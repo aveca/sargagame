@@ -7977,8 +7977,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
         setPayBusy(false);onActivated?.();onClose();return
       }
-      // Parrainage : transmet le code parrain (filleul → 1er mois offert serveur)
-      // + mon propre code (écrit en metadata customer pour pouvoir me créditer plus tard).
+      // Parrainage : transmet le code parrain (le filleul ramené crédite le parrain
+      // de jours de pass — cf. mollie.php refcredit) + mon propre code en metadata customer.
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown",referredBy:_refBy,myReferralCode:_myRef})})

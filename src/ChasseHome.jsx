@@ -731,7 +731,7 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
             if(referral0||!/^REF-[A-Z0-9]{6}$/.test(code))return null
             const url=(typeof window!=="undefined"?window.location.origin:"")+"/?ref="+code
             const onShare=()=>{
-              const txt=_t({fr:"Je surveille les sargasses avec cette appli — prévisions 7 jours par plage. Profite de ton 1er mois offert avec mon lien 👇",en:"I track sargassum with this app — 7-day forecast per beach. Get your 1st month free with my link 👇",es:"Sigo el sargazo con esta app — pronóstico de 7 días por playa. Consigue tu 1er mes gratis con mi enlace 👇"})
+              const txt=_t({fr:"Je surveille les sargasses avec cette appli — LA plage sans sargasses chaque matin, prévision 7 jours par plage. Essaie avec mon lien 👇",en:"I track sargassum with this app — THE clean beach every morning, 7-day forecast per beach. Try it with my link 👇",es:"Sigo el sargazo con esta app — LA playa sin sargazo cada mañana, pronóstico de 7 días por playa. Pruébala con mi enlace 👇"})
               try{track&&track("sg_referral_share",{method:(navigator.share?"native":"clipboard"),code})}catch(_){}
               if(navigator.share){navigator.share({title:"Sargasses",text:txt,url}).catch(()=>{})}
               else{try{navigator.clipboard&&navigator.clipboard.writeText(txt+" "+url);setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)}catch(_){}}
@@ -739,7 +739,7 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
             return (
               <div style={{marginTop:12,padding:"14px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(124,58,237,.10),rgba(168,85,247,.10))",border:"1px solid rgba(168,85,247,.25)"}}>
                 <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un ami 🎁",en:"Invite a friend 🎁",es:"Invita a un amigo 🎁"})}</div>
-                <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Vous gagnez tous les deux 1 mois.",en:"You both get 1 month free.",es:"Ambos ganáis 1 mes gratis."})}</div>
+                <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Tu gagnes 7 jours de Veilleur offerts dès qu'un ami prend un pass.",en:"You earn 7 Watchman days each time a friend gets a pass.",es:"Ganas 7 días de Vigía cada vez que un amigo compra un pase."})}</div>
                 <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   <code style={{flex:"1 1 170px",fontSize:11.5,background:"rgba(0,0,0,.18)",padding:"8px 10px",borderRadius:8,wordBreak:"break-all"}}>{url}</code>
                   <button type="button" onClick={onShare} className="lc-cta yel" style={{whiteSpace:"nowrap"}}>

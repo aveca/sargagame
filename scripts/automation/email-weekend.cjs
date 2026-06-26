@@ -464,20 +464,26 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
   </div>
 
   <div style="background:#fff;padding:20px">
-    <div style="display:flex;gap:12px;margin-bottom:20px;text-align:center">
-      <div style="flex:1;padding:12px;background:rgba(34,197,94,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
-        <div style="font-size:11px;color:#686868">${t.clean}</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(184,122,0,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
-        <div style="font-size:11px;color:#686868">${t.watch}</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(232,82,42,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
-        <div style="font-size:11px;color:#686868">${t.alerts}</div>
-      </div>
-    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;text-align:center"><tr>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#f0faf2;background:rgba(34,197,94,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
+          <div style="font-size:11px;color:#686868">${t.clean}</div>
+        </div>
+      </td>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#fff8ec;background:rgba(184,122,0,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
+          <div style="font-size:11px;color:#686868">${t.watch}</div>
+        </div>
+      </td>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#fdefea;background:rgba(232,82,42,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
+          <div style="font-size:11px;color:#686868">${t.alerts}</div>
+        </div>
+      </td>
+    </tr></table>
     <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">${t.top}</div>
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
