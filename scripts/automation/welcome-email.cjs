@@ -64,6 +64,15 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
   // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
   // email ouvre le paywall on-site via ?paywall=1 (deep-link App → openPremium).
   const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
+  const headerHtml = brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')
+  const captureBlock = PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
+      <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
+      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — ta meilleure plage du jour — arrive chaque matin dans ta boîte. Prévision 7 jours + alertes dans l'app.</div>
+    </div>` : ''
+  const cleanBlock = cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
+      <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
+      <div style="font-size:13px;color:#686868;margin-top:2px">plages propres en ce moment en ${name}</div>
+    </div>` : ''
 
   return `<!DOCTYPE html>
 <html>
@@ -71,17 +80,11 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
 
-  ${brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')}
+  ${headerHtml}
 
   <div style="background:#fff;padding:24px 20px">
-    ${PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
-      <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
-      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — ta meilleure plage du jour — arrive chaque matin dans ta boîte. Prévision 7 jours + alertes dans l'app.</div>
-    </div>` : ''}
-    ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
-      <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
-      <div style="font-size:13px;color:#686868;margin-top:2px">plages propres en ce moment en ${name}</div>
-    </div>` : ''}
+    ${captureBlock}
+    ${cleanBlock}
 
     <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">
       Tu viens de rejoindre les habitants de ${name} protégés par le Veilleur. Voici ce que tu vas recevoir :
@@ -343,4 +346,6 @@ async function main() {
   console.log('Done.')
 }
 
-main().catch(e => console.error(e))
+if (require.main === module) main().catch(e => console.error(e))
+
+module.exports = { buildWelcomeHTML, buildWelcomeHTMLRegion }
