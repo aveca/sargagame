@@ -214,5 +214,35 @@
       "body": "Aujourd'hui, <plage> est propre : XX/100. Pour demain, la tendance penche vers le calme — et tu n'auras pas à deviner toi-même.\n\nLe Veilleur regarde TA plage au satellite, 4 fois par jour. Au lieu d'ouvrir la carte chaque matin, tu reçois le verdict avant le café :\n- propre, ou pas\n- la tendance des 3 prochains jours\n- rien à vérifier toi-même\n\nActive-le pour une plage en particulier, et il veille pour toi — chaque jour. Satisfait ou remboursé 30 jours, annulation en 2 clics.",
       "cta": "Faire veiller ma plage"
     }
+  },
+  "em_winback_fr": {
+    "key": "winback",
+    "lang": "fr",
+    "intent": "Faire RACHETER un pass à un acheteur dont l'accès a expiré. Control = réassurance ; challenger = urgence honnête (la mer change).",
+    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "ship": {
+      "subject": "Les sargasses bougent — ta plage propre du moment ne durera pas",
+      "preheader": "Reprends ton veilleur en 1 geste. Paiement unique, sans abonnement."
+    }
+  },
+  "em_winback_en": {
+    "key": "winback",
+    "lang": "en",
+    "intent": "Drive a repeat pass purchase from an expired buyer. Control = reassurance; challenger = honest urgency (the sea changes).",
+    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "ship": {
+      "subject": "Sargassum is moving — today's clean beach won't stay clean",
+      "preheader": "Reactivate your watcher in one tap. One-time, no subscription."
+    }
+  },
+  "em_winback_es": {
+    "key": "winback",
+    "lang": "es",
+    "intent": "Lograr la recompra de un pase de un comprador cuyo acceso expiró. Control = tranquilidad; challenger = urgencia honesta.",
+    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "ship": {
+      "subject": "El sargazo se mueve — la playa limpia de hoy no durará",
+      "preheader": "Reactiva tu vigía en 1 toque. Pago único, sin suscripción."
+    }
   }
 }
