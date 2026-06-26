@@ -1358,8 +1358,10 @@ export default function WorldMapView({
           </div>
         </div>
 
-        {/* Dock bas */}
-        <div style={{
+        {/* Dock bas — label « Carte » inerte (cursor:default, sans onClick) RETIRÉ :
+            on est déjà sur la carte, il ne servait à rien (retour fondateur). On ne garde
+            que le ✕ Fermer, et SEULEMENT hors rootMode (en rootMode la carte EST l'app). */}
+        {!rootMode&&<div style={{
           position:"absolute",left:0,right:0,bottom:"calc(16px + env(safe-area-inset-bottom))",
           display:"flex",justifyContent:"center",pointerEvents:"none",
         }}>
@@ -1368,20 +1370,14 @@ export default function WorldMapView({
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:5,
           }}>
-            <button style={{
+            <button onClick={onClose} style={{
               display:"flex",alignItems:"center",gap:6,border:`2px solid ${INK}`,
               background:"#ffd23f",color:INK,
               font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
-              padding:"8px 14px",borderRadius:999,cursor:"default",
-            }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinejoin="round" style={{flexShrink:0}}><path d="m9 4 6 2 5-2v14l-5 2-6-2-5 2V6l5-2Z"/><path d="M9 4v14M15 6v14"/></svg> {_t(lang,"Carte","Map","Mapa")}</button>
-            {!rootMode&&<button onClick={onClose} style={{
-              display:"flex",alignItems:"center",gap:6,border:"2px solid transparent",
-              background:"transparent",color:INK,
-              font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
               padding:"8px 14px",borderRadius:999,cursor:"pointer",
-            }}>✕ {_t(lang,"Fermer","Close","Cerrar")}</button>}
+            }}>✕ {_t(lang,"Fermer","Close","Cerrar")}</button>
           </div>
-        </div>
+        </div>}
 
         {/* Tooltip plage sélectionnée */}
         {selected&&tagPos&&(

@@ -1852,8 +1852,11 @@ export const CSS=`
 .lc-h2s-src{font-size:9.5px;font-weight:700;color:#8a7f7f;margin-top:9px;letter-spacing:.2px}
 /* plages voisines (hub d'exploration in-world) */
 .lc-detail-rel{margin-top:20px}
-.lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
-.lc-detail-rel-card{position:relative}
+/* minmax(0,1fr) + min-width:0 : sans ça les items grid ont min-width:auto → le
+   contenu des cartes élargit les colonnes au-delà du conteneur → 3e carte croppée
+   à droite (avant masqué par un scroll-x, supprimé depuis). Maintenant les 3 rentrent. */
+.lc-detail-rel-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.lc-detail-rel-card{position:relative;min-width:0}
 .lc-detail-rel-card .lc-card{width:100%}
 .lc-detail-planb .lc-detail-fc-h::before{content:"";display:inline-block;width:8px;height:8px;border-radius:4px;background:#E8522A;margin-right:7px;vertical-align:middle;box-shadow:0 0 0 2px var(--ink)}
 .lc-planb-sub{font-size:11.5px;font-weight:700;line-height:1.25;color:var(--ink);opacity:.82;margin:4px 0 2px}
