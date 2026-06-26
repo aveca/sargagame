@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **🗓️ RUNBOOK 7 JOURS (27/06 → 03/07) → `PLAN_7J.md`** — un bloc/jour (objectif + data à checker + tâches du backlog audit + PROMPT à coller). Commence chaque jour par le DATA DOC en tête de PLAN_7J.
+
 > **🔍 2026-06-26 (suite) — AUDIT REPO COMPLET (14 agents, 55 findings, vérifiés adversarialement). 5 PR de fixes shippés (#157→#160). Backlog restant ci-dessous.**
 >
 > **FIXÉ + MERGÉ (NE PAS REFAIRE) :**
