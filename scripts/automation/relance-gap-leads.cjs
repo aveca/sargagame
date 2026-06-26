@@ -5,8 +5,8 @@
  * Pendant la coupure paiement (Stripe mort, attente validation Mollie on-site), le
  * paywall est en mode CAPTURE : il enrôle l'email (sources gap_freemium / mollie_waitlist
  * / onsite_checkout / pay_intent / paypal_sub) au lieu de charger. CE SCRIPT = la relance
- * à dégainer AU GO-LIVE Mollie : « C'est rouvert — ton accès Premium pour 4,99 €/mois. »
- * Convertit les leads capturés pendant l'attente en abonnés dès la réouverture.
+ * à dégainer AU GO-LIVE Mollie : « C'est rouvert — ton Pass plage, dès 7,99 € (paiement unique). »
+ * Convertit les leads capturés pendant l'attente en clients dès la réouverture.
  *
  * One-shot, idempotent (data/relance-gap-sent.json), throttlé (plafond Resend ~100/j).
  * Nécessite scripts/automation/data/subscribers.json (récupéré au runtime/FTP).

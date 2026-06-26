@@ -25,7 +25,7 @@ const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 // Leads PRO (formulaires /pro/*) : exclus du welcome grand public — ils ont leur
-// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre 4,99 €.
+// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre Pass conso.
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
 // Sources de CAPTURE qui DÉBLOQUENT réellement 7j premium côté front (rang 1 :
 // capture-gate + gap_freemium posent sg_premium_pass_end). Le welcome leur CONFIRME
@@ -115,8 +115,8 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
     </div>
     <a href="${stripe}" style="display:inline-block;padding:11px 26px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">Activer mon veilleur</a>
-    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule en 1 clic</div>
+      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">Activer mon Pass</a>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00b7 rembours\u00E9 en un email</div>
   </div>
 
   <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
@@ -150,8 +150,8 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'Ver el mapa ahora',
     upKicker: 'Para ir más lejos', upTitle: 'Sabe el sábado desde el lunes',
     upDesc: 'Pronóstico de 7 días + alertas push.<br>Planifica tus días de playa sin estrés.',
-    upCta: 'Activar mi vigía',
-    upFoot: `${monthly}/mes · Sin permanencia · Cancela en 1 clic`,
+    upCta: 'Activar mi pase',
+    upFoot: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     unsub: 'Darse de baja',
   } : {
     kicker: 'Welcome aboard',
@@ -165,8 +165,8 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'See the map now',
     upKicker: 'Go further', upTitle: 'Know Saturday by Monday',
     upDesc: '7-day forecast + push alerts.<br>Plan your beach days stress-free.',
-    upCta: 'Activate my watcher',
-    upFoot: `${monthly}/month · No commitment · Cancel anytime`,
+    upCta: 'Activate my Pass',
+    upFoot: 'From $5.99 · one-time, no subscription · refund in one email',
     unsub: 'Unsubscribe',
   }
   const island = region.id.toUpperCase()

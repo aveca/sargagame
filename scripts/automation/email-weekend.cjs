@@ -33,7 +33,7 @@ function envVal(name) {
 }
 const SMTP_HOST = envVal('SMTP_HOST'), SMTP_PORT = +envVal('SMTP_PORT') || 465
 const SMTP_USER = envVal('SMTP_USER'), SMTP_PASS = envVal('SMTP_PASS')
-// Leads PRO exclus du bulletin grand public (drip B2B dédié — jamais l'offre 4,99 €).
+// Leads PRO exclus du bulletin grand public (drip B2B dédié — jamais l'offre Pass conso).
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
 // Liste d'abonnés fetchée au runtime par fetch-subscribers.cjs (RGPD : gitignored,
 // déjà filtrée des désabonnés + bounces + dédupliquée).
@@ -145,17 +145,17 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 
   <!-- Premium upsell -->
   <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Le Pass Veilleur</div>
     <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Sache samedi d\u00E8s lundi</div>
     <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">
-      Pr\u00E9visions 7 jours + alertes push.<br>
-      Rejoins les familles qui planifient leur weekend \u00E0 l'avance.
+      Pr\u00E9vision 7 jours + alertes push : <b style="color:rgba(255,255,255,.85)">LA plage sans sargasses</b>, chaque matin.<br>
+      Plus jamais un weekend g\u00E2ch\u00E9 par surprise.
     </div>
     <a href="https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
-      box-shadow:0 4px 16px rgba(232,168,0,.3)">Activer mon veilleur</a>
-    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule quand tu veux</div>
+      box-shadow:0 4px 16px rgba(232,168,0,.3)">Activer mon Pass</a>
+    <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00B7 rembours\u00E9 en un email</div>
   </div>
 
   <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">
@@ -165,8 +165,9 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
     <div style="font-size:11px;color:#999;margin-top:12px">Pr\u00E9vision satellite pour samedi \u00B7 Mise \u00E0 jour 4\u00D7/jour</div>
   </div>
 
-  <div style="text-align:center;padding:16px;font-size:10px;color:#999">
-    Sargasses ${islandName} · sargasses-${islandName.toLowerCase()}.com<br>
+  <div style="text-align:center;padding:16px;font-size:10px;color:#999;line-height:1.6">
+    <b style="color:#0D1E1C">Le Veilleur</b> · Sargasses ${islandName} · sargasses-${islandName.toLowerCase()}.com<br>
+    © ${new Date().getFullYear()} Le Veilleur · données Copernicus Marine<br>
     <a href="${unsubUrl(island)}" style="color:#999">Se d\u00E9sabonner</a>
   </div>
 </div>
@@ -273,7 +274,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 para el sábado — puntuación sobre 100:',
     premiumKick: 'Premium', premiumTitle: 'Sabe el sábado desde el lunes',
     premiumDesc: 'Pronóstico de 7 días + alertas push.<br>Únete a quienes planifican su fin de semana con antelación.',
-    premiumCta: 'Activar mi vigía', priceNote: `${monthly}/mes · Reembolso 30 días · Cancela cuando quieras`,
+    premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
     unsub: 'Darse de baja',
   } : {
@@ -283,7 +284,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 for Saturday — score out of 100:',
     premiumKick: 'Premium', premiumTitle: 'Know Saturday by Monday',
     premiumDesc: '7-day forecast + push alerts.<br>Join the families who plan their weekend ahead.',
-    premiumCta: 'Activate my watchman', priceNote: `${monthly}/month · 30-day money-back · Cancel anytime`,
+    premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · refund in one email',
     mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
     unsub: 'Unsubscribe',
   }
@@ -353,8 +354,9 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     <div style="font-size:11px;color:#999;margin-top:12px">${t.mapNote}</div>
   </div>
 
-  <div style="text-align:center;padding:16px;font-size:10px;color:#999">
-    ${brand} ${name} · ${domain}<br>
+  <div style="text-align:center;padding:16px;font-size:10px;color:#999;line-height:1.6">
+    <b style="color:#0D1E1C">${brand} ${name}</b> · ${domain}<br>
+    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'datos Copernicus Marine' : 'Copernicus Marine data'}<br>
     <a href="${unsubUrl(region.id)}" style="color:#999">${t.unsub}</a>
   </div>
 </div>
@@ -635,4 +637,4 @@ if (require.main === module) {
   main().catch(e => { console.error(e); process.exitCode = 1 })
 }
 
-module.exports = { main, isSendDay, sentKey, buildEmailHTMLRegion, buildRegionSubject, prepareRegionBeaches, rankBeaches, computeStats }
+module.exports = { main, isSendDay, sentKey, buildEmailHTML, buildEmailHTMLRegion, buildRegionSubject, prepareRegionBeaches, rankBeaches, computeStats }
