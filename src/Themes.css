@@ -145,3 +145,9 @@ html body .sg-wbtn-dark{background:#000!important;color:#fff!important;-webkit-t
 html body .sg-wbtn-light{background:#fff!important;color:#3c4043!important;-webkit-text-fill-color:#3c4043!important}
 /* Bouton « Retour » : texte clair transparent (pas la pastille blanche comic). */
 html body .sg-payplain{background:none!important;border:none!important;box-shadow:none!important;border-radius:0!important;text-shadow:none!important;color:rgba(255,255,255,.7)!important;-webkit-text-fill-color:rgba(255,255,255,.7)!important;font-family:inherit!important}
+
+/* Cartes PASS (PassOffer) — ce sont des <button> → le skin .theme-X button les
+   repeignait en BLANC (texte clair = invisible). On force le fond sombre + bordure
+   voulus. Spécificité html body .classe (0,1,2) > .theme-X button (0,1,1). */
+html body .sg-passcard-sec{background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.13)!important;box-shadow:none!important;border-radius:18px!important;color:#EAF7F4!important;text-shadow:none!important;font-family:inherit!important}
+html body .sg-passcard-hero{background:linear-gradient(165deg,rgba(255,199,44,.17),rgba(255,199,44,.03) 58%,transparent)!important;border:1.5px solid #FFC72C!important;box-shadow:0 14px 40px rgba(232,168,0,.20)!important;border-radius:18px!important;color:#EAF7F4!important;text-shadow:none!important;font-family:inherit!important}

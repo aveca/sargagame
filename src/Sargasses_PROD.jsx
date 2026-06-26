@@ -14048,6 +14048,9 @@ export default function App(){
 
   // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h
   const[showRecoveryBanner,setShowRecoveryBanner]=useState(false)
+  // Hauteur RÉELLE de la bannière du haut (recovery/pass-expiré) — mesurée pour décaler
+  // le header d'autant (sinon, sur 2-3 lignes en haute saison, le titre était CROPPÉ).
+  const[bannerH,setBannerH]=useState(0)
   useEffect(()=>{
     if(isPremium)return
     try{
@@ -15231,7 +15234,7 @@ export default function App(){
 
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
-          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
@@ -15263,7 +15266,7 @@ export default function App(){
 
         {/* PASS 7J EXPIRÉ — relance capture (un seul affichage, après les overlays prioritaires) */}
         {showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
-          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
@@ -15553,7 +15556,7 @@ export default function App(){
             l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
-          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:showPassExpired?64:(showPushPrimer?58:0)}px) 16px 0`,
+          padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
           display:showPremium?"none":undefined,

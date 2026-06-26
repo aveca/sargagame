@@ -38,7 +38,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
   const G = { color: "#FFC72C" }
   // carte secondaire (7j / saison)
   const SecCard = ({ p, label, desc, perdayTxt }) => (
-    <button onClick={() => buy(p)} style={{
+    <button onClick={() => buy(p)} className="sg-passcard-sec" style={{
       display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 12,
       cursor: "pointer", fontFamily: "inherit", textAlign: "left", color: "inherit",
       border: "1px solid rgba(255,255,255,.13)", borderRadius: 18, background: "rgba(255,255,255,.035)", padding: "14px 16px",
@@ -103,7 +103,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
             perdayTxt={perDay(P7.c, P7.days, lang)} />
 
           {/* 30 jours — HÉROS */}
-          <button onClick={() => buy(P30)} style={{
+          <button onClick={() => buy(P30)} className="sg-passcard-hero" style={{
             position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "inherit",
             border: "1.5px solid #FFC72C", borderRadius: 18, padding: "18px 17px 16px", marginTop: 6,
             background: "linear-gradient(165deg,rgba(255,199,44,.17),rgba(255,199,44,.03) 58%,transparent)",
