@@ -1584,7 +1584,7 @@
   },
   {
     "date": "2026-06-26",
-    "time": "2026-06-26T17:17:25.065Z",
+    "time": "2026-06-26T17:28:22.505Z",
     "payments": 12,
     "revenue": 59.88,
     "emails": 248,
@@ -1592,7 +1592,7 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 31039,
+      "sessions": 31045,
       "lockClicks": 133,
       "modalOpens": 3514,
       "modalCta": 122,
