@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T04:54:20.365Z",
+  "generatedAt": "2026-06-26T13:11:46.445Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -68,7 +68,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 372
+            "count": 374
           },
           {
             "event": "clarity_rage_click",
@@ -190,19 +190,19 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 5582
+            "count": 5653
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 1031
+            "count": 1049
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 189
+            "count": 195
           },
           {
             "event": "clarity_dead_click",
@@ -238,7 +238,7 @@
             "event": "clarity_dead_click",
             "page": "/plages-sans-sargasses/",
             "target": "",
-            "count": 29
+            "count": 32
           },
           {
             "event": "clarity_dead_click",
@@ -332,6 +332,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/sargasses-le-diamant/",
+            "target": "",
+            "count": 8
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/a-propos/",
             "target": "",
             "count": 7
@@ -363,12 +369,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/meilleures-plages-guadeloupe-sargasses/",
-            "target": "",
-            "count": 6
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-le-diamant/",
             "target": "",
             "count": 6
           },
@@ -423,6 +423,12 @@
           {
             "event": "clarity_dead_click",
             "page": "/danger-sargasses-h2s/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/pointe-du-bout/",
             "target": "",
             "count": 3
           },
@@ -542,7 +548,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 422
+            "count": 423
           },
           {
             "event": "clarity_rage_click",
@@ -628,7 +634,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 3428
+            "count": 3451
           },
           {
             "event": "clarity_dead_click",
@@ -652,13 +658,13 @@
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-la-caravelle/",
             "target": "",
-            "count": 58
+            "count": 61
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-du-gosier/",
             "target": "",
-            "count": 51
+            "count": 59
           },
           {
             "event": "clarity_dead_click",
@@ -670,7 +676,7 @@
             "event": "clarity_dead_click",
             "page": "/plages/la-datcha/",
             "target": "",
-            "count": 25
+            "count": 27
           },
           {
             "event": "clarity_dead_click",
@@ -680,15 +686,15 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/petit-havre-sud/",
+            "page": "/plages/ile-de-la-petite-terre/",
             "target": "",
             "count": 13
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/ile-de-la-petite-terre/",
+            "page": "/plages/petit-havre-sud/",
             "target": "",
-            "count": 12
+            "count": 13
           },
           {
             "event": "clarity_dead_click",
@@ -977,7 +983,7 @@
     },
     "florida": {
       "domain": "sargassummiami.com",
-      "indexedCount": 3,
+      "indexedCount": 4,
       "totalUrls": 16,
       "findings": {
         "notIndexed": [],
@@ -1004,13 +1010,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 410
+            "count": 421
           },
           {
             "event": "clarity_dead_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 197
+            "count": 199
           },
           {
             "event": "clarity_dead_click",
@@ -1086,7 +1092,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 59
+            "count": 63
           },
           {
             "event": "clarity_dead_click",
@@ -1203,7 +1209,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 181
+            "count": 182
           },
           {
             "event": "clarity_dead_click",

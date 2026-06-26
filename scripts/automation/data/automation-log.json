@@ -1,27 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-06-01T16:43:12.672Z",
-      "dryRun": false,
-      "script": "seo-position-tracker",
-      "action": "snapshot",
-      "snapshots": 9,
-      "drops": 0,
-      "gains": 0,
-      "queryDrops": 0,
-      "queryGains": 0,
-      "appeared": 0,
-      "vanished": 0
-    },
-    {
-      "timestamp": "2026-06-01T16:43:12.722Z",
-      "dryRun": false,
-      "script": "seo-orphan-detector",
-      "action": "scan",
-      "sites": 2,
-      "totalOrphans": 27
-    },
-    {
       "timestamp": "2026-06-01T16:43:12.764Z",
       "dryRun": false,
       "script": "seo-ctr-diagnostic",
@@ -1481,6 +1460,65 @@
     },
     {
       "timestamp": "2026-06-26T05:18:14.189Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 96,
+        "critical": 36,
+        "warnings": 60
+      }
+    },
+    {
+      "timestamp": "2026-06-26T13:36:01.093Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 35,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "gp": {
+          "indexed": 90,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "florida": {
+          "indexed": 4,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "puntacana": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 14,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-06-26T13:36:01.139Z",
       "dryRun": false,
       "script": "ux-audit",
       "action": "report-generated",
