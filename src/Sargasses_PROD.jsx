@@ -16051,11 +16051,11 @@ export default function App(){
             boxShadow:"0 8px 24px rgba(124,58,237,.35)",cursor:"pointer",
             display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
             animation:"slideUp .4s ease"}}>
-            <span style={{fontSize:20}}>🎁</span>
+            <span style={{fontSize:20}}>🌊</span>
             <div>
-              <div>{_t(lang,"Un ami t'offre ton 1er mois","A friend gifts you your 1st month","Un amigo te regala tu 1er mes")}</div>
+              <div>{_t(lang,"Un ami te recommande Le Veilleur","A friend recommends the Watchman","Un amigo te recomienda El Vigía")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {_t(lang,"Appuie pour activer — 1er mois à 0 €","Tap to activate — 1st month free","Toca para activar — 1er mes gratis")}
+                {_t(lang,"Appuie pour découvrir LA plage sans sargasses","Tap to discover THE sargassum-free beach","Toca para descubrir LA playa sin sargazo")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
