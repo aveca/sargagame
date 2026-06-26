@@ -722,6 +722,59 @@ function doGet(e) {
     }
   }
 
+  // Referral funnel — la boucle parrainage est live côté app (share avec ?ref=CODE →
+  // landing du filleul → conversion). Ces 3 signaux vivent dans analytics_events mais
+  // n'étaient comptés NULLE PART. Ici on les agrège pour décider des récompenses
+  // (founder-only Mollie) et repérer les meilleurs parrains.
+  //   share   = sg_share avec has_referral (un premium a partagé son lien parrain) ;
+  //   landing = sg_referral_landing (un filleul est arrivé via ?ref=CODE) ;
+  //   convert = sg_referral_convert (ce filleul a payé). landing/convert portent
+  //   ref_code (= code du PARRAIN) → on groupe par code. Fenêtre 90j par défaut (?days=).
+  if (action === 'referral') {
+    try {
+      var rDays = Math.min(365, Math.max(1, parseInt(e.parameter.days, 10) || 90))
+      var rCut = new Date(Date.now() - rDays * 24 * 60 * 60 * 1000).toISOString()
+      var rss = SpreadsheetApp.openById(SHEET_ID)
+      var rSheet = rss.getSheetByName('analytics_events')
+      var rep = { window_days: rDays, shares: 0, landings: 0, converts: 0, by_code: {}, top: [], rates: {} }
+      if (rSheet) {
+        var rData = rSheet.getDataRange().getValues()
+        for (var ri = 1; ri < rData.length; ri++) {
+          var rTs = rData[ri][0]
+          var rIso = rTs instanceof Date ? rTs.toISOString() : String(rTs || '')
+          if (rIso < rCut) continue
+          var rEvt = (rData[ri][1] || '').replace('sg_', '')
+          var rp = null
+          try { var rraw = rData[ri][9]; rp = rraw ? (typeof rraw === 'string' ? JSON.parse(rraw) : rraw) : null } catch (e2) { rp = null }
+          if (rEvt === 'share') {
+            if (rp && (rp.has_referral === true || rp.has_referral === 1 || rp.has_referral === '1' || rp.has_referral === 'true')) rep.shares++
+            continue
+          }
+          if (rEvt !== 'referral_landing' && rEvt !== 'referral_convert') continue
+          var rCode = (rp && rp.ref_code) ? String(rp.ref_code) : '(unknown)'
+          if (!rep.by_code[rCode]) rep.by_code[rCode] = { landings: 0, converts: 0 }
+          if (rEvt === 'referral_landing') { rep.landings++; rep.by_code[rCode].landings++ }
+          else { rep.converts++; rep.by_code[rCode].converts++ }
+        }
+        var rCodes = Object.keys(rep.by_code)
+        rCodes.sort(function (a, b) {
+          var dd = rep.by_code[b].converts - rep.by_code[a].converts
+          return dd !== 0 ? dd : rep.by_code[b].landings - rep.by_code[a].landings
+        })
+        for (var ci = 0; ci < Math.min(20, rCodes.length); ci++) {
+          rep.top.push({ code: rCodes[ci], landings: rep.by_code[rCodes[ci]].landings, converts: rep.by_code[rCodes[ci]].converts })
+        }
+      }
+      rep.rates = {
+        share_to_landing: rep.shares > 0 ? Math.round(rep.landings / rep.shares * 1000) / 10 : 0,
+        landing_to_convert: rep.landings > 0 ? Math.round(rep.converts / rep.landings * 1000) / 10 : 0
+      }
+      return jsonResponse(rep)
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
   // Send feedback request to premium clients
   if (action === 'feedback_request') {
     try {
@@ -792,7 +845,7 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|drip_check|clean_bounces|unsubscribe' })
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|referral|drip_check|clean_bounces|unsubscribe' })
 }
 
 function htmlResponse(body) {

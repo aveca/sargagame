@@ -1,5 +1,16 @@
 # NEXT_SESSION — sargagame
 
+> **💰 2026-06-26 (suite, autonome) — 2 SYSTÈMES REVENU/SCALE DIFFÉRÉS → CONSTRUITS (goal « augmenter revenus & scaler »). Branche `claude/hello-qce0lt` (PR draft). Vérifiés (npm test 3/3 vert, dry-runs, logique GAS simulée). NE PAS REFAIRE.**
+>
+> - **Cold-lead RÉ-ENGAGE** (`scripts/automation/cold-lead-reengage.cjs`) — le rank-5 différé. Nurture long-traîne des leads DEVENUS FROIDS (jamais convertis) : EUR/FR, âge **60–365j**, **cadence 90j**, **cap 3 touches/lead à vie**, exclut bounced/désabo/B2B/test, List-Unsubscribe + désabo proéminent, CTA `?paywall=1`. A/B `em_coldreengage_fr` (variant ajouté à email-ab-variants.json). Source = subscribers.json (déjà fetché). **Câblé DRY-RUN** dans `daily-copernicus` (step « Cold-lead reengage (DRY-RUN — flip --send to activate) »), ledger `cold-reengage-sent.json` committé. Vérifié : fixture 12 leads → 2 éligibles, toutes les exclusions + cadence + cap firent ; HTML sans undefined/NaN ; --send sans SMTP échoue loud.
+> - **Referral REPORT** (`scripts/automation/referral-report.cjs` + action GAS `referral` dans `scripts/appscript/Code.js`) — le rank-6 différé. Découverte clé : le vrai signal « share » = **`sg_share` avec `has_referral:true`** (`sg_referral_share` est mort/legacy). L'action GAS agrège **share→landing→convert** + groupe landing/convert par `ref_code` (top parrains) sur fenêtre 90j. Le script fetch + sauve `data/referral-report.json` (committé) + **détecte le no-déploiement** (« unknown action ») sans planter. **Câblé read-only** dans `daily-copernicus`. Logique GAS simulée localement (assertions vertes : shares/landings/converts/top/rates).
+>
+> **🎬 CHECKLIST FONDATEUR pour ACTIVER (= revenu/data réels) :**
+> 1. **Cold-reengage en LIVE** : relire copy + volumes dans les logs du step DRY-RUN, puis éditer le step `daily-copernicus` → `cold-lead-reengage.cjs --send`. (`SMTP_PASS` déjà secret.) Levier nurture long-terme sur les ~246 leads.
+> 2. **Referral report data** : `cd scripts/appscript && clasp push` (déploie l'action GAS `referral`). Tant que non poussé, le report est un no-op gracieux. Après → `referral-report.json` se remplit chaque jour, décide les récompenses parrain.
+>
+> **RESTE des différés** : B2B pricing page = DÉJÀ shippé (#174). Plus de système « différé » vétté en attente — re-prioriser sur données POST-refonte (~après 23/07).
+
 > **💰 2026-06-26 (nuit, autonome) — SYSTÈMES REVENU/SCALE (goal « augmenter revenus & scaler »). Cartographie multi-agents (7 dimensions, vérif adversariale) → backlog ordonné → 3 PR shippés (#170→#172). NE PAS REFAIRE.**
 >
 > **SHIPPÉ + MERGÉ + DÉPLOYÉ :**
