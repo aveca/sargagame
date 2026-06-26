@@ -27,7 +27,7 @@ const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" st
  * basse), 30j HÉROS, Saison (local). Aucune mention d'abonnement. onBuy({c,pass,days,
  * method}) → le parent route vers Mollie on-site (carte ou wallet). Pas de Stripe.
  */
-export default function PassOffer({ lang = "fr", currency = "eur", onBuy }) {
+export default function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
   const cur = currency === "usd" ? "usd" : "eur"
   const { P7, P30, SAISON } = CAT[cur]
   const seg = getSegment()
@@ -100,6 +100,33 @@ export default function PassOffer({ lang = "fr", currency = "eur", onBuy }) {
           <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>75%</span>
           {_t(lang, "de fiabilité sur la prévision 7 jours · 136 plages suivies par satellite, 4×/jour.", "reliability on the 7-day forecast · 136 beaches tracked by satellite, 4×/day.", "de fiabilidad en el pronóstico 7 días · 136 playas por satélite, 4×/día.")}
         </div>
+
+        {/* Preuve sociale + fraîcheur (A/B-gated côté parent : community=0 / freshTs=null → masqué).
+            Valeurs HONNÊTES : community = plancher réel des leads email ; freshTs = updatedAt réel du pipeline. */}
+        {(community > 0 || freshTs) && (
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 14px", margin: "10px 0 0", fontSize: 11.5, fontWeight: 600, color: "rgba(234,247,244,.62)" }}>
+            {community > 0 && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: "#FFC72C", fontWeight: 800 }}>★</span>
+                {_t(lang, `Déjà ${community}+ vacanciers suivent leurs plages`, `${community}+ beachgoers already track their beaches`, `${community}+ veraneantes ya siguen sus playas`)}
+              </span>
+            )}
+            {(() => {
+              if (!freshTs) return null
+              const h = Math.round((Date.now() - new Date(freshTs).getTime()) / 3.6e6)
+              if (!(h >= 0 && h < 48)) return null
+              const txt = h < 1
+                ? _t(lang, "Données mises à jour à l'instant", "Data updated just now", "Datos actualizados ahora")
+                : _t(lang, `Données mises à jour il y a ${h} h`, `Data updated ${h}h ago`, `Datos actualizados hace ${h} h`)
+              return (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
+                  {txt}
+                </span>
+              )
+            })()}
+          </div>
+        )}
 
         {/* GRILLE PASS */}
         <div style={{ margin: "18px 0 0", display: "flex", flexDirection: "column", gap: 11 }}>

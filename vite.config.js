@@ -101,6 +101,19 @@ try {
   console.warn('vite.config.js: backtest fiabilité non chargé:', e.message)
 }
 
+// Taille communauté (preuve sociale HONNÊTE, paywall) — plancher conservateur du
+// nombre de leads email réels (daily-metrics), arrondi à la dizaine INFÉRIEURE.
+// Injecté au build via __COMMUNITY__ ; 0 si <50 (on ne montre pas une preuve faible).
+let COMMUNITY = 0
+try {
+  const _dm = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/daily-metrics.json'), 'utf-8'))
+  const _last = Array.isArray(_dm) ? _dm[_dm.length - 1] : null
+  const _emails = _last && Number(_last.emails)
+  if (_emails && _emails >= 50) COMMUNITY = Math.floor(_emails / 10) * 10
+} catch (e) {
+  console.warn('vite.config.js: daily-metrics (communauté) non chargé:', e.message)
+}
+
 // Données de référence sargasses par plage (fallback si API Copernicus indisponible) — sync avec beaches-list.json
 const SARGASSUM_REF = ALL_BEACHES.map(b => ({
   id: b.id,
@@ -2346,6 +2359,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
     __REGION__: JSON.stringify(REGION),
     // Fiabilité honnête par régime (cf. bloc RELIABILITY plus haut) — badge in-app.
     __RELIABILITY__: JSON.stringify(RELIABILITY),
+    // Taille communauté (plancher honnête leads email) — preuve sociale paywall.
+    __COMMUNITY__: JSON.stringify(COMMUNITY),
   },
   build: {
     // Carte Leaflet retirée (2026-06-21) → plus de chunk leaflet ni de filtre de preload.
