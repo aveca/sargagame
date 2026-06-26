@@ -19,7 +19,7 @@ const path = require('path')
 const https = require('https')
 const nodemailer = require('nodemailer')
 const { injectPreheader, applyBrand, htmlToText } = require('./lib/email-send.cjs')
-const { logId } = require('./lib/email-hash.cjs')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
 
 // SMTP — boîte alerte@ (cPanel). Envoi depuis le VRAI alerte@sargasses-martinique.com
 // (plus de MailApp/gmail). Lit process.env (CI) OU le .env local (comme welcome-paid.cjs).
@@ -370,6 +370,25 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
 function isSendDay(d = new Date()) { return d.getUTCDay() === 5 }
 function sentKey(d = new Date()) { return d.toISOString().split('T')[0] }
 
+// Dédup INCRÉMENTALE par destinataire (RGPD : hashes only, comme drip-sent).
+// AVANT : le marqueur {lastSent} n'était écrit qu'en TOUTE FIN de run → un crash
+// après MQ mais avant GP/USD re-spammait le bulletin ENTIER au prochain run (le
+// check lastSent===today ne voyait rien d'écrit). MAINTENANT : on persiste après
+// CHAQUE envoi → un crash mid-run ne ré-envoie qu'aux destinataires manquants.
+// L'état n'est valable que pour AUJOURD'HUI (date != today ⇒ on repart à zéro,
+// migre aussi l'ancien format {lastSent}).
+function loadSent(todayKey) {
+  let data
+  try { data = JSON.parse(fs.readFileSync(SENT_PATH, 'utf-8')) } catch { data = null }
+  if (!data || typeof data !== 'object' || data.date !== todayKey || !data.sent || typeof data.sent !== 'object') {
+    data = { date: todayKey, sent: {} }
+  }
+  return data
+}
+function persistSent(data) {
+  try { fs.writeFileSync(SENT_PATH, JSON.stringify(data)) } catch (e) { console.log(`  ⚠️ persist marqueur: ${e.message}`) }
+}
+
 async function main() {
   console.log('=== Weekend Email Bulletin ===')
 
@@ -378,15 +397,13 @@ async function main() {
     return
   }
 
-  // Deduplication: only send once per Friday
+  // Dédup par destinataire (incrémentale, voir loadSent). FORCE = ignore l'état
+  // (ré-envoi complet), mais on enregistre quand même les envois du jour.
   const todayKey = sentKey()
-  try {
-    const sent = JSON.parse(fs.readFileSync(SENT_PATH, 'utf-8'))
-    if (sent.lastSent === todayKey && !FORCE) {
-      console.log(`Already sent today (${todayKey}). Use --force to resend.`)
-      return
-    }
-  } catch {}
+  const sentState = loadSent(todayKey)
+  const alreadySent = FORCE ? new Set() : new Set(Object.keys(sentState.sent))
+  persistSent(sentState) // grave la date du jour même si 0 envoi
+  if (alreadySent.size) console.log(`Dédup : ${alreadySent.size} destinataire(s) déjà servi(s) aujourd'hui — seront sautés.`)
 
   // SMTP transporter (boîte alerte@). Fail-fast si creds absents — JAMAIS de
   // fallback gmail (c'est précisément ce qu'on supprime).
@@ -505,8 +522,10 @@ async function main() {
       (s.island || 'MQ').toUpperCase() === island.toUpperCase() &&
       !B2B_SOURCES.has(s.source)
     )
-    let sent = 0, failed = 0
+    let sent = 0, failed = 0, skipped = 0
     for (const sub of recipients) {
+      const h = emailHash(sub.email)
+      if (alreadySent.has(h)) { skipped++; continue }
       const enc = encodeURIComponent(sub.email)
       const personalHtml = html.replace(/\{\{EMAIL\}\}/g, enc)
       const personalText = text.replace(/\{\{EMAIL\}\}/g, enc)
@@ -521,13 +540,14 @@ async function main() {
           },
         })
         sent++
+        sentState.sent[h] = 1; persistSent(sentState) // marqueur incrémental anti re-spam
         if (sent % 25 === 0) await sleep(1500) // douceur pour l'hôte mutualisé
       } catch (e) {
         failed++
         console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
       }
     }
-    console.log(`${islandName}: envoyé ${sent}/${recipients.length} (échecs ${failed})`)
+    console.log(`${islandName}: envoyé ${sent}/${recipients.length} (échecs ${failed}, sautés ${skipped})`)
 
     // Track aggregate in Sheet (best-effort, non bloquant)
     try {
@@ -565,8 +585,10 @@ async function main() {
       (s.island || '').toUpperCase() === region.id.toUpperCase() &&
       !B2B_SOURCES.has(s.source)
     )
-    let rSent = 0, rFailed = 0
+    let rSent = 0, rFailed = 0, rSkipped = 0
     for (const sub of rRecipients) {
+      const h = emailHash(sub.email)
+      if (alreadySent.has(h)) { rSkipped++; continue }
       const enc = encodeURIComponent(sub.email)
       const personalHtml = rHtml.replace(/\{\{EMAIL\}\}/g, enc)
       const personalText = rText.replace(/\{\{EMAIL\}\}/g, enc)
@@ -581,13 +603,14 @@ async function main() {
           },
         })
         rSent++
+        sentState.sent[h] = 1; persistSent(sentState) // marqueur incrémental anti re-spam
         if (rSent % 25 === 0) await sleep(1500)
       } catch (e) {
         rFailed++
         console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
       }
     }
-    console.log(`${region.name} (${lang}): envoyé ${rSent}/${rRecipients.length} (échecs ${rFailed})`)
+    console.log(`${region.name} (${lang}): envoyé ${rSent}/${rRecipients.length} (échecs ${rFailed}, sautés ${rSkipped})`)
     try {
       await post(WEBHOOK_URL, {
         type: 'email_tracking', to: `all_${region.id}`, subject: rSubject,
@@ -599,8 +622,10 @@ async function main() {
 
   transporter.close()
 
-  // Mark as sent for deduplication
-  try { fs.writeFileSync(SENT_PATH, JSON.stringify({ lastSent: todayKey })) } catch {}
+  // L'état est déjà persisté incrémentalement après chaque envoi ; flush final
+  // de sécurité (no-op si rien de neuf). Marque aussi lastSent pour rétro-compat.
+  sentState.lastSent = todayKey
+  persistSent(sentState)
 
   console.log('\nDone.')
 }

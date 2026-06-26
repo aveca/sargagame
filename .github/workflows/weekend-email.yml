@@ -16,9 +16,13 @@ name: Weekend Email Bulletin
 # le vendredi → il n'a AUCUNE gate horaire. Quelle que soit la dérive (12h, 15h,
 # 16h…), il envoie dès qu'il tourne. La dérive devient sans effet par construction.
 # Anti-doublon (si plusieurs runs qualifient le même vendredi) :
-#   1. dedup server-side Apps Script (type=weekend_email)
-#   2. marqueur local weekend-sent.json (commité ci-dessous, lu au prochain run)
-#   3. le script garde sa propre garde getUTCDay()===5 + lastSent===todayKey.
+#   1. marqueur local weekend-sent.json — dédup INCRÉMENTALE PAR DESTINATAIRE
+#      (hash écrit après CHAQUE envoi, commité ci-dessous, lu au prochain run) →
+#      un crash mid-run ne ré-envoie qu'aux destinataires manquants.
+#   2. la garde getUTCDay()===5 du script (pas d'envoi hors vendredi UTC).
+# NB : depuis la migration SMTP (envoi direct depuis alerte@, plus de MailApp),
+# Apps Script ne dédup PLUS rien — il ne reçoit qu'un ping de tracking. Le moat
+# anti-doublon est 100 % le marqueur local par destinataire.
 
 on:
   schedule:
