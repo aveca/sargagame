@@ -9,12 +9,9 @@ import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useCon
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
-import ArenaSplash from "./ArenaSplash.jsx"
-import ArenaOnboarding from "./ArenaOnboarding.jsx"
-import VeilleurHero from "./VeilleurHero.jsx"
-import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
 import "./Themes.css"
+import "./app-runtime.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -38,6 +35,13 @@ const lazyWithRetry=imp=>lazy(()=>imp()
 // Carte Leaflet RETIRÉE (2026-06-21) — app full-SVG (WorldMapView/ArchipelView) : plus de
 // fallback ?nav=map, plus de dépendance leaflet (~146 Ko). Une vieille version (carte à tuiles,
 // menu « Toute l'île » à droite) flashait au lancement via un cache PWA → suppression propre.
+// Scènes HORS first-paint (rendues derrière des flags false par défaut / events) :
+// splash, onboarding, hero veilleur, transition plongée. Lazy → sorties du chunk
+// critique (perf LCP). DOIVENT être rendues sous <Suspense>.
+const ArenaSplash=lazyWithRetry(()=>import("./ArenaSplash.jsx"))
+const ArenaOnboarding=lazyWithRetry(()=>import("./ArenaOnboarding.jsx"))
+const VeilleurHero=lazyWithRetry(()=>import("./VeilleurHero.jsx"))
+const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 // Accueil « LA CHASSE » (bras A/B `arena_loop`) — boucle de jeu TCG comic.
@@ -2374,388 +2378,7 @@ function beachThumbBg(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    GLOBAL STYLES (injected once)
    ═══════════════════════════════════════════════════════════════════════════ */
-const CSS=`
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
-body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
-button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}
-button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .12s}
-button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opacity:.9;transition:transform .07s ease}
-.anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
-.leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
-.leaflet-control-attribution{display:none!important}
-/* Marker glow — status-colored halo around beach dots */
-.leaflet-interactive{filter:drop-shadow(0 0 4px rgba(255,255,255,.3))}
-/* Fav heart bounce */
-@keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.3)}60%{transform:scale(.9)}100%{transform:scale(1)}}
-.heart-pop{animation:heartPop .4s cubic-bezier(.22,1,.36,1)}
-.leaflet-control-zoom{display:none!important}
-.leaflet-interactive{cursor:pointer!important}
-/* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
-.sg-pin{backface-visibility:hidden;will-change:transform}
-.sg-pin:hover{transform:scale(1.12)!important}
-.sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out 1 both}
-@keyframes sgPinNearest{
-  0%,100%{box-shadow:0 0 0 2px #E8A800,0 0 0 6px rgba(232,168,0,.25),0 4px 12px rgba(0,0,0,.35)}
-  50%{box-shadow:0 0 0 2px #E8A800,0 0 0 12px rgba(232,168,0,0),0 4px 12px rgba(0,0,0,.35)}
-}
-.sg-pin-selected{animation:sgPinSelected .5s cubic-bezier(.22,1,.36,1)}
-@keyframes sgPinSelected{0%{transform:scale(.8)}60%{transform:scale(1.18)}100%{transform:scale(1.08)}}
 
-/* Gold button */
-.gbtn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
-  border:none;border-radius:22px;color:#0D0D0D;font-weight:700;font-size:15px;
-  padding:14px 28px;cursor:pointer;position:relative;overflow:hidden;
-  font-family:'Bricolage Grotesque',system-ui,sans-serif;
-  box-shadow:0 2px 12px rgba(232,168,0,.3);transition:transform .15s,box-shadow .15s;
-  will-change:transform;
-}
-.gbtn:active{transform:scale(.95);box-shadow:0 1px 6px rgba(232,168,0,.2)}
-.gbtn::after{
-  content:'';position:absolute;top:0;left:0;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
-  animation:shine 4.5s 1 both;
-  /* transform-only (GPU) : la version left:-100%→100% layoutait à chaque frame
-     et pesait l'essentiel du CLS mobile mesuré (0,065 → ~0,02, audit 2026-06-11) */
-  will-change:transform;
-}
-@keyframes shine{0%,70%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
-
-/* Bottom sheet */
-.sheet{
-  /* z 900→1010 : passe AU-DESSUS du chrome carte (radar z900, recenter z1000)
-     qui flottait sur le backdrop pendant la lecture d'une fiche (audit 2026-06-11).
-     Reste sous hero 1050 / toast 1090 / paywall 1100. */
-  position:fixed;bottom:0;left:0;right:0;z-index:1010;
-  max-width:520px;margin:0 auto;
-  background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
-  box-shadow:0 -4px 30px rgba(0,0,0,.12);
-  transition:transform .35s cubic-bezier(.32,.72,0,1);
-  max-height:85vh;max-height:85dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-  animation:sheetSlideUp .4s cubic-bezier(.32,.72,0,1);
-  will-change:transform;
-}
-@keyframes sheetSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-/* Sortie symétrique de l'entrée (audit 2026-06-11 : « les entrées sont animées,
-   les sorties sont des démontages bruts » — le cœur du ressenti pas fluide) */
-@keyframes sheetSlideDown{to{transform:translateY(100%)}}
-.sheet-exit{animation:sheetSlideDown .28s cubic-bezier(.32,.72,0,1) forwards}
-@keyframes sgFadeOut{to{opacity:0}}
-.backdrop-exit{animation:sgFadeOut .25s ease forwards}
-@media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
-.sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
-
-/* Backdrop */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1005;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-/* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
-
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-@keyframes float-a{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-@keyframes sgReveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-@keyframes sg-threat-slide{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes sg-threat-glow{0%,100%{box-shadow:0 4px 20px rgba(232,82,42,.3)}50%{box-shadow:0 4px 30px rgba(232,82,42,.55)}}
-@keyframes sg-dash-flow{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
-@keyframes beachScanLine{0%{top:0;opacity:1}85%{top:100%;opacity:.8}100%{top:100%;opacity:0}}
-.sg-drift-path{animation:sg-dash-flow 1.5s linear 1 both}
-@keyframes goldGlow{0%,100%{box-shadow:0 4px 20px rgba(232,168,0,.25)}50%{box-shadow:0 4px 30px rgba(232,168,0,.5)}}
-@keyframes confirmPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
-@keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
-@keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
-@keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
-
-/* ── WOW TRANSITIONS ── */
-/* Comic spring-pop (overshoot cartoon, façon clip) — entrée de vues + FABs */
-@keyframes viewFadeIn{0%{opacity:0;transform:translateY(14px) scale(.92)}60%{opacity:1;transform:translateY(0) scale(1.03)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes viewFadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.96)}}
-.view-enter{animation:viewFadeIn .42s cubic-bezier(.34,1.56,.64,1) both}
-.view-exit{animation:viewFadeOut .2s ease both}
-
-/* Staggered card entrance */
-@keyframes cardReveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.card-reveal{animation:cardReveal .4s cubic-bezier(.22,1,.36,1) both}
-.card-reveal:nth-child(1){animation-delay:0s}
-.card-reveal:nth-child(2){animation-delay:.06s}
-.card-reveal:nth-child(3){animation-delay:.08s}
-.card-reveal:nth-child(4){animation-delay:.12s}
-.card-reveal:nth-child(5){animation-delay:.16s}
-
-/* Number count-up shimmer */
-@keyframes countShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.count-shimmer{background:linear-gradient(90deg,currentColor 40%,rgba(255,199,44,.8) 50%,currentColor 60%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:countShimmer 1.5s ease-in-out}
-
-/* Glow badge pulse */
-@keyframes glowPulse{0%,100%{box-shadow:0 0 8px rgba(0,158,142,.3)}50%{box-shadow:0 0 20px rgba(0,158,142,.6)}}
-.glow-pulse{animation:glowPulse 2.5s ease-in-out 1 both}
-
-/* Ocean wave ambient */
-@keyframes oceanWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.ocean-gradient{background-size:200% 200%;animation:oceanWave 8s ease-in-out 1 both}
-
-/* Hero zoom in */
-@keyframes heroZoom{from{transform:scale(1.08);opacity:.7}to{transform:scale(1);opacity:1}}
-.hero-zoom{animation:heroZoom .8s cubic-bezier(.22,1,.36,1) both}
-
-/* Floating particles for learn/science sections */
-@keyframes floatParticle{0%,100%{transform:translateY(0) translateX(0);opacity:.3}25%{transform:translateY(-15px) translateX(5px);opacity:.6}50%{transform:translateY(-8px) translateX(-3px);opacity:.4}75%{transform:translateY(-20px) translateX(7px);opacity:.5}}
-
-/* Scrollbar — 8px for touch targets */
-::-webkit-scrollbar{width:8px}
-::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:4px}
-::-webkit-scrollbar-track{background:transparent}
-*{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}
-
-/* Forecast bars — staggered grow-in */
-.fc-bar{border-radius:3px 3px 0 0;animation:barGrow .6s cubic-bezier(.22,1,.36,1) backwards}
-.fc-bar:nth-child(1){animation-delay:0s}.fc-bar:nth-child(2){animation-delay:.06s}.fc-bar:nth-child(3){animation-delay:.12s}
-.fc-bar:nth-child(4){animation-delay:.18s}.fc-bar:nth-child(5){animation-delay:.24s}.fc-bar:nth-child(6){animation-delay:.3s}.fc-bar:nth-child(7){animation-delay:.36s}
-@keyframes barGrow{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
-
-/* Status pulse */
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.pulse{animation:pulse 2s 1 both}
-
-/* Header LIVE badge halo — soft breathing glow around the status dot */
-@keyframes sg-live-halo{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.35)}}
-
-/* ═══ CHROME GLOBAL — recette comic dure (bible marque 22/06) ═══
-   Classes SCOPÉES !important : le thème comic force button{border/shadow/bg !important}
-   → on doit re-spécifier ici pour la barre/nav/pill (cf. .sg-sortseg/.sg-fchip pattern). */
-@keyframes sg-live-pulse{0%,100%{opacity:1}50%{opacity:.45}}
-/* TOP RAIL — segment commun : contour ink 2.5px + pop-1 dure (0 blur) */
-.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
-.sg-seg{height:40px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
-  box-shadow:2px 2px 0 var(--sg-ink,#0d0b14)!important;border-radius:13px!important;
-  display:flex;align-items:center;flex-shrink:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-.sg-seg.sg-seg-home{width:40px;justify-content:center;padding:0!important;overflow:hidden}
-.sg-seg.sg-seg-home svg{width:22px;height:22px;display:block}
-/* Toggle MQ/GP : SEULE surface or pleine de la barre */
-.sg-iso{position:relative;overflow:hidden;padding:0!important}
-.sg-iso .sg-iso-knob{position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;z-index:0;
-  background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);box-shadow:inset 0 0 0 2px var(--sg-ink,#0d0b14);
-  transition:transform .3s cubic-bezier(.22,1,.36,1)}
-.sg-iso button{position:relative;z-index:1;padding:0 13px!important;height:100%;border:0!important;background:none!important;
-  box-shadow:none!important;border-radius:0!important;cursor:pointer;font-family:"Bricolage Grotesque",sans-serif!important;
-  font-weight:800!important;font-size:14px;letter-spacing:0;transition:color .2s;display:flex;align-items:center;text-shadow:none!important}
-/* Pill EN DIRECT — composant canonique .sg-live (teal #009E8E, plus de corail) */
-.sg-live{gap:6px;padding:0 12px!important;border-radius:999px!important;max-width:fit-content;flex:0 1 auto;
-  min-width:0;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;background:rgba(0,158,142,.12)!important}
-.sg-live .sg-live-dot{position:relative;width:10px;height:10px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
-.sg-live .sg-live-dot i{position:absolute;width:7px;height:7px;border-radius:50%;background:#009E8E}
-.sg-live .sg-live-dot .sg-live-halo{position:absolute;inset:-4px;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(0,158,142,.5),transparent 70%);animation:sg-live-pulse 2.4s ease-in-out infinite}
-.sg-live .sg-live-lbl{color:var(--sg-ink,#0d0b14)!important;font-weight:800;font-size:12px;letter-spacing:.03em;flex-shrink:0;white-space:nowrap}
-.sg-live .sg-live-age{color:var(--sg-mid,#5A5A5A);font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;
-  flex-shrink:1;min-width:0;font-family:"JetBrains Mono",ui-monospace,monospace}
-/* Util (theme + lang) : 2 boutons, pictos SVG ink, labels Bricolage 800 */
-.sg-util{overflow:hidden;padding:0!important}
-.sg-util button{width:38px;height:100%;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sg-ink,#0d0b14)!important;text-shadow:none!important}
-.sg-util button+button{border-left:2.5px solid var(--sg-ink,#0d0b14)!important}
-.sg-util .sg-lang{font-family:"Bricolage Grotesque",sans-serif!important;font-weight:800!important;font-size:14px;letter-spacing:.02em}
-.sg-util svg{width:18px;height:18px}
-/* FAB stack — pictos SVG ink, recette comic */
-.sg-fab svg{width:24px;height:24px;display:block}
-/* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
-   sens que sur le fond SOMBRE #190c2c. Le skin de thème (.theme-X button{bg !important})
-   écrase l'inline → strokes papier sur blanc/crème/rose = invisibles. On VERROUILLE
-   le fond sombre + bord/ombre comic dans tous les arms (pattern .sg-seg/.sg-util). */
-button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-manga .sg-fab,
-.theme-arcade .sg-fab,.theme-sticker .sg-fab{
-  background:#190c2c!important;border:2.5px solid #0d0b14!important;
-  box-shadow:2px 2px 0 #0d0b14!important;color:#fdfcf7!important;text-shadow:none!important}
-/* @360px : re-serrer encore (paddings + masquer label âge si besoin) */
-@media(max-width:380px){
-  .sg-rail{gap:5px}
-  .sg-iso button{padding:0 10px!important;font-size:13px}
-  .sg-live{padding:0 9px!important;gap:5px}
-  .sg-util button{width:34px}
-}
-@media(max-width:360px){
-  .sg-rail{gap:4px}
-  .sg-seg{height:38px}
-  .sg-seg.sg-seg-home{width:38px}
-  .sg-iso button{padding:0 8px!important}
-  .sg-live .sg-live-age{display:none}
-}
-
-/* ═══ MODALS SECONDAIRES « SUR FOND SOMBRE » (bible 22/06) ═══
-   Surfaces dark plein-écran (Assistant / Comprendre / Solutions / Journal) :
-   leur look est porté par des styles INLINE. Le thème (comic 100% par défaut)
-   force .theme-comic button{bg/border/shadow/color !important} → écraserait nos
-   boutons (chips, ✕, CTA, items). On NEUTRALISE le thème avec une classe scopée
-   à spécificité supérieure (0,2,x) qui « débranche » le skin, puis on RE-SPÉCIFIE
-   l'apparence onink en !important (pattern .sg-live/.sg-iso). 'unset' laisse le
-   reste passer aux styles inline du bouton (chaque bouton garde son fond inline). */
-.theme-comic .sg-onink-scope button,.theme-soft .sg-onink-scope button,
-.theme-manga .sg-onink-scope button,.theme-arcade .sg-onink-scope button,
-.theme-sticker .sg-onink-scope button{
-  background:unset!important;border:unset!important;box-shadow:unset!important;
-  color:unset!important;border-radius:unset!important;text-shadow:unset!important;
-  text-transform:none!important;letter-spacing:normal!important;
-  font-family:"Bricolage Grotesque",system-ui,sans-serif!important;
-  transition:transform .08s,box-shadow .08s}
-/* Le reset onink doit AUSSI couvrir les titres : chaque thème recolore h2/h3 en
-   !important (manga #0a0a0a, sticker #ff5fa2, arcade #fff néon, comic ink-ombré) →
-   sur fond sombre plein-écran (StoryEngine/StationStory/Journal) ils tombaient
-   encre-sur-sombre. On force le blanc lisible dans les 5 arms. */
-.theme-comic .sg-onink-scope h2,.theme-soft .sg-onink-scope h2,
-.theme-manga .sg-onink-scope h2,.theme-arcade .sg-onink-scope h2,
-.theme-sticker .sg-onink-scope h2,
-.theme-comic .sg-onink-scope h3,.theme-soft .sg-onink-scope h3,
-.theme-manga .sg-onink-scope h3,.theme-arcade .sg-onink-scope h3,
-.theme-sticker .sg-onink-scope h3{
-  color:#fff!important;text-shadow:0 2px 18px rgba(0,0,0,.4)!important;
-  -webkit-text-fill-color:#fff!important;-webkit-text-stroke:0!important}
-
-/* Sargassum bank animations */
-.sg-bank{transition:fill-opacity .6s ease}
-.sg-drift-dot{transition:all .6s ease}
-@keyframes sg-eta-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-.sg-eta-badge{animation:sg-eta-pulse 2s ease-in-out 1 both}
-
-/* Radar v2 — NAMED insight bubble entry */
-@keyframes sgRadarInsightIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-
-/* Shine for onboarding buttons */
-@keyframes onb-shine{0%,100%{left:-75%}35%,65%{left:120%}}
-
-/* Small screens — iPhone SE, Galaxy S5, etc. */
-@media(max-width:360px){
-  .gbtn{padding:12px 18px !important;font-size:14px !important}
-  .sheet{border-radius:16px 16px 0 0 !important}
-  .anton{letter-spacing:0 !important}
-}
-
-/* Tablets & desktop — keep the mobile app feel on every screen.
-   Strategy: full-bleed map as ambient backdrop, app chrome (nav/sheet/panels)
-   capped at ~520px centered. BottomNav becomes a floating dock pill.
-   One simple rule set — no split-pane, no sidebar — works at every resolution. */
-@media(min-width:768px){
-  .sheet{max-width:520px;margin:0 auto !important}
-  .sg-modal-panel{max-width:520px !important;margin:0 auto !important;left:50% !important;right:auto !important;transform:translateX(-50%) !important}
-  .sg-float-panel{max-width:560px;margin:0 auto;left:50% !important;right:auto !important;transform:translateX(-50%)}
-
-  /* BottomNav → floating dock pill, detached from bottom edge */
-  .sg-bottom-nav{
-    left:50% !important;
-    right:auto !important;
-    transform:translateX(-50%);
-    bottom:18px !important;
-    width:min(440px, calc(100vw - 48px));
-    border-radius:999px !important;
-    border:1px solid rgba(0,0,0,.08) !important;
-    border-top:1px solid rgba(0,0,0,.08) !important;
-    padding:10px 12px !important;
-    box-shadow:0 12px 40px rgba(0,0,0,.14), 0 2px 10px rgba(0,0,0,.06);
-    transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
-  }
-  .sg-bottom-nav:hover{
-    transform:translateX(-50%) translateY(-2px);
-    box-shadow:0 16px 48px rgba(0,0,0,.18), 0 3px 12px rgba(0,0,0,.08);
-  }
-
-  /* Ambient radial backdrop on wide screens — the map fades into a soft halo
-     at the edges so the app chrome reads as a floating card, not a browser frame */
-  html,body,#root{background:radial-gradient(ellipse at center, #FDFCF7 0%, #F0ECE0 100%)}
-}
-
-/* Larger desktops — same behaviour, just a touch more breathing room */
-@media(min-width:1200px){
-  .sg-bottom-nav{bottom:24px !important}
-  .sheet{max-width:540px}
-}
-
-/* Dock glass : pill sombre flottant à TOUS les breakpoints (variant dock_glass A/B) */
-.sg-dock-glass{
-  left:50% !important;right:auto !important;
-  transform:translateX(-50%);
-  bottom:calc(16px + env(safe-area-inset-bottom)) !important;
-  width:auto !important;max-width:calc(100vw - 32px);
-  background:rgba(8,18,16,.62) !important;
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,.12) !important;
-  border-top:1px solid rgba(255,255,255,.12) !important;
-  border-radius:999px !important;padding:5px !important;
-  box-shadow:0 10px 30px rgba(0,0,0,.4);
-}
-
-/* Landscape — reduce vertical footprint */
-@media(orientation:landscape) and (max-height:500px){
-  .sheet{max-height:92dvh !important}
-}
-
-/* ══════════ TOAST CANONIQUE (.sg-toast) — bible États & micro-copy ══════════
-   Scopé !important pour battre le skin de thème forcé (theme-comic button{…!important},
-   etc.). Une seule recette : papier crème, liseré ink 2.5px, ombre dure bas-droite.
-   Le Veilleur porte l'humeur. Corps ≥15px. ✕ en SVG. Aligné comic-crème live. */
-.sg-toast-host{position:fixed;left:50%;transform:translateX(-50%);
-  bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:1480;
-  width:min(92vw,460px);display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.sg-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;position:relative;overflow:hidden;
-  box-sizing:border-box;width:100%;padding:14px 14px 14px 16px;
-  background:var(--sg-card,#fdf6e3) !important;color:var(--sg-ink,#0d0d0d) !important;
-  border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:16px !important;
-  box-shadow:4px 4px 0 var(--sg-ink,#0d0d0d) !important;
-  font-family:'Bricolage Grotesque',system-ui,sans-serif;
-  animation:sgToastIn .34s cubic-bezier(.22,1,.36,1) both}
-.sg-toast__bar{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sg-teal,#009E8E)}
-.sg-toast--error .sg-toast__bar{background:#E8522A}
-.sg-toast--success .sg-toast__bar{background:#22C55E}
-.sg-toast--info .sg-toast__bar{background:#FFC72C}
-.sg-toast__veil{flex-shrink:0;margin-top:1px;line-height:0}
-.sg-toast__body{flex:1;min-width:0}
-.sg-toast__title{font-weight:800;font-size:16px;line-height:1.25;letter-spacing:-.01em;color:var(--sg-ink,#0d0d0d)}
-.sg-toast__msg{font-size:15px;line-height:1.4;font-weight:600;color:var(--sg-mid,#3a3a3a);margin-top:2px}
-.sg-toast__title + .sg-toast__msg{margin-top:3px}
-.sg-toast__act{margin-top:10px;font-family:'Bricolage Grotesque',sans-serif !important;font-weight:800 !important;
-  font-size:13px !important;min-height:40px;padding:8px 14px !important;
-  background:#fff !important;color:var(--sg-ink,#0d0d0d) !important;
-  border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:12px !important;
-  box-shadow:2px 2px 0 var(--sg-ink,#0d0d0d) !important;text-shadow:none !important;cursor:pointer}
-.sg-toast__act:active{transform:translate(2px,2px) !important;box-shadow:0 0 0 var(--sg-ink,#0d0d0d) !important}
-.sg-toast__x{flex-shrink:0;width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;
-  border:none !important;background:none !important;box-shadow:none !important;color:var(--sg-mid,#5a5a5a) !important;
-  cursor:pointer;padding:0 !important;border-radius:10px !important;margin:-4px -4px 0 0}
-.sg-toast__x:active{transform:scale(.9)}
-@keyframes sgToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
-
-/* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
-.sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);
-  background-size:200% 100%;border-radius:8px;animation:sgShimmer 1.6s ease-in-out infinite}
-@keyframes sgShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* ══════════ EMPTY-STATE de marque (Veilleur calme, copy ≥15px) ══════════ */
-.sg-empty{text-align:center;animation:fadeIn .3s ease}
-.sg-empty__veil{display:flex;justify-content:center;margin-bottom:10px}
-.sg-empty__title{font-size:17px;font-weight:800;color:var(--sg-ink,#fff);margin-bottom:6px;line-height:1.2}
-.sg-empty__sub{font-size:15px;line-height:1.45;color:var(--sg-mute,rgba(255,255,255,.62));max-width:34ch;margin:0 auto}
-
-/* Reduced motion — kill infinite animations, keep one-shot transitions */
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
-  .gbtn::after{animation:none !important}
-  .sg-nearest-ring,.sg-eta-badge,.pulse,.sg-drift-path{animation:none !important}
-  .heart-pop{animation:none !important}
-  .sg-sk{animation:none !important;background:var(--sg-cardS,#EFEDE6) !important}
-}
-`
-
-function StyleInjector(){
-  const ref=useRef(false)
-  useEffect(()=>{
-    if(ref.current)return;ref.current=true
-    const el=document.createElement("style");el.textContent=CSS;document.head.appendChild(el)
-  },[])
-  return null
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    WOW UTILITIES
@@ -12889,10 +12512,11 @@ export default function App(){
 
   return(
     <LangCtx.Provider value={lang}>
-      <StyleInjector/>
-      {showVeilleurHero&&<VeilleurHero lang={lang} onEnter={dismissVeilleurHero}/>}
-      {showSplash&&<ArenaSplash lang={lang} track={track} wordmark={_onbWordmark} onDone={()=>setShowSplash(false)}/>}
-      {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} region={_onbRegion} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      {(showVeilleurHero||showSplash||showArenaOnb)&&<ErrBound fallback={null}><Suspense fallback={null}>
+        {showVeilleurHero&&<VeilleurHero lang={lang} onEnter={dismissVeilleurHero}/>}
+        {showSplash&&<ArenaSplash lang={lang} track={track} wordmark={_onbWordmark} onDone={()=>setShowSplash(false)}/>}
+        {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} region={_onbRegion} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      </Suspense></ErrBound>}
       {/* JEU RETIRÉ DU PRODUIT (décision fondateur : « c'est pas un plus, c'est nul »).
           L'arène/collection n'est plus accessible depuis l'UX — produit utilitaire pur
           (carte → fiche → alerte). Code dormant conservé, joignable seulement via ?hero=1
@@ -13481,7 +13105,7 @@ export default function App(){
 
         {/* FAV TOAST — inline, first favorite only */}
         <FavToast show={showFavToast} lang={lang} onPremiumClick={openPremium} isPremium={isPremium}/>
-        {diveBeach&&<DiveTransition beach={diveBeach} lang={lang} onDone={()=>setDiveBeach(null)}/>}
+        {diveBeach&&<ErrBound fallback={null}><Suspense fallback={null}><DiveTransition beach={diveBeach} lang={lang} onDone={()=>setDiveBeach(null)}/></Suspense></ErrBound>}
 
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
