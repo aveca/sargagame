@@ -84,6 +84,7 @@ const TEMPLATES = {
 }
 
 const loadJSON = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fb } }
+const saveIncidents = (incidents) => { try { fs.writeFileSync(INCIDENTS_PATH, JSON.stringify(incidents, null, 2), 'utf-8') } catch (e) { console.log(`  ⚠️ persist incidents.json: ${e.message}`) } }
 const unsubUrl = (email, island) => `${WEBHOOK_URL}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}`
 
 function wrapHTML(bodyHtml, email, island, meta) {
@@ -151,6 +152,7 @@ async function main() {
         })
         if (error) { console.log(`  x ${logId(sub.email)}: ${error.message}`); continue }
         inc.sent[h] = new Date().toISOString()
+        saveIncidents(incidents) // flush INCRÉMENTAL : un crash mid-boucle ne re-spamme pas (le bug même que ce script répare)
         sent++
         console.log(`  + ${logId(sub.email)} (${island}) — incident ${inc.id}`)
         await trackToSheet({ resend_id: data?.id || '', to: sub.email, subject: t.subject, email_type: 'incident_apology', island, status: 'sent', source: inc.id })
@@ -158,7 +160,7 @@ async function main() {
     }
   }
 
-  if (sent) fs.writeFileSync(INCIDENTS_PATH, JSON.stringify(incidents, null, 2), 'utf-8')
+  if (sent) saveIncidents(incidents) // flush final de sécurité (déjà persisté à chaque envoi)
   console.log(`Done. ${sent} apology email(s) sent.`)
 }
 

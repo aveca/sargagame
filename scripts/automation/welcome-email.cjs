@@ -44,6 +44,7 @@ const NEW_REGIONS = Object.fromEntries(
 const UNSUB_BASE = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms))
 function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
 }
@@ -262,6 +263,7 @@ async function main() {
   const sargData = loadJSON(SARG_PATH, {})
   const beaches = loadJSON(BEACHES_PATH, [])
 
+  let sentCount = 0
   for (const sub of newSubs) {
     const island = (sub.island || 'MQ').toUpperCase()
     const newRegion = NEW_REGIONS[island] || null
@@ -315,6 +317,9 @@ async function main() {
         console.log(`  ✅ ${logId(sub.email)} (${island})`)
         sentSet.add(emailHash(sub.email))
         saveJSON(SENT_PATH, [...sentSet]) // flush incrémental : un crash/retry mid-run ne re-welcome JAMAIS un lead déjà servi
+        // Throttle SMTP (hôte mutualisé cPanel) — cohérent avec email-weekend :
+        // un gros backlog de nouveaux leads ne tire pas en rafale sur la boîte alerte@.
+        if (++sentCount % 25 === 0) await sleep(1500)
         // Track to Google Sheet
         try {
           await fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {
