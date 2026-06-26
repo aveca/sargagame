@@ -12427,7 +12427,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}
       <div aria-hidden onClick={()=>{track("sg_hero_tap",{t:"media"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",inset:0,cursor:"pointer",
         background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#120821 100%)"}}/>
-      <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
+      {/* Bandeau haut : décoratif (wordmark + LIVE) mais AU-DESSUS du voile cliquable
+          → sans handler il avalait le tap (dead-clicks home). On lui donne le même
+          tap = ouvrir la fiche, pour récupérer ces clics morts. */}
+      <div onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
@@ -12440,12 +12443,12 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
         maxWidth:560,margin:"0 auto"}}>
         {userPos&&(
-          <div style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
-            color:"#FFC72C",marginBottom:8}}>
+          <div onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
+            color:"#FFC72C",marginBottom:8,cursor:"pointer"}}>
             📍 {_t(lang,"LA PLUS PROCHE DE TOI","CLOSEST TO YOU","LA MÁS CERCA DE TI")}
           </div>
         )}
-        <div style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase"}}>
+        <div onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
           {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
         </div>
         <h1 onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
@@ -12458,7 +12461,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           {verdictTxt}
           {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
-        {sub&&<div style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18}}>{sub}</div>}
+        {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
             home vs 72-98% "état maintenant", mais sur grand écran les
