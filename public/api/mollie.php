@@ -51,6 +51,7 @@ $RL_LIMITS = [
     'payment_status'      => 40,
     'verify_subscription' => 30,
     'cancel_subscription' => 20,
+    'applepay_session'    => 30,
 ];
 sg_rate_limit('mol_' . $action, $RL_LIMITS[$action] ?? 30);
 
@@ -65,6 +66,12 @@ if ($action === 'create_payment') {
     // retour ?mollie_return=1 confirme via payment_status, comme la 3DS carte.
     $method = preg_replace('/[^a-z]/', '', $input['method'] ?? '');
     $method = in_array($method, ['applepay', 'googlepay'], true) ? $method : '';
+    // Apple Pay / Google Pay ON-SITE (direct) : le token chiffré du wallet est créé
+    // dans la feuille NATIVE sur notre page (pas de redirect). On le transmet tel quel
+    // a Mollie avec method=creditcard -> paiement traite inline (statut paid direct).
+    $applePayToken = is_string($input['applePayPaymentToken'] ?? null) ? $input['applePayPaymentToken'] : '';
+    $googlePayToken = is_string($input['googlePayPaymentToken'] ?? null) ? $input['googlePayPaymentToken'] : '';
+    $walletToken = $applePayToken ?: $googlePayToken;
     $passKey = preg_replace('/[^a-z0-9]/', '', $input['pass'] ?? '');
     $cents = (int)($input['cents'] ?? 0);
     $email = trim($input['email'] ?? '');
@@ -75,7 +82,7 @@ if ($action === 'create_payment') {
     // 499 = Trip Pass 7j (4,99 €, miroir du tripPass USD). 799/999 = pass 7j ;
     // 1499/1999/2499 = pass 30j + saison. USD (599) reste hors Mollie (EUR only).
     $allowedCents = [499, 799, 999, 1499, 1999, 2499];
-    if ((!$cardToken && !$method) || !in_array($cents, $allowedCents, true)) {
+    if ((!$cardToken && !$method && !$walletToken) || !in_array($cents, $allowedCents, true)) {
         http_response_code(400); echo json_encode(['error' => 'bad pass params']); exit;
     }
     $value = number_format($cents / 100, 2, '.', '');
@@ -86,8 +93,17 @@ if ($action === 'create_payment') {
         'webhookUrl'  => $returnBase . '/api/mollie-webhook.php',
         'metadata'    => ['island' => ($island !== '' ? $island : 'mq'), 'pass' => $passKey, 'plan' => $passKey, 'source' => $source, 'email' => $email],
     ];
-    if ($cardToken) $payParams['cardToken'] = $cardToken; // carte on-site (Components)
-    if ($method)    $payParams['method']    = $method;    // wallet -> checkout heberge
+    if ($walletToken) {
+        // Wallet ON-SITE direct : method=creditcard + token chiffre du wallet -> Mollie
+        // traite inline (pas de checkoutUrl). Le front confirme via payment_status.
+        $payParams['method'] = 'creditcard';
+        if ($applePayToken)  $payParams['applePayPaymentToken']  = $applePayToken;
+        if ($googlePayToken) $payParams['googlePayPaymentToken'] = $googlePayToken;
+    } elseif ($cardToken) {
+        $payParams['cardToken'] = $cardToken; // carte on-site (Components)
+    } elseif ($method) {
+        $payParams['method'] = $method;       // wallet -> checkout heberge (fallback redirect)
+    }
     list($code, $pay) = mol_api('POST', '/payments', $payParams);
     if ($code >= 400 || empty($pay['id'])) { http_response_code(500); echo json_encode(['error' => 'payment create failed']); exit; }
     echo json_encode([
@@ -95,6 +111,27 @@ if ($action === 'create_payment') {
         'status'      => $pay['status'] ?? '',
         'checkoutUrl' => $pay['_links']['checkout']['href'] ?? null, // present si 3DS requis
     ]);
+    exit;
+}
+
+// ── Action: applepay_session — validation marchand pour Apple Pay ON-SITE (direct).
+// Le front (ApplePaySession.onvalidatemerchant) nous envoie la validationUrl d'Apple ;
+// on appelle l'API Mollie qui renvoie l'objet session opaque a passer tel quel a
+// completeMerchantValidation(). Domaine = host autorise (fichier .well-known servi).
+// Session non reutilisable, expire en 5 min. cf. docs.mollie.com wallets-api.
+if ($action === 'applepay_session') {
+    $validationUrl = $input['validationUrl'] ?? '';
+    // Garde-fou : n'accepter qu'une URL de validation Apple (apple-pay-gateway*.apple.com).
+    if (!preg_match('#^https://[a-z0-9.-]*apple\.com/#i', $validationUrl)) {
+        http_response_code(400); echo json_encode(['error' => 'bad validationUrl']); exit;
+    }
+    $host = parse_url($returnBase, PHP_URL_HOST) ?: 'sargasses-martinique.com';
+    list($code, $sess) = mol_api('POST', '/wallets/applepay/sessions', [
+        'validationUrl' => $validationUrl,
+        'domain'        => $host,
+    ]);
+    if ($code >= 400 || !is_array($sess)) { http_response_code(502); echo json_encode(['error' => 'applepay session failed']); exit; }
+    echo json_encode($sess); // objet Apple opaque -> completeMerchantValidation
     exit;
 }
 
