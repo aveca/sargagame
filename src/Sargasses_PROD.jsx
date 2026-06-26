@@ -7991,18 +7991,20 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // même confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).
   const payWithWallet=useCallback(async(method)=>{
     if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
+    const _pc=passCtxRef.current
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
-    // Abo : email obligatoire (création customer côté serveur). Pass : on le demande
-    // aussi pour le reçu / la relance. Sans email valide → focus le champ.
-    if(!email||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+    // Pass (one-time) : email FACULTATIF — Apple/Google Pay le fournit et l'accès se pose
+    // en local au retour ; le one-tap wallet depuis le storefront n'a pas de champ email.
+    // Abo : email obligatoire (création customer côté serveur).
+    if(!_pc&&!emailOk){
       setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
       try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
       return
     }
-    const plan=payPlanRef.current,_pc=passCtxRef.current
+    const plan=payPlanRef.current
     setPayBusy(true);setPayError("")
-    try{submitLead(email,"onsite_wallet")}catch(_){}
-    try{localStorage.setItem("sg_email",email)}catch(_){}
+    if(emailOk){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
@@ -8027,6 +8029,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayBusy(false)
       const msg=(e&&e.message)?String(e.message):""
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
+      try{setPayStep(true)}catch(_){} // surface l'erreur si lancé depuis le storefront (pay-step pas encore ouvert)
       track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
     }
   },[lang,source,onActivated,onClose])
@@ -8128,13 +8131,20 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // EUR UNIQUEMENT : PassOffer n'a qu'un catalogue mq/gp (cents EUR) + liens buy.stripe.com EUR.
   // Sur les régions USD (florida/rivieramaya/puntacana) il rendrait le mauvais devise + un
   // redirect off-site EUR. Le pay-per-use USD passe par le Trip Pass on-site (tripAB, gaté plus bas).
-  const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
+  // PASS-ONLY (2026-06-26) : le modèle abo est abandonné (jamais vendu à 49€, mismatch
+  // touriste/saisonnier, + wallets on-site = one-time only). pwPass défaut = ON (100% pass).
+  // ?pwpass=0 = échappe vers l'ancien paywall abo (secours). EUR uniquement (catalogue mq/gp).
+  const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()
   // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
   // FORCÉ ON-SITE (2026-06-24) : Stripe est mort → les liens off-site buy.stripe.com
   // de PassOffer redirigeaient vers un checkout cassé en sautant la capture. Défaut
   // passé [1,0]→[0,1] : tout pass passe par passCtxRef/setPayStep (capture maintenant,
   // Mollie create_payment au go-live). ?passonsite=0 force l'ancien off-site (mort).
   const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[0,1])==="on"}catch(_){return false}})()
+  // Mode PASS-ONLY effectif : on n'affiche QUE PassOffer (sombre) et on masque tout l'UI
+  // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde
+  // l'ancien flux email-offert (passOnly=false → l'UI abo/capture s'affiche normalement).
+  const passOnly=pwPass&&!PAY_CAPTURE_ONLY
   // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
@@ -8307,11 +8317,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium
         // est UNE scène continue, pas une feuille sombre. Holdout garde le sombre.
         /* halftone Ben-Day comic (réf Spider-Verse) par-dessus le dégradé — texte intact */
-        background:pwComic
+        background:passOnly
+          ? "linear-gradient(145deg,#190c2c,#120821)"
+          : pwComic
           ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"
           : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
-        color:pwComic?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflow:"auto",
+        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         {/* Close X top-right — resolves Design feedback "no close affordance
@@ -8320,12 +8332,19 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <button
           aria-label={_t(lang,"Fermer","Close","Cerrar")}
           onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
-          style={{position:"absolute",top:14,right:14,width:pwComic?34:30,height:pwComic?34:30,
-            borderRadius:"50%",background:pwComic?"#ffd23f":"rgba(255,255,255,.08)",border:pwComic?"2.5px solid #0d0b14":"none",
-            color:pwComic?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:pwComic?800:400,
-            boxShadow:pwComic?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
+          style={{position:"absolute",top:14,right:14,width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,
+            borderRadius:"50%",background:(pwComic&&!passOnly)?"#ffd23f":"rgba(255,255,255,.08)",border:(pwComic&&!passOnly)?"2.5px solid #0d0b14":"none",
+            color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,
+            boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        {pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
+        {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
+            wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
+        {passOnly&&<PassOffer lang={lang} onBuy={(item)=>{
+          try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
+          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:"eur"}
+          if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
+        }}/>}
+        {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
@@ -8337,7 +8356,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
-        {pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
+        {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
@@ -8350,7 +8369,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} onClose={()=>setShowB2B(false)}/>}
-        {!pwComic&&(<>
+        {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
         {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}

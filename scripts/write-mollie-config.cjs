@@ -31,7 +31,7 @@ return [
     ],
     'passes' => [
         'trip7'  => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'],
-        'saison' => ['cents' => 1999, 'days' => 180, 'label' => 'Pass saison'],
+        'saison' => ['cents' => 2499, 'days' => 210, 'label' => 'Pass saison'],
         'p7'     => ['cents' => 799,  'days' => 7,   'label' => 'Pass 7 jours'],
         'p30'    => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],
     ],
