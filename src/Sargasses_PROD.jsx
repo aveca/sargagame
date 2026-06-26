@@ -75,6 +75,8 @@ class ErrBound extends Component{
 const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 // Fiabilité honnête par régime injectée au build (cf. vite.config.js __RELIABILITY__).
 const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
+// Taille communauté (plancher honnête leads email) injectée au build — preuve sociale paywall.
+const __COMM = (typeof __COMMUNITY__ !== "undefined" && Number(__COMMUNITY__)) || 0
 const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
@@ -7510,6 +7512,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[_trackRec,_setTrackRec]=useState(null)
   useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
   const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
+  // A/B preuve sociale (PassOffer) : badge communauté HONNÊTE (__COMM = plancher leads email).
+  const pwSocial=(()=>{try{const q=window.location.search;if(/[?&]pwsocial=1/.test(q))return true;if(/[?&]pwsocial=0/.test(q))return false;return abVariant("pw_socialproof",["control","proof"],[.5,.5])==="proof"}catch(_){return false}})()
+  // A/B fraîcheur (PassOffer) : "Données mises à jour il y a Xh" — récence réelle du pipeline.
+  const pwFresh=(()=>{try{const q=window.location.search;if(/[?&]pwfresh=1/.test(q))return true;if(/[?&]pwfresh=0/.test(q))return false;return abVariant("pw_freshness",["control","fresh"],[.5,.5])==="fresh"}catch(_){return false}})()
+  const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
   // Régime au plus gros échantillon « mer propre » = nombre fort ET honnête.
   const _recordProof=(()=>{
     try{
@@ -8416,7 +8423,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{
           try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
@@ -8449,7 +8456,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
