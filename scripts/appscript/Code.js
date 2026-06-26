@@ -881,8 +881,8 @@ var DRIP_SEQUENCES = [
         + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">Planifie ton weekend sans surprise</h1>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Tu utilises la carte depuis une semaine — super ! Mais savais-tu que les sargasses changent en quelques jours ?</p>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Avec les <strong>pr&eacute;visions 7 jours</strong>, tu sais d&egrave;s lundi quelle plage sera propre samedi. Plus de mauvaise surprise en arrivant.</p>'
-        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j7#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essayer 7 jours gratuit →</a>'
-        + '<p style="color:#666;font-size:13px">Essai gratuit, annulation en 1 clic.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?paywall=1&utm_source=email&utm_medium=drip&utm_campaign=j7" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Activer mon Pass →</a>'
+        + '<p style="color:#666;font-size:13px">Paiement unique, sans abonnement - d&egrave;s 7,99 €.</p>'
         + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
@@ -901,8 +901,8 @@ var DRIP_SEQUENCES = [
         + '<li><strong>Donn&eacute;es vent + courants</strong> — comprends pourquoi</li>'
         + '</ul>'
         + '<p style="color:#333;font-size:15px;line-height:1.6"><em>« J\'ai &eacute;vit&eacute; 3 weekends pourris gr&acirc;ce aux pr&eacute;visions »</em> — un utilisateur ' + name + '</p>'
-        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j14#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essai gratuit 7 jours →</a>'
-        + '<p style="color:#666;font-size:13px">4,99 €/mois apr&egrave;s l\'essai. Annulation en 1 clic.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?paywall=1&utm_source=email&utm_medium=drip&utm_campaign=j14" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Activer mon Pass →</a>'
+        + '<p style="color:#666;font-size:13px">Paiement unique, sans abonnement - d&egrave;s 7,99 €.</p>'
         + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
