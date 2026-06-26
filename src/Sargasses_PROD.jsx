@@ -1895,6 +1895,10 @@ const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
    ci-dessus inchangées). REGION.paymentLinks={monthly,yearly} en devise locale.
    Liens absents → CTA paywall masqué (waitlist), JAMAIS de fallback vers l'EUR. ── */
 const REGION_PAY=IS_NEW_REGION?(REGION.paymentLinks||{}):null
+// Devise de paiement front (miroir du backend mollie.php $CUR_BY_ISLAND). USD pour
+// les régions touristes (Floride/Punta Cana/Cancún), EUR pour MQ/GP. Pilote PassOffer
+// (prix $), l'écran de paiement (passCtxRef.cur) et la feuille native Apple/Google Pay.
+const PAY_CUR=(IS_NEW_REGION&&REGION&&REGION.currency==="USD")?"usd":"eur"
 // EUR (MQ/GP, REGION_PAY null) : plans dispo ON-SITE → marqueur truthy "onsite"
 // (PAS une URL) qui alimente hasMonthly/hasAnnual/PAYWALL_READY sans réintroduire
 // le moindre lien off-site. Aucun code ne navigue plus vers LINK_* (stripeLinkFor
@@ -8049,7 +8053,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       if(canAP){
         try{
           const cents=_pc?_pc.cents:499
-          const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:"EUR",merchantCapabilities:["supports3DS"],
+          // countryCode = pays MARCHAND (compte Mollie FR) → "FR" pour toutes les régions.
+          // currencyCode = devise de la transaction → USD pour les régions touristes.
+          const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],
             supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
             total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
             requiredBillingContactFields:["email"]})
@@ -8187,13 +8193,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection issue","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})})
   },[lang,source,onActivated,onClose])
   // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
-  // EUR UNIQUEMENT : PassOffer n'a qu'un catalogue mq/gp (cents EUR) + liens buy.stripe.com EUR.
-  // Sur les régions USD (florida/rivieramaya/puntacana) il rendrait le mauvais devise + un
-  // redirect off-site EUR. Le pay-per-use USD passe par le Trip Pass on-site (tripAB, gaté plus bas).
-  // PASS-ONLY (2026-06-26) : le modèle abo est abandonné (jamais vendu à 49€, mismatch
-  // touriste/saisonnier, + wallets on-site = one-time only). pwPass défaut = ON (100% pass).
-  // ?pwpass=0 = échappe vers l'ancien paywall abo (secours). EUR uniquement (catalogue mq/gp).
-  const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()
+  // PASS-ONLY + MOLLIE PARTOUT (2026-06-26) : le modèle abo est abandonné (jamais vendu à 49€,
+  // mismatch touriste/saisonnier, + wallets on-site = one-time only). PassOffer est désormais
+  // MULTI-DEVISE (catalogue eur/usd, prix $ pour les régions touristes) et 100% on-site Mollie
+  // (zéro lien buy.stripe.com) → il rend correctement sur TOUTES les régions, EUR comme USD.
+  // pwPass défaut = ON (100% pass). ?pwpass=0 = échappe vers l'ancien paywall abo (secours).
+  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()
   // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
   // FORCÉ ON-SITE (2026-06-24) : Stripe est mort → les liens off-site buy.stripe.com
   // de PassOffer redirigeaient vers un checkout cassé en sautant la capture. Défaut
@@ -8398,9 +8403,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} onBuy={(item)=>{
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{
           try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
-          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:"eur"}
+          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
         }}/>}
         {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
@@ -8431,8 +8436,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
-          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7,cur:"eur"};setPayStep(true)}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
+          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7,cur:PAY_CUR};setPayStep(true)}
           else{try{window.location.href=item.u}catch(_){}}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}

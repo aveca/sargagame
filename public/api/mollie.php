@@ -35,6 +35,11 @@ $ISLAND_BY_ORIGIN = [
 $island = $ISLAND_BY_ORIGIN[$origin] ?? '';
 $returnBase = in_array($origin, $allowed, true) ? $origin : 'https://sargasses-martinique.com';
 
+// Devise par région. Le pass on-site Mollie est MULTI-DEVISE : Mollie encaisse en
+// USD (cartes + Apple/Google Pay) et règle sur le compte EUR (conversion Mollie).
+// MQ/GP = EUR ; régions touristes = USD. Région inconnue → pas de pass (gate plus bas).
+$CUR_BY_ISLAND = ['mq' => 'EUR', 'gp' => 'EUR', 'florida' => 'USD', 'puntacana' => 'USD', 'rivieramaya' => 'USD'];
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'POST') === 'OPTIONS') { http_response_code(204); exit; }
 if (($_SERVER['REQUEST_METHOD'] ?? 'POST') !== 'POST') { http_response_code(405); exit; }
 
@@ -58,7 +63,8 @@ sg_rate_limit('mol_' . $action, $RL_LIMITS[$action] ?? 30);
 // ── Action: create_payment — PASS one-time. cardToken (Components) -> paiement
 // oneoff. cents valide contre l'allowlist des passes (config). 3DS -> checkoutUrl.
 if ($action === 'create_payment') {
-    if (!mol_is_eur_region($island)) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
+    if (!isset($CUR_BY_ISLAND[$island])) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
+    $currency = $CUR_BY_ISLAND[$island];
     $cardToken = $input['cardToken'] ?? '';
     // Wallet (Apple Pay / Google Pay) : PAS de cardToken on-site. On force `method`
     // -> Mollie renvoie le checkout heberge ou la feuille native du wallet s'affiche
@@ -76,18 +82,21 @@ if ($action === 'create_payment') {
     $cents = (int)($input['cents'] ?? 0);
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
-    // Allowlist EUR = MEME liste que create-checkout.php pay_once (anti-tampering) :
-    // couvre passes 7j (799/999), 30j (1499/1999/2499) + saison (1999). Derive des
-    // donnees Stripe existantes (pass-links.json). USD (599) reste sur Stripe.
-    // 499 = Trip Pass 7j (4,99 €, miroir du tripPass USD). 799/999 = pass 7j ;
-    // 1499/1999/2499 = pass 30j + saison. USD (599) reste hors Mollie (EUR only).
-    $allowedCents = [499, 799, 999, 1499, 1999, 2499];
+    // Allowlist PAR DEVISE (anti-tampering, miroir du front PassOffer). cents seul ne
+    // porte pas la devise → on valide la paire (devise, cents). EUR (MQ/GP) : 499
+    // tripPass, 799/999 pass 7j, 1499/1999 pass 30j, 2499 saison. USD (régions
+    // touristes) : 599 pass 7j ($5.99), 1199 pass 30j ($11.99), 1999 saison ($19.99).
+    $allowedByCur = [
+        'EUR' => [499, 799, 999, 1499, 1999, 2499],
+        'USD' => [599, 1199, 1999],
+    ];
+    $allowedCents = $allowedByCur[$currency] ?? [];
     if ((!$cardToken && !$method && !$walletToken) || !in_array($cents, $allowedCents, true)) {
         http_response_code(400); echo json_encode(['error' => 'bad pass params']); exit;
     }
     $value = number_format($cents / 100, 2, '.', '');
     $payParams = [
-        'amount'      => ['currency' => 'EUR', 'value' => $value],
+        'amount'      => ['currency' => $currency, 'value' => $value],
         'description' => 'Sargasses pass ' . $passKey,
         'redirectUrl' => $returnBase . '/?mollie_return=1',
         'webhookUrl'  => $returnBase . '/api/mollie-webhook.php',
