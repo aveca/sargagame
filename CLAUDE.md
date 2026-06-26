@@ -55,13 +55,15 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 - **Trust page** : `/a-propos/` (shipped 2026-04-17, standalone HTML + colors_and_type.css)
 - **Repo** : aveca/sargagame (public, minutes illimitées GH Actions)
 
-## État business au 2026-06-17
+## État business au 2026-06-26
 
-- **MRR** : €74,85/mois (15 abonnés actifs × 4,99 — source Stripe, daily-metrics) · pastDue 0
-- **Leads** : ~213 emails captés
-- **Bottleneck #1** : modal→CTA bloqué à **2%** (3 388 opens → 74 CTA) depuis ≥5 jours. CTA→redirect sain (97%). Levier prioritaire = le modal lui-même (offre/copy/anchoring), pas les bords du funnel.
-- **A/B tests live** : `pw_cta_order` (control/sample_first) + `pw_prelude` (direct/prelude) — mesure 4-8 semaines
-- **Refonte golden-hour promue (18/06, feu vert)** : `ab_fiche_dive` **DÉ-PARQUÉ 50/50** (plongée scrollytelling sur fiches plage SEO `/plages/`, vérifiée 16/16 ; `?fichedive=0` re-force le contrôle, re-park = un flip dans `vite.config.js` picker) + `home_az` 30→**50%** + `map_world` **50%** (ArchipelView). À évaluer conversion ~2-4 sem. cf. skill `sargasses` / mémoire `project_fiche_dive_status`.
-- **Pipeline** : ERDDAP-live, 4×/j, stable
+- **Modèle = PASS-ONLY** (paiement UNIQUE, plus d'abonnement) via **Mollie on-site PARTOUT** (carte Components + Apple Pay natif). EUR : 7,99/14,99/24,99 € · USD : $5.99/$11.99/$19.99. Mollie encaisse l'USD et règle en EUR (FX Mollie).
+- **GO-LIVE paiements réels** : EUR (MQ/GP) 25/06 · **USD (Floride/Punta Cana/Cancún) 26/06** (validé par un vrai paiement $5.99). Barbados = reste en capture (pas câblé Mollie). Stripe = NE sert plus de caisse (16 abos EUR legacy continuent d'y facturer ; ses liens USD sont DÉSACTIVÉS — ne jamais y renvoyer un CTA).
+- **MRR** : €79,84/mois (16 abonnés Stripe legacy — source de vérité Stripe/daily-metrics) · pastDue 1 (dunning auto `--send` actif). Premières conversions pass/USD à suivre (dashboard Mollie).
+- **Leads** : ~246 emails. Relances go-live parties (235 EUR + 4 USD EN/ES).
+- **⚠️ Funnel NON fiable jusqu'à ~23/07** : fenêtre 28j → mélange l'ancien design abo (avant 25/06). `Code.js` compte désormais `sg_pass_cta` (vrai CTA) mais **nécessite `clasp push`** (action fondateur, reporting only). Revenu = Stripe/Mollie, jamais le funnel.
+- **Boucles d'alerte auto** : `revenue-watch` (mouvements Stripe) + `ux-watch` (criticals rage/dead-clicks de ux-report) → email fondateur, dans daily-copernicus.
+- **A/B tests live** : `pw_cta_order` + `pw_prelude` + `ab_fiche_dive` (50/50) + `home_az` (50%) + `map_world` (50%). Réévaluer sur données POST-refonte.
+- **Pipeline** : ERDDAP-live, 4×/j, stable. **Détail complet de la session 26/06 → `NEXT_SESSION.md` (entrée en tête).**
 
 Pour les opérations détaillées (deploy manuel, A/B eval, backtest forecast, stats), invoquer le skill `sargasses`.
