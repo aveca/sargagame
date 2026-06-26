@@ -15905,6 +15905,7 @@ export default function App(){
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
                 arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m})()}
                 onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
+                topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
