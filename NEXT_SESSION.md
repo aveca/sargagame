@@ -1,5 +1,25 @@
 # NEXT_SESSION — sargagame
 
+> **🔍 2026-06-26 (suite) — AUDIT REPO COMPLET (14 agents, 55 findings, vérifiés adversarialement). 5 PR de fixes shippés (#157→#160). Backlog restant ci-dessous.**
+>
+> **FIXÉ + MERGÉ (NE PAS REFAIRE) :**
+> - **#157** Sécurité CI : inputs `workflow_dispatch` (beach_id/day_override/regions) déplacés en `env:` (anti-injection d'expression) — push-debug, weekly-optimize, provision-ga4/gsc.
+> - **#158** Bugs front : sélecteur CSS malformé `[role="dialog" aria-modal="true"]` → `[role="dialog"][aria-modal="true"]` (cassait nav clavier ArchipelView + parallax BeachScene ; 2 occurrences STRING uniquement, pas les attributs JSX) · **ComicDetail recevait pas isPremium** → abonné payant voyait la prévision 7j verrouillée depuis la carte (corrigé) · branche morte `window.location.href=item.u`.
+> - **#159** Sécurité+data : SSRF Apple Pay (regex `[a-z0-9.-]*apple.com` matchait evilapple.com → `([a-z0-9-]+\.)*apple\.com`) · `normalizeAfai` garde `Number.isFinite` (NaN se propageait dans la grille) · disclaimer forecast interpolé sur `HALF_LIFE_DAYS` réel.
+> - **#160** Hygiène : 9 brouillons orphelins supprimés (GARDÉS car référencés : onboarding-final.html, neptunes_fury.html).
+>
+> **⚠️ FAUX POSITIFS de l'audit — NE PAS « corriger » :** saison 2499 « absente de l'allowlist » (elle Y EST, mollie.php:90) · `?premium=1` « bypass paywall » (paywall SOFT sur PWA statique + ressemble à un QA shortcut du fondateur ; data déjà côté client) · onboarding-final.html/neptunes_fury.html « orphelins » (référencés).
+>
+> **BACKLOG AUDIT RESTANT (à exécuter en session fraîche, PAS au tél de nuit) :**
+> - **DÉLICAT (chemin paiement — soin requis) :** double-submit wallet `walletRedirect` (garder `if(payBusy)return` + payBusy en deps, VÉRIFIER que le cancel Apple Pay reset payBusy sinon lockout) · Apple Pay natif abo affiche 4,99€ fallback (8068, chemin abo masqué par passOnly — vérifier atteignabilité) · SKU saison divergent PassOffer 2499/210 vs onSeason 1999/183 (8433).
+> - **DATA (moyen, soin) :** pipeline publie `source:'erddap-live'+updatedAt:now` même si le timestamp satellite est périmé (fetch-sargassum-live:1637-1647, 213-218) → le check de fraîcheur ne détecte JAMAIS un ERDDAP qui sert un composite vieux. À corriger : propager le vrai timestamp satellite + le comparer. · intent demi-vie **3.5 vs 5.0** à TRANCHER (code=5.0, doc CLAUDE.md=3.5 ; j'ai aligné la copy sur 5.0, pas le calcul).
+> - **EMAILS (moyen) :** email-weekend dedup all-or-nothing (re-envoi du bulletin entier si crash partiel ; marqueur écrit en fin de run) + dédup Apps Script `weekend_email` documentée mais ABSENTE du code migré SMTP · incident-apology marqueur flush en fin de boucle (même classe) · welcome-email sans throttle SMTP.
+> - **BUGS BAS :** WorldMapView double `onOpenBeach` (onPointerDown+onClick, 1400) · FeedbackWidget timer jamais clear (10211) · OneSignal tags fav jamais retirés au unfav (14104) · redirect premium efface TOUS les query params (13846) · Conditions sans aria-label + `island` pas re-propagé · listeners Escape multiples (ChasseHome).
+> - **DEAD CODE :** Stripe.js chargé chaque session (provider=Mollie) · stripeLinkFor/stripeUrlWith morts · engagement auto-open unreachable (15215) · drip-email STRIPE_BASE/stripeLink morts.
+> - **SÉCU-PROFONDEUR (bas, surtout endpoints legacy/dormants) :** collect.php sans Origin/rate-limit · verify_subscription unlock par email seul (énumération) · paypal.php confirm/capture sur IDs client (PayPal dormant) · setupIntentId non sanitisé (Stripe legacy) · _deploy.php zip-slip (mitigé par token) · fast-deploy DEPLOY_TOKEN en query string (loggé) · .htaccess seul protège collect/config (void si AllowOverride None) · mollie-lib URL Apps Script en clair.
+> - **CONFIG (moyen) :** regions/index.cjs — 1 JSON région invalide casse TOUT le deploy (y compris MQ/GP) ; CI ne valide pas les régions non-mq. Décision fail-loud vs fail-isolé à trancher.
+> - Rapport brut complet : `/tmp/.../tasks/wpgz1n8n9.output` (éphémère — ce résumé fait foi).
+
 > **💳🌍 2026-06-26 — GO-LIVE MOLLIE PARTOUT (EUR + USD) + SWEEP REVENU/UX/ANALYTICS. ~13 PR (#143→#155) shippés+mergés+déployés. NE PAS RECONSTRUIRE.**
 >
 > **LE PLUS GROS : « Mollie partout », pass-only.**
