@@ -2593,7 +2593,7 @@ function LearnView({lang,onBack,onGoMap}){
   const LL=T[lang]||T.fr
   return(
     <div className="view-enter" style={{position:"absolute",inset:0,zIndex:750,
-      background:"var(--sg-bg,#FDFCF7)",overflowY:"auto",
+      background:"var(--sg-bg,#FDFCF7)",overflowY:"auto",overflowX:"hidden",
       WebkitOverflowScrolling:"touch"}}>
       {/* Ambient gradient glow */}
       <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",
@@ -2974,7 +2974,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
   },[beach?.id,beach?.status,trackFn])
   const vm=verdictMeta(beach?.status,lang)
   return(
-    <div style={{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",WebkitOverflowScrolling:"touch",
+    <div style={{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",
       background:"var(--sg-bg,#FDFCF7)",opacity:exiting?0:1,transform:exiting?"scale(.98)":"scale(1)",
       transition:"opacity .3s ease,transform .3s ease",pointerEvents:exiting?"none":"auto"}}>
       {/* Hero golden-hour */}
@@ -6412,7 +6412,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
         <div style={{
           borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
           background:"var(--sg-bgD,#FAFAFA)",
-          maxHeight:200,overflowY:"auto",
+          maxHeight:200,overflowY:"auto",overflowX:"hidden",
         }}>
           {picks.slice(1).map(alt=>{
             const altSt=ST[alt.status]||ST._loading
@@ -7800,7 +7800,7 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
           <button onClick={onClose} aria-label="Fermer" style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",
             fontSize:18,cursor:"pointer",padding:4}}>✕</button>
         </div>
-        <div ref={bodyRef} style={{overflowY:"auto",padding:"14px 12px",display:"flex",flexDirection:"column",gap:10}}>
+        <div ref={bodyRef} style={{overflowY:"auto",overflowX:"hidden",padding:"14px 12px",display:"flex",flexDirection:"column",gap:10}}>
           {msgs.map((m,i)=>(
             <div key={i} style={{alignSelf:m.who==="me"?"flex-end":"flex-start",maxWidth:"86%",
               background:m.who==="me"?"#FFC72C":"rgba(255,255,255,.07)",color:m.who==="me"?"#120821":"#fff",
@@ -9741,7 +9741,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                     color:"var(--sg-ink,#0D0D0D)",fontSize:16,fontWeight:600,fontFamily:"inherit",outline:"none",
                     boxShadow:"2px 2px 0 #0D0D0D"}}/>
               </div>
-              <div style={{maxHeight:312,overflowY:"auto",display:"flex",flexDirection:"column",gap:6,
+              <div style={{maxHeight:312,overflowY:"auto",overflowX:"hidden",display:"flex",flexDirection:"column",gap:6,
                 WebkitOverflowScrolling:"touch",paddingRight:2}}>
                 {list.map(b=>(
                   <button key={b.id} onClick={()=>onOpenBeach&&onOpenBeach(b)}
@@ -10326,7 +10326,7 @@ function WorldCarnet({beach,lang,onClose,onPremium}){
   const hasScore=typeof beach.score==="number"
   const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
   return(
-    <div role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",WebkitOverflowScrolling:"touch",
+    <div role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",
       background:"linear-gradient(180deg,#04090B 0%,#0B2230 50%,#11463E 100%)",animation:"wfCarnetIn .32s cubic-bezier(.22,1,.36,1) both"}}>
       <button onClick={onClose} style={{position:"sticky",top:"calc(12px + env(safe-area-inset-top))",marginLeft:14,zIndex:3,padding:"8px 14px",borderRadius:999,
         background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",backdropFilter:"blur(8px)"}}>← {_t(lang,"Retour","Back","Volver")}</button>
@@ -10426,7 +10426,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
       {streak>0&&<div aria-label={_t(lang,"Série","Streak","Racha")} style={{position:"absolute",top:"calc(15px + env(safe-area-inset-top))",left:14,zIndex:30,padding:"6px 12px",borderRadius:999,
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,216,132,.45)",color:"#FFD884",fontSize:12.5,fontWeight:800,backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>🔥 {streak}{best>streak?" · ⭐"+best:""}</div>}
-      <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
+      <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",overflowX:"hidden",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
         {items.map((it,idx)=>(
           <div key={idx} data-wf-card={idx}>
             {it.type==="beach"&&<WorldCard beach={it.beach} index={it.bi} active={Math.abs(idx-active)<=1} lang={lang} onCarnet={setCarnet} phaseGrad={phaseGrad}/>}
@@ -12775,7 +12775,7 @@ export default function App(){
 
         {/* ALERTS HUB — /alertes/ page view (hub Premium = le veilleur personnel). */}
         {showAlertHub&&allBeaches?.length>=1&&(
-          <div style={{position:"fixed",inset:0,zIndex:1006,overflowY:"auto",background:"#120821"}}>
+          <div style={{position:"fixed",inset:0,zIndex:1006,overflowY:"auto",overflowX:"hidden",background:"#120821"}}>
             <AlertHub
               lang={lang} island={island}
               beach={heroPick}
@@ -12906,7 +12906,7 @@ export default function App(){
               {search.trim().length>=2&&filtered.length>0&&(
                 <div style={{background:"var(--sg-card,#fff)",borderRadius:14,
                   boxShadow:"0 12px 32px rgba(0,0,0,.18)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-                  maxHeight:"min(280px,40vh)",overflowY:"auto",overscrollBehavior:"contain"}}>
+                  maxHeight:"min(280px,40vh)",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain"}}>
                   {filtered.slice(0,8).map(b=>{
                     const st=ST[b.status]||ST._loading
                     return(

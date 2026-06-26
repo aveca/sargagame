@@ -2093,7 +2093,7 @@ export const CSS=`
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-badgesheet{animation:none}
-.lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-badge-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
@@ -2142,7 +2142,7 @@ export const CSS=`
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-laddersheet{animation:none}
-.lc-ladder-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-ladder-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-ladder-sub{margin:8px auto 4px;max-width:340px}
@@ -2210,7 +2210,7 @@ export const CSS=`
 .lc-space-pro-link:active{opacity:.7}
 /* overlay */
 .lc-alerts{position:fixed;inset:0;z-index:1140;display:flex;align-items:flex-start;justify-content:center;
-  padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-alerts{animation:none}

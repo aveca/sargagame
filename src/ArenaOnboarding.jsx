@@ -63,7 +63,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
   return (
     <div className={"arena-onb bg-"+bg} role="dialog" aria-modal="true">
       <style>{`
-        .arena-onb{position:fixed;inset:0;z-index:2900;overflow-y:auto;-webkit-overflow-scrolling:touch;
+        .arena-onb{position:fixed;inset:0;z-index:2900;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
           font-family:"Comic Neue",system-ui,sans-serif;color:#fff;
           padding:max(18px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));
           display:flex;flex-direction:column;animation:arenaOnbIn .35s ease}
