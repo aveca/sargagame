@@ -14014,7 +14014,12 @@ export default function App(){
   // stripe.js à l'idle (3s post-load) : la 1re connexion js.stripe.com mesurée
   // 15-22s à froid (TLS 9s) sur réseau Caraïbe — preconnect (index.html) + charge
   // tôt pour qu'il soit en cache AVANT que l'utilisateur ouvre le paywall.
+  // GATE provider : le PSP par défaut est Mollie → ~tous les sessions n'ouvrent
+  // JAMAIS un checkout Stripe. On ne préchauffe donc js.stripe.com QUE si le
+  // provider actif est Stripe (?pay=stripe). Le chemin on-demand (ouverture du
+  // paywall) charge toujours Stripe.js au besoin — zéro impact checkout.
   useEffect(()=>{
+    if(PAY_PROVIDER!=="stripe")return
     const t=setTimeout(()=>{loadStripeJs().catch(()=>{})},3000)
     return()=>clearTimeout(t)
   },[])
