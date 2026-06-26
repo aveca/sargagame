@@ -13248,7 +13248,8 @@ export default function App(){
                 onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
                 onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
                 onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
-                onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}/>
+                onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
+                communityReports={communityReports} ReportComp={BeachReport}/>
             </Suspense>
           </ErrBound>
         )}

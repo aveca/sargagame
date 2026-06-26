@@ -319,7 +319,7 @@ function fcTrend(fc){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,communityReports={}}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -456,6 +456,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
+        {/* Signalement citoyen « note le niveau de sargasses » DIRECTEMENT sur la preview
+            (retour fondateur : c'était seulement sur la fiche complète). BeachReport est
+            passé en COMPOSANT (ReportComp) depuis Sargasses_PROD → garde son scope/module
+            (track, endpoint, i18n) sans import circulaire. */}
+        {ReportComp&&<div className="lc-detail-report" style={{margin:"16px 0 0"}}>
+          <ReportComp beach={beach} lang={lang} communityReports={communityReports}/>
+        </div>}
         <div className="lc-detail-actions">
           {onToggleFav&&<button type="button" className={"lc-detail-full lc-detail-fav"+(favorites.includes(beach.id)?" on":"")} aria-pressed={favorites.includes(beach.id)}
             onClick={()=>{ if(track)try{track(favorites.includes(beach.id)?"sg_chasse_unfav":"sg_chasse_fav",{beach_id:beach.id})}catch(_){}; onToggleFav(beach.id) }}>
