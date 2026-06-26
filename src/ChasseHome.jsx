@@ -471,7 +471,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           <button type="button" className="lc-detail-full" onClick={share}>
             📣 {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
           </button>
-          <button type="button" className="lc-detail-full" onClick={onFull}>
+          <button type="button" className="lc-detail-full lc-detail-go" onClick={onFull}>
             {_t({fr:"Fiche complète →",en:"Full sheet →",es:"Ficha completa →"})}
           </button>
         </div>
@@ -1813,11 +1813,20 @@ export const CSS=`
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
-.lc-detail-full{display:block;width:100%;margin-top:12px;-webkit-appearance:none;appearance:none;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
-  text-decoration:underline;cursor:pointer;font-family:inherit}
-.lc-detail-actions{display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap}
-.lc-detail-actions .lc-detail-full{width:auto;margin-top:0}
-.lc-detail-fav.on{color:#E8522A}
+/* Boutons d'action (Partager / Fiche complète / Suivre) — vrais boutons BD
+   (bord + ombre décalée + press), plus de lien souligné « pas fini ». Équilibrés
+   en largeur (flex:1). « Fiche complète » = primaire (rempli encre) pour la
+   hiérarchie sans concurrencer le gros CTA or au-dessus. */
+.lc-detail-full{flex:1 1 0;min-width:128px;-webkit-appearance:none;appearance:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:12px 14px;
+  color:var(--ink);font-weight:800;font-size:13.5px;font-family:inherit;cursor:pointer;
+  box-shadow:2px 2px 0 var(--ink);transition:transform .08s,box-shadow .08s;white-space:nowrap}
+.lc-detail-full:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.lc-detail-full.lc-detail-go{background:var(--ink);color:#fff}
+.lc-detail-actions{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.lc-detail-actions .lc-detail-full{margin-top:0}
+.lc-detail-fav.on{color:#E8522A;background:#fff}
 /* strip 7 jours (case BD) */
 .lc-detail-fc{margin:4px 0 18px}
 .lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
