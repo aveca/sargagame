@@ -162,7 +162,7 @@ function getRegionBrief(islandKey) {
 // le brief promis (le front leur débloque en plus 7 j premium réels). map_world exclu
 // volontairement (promesse de récurrence non confirmée — on ne grille pas le domaine).
 const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert', 'exit_intent', 'capture-gate', 'gap_freemium', 'chasse'])
-function buildDaily(island, brief, email) {
+function buildDaily(island, brief, email, opts = {}) {
   const meta = brief.meta
   const lang = meta.lang
   const name = meta.name || meta.place
@@ -193,6 +193,7 @@ function buildDaily(island, brief, email) {
     ${brief.degradedCount ? `<div style="font-size:12.5px;color:#666;margin-top:10px">${lang === 'fr' ? `${brief.degradedCount} plage(s) se dégradent d'ici 3 jours${brief.degradeDay ? ` (surtout ${brief.degradeDay})` : ''}.` : lang === 'es' ? `${brief.degradedCount} playa(s) empeoran en 3 días${brief.degradeDay ? ` (sobre todo el ${brief.degradeDay})` : ''}.` : `${brief.degradedCount} beach(es) turn worse within 3 days${brief.degradeDay ? ` (mostly ${brief.degradeDay})` : ''}.`}</div>` : ''}
     ${ctaButton(ctaTxt, `https://${domain}/?utm_source=email&utm_medium=daily_verdict`)}
   </div>
+  ${opts.showInstall ? installNudge(lang, domain) : ''}
   ${footer(name, domain, email, island, lang)}`
   return { subject, html }
 }
@@ -279,6 +280,41 @@ function ctaButton(text, url, size = 'normal') {
     background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
     color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:${fs};font-weight:700;
     box-shadow:0 4px 16px rgba(232,168,0,.3)">${text}</a>`
+}
+
+// Nudge « ajoute l'appli à l'écran d'accueil + active les alertes » — bloc
+// secondaire, discret, injecté SOUS la carte du verdict quotidien. Email ne peut
+// pas déclencher l'install PWA : il GUIDE (iOS Partager → écran d'accueil ;
+// Android menu → Installer), comme demandé (cf. autres apps). Gated en aval par
+// l'usage (≥3 briefs reçus), cappé à 3 impressions, espacé ≥10j — « au bon
+// moment, pas d'un coup ». Localisé FR/EN/ES. Le lien renvoie au site où le
+// prompt in-app (A2HS + cloche) prend le relais avec le bon geste natif.
+function installNudge(lang, domain) {
+  const t = (fr, en, es) => lang === 'es' ? es : lang === 'en' ? en : fr
+  const title = t('📲 Garde la plage du jour à portée de main',
+    '📲 Keep the daily verdict one tap away',
+    '📲 Ten el veredicto del día a un toque')
+  const ios = t('iPhone : appuie sur Partager <span style="font-weight:700">⎙</span> puis « Sur l’écran d’accueil ».',
+    'iPhone: tap Share <span style="font-weight:700">⎙</span> then “Add to Home Screen”.',
+    'iPhone: pulsa Compartir <span style="font-weight:700">⎙</span> y luego “Añadir a inicio”.')
+  const android = t('Android : menu <span style="font-weight:700">⋮</span> puis « Installer l’application ».',
+    'Android: menu <span style="font-weight:700">⋮</span> then “Install app”.',
+    'Android: menú <span style="font-weight:700">⋮</span> y luego “Instalar aplicación”.')
+  const tail = t('Une fois installée, active les alertes en un geste : tu es prévenu dès qu’une plage change.',
+    'Once installed, turn on alerts in one tap: you’ll know the moment a beach changes.',
+    'Una vez instalada, activa las alertas en un toque: te avisamos cuando una playa cambia.')
+  const cta = t('Installer l’appli →', 'Install the app →', 'Instalar la app →')
+  const url = `https://${domain}/?utm_source=email&utm_medium=daily_verdict&utm_content=install_nudge`
+  return `<div style="background:#fff;padding:0 24px 22px">
+    <div style="background:#F7F5EF;border:1px solid #ECE7DA;border-radius:12px;padding:16px 16px 18px">
+      <div style="font-size:14px;font-weight:800;color:#0A1714;margin-bottom:8px">${title}</div>
+      <div style="font-size:12.5px;color:#555;line-height:1.6">${ios}<br>${android}</div>
+      <div style="font-size:12px;color:#777;line-height:1.5;margin-top:8px">${tail}</div>
+      <div style="margin-top:12px">
+        <a href="${url}" style="display:inline-block;padding:9px 18px;background:#0A1714;color:#fff;text-decoration:none;border-radius:10px;font-size:12.5px;font-weight:700">${cta}</a>
+      </div>
+    </div>
+  </div>`
 }
 
 // J+3 — Le brief réel du matin (exactement ce qu'un abonné a reçu), généré
@@ -942,10 +978,17 @@ async function main() {
       if (ageDays < 7) continue
     }
     if (dailySent >= DAILY_CAP) break
+    // Nudge install/alertes : « en fonction de l'usage » → seulement pour les
+    // engagés (≥3 verdicts déjà reçus), cappé à 3 impressions, espacé ≥10j
+    // (« pas d'un coup »). daily_count s'incrémente à chaque envoi quotidien.
+    const _nudgeCount = record.install_nudge_count || 0
+    const _nudgeAgeOK = !record.install_nudge_last
+      || Math.floor((new Date(todayKey) - new Date(record.install_nudge_last)) / 864e5) >= 10
+    const showInstall = (record.daily_count || 0) >= 3 && _nudgeCount < 3 && _nudgeAgeOK
     if (!resend) {
       // Dry-run : on rend quand même l'email (atteste que le builder marche) +
       // dump du premier HTML pour inspection visuelle.
-      const p = buildDaily(island, brief, email)
+      const p = buildDaily(island, brief, email, { showInstall })
       console.log(`  ~ ${logId(email)} [daily] would send: "${p.subject}"`)
       if (!dailyWould) try { fs.writeFileSync(path.join(__dirname, 'data', 'daily-preview.html'), p.html) } catch {}
       dailyWould++
@@ -955,7 +998,7 @@ async function main() {
     const from = meta.regionId
       ? `${meta.lang === 'es' ? 'Sargazo' : 'Sargassum'} ${meta.place} <alerte@sargasses-martinique.com>`
       : (island === 'GP' ? FROM_GP : FROM_MQ)
-    const { subject, html } = buildDaily(island, brief, email)
+    const { subject, html } = buildDaily(island, brief, email, { showInstall })
     const dl = meta.lang
     const dailyPre = dl === 'es'
       ? `${brief.best.name} y tus otras playas, revisadas por satélite esta mañana.`
@@ -985,6 +1028,8 @@ async function main() {
         console.log(`  + ${logId(email)} [daily] (${island})`)
         record.daily_last = todayKey
         record.daily_sig = dailySig
+        record.daily_count = (record.daily_count || 0) + 1 // usage → gate du nudge install
+        if (showInstall) { record.install_nudge_count = _nudgeCount + 1; record.install_nudge_last = todayKey }
         dripSent[key] = record
         saveJSON(DRIP_SENT_PATH, dripSent) // flush incrémental anti-resend
         dailySent++
