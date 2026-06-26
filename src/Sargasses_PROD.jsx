@@ -150,7 +150,9 @@ function walletAvail(){
 // nos libellés clairs rendus HORS iframe (le composant combiné les rendait illisibles).
 const MOL_FIELD={width:"100%",boxSizing:"border-box",minHeight:46,padding:"4px 13px",
   borderRadius:11,marginBottom:13,border:"1px solid rgba(255,255,255,.14)",
-  background:"rgba(255,255,255,.05)",display:"flex",alignItems:"center"}
+  // Fond SOLIDE (matche le backgroundColor posé sur l'input Mollie dans l'iframe) :
+  // l'input opaque tue le blanc d'autofill iOS sans laisser de couture de teinte.
+  background:"#241837",display:"flex",alignItems:"center"}
 const MOL_LABEL={display:"block",fontSize:11.5,fontWeight:600,color:"rgba(255,255,255,.62)",marginBottom:6,letterSpacing:".01em"}
 // PayPal SDK (bouton abo) : vault + intent=subscription. Le client-id détermine
 // l'environnement (sandbox vs live) — pas de flag séparé.
@@ -7731,7 +7733,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           // → carte 100% dans le thème premium, zéro blanc. `styles` ne stylise QUE le texte
           // DANS l'iframe ; le fond visible = nos divs sombres. createToken() (doSubscribe)
           // collecte tous les composants montés sur l'instance → submit STRICTEMENT inchangé.
-          const styles={base:{color:"#eef2f7",fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0"},invalid:{color:"#FF8A66"}}
+          // backgroundColor SOLIDE (et non transparent) sur l'input DANS l'iframe : sans
+          // lui, l'autofill iOS/Safari peint le champ en BLANC (le nom auto-rempli ressortait
+          // sur fond blanc, illisible). Mollie ne supporte ni boxShadow ni :-webkit-autofill
+          // (cf. docs styling) → backgroundColor est le seul levier ; on le pose sur les 3
+          // états pour couvrir l'autofill quel que soit l'état de validation. Doit matcher
+          // MOL_FIELD (la div hôte, désormais solide #241837) pour zéro couture visible.
+          const _molBg="#241837"
+          const styles={base:{color:"#eef2f7",backgroundColor:_molBg,fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0",backgroundColor:_molBg},invalid:{color:"#FF8A66",backgroundColor:_molBg}}
           const M=mollieRef.current
           const holder=M.createComponent("cardHolder",{styles})
           const number=M.createComponent("cardNumber",{styles})
