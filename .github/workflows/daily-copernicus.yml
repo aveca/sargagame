@@ -232,6 +232,25 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/dunning-past-due.cjs --send
 
+      # Pass-expiry WIN-BACK (RACHAT — levier N°1 du modèle pass-only) : relance les
+      # acheteurs de pass Mollie dont l'accès a EXPIRÉ (dernier pass, fenêtre 21j) pour
+      # qu'ils reprennent un pass. Source = API Mollie (MOLLIE_API_KEY, déjà secret).
+      # Idempotent par paymentId (pass-expiry-winback-sent.json committé plus bas),
+      # garde-fou MAX 50, copy FR/EN/ES, CTA ?paywall=1.
+      # ⚠️ DRY-RUN volontaire : nouveau mail vers des CLIENTS payants → le fondateur
+      # relit la copy + les volumes (logs) puis ajoute « --send » pour activer (comme
+      # dunning/welcome-paid l'ont été). No-op tant que MOLLIE_API_KEY absent.
+      - name: Pass-expiry win-back (DRY-RUN — flip --send to activate)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/pass-expiry-winback.cjs
+
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
       # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
@@ -311,7 +330,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/daily-brief-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/daily-brief-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
