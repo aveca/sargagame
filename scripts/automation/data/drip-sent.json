@@ -1068,13 +1068,15 @@
     "daily_last": "2026-06-25",
     "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
-    "j7": "2026-06-19T10:26:18.113Z"
+    "j7": "2026-06-19T10:26:18.113Z",
+    "j14": "2026-06-26T09:27:07.949Z"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
     "daily_last": "2026-06-25",
     "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
-    "j7": "2026-06-19T10:26:19.849Z"
+    "j7": "2026-06-19T10:26:19.849Z",
+    "j14": "2026-06-26T09:27:09.664Z"
   },
   "8703e57cadda6d7ee1b5d10e7809412a": {
     "j3": "2026-06-15T12:14:18.438Z",
@@ -1272,7 +1274,9 @@
     "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
     "j3": "2026-06-25T20:00:52.774Z"
   },
-  "ddc57c36d6d16c8e798ddbf03c8ab15a": {},
+  "ddc57c36d6d16c8e798ddbf03c8ab15a": {
+    "j3": "2026-06-26T09:27:12.353Z"
+  },
   "a47d1cd69aa0c7b03b7f9253d74f48b3": {
     "daily_last": "2026-06-25",
     "daily_sig": "Playa Holbox|clean|91|clean|9|viernes"
