@@ -34,6 +34,14 @@ const CAPTURE_SOURCES = new Set(['gap_freemium', 'mollie_waitlist', 'onsite_chec
 const ALL = process.argv.includes('--all')
 const isB2B = s => /b2b|pro|hotel|hôtel/i.test(s || '')
 const isTestEmail = e => /^test@|(\+test@)|@(test|example)\./i.test(e || '')
+// Relance PASS = EUR only (MQ/GP). Les régions USD (FLORIDA/RIVIERAMAYA/PUNTACANA)
+// sont en mode CAPTURE (Mollie = EUR-only, paiement pas live) → le CTA ne charge
+// pas, et le copy FR « Pass plage Martinique » est inadapté à ces audiences. Les
+// exclure évite du spam inutile sur la boîte SMTP mutualisée (qui sert aussi le
+// bulletin hebdo réel). island absent → défaut MQ (visiteurs MQ sans tag).
+const EUR_ISLANDS = new Set(['MQ', 'GP'])
+const islandOf = s => (s.island || s.region || 'MQ').toString().toUpperCase()
+const isEur = s => EUR_ISLANDS.has(islandOf(s))
 // Plafond par run pour la boîte SMTP cPanel (alerte@, premium115.web-hosting.com via
 // nodemailer — PAS Resend, cf. lib/email-send.cjs) : les boîtes mutualisées ont une
 // limite d'envoi horaire. --max=N pour override ; relancer plus tard reprend où on
@@ -90,8 +98,9 @@ function buildHtmlDiscovery(domain, island) {
   const sent = loadJson(SENT_PATH, {})
   const subs = subscribersList().filter(s => {
     if (!s || !s.email || isTestEmail(s.email)) return false
-    if (ALL) return !isB2B(s.source)              // --all : tous les conso (hors B2B/hôtels)
-    return CAPTURE_SOURCES.has(s.source)          // défaut : seulement les 23 leads "paiement"
+    if (!isEur(s)) return false                   // USD (FLORIDA/RIVIERAMAYA/PUNTACANA) : paiement pas live + copy FR inadapté
+    if (ALL) return !isB2B(s.source)              // --all : tous les conso EUR (hors B2B/hôtels)
+    return CAPTURE_SOURCES.has(s.source)          // défaut : seulement les leads "paiement"
   })
   console.log(`cible: ${subs.length} (${ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"'}) | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
   let done = 0, skip = 0, fail = 0
@@ -101,7 +110,7 @@ function buildHtmlDiscovery(domain, island) {
     if (!email || !email.includes('@')) { skip++; continue }
     const h = emailHash(email)
     if (sent[h]) { skip++; continue }
-    const island = (s.island || s.region || 'MQ').toString().toUpperCase()
+    const island = islandOf(s)
     const reg = REGION[island] || fallback
     if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island})`); done++; continue }
     const r = await sendEmail({
