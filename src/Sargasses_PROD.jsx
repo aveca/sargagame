@@ -2433,7 +2433,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
   transition:transform .35s cubic-bezier(.32,.72,0,1);
-  max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;
+  max-height:85vh;max-height:85dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   animation:sheetSlideUp .4s cubic-bezier(.32,.72,0,1);
   will-change:transform;
@@ -4123,7 +4123,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
       {/* Sheet */}
       <div ref={sheetRef} className="bsc-sheet" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",
+        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
           padding:"10px 16px calc(20px + env(safe-area-inset-bottom))",WebkitOverflowScrolling:"touch",
@@ -5258,7 +5258,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
   const qBase=useMemo(()=>{if(!q)return beaches;const lq=q.toLowerCase();return beaches.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))},[beaches,q])
   const chipCount=id=>id==="fav"?qBase.filter(b=>favorites.includes(b.id)).length:qBase.filter(b=>b.status===id).length
   return(
-    <div style={{height:"100%",overflowY:"auto",
+    <div style={{height:"100%",overflowY:"auto",overflowX:"hidden",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#120821 100%)",
       color:"#fff",maxWidth:600,margin:"0 auto"}}>
