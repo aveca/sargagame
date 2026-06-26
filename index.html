@@ -191,6 +191,17 @@
     window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
     </script>
     <div id="root">
+      <!-- Boot skeleton : peint INSTANTANÉMENT (HTML/CSS inline, zéro JS, zéro requête)
+           pendant le download+parse du bundle (~221 Ko gzip). Sans lui, #root est vide →
+           écran noir plusieurs secondes sur réseau mobile Caraïbe = abandons avant le paywall.
+           createRoot(#root).render() REMPLACE ces enfants au montage React → disparaît seul.
+           Visuel-only (pas de texte) → neutre pour les 5 domaines/langues. -->
+      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 76% -10%,rgba(255,199,44,.22),rgba(255,199,44,0) 55%),linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);z-index:0">
+        <div style="width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,#E89400);box-shadow:0 0 0 0 rgba(255,199,44,.45);animation:sgBootPulse 1.5s ease-in-out infinite"></div>
+        <style>@keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 22px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}@media (prefers-reduced-motion:reduce){#sg-boot>div{animation:none}}</style>
+      </div>
+      <!-- Révélé par JS uniquement → les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage → le boot disparaît seul. -->
+      <script>(function(){var b=document.getElementById('sg-boot');if(b)b.style.display='flex'})()</script>
       <noscript>
         <h1>Sargasses Martinique en temps réel — carte et plages aujourd'hui (2026)</h1>
         <p>Carte des sargasses en Martinique en temps réel. Où se baigner aujourd'hui ? État de 53 plages mis à jour quotidiennement grâce aux données satellite Copernicus Marine. Prévisions sargasses 7 jours et alertes push gratuites.</p>
