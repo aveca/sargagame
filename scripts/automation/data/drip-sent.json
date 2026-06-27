@@ -1133,28 +1133,32 @@
     "daily_sig": "Anse Madame|clean|86|clean|0|",
     "j3": "2026-06-16T10:16:09.348Z",
     "j7": "2026-06-20T14:04:22.219Z",
-    "daily_count": 1
+    "daily_count": 1,
+    "j14": "2026-06-27T13:42:58.433Z"
   },
   "7ea96f3a91816d70abc7dac28f7c6fa7": {
     "daily_last": "2026-06-27",
     "daily_sig": "Anse Madame|clean|86|clean|0|",
     "j3": "2026-06-16T11:43:35.578Z",
     "j7": "2026-06-20T14:04:23.601Z",
-    "daily_count": 1
+    "daily_count": 1,
+    "j14": "2026-06-27T13:43:00.635Z"
   },
   "a06e34affbd9b0b02bac52c51da38802": {
     "daily_last": "2026-06-27",
     "daily_sig": "Anse Madame|clean|86|clean|0|",
     "j3": "2026-06-16T12:33:21.371Z",
     "j7": "2026-06-20T14:04:24.853Z",
-    "daily_count": 1
+    "daily_count": 1,
+    "j14": "2026-06-27T13:43:02.485Z"
   },
   "6023d811323298320ce8ca49b4121adf": {
     "daily_last": "2026-06-27",
     "daily_sig": "Anse Madame|clean|86|clean|0|",
     "j3": "2026-06-16T12:33:22.814Z",
     "j7": "2026-06-20T14:04:26.311Z",
-    "daily_count": 1
+    "daily_count": 1,
+    "j14": "2026-06-27T13:43:03.789Z"
   },
   "824a7b53f1f68745929343bc9f17c617": {
     "j3": "2026-06-16T15:01:41.983Z",
@@ -1270,7 +1274,8 @@
     "j3": "2026-06-23T14:51:29.309Z",
     "daily_last": "2026-06-27",
     "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
-    "daily_count": 1
+    "daily_count": 1,
+    "j7": "2026-06-27T13:43:05.532Z"
   },
   "324c0139f551d07758f699db12ec97f3": {},
   "97532088d9fed647d3d6725194ad09b7": {
@@ -1345,9 +1350,12 @@
   "7688543eb756d12022fd82508778d008": {
     "daily_last": "2026-06-27",
     "daily_sig": "Anse Madame|clean|86|clean|0|",
-    "daily_count": 1
+    "daily_count": 1,
+    "j3": "2026-06-27T13:43:09.354Z"
   },
-  "f43bb7311615324fe54e244176553426": {},
+  "f43bb7311615324fe54e244176553426": {
+    "j3": "2026-06-27T13:43:08.014Z"
+  },
   "e383942c9c243956a6078128ed7d57c7": {
     "daily_last": "2026-06-27",
     "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
