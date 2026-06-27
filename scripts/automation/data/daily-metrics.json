@@ -1673,7 +1673,7 @@
   },
   {
     "date": "2026-06-27",
-    "time": "2026-06-27T08:46:51.931Z",
+    "time": "2026-06-27T13:47:42.118Z",
     "payments": 12,
     "revenue": 59.88,
     "emails": 252,
@@ -1702,7 +1702,7 @@
       }
     },
     "email": {
-      "sent": 1708,
+      "sent": 1746,
       "delivered": null,
       "opened": null,
       "clicked": null,
