@@ -77,7 +77,13 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "lCn_xjsR6BQ",
+        "label": "Cancún — vue sud",
+        "provider": "webcamsdemexico"
+      }
     },
     {
       "id": "rm002",
@@ -89,7 +95,13 @@
       "status": "moderate",
       "kids": true,
       "snorkel": true,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "P95XK1EJyBU",
+        "label": "Cancún — Punta Cancún",
+        "provider": "webcamsdemexico"
+      }
     },
     {
       "id": "rm003",
@@ -101,7 +113,13 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "link",
+        "url": "https://www.skylinewebcams.com/en/webcam/mexico/quintana-roo/solidaridad/playa-del-carmen.html",
+        "label": "Playa del Carmen",
+        "provider": "SkylineWebcams"
+      }
     },
     {
       "id": "rm004",
@@ -113,7 +131,13 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "link",
+        "url": "https://www.skylinewebcams.com/en/webcam/mexico/quintana-roo/tulum/playa.html",
+        "label": "Tulum — Playa",
+        "provider": "SkylineWebcams"
+      }
     },
     {
       "id": "rm005",

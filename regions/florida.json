@@ -84,7 +84,13 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "g5BS95j2rmM",
+        "label": "Miami Beach — Collins Ave",
+        "provider": "ZeroEight"
+      }
     },
     {
       "id": "fl002",
@@ -96,7 +102,13 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "IG04qlJFiz8",
+        "label": "South Beach — Collins Ave",
+        "provider": "ZeroEight"
+      }
     },
     {
       "id": "fl003",
@@ -108,7 +120,13 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "1j1lgppb0PY",
+        "label": "Fort Lauderdale Beach",
+        "provider": "ElboTV"
+      }
     },
     {
       "id": "fl004",
