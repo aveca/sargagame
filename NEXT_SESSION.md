@@ -1,5 +1,39 @@
 # NEXT_SESSION — sargagame
 
+> **🚀📈 2026-06-28 (nuit) — SEO GROWTH ENGINE : 87 pages programmatiques + netlinking ×2,4, objectif ×100 trafic. 3 PR mergées sur `main` (#189, #193, #194), 3 déploiements `success`, auto-indexé. NE PAS REFAIRE. Forgé par orchestration multi-agents (5 workflows, ~110 agents).**
+>
+> **Objectif fondateur : être #1 et faire ×100 sur le trafic SEO (longue-traîne + têtes), 100 % automatisé via GitHub Actions.** Doctrine d'agressivité : volume programmatique **data-backed** (jamais thin/spam, jamais ce qui pénaliserait les sites FR rentables). Doc stratégie maître = **`GROWTH-SEO-STRATEGY.md`** (thèse, modèle ×100 honnête chiffré, roadmap 90j, KPIs). Artefacts machine = **`scripts/automation/data/seo-growth/`** (strategy.json, crosssite-linkmap.json, backlink-prospects.json).
+>
+> ### Ce qui a été livré (mergé + déployé `success`, LIVE)
+> - **#189** — Moteur `extraPages` + **17 pages EN/ES** (Miami, Punta Cana, Cancún) + netlinking curé v1 (80 prospects) + stratégie + artefacts.
+> - **#193** — **32 pages communes FR** data-backed (14 MQ + 18 GP) : longue-traîne `sargasses <commune>`, chaque page = hub listant les vraies plages → fiches `/plages/` live.
+> - **#194** — **38 pages EN/ES vague 2** (20 espagnol : Playa del Carmen, Tulum, Zona Hotelera, Cozumel, Isla Mujeres, Puerto Morelos, Akumal, Bávaro, Macao, + questions `que-es-el-sargazo`, `es-peligroso`, `cuando-se-va`…) + **netlinking 80→189 prospects**.
+> - **TOTAL : 87 pages neuves** sur les 5 marchés (**55 EN/ES** dont 23 ES, **32 communes FR**) + **189 prospects backlink réels**.
+>
+> ### Architecture — le moteur (où ça vit, comment scaler encore)
+> - **EN/ES** : `scripts/lib/region-seo-pages.cjs` rend un tableau générique **`content.extraPages[]`** (ajouté dans `regions/seo-content/<site>.json` ET les fichiers de langue secondaire `<site>.es.json`/`<site>.en.json` — **routage par langue obligatoire**, sinon non rendu). Chaque page : noscript SSR + FAQPage JSON-LD + breadcrumb + maillage hub↔spoke auto + réseau inter-sites. **Slug propre à la langue, pas d'hreflang** (canonical self).
+> - **FR communes** : `scripts/lib/commune-seo-pages.cjs` (module isolé déterministe). Branché dans `vite.config.js` par injection programmatique : `pages.push(...communeSeoList())` (avant la boucle d'écriture), `Object.assign(editorialContent, communeNoscripts())`, `Object.assign(PUBLISHED_BY_SLUG, communeDates())`, `...COMMUNE_SLUGS.{mq,gp}` dans les Sets inline `MQ_ONLY`/`GP_ONLY` (~l.819), + **injection URLs communes dans les sitemaps MQ/GP** (~l.2293, sinon invisibles d'IndexNow). Slugs aussi ajoutés à **`scripts/lib/cross-domain-drops.cjs`** (drop deploy/purge prepare-ftp). ⚠️ **3 listes MQ_ONLY/GP_ONLY à garder en phase** (inline vite + cross-domain-drops).
+> - **Intégrateur** : `scripts/automation/seo-integrate-extrapages.cjs <site> <pages.json>` — **MERGE additif** (skip slugs déjà livrés), collision-guard (drop si slug ∈ hub/route/existant), routage par langue, normalisation slug (strip préfixes lang/site). **C'est l'outil pour livrer les prochaines vagues.**
+> - **Netlinking** : `scripts/automation/seo-outreach-curated.cjs` (câblé `weekly-outreach.yml`, `OUTREACH_INTL=1`, `CURATED_MAX=2`) lit `data/seo-growth/backlink-prospects.json`. **Délivrabilité-first** : 2/run, email réel trouvé on-site EXIGÉ (pas de fallback deviné), dédup à vie (`curated-outreach-sent.json`), opt-out. 189 prospects = des années de runway.
+>
+> ### Comment scaler la prochaine vague (recette ×100)
+> 1. Lancer un Workflow de contenu (cf. scripts scratchpad `wave2-enes.js` comme modèle) : per-site planner → fan-out pagespecs, **grounding embarqué inline** (PAS via `args` — bug connu : args stringifié → `g.q undefined`). ⚠️ Schémas JSON : **équilibrer les accolades** (bug récurrent, vérifier `node --check`).
+> 2. Harvester les `StructuredOutput` depuis les transcripts d'agents (`subagents/workflows/<id>/*.jsonl`).
+> 3. `node scripts/automation/seo-integrate-extrapages.cjs <site> <harvest.json>` (merge additif).
+> 4. `VITE_REGION=<site> npm run build` pour valider chaque région EN/ES ; `npm run build` (MQ/GP) + `npm test` pour le FR. Vérifier pages rendues + sitemaps + routage par île + 0 lien `/plages/` 404 + **0 cannibalisation**.
+> 5. Commit → push → PR draft → CI verte → merge squash (auto-deploy). **Auto-merge sur CI verte autorisé par le fondateur.**
+>
+> ### Mesure du lift (le trafic est un effet à 1-4 semaines, pas instantané)
+> - **GSC frais** : seul `seo-position-tracker.cjs` (hebdo via `weekly-seo-automation.yml`, creds CI `GOOGLE_SERVICE_ACCOUNT_JSON`) produit une série propre. **Pas de creds GSC en local** (secret CI) → pull GSC = uniquement via GH Actions.
+> - **Baseline au 2026-06-15** (`position-history.json`, ce qu'on fait croître) : mq 1354 clics · gp ~0 (gap tracking) · florida 3 clics/47 impr · puntacana 3/133 · rivieramaya 0/70. ⚠️ La série historique est **un artefact de couverture** (sites suivis 2→1→4) — non fiable comme time-series ; se fier aux pulls GSC futurs cohérents.
+> - **KPIs** (`GROWTH-SEO-STRATEGY.md`) : clics segmentés FR/EN/ES, dé-zérotage du pool ES « sargazo » (202 req.), émergence `sargasses <commune>`, pages indexées (GSC Coverage), écart CTR vs courbe, striking-distance pos 4-15→top3, conversion organique→PASS.
+>
+> ### À surveiller / dette
+> - **Gap tracking GP** : `gp` apparaît ~0 dans position-history alors que GSC réel = énorme (5029 impr « sargasses guadeloupe »). C'est un trou de COUVERTURE du tracker (ajouter les pages GP au config position-tracker), pas une absence de trafic.
+> - **Pages FR de l'agent NON intégrées** (volontaire) : la vague de contenu a produit des pages FR (têtes `en-direct`/`carte-2026`, plages) qui **cannibaliseraient** la home (déjà pos 1-4) ou les 136 fiches `/plages/` → écartées. Le levier FR propre restant = communes (FAIT) ou commune×intent variants (à curer finement).
+> - **Vélocité d'indexation** déjà couverte : IndexNow (Bing/Yandex/Seznam, gratuit) + Google Indexing API tournent post-deploy sur les 5 domaines (daily-copernicus l.520/527).
+> - **Squash-merge divergence** : après un squash, la branche `claude/seo-automation-agents-9rbfd6` diverge → pour une nouvelle vague, `git reset --soft origin/main` puis recommit (cf. fin de session, conflit #194 résolu ainsi).
+
 > **📖🌅 2026-06-28 — REFONTE STORYTELLING GLOBALE (la saga « Le Veilleur »). 8 PRs mergées sur `main` (#180→#187, auto-deploy 5 domaines). NE PAS REFAIRE.**
 >
 > **Source de vérité = `design/STORY/` (11 docs, mergé).** Point d'entrée `design/STORY/00-README.md` ; suite à dérouler dans `10-ROLLOUT-AND-COHERENCE.md`.
