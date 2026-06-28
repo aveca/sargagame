@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-06-28T13:51:39.037Z",
+  "updatedAt": "2026-06-28T19:28:36.018Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 92,
-    "contacted": 15,
+    "discovered": 87,
+    "contacted": 20,
     "lead": 3,
-    "paid": 0
+    "paid": 1
   },
   "funnel": {
     "9a9cdbd282d741fb6e56c1e35bfc0552": {
@@ -157,49 +157,49 @@
       "nextAction": "attendre / relance programmée"
     },
     "8cb9d4a3ea8cc38696066ba3c22aaffd": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Langley Resort Fort Royal",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T19:25:47.952Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "7c8394c00c89be4b2566b1a6727e48ae": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Toubana Hôtel & Spa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T19:25:49.754Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "f20713055aadf258b479b9c32f8c7852": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Tendacayou Ecolodge & SPA",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T19:25:50.069Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "f172ad192ebac4990856a9f6fe5ab745": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Jardin Malanga",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T19:25:50.315Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "0f2d666cf53a811a584a0c3f23578609": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Habitation Grande Anse",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T19:25:50.431Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "fc32a9989124a697d5189ace073e8c84": {
       "stage": "discovered",
@@ -1001,6 +1001,15 @@
       "isLead": true,
       "isPaid": false,
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "bf819a41db0f3e6744fa07d5e6b56e5f": {
+      "stage": "paid",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": true,
+      "nextAction": "onboarding + relance renouvellement"
     }
   }
 }
