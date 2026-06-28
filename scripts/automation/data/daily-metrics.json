@@ -1762,10 +1762,10 @@
   },
   {
     "date": "2026-06-28",
-    "time": "2026-06-28T13:58:53.484Z",
-    "payments": 12,
-    "revenue": 59.88,
-    "emails": 257,
+    "time": "2026-06-28T19:35:46.788Z",
+    "payments": 14,
+    "revenue": 75.86,
+    "emails": 262,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -1791,7 +1791,7 @@
       }
     },
     "email": {
-      "sent": 1797,
+      "sent": 1808,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -1841,7 +1841,7 @@
       "date": "2026-06-27",
       "mq": {
         "sessions": 287,
-        "users": 847
+        "users": 875
       },
       "gp": {
         "sessions": 207,
