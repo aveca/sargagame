@@ -12,6 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import BeachPhotos from "./BeachPhotos.jsx"
+import { uploadBeachPhoto, supabaseConfigured } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -2175,11 +2176,10 @@ function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect
 //    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
 //    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
 const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
-// Capture photo visiteur (BeachReport). OFF tant que le backend photo n'est pas en
-// ligne : passer à true UNIQUEMENT après le `clasp push` du Code.js (handler
-// type:"beach_photo" → Drive) — sinon les photos partiraient dans le vide.
-// Détails : docs/visitor-photos-runbook.md.
-const PHOTO_UPLOAD_ENABLED=false
+// Capture photo visiteur (BeachReport) — backend SUPABASE (mobile-friendly, voir
+// src/supabasePhotos.js). S'active AUTOMATIQUEMENT dès que SUPABASE_URL + ANON_KEY
+// sont renseignés (sinon no-op). Détails : docs/visitor-photos-runbook.md.
+const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
 function _sgReportStash(body){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_report_q",JSON.stringify(q))}catch(_){}}
 function _sgReportFlush(){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");if(!q.length)return;localStorage.removeItem("sg_report_q");q.forEach(body=>{try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).catch(()=>_sgReportStash(body))}catch(_){_sgReportStash(body)}})}catch(_){}}
 function sgCollectFlush(reason){
@@ -3174,12 +3174,13 @@ function BeachReport({beach,lang,communityReports}){
     }catch(_){setPhoto(null);setPhotoState("error")}
   }
   const sendPhoto=()=>{
-    if(!photo||photoState==="sent")return
+    if(!photo||photoState==="sent"||photoState==="busy")return
     try{track("sg_beach_photo",{beach_id:beach.id,level:voted||null,island:beach.island})}catch(_){}
-    const body=JSON.stringify({type:"beach_photo",beach_id:beach.id,beach_name:beach.name,island:beach.island,level:voted||null,photo,date:new Date().toISOString()})
-    if(typeof navigator!=="undefined"&&navigator.onLine===false){_sgReportStash(body);setPhotoState("sent");return}
-    try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).then(()=>setPhotoState("sent")).catch(()=>{_sgReportStash(body);setPhotoState("sent")})}
-    catch(_){_sgReportStash(body);setPhotoState("sent")}
+    setPhotoState("busy")
+    // Upload Supabase (Storage + ligne `photos` status 'pending', cf. supabasePhotos.js).
+    uploadBeachPhoto(beach,voted||null,photo)
+      .then(ok=>setPhotoState(ok?"sent":"error"))
+      .catch(()=>setPhotoState("error"))
   }
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
