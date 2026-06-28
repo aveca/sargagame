@@ -170,6 +170,16 @@ jobs:
             echo "skip daily-brief (matin uniquement, h=$H UTC)"
           fi
 
+      # Liens de paiement Mollie B2B (prépaiement annuel) — créés une fois (idempotent),
+      # publiés dans public/api/b2b-paylinks.json. DOIT tourner AVANT les emails B2B pour
+      # qu'ils embarquent le vrai lien de paiement. No-op si MOLLIE_API_KEY absent.
+      - name: Ensure B2B Mollie payment links
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-paylinks.cjs
+
       # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
       # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
       - name: Send B2B drip emails (Sargasses Pro)
@@ -385,7 +395,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/daily-brief-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/daily-brief-sent.json public/api/b2b-paylinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi

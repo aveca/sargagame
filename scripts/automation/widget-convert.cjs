@@ -18,6 +18,7 @@ const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, brandHeader } = require('./lib/email-send.cjs')
+const { payUrlFor } = require('./lib/b2b-paylinks.cjs')
 
 const CONTACTS_PATH = path.join(__dirname, 'data', 'widget-contacts.json')
 const SENT_PATH = path.join(__dirname, 'data', 'widget-converted-sent.json')
@@ -55,6 +56,7 @@ function build(c) {
     </ul>
     <div style="font-size:15px;color:#333;line-height:1.6">Je vous l'active <strong>14 jours gratuitement, sans carte</strong>. Ensuite c'est ${price}, sans engagement, stop quand vous voulez.</div>
     <div style="text-align:center;margin-top:18px">${cta('Activer mon essai 14 jours', proPath)}</div>
+    ${(() => { const pu = payUrlFor(c.tier || 'pro'); return pu ? `<div style="text-align:center;margin-top:10px;font-size:13px;color:#666">Déjà convaincu ? <a href="${pu}" style="color:#0A1714;font-weight:700">Payez l'année directement →</a></div>` : '' })()}
     <div style="font-size:13px;color:#666;margin-top:14px;line-height:1.5">Une question ? Répondez simplement à cet email.</div>
   </div>
   <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">

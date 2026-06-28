@@ -1,0 +1,4 @@
+{
+  "_note": "Liens de paiement Mollie B2B (prépaiement annuel), générés par scripts/automation/mollie-paylinks.cjs dans le pipeline (clé MOLLIE_API_KEY). Lus par l'app + les emails. Vide tant que le 1er run n'a pas tourné → CTA repli vers /?pro=1.",
+  "links": {}
+}

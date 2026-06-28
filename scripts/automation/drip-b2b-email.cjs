@@ -44,6 +44,7 @@ const REPLY_HINT = 'Répondez simplement à cet email — c\'est nous (l\'équip
 // Inclut les nouvelles sources d'INTENTION HAUTE de l'offre chiffrée (B2BModal 28/06 :
 // b2b_brief 29€ / b2b_pro 79€ / b2b_territoire) — ces leads veulent l'essai/le produit
 // payant, pas un brief gratuit perpétuel. La séquence vend l'essai 14j → abonnement.
+const { payUrlFor } = require('./lib/b2b-paylinks.cjs')
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire'])
 
 // Noms lisibles des 20 plages suivies (miroir track-record / BEACHES_META).
@@ -210,12 +211,14 @@ function build(step, sub, ctx) {
     // Conversion : fin de la fenêtre d'essai → on demande la souscription (prix explicite,
     // annuel poussé). Self-serve via ?pro=1 (l'offre/checkout). Pas d'appel, pas de slides.
     const price = priceLong
+    // Lien de paiement Mollie (prépaiement annuel) si dispo, sinon repli capture /?pro=1.
+    const payUrl = payUrlFor(isColl ? 'territoire' : isBrief ? 'brief' : 'pro') || proPath
     const subject = `Vos plages, surveillées toute la saison ?`
     const inner = `${brandHeader('On continue ?', 'Sargasses Pro', `${beaches}, surveillées chaque matin`)}
     <div style="background:#fff;padding:24px 20px">
       <div style="font-size:15px;color:#333;line-height:1.6">Vous avez vu ce que donne la surveillance de ${beaches} — l'état réel chaque matin + l'alerte avant l'échouage + la prévision 7 jours.</div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pour la garder toute la saison : <strong>${price}</strong>. Sans engagement, stop quand vous voulez. Activation immédiate, aucun appel.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Activer mon abonnement', proPath)}</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pour la garder toute la saison : <strong>${price}</strong>. Sans engagement, paiement en ligne sécurisé, activation immédiate, aucun appel.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Activer mon abonnement', payUrl)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
