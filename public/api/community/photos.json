@@ -1,0 +1,1 @@
+{"_comment":"Photos visiteurs APPROUVÉES par plage (preuve du présent). Bakée en CI par scripts/automation/build-community-photos.cjs depuis l'Apps Script (?action=beach_photos, status=approved). Format : beaches[beachId] = [{url, ts, level}]. Vide tant que le backend photo n'est pas déployé (cf. docs/visitor-photos-runbook.md).","source":"app","updatedAt":null,"beaches":{}}

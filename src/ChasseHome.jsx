@@ -20,6 +20,7 @@
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
+import { WebcamPanel } from "./WebcamPanel.jsx"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -463,6 +464,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {ReportComp&&<div className="lc-detail-report" style={{margin:"16px 0 0"}}>
           <ReportComp beach={beach} lang={lang} communityReports={communityReports}/>
         </div>}
+        {/* Webcam plage EN DIRECT (gratuite) — la « preuve du présent » face au
+            concurrent. Rend null si la plage n'a pas de champ `webcam`. */}
+        <WebcamPanel beach={beach} lang={lang}/>
         <div className="lc-detail-actions">
           {onToggleFav&&<button type="button" className={"lc-detail-full lc-detail-fav"+(favorites.includes(beach.id)?" on":"")} aria-pressed={favorites.includes(beach.id)}
             onClick={()=>{ if(track)try{track(favorites.includes(beach.id)?"sg_chasse_unfav":"sg_chasse_fav",{beach_id:beach.id})}catch(_){}; onToggleFav(beach.id) }}>
