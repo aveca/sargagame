@@ -21,6 +21,27 @@
         addEventListener('load',function(){vh();setTimeout(vh,300)});
         if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
     </script>
+    <script>
+      /* DIAGNOSTIC TEMPORAIRE crop bas standalone — visible UNIQUEMENT en mode écran
+         d'accueil (navigator.standalone / display-mode:standalone). À RETIRER une fois
+         le crop diagnostiqué. Repère MAGENTA = position:fixed;bottom:0 (où iOS croit
+         que le bas est). Repère CYAN = JS top=innerHeight-6 (vraie hauteur mesurée).
+         L'écart entre ces repères, la bande vide et le bord physique = la réponse. */
+      (function(){
+        function sa(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        if(!sa())return;
+        function go(){
+          var probe=document.createElement('div');probe.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none';document.body.appendChild(probe);
+          var mb=document.createElement('div');mb.style.cssText='position:fixed;left:0;right:0;bottom:0;height:6px;background:#f0f;z-index:2147483647;pointer-events:none';document.body.appendChild(mb);
+          var mj=document.createElement('div');mj.style.cssText='position:fixed;left:0;right:0;height:6px;background:#0ff;z-index:2147483647;pointer-events:none';document.body.appendChild(mj);
+          var box=document.createElement('div');box.style.cssText='position:fixed;left:8px;right:8px;bottom:48px;z-index:2147483647;background:rgba(0,0,0,.88);color:#0f0;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;white-space:pre;pointer-events:none';document.body.appendChild(box);
+          function upd(){var r=document.getElementById('root');var rr=r?r.getBoundingClientRect():{height:0,bottom:0};mj.style.top=(window.innerHeight-6)+'px';
+            box.textContent='CROP DIAG (standalone)\ninnerH '+window.innerHeight+'  screenH '+screen.height+'\ndocClientH '+document.documentElement.clientHeight+'\nvisualVP '+(window.visualViewport?Math.round(window.visualViewport.height):'-')+'\nsafe-bottom '+getComputedStyle(probe).height+'\nrootH '+Math.round(rr.height)+'  rootBottom '+Math.round(rr.bottom)+'\n--sg-vh '+(getComputedStyle(document.documentElement).getPropertyValue('--sg-vh')||'(vide)')+'\ndpr '+window.devicePixelRatio;}
+          upd();addEventListener('resize',upd);addEventListener('orientationchange',function(){setTimeout(upd,300)});setTimeout(upd,600);setTimeout(upd,1600);
+        }
+        if(document.readyState!=='loading')go();else addEventListener('DOMContentLoaded',go);
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
