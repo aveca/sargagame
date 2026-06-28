@@ -3005,7 +3005,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
           {_t(lang,"Prévisions 7 jours","7-day forecast","Pronóstico 7 días")}
         </h1>
         <p style={{fontSize:14,color:"rgba(255,255,255,.72)",margin:"10px 0 0",lineHeight:1.45,maxWidth:420}}>
-          {_t(lang,"Cette semaine, plage par plage · mesure satellite","This week, beach by beach · satellite data","Esta semana, playa por playa · satélite")}
+          {_t(lang,"Cette semaine, plage par plage. Mesuré au satellite, pas deviné — et quand on se trompe, on l'écrit.","This week, beach by beach. Measured by satellite, not guessed — and when we're wrong, we say so.","Esta semana, playa por playa. Medido por satélite, no adivinado — y cuando nos equivocamos, lo escribimos.")}
         </p>
       </div>
       {/* Corps — chart + meilleur jour */}
@@ -3037,7 +3037,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
             ?<div style={{fontSize:15,fontWeight:700,color:ST.clean.c}}>
                 {fcDay(bestDay,lang)}{bestDay.confidence!=null?` · ${Math.round(bestDay.confidence)}%`:``}
                 <span style={{display:"block",fontSize:12,fontWeight:500,color:"var(--sg-mid,#5A5A5A)",marginTop:4}}>
-                  {_t(lang,"Créneau le plus favorable dans l'horizon fiable","Best window within the reliable horizon","Mejor ventana en el horizonte fiable")}
+                  {_t(lang,"Le meilleur créneau de l'horizon fiable. Le Veilleur regarde la mer pour toi — au-delà, on estompe plutôt que d'inventer.","The best window within the reliable horizon. The Watcher looks at the sea for you — beyond it, we fade the days rather than fake them.","La mejor ventana del horizonte fiable. El Vigía mira el mar por ti — más allá, lo difuminamos en vez de inventarlo.")}
                 </span>
               </div>
             :<div style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",lineHeight:1.45}}>
@@ -3050,7 +3050,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
           {_t(lang,"Ouvrir la carte en direct →","Open the live map →","Abrir el mapa en directo →")}
         </button>
         <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"var(--sg-mid,#999)"}}>
-          {_t(lang,"Voir une autre plage sur la carte","Pick another beach on the map","Elige otra playa en el mapa")}
+          {_t(lang,"Ta côte est complexe pour de vrai : on la connaît baie par baie. Choisis une autre plage sur la carte.","Your coast is genuinely complex — we know it bay by bay. Pick another beach on the map.","Tu costa es realmente compleja: la conocemos bahía por bahía. Elige otra playa en el mapa.")}
         </div>
       </div>
     </div>
