@@ -150,9 +150,9 @@ function b2bMeta(target) { return B2B_REGION[target.island] || B2B_REGION.mq }
 
 function buildSubject(target) {
   const { lang } = b2bMeta(target)
-  if (lang === 'en') return `The real state of your beaches, every morning`
-  if (lang === 'es') return `El estado real de tus playas, cada mañana`
-  return `L'état réel de vos plages, chaque matin`
+  if (lang === 'en') return `The real state of your beaches — measured by satellite, every morning`
+  if (lang === 'es') return `El estado real de tus playas — medido por satélite, cada mañana`
+  return `L'état réel de vos plages — mesuré au satellite, chaque matin`
 }
 
 function buildEmailHTML(target) {
@@ -161,16 +161,17 @@ function buildEmailHTML(target) {
     return `<!DOCTYPE html>
 <html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
 <p>Hello,</p>
-<p>I'm reaching out because guests keep asking "is there sargassum on the beach today?" — and answering it fast reassures your guests and spares them a let-down.</p>
-<p>We built <strong>The Watchman</strong>: a daily read of the real state of ${region}'s beaches, <strong>measured by satellite</strong> (Copernicus Marine, per-beach AFAI index) — not guessed — with a 7-day forecast and an alert <em>before</em> sargassum lands.</p>
+<p>A seaweed-covered beach one morning means a let-down guest, sometimes a sour review, sometimes a refund — and you often find out at the same time they do. "Is there sargassum, right now?" is the question that keeps coming, and answering it fast changes the day.</p>
+<p>I'm writing from Martinique: <strong>The Watchman</strong> is an independent project that reads the real state of ${region}'s beaches <strong>measured by satellite</strong> (Copernicus Marine, per-beach AFAI index), never guessed — with a 7-day forecast and an alert <em>before</em> sargassum lands. The same satellite that watches for the traveler can watch your shore.</p>
 <p>For a property like yours, concretely:</p>
 <ul>
   <li>a <strong>morning brief</strong> on the state of your nearest beaches;</li>
   <li>an <strong>alert</strong> before an influx, to get ahead of it with your guests;</li>
-  <li><strong>reliable data to answer with</strong> instead of guesswork.</li>
+  <li><strong>dated data to answer with</strong> instead of guesswork.</li>
 </ul>
+<p>And you don't have to take our word for it: our reliability is <strong>published and auditable, by regime</strong>. Over the May 30 – June 28 window, 100% of our "clean water" forecasts proved correct (2,274 comparisons, calm season); across all regimes we run around 76% accuracy, and the rare calm-season alerts are shown as low-confidence. When we miss, we write it down.</p>
 <p><strong>See your beaches live, right now</strong>: <a href="https://${site}/">${site}</a> — satellite map, 7-day forecast, free.</p>
-<p>And to get <strong>the daily brief of your beaches by email</strong> (100% automatic, no call, stop anytime): <a href="https://${site}/?pro=1">turn it on in 10 seconds here</a>.</p>
+<p>A coastal watch dedicated to your property is in the works. If that resonates, <strong>just reply to this email — let's talk</strong>: I'll walk you through your beaches first.</p>
 <p>Best,<br>
 <strong>The Watchman team · Sargassum ${region}</strong><br>
 <span style="color:#888;font-size:13px">Copernicus Marine satellite data · ${site}</span></p>
@@ -182,16 +183,17 @@ function buildEmailHTML(target) {
     return `<!DOCTYPE html>
 <html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
 <p>Hola,</p>
-<p>Le escribo porque la pregunta "¿hay sargazo en la playa hoy?" no para entre los visitantes — y responderla rápido tranquiliza a sus huéspedes y les evita una decepción.</p>
-<p>Creamos <strong>El Vigía</strong>: la lectura diaria del estado real de las playas de ${region}, <strong>medida por satélite</strong> (Copernicus Marine, índice AFAI por playa) — no estimada — con un pronóstico a 7 días y una alerta <em>antes</em> de que llegue el sargazo.</p>
+<p>Una playa cubierta de sargazo una mañana es un huésped decepcionado, a veces una reseña amarga, a veces un reembolso — y suele enterarse usted al mismo tiempo que él. La pregunta "¿hay sargazo, ahora mismo?" no para, y responderla rápido cambia el día.</p>
+<p>Le escribo desde Martinica: <strong>El Vigía</strong> es un proyecto independiente que lee el estado real de las playas de ${region} <strong>medido por satélite</strong> (Copernicus Marine, índice AFAI por playa), nunca estimado — con un pronóstico a 7 días y una alerta <em>antes</em> de que llegue el sargazo. El mismo satélite que vigila para el viajero puede vigilar su costa.</p>
 <p>En concreto para un establecimiento como el suyo:</p>
 <ul>
   <li>un <strong>resumen cada mañana</strong> del estado de sus playas más cercanas;</li>
   <li>una <strong>alerta</strong> antes de una llegada, para anticiparse con sus huéspedes;</li>
-  <li><strong>datos fiables para responder</strong> en vez de adivinar.</li>
+  <li><strong>datos con fecha para responder</strong> en vez de adivinar.</li>
 </ul>
+<p>Y no tiene que creernos: nuestra fiabilidad está <strong>publicada y es auditable, por régimen</strong>. En la ventana del 30 de mayo al 28 de junio, el 100% de nuestros pronósticos de "agua limpia" se confirmaron (2.274 comparaciones, temporada tranquila); en todos los regímenes rondamos el 76% de acierto, y las raras alertas de temporada tranquila se muestran como baja confianza. Cuando nos equivocamos, lo escribimos.</p>
 <p><strong>Vea sus playas en vivo, ahora</strong>: <a href="https://${site}/">${site}</a> — mapa satelital, pronóstico 7 días, gratis.</p>
-<p>Y para recibir <strong>el resumen diario de sus playas por email</strong> (100% automático, sin llamadas, pare cuando quiera): <a href="https://${site}/?pro=1">actívelo en 10 segundos aquí</a>.</p>
+<p>Una vigilancia costera dedicada a su establecimiento está en construcción. Si le interesa, <strong>responda a este correo — hablémoslo</strong>: primero le muestro sus playas.</p>
 <p>Un saludo,<br>
 <strong>El equipo El Vigía · Sargazo ${region}</strong><br>
 <span style="color:#888;font-size:13px">Datos satelitales Copernicus Marine · ${site}</span></p>
@@ -202,16 +204,17 @@ function buildEmailHTML(target) {
   return `<!DOCTYPE html>
 <html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
 <p>Bonjour,</p>
-<p>Je vous écris parce que la question « est-ce qu'il y a des sargasses sur la plage aujourd'hui ? » revient sans cesse chez les visiteurs — et y répondre vite, c'est rassurer vos clients et leur éviter une déception.</p>
-<p>On a construit <strong>Le Veilleur</strong> : la lecture quotidienne de l'état réel des plages de ${region}, <strong>mesurée au satellite</strong> (Copernicus Marine, indice AFAI par plage), pas devinée — avec une prévision à 7 jours et une alerte <em>avant</em> que les sargasses arrivent.</p>
+<p>Une plage envahie un matin, c'est un client déçu, parfois un avis amer, parfois un remboursement — et vous l'apprenez souvent en même temps que lui. La question « est-ce qu'il y a des sargasses, là, maintenant ? » revient sans cesse, et y répondre vite change la journée.</p>
+<p>Je vous écris depuis la Martinique : <strong>Le Veilleur</strong> est un projet indépendant qui lit l'état réel des plages de ${region} <strong>mesuré au satellite</strong> (Copernicus Marine, indice AFAI par plage), jamais deviné — avec une prévision à 7 jours et une alerte <em>avant</em> que les sargasses arrivent. Le même satellite qui veille pour le voyageur peut veiller votre rivage.</p>
 <p>Concrètement pour un établissement comme le vôtre :</p>
 <ul>
   <li>un <strong>brief chaque matin</strong> de l'état de vos plages les plus proches ;</li>
   <li>une <strong>alerte</strong> avant un échouage, pour anticiper auprès de vos clients ;</li>
-  <li>de quoi <strong>répondre avec une donnée fiable</strong> plutôt qu'au doigt mouillé.</li>
+  <li>de quoi <strong>répondre avec une donnée datée</strong> plutôt qu'au doigt mouillé.</li>
 </ul>
+<p>Et on ne vous demande pas de nous croire : notre fiabilité est <strong>publiée et auditable, par régime</strong>. Sur la fenêtre du 30 mai au 28 juin, 100 % de nos prévisions « mer propre » se sont vérifiées (2 274 comparaisons, saison calme) ; tous régimes confondus on tourne autour de 76 % de justesse, et les rares alertes de saison calme sont affichées en faible confiance. On se trompe parfois, on l'écrit.</p>
 <p><strong>Voyez l'état de vos plages en direct, maintenant</strong> : <a href="https://${site}/">${site}</a> — carte satellite, prévision 7 jours, gratuit.</p>
-<p>Et pour recevoir <strong>le brief quotidien de vos plages par email</strong> (100% automatique, sans appel, stop quand vous voulez) : <a href="https://${site}/?pro=1">activez-le en 10 secondes ici</a>.</p>
+<p>Une veille côtière dédiée à votre établissement est en cours de construction. Si l'idée vous parle, <strong>répondez à cet email — parlons-en</strong> : je vous montre vos plages avant d'aller plus loin.</p>
 <p>Bien à vous,<br>
 <strong>L'équipe Le Veilleur · Sargasses ${region}</strong><br>
 <span style="color:#888;font-size:13px">Données satellite Copernicus Marine · ${site}</span></p>

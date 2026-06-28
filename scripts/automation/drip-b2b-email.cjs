@@ -147,8 +147,12 @@ function build(step, sub, ctx) {
   const who = isColl ? 'votre territoire' : 'votre établissement'
   const beaches = isColl ? 'vos plages' : 'votre plage'
   // Prix par tier (grille B2BModal) : territoire 199 · brief 29 · pro/hôtel 79.
-  const priceShort = isColl ? 'dès 199 €/mois' : isBrief ? '29 €/mois' : '79 €/mois'
-  const priceLong = isColl ? 'dès 199 €/mois' : isBrief ? '29 €/mois (290 €/an, 2 mois offerts)' : '79 €/mois (790 €/an, 2 mois offerts)'
+  // B2B est PASS-ONLY comme le grand public et l'offre dédiée est EN CONSTRUCTION
+  // (paliers Brief/Pro/Territory non câblés — Truth Pack). On ne chiffre donc PAS
+  // un abonnement mensuel ici (interdit : « abonnement », « €/mois », « 2 mois offerts »).
+  // L'action B2B aujourd'hui = « parlons-en ». Variables prix neutralisées.
+  const priceShort = ''
+  const priceLong = ''
   const island = (sub.island || 'MQ').toUpperCase()
   const name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
   const domain = island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
@@ -158,19 +162,19 @@ function build(step, sub, ctx) {
   const { proof, brief } = ctx
 
   if (step === 'b0') {
-    const subject = 'Sargasses Pro — votre accès, et notre fiabilité publiée'
-    const inner = `${brandHeader('Bienvenue', 'Sargasses Pro', `La prévision sargasses au service de ${who}.`)}
+    const subject = 'Le Veilleur Pro — vos plages, et notre fiabilité publiée'
+    const inner = `${brandHeader('Bienvenue', 'Le Veilleur · Veille côtière', `L'état réel de ${beaches} au service de ${who}.`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Merci de votre intérêt. En clair, ce que nous faisons pour ${who} :</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">Merci de votre intérêt. Une plage envahie un matin, c'est un client déçu, parfois un avis amer — et vous l'apprenez souvent en même temps que lui. Le Veilleur vous fait passer de l'autre côté : celui qui connaît la fin de l'histoire avant ses clients. En clair, pour ${who} :</div>
       <ul style="font-size:14px;color:#444;line-height:1.7;padding-left:18px;margin:14px 0">
-        <li>Prévision <strong>plage par plage, 7 jours à l'avance</strong> — pas une moyenne d'île.</li>
-        <li>Alertes au changement d'état pour ${beaches} — anticiper le ramassage.</li>
+        <li>L'état réel de ${beaches} <strong>chaque matin</strong>, mesuré au satellite — pas une moyenne d'île.</li>
+        <li>L'alerte <strong>avant</strong> l'échouage, pour anticiper le ramassage et prévenir vos clients.</li>
         <li>Une fiabilité que nous <strong>publions et auditons chaque jour</strong>.</li>
       </ul>
       ${proofBlock(proof)}
-      <div style="text-align:center;margin-top:8px">${cta('Démarrer mon essai 14 jours', proPath)}</div>
-      <div style="font-size:12px;color:#888;text-align:center;margin-top:8px">14 jours gratuits, sans carte · ensuite ${priceShort} · stop quand vous voulez</div>
-      <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:4px">La veille côtière dédiée à ${who} est <strong>en cours de construction</strong> — l'offre se précise. En attendant, voyez l'état réel de ${beaches} en direct, gratuitement, et si l'idée vous parle, on en discute.</div>
+      <div style="text-align:center;margin-top:14px">${cta('Voir ' + beaches + ' en direct', proPath)}</div>
+      <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT} Envie d'aller plus loin ? Répondez « parlons-en ».</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
@@ -198,7 +202,7 @@ function build(step, sub, ctx) {
       : 'Anticiper, c\'est éviter une journée d\'équipe sur-staffée pour rien, et surtout éviter le client déçu qui annule ou ne revient pas.'
     const inner = `${brandHeader('La preuve, pas la promesse', 'Sargasses Pro', 'Notre fiabilité, publiée et datée')}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Les cartes gratuites donnent un risque régional. Nous, on s'engage sur un chiffre — et on le publie.</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">Les cartes gratuites donnent un risque régional, en moyenne. Nous, on lit la côte baie par baie — et surtout, on publie notre taux d'erreur, daté et par régime. C'est ça qu'un outil gratuit ne fait pas.</div>
       ${proofBlock(proof)}
       <div style="font-size:14px;color:#444;line-height:1.6">${roi}</div>
       <div style="text-align:center;margin-top:18px">${cta('Voir le palmarès complet', 'https://' + domain + '/fiabilite/')}</div>
@@ -208,17 +212,15 @@ function build(step, sub, ctx) {
   }
 
   if (step === 'b13') {
-    // Conversion : fin de la fenêtre d'essai → on demande la souscription (prix explicite,
-    // annuel poussé). Self-serve via ?pro=1 (l'offre/checkout). Pas d'appel, pas de slides.
-    const price = priceLong
-    // Lien de paiement Mollie (prépaiement annuel) si dispo, sinon repli capture /?pro=1.
-    const payUrl = payUrlFor(isColl ? 'territoire' : isBrief ? 'brief' : 'pro') || proPath
-    const subject = `Vos plages, surveillées toute la saison ?`
-    const inner = `${brandHeader('On continue ?', 'Sargasses Pro', `${beaches}, surveillées chaque matin`)}
+    // B2B sous-construction : pas de checkout abonnement ici (interdit). On boucle
+    // sur l'outcome et on demande l'échange humain — « parlons-en » (B2B arc).
+    const subject = `Veiller ${beaches} toute la saison — on en parle ?`
+    const inner = `${brandHeader('On en parle ?', 'Le Veilleur · Veille côtière', `${beaches}, veillées chaque matin`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Vous avez vu ce que donne la surveillance de ${beaches} — l'état réel chaque matin + l'alerte avant l'échouage + la prévision 7 jours.</div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pour la garder toute la saison : <strong>${price}</strong>. Sans engagement, paiement en ligne sécurisé, activation immédiate, aucun appel.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Activer mon abonnement', payUrl)}</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">Ces derniers jours, vous avez vu ce que donne Le Veilleur sur ${beaches} — l'état réel chaque matin, l'alerte <em>avant</em> l'échouage, la prévision 7 jours, et une fiabilité publiée plutôt que promise.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">L'outcome est simple : <strong>zéro surprise pour le client qui réserve, donc zéro déception, donc un avis serein.</strong></div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">La veille côtière dédiée aux établissements est <strong>en cours de construction</strong> ; l'offre se précise. Plutôt que de vous vendre un palier qui n'existe pas encore, je préfère vous montrer vos plages et caler ensemble ce qui aurait du sens pour ${who}.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Répondre : parlons-en', 'mailto:' + FROM.replace(/.*<|>.*/g, '') + '?subject=' + encodeURIComponent('Veille côtière — ' + name))}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }

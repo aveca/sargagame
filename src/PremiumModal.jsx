@@ -318,7 +318,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
           </g>
         </svg>
-        <span className="pww-eyebrow pww-anton">{_t(lang,"Le Veilleur · Premium","The Watcher · Premium","El Vigía · Premium")}</span>
+        <span className="pww-eyebrow pww-anton">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
         <span className="pww-season">{seasonMsg||_t(lang,"La saison est là","Season is here","La temporada está aquí")}</span>
         <div className="pww-vbubble">{_t(lang,<>Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</>,<>Your beach, checked every morning — <b>before</b> you leave.</>,<>Tu playa, verificada cada mañana — <b>antes</b> de que salgas.</>)}</div>
         <span className="pww-veil">
@@ -634,7 +634,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
           </svg>
         </span>
-        <span className="pwx-eyebrow">{_t(lang,"Le Veilleur · Premium","The Watcher · Premium","El Vigía · Premium")}</span>
+        <span className="pwx-eyebrow">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
         {ctx&&<span className={"pwx-verdict "+stCls}>{ctx}{ST?" · "+vLbl:""}</span>}
       </div>
       <div className="pwx-body">

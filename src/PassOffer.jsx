@@ -132,7 +132,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
         <div style={{ margin: "18px 0 0", display: "flex", flexDirection: "column", gap: 11 }}>
           {/* 7 jours — ancre basse */}
           <SecCard p={P7}
-            label={_t(lang, "Pass 7 jours", "7-day pass", "Pase 7 días")}
+            label={_t(lang, "Pass 7 jours", "7-day Pass", "Pase 7 días")}
             desc={_t(lang, "Court séjour, une escapade", "Short stay, a getaway", "Estancia corta, una escapada")}
             perdayTxt={perDay(P7.c, P7.days, cur, lang)} />
 
@@ -175,7 +175,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
 
           {/* Saison — local uniquement */}
           {showSeason && <SecCard p={SAISON}
-            label={_t(lang, "Pass Saison", "Season pass", "Pase Temporada")}
+            label={_t(lang, "Pass Saison", "Season Pass", "Pase Temporada")}
             desc={_t(lang, "Local, pêche & nautique · toute la saison", "Local, fishing & watersports · all season", "Local, pesca y náutica · toda la temporada")}
             perdayTxt={_t(lang, "le meilleur prix", "best value", "mejor precio")} />}
         </div>

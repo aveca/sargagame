@@ -112,7 +112,7 @@ Les donnees sont mises a jour 4 fois par jour, c'est fiable.
 
 ### Quand quelqu'un demande des previsions
 
-Les previsions 7 jours sont disponibles gratuitement sur sargasses-martinique.com (ou sargasses-guadeloupe.com). Les donnees viennent du satellite NOAA et sont mises a jour 4 fois par jour. Il y a aussi un bulletin gratuit par email chaque vendredi.
+Le verdict du matin de chaque plage est gratuit sur sargasses-martinique.com (ou sargasses-guadeloupe.com), mesure au satellite Copernicus + NOAA, 4 fois par jour. Le detail de la prevision 7 jours (J+1 a J+7) est dans le Pass (paiement unique, des 7,99 euros, jamais d'abonnement, rembourse en un email sous 30 jours). Il y a aussi un bulletin gratuit par email chaque vendredi.
 
 ---
 
