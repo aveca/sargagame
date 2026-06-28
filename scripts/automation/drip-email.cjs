@@ -170,9 +170,9 @@ function buildDaily(island, brief, email, opts = {}) {
   const st = STATUS_LOC[lang][brief.best.status] || brief.best.status
   const score = brief.best.score != null ? ` — ${brief.best.score}/100` : ''
   const dayName = DAYS_FULL[lang][new Date().getDay()]
-  const subject = lang === 'fr' ? `🌅 ${brief.best.name} : ${st.toLowerCase()} aujourd'hui${score}`
-    : lang === 'es' ? `🌅 ${brief.best.name}: ${st.toLowerCase()} hoy${score}`
-    : `🌅 ${brief.best.name}: ${st.toLowerCase()} today${score}`
+  const subject = lang === 'fr' ? `🌅 ${brief.best.name} : ${st.toLowerCase()} ce matin${score}`
+    : lang === 'es' ? `🌅 ${brief.best.name}: ${st.toLowerCase()} esta mañana${score}`
+    : `🌅 ${brief.best.name}: ${st.toLowerCase()} this morning${score}`
   const holdLine = brief.best.j1
     ? (brief.best.j1 === 'clean'
       ? (lang === 'fr' ? 'Prévision : propre aussi demain ✅' : lang === 'es' ? 'Pronóstico: limpia también mañana ✅' : 'Forecast: clean tomorrow too ✅')
@@ -181,11 +181,11 @@ function buildDaily(island, brief, email, opts = {}) {
         : `⚠️ Forecast: turns worse tomorrow${brief.alt ? ` — fallback: ${brief.alt}` : ''}`))
     : ''
   const title = lang === 'fr' ? `Ton verdict plage — ${dayName}` : lang === 'es' ? `Tu veredicto de playa — ${dayName}` : `Your beach verdict — ${dayName}`
-  const sub2 = lang === 'fr' ? 'Satellite Copernicus, ce matin' : lang === 'es' ? 'Satélite Copernicus, esta mañana' : 'Copernicus satellite, this morning'
-  const ctaTxt = lang === 'fr' ? 'Voir la carte live →' : lang === 'es' ? 'Ver el mapa en vivo →' : 'See the live map →'
+  const sub2 = lang === 'fr' ? 'Mesuré au satellite cette nuit, pas deviné' : lang === 'es' ? 'Medido por satélite esta noche, no adivinado' : 'Measured by satellite overnight, not guessed'
+  const ctaTxt = lang === 'fr' ? 'Ouvrir la carte du jour →' : lang === 'es' ? 'Abrir el mapa de hoy →' : "Open today's map →"
   const html = `${header(title, sub2, lang)}
   <div style="background:#fff;padding:22px 24px">
-    <div style="font-size:13px;color:#666;margin-bottom:6px">${lang === 'fr' ? 'La plage du jour' : lang === 'es' ? 'La playa del día' : "Today's pick"}</div>
+    <div style="font-size:13px;color:#666;margin-bottom:6px">${lang === 'fr' ? 'La dépêche du matin · ta plage' : lang === 'es' ? 'El parte de la mañana · tu playa' : "This morning's dispatch · your beach"}</div>
     <div style="font-size:22px;font-weight:800;color:#0A1714">${brief.best.name}</div>
     ${brief.best.commune ? `<div style="font-size:12px;color:#888">${brief.best.commune}</div>` : ''}
     <div style="display:inline-block;background:${brief.best.status === 'clean' ? '#FFC72C' : brief.best.status === 'moderate' ? '#F59E0B' : '#E8522A'};color:#0A1714;font-weight:800;font-size:14px;padding:7px 14px;border-radius:999px;margin:10px 0">${st}${score}</div>

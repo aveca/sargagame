@@ -64,10 +64,10 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
   // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
   // email ouvre le paywall on-site via ?paywall=1 (deep-link App → openPremium).
   const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
-  const headerHtml = brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')
+  const headerHtml = brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur veille la mer pendant que tu dors. Chaque matin, le verdict de ta plage.')
   const captureBlock = PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
       <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
-      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — ta meilleure plage du jour — arrive chaque matin dans ta boîte. Prévision 7 jours + alertes dans l'app.</div>
+      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — Baignade OK / À surveiller / Évite — arrive chaque matin dans ta boîte, mesuré au satellite cette nuit. Prévision 7 jours détaillée + alertes dans l'app.</div>
     </div>` : ''
   const cleanBlock = cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
       <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
@@ -109,7 +109,7 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 <td style="padding:28px 32px 0 32px;">
 <p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:13px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#E89400; font-weight:bold;">Le mot du Veilleur</p>
 <p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:1.3; color:#0A1714; font-weight:bold;">Chaque matin, je regarde la mer pour toi.</p>
-<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:16px; line-height:1.65; color:#2E3B38;">Tu viens de rejoindre les habitants de ${name} protégés par le Veilleur. Pas de panique le week-end venu, pas de plage gâchée à l'arrivée. Voici concrètement ce que tu vas recevoir.</p>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:16px; line-height:1.65; color:#2E3B38;">Tu viens de rejoindre les habitants de ${name} qui demandent à la mer avant de partir, au lieu de deviner. Plus de trajet pour rien, plus de matin gâché à l'arrivée. Et quand on n'est pas sûrs, on te le dit. Voici ce que tu vas recevoir chaque jour.</p>
 </td>
 </tr>
 
@@ -151,8 +151,8 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 <tr>
 <td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">03</td>
 <td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
-<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Les données satellite</p>
-<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">De vraies images Copernicus, mises à jour 4 fois par jour. Aucune approximation, juste ce que voit le ciel.</p>
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Mesuré, pas deviné</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">De vraies images Copernicus et NOAA, croisées 4 fois par jour. Pas d'avis, pas de boîte noire : juste ce que le satellite a réellement vu. Et si l'image a plus de 36h, on l'écrit.</p>
 </td>
 </tr>
 </table>
@@ -188,8 +188,8 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 <tr>
 <td style="padding:30px 30px 28px 30px;">
 <p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:12px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#FFC72C; font-weight:bold;">Pour aller plus loin</p>
-<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:21px; line-height:1.35; color:#FFFFFF; font-weight:bold;">Sache dès lundi ce que sera ton samedi.</p>
-<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#C7D2CE;">Tout ce que la carte te montre aujourd'hui, projeté sur ta semaine. Le Pass débloque les prévisions sur 7 jours et les alertes push quand la sargasse approche ta plage. Tu anticipes au lieu de subir.</p>
+<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:21px; line-height:1.35; color:#FFFFFF; font-weight:bold;">Vois le matin où ça bascule, 7 jours avant.</p>
+<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#C7D2CE;">« Les Salines passe Propre → Modéré demain — bascule sur Tartane. » Le Pass débloque la prévision 7 jours détaillée et l'alerte le matin où une plage tourne. En haute saison, savoir d'avance sauve un week-end. En saison calme, les alertes sont rares et peu fiables — on ne te le vend pas comme essentiel.
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;">
 <tr>
 <td align="center" bgcolor="#E8A800" style="border-radius:10px; background-color:#E8A800;">
@@ -242,26 +242,26 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cleanLabel: `playas sin sargazo ahora mismo en ${name}`,
     intro: `Acabas de unirte a quienes verifican la playa antes de salir. Esto es lo que recibes:`,
     f1t: 'Mapa en vivo', f1d: 'Verifica cualquier playa en 5 segundos antes de ir.',
-    f2t: 'Datos satelitales', f2d: 'Actualizados 4 veces al día con imágenes reales de satélite.',
+    f2t: 'Medido, no adivinado', f2d: 'Imágenes reales de Copernicus + NOAA, cruzadas 4 veces al día. Sin opiniones, sin caja negra — solo lo que el satélite vio de verdad.',
     f3t: 'Beach Score 0-100', f3d: 'Sargazo, oleaje, viento y sol combinados en una sola nota por playa.',
     cta: 'Ver el mapa ahora',
-    upKicker: 'Para ir más lejos', upTitle: 'Sabe el sábado desde el lunes',
-    upDesc: 'Pronóstico de 7 días + alertas push.<br>Planifica tus días de playa sin estrés.',
+    upKicker: 'Para ir más lejos', upTitle: 'Mira la mañana en que cambia, 7 días antes',
+    upDesc: '"Tu playa pasa de Limpia → Moderada mañana — cámbiate a la siguiente."<br>El Pase desbloquea el pronóstico de 7 días detallado y la alerta la mañana en que una playa cambia. En temporada tranquila las alertas son raras y de baja confianza — así que no te lo vendemos como esencial.',
     upCta: 'Activar mi pase',
     upFoot: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     unsub: 'Darse de baja',
   } : {
     kicker: 'Welcome aboard',
     brand: `Sargassum ${name}`,
-    tagline: 'No more nasty surprises when you reach the beach.',
+    tagline: 'Le Veilleur watches the sea while you sleep. Each morning, your beach verdict.',
     cleanLabel: `sargassum-free beaches right now in ${name}`,
     intro: `You just joined the people who check the beach before heading out. Here's what you get:`,
     f1t: 'Live map', f1d: 'Check any beach in 5 seconds before you go.',
-    f2t: 'Satellite data', f2d: 'Updated 4 times a day from real satellite imagery.',
+    f2t: 'Measured, not guessed', f2d: 'Real Copernicus + NOAA imagery, cross-checked 4 times a day. No opinions, no black box — just what the satellite actually saw.',
     f3t: 'Beach Score 0-100', f3d: 'Sargassum, swell, wind and sun blended into one score per beach.',
     cta: 'See the map now',
-    upKicker: 'Go further', upTitle: 'Know Saturday by Monday',
-    upDesc: '7-day forecast + push alerts.<br>Plan your beach days stress-free.',
+    upKicker: 'Go further', upTitle: 'See the morning it turns, 7 days ahead',
+    upDesc: '"Your beach goes Clean → Moderate tomorrow — switch to the next one."<br>The Pass unlocks the detailed 7-day forecast and the alert the morning a beach turns. In calm season, alerts are rare and low-confidence — so we don\'t sell it as essential.',
     upCta: 'Activate my Pass',
     upFoot: 'From $5.99 · one-time, no subscription · refund in one email',
     unsub: 'Unsubscribe',
