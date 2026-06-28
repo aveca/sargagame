@@ -4620,7 +4620,7 @@
         },
         {
           "id": "mq006",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -4640,7 +4640,7 @@
         },
         {
           "id": "mq010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4650,32 +4650,32 @@
         },
         {
           "id": "mq012",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq013",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq014",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq015",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq016",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq017",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4705,17 +4705,17 @@
         },
         {
           "id": "mq024",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq025",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq026",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4755,12 +4755,12 @@
         },
         {
           "id": "mq035",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq036",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4770,17 +4770,17 @@
         },
         {
           "id": "mq038",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq039",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq041",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4800,7 +4800,7 @@
         },
         {
           "id": "mq047",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -4815,12 +4815,12 @@
         },
         {
           "id": "mq051",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq053",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4840,12 +4840,12 @@
         },
         {
           "id": "mq062",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq063",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4855,7 +4855,7 @@
         },
         {
           "id": "mq067",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         }
       ]
