@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>API Le Veilleur — l'état des plages en JSON (gratuit, satellite)</title>
-<meta name="description" content="API publique gratuite : l'état des sargasses plage par plage (Martinique & Guadeloupe) en JSON, mesuré au satellite Copernicus. Endpoints, champs, exemples.">
+<title>API Le Veilleur — l'état des plages en JSON, données publiques (gratuit, satellite)</title>
+<meta name="description" content="API publique gratuite : l'état des sargasses plage par plage (Martinique, Guadeloupe et 5 régions) en JSON, mesuré au satellite Copernicus & NOAA — pas deviné. Pour tableaux de bord d'hôtels, embeds média, recherche. Endpoints, champs, exemples.">
 <link rel="canonical" href="https://sargasses-martinique.com/api/">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -51,7 +51,7 @@
 <div class="wrap">
   <span class="eyebrow">🛰️ Le Veilleur · API publique</span>
   <h1>L'état des plages,<br>en JSON.</h1>
-  <p class="lede">L'état des sargasses plage par plage, mesuré au satellite Copernicus (indice AFAI), avec la prévision 7 jours. Données ouvertes, lecture seule, <strong>gratuites</strong>.</p>
+  <p class="lede">L'état des sargasses plage par plage, mesuré au satellite Copernicus & NOAA (indice AFAI), avec la prévision 7 jours. Données publiques, lecture seule, <strong>gratuites</strong> — ta prévision, sans lock-in : branche-la sur ton tableau de bord d'hôtel, ton embed média ou ton notebook de recherche.</p>
   <span class="pill">● Mise à jour 4×/jour · ERDDAP-live</span>
 
   <!-- DÉMARRAGE -->
@@ -104,30 +104,31 @@ curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
     <span class="ep"><b>GET</b> /api/copernicus/track-record.json</span>
     <p>Notre fiabilité, auditée et publiée — le contraire d'une boîte noire. Taux de justesse du statut, erreur AFAI moyenne, ventilés par horizon et par régime de saison (calme / transition).</p>
     <pre>{
-  <span class="k">"overall"</span>: { <span class="k">"statusHitRatePct"</span>:77, <span class="k">"afaiMAE"</span>:0.047 },
+  <span class="c">// exemple de structure — valeurs réelles servies à l'endpoint, datées</span>
+  <span class="k">"overall"</span>: { <span class="k">"statusHitRatePct"</span>:<span class="s">…</span>, <span class="k">"afaiMAE"</span>:<span class="s">…</span> },
   <span class="k">"byRegime"</span>: { <span class="k">"calm"</span>:{…}, <span class="k">"transition"</span>:{…} },
   <span class="k">"byHorizon"</span>: {…}, <span class="k">"sampleSize"</span>:…, <span class="k">"window"</span>:…
 }</pre>
-    <p>Règle d'or : aucun chiffre inventé. Un global masque que les alertes de saison calme sont moins fiables que les pics — on le dit. Voir la page lisible : <a href="/fiabilite/">/fiabilite/</a>.</p>
+    <p>Règle d'or : aucun chiffre inventé. Le taux est publié daté et par régime — tous régimes confondus, jamais présenté comme une justesse de haute saison. Un global masque que les alertes de saison calme sont en faible confiance — on l'étiquette. Mesuré au satellite, pas deviné — et quand on se trompe, on l'écrit. Voir la page lisible : <a href="/fiabilite/">/fiabilite/</a>.</p>
   </div>
 
   <!-- WIDGET -->
   <div class="card">
     <h2>Widget embarquable</h2>
-    <p>Pas envie de coder ? Affichez l'état de votre plage sur votre site avec un simple bout de HTML — zéro fetch, zéro maintenance, toujours à jour.</p>
+    <p>Pas envie de coder ? Affichez l'état de votre plage sur votre site média ou votre page hôtel avec un simple bout de HTML — zéro fetch, zéro maintenance, toujours à jour. Le Veilleur regarde la mer, jamais vos visiteurs.</p>
     <a class="btn gold" href="/widget/">⬩ Obtenir mon widget →</a>
   </div>
 
   <!-- PRO / VOLUME -->
   <div class="card">
-    <h2>Pro · hôtels &amp; collectivités</h2>
-    <p>Recevez chaque matin le <strong>brief automatique de vos plages</strong> par email — 100% automatique, sans appel, stop quand vous voulez.</p>
-    <p>Besoin de volume élevé, d'un SLA, d'un accès clé (<code>/stats.php?key=…</code>), ou d'une intégration en marque blanche ? On en parle.</p>
-    <a class="btn gold" href="/?pro=1">⭐ Activer le brief gratuit →</a>
-    <a class="btn ghost" href="/pro/">Offre Pro →</a>
+    <h2>Veille côtière · hôtels, médias &amp; collectivités</h2>
+    <p>Recevez chaque matin le <strong>brief automatique de vos plages</strong> par email — la même donnée satellite, mise en page pour votre équipe. Le même satellite qui veille pour le voyageur veille votre rivage.</p>
+    <p>Volume élevé, accès clé, embed sur-mesure ou intégration plus poussée ? L'offre B2B se précise (paliers en construction, non câblés). Aujourd'hui, l'action c'est simple : parlons-en.</p>
+    <a class="btn gold" href="/?pro=1">⭐ Recevoir le brief gratuit →</a>
+    <a class="btn ghost" href="mailto:contact@sargasses-martinique.com?subject=Veille%20côtière%20B2B">Parlons-en →</a>
   </div>
 
-  <div class="note">⚠️ Stabilité &amp; bon usage — la donnée vient des satellites Sentinel-3 / MODIS (Copernicus Marine), recalculée 4×/jour. Les champs ci-dessus sont stables ; tout changement cassant serait annoncé. Mentionnez la source « Le Veilleur · Copernicus Marine » si vous réutilisez la donnée. Ce n'est pas une mesure sanitaire : suivez toujours les consignes ARS/HCSP.</div>
+  <div class="note">⚠️ Stabilité &amp; bon usage — la donnée vient des satellites Sentinel-3 / MODIS (Copernicus Marine) et NOAA, recalculée 4×/jour. Si le composite satellite a plus de 36h, le flag <code>stale</code> passe à <code>true</code> : Le Veilleur l'avoue plutôt que de faire semblant de tout voir en direct — vérifiez-le avant d'afficher. Les champs ci-dessus sont stables ; tout changement cassant serait annoncé. Mentionnez la source « Le Veilleur · Copernicus & NOAA » si vous réutilisez la donnée. Ce n'est pas une mesure sanitaire : suivez toujours les consignes ARS/HCSP.</div>
 
   <footer>
     Le Veilleur · données satellite Copernicus Marine<br>

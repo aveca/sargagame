@@ -114,8 +114,8 @@
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap">
     <div class="eyebrow">Espace recherche · Données ouvertes</div>
-    <h1>Notre prévision, vérifiable.</h1>
-    <p class="lede">Chaque jour, nos prévisions sargasses sont <b>figées à l'émission</b> puis comparées à l'observation satellite réelle. Le résultat — réussites comme limites — est public, daté et recalculable. Pas un argument marketing : une archive auditable.</p>
+    <h1>Vérifiable, pas du marketing.</h1>
+    <p class="lede">Chaque matin, Le Veilleur regarde la mer au satellite, puis on <b>fige la prévision à l'émission</b> et on la confronte à ce que le satellite a réellement vu à l'échéance. Le résultat — réussites comme limites — est public, daté et recalculable. <b>Mesuré au satellite, pas deviné. Rien de magique — et quand on se trompe, on l'écrit.</b> Pas un argument : une archive auditable.</p>
     <div class="herofoot">
       <span class="chip">🛰️ Copernicus / Sentinel-3</span>
       <span class="chip">📐 Seuils NOAA SIR</span>
@@ -130,20 +130,20 @@
 <section class="px"><div class="wrap">
   <div class="seclabel">Le palmarès</div>
   <h2 class="t">Ce que valent nos prévisions</h2>
-  <p class="b">Période couverte : <b id="r-window">17 mai → 17 juin 2026</b> · <span id="r-sample">3 420</span> prévisions comparées au satellite · Martinique &amp; Guadeloupe.</p>
+  <p class="b">Période couverte : <b id="r-window">30 mai → 28 juin 2026</b> · <span id="r-sample">3 180</span> prévisions comparées au satellite · Martinique &amp; Guadeloupe (43 jours d'archive, <b>3 720</b> paires au total).</p>
 
   <div class="stat">
     <div class="big">
       <div class="num" id="r-clean-pct">100%</div>
       <div>
         <div class="lab">de nos prévisions « mer propre » se sont vérifiées</div>
-        <div class="sub">sur <span id="r-clean-n">2 362</span> prévisions « mer propre » contrôlées au satellite (saison calme).</div>
+        <div class="sub">sur <span id="r-clean-n">2 274</span> prévisions « mer propre » contrôlées au satellite (saison calme, faible confiance étiquetée sur les alertes).</div>
       </div>
     </div>
     <div class="metarow">
-      <div class="meta"><div class="v" id="r-overall">77%</div><div class="k">Justesse globale*</div></div>
-      <div class="meta"><div class="v" id="r-mae">0.044</div><div class="k">MAE AFAI</div></div>
-      <div class="meta"><div class="v" id="r-pairs">3 420</div><div class="k">Paires vérifiées</div></div>
+      <div class="meta"><div class="v" id="r-overall">76%</div><div class="k">Justesse globale*</div></div>
+      <div class="meta"><div class="v" id="r-mae">0.047</div><div class="k">MAE AFAI</div></div>
+      <div class="meta"><div class="v" id="r-pairs">3 180</div><div class="k">Paires vérifiées</div></div>
       <div class="meta"><div class="v">MQ·GP</div><div class="k">Couverture</div></div>
     </div>
     <div class="freshness"><span class="dot"></span> Données arrêtées au <span id="r-gen">17 juin 2026</span> — recalculées à chaque mise à jour de l'archive.</div>
@@ -176,7 +176,7 @@
     <h3>⚠️ Ce que nos chiffres ne disent pas</h3>
     <p class="b" style="margin:0 0 6px">La transparence d'un modèle se juge à ce qu'il avoue, pas à ce qu'il affiche.</p>
     <ul>
-      <li>Sur la période, nos <b>alertes</b> (sargasses attendues) ont un taux de fausse alerte d'environ <b id="r-fa">23%</b> en saison calme : le modèle « crie au loup » plus souvent qu'il ne devrait. Nous les émettons donc à <b>confiance prudente</b> et les signalons comme telles tant que la donnée satellite ne les confirme pas.</li>
+      <li>Sur la période, nos <b>alertes</b> (sargasses attendues) ont un taux de fausse alerte d'environ <b id="r-fa">12%</b> en saison calme : le modèle « crie au loup » plus souvent qu'il ne devrait. Nous émettons donc ces alertes en <b>faible confiance, explicitement étiquetée</b>, tant que le satellite ne les confirme pas — on ne te les vend jamais comme certaines.</li>
       <li>Au-delà de <b>J+3</b>, la fiabilité décroît : la prévision devient indicative.</li>
       <li>Le chiffre fort (100% « mer propre ») vaut <b>pour ce régime et cette période</b> — il sera recalculé, à la hausse comme à la baisse, à chaque mise à jour.</li>
     </ul>
@@ -202,7 +202,7 @@
     </div>
     <div class="mcard">
       <div class="h">🔒 Intégrité</div>
-      <p>Chaque prévision est <b>figée à la date d'émission</b> dans une archive <b>append-only</b>, comparée ensuite à l'observation. <b>Aucun chiffre n'est rétro-ajustable.</b></p>
+      <p>Chaque prévision est <b>figée à la date d'émission</b> dans une archive <b>append-only</b>, comparée ensuite à l'observation. <b>Aucun chiffre n'est rétro-ajustable.</b> C'est ça, le moat : une honnêteté que n'importe qui peut auditer — donnée publique Copernicus &amp; NOAA, jamais une boîte noire.</p>
     </div>
   </div>
 </div></section>
@@ -240,7 +240,7 @@
       <div class="arrow">Voir la page fiabilité →</div>
     </a>
   </div>
-  <p class="b" style="margin-top:18px">Chercheur·se, institution, journaliste ? Pour un accès aux séries longues, une collaboration ou une vérification indépendante, écrivez-nous via la <a href="/a-propos/" style="color:var(--sg-gold);font-weight:700;text-decoration:none">page À propos</a>.</p>
+  <p class="b" style="margin-top:18px">Une seule mer, une famille d'îles — la même méthode veille la Martinique, la Guadeloupe, puis la Floride, Punta Cana et la Riviera Maya, dans la langue de chaque rivage. Le palmarès grandira avec elles, publié tel quel.<br><br>Chercheur·se, institution, journaliste ? Pour un accès aux séries longues, une collaboration ou une vérification indépendante, écrivez-nous via la <a href="/a-propos/" style="color:var(--sg-gold);font-weight:700;text-decoration:none">page À propos</a>.</p>
 </div></section>
 
 </main>
