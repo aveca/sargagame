@@ -9,6 +9,7 @@ import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useCon
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
+import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import "./Themes.css"
 import "./app-runtime.css"
@@ -7077,6 +7078,8 @@ function VeilleurGlyph(){
 function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
+  // Swipe down pour fermer (guardInput : ne ferme pas si le champ email est focus).
+  const sw=useSwipeClose(()=>onClose&&onClose("dismiss"),{guardInput:true,threshold:70})
   const INK="#0D0D0D"
   // BIBLE : purge pirates — clean #22C55E, modéré #B87A00 (jamais l'or), avoid #E8522A.
   const STC={clean:"#22C55E",moderate:"#B87A00",avoid:"#E8522A"}
@@ -7104,10 +7107,12 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
         <div aria-hidden="true" style={{position:"absolute",top:-72,left:"50%",transform:"translateX(-50%)",zIndex:0,width:112,pointerEvents:"none"}}>
           <VeilleurGlyph/>
         </div>
-        <div style={{position:"relative",zIndex:1,background:"#FDFCF7",border:"2.6px solid "+INK,borderRadius:20,
+        <div ref={sw.ref} onTouchStart={sw.onTouchStart} onTouchMove={sw.onTouchMove} onTouchEnd={sw.onTouchEnd}
+          style={{position:"relative",zIndex:1,background:"#FDFCF7",border:"2.6px solid "+INK,borderRadius:20,
           boxShadow:"6px 6px 0 "+INK,padding:"46px 22px 18px",overflow:"hidden",
           animation:"slideUp .38s cubic-bezier(.34,1.56,.64,1) both"}}>
           <div aria-hidden="true" style={{position:"absolute",top:0,left:0,right:0,height:12,background:"linear-gradient(90deg,#155A5A,#C97E3A 55%,#F2B05E)"}}/>
+          <div aria-hidden="true" style={{position:"absolute",top:20,left:"50%",transform:"translateX(-50%)",width:42,height:5,borderRadius:3,background:"rgba(13,13,13,.18)"}}/>
           <button onClick={()=>onClose&&onClose("dismiss")} aria-label={_t(lang,"Fermer","Close","Cerrar")}
             style={{position:"absolute",top:14,right:14,width:26,height:26,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,cursor:"pointer",fontSize:15,lineHeight:1,padding:0}}>×</button>
           {done?(
@@ -11733,6 +11738,9 @@ export default function App(){
   // vue carte, hero fermé, pas de fiche/paywall ouvert, pas premium, 1×/session.
   const[showGameToast,setShowGameToast]=useState(false)
   const[showGameFull,setShowGameFull]=useState(false)
+  // Swipe down pour fermer le jeu : le jeu est un <iframe> qui avale les touches →
+  // une poignée en haut (hors iframe) porte le geste, tout l'overlay glisse (ref = overlay).
+  const gameSwipe=useSwipeClose(()=>{setShowGameFull(false);track("sg_game_full_close",{from:"swipe"})},{threshold:64})
   const[showExitCap,setShowExitCap]=useState(false)
   const[showExitVeilleur,setShowExitVeilleur]=useState(false)
   // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
@@ -12835,9 +12843,18 @@ export default function App(){
         {/* SARGACATCH PLEIN ÉCRAN — lancé direct sur AFK (idle). Le jeu /jeu/ (page
             autonome) en iframe par-dessus la carte ; × pour revenir. z1099 (sous paywall). */}
         {showGameFull&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&(
-          <div style={{position:"fixed",inset:0,zIndex:1099,background:"#0d2230",animation:"fadeIn .25s ease both"}}>
+          <div ref={gameSwipe.ref} style={{position:"fixed",inset:0,zIndex:1099,background:"#0d2230",animation:"fadeIn .25s ease both"}}>
             <iframe src="/jeu/?utm_source=app&utm_medium=afk" title="SargaCatch"
               style={{position:"absolute",inset:0,width:"100%",height:"100%",border:"none",display:"block"}}/>
+            {/* Poignée de fermeture (hors iframe) : swipe down OU tap pour fermer. */}
+            <div onTouchStart={gameSwipe.onTouchStart} onTouchMove={gameSwipe.onTouchMove} onTouchEnd={gameSwipe.onTouchEnd}
+              onClick={()=>{setShowGameFull(false);track("sg_game_full_close",{from:"handle"})}}
+              role="button" aria-label={_t(lang,"Fermer le jeu","Close game","Cerrar juego")}
+              style={{position:"fixed",top:0,left:0,right:0,height:"calc(34px + env(safe-area-inset-top))",zIndex:1101,
+                display:"flex",alignItems:"flex-end",justifyContent:"center",paddingBottom:6,
+                background:"linear-gradient(180deg,rgba(10,23,20,.55),rgba(10,23,20,0))",touchAction:"none",cursor:"pointer"}}>
+              <div aria-hidden="true" style={{width:46,height:5,borderRadius:3,background:"rgba(255,255,255,.55)"}}/>
+            </div>
             <button onClick={()=>{setShowGameFull(false);track("sg_game_full_close",{})}}
               aria-label={_t(lang,"Fermer le jeu","Close game","Cerrar juego")}
               style={{position:"fixed",top:"calc(10px + env(safe-area-inset-top))",right:12,zIndex:1101,
