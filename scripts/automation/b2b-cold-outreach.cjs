@@ -28,14 +28,28 @@ const SRC_PATH = path.join(__dirname, 'data', 'b2b-enriched.json')
 const SENT_PATH = path.join(__dirname, 'data', 'b2b-cold-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SEND = process.argv.includes('--send')
-const CAP_NEW = parseInt(process.env.CAP_NEW || '5', 10)   // warmup : nouveaux contacts/run
-const FROM = 'Sargasses Pro <alerte@sargasses-martinique.com>'
-const REPLY_TO = 'alerte@sargasses-martinique.com'
+// Expéditeur CONFIGURABLE : le jour où un domaine d'envoi dédié existe, on change
+// juste B2B_FROM / B2B_REPLY_TO en secret → scale sans toucher au code.
+const FROM = process.env.B2B_FROM || 'Sargasses Pro <alerte@sargasses-martinique.com>'
+const REPLY_TO = process.env.B2B_REPLY_TO || 'alerte@sargasses-martinique.com'
 const FOLLOWUP_DAYS = 4
 
 function loadJSON(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 function saveJSON(p, d) { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(d, null, 2)) }
 function daysSince(iso) { const t = Date.parse(iso); return isNaN(t) ? 999 : Math.floor((Date.now() - t) / 86400000) }
+
+// MONTÉE EN DÉBIT AUTO (warmup) : le nb de NOUVEAUX contacts/jour augmente avec l'âge
+// de la campagne (jours depuis le 1er envoi), pour protéger la délivrabilité puis
+// scaler. Override manuel CAP_NEW. Sur domaine dédié, on pourra élargir le barème.
+function rampCap(firstSendISO) {
+  if (process.env.CAP_NEW) return parseInt(process.env.CAP_NEW, 10)
+  const d = firstSendISO ? daysSince(firstSendISO) : 0
+  if (d < 3) return 5
+  if (d < 7) return 10
+  if (d < 14) return 20
+  if (d < 28) return 35
+  return 50
+}
 
 function priceFor(c) { return c.fit === 'lodge-gite' ? '29 €/mois' : c.fit === 'territoire' ? 'dès 199 €/mois' : '79 €/mois' }
 function domainFor(c) { return c.island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com' }
@@ -56,9 +70,11 @@ function shell(inner, c) {
   }
 }
 
-function buildC0(c) {
+function buildC0(c, key) {
   const domain = domainFor(c)
-  const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c0`
+  // Token par destinataire (&b=) → l'app logue la visite par prospect (funnel tracking).
+  const b = key ? `&b=${String(key).slice(0, 12)}` : ''
+  const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c0${b}`
   const place = c.town || (c.island === 'GP' ? 'Guadeloupe' : 'Martinique')
   const subject = `${c.name} — l'état de vos plages chaque matin ?`
   const preheader = `Surveillance satellite de vos plages : prévenus avant l'échouage. 14 jours offerts.`
@@ -76,9 +92,10 @@ function buildC0(c) {
   return { subject, preheader, html: s.html, unsub: s.unsub }
 }
 
-function buildC4(c) {
+function buildC4(c, key) {
   const domain = domainFor(c)
-  const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c4`
+  const b = key ? `&b=${String(key).slice(0, 12)}` : ''
+  const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c4${b}`
   const subject = `Re: ${c.name} — l'état de vos plages`
   const preheader = `J'active votre essai 14 jours en 5 minutes, sans engagement.`
   const inner = `${brandHeader('Sargasses Pro', 'Juste au cas où', '')}
@@ -106,6 +123,10 @@ async function main() {
   const widgetCfg = loadJSON(path.join(__dirname, 'data', 'widget-contacts.json'), { contacts: {} })
   const widgetEmails = new Set(Object.values(widgetCfg.contacts || {}).map(w => (w.email || '').trim().toLowerCase()).filter(Boolean))
 
+  // Cap du run = ramp auto basé sur l'âge de la campagne (1er envoi enregistré).
+  const firstSend = sent._meta && sent._meta.firstSendAt
+  const CAP_NEW = rampCap(firstSend)
+
   let newCount = 0, followCount = 0
   for (const c of contacts) {
     if (!c.email || !c.email.includes('@')) continue
@@ -115,10 +136,10 @@ async function main() {
     const rec = sent[key] || {}
     let step = null, built = null
     if (!rec.c0) {
-      if (newCount >= CAP_NEW) continue            // warmup : plafond de nouveaux/run
-      step = 'c0'; built = buildC0(c); newCount++
+      if (newCount >= CAP_NEW) continue            // warmup/ramp : plafond de nouveaux/run
+      step = 'c0'; built = buildC0(c, key); newCount++
     } else if (!rec.c4 && daysSince(rec.c0) >= FOLLOWUP_DAYS) {
-      step = 'c4'; built = buildC4(c); followCount++
+      step = 'c4'; built = buildC4(c, key); followCount++
     } else continue
 
     if (!ready) { console.log(`  ~ [${step}] ${logId(c.email)} ${c.name} — "${built.subject}"`); continue }
@@ -127,6 +148,8 @@ async function main() {
     console.log(`  + [${step}] ${logId(c.email)} ${c.name}`)
     rec[step] = new Date().toISOString()
     sent[key] = rec
+    if (!sent._meta) sent._meta = {}
+    if (!sent._meta.firstSendAt) sent._meta.firstSendAt = rec[step] // ancre le ramp
     saveJSON(SENT_PATH, sent)
   }
   console.log(ready ? `\nEnvoyé : ${newCount} neufs + ${followCount} relances.` : `\nDry-run : ${newCount} neufs (cap ${CAP_NEW}) + ${followCount} relances.`)
