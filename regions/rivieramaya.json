@@ -113,7 +113,13 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true
+      "parking": true,
+      "webcam": {
+        "type": "youtube",
+        "id": "_dLEX-64EtE",
+        "label": "Playa del Carmen",
+        "provider": "webcamsdemexico"
+      }
     },
     {
       "id": "rm004",
