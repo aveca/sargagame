@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, follow">
-<title>SARGASSES.MQ</title>
+<title>Le Veilleur — ta plage, vérifiée chaque matin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
@@ -472,7 +472,7 @@ h1 .t{display:inline-block;color:var(--teal);}
         <div class="s1-strip">
           <div class="strip-left">
             <div class="ldot"></div>
-            <span class="strip-txt"><em>47 plages</em> surveillées en temps réel</span>
+            <span class="strip-txt"><em id="beachCount">136+ plages</em> mesurées au satellite</span>
           </div>
           <div class="lbadge">LIVE</div>
         </div>
@@ -480,15 +480,14 @@ h1 .t{display:inline-block;color:var(--teal);}
         <!-- satellite badge — valeur perçue -->
         <div class="satellite-badge">
           <span class="sat-icon">🛰️</span>
-          <span class="sat-txt">Sentinel-2 · <em>image du 02/03/2026 à 06h14</em></span>
-          <span class="sat-fresh">Frais</span>
+          <span class="sat-txt">Copernicus / NOAA · <em id="satFresh">composite satellite récent</em></span>
+          <span class="sat-fresh" id="satFreshBadge">Frais</span>
         </div>
 
         <!-- live counter -->
         <div class="live-counter">
           <div class="lc-dot"></div>
-          <span class="lc-num" id="liveCount">34</span>
-          <span class="lc-txt">Martiniquais vérifient <em>en ce moment</em></span>
+          <span class="lc-txt">Le Veilleur a veillé la mer cette nuit — <em>verdict du matin prêt</em></span>
         </div>
 
         <!-- hero -->
@@ -502,16 +501,16 @@ h1 .t{display:inline-block;color:var(--teal);}
           <div class="card-bad">
             <div class="cb-icon">🚫</div>
             <div class="cb-info">
-              <div class="cb-label">Éviter</div>
+              <div class="cb-label">Évite ce matin</div>
               <div class="cb-val">Sainte-Anne</div>
-              <div class="cb-sub">Sargasses ce matin</div>
+              <div class="cb-sub">Sargasses en approche</div>
             </div>
           </div>
           <div class="card-good">
             <div class="cg-icon">🏖️</div>
             <div class="cg-info">
               <div class="cg-name">Grande Anse d'Arlet</div>
-              <div class="cg-status"><span class="cg-check">✓</span>Propre aujourd'hui</div>
+              <div class="cg-status"><span class="cg-check">✓</span>Baignade OK ce matin</div>
             </div>
           </div>
         </div>
@@ -519,15 +518,15 @@ h1 .t{display:inline-block;color:var(--teal);}
         <!-- copy -->
         <div class="s1-copy">
           <!-- eyebrow — miroir de la douleur -->
-          <div class="eyebrow">Encore une plage envahie un dimanche matin ?</div>
+          <div class="eyebrow">La veille au soir, la même question : et si demain la plage est étouffée de sargasses ?</div>
 
           <h1>
-            <span class="t">Cette</span><br>
-            <span class="g">fois,</span><br>
-            tu seras<br>prévenu.
+            Le <span class="g">Veilleur</span><br>
+            veille la mer<br>
+            <span class="t">pour toi.</span>
           </h1>
 
-          <p class="tagline"><strong>47 plages de Martinique.</strong> Vert ou rouge. Avant de charger la voiture.</p>
+          <p class="tagline"><strong>Chaque matin, il regarde la mer — jamais toi.</strong> Mesuré au satellite, pas deviné. Et quand on se trompe, on l'écrit.</p>
 
           <!-- preuve MESURÉE (pas de témoignage fabriqué — doctrine d'honnêteté) -->
           <div class="proof">
@@ -551,10 +550,10 @@ h1 .t{display:inline-block;color:var(--teal);}
 
           <div class="cta">
             <button class="btn-main" onclick="goTo(1)">
-              <span class="btn-label">Voir les plages maintenant</span>
+              <span class="btn-label">Voir le verdict du matin</span>
               <span class="btn-arrow">→</span>
             </button>
-            <div class="micro">Gratuit<span class="mdot"></span>Sans inscription</div>
+            <div class="micro">Gratuit<span class="mdot"></span>Aucune carte bancaire</div>
             <button class="btn-link">Déjà un compte ? <span>Se connecter</span></button>
           </div>
         </div>
@@ -568,7 +567,7 @@ h1 .t{display:inline-block;color:var(--teal);}
         </div>
 
         <!-- eyebrow -->
-        <div class="s2-eyebrow">La carte que tu aurais voulu avoir.</div>
+        <div class="s2-eyebrow">Le coup d'œil du matin — sans donner ta carte bancaire.</div>
 
         <div class="s2-headline">
           <span class="t">Vert</span> = tu pars.<br>
@@ -578,14 +577,14 @@ h1 .t{display:inline-block;color:var(--teal);}
         <!-- satellite precision badge -->
         <div class="sat-inline">
           <span style="font-size:11px;">🛰️</span>
-          <span class="si-txt">Sentinel-2 · ESA Copernicus</span>
-          <span class="si-time">· image du 02/03 à 06h14</span>
+          <span class="si-txt">Copernicus · NOAA</span>
+          <span class="si-time" id="satFresh2">· composite satellite récent</span>
         </div>
 
         <!-- micro proof -->
         <div style="margin:6px 22px 0;font-size:11px;color:var(--mid);display:flex;align-items:center;gap:5px;">
           <span style="color:#16A34A;font-weight:700;">✓</span>
-          Confirmé par <strong style="color:var(--ink);">+2 400 locaux</strong> ce matin
+          Croisé sur <strong style="color:var(--ink);">7 facteurs, 4×/jour</strong> — baie par baie
         </div>
 
         <!-- map -->
@@ -612,7 +611,7 @@ h1 .t{display:inline-block;color:var(--teal);}
         <div class="beach-list">
           <div class="beach-row">
             <div class="br-left"><div class="br-emoji">🏖️</div><div><div class="br-name">Grande Anse d'Arlet</div><div class="br-dist">Sud · 12 km</div></div></div>
-            <div class="br-status brs-g">✓ Propre</div>
+            <div class="br-status brs-g">✓ Baignade OK</div>
           </div>
           <div class="beach-row">
             <div class="br-left"><div class="br-emoji">⛱️</div><div><div class="br-name">Le Diamant</div><div class="br-dist">Sud · 25 km</div></div></div>
@@ -640,14 +639,14 @@ h1 .t{display:inline-block;color:var(--teal);}
         </div>
 
         <!-- eyebrow -->
-        <div class="s3-eyebrow">Pour les weekends qui comptent vraiment.</div>
+        <div class="s3-eyebrow">Le matin où ça bascule, savoir d'avance sauve le week-end.</div>
 
         <div class="s3-headline">
-          Sois <span class="g">prévenu</span><br>
-          7 jours<br>à l'avance.
+          Vois <span class="g">7 jours</span><br>
+          à l'avance.
         </div>
 
-        <p class="s3-tagline">Les données du jour c'est bien. <strong>Savoir ce qui arrive ce weekend</strong>, c'est mieux.</p>
+        <p class="s3-tagline">Le verdict du matin est gratuit. <strong>La prévision 7 jours et l'alerte « le matin où ça bascule »</strong> débloquent le week-end sauvé.</p>
 
         <div class="premium-card">
           <div class="pc-tag"><div class="pc-tag-dot"></div>Premium</div>
@@ -656,15 +655,15 @@ h1 .t{display:inline-block;color:var(--teal);}
           <div class="pc-price-block">
             <div class="pc-price-row">
               <span class="pc-cur">€</span>
-              <span class="pc-amt">4,99</span>
-              <span class="pc-per">/ mois</span>
+              <span class="pc-amt">7,99</span>
+              <span class="pc-per">Pass 7 jours</span>
             </div>
           </div>
 
-          <!-- price anchor — copywriting key -->
+          <!-- price anchor — regret vs pact -->
           <div class="pc-anchor">
-            Une journée plage pour 4 personnes = <strong>80€ minimum.</strong><br>
-            Savoir à l'avance = <strong>4,99€.</strong>
+            Un jour de plage gâché = <strong>~200 € perdus.</strong><br>
+            Ton Pass coûte une fraction de ça. <strong>Paiement unique — pas d'abonnement.</strong>
           </div>
 
           <!-- forecast — fomo element -->
@@ -708,16 +707,16 @@ h1 .t{display:inline-block;color:var(--teal);}
               </div>
             </div>
           </div>
-          <div class="pc-unlock">🔒 Débloque les 5 prochains jours</div>
+          <div class="pc-unlock">🔒 Débloque J+1 → J+7 avec le Pass</div>
 
           <div class="pc-feats">
-            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Prévisions 7 jours</strong> · dérive satellite</div></div>
-            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Alertes</strong> avant que ça arrive</div></div>
-            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Annulation</strong> à tout moment</div></div>
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Prévision 7 jours</strong> · J+1 → J+7, mesurée au satellite</div></div>
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>L'alerte « le matin où ça bascule »</strong> · avant les sargasses</div></div>
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Remboursé sous 30 jours</strong> · un email suffit, sans condition</div></div>
           </div>
 
           <button class="pc-btn">
-            <span class="pc-btn-lbl">Débloquer mes prévisions</span>
+            <span class="pc-btn-lbl">Prendre mon Pass</span>
             <span class="pc-btn-arr">→</span>
           </button>
         </div>
@@ -735,7 +734,7 @@ h1 .t{display:inline-block;color:var(--teal);}
           Pas maintenant — <button onclick="goTo(0)">commencer gratuitement</button>
         </div>
         <div class="s3-micro">
-          Paiement sécurisé<span class="s3-mdot"></span>Annulation à tout moment
+          Paiement unique<span class="s3-mdot"></span>Pas d'abonnement<span class="s3-mdot"></span>Remboursé sous 30 jours
         </div>
       </div>
 
@@ -795,7 +794,7 @@ if (isGP) {
   document.querySelectorAll('.cg-name').forEach(el => el.textContent = gpBeaches.good);
   // Update tagline
   document.querySelectorAll('.tagline').forEach(el => {
-    el.innerHTML = '<strong>21 plages de Guadeloupe.</strong> Vert ou rouge. Avant de charger la voiture.';
+    el.innerHTML = '<strong>Chaque matin, Le Veilleur regarde la mer — jamais toi.</strong> Mesuré au satellite, pas deviné. Et quand on se trompe, on l\'écrit.';
   });
   // Update slide 2 headline references
   document.querySelectorAll('.s2-headline').forEach(el => {

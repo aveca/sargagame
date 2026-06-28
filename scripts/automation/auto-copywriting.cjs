@@ -204,7 +204,7 @@ function generateBeachMeta(beach, island, topQueries, copyLog) {
   // Build description: include "en temps réel", commune, island, "aujourd'hui"
   // Constraint: under 160 chars
   const dateStr = today()
-  let description = `État des sargasses à ${beach.name} (${beach.commune}, ${islandName}) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le ${dateStr}.`
+  let description = `Sargasses à ${beach.name} (${beach.commune}, ${islandName}) aujourd'hui — mesuré au satellite, pas deviné. Carte en temps réel, prévisions 7 jours. Mis à jour le ${dateStr}.`
   if (description.length > 160) {
     description = `Sargasses ${beach.name} (${beach.commune}) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le ${dateStr}.`
   }
@@ -313,7 +313,7 @@ function generateH1Suggestions(topQueries, copyLog) {
     })
 
     // /alertes/ H1
-    const alerteH1 = `Alertes sargasses ${islandName} — Notifications push gratuites`
+    const alerteH1 = `Alertes sargasses ${islandName} — la dépêche du matin, mesurée au satellite`
     suggestions[`${siteKey}:alertes`] = {
       path: '/alertes/',
       h1: alerteH1,

@@ -91,7 +91,7 @@ La saison approche et je voulais partager un outil gratuit qui surveille 53 plag
 
 En ce moment : 44 plages propres, 7 moderees, 2 en alerte.
 
-Le site affiche une carte en temps reel avec l'etat de chaque plage, plus des previsions sur 7 jours.
+Le site affiche une carte en temps reel avec le verdict du matin de chaque plage (Baignade OK / A surveiller / Evite), mesure au satellite Copernicus + NOAA. Le detail de la prevision 7 jours est dans le Pass (paiement unique, jamais d'abonnement) ; le coup d'oeil quotidien reste gratuit.
 
 Il y a aussi un bulletin gratuit par email chaque vendredi avec les meilleures plages pour le weekend.
 

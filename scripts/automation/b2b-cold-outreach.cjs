@@ -4,7 +4,7 @@
  *
  * Source = data/b2b-enriched.json (hôtels MQ/GP avec email RÉEL + hook perso, produit
  * par l'agent d'enrichissement). Envoie une séquence courte et PERSONNALISÉE :
- *   c0  = premier contact (hook réel + offre essai 14j → prix + question fermée)
+ *   c0  = premier contact (hook réel + preuve datée + ask honnête « parlons-en »)
  *   c4  = relance unique J+4 (la plupart des réponses viennent de la relance)
  *
  * Délivrabilité (directive fondateur : ne jamais passer en spam) :
@@ -51,7 +51,9 @@ function rampCap(firstSendISO) {
   return 50
 }
 
-function priceFor(c) { return c.fit === 'lodge-gite' ? '29 €/mois' : c.fit === 'territoire' ? 'dès 199 €/mois' : '79 €/mois' }
+// Offre B2B en cours de définition (paliers Brief/Pro/Territory à venir, NON câblés).
+// Aucun prix mensuel n'est annoncé en froid : l'ask est « parlons-en » (B2B arc).
+function localeFor(c) { return c.island === 'FL' || c.island === 'florida' ? 'en' : (c.island === 'PC' || c.island === 'puntacana') ? 'es' : (c.island === 'RM' || c.island === 'rivieramaya') ? 'en' : 'fr' }
 function domainFor(c) { return c.island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com' }
 
 function cta(text, url) {
@@ -76,17 +78,55 @@ function buildC0(c, key) {
   const b = key ? `&b=${String(key).slice(0, 12)}` : ''
   const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c0${b}`
   const place = c.town || (c.island === 'GP' ? 'Guadeloupe' : 'Martinique')
-  const subject = `${c.name} — l'état de vos plages chaque matin ?`
-  const preheader = `Surveillance satellite de vos plages : prévenus avant l'échouage. 14 jours offerts.`
-  const inner = `${brandHeader('Sargasses Pro', 'Vos plages, surveillées', `Pour ${c.name}, ${place}`)}
+  const L = localeFor(c)
+  const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
+    : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
+    : `${c.name} — l'état de vos plages chaque matin ?`
+  const preheader = L === 'en' ? `Your beaches measured by satellite (Copernicus, NOAA) — alerted before the seaweed lands.`
+    : L === 'es' ? `Sus playas medidas por satélite (Copernicus, NOAA) — avisados antes de que llegue el sargazo.`
+    : `Vos plages mesurées au satellite (Copernicus, NOAA) — prévenus avant l'échouage.`
+  const T = {
+    fr: {
+      hdrTitle: 'Le Veilleur', hdrSub: 'Vos plages, mesurées au satellite', hdrFor: `Pour ${c.name}, ${place}`,
+      hi: 'Bonjour,',
+      pain: `Je fais <strong>Le Veilleur</strong> — un projet indépendant, opéré depuis la Martinique, qui mesure les sargasses plage par plage au satellite (Copernicus Marine, NOAA), 4 fois par jour. Pour un établissement comme le vôtre, une plage envahie = clients déçus, avis, parfois remboursements — et vous l'apprenez souvent en même temps qu'eux.`,
+      flip: `Avec Le Veilleur, vous connaissez la fin de l'histoire avant vos clients : l'alerte arrive <strong>avant</strong> les sargasses, avec une prévision 7 jours. Vous prévenez, vous ne subissez pas.`,
+      proof: `On ne promet pas, on montre. La fiabilité est publiée et auditée chaque jour, par régime : <strong>100 % des prévisions « mer propre » vérifiées en saison calme</strong> sur 2 274 échantillons (fenêtre 2026-05-30 → 2026-06-28) ; <strong>~76 % de justesse tous régimes confondus</strong>, les alertes de saison calme étant explicitement en faible confiance. Vous voyez nos réussites comme nos limites.`,
+      ask: `L'offre côté pro (brief quotidien de vos plages, widget « plage mesurée au satellite » pour rassurer avant la réservation) est en cours de définition. Aujourd'hui je préfère vous montrer un rendu réel et daté de vos plages, puis en discuter. <strong>On en parle ?</strong>`,
+      ctaText: 'Voir l’état de mes plages',
+      orReply: 'Ou répondez simplement « ok » et je vous envoie le rendu de vos plages.'
+    },
+    en: {
+      hdrTitle: 'Le Veilleur', hdrSub: 'Your beaches, measured by satellite', hdrFor: `For ${c.name}, ${place}`,
+      hi: 'Hi,',
+      pain: `I run <strong>Le Veilleur</strong> — an independent project, operated from Martinique, that measures sargassum beach by beach via satellite (Copernicus Marine, NOAA), four times a day. For a property like yours, an invaded beach means disappointed guests, bad reviews, sometimes refunds — and you often learn it at the same time they do.`,
+      flip: `With Le Veilleur, you know how the story ends before your guests do: the alert lands <strong>before</strong> the seaweed, with a 7-day forecast. You warn them instead of taking the hit.`,
+      proof: `We don't promise, we show. Reliability is published and audited every day, by regime: <strong>100% of “clean-sea” forecasts verified in calm season</strong> over 2,274 samples (window 2026-05-30 → 2026-06-28); <strong>~76% accuracy across all regimes</strong>, with calm-season alerts explicitly flagged low-confidence. You see our hits and our limits.`,
+      ask: `The pro side (a daily brief of your beaches, a “satellite-measured beach” widget to reassure guests before they book) is still being shaped. For now I'd rather show you a real, dated readout of your beaches, then talk it through. <strong>Shall we talk?</strong>`,
+      ctaText: 'See my beaches now',
+      orReply: 'Or just reply “ok” and I’ll send you the readout of your beaches.'
+    },
+    es: {
+      hdrTitle: 'Le Veilleur', hdrSub: 'Sus playas, medidas por satélite', hdrFor: `Para ${c.name}, ${place}`,
+      hi: 'Hola,',
+      pain: `Soy <strong>Le Veilleur</strong> — un proyecto independiente, operado desde Martinica, que mide el sargazo playa por playa vía satélite (Copernicus Marine, NOAA), cuatro veces al día. Para un establecimiento como el suyo, una playa invadida significa huéspedes decepcionados, malas reseñas, a veces reembolsos — y a menudo se entera al mismo tiempo que ellos.`,
+      flip: `Con Le Veilleur, usted conoce el final de la historia antes que sus huéspedes: la alerta llega <strong>antes</strong> que el sargazo, con un pronóstico a 7 días. Usted avisa en lugar de sufrirlo.`,
+      proof: `No prometemos, mostramos. La fiabilidad se publica y se audita cada día, por régimen: <strong>100 % de los pronósticos de “mar limpio” verificados en temporada calmada</strong> sobre 2.274 muestras (ventana 2026-05-30 → 2026-06-28); <strong>~76 % de acierto en todos los regímenes</strong>, con las alertas de temporada calmada marcadas explícitamente como baja confianza. Usted ve nuestros aciertos y nuestros límites.`,
+      ask: `La parte pro (un parte diario de sus playas, un widget “playa medida por satélite” para tranquilizar antes de reservar) aún se está definiendo. Por ahora prefiero mostrarle una lectura real y fechada de sus playas, y luego conversarlo. <strong>¿Hablamos?</strong>`,
+      ctaText: 'Ver mis playas ahora',
+      orReply: 'O responda simplemente “ok” y le envío la lectura de sus playas.'
+    }
+  }[L]
+  const inner = `${brandHeader(T.hdrTitle, T.hdrSub, T.hdrFor)}
   <div style="background:#fff;padding:24px 20px">
-    <div style="font-size:15px;color:#333;line-height:1.6">Bonjour,</div>
+    <div style="font-size:15px;color:#333;line-height:1.6">${T.hi}</div>
     ${c.hook ? `<div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">${c.hook}</div>` : ''}
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">Je fais <strong>Le Veilleur</strong> — la surveillance satellite des sargasses plage par plage (les vacanciers s'en servent déjà chaque matin). Pour un établissement comme le vôtre, une plage envahie = clients déçus, avis, parfois remboursements — et vous l'apprenez souvent en même temps qu'eux.</div>
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">Je propose le <strong>brief quotidien de vos plages</strong> (état réel + alerte avant l'échouage + prévision 7 jours), et un <strong>widget « plages surveillées »</strong> pour votre site, qui rassure avant la réservation.</div>
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px"><strong>14 jours gratuits, sans carte.</strong> Ensuite ${priceFor(c)} si vous gardez, sans engagement. Je vous active l'essai aujourd'hui ?</div>
-    <div style="text-align:center;margin-top:18px">${cta('Démarrer l’essai 14 jours', pro)}</div>
-    <div style="font-size:13px;color:#666;margin-top:14px">Ou répondez simplement « ok » à cet email.</div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${T.pain}</div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${T.flip}</div>
+    <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px;background:#FBF7E9;border-radius:10px;padding:12px 14px">${T.proof}</div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${T.ask}</div>
+    <div style="text-align:center;margin-top:18px">${cta(T.ctaText, pro)}</div>
+    <div style="font-size:13px;color:#666;margin-top:14px">${T.orReply}</div>
   </div>`
   const s = shell(inner, c)
   return { subject, preheader, html: s.html, unsub: s.unsub }
@@ -96,15 +136,42 @@ function buildC4(c, key) {
   const domain = domainFor(c)
   const b = key ? `&b=${String(key).slice(0, 12)}` : ''
   const pro = `https://${domain}/?pro=1&utm_source=email&utm_medium=b2b_cold&utm_campaign=c4${b}`
-  const subject = `Re: ${c.name} — l'état de vos plages`
-  const preheader = `J'active votre essai 14 jours en 5 minutes, sans engagement.`
-  const inner = `${brandHeader('Sargasses Pro', 'Juste au cas où', '')}
+  const L = localeFor(c)
+  const F = {
+    fr: {
+      subject: `Re: ${c.name} — vos plages, mesurées au satellite`,
+      preheader: `Je vous envoie un rendu réel et daté de vos plages — dites-moi juste oui.`,
+      hdrSub: 'Juste au cas où', hi: 'Bonjour,',
+      l1: `Mon précédent message est peut-être passé sous la pile. La saison sargasses bat son plein — c'est maintenant que connaître la fin de l'histoire avant vos clients change tout.`,
+      l2: `Je peux vous envoyer un <strong>rendu réel et daté de vos plages</strong> (mesuré au satellite, par régime, réussites comme limites). Sans engagement — on regarde, et on en parle si ça vous parle.`,
+      ctaText: 'Voir l’état de mes plages', orReply: 'Sinon, répondez « stop » et je ne vous écris plus.'
+    },
+    en: {
+      subject: `Re: ${c.name} — your beaches, measured by satellite`,
+      preheader: `I'll send you a real, dated readout of your beaches — just say yes.`,
+      hdrSub: 'Just in case', hi: 'Hi,',
+      l1: `My earlier note may have slipped under the pile. Sargassum season is in full swing — this is exactly when knowing the ending before your guests do changes everything.`,
+      l2: `I can send you a <strong>real, dated readout of your beaches</strong> (satellite-measured, by regime, hits and limits alike). No commitment — we look, and we talk if it speaks to you.`,
+      ctaText: 'See my beaches now', orReply: 'Otherwise, reply “stop” and I won’t write again.'
+    },
+    es: {
+      subject: `Re: ${c.name} — sus playas, medidas por satélite`,
+      preheader: `Le envío una lectura real y fechada de sus playas — solo dígame que sí.`,
+      hdrSub: 'Por si acaso', hi: 'Hola,',
+      l1: `Quizás mi mensaje anterior quedó bajo la pila. La temporada de sargazo está en pleno apogeo — es justo cuando conocer el final antes que sus huéspedes lo cambia todo.`,
+      l2: `Puedo enviarle una <strong>lectura real y fechada de sus playas</strong> (medida por satélite, por régimen, aciertos y límites). Sin compromiso — la vemos y conversamos si le interesa.`,
+      ctaText: 'Ver mis playas ahora', orReply: 'Si no, responda “stop” y no le escribo más.'
+    }
+  }[L]
+  const subject = F.subject
+  const preheader = F.preheader
+  const inner = `${brandHeader('Le Veilleur', F.hdrSub, '')}
   <div style="background:#fff;padding:24px 20px">
-    <div style="font-size:15px;color:#333;line-height:1.6">Bonjour,</div>
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">Mon précédent message est peut-être passé sous la pile. La saison sargasses bat son plein — c'est maintenant que le brief quotidien sert le plus.</div>
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">Je peux activer votre <strong>essai 14 jours gratuit</strong> en 5 minutes, sans engagement. Je le lance ?</div>
-    <div style="text-align:center;margin-top:18px">${cta('Activer mon essai', pro)}</div>
-    <div style="font-size:13px;color:#666;margin-top:14px">Sinon, répondez « stop » et je ne vous écris plus.</div>
+    <div style="font-size:15px;color:#333;line-height:1.6">${F.hi}</div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">${F.l1}</div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${F.l2}</div>
+    <div style="text-align:center;margin-top:18px">${cta(F.ctaText, pro)}</div>
+    <div style="font-size:13px;color:#666;margin-top:14px">${F.orReply}</div>
   </div>`
   const s = shell(inner, c)
   return { subject, preheader, html: s.html, unsub: s.unsub }

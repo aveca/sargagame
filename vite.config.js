@@ -1635,7 +1635,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             mkdirSync(beachDir, { recursive: true })
             // Data-driven title from seo-enrich-content (e.g. "Plage X: 86% propres sur 7j")
             // Falls back to static title if enrichment not generated yet.
-            const beachTitle = _enrichments[b.slug]?.metaTitle || `${b.name} — Sargasses ${island} aujourd'hui`
+            const beachTitle = _enrichments[b.slug]?.metaTitle || `Sargasses ${b.name} aujourd'hui (${island}) — état en temps réel`
             const statusTextMap = { clean: 'Plage propre aujourd\u2019hui', moderate: 'Présence modérée de sargasses détectée au large', avoid: 'Alerte sargasses — forte concentration détectée au large' }
             const statusText = statusTextMap[b.status] || statusTextMap.clean
             // Rich unique meta description: beach name + commune + island + coast type + status + amenity
@@ -1731,7 +1731,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
             // Build noscript with nearby beaches (same commune first, then same island), nav links
             // Extra SEO sections appended to ALL beaches (enriched or not)
-            const condBaignade = b.status === 'clean' ? `<h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite au large de ${b.name}. Vérifiez toujours sur place avant de vous baigner.</p>` : b.status === 'moderate' ? `<h2>Conditions</h2><p>Présence modérée de sargasses détectée par satellite au large de ${b.name}. Vérifiez l'état de la plage sur place.</p>` : `<h2>Conditions</h2><p>Forte concentration de sargasses détectée par satellite au large de ${b.name}. Échouages probables. Si des sargasses sont en décomposition sur place, éloignez-vous (risque H₂S — source HCSP). Consultez les <a href="/">plages propres à proximité</a>.</p>`
+            const condBaignade = b.status === 'clean' ? `<h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite (Copernicus AFAI) au large de ${b.name} — mesuré, pas deviné. La côte est complexe baie par baie et l'état peut basculer en quelques heures avec le vent : vérifiez toujours sur place avant de vous baigner.</p>` : b.status === 'moderate' ? `<h2>Conditions</h2><p>Présence modérée de sargasses détectée par satellite au large de ${b.name}. Vérifiez l'état de la plage sur place.</p>` : `<h2>Conditions</h2><p>Forte concentration de sargasses détectée par satellite au large de ${b.name}. Échouages probables. Si des sargasses sont en décomposition sur place, éloignez-vous (risque H₂S — source HCSP). Consultez les <a href="/">plages propres à proximité</a>.</p>`
             const accessSection = `<h2>Comment s'y rendre</h2><p>${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.</p>`
             const tagsList = []
             if (b.kids) tagsList.push('Adaptée aux enfants')
@@ -1762,7 +1762,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               activitySection = `<h2>Activités</h2><p>Plage sauvage sans parking — accessible à pied uniquement.</p>`
             }
             // 3. Season tip
-            const seasonSection = `<h2>Saison des sargasses</h2><p>La saison des sargasses aux Antilles s'étend généralement d'avril à septembre. Consultez les prévisions 7 jours avant votre visite.</p>`
+            const seasonSection = `<h2>Saison des sargasses</h2><p>La saison des sargasses aux Antilles s'étend généralement d'avril à septembre, avec des pics entre juin et août. Le reste de l'année, les échouages sont rares : sur cette période calme nos alertes sont affichées en faible confiance, et on le dit franchement plutôt que de faire semblant. Consultez les prévisions 7 jours (J+1 à J+7) avant votre visite.</p>`
             // 4. Drive context
             const driveMin = parseInt(b.drive, 10) || 30
             const driveType = driveMin < 20 ? 'sortie rapide' : 'excursion à la journée'
@@ -1826,7 +1826,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${communeLine}${networkLine}${proLine}\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} aujourd'hui (${b.commune}, ${island}) — état en temps réel</h1>\n        ${beachImgTag}\n        <p>Y a-t-il des sargasses à ${b.name} ce matin ? Le Veilleur lit la mer au large de ${b.commune} (${island}) à partir des données satellite publiques Copernicus et NOAA — mesuré, pas deviné — et croise l'image 4 fois par jour. État en temps réel et prévisions 7 jours, plage par plage.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${communeLine}${networkLine}${proLine}\n      </article>\n    </noscript>`
             }
             // ── HERO golden-hour : préfixe le noscript (page JS-off) par une scène
             // SVG inline + bande verdict, AVANT l'<article>. Additif, jamais bloquant :

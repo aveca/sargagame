@@ -657,7 +657,7 @@ function VisitPlan({beach,lang,allBeaches,weeklyData}){
   if(!plan.sections.length)return null
   const tones={clean:"#22C55E",warn:"#F59E0B",avoid:"#E8522A",alt:"#5b3a8e",info:"#3fd07f"}
   return(<div style={{margin:"14px 0 6px"}}>
-    <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"var(--sg-mid,#8AA09B)",marginBottom:6}}>{_t(lang,"Le plan du Veilleur","The Watchman's plan","El plan del Vigía")}</div>
+    <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"var(--sg-mid,#8AA09B)",marginBottom:6}}>{_t(lang,"Le plan du Veilleur","The Watcher's plan","El plan del Vigía")}</div>
     {plan.sections.map((sec,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"9px 0",borderTop:i?"1px solid rgba(120,140,135,.16)":"none"}}>
       <div style={{width:3,borderRadius:3,background:tones[sec.tone]||"#3fd07f",flexShrink:0,alignSelf:"stretch"}}/>
       <div><div style={{fontSize:13.5,fontWeight:800,color:tones[sec.tone]||"var(--sg-text,#1A2B27)"}}>{sec.title}</div><div style={{fontSize:13,lineHeight:1.42,color:"var(--sg-text,#33433F)",marginTop:1}}>{sec.body}</div></div>
@@ -1082,7 +1082,7 @@ function h2sBeats(lang){
       eyrow: T("ALERTE VEILLEUR", "WATCHMAN ALERTS", "ALERTA DEL VIGÍA"),
       heading: T("Sois prévenu à temps", "Get warned in time", "Recibe alertas a tiempo"),
       sub: T("Ne te laisse plus surprendre par l'odeur. Notre veilleur surveille les risques H₂S devant tes plages préférées.", "Never get caught off guard by the smell again. Our Watchman monitors H₂S risks in front of your favorite beaches.", "No te dejes sorprender por el olor. Nuestro Vigía monitorea los riesgos de H₂S frente a tus playas."),
-      cta: T("Activer Le Veilleur →", "Activate the Watchman →", "Activar el Vigía →"),
+      cta: T("Activer Le Veilleur →", "Activate the Watcher →", "Activar el Vigía →"),
       scene: (
         <g>
           <rect width="800" height="600" fill="#120821"/>
@@ -1359,7 +1359,7 @@ function solutionsBeats(lang){
       </g>},
     // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
     {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit la signature des algues en mer (satellites NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watchman reads the algae's signature at sea (NASA/Copernicus satellites) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee la firma de las algas en el mar (satélites NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
+      sub:T("Le Veilleur lit la signature des algues en mer (satellites NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watcher reads the algae's signature at sea (Copernicus/NOAA satellites) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee la firma de las algas en el mar (satélites NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
@@ -1406,7 +1406,7 @@ function solutionsBeats(lang){
       scene:<SolDebateScene lang={lang}/>},
     // 7 — ESPOIR + SORTIE (escapable, jamais infernal)
     {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
-      sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watchman keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
+      sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watcher keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
       cta:T("Sortir & voir les plages →","Exit & see the beaches →","Salir y ver las playas →"),
       scene:<g><defs>{SKY("sol5s")}{SEA("sol5")}</defs><rect width="800" height="360" fill="url(#sol5s)"/>
         <path d="M340 230 a60 60 0 0 1 120 0 Z" fill="#FFD884"/>
@@ -2908,7 +2908,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
       const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
       const promiseEl=allClean
         ?(lang==="es"?(<>Tu costa está limpia. <span style={G}>Mañana</span>, el Vigía ya lo ha visto.</>):lang==="en"?(<>Your coast is clear. <span style={G}>Tomorrow</span>, the Watchman has already seen it.</>):(<>Ta côte est propre. <span style={G}>Demain</span>, le Veilleur l'a déjà vu.</>))
-        :(lang==="es"?(<>El Vigía vigila tu costa <span style={G}>cada día</span>, antes que tú.</>):lang==="en"?(<>The Watchman watches your coast <span style={G}>every day</span>, before you.</>):(<>Le Veilleur garde ta côte <span style={G}>chaque jour</span>, avant toi.</>))
+        :(lang==="es"?(<>El Vigía vigila tu costa <span style={G}>cada día</span>, antes que tú.</>):lang==="en"?(<>The Watcher watches your coast <span style={G}>every day</span>, before you.</>):(<>Le Veilleur garde ta côte <span style={G}>chaque jour</span>, avant toi.</>))
       const proof=_t(lang,`Fiable à ${Math.round(firstConf)}% demain · vérifié satellite`,`${Math.round(firstConf)}% confidence tomorrow · satellite-verified`,`${Math.round(firstConf)}% de confianza mañana · verificado por satélite`)
       return(
         <div className="pw-beat-in" style={{marginTop:10,borderRadius:16,overflow:"hidden",border:"1px solid rgba(0,0,0,.06)",background:"#190c2c"}}>
@@ -7137,7 +7137,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
             </div>
           ):(<>
             <div style={{display:"inline-block",background:INK,color:"#FDFCF7",fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",padding:"4px 11px",borderRadius:7,marginBottom:11}}>
-              {_t(lang,"Le Veilleur a préparé ta semaine","The Veilleur prepped your week","El Vigía preparó tu semana")}
+              {_t(lang,"Le Veilleur a préparé ta semaine","The Watcher prepped your week","El Vigía preparó tu semana")}
             </div>
             <div style={{fontFamily:"'Anton',sans-serif",color:INK,fontSize:28,lineHeight:.94,letterSpacing:"-.015em",textTransform:"uppercase",marginBottom:13}}>
               {_t(lang,<>Ta <span style={hl}>semaine</span> de plages propres est prête.</>,<>Your <span style={hl}>week</span> of clean beaches is ready.</>,<>Tu <span style={hl}>semana</span> de playas limpias está lista.</>)}
