@@ -47,6 +47,18 @@ jobs:
           OUTREACH_INTL: '1'
         run: node scripts/automation/auto-outreach.cjs
 
+      # ── 1a. Curated high-authority backlink outreach (DMOs, tourism boards,
+      #   municipal beach-conditions pages, local news) from seo-growth/
+      #   backlink-prospects.json. Deliverability-first: max 2/run, REAL on-site
+      #   email only (no guessed fallback), dedup-for-life, value-first + opt-out.
+      #   Intl (US/MX/DR) gated on OUTREACH_INTL=1 (already set above).
+      - name: Curated backlink outreach (low-volume, high-authority)
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          OUTREACH_INTL: '1'
+          CURATED_MAX: '2'
+        run: node scripts/automation/seo-outreach-curated.cjs
+
       # ── 1b. Prospection B2B sortante SELF-SERVE (le bot prospecte, pas le fondateur).
       #   CTA = brief quotidien auto + widget gratuit (AUCUN appel demandé).
       #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur SMTP_PASS.

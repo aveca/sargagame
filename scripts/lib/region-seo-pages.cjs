@@ -419,6 +419,13 @@ function emitLangPages(ctx) {
     items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
     if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
+    // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
+    // sont liées depuis chaque hub ET entre elles → aucune orpheline, autorité
+    // concentrée sur le cluster. Filtre par langue (slug propre à la langue).
+    for (const e of (content.extraPages || [])) {
+      if ((e.lang && e.lang !== lang) || !e.slug || e.inNav === false) continue
+      items.push([`extra:${e.slug}`, `${prefix}/${e.slug}/`, e.navLabel || smartTrim(e.h1 || e.title, 48)])
+    }
     return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
   }
 
@@ -579,13 +586,39 @@ ${hubLinks('weekly')}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
+  // ── Pages éditoriales programmatiques (content.extraPages[]) ──
+  // Levier de scale long-traîne EN/ES, grounded sur les vraies requêtes GSC
+  // (questions "is there sargassum… / porque hay sargazo", sécurité "es peligroso",
+  // "playas sin sargazo", plages/villes spécifiques). Chaque page = noscript SSR
+  // pur + FAQPage JSON-LD (featured-snippet / PAA bait) + breadcrumb, maillée vers
+  // tous les hubs + le réseau inter-sites (jamais orpheline). Slug propre à la
+  // langue → pas d'hreflang (pages spécifiques au marché ; canonical = self).
+  // Additif : pas d'extraPages pour la langue ⇒ rendu inchangé.
+  for (const e of (content.extraPages || [])) {
+    if ((e.lang && e.lang !== lang) || !e.slug || !e.title) continue
+    const secHtml = (e.sections || []).map(s => `<h2>${esc(s.h2)}</h2><p>${esc(s.text)}</p>`).join('')
+    const faqArr = Array.isArray(e.faq) ? e.faq.filter(f => f && f.q && f.a) : []
+    const faqLabel = lang === 'es' ? 'Preguntas frecuentes' : lang === 'fr' ? 'Questions fréquentes' : 'Frequently asked questions'
+    const faqHtml = faqArr.length
+      ? `<section><h2>${faqLabel}</h2>${faqArr.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>` : ''
+    const jsonLd = [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: smartTrim(e.title, 60), path: `${prefix}/${e.slug}/` }])]
+    if (faqArr.length) jsonLd.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqArr.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) })
+    hubs.push({
+      kind: `extra:${e.slug}`, sm: { daily: !!e.daily, priority: e.priority || '0.6' },
+      slug: e.slug, title: smartTrim(e.title, 70), desc: trimDesc(e.desc), jsonLd, alternates: [],
+      noscript: `<article><h1>${esc(e.h1 || e.title)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(e.intro || '')}</p>
+${secHtml}${faqHtml}
+${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
+    })
+  }
+
   for (const h of hubs) {
     const pathname = `${prefix}/${h.slug}/`
     writePage(distDir, pathname, pageShell(tpl, {
       title: h.title, desc: h.desc, pathname, domain, lang,
       noscript: h.noscript,
-      jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: h.title, path: pathname }])],
-      alternates: altsForKind(h.kind),
+      jsonLd: h.jsonLd || [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: h.title, path: pathname }])],
+      alternates: h.alternates !== undefined ? h.alternates : altsForKind(h.kind),
     }))
     pushUrl(pathname, h.sm)
   }
