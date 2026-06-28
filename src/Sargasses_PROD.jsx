@@ -62,9 +62,21 @@ const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
 const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
 const LazyConditions=lazyWithRetry(()=>import("./Conditions"))
+// Journal du Veilleur (nouveautés visiteurs de retour) — scène cold, interaction-only.
+const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal"))
+// Vue Liste des plages (tab Plages) — alternative carte, montrée seulement sur view==="list".
+const BeachListView=lazyWithRetry(()=>import("./BeachListView"))
+// Scène « L'Alerte » (boucle SVG 9s) — illustration premium, hors first-paint.
+const AlertScene=lazyWithRetry(()=>import("./AlertScene"))
+// HeroScene — hero vectoriel golden-hour, montré dans les funnels (hors first-paint).
+const HeroScene=lazyWithRetry(()=>import("./HeroScene"))
+// SargaChat — assistant guidé (chips), ouvert via showChat (interaction-only).
+const SargaChat=lazyWithRetry(()=>import("./SargaChat"))
+// AlertHub — page /alertes/ (hub Premium), ouvert via showAlertHub (interaction-only).
+const AlertHub=lazyWithRetry(()=>import("./AlertHub"))
 
 
-class ErrBound extends Component{
+export class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
   componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack);try{this.props.onError&&this.props.onError(e)}catch(_){}}
@@ -186,7 +198,7 @@ const FC_DAY_MAP={
 const fcDay=(d,lang)=>lang==="fr"?d.day:((FC_DAY_MAP[lang]||{})[d.day]||d.day)
 /* Beach Score labels arrive in FRENCH from src/lib/score.js — map to en/es at render */
 const SCORE_LABEL_I18N={EXCEPTIONNEL:{en:"EXCEPTIONAL",es:"EXCEPCIONAL"},SUPER:{en:"GREAT",es:"GENIAL"},BON:{en:"GOOD",es:"BUENO"},MOYEN:{en:"AVERAGE",es:"REGULAR"},PASSABLE:{en:"FAIR",es:"PASABLE"},"ÉVITER":{en:"AVOID",es:"EVITAR"},NON:{en:"NO",es:"NO"}}
-const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[lang==="es"?"es":"en"]||label)
+export const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[lang==="es"?"es":"en"]||label)
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -435,7 +447,7 @@ async function _scMissedCard(opts,lang){
     return await _scShip(cv,"defi-veilleur.png",correct?_t(lang,"J'ai eu l'œil du Veilleur 🛰️🎯 — tu fais mieux ?","Got the Watchman's eye 🛰️🎯 — beat it?","Tuve el ojo del Vigía 🛰️🎯 — ¿me superas?"):_t(lang,"Le défi du Veilleur m'a eu 😅 — tu fais mieux ? 🛰️","The Watchman's Challenge fooled me 😅 — beat it? 🛰️","El Desafío del Vigía me engañó 😅 — ¿me superas? 🛰️"))
   }catch(e){return false}
 }
-function Veilleur({mood="serein",size=44}){
+export function Veilleur({mood="serein",size=44}){
   const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
   return(
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
@@ -1561,7 +1573,7 @@ function beachStoryBeats(beach,forecast,lang){
   ]
 }
 
-const ST={
+export const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
   clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",les:"Limpia",e:"✅",h2s:false,
@@ -1981,7 +1993,7 @@ export const NO_TRIAL=true
    UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
-const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+export const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    A/B TESTING + ANALYTICS
@@ -2257,7 +2269,7 @@ function satImg(lat,lng,size=280){
   return`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng-p},${lat-p},${lng+p},${lat+p}&bboxSR=4326&size=${size},${size}&imageSR=4326&format=png&f=image`
 }
 
-function haversine(lat1,lon1,lat2,lon2){
+export function haversine(lat1,lon1,lat2,lon2){
   const R=6371,toR=Math.PI/180
   const dLat=(lat2-lat1)*toR,dLon=(lon2-lon1)*toR
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2
@@ -2371,7 +2383,7 @@ function getBeachPhoto(beach){
 /* Vignette golden-hour de marque — remplace les photos externes (Google Places)
    et les tuiles satellite qui juraient avec le design « 100% nos assets ».
    Dégradé ciel→soleil→mer (SCENE_TOKENS) teinté par l'état réel de la plage. */
-function beachThumbBg(beach){
+export function beachThumbBg(beach){
   const c=(ST[beach?.status]||ST._loading).c
   return`radial-gradient(120% 78% at 50% 14%, ${c}3a 0%, transparent 58%), linear-gradient(168deg, #2e1a5e 0%, #6a2f9e 30%, #C97E3A 56%, #F2B05E 70%, #6a2f9e 84%, #1a1140 100%)`
 }
@@ -4812,372 +4824,6 @@ function SearchBar({value,onChange,lang}){
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   BEACH LIST VIEW — alternative to map (tab Plages)
-   ═══════════════════════════════════════════════════════════════════════════ */
-function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium,userPos,onRequestGeo}){
-  const LL=T[lang]||T.fr
-  const [q,setQ]=useState("")
-  const [qFocus,setQFocus]=useState(false)
-  const [chip,setChip]=useState(null)
-  // TRI explicite (contrôle discret) — best (défaut, ordre data déjà classé) / near / az.
-  // "near" = gracieux : haversine si géoloc, sinon temps de route (drive), sinon best.
-  const [sort,setSort]=useState("best")
-  const listFclock=useMemo(()=>{try{const q=window.location.search;if(/[?&]listfclock=1/.test(q))return true;if(/[?&]listfclock=0/.test(q))return false;return abVariant("list_fclock",["control","lock"],[.5,.5])==="lock"}catch(_){return false}},[])
-
-  const filtered=useMemo(()=>{
-    let r=beaches
-    if(q){const lq=q.toLowerCase();r=r.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))}
-    if(chip==="clean")r=r.filter(b=>b.status==="clean")
-    if(chip==="fav")r=r.filter(b=>favorites.includes(b.id))
-    if(chip==="avoid")r=r.filter(b=>b.status==="avoid")
-    // TRI : "best" garde l'ordre data d'entrée (déjà classé) → ne pas re-trier.
-    if(sort!=="best"){
-      r=r.slice()
-      if(sort==="az"){
-        r.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),lang||"fr"))
-      }else if(sort==="near"){
-        // distance réelle si géoloc accordée, sinon fallback temps de route, sinon en queue
-        const dist=b=>{
-          if(userPos&&typeof b.lat==="number"&&typeof b.lng==="number")return haversine(userPos.lat,userPos.lng,b.lat,b.lng)
-          if(typeof b.drive==="number")return b.drive
-          return Infinity
-        }
-        r.sort((a,b)=>dist(a)-dist(b))
-      }
-    }
-    return r
-  },[beaches,q,chip,favorites,sort,userPos,lang])
-  const nClean=filtered.filter(b=>b.status==="clean").length
-  const bestToday=useMemo(()=>beaches.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,bb)=>bb.score-a.score)[0]||null,[beaches])
-  /* ── BIBLE DE MARQUE (tokens locaux, 1 rôle = 1 valeur) ──
-     Statut = trio EXCLUSIF couleur + FORME-SVG + MOT. Jamais l'or sur un statut.
-     Or = action premium RARE (1 seul CTA pop-3). Mono = chiffres (score). */
-  const SG={gold:"#E8A800",goldL:"#FFC72C",goldLL:"#FFE47A",teal:"#009E8E",tealL:"#1EC8B0",
-    clean:"#22C55E",moderate:"#B87A00",avoid:"#E8522A",ink:"#0D0D0D",mid:"#5A5A5A"}
-  const MONO="'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace"
-  // Couleur du trio statut depuis un status app → token bible (purge des verts pirates)
-  const stColor=s=>s==="clean"?SG.clean:s==="moderate"?SG.moderate:s==="avoid"?SG.avoid:SG.mid
-  // Pastille verdict : couleur + FORME SVG inline (✓ / ◐ / ✕, jamais l'Unicode tofu) + MOT
-  const StatusForm=({status,size=13})=>{
-    const c="#0D0D0D"
-    if(status==="clean")return(<svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0}}><path d="M3.5 8.5 L6.5 11.5 L12.5 4.5" fill="none" stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg>)
-    if(status==="moderate")return(<svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0}}><circle cx="8" cy="8" r="6" fill="none" stroke="#fff" strokeWidth="2"/><path d="M8 2 A6 6 0 0 1 8 14 Z" fill="#fff"/></svg>)
-    return(<svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0}}><path d="M4 4 L12 12 M12 4 L4 12" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/></svg>)
-  }
-  // Pastille complète (réutilisée strip + cartes) : couleur+forme+mot
-  const StatusPill=({status,word})=>(
-    <span style={{display:"inline-flex",alignItems:"center",gap:5,border:`2px solid ${SG.ink}`,borderRadius:999,
-      padding:"3px 9px",fontWeight:800,fontSize:12,textTransform:"uppercase",letterSpacing:".02em",
-      boxShadow:`2px 2px 0 ${SG.ink}`,whiteSpace:"nowrap",
-      background:stColor(status),color:status==="clean"?SG.ink:"#fff"}}>
-      <StatusForm status={status}/>{word}
-    </span>
-  )
-  const chips=[
-    {id:"clean",label:_t(lang,"Propres","Clean","Limpias"),c:SG.clean,fg:SG.ink},
-    {id:"fav",label:_t(lang,"Favoris","Favourites","Favoritas"),c:SG.teal,fg:"#fff"},
-    {id:"avoid",label:_t(lang,"Éviter","Avoid","Evitar"),c:SG.avoid,fg:"#fff"},
-  ]
-  // Compteurs par chip (P10) : combien de plages chaque filtre donnerait, en respectant
-  // la recherche q mais indépendamment du chip actif → l'utilisateur voit où il y a des
-  // résultats avant de cliquer.
-  const qBase=useMemo(()=>{if(!q)return beaches;const lq=q.toLowerCase();return beaches.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))},[beaches,q])
-  const chipCount=id=>id==="fav"?qBase.filter(b=>favorites.includes(b.id)).length:qBase.filter(b=>b.status===id).length
-  return(
-    <div style={{height:"100%",overflowY:"auto",overflowX:"hidden",
-      paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
-      background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#120821 100%)",
-      color:"#fff",maxWidth:600,margin:"0 auto"}}>
-      {/* Editorial kicker — couleurs via tokens thème (lisible papier comic + sombre) */}
-      <div style={{padding:"10px 20px 8px",display:"flex",alignItems:"baseline",gap:8}}>
-        <span style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,
-          letterSpacing:"-.02em",color:"var(--sg-ink,#fff)"}}>
-          {filtered.length}
-        </span>
-        <span style={{fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",
-          color:"var(--sg-mute,rgba(255,255,255,.6))"}}>
-          {_t(lang,`plages · ${nClean} propres`,`beaches · ${nClean} clean`,`playas · ${nClean} limpias`)}
-        </span>
-      </div>
-      {/* Strip meilleur aujourd'hui — best clean beach card (no filter active, has candidate) */}
-      {!q&&!chip&&bestToday&&(
-        <button onClick={()=>onBeachClick(bestToday)}
-          style={{display:"flex",alignItems:"center",gap:12,width:"calc(100% - 32px)",margin:"0 16px 12px",
-            padding:14,borderRadius:16,border:`2.5px solid ${SG.ink}`,
-            background:"radial-gradient(circle at 1px 1px, rgba(232,168,0,.10) 1.4px, transparent 1.6px) 0 0/7px 7px, linear-gradient(135deg,#15433A,#0E2B25)",
-            cursor:"pointer",textAlign:"left",fontFamily:"inherit",color:"#fff",
-            boxShadow:`4px 4px 0 ${SG.ink}`}}>
-          <div style={{width:54,height:54,flexShrink:0,borderRadius:12,border:`2px solid ${SG.ink}`,
-            background:beachThumbBg(bestToday),position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.12)"}}/>
-          </div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",
-              color:"var(--sg-mute,#FFE47A)",marginBottom:3}}>{_t(lang,"Meilleure aujourd'hui","Best today","Mejor hoy")}</div>
-            <div className="anton" style={{fontSize:20,lineHeight:1.08,textTransform:"uppercase",color:"var(--sg-ink,#fff)",
-              whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{bestToday.name}</div>
-            <div style={{fontSize:12,color:"var(--sg-mute,rgba(255,255,255,.92))",marginTop:3,fontWeight:600}}>
-              {bestToday.commune} · <span style={{fontFamily:MONO,fontVariantNumeric:"tabular-nums"}}>{bestToday.score}</span><span style={{fontFamily:MONO}}>/100</span>
-            </div>
-          </div>
-          <StatusPill status="clean" word={_t(lang,"Propre","Clean","Limpia")}/>
-        </button>
-      )}
-      {/* Search + filter chips + TRI — recette .sg-field comic unique (bord 2.5 ink,
-          ombre dure, loupe SVG mono-trait, focus ring or). Tokens thème → comic + dark. */}
-      <div style={{padding:"0 16px 12px"}}>
-        <div style={{position:"relative",display:"flex",alignItems:"center",gap:8,
-          background:"var(--sg-card,#fff)",
-          borderRadius:12,padding:"0 14px",height:48,marginBottom:12,
-          border:`2.5px solid ${SG.ink}`,
-          boxShadow:qFocus?`2px 2px 0 ${SG.ink}, 0 0 0 3px rgba(255,199,44,.20)`:`2px 2px 0 ${SG.ink}`,
-          transition:"box-shadow .12s"}}>
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{flexShrink:0,transition:"color .15s",color:qFocus?SG.gold:SG.mid}}>
-            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2.4"/>
-            <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
-          </svg>
-          <input value={q} onChange={e=>setQ(e.target.value)} type="search"
-            onFocus={()=>setQFocus(true)} onBlur={()=>setQFocus(false)}
-            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
-            placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
-            style={{flex:1,background:"none",border:"none",outline:"none",fontSize:16,color:"var(--sg-ink,"+SG.ink+")",fontFamily:"inherit",fontWeight:600,letterSpacing:0,minWidth:0}}/>
-          {q&&<button onClick={()=>setQ("")} aria-label={_t(lang,"Effacer","Clear","Borrar")} className="sg-field-clear">
-            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>
-          </button>}
-        </div>
-        {/* CHIPS — pill comic. Active = fond statut PLEIN (clean/teal/avoid). Le thème comic
-            force le fond des boutons → on peint l'actif via classes `!important` scopées. */}
-        <style>{`
-          .sg-field-clear{display:flex!important;align-items:center;justify-content:center;width:36px;height:36px;padding:0!important;flex-shrink:0;
-            background:none!important;border:none!important;box-shadow:none!important;border-radius:999px!important;color:${SG.mid}!important;cursor:pointer;text-shadow:none!important}
-          .sg-fchip{display:inline-flex!important;align-items:center;gap:6px;min-height:36px;font-size:12px;font-weight:800!important;
-            text-transform:uppercase;letter-spacing:.02em;padding:6px 12px!important;border-radius:999px!important;
-            border:2.5px solid ${SG.ink}!important;box-shadow:2px 2px 0 ${SG.ink}!important;cursor:pointer;font-family:inherit!important;
-            white-space:nowrap;background:var(--sg-card,#fff)!important;color:var(--sg-ink,${SG.ink})!important;text-shadow:none!important;transform:none}
-          .sg-fchip.is-on{box-shadow:1px 1px 0 ${SG.ink}!important;transform:translate(2px,2px)}
-          .sg-fchip.is-on .sg-fchip-ct{color:inherit!important}
-          .sg-fchip-clean.is-on{background:${SG.clean}!important;color:${SG.ink}!important}
-          .sg-fchip-fav.is-on{background:${SG.teal}!important;color:#fff!important}
-          .sg-fchip-avoid.is-on{background:${SG.avoid}!important;color:#fff!important}
-          .sg-fchip-ct{font-family:${MONO};font-variant-numeric:tabular-nums;font-weight:700;opacity:.7;color:${SG.mid}}
-        `}</style>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {chips.map(ch=>{
-            const active=chip===ch.id
-            return(
-              <button key={ch.id} onClick={()=>setChip(active?null:ch.id)}
-                aria-pressed={active}
-                className={`sg-fchip sg-fchip-${ch.id}`+(active?" is-on":"")}>
-                {ch.label} <span className="sg-fchip-ct">{chipCount(ch.id)}</span>
-              </button>
-            )
-          })}
-        </div>
-        {/* TRI — segmented discret (plus léger que les chips : sans ombre dure, zéro or).
-            Câblé sur l'état `sort` ci-dessus. "Plus proches" = fallback gracieux sans géoloc.
-            ⚠️ Le thème comic force `.theme-comic button{background:var(--sg-card)!important}` →
-            on neutralise les styles encrés via classes `!important` scopées (sinon l'actif
-            est invisible). C'est pourquoi ce contrôle utilise des classes, pas du inline. */}
-        <style>{`
-          .sg-sortseg{display:inline-flex;border:2px solid ${SG.ink};border-radius:999px;overflow:hidden;max-width:100%;background:var(--sg-card,#fff)}
-          .sg-sortseg .sg-sortbtn{appearance:none!important;border:none!important;border-right:2px solid ${SG.ink}!important;border-radius:0!important;
-            box-shadow:none!important;cursor:pointer;min-height:38px;padding:0 13px!important;
-            font-family:inherit!important;font-weight:800!important;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
-            background:var(--sg-card,#fff)!important;color:var(--sg-mute,rgba(255,255,255,.7))!important;
-            transition:background .1s,color .1s;white-space:nowrap;text-shadow:none!important}
-          .sg-sortseg .sg-sortbtn:last-child{border-right:none!important}
-          .sg-sortseg .sg-sortbtn.is-on{background:${SG.ink}!important;color:var(--sg-card,#fff)!important}
-        `}</style>
-        <div style={{marginTop:12}}>
-          <div style={{fontSize:12,fontWeight:800,letterSpacing:".10em",textTransform:"uppercase",
-            color:"var(--sg-mute,rgba(255,255,255,.6))",marginBottom:7}}>
-            {_t(lang,"Trier par","Sort by","Ordenar por")}
-          </div>
-          <div className="sg-sortseg" role="tablist" aria-label={_t(lang,"Trier les plages","Sort beaches","Ordenar playas")}>
-            {[
-              {id:"best",label:_t(lang,"Meilleures","Best","Mejores")},
-              {id:"near",label:_t(lang,"Plus proches","Nearest","Cercanas")},
-              {id:"az",label:_t(lang,"A–Z","A–Z","A–Z")},
-            ].map((s,i)=>{
-              const on=sort===s.id
-              return(
-                <button key={s.id} role="tab" aria-selected={on}
-                  className={"sg-sortbtn"+(on?" is-on":"")}
-                  onClick={()=>{setSort(s.id);try{track("sg_list_sort",{sort:s.id})}catch(_){}
-                    // « Plus proches » sans position → soft-ask contextuel (tri par
-                    // distance réelle dès que la permission est accordée ; sinon repli drive).
-                    if(s.id==="near"&&!userPos&&onRequestGeo)onRequestGeo("list_near")}}>
-                  {s.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ── CTA OR PREMIUM — le SEUL pop-3 / seule surface or de l'écran (conversion) ──
-          className "sg-cta" : sous le thème comic global (100% site), c'est la règle
-          `.theme-comic .sg-cta` qui peint le DORÉ golden-hour (sinon le bouton hérite du
-          papier crème générique). Hors thème, le style inline or sert de fallback. */}
-      {!isPremium&&(
-        <button className="sg-cta sg-paygold" onClick={()=>{try{track("sg_beach_list_premium_cta")}catch(_){}; onPremiumClick("beach_list")}}
-          style={{margin:"4px 16px 16px",border:`2.5px solid ${SG.ink}`,borderRadius:16,boxShadow:`6px 6px 0 ${SG.ink}`,
-            background:"radial-gradient(circle at 1px 1px, rgba(13,13,13,.10) 1.3px, transparent 1.5px) 0 0/7px 7px, linear-gradient(135deg,"+SG.goldL+","+SG.gold+")",
-            color:SG.ink,padding:14,display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",
-            width:"calc(100% - 32px)",fontFamily:"inherit"}}>
-          <svg width="42" height="42" viewBox="0 0 40 40" aria-hidden="true" style={{flexShrink:0}}>
-            <rect x="9" y="11" width="22" height="15" rx="6" fill="#0D0D0D"/>
-            <rect x="11" y="13" width="18" height="11" rx="4" fill="#FFC72C"/>
-            <circle cx="16" cy="18" r="3" fill="#0D0D0D"/><circle cx="15" cy="17.5" r="1.1" fill="#FFE47A"/>
-            <path d="M31 18 L37 15 M31 20 L37 22" stroke="#0D0D0D" strokeWidth="2.4" strokeLinecap="round"/>
-          </svg>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:800,fontSize:12,textTransform:"uppercase",letterSpacing:".10em",color:"#5c4500"}}>
-              {_t(lang,"Le Veilleur","The Watcher","El Vigía")}
-            </div>
-            <div style={{fontSize:15,fontWeight:800,lineHeight:1.3,marginTop:2,color:SG.ink}}>
-              {_t(lang,"7 jours d'avance · alerte dès qu'une plage change","7 days ahead · alert the moment a beach changes","7 días de adelanto · alerta en cuanto cambia una playa")}
-            </div>
-          </div>
-          <span style={{flexShrink:0,width:30,height:30,borderRadius:"50%",background:SG.ink,color:SG.goldL,
-            display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800}}>→</span>
-        </button>
-      )}
-      {filtered.length===0?(
-        <div className="sg-empty" style={{padding:"60px 32px"}}>
-          <div className="sg-empty__veil"><Veilleur mood="serein" size={64}/></div>
-          <div className="sg-empty__title">
-            {_t(lang,"Aucune plage trouvée","No beaches match","No se encontraron playas")}
-          </div>
-          <div className="sg-empty__sub">
-            {_t(lang,"Essaie un autre filtre — je garde l'œil sur la mer, baie par baie.","Try another filter — I'm watching the sea, bay by bay.","Prueba otro filtro — vigilo el mar, bahía por bahía.")}
-          </div>
-        </div>
-      ):(
-      <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:11}}>
-        {filtered.map(b=>{
-          const st=ST[b.status]||ST._loading
-          const hasScore=typeof b.score==="number"
-          // statut du trio aligné sur le SCORE affiché (pas le status brut) → couleur+forme+mot cohérents
-          const band=hasScore?(b.score>=70?"clean":b.score>=40?"moderate":"avoid"):b.status
-          const railC=stColor(band)
-          // MOT : label éditorial data-driven si présent, sinon le mot du trio
-          const word=(hasScore&&scoreLabelFor(b.scoreLabel,lang))||(lang==="es"?st.les:lang==="en"?st.le:st.l)
-          const isFav=favorites.includes(b.id)
-          const sargId=BEACH_TO_SARG?.[b.id]
-          const fcDays=(listFclock&&isFav&&!isPremium&&sargData)
-            ?(sargData?.weekly?.[sargId]?.forecast||null)
-            :null
-          const colFc=s=>stColor(s)
-          const hFc=s=>s==="clean"?20:s==="moderate"?28:36
-          return(
-            <button key={b.id} onClick={()=>onBeachClick(b)} style={{
-              position:"relative",
-              display:"flex",flexDirection:fcDays?"column":"row",alignItems:fcDays?"stretch":"center",
-              gap:fcDays?0:13,padding:0,
-              borderRadius:16,border:`2.5px solid ${SG.ink}`,
-              background:"linear-gradient(180deg,#16322B,#0E2620)",
-              cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",color:"#fff",
-              boxShadow:isFav&&fcDays?`6px 6px 0 ${SG.ink}`:`4px 4px 0 ${SG.ink}`,
-              overflow:"hidden",
-            }}>
-              {/* Top row (always) */}
-              <div style={{display:"flex",alignItems:"center",gap:13,position:"relative"}}>
-              {/* Score-colored left rail — static (doctrine calme, pas de glow) */}
-              <div aria-hidden="true" style={{position:"absolute",left:0,top:0,bottom:0,width:5,
-                background:railC}}/>
-              {/* Photo thumbnail */}
-              <div style={{width:74,height:74,flexShrink:0,position:"relative",marginLeft:7,borderRadius:12,
-                border:`2px solid ${SG.ink}`,background:beachThumbBg(b)}}/>
-              <div style={{flex:1,minWidth:0,padding:"13px 4px 13px 0"}}>
-                {/* Couleurs via tokens thème (--sg-ink/--sg-mute) avec fallback scène sombre :
-                    lisible sur le papier crème du thème comic global ET sur fond sombre. */}
-                <div className="anton" style={{fontSize:20,lineHeight:1.08,letterSpacing:".005em",
-                  textTransform:"uppercase",color:"var(--sg-ink,#fff)",
-                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {isFav?<span style={{color:SG.teal}}>♥ </span>:null}{b.name}
-                </div>
-                <div style={{fontSize:12,color:"var(--sg-mute,rgba(255,255,255,.85))",marginTop:3,fontWeight:600,
-                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {b.commune}{typeof b.drive==="number"?<>{" · "}<span style={{fontFamily:MONO,fontVariantNumeric:"tabular-nums"}}>{b.drive}</span>{` ${LL.drive}`}</>:""}
-                </div>
-                <div style={{marginTop:8}}>
-                  <StatusPill status={band} word={word}/>
-                </div>
-              </div>
-              {/* Score badge — JetBrains Mono numeral, trio-coloré (lisible papier+sombre) */}
-              {hasScore&&(
-                <div style={{flexShrink:0,padding:"0 16px 0 0",display:"flex",flexDirection:"column",
-                  alignItems:"flex-end",justifyContent:"center"}}>
-                  <span style={{fontFamily:MONO,fontVariantNumeric:"tabular-nums",fontSize:28,fontWeight:800,lineHeight:.95,
-                    letterSpacing:"-.01em",color:railC}}>
-                    {b.score}
-                  </span>
-                  <span style={{fontFamily:MONO,fontSize:12,fontWeight:700,color:"var(--sg-mute,rgba(255,255,255,.7))",
-                    letterSpacing:".02em",marginTop:1}}>/100</span>
-                </div>
-              )}
-              </div>
-              {/* Forecast lock strip — fav only, !isPremium, A/B list_fclock */}
-              {fcDays&&(
-                <div onClick={e=>{e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}
-                  style={{margin:"0 14px 13px",padding:"12px 14px",borderRadius:12,
-                    background:"rgba(232,168,0,.10)",
-                    border:`2px solid ${SG.gold}`,cursor:"pointer"}}>
-                  <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:10}}>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"var(--sg-ink,#FFC72C)"}}>
-                        <svg width="13" height="13" viewBox="0 0 40 40" aria-hidden="true" style={{flexShrink:0}}>
-                          <rect x="9" y="11" width="22" height="15" rx="6" fill="#0D0D0D"/>
-                          <rect x="11" y="13" width="18" height="11" rx="4" fill="#FFC72C"/>
-                          <path d="M31 18 L37 15 M31 20 L37 22" stroke="#0D0D0D" strokeWidth="3" strokeLinecap="round"/>
-                        </svg>
-                        {_t(lang,"Prévisions 4 jours","4-day Forecast","Pronóstico 4 días")}
-                      </div>
-                      <div style={{fontSize:12,color:"var(--sg-mute,rgba(255,255,255,.9))",marginTop:3,fontWeight:600}}>
-                        {_t(lang,"J+2 · J+3 réservés aux Veilleurs","J+2 · J+3 for Watchers","J+2 · J+3 para Vigías")}
-                      </div>
-                    </div>
-                    <div style={{display:"flex",alignItems:"flex-end",gap:8,flexShrink:0}}>
-                      {[0,1].map(i=>{
-                        const day=fcDays[i]
-                        const c=colFc(day?.status||b.status)
-                        const h=hFc(day?.status||b.status)
-                        return(
-                          <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
-                            <div style={{width:22,height:h,borderRadius:5,border:`2px solid ${SG.ink}`,background:c}}/>
-                            <span style={{fontFamily:MONO,fontSize:10,fontWeight:700,color:"rgba(255,255,255,.85)",letterSpacing:".02em"}}>
-                              {i===0?_t(lang,"AUJ","TODAY","HOY"):"J+1"}
-                            </span>
-                          </div>
-                        )
-                      })}
-                      {["J+2","J+3"].map(lbl=>(
-                        <div key={lbl} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
-                          <div style={{width:22,height:28,borderRadius:5,border:`2px dashed ${SG.goldL}`,
-                            background:"rgba(255,199,44,.12)",display:"flex",alignItems:"center",
-                            justifyContent:"center"}}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true">
-                              <rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke={SG.goldL} strokeWidth="2"/>
-                              <path d="M8 11 V8 a4 4 0 0 1 8 0 V11" fill="none" stroke={SG.goldL} strokeWidth="2"/>
-                            </svg>
-                          </div>
-                          <span style={{fontFamily:MONO,fontSize:10,fontWeight:700,color:SG.goldL,letterSpacing:".02em"}}>{lbl}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-      )}
-    </div>
-  )
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ONBOARDING — Inline coachmark (progressive disclosure, no overlay)
@@ -7706,156 +7352,6 @@ function InstallPrompt(){
    (25 % des clics Clarity). S'affiche : home "/" uniquement, 1×/session,
    jamais sur les deep-links/landings SEO. Photo locale (~50-200 ko).
    ═══════════════════════════════════════════════════════════════════════════ */
-// ── SargaChat — assistant guidé « style chat IA », 100% statique ──
-// Arbre fermé (chips, pas de saisie libre) : les réponses sont calculées depuis
-// la donnée LIVE déjà en mémoire (sargassum.json) → véridiques par construction,
-// instantanées, zéro backend/LLM (recherche 2026-06-10 : hallucination sur un
-// produit qui vend UN verdict fiable = inacceptable ; précédent Air Canada 2024).
-// Chaque branche se termine sur une action : plage, carte, Premium, confiance.
-function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClose}){
-  const t=(fr,en,es)=>_t(lang,fr,en,es)
-  const cands=useMemo(()=>(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status),[allBeaches,island])
-  const cleans=useMemo(()=>cands.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0)),[cands])
-  const rootChips=[
-    {k:"where",label:t("🏖 Où aller aujourd'hui ?","🏖 Where should I go today?","🏖 ¿Adónde voy hoy?")},
-    {k:"tomorrow",label:t("📅 Et demain, ça tient ?","📅 Will it hold tomorrow?","📅 ¿Y mañana?")},
-    {k:"premium",label:t("⭐ C'est quoi Premium ?","⭐ What's Premium?","⭐ ¿Qué es Premium?")},
-    {k:"trust",label:t("🛰 C'est fiable ?","🛰 Is it reliable?","🛰 ¿Es confiable?")},
-  ]
-  const hello={who:"bot",text:t(
-    "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
-    "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
-    "¡Hola! Respondo con los datos satelitales de hoy — nada inventado. ¿Qué quieres saber?"),chips:rootChips}
-  const[msgs,setMsgs]=useState([hello])
-  const[typing,setTyping]=useState(false)
-  const bodyRef=useRef(null)
-  useEffect(()=>{if(bodyRef.current)bodyRef.current.scrollTop=bodyRef.current.scrollHeight},[msgs,typing])
-  const answer=k=>{
-    if(k==="where"){
-      if(cleans.length){
-        const top=cleans.slice(0,3)
-        return{text:t(
-          `Aujourd'hui, ${cleans.length} plage${cleans.length>1?"s":""} propre${cleans.length>1?"s":""}. Mon top : ${top.map(b=>`${b.name}${b.score!=null?` (${b.score}/100)`:""}`).join(", ")}.`,
-          `${cleans.length} clean beach${cleans.length>1?"es":""} today. My top picks: ${top.map(b=>`${b.name}${b.score!=null?` (${b.score}/100)`:""}`).join(", ")}.`,
-          `Hoy hay ${cleans.length} playa${cleans.length>1?"s":""} limpia${cleans.length>1?"s":""}. Mi top: ${top.map(b=>`${b.name}${b.score!=null?` (${b.score}/100)`:""}`).join(", ")}.`),
-          chips:[{k:"open:"+top[0].id,label:t("Ouvrir "+top[0].name+" →","Open "+top[0].name+" →","Abrir "+top[0].name+" →")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
-      }
-      const best=[...cands].sort((a,b)=>(b.score||0)-(a.score||0))[0]
-      return{text:t(
-        "Aucune plage 100% propre aujourd'hui — journée compliquée. La moins touchée reste "+(best?best.name:"…")+".",
-        "No fully clean beach today — rough day. The least affected is "+(best?best.name:"…")+".",
-        "Ninguna playa 100% limpia hoy — día difícil. La menos afectada es "+(best?best.name:"…")+"."),
-        chips:[...(best?[{k:"open:"+best.id,label:t("Voir "+best.name+" →","See "+best.name+" →","Ver "+best.name+" →")}]:[]),{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
-    }
-    if(k==="tomorrow"){
-      const wk=sargData?.weekly||{}
-      let stay=0,turn=0
-      for(const b of cleans){
-        const id=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id]
-        const f=id?wk[id]?.forecast?.[1]?.status:null
-        if(!f)continue
-        if(f==="clean")stay++;else turn++
-      }
-      const has=stay+turn>0
-      return{text:has?t(
-        `Prévision satellite pour demain : ${stay} plage${stay>1?"s":""} propre${stay>1?"s":""} le reste${stay>1?"nt":""}${turn?`, ${turn} se dégrade${turn>1?"nt":""} ⚠️`:" — ça tient."}`,
-        `Satellite forecast for tomorrow: ${stay} beach${stay>1?"es":""} stay${stay>1?"":"s"} clean${turn?`, ${turn} turn${turn>1?"":"s"} worse ⚠️`:" — holding."}`,
-        `Pronóstico satelital para mañana: ${stay} playa${stay>1?"s":""} sigue${stay>1?"n":""} limpia${stay>1?"s":""}${turn?`, ${turn} empeora${turn>1?"n":""} ⚠️`:" — se mantiene."}`):t(
-        "La prévision de demain est en cours de calcul (4 passages satellite par jour) — repasse dans quelques heures.",
-        "Tomorrow's forecast is still computing (4 satellite passes a day) — check back in a few hours.",
-        "El pronóstico de mañana se está calculando (4 pasadas satelitales al día) — vuelve en unas horas."),
-        chips:[{k:"premium",label:t("⭐ Les 7 jours, plage par plage","⭐ The full 7 days, beach by beach","⭐ Los 7 días, playa por playa")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
-    }
-    if(k==="premium")return{text:t(
-      "Premium, c'est ton veilleur personnel : la plage recommandée chaque matin dans ta boîte, une alerte si TA plage change, et la prévision 7 jours plage par plage. "+(PAY_CAPTURE_ONLY?"En ce moment c'est offert 7 jours, juste ton email.":"Annulable en 2 clics."),
-      "Premium is your personal watchman: the recommended beach in your inbox every morning, an alert when YOUR beach changes, and the 7-day forecast beach by beach. "+(PAY_CAPTURE_ONLY?"Right now it's 7 days on us, just your email.":"Cancel in 2 clicks."),
-      "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. "+(PAY_CAPTURE_ONLY?"Ahora son 7 días gratis, solo tu email.":"Cancela en 2 clics.")),
-      chips:[{k:"cta",label:t("Voir l'offre ⭐","See the offer ⭐","Ver la oferta ⭐")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
-    if(k==="trust")return{text:t(
-      "Données satellite Copernicus (programme spatial européen), actualisées 4×/jour, croisées avec la météo marine et les signalements locaux — plage par plage, pas de moyenne d'île. Quand on ne sait pas, on le dit.",
-      "Copernicus satellite data (the EU space programme), refreshed 4×/day, cross-checked with marine weather and local reports — beach by beach, no island-wide averages. When we don't know, we say so.",
-      "Datos del satélite Copernicus (programa espacial europeo), actualizados 4 veces al día, cruzados con meteo marina y reportes locales — playa por playa. Cuando no sabemos, lo decimos."),
-      chips:[{k:"about",label:t("La page confiance →","The trust page →","La página de confianza →")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
-    return null
-  }
-  const onChip=c=>{
-    const lbl=c.label.replace(/^← /,"")
-    if(c.k==="root"){setMsgs(m=>[...m,{who:"me",text:lbl},hello]);return}
-    if(c.k==="cta"){track("sg_chat_cta",{});onClose();onPremium();return}
-    // USD : /about/ (EN/ES, shipped 2026-06-11) — /a-propos/ n'existe que MQ/GP
-    // (pointer /a-propos/ sur USD = 404 avalé par le fallback SPA).
-    if(c.k==="about"){track("sg_chat_branch",{branch:"about_page"});window.location.href=IS_NEW_REGION?"/about/":"/a-propos/";return}
-    if(c.k.startsWith("open:")){
-      const b=cands.find(x=>x.id===c.k.slice(5))
-      if(b){track("sg_chat_branch",{branch:"open_beach"});onClose();onOpenBeach(b)}
-      return
-    }
-    track("sg_chat_branch",{branch:c.k})
-    setMsgs(m=>[...m,{who:"me",text:lbl}])
-    setTyping(true)
-    setTimeout(()=>{
-      setTyping(false)
-      const a=answer(c.k)
-      if(a)setMsgs(m=>[...m,{who:"bot",text:a.text,chips:a.chips}])
-    },650)
-  }
-  const last=msgs[msgs.length-1]
-  return(
-    <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
-      <div className="sg-onink-scope" style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
-        background:"#120821",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
-        boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",
-          borderBottom:"1px solid rgba(255,255,255,.10)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
-            {/* Le Veilleur miniature (satellite, seul personnage) — humeur calme teal, veille la mer */}
-            <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true" style={{flexShrink:0,display:"block"}}>
-              <g transform="translate(32,33)">
-                <circle r="20" fill="#009E8E" opacity=".18"/>
-                <rect x="-26" y="-5" width="12" height="11" rx="2.5" fill="#0A1714"/>
-                <rect x="14" y="-5" width="12" height="11" rx="2.5" fill="#0A1714"/>
-                <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
-                <rect x="-11" y="-11" width="22" height="6" rx="6" fill="#1EC8B0"/>
-                <line x1="0" y1="-11" x2="0" y2="-18" stroke="#009E8E" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="0" cy="-19" r="2" fill="#009E8E"/>
-                <circle cx="0" cy="2" r="5" fill="#07201E"/>
-                <circle cx="0" cy="2" r="3.4" fill="#1EC8B0"/>
-                <circle cx="-1.3" cy=".6" r="1.2" fill="#EAFBF8"/>
-              </g>
-            </svg>
-            <div style={{minWidth:0}}>
-              <strong style={{fontSize:13.5,color:"#fff",lineHeight:1.2,display:"block"}}>{t("Le Veilleur","The Watchman","El Vigía")}</strong>
-              <span style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:2,fontSize:10.5,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textTransform:"uppercase"}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:"#009E8E"}}/>{t("En direct","Live","En vivo")}
-              </span>
-            </div>
-          </div>
-          <button onClick={onClose} aria-label="Fermer" style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",
-            fontSize:18,cursor:"pointer",padding:4}}>✕</button>
-        </div>
-        <div ref={bodyRef} style={{overflowY:"auto",overflowX:"hidden",padding:"14px 12px",display:"flex",flexDirection:"column",gap:10}}>
-          {msgs.map((m,i)=>(
-            <div key={i} style={{alignSelf:m.who==="me"?"flex-end":"flex-start",maxWidth:"86%",
-              background:m.who==="me"?"#FFC72C":"rgba(255,255,255,.07)",color:m.who==="me"?"#120821":"#fff",
-              fontSize:13.5,lineHeight:1.5,padding:"10px 13px",
-              borderRadius:m.who==="me"?"16px 16px 4px 16px":"16px 16px 16px 4px"}}>{m.text}</div>
-          ))}
-          {typing&&<div style={{alignSelf:"flex-start",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.7)",
-            fontSize:13.5,padding:"10px 14px",borderRadius:"16px 16px 16px 4px",letterSpacing:2}}>•••</div>}
-          {!typing&&last?.who==="bot"&&last.chips&&(
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:2}}>
-              {last.chips.map((c,i)=>(
-                <button key={i} onClick={()=>onChip(c)} style={{background:"rgba(255,199,44,.1)",
-                  border:"1px solid rgba(255,199,44,.45)",color:"#FFC72C",fontFamily:"inherit",fontWeight:700,
-                  fontSize:12.5,padding:"9px 13px",borderRadius:999,cursor:"pointer",textAlign:"left"}}>{c.label}</button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /* ── SCÈNE VIVANTE (WebGL) — demande user 2026-06-11 « une vraie scène, pas
    juste animer la photo ». Shader temps réel sur la photo réelle de la plage :
@@ -8148,79 +7644,12 @@ function MethodScene(){
   )
 }
 
-/* ── Scène 2 « L'Alerte » (même gabarit que MethodScene) — le moment de valeur
-   Premium en une boucle 9s : 6h du matin, le téléphone reçoit l'alerte ⚠️
-   (un banc arrive sur la plage prévue), l'itinéraire bascule en pointillés
-   vers la plage ✓ propre. Séquencée en % d'une seule timeline CSS. */
-function AlertScene(){
-  return(
-    <div aria-hidden style={{borderRadius:20,overflow:"hidden",border:"1px solid rgba(255,255,255,.09)",
-      background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)"}}>
-      <svg viewBox="0 0 560 240" style={{display:"block",width:"100%",height:"auto"}}>
-        <style>{`
-.sgas-notif{animation:sgasNotif 9s cubic-bezier(.22,1,.36,1) 1 both}
-@keyframes sgasNotif{0%,6%{opacity:0;transform:translateY(14px)}12%,100%{opacity:1;transform:translateY(0)}}
-.sgas-raft{animation:sgasRaft 9s linear 1 both}
-@keyframes sgasRaft{0%{transform:translateX(46px)}100%{transform:translateX(-30px)}}
-.sgas-route{stroke-dasharray:4 6;animation:sgasRoute 9s linear 1 both}
-@keyframes sgasRoute{0%,18%{opacity:0}26%,100%{opacity:1}}
-.sgas-dot{animation:sgasDot 9s cubic-bezier(.45,.05,.4,1) 1 both}
-@keyframes sgasDot{0%,24%{offset-distance:0%;opacity:0}30%{opacity:1}62%,100%{offset-distance:100%;opacity:1}}
-.sgas-ok{animation:sgasOk 9s ease-out 1 both;transform-origin:468px 96px}
-@keyframes sgasOk{0%,60%{transform:scale(.4);opacity:0}68%{transform:scale(1.25);opacity:1}74%,100%{transform:scale(1);opacity:1}}
-.sgas-sun{animation:sgasSun 9s ease-in-out 1 both}
-@keyframes sgasSun{0%,8%{transform:translateY(16px);opacity:.4}30%,100%{transform:translateY(0);opacity:.9}}
-@media (prefers-reduced-motion:reduce){.sgas-notif,.sgas-raft,.sgas-route,.sgas-dot,.sgas-ok,.sgas-sun{animation:none}}
-        `}</style>
-        {/* aube : soleil qui se lève + heure */}
-        <g className="sgas-sun"><circle cx="60" cy="52" r="16" fill="#FFC72C"/><circle cx="60" cy="52" r="26" fill="#FFC72C" opacity=".12"/></g>
-        <text x="92" y="58" fontFamily="ui-monospace,monospace" fontSize="15" fontWeight="700" fill="rgba(255,255,255,.75)">06:00</text>
-        {/* téléphone + notification */}
-        <g>
-          <rect x="36" y="84" width="118" height="128" rx="16" fill="#10231E" stroke="rgba(255,255,255,.16)"/>
-          <rect x="78" y="92" width="34" height="5" rx="2.5" fill="rgba(255,255,255,.18)"/>
-          <g className="sgas-notif">
-            <rect x="46" y="108" width="98" height="44" rx="10" fill="#1A2F29" stroke="rgba(255,199,44,.45)"/>
-            <text x="56" y="126" fontSize="13">⚠️</text>
-            <rect x="76" y="118" width="58" height="5" rx="2.5" fill="rgba(255,255,255,.55)"/>
-            <rect x="76" y="128" width="42" height="5" rx="2.5" fill="rgba(255,255,255,.28)"/>
-            <rect x="56" y="138" width="50" height="7" rx="3.5" fill="#FFC72C"/>
-          </g>
-        </g>
-        {/* plage ⚠️ (le banc arrive) */}
-        <path d="M205 196 Q255 176 310 182 L310 240 L205 240 Z" fill="#1A2A23"/>
-        <g className="sgas-raft" transform="translate(232,186)">
-          <ellipse cx="0" cy="0" rx="14" ry="5" fill="#8a6a1a"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#9a7a22"/>
-          <ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#6b4a12"/><circle cx="-4" cy="-5" r="1.8" fill="#b8962e"/><circle cx="6" cy="-4" r="1.8" fill="#b8962e"/>
-        </g>
-        <g transform="translate(258,160)">
-          <circle cx="0" cy="0" r="11" fill="#E8522A"/>
-          <text x="0" y="4.5" textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff">!</text>
-        </g>
-        {/* itinéraire bascule : pointillés du téléphone vers la plage ✓ */}
-        <path id="sgasPath" d="M160 150 Q300 70 440 116" fill="none" className="sgas-route" stroke="#FFC72C" strokeWidth="2.4"/>
-        <circle className="sgas-dot" r="6" fill="#FFC72C" style={{offsetPath:"path('M160 150 Q300 70 440 116')"}}/>
-        {/* plage ✓ propre */}
-        <path d="M388 178 Q452 152 560 160 L560 240 L388 240 Z" fill="#1A2A23"/>
-        <path d="M402 178 Q462 158 552 162" stroke="#FFC72C" strokeWidth="1.3" fill="none" opacity=".5"/>
-        <g fill="none" stroke="#3F6B52" strokeWidth="3.4" strokeLinecap="round">
-          <path d="M512 164 Q506 140 512 122"/>
-          <path d="M512 122 Q524 112 538 114"/><path d="M512 122 Q500 110 488 112"/><path d="M512 122 Q514 106 518 100"/>
-        </g>
-        <g className="sgas-ok">
-          <circle cx="468" cy="96" r="15" fill="#FFC72C"/>
-          <path d="M461 96 L466 101 L476 90" stroke="#120821" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        </g>
-      </svg>
-    </div>
-  )
-}
 
 /* ── BrandIcon — kit iconographique maison (MIROIR de scripts/lib/brand-icons.cjs,
    garder les paths synchronisés). Remplace les emojis OS sur les surfaces de
    marque : un emoji rend différemment par device et casse la cohérence avec
    les scènes SVG (audit design 2026-06-12). ── */
-function BrandIcon({name,size=22,accent="#FFC72C",style}){
+export function BrandIcon({name,size=22,accent="#FFC72C",style}){
   const A={stroke:accent}
   const P={
     satellite:<><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.2"/><path d="M7.5 9.5L5 7M16.5 14.5l2.5 2.5"/><rect x="1.6" y="2.6" width="5.2" height="3.6" rx="0.8" transform="rotate(45 4.2 4.4)"/><rect x="17.2" y="17.2" width="5.2" height="3.6" rx="0.8" transform="rotate(45 19.8 19)"/><path d="M14.5 7.5c1.6-1.6 4.6-1.4 6 0" {...A}/></>,
@@ -8339,7 +7768,7 @@ function SceneWipe({label,onDone}){
 
 /* Override QA de phase (?ph=dawn|day|golden|night) — capturé au chargement du
    module car les effets de l'app nettoient la query string avant le mount. */
-const HERO_PH_OVERRIDE=(()=>{try{
+export const HERO_PH_OVERRIDE=(()=>{try{
   const o=new URLSearchParams(window.location.search).get("ph")
   return ["dawn","day","golden","night"].includes(o)?o:null
 }catch(_){return null}})()
@@ -8352,250 +7781,6 @@ const LF_OVERRIDE=(()=>{try{
   return o==="game"||o==="control"?o:null
 }catch(_){return null}})()
 
-/* ── HeroScene — le hero en scène vectorielle (directive user 12/06 : plus de
-   photo en hero home, « une expérience bluffante de bout en bout » — les
-   photos réelles restent la matière des cards/fiches/SEO). Golden-hour
-   Shinkai (gabarit approuvé du jeu) + le récit de marque : les sargasses
-   dérivent à l'horizon, repérées depuis l'espace (satellite, faisceau,
-   échos). Le scroll fait AVANCER dans la baie : dolly-in par couches
-   (ciel < mer < plage) via la var CSS --hs recalculée en rAF. Time-anims
-   douces (nuages, glitter, écume, oiseaux) ; reduced-motion = statique.
-   Composition calée sur la bande visible du crop mobile (x 262-538). ── */
-function HeroScene(){
-  const boxRef=useRef(null)
-  // Phase locale du visiteur → palette + vie de la scène (landing personnalisée,
-  // directive user 12/06 soir). L'heure device ≈ l'heure de la plage (visiteurs
-  // locaux/planificateurs). aube 5-8h / jour 8-17h / golden 17-20h / nuit.
-  const [ph]=useState(()=>{try{
-    if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE
-    const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"
-  }catch(_){return "golden"}})
-  const t={
-    golden:{sky:["#0B2230","#155A5A","#C97E3A","#F2B05E"],seaT:"#1A5852",seaB:"#08251F",glit:"#FFD884",glitO:1,
-      sun:"set",stars:1,cloud:"#10333E",rim:"#FFD884",sand:"#1C1712",trunk:"#120F0A",frond:"#16120C",
-      boat:true,swim:false,beam:.3},
-    dawn:{sky:["#141B33","#3A4A6B","#B86E7E","#F2A968"],seaT:"#235862",seaB:"#0A2630",glit:"#F2A968",glitO:.85,
-      sun:"set",stars:.7,cloud:"#1A2440",rim:"#F2A968",sand:"#1E1812",trunk:"#14100C",frond:"#181410",
-      boat:false,swim:false,beam:.34},
-    day:{sky:["#1A6FA8","#3E9BC4","#7BC8D8","#AEE0E6"],seaT:"#15706A",seaB:"#0B3A34",glit:"#FDFCF7",glitO:.65,
-      sun:"high",stars:0,cloud:"#F4FAFA",rim:"#FFFFFF",sand:"#A8895A",trunk:"#3A2E1A",frond:"#3F6B52",
-      boat:true,swim:true,beam:.2},
-    night:{sky:["#040B16","#0A1B2E","#10303B","#16424A"],seaT:"#0A2E2E",seaB:"#04140F",glit:"#9ADCD4",glitO:.6,
-      sun:"moon",stars:2,cloud:"#0A1622",rim:"#9ADCD4",sand:"#0F0C08",trunk:"#0A0806",frond:"#0C0A06",
-      boat:false,swim:false,beam:.5},
-  }[ph]
-  useEffect(()=>{
-    const box=boxRef.current;if(!box)return
-    try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(_){}
-    const scroller=box.closest('[role="dialog"][aria-modal="true"]')
-    if(!scroller)return
-    let raf=0
-    const upd=()=>{
-      raf=0
-      const vh=window.innerHeight||1
-      const p=Math.max(0,Math.min(1,scroller.scrollTop/(vh*.92)))
-      box.style.setProperty("--hs",(p*(2-p)).toFixed(4))
-    }
-    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
-    scroller.addEventListener("scroll",onScroll,{passive:true})
-    upd()
-    return()=>{scroller.removeEventListener("scroll",onScroll);if(raf)cancelAnimationFrame(raf)}
-  },[])
-  return(
-    <div ref={boxRef} aria-hidden style={{position:"absolute",inset:0,"--hs":0,background:"#0B2230"}}>
-      <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-        {/* TABLEAU CALME (mandat fondateur) : au repos rien ne clignote. On garde UNIQUEMENT
-            la dérive très lente des nuages (mouvement naturel qui repose les yeux). Tout le reste
-            (râteau, respiration, poisson, scintillements, vagues-traits, avion, marche) est figé.
-            Le poisson et l'élément "arrivée" n'existaient que pendant leur anim → masqués. */}
-        <style>{`
-.sgh-cloud1{animation:sghDrift 110s ease-in-out infinite alternate}
-.sgh-cloud2{animation:sghDrift 150s ease-in-out infinite alternate-reverse}
-@keyframes sghDrift{from{transform:translateX(0)}to{transform:translateX(-44px)}}
-.sgh-shim{opacity:.5}
-.sgh-star{opacity:.5}
-.sgh-fish,.sgh-arrive{opacity:0}
-@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2{animation:none}}
-        `}</style>
-        <defs>
-          <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/>
-            <stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/>
-          </linearGradient>
-          <linearGradient id="sghSea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={t.seaT}/><stop offset="1" stopColor={t.seaB}/>
-          </linearGradient>
-          <linearGradient id="sghCol" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={t.glit} stopOpacity=".5"/><stop offset="1" stopColor={t.glit} stopOpacity="0"/>
-          </linearGradient>
-          <g id="sghSarg">
-            <ellipse cx="0" cy="0" rx="14" ry="5" fill="#7a5c14"/>
-            <ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#8a6c1c"/>
-            <ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#5d400e"/>
-            <circle cx="-10" cy="-4" r="1.8" fill="#a8862a"/><circle cx="6" cy="-5" r="1.8" fill="#a8862a"/>
-          </g>
-        </defs>
-
-        {/* ciel + soleil + satellite (couche lente) */}
-        <g style={{transform:"translateY(calc(var(--hs)*26px))"}}>
-          <rect width="800" height="340" fill="url(#sghSky)"/>
-          {t.stars>0&&[[96,46,1.1,.4],[238,84,.8,.28],[388,38,1.2,.4],[542,72,.9,.3],[692,52,1,.35]].map((s,i)=>(
-            <circle key={i} className="sgh-star" cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={Math.min(1,s[3]*t.stars)} style={{animationDelay:`${i*.6}s`}}/>
-          ))}
-          {t.stars>1.5&&[[150,140,.9,.5],[320,170,.8,.4],[470,150,1,.55],[600,180,.8,.4],[700,120,1.1,.5],[60,200,.8,.35]].map((s,i)=>(
-            <circle key={"n"+i} className="sgh-star" cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]} style={{animationDelay:`${.3+i*.5}s`}}/>
-          ))}
-          {/* l'astre de la phase : soleil couché/levant, plein jour, ou lune */}
-          {t.sun==="set"&&<>
-            <circle cx="400" cy="318" r="150" fill={t.glit} opacity=".07"/>
-            <circle cx="400" cy="318" r="88" fill={t.glit} opacity=".12"/>
-            <path d="M354 312 a46 46 0 0 1 92 0 Z" fill={t.glit}/>
-          </>}
-          {t.sun==="high"&&<>
-            <circle cx="316" cy="98" r="58" fill="#FDFCF7" opacity=".2"/>
-            <circle cx="316" cy="98" r="30" fill="#FFF4D6"/>
-          </>}
-          {t.sun==="moon"&&<>
-            <circle cx="330" cy="92" r="42" fill="#9ADCD4" opacity=".08"/>
-            <circle cx="330" cy="92" r="21" fill="#E6F2EF"/>
-            <circle cx="323" cy="86" r="4" fill="#C2D8D2" opacity=".7"/>
-            <circle cx="336" cy="98" r="3" fill="#C2D8D2" opacity=".6"/>
-            <circle cx="338" cy="84" r="2" fill="#C2D8D2" opacity=".5"/>
-          </>}
-          {/* nuages plats Shinkai (2 tons + liseré or) */}
-          <g className="sgh-cloud1">
-            <path d="M120 120 q14 -26 48 -26 q18 -18 46 -12 q30 -8 44 12 q26 2 30 26 Z" fill={t.cloud}/>
-            <path d="M122 121 h162" stroke={t.rim} strokeWidth="2" opacity=".4"/>
-          </g>
-          <g className="sgh-cloud2">
-            <path d="M520 86 q12 -22 42 -22 q16 -14 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill={t.cloud} opacity=".9"/>
-            <path d="M522 87 h140" stroke={t.rim} strokeWidth="1.8" opacity=".35"/>
-          </g>
-          {/* oiseaux (pas la nuit) */}
-          {t.sun!=="moon"&&<g className="sgh-bird" opacity=".5" stroke={ph==="day"?"#1A4A5E":"#0B1B22"} strokeWidth="2.2" fill="none" strokeLinecap="round">
-            <path d="M714 142 q5 -6 10 0 q5 -6 10 0"/>
-            <path d="M752 128 q4 -5 8 0 q4 -5 8 0"/>
-            <path d="M520 116 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/>
-            <path d="M566 102 q3.5 -4.5 7 0 q3.5 -4.5 7 0"/>
-            <path d="M612 128 q4 -5 8 0 q4 -5 8 0"/>
-            <path d="M488 138 q3 -4 6 0 q3 -4 6 0"/>
-          </g>}
-          {/* un avion en approche d'atterrissage traverse le ciel (jour + golden) */}
-          {t.sun!=="moon"&&<g className="sgh-plane">
-            <g transform="rotate(13)">
-              <line x1="-7" y1="3" x2="-66" y2="2" stroke="#FDFCF7" strokeWidth="1.6" strokeDasharray="2 6" opacity=".35"/>
-              <path d="M0 0 L30 0 L41 3 L30 6 L0 6 L-7 3 Z" fill="#EAF0F4"/>
-              <path d="M9 1 L1 -9 L6 -9 L17 1 Z" fill="#C4D0D8"/>
-              <path d="M9 5 L2 14 L7 14 L17 5 Z" fill="#AEBBC4"/>
-              <path d="M-3 0 L-9 -7 L-5 -7 L0 0 Z" fill="#C4D0D8"/>
-            </g>
-          </g>}
-          {/* le satellite veille (continuité ScrollStory) */}
-          <g transform="translate(474,78) scale(.62)">
-            <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
-            <rect x="11" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
-            <rect x="-10" y="-9" width="20" height="17" rx="2.5" fill="#5b3a8e"/>
-            <rect x="-10" y="-9" width="20" height="6" rx="2.5" fill="#FFC72C"/>
-          </g>
-          <polygon points="470,90 478,90 452,318 420,318" fill="url(#sghCol)" opacity={t.beam}/>
-        </g>
-
-        {/* mer + sargasses à l'horizon (couche moyenne) */}
-        <g style={{transformOrigin:"400px 600px",transform:"scale(calc(1 + var(--hs)*.1))"}}>
-          <rect x="-40" y="312" width="880" height="170" fill="url(#sghSea)"/>
-          {/* colonne de lumière du soleil sur l'eau */}
-          <rect x="376" y="312" width="48" height="150" fill="url(#sghCol)" opacity=".4"/>
-          {/* glitter */}
-          <line className="sgh-glit" x1="-40" y1="334" x2="840" y2="334" stroke={t.glit} strokeWidth="2.2" strokeDasharray="3 13" opacity={.5*t.glitO}/>
-          <line className="sgh-glit" x1="-40" y1="362" x2="840" y2="362" stroke={t.glit} strokeWidth="1.8" strokeDasharray="2 17" opacity={.3*t.glitO} style={{animationDelay:"-3s"}}/>
-          <line className="sgh-glit" x1="-40" y1="402" x2="840" y2="402" stroke={t.glit} strokeWidth="1.6" strokeDasharray="2 23" opacity={.18*t.glitO} style={{animationDelay:"-5s"}}/>
-          {/* les nappes arrivent — celle de droite est repérée (échos teal) */}
-          <g className="sgh-mat"><g transform="translate(318,338) scale(.5)" opacity=".85"><use href="#sghSarg"/></g></g>
-          <g className="sgh-mat" style={{animationDelay:"-7s"}}><g transform="translate(372,330) scale(.38)" opacity=".7"><use href="#sghSarg"/></g></g>
-          <g className="sgh-mat" style={{animationDelay:"-3.5s"}}>
-            <g transform="translate(452,334) scale(.55)" opacity=".9"><use href="#sghSarg"/></g>
-            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}>
-              <circle cx="452" cy="334" r="11" fill="none" stroke="#5b3a8e" strokeWidth="1.5"/>
-            </g>
-            <g className="sgst-ring2" style={{transformBox:"fill-box",transformOrigin:"center"}}>
-              <circle cx="452" cy="334" r="11" fill="none" stroke="#5b3a8e" strokeWidth="1.2"/>
-            </g>
-          </g>
-          {/* un banc de sargasse arrive du large — repéré par le satellite (jour + golden) */}
-          {t.boat&&<g className="sgh-arrive">
-            <g transform="translate(498,328) scale(.62)" opacity=".9"><use href="#sghSarg"/></g>
-            <g transform="translate(536,320) scale(.44)" opacity=".7"><use href="#sghSarg"/></g>
-            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}><circle cx="498" cy="328" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
-          </g>}
-          {/* le bateau de collecte travaille (jour + golden) */}
-          {t.boat&&<g className="sgst-bob">
-            <g transform="translate(300,354) scale(.8)">
-              <path d="M-30 0 L30 0 L21 12 L-23 12 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.3"/>
-              <line x1="0" y1="0" x2="0" y2="-24" stroke="#E8EDF2" strokeWidth="2"/>
-              <polygon points="0,-24 15,-18 0,-13" fill="#FFC72C"/>
-            </g>
-            <path className="sg-flow" d="M312 350 Q316 344 318 340" stroke="#FFC72C" strokeWidth="1.4" fill="none" opacity=".7"/>
-          </g>}
-          {/* baigneurs (plein jour) */}
-          {t.swim&&<g>
-            <circle cx="478" cy="398" r="3.4" fill="#0D2B26"/>
-            <path d="M470 402 q8 -6 16 0" stroke="#0D2B26" strokeWidth="2.6" fill="none" strokeLinecap="round"/>
-            <circle cx="536" cy="406" r="3" fill="#0D2B26"/>
-            <path d="M529 410 q7 -5 14 0" stroke="#0D2B26" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
-            <path d="M462 404 h6 M492 405 h5 M524 412 h5 M552 410 h6" stroke="#FDFCF7" strokeWidth="1.6" opacity=".5" strokeLinecap="round"/>
-          </g>}
-          {/* le bateau pose son filet — maille + bouées dorées qui dérivent (jour + golden) */}
-          {t.boat&&<g className="sgh-net">
-            <path d="M286 358 Q330 367 372 360 Q410 354 444 363" fill="none" stroke="#CDEBE6" strokeWidth="1" strokeDasharray="1.5 4" opacity=".5"/>
-            <circle cx="300" cy="360" r="2.2" fill="#FFC72C" opacity=".85"/><circle cx="344" cy="364" r="2" fill="#FFC72C" opacity=".7"/><circle cx="388" cy="358" r="2" fill="#FFC72C" opacity=".7"/><circle cx="432" cy="362" r="2.2" fill="#FFC72C" opacity=".85"/>
-          </g>}
-          {/* reflet du soleil renforcé — éclats qui scintillent sous l'astre */}
-          <g className="sgh-shim" fill={t.glit}>
-            <circle cx="392" cy="348" r="1.7"/><circle cx="410" cy="374" r="1.4"/><circle cx="384" cy="396" r="1.5"/><circle cx="416" cy="410" r="1.3"/>
-          </g>
-          {/* poissons qui sautent hors de l'eau (jour + golden) */}
-          {t.boat&&<>
-            <g transform="translate(414,340)"><g className="sgh-fish"><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#6FD8CC"/><path d="M8 0 l5 -4 0 8 Z" fill="#5b3a8e"/><circle cx="3" cy="-1.4" r=".9" fill="#120821"/></g></g>
-            <g transform="translate(356,350) scale(.82)"><g className="sgh-fish" style={{animationDelay:"-2.4s"}}><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#8AE4D8"/><path d="M8 0 l5 -4 0 8 Z" fill="#5b3a8e"/></g></g>
-          </>}
-        </g>
-
-        {/* plage + palmier + écume (couche avant, la plus rapide) */}
-        <g style={{transformOrigin:"400px 640px",transform:"scale(calc(1 + var(--hs)*.22)) translateY(calc(var(--hs)*10px))"}}>
-          <path d="M-40 470 Q200 432 430 446 Q640 458 840 500 L840 620 L-40 620 Z" fill={t.sand}/>
-          <path d="M-40 470 Q200 432 430 446 Q640 458 840 500" fill="none" stroke={t.rim} strokeWidth="2.4" opacity=".3"/>
-          <path className="sgh-foam" d="M-40 478 Q200 440 430 454 Q640 466 840 508" fill="none" stroke="#FDFCF7" strokeWidth="2.6" strokeDasharray="12 16" opacity=".4"/>
-          {/* palmier silhouette (droite, penché dans la baie) */}
-          <path d="M586 612 Q570 520 538 470 Q524 448 502 436" stroke={t.trunk} strokeWidth="13" fill="none" strokeLinecap="round"/>
-          {/* parasol + serviette (plein jour : la plage vit) */}
-          {t.swim&&<g>
-            <line x1="300" y1="466" x2="306" y2="508" stroke="#7A4A1E" strokeWidth="3.5"/>
-            <path d="M268 472 A36 36 0 0 1 334 464 Z" fill="#E8522A"/>
-            <path d="M268 472 L334 464" stroke="#B83A1A" strokeWidth="2"/>
-            <rect x="320" y="504" width="26" height="8" rx="3" transform="rotate(-6 320 504)" fill="#5b3a8e" opacity=".85"/>
-          </g>}
-          <g fill="none" stroke={t.frond} strokeWidth="9" strokeLinecap="round">
-            <path d="M502 436 Q466 416 428 422"/><path d="M502 436 Q472 400 440 392"/>
-            <path d="M502 436 Q506 396 522 372"/><path d="M502 436 Q538 404 576 402"/>
-            <path d="M502 436 Q540 432 570 448"/>
-          </g>
-          {/* échouage du jour : une nappe sur le sable (honnêteté du produit) */}
-          <g transform="translate(252,486) scale(.62)" opacity=".55"><use href="#sghSarg"/></g>
-          {/* le ramasseur nettoie le sable — il râtelle la nappe échouée (jour + golden) */}
-          {t.boat&&<g transform="translate(360,484)">
-            <g transform="translate(-21,11) scale(.46)" opacity=".68"><use href="#sghSarg"/></g>
-            <g fill="#0E1F1A"><circle cx="0" cy="-27" r="5"/><path d="M-5 -22 q5 -4 10 0 l-1.5 19 h-7 Z"/><path d="M-4 -4 l-3 12 M4 -4 l3 12" stroke="#0E1F1A" strokeWidth="2.4" strokeLinecap="round" fill="none"/></g>
-            <g className="sgh-rake" stroke="#3A2A14" strokeWidth="2.2" fill="none" strokeLinecap="round">
-              <line x1="2" y1="-19" x2="20" y2="8"/>
-              <path d="M13 6 h13 M15 3 v7 M19 2 v8.5 M23 2 v8"/>
-            </g>
-          </g>}
-        </g>
-      </svg>
-    </div>
-  )
-}
 
 /* ── ScrollStory — la méthode en scrollytelling (directive user 12/06 :
    « interface entièrement construite, branding focus, bluffant au scroll »,
@@ -9155,7 +8340,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
       {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
       <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
         transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="verdict"?"scale(1.2) translateY(-3%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
-        <HeroScene/>
+        <ErrBound><Suspense fallback={null}><HeroScene/></Suspense></ErrBound>
       </div>
       <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
         background:stage==="scan"
@@ -9629,7 +8814,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 
       {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
       <section ref={heroRef} className="sg-heroSec">
-      <HeroScene/>
+      <ErrBound><Suspense fallback={null}><HeroScene/></Suspense></ErrBound>
       {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
           visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}
@@ -9853,7 +9038,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <div style={ovl}>Premium</div>
           <h2 style={h2s}>{_t(lang,"Soyez prévenu avant tout le monde","Be the first to know","Entérate antes que nadie")}</h2>
         </div>
-        <div className="sg-rv" style={{margin:"16px 0 6px"}}><AlertScene/></div>
+        <div className="sg-rv" style={{margin:"16px 0 6px"}}><ErrBound><Suspense fallback={null}><AlertScene/></Suspense></ErrBound></div>
         <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:10,margin:"14px 0 20px"}}>
           {[
             ["bell",_t(lang,"Une alerte quand VOTRE plage change d'état","An alert when YOUR beach changes","Una alerta cuando TU playa cambia")],
@@ -9928,163 +9113,6 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   )
 }
 
-// AlertHub — /alertes/ page view (hub Premium = le veilleur personnel)
-function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
-  const [email,setEmail]=useState("")
-  const [submitted,setSubmitted]=useState(false)
-  const [busy,setBusy]=useState(false)
-
-  // Verify if already subscribed
-  const isSubscribed = (() => {
-    try {
-      return !!localStorage.getItem("sg_email")
-    } catch (_) {
-      return false
-    }
-  })()
-
-  const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
-  const beachName = beach ? beach.name : (lang === "en" ? "your beach" : lang === "es" ? "tu playa" : "ta plage")
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    if (!email || !email.includes("@")) return
-    setBusy(true)
-    track("sg_email_submit", { source: "alertes" })
-    try {
-      localStorage.setItem("sg_email", email)
-    } catch (_) {}
-
-    const islandCode = IS_NEW_REGION ? REGION.id.toUpperCase() : window.location.hostname.includes("guadeloupe") ? "GP" : "MQ"
-    fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", {
-      method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ email, island: islandCode, source: "alertes", date: new Date().toISOString() })
-    })
-    .then(() => {
-      setSubmitted(true)
-      setBusy(false)
-    })
-    .catch(() => {
-      setSubmitted(true)
-      setBusy(false)
-    })
-  }
-
-  useEffect(() => {
-    track("sg_alerts_view", { variant: "hub", lang })
-  }, [lang])
-
-  return (
-    <div style={{minHeight:"100svh",background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)",color:"#fff",position:"relative",padding:"40px 16px 60px",fontFamily:"inherit"}}>
-      {/* Croix de fermeture */}
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top, 0px))",right:16,zIndex:10,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.85)",width:34,height:34,borderRadius:"50%",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>
-        &times;
-      </button>
-
-      <div style={{maxWidth:560,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"stretch"}}>
-        {/* Pli 1 — Promesse + Veilleur */}
-        <div style={{textAlign:"center",marginBottom:20,marginTop:20}}>
-          <div style={{fontSize:10.5,fontWeight:800,color:"#156a96",letterSpacing:".14em",textTransform:"uppercase",marginBottom:8}}>
-            {dateLong} · {_t(lang,"LE VEILLEUR PERSONNEL","YOUR PERSONAL WATCHER","TU VIGÍA PERSONAL")}
-          </div>
-          <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,42px)",lineHeight:1.02,letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 16px",color:"#fff"}}>
-            {_t(lang,"On surveille ta plage pendant que tu dors.","We watch your beach while you sleep.","Vigilamos tu playa mientras duermes.")}
-          </h1>
-          <div style={{display:"flex",justifyContent:"center",margin:"12px 0 16px"}}>
-            <Veilleur mood="serein" size={64} />
-          </div>
-          <p style={{fontSize:14,lineHeight:1.4,color:"rgba(255,255,255,.7)",maxWidth:460,margin:"0 auto"}}>
-            {_t(lang,`Tu n'ouvres l'app que le jour où l'état de ${beachName} change. Le reste du temps, profite.`,`You only open the app the day ${beachName}'s status changes. The rest of the time, enjoy.`,`Solo abres la aplicación el día que el estado de ${beachName} cambie. El resto del tiempo, disfruta.`)}
-          </p>
-        </div>
-
-        {/* Pli 2 — AlertScene */}
-        <div style={{marginBottom:28,borderRadius:20,overflow:"hidden"}}>
-          <AlertScene />
-        </div>
-
-        {/* Pli 3 — Capture email */}
-        <div style={{background:"linear-gradient(135deg,#190c2c,#142824)",border:"1px solid rgba(255,255,255,.08)",borderRadius:18,padding:"18px 20px",marginBottom:28,position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:"-50%",left:"-20%",width:"60%",height:"200%",background:"radial-gradient(ellipse, rgba(34,197,94,.06) 0%, transparent 70%)",pointerEvents:"none"}}/>
-          <div style={{position:"relative"}}>
-            {submitted ? (
-              <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#1c7fb0"}}>
-                <span style={{fontSize:22,display:"block",marginBottom:6}}>✅</span>
-                {_t(lang,"C'est fait ! Le verdict du matin arrive dans ta boîte.","You're in! The morning verdict will arrive in your inbox.","¡Listo! El veredicto matutino llegará a tu bandeja.")}
-              </div>
-            ) : isSubscribed ? (
-              <div style={{textAlign:"center",fontSize:13.5,fontWeight:600,color:"rgba(255,255,255,.85)"}}>
-                <span style={{fontSize:18,marginRight:6}}>✓</span>
-                {_t(lang,"Tu es déjà inscrit aux alertes quotidiennes.","You are already subscribed to daily alerts.","Ya estás suscrito a las alertas diarias.")}
-                <button onClick={() => onPremium("alertes_subscribed")}
-                  style={{display:"block",margin:"10px auto 0",background:"none",border:"none",color:"#FFC72C",fontWeight:800,fontSize:13,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
-                  {_t(lang,"Gérer mes alertes Premium →","Manage my Premium alerts →","Gestionar mis alertas Premium →")}
-                </button>
-              </div>
-            ) : (
-              <>
-                <div style={{fontSize:10,fontWeight:800,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
-                  {_t(lang,"GRATUIT","FREE","GRATIS")}
-                </div>
-                <div style={{fontSize:14.5,fontWeight:700,color:"#fff",marginBottom:6}}>
-                  {_t(lang,`Reçois le verdict du matin sur ${beachName}`,`Get the morning verdict for ${beachName}`,`Recibe el veredicto matutino sobre ${beachName}`)}
-                </div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:14,lineHeight:1.4}}>
-                  {_t(lang,"Bilan matinal chaque jour + alerte immédiate si le statut change.","Daily morning brief + immediate alert if status changes.","Resumen matinal diario + alerta inmediata si el estado cambia.")}
-                </div>
-                <form onSubmit={handleSubmit} style={{display:"flex",gap:10,alignItems:"center"}}>
-                  <input type="email" inputMode="email" autoComplete="email" required placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
-                    value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
-                    style={{flex:1,padding:"12px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
-                  <button type="submit" disabled={busy}
-                    style={{background:"#1c7fb0",color:"#06231d",border:"none",borderRadius:12,padding:"12px 18px",fontSize:14.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit",opacity:busy?.7:1}}>
-                    {busy ? "..." : _t(lang,"S'inscrire","Subscribe","Suscribirme")}
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Pli 4 — Preuve de valeur Premium */}
-        <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:32,padding:"0 4px"}}>
-          {[
-            ["bell", _t(lang,"Alerte la VEILLE quand les sargasses approchent de ta plage","Alert the DAY BEFORE sargassum approaches your beach","Alerta la VÍSPERA cuando el sargazo se acerque a tu playa")],
-            ["brief", _t(lang,"Le brief complet du matin : ta meilleure plage du jour","The morning brief: your best clean beach today","El brief matinal: tu mejor playa limpia hoy")],
-            ["cal7", _t(lang,"Les 7 jours de prévisions complets, plage par plage","The 7-day forecast, beach by beach","Los 7 días de pronóstico, playa por playa")]
-          ].map(([ic,txt],i)=>(
-            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,fontSize:13.5,fontWeight:600,color:"rgba(255,255,255,.85)",lineHeight:1.35}}>
-              <BrandIcon name={ic} size={20} style={{color:"rgba(255,255,255,.92)",marginTop:1}} />
-              <span>{txt}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Pli 5 — CTA conversion UNIQUE */}
-        <button onClick={() => onPremium("alertes")} className="gbtn"
-          style={{display:"block",width:"100%",textAlign:"center",background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)",marginBottom:10}}>
-          {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
-        </button>
-        <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — remboursé en 1 email sous 30 j","One-time payment — refunded in 1 email within 30 days","Pago único — reembolso en 1 email en 30 días")}
-        </div>
-
-        {/* Pli 6 — Sorties */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:24}}>
-          <button onClick={onShowMap}
-            style={{background:"none",border:"none",color:"#1c7fb0",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
-            {_t(lang,"Voir l'état des plages maintenant →","See beach status now →","Ver el estado de las playas ahora →")}
-          </button>
-          {!IS_NEW_REGION&&<a href="/previsions/"
-            style={{color:"rgba(255,255,255,.5)",fontWeight:600,fontSize:13,textDecoration:"underline",fontFamily:"inherit"}}>
-            {_t(lang,"Comment marchent nos prévisions →","How our forecasts work →","Cómo funcionan nuestros pronósticos →")}
-          </a>}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
@@ -10865,96 +9893,6 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   LE JOURNAL DU VEILLEUR — accueil "nouveautés" des visiteurs qui reviennent.
-   Montré 1×/release (clé sg_rel_seen) à un visiteur CONNU, JAMAIS au tout 1er
-   passage. NON destructif : aucun reload (le nouveau bundle est déjà servi en
-   network-first) — c'est une scène golden-hour plein écran, fermable, qui
-   "rattrape" ce qu'on a publié en son absence puis le repose sur sa plage live.
-   Contenu = public/release-notes.json. Gated A/B `wn1`. Conversion-aware.
-   ═══════════════════════════════════════════════════════════════════════════ */
-function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,isPremium,mood="scan",onClose,onExplore,onPremium}){
-  useEffect(()=>{try{track("sg_whatsnew_view",{v:releaseV,items:items.length})}catch(_){}},[])// eslint-disable-line
-  const L=(it)=>it[lang]||it.fr
-  const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
-  const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
-  return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
-      style={{position:"fixed",inset:0,zIndex:1072,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
-        background:"linear-gradient(180deg,#0B2230 0%,#155A5A 38%,#C97E3A 76%,#F2B05E 100%)",
-        animation:"viewFadeIn .4s cubic-bezier(.22,1,.36,1) both"}}>
-      <div aria-hidden style={{position:"absolute",left:"50%",bottom:"-22%",width:"140%",height:"62%",transform:"translateX(-50%)",
-        background:"radial-gradient(closest-side,rgba(255,216,132,.5),rgba(255,216,132,0))",pointerEvents:"none"}}/>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:6,width:42,height:42,borderRadius:21,
-          background:"rgba(7,32,30,.5)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
-          border:"1px solid rgba(255,255,255,.2)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
-
-      <div style={{position:"relative",maxWidth:460,margin:"0 auto",minHeight:"100%",display:"flex",flexDirection:"column",
-        justifyContent:"center",padding:"max(40px,11vh) 22px max(26px,env(safe-area-inset-bottom)) 22px",boxSizing:"border-box"}}>
-        {/* Humeur du Veilleur branchée sur l'état RÉEL du littoral (jamais 'serein' figé). */}
-        <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Veilleur mood={mood} size={70}/></div>
-        <div style={{textAlign:"center",fontSize:11.5,fontWeight:800,letterSpacing:".16em",textTransform:"uppercase",color:"#FFD884",marginBottom:7}}>
-          {_t(lang,"Content de te revoir","Good to see you back","Qué bueno verte")}
-        </div>
-        <h2 style={{margin:"0 0 8px",textAlign:"center",fontFamily:"'Anton',Impact,Haettenschweiler,'Arial Narrow',sans-serif",fontWeight:400,
-          textTransform:"uppercase",letterSpacing:"-.02em",lineHeight:1.02,color:"#fff",
-          fontSize:"clamp(30px,8vw,42px)",textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>{ttl}</h2>
-        <p style={{margin:"0 auto 20px",textAlign:"center",maxWidth:360,fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.82)"}}>
-          {_t(lang,"On a continué à veiller pendant que tu n'étais pas là. Voilà ce qui a changé.",
-                  "We kept watch while you were gone. Here's what changed.",
-                  "Seguimos vigilando mientras no estabas. Esto fue lo que cambió.")}
-        </p>
-
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {items.map((it,i)=>{
-            const clickable=allowDeepLinks&&it.href&&it.href.startsWith("/")
-            return(
-            <div key={i} onClick={clickable?()=>go(it.href):undefined}
-              style={{display:"flex",alignItems:"center",gap:13,padding:"13px 15px",borderRadius:16,
-                background:"rgba(255,252,247,.95)",border:"1px solid rgba(255,255,255,.5)",
-                boxShadow:"0 8px 26px rgba(7,32,30,.22)",cursor:clickable?"pointer":"default",
-                animation:`viewFadeIn .5s cubic-bezier(.22,1,.36,1) ${(0.06*i+0.12).toFixed(2)}s both`}}>
-              <div style={{flexShrink:0,width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:21,background:"linear-gradient(180deg,#FFE47A,#F2B05E)"}}>{it.emoji||"✨"}</div>
-              <div style={{flex:1,fontSize:13.5,lineHeight:1.42,fontWeight:600,color:"#15110A"}}>{L(it)}</div>
-              {clickable&&<div style={{flexShrink:0,color:"#B87A00",fontSize:18,fontWeight:800}}>→</div>}
-            </div>)
-          })}
-        </div>
-
-        <button onClick={onExplore}
-          style={{marginTop:22,width:"100%",padding:"16px",borderRadius:16,border:"none",cursor:"pointer",
-            fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#0D0D0D",
-            background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E8A800)",boxShadow:"0 10px 30px rgba(232,168,0,.4)"}}>
-          {_t(lang,"Voir ma plage en direct →","See my beach live →","Ver mi playa en vivo →")}
-        </button>
-
-        {!isPremium&&(
-          // Lien premium DISCRET mais bien cliquable (→ openPremium). Posé sur le BAS golden
-          // clair du dégradé → texte ENCRE (#0D0D0D ≈8:1 sur #F2B05E), pas blanc (le blanc y
-          // tombait à ~1.9:1, le text-shadow ne compte pas WCAG). Picto SVG ink (plus de 🛰️ OS).
-          <button onClick={onPremium} style={{marginTop:13,background:"none",border:"none",cursor:"pointer",
-            display:"flex",alignItems:"center",justifyContent:"center",gap:7,
-            color:"#0D0D0D",fontSize:13,fontWeight:800,fontFamily:"inherit",textAlign:"center",width:"100%",
-            textShadow:"none"}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
-              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#07201E"/>
-              <circle cx="12" cy="12" r="1.1" fill="#FFE47A"/>
-              <path d="M9 11 4.4 8M15 11 19.6 8" stroke="#07201E" strokeWidth="1.6" strokeLinecap="round" opacity=".9"/>
-              <rect x="3" y="6.2" width="3" height="3.4" rx=".7" fill="#07201E" opacity=".9"/>
-              <rect x="18" y="6.2" width="3" height="3.4" rx=".7" fill="#07201E" opacity=".9"/>
-            </svg>
-            {_t(lang,"Le Veilleur personnel veille TA plage pour toi →",
-                      "Your personal Watcher keeps an eye on YOUR beach →",
-                      "El Vigía personal cuida TU playa por ti →")}
-          </button>
-        )}
-        <div style={{textAlign:"center",marginTop:14,fontSize:10.5,color:"rgba(13,13,13,.65)"}}>{releaseV}{releaseDate?" · "+releaseDate:""}</div>
-      </div>
-    </div>
-  )
-}
 
 export default function App(){
   const[lang,setLang]=useState(getLang)
@@ -12660,10 +11598,10 @@ export default function App(){
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           transform:view==="list"?"translateY(0)":"translateY(14px)",
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
-          {view==="list"&&<BeachListView beaches={filtered} onBeachClick={onBeachClick}
+          {view==="list"&&<ErrBound><Suspense fallback={null}><BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
             sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}
-            onRequestGeo={requestGeo}/>}
+            onRequestGeo={requestGeo}/></Suspense></ErrBound>}
         </div>
 
         {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
@@ -12828,13 +11766,13 @@ export default function App(){
         {/* ALERTS HUB — /alertes/ page view (hub Premium = le veilleur personnel). */}
         {showAlertHub&&allBeaches?.length>=1&&(
           <div style={{position:"fixed",inset:0,zIndex:1006,overflowY:"auto",overflowX:"hidden",background:"#120821"}}>
-            <AlertHub
+            <ErrBound><Suspense fallback={null}><AlertHub
               lang={lang} island={island}
               beach={heroPick}
               onPremium={src=>openPremium(src||"alertes")}
               onShowMap={()=>{setShowAlertHub(false);track("sg_alerts_to_map",{})}}
               onClose={()=>{setShowAlertHub(false);track("sg_alerts_close",{})}}
-            />
+            /></Suspense></ErrBound>
           </div>
         )}
 
@@ -13136,7 +12074,7 @@ export default function App(){
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
             Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}
         {whatsNew&&!showHero&&!showPrevLanding&&!showOnboarding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
-          <WhatsNewJournal lang={lang} title={whatsNew.title} items={whatsNew.items}
+          <ErrBound><Suspense fallback={null}><WhatsNewJournal lang={lang} title={whatsNew.title} items={whatsNew.items}
             releaseV={whatsNew.v} releaseDate={whatsNew.date} allowDeepLinks={!IS_NEW_REGION} isPremium={isPremium}
             mood={(()=>{const[,clean,,avoid]=filterCounts;return avoid>0?(avoid>=2?"alerte":"vigilant"):clean>0?"serein":"scan"})()}
             onClose={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_dismiss",{v:whatsNew.v});setWhatsNew(null)}}
@@ -13145,7 +12083,7 @@ export default function App(){
               setWhatsNew(null);setShowPremium(false);setView("map")
               if(myBeach)onBeachClick(myBeach) // atterrissage personnel : sa plage en direct
             }}
-            onPremium={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_premium",{v:whatsNew.v});setWhatsNew(null);openPremium("whatsnew")}}/>
+            onPremium={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_premium",{v:whatsNew.v});setWhatsNew(null);openPremium("whatsnew")}}/></Suspense></ErrBound>
         )}
 
         {/* First-visit hint removed — the Hero peek card now carries the same
@@ -13187,8 +12125,8 @@ export default function App(){
             </svg>
           </button>
         )}
-        {showChat&&<SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
-          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/>}
+        {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
+          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
