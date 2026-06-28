@@ -1,7 +1,7 @@
 {
   "_note": "Cibles B2B hotels MQ/GP enrichies (email reel + hook perso) — carburant outreach B2B auto. Genere 28/06.",
-  "updatedAt": "2026-06-28T02:34:50.289Z",
-  "count": 27,
+  "updatedAt": "2026-06-28T03:08:29.693Z",
+  "count": 108,
   "contacts": [
     {
       "email": "contact@diamantlesbains.com",
@@ -26,9 +26,9 @@
       "name": "La Créole Beach Hôtel & Spa",
       "town": "Le Gosier",
       "island": "GP",
-      "fit": "hotel",
-      "hook": "Votre hôtel 4 étoiles est directement sur la plage de la Pointe de la Verdure au Gosier, en première ligne face aux échouages de sargasses qui touchent le sud Grande-Terre.",
-      "url": "https://www.creolebeach.com/"
+      "fit": "resort",
+      "hook": "En front de mer à la Pointe de la Verdure au Gosier, La Créole Beach a tout intérêt à savoir chaque matin si sa plage privée sera épargnée par les sargasses — une alerte fiable pour rassurer vos clients avant leur baignade.",
+      "url": "https://www.lacreolebeach.com/"
     },
     {
       "email": "reservations@majesty-palm.com",
@@ -162,17 +162,8 @@
       "town": "Sainte-Anne",
       "island": "GP",
       "fit": "hotel",
-      "hook": "Perché sur les hauteurs de Sainte-Anne avec sa plage privée tournée vers la mer des Caraïbes, La Toubana est en première ligne face aux échouages de sargasses qui touchent le sud Grande-Terre — une info plage fiable au quotidien est un vrai plus pour rassurer vos clients avant leur baignade.",
+      "hook": "Votre plage privée et le restaurant Toubana La Plage à Sainte-Anne sont en première ligne face aux échouages de sargasses : un suivi quotidien fiable aide à rassurer vos clients 5 étoiles avant leur arrivée.",
       "url": "https://www.toubana.com/"
-    },
-    {
-      "email": "reservation@creolebeach.com",
-      "name": "La Créole Beach Hôtel & Spa",
-      "town": "Le Gosier",
-      "island": "GP",
-      "fit": "resort",
-      "hook": "En front de mer à la Pointe de la Verdure au Gosier, La Créole Beach a tout intérêt à savoir chaque matin si sa plage privée sera épargnée par les sargasses — une alerte fiable pour rassurer vos clients avant leur baignade.",
-      "url": "https://www.lacreolebeach.com/"
     },
     {
       "email": "resa@tendacayou.com",
@@ -229,15 +220,6 @@
       "url": "https://www.hotel-amaudo.com/"
     },
     {
-      "email": "info@toubana.com",
-      "name": "La Toubana Hôtel & Spa",
-      "town": "Sainte-Anne",
-      "island": "GP",
-      "fit": "hotel",
-      "hook": "Votre plage privée et le restaurant Toubana La Plage à Sainte-Anne sont en première ligne face aux échouages de sargasses : un suivi quotidien fiable aide à rassurer vos clients 5 étoiles avant leur arrivée.",
-      "url": "https://www.toubana.com/"
-    },
-    {
       "email": "info@kawann-beach-hotel.com",
       "name": "Kawann Beach Hôtel",
       "town": "Grand-Bourg (Marie-Galante)",
@@ -245,6 +227,753 @@
       "fit": "hotel",
       "hook": "Seul grand hôtel de Marie-Galante, le Kawann borde Folle Anse, une plage naturelle classée site de ponte des tortues — un littoral directement exposé aux échouages de sargasses qui peuvent gâcher l'expérience clients comme la nidification.",
       "url": "https://www.kawann-beach-hotel.com/"
+    },
+    {
+      "email": "baobeach@orange.fr",
+      "name": "Bao Beach",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Votre Beach Bar les pieds dans l'eau sur la Pointe Marin est en premiere ligne face aux echouages de sargasses : une alerte la veille vous evite de servir vos clients dans l'odeur.",
+      "url": "https://baobeach.com/en/"
+    },
+    {
+      "email": "eco_loisirs@yahoo.fr",
+      "name": "Maya Beach Club",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Un club de plage avec piscine et transats sur l'Anse Caritan vit ou meurt avec la proprete de son sable : savoir 48h a l'avance si les sargasses arrivent protege vos reservations du week-end.",
+      "url": "https://www.mayabeachclub.com/contact"
+    },
+    {
+      "email": "boucaniersdiving@gmail.com",
+      "name": "Boucaniers Diving",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Vos baptemes et explorations partent de la Pointe Marin : une alerte sargasses vous permet de deplacer le site de plongee avant que vos plongeurs n'arrivent dans les nappes.",
+      "url": "https://www.boucaniersdiving.com/"
+    },
+    {
+      "email": "kalinago2@wanadoo.fr",
+      "name": "Kalinago Plongee",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Un centre 'les pieds dans l'eau' a la Pointe Marin perd ses sorties bateau quand les sargasses bloquent la mise a l'eau : anticiper de 2-3 jours vous evite les annulations de derniere minute.",
+      "url": "https://www.plongeekalinago.fr/"
+    },
+    {
+      "email": "residence.turquoise.martinique@gmail.com",
+      "name": "Residence Turquoise",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Votre studio a 3 min de l'Anse Caritan avec vue sur la baie du Marin : une alerte sargasses dans votre livret d'accueil rassure vos locataires avant meme leur arrivee.",
+      "url": "https://www.residence-turquoise-martinique.com/"
+    },
+    {
+      "email": "reception@diamantbeachclub.com",
+      "name": "Hôtel Diamant Beach",
+      "town": "Le Diamant",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Vos 49 appartements et votre restaurant Le Grand Bleu donnent face à la mer et au Rocher du Diamant, en première ligne sur les arrivages de sargasses.",
+      "url": "https://www.diamant-beach.com/"
+    },
+    {
+      "email": "dscplongee@gmail.com",
+      "name": "DSC Plongée (Diamant Sub Club)",
+      "town": "Le Diamant",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Votre club de plongée part directement de la plage du Diamant : savoir 48h à l'avance si les sargasses vont bloquer la mise à l'eau changerait votre planning de sorties.",
+      "url": "https://dscplongee.com/"
+    },
+    {
+      "email": "reservation@hotel-carayou.com",
+      "name": "Hôtel Carayou & SPA",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Vos 3 hectares de jardin tropical bordés par la mer des Caraïbes à la Pointe du Bout sont en première ligne face aux arrivées d'algues sargasses.",
+      "url": "https://www.hotel-carayou.com/"
+    },
+    {
+      "email": "contact@courbarilvillage.com",
+      "name": "Le Courbaril (Courbaril Village)",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Votre résidence 4 étoiles avec accès direct à la plage de l'Anse à l'Âne dépend d'une plage attractive — exactement ce que les sargasses viennent gâcher sans prévenir.",
+      "url": "https://www.courbarilvillage.com/fr/"
+    },
+    {
+      "email": "impe.village@gmail.com",
+      "name": "L'Impératrice Village",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "restaurant",
+      "hook": "Votre restaurant en bord de plage privée à l'Anse Mitan sert les pieds dans le sable — une expérience directement compromise par l'odeur et les algues sargasses.",
+      "url": "https://www.imperatricevillage.com/"
+    },
+    {
+      "email": "contact@kawanplongee.com",
+      "name": "Kawan Plongée",
+      "town": "Sainte-Luce",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Votre centre est sur le front de mer au 43 boulevard Kennedy, avec des départs plongée plusieurs fois par jour : les arrivages de sargasses peuvent gâcher la mise à l'eau et faire annuler des baptêmes.",
+      "url": "https://kawanplongee.com/"
+    },
+    {
+      "email": "karibaplongee@gmail.com",
+      "name": "Kariba Plongée",
+      "town": "Sainte-Luce",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Implantés sur la plage de Pont Café et engagés dans la réintroduction du corail avec l'ASSOMER, vous savez à quel point les échouages de sargasses menacent l'eau de baignade et vos sorties.",
+      "url": "https://www.karibaplongee.com"
+    },
+    {
+      "email": "brisemarine97@wanadoo.fr",
+      "name": "Résidence Brise Marine",
+      "town": "Sainte-Luce",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos bungalows ont un accès direct à la plage de Gros Raisins : savoir à l'avance quand les sargasses arrivent vous permettrait de rassurer vos clients en bord de mer.",
+      "url": "https://www.brise-marine.fr/en"
+    },
+    {
+      "email": "booking@lesvillasdulagon.fr",
+      "name": "Les Villas du Lagon (ex-Cap Est Lagoon Resort & Spa)",
+      "town": "Le François",
+      "island": "MQ",
+      "fit": "resort",
+      "hook": "Vous avez déjà installé des filets anti-algues pour protéger votre plage privée du Cap Est : une alerte sargasses anticipée vous éviterait de réagir trop tard sur le lagon.",
+      "url": "https://www.lesvillasdulagon.com/en/contact/"
+    },
+    {
+      "email": "geraldinesirieix@gmail.com",
+      "name": "Zenergie",
+      "town": "Le François",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Vos Pool Days et privatisations à la Pointe Jacob (Cap Est) dépendent d'un bord de mer propre : savoir 48h à l'avance si les sargasses arrivent sécurise vos réservations.",
+      "url": "https://www.zenergie-martinique.com/contact"
+    },
+    {
+      "email": "monsejour@hotelsablebleu.com",
+      "name": "Hôtel Sable Bleu",
+      "town": "Le Marin",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hôtel-boutique 4 étoiles est ancré face à la mer juste à côté de la marina du Marin, en première ligne face aux arrivages de sargasses dans la baie.",
+      "url": "https://www.hotelsablebleu.com/hotel-le-marin-martinique/"
+    },
+    {
+      "email": "residencedesiles@yahoo.fr",
+      "name": "Résidence des Îles",
+      "town": "Le Marin",
+      "island": "MQ",
+      "fit": "resort",
+      "hook": "Vos 17 appartements avec terrasse au quartier Mondésir promettent l'accès aux Salines en quelques minutes : une alerte sargasses anticipée protégerait directement cet argument de vente auprès de vos clients.",
+      "url": "https://residence-des-iles-martinique.fr/b/fr/contact.php"
+    },
+    {
+      "email": "lavillabdm@outlook.fr",
+      "name": "LA VILLA Baie du Marin",
+      "town": "Le Marin",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Votre gîte situé à l'Habitation Baie du Marin, au bord de la baie, est en première ligne des échouages de sargasses qui peuvent gâcher le séjour de vos locataires.",
+      "url": "https://lavillabdm.com/martinique.html"
+    },
+    {
+      "email": "contact@marinplongee.com",
+      "name": "Marin Plongée Martinique",
+      "town": "Le Marin",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Votre centre de plongée part chaque jour de la marina du Marin : savoir à l'avance où les sargasses bloquent les sites vous évite des sorties annulées et des plongeurs déçus.",
+      "url": "https://www.marinplongee.com/"
+    },
+    {
+      "email": "madinina-kitesurf@hotmail.com",
+      "name": "Madinina Kite Surf",
+      "town": "Sainte-Anne (Pointe Marin, baie du Marin)",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Votre école de kite à Pointe Marin, en plein cœur de la baie du Marin, est directement impactée quand les sargasses envahissent le plan d'eau et le spot.",
+      "url": "https://madinina-kitesurf.com/contact/"
+    },
+    {
+      "email": "contact@deepturtleplongee.fr",
+      "name": "Deep Turtle Plongée",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Votre centre est face au ponton de Grande Anse, le berceau des tortues vertes - une plage où l'echouage de sargasses peut couper net une sortie palanquee et faire annuler les baptêmes du jour.",
+      "url": "https://deepturtleplongee.fr/"
+    },
+    {
+      "email": "contact@alphaplongee.com",
+      "name": "Alpha Plongée",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Implantés sur la rue piétonne le long de la plage de Grande Anse, vos plongées dépendent d'un plan d'eau dégagé que les bancs de sargasses peuvent saturer en quelques heures.",
+      "url": "https://alphaplongee.com/?lang=fr"
+    },
+    {
+      "email": "aliotis.plongee@gmail.com",
+      "name": "Aliotis Plongée",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Seul club de plongée \"sur l'eau\" en catamaran depuis le ponton de Grande Anse - une arrivée de sargasses sur la baie complique embarquement et mise à l'eau de vos clients.",
+      "url": "https://www.aliotis-martinique.com/"
+    },
+    {
+      "email": "andrecammarota@hotmail.com",
+      "name": "Anses d'Arlet Plongée",
+      "town": "Les Anses-d'Arlet (bourg)",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Club familial en plein cœur du bourg des Anses d'Arlet : savoir 48h à l'avance si la sargasse arrive sur la plage du bourg vous évite d'annuler vos demi-journées au dernier moment.",
+      "url": "https://ansesdarletplongee.over-blog.com/"
+    },
+    {
+      "email": "contact@residanses.com",
+      "name": "Résid'Anses",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Vos villas 3 étoiles sont à proximité immédiate de la plage de Petite Anse - une plage de pêcheurs régulièrement touchée par les échouages, dont l'odeur peut gâcher le séjour de vos voyageurs.",
+      "url": "https://residanses.com/"
+    },
+    {
+      "email": "arlet.location@gmail.com",
+      "name": "Lez'arlet Plage",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos hébergements pieds dans l'eau à Grande Anse vendent l'accès direct à la plage - un argument fragilisé dès qu'un banc de sargasses s'échoue devant la maison.",
+      "url": "https://arletplage.com/"
+    },
+    {
+      "email": "lescalegrandeanse@gmail.com",
+      "name": "L'Escale",
+      "town": "Les Anses-d'Arlet",
+      "island": "MQ",
+      "fit": "restaurant",
+      "hook": "Table bistronomique à quelques mètres de la plage de Grande Anse : l'odeur de sargasses en décomposition juste devant la terrasse fait fuir les clients en pleine service.",
+      "url": "https://www.lescalemartinique.com/"
+    },
+    {
+      "email": "conciergerie@hotelfrenchcoco.com",
+      "name": "Hôtel French Coco",
+      "town": "Tartane, La Trinité",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hôtel boutique 5 étoiles aux portes de la réserve naturelle de la Caravelle est en première ligne sur la côte atlantique au vent, la plus exposée aux échouages de sargasses.",
+      "url": "https://www.hotelfrenchcoco.com/en/"
+    },
+    {
+      "email": "contact@aucitronvert.com",
+      "name": "Au Citron Vert Hébergements",
+      "town": "Tartane, La Trinité",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos hébergements 5 étoiles à l'Anse l'Étang donnent sur une plage atlantique régulièrement touchée par les arrivages de sargasses — un point de friction direct pour vos voyageurs.",
+      "url": "https://aucitronvert.com/en/"
+    },
+    {
+      "email": "hot.lemanguier@gmail.com",
+      "name": "Hôtel Le Manguier",
+      "town": "Tartane, La Trinité",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Vos bungalows créoles vue mer sur les hauteurs de Tartane surplombent des plages au vent où les sargasses peuvent gâcher l'expérience de vos clients du jour au lendemain.",
+      "url": "https://www.hotel-martinique-le-manguier.com/"
+    },
+    {
+      "email": "jm@locations-vue-turquoise.com",
+      "name": "Locations Vue Turquoise (bungalows & villas Tartane)",
+      "town": "Tartane, La Trinité",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vous gérez plusieurs locations pieds dans l'eau à Tartane depuis 1993 — anticiper les échouages de sargasses sur l'Anse l'Étang vous éviterait des arrivées déçues et des avis négatifs.",
+      "url": "https://www.locations-vue-turquoise.com/en/location/martinique/tartane"
+    },
+    {
+      "email": "reservation@villagedelapointe.fr",
+      "name": "Village de la Pointe",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "resort",
+      "hook": "Votre residence est implantee a quelques metres et face au lagon de la Pointe Faula, en premiere ligne des arrivages de sargasses qui peuvent gacher le sejour de vos clients.",
+      "url": "https://www.villagedelapointe.fr/"
+    },
+    {
+      "email": "contact@capmacabou.com",
+      "name": "Cap Macabou Hotel-Restaurant",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hotel-restaurant les pieds dans l'eau a Petit Macabou est directement expose aux echouages de sargasses sur la cote atlantique entre Vauclin et Marin.",
+      "url": "https://www.capmacabou.com/"
+    },
+    {
+      "email": "macabou@vacances-authentiques.com",
+      "name": "Les Plages de Macabou (Vacances Authentiques)",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "resort",
+      "hook": "Votre residence renovee a 150 m de la plage de Petit Macabou subit les arrivages de sargasses typiques de la facade atlantique du Vauclin.",
+      "url": "https://www.vacances-authentiques.com/residences/martinique-macabou/"
+    },
+    {
+      "email": "clubnautiquevauclin@gmail.com",
+      "name": "Club Nautique du Vauclin",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Votre base de kite et wingfoil a la Pointe Faula depend d'un plan d'eau propre, or les nappes de sargasses peuvent rendre le lagon impraticable du jour au lendemain.",
+      "url": "https://clubnautiqueduvauclin.com/"
+    },
+    {
+      "email": "martiniquekiteschool@gmail.com",
+      "name": "Martinique Kiteschool",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Votre ecole de kitesurf et wingfoil a la Pointe Faula a besoin d'anticiper les arrivages de sargasses pour planifier les cours et eviter d'annuler au dernier moment.",
+      "url": "https://www.martiniquekiteschool.com/"
+    },
+    {
+      "email": "contact@croisieres-denebola.com",
+      "name": "Dénébola - Les Plaisirs Nautiques",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "dive-club",
+      "hook": "Vos sorties plongée et croisières partent de Pointe Fort dans la Baie du Robert, une zone où les arrivages de sargasses peuvent gâcher une journée en mer du jour au lendemain.",
+      "url": "https://www.croisieres-denebola.com/"
+    },
+    {
+      "email": "marinadurobert@gmail.com",
+      "name": "La Voile - Marina du Robert",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "restaurant",
+      "hook": "Votre restaurant bord de mer à la marina donne directement sur la Baie du Robert, en première ligne face aux échouages de sargasses qui font fuir les clients en terrasse.",
+      "url": "https://marinadurobert.fr/hotel/le-restaurant/"
+    },
+    {
+      "email": "rolandelepain@gmail.com",
+      "name": "Le Mouillage",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "restaurant",
+      "hook": "Situé au 33 Boulevard Henri Auzé sur le front de mer, votre établissement subit de plein fouet les odeurs et l'aspect des sargasses échouées dans la baie.",
+      "url": "https://www.ville-robert.fr/vivre-au-robert/tourisme/la-restauration"
+    },
+    {
+      "email": "jonathandelnero@gmail.com",
+      "name": "L'Escale du Robert",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "restaurant",
+      "hook": "Sur le front de mer du Robert, anticiper les arrivages de sargasses vous permettrait de prévenir vos clients et d'éviter les annulations en terrasse face à la baie.",
+      "url": "https://www.ville-robert.fr/vivre-au-robert/tourisme/la-restauration"
+    },
+    {
+      "email": "boleroclub@hotmail.fr",
+      "name": "La Yole Bleue",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "beach-club",
+      "hook": "Votre club/restaurant en bord de mer sur le Boulevard Henri Auzé est exposé aux échouages de sargasses dans la Baie du Robert, qui plombent l'ambiance dès qu'ils arrivent.",
+      "url": "https://www.ville-robert.fr/vivre-au-robert/tourisme/la-restauration"
+    },
+    {
+      "email": "scadanse@orange.fr",
+      "name": "Le Paradis d'Adam et Eve",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos clients viennent au Robert pour la baie et les fonds blancs ; une alerte sargasses fiable vous éviterait des arrivées déçues par une plage couverte d'algues.",
+      "url": "https://www.ville-robert.fr/vivre-au-robert/tourisme/les-hebergements"
+    },
+    {
+      "email": "contact.otantikevasion@gmail.com",
+      "name": "O'TAN'TIK EVASION",
+      "town": "Le Robert",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "L'attrait de votre hébergement repose sur la proximité des îlets et de la baie du Robert, des spots directement menacés par les échouages de sargasses.",
+      "url": "https://www.ville-robert.fr/vivre-au-robert/tourisme/les-hebergements"
+    },
+    {
+      "email": "reservation@canellabeach.com",
+      "name": "Canella Beach Hôtel",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "En front de mer au coeur de la station balnéaire du Gosier, vos studios et suites donnent sur la plage : une alerte sargasses la veille vous laisse le temps de prévenir vos clients et d'organiser le nettoyage.",
+      "url": "https://canellabeachhotel.com/en/"
+    },
+    {
+      "email": "reservation@hotel-fleur-depee.com",
+      "name": "Hôtel Fleur d'Épée",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "À quelques pas du sable fin de Bas-du-Fort, vos 183 chambres dépendent de la qualité de la plage : une surveillance sargasses protège la promesse 'vue mer' de votre établissement 3 étoiles.",
+      "url": "https://www.hotel-fleur-depee.com/contact/"
+    },
+    {
+      "email": "cnbo971@gmail.com",
+      "name": "Centre Nautique Bleu Outremer",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Votre centre de plongée part de la plage de Bas-du-Fort : connaître l'état des sargasses au mouillage et à la mise à l'eau le matin évite des sorties annulées et des clients déçus.",
+      "url": "https://www.plongee-bleu-outremer.com/"
+    },
+    {
+      "email": "yvan@villalaplaya.net",
+      "name": "Villa La Playa",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Votre villa est à 10 mètres de la mer avec accès direct à la plage des Raisins Clairs, en première ligne face aux arrivages de sargasses.",
+      "url": "https://www.villalaplaya.net/en"
+    },
+    {
+      "email": "contact@gite-ty-koko.fr",
+      "name": "Gîte Ty Koko",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vous vendez à vos hôtes les belles plages de Saint-François à quelques minutes : une alerte sargasses fiable évite la déception (et les mauvais avis) le jour de leur arrivée.",
+      "url": "https://www.gite-ty-koko.fr/"
+    },
+    {
+      "email": "iguane.cafe@wanadoo.fr",
+      "name": "Iguane Café",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Sur la route de la Pointe des Châteaux, votre clientèle vient pour le cadre bord de mer : savoir à l'avance quand les sargasses arrivent protège l'expérience en terrasse.",
+      "url": "http://www.iguane-cafe.com"
+    },
+    {
+      "email": "noaplongee@gmail.com",
+      "name": "Noa Plongée",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Vos sorties plongée partent de la marina de Saint-François : anticiper les bancs de sargasses sur les sites et l'embarcadère sécurise vos départs et l'expérience client.",
+      "url": "http://noaplongee.fr/"
+    },
+    {
+      "email": "kontiki.steanne971@gmail.com",
+      "name": "Restaurant Bar Le Kontiki",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Restaurant de plage directement sur la plage communale ouvert tous les jours 9h-19h : vos clients attablés face au lagon sont en premiere ligne quand les sargasses s'echouent et que l'odeur s'installe.",
+      "url": "https://www.kontiki-guadeloupe.fr"
+    },
+    {
+      "email": "kazasand971@gmail.com",
+      "name": "Gîtes Kazasand",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vos 3 bungalows avec jacuzzi sont à 300 m à pied de la plage de la Caravelle : savoir la veille si elle est touchee par les sargasses vous evite des arrivees clients decues.",
+      "url": "https://kazasand.com"
+    },
+    {
+      "email": "hello@les-kaz.fr",
+      "name": "Les KAZ de Sainte-Anne (Ecolodges & Gîtes)",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Ecolodges eco-responsables à 5 min des plus belles plages : une alerte sargasses fiable est l'info exacte que vos hotes en quete de nature attendent avant de choisir leur plage du jour.",
+      "url": "https://www.les-kaz.fr"
+    },
+    {
+      "email": "oasisgrandeanse@outlook.com",
+      "name": "Oasis Grande Anse",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vos villas et bungalows misent sur le cadre tropical de Grande Anse ; savoir 24h à l'avance si les sargasses arrivent vous permet de rassurer vos voyageurs avant leur séjour.",
+      "url": "https://www.oasisdegrandeanse.com/en"
+    },
+    {
+      "email": "ecolodge@aujardindescolibris.com",
+      "name": "Au Jardin des Colibris",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Votre écolodge met en avant la proximité immédiate des plages (La Perle, Leroux, Grande Anse) : une veille sargasses sur ces 3-4 spots est exactement l'info que vos hôtes vous demandent.",
+      "url": "https://www.aujardindescolibris.com/en/"
+    },
+    {
+      "email": "kote-lagon@outlook.fr",
+      "name": "Koté Lagon",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "beach-club",
+      "hook": "Restaurant les pieds dans le sable sur Grande Anse, ouvert non-stop : un échouage de sargasses vide votre terrasse en une matinée — une alerte anticipée protège votre service du jour.",
+      "url": "https://www.kote-lagon.com/"
+    },
+    {
+      "email": "tropicalsubdiving@gmail.com",
+      "name": "Tropicalsub Diving",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Vos sorties plongée partent du village de Deshaies : connaître l'état des sargasses sur les zones de mise à l'eau vous évite d'annuler une palanquée au dernier moment.",
+      "url": "https://www.tropicalsubdiving-plongeeguadeloupe.com/en"
+    },
+    {
+      "email": "glplongee971@gmail.com",
+      "name": "Calypso Plongée",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Votre club part du ponton bois au centre de Deshaies ; une alerte sargasses sur les sites de plongée locaux sécurise vos baptêmes et formations programmés.",
+      "url": "http://www.glplongee.fr/le-club/"
+    },
+    {
+      "email": "contact@guadeloupe-cip.com",
+      "name": "CIP Guadeloupe (Centre International de Plongée)",
+      "town": "Bouillante",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Votre centre est directement sur la plage de Malendure, en première ligne face aux échouages de sargasses qui peuvent gâcher les sorties plongée vers la Réserve Cousteau.",
+      "url": "https://www.guadeloupe-cip.com/"
+    },
+    {
+      "email": "info@heures-saines.com",
+      "name": "Les Heures Saines",
+      "town": "Bouillante",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Vos départs plongée depuis Malendure dépendent d'une eau dégagée : une alerte sargasses anticipée vous évite d'annuler une sortie au dernier moment vers les Îlets Pigeon.",
+      "url": "https://www.heures-saines.com/"
+    },
+    {
+      "email": "contact@lerocherdemalendure.com",
+      "name": "Le Rocher de Malendure",
+      "town": "Pigeon, Bouillante",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Votre restaurant vue mer surplombe la baie de Malendure : prévenir vos clients quand les sargasses arrivent protège l'expérience terrasse et coucher de soleil que vous vendez.",
+      "url": "https://www.lerocherdemalendure.com/"
+    },
+    {
+      "email": "gitescouleurcaraibe@orange.fr",
+      "name": "Gîtes Couleur Caraïbes",
+      "town": "Malendure, Bouillante",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vos gîtes donnent juste au-dessus de la plage de Malendure : informer vos hôtes de l'état des sargasses avant leur arrivée évite les déceptions et les mauvais avis.",
+      "url": "https://gitescouleurcaraibes.com/"
+    },
+    {
+      "email": "reservation@leslodgesdemalendure.fr",
+      "name": "Les Lodges de Malendure",
+      "town": "Bouillante",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vos lodges sont à 5 minutes à pied de la plage de Malendure : une veille sargasses vous permet de rassurer vos clients en amont sur l'état de la baie.",
+      "url": "https://www.leslodgesdemalendure.fr/"
+    },
+    {
+      "email": "contact@gite-mayo.com",
+      "name": "Gîte Mayo & Hylode's Song",
+      "town": "Bouillante",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Votre gîte est idéalement placé pour la plongée à Bouillante : une alerte sargasses fiable aide vos hôtes plongeurs à planifier leurs sorties sans mauvaise surprise.",
+      "url": "https://www.gite-mayo.com/"
+    },
+    {
+      "email": "contact@bik-karaib.com",
+      "name": "Bik Karaïb",
+      "town": "Le Moule",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Votre restaurant les pieds dans le sable sur la Plage de l'Autre Bord est en première ligne face aux échouages de sargasses qui peuvent vider la terrasse en plein service.",
+      "url": "https://www.lesilesdeguadeloupe.com/en/restaurant/bik-karaib/"
+    },
+    {
+      "email": "ksurfclub@gmail.com",
+      "name": "Karukera Surf Club",
+      "town": "Le Moule",
+      "island": "GP",
+      "fit": "beach-club",
+      "hook": "Vos cours de surf sur la Plage de l'Autre Bord dépendent d'un plan d'eau propre : une alerte sargasses en amont vous éviterait d'annuler des sessions le jour même.",
+      "url": "https://ksurfclub.wixsite.com/karukerasurfclub"
+    },
+    {
+      "email": "gaia@ternelia.com",
+      "name": "Résidence Tropicale",
+      "town": "Le Moule",
+      "island": "GP",
+      "fit": "resort",
+      "hook": "À 50 m de la Plage des Alizés, vos clients viennent pour la mer et les cocotiers : une surveillance sargasses vous permettrait de les prévenir avant l'arrivée plutôt que sur place.",
+      "url": "https://www.ternelia.com/destination/residence-tropicale-le-moule/"
+    },
+    {
+      "email": "contact@kayalistudios.com",
+      "name": "Kayali Studios & Spa",
+      "town": "Port-Louis",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vous mettez en avant la plage du Souffleur \"sans sargasses\" à 5 minutes de vos studios, et vous avez même un article de blog dédié aux sargasses : une alerte quotidienne fiable rendrait cette promesse vérifiable pour vos clients avant chaque réservation.",
+      "url": "https://www.kayalistudios.com/"
+    },
+    {
+      "email": "contact@seacretdive.com",
+      "name": "SeacretDive",
+      "town": "Port-Louis",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Votre centre est installé à l'angle de deux rues près de la plage du Souffleur et part plonger dans le Grand Cul-de-Sac Marin : savoir la veille si les sargasses gênent l'accès ou la sortie en mer vous éviterait des annulations de baptêmes de dernière minute.",
+      "url": "https://seacretdive.com/"
+    },
+    {
+      "email": "edenplongee@gmail.com",
+      "name": "Eden Plongée",
+      "town": "Port-Louis",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Labellisés \"Esprit Parc National\" sur le boulevard A. R. Boisneuf face mer, vos sorties dans le Grand Cul-de-Sac Marin dépendent de l'état du plan d'eau : une alerte sargasses quotidienne sécuriserait vos départs et la satisfaction de vos plongeurs.",
+      "url": "https://www.edenplongee.fr/"
+    },
+    {
+      "email": "restaurantlepoissondor.1960@gmail.com",
+      "name": "Le Poisson d'Or",
+      "town": "Port-Louis",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Votre restaurant \"face à la mer\" sur la côte nord de Grande-Terre vend la vue sur les eaux cristallines des Caraïbes : prévenir vos clients en cas d'arrivage de sargasses protégerait directement votre principal argument et vos réservations de table en terrasse.",
+      "url": "https://www.lepoissondor.fr/"
+    },
+    {
+      "email": "kanaoa@wanadoo.fr",
+      "name": "Hôtel Kanaoa",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre plage privée et le ponton donnent direct sur la Baie des Saintes, donc le moindre dépôt de sargasses se voit immédiatement par vos clients à l'arrivée.",
+      "url": "https://www.hotelkanaoa.com/fr/"
+    },
+    {
+      "email": "info@petitssaints.com",
+      "name": "Les Petits Saints",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre maison créole vend la vue sur la Baie des Saintes : anticiper les épisodes de sargasses protège directement l'argument central de vos réservations.",
+      "url": "https://petitssaints.com/"
+    },
+    {
+      "email": "info@lobleuhotel.com",
+      "name": "LoBleu Hôtel",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Hôtel de charme en bord de Baie des Saintes : une alerte sargasses en amont vous laisse le temps de prévenir vos clients plutôt que de subir leur déception sur place.",
+      "url": "https://lobleuhotel.com/en/lobleu-hotel-homepage/"
+    },
+    {
+      "email": "mail@dive-bouteille.com",
+      "name": "La Dive Bouteille",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Vos départs plongée se font depuis le bord de mer aux Saintes : connaître à l'avance l'état des sites évite d'annuler une sortie au dernier moment à cause des sargasses.",
+      "url": "https://www.dive-bouteille.com/"
+    },
+    {
+      "email": "plongee@pisquettes.com",
+      "name": "Pisquettes Club de Plongée des Saintes",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "dive-club",
+      "hook": "Vos baptêmes et explorations partent du bord de mer aux Saintes : une surveillance des sargasses sécurise vos sorties autour du Pain de Sucre et du Sec Pâté.",
+      "url": "https://www.pisquettes.com/"
+    },
+    {
+      "email": "cafedelamarine@icloud.com",
+      "name": "Café de la Marine",
+      "town": "Terre-de-Haut",
+      "island": "GP",
+      "fit": "restaurant",
+      "hook": "Vous vendez le repas avec vue sur la Baie des Saintes depuis 1922 : une alerte sargasses préserve l'ambiance et les odeurs de votre terrasse en bord de mer.",
+      "url": "https://cafedelamarine.com/"
+    },
+    {
+      "email": "reservation@relaisdumoulin.com",
+      "name": "Le Relais du Moulin - Hôtel de Charme & Spa",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Boutique-hôtel adults-only positionné sur la détente, à 700 m de la plage du Helleux et des bassins de Bois Jolan — vos clients viennent pour ces plages, autant savoir avant eux quand les sargasses arrivent.",
+      "url": "https://www.relaisdumoulin.com/en/"
+    },
+    {
+      "email": "residenceleseauxbleues@gmail.com",
+      "name": "Résidence Les Eaux Bleues (Gîtes Sainte-Anne)",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Appartements les pieds dans l'eau directement sur la plage du bourg de Sainte-Anne — un banc de sargasses devant la résidence se voit immédiatement sur vos avis voyageurs.",
+      "url": "https://www.gites-sainte-anne.com/"
+    },
+    {
+      "email": "leszitadines@gmail.com",
+      "name": "Les Zitadines",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Gîtes sur les hauteurs de Sainte-Anne à 5 min de la plage — pouvoir dire à vos hôtes 'la plage est propre aujourd'hui' avant leur réservation est un argument de différenciation.",
+      "url": "https://leszitadines.com/"
+    },
+    {
+      "email": "guadeloupe@gites-mosaiques.com",
+      "name": "Gîtes Mosaïques",
+      "town": "Sainte-Rose",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vos cinq cases créoles sont en bord de mer des Caraïbes au Domaine de Nogent, à seulement 200 m de la plage — vos clients tombent directement sur l'état du rivage, donc une alerte sargasses anticipée protège leur première impression.",
+      "url": "https://gites-mosaiques.com/en/contacts/"
+    },
+    {
+      "email": "pipiritechantant.sofaia@gmail.com",
+      "name": "Pipirite Chantant",
+      "town": "Sainte-Rose",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Vous vendez la vue imprenable sur la mer des Caraïbes et la proximité de la plage des Amandiers — savoir à l'avance si les sargasses arrivent sur les Amandiers vous permet d'orienter vos hôtes vers une plage propre plutôt que de les décevoir.",
+      "url": "https://pipirite-chantant.com/infos-utiles/"
+    },
+    {
+      "email": "contact@habitation-saint-charles.com",
+      "name": "Habitation Saint Charles - Hôtel & Spa 4*",
+      "town": "Petit-Bourg",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "En tant qu'hôtel 4* de Petit-Bourg, vos clients vous demandent forcément où se baigner — pouvoir leur dire chaque matin si la plage de Viard est touchée par les sargasses est un vrai service de conciergerie qui évite les mauvaises surprises.",
+      "url": "https://www.habitation-saint-charles.com/en/"
     }
   ]
 }
