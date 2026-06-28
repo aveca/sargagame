@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-28T08:57:17.543Z",
+  "updatedAt": "2026-06-28T13:51:39.037Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 97,
-    "contacted": 10,
+    "discovered": 92,
+    "contacted": 15,
     "lead": 3,
     "paid": 0
   },
@@ -112,49 +112,49 @@
       "nextAction": "attendre / relance programmée"
     },
     "76690b3b63d61ac3b0f797410162ca55": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Frégate Bleue",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T13:48:52.105Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "8ab2fad77d1f998bd0249e7034e1cb8a": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Domaine Saint Aubin",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T13:48:52.402Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "790f73c8cf68f823ed818e5b645909ea": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Domaine des Bulles",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T13:48:52.864Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "42a4f510f3f4ed69bd09d4c97f21165d": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hotel Arawak Beach Resort",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T13:48:53.246Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "3799c25eb1613468dda4a1a7e39f16d4": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Maison de l'Ilet Oscar",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T13:48:53.528Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "8cb9d4a3ea8cc38696066ba3c22aaffd": {
       "stage": "discovered",
