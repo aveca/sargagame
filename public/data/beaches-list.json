@@ -12,13 +12,7 @@
     "snorkel": false,
     "parking": true,
     "drive": 52,
-    "slug": "plage-des-salines",
-    "webcam": {
-      "type": "link",
-      "url": "https://www.skylinewebcams.com/en/webcam/martinique/martinique/sainte-anne/baie-sainte-anne.html",
-      "label": "Baie de Sainte-Anne",
-      "provider": "SkylineWebcams"
-    }
+    "slug": "plage-des-salines"
   },
   {
     "id": "mq002",
@@ -918,13 +912,7 @@
     "snorkel": false,
     "parking": true,
     "drive": 38,
-    "slug": "plage-de-sainte-anne",
-    "webcam": {
-      "type": "link",
-      "url": "https://www.skylinewebcams.com/en/webcam/guadeloupe/guadeloupe/pointe-a-pitre/sainte-anne.html",
-      "label": "Sainte-Anne",
-      "provider": "SkylineWebcams"
-    }
+    "slug": "plage-de-sainte-anne"
   },
   {
     "id": "gp011",

@@ -113,13 +113,7 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "link",
-        "url": "https://www.skylinewebcams.com/en/webcam/mexico/quintana-roo/solidaridad/playa-del-carmen.html",
-        "label": "Playa del Carmen",
-        "provider": "SkylineWebcams"
-      }
+      "parking": true
     },
     {
       "id": "rm004",
@@ -131,13 +125,7 @@
       "status": "moderate",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "link",
-        "url": "https://www.skylinewebcams.com/en/webcam/mexico/quintana-roo/tulum/playa.html",
-        "label": "Tulum — Playa",
-        "provider": "SkylineWebcams"
-      }
+      "parking": true
     },
     {
       "id": "rm005",
