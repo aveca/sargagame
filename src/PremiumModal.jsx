@@ -408,8 +408,8 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
             clic modal→CTA. Réversible avec tout le reste via ?pay_capture=0. */}
         {hasAnnual&&!captureMode&&<div className="pww-plans">
-          {planBtn("monthly",_t(lang,"Mensuel","Monthly","Mensual"),pMo,_t(lang,"mois","mo","mes"),null,null)}
-          {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
+          {planBtn("monthly",_t(lang,"Pass 7 jours","7-day pass","Pase 7 días"),pMo,_t(lang,"7 j","7d","7d"),null,null)}
+          {planBtn("annual",_t(lang,"Pass 30 jours","30-day pass","Pase 30 días"),pYr,_t(lang,"30 j","30d","30d"),"★",eqMo)}
         </div>}
 
         {/* CTA — en capture, framing GRATUIT (juste l'email, sans carte) = exactement ce
@@ -444,14 +444,14 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
             <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
+            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
         </button>}
 
         {/* LIENS SECONDAIRES */}
         <div className="pww-links">
-          <button type="button" className="pww-link" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+          <button type="button" className="pww-link" onClick={onAlready}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
           {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:4}}><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M10.5 21v-3h3v3"/></svg>{_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
         </div>
 
@@ -704,12 +704,12 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
               <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
                 <b style={{fontSize:13.5,color:"#0d0b14",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
+                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
               </span>
               <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
             </span>
           </button>}
-          <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+          <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
           <div className="pwx-secure">🔒 {captureMode
             ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
@@ -1602,7 +1602,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
             </div>
             <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):_t(lang,"Pass dès 7,99 € · paiement unique, sans abonnement","Pass from €7.99 · one-time, no subscription","Pase desde 7,99 € · pago único, sin suscripción")}
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
@@ -2343,7 +2343,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           width:"100%",padding:"10px",marginTop:10,background:"none",
           border:"1px dashed rgba(255,255,255,.2)",borderRadius:14,
           color:"rgba(255,255,255,.55)",fontSize:12,cursor:"pointer",fontFamily:"inherit",
-        }}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+        }}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
 
         <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}} style={{
           width:"100%",padding:"12px",marginTop:8,background:"none",

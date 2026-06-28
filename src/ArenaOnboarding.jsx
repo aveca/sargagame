@@ -24,21 +24,21 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     welcome:{fr:["BIENVENUE,","CHASSEUR DE PLAGES"],en:["WELCOME,","BEACH HUNTER"],es:["BIENVENIDO,","CAZADOR DE PLAYAS"]},
     p1a:{fr:"Le Veilleur scrute la côte martiniquaise depuis l'espace.",en:"The Watcher scans the Martinique coast from space.",es:"El Vigía escruta la costa de Martinica desde el espacio."},
     p1b:{fr:"Chaque plage devient une <b>carte</b>. Son score sur 100, ce sont ses <b>points de vie</b>. Collectionne les plages PROPRES, fuis les ⚠️ À ÉVITER.",en:"Each beach becomes a <b>card</b>. Its score out of 100 is its <b>hit points</b>. Collect CLEAN beaches, flee the ⚠️ AVOID ones.",es:"Cada playa es una <b>carta</b>. Su puntuación sobre 100 son sus <b>puntos de vida</b>. Colecciona las playas LIMPIAS, huye de las ⚠️ EVITAR."},
-    r1a:{fr:"<b>10 plages suivies</b> en temps réel, données Copernicus Marine.",en:"<b>10 beaches tracked</b> in real time, Copernicus Marine data.",es:"<b>10 playas seguidas</b> en tiempo real, datos Copernicus Marine."},
-    r1b:{fr:"<b>Verdict du jour</b> + prévision 7 jours sur ta plage.",en:"<b>Daily verdict</b> + 7-day forecast on your beach.",es:"<b>Veredicto del día</b> + previsión 7 días en tu playa."},
+    r1a:{fr:"<b>136+ plages</b> lues au satellite, 4×/jour — Copernicus &amp; NOAA. Mesuré, pas deviné.",en:"<b>136+ beaches</b> read by satellite, 4×/day — Copernicus &amp; NOAA. Measured, not guessed.",es:"<b>136+ playas</b> leídas por satélite, 4×/día — Copernicus y NOAA. Medido, no adivinado."},
+    r1b:{fr:"<b>Le verdict du matin</b> sur ta plage — et le Plan B des 3 plages propres les plus proches.",en:"<b>The morning verdict</b> on your beach — plus a Plan B: the 3 nearest clean beaches.",es:"<b>El veredicto de la mañana</b> en tu playa — y un Plan B: las 3 playas limpias más cercanas."},
     cta1:{fr:"Commencer l'aventure",en:"Start the adventure",es:"Empezar la aventura"},
     cta1s:{fr:"Gratuit · aucune carte demandée",en:"Free · no card required",es:"Gratis · sin tarjeta"},
     // étape 2
     scan:{fr:["LE SATELLITE","SCANNE."],en:["THE SATELLITE","SCANS."],es:["EL SATÉLITE","ESCANEA."]},
     scanSub:{fr:"Indice AFAI · données Copernicus Marine",en:"AFAI index · Copernicus Marine data",es:"Índice AFAI · datos Copernicus Marine"},
-    s1:{fr:"<b>Copernicus mesure</b> les radeaux de sargasses au large.",en:"<b>Copernicus measures</b> the sargassum rafts offshore.",es:"<b>Copernicus mide</b> las balsas de sargazo mar adentro."},
+    s1:{fr:"<b>Copernicus &amp; NOAA mesurent</b> les radeaux de sargasses au large — données publiques, auditables.",en:"<b>Copernicus &amp; NOAA measure</b> the sargassum rafts offshore — public, auditable data.",es:"<b>Copernicus y NOAA miden</b> las balsas de sargazo mar adentro — datos públicos y auditables."},
     s2:{fr:"On croise <b>7 facteurs</b> : sargasses, houle, vent, eau, ciel, UV, marée.",en:"We cross <b>7 factors</b>: sargassum, swell, wind, water, sky, UV, tide.",es:"Cruzamos <b>7 factores</b>: sargazo, oleaje, viento, agua, cielo, UV, marea."},
-    s3:{fr:"Ta plage reçoit un <b>score / 100</b> et un statut clair.",en:"Your beach gets a <b>score / 100</b> and a clear status.",es:"Tu playa recibe una <b>puntuación / 100</b> y un estado claro."},
+    s3:{fr:"Ta plage devient une <b>carte, score / 100</b> : Baignade OK, À surveiller ou Évite.",en:"Your beach becomes a <b>card, score / 100</b>: Swim OK, Watch out, or Avoid.",es:"Tu playa se vuelve una <b>carta, puntuación / 100</b>: Baño OK, Atención o Evita."},
     cta2:{fr:"Suivant",en:"Next",es:"Siguiente"},
     cta2s:{fr:"Plus qu'une étape",en:"One step left",es:"Queda un paso"},
     // étape 3
     terrain:{fr:["CHOISIS","TON TERRAIN"],en:["CHOOSE","YOUR TURF"],es:["ELIGE","TU TERRENO"]},
-    terrainSub:{fr:"Où le Veilleur doit-il monter la garde ?",en:"Where should the Watcher stand guard?",es:"¿Dónde debe vigilar el Vigía?"},
+    terrainSub:{fr:"Quelle mer Le Veilleur doit-il veiller pour toi ?",en:"Which sea should the Watcher keep for you?",es:"¿Qué mar debe velar el Vigía para ti?"},
     chosen:{fr:"✓ Choisie",en:"✓ Chosen",es:"✓ Elegida"},
     soon:{fr:"🔒 Bientôt",en:"🔒 Soon",es:"🔒 Pronto"},
     cta3:{fr:"Entrer en Martinique",en:"Enter Martinique",es:"Entrar en Martinica"},
@@ -187,7 +187,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
               <span style={{fontSize:30}}>🏝️</span>
               <span style={{flex:1}}>
                 <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>{RL?RL.toUpperCase():"MARTINIQUE"}</span>
-                <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#d8fff6"}}>{RL?(regBeaches.length?regBeaches.join(", ")+"…":RL):"10 plages · Le Diamant, Les Salines…"}</span>
+                <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#d8fff6"}}>{RL?(regBeaches.length?regBeaches.join(", ")+"…":RL):"Les Salines, Grande-Anse d'Arlet, Tartane…"}</span>
               </span>
               <span className="pill" style={{background:"#27c46b",color:"#fff",borderWidth:2.5}}>{L(t.chosen,lang)}</span>
             </div>

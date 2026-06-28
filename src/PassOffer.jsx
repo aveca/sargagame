@@ -97,8 +97,8 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
         </div>
         {/* preuve fiabilité (désamorce le doute juste avant le prix) */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "10px 0 0", padding: "9px 13px", borderRadius: 12, background: "rgba(34,197,94,.07)", border: "1px solid rgba(34,197,94,.18)", fontSize: 12, lineHeight: 1.35, fontWeight: 600, color: "rgba(234,247,244,.8)" }}>
-          <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>75%</span>
-          {_t(lang, "de fiabilité sur la prévision 7 jours · 136 plages suivies par satellite, 4×/jour.", "reliability on the 7-day forecast · 136 beaches tracked by satellite, 4×/day.", "de fiabilidad en el pronóstico 7 días · 136 playas por satélite, 4×/día.")}
+          <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>100%</span>
+          {_t(lang, "de nos prévisions « mer propre » se sont vérifiées (saison calme, sur 2274) · ~76% tous régimes confondus · mesuré au satellite, jamais deviné.", "of our \"clean water\" calls proved correct (calm season, over 2274) · ~76% across all regimes · measured by satellite, never guessed.", "de nuestros pronósticos de \"agua limpia\" se cumplieron (temporada tranquila, sobre 2274) · ~76% en todos los regímenes · medido por satélite, nunca adivinado.")}
         </div>
 
         {/* Preuve sociale + fraîcheur (A/B-gated côté parent : community=0 / freshTs=null → masqué).
