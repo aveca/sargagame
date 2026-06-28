@@ -191,6 +191,16 @@ jobs:
           SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
         run: node scripts/automation/widget-install-watch.cjs --send
 
+      # Conversion widget → Pro : les hôtels qui ont installé le widget (lead le plus
+      # chaud) sont contactés AUTOMATIQUEMENT pour passer au payant (essai 14j → 79€).
+      # Source data/widget-contacts.json (host→contact enrichi), dédup widget-converted-sent.json.
+      - name: Convert widget installers to Pro (B2B)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/widget-convert.cjs --send
+
       # Relance panier abandonné : carte refusée / 3DS non confirmé / abandon.
       # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
       # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
@@ -365,7 +375,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/daily-brief-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/daily-brief-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
