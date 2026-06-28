@@ -58,7 +58,7 @@
   </header>
   <main>
     <h1>Configurez votre widget</h1>
-    <p class="sub">Réglez votre widget « plages en direct », générez le code, collez-le sur votre site. Avec votre <strong>token Pro</strong>, le widget passe <strong>à votre marque</strong> — sans crédit Sargasses.</p>
+    <p class="sub">Réglez votre widget « plages en direct », générez le code, collez-le sur votre site. Le même satellite qui veille votre rivage, à votre marque : avec votre <strong>token Pro</strong>, le widget passe <strong>à vos couleurs</strong> — sans crédit Sargasses, mesuré au satellite, pas deviné.</p>
 
     <h2>Comment ça marche</h2>
     <ol class="steps">
@@ -71,7 +71,7 @@
       <div class="token-row">
         <label for="k">Token Pro (marque blanche)</label>
         <input type="text" id="k" autocomplete="off" spellcheck="false" placeholder="Collez ici le token reçu par email — ou laissez vide pour le widget gratuit">
-        <div class="token-state free" id="kstate">Sans token : widget gratuit, avec un discret crédit « par Sargasses ».</div>
+        <div class="token-state free" id="kstate">Sans token : widget gratuit, avec un discret crédit « par Le Veilleur » — la confiance que vous donnez au client.</div>
       </div>
       <div class="controls">
         <div>
@@ -183,7 +183,7 @@
         kstate.textContent='✓ Marque blanche active — le crédit Sargasses sera retiré (token validé côté serveur à l\'affichage).';
       }else{
         kstate.className='token-state free';
-        kstate.textContent='Sans token : widget gratuit, avec un discret crédit « par Sargasses ».';
+        kstate.textContent='Sans token : widget gratuit, avec un discret crédit « par Le Veilleur » — la confiance que vous donnez au client.';
       }
     }
     function update(){
