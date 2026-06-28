@@ -15,7 +15,17 @@
          échoué car tous purement CSS. Ici on MESURE la vraie hauteur visible
          (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
-      (function(){var d=document.documentElement;function vh(){d.style.setProperty('--sg-vh',window.innerHeight+'px')}vh();
+      (function(){var d=document.documentElement;
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        function vh(){var h=window.innerHeight;
+          /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
+             l'écran réel (screen.height 896) → le contenu s'arrête à 852 = bande vide.
+             L'app est portrait-locked (manifest) donc screen.height = la vraie hauteur
+             portrait fiable. On la prend SEULEMENT en standalone (en Safari screen.height
+             dépasse la zone visible → cacherait le bas derrière la toolbar). */
+          if(isSA()&&window.screen&&screen.height>h)h=screen.height;
+          d.style.setProperty('--sg-vh',h+'px')}
+        vh();
         addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
         addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
         addEventListener('load',function(){vh();setTimeout(vh,300)});

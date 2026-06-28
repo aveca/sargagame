@@ -516,8 +516,10 @@ function writeRegionIndex(region, out) {
       /* iOS standalone : position:fixed/100vh/100dvh ne descendent pas jusqu'au bord
          bas reel -> bande vide en bas. On mesure la vraie hauteur (window.innerHeight =
          plein ecran sous viewport-fit=cover) -> --sg-vh, #root + html/body s'y collent. */
-      (function(){var d=document.documentElement;function vh(){d.style.setProperty('--sg-vh',window.innerHeight+'px')}vh();
-        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+      (function(){var d=document.documentElement;
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        function vh(){var h=window.innerHeight;if(isSA()&&window.screen&&screen.height>h)h=screen.height;d.style.setProperty('--sg-vh',h+'px')}
+        vh();addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
         addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
         addEventListener('load',function(){vh();setTimeout(vh,300)});
         if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();

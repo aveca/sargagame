@@ -939,7 +939,11 @@ export default function WorldMapView({
 
   return(
     <div ref={wrapRef} className="sg-onink-scope" style={{
-      position:"fixed",inset:0,zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
+      // iOS standalone : inset:0 clippe à la hauteur du layout viewport (852) qui est
+      // PLUS COURTE que l'écran réel (896) → bande vide en bas. On force la hauteur
+      // MESURÉE (--sg-vh = plein écran en standalone, cf. script index.html) pour que
+      // le fond de carte descende jusqu'au bord physique. Fallback 100% hors standalone.
+      position:"fixed",top:0,left:0,right:0,bottom:"auto",width:"100%",height:"var(--sg-vh,100%)",zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
       // forced-color-adjust HÉRITE → préserve les VRAIES couleurs golden-hour de TOUTE la
       // carte (fond + CTA dorés + dots de statut) même si le système force les couleurs
       // (thème contraste Windows / filtre couleur / forced-colors navigateur). Sans ça,
