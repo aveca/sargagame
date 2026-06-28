@@ -19,6 +19,7 @@
  * Reduced-motion : foil + flip + flottement désactivés (plancher statique).
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
+import { useSwipeClose } from "./useSwipeClose.js"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -343,10 +344,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   /* Fermer en GLISSANT vers le bas (parité fiche data : la fiche carte ne se fermait
      qu'au ✕/Échap → « scroll down pour fermer ne marche jamais », user). Actif en haut
      du scroll ; feedback translateY ; seuil 70px → onClose. */
-  const lcRef=useRef(null),dragStartY=useRef(0),dragDy=useRef(0)
-  const onTdStart=e=>{dragStartY.current=e.touches[0].clientY;dragDy.current=0;if(lcRef.current)lcRef.current.style.transition=""}
-  const onTdMove=e=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=e.touches[0].clientY-dragStartY.current;if(dy>0){dragDy.current=dy;if(lcRef.current)lcRef.current.style.transform="translateY("+dy+"px)"}}
-  const onTdEnd=()=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=dragDy.current;if(dy>70){onClose&&onClose();return}if(lcRef.current){lcRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";lcRef.current.style.transform="";setTimeout(()=>{if(lcRef.current)lcRef.current.style.transition=""},300)}}
+  // Swipe down pour fermer — via le hook commun. guardInput:true = ne ferme PAS en
+  // pleine saisie (la note BeachReport a un champ texte) — fix régression (audit UX).
+  const lcSwipe=useSwipeClose(()=>onClose&&onClose(),{guardInput:true,threshold:70})
   const [shared,setShared]=useState(false)
   const share=useCallback(()=>{
     const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
@@ -361,7 +361,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   },[beach,head,track]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
-      ref={lcRef} onTouchStart={onTdStart} onTouchMove={onTdMove} onTouchEnd={onTdEnd}>
+      ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>

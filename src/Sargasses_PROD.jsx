@@ -3705,9 +3705,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   }
   useEffect(()=>{const h=e=>{if(e.key==="Escape")requestClose()};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[])
   // Drag-to-dismiss (seuil 10% hauteur écran — recherche Reanimated) + rubber-band
+  // _swBlock : ne pas armer le swipe-close si un champ est focus (email/note) — fix
+  // régression data-loss (audit UX) ; + garde scrollTop>5 (ne fight pas le scroll contenu).
+  const _swBlock=()=>{const a=typeof document!=="undefined"&&document.activeElement;return !!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))}
   const onTouchStart=e=>{startY.current=e.touches[0].clientY;dragY.current=0;if(sheetRef.current)sheetRef.current.style.transition=""}
-  const onTouchMove=e=>{const dy=e.touches[0].clientY-startY.current;if(dy<=0)return;dragY.current=dy;if(sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`}
-  const onTouchEnd=()=>{const dy=dragY.current;const thr=Math.max(90,(window.innerHeight||700)*0.1)
+  const onTouchMove=e=>{if(_swBlock())return;if(sheetRef.current&&sheetRef.current.scrollTop>5)return;const dy=e.touches[0].clientY-startY.current;if(dy<=0)return;dragY.current=dy;if(sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`}
+  const onTouchEnd=()=>{if(_swBlock()){if(sheetRef.current)sheetRef.current.style.transform="";return}if(sheetRef.current&&sheetRef.current.scrollTop>5){sheetRef.current.style.transform="";return}const dy=dragY.current;const thr=Math.max(90,(window.innerHeight||700)*0.1)
     if(dy>thr)return requestClose()
     if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}}
 
