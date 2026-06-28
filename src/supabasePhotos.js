@@ -19,9 +19,9 @@
  *      donne, je commit → auto-deploy). Tant que vide → fonctionnalité OFF (no-op).
  */
 
-// ⬇️ À renseigner une fois le projet Supabase créé (valeurs PUBLIQUES, RLS protège).
-export const SUPABASE_URL = ""              // ex: https://abcd1234.supabase.co
-export const SUPABASE_ANON_KEY = ""         // clé "anon public"
+// Valeurs PUBLIQUES (clé publishable conçue pour le client ; la sécurité = RLS).
+export const SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
+export const SUPABASE_ANON_KEY = "sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz"
 
 const BUCKET = "beach-photos"
 
