@@ -30,7 +30,13 @@ function B2BModal({lang,onClose}){
   const [sent,setSent]=useState(false)
   const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
   const I=COMIC
-  useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}},[])
+  // Liens de paiement Mollie (self-service in-app) — chargés depuis le JSON publié par
+  // mollie-paylinks.cjs. Permet de PAYER l'année directement, sans humain.
+  const [paylinks,setPaylinks]=useState(null)
+  useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}
+    try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}
+  },[])
+  const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
   // Grille B2B (mémo stratégique 28/06) : 3 tiers payants, essai 14j sans carte,
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 14j time-boxé.
@@ -88,6 +94,9 @@ function B2BModal({lang,onClose}){
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{cur.cta}</button>
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 14 jours, sans carte · −2 mois en annuel · stop quand vous voulez","14-day trial, no card · 2 months free yearly · stop anytime","Prueba 14 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
+          {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
+            <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
+          </div>}
         </>:<>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","¡Recibido ✓")}</div>
           <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="widget"

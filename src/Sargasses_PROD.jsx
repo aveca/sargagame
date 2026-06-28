@@ -12452,7 +12452,12 @@ export default function App(){
       // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
       const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
       const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
-    else if(p.get("pro")==="1"){setShowProB2B(true);try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){};window.history.replaceState({},"",window.location.pathname)}
+    else if(p.get("pro")==="1"){setShowProB2B(true);
+      // Tracking funnel PAR PROSPECT : le token b= (hash8 du destinataire, posé dans
+      // les emails B2B) + la campagne → on sait QUI a cliqué (b2b-funnel lit ce signal).
+      try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
+      try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
+      window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
   }catch(_){}},[openPremium])
 
