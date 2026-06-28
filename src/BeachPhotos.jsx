@@ -1,28 +1,26 @@
 /**
  * BeachPhotos — galerie « photos visiteurs » MODÉRÉES sur la fiche plage.
  *
- * Pourquoi : la 2e forme de « preuve du présent » (après les webcams), et la SEULE
- * qui marche sur les 136+ plages (pas seulement celles équipées d'une cam). Ce sont
- * NOS photos (uploadées dans l'app, consenties, modérées) — distinctes des photos FB
- * scrapées que `FbPostsStrip` n'affiche PAS (re-hébergement/légal). Comme on les
- * héberge nous-mêmes avec consentement, on a le droit de les montrer.
+ * Pourquoi : 2e forme de « preuve du présent » (après les webcams), et la SEULE qui
+ * marche sur les 136+ plages (pas seulement celles équipées d'une cam). Ce sont NOS
+ * photos (uploadées dans l'app, consenties, modérées) — distinctes des photos FB
+ * scrapées que `FbPostsStrip` n'affiche PAS (re-hébergement/légal).
  *
- * Données : `public/api/community/photos.json` = { updatedAt, beaches:{ [id]:[{url,ts,level?}] } }.
- * Bakée en CI par scripts/automation/build-community-photos.cjs (photos APPROUVÉES
- * uniquement). Composant autonome (n'importe rien de Sargasses_PROD) → import direct.
+ * Source : Supabase (table `photos`, status='approved', cf. src/supabasePhotos.js).
+ * Lecture par plage à l'ouverture de la fiche (cache module-level). Rend `null` si
+ * Supabase pas configuré ou aucune photo approuvée → inerte tant que le backend
+ * n'est pas branché. Composant autonome → import direct (pas de cycle).
  */
 import React, { useState, useEffect } from "react"
+import { fetchApprovedPhotos, supabaseConfigured } from "./supabasePhotos.js"
 
-// Cache module-level : un seul fetch partagé par toutes les fiches.
-let _photosPromise = null
-function loadPhotos() {
-  if (!_photosPromise) {
-    _photosPromise = fetch("/api/community/photos.json")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => (d && d.beaches) || {})
-      .catch(() => ({}))
+// Cache module-level par plage : une seule requête par fiche ouverte.
+const _cache = new Map()
+function loadPhotos(beachId) {
+  if (!_cache.has(beachId)) {
+    _cache.set(beachId, fetchApprovedPhotos(beachId).catch(() => []))
   }
-  return _photosPromise
+  return _cache.get(beachId)
 }
 
 const _t = (lang, fr, en, es) => (lang === "es" ? es : lang === "en" ? en : fr)
@@ -41,8 +39,9 @@ function timeAgo(ts, lang) {
 export function BeachPhotos({ beach, lang = "fr", max = 6 }) {
   const [photos, setPhotos] = useState(null)
   useEffect(() => {
+    if (!beach || !beach.id || !supabaseConfigured()) return
     let alive = true
-    loadPhotos().then((all) => { if (alive) setPhotos(all[beach.id] || []) })
+    loadPhotos(beach.id).then((list) => { if (alive) setPhotos(list || []) })
     return () => { alive = false }
   }, [beach && beach.id])
 

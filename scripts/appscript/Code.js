@@ -34,18 +34,6 @@ function jsonResponse(data) {
     .setMimeType(ContentService.MimeType.JSON)
 }
 
-// Dossier Drive des photos visiteurs — auto-créé au 1er appel (zéro setup manuel).
-// L'id est mémorisé en script property pour réutilisation.
-function getPhotoFolder_() {
-  const props = PropertiesService.getScriptProperties()
-  const id = props.getProperty('PHOTO_FOLDER_ID')
-  if (id) { try { return DriveApp.getFolderById(id) } catch (e) {} }
-  const it = DriveApp.getFoldersByName('sargasses_photos')
-  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('sargasses_photos')
-  props.setProperty('PHOTO_FOLDER_ID', folder.getId())
-  return folder
-}
-
 // ── POST handler ─────────────────────────────────────
 
 function doPost(e) {
@@ -216,34 +204,6 @@ function doPost(e) {
         payload.level || 'clean'
       ])
       return jsonResponse({ ok: true, action: 'beach_report_saved' })
-    }
-
-    // 5b. Beach PHOTO (visitor on-site photo, moderated before display)
-    // Frontend envoie une data URL JPEG déjà redimensionnée + EXIF/GPS strippée.
-    // On stocke le binaire dans Drive (dossier auto-créé) et on log une ligne en
-    // status 'pending' → seules les lignes passées en 'approved' sont servies par
-    // ?action=beach_photos (modération). Cf. docs/visitor-photos-runbook.md.
-    if (type === 'beach_photo') {
-      const dataUrl = payload.photo || ''
-      const m = dataUrl.match(/^data:(image\/[\w+.-]+);base64,(.+)$/)
-      if (!m) return jsonResponse({ error: 'no image' })
-      if (m[2].length > 4000000) return jsonResponse({ error: 'too_large' }) // ~3 Mo de base64
-      const blob = Utilities.newBlob(Utilities.base64Decode(m[2]), m[1], 'beach.jpg')
-      const folder = getPhotoFolder_()
-      const file = folder.createFile(blob)
-      try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW) } catch (e) {}
-      const fid = file.getId()
-      const url = 'https://lh3.googleusercontent.com/d/' + fid // direct image (embeddable)
-      const sheet = getOrCreateSheet('beach_photos', ['date', 'beach_id', 'beach_name', 'island', 'level', 'file_id', 'url', 'status'])
-      sheet.appendRow([
-        payload.date || new Date().toISOString(),
-        payload.beach_id || '',
-        payload.beach_name || '',
-        (payload.island || 'MQ').toUpperCase(),
-        payload.level || '',
-        fid, url, 'pending'
-      ])
-      return jsonResponse({ ok: true, action: 'beach_photo_saved', id: fid })
     }
 
     // 6z. Welcome email after successful trial signup — fallback path
@@ -514,29 +474,6 @@ function doGet(e) {
         items.push({ date: data[i][0], rating: data[i][1], text: data[i][2], island: data[i][3] })
       }
       return jsonResponse({ count: items.length, items: items.slice(-20) })
-    } catch (err) {
-      return jsonResponse({ error: err.message })
-    }
-  }
-
-  // Beach PHOTOS — visitor photos APPROVED for display (moderation gate)
-  if (action === 'beach_photos') {
-    try {
-      const sheet = getOrCreateSheet('beach_photos', ['date', 'beach_id', 'beach_name', 'island', 'level', 'file_id', 'url', 'status'])
-      const data = sheet.getDataRange().getValues()
-      const out = {}
-      for (let i = 1; i < data.length; i++) {
-        if ((data[i][7] || '').toString().toLowerCase() !== 'approved') continue // approuvées uniquement
-        const bid = data[i][1]; if (!bid) continue
-        const url = data[i][6] || ('https://lh3.googleusercontent.com/d/' + data[i][5])
-        if (!out[bid]) out[bid] = []
-        out[bid].push({ url: url, ts: data[i][0], level: data[i][4] || '' })
-      }
-      Object.keys(out).forEach(function (k) {
-        out[k].sort(function (a, b) { return new Date(b.ts) - new Date(a.ts) })
-        out[k] = out[k].slice(0, 12)
-      })
-      return jsonResponse({ ok: true, photos: out })
     } catch (err) {
       return jsonResponse({ error: err.message })
     }
@@ -908,7 +845,7 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|beach_photos|email_stats|funnel|referral|drip_check|clean_bounces|unsubscribe' })
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|referral|drip_check|clean_bounces|unsubscribe' })
 }
 
 function htmlResponse(body) {

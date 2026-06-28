@@ -1,55 +1,66 @@
-# Photos visiteurs — runbook (backend Apps Script)
+# Photos visiteurs — runbook (backend Supabase, 100 % mobile)
 
 Fonctionnalité : un visiteur ajoute une photo de la plage depuis `BeachReport` →
 stockée + modérée → affichée dans `BeachPhotos` (galerie « preuve du présent »).
 Marche sur **toutes les plages** (contrairement aux webcams, limitées à 9).
 
-## Architecture (telle qu'implémentée)
+**Pourquoi Supabase** : le fondateur est 100 % mobile et `clasp push` (Apps Script)
+exige un ordinateur. Supabase se gère **entièrement au dashboard web** (mobile) et
+l'app lui parle en HTTP direct — zéro CLI, zéro ordinateur. Le reste de la stack
+(static-bake + Apps Script pour reports/emails/paiements) **ne change pas** : c'est
+chirurgical, pas une migration globale.
+
+## Architecture
 
 ```
-App (BeachReport)                 Apps Script (Code.js)            CI (daily)            App (BeachPhotos)
- photo → resize 1280px,    POST   doPost type:"beach_photo"        build-community-       lit
- EXIF/GPS strippée  ─────────────▶ → Drive (dossier auto-créé)      photos.cjs  ─────────▶ /api/community/
- (imageResize.js)         no-cors  → sheet beach_photos (pending)   ?action=beach_photos   photos.json
-                                                                    (approved only) →
-                                                                    photos.json (statique)
+App (BeachReport)                     Supabase                       App (BeachPhotos)
+ photo → resize 1280px,    HTTP POST   Storage bucket beach-photos     HTTP GET (REST)
+ EXIF/GPS strippée  ───────────────▶   + table `photos` (pending)  ──▶ status=approved
+ (imageResize.js)                      RLS protège (clé anon publique)  → galerie
+                                       Modération : status→approved
+                                       (Table Editor, mobile)
 ```
 
-- Frontend déjà mergé. Garde-fou : `PHOTO_UPLOAD_ENABLED=false` dans `Sargasses_PROD.jsx`
-  (le bouton « Ajoute une photo » est masqué) **tant que le backend n'est pas déployé**.
-- Affichage `BeachPhotos` actif dès que `photos.json` contient des entrées approuvées.
+- Code : `src/supabasePhotos.js` (upload + lecture, `fetch` brut, **aucune dépendance**),
+  `src/BeachPhotos.jsx` (galerie), capture dans `BeachReport` (`src/Sargasses_PROD.jsx`).
+- S'active **automatiquement** dès que `SUPABASE_URL` + `SUPABASE_ANON_KEY` sont
+  renseignés dans `src/supabasePhotos.js` (sinon no-op : bouton masqué, galerie vide).
 
-## Pour passer en LIVE (≈5 min, côté fondateur)
+## Mise en LIVE (≈10 min, 100 % au téléphone)
 
-1. **Déployer le backend** : `clasp push` du dossier `scripts/appscript/` (handler
-   `type:"beach_photo"` + `?action=beach_photos` + helper `getPhotoFolder_`).
-   Le dossier Drive `sargasses_photos` est **auto-créé** au 1er upload (aucun setup manuel).
-2. **Activer le bouton** : passer `PHOTO_UPLOAD_ENABLED=true` (`src/Sargasses_PROD.jsx`),
-   commit/push → auto-deploy. Le bouton capture apparaît dans la fiche plage.
+1. **Créer un projet Supabase** : [supabase.com](https://supabase.com) → *New project*
+   (navigateur mobile). Région : Europe (proche MQ/GP/clients).
+2. **Coller le schéma** : dashboard → *SQL Editor* → coller tout `supabase/schema.sql`
+   → *Run*. (Crée la table `photos`, les policies RLS, le bucket public `beach-photos`.)
+3. **Récupérer les 2 clés** : *Project Settings → API* → copier **Project URL** et la clé
+   **anon public**. Me les donner ici → je les colle dans `src/supabasePhotos.js`,
+   commit → auto-deploy. (Ces valeurs sont **publiques** par design ; la sécurité vient
+   du RLS — l'anon ne peut qu'INSÉRER en `pending` et LIRE les `approved`.)
 
-## Modération (obligatoire avant affichage public)
+→ Dès le déploiement, le bouton « Ajoute une photo » apparaît sur les fiches plage.
 
-Les photos arrivent en `status="pending"` dans la sheet `beach_photos`. **Seules les
-lignes passées à `approved` sont servies** par `?action=beach_photos` puis bakées dans
-`photos.json` par la CI quotidienne.
+## Modération (avant affichage public)
 
-- **Manuel (v1)** : ouvrir la sheet `beach_photos`, vérifier la photo (colonne `url`),
-  passer la colonne `status` de `pending` à `approved` (ou `rejected`).
-- **Auto (v2, optionnel)** : un script de modération vision (on a déjà `@anthropic-ai/sdk`
-  + clé `ANTHROPIC_API_KEY` en CI) peut pré-trier pending→approved/rejected. Non implémenté
-  pour garder v1 simple et sûr — à brancher avant le bake si le volume le justifie.
+Les photos arrivent en `status='pending'`. **Seules les `approved` sont affichées**
+(garanti par RLS). Pour modérer, **depuis le téléphone** :
 
-## Colonnes sheet `beach_photos`
-
-`date | beach_id | beach_name | island | level | file_id | url | status`
-
-- `url` = `https://lh3.googleusercontent.com/d/<file_id>` (image directe, embeddable).
-- `status` ∈ `pending | approved | rejected`.
+- Dashboard Supabase → *Table Editor* → table `photos` → vérifier la photo (colonne
+  `url`) → passer `status` de `pending` à `approved` (ou `rejected`).
+- Suppression : `rejected` (disparaît aussitôt) + supprimer l'objet dans *Storage* si besoin.
 
 ## Privacy / légal
 
-- EXIF (dont GPS) **retirée côté client** au ré-encodage JPEG (`imageResize.js`).
+- EXIF (dont GPS) **retirée côté client** au ré-encodage JPEG (`src/imageResize.js`).
 - Photos **consenties** (uploadées volontairement) et **modérées** → on a le droit de les
   afficher (≠ photos FB scrapées, que `FbPostsStrip` n'affiche volontairement pas).
-- Suppression : passer `status` à `rejected` (retirée au prochain bake) + supprimer le
-  fichier Drive si demandé.
+
+## Coût
+
+Free tier Supabase : 1 Go storage + 5 Go egress/mois ≈ plusieurs milliers de photos.
+Au-delà (succès), passer en Pro (~25 $/mois). À surveiller dans le dashboard *Usage*.
+
+## Note
+
+Le backend photo **Apps Script** (handler Drive) a été **retiré** au profit de Supabase
+(une seule voie, mobile-friendly). Le reste de `scripts/appscript/Code.js` (reports,
+emails, paiements) est inchangé.
