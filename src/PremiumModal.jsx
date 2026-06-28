@@ -16,46 +16,83 @@ import {
   track, walletAvail
 } from "./Sargasses_PROD.jsx"
 
+// B2BModal — OFFRE PRO réelle et chiffrée (pivot B2B, juin 2026). 3 tiers (Widget
+// gratuit / Pro Alertes 79€/mois / Territoire sur devis). Capture d'INTENTION HAUTE
+// (pas juste « brief gratuit ») : le pro choisit un tier payant → on enregistre
+// source distincte (b2b_pro_alertes / b2b_territoire / b2b_widget) + event
+// sg_b2b_intent avec le prix → mesure la WILLINGNESS-TO-PAY sur 2-3 semaines.
+// Vente B2B early = concierge (démo→facture) : le CTA capte l'intent, l'onboarding
+// est manuel au début. ZÉRO logique de paiement touchée (capture, pas billing).
 function B2BModal({lang,onClose}){
-  const [kind,setKind]=useState("hotel")
+  const [tier,setTier]=useState("pro")
   const [email,setEmail]=useState("")
+  const [org,setOrg]=useState("")
   const [sent,setSent]=useState(false)
   const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
+  const I=COMIC
+  useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}},[])
+  // Grille B2B (mémo stratégique 28/06) : 3 tiers payants, essai 14j sans carte,
+  // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
+  // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 14j time-boxé.
+  const TIERS=[
+    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
+      pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
+      cta:_t(lang,"Démarrer l'essai 14 j","Start 14-day trial","Empezar prueba 14 días"),source:"b2b_brief"},
+    {id:"pro",icon:"🔔",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
+      pitch:_t(lang,"Widget marque-blanche sur votre site + brief + alertes + prévision 7 j sur VOS plages. Pour hôtels & resorts.","White-label widget on your site + brief + alerts + 7-day forecast for YOUR beaches. For hotels & resorts.","Widget marca blanca en su web + informe + alertas + pronóstico 7 días. Para hoteles y resorts."),
+      cta:_t(lang,"Démarrer l'essai 14 j","Start 14-day trial","Empezar prueba 14 días"),source:"b2b_pro"},
+    {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois","from €199/mo","desde 199 €/mes"),
+      pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
+      cta:_t(lang,"Réserver une démo","Book a demo","Reservar demo"),source:"b2b_territoire"},
+  ]
+  const cur=TIERS.find(t=>t.id===tier)||TIERS[1]
   const submit=()=>{
     if(!valid||sent)return
-    const source=kind==="hotel"?"b2b_hotel_request":"b2b_collectivite_request"
-    try{localStorage.setItem("sg_b2b_lane",kind)}catch(_){}  // mémoire de lane (analytics + perso) — ne supprime JAMAIS le paywall B2C
-    try{submitLead(email.trim(),source)}catch(_){}
-    try{track("sg_b2b_lead",{kind})}catch(_){}
+    try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
+    try{submitLead(email.trim(),cur.source)}catch(_){}
+    try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
     setSent(true)
   }
-  const I=COMIC
   return(
     <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",
         background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
         border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",
         fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>
         <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:13,right:13,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,fontSize:16,fontWeight:900,color:I.ink,cursor:"pointer",lineHeight:1}}>✕</button>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`}}>🏨 {_t(lang,"Pro · Hôtels & collectivités","Pro · Hotels & towns","Pro · Hoteles y municipios")}</div>
         {!sent?<>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:27,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 7px"}}>{_t(lang,"L'état réel de vos plages, chaque matin.","The real state of your beaches, every morning.","El estado real de sus playas, cada mañana.")}</div>
-          <div style={{font:"600 13.5px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:15}}>{_t(lang,"Brief quotidien fiable + alertes avant les échouages — pour rassurer vos clients ou vos administrés. Mesuré au satellite, pas deviné.","Reliable daily brief + alerts before sargassum lands — to reassure your guests or citizens. Measured by satellite, not guessed.","Informe diario fiable + alertas antes de la llegada — para tranquilizar a sus clientes o ciudadanos. Medido por satélite.")}</div>
-          <div style={{display:"flex",gap:8,marginBottom:12}}>
-            {[["hotel",_t(lang,"🏨 Hôtel · club plage","🏨 Hotel · beach club","🏨 Hotel · club")],["collectivite",_t(lang,"🏛️ Collectivité","🏛️ Town / public","🏛️ Municipio")]].map(([k,lbl])=>(
-              <button key={k} onClick={()=>setKind(k)} style={{flex:1,padding:"11px 8px",borderRadius:13,border:`2.5px solid ${I.ink}`,cursor:"pointer",font:"800 12.5px/1.15 'Bricolage Grotesque'",color:I.ink,
-                background:kind===k?I.gold:"#fff",boxShadow:kind===k?`3px 3px 0 ${I.ink}`:`2px 2px 0 ${I.ink}`,transition:"transform .08s ease"}}>{lbl}</button>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:25,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 6px"}}>{_t(lang,"Les sargasses gâchent l'expérience. Reprenez la main.","Sargassum ruins the guest experience. Take back control.","El sargazo arruina la experiencia. Recupere el control.")}</div>
+          <div style={{font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:14}}>{_t(lang,"Surveillance satellite de VOS plages : prévenez avant l'échouage, rassurez clients et administrés.","Satellite monitoring of YOUR beaches: warn before sargassum lands, reassure guests and citizens.","Monitoreo satelital de SUS playas: avise antes de la llegada, tranquilice a clientes y ciudadanos.")}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:13}}>
+            {TIERS.map(t=>(
+              <button key={t.id} onClick={()=>setTier(t.id)} style={{textAlign:"left",position:"relative",padding:"12px 13px",borderRadius:14,cursor:"pointer",
+                border:`2.5px solid ${I.ink}`,background:tier===t.id?(t.featured?I.gold:"#fff"):"#fff",
+                boxShadow:tier===t.id?`3px 3px 0 ${I.ink}`:`1px 1px 0 ${I.ink}`,transition:"transform .08s ease",
+                outline:tier===t.id?`0`:"0",opacity:1}}>
+                {t.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}
+                <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>
+                  <span style={{font:"800 15px/1.1 'Bricolage Grotesque'",color:I.ink}}>{t.icon} {t.name}</span>
+                  <span style={{font:"800 14px/1 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{t.price}</span>
+                </div>
+                <div style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:4}}>{t.pitch}</div>
+              </button>
             ))}
           </div>
+          <input value={org} onChange={e=>setOrg(e.target.value)}
+            placeholder={_t(lang,"Nom de l'établissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}
+            style={{width:"100%",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 14px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
-          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{_t(lang,"Recevoir le brief gratuit →","Get the free brief →","Recibir el resumen gratis →")}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"100% automatique · sans appel · stop quand vous voulez","100% automated · no call · stop anytime","100% automático · sin llamada · pare cuando quiera")}</div>
+          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{cur.cta}</button>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 14 jours, sans carte · −2 mois en annuel · stop quand vous voulez","14-day trial, no card · 2 months free yearly · stop anytime","Prueba 14 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
         </>:<>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"C'est parti ✓","You're in ✓","¡Listo ✓")}</div>
-          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"Vous recevrez le brief quotidien de l'état de vos plages par email — automatique, sans appel, stop quand vous voulez.","You'll get the daily brief of your beaches by email — automated, no call, stop anytime.","Recibirá el resumen diario de sus playas por email — automático, sin llamada, pare cuando quiera.")}</div>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","¡Recibido ✓")}</div>
+          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="widget"
+            ? _t(lang,"On vous envoie le lien d'installation du widget sous 24h.","We'll send your widget install link within 24h.","Le enviamos el enlace de instalación del widget en 24h.")
+            : _t(lang,"On vous recontacte sous 24h pour activer votre surveillance et démarrer.","We'll get back to you within 24h to set up your monitoring.","Le contactamos en 24h para activar su monitoreo.")}</div>
           <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>
         </>}
       </div>
