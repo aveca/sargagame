@@ -11377,6 +11377,13 @@ export default function App(){
   // Hauteur RÉELLE de la bannière du haut (recovery/pass-expiré) — mesurée pour décaler
   // le header d'autant (sinon, sur 2-3 lignes en haute saison, le titre était CROPPÉ).
   const[bannerH,setBannerH]=useState(0)
+  // Ref de mesure STABLE (useCallback) : NE PAS utiliser une ref inline `el=>setBannerH(...)`.
+  // Runtime = Preact (alias react→preact/compat) : une ref inline change d'identité à chaque
+  // render → Preact ré-invoque old(null) PUIS new(node) à CHAQUE commit → setBannerH(0) puis
+  // setBannerH(H). Le 0 intermédiaire diffère toujours de l'état courant → re-render forcé en
+  // boucle INFINIE → thread principal saturé → l'app gèle au lancement quand un bandeau du haut
+  // (recovery / pass-expiré) est monté. La ref stable + updater à égalité tue la boucle.
+  const measureBanner=useCallback(el=>{if(el){const h=el.offsetHeight;setBannerH(p=>p===h?p:h)}},[])
   useEffect(()=>{
     if(isPremium)return
     try{
@@ -11825,7 +11832,16 @@ export default function App(){
     document.addEventListener("mousemove",exitFlick,{passive:true})
     // Bascule d'onglet / alt-tab (desktop ET mobile) = signal de départ fort : la carte est
     // prête au retour. fire() la garde 1×/session + snooze 14j au dismiss → jamais spammy.
-    const onVis=()=>{if(document.visibilityState==="hidden")fire("hidden")}
+    // FIX freeze (vérifié) : NE PLUS auto-monter le Veilleur sur visibilitychange:hidden en
+    // mobile/PWA. Là, l'overlay (position:fixed;inset:0;z1098, pointerEvents:auto) surgissait
+    // APRÈS que l'utilisateur ait verrouillé/changé d'app puis soit revenu → carte derrière
+    // bloquée, « impossible de cliquer nulle part ». Sur mobile « hidden » n'a aucun pouvoir de
+    // rétention (l'overlay n'apparaît qu'une fois l'utilisateur déjà parti). On gate donc
+    // « hidden » au DESKTOP (comme mouseleave/flick, 11811/11820) ; sur mobile l'exit-intent
+    // reste le scroll-up (utilisateur présent et actif). NB : pas d'auto-dismiss au retour ici,
+    // sinon le tab-switch desktop consommerait le one-shot sg_exitcap (11781) puis refermerait
+    // → le Veilleur ne s'afficherait plus jamais (régression mouseleave/flick).
+    const onVis=()=>{if(document.visibilityState==="hidden"&&window.matchMedia("(min-width:900px)").matches)fire("hidden")}
     document.addEventListener("visibilitychange",onVis)
     let downAcc=0,lastY=0,lastT=0
     const onScroll=()=>{
@@ -12573,7 +12589,7 @@ export default function App(){
 
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
-          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={measureBanner} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
@@ -12605,7 +12621,7 @@ export default function App(){
 
         {/* PASS 7J EXPIRÉ — relance capture (un seul affichage, après les overlays prioritaires) */}
         {showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
-          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={measureBanner} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
