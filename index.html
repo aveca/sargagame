@@ -134,6 +134,12 @@
   <!-- fonts.css = QUE des @font-face (display:swap) → non render-blocking : le navigateur peint
        en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
        4G avant le 1er paint. (Pattern media=print→onload ; noscript fallback.) -->
+  <!-- PRELOAD des sous-ensembles LATIN critiques : sans ça la police ne se télécharge qu'APRÈS
+       l'application de fonts.css (media=print→onload) → le H1 Anton (élément LCP) swap tard +
+       layout shift. On précharge Anton-latin (titres, 18 Ko) + Bricolage-latin (corps) en parallèle
+       du 1er paint → swap quasi-instantané, LCP/CLS améliorés. crossorigin obligatoire (font CORS). -->
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high" />
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
   <link rel="preconnect" href="https://www.clarity.ms" />

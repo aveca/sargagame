@@ -586,8 +586,7 @@ function writeRegionIndex(region, out) {
     html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- preconnect Google Fonts retirés : polices désormais same-origin (cf. fonts.css ci-dessous). -->
   <link rel="preconnect" href="https://www.clarity.ms" />
   <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
        connexions pendant le chargement de l'app rend le checkout on-site instantané.
@@ -598,8 +597,13 @@ function writeRegionIndex(region, out) {
   <link rel="dns-prefetch" href="https://api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
+  <!-- Polices AUTO-HÉBERGÉES (same-origin) — aligné sur index.html. Google Fonts était bloqué
+       par les navigateurs anti-suivi (Brave/Edge) → rendu en fallback système « cheap » + 2 round-trips
+       cross-origin avant le paint de marque. Self-host + preload Anton-latin (LCP H1) → LCP/CLS améliorés. -->
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high" />
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
   <!-- OneSignal Push — SDK chargé à la demande -->
   <script>
     window.ONESIGNAL_APP_ID="${onesignalAppId}";
