@@ -75,13 +75,13 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 480, width: "100%", margin: "0 auto", overflowY: "auto" }}>
         <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 6, font: "800 10px/1 'Bricolage Grotesque'", letterSpacing: ".09em", textTransform: "uppercase", color: INK, background: YEL, border: `2px solid ${INK}`, borderRadius: 6, padding: "5px 9px", boxShadow: `2px 2px 0 ${INK}`, marginBottom: 14 }}>
-          ⭐ {t("Premium · Ton veilleur est en place", "Premium · Your watchman is set", "Premium · Tu vigía está activo")} · {t("Étape", "Step", "Paso")} {step + 1}/3
+          ⭐ {t("Pass activé · Le Veilleur est à son poste", "Pass active · Le Veilleur is on watch", "Pase activo · Le Veilleur está de guardia")} · {t("Étape", "Step", "Paso")} {step + 1}/3
         </div>
 
         {step === 0 && (
           <>
-            <h1 style={h1}>{t("Quelles plages surveille-t-on pour toi ?", "Which beaches should we watch for you?", "¿Qué playas vigilamos para ti?")}</h1>
-            <p style={sub}>{t("Choisis-en 1 à 3. Ton veilleur t'alerte dès que l'une d'elles bascule — et te les met en tête du brief du matin.", "Pick 1 to 3. Your watchman alerts you the moment one of them changes — and puts them first in your morning brief.", "Elige de 1 a 3. Tu vigía te avisa en cuanto una cambie — y las pone primero en tu brief matinal.")}</p>
+            <h1 style={h1}>{t("Quelles plages Le Veilleur garde pour toi ?", "Which beaches should Le Veilleur keep for you?", "¿Qué playas debe cuidar Le Veilleur para ti?")}</h1>
+            <p style={sub}>{t("Choisis-en 1 à 3. Le Veilleur les surveillera au satellite, 4×/jour, et te prévient le matin où l'une bascule — en tête de ta dépêche.", "Pick 1 to 3. Le Veilleur watches them by satellite, 4×/day, and warns you the morning one of them turns — first in your morning dispatch.", "Elige de 1 a 3. Le Veilleur las vigila por satélite, 4×/día, y te avisa la mañana en que una cambie — primero en tu parte matinal.")}</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {suggestions.map(b => {
                 const on = favSet.has(b.id)
@@ -108,8 +108,8 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
         {step === 1 && (
           <>
-            <h1 style={h1}>{t("Sois prévenu avant tout le monde", "Get warned before anyone else", "Entérate antes que nadie")}</h1>
-            <p style={sub}>{t("Une alerte le matin où TA plage passe au rouge — pour décider avant de charger la voiture. Pas de spam : seulement quand ça change.", "An alert the morning YOUR beach turns red — so you decide before loading the car. No spam: only when it changes.", "Una alerta la mañana en que TU playa se pone roja — para decidir antes de cargar el coche. Sin spam: solo cuando cambia.")}</p>
+            <h1 style={h1}>{t("Le matin où ça bascule, tu le sauras", "The morning it turns, you'll know", "La mañana en que cambie, lo sabrás")}</h1>
+            <p style={sub}>{t("Le Veilleur veille la mer pendant que tu dors, jamais toi. Une alerte seulement le matin où ta plage bascule — pour décider avant de charger la voiture. Pas de spam : la mer parle, pas nous.", "Le Veilleur watches the sea while you sleep — never you. One alert, only the morning your beach turns — so you decide before loading the car. No spam: the sea talks, not us.", "Le Veilleur vigila el mar mientras duermes, nunca a ti. Una alerta solo la mañana en que tu playa cambie — para decidir antes de cargar el coche. Sin spam: habla el mar, no nosotros.")}</p>
             <button onClick={() => { setNotifAsked(true); try { onEnableNotif && onEnableNotif() } catch (e) {}; next() }} style={btnGold}>
               {t("Activer les alertes", "Enable alerts", "Activar alertas")}
             </button>
@@ -119,9 +119,9 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
         {step === 2 && (
           <>
-            <h1 style={h1}>{t("Ton brief t'attend chaque matin", "Your brief waits each morning", "Tu brief te espera cada mañana")}</h1>
-            <p style={sub}>{t("Chaque matin, l'état de tes plages + la reco du jour t'attendent en haut de l'app. Ton veilleur a déjà commencé à veiller la mer pour toi.", "Every morning, your beaches' status + the daily pick wait at the top of the app. Your watchman is already watching the sea for you.", "Cada mañana, el estado de tus playas + la recomendación del día te esperan arriba en la app. Tu vigía ya vigila el mar por ti.")}</p>
-            <button onClick={() => done("finish")} style={btnGold}>{t("C'est parti", "Let's go", "Vamos")}</button>
+            <h1 style={h1}>{t("Il y a toujours un demain à lire", "There's always a tomorrow to read", "Siempre hay un mañana por leer")}</h1>
+            <p style={sub}>{t("Chaque matin, ta dépêche t'attend en haut de l'app : l'état de tes plages mesuré au satellite cette nuit, plus la plage propre à viser aujourd'hui. Le Veilleur a déjà pris son poste — il a commencé à veiller la mer pour toi.", "Every morning, your dispatch waits at the top of the app: your beaches measured by satellite overnight, plus the clean beach to aim for today. Le Veilleur has taken his post — he's already watching the sea for you.", "Cada mañana, tu parte te espera arriba en la app: tus playas medidas por satélite esta noche, más la playa limpia a la que ir hoy. Le Veilleur ya está en su puesto — ya vigila el mar por ti.")}</p>
+            <button onClick={() => done("finish")} style={btnGold}>{t("Lire ma première dépêche", "Read my first dispatch", "Leer mi primer parte")}</button>
           </>
         )}
       </div>

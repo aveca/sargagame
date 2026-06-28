@@ -184,7 +184,7 @@ const SCENE_MARKUP = `<svg id="scene" viewBox="0 0 800 600" preserveAspectRatio=
 function _t(lang,fr,en,es){return lang==="en"?en:lang==="es"?es:fr}
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function thumbSVG(seed){var rnd=mulberry(seed);var palms=seed%3===0?2:(seed%2===0?1:0);var p="";for(var i=0;i<palms;i++){var px=30+Math.floor(rnd()*120),py=44+Math.floor(rnd()*6);p+='<g transform="translate('+px+','+py+')">'+'<path d="M0,0 q-2,-14 -1,-26" stroke="#13514c" stroke-width="3" fill="none"/>'+'<path d="M-1,-26 q-12,-2 -20,4 M-1,-26 q12,-2 20,4 M-1,-26 q-6,-9 -14,-12 M-1,-26 q6,-9 14,-12" stroke="#1a6b5f" stroke-width="2.4" fill="none" stroke-linecap="round"/>'+'</g>';}return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 90" preserveAspectRatio="xMidYMid slice">'+'<defs><linearGradient id="ct'+seed+'" x1="0" y1="0" x2="0" y2="1">'+'<stop offset="0" stop-color="#9bd9cf"/><stop offset="1" stop-color="#1c7fb0"/></linearGradient></defs>'+'<rect width="172" height="90" fill="#FFE9B0"/>'+'<circle cx="132" cy="22" r="13" fill="#FFF1C4"/>'+'<rect y="34" width="172" height="34" fill="url(#ct'+seed+')"/>'+'<rect y="33" width="172" height="2" fill="#fff" opacity=".5"/>'+'<path d="M0,62 Q86,56 172,62 L172,90 L0,90 Z" fill="#F2D9A0"/>'+p+'</svg>'}
-function fmtFreshness(ts,lang){var h=(Date.now()-ts)/3.6e6;if(h<12)return _t(lang,"EN DIRECT - il y a "+Math.max(1,Math.round(h))+" h","LIVE - "+Math.max(1,Math.round(h))+"h ago","EN VIVO - hace "+Math.max(1,Math.round(h))+" h");return _t(lang,"vérification en cours...","checking...","verificando...")}
+function fmtFreshness(ts,lang){var h=(Date.now()-ts)/3.6e6;if(h<12)return _t(lang,"MESURÉ - il y a "+Math.max(1,Math.round(h))+" h","MEASURED - "+Math.max(1,Math.round(h))+"h ago","MEDIDO - hace "+Math.max(1,Math.round(h))+" h");if(h<36)return _t(lang,"mesuré il y a "+Math.round(h)+" h","measured "+Math.round(h)+"h ago","medido hace "+Math.round(h)+" h");return _t(lang,"donnée en retard ("+Math.round(h/24)+" j)","data delayed ("+Math.round(h/24)+"d)","dato en retraso ("+Math.round(h/24)+" d)")}
 function el(tag,cls,txt){var n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n}
 function svgNode(s){return(new DOMParser()).parseFromString(s,"image/svg+xml").documentElement}
 function buildCard(b,i,lang,geo,onOpen){var best=i===0;var card=el("button","card"+(best?" is-best":""));card.setAttribute("aria-label",b.name+" "+b.commune+", "+_t(lang,"propre, score","clean, score","limpia, score")+" "+b.score+" /100");var thumb=el("div","thumb");thumb.appendChild(svgNode(thumbSVG(b._seed||(b.id.charCodeAt(0)||1))));thumb.appendChild(el("span","badge",_t(lang,"PROPRE","CLEAN","LIMPIA")));if(best)thumb.appendChild(el("span","ribbon",_t(lang,"le + sûr","safest","más segura")));card.appendChild(thumb);var body=el("div","body");body.appendChild(el("div","bname",b.name));body.appendChild(el("div","bplace",b.commune+(b.kids?" - "+_t(lang,"enfants ok","kids ok","niños ok"):"")));var row=el("div","brow");var distVal=geo&&b._dist!=null?_t(lang,"vers ","to ","hasta ")+b._dist.toFixed(0)+" km":_t(lang,"env. ","about ","aprox. ")+(b.drive?b.drive+" min":"");var dist=el("span","bdist"+(geo?"":" nodist"),distVal);var sc=el("span","bscore");sc.appendChild(el("span","n",String(b.score!=null?b.score:"—")));sc.appendChild(el("span","d","/100"));row.appendChild(dist);row.appendChild(sc);body.appendChild(row);var confVal=b._conf!=null?b._conf:60;var conf=el("div","conf");conf.appendChild(el("span",null,_t(lang,"fiabilité","reliability","fiabilidad")));var bar=el("span","bar");var fill=el("i");fill.style.width=confVal+"%";bar.appendChild(fill);conf.appendChild(bar);conf.appendChild(el("b",null,confVal+"%"));body.appendChild(conf);card.appendChild(body);card.addEventListener("click",function(){onOpen(b)});return card}
@@ -215,17 +215,17 @@ export function initCleanList(SR, HOST, opts){
     var rail=SR.getElementById("clRail");if(!rail)return;
     while(rail.firstChild)rail.removeChild(rail.firstChild);
     var kicker=SR.getElementById("clKicker");
-    if(kicker)kicker.textContent=_t(LANG,"Plages propres aujourd'hui","Clean beaches today","Playas limpias hoy");
+    if(kicker)kicker.textContent=_t(LANG,"Ton plan B du matin","Your morning plan B","Tu plan B de la mañana");
     var liveTxt=SR.getElementById("clLiveTxt");
     if(liveTxt&&UPDATED_AT)liveTxt.textContent=fmtFreshness(new Date(UPDATED_AT).getTime(),LANG);
     var title=SR.getElementById("clTitle");
     if(title){while(title.firstChild)title.removeChild(title.firstChild);
-      title.appendChild(document.createTextNode(_t(LANG,"Le meilleur choix : ","Best picks: ","Lo mejor: ")));
+      title.appendChild(document.createTextNode(_t(LANG,"Vérifiées ce matin : ","Verified this morning: ","Verificadas esta mañana: ")));
       var em=document.createElement("em");em.textContent=_t(LANG,CLEAN.length+" plages propres",CLEAN.length+" clean beaches",CLEAN.length+" playas limpias");title.appendChild(em);}
     CLEAN.forEach(function(b,i){rail.appendChild(buildCard(b,i,LANG,GEO,onOpenBeach));});
     var more=el("button","card more");
     var mi=el("div","mi","🗺");more.appendChild(mi);
-    more.appendChild(el("span",null,_t(LANG,"Toutes sur la carte","All on the map","Todas en el mapa")));
+    more.appendChild(el("span",null,_t(LANG,"Voir toute la côte","See the whole coast","Ver toda la costa")));
     more.addEventListener("click",function(){onShowMap()});rail.appendChild(more);
   }
 

@@ -703,8 +703,8 @@ const SPACE_I18N={
   btn:{fr:"Mon espace",en:"My space",es:"Mi espacio"},
   title:{fr:"MON ESPACE",en:"MY SPACE",es:"MI ESPACIO"},
   proOn:{fr:"Premium actif",en:"Premium active",es:"Premium activo"},
-  proOnSub:{fr:"Prévision 7 jours + alertes débloquées sur tes plages.",en:"7-day forecast + alerts unlocked on your beaches.",es:"Pronóstico 7 días + alertas desbloqueados en tus playas."},
-  manage:{fr:"Gérer mon abonnement →",en:"Manage my subscription →",es:"Gestionar mi suscripción →"},
+  proOnSub:{fr:"Prévision 7 jours + l'alerte le matin où ça bascule, débloquées sur tes plages. Le Veilleur veille la mer pour toi.",en:"7-day forecast + the alert the morning it flips, unlocked on your beaches. The Watcher watches the sea for you.",es:"Pronóstico 7 días + la alerta la mañana en que cambia, desbloqueados en tus playas. El Vigía mira el mar por ti."},
+  manage:{fr:"Gérer mon Pass →",en:"Manage my Pass →",es:"Gestionar mi Pase →"},
   proOff:{fr:"Passe en Premium",en:"Go Premium",es:"Hazte Premium"},
   proOffSub:{fr:"Débloque la prévision 7 jours plage par plage + l'alerte le jour exact où ça bascule.",en:"Unlock the 7-day forecast beach by beach + the alert the exact day it flips.",es:"Desbloquea el pronóstico 7 días playa por playa + la alerta el día exacto en que cambia."},
   favH:{fr:"MES PLAGES ♥",en:"MY BEACHES ♥",es:"MIS PLAYAS ♥"},
@@ -746,15 +746,15 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
             if(referral0||!/^REF-[A-Z0-9]{6}$/.test(code))return null
             const url=(typeof window!=="undefined"?window.location.origin:"")+"/?ref="+code
             const onShare=()=>{
-              const txt=_t({fr:"Je surveille les sargasses avec cette appli — LA plage sans sargasses chaque matin, prévision 7 jours par plage. Essaie avec mon lien 👇",en:"I track sargassum with this app — THE clean beach every morning, 7-day forecast per beach. Try it with my link 👇",es:"Sigo el sargazo con esta app — LA playa sin sargazo cada mañana, pronóstico de 7 días por playa. Pruébala con mi enlace 👇"})
+              const txt=_t({fr:"Chaque matin, Le Veilleur regarde la mer pour moi et me dit quelle plage est sans sargasses — mesuré au satellite, pas deviné. Avec mon lien, on gagne tous les deux un Pass 30 jours offert 👇",en:"Every morning, The Watcher looks at the sea for me and tells me which beach is sargassum-free — measured by satellite, not guessed. With my link, we both get a free 30-day Pass 👇",es:"Cada mañana, El Vigía mira el mar por mí y me dice qué playa está sin sargazo — medido por satélite, no adivinado. Con mi enlace, los dos ganamos un Pase de 30 días gratis 👇"})
               try{track&&track("sg_referral_share",{method:(navigator.share?"native":"clipboard"),code})}catch(_){}
               if(navigator.share){navigator.share({title:"Sargasses",text:txt,url}).catch(()=>{})}
               else{try{navigator.clipboard&&navigator.clipboard.writeText(txt+" "+url);setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)}catch(_){}}
             }
             return (
               <div style={{marginTop:12,padding:"14px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(124,58,237,.10),rgba(168,85,247,.10))",border:"1px solid rgba(168,85,247,.25)"}}>
-                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un ami 🎁",en:"Invite a friend 🎁",es:"Invita a un amigo 🎁"})}</div>
-                <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Tu gagnes 7 jours de Veilleur offerts dès qu'un ami prend un pass.",en:"You earn 7 Watchman days each time a friend gets a pass.",es:"Ganas 7 días de Vigía cada vez que un amigo compra un pase."})}</div>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un proche, offre-lui la mer claire 🎁",en:"Gift a friend a clear sea 🎁",es:"Regala a alguien el mar tranquilo 🎁"})}</div>
+                <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Invite un proche : vous gagnez tous les deux un Pass 30 jours offert.",en:"Invite a friend: you both get a free 30-day Pass.",es:"Invita a alguien: los dos ganáis un Pase de 30 días gratis."})}</div>
                 <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   <code style={{flex:"1 1 170px",fontSize:11.5,background:"rgba(0,0,0,.18)",padding:"8px 10px",borderRadius:8,wordBreak:"break-all"}}>{url}</code>
                   <button type="button" onClick={onShare} className="lc-cta yel" style={{whiteSpace:"nowrap"}}>

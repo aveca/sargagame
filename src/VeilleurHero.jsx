@@ -103,8 +103,8 @@ export default function VeilleurHero({ onEnter, lang }){
       <div className="vh-grain" style={{backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
       <div className="vh-scan"/>
       <button className="vh-skip" onClick={onEnter}>{t("Passer ›","Skip ›","Saltar ›")}</button>
-      <div className="vh-wm"><h1>LE <b>VEILLEUR</b></h1><p>{t("OÙ TE BAIGNER · AUJOURD'HUI","WHERE TO SWIM · TODAY","DÓNDE BAÑARTE · HOY")}</p></div>
-      <button className="vh-cta" onClick={onEnter}>🛟 {t("Voir les plages propres →","See the clean beaches →","Ver las playas limpias →")}</button>
+      <div className="vh-wm"><h1>LE <b>VEILLEUR</b></h1><p>{t("IL VEILLE LA MER · TU PROFITES","HE WATCHES THE SEA · YOU ENJOY","ÉL VELA EL MAR · TÚ DISFRUTAS")}</p></div>
+      <button className="vh-cta" onClick={onEnter}>🛟 {t("Voir le verdict du matin →","See the morning verdict →","Ver el veredicto de la mañana →")}</button>
     </div>
   )
 }

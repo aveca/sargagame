@@ -1599,7 +1599,7 @@ export const T={
     filters:["Toutes","Propres","Favoris","Alertes"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
-    verdictGo:"Tu peux y aller",verdictModerate:"Modéré, à toi de voir",verdictAvoid:"À éviter aujourd'hui",verdictUnknown:"État non confirmé",
+    verdictGo:"Tu peux y aller",verdictModerate:"À surveiller — à toi de voir",verdictAvoid:"À éviter aujourd'hui",verdictUnknown:"Le Veilleur scanne encore",
     forecast:"Prévisions",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
@@ -1665,7 +1665,7 @@ export const T={
     filters:["All","Clean","Favourites","Alerts"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
-    verdictGo:"Go for it",verdictModerate:"Moderate, your call",verdictAvoid:"Skip it today",verdictUnknown:"Status unconfirmed",
+    verdictGo:"Go for it",verdictModerate:"Worth a check — your call",verdictAvoid:"Skip it today",verdictUnknown:"The Watchman's still scanning",
     forecast:"Forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
@@ -1731,7 +1731,7 @@ export const T={
     filters:["Todas","Limpias","Favoritas","Alertas"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Mapa",navList:"Playas",navGame:"Juego",navPremium:"Premium",
-    verdictGo:"Puedes ir",verdictModerate:"Moderado, tú decides",verdictAvoid:"Evita hoy",verdictUnknown:"Estado no confirmado",
+    verdictGo:"Puedes ir",verdictModerate:"A vigilar — tú decides",verdictAvoid:"Evita hoy",verdictUnknown:"El Vigía sigue escaneando",
     forecast:"Pronóstico",weather:"Clima",directions:"Cómo llegar",
     fav:"Favorita",addFav:"Agregar a favoritas",removeFav:"Quitar de favoritas",
     wind:"Viento",uv:"UV",temp:"Temperatura",drive:"min",
@@ -3849,7 +3849,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <button className="bsc-gobtn sg-paygold" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
-            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
+            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"Pass unique, rien à résilier · remboursé en 1 email sous 30 j","One-time pass, nothing to cancel · refunded in 1 email within 30 days","Pase único, nada que cancelar · reembolso en 1 email en 30 días")}</div>
             {!IS_NEW_REGION&&<div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><svg width="12" height="12" viewBox="0 0 24 24" fill="#E8A800" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>}
           </>}
           <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
@@ -5051,7 +5051,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
             {_t(lang,"Aucune plage trouvée","No beaches match","No se encontraron playas")}
           </div>
           <div className="sg-empty__sub">
-            {_t(lang,"Essaie un autre filtre — je garde l'œil sur le reste de la côte.","Try another filter — I'm keeping an eye on the rest of the coast.","Prueba otro filtro — sigo vigilando el resto de la costa.")}
+            {_t(lang,"Essaie un autre filtre — je garde l'œil sur la mer, baie par baie.","Try another filter — I'm watching the sea, bay by bay.","Prueba otro filtro — vigilo el mar, bahía por bahía.")}
           </div>
         </div>
       ):(
@@ -6580,7 +6580,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
           return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
             onClick={()=>{
-              if(on){try{sgToast({tone:"success",msg:_t(lang,"Alertes déjà activées 🔔","Alerts already on 🔔","Alertas ya activas 🔔")})}catch(_){}; return}
+              if(on){try{sgToast({tone:"success",msg:_t(lang,"Le Veilleur t'écrit déjà chaque matin 🔔","The Watchman already writes you each morning 🔔","El Vigía ya te escribe cada mañana 🔔")})}catch(_){}; return}
               if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
               if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
               try{track("sg_push_header_cta",{})}catch(_){}
@@ -7005,7 +7005,7 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
       {done?(
         <div style={{flex:1,fontSize:12.5,fontWeight:700,color:C.green,textAlign:"center",padding:"3px 0"}}>
           <span style={{fontSize:18,marginRight:6}}>✅</span>
-          {_t(lang,"C'est noté ! Tu reçois la prévision demain matin.","Done! Tomorrow's forecast lands in your inbox.","¡Listo! Recibirás el pronóstico mañana.")}
+          {_t(lang,"C'est noté — Le Veilleur t'écrit demain matin : le verdict de ta plage, mesuré au satellite cette nuit.","Done — the Watchman writes tomorrow morning: your beach's verdict, measured by satellite overnight.","Listo — el Vigía te escribe mañana: el veredicto de tu playa, medido por satélite esta noche.")}
         </div>
       ):(<>
         <span style={{width:9,height:9,borderRadius:5,background:C.green,flexShrink:0,boxShadow:"0 0 8px "+C.green,marginTop:3,alignSelf:"flex-start"}}/>
@@ -9867,7 +9867,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </button>
         )}
         <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — remboursé en 1 email sous 30 j","One-time payment — refunded in 1 email within 30 days","Pago único — reembolso en 1 email en 30 días")}
         </div>
       </section>
 
@@ -10060,7 +10060,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
           {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
         </button>
         <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — remboursé en 1 email sous 30 j","One-time payment — refunded in 1 email within 30 days","Pago único — reembolso en 1 email en 30 días")}
         </div>
 
         {/* Pli 6 — Sorties */}
@@ -13296,9 +13296,9 @@ export default function App(){
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:20}}>🌊</span>
             <div>
-              <div>{_t(lang,"Un ami te recommande Le Veilleur","A friend recommends the Watchman","Un amigo te recomienda El Vigía")}</div>
+              <div>{_t(lang,"Un ami t'a passé le relais 🌊","A friend passed you the watch 🌊","Un amigo te pasó el relevo 🌊")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {_t(lang,"Appuie pour découvrir LA plage sans sargasses","Tap to discover THE sargassum-free beach","Toca para descubrir LA playa sin sargazo")}
+                {_t(lang,"Touche : le verdict satellite de ta plage, ce matin — mesuré, pas deviné. Gratuit.","Tap: your beach's satellite verdict this morning — measured, not guessed. Free.","Toca: el veredicto satelital de tu playa, esta mañana — medido, no adivinado. Gratis.")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{

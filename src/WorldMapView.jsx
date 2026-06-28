@@ -41,6 +41,11 @@ function fmtFresh(updatedAt){
     return `${Math.round(h/24)} j`
   }catch(_){ return "···" }
 }
+// Honnêteté fraîcheur : si l'image satellite a >36h, Le Veilleur l'avoue (flag STALE)
+// au lieu de faire semblant de tout voir en direct (Story Bible : « quand le Veilleur ne voit pas »).
+function isStale(updatedAt){
+  try{ return (Date.now()-new Date(updatedAt).getTime())/3.6e6 >= 36 }catch(_){ return false }
+}
 
 // Couleur antenne Veilleur selon proportion propres
 function vantColor(beachList, day){
@@ -1026,7 +1031,7 @@ export default function WorldMapView({
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={_t(lang,`Carte ${regionName} — déplace, zoome, touche une plage`,`${regionName} map — pan, zoom, tap a beach`,`Mapa ${regionName} — desplaza, zoom, toca playa`)}
+        aria-label={_t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`)}
         onClick={()=>{ setSelected(null); setTagPos(null) }}
       >
         {mapDefs}
@@ -1193,10 +1198,11 @@ export default function WorldMapView({
               width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#00786C",marginLeft:2}}>
+            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&isStale(updatedAt)?_t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"):_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&isStale(updatedAt)?"#B87A00":"#00786C",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
+            {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
           <div style={{position:"relative",flex:1,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
@@ -1254,7 +1260,7 @@ export default function WorldMapView({
               }}/>
             </div>
             <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
             </span>
           </div>
 
@@ -1271,7 +1277,7 @@ export default function WorldMapView({
               <input type="email" inputMode="email" autoComplete="email"
                 value={emailVal} onChange={e=>setEmailVal(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
-                placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — playa del día a las 7")}
+                placeholder={_t(lang,"ton@email — le verdict du matin, gratuit","email — the morning verdict, free","tu@email — el veredicto de la mañana, gratis")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
                   padding:"6px 9px",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
               <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
@@ -1292,7 +1298,7 @@ export default function WorldMapView({
             }}>
               <span style={{fontSize:14}}>✅</span>
               <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#177A42"}}>
-                {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa mañana a las 7.")}
+                {_t(lang,"C'est fait. Le verdict du matin t'attend demain — mesuré, pas deviné.","Done. The morning verdict lands tomorrow — measured, not guessed.","Listo. El veredicto de la mañana llega mañana — medido, no adivinado.")}
               </span>
             </div>
           )}
@@ -1323,7 +1329,7 @@ export default function WorldMapView({
           padding:"11px 14px",borderRadius:999,cursor:"pointer",
           boxShadow:`3px 3px 0 ${INK}`,
         }} onClick={nearMe}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke={INK} strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdf6e3" stroke="none"/></svg> {_t(lang,"Près de moi","Near me","Cerca de mí")}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke={INK} strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdf6e3" stroke="none"/></svg> {_t(lang,"Une plage propre près de moi","A clean beach near me","Una playa limpia cerca")}
         </button>
 
         {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}
