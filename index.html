@@ -17,6 +17,11 @@
          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
       (function(){var d=document.documentElement;
         function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
+           ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
+           (déjà correct : inset:0 atteint le vrai bas au-dessus de la toolbar ; --sg-vh
+           = innerHeight y est instable et créait une bande). */
+        if(isSA())d.classList.add('sg-standalone')
         function vh(){var h=window.innerHeight;
           /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
              l'écran réel (screen.height 896) → le contenu s'arrête à 852 = bande vide.
@@ -30,27 +35,6 @@
         addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
         addEventListener('load',function(){vh();setTimeout(vh,300)});
         if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
-    </script>
-    <script>
-      /* DIAGNOSTIC TEMPORAIRE crop bas standalone — visible UNIQUEMENT en mode écran
-         d'accueil (navigator.standalone / display-mode:standalone). À RETIRER une fois
-         le crop diagnostiqué. Repère MAGENTA = position:fixed;bottom:0 (où iOS croit
-         que le bas est). Repère CYAN = JS top=innerHeight-6 (vraie hauteur mesurée).
-         L'écart entre ces repères, la bande vide et le bord physique = la réponse. */
-      (function(){
-        function sa(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
-        if(!sa())return;
-        function go(){
-          var probe=document.createElement('div');probe.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none';document.body.appendChild(probe);
-          var mb=document.createElement('div');mb.style.cssText='position:fixed;left:0;right:0;bottom:0;height:6px;background:#f0f;z-index:2147483647;pointer-events:none';document.body.appendChild(mb);
-          var mj=document.createElement('div');mj.style.cssText='position:fixed;left:0;right:0;height:6px;background:#0ff;z-index:2147483647;pointer-events:none';document.body.appendChild(mj);
-          var box=document.createElement('div');box.style.cssText='position:fixed;left:8px;right:8px;bottom:48px;z-index:2147483647;background:rgba(0,0,0,.88);color:#0f0;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;white-space:pre;pointer-events:none';document.body.appendChild(box);
-          function upd(){var r=document.getElementById('root');var rr=r?r.getBoundingClientRect():{height:0,bottom:0};mj.style.top=(window.innerHeight-6)+'px';
-            box.textContent='CROP DIAG (standalone)\ninnerH '+window.innerHeight+'  screenH '+screen.height+'\ndocClientH '+document.documentElement.clientHeight+'\nvisualVP '+(window.visualViewport?Math.round(window.visualViewport.height):'-')+'\nsafe-bottom '+getComputedStyle(probe).height+'\nrootH '+Math.round(rr.height)+'  rootBottom '+Math.round(rr.bottom)+'\n--sg-vh '+(getComputedStyle(document.documentElement).getPropertyValue('--sg-vh')||'(vide)')+'\ndpr '+window.devicePixelRatio;}
-          upd();addEventListener('resize',upd);addEventListener('orientationchange',function(){setTimeout(upd,300)});setTimeout(upd,600);setTimeout(upd,1600);
-        }
-        if(document.readyState!=='loading')go();else addEventListener('DOMContentLoaded',go);
-      })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -112,14 +96,17 @@
        bas (« crop » écran d'accueil). On peint le <html> en sombre (= manifest
        background_color/chrome de l'app) : aucun blanc ne transparaît ; le body garde sa
        couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:var(--sg-vh,100dvh);width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
     html{background:#0d1117}
     body{background:var(--sg-bg)}
-    /* iOS standalone (écran d'accueil) : 100vh/100dvh/position:fixed ne descendent PAS
-       jusqu'au bord bas réel → bande vide en bas. On colle #root au top-left et on lui
-       donne la hauteur MESURÉE en JS (--sg-vh = window.innerHeight, cf. <script> head)
-       qui, elle, vaut le plein écran sous viewport-fit=cover. Fallback 100dvh si pas de JS. */
-    #root{position:fixed;top:0;left:0;width:100%;height:var(--sg-vh,100dvh);overflow:hidden}
+    /* Safari/par défaut : position:fixed;inset:0 atteint le vrai bas (au-dessus de la
+       toolbar) — NE PAS y toucher. iOS standalone UNIQUEMENT (html.sg-standalone) :
+       le layout viewport (innerHeight ~852) est ~44px plus court que l'écran réel
+       (screen.height 896, mesuré IMG_2846/2847) → bande vide en bas. On étend #root à
+       la hauteur MESURÉE --sg-vh (= screen.height en standalone, cf. <script> head). */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){

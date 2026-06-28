@@ -939,11 +939,15 @@ export default function WorldMapView({
 
   return(
     <div ref={wrapRef} className="sg-onink-scope" style={{
-      // iOS standalone : inset:0 clippe à la hauteur du layout viewport (852) qui est
-      // PLUS COURTE que l'écran réel (896) → bande vide en bas. On force la hauteur
-      // MESURÉE (--sg-vh = plein écran en standalone, cf. script index.html) pour que
-      // le fond de carte descende jusqu'au bord physique. Fallback 100% hors standalone.
-      position:"fixed",top:0,left:0,right:0,bottom:"auto",width:"100%",height:"var(--sg-vh,100%)",zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
+      // Safari : inset:0 atteint le vrai bas (au-dessus de la toolbar) → on le garde.
+      // iOS standalone SEULEMENT (html.sg-standalone, cf. script index.html) : inset:0
+      // clippe au layout viewport (~852) plus court que l'écran réel (896) → bande vide
+      // en bas. On force alors la hauteur MESURÉE --sg-vh (= screen.height) pour que le
+      // fond de carte descende au bord physique.
+      position:"fixed",zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
+      ...((typeof document!=="undefined"&&document.documentElement.classList.contains("sg-standalone"))
+        ?{top:0,left:0,right:0,bottom:"auto",width:"100%",height:"var(--sg-vh,100%)"}
+        :{inset:0}),
       // forced-color-adjust HÉRITE → préserve les VRAIES couleurs golden-hour de TOUTE la
       // carte (fond + CTA dorés + dots de statut) même si le système force les couleurs
       // (thème contraste Windows / filtre couleur / forced-colors navigateur). Sans ça,

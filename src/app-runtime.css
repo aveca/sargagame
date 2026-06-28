@@ -1,10 +1,12 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:var(--sg-vh,100dvh);overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
-/* iOS standalone (écran d'accueil) : 100vh/100dvh/position:fixed ne descendent PAS
-   jusqu'au bord bas réel → bande vide en bas. #root collé top-left + hauteur MESURÉE
-   en JS (--sg-vh = window.innerHeight, cf. <script> de index.html) = plein écran sous
-   viewport-fit=cover. Fallback 100dvh sans JS. <html> sombre = filet derrière. */
-#root{position:fixed;top:0;left:0;width:100%;height:var(--sg-vh,100dvh);overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+html,body{height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
+/* Safari/par défaut : position:fixed;inset:0 atteint le vrai bas — NE PAS toucher.
+   iOS standalone UNIQUEMENT (html.sg-standalone) : le layout viewport (~852) est ~44px
+   plus court que l'écran réel (896) → bande vide en bas. On étend #root à la hauteur
+   MESURÉE --sg-vh (= screen.height en standalone, cf. <script> de index.html). */
+#root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
 html{background:#0d1117}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}

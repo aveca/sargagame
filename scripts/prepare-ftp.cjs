@@ -518,6 +518,7 @@ function writeRegionIndex(region, out) {
          plein ecran sous viewport-fit=cover) -> --sg-vh, #root + html/body s'y collent. */
       (function(){var d=document.documentElement;
         function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        if(isSA())d.classList.add('sg-standalone')
         function vh(){var h=window.innerHeight;if(isSA()&&window.screen&&screen.height>h)h=screen.height;d.style.setProperty('--sg-vh',h+'px')}
         vh();addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
         addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
@@ -575,12 +576,14 @@ function writeRegionIndex(region, out) {
     :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
     .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
     html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:var(--sg-vh,100dvh);width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
     html{background:#0d1117}body{background:var(--sg-bg)}
-    /* iOS standalone : #root collé top-left + hauteur MESUREE en JS (--sg-vh =
-       window.innerHeight, cf. script head) = plein ecran sous viewport-fit=cover.
-       Fallback 100dvh sans JS. (position:fixed/100dvh seuls = bande vide en bas.) */
-    #root{position:fixed;top:0;left:0;width:100%;height:var(--sg-vh,100dvh);overflow:hidden}
+    /* Safari/defaut : position:fixed;inset:0 atteint le vrai bas -> NE PAS toucher.
+       iOS standalone UNIQUEMENT : layout viewport ~44px plus court que l'ecran reel
+       -> bande vide. On etend #root a la hauteur MESUREE --sg-vh (= screen.height). */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
