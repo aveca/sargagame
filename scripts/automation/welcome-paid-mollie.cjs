@@ -88,12 +88,12 @@ function copy(island) {
   const btn = (label, href) => `<p style="text-align:center;margin:22px 0"><a href="${href}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">${label}</a></p>`
   if (lang === 'es') return {
     from: `${brand} ${name} <alerte@sargasses-martinique.com>`,
-    subject: 'Tu vigía está activo 🌅',
-    pre: 'Así no vuelves a toparte con el sargazo. Cómo funciona.',
-    body: brandHeader('Tu vigía está activo', `${brand} ${name}`, 'Cada mañana, LA playa sin sargazo.') +
+    subject: 'Tu Vigía está vigilando — tu parte de la mañana 🌅',
+    pre: 'Cada mañana, el veredicto de tu playa. Medido por satélite, nunca adivinado.',
+    body: brandHeader('Tu Vigía vigila el mar', `${brand} ${name}`, 'Cada mañana, el veredicto de tu playa — medido, no adivinado.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
-        <p>¡Gracias! Tu Pase está activo. Cada mañana, el Vigía te dice <b>LA playa sin sargazo</b> — con pronóstico de 7 días y alertas.</p>
-        <p><b>Para empezar:</b> abre el mapa, elige tus playas favoritas (♥) y activa las alertas para que te avisemos la mañana en que una cambia.</p>
+        <p>¡Gracias! Tu Pase está activo. Cada mañana, el Vigía mira el mar mientras duermes — nunca a ti — y te da el veredicto de tu playa, su pronóstico de 7 días y la alerta la mañana en que cambia. Y cuando no estamos seguros, te lo decimos.</p>
+        <p><b>Para empezar:</b> abre el mapa, añade tus playas favoritas (♥) y activa las alertas para avisarte la mañana en que una cambia. Si una playa se llena, tu Plan B — las 3 playas limpias más cercanas — ya está ahí.</p>
         ${btn('Abrir mi mapa', open)}
         <p style="font-size:13px;color:#1a2b3c">¿Un amigo sufre con el sargazo? <b>Compártele El Vigía</b> — ayúdale a no perder un día de playa.</p>
         <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · reembolso con un solo email.</p>
@@ -101,12 +101,12 @@ function copy(island) {
   }
   if (lang === 'en') return {
     from: `${brand} ${name} <alerte@sargasses-martinique.com>`,
-    subject: 'Your watchman is live 🌅',
-    pre: 'So you never run into sargassum again. Here is how it works.',
-    body: brandHeader('Your watchman is live', `${brand} ${name}`, 'Every morning, THE sargassum-free beach.') +
+    subject: 'Your Watchman is on watch — your morning dispatch 🌅',
+    pre: 'Every morning, your beach verdict. Measured by satellite, never guessed.',
+    body: brandHeader('Your Watchman is on watch', `${brand} ${name}`, 'Every morning, your beach verdict — measured, not guessed.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
-        <p>Thank you! Your Pass is active. Every morning, the Watchman tells you <b>THE sargassum-free beach</b> — with the 7-day forecast and alerts.</p>
-        <p><b>To start:</b> open the map, pick your favourite beaches (♥) and turn on alerts so we warn you the morning one changes.</p>
+        <p>Thank you! Your Pass is active. Every morning, the Watchman watches the sea while you sleep — never you — and gives you your beach verdict, its 7-day forecast and the alert the morning it turns. And when we're not sure, we tell you.</p>
+        <p><b>To start:</b> open the map, add your favourite beaches (♥) and turn on alerts so we warn you the morning one turns. If a beach closes up, your Plan B — the 3 nearest clean beaches — is already there.</p>
         ${btn('Open my map', open)}
         <p style="font-size:13px;color:#1a2b3c">A friend struggling with sargassum? <b>Share the Watchman</b> — help them never waste a beach day.</p>
         <p style="font-size:12px;color:#8a97a5">One-time · no subscription · refunded with one email.</p>
@@ -114,12 +114,12 @@ function copy(island) {
   }
   return {
     from: `${brand} ${name} <alerte@sargasses-martinique.com>`,
-    subject: 'Ton veilleur est en place 🌅',
-    pre: 'Pour ne plus jamais tomber sur les sargasses. Comment ça marche.',
-    body: brandHeader('Ton veilleur est en place', `${brand} ${name}`, 'Chaque matin, LA plage sans sargasses.') +
+    subject: 'Ton Veilleur veille — voici ta dépêche du matin 🌅',
+    pre: 'Chaque matin, le verdict de ta plage. Mesuré au satellite, jamais deviné.',
+    body: brandHeader('Ton Veilleur veille la mer', `${brand} ${name}`, 'Chaque matin, le verdict de ta plage — mesuré, pas deviné.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
-        <p>Merci ! Ton Pass est actif. Chaque matin, Le Veilleur te dit <b>LA plage sans sargasses</b> — avec la prévision 7 jours et les alertes.</p>
-        <p><b>Pour démarrer :</b> ouvre la carte, choisis tes plages favorites (♥) et active les alertes pour qu'on te prévienne le matin où l'une bascule.</p>
+        <p>Merci ! Ton Pass est actif. Chaque matin, Le Veilleur regarde la mer pendant que tu dors — jamais toi — et te livre le verdict de ta plage, sa prévision 7 jours et l'alerte le matin où ça bascule. Et quand on n'est pas sûrs, on te le dit.</p>
+        <p><b>Pour démarrer :</b> ouvre la carte, ajoute tes plages favorites (♥) et active les alertes pour qu'on te prévienne le matin où l'une tourne. Si une plage se ferme, ton Plan B — les 3 plages propres les plus proches — est déjà là.</p>
         ${btn('Ouvrir ma carte', open)}
         <p style="font-size:13px;color:#1a2b3c">Un ami galère avec les sargasses ? <b>Partage-lui Le Veilleur</b> — évite-lui de gâcher une journée plage.</p>
         <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · remboursé en un email.</p>

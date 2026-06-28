@@ -139,7 +139,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <td style="padding-top:10px; font-family:'Anton','Bricolage Grotesque','Helvetica Neue',Arial,sans-serif; font-size:42px; line-height:1.04; font-weight:800; color:#FFFFFF; letter-spacing:-0.5px;">Plages ${islandName}</td>
 </tr>
 <tr>
-<td style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:16px; line-height:1.5; color:#C9D6D2;">Le Veilleur a scruté l'Atlantique toute la semaine. Voici où poser ta serviette ce weekend.</td>
+<td style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:16px; line-height:1.5; color:#C9D6D2;">Le Veilleur a veillé l'Atlantique toute la semaine &mdash; mesuré au satellite, jamais deviné. Voici o&ugrave; poser ta serviette ce weekend.</td>
 </tr>
 </table>
 </td>
@@ -228,7 +228,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </tr>
 <tr>
 <td style="padding:14px 28px 0 28px;">
-<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.6; color:#C9D6D2;">Ce bulletin t'offre le verdict du weekend. Le Pass, c'est moi qui veille chaque matin pour toi : les 7 prochains jours, plage par plage, plus une alerte sur ton téléphone dès qu'une plage propre se charge. <strong style="color:#FFFFFF;">Ne découvre plus les sargasses sur place</strong> &mdash; tu pars en sachant.</div>
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.6; color:#C9D6D2;">Ce bulletin t'offre le verdict du weekend. Le Pass, c'est moi qui veille chaque matin pour toi : les 7 prochains jours, plage par plage, mesur&eacute;s au satellite &mdash; et l'alerte le matin o&ugrave; &ccedil;a bascule, d&egrave;s qu'une plage propre se lib&egrave;re. <strong style="color:#FFFFFF;">Ne d&eacute;couvre plus les sargasses sur place</strong> &mdash; tu pars en sachant.</div>
 </td>
 </tr>
 <tr>
@@ -303,7 +303,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <tr>
 <td align="center" style="padding:26px 28px 36px 28px;">
 <div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:16px; font-weight:800; letter-spacing:1px; color:#0D1E1C; text-transform:uppercase;">Le Veilleur</div>
-<div style="padding-top:8px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;">Ta vigie sargasses pour ${islandName}.<br>&copy; ${new Date().getFullYear()} Le Veilleur · Tous droits réservés</div>
+<div style="padding-top:8px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;">Ta vigie sargasses pour ${islandName} &mdash; donn&eacute;es publiques Copernicus + NOAA, mesur&eacute;es 4&times;/jour.<br>&copy; ${new Date().getFullYear()} Le Veilleur &middot; 97TECH SAS &middot; RCS Paris 882 370 703</div>
 <div style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;"><a href="${unsubUrl(island)}" target="_blank" style="color:#7A8A85; text-decoration:underline;">Me désabonner</a></div>
 </td>
 </tr>
@@ -410,21 +410,21 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
   const payLink = `https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin`
   const t = es ? {
     eyebrow: 'El Boletín del Vigía', title: `Playas de ${name}`,
-    sub: 'El Vigía vigiló el mar. Aquí está tu fin de semana.',
+    sub: 'El Vigía vigiló el mar toda la semana — por satélite, no a ojo. Aquí está tu fin de semana.',
     clean: 'limpias', watch: 'a vigilar', alerts: 'alertas',
     top: 'Top 5 para el sábado — puntuación sobre 100:',
-    premiumKick: 'Premium', premiumTitle: 'Sabe el sábado desde el lunes',
-    premiumDesc: 'Pronóstico de 7 días + alertas push.<br>Únete a quienes planifican su fin de semana con antelación.',
+    premiumKick: 'El Pase del Vigía', premiumTitle: 'Sabe el sábado desde el lunes',
+    premiumDesc: '7 días por delante, playa por playa — medido por satélite, no adivinado.<br>Un aviso la mañana en que se despeja una playa, para que salgas sabiéndolo ya.',
     premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
     unsub: 'Darse de baja',
   } : {
     eyebrow: "The Watchman's Bulletin", title: `${name} Beaches`,
-    sub: 'The Watchman scanned the sea. Here is your weekend.',
+    sub: 'The Watchman watched the sea all week — by satellite, not by eye. Here is your weekend.',
     clean: 'clean', watch: 'watch', alerts: 'alerts',
     top: 'Top 5 for Saturday — score out of 100:',
-    premiumKick: 'Premium', premiumTitle: 'Know Saturday by Monday',
-    premiumDesc: '7-day forecast + push alerts.<br>Join the families who plan their weekend ahead.',
+    premiumKick: 'The Watchman Pass', premiumTitle: 'Know Saturday by Monday',
+    premiumDesc: '7 days ahead, beach by beach — measured by satellite, not guessed.<br>A push the morning a clean beach opens up, so you leave already knowing.',
     premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · refund in one email',
     mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
     unsub: 'Unsubscribe',
@@ -503,7 +503,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
 
   <div style="text-align:center;padding:16px;font-size:10px;color:#999;line-height:1.6">
     <b style="color:#0D1E1C">${brand} ${name}</b> · ${domain}<br>
-    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'datos Copernicus Marine' : 'Copernicus Marine data'}<br>
+    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'Datos públicos Copernicus Marine + NOAA, medidos 4×/día' : 'Public Copernicus Marine + NOAA data, measured 4×/day'}<br>
     <a href="${unsubUrl(region.id)}" style="color:#999">${t.unsub}</a>
   </div>
 </div>
