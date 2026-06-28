@@ -936,7 +936,7 @@ function discoveryBeats(lang){
 function DiscoveryStory({lang,onClose,onShowMap}){
   return(
     <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:30,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
       <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
     </div>
   )
@@ -1229,7 +1229,7 @@ function StationStory({slug,lang,onExit,onCTA}){
   const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
   return(
     <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:30,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
       <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
         ev="sg_station_beat" onCTA={onCTA}
         onBeat={(b,n)=>{try{track("sg_station_beat",{slug,b:b+1,n})}catch(_){}}}/>
@@ -1257,7 +1257,7 @@ function SolTransformScene({lang}){
     <rect width="800" height="600" fill="url(#sol4)"/>
     <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p5)*.7)"}}/></g>
     {items.map((o,i)=>(
-      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
+      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}}} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
         <circle r="34" fill="#0A1714" stroke={sel===i?"#FFD884":"#1EC8B0"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
       </g>))}
     {sel==null
@@ -1286,7 +1286,7 @@ function SolSortScene({lang}){
     <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#0A1714"/><circle cx="1" cy="-42" r="3.6" fill="#1EC8B0"/></g>
     {/* 3 bacs triés, cliquables, remplis par --p4 */}
     {bins.map((b,i)=>(
-      <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}} style={{cursor:"pointer"}}>
+      <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}}} style={{cursor:"pointer"}}>
         <clipPath id={"binc"+i}><path d="M-32 2 L32 2 L27 66 L-27 66 Z"/></clipPath>
         <rect x="-32" y="6" width="64" height="60" fill={b.c} opacity=".4" clipPath={"url(#binc"+i+")"} style={{transform:"scaleY(var(--p4))",transformBox:"fill-box",transformOrigin:"center bottom"}}/>
         <path d="M-32 2 L32 2 L27 66 L-27 66 Z" fill="none" stroke={sel===i?"#FFD884":b.c} strokeWidth={sel===i?2.6:1.6}/>
@@ -1328,14 +1328,14 @@ function SolDebateScene({lang}){
     {vi===4&&<g stroke="#FFD884" strokeWidth="2" fill="none" opacity=".7"><path d="M250 200 Q330 330 400 430"/><path d="M400 190 Q400 310 400 430"/><path d="M550 200 Q470 330 400 430"/></g>}
     {miVeil(400,150,"#0A1714","#1EC8B0")}
     {/* sélecteur de voix (bande centrale, mobile-safe) */}
-    <g role="button" tabIndex={0} aria-label="prev" onClick={()=>{const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
-    <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
+    <g role="button" tabIndex={0} aria-label="prev" onClick={()=>{const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}}} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
+    <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
     <g><rect x="298" y="206" width="204" height="56" rx="14" fill="rgba(7,32,30,.92)" stroke="#FFD884" strokeWidth="1.3"/><text x="400" y="228" fontSize="13.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{v.e+" "+v.n}</text><text x="400" y="248" fontSize="10.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{v.s.length>52?v.s.slice(0,50)+"…":v.s}</text></g>
     <text x="400" y="288" fontSize="10" fill="rgba(255,255,255,.5)" textAnchor="middle">{(vi+1)+"/5 · "+T("‹ › les 5 regards","‹ › the 5 views","‹ › las 5 miradas")}</text>
     {/* vote 2×2 (safe band) ou résultat */}
     {!voted
       ? <g><text x="400" y="312" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
-          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#1EC8B0" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
+          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();vote(i)}}} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#1EC8B0" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
         </g>
       : <g><text x="400" y="306" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
           {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#1EC8B0"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#1EC8B0">{pct+"%"}</text></g>)})}
@@ -1428,7 +1428,7 @@ function SolutionsStory({lang,onClose,onExit}){
   const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
     <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:31,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
       {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
       <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
         <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
@@ -2446,7 +2446,7 @@ function FilterChip({label,icon,active,onClick,count}){
   // a tighter visual hierarchy with the header's colored-dot language.
   return(
     <button onClick={onClick} style={{
-      display:"inline-flex",alignItems:"center",gap:7,padding:"0 14px 0 12px",height:40,minHeight:40,
+      display:"inline-flex",alignItems:"center",gap:7,padding:"0 14px 0 12px",height:40,minHeight:44,
       borderRadius:100,
       border:active?"1px solid rgba(232,168,0,.55)":"1px solid rgba(15,42,58,.08)",
       background:active
@@ -2508,7 +2508,7 @@ function ForecastCredibility({weeklyData,lang,sargData}){
         </button>
       </div>
       {showTip&&(
-        <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginBottom:6,lineHeight:1.5,
+        <div style={{fontSize:12,color:"var(--sg-mid,#5A5A5A)",marginBottom:6,lineHeight:1.5,
           padding:"8px 10px",borderRadius:8,background:"var(--sg-card,#fff)",
           animation:"slideUp .25s cubic-bezier(.22,1,.36,1)"}}>
           {levelDesc}
@@ -2927,11 +2927,11 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           </svg>
           <div style={{padding:"12px 16px 16px",textAlign:"center"}}>
             <div style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.3}}>{promiseEl}</div>
-            <div style={{fontSize:11.5,color:"rgba(255,255,255,.55)",marginTop:5,fontFamily:"ui-monospace,monospace"}}>{proof}</div>
+            <div style={{fontSize:11.5,color:"rgba(255,255,255,.72)",marginTop:5,fontFamily:"ui-monospace,monospace"}}>{proof}</div>
             <button onClick={()=>{try{track("sg_beat_cta",{conf:Math.round(firstConf)})}catch(_){};onPremiumClick("forecast_beat")}} className="gbtn" style={{display:"block",width:"100%",marginTop:13,padding:"13px",borderRadius:13,border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15}}>
               {_t(lang,"Voir la prévision de ma côte","See my coast's forecast","Ver el pronóstico de mi costa")}
             </button>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:9}}>{lockSub}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:9}}>{lockSub}</div>
           </div>
         </div>
       )})()}
@@ -2992,7 +2992,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
                 <span style={{fontSize:11,fontWeight:700,color:isLive?"#3fd07f":"rgba(255,255,255,.6)"}}>
                   {isLive?_t(lang,"EN DIRECT","LIVE","EN DIRECTO"):freshLbl}
                 </span>
-                {isLive&&freshLbl&&<span style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>· {freshLbl}</span>}
+                {isLive&&freshLbl&&<span style={{fontSize:10,color:"rgba(255,255,255,.72)"}}>· {freshLbl}</span>}
               </div>
             </div>
           </div>
@@ -3049,7 +3049,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
           fontFamily:"inherit",fontSize:14,fontWeight:700,color:"var(--sg-ink,#0D0D0D)"}}>
           {_t(lang,"Ouvrir la carte en direct →","Open the live map →","Abrir el mapa en directo →")}
         </button>
-        <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"var(--sg-mid,#999)"}}>
+        <div style={{textAlign:"center",marginTop:10,fontSize:12,color:"var(--sg-mid,#999)"}}>
           {_t(lang,"Ta côte est complexe pour de vrai : on la connaît baie par baie. Choisis une autre plage sur la carte.","Your coast is genuinely complex — we know it bay by bay. Pick another beach on the map.","Tu costa es realmente compleja: la conocemos bahía por bahía. Elige otra playa en el mapa.")}
         </div>
       </div>
@@ -3076,7 +3076,7 @@ function MethodologyLink({beach,lang,sargData}){
       background:"none",border:"none",padding:0,cursor:"pointer",
       fontSize:10,color:"var(--sg-mid,#999)",textDecoration:"underline",fontWeight:500,
     }}>{fr?"Comment c'est calculé ?":"How is this calculated?"} {open?"▲":"▼"}</button>
-    {open&&<div style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)",marginTop:4,padding:"6px 10px",
+    {open&&<div style={{fontSize:12,color:"var(--sg-mid,#5A5A5A)",marginTop:4,padding:"6px 10px",
       background:"rgba(0,0,0,.03)",borderRadius:8,lineHeight:1.5}}>
       <div style={{fontWeight:600,marginBottom:2}}>{fr?"Chaîne de données":"Data chain"}</div>
       <div>{chain}</div>
@@ -3206,7 +3206,7 @@ function BeachReport({beach,lang,communityReports}){
             {counts.moderate>0&&<div style={{flex:counts.moderate,background:C.stMod}}/>}
             {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
           </div>
-          <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
+          <div style={{marginTop:4,fontSize:12,color:"var(--sg-mid)",textAlign:"center"}}>
             {counts.rawTotal||Math.round(total)} {lang==="es"?"reporte"+((counts.rawTotal||total)>1?"s":""):lang==="en"?"report"+((counts.rawTotal||total)>1?"s":""):"signalement"+((counts.rawTotal||total)>1?"s":"")}
             {counts.trend&&counts.trend!=="stable"&&<span style={{marginLeft:4,color:counts.trend==="worsening"?C.red:C.green}}>
               {counts.trend==="worsening"?"↗":"↘"}</span>}
@@ -3367,7 +3367,7 @@ function GeoSoftAsk({lang,onAsk,label,src,style}){
   if(typeof navigator!=="undefined"&&!navigator.geolocation)return null
   return(
     <button type="button" onClick={e=>{e.stopPropagation();try{onAsk&&onAsk(src||"softask")}catch(_){}}}
-      style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:999,
+      style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",minHeight:44,borderRadius:999,
         border:"1px solid var(--sg-border,rgba(13,13,13,.14))",background:"var(--sg-card,rgba(255,255,255,.55))",
         color:"var(--sg-mid,#5A5A5A)",fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",lineHeight:1.1,...(style||{})}}>
       📍 {label||_t(lang,"Voir la distance","Show distance","Ver distancia")}
@@ -3756,9 +3756,9 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           padding:"10px 16px calc(20px + env(safe-area-inset-bottom))",WebkitOverflowScrolling:"touch",
           animation:"bscUp .42s cubic-bezier(.16,1,.3,1) both",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
         {/* Grip + X visible (NN/g : jamais handle seul) */}
-        <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
+        <div aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
         <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+          style={{position:"absolute",top:9,right:9,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span></button>
 
         {/* En-tête : nom + badge statut */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,paddingRight:34}}>
@@ -3834,7 +3834,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
           <div style={{display:"flex",flexDirection:"column",gap:7}}>
             {planB.map((b,i)=><button key={b.id} className="bsc-row" onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,minHeight:44,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
               <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
               <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
           </div>
@@ -5438,7 +5438,7 @@ function PushPrimer({lang,onAccept,onDismiss}){
           background:"#16a34a",color:"#fff",border:"none",
           padding:"9px 14px",borderRadius:10,fontSize:13,fontWeight:700,
           cursor:"pointer",flexShrink:0,whiteSpace:"nowrap",
-          minHeight:36,
+          minHeight:44,
         }}>
           {_t(lang,"Activer","Activate","Activar")}
         </button>
@@ -5446,7 +5446,7 @@ function PushPrimer({lang,onAccept,onDismiss}){
           style={{
             background:"transparent",border:"none",padding:"8px 4px",
             fontSize:18,color:"var(--sg-mid,#5A5A5A)",cursor:"pointer",
-            flexShrink:0,minHeight:36,minWidth:32,
+            flexShrink:0,minHeight:44,minWidth:44,
           }}>
           {"\u2715"}
         </button>
@@ -7117,7 +7117,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
           <div aria-hidden="true" style={{position:"absolute",top:0,left:0,right:0,height:12,background:"linear-gradient(90deg,#155A5A,#C97E3A 55%,#F2B05E)"}}/>
           <div aria-hidden="true" style={{position:"absolute",top:20,left:"50%",transform:"translateX(-50%)",width:42,height:5,borderRadius:3,background:"rgba(13,13,13,.18)"}}/>
           <button onClick={()=>onClose&&onClose("dismiss")} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-            style={{position:"absolute",top:14,right:14,width:26,height:26,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,cursor:"pointer",fontSize:15,lineHeight:1,padding:0}}>×</button>
+            style={{position:"absolute",top:5,right:5,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:26,height:26,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,fontSize:15,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}>×</span></button>
           {done?(
             <div style={{textAlign:"center",padding:"6px 0"}}>
               <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:13}}>
@@ -7871,7 +7871,7 @@ function SceneCanvas({src,focalY=0.38,onReady}){
     let gl=null
     try{gl=cv.getContext("webgl",{antialias:false,alpha:false,powerPreference:"low-power"})}catch(_){}
     if(!gl)return
-    let dead=false,raf=0,tex=null,prog=null,t0=performance.now()
+    let dead=false,raf=0,tex=null,prog=null,t0=performance.now(),visHandler=null
     const parCur=[0,0],parTgt=[0,0]
     const VS="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}"
     const FS=`precision mediump float;
@@ -7938,8 +7938,8 @@ void main(){
       let last=0
       const loop=ts=>{
         if(dead)return
+        if(document.hidden){raf=0;return}   /* caché : on stoppe la boucle (pas de RAF treadmill) — relancée au retour */
         raf=requestAnimationFrame(loop)
-        if(document.hidden)return
         if(ts-last<33)return            /* cap ~30fps : fluide et sobre en batterie */
         last=ts
         size()
@@ -7949,6 +7949,12 @@ void main(){
         gl.uniform2f(uPar,parCur[0],parCur[1])
         gl.drawArrays(gl.TRIANGLES,0,3)
       }
+      visHandler=()=>{
+        if(dead)return
+        if(document.hidden){if(raf){cancelAnimationFrame(raf);raf=0}}
+        else if(!raf){raf=requestAnimationFrame(loop)}
+      }
+      document.addEventListener("visibilitychange",visHandler)
       raf=requestAnimationFrame(loop)
     }
     img.src=src
@@ -7960,6 +7966,7 @@ void main(){
     window.addEventListener("pointermove",onMove,{passive:true})
     return()=>{dead=true;cancelAnimationFrame(raf)
       window.removeEventListener("pointermove",onMove)
+      if(visHandler)document.removeEventListener("visibilitychange",visHandler)
       try{tex&&gl.deleteTexture(tex);prog&&gl.deleteProgram(prog)}catch(_){}}
   },[src,focalY])
   return <canvas ref={ref} aria-hidden style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}/>
@@ -10612,8 +10619,8 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const onMove=e=>{if(!ptrs.current.has(e.pointerId))return;const prev=ptrs.current.get(e.pointerId),p=rel(e);ptrs.current.set(e.pointerId,p)
     if(satDragRef.current){const sc=satScale();satOffRef.current.x+=(p.x-prev.x)/sc;satOffRef.current.y+=(p.y-prev.y)/sc;satWrite();movedRef.current=true;return}
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
-    if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
-    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true;clearPress()}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
+    if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>6)movedRef.current=true;return}
+    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>6){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true;clearPress()}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
   const onUp=e=>{clearPress();if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
     if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}
     else if(tourRef.current==null&&ptrs.current.size===1&&!pinchRef.current){
@@ -10781,6 +10788,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
               onPointerDown={pv?(()=>{pressStartRef.current=Date.now();pressedRef.current=b.id;setPressed(b.id)}):undefined}
               onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;if(pv&&pressStartRef.current&&Date.now()-pressStartRef.current>280)return;markConsulted(b.id);diveBeach(i,b)}}>
+              <circle r={16} fill="transparent" style={{pointerEvents:"auto"}} />
               {me
                 ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#241246" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
                 :(pv&&pressed===b.id
@@ -10799,7 +10807,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       </svg>
       {/* rootMode (navWorld) : le monde EST l'app → pas de ✕ qui fermerait sur du vide
           (Leaflet retiré). En fallback ?nav=map, le ✕ ferme vers la carte Leaflet. */}
-      {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>}
+      {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(10px + env(safe-area-inset-top))",right:12,zIndex:5,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>}
       {ready&&(lecture||my)&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
         <Veilleur mood={moodFromStatus((lecture&&lecture.mood)||(my&&my.status)||"clean")} size={26}/>
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}>

@@ -65,7 +65,7 @@ function B2BModal({lang,onClose}){
         background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
         border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",
         fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>
-        <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:13,right:13,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,fontSize:16,fontWeight:900,color:I.ink,cursor:"pointer",lineHeight:1}}>✕</button>
+        <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:8,right:8,width:44,height:44,padding:0,border:"none",background:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",WebkitTapHighlightColor:"transparent"}}><span aria-hidden="true" style={{display:"flex",alignItems:"center",justifyContent:"center",width:34,height:34,borderRadius:"50%",border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,fontSize:16,fontWeight:900,color:I.ink,lineHeight:1}}>✕</span></button>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`}}>🏨 {_t(lang,"Pro · Hôtels & collectivités","Pro · Hotels & towns","Pro · Hoteles y municipios")}</div>
         {!sent?<>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:25,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 6px"}}>{_t(lang,"Les sargasses gâchent l'expérience. Reprenez la main.","Sargassum ruins the guest experience. Take back control.","El sargazo arruina la experiencia. Recupere el control.")}</div>
@@ -87,11 +87,12 @@ function B2BModal({lang,onClose}){
           </div>
           <input value={org} onChange={e=>setOrg(e.target.value)}
             placeholder={_t(lang,"Nom de l'établissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}
-            style={{width:"100%",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 14px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
+            style={{width:"100%",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
-            style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
+            enterKeyHint="send" aria-label={_t(lang,"Email pro","Work email","Email de trabajo")}
+            style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{cur.cta}</button>
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 14 jours, sans carte · −2 mois en annuel · stop quand vous voulez","14-day trial, no card · 2 months free yearly · stop anytime","Prueba 14 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
@@ -920,6 +921,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
+  const[emailErr,setEmailErr]=useState(false)
   const stripeRef=useRef(null)
   const elementsRef=useRef(null)
   const setupSecretRef=useRef(null)
@@ -1110,6 +1112,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const email=(payEmailRef.current?.value||"").trim()
     if(!email||!email.includes("@")||!email.includes(".")){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
+      setEmailErr(true)
+      try{payEmailRef.current&&payEmailRef.current.focus();payEmailRef.current&&payEmailRef.current.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}
       return
     }
     // ── Mode CAPTURE : aucun paiement dispo → on enregistre l'email (waitlist) +
@@ -1285,7 +1289,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
     if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
       setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
-      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
+      setEmailErr(true)
+      try{payEmailRef.current&&payEmailRef.current.focus();payEmailRef.current&&payEmailRef.current.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}
       return
     }
     // ── Apple Pay ON-SITE (direct) : feuille NATIVE sur notre page, zéro redirect ──
@@ -1627,8 +1632,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           : pwComic
           ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"
           : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),
-        borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
-        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflowX:"hidden",overflowY:"auto",
+        borderRadius:"24px 24px 0 0",padding:"28px 24px calc(20px + env(safe-area-inset-bottom,0px))",
+        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85svh",overflowX:"hidden",overflowY:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         {/* Close X top-right — resolves Design feedback "no close affordance
@@ -1637,11 +1642,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <button
           aria-label={_t(lang,"Fermer","Close","Cerrar")}
           onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
-          style={{position:"absolute",top:14,right:14,width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,
+          style={{position:"absolute",top:7,right:7,width:44,height:44,padding:0,
+            borderRadius:"50%",background:"none",border:"none",cursor:"pointer",
+            zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",WebkitTapHighlightColor:"transparent"}}>
+          <span aria-hidden="true" style={{display:"flex",alignItems:"center",justifyContent:"center",width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,
             borderRadius:"50%",background:(pwComic&&!passOnly)?"#ffd23f":"rgba(255,255,255,.08)",border:(pwComic&&!passOnly)?"2.5px solid #0d0b14":"none",
-            color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,
-            boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
-            zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+            color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,
+            boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none"}}>×</span></button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
         {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{
@@ -2060,7 +2067,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             (was: transparent→ink gradient that made WEEKEND card visible under the
             plan toggle per screenshot 05-paywall-control.png). */}
         <div style={{position:"sticky",bottom:0,background:"#120821",
-          paddingTop:12,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24,
+          paddingTop:12,paddingBottom:"calc(12px + env(safe-area-inset-bottom,0px))",marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24,
           boxShadow:"0 -12px 16px -8px rgba(10,23,20,.85)"}}>
 
         {/* Plan toggle — monthly + annual. Wrapped in a 4px-padded grouped
@@ -2072,8 +2079,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",forcedColorAdjust:"none",
             background:plan==="monthly"?"linear-gradient(180deg,#FFE07A,#FFC72C)":"#fdf6e3",
             border:"2.5px solid #0d0b14",
-            color:"#0d0b14",fontSize:13,fontWeight:700,
-            boxShadow:plan==="monthly"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,minHeight:44,
+            boxShadow:plan==="monthly"?"0 4px 0 #0d0b14,0 0 0 3px rgba(255,199,44,.45)":"2px 2px 0 #0d0b14",
             transition:"all .15s"}}>
             <div>{_t(lang,"Mensuel","Monthly","Mensual")}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_MO:lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"mois","mo","mes")}</span></div>
@@ -2082,8 +2089,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",position:"relative",forcedColorAdjust:"none",
             background:plan==="annual"?"linear-gradient(180deg,#FFE07A,#FFC72C)":"#fdf6e3",
             border:"2.5px solid #0d0b14",
-            color:"#0d0b14",fontSize:13,fontWeight:700,
-            boxShadow:plan==="annual"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,minHeight:44,
+            boxShadow:plan==="annual"?"0 4px 0 #0d0b14,0 0 0 3px rgba(255,199,44,.45)":"2px 2px 0 #0d0b14",
             transition:"all .15s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
@@ -2121,8 +2128,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",position:"relative",forcedColorAdjust:"none",
             background:plan==="pro"?"linear-gradient(180deg,#ff8a8a,#ff6464)":"#fdf6e3",
             border:"2.5px solid #0d0b14",
-            color:"#0d0b14",fontSize:13,fontWeight:700,
-            boxShadow:plan==="pro"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,minHeight:44,
+            boxShadow:plan==="pro"?"0 4px 0 #0d0b14,0 0 0 3px rgba(255,100,100,.45)":"2px 2px 0 #0d0b14",
             transition:"all .15s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:"#ff6464",color:"#fff",
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
@@ -2410,13 +2417,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(
             <div style={{marginBottom:14}}>
               <label style={MOL_LABEL}>{_t(lang,"E-mail (reçu d'accès)","Email (access receipt)","Email (recibo de acceso)")}</label>
-              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email" enterKeyHint="done"
+                aria-label={_t(lang,"E-mail","Email","Email")} aria-invalid={emailErr||undefined}
+                onBlur={capturePayEmail} onInput={()=>emailErr&&setEmailErr(false)}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
                 style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,
-                  fontSize:15,fontFamily:"inherit",outline:"none",
-                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
+                  fontSize:16,fontFamily:"inherit",outline:"none",
+                  border:emailErr?"1.5px solid #E8522A":"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
               <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:6}}>{_t(lang,"Pour t'envoyer ton reçu et ton accès premium.","To send your receipt and premium access.","Para enviarte tu recibo y acceso premium.")}</div>
             </div>
           )}
@@ -2495,13 +2503,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             </div>
           ):(
             <>
-              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email" enterKeyHint="done"
+                aria-label={_t(lang,"E-mail","Email","Email")} aria-invalid={emailErr||undefined}
+                onBlur={capturePayEmail} onInput={()=>emailErr&&setEmailErr(false)}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
                 style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
-                  fontSize:15,fontFamily:"inherit",outline:"none",
-                  border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>
+                  fontSize:16,fontFamily:"inherit",outline:"none",
+                  border:emailErr?"1.5px solid #E8522A":"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>
               {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
               {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
               {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}

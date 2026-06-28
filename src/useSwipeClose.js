@@ -24,7 +24,9 @@ export function useSwipeClose(onClose, opts = {}) {
   const guardInput = !!opts.guardInput
   const ref = useRef(null)
   const startY = useRef(0)
+  const startX = useRef(0)
   const dy = useRef(0)
+  const axis = useRef(null) // null = pas encore verrouillé, "v" = vertical, "h" = horizontal
   const armed = useRef(false)
 
   const onTouchStart = useCallback((e) => {
@@ -35,7 +37,9 @@ export function useSwipeClose(onClose, opts = {}) {
       if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) { armed.current = false; return }
     }
     startY.current = e.touches[0].clientY
+    startX.current = e.touches[0].clientX
     dy.current = 0
+    axis.current = null
     armed.current = true
     el.style.transition = ""
   }, [guardInput])
@@ -45,6 +49,13 @@ export function useSwipeClose(onClose, opts = {}) {
     if (!armed.current || !el) return
     if (el.scrollTop > 5) return
     const d = e.touches[0].clientY - startY.current
+    const dx = e.touches[0].clientX - startX.current
+    // Verrouille l'axe au 1er mouvement franc : un drag horizontal (carrousel de
+    // plages voisines, plans…) NE doit PAS armer la fermeture verticale.
+    if (axis.current === null && (Math.abs(d) > 8 || Math.abs(dx) > 8)) {
+      axis.current = Math.abs(dx) > Math.abs(d) ? "h" : "v"
+    }
+    if (axis.current === "h") return
     if (d > 0) { dy.current = d; el.style.transform = "translateY(" + d + "px)" }
   }, [])
 

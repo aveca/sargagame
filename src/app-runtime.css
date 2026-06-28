@@ -12,6 +12,11 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}
 button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .12s}
 button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opacity:.9;transition:transform .07s ease}
+/* Anneau de focus clavier/voice-control (additif, ne s'affiche QUE pour la navigation
+   clavier via :focus-visible — la souris/tap ne le déclenche pas). a11y mobile : switch
+   control & claviers externes voient enfin la cible active. */
+:focus-visible{outline:3px solid #FFC72C;outline-offset:2px;border-radius:4px}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible),[role="button"]:focus:not(:focus-visible){outline:none}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
 .leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
 .leaflet-control-attribution{display:none!important}
@@ -23,7 +28,9 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 .leaflet-control-zoom{display:none!important}
 .leaflet-interactive{cursor:pointer!important}
 /* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
-.sg-pin{backface-visibility:hidden;will-change:transform}
+/* Pas de will-change permanent : 50+ pins en couche GPU figée vidaient la VRAM/batterie
+   sur mobile milieu de gamme. Le compositing reste correct sans le hint. */
+.sg-pin{backface-visibility:hidden}
 .sg-pin:hover{transform:scale(1.12)!important}
 .sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out 1 both}
 @keyframes sgPinNearest{
@@ -41,7 +48,6 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   padding:14px 28px;cursor:pointer;position:relative;overflow:hidden;
   font-family:'Bricolage Grotesque',system-ui,sans-serif;
   box-shadow:0 2px 12px rgba(232,168,0,.3);transition:transform .15s,box-shadow .15s;
-  will-change:transform;
 }
 .gbtn:active{transform:scale(.95);box-shadow:0 1px 6px rgba(232,168,0,.2)}
 .gbtn::after{
@@ -49,8 +55,8 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
   animation:shine 4.5s 1 both;
   /* transform-only (GPU) : la version left:-100%→100% layoutait à chaque frame
-     et pesait l'essentiel du CLS mobile mesuré (0,065 → ~0,02, audit 2026-06-11) */
-  will-change:transform;
+     et pesait l'essentiel du CLS mobile mesuré (0,065 → ~0,02, audit 2026-06-11).
+     will-change retiré : le shine est one-shot, pas de couche GPU à garder à vie. */
 }
 @keyframes shine{0%,70%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 
@@ -77,7 +83,9 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 .sheet-exit{animation:sheetSlideDown .28s cubic-bezier(.32,.72,0,1) forwards}
 @keyframes sgFadeOut{to{opacity:0}}
 .backdrop-exit{animation:sgFadeOut .25s ease forwards}
-@media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
+@media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}
+  /* coupe les boucles infinies (halo LIVE) pour les users reduced-motion + économise la batterie */
+  .sg-live .sg-live-halo,.sg-pin-nearest{animation:none!important}}
 .sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
 
 /* Backdrop */
