@@ -1,0 +1,241 @@
+{
+  "updatedAt": "2026-06-28T02:50:03.019Z",
+  "signals": {
+    "paidSignal": "absent (pas de MOLLIE_API_KEY)",
+    "leadsSignal": "absent",
+    "clickSignal": "à brancher (token &b + stats)"
+  },
+  "counts": {
+    "discovered": 25,
+    "contacted": 0,
+    "lead": 0,
+    "paid": 0
+  },
+  "funnel": {
+    "9a9cdbd282d741fb6e56c1e35bfc0552": {
+      "stage": "discovered",
+      "name": "Hôtel Diamant Les Bains",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "21a1ce456cce137686a67f39bb046917": {
+      "stage": "discovered",
+      "name": "Anoli Lodges",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "197b77981fac3a014cfe1ad824390714": {
+      "stage": "discovered",
+      "name": "La Créole Beach Hôtel & Spa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "1ceed3e228efbf9500c9320992fbbb6c": {
+      "stage": "discovered",
+      "name": "Majesty Palm Hotel & Spa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "68b608e279a86ea9df43e0515ff2e4e7": {
+      "stage": "discovered",
+      "name": "Bambou Resort (Hôtel Bambou)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "62098b0361188b94d03b943ddd0323f7": {
+      "stage": "discovered",
+      "name": "Hôtel Plein Soleil",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "bca368d0780b1f676de05ed420fb1d57": {
+      "stage": "discovered",
+      "name": "La Suite Villa",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "149125a95bc6c8c600198cb8b9399638": {
+      "stage": "discovered",
+      "name": "Hôtel Bakoua",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "34e3bf3520495bde3bd398bfa6abdf79": {
+      "stage": "discovered",
+      "name": "Karibea Hôtels & Résidences",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "713ca6f5148332776e8ae2d48c51de33": {
+      "stage": "discovered",
+      "name": "ILOMA Hotel & Spa (ex-Corail Résidence)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "8e87822d3fe7e0f8e82242856cca7637": {
+      "stage": "discovered",
+      "name": "Hôtel La Pagerie Tropical Garden",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "76690b3b63d61ac3b0f797410162ca55": {
+      "stage": "discovered",
+      "name": "Hôtel Frégate Bleue",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "8ab2fad77d1f998bd0249e7034e1cb8a": {
+      "stage": "discovered",
+      "name": "Domaine Saint Aubin",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "790f73c8cf68f823ed818e5b645909ea": {
+      "stage": "discovered",
+      "name": "Le Domaine des Bulles",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "42a4f510f3f4ed69bd09d4c97f21165d": {
+      "stage": "discovered",
+      "name": "Hotel Arawak Beach Resort",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "3799c25eb1613468dda4a1a7e39f16d4": {
+      "stage": "discovered",
+      "name": "La Maison de l'Ilet Oscar",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "8cb9d4a3ea8cc38696066ba3c22aaffd": {
+      "stage": "discovered",
+      "name": "Langley Resort Fort Royal",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "7c8394c00c89be4b2566b1a6727e48ae": {
+      "stage": "discovered",
+      "name": "La Toubana Hôtel & Spa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "f20713055aadf258b479b9c32f8c7852": {
+      "stage": "discovered",
+      "name": "Tendacayou Ecolodge & SPA",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "f172ad192ebac4990856a9f6fe5ab745": {
+      "stage": "discovered",
+      "name": "Le Jardin Malanga",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "0f2d666cf53a811a584a0c3f23578609": {
+      "stage": "discovered",
+      "name": "Habitation Grande Anse",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "fc32a9989124a697d5189ace073e8c84": {
+      "stage": "discovered",
+      "name": "Karibea Résidence Prao (Karibea Beach Resort Gosier)",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "90367996a9c7de95467ea9a7da99d26e": {
+      "stage": "discovered",
+      "name": "Hôtel Bois Joli",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "570b71d132173d5e5806ceb07224aa9b": {
+      "stage": "discovered",
+      "name": "Hôtel Amaudo",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "26c84124b4a366d93e3bc4c280759f88": {
+      "stage": "discovered",
+      "name": "Kawann Beach Hôtel",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    }
+  }
+}
