@@ -194,4 +194,4 @@ Pas de `file://`. Pas de preview app (timeout rAF). JUGER soi-même la capture ;
 - **NE JAMAIS 301** `/a-propos/` (régression 2026-06-10) ; garder servable (le 302 fiabilité l.251 dépend de `!-f !-d`). Garder les 2 liens `→ /fiabilite/`.
 - **Tracking** : réutiliser les noms `sg_*` existants, ne pas créer un schéma de funnel parallèle (`funnel_tracking_gap`). Beacon fire-and-forget vers `/collect.php` (POST 204).
 - **Control intact + réversible** : tout le neuf sous `.az-on` / `az` true ; retirer = retour exact à l'actuel.
-- **Shabbat ven 18h → sam 19h : ne RIEN déployer.** SW bump (`public/sw.js CACHE_NAME`) au deploy de code. `git pull --rebase` avant push ; stage fichier par fichier (jamais `git add -A`).
+- SW bump (`public/sw.js CACHE_NAME`) au deploy de code. `git pull --rebase` avant push ; stage fichier par fichier (jamais `git add -A`).

@@ -219,5 +219,4 @@ node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sa
 - **Données honnêtes** : score masqué si live absent ; freshness dégradée si >12 h ; jamais de `cleanFloor` atlantique (re-teinte au scrub branchée UNIQUEMENT sur `forecast[].status/regime`) ; fiabilité PAR RÉGIME, jamais le global %.
 - **Slug = nom = SEO** : aucune page sans 301, jamais renommer une plage. Canonical/hreflang/JSON-LD du head INCHANGÉS.
 - **GP swap** : zéro chaîne « Martinique » hardcodée dans le markup/CSS/engine du variant (casserait `prepare-ftp.cjs`).
-- **Shabbat ven 18h→sam 19h** : ne RIEN déployer.
 - **Pas d'agent-slop en prod** : vérifier chaque stage au navigateur, juger soi-même contre la barre HomeAZ, refaire à la main si ça ne passe pas — AVANT le port.

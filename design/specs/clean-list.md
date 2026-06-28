@@ -189,5 +189,5 @@ JUGER soi-même chaque capture. Si moche/illisible/Veilleur inquiétant → corr
 - **Honnêteté data** : fausse fraîcheur interdite (`<12h` sinon « vérification en cours ») ; jamais de plage inventée ; liste vide → mode « moins touchées » daté, jamais page blanche ; JAMAIS de cleanFloor atlantique — re-teinte/tendance sur `forecast[].status/regime` seulement.
 - **SEO** : slug=nom, aucune page sans 301, noscript jamais vide, hreflang réciproque intact ; ne pas dériver le pipeline de génération (réutiliser l.495-573).
 - **DOM sûr** : Shadow DOM + `textContent`/`createElement`/`createContextualFragment`, JAMAIS `innerHTML` (hook sécurité bloque).
-- **Git/deploy** : `git pull --rebase` avant push ; jamais `git add -A` (fichier par fichier) ; bump `public/sw.js` `CACHE_NAME`; Shabbat ven 18h→sam 19h = no-deploy.
+- **Git/deploy** : `git pull --rebase` avant push ; jamais `git add -A` (fichier par fichier) ; bump `public/sw.js` `CACHE_NAME`.
 - **Anti agent-slop** : le proto se re-vérifie au navigateur ; s'il ne passe pas la barre HomeAZ, le refaire à la main avant port.

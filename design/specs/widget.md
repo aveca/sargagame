@@ -194,5 +194,4 @@ Critères PASS : (a) variant golden-hour ressemble à la barre HomeAZ (Veilleur 
 - **Tracking `sg_*` identiques** : l'attribution passe par `utm_source`/`utm_content` lus par l'app, pas de nouvel event renommé. Beacon widget = phase 2, optionnel, et n'altère pas les events existants.
 - **slug = nom = SEO** : slugs embed = `slugify(beach.name)`, identiques aux pages `/plages/:slug`. Conserver les 20 alias legacy pour ne pas casser les embeds déjà déployés ; ne JAMAIS renommer une plage (slug SEO).
 - **Aucune page sans 301 / pas de route morte** : ne pas livrer la landing tant que l'aperçu pointe une route embed réellement générée (le bug actuel `anse-mitan` 404). Vérifier `curl` 200 avant deploy.
-- **Shabbat / no-deploy** : génération et tests en interne ; pas de push/deploy ven 18 h → sam 19 h (GH Actions couvre, cf. user_schedule).
 - **Additif & réversible** : tout le code widget est isolé (`scripts/lib/widget-embed.cjs` + une boucle dans `closeBundle` + fichiers `public/widget/*`). Retirer la boucle = retour à l'état actuel. Control jamais modifié.

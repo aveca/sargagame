@@ -210,4 +210,3 @@ Si plus tard on veut un point d'état sur ⭐ (ex. pastille "1 alerte"), il devr
 - **z-index** : garder `zIndex:800` (control) ; en `glass`, rester < paywall (z1100) et < hero/world overlays quand ils doivent masquer le dock. Si un overlay doit cacher le dock (HomeAZ plein écran), c'est l'overlay qui passe au-dessus, pas au dock de se démonter (réversibilité).
 - **Le dock vit dans la lumière DOM**, pas dans le Shadow DOM de HomeAZ (`src/HomeAZ.jsx`) — ne pas l'y injecter.
 - **Vérif navigateur OBLIGATOIRE avant ship** (`feedback_dont_show_wip`) : aucun jugement de goût fondateur ; on shippe gated A/B et on lit les vrais events.
-- **Shabbat no-deploy** (ven 18h–sam 19h, `user_schedule`).

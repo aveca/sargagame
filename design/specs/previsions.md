@@ -178,7 +178,7 @@ node -e "const h=require('fs').readFileSync('dist/_gp/previsions/index.html','ut
 #   puis ?prev_az=0 → DOIT afficher la carte brute (control intact)
 #   reduced-motion : émuler prefers-reduced-motion → AUCUNE anim (repos = tableau)
 ```
-Avant ship : `git pull --rebase` ; SW bump `public/sw.js CACHE_NAME='sargasses-vXXX'` ; rebuild MQ d'abord ; stage fichier par fichier (jamais `git add -A`) ; **pas de deploy Shabbat ven 18h→sam 19h**.
+Avant ship : `git pull --rebase` ; SW bump `public/sw.js CACHE_NAME='sargasses-vXXX'` ; rebuild MQ d'abord ; stage fichier par fichier (jamais `git add -A`).
 
 ---
 

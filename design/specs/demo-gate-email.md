@@ -175,4 +175,3 @@ npm run build   # attendre "built in", vérifier chunk + 136 pages + 0 erreur
 - **Shadow DOM HomeAZ** : aucun `innerHTML`. Si du DOM doit être injecté dans le shadow → `createContextualFragment` + `<style>.textContent` (cf. `src/HomeAZ.jsx:726-727`). Idéalement, le gate React vit HORS du shadow (overlay React classique sous l'hôte), piloté par `onAha` — zéro édition du markup trusté.
 - **Additif + réversible** : control byte-identique à la prod actuelle. `?demogate=0` doit rendre l'app strictement comme avant.
 - **Anti-spam** : un seul affichage par session, jamais si `sg_email_prompt` déjà vrai (déjà capturé/dismiss).
-- **Shabbat** ven 18 h → sam 19 h : ne rien déployer.

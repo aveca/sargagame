@@ -250,5 +250,4 @@ Vérif navigateur (Playwright MCP ou serveur 8799 du skill `sg-svg-scene`) :
 - **slug=nom** : `ctx.beachName=beach.name` brut, aucun renommage.
 - **Calme = tableau** : aucune anim idle ajoutée ; reduced-motion floor respecté (réutilise la scène constel statique existante).
 - **i18n natif FR/EN/ES** : toute string passe par `_t(lang,fr,en,es)` (`68`). Aucune chaîne en dur monolingue.
-- **Shabbat** : pas de deploy ven 18h→sam 19h ; build/QA OK, push à éviter sur la fenêtre.
 - **Vérif navigateur obligatoire** avant push (l'app preview timeout → serveur local + Playwright, cf. skill `sg-svg-scene`).
