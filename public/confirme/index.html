@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Confirme l'état de la plage — le Veilleur</title>
+<title>Entraîne Le Veilleur — confirme ce que tu vois</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap');
   :root{--ink:#0A1714;--card:#10231E;--or:#FFC72C;--orL:#FFE08A;--teal:#5FD3C9;
@@ -53,21 +53,21 @@
   </g></svg>
 
   <div id="ask">
-    <p class="eyebrow" id="eyebrow">Veille communautaire</p>
+    <p class="eyebrow" id="eyebrow">Tu entraînes Le Veilleur</p>
     <h1 id="title">Cette plage</h1>
-    <p class="q" id="q">Tu y es maintenant ? Quel est l'état de la plage&nbsp;?</p>
+    <p class="q" id="q">Tu es sur place&nbsp;? Ce que tu vois maintenant affûte la prévision de demain.</p>
     <div class="btns">
       <button class="b-clean" data-s="clean"><span class="em">😎</span><span id="lc">Propre — on se baigne</span></button>
       <button class="b-mod" data-s="moderate"><span class="em">😐</span><span id="lm">Quelques algues</span></button>
       <button class="b-avoid" data-s="avoid"><span class="em">🚫</span><span id="la">Beaucoup d'algues</span></button>
     </div>
-    <p class="note" id="note">Anonyme. Ta confirmation aide les autres voyageurs — et entraîne le Veilleur.</p>
+    <p class="note" id="note">Anonyme. Chaque observation affûte la prévision du Veilleur — et quand on se trompe, c’est ce qui nous corrige.</p>
   </div>
 
   <div id="done" class="done">
     <div class="big">🛰️</div>
     <h1 id="thanks">Merci !</h1>
-    <p class="q" id="thanksMsg">Le Veilleur a noté. C'est ce genre d'observation terrain qui rend la prévision plus juste.</p>
+    <p class="q" id="thanksMsg">Le Veilleur a noté. Ton coup d'œil entre dans le verdict de demain — c'est toi qui affûtes la prévision.</p>
     <div class="verdict" id="verdict" style="display:none"></div>
     <p class="note"><a id="home" href="/">← Voir la carte des plages</a></p>
   </div>
@@ -84,9 +84,9 @@
   var sid='';try{sid=localStorage.getItem('sg_sid');if(!sid){sid='c'+Math.random().toString(36).slice(2,10);localStorage.setItem('sg_sid',sid)}}catch(e){}
 
   var T={
-    fr:{eyebrow:'Veille communautaire',q:'Tu y es maintenant ? Quel est l’état de la plage ?',lc:'Propre — on se baigne',lm:'Quelques algues',la:'Beaucoup d’algues',note:'Anonyme. Ta confirmation aide les autres voyageurs — et entraîne le Veilleur.',thanks:'Merci !',thanksMsg:'Le Veilleur a noté. C’est ce genre d’observation terrain qui rend la prévision plus juste.',home:'← Voir la carte des plages',commu:'La communauté dit :',you:'Tu y es ?'},
-    en:{eyebrow:'Community watch',q:'Are you there now? What’s the beach like?',lc:'Clean — good to swim',lm:'Some seaweed',la:'A lot of seaweed',note:'Anonymous. Your call helps other travellers — and trains the Watchman.',thanks:'Thank you!',thanksMsg:'The Watchman logged it. Ground-truth like this is what makes the forecast sharper.',home:'← See the beach map',commu:'The community says:',you:'You’re there?'},
-    es:{eyebrow:'Vigilancia comunitaria',q:'¿Estás ahí ahora? ¿Cómo está la playa?',lc:'Limpia — para bañarse',lm:'Algo de sargazo',la:'Mucho sargazo',note:'Anónimo. Tu confirmación ayuda a otros viajeros — y entrena al Vigía.',thanks:'¡Gracias!',thanksMsg:'El Vigía lo registró. Así se calibra el pronóstico con datos de campo.',home:'← Ver el mapa de playas',commu:'La comunidad dice:',you:'¿Estás ahí?'}
+    fr:{eyebrow:'Tu entraînes Le Veilleur',q:'Tu es sur place ? Ce que tu vois maintenant affûte la prévision de demain.',lc:'Propre — on se baigne',lm:'Quelques algues',la:'Beaucoup d’algues',note:'Anonyme. Chaque observation affûte la prévision du Veilleur — et quand on se trompe, c’est ce qui nous corrige.',thanks:'Merci !',thanksMsg:'Le Veilleur a noté. Ton coup d’œil entre dans le verdict de demain — c’est toi qui affûtes la prévision.',home:'← Voir la carte des plages',commu:'La communauté dit :',you:'Tu y es ?'},
+    en:{eyebrow:'You train The Watcher',q:'On the beach right now? What you see sharpens tomorrow’s forecast.',lc:'Clean — good to swim',lm:'Some seaweed',la:'A lot of seaweed',note:'Anonymous. Every observation sharpens The Watcher’s forecast — it’s how we get corrected when we’re wrong.',thanks:'Thank you!',thanksMsg:'The Watcher logged it. Your glance feeds tomorrow’s verdict — you just sharpened the forecast.',home:'← See the beach map',commu:'The community says:',you:'You’re there?'},
+    es:{eyebrow:'Entrenas al Vigía',q:'¿Estás en la playa ahora? Lo que ves afina el pronóstico de mañana.',lc:'Limpia — para bañarse',lm:'Algo de sargazo',la:'Mucho sargazo',note:'Anónimo. Cada observación afina el pronóstico del Vigía — y cuando nos equivocamos, así nos corregimos.',thanks:'¡Gracias!',thanksMsg:'El Vigía lo registró. Tu vistazo entra en el veredicto de mañana — acabas de afinar el pronóstico.',home:'← Ver el mapa de playas',commu:'La comunidad dice:',you:'¿Estás ahí?'}
   };
   var t=T[lang]||T.fr;
   document.documentElement.lang=lang;

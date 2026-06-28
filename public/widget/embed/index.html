@@ -25,6 +25,7 @@ body{font-family:'Bricolage Grotesque',system-ui,-apple-system,Segoe UI,sans-ser
 .pill{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;color:#fff;background:var(--st);letter-spacing:.01em}
 .sub{font-size:11.5px;color:var(--mid);margin:5px 0 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .live{display:inline-flex;align-items:center;gap:4px;color:var(--acc);font-weight:600}
+.wsp{color:var(--mid);font-weight:600;font-style:italic}
 .live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 0 var(--acc);animation:p 2.4s ease-out infinite}
 @keyframes p{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--acc) 55%,transparent)}70%,100%{box-shadow:0 0 0 6px transparent}}
 .fc{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:11px 0 0}
@@ -109,17 +110,20 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
         updated:function(h){return "il y a "+h},stale:"Vérification en cours",
         wd:["dim","lun","mar","mer","jeu","ven","sam"],today:"auj.",
         src:"Données satellite Copernicus",notfound:"Voir toutes les plages",
-        unavail:"Conditions momentanément indisponibles"},
+        unavail:"Conditions momentanément indisponibles",
+        whisper:{clean:"Le Veilleur a vu clair ce matin.",moderate:"Le Veilleur croise la mer — à surveiller.",avoid:"Sargasses en approche — Le Veilleur te prévient."}},
     en:{clean:"Clear water",moderate:"Moderate",avoid:"Avoid",live:"Live",
         updated:function(h){return h+" ago"},stale:"Checking",
         wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"today",
         src:"Copernicus satellite data",notfound:"See all beaches",
-        unavail:"Conditions temporarily unavailable"},
+        unavail:"Conditions temporarily unavailable",
+        whisper:{clean:"The Watcher saw clear this morning.",moderate:"The Watcher is scanning the sea — keep an eye.",avoid:"Sargassum incoming — the Watcher's got you."}},
     es:{clean:"Agua limpia",moderate:"Moderado",avoid:"Evitar",live:"En vivo",
         updated:function(h){return "hace "+h},stale:"Verificando",
         wd:["dom","lun","mar","mié","jue","vie","sáb"],today:"hoy",
         src:"Datos satélite Copernicus",notfound:"Ver todas las playas",
-        unavail:"Condiciones no disponibles"}
+        unavail:"Condiciones no disponibles",
+        whisper:{clean:"El Vigía vio claro esta mañana.",moderate:"El Vigía vigila el mar — atento.",avoid:"Sargazo en camino — el Vigía te avisa."}}
   }[lang];
   var ST = {clean:"var(--clean)",moderate:"var(--moderate)",avoid:"var(--avoid)"};
 
@@ -189,7 +193,8 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
 
     var age = relAge(d.updatedAt);
     var fresh = age && (Date.now()-new Date(d.updatedAt).getTime()) < 12*3.6e6;
-    if (fresh) setSub(el("span","live",T.live), el("span",null,"· "+T.updated(age)));
+    var wsp = T.whisper && T.whisper[status];
+    if (fresh) setSub(el("span","live",T.live), el("span",null,"· "+T.updated(age)), wsp?el("span","wsp","· "+wsp):document.createTextNode(""));
     else setSub(el("span",null,T.stale));
     $("src").textContent = T.src;
     if (isPro) { $("link").style.display = "none"; }        // PRO = marque blanche (pas de backlink)

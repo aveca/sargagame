@@ -90,9 +90,9 @@ function pickVerdict(region) {
 /** Ligne de crédibilité — uniquement vraie, jamais inventée. */
 function credibilityText(v) {
   if (!v.isReliable || v.hitRate == null) return null
-  const parts = [`${v.hitRate}% de prévisions justes ici`]
-  if (v.archiveDays) parts.push(`backtest ${v.archiveDays} jours`)
-  if (v.streak >= STREAK_MIN_SHOW) parts.push(`${v.streak} jours d’affilée`)
+  const parts = [`${v.hitRate}% vérifiées au satellite ici, tous régimes confondus`]
+  if (v.archiveDays) parts.push(`backtest ${v.archiveDays} jours, daté`)
+  if (v.streak >= STREAK_MIN_SHOW) parts.push(`${v.streak} matins d’affilée sans se tromper`)
   return parts.join(' · ')
 }
 
@@ -100,7 +100,7 @@ function buildCard(v) {
   const reg = L.REGION[v.region]
   const isGo = v.type === 'go'
   const accent = isGo ? L.PALETTE.teal : (L.STATUS.avoid.color)
-  const eyebrow = isGo ? 'LE SPOT NET DU JOUR' : 'À ÉVITER AUJOURD’HUI'
+  const eyebrow = isGo ? 'LE VERDICT DU MATIN' : 'L’ALERTE DU MATIN'
   // Colonne nom à gauche, gouttière droite réservée à l'anneau (jamais de collision)
   const nameLines = L.wrapLines(v.name, 12)
   const reasonLines = v.reason ? L.wrapLines(v.reason, 40).slice(0, 2) : []
@@ -118,7 +118,7 @@ function buildCard(v) {
     const txtX = PAD + 116
     credBlock = `<rect x="${PAD}" y="${cy}" width="${W - PAD * 2}" height="${ch}" rx="26" fill="${L.PALETTE.card}" stroke="${L.PALETTE.gold}" stroke-opacity="0.5"/>
       <path d="M ${PAD + 44} ${cy + 58} l 20 22 l 40 -46" fill="none" stroke="${L.PALETTE.gold}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="${txtX}" y="${cy + 48}" font-family="${L.FONT}" font-size="25" font-weight="800" letter-spacing="2" fill="${L.PALETTE.gold}">LE VEILLEUR A VU JUSTE</text>
+      <text x="${txtX}" y="${cy + 48}" font-family="${L.FONT}" font-size="25" font-weight="800" letter-spacing="2" fill="${L.PALETTE.gold}">CE QUE LE VEILLEUR A DÉJÀ VU JUSTE</text>
       ${credLines.map((ln, i) => `<text x="${txtX}" y="${cy + 86 + i * 38}" font-family="${L.FONT}" font-size="27" font-weight="600" fill="${L.PALETTE.white}">${L.esc(ln)}</text>`).join('')}`
   }
 
@@ -148,7 +148,7 @@ function buildCard(v) {
   <text x="${ringX}" y="${ringY + 42}" text-anchor="middle" font-family="${L.FONT}" font-size="20" font-weight="700" letter-spacing="1" fill="${L.PALETTE.mut}">/ 100</text>
 
   <!-- Verdict mot + raison -->
-  <text x="${PAD}" y="${nameY + nameLines.length * (nameFont + 4) + 36}" font-family="${L.FONT}" font-size="36" font-weight="900" letter-spacing="2" fill="${accent}">${L.esc(isGo ? 'PROPRE' : 'À ÉVITER')} <tspan fill="${L.PALETTE.mut}" font-weight="700" font-size="30" letter-spacing="0">· satellite ce matin</tspan></text>
+  <text x="${PAD}" y="${nameY + nameLines.length * (nameFont + 4) + 36}" font-family="${L.FONT}" font-size="36" font-weight="900" letter-spacing="2" fill="${accent}">${L.esc(isGo ? 'PROPRE' : 'À ÉVITER')} <tspan fill="${L.PALETTE.mut}" font-weight="700" font-size="30" letter-spacing="0">· mesuré au satellite, pas deviné</tspan></text>
   ${reasonLines.map((ln, i) => `<text x="${PAD}" y="${nameY + nameLines.length * (nameFont + 4) + 96 + i * 40}" font-family="${L.FONT}" font-size="30" font-weight="500" fill="${L.PALETTE.mut}">${L.esc(ln)}</text>`).join('')}
 
   ${credBlock}
@@ -160,11 +160,12 @@ function buildCard(v) {
 function caption(v) {
   const reg = L.REGION[v.region]
   const head = v.type === 'go'
-    ? `🌊 Le Verdict du Veilleur — ${reg.name}\n\n✅ ${v.name} : propre aujourd'hui. ${v.score}/100 au satellite Copernicus de ce matin.`
-    : `🌊 Le Verdict du Veilleur — ${reg.name}\n\n⚠️ ${v.name} : sargasses détectées. À éviter aujourd'hui (satellite Copernicus de ce matin).`
+    ? `🌊 Le Verdict du Veilleur — ${reg.name}\n\nChaque matin, Le Veilleur regarde la mer pour toi.\n\n✅ ${v.name} : propre ce matin. ${v.score}/100, mesuré au satellite Copernicus — pas deviné.`
+    : `🌊 Le Verdict du Veilleur — ${reg.name}\n\nChaque matin, Le Veilleur regarde la mer pour toi.\n\n⚠️ ${v.name} : sargasses détectées au large. À éviter ce matin — mesuré au satellite Copernicus, pas deviné. Passe au Plan B.`
   const cred = credibilityText(v)
   const credLine = cred ? `\n\n🛰️ ${cred}.` : ''
-  return `${head}${credLine}\n\nLa carte complète, mise à jour 4×/jour, gratuite sur ${reg.domain}`
+  const honesty = '\n\nRien de magique — et quand on se trompe, on l’écrit.'
+  return `${head}${credLine}${honesty}\n\nLa carte complète, baie par baie, mise à jour 4×/jour — gratuite sur ${reg.domain}`
 }
 
 function alreadySentToday(region) {
