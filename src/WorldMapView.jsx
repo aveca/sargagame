@@ -1148,12 +1148,21 @@ export default function WorldMapView({
               data-vy={b.vy}
               data-status={st}
               data-sel={selected?.id===b.id?"1":"0"}
+              role="button" tabIndex={0}
+              aria-label={(b.name||"")+(STATUS_LBL[st]?.[li]?(" — "+STATUS_LBL[st][li]):"")}
+              onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } }}
+              onKeyDown={e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } } }}
               style={{
                 position:"absolute",left:0,top:0,
                 transform:"translate(-50%,-100%)",
-                paddingBottom:8,
+                // La couche est pointerEvents:none (pan préservé) ; SEULS les labels
+                // redeviennent tapables → fin du dead-click sur le nom de plage (5653/j
+                // sur «/», ux-report 26/06). Tap nom = tap pin = ouvre la fiche.
+                pointerEvents:"auto", cursor:"pointer",
+                paddingBottom:8, paddingTop:6, paddingLeft:10, paddingRight:10,
                 textAlign:"center",
                 whiteSpace:"nowrap",
+                WebkitTapHighlightColor:"transparent",
               }}>
               <div style={{
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
