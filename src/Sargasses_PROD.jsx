@@ -11,6 +11,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
+import BeachPhotos from "./BeachPhotos.jsx"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -2174,6 +2175,11 @@ function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect
 //    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
 //    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
 const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+// Capture photo visiteur (BeachReport). OFF tant que le backend photo n'est pas en
+// ligne : passer à true UNIQUEMENT après le `clasp push` du Code.js (handler
+// type:"beach_photo" → Drive) — sinon les photos partiraient dans le vide.
+// Détails : docs/visitor-photos-runbook.md.
+const PHOTO_UPLOAD_ENABLED=false
 function _sgReportStash(body){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_report_q",JSON.stringify(q))}catch(_){}}
 function _sgReportFlush(){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");if(!q.length)return;localStorage.removeItem("sg_report_q");q.forEach(body=>{try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).catch(()=>_sgReportStash(body))}catch(_){_sgReportStash(body)}})}catch(_){}}
 function sgCollectFlush(reason){
@@ -3153,6 +3159,28 @@ function BeachReport({beach,lang,communityReports}){
     return null
   })
   const[queued,setQueued]=useState(false)  // #27 : signalement mis en file hors-ligne
+  // Photo visiteur (preuve du présent). Optionnelle, indépendante du vote de niveau.
+  const fileRef=useRef(null)
+  const[photo,setPhoto]=useState(null)   // data URL JPEG redimensionnée
+  const[photoState,setPhotoState]=useState("idle") // idle|busy|sent|error
+  const onPickPhoto=async(e)=>{
+    const f=e.target.files&&e.target.files[0]; if(f)try{e.target.value=""}catch(_){}
+    if(!f)return
+    setPhotoState("busy")
+    try{
+      const {fileToResizedJpeg}=await import("./imageResize.js")
+      const dataUrl=await fileToResizedJpeg(f,{maxDim:1280,quality:0.8})
+      setPhoto(dataUrl);setPhotoState("idle")
+    }catch(_){setPhoto(null);setPhotoState("error")}
+  }
+  const sendPhoto=()=>{
+    if(!photo||photoState==="sent")return
+    try{track("sg_beach_photo",{beach_id:beach.id,level:voted||null,island:beach.island})}catch(_){}
+    const body=JSON.stringify({type:"beach_photo",beach_id:beach.id,beach_name:beach.name,island:beach.island,level:voted||null,photo,date:new Date().toISOString()})
+    if(typeof navigator!=="undefined"&&navigator.onLine===false){_sgReportStash(body);setPhotoState("sent");return}
+    try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).then(()=>setPhotoState("sent")).catch(()=>{_sgReportStash(body);setPhotoState("sent")})}
+    catch(_){_sgReportStash(body);setPhotoState("sent")}
+  }
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
@@ -3199,6 +3227,45 @@ function BeachReport({beach,lang,communityReports}){
           <span aria-hidden="true">📡</span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
         </div>
       )}
+      {PHOTO_UPLOAD_ENABLED&&(
+        <div style={{marginTop:10}}>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={onPickPhoto} style={{display:"none"}}/>
+          {!photo&&photoState!=="sent"&&(
+            <button type="button" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={photoState==="busy"} style={{
+              width:"100%",padding:"10px 8px",borderRadius:12,border:"1px dashed var(--sg-border,rgba(0,0,0,.18))",
+              background:"var(--sg-card,#fff)",color:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",
+              cursor:photoState==="busy"?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              📷 {photoState==="busy"?_t(lang,"Préparation…","Preparing…","Preparando…"):_t(lang,"Ajoute une photo","Add a photo","Añade una foto")}
+            </button>
+          )}
+          {photo&&photoState!=="sent"&&(
+            <div>
+              <div style={{position:"relative",width:"100%",borderRadius:12,overflow:"hidden",background:"#000",marginBottom:8}}>
+                <img src={photo} alt="" style={{width:"100%",maxHeight:200,objectFit:"cover",display:"block"}}/>
+                <button type="button" onClick={()=>setPhoto(null)} aria-label="x" style={{position:"absolute",top:6,right:6,width:26,height:26,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.55)",color:"#fff",fontSize:14,cursor:"pointer"}}>✕</button>
+              </div>
+              <button type="button" onClick={sendPhoto} style={{
+                width:"100%",padding:"10px 8px",borderRadius:12,border:"none",background:C.green,color:"#fff",
+                fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}}>
+                {_t(lang,"Envoyer la photo","Send photo","Enviar foto")}
+              </button>
+              <div style={{marginTop:5,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
+                {_t(lang,"Localisation retirée · publiée après modération","Location stripped · published after review","Ubicación eliminada · publicada tras revisión")}
+              </div>
+            </div>
+          )}
+          {photoState==="sent"&&(
+            <div style={{fontSize:11,color:C.green,textAlign:"center",fontWeight:600}}>
+              {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
+            </div>
+          )}
+          {photoState==="error"&&(
+            <div style={{fontSize:11,color:C.red,textAlign:"center",fontWeight:600}}>
+              {_t(lang,"Image illisible — réessaie.","Unreadable image — try again.","Imagen ilegible — reintenta.")}
+            </div>
+          )}
+        </div>
+      )}
       {total>0&&(
         <div style={{marginTop:8}}>
           <div style={{display:"flex",height:4,borderRadius:2,overflow:"hidden",background:"var(--sg-border,rgba(0,0,0,.06))"}}>
@@ -3217,6 +3284,7 @@ function BeachReport({beach,lang,communityReports}){
       {voted&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
         {_t(lang,"Merci pour ton signalement !","Thanks for your report!","¡Gracias por tu reporte!")}
       </div>}
+      <BeachPhotos beach={beach} lang={lang}/>
     </div>
   )
 }
