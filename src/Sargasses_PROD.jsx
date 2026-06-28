@@ -11647,12 +11647,12 @@ export default function App(){
   // Inliné au control — la plongée 1×/session ajoutait une friction sans conversion. ?navdive=1 force
   // encore l'aperçu. Réversible : restaurer abVariant("nav_dive",["control","dive"],[.85,.15])==="dive".
   const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return false}catch(_){return false}},[])
-  // A/B `capture_gate` : gate email légère avant PremiumModal sur intent forecast.
-  // 50/50. Override ?capture_gate=1/0. Cible : lever le 0,35 % capture email.
-  // 2026-06-17 — porte « soit email soit cb » PROMUE EN DÉFAUT (85% gate / 15%
-  // holdout mesurable) : modèle directeur fondateur = capturer le lead (email →
-  // drip de contenu) OU encaisser (carte, on-site). ?capture_gate=0 force le holdout.
-  const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;if(/[?&]capture_gate=0/.test(q))return false;return abVariant("capture_gate",["control","gate"],[.15,.85])==="gate"}catch(_){return false}},[])
+  // A/B `capture_gate` : gate email avant le paywall sur intent forecast.
+  // 2026-06-28 — COUPÉ (défaut OFF). L'audit business a prouvé que ce gate détournait
+  // ~85% de l'intention d'ACHAT vers une collecte d'email → fabrique des leads, pas des
+  // ventes (cohérent avec « 246 emails, 0 vente »). L'intent d'achat va maintenant
+  // DIRECT au paywall. Override QA conservé : ?capture_gate=1 force le gate.
+  const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;return false}catch(_){return false}},[])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
