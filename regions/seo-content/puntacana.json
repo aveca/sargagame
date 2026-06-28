@@ -428,6 +428,332 @@
       ],
       "priority": "0.7",
       "daily": false
+    },
+    {
+      "lang": "en",
+      "slug": "sargassum-macao-beach-today",
+      "title": "Sargassum at Macao Beach Today — Live Status",
+      "desc": "Check sargassum at Macao Beach today with live satellite imagery refreshed 4x daily. See Macao's Beach Score, clean/moderate/avoid status, and 7-day forecast.",
+      "h1": "Sargassum at Macao Beach Today — Live Satellite Status",
+      "intro": "Want to know if Macao Beach has sargassum today? Check the live Beach Score at the top of this page — it reads clean, moderate, or avoid based on the latest satellite pass over Macao, updated today. Macao sits on Punta Cana's exposed Atlantic coast, so its sargassum can shift quickly with wind and current, which is exactly why a same-day reading beats yesterday's photos. We don't guess. The Watcher reads Copernicus and NOAA AFAI imagery four times a day, scores each beach from 0 to 100, and tells you each morning where the water is clean. When clouds block the satellite, we say so instead of inventing a number — honesty over false certainty. Below you'll find when Macao typically clears, how its score compares to nearby breaks, and where to go if today's reading says avoid.",
+      "sections": [
+        {
+          "h2": "Is Macao Beach clean today?",
+          "text": "The live Beach Score at the top of this page answers that for Macao right now. A clean status means the satellite saw little to no sargassum on the most recent pass; moderate means scattered rafts near the shore; avoid means a heavy band the wind has pushed in. Because Macao faces the open Atlantic, conditions there can change between morning and afternoon, so we refresh four times a day rather than once. If today's pass was clouded over, the page will tell you the reading is uncertain instead of showing a confident-looking score we can't back up. Check the timestamp on the score to see exactly how fresh today's Macao reading is before you load the car or book a surf session."
+        },
+        {
+          "h2": "When does sargassum clear at Macao?",
+          "text": "Sargassum at Macao tends to arrive in pulses driven by Atlantic currents, usually heaviest from roughly late spring through summer, then easing as the season turns — but the open-water nature of this coast means no calendar is reliable on its own. A strong offshore wind can clear Macao in a day; a shift onshore can pile weed back overnight. That's why we publish a 7-day per-beach forecast for Macao alongside the live score, so you can see whether the trend is improving or worsening before your trip. We also publish our backtest accuracy so you can judge how much to trust the forecast. The honest answer to 'when will it clear' is: watch the daily reading, because Macao moves faster than any seasonal rule."
+        },
+        {
+          "h2": "Where to go if Macao has sargassum today",
+          "text": "If today's Macao reading says avoid, the live map shows you which nearby beaches are scoring cleaner on the same satellite pass. Sheltered and west-facing spots around Punta Cana, plus calmer bays toward Bayahibe and La Romana, often catch less Atlantic weed than exposed Macao. Open the map, compare Beach Scores side by side, and pick the best clean option for today rather than driving blind. Every score comes from the same imagery on the same day, so you're comparing like with like. The one-time PASS unlocks the full per-beach map, all scores, and the 7-day forecast for Macao and every Punta Cana beach — no subscription, starting at USD 5.99."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Macao Beach have sargassum today?",
+          "a": "Check the live Beach Score at the top of this page. It reads clean, moderate, or avoid from the latest satellite pass over Macao, updated today and refreshed four times daily."
+        },
+        {
+          "q": "How often is the Macao reading updated?",
+          "a": "Four times a day. The Watcher reads Copernicus and NOAA AFAI satellite imagery and re-scores Macao on each pass. The timestamp on the score shows exactly how fresh today's reading is."
+        },
+        {
+          "q": "What if clouds block the satellite over Macao?",
+          "a": "We tell you. When a pass is clouded, the page flags the reading as uncertain instead of showing a confident score we can't verify. Honesty over false precision is the rule."
+        },
+        {
+          "q": "Is Macao worse for sargassum than other Punta Cana beaches?",
+          "a": "Often, because Macao faces the open Atlantic and catches incoming weed first. The live map lets you compare Macao's Beach Score with sheltered beaches scored on the same day."
+        },
+        {
+          "q": "How accurate is the Macao forecast?",
+          "a": "We publish our backtest accuracy openly so you can judge it yourself. The 7-day forecast shows the trend for Macao, but same-day satellite readings remain the most reliable signal."
+        },
+        {
+          "q": "How much does the full map cost?",
+          "a": "A one-time PASS, starting at USD 5.99. It unlocks every Punta Cana Beach Score, the live map, and the 7-day per-beach forecast. No subscription."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "bavaro-vs-cap-cana-sargassum",
+      "title": "Bavaro vs Cap Cana: Which Has Less Sargassum?",
+      "desc": "Bavaro vs Cap Cana for sargassum: compare live Beach Scores from satellite imagery refreshed 4x daily, plus a 7-day forecast for each, before you book.",
+      "h1": "Bavaro vs Cap Cana: Which Has Less Sargassum?",
+      "intro": "Deciding between Bavaro and Cap Cana and want the one with less sargassum? The honest answer is that it changes day to day, so compare today's live Beach Scores for both at the top of this page before you book. Cap Cana's marina-side coves and more sheltered orientation often catch less Atlantic weed than the long, exposed Bavaro strip — but a wind shift can flip that on any given morning. That's why we don't hand you a single fixed ranking. The Watcher reads Copernicus and NOAA AFAI imagery four times a day, scores each stretch from 0 to 100, and shows them side by side on the same satellite pass. When clouds hide a beach, we flag it as uncertain rather than invent a number. Below: how the two coasts typically differ, when each clears, and how to lock in the cleaner choice for your dates.",
+      "sections": [
+        {
+          "h2": "Which has less sargassum, Bavaro or Cap Cana?",
+          "text": "On the same satellite pass, Cap Cana's sheltered marina coves and southern-facing pockets frequently score cleaner than the open Bavaro beach, which runs long and exposed to the Atlantic and tends to catch incoming weed first. But 'frequently' isn't 'always.' Wind and current can stack sargassum into Cap Cana's coves or strip it off Bavaro overnight, so the only reliable comparison is today's reading. The live map shows both Beach Scores from the same imagery on the same day, so you're comparing like with like instead of guessing from old photos. Open the map, look at both numbers, and let the satellite — not a brochure — decide which side is cleaner for your stay."
+        },
+        {
+          "h2": "When does each coast clear?",
+          "text": "Both Bavaro and Cap Cana sit on Punta Cana's Atlantic side, so both follow the broad pattern of heavier sargassum from roughly late spring into summer, easing later in the year. But the two don't always clear together. Cap Cana's pocket coves can flush clean while Bavaro's open strip still holds a band, or the reverse, depending on which way the wind is pushing. We publish a separate 7-day forecast for each so you can see whether one is trending cleaner than the other across your travel dates. We also publish our backtest accuracy, so you can weigh the forecast honestly rather than trust a confident-sounding promise."
+        },
+        {
+          "h2": "How to pick the cleaner side for your dates",
+          "text": "Don't book on reputation — book on today's data and the trend. Open the live map, compare the Bavaro and Cap Cana Beach Scores side by side, then check each 7-day forecast to see which side is heading cleaner around your arrival. If both look heavy, the same map shows nearby alternatives like sheltered bays toward Bayahibe and La Romana scoring on the same pass. Everything is measured from satellite, refreshed four times a day, never guessed. The one-time PASS unlocks both forecasts, all Punta Cana Beach Scores, and the full map — USD 5.99 to start, no subscription — so you can settle the Bavaro-vs-Cap-Cana question with data instead of a coin flip."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is Bavaro or Cap Cana better for avoiding sargassum?",
+          "a": "It varies daily. Cap Cana's sheltered coves often score cleaner than exposed Bavaro, but wind can flip it. Compare today's live Beach Scores for both at the top of this page."
+        },
+        {
+          "q": "Why does Cap Cana usually have less sargassum?",
+          "a": "Its marina coves and more sheltered orientation tend to catch less open-Atlantic weed than Bavaro's long, exposed strip. 'Tend to' isn't a guarantee, so check today's satellite reading."
+        },
+        {
+          "q": "Can I compare both beaches on the same day?",
+          "a": "Yes. The live map scores Bavaro and Cap Cana from the same satellite pass, so you compare like with like rather than guessing from old or mismatched photos."
+        },
+        {
+          "q": "Do you have a forecast for each side?",
+          "a": "Yes, a separate 7-day forecast for Bavaro and for Cap Cana, refreshed four times a day. We also publish our backtest accuracy so you can judge the forecast honestly."
+        },
+        {
+          "q": "What if both are bad on my dates?",
+          "a": "The same map shows nearby alternatives — including sheltered bays toward Bayahibe and La Romana — scored on the same satellite pass, so you can find a cleaner option fast."
+        },
+        {
+          "q": "What does it cost to compare them?",
+          "a": "A one-time PASS from USD 5.99 unlocks both forecasts, every Punta Cana Beach Score, and the live map. No subscription."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "en",
+      "slug": "sargassum-bayahibe-la-romana-today",
+      "title": "Sargassum at Bayahibe & La Romana Today",
+      "desc": "Check sargassum at Bayahibe and La Romana today with live satellite imagery refreshed 4x daily. See each Beach Score, status, and 7-day forecast before you go.",
+      "h1": "Sargassum at Bayahibe & La Romana Today — Live Map",
+      "intro": "Wondering if Bayahibe or La Romana has sargassum today? Check the live Beach Scores at the top of this page — each reads clean, moderate, or avoid from the latest satellite pass, updated today. Bayahibe and La Romana sit on the calmer southern Caribbean coast, more sheltered from the open Atlantic than Punta Cana's east-facing beaches, which is why they're often a sargassum-lighter alternative — but 'often' is not 'always,' so we give you the same-day reading instead of a promise. The Watcher reads Copernicus and NOAA AFAI imagery four times a day, scores each beach from 0 to 100, and tells you each morning where the water is clean. When clouds block a pass, we flag it as uncertain rather than invent a number. Below: which spots tend to stay clearest, when sargassum reaches this coast, and how to confirm before you travel down.",
+      "sections": [
+        {
+          "h2": "Are Bayahibe and La Romana clean today?",
+          "text": "The live Beach Scores at the top of this page answer that for both right now. Because this coast faces the calmer southern Caribbean rather than the open Atlantic, Bayahibe and La Romana frequently score cleaner than Macao or Bavaro on the same satellite pass — which is what makes them a popular sargassum-light escape. Still, currents can carry weed around the coast, so we don't assume they're clean; we measure. Each score carries a timestamp showing how fresh today's reading is, refreshed four times a day. If a pass was clouded over, the page says the reading is uncertain instead of showing a confident number we can't stand behind. Check both scores before you commit to the drive south."
+        },
+        {
+          "h2": "When does sargassum reach this coast?",
+          "text": "Bayahibe and La Romana sit on the sheltered south side, so they tend to see less sargassum overall and often stay clearer through the heavier late-spring-to-summer window than the exposed east coast. But this coast isn't immune — strong currents can still push rafts in, usually lighter and less persistent than at Macao. We publish a 7-day forecast for each beach so you can see whether the trend is holding clean or building across your dates, and we publish our backtest accuracy so you can weigh that forecast honestly. The dependable move is to watch the daily satellite reading: it captures what's actually offshore today, which no seasonal rule for this coast can reliably predict on its own."
+        },
+        {
+          "h2": "Using Bayahibe and La Romana as a clean-water backup",
+          "text": "If Punta Cana's east-coast beaches are scoring heavy, Bayahibe and La Romana are often the smart pivot — the live map lets you compare their Beach Scores against Macao, Bavaro, and Cap Cana on the same day, so you can pick the cleanest water available without guessing. From here you can also reach calm dive and boat spots and nearby islands that the same map scores too. Everything is measured from satellite, four times a day, never invented. The one-time PASS unlocks every Beach Score, the full live map, and the 7-day forecast for Bayahibe, La Romana, and all of Punta Cana — USD 5.99 to start, no subscription — so your clean-water backup is always one glance away."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Bayahibe have sargassum today?",
+          "a": "Check the live Beach Score at the top of this page. It reads clean, moderate, or avoid from the latest satellite pass over Bayahibe, updated today and refreshed four times daily."
+        },
+        {
+          "q": "Is La Romana usually cleaner than Punta Cana for sargassum?",
+          "a": "Often, yes — it sits on the sheltered southern Caribbean coast rather than the open Atlantic, so it tends to catch less weed. But we measure each day rather than assume it."
+        },
+        {
+          "q": "How fresh is the Bayahibe and La Romana reading?",
+          "a": "Updated four times a day from Copernicus and NOAA AFAI satellite imagery. Each Beach Score shows a timestamp so you know exactly how current today's reading is."
+        },
+        {
+          "q": "What if the satellite is clouded over?",
+          "a": "We flag the reading as uncertain rather than show a confident score we can't verify. Honesty over false precision is the rule for every beach, including this coast."
+        },
+        {
+          "q": "Can I compare these with Punta Cana's east-coast beaches?",
+          "a": "Yes. The live map scores Bayahibe and La Romana alongside Macao, Bavaro, and Cap Cana on the same satellite pass, so you can pick the cleanest water on the day."
+        },
+        {
+          "q": "What does the full map cost?",
+          "a": "A one-time PASS from USD 5.99 unlocks every Beach Score, the live map, and the 7-day forecast for Bayahibe, La Romana, and all of Punta Cana. No subscription."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "best-beaches-punta-cana-without-seaweed",
+      "title": "Best Punta Cana Beaches Without Seaweed",
+      "desc": "Find the cleanest Punta Cana beaches without seaweed today, ranked by live satellite data refreshed 4x daily. See each beach's status before you go.",
+      "h1": "Best Beaches in Punta Cana Without Seaweed",
+      "intro": "The cleanest Punta Cana beaches today are the ones our satellite map shows with a high Beach Score and a \"clean\" status right now -- which is why we don't hand you a fixed list. Seaweed (sargassum) drifts with wind and current, so a beach that's spotless this morning can change by the weekend. Instead of guessing, we watch the coastline with Copernicus and NOAA satellite imagery refreshed four times a day, score each beach from 0 to 100, and tell you which stretch of sand is clear before you pack the cooler. The map is measured, not guessed. When clouds block the satellite, we say so rather than invent a number. Below we explain which beaches tend to stay cleaner, how to read the live status, and where to head when your first pick is covered.",
+      "sections": [
+        {
+          "h2": "Which Punta Cana beaches stay cleanest",
+          "text": "Seaweed in Punta Cana isn't evenly spread. Exposed, east-facing stretches catch more drifting sargassum, while sheltered coves and hotel beaches with active raking often look clearer on the same day. But \"usually cleaner\" is not the same as \"clean today.\" That's the gap our live map closes. Open the Punta Cana beach list and each spot carries a Beach Score and a status -- clean, moderate, or avoid -- built from satellite imagery, not last season's reputation. Filter for the highest scores and you're looking at the genuinely clearest sand right now. Check it the morning you go, because conditions shift with the wind. The honest version: there is no permanent \"no-seaweed beach,\" only the beach that reads clean today."
+        },
+        {
+          "h2": "When the seaweed clears",
+          "text": "Sargassum arrives in pulses, not a steady tide. A beach can sit at \"avoid\" for a few days, then clear quickly once the wind shifts offshore and the current carries the mats away. That's exactly why a single snapshot misleads travelers. Our 7-day per-beach forecast projects how each stretch is trending -- improving, holding, or worsening -- so you can time a beach day or pick a different spot. We publish our backtest accuracy so you can judge how much weight to give the outlook, and we flag low-confidence days when cloud cover thins the satellite signal. We'd rather tell you \"we can't see clearly today\" than guess. Use the forecast to plan, then confirm with the live status before you leave."
+        },
+        {
+          "h2": "Where to go instead",
+          "text": "If your first-choice beach reads \"avoid\" this morning, don't write off the trip -- pivot. The live map lets you compare nearby beaches side by side, so when one east-facing stretch is loaded with sargassum, a more sheltered cove a short drive away may still score clean. Sort the Punta Cana list by Beach Score, pick the highest clean status within your range, and you've got a backup before you've left the hotel. This is the everyday job of The Watcher: a satellite watching the sea while you sleep, telling you each morning where the water is clear. One-time PASS unlocks every beach score and the full 7-day forecast -- no subscription, just the answer when you need it."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Which Punta Cana beach has the least seaweed?",
+          "a": "It changes day to day. Rather than name one beach, check the live map -- the spot with the highest Beach Score and a \"clean\" status today is your least-seaweed option. We update scores from satellite imagery four times daily."
+        },
+        {
+          "q": "Is there any Punta Cana beach guaranteed to be seaweed-free?",
+          "a": "No, and we won't pretend otherwise. Sargassum drifts with wind and current, so no beach is permanently clear. We show you which beaches read clean today and how each is trending over the next 7 days."
+        },
+        {
+          "q": "How often is the beach data updated?",
+          "a": "We refresh Copernicus and NOAA satellite imagery four times a day and recalculate each beach's score and status. When clouds block the view, we mark the day low-confidence instead of inventing a reading."
+        },
+        {
+          "q": "Can I check a beach before I travel?",
+          "a": "Yes. Each beach carries a 7-day forecast showing whether it's improving or worsening, so you can plan ahead. Confirm with the live status the morning you go, since conditions can shift quickly."
+        },
+        {
+          "q": "How much does it cost to see all the beach scores?",
+          "a": "A one-time PASS unlocks every Punta Cana beach score and the full forecast, starting at USD 5.99. No subscription -- you pay once for the answer."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "en",
+      "slug": "does-bavaro-beach-have-sargassum",
+      "title": "Does Bavaro Beach Have Sargassum? Live Answer",
+      "desc": "Does Bavaro Beach have sargassum right now? Check the live satellite Beach Score and clean/moderate/avoid status, updated 4x daily before you go.",
+      "h1": "Does Bavaro Beach Have Sargassum? Live Answer",
+      "intro": "Bavaro Beach can have sargassum -- and whether it does right now is the only answer worth giving, which is exactly what our live map shows. As an east-facing Punta Cana beach, Bavaro sits in the path of drifting sargassum that arrives in pulses through the season, so the honest answer is \"sometimes, depending on the day.\" Instead of telling you what Bavaro looked like last week, we watch it with Copernicus and NOAA satellite imagery refreshed four times a day, turn that into a Beach Score from 0 to 100, and post a clear status: clean, moderate, or avoid. It's measured, not guessed. When cloud cover blocks the satellite, we flag the reading as low-confidence rather than invent a number. Below: how to read Bavaro's live status, when it tends to clear, and where to go if today's reading says avoid.",
+      "sections": [
+        {
+          "h2": "Bavaro Beach status today",
+          "text": "The fastest way to know if Bavaro has sargassum is to open its live page and read the status -- clean, moderate, or avoid -- alongside today's Beach Score. That score comes from satellite imagery processed four times a day, not from a guess or an old photo. A high score means clear water and sand; a low score means sargassum is likely present. Because Bavaro faces east into the open Atlantic, its reading can swing more than sheltered coves nearby, so we check it every cycle. If the latest pass was clouded over, we don't fake confidence -- we mark the day as uncertain and tell you the satellite couldn't see clearly. That transparency is the point: you get the measurement, including when the measurement is weak."
+        },
+        {
+          "h2": "When does Bavaro clear up?",
+          "text": "Sargassum on Bavaro comes and goes with the wind and current rather than sitting in one place. A few days of onshore wind can pile it up; an offshore shift can carry it away within a day or two. That's why we publish a 7-day forecast for Bavaro specifically -- so you can see whether it's trending toward clean or worsening, and time your beach day accordingly. We also publish our backtest accuracy so you can judge how much to trust the outlook, and we lower the confidence flag on cloudy days. Use the forecast to plan the week, then confirm Bavaro's live status the morning you head out, because a multi-day projection is a plan, not a promise."
+        },
+        {
+          "h2": "If Bavaro reads \"avoid\" today",
+          "text": "If today's status for Bavaro is \"avoid,\" you still have good options nearby. The live map lets you compare neighboring Punta Cana beaches by Beach Score, so you can find a sheltered stretch that reads clean while Bavaro is loaded. Sort the list, pick the highest clean status within reach, and you've got a backup before leaving the hotel. This is what The Watcher does each morning: a satellite that watches the sea while you sleep and tells you where the water is clear. A one-time PASS unlocks Bavaro's full score, its 7-day forecast, and every other Punta Cana beach -- no subscription, just the live answer, from USD 5.99."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Bavaro Beach have sargassum right now?",
+          "a": "Check its live status on our map -- clean, moderate, or avoid -- updated from satellite imagery four times a day. Bavaro faces east, so it can collect sargassum in pulses, but the only reliable answer is today's reading."
+        },
+        {
+          "q": "Is Bavaro Beach always full of seaweed?",
+          "a": "No. Sargassum arrives and clears with wind and current, so Bavaro is clean on many days and covered on others. We track it every cycle so you see the current state, not a worst-case rumor."
+        },
+        {
+          "q": "How accurate is the Bavaro sargassum reading?",
+          "a": "It's built from Copernicus and NOAA satellite data, refreshed four times daily, and we publish our backtest accuracy. On cloudy days we flag the reading as low-confidence instead of guessing."
+        },
+        {
+          "q": "Can I see if Bavaro will be clear later this week?",
+          "a": "Yes. Bavaro has its own 7-day forecast showing whether it's improving or worsening. Treat it as a plan and confirm with the live status the morning you go."
+        },
+        {
+          "q": "Where can I go if Bavaro has sargassum today?",
+          "a": "Compare nearby beaches on the live map and pick the highest Beach Score with a clean status. A one-time PASS from USD 5.99 unlocks every Punta Cana beach reading."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "sargassum-uvero-alto-today",
+      "title": "Sargassum at Uvero Alto Today — Live Satellite Map",
+      "desc": "Check today's sargassum at Uvero Alto Beach with a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, refreshed 4x a day.",
+      "h1": "Sargassum at Uvero Alto Beach Today — Live Satellite Map",
+      "intro": "Want to know if Uvero Alto has sargassum today? Open the live map for Uvero Alto's Beach Score and current status (clean, moderate, or avoid) — measured this morning from satellite, not guessed from last week. Uvero Alto sits on Punta Cana's quieter north strip, and because wind and currents shift overnight, this beach can read very differently from Bavaro or Macao just down the coast. That's why we score Uvero Alto on its own. The Watcher is a satellite that watches the sea while you sleep and tells you each morning where the water is clean, using Copernicus and NOAA AFAI imagery refreshed four times a day. You get a per-beach Beach Score (0-100), a plain status, and a 7-day forecast for Uvero Alto. When clouds block the view, we say so — we'd rather tell you we can't confirm today than invent a number.",
+      "sections": [
+        {
+          "h2": "How to read today's Uvero Alto Beach Score",
+          "text": "The Beach Score runs 0 to 100 and folds into a simple status. Clean means the satellite sees little to no sargassum mat near Uvero Alto's shoreline right now — a good morning for swimming and photos. Moderate means scattered weed is showing up; conditions can change within hours, so check again before you head down. Avoid means significant sargassum is detected and you may prefer another beach today. The score is recomputed each time fresh imagery lands, four times a day. If cloud cover hides Uvero Alto in the latest pass, we flag low confidence rather than guess — honesty over a fake green light."
+        },
+        {
+          "h2": "Why Uvero Alto can differ from the rest of Punta Cana",
+          "text": "Uvero Alto faces a more open, northern stretch of coast than the central Bavaro tourist core. The same morning, prevailing easterlies and local currents can pile sargassum onto one strip while leaving the next relatively clear. A regional Punta Cana average won't tell you what's actually on your sand at Uvero Alto. That's the whole point of a per-beach score: we process the satellite tile over this specific shoreline and report what's there now. Pair today's status with the 7-day Uvero Alto forecast to pick the best window for a swim, and compare nearby beaches if Uvero Alto reads heavy on a given day."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum at Uvero Alto today?",
+          "a": "Open the live map for Uvero Alto's current Beach Score and status (clean, moderate, or avoid). It's recomputed from satellite imagery four times a day, so it reflects this morning — not last week."
+        },
+        {
+          "q": "How often does the Uvero Alto data update?",
+          "a": "Four times a day, each time new Copernicus/NOAA AFAI imagery arrives. If clouds block the satellite over Uvero Alto, we flag lower confidence instead of inventing a status."
+        },
+        {
+          "q": "Does Uvero Alto get less sargassum than Bavaro?",
+          "a": "It can differ either way on any given day because wind and currents shift overnight. We don't assume — we score Uvero Alto on its own satellite tile so you see its real status, not a regional average."
+        },
+        {
+          "q": "Can I see a sargassum forecast for Uvero Alto?",
+          "a": "Yes. Each beach, including Uvero Alto, has a 7-day forecast to help you plan. We also publish our backtested accuracy so you know how much to trust the outlook."
+        },
+        {
+          "q": "What does the Uvero Alto Beach Score mean?",
+          "a": "It's a 0-100 measure of detected sargassum near the shoreline, mapped to clean, moderate, or avoid. Higher conditions mean more weed. It updates with each fresh satellite pass."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "sargassum-juanillo-beach-today",
+      "title": "Sargassum at Juanillo Beach (Cap Cana) Today — Map",
+      "desc": "Check today's sargassum at Juanillo Beach, Cap Cana, on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, updated 4x a day.",
+      "h1": "Sargassum at Juanillo Beach (Cap Cana) Today — Live Map",
+      "intro": "Wondering if Juanillo Beach in Cap Cana has sargassum today? Open the live map for Juanillo's Beach Score and current status — clean, moderate, or avoid — measured this morning from satellite, not guessed from a seasonal average. Juanillo is Cap Cana's premium, partly sheltered cove, and that geometry means it often reads differently from the open beaches up the coast. So we score Juanillo on its own. The Watcher is a satellite that watches the sea while you sleep and tells you each morning where the water is clean, using Copernicus and NOAA AFAI imagery refreshed four times a day. You get a per-beach Beach Score (0-100), a plain status, and a 7-day forecast for Juanillo. When clouds hide the cove in the latest pass, we tell you straight — we'd rather admit we can't confirm today than publish a number we didn't measure.",
+      "sections": [
+        {
+          "h2": "Today's Juanillo Beach Score, explained",
+          "text": "The Beach Score runs 0 to 100 and rolls up into a simple status. Clean means the satellite detects little to no sargassum along Juanillo's shoreline right now — ideal for that calm Cap Cana swim or a clear-water photo. Moderate means some weed is appearing and conditions may shift within hours, so re-check before you walk down. Avoid means notable sargassum is detected and another beach may serve you better today. We recompute the score every time fresh imagery lands, four times a day. If cloud cover obscures Juanillo in the newest pass, we mark lower confidence rather than guess — a measured maybe beats a fake green light."
+        },
+        {
+          "h2": "Why Cap Cana's Juanillo behaves differently",
+          "text": "Juanillo sits in a more protected pocket of Cap Cana than the long open strands of Bavaro and Macao. Its orientation and the marina breakwaters can change how sargassum drifts in, so the same morning it may stay calm while exposed beaches load up — or occasionally the reverse. A Punta Cana regional average won't capture that. That's why we read the satellite tile over Juanillo specifically and report what's actually there now. Use today's status alongside the 7-day Juanillo forecast to choose the best window, and compare nearby Cap Cana beaches if Juanillo happens to read heavy on a given day."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum at Juanillo Beach today?",
+          "a": "Open the live map for Juanillo's current Beach Score and status (clean, moderate, or avoid). It's recomputed from satellite imagery four times a day, so it reflects today, not a seasonal guess."
+        },
+        {
+          "q": "How current is the Juanillo Beach data?",
+          "a": "It refreshes four times a day as new Copernicus/NOAA AFAI imagery arrives. If clouds block the satellite over Cap Cana, we flag lower confidence instead of inventing a status."
+        },
+        {
+          "q": "Does Juanillo get less sargassum because it's sheltered?",
+          "a": "Its protected geometry can help on many days, but currents shift, so we never assume. We score Juanillo on its own satellite tile so you see its real status today, not a regional average."
+        },
+        {
+          "q": "Can I see a sargassum forecast for Juanillo?",
+          "a": "Yes. Juanillo has a 7-day forecast to help you plan your Cap Cana day. We also publish our backtested accuracy so you know how far to trust the outlook."
+        },
+        {
+          "q": "What does the Juanillo Beach Score mean?",
+          "a": "It's a 0-100 measure of detected sargassum near the shoreline, mapped to clean, moderate, or avoid. More weed means a higher reading. It updates with each fresh satellite pass."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
     }
   ]
 }

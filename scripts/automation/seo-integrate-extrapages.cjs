@@ -51,13 +51,19 @@ const specs = JSON.parse(readFileSync(resolve(PAGES_PATH), 'utf8')).filter(p => 
 const reserved = new Set()
 for (const r of Object.values(region.routes || {})) if (typeof r === 'string') reserved.add(r)
 ;['methodology', 'metodologia', 'semaforo-del-sargazo'].forEach(s => reserved.add(s))
+// Existing extraPages (already shipped in prior waves) — keyed by file → kept and
+// merged with, NOT overwritten, so additive waves never wipe live pages.
+const existingByFile = {}
 for (const f of Object.values(LANG_FILES)) {
   try {
     const c = JSON.parse(readFileSync(cpath(f), 'utf8'))
     for (const v of Object.values(c.pages || {})) if (v && v.slug) reserved.add(v.slug)
     if (c.press && c.press.slug) reserved.add(c.press.slug)
-  } catch { /* file may not exist */ }
+    existingByFile[f] = Array.isArray(c.extraPages) ? c.extraPages : []
+  } catch { existingByFile[f] = [] }
 }
+// A slug already present as an extraPage is "taken" — skip the new duplicate.
+const existingSlugs = new Set(Object.values(existingByFile).flat().map(p => p && p.slug).filter(Boolean))
 
 const isDaily = p => /today|right[- ]?now|live|en direct|en-direct|hoy|aujourd|ahora|en vivo/i.test(`${p.slug} ${p.title} ${p.h1}`)
 
@@ -76,6 +82,7 @@ for (const p of specs) {
   if (!slug || !p.title || !p.intro) continue
   if (!LANG_FILES[p.lang]) { console.log(`  drop ${slug} — lang ${p.lang} not emitted by ${SITE}`); continue }
   if (reserved.has(slug)) { console.log(`  drop ${slug} — collides with reserved hub/route slug`); continue }
+  if (existingSlugs.has(slug)) { console.log(`  skip ${slug} — already shipped in a prior wave`); continue }
   if (skipSet.has(slug)) { console.log(`  drop ${slug} — curated SKIP (cannibalizes existing page)`); continue }
   if (seen.has(slug)) { console.log(`  drop ${slug} — duplicate`); continue }
   seen.add(slug)
@@ -95,8 +102,10 @@ for (const [lang, file] of Object.entries(LANG_FILES)) {
   const fp = cpath(file)
   let c
   try { c = JSON.parse(readFileSync(fp, 'utf8')) } catch { console.log(`  skip ${file} — not found`); continue }
-  c.extraPages = langPages
-  console.log(`  ${file} (${lang}): ${langPages.length} pages — ${langPages.map(p => p.slug).join(', ')}`)
+  // MERGE additif : on garde les pages déjà livrées et on ajoute les nouvelles.
+  const prev = Array.isArray(c.extraPages) ? c.extraPages : []
+  c.extraPages = [...prev, ...langPages]
+  console.log(`  ${file} (${lang}): +${langPages.length} new → ${c.extraPages.length} total — ${langPages.map(p => p.slug).join(', ')}`)
   if (!DRY) { writeFileSync(fp, JSON.stringify(c, null, 2) + '\n'); console.log(`    → wrote ${file}`) }
 }
 if (DRY) console.log('  (dry-run, not written)')

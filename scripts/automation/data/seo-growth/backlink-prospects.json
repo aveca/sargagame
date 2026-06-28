@@ -182,6 +182,307 @@
         "contactHint": "Service communication Collectivité Territoriale de Martinique / GIP Sargasses ; contact via le portail CTM.",
         "authority": "high",
         "angle": "Proposer la carte comme outil grand public complémentaire à leurs bilans (eux = tonnage ramassé, nous = état par plage en direct)."
+      },
+      {
+        "name": "Club Med Buccaneer's Creek (Les Boucaniers, Sainte-Anne)",
+        "type": "Resort all-inclusive (Martinique)",
+        "url": "https://www.clubmed.fr/r/les-boucaniers/y",
+        "whyRelevant": "Resort tout-compris sur une péninsule à Sainte-Anne, l'une des plus belles plages de Martinique mais zone Sud exposée aux sargasses. Activités nautiques 100% incluses : la qualité de la plage est centrale à leur produit.",
+        "contactHint": "Service presse/RP Club Med France (relations.presse via clubmed.fr/presse) ; viser l'équipe communication/RSE plutôt que le resort. LinkedIn Club Med pour décideurs marketing.",
+        "authority": "high",
+        "angle": "Difficile d'obtenir un embed sur clubmed.com (corporate), donc cibler le press/data kit + une citation dans un communiqué RSE 'surveillance des sargasses'; alternativement un guest data-story sur un blog partenaire Club Med."
+      },
+      {
+        "name": "Hôtel Bakoua (Pointe du Bout, Les Trois-Îlets) & Le Beach Club Bakoua",
+        "type": "Hôtel 4 étoiles bord de mer + beach club (Martinique)",
+        "url": "https://hotel-bakoua.fr/",
+        "whyRelevant": "Icône balnéaire de Trois-Îlets avec plage privée et beach club ; face à la baie de Fort-de-France. Les clients viennent pour la plage et le beach club — connaître les conditions du jour est un argument concierge fort.",
+        "contactHint": "Formulaire/email contact sur hotel-bakoua.fr (souvent contact@hotel-bakoua.fr) ; viser direction/communication. DM Instagram/Facebook 'Hôtel Bakoua'.",
+        "authority": "medium",
+        "angle": "Intégrer le widget sur la page du Beach Club ('conditions de plage du jour') et citer le score quotidien d'Anse Mitan/Pointe du Bout ; angle concierge."
+      },
+      {
+        "name": "Ti Sable Beach Club (Grande Anse, Les Anses-d'Arlet)",
+        "type": "Beach club / restaurant de plage (Martinique)",
+        "url": "https://www.tisablemartinique.com/",
+        "whyRelevant": "Beach club emblématique sur la plage de Grande Anse aux Anses-d'Arlet (côte Caraïbe). Leurs clients viennent pour transats + baignade : afficher l'état de la plage du jour augmente la fréquentation et réduit les déceptions.",
+        "contactHint": "Email/téléphone sur tisablemartinique.com ('contact' / réservations) ; DM Instagram '@tisable_martinique' très actif (canal le plus rapide pour un beach club).",
+        "authority": "medium",
+        "angle": "Embarquer le widget sur leur page d'accueil ('plage du jour : Grande Anse claire') et partage du score quotidien en story ; idéal pour un partenariat de visibilité croisée."
+      },
+      {
+        "name": "Batelière Beach Club / BBC (Schœlcher)",
+        "type": "Beach club avec plage privée (Martinique)",
+        "url": "https://www.bellemartinique.com/tourisme/ou-manger/bars-clubs-pubs/bateliere-beach-club/",
+        "whyRelevant": "Beach club face aux Caraïbes à Schœlcher (côte sous le vent, peu touchée). Mettre en avant une plage protégée et claire via une donnée tierce crédible est un argument marketing direct pour attirer les clients du jour.",
+        "contactHint": "Coordonnées via la fiche BelleMartinique et leurs réseaux ; chercher le compte Instagram/Facebook officiel 'Batelière Beach Club' pour un DM. (Pas de site .com officiel confirmé — passer par les réseaux.)",
+        "authority": "low",
+        "angle": "Partenariat social + lien depuis leur bio/site vers la carte ; angle 'notre plage est claire, vérifiez-le en direct'. Si pas de site propre, viser un backlink depuis leur page Linktree/réseaux."
+      },
+      {
+        "name": "AZ Martinique (Comité Martiniquais du Tourisme — plateforme officielle)",
+        "type": "Office de tourisme / DMO officiel (Martinique)",
+        "url": "https://azmartinique.com/",
+        "whyRelevant": "Plateforme officielle du tourisme martiniquais référençant hôtels, plages et activités. Forte autorité ; ses visiteurs cherchent justement l'état des plages, une info que la carte live fournit en continu.",
+        "contactHint": "Espace presse/contact sur azmartinique.com (Comité Martiniquais du Tourisme) ; viser le service presse/digital. Approche partenariat institutionnel, ressource gratuite pour leurs visiteurs.",
+        "authority": "high",
+        "angle": "Référencer la carte/rapport hebdo comme ressource pratique 'sargasses & plages' depuis leurs pages plages ; fournir le press kit comme source méthodologique citable par leurs contenus et les journalistes."
+      },
+      {
+        "name": "RCI — Radio Caraïbes International (Martinique & Guadeloupe)",
+        "type": "Commercial radio + news website (regional, #1 audience Antilles)",
+        "url": "https://rci.fm/",
+        "whyRelevant": "Première radio des Antilles françaises, avec un site d'info très actif sur les sargasses (séries d'articles environnement/société juin 2026 : Vauclin, Diamant, Saint-Pierre). Forte demande d'info pratique côtière de leur audience.",
+        "contactHint": "Guadeloupe : secretariat971@rcigroup.fr / +590 590 839 696 ; Martinique : contact@rcigroup.fr / +596 696 28 44 92. Proposer une chronique régulière à l'antenne.",
+        "authority": "high",
+        "angle": "Devenir la source citée de leurs papiers sargasses (lien vers la carte live + rapport hebdo) ; proposer un point hebdo à l'antenne « état des plages » basé sur le Beach Score, et l'embed du widget sur les pages infos rci.fm.",
+        "name_dup": ""
+      },
+      {
+        "name": "France-Antilles (éditions Martinique & Guadeloupe)",
+        "type": "Daily regional newspaper (print + web)",
+        "url": "https://www.franceantilles.fr/",
+        "whyRelevant": "Quotidien historique des Antilles (fondé 1964), traite météo et infos pratiques régionales. Lectorat large ayant besoin d'un repère fiable sur l'état des plages pendant la saison sargasses.",
+        "contactHint": "Rédaction : redaction@franceantilles.fr ; Martinique 0596 72 88 00 ; Guadeloupe 05 90 25 18 88. Pitch FR value-first à l'éditeur web.",
+        "authority": "high",
+        "angle": "Citation du rapport hebdo par plage dans leurs articles + lien vers la carte live ; proposer une data-story invitée (« quelles plages échappent aux sargasses cette semaine ») et l'embed du widget sur leur rubrique pratique/météo.",
+        "name_dup": ""
+      },
+      {
+        "name": "Météo-France Antilles-Guyane (desks Martinique & Guadeloupe)",
+        "type": "Official weather service + sargassum forecast desk",
+        "url": "https://meteofrance.fr/missions/contribuer-securite/antilles-guyane-le-suivi-des-sargasses",
+        "whyRelevant": "Producteur officiel du bulletin sargasses (modèle MOTHY + satellite OLCI-Sentinel 3). Leurs pages sargasses (meteofrance.mq, meteofrance.gp) sont consultées massivement par le public local et touristique.",
+        "contactHint": "Contact presse Météo-France via service communication national ; pages dédiées meteofrance.mq/fr/sargasses et meteofrance.gp/fr/sargasses. Approche partenariat/complémentarité de données (pas demande de lien brute).",
+        "authority": "high",
+        "angle": "Positionner la carte live et le Beach Score comme complément granulaire (par plage) de leur prévision d'échouement à 4 jours ; partager la méthodo/backtest pour éventuelle mention ou collaboration data. Crédibilité Copernicus/NOAA AFAI à mettre en avant.",
+        "name_dup": ""
+      },
+      {
+        "name": "France 24 — émission Outre-Mer",
+        "type": "International broadcaster (Outre-mer desk)",
+        "url": "https://www.france24.com/fr/emissions/outre-mer/",
+        "whyRelevant": "Diffuseur international avec une émission Outre-Mer ayant couvert l'accumulation de sargasses aux Antilles (juin 2026). Forte autorité et reach international/diaspora.",
+        "contactHint": "Contact presse/rédaction Outre-Mer via france24.com (formulaire) ; cibler les journalistes ayant signé le sujet sargasses. Approche source data + visuels carte.",
+        "authority": "high",
+        "angle": "Fournir la carte live + visuels et le rapport hebdo comme matériau et source citable pour leurs sujets sargasses ; proposer une interview data / mention de la méthodo (backtest d'exactitude) comme angle crédibilité.",
+        "name_dup": ""
+      },
+      {
+        "name": "DEAL Martinique (développement-durable.gouv.fr)",
+        "type": "Government environmental service / beach-conditions page",
+        "url": "https://www.martinique.developpement-durable.gouv.fr/sargasses-a1174.html",
+        "whyRelevant": "Service de l'État qui héberge le dispositif officiel de prévision des échouages de sargasses : leur page est consultée par citoyens, communes et médias. Un complément carte satellite live par plage enrichit une ressource déjà axée conditions littorales.",
+        "contactHint": "Page contact du site DEAL Martinique ; courrier au service Risques/Mer-Littoral. Email institutionnel via standard préfecture (.gouv.fr). Approche institutionnelle écrite, value-first.",
+        "authority": "high",
+        "angle": "Positionner la carte comme ressource grand public complémentaire au bulletin Météo-France ; partager le data kit (méthodo Copernicus/NOAA AFAI + backtest) en transparence pour un éventuel lien 'voir aussi'."
+      },
+      {
+        "name": "DEAL Guadeloupe (guadeloupe.developpement-durable.gouv.fr)",
+        "type": "Government environmental service / beach-conditions page",
+        "url": "https://www.guadeloupe.developpement-durable.gouv.fr/prevision-des-echouages-r1256.html",
+        "whyRelevant": "Page officielle 'Prévision des échouages' de l'État en Guadeloupe : audience d'élus locaux, gestionnaires de plages et habitants cherchant l'état des côtes. Une carte live par plage est un prolongement naturel de cette section.",
+        "contactHint": "Formulaire contact du site DEAL Guadeloupe ; service Mer/Littoral. Email .gouv.fr via standard. Courrier institutionnel value-first.",
+        "authority": "high",
+        "angle": "Offrir le widget/lien comme outil grand public gratuit cité depuis la page prévision ; press kit avec accuracy backtest pour crédibiliser la source."
+      },
+      {
+        "name": "Services de l'État en Martinique — Dossier Sargasses (martinique.gouv.fr)",
+        "type": "Government / prefecture environmental beach-conditions page",
+        "url": "https://www.martinique.gouv.fr/Politiques-publiques/Environnement-sante-publique/Sargasses",
+        "whyRelevant": "Page préfectorale de référence sur les sargasses (incluant sous-préfecture du Marin, zone très touchée). Forte autorité, citée par la presse locale ; son audience veut savoir où et quand les algues arrivent.",
+        "contactHint": "Service communication de la préfecture (page contact martinique.gouv.fr) ; pref-communication@martinique.gouv.fr (pattern préfecture courant — à confirmer). Démarche écrite institutionnelle.",
+        "authority": "high",
+        "angle": "Proposer un lien 'ressource carte temps réel' dans la liste des liens utiles du dossier sargasses ; fournir le data kit pour vérification méthodo."
+      },
+      {
+        "name": "Météo-France Guadeloupe — Bulletin sargasses (meteofrance.gp)",
+        "type": "Government meteorological service / forecast beach-conditions page",
+        "url": "https://meteofrance.gp/fr/sargasses",
+        "whyRelevant": "Équivalent guadeloupéen (couvre aussi les Îles du Nord) du bulletin officiel d'échouement, audience résidents + visiteurs très ciblée 'quelle plage aujourd'hui'.",
+        "contactHint": "Même filière que MQ : presse@meteo.fr + DIRAG (Direction interrégionale Antilles-Guyane). Page contact meteofrance.gp.",
+        "authority": "high",
+        "angle": "Mise en avant croisée : carte satellite live citable en complément du bulletin ; data kit méthodo Copernicus/NOAA AFAI fourni pour validation."
+      },
+      {
+        "name": "ARS Martinique — Point journalier H2S sargasses (martinique.ars.sante.fr)",
+        "type": "Government health agency / sargassum monitoring page",
+        "url": "https://www.martinique.ars.sante.fr/point-journalier-sur-les-mesures-dhydrogene-sulfure",
+        "whyRelevant": "Agence régionale de santé publiant le suivi quotidien du H2S lié à la décomposition des sargasses : audience santé/riverains qui veut anticiper où les algues s'échouent (la donnée amont de leurs mesures d'air).",
+        "contactHint": "Service communication ARS Martinique (page contact / ars-martinique-communication@ars.sante.fr — pattern ARS). Démarche écrite, angle santé publique value-first.",
+        "authority": "high",
+        "angle": "Proposer la carte comme outil amont 'localisation des échouages' complétant le suivi H2S ; lien 'pour suivre les arrivages par plage' depuis leur page."
+      },
+      {
+        "name": "Madininair — page Algues Sargasses (madininair.fr)",
+        "type": "Air-quality monitoring association (agréée) / sargassum page",
+        "url": "https://www.madininair.fr/Les-algues-Sargasses",
+        "whyRelevant": "Observatoire agréé de la qualité de l'air en Martinique, partenaire technique de l'ARS sur les capteurs sargasses. Page dédiée aux algues consultée par public soucieux des émanations — la carte live des arrivages est l'amont logique.",
+        "contactHint": "Page contact madininair.fr ; contact@madininair.fr (pattern association). DM réseaux sociaux Madininair. Angle scientifique/data.",
+        "authority": "medium",
+        "angle": "Échange de ressources data : citer leur suivi H2S et leur proposer en retour un lien vers la carte d'échouages ; partager méthodo/backtest pour crédibilité scientifique."
+      },
+      {
+        "name": "Office de Tourisme du Marin (sud Martinique)",
+        "type": "Municipal tourism office (zone très exposée sargasses)",
+        "url": "https://otmarin.wixsite.com/officetourisme-marin/le-marin",
+        "whyRelevant": "Le Marin / Sainte-Anne (Pointe Marin, Cap Macré, Grand Macabou) : sud caraïbe-atlantique régulièrement touché. L'OT classé catégorie I conseille des visiteurs qui demandent quotidiennement 'quelle plage sans sargasses'.",
+        "contactHint": "Tél 05 96 74 63 21 ; via formulaire du site Wix ; DM Facebook OT du Marin. Petite structure — un email personnalisé au directeur suffit souvent.",
+        "authority": "medium",
+        "angle": "Embed du widget sur leur page plages/infos pratiques ; rapport hebdo par plage comme aide-conseil au comptoir d'accueil."
+      },
+      {
+        "name": "Office de Tourisme des Trois-Îlets (troisilets-martinique.fr)",
+        "type": "Municipal tourism office (Martinique)",
+        "url": "https://www.troisilets-martinique.fr",
+        "whyRelevant": "Pôle touristique majeur (Pointe du Bout, anses de la baie de Fort-de-France) : forte concentration d'hôtels et de visiteurs qui veulent vérifier l'état des plages avant l'excursion. Côte caraïbe globalement épargnée — argument que la carte met en valeur.",
+        "contactHint": "Email otitour.trois.ilets@wanadoo.fr ; tél +596 596 68 47 63. Email direct au responsable accueil/communication.",
+        "authority": "medium",
+        "angle": "Embed widget + lien 'plages épargnées aujourd'hui' qui valorise leur littoral caraïbe ; data report citable dans leur com locale."
+      },
+      {
+        "name": "Office de Tourisme de Sainte-Luce (sainteluce-martinique.fr)",
+        "type": "Municipal tourism office (Martinique)",
+        "url": "https://www.sainteluce-martinique.fr",
+        "whyRelevant": "Sainte-Luce (Anse Mabouya, Corps de Garde, Gros Raisin) : destination balnéaire du sud caraïbe avec hébergements touristiques. Audience qui choisit sa plage à la journée — usage typique d'une carte live + Beach Score.",
+        "contactHint": "Tél 05 96 62 57 85 ; formulaire/contact sur sainteluce-martinique.fr. Email direct à l'OT, ton value-first.",
+        "authority": "medium",
+        "angle": "Intégrer le widget sur la page plages du site ; proposer le rapport hebdo comme contenu pour leur actualité/réseaux."
+      },
+      {
+        "name": "Office de Tourisme La Riviera du Levant (rivieraguadeloupe.com)",
+        "type": "Intercommunal tourism office (Sainte-Anne, Saint-François, Le Gosier, La Désirade)",
+        "url": "https://www.rivieraguadeloupe.com",
+        "whyRelevant": "OTI couvrant précisément les communes les plus touchées de Grande-Terre (Sainte-Anne, Saint-François) + La Désirade. Audience touristique forte cherchant des plages praticables : c'est le cœur de cible d'une carte sargasses par plage.",
+        "contactHint": "Page contact rivieraguadeloupe.com ; OT Sainte-Anne 05 90 88 09 49 ; OT Gosier 05 90 84 80 80. Email au pôle communication/numérique de l'OTI.",
+        "authority": "medium",
+        "angle": "Embed widget sur une page 'conditions plages / sargasses' de l'OTI ; rapport hebdo par plage que leurs conseillers et leur site peuvent citer."
+      },
+      {
+        "name": "GIP / Service public anti-sargasses Martinique (CTM + État, via outre-mer.gouv.fr)",
+        "type": "Public-interest group (collectivité territoriale + État)",
+        "url": "https://www.outre-mer.gouv.fr/cp-service-public-anti-sargasses-deux-gip-crees-en-guadeloupe-et-martinique",
+        "whyRelevant": "GIP opérationnel depuis 2024 réunissant l'État, la CTM et les EPCI pour la lutte sargasses : acteur institutionnel central, ses communications et celles de la Collectivité Territoriale de Martinique sont reprises par la presse. Audience décideurs + grand public.",
+        "contactHint": "Via la Collectivité Territoriale de Martinique (collectivitedemartinique.mq, service communication) et le ministère des Outre-Mer (presse). Démarche institutionnelle écrite.",
+        "authority": "high",
+        "angle": "Proposer la carte comme ressource publique gratuite référençable dans leurs supports d'information citoyenne ; transparence méthodo via le data kit pour une mention/lien."
+      },
+      {
+        "name": "Région Guadeloupe (regionguadeloupe.fr)",
+        "type": "Regional collectivity / institutional environment-tourism portal",
+        "url": "https://www.regionguadeloupe.fr",
+        "whyRelevant": "Collectivité régionale pilotant le GIP anti-sargasses guadeloupéen et la promotion du territoire ; son portail relaie l'actualité environnementale et touristique vers résidents et visiteurs. Forte autorité de domaine institutionnelle.",
+        "contactHint": "Service communication via page contact regionguadeloupe.fr / formulaire presse. Courrier institutionnel value-first au pôle environnement ou tourisme.",
+        "authority": "high",
+        "angle": "Mention/lien de la carte live comme service d'information aux habitants et visiteurs dans une actualité ou page sargasses ; data kit fourni pour validation officielle."
+      },
+      {
+        "name": "We Love Guadeloupe",
+        "type": "Blog de locaux guadeloupeens (FR/EN)",
+        "url": "https://we-love-guadeloupe.com/en/plages-guadeloupe-plus-belles/",
+        "whyRelevant": "Blog fonde par des locaux (depuis 2019), articles sur les plus belles plages avec 'oeil local'. Audience = voyageurs qui veulent la bonne plage au bon moment ; les sargasses sont leur frustration n°1.",
+        "contactHint": "Page contact du site ; pattern bonjour@ / contact@we-love-guadeloupe.com. Forte presence Instagram (@welove.guadeloupe) — DM efficace pour blog local.",
+        "authority": "medium",
+        "angle": "Embed du widget live sur leur page 'plus belles plages' (chaque plage gagne un Beach Score du jour) + co-signature d'un rapport hebdo 'etat des plages GP' qu'ils peuvent republier."
+      },
+      {
+        "name": "Chouette World — Blog Voyage en Famille",
+        "type": "Blog voyage famille a forte audience (FR)",
+        "url": "https://chouetteworld.com/23-choses-a-faire-en-martinique/",
+        "whyRelevant": "Gros blog FR (itineraires 7/10/15 jours MQ & GP, guides familles). Les familles avec enfants sont ultra-sensibles aux sargasses (odeur, securite) — exactement notre cible.",
+        "contactHint": "Page contact Chouette World (formulaire pro/partenariats) ; email partenariats type contact@chouetteworld.com. Mention 'collaborations' sur le site.",
+        "authority": "high",
+        "angle": "Encart 'avant d'aller a la plage, verifiez l'etat du jour' avec le widget, dans leurs itineraires MQ/GP ; ressource utile a leur audience famille, lien value-first plutot que pub."
+      },
+      {
+        "name": "Tropicalement Vôtre",
+        "type": "Magazine de voyage Antilles (FR)",
+        "url": "https://www.tropicalement-votre.com/guadeloupe/actualites/tips.php",
+        "whyRelevant": "Magazine etabli avec rubrique 'Tips' Guadeloupe/Martinique et coverage des plages. Public planifie son sejour aux Antilles et cherche des infos pratiques actualisees.",
+        "contactHint": "Formulaire de contact / redaction du magazine ; pattern redaction@ / contact@tropicalement-votre.com.",
+        "authority": "medium",
+        "angle": "Pitch d'un article 'Sargasses 2026 : comment lire la carte live avant de choisir sa plage' citant notre kit presse (methodo + backtest) + embed widget en bas d'article."
+      },
+      {
+        "name": "Tourcrib — Blog Martinique",
+        "type": "Plateforme location + blog destination (EN/FR)",
+        "url": "https://tourcrib.com/en/martinique/beaches",
+        "whyRelevant": "Vue d'ensemble des plages de Martinique + guides 'things to do'. Audience reservant logement/activites, qui choisit ses plages — bonne fit pour une couche conditions live.",
+        "contactHint": "Page contact Tourcrib (formulaire) ; pattern contact@ / hello@tourcrib.com. Equipe produit reactive aux outils embeddables.",
+        "authority": "medium",
+        "angle": "Integration du widget iframe sur leur page 'beaches' (une ligne de code) ; argument produit : enrichit leur fiche plage avec une donnee fraiche sans maintenance editoriale."
+      },
+      {
+        "name": "ByeMyself — Best Beaches by Public Bus (MQ & GP)",
+        "type": "Blog voyage independant (EN)",
+        "url": "https://byemyself.com/the-best-beaches-in-guadeloupe-you-can-easily-visit-by-public-bus/",
+        "whyRelevant": "Guides pratiques plage-par-plage en Martinique ET Guadeloupe pour voyageurs sans voiture — qui ont d'autant plus besoin de savoir a l'avance quelle plage vaut le trajet en bus.",
+        "contactHint": "Page contact / collaborations du blog (auteure Renata, solo, repond aux mails). Pattern renata@ / info@byemyself.com ; Instagram du blog.",
+        "authority": "medium",
+        "angle": "Encart 'verifiez l'etat sargasses avant de prendre le bus' avec le widget, dans ses deux guides MQ/GP ; ressource concrete pour son audience budget/sans voiture."
+      },
+      {
+        "name": "World Wanderista — Martinique beaches",
+        "type": "Blog voyage independant (EN)",
+        "url": "https://www.worldwanderista.com/martinique-beautiful-beaches/",
+        "whyRelevant": "Guide detaille des plus belles plages de Martinique. Lectorat anglophone qui planifie un sejour balneaire MQ et redoute les sargasses.",
+        "contactHint": "Page contact / work-with-me du blog (auteure solo) ; email perso liste, sinon DM Instagram @worldwanderista.",
+        "authority": "medium",
+        "angle": "Ajout du widget live ou d'un lien 'beach conditions today' sous son guide plages MQ + offre du forecast 7 jours comme bonus utile pour ses lecteurs."
+      },
+      {
+        "name": "AirVacances — Sargasses Guadeloupe & Martinique 2026",
+        "type": "Guide voyage / agence en ligne (FR)",
+        "url": "https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/",
+        "whyRelevant": "Article dedie 'Quand partir sans sargasses 2026' — contenu evergreen a fort trafic saisonnier qui aurait besoin d'une source live citable plutot que de moyennes.",
+        "contactHint": "Formulaire de contact AirVacances + mentions legales (editeur) ; pattern contact@airvacances.fr. Service contenu/SEO.",
+        "authority": "medium",
+        "angle": "Citer le rapport hebdo + embed du widget sous leur calendrier 'periodes a eviter', pour transformer un conseil saisonnier statique en outil temps reel ; lien vers kit methodo comme source."
+      },
+      {
+        "name": "Espace Plongée Martinique (Marina Pointe du Bout, Trois-Îlets)",
+        "type": "Dive shop / boat operator (Martinique)",
+        "url": "https://espaceplongee-martinique.com/",
+        "whyRelevant": "Sorties du Rocher du Diamant aux Anses d'Arlet jusqu'à Saint-Pierre — côte caraïbe globalement épargnée mais variable. Audience de plongeurs/touristes qui planifient selon mer et sargasses.",
+        "contactHint": "Page contact espaceplongee-martinique.com ; page Facebook très active (ESPACE.PLONGEE.MARTINIQUE) en DM.",
+        "authority": "low",
+        "angle": "Embed du widget sur leur page d'accueil/infos, ou citer le rapport hebdo par plage pour rassurer la clientèle sur la côte caraïbe."
+      },
+      {
+        "name": "GuideMartinique.com (guide tourisme & annuaire plongée)",
+        "type": "Travel-info publisher / annuaire (Martinique)",
+        "url": "https://www.guidemartinique.com/",
+        "whyRelevant": "Portail de référence avec sections plages, activités et clubs de plongée. Leur audience cherche précisément l'état des plages avant de choisir une activité.",
+        "contactHint": "Page contact du site ; email pattern contact@guidemartinique.com.",
+        "authority": "medium",
+        "angle": "Proposer une data-story invité « quelles plages sans sargasses cette semaine » avec le rapport hebdo, + lien vers la carte live depuis leur page plages."
+      },
+      {
+        "name": "Antilles Exception (antillesexception.com — locations villas)",
+        "type": "Vacation-rental platform (Martinique, 200+ villas)",
+        "url": "https://www.antillesexception.com/",
+        "whyRelevant": "Catalogue de villas, beaucoup en bord de mer. Les locataires arrivent avec des attentes plage et sont déçus par les sargasses — un outil de conditions plage réduit les réclamations.",
+        "contactHint": "Page contact du site ; email pattern info@antillesexception.com ; LinkedIn agence.",
+        "authority": "medium",
+        "angle": "Intégrer le widget dans leur « guide du locataire » / fiches villas côtières, ou citer le rapport hebdo dans leur blog destination."
+      },
+      {
+        "name": "Amivac — Locations bord de mer Martinique & Guadeloupe",
+        "type": "OTA / plateforme de locations de vacances",
+        "url": "https://www.amivac.com/",
+        "whyRelevant": "Plateforme de locations avec pages dédiées « bord de mer » MQ et GP fortement indexées. Audience de vacanciers planifiant un séjour plage — public idéal pour une ressource conditions de plage.",
+        "contactHint": "Service éditorial/SEO via formulaire amivac.com ; contact partenariats pattern partenaires@amivac.com.",
+        "authority": "medium",
+        "angle": "Data-story invité ou lien ressource depuis leurs pages « bord de mer » vers la carte live ; proposer le kit data comme contenu utile à leurs voyageurs."
+      },
+      {
+        "name": "Martinique Travel (chaîne YouTube)",
+        "type": "YouTube creator (Martinique)",
+        "url": "https://www.youtube.com/@Martinique-Travel",
+        "whyRelevant": "Chaîne dédiée aux guides voyage Martinique (sites, plages, conseils pratiques). Leur audience planifie un séjour plage et bénéficie d'un outil conditions temps réel en description/lien.",
+        "contactHint": "Onglet « À propos » de la chaîne (email business souvent affiché) ; sinon DM via réseaux liés.",
+        "authority": "medium",
+        "angle": "Proposer de mentionner/linker la carte live en description de leurs vidéos plages, ou collaborer sur une vidéo « éviter les sargasses » avec le rapport hebdo."
       }
     ],
     "outreach": {
@@ -382,6 +683,321 @@
         "contactHint": "Editorial contact via nextbreakout.com; email the author of the seaweed playbook.",
         "authority": "low",
         "angle": "Offer the embeddable widget to make their seaweed playbook actionable with real-time per-beach status."
+      },
+      {
+        "name": "Fontainebleau Miami Beach",
+        "type": "Luxury resort (concierge/press section)",
+        "url": "https://www.fontainebleau.com/miamibeach/",
+        "whyRelevant": "Iconic oceanfront resort on Collins Ave whose guests plan beach/pool days on arrival. Sargassum landings directly affect the guest beach experience, so a live, citable beach-conditions resource is genuinely useful to their concierge desk and pre-arrival comms. Its blog/press section already publishes Miami beach guides.",
+        "contactHint": "PR team direct: pr@fontainebleau.com (verified on press page). Also media photo/video requests via press page contact form at fontainebleau.com/miamibeach/press/.",
+        "authority": "high",
+        "angle": "Offer the one-line iframe widget for the resort's 'beach & pool' or concierge / 'know before you go' page; secondary: feed the weekly per-beach data report to their PR/concierge so staff answer guest sargazo questions with current data."
+      },
+      {
+        "name": "The Setai, Miami Beach",
+        "type": "Luxury hotel (Clefs d'Or concierge)",
+        "url": "https://www.thesetaihotel.com/",
+        "whyRelevant": "Forbes Five-Star South Beach property with a Clefs d'Or concierge team and beachfront service. Concierge teams that pride themselves on local knowledge are natural homes for a citable live beach-conditions tool their high-end clientele relies on.",
+        "contactHint": "Site contact / concierge form at thesetaihotel.com; Clefs d'Or concierges actively curate local resources — pitch the concierge desk and marketing team directly.",
+        "authority": "high",
+        "angle": "Provide the free press/data kit and weekly report to the concierge team as a curated guest resource; optional widget embed on their local-guide page."
+      },
+      {
+        "name": "The Elser Hotel & Residences (Downtown Miami)",
+        "type": "Hotel blog / 'best beaches' content section",
+        "url": "https://www.theelserhotel.com/blog/best-beaches-miami",
+        "whyRelevant": "Already publishes an editorial 'Miami's Best Beaches' guide covering South Beach, Surfside, Bal Harbour and Haulover — exactly the kind of evergreen page that should link to a live conditions map so readers get current data, not just static descriptions.",
+        "contactHint": "Reach the marketing/content team via theelserhotel.com contact page; pitch the blog editor with a value-add update to their existing beaches article.",
+        "authority": "medium",
+        "angle": "Suggest citing the live map + Beach Score in their existing 'best beaches' post ('check live conditions before you go') — a contextual editorial link plus optional widget embed."
+      },
+      {
+        "name": "Nikki Beach Miami Beach",
+        "type": "Beach club (flagship oceanfront venue)",
+        "url": "https://nikkibeach.com/miami-beach/",
+        "whyRelevant": "Flagship oceanfront beach club at 1 Ocean Drive whose entire experience is on the sand. Sargassum directly hits their guest experience and event bookings; a live conditions map helps members/guests and their events team plan, and helps the brand show transparency.",
+        "contactHint": "Brand PR/marketing via nikkibeach.com contact page; the global brand has a press/media contact — also reachable via Instagram DM (@nikkibeach) for the social/marketing team.",
+        "authority": "medium",
+        "angle": "Embed the widget on a 'beach conditions / plan your visit' page; or supply weekly data to their events team so they can advise clients booking beachfront experiences."
+      },
+      {
+        "name": "Soho Beach House Miami",
+        "type": "Private members' club & hotel (house notes/blog)",
+        "url": "https://www.sohohouse.com/en-us/houses/soho-beach-house",
+        "whyRelevant": "Oceanfront members' club in Mid-Beach with a content arm ('House Notes') publishing Miami lifestyle/travel pieces. Members visiting the beachfront benefit from a live conditions resource; their editorial team values curated local recommendations.",
+        "contactHint": "Soho House press/comms team — pitch via the corporate press contact on sohohouse.com; the 'House Notes' editorial team can be reached through the membership/comms office or LinkedIn.",
+        "authority": "high",
+        "angle": "Pitch a guest data-story or member resource for 'House Notes' (e.g., 'when is the Miami beach clearest? a data look at sargassum season'), citing the live map and backtest accuracy from the press kit."
+      },
+      {
+        "name": "City of Fort Lauderdale — Beach Conditions page",
+        "type": "Municipal visitor 'beach conditions' page",
+        "url": "https://www.fortlauderdale.gov/visitors/beach-conditions",
+        "whyRelevant": "An official, indexed 'beach conditions' page (currently just a hotline number) that visitors check before going to the beach — the single most on-topic embed target possible. A live satellite sargassum layer is a direct, audience-serving upgrade.",
+        "contactHint": "Reach via fortlauderdale.gov visitor services / public information office contact form; pitch the web/communications team that maintains the visitors section.",
+        "authority": "high",
+        "angle": "Embed the one-line live-map widget directly on the official beach-conditions page as a free public-service upgrade alongside the existing hotline."
+      },
+      {
+        "name": "Latitude Key (South Florida vacation rentals & travel blog)",
+        "type": "Vacation rental group / travel blog",
+        "url": "https://latitudekey.com/blog/",
+        "whyRelevant": "Manages South Florida / Fort Lauderdale rentals and runs an active travel blog. Their renters head straight to the beach; a live conditions resource is a natural, useful addition to their guides and guest-prep emails.",
+        "contactHint": "Pitch the content/marketing team via latitudekey.com contact page; small enough that an email to the blog editor or marketing manager gets a fast read.",
+        "authority": "medium",
+        "angle": "Contextual editorial link in their beach/activity guides ('check live sargassum conditions') plus the widget embedded in a guest 'before you go' resource."
+      },
+      {
+        "name": "Loews Miami Beach Hotel",
+        "type": "Large beachfront resort (concierge/blog)",
+        "url": "https://www.loewshotels.com/miami-beach",
+        "whyRelevant": "Big oceanfront South Beach resort with families and groups who plan beach time; concierge regularly answers beach/seaweed questions. A live conditions resource supports both pre-arrival content and on-property concierge guidance.",
+        "contactHint": "Loews Hotels corporate PR/communications via loewshotels.com press/media contacts; pitch the property marketing team or the brand's PR office.",
+        "authority": "high",
+        "angle": "Embed the widget on a concierge 'plan your beach day' page and/or cite the weekly report in their local-guide blog content."
+      },
+      {
+        "name": "Turista en Miami",
+        "type": "Spanish-language Miami travel blog",
+        "url": "https://turistaenmiami.com/news/sargazo-en-miami/",
+        "whyRelevant": "Top Spanish-language Miami tourism blog that already publishes a '¿Sargazo en Miami?' guide for Hispanic visitors planning beach days. Directly serves the US-Hispanic and LatAm traveler segment that sargassummiami.com targets in Spanish.",
+        "contactHint": "Contact via the site's contacto page / contact form; try info@turistaenmiami.com. Pitch in Spanish ('mapa en vivo del sargazo, gratis y actualizado 4x/día').",
+        "authority": "medium",
+        "angle": "Embed el widget del mapa en vivo en su artículo de sargazo, y citar el reporte semanal por playa + el press kit con metodología; recurso 'antes de ir a la playa' para su audiencia hispana."
+      },
+      {
+        "name": "Diver's Paradise Miami",
+        "type": "Dive shop / snorkeling charter (Key Biscayne)",
+        "url": "https://diversparadise.miami/",
+        "whyRelevant": "Daily dive and snorkel trips departing Key Biscayne (only operator with access to Biscayne National Park's northern quadrant). Their customers care about water clarity and shore conditions; sargassum affects shore entry, photos and trip satisfaction, so a conditions resource reduces refund/complaint friction.",
+        "contactHint": "Contact form / info email on diversparadise.miami (info@diversparadise.miami), or DM their Instagram. Pitch to owner/marketing as a guest-experience add-on.",
+        "authority": "medium",
+        "angle": "Embed the live-map widget on a 'beach & water conditions' or trip-prep page so guests can check before booking/arrival; positions them as the helpful local expert."
+      },
+      {
+        "name": "Deco Divers Miami",
+        "type": "Dive boat / charter (Miami Beach Marina, South Beach)",
+        "url": "https://decodiversmiami.com/",
+        "whyRelevant": "Operates reef and shipwreck dive/snorkel charters from Miami Beach Marina with a 38-passenger boat. Guests booking South Beach-area trips frequently arrive during sargassum season; a live conditions widget sets expectations and adds trust.",
+        "contactHint": "Contact page / booking email on decodiversmiami.com; Instagram DM (@decodivers). Reach the charter manager.",
+        "authority": "medium",
+        "angle": "Add the embeddable widget to their FAQ/'know before you go' page and link the press/data kit so they can answer the recurring 'is there seaweed?' question with a live source."
+      },
+      {
+        "name": "Captain Hook's Marina & Dive Center (Looe Key, Florida Keys)",
+        "type": "Dive/snorkel tour operator (Florida Keys)",
+        "url": "https://captainhooks.com/big-pine/looe-key-snorkeling/",
+        "whyRelevant": "Award-winning operator running daily Looe Key reef snorkel/dive trips — the Keys are the highest-sargassum-concentration zone in the state. Their guests' satisfaction hinges on water/shore conditions, so a citable conditions resource is highly relevant.",
+        "contactHint": "Contact form / booking email on captainhooks.com; reservations line; Instagram/Facebook DM. Pitch to reservations/marketing manager.",
+        "authority": "medium",
+        "angle": "Place the live-map widget on their trip-prep/FAQ page (extend coverage to Keys beaches) and cite the weekly report; helps reduce weather/seaweed-related cancellations."
+      },
+      {
+        "name": "Funwaves Watersports Miami",
+        "type": "Jet ski / boat rental & watersports operator",
+        "url": "https://www.funwaveswatersports.com/",
+        "whyRelevant": "High-volume Biscayne Bay / Haulover Sandbar jet ski and boat rental operator (4.7 stars, 830+ reviews). Renters planning a beach/sandbar day want to know shore conditions; a live map adds value to their site and supports SEO around 'Miami beach conditions'.",
+        "contactHint": "Contact form / info email on funwaveswatersports.com; very active Instagram — DM marketing. Pitch as a free guest-resource add-on.",
+        "authority": "medium",
+        "angle": "Embed the one-line widget on a 'plan your day / beach conditions' page; offer the weekly data report as shareable social content tied to clear-water days."
+      },
+      {
+        "name": "BoatRentals.Miami",
+        "type": "Boat rental / charter marketplace (Miami Beach)",
+        "url": "https://www.boatrentals.miami/",
+        "whyRelevant": "Self-marketed as Miami Beach's #1 boat rental service offering Biscayne Bay cruises, sandbar trips and jet skis. Customers choosing a day on the water/sandbar benefit from live shore-condition info, a natural complement to their booking flow.",
+        "contactHint": "Contact form / info@boatrentals.miami on site; Instagram DM. Reach the site owner/marketing.",
+        "authority": "medium",
+        "angle": "Embed the live-map widget on a conditions/blog page and link the free press kit (methodology + backtest) to build trust; helps justify booking on good-condition days."
+      },
+      {
+        "name": "Host & Keep (Miami vacation rental management)",
+        "type": "Vacation-rental property manager",
+        "url": "https://hostandkeep.com/",
+        "whyRelevant": "Full-service short-term rental manager for Miami/Miami Beach/Hollywood with 24/7 guest support. Their guests staying near the beach repeatedly ask hosts about seaweed; a live map in the digital guest guide pre-empts complaints and review damage.",
+        "contactHint": "Contact form on hostandkeep.com; LinkedIn outreach to founders/ops lead; info@hostandkeep.com. Pitch as a guest-experience tool for their welcome guides.",
+        "authority": "medium",
+        "angle": "Include the embeddable widget / link in their digital guest guides and house manuals ('check today's beach conditions'); offer co-branded guest resource — high recurring exposure across many listings."
+      },
+      {
+        "name": "Wanderlust Chloe",
+        "type": "Travel blogger / content creator",
+        "url": "https://www.wanderlustchloe.com/miami-florida-holiday-travel-guide/",
+        "whyRelevant": "Established travel blog with an in-depth 2026 Miami holiday guide ranking for high-intent 'Miami travel guide' searches. A 'before you go / beach tips' section is a natural home for a live sargassum resource her readers need.",
+        "contactHint": "Contact / work-with-me page on wanderlustchloe.com (PR-friendly); email typically hello@wanderlustchloe.com; Instagram DM. Pitch a value-add resource link, not a paid placement first.",
+        "authority": "high",
+        "angle": "Suggest adding a 'check live beach/seaweed conditions' callout linking the map in her Miami guide; offer a short guest data-story on Miami's 2026 sargassum season using the published data."
+      },
+      {
+        "name": "Univision Miami (WLTV) — local news",
+        "type": "Spanish-language news / DMO-adjacent media",
+        "url": "https://www.univision.com/local/miami-wltv",
+        "whyRelevant": "Already publishes Spanish-language coverage of the 2026 Miami sargassum record. Their large US-Hispanic audience is core to sargassummiami.com's Spanish vertical; reporters need a citable, methodology-backed live data source for ongoing coverage.",
+        "contactHint": "Pitch the assignment/digital desk via Univision Miami contact/news-tip form; LinkedIn to local reporters covering the sargazo beat. Offer data + interview in Spanish.",
+        "authority": "high",
+        "angle": "Provide the free press/data kit (metodología + backtest) and weekly per-beach report as a citable source for sargazo stories; offer an embeddable live map for their article pages."
+      },
+      {
+        "name": "CBS News Miami (WFOR)",
+        "type": "Local TV station / weather desk",
+        "url": "https://www.cbsnews.com/miami/weather/",
+        "whyRelevant": "NEXT Weather team covers Miami-Dade/Broward beach and marine conditions daily; their digital audience searches 'is there seaweed at the beach today.' A live citable source strengthens their explainer content.",
+        "contactHint": "CBS Miami newsroom contact on cbsnews.com/miami; Paramount/CBS pattern firstname.lastname@cbs.com or news desk form. DM NEXT Weather meteorologists.",
+        "authority": "high",
+        "angle": "Offer the free press/data kit (methodology + published backtest) so their meteorologists can cite the Beach Score, plus the iframe widget for a 'beach conditions' explainer."
+      },
+      {
+        "name": "Telemundo 51 Miami (WSCV)",
+        "type": "Spanish-language local TV station (Hispanic audience)",
+        "url": "https://www.telemundo51.com/",
+        "whyRelevant": "Telemundo's Miami/Fort Lauderdale station serves a huge bilingual beachgoing audience. Their weather coverage needs a per-beach, always-current sargazo resource to reference for viewers across Miami-Dade and Broward.",
+        "contactHint": "Tips via telemundo51.com contact; NBCUniversal Telemundo pattern firstname.lastname@nbcuni.com. DM the Telemundo 51 weather team on social.",
+        "authority": "high",
+        "angle": "Spanish-language pitch: embed the live sargazo widget on their site and supply the weekly per-beach report as a recurring on-air citable source."
+      },
+      {
+        "name": "Miami Herald",
+        "type": "Regional daily newspaper",
+        "url": "https://www.miamiherald.com/",
+        "whyRelevant": "Founding member of the Florida Climate Reporting Network; covers sargassum as a climate/tourism story. Their readers want actionable 'which beach is clear' guidance to pair with deeper reporting.",
+        "contactHint": "Tips/news via miamiherald.com; McClatchy pattern firstname.lastname@miamiherald.com. Target the environment/climate reporter and the things-to-do/beach editor directly.",
+        "authority": "high",
+        "angle": "Offer a guest data-story or the weekly per-beach report as a cited dataset in their seasonal sargassum coverage; supply the press kit with methodology + backtest for credibility."
+      },
+      {
+        "name": "South Florida Sun Sentinel",
+        "type": "Regional daily newspaper (Broward/Palm Beach)",
+        "url": "https://www.sun-sentinel.com/",
+        "whyRelevant": "Covers Fort Lauderdale, Broward and Palm Beach beaches — among the hardest-hit Atlantic stretches in 2026. Florida Climate Reporting Network member; readers need a per-beach forecast for the whole SE Florida coast.",
+        "contactHint": "Tips via sun-sentinel.com; pattern firstname.lastname@sunsentinel.com. Target the environment reporter and the South Florida things-to-do/beach editor.",
+        "authority": "high",
+        "angle": "Pitch the weekly per-beach data report covering Broward/Palm Beach as a cited resource; offer the widget for their beach-conditions/visitor content."
+      },
+      {
+        "name": "Florida Today (Brevard / Space Coast)",
+        "type": "Regional daily newspaper",
+        "url": "https://www.floridatoday.com/",
+        "whyRelevant": "Space Coast/Treasure Coast beaches get sargassum drift up the Atlantic; their surf-and-beach audience checks conditions constantly. A live map extends their existing beach/surf reporting.",
+        "contactHint": "Gannett pattern firstname.lastname@floridatoday.com; tips via floridatoday.com. Pitch the environment/outdoors and surf-forecast contributors.",
+        "authority": "medium",
+        "angle": "Offer the widget for their beach/surf section and a guest data-story on how far north the 2026 bloom is reaching per satellite."
+      },
+      {
+        "name": "WLRN Public Media (Miami NPR/PBS)",
+        "type": "Public radio/TV news (NPR member)",
+        "url": "https://www.wlrn.org/",
+        "whyRelevant": "Miami's NPR station and a Florida Climate Reporting Network partner; produces environment and Florida Roundup coverage on sargassum. Their listeners want a trustworthy, methodology-backed resource over hype.",
+        "contactHint": "News tips via wlrn.org/contact; pattern firstname@wlrnnews.org. Pitch the environment reporter and Florida Roundup producers directly.",
+        "authority": "high",
+        "angle": "Lead with the free press/data kit (methodology + published backtest accuracy) for a credible cited source; offer a data-driven interview/segment and a linkable map resource in the online story."
+      },
+      {
+        "name": "Keys Weekly",
+        "type": "Local newspaper (Florida Keys)",
+        "url": "https://keysweekly.com/",
+        "whyRelevant": "Publishes frequent, science-forward Keys sargassum coverage ('stick to the science as the blob approaches'). Keys beaches are heavily affected; readers want per-beach, Gulf-vs-Atlantic-side guidance.",
+        "contactHint": "Editor/news contacts on keysweekly.com; pattern firstname@keysweekly.com / editor@keysweekly.com. Small newsroom — direct email to the reporter works well.",
+        "authority": "medium",
+        "angle": "Offer the Keys-specific weekly per-beach report and the live map widget for their site; pitch a guest data-story on which Keys beaches stay clearest."
+      },
+      {
+        "name": "Keynoter / Florida Keys News (keysnews.com)",
+        "type": "Local newspaper (Florida Keys)",
+        "url": "https://www.keysnews.com/",
+        "whyRelevant": "Covers Monroe County sargassum cleanup and county guidance; their Keys readership needs current per-beach conditions and a forecast for trip planning.",
+        "contactHint": "Newsroom contact on keysnews.com; pattern firstname.lastname@keysnews.com. Pitch the local news editor.",
+        "authority": "medium",
+        "angle": "Supply the weekly Keys data report as a cited resource and offer the embeddable map for their local-news/beach pages."
+      },
+      {
+        "name": "AFAR — Miami Travel Guide",
+        "type": "National travel magazine / destination guide",
+        "url": "https://www.afar.com/travel-guides/united-states/florida/miami/guide",
+        "whyRelevant": "AFAR's Miami guide is a top-ranked authoritative destination resource; their audience plans beach days in advance and 'is the seaweed bad right now' is a real pre-trip question their guide doesn't currently answer with live data.",
+        "contactHint": "Pitch per published guidelines (afar.com/about/pitch-guidelines): Deputy Editor Katherine LaGrave, klagrave@afar.com — 300-word data-story pitch.",
+        "authority": "high",
+        "angle": "Guest data-story / timely pitch: 'Which Miami beaches are clear right now — and the satellite data behind it,' citing the live map and backtest accuracy; secures a contextual link from a high-DA national outlet."
+      },
+      {
+        "name": "Time Out Miami",
+        "type": "Major city guide / 'things to do' destination media",
+        "url": "https://www.timeout.com/miami/things-to-do/best-miami-beaches",
+        "whyRelevant": "Their 'Best beaches in Miami' guide is a heavily-trafficked decision page; readers picking a beach for the day need to know which ones are seaweed-free, which Time Out doesn't surface.",
+        "contactHint": "Local pitches: hello@timeout.com; travel team: travel.team@timeout.com (subject 'Pitch'), per timeout.com/travel/how-to-pitch-time-out-travel-stories.",
+        "authority": "high",
+        "angle": "Pitch adding a 'check live beach conditions' resource link/box to the best-beaches guide via the embeddable widget, framed as a reader-service upgrade rather than a link ask."
+      },
+      {
+        "name": "Nomadic Matt — Miami Travel Guide",
+        "type": "Top independent travel blog (very high DA)",
+        "url": "https://www.nomadicmatt.com/travel-guides/united-states-travel-guide/miami/",
+        "whyRelevant": "One of the most-linked budget-travel resources; the Miami guide's beach section is read by trip-planners who'd value a free pre-beach conditions tool. Accepts occasional guest features.",
+        "contactHint": "'Write for Us' / contact form on nomadicmatt.com; team email via site contact page.",
+        "authority": "high",
+        "angle": "Suggest a free 'plan around sargassum season' resource link in the Miami guide's beach section, or a guest tips piece using the press kit; value-first reader resource, not a bare link."
+      },
+      {
+        "name": "The Blonde Abroad — South Beach Miami Guide",
+        "type": "High-traffic travel/lifestyle blog (1M+ monthly views)",
+        "url": "https://www.theblondeabroad.com/the-ultimate-guide-to-south-beach-miami-in-a-weekend/",
+        "whyRelevant": "Large solo-female-travel audience using her South Beach weekend guide to plan; knowing current beach/seaweed conditions is a genuine pre-trip need she doesn't cover.",
+        "contactHint": "theblondeabroad.com/contact/ ; guest submissions at theblondeabroad.com/guest-author-submissions/.",
+        "authority": "high",
+        "angle": "Guest data-tip or resource-link addition: a free live beach-conditions tool for the South Beach guide; pitched as audience value with the press kit for credibility."
+      },
+      {
+        "name": "Out of Town Blog — Things to Do in Miami",
+        "type": "Established travel/lifestyle magazine blog (~1.1M monthly hits)",
+        "url": "https://outoftownblog.com/things-to-do-in-miami-florida/",
+        "whyRelevant": "High-traffic 'Top things to do in Miami' listicle whose readers include beach days; a live conditions resource is a useful, evergreen addition.",
+        "contactHint": "melovillareal[at]gmail[dot]com (founder/editor Melo Villareal); contact form at outoftownblog.com/contact/.",
+        "authority": "medium",
+        "angle": "Offer a resource link or short embed to their Miami things-to-do post so readers can check beach conditions before heading out — reader-service angle plus optional cite of the weekly report."
+      },
+      {
+        "name": "Dana Berez — Miami Travel Guide",
+        "type": "Independent travel blogger (US, well-ranked Miami guide)",
+        "url": "https://danaberez.com/miami-travel-guide/",
+        "whyRelevant": "'The Only Miami Travel Guide You Need' draws planning-stage US travelers choosing beaches; live seaweed status is a missing practical detail.",
+        "contactHint": "Contact page on danaberez.com; PR/collab email listed there; Instagram DM @danaberez.",
+        "authority": "medium",
+        "angle": "Pitch a value-add 'check live beach conditions' link/widget in her Miami beach section, framed as keeping the evergreen guide genuinely useful year-round."
+      },
+      {
+        "name": "Jessica Litras — Ultimate Guide to South Beach Miami",
+        "type": "Independent travel blogger/influencer",
+        "url": "https://jessicalitras.com/the-ultimate-guide-to-south-beach-miami/",
+        "whyRelevant": "Detailed South Beach guide for visitors planning beach time; a live sargassum map answers the 'will the beach be clear?' question her readers ask.",
+        "contactHint": "Contact/work-with-me page on jessicalitras.com; Instagram DM @jessicalitras.",
+        "authority": "low",
+        "angle": "Offer the embeddable widget or a resource link for her South Beach guide as a free pre-trip tool; lightweight value-first add for a content-creator audience."
+      },
+      {
+        "name": "Hello Endless Summer — Florida Travel Blog",
+        "type": "Florida-focused independent travel blog",
+        "url": "https://www.helloendlesssummer.com/florida-travel-blog/",
+        "whyRelevant": "Florida-specialist blog writing practical 'what to know / what to pack for a Florida vacation' content; seaweed conditions are a recurring planning concern she can serve readers on.",
+        "contactHint": "Contact page on helloendlesssummer.com; PR/collab email there; Instagram DM.",
+        "authority": "low",
+        "angle": "Pitch a guest tip or resource link: a free live map to plan around sargassum season, fitting naturally into her Florida-prep posts, with the press kit for backing."
+      },
+      {
+        "name": "Florida Department of Health — Beach Water Quality / Florida Healthy Beaches",
+        "type": "State government environmental / beach-conditions program",
+        "url": "https://www.floridahealth.gov/environmental-health/beach-water-quality/index.html",
+        "whyRelevant": "The statewide authority on beach water-quality advisories (floridahealthybeaches.com), checked by residents and tourists statewide. Sargassum is a frequent companion concern to bacteria advisories; a live bloom map fills a gap their bi-weekly bacterial sampling doesn't cover.",
+        "contactHint": "FDOH Communications Office / Public Information Officer via floridahealth.gov press contacts; county-level Environmental Health offices also linkable. State PIO email via the newsroom/press page.",
+        "authority": "high",
+        "angle": "Position as a complementary citable resource alongside their advisory pages — 'check water-quality advisories here, current sargassum here.' Offer the press/data kit (Copernicus/NOAA AFAI methodology + backtest) to satisfy a government linking bar; propose the weekly report as a cite-able data source."
+      },
+      {
+        "name": "Miami Waterkeeper — Water Quality Map / Monitoring",
+        "type": "Regional environmental nonprofit (water-quality authority)",
+        "url": "https://www.miamiwaterkeeper.org/water_quality_map",
+        "whyRelevant": "Leading South Florida water-quality nonprofit whose audience (residents, beachgoers, journalists) actively consults their water-quality map. Sargassum is a recurring topic; a live bloom map is a natural complementary data layer they and their followers would cite.",
+        "contactHint": "Miami Waterkeeper via miamiwaterkeeper.org contact page; communications/outreach team email (info@ or comms@) and active social channels for DM outreach.",
+        "authority": "medium",
+        "angle": "Propose a resource cross-link from their water-quality map/resources page and pitch a co-branded data-story or the weekly report. Lead value-first with the open methodology/backtest data kit, aligning with their science-driven mission."
       }
     ],
     "outreach": {
@@ -582,6 +1198,276 @@
         "contactHint": "Contact page on puntacanabavaro.com; small editorial team, direct email",
         "authority": "low",
         "angle": "Offer the live map as a free embeddable 'current beach conditions' module and a weekly conditions summary they can publish."
+      },
+      {
+        "name": "Acento",
+        "type": "Digital news outlet with a dedicated Ecología/environment section",
+        "url": "https://acento.com.do/ecologia/",
+        "whyRelevant": "Acento already publishes in-depth sargazo features ('el impacto creciente de un fenómeno que no da tregua'). Its environment-focused audience and journalists actively need authoritative, current beach-level data to cite.",
+        "contactHint": "Contact page at acento.com.do; editorial email typically redaccion@acento.com.do. DM via @acento_diario on social for the Ecología desk.",
+        "authority": "medium",
+        "angle": "Provide the weekly per-beach data report + backtest-accuracy press kit as a citable data source for their ongoing sargazo coverage, and offer the embeddable live-map widget for the article footer."
+      },
+      {
+        "name": "ONAMET / INDOMET (Dominican National Meteorological Office)",
+        "type": "National weather authority / data desk (the country's official meteorology source)",
+        "url": "https://www.onamet.gob.do/",
+        "whyRelevant": "ONAMET is the official source DR media cite for weather and coastal conditions; sargazo affects the same beachgoing public it serves. A complementary satellite sargazo map could be referenced from their marine/coastal advisory resources.",
+        "contactHint": "Contact page at onamet.gob.do; institutional email info@onamet.gob.do. Approach the marine/coastal forecasting unit as a data-sharing/complementary-resource conversation.",
+        "authority": "high",
+        "angle": "Propose a complementary-resource link from their marine/coastal conditions section, framed as a public-service tool (not commercial), backed by the Copernicus/NOAA methodology kit."
+      },
+      {
+        "name": "Fundación Grupo Puntacana — Center for Marine Innovation",
+        "type": "Local environmental research foundation / marine monitoring institution in Punta Cana",
+        "url": "https://puntacana.org/en/environment/marine-innovation-center",
+        "whyRelevant": "Based in Punta Cana and listed among international sargassum efforts (NOAA project partner), the foundation does reef and marine monitoring locally. A live local sargazo map aligns with their public education and monitoring mission and could be referenced from their environment pages.",
+        "contactHint": "Contact page at puntacana.org/en/contact; foundation email pattern fundacion@puntacana.com. Pitch the marine/environment program team as a fellow local data project.",
+        "authority": "high",
+        "angle": "Offer the map and press kit as a local public-education and monitoring resource for their environment/marine-innovation pages, and explore a guest data-story collaboration tying satellite sargazo to their on-the-ground Punta Cana coastal work."
+      },
+      {
+        "name": "CDN (Cadena de Noticias) — Dominican TV news network",
+        "type": "National TV news channel (Canal 37) with weather/breaking-news desk",
+        "url": "https://cdn.com.do/",
+        "whyRelevant": "A 24-hour Dominican news network whose weather and national coverage regularly features ONAMET alerts and seasonal sargazo arrivals on tourist beaches — a live per-beach map is a natural on-air and web reference for those segments.",
+        "contactHint": "Contact page at cdn.com.do; newsroom email pattern info@cdn.com.do. Pitch the weather/'tiempo' segment producer; also reachable via the channel's verified social accounts.",
+        "authority": "medium",
+        "angle": "Offer the live map as an on-air/web reference for sargazo weather segments and embed the widget on their site's weather page, supported by the free press kit for source credibility."
+      },
+      {
+        "name": "Boat Trips Punta Cana",
+        "type": "Boat-tour / catamaran & snorkeling operator (OTA-style)",
+        "url": "https://boattripspuntacana.com/seaweed-in-punta-cana/",
+        "whyRelevant": "Sells private/shared catamaran and snorkeling tours and already maintains a 'Complete 2026 Sargassum Guide' page to answer buyer concerns. Snorkeling visibility and beach launch points are directly affected by sargassum, so their booking audience needs current conditions.",
+        "contactHint": "Contact/WhatsApp on boattripspuntacana.com; #1-rated private-tours operator so likely owner-run — reach via site contact form or booking WhatsApp referencing their seaweed guide page.",
+        "authority": "medium",
+        "angle": "Embed the iframe inside their existing seaweed guide as a live 'check today's conditions' panel; offer the press kit methodology so they can confidently link the satellite source to back up their tour-day recommendations."
+      },
+      {
+        "name": "Pelicano Sport (Punta Cana Dive Center)",
+        "type": "Dive shop / PADI dive center",
+        "url": "https://www.pelicanosport.com/punta-cana-dive-center",
+        "whyRelevant": "One of Punta Cana's top PADI dive operations (Bavaro/Punta Cana/Bayahibe). Surface sargassum mats hurt entry conditions and visibility; divers planning trips want to know whether shore/boat dives will be affected before booking.",
+        "contactHint": "Contact page on pelicanosport.com; also reachable via their Facebook/Instagram. Pitch the dive center manager as a guest amenity for their 'conditions' or dive-planning content.",
+        "authority": "medium",
+        "angle": "Add the live-map widget to a 'dive conditions / before you dive' page as a guest resource; offer the free press/data kit with backtest accuracy so they can trust and reference the source for clients."
+      },
+      {
+        "name": "NAUTILUS Dive Centre Bavaro",
+        "type": "Dive shop / PADI dive center",
+        "url": "https://www.scubadivingbavaro-puntacana.com/",
+        "whyRelevant": "Beachfront PADI center directly on Bavaro beach — the stretch most affected by sargassum. Their shore-based operation is literally on the sand, so live beach conditions are operationally relevant to them and their booking customers.",
+        "contactHint": "Contact page on scubadivingbavaro-puntacana.com; beachfront owner-operated, so site contact form or Instagram DM reaches decision-maker directly.",
+        "authority": "medium",
+        "angle": "Embed the widget on a beach-conditions / FAQ page as a customer convenience; value-first framing: 'a free tool so your divers know what to expect at Bavaro before they arrive.'"
+      },
+      {
+        "name": "Bebe Catamaran Punta Cana",
+        "type": "Catamaran / snorkeling tour operator",
+        "url": "https://bebecatamaranpuntacana.com/",
+        "whyRelevant": "Runs shared family snorkel tours and party catamarans from Punta Cana beaches. Sargassum at the launch beach and snorkel sites directly shapes the guest experience, and prospective bookers ask about conditions before paying.",
+        "contactHint": "Contact / booking form on bebecatamaranpuntacana.com (official site); also social channels for DM. Reach the owner/booking team referencing snorkel-day conditions.",
+        "authority": "medium",
+        "angle": "Offer the embeddable live-map widget for an FAQ/'beach conditions' section so customers self-serve, plus the weekly per-beach report as a citable source on their blog."
+      },
+      {
+        "name": "Ocean Adventures Punta Cana",
+        "type": "Watersport / catamaran & snorkeling excursion operator",
+        "url": "https://www.oceanadventures-puntacana.com/catamaran-tour-and-snorkeling-punta-cana",
+        "whyRelevant": "Established watersport/snorkeling brand selling catamaran + snorkel + speedboat combos. Their large excursion audience plans around beach and water conditions, making a live conditions resource a natural add to their tour pages.",
+        "contactHint": "Contact page on oceanadventures-puntacana.com; established operator with a marketing team — pitch via the site contact form or info@ pattern referencing their catamaran/snorkel pages.",
+        "authority": "medium",
+        "angle": "Embed the live map on a 'conditions before your tour' page; offer a co-branded weekly snapshot of the snorkel-zone beaches as recurring citable content."
+      },
+      {
+        "name": "Go Punta Cana Vacations (vacation-rental management)",
+        "type": "Vacation-rental / property management company",
+        "url": "https://www.gopuntacanavacations.com/full-service-vacation-rental-management",
+        "whyRelevant": "Full-service short-term rental manager on the Punta Cana–Bavaro beachfront (since 2007). Their guests book beachfront condos/villas and are the most sensitive segment to sargassum — bad beach days drive complaints and refund requests for managers.",
+        "contactHint": "Contact page on gopuntacanavacations.com / sister site gopuntacanarealestate.com; reach the property-management or guest-services lead. Pitch as a guest-experience resource for their welcome/check-in info.",
+        "authority": "medium",
+        "angle": "Add the widget to a guest 'beach conditions' page or pre-arrival email; frame as reducing complaints — 'set guest expectations with a live, citable map.' Offer the press kit to back the data source."
+      },
+      {
+        "name": "Reliable Realty Vacation Rentals (El Cortecito, Bavaro)",
+        "type": "Vacation-rental / property management company",
+        "url": "https://www.vacationrentalspuntacana.com/",
+        "whyRelevant": "American-operated rental agency in El Cortecito with most properties a short walk to the beach. Guests booking these beachfront condos repeatedly ask about seaweed; managers benefit from a neutral, always-current conditions tool.",
+        "contactHint": "Contact page on vacationrentalspuntacana.com; owner-operated US/DR team reachable by email/contact form. Pitch the owner as a guest-info resource.",
+        "authority": "low",
+        "angle": "Embed the live-map widget in a guest area-guide / FAQ page and link it in booking confirmations; value-first as a complaint-reduction tool."
+      },
+      {
+        "name": "Punta Cana Beach Rental",
+        "type": "Vacation-rental / property management company",
+        "url": "https://puntacanabeachrental.com/",
+        "whyRelevant": "Family-run Bavaro condo rental + management agency. Their entire pitch is beachfront access, so live sargassum conditions are a core guest concern they currently can't answer dynamically.",
+        "contactHint": "Contact page on puntacanabeachrental.com; small family operation, so the site contact form / WhatsApp reaches the decision-maker directly.",
+        "authority": "low",
+        "angle": "Free embeddable conditions widget for their area/beach-info page; offer the weekly report so they can proactively message guests when conditions shift."
+      },
+      {
+        "name": "TodoPuntaCana / todopuntacana.com",
+        "type": "Traveler info portal (EN/ES)",
+        "url": "https://www.todopuntacana.com/en/sargassum-in-punta-cana/",
+        "whyRelevant": "Bilingual Punta Cana info portal with a dedicated 'where to check the sargassum status' page — they already curate monitoring resources, so a live satellite map + forecast is exactly the kind of source they list and link.",
+        "contactHint": "Contact page on todopuntacana.com (EN/ES); pitch the editor to add the map to their existing 'where to check sargassum status' resource list.",
+        "authority": "medium",
+        "angle": "Get listed as a recommended monitoring source on their 'where to check sargassum status' page, then offer the embeddable widget so the data lives directly on their portal; cite the weekly report."
+      },
+      {
+        "name": "Pinpar / Amali Real Estate (villa & vacation rentals, Bavaro)",
+        "type": "Vacation-rental / villa management company",
+        "url": "https://www.amalirealestate.com/",
+        "whyRelevant": "Manages villa and vacation rentals in Bavaro, Punta Cana. Their beachfront-villa guests are premium travelers highly sensitive to beach quality, and the manager benefits from setting accurate expectations to protect reviews.",
+        "contactHint": "Contact page on amalirealestate.com; reach the rental/property-management team via site contact form. Pitch as a guest-experience amenity.",
+        "authority": "low",
+        "angle": "Embed the live-map widget on a guest area guide / 'about Bavaro beaches' page; frame as a free guest amenity that reduces beach-condition complaints, backed by the press kit."
+      },
+      {
+        "name": "Visit Dominican Republic (Official Travel Guide)",
+        "type": "Official national tourism guide / DMO",
+        "url": "https://visitdominicanrepublic.com/",
+        "whyRelevant": "A consumer-facing official travel guide whose readers are actively planning beach trips to Punta Cana/Bavaro; sargassum is the #1 pre-trip concern in season, so an always-current map is a high-value reader resource.",
+        "contactHint": "Use the site's contact/about page form; cross-promote with the Ministry of Tourism PR channel (shared official ecosystem). Editor/PR pattern typically info@ or press@ on the domain.",
+        "authority": "medium",
+        "angle": "Embed the one-line iframe live-map widget on their Punta Cana beach guide and link the weekly per-beach data report as a 'check conditions before you go' resource."
+      },
+      {
+        "name": "ASONAHORES — Asociación de Hoteles y Turismo de la República Dominicana",
+        "type": "National hotel & tourism association (DMO-adjacent industry body)",
+        "url": "https://asonahores.com/",
+        "whyRelevant": "ASONAHORES represents Punta Cana/Bavaro hotels and regional hotel associations and publicly communicates on sargassum management; its member-facing and press content needs a neutral, citable per-beach data source travelers and members trust.",
+        "contactHint": "Marketing/press email confirmed as mercadeo@asonahores.com; also via the contact page on asonahores.com and LinkedIn (do.linkedin.com/company/asonahores).",
+        "authority": "high",
+        "angle": "Cite the weekly per-beach data report in their member/press communications and link the live map as an objective conditions reference; offer the press kit's methodology + backtest accuracy to lend credibility to their sargassum messaging."
+      },
+      {
+        "name": "Ministry of Environment and Natural Resources of the Dominican Republic (sargassum 'Multisectoral Table' lead)",
+        "type": "Government environmental / beach-conditions authority",
+        "url": "https://ambiente.gob.do/",
+        "whyRelevant": "The Ministry runs the national 'Multisectoral Table for the Integral Management of Sargassum,' issues emergency cleanup resolutions, and is the government voice on beach conditions — a daily-refreshed satellite map complements their forecasting (CLS/ANAMAR) with a public-facing, per-beach view.",
+        "contactHint": "Contact via the ambiente.gob.do communications/press (comunicaciones) office and contact form; reference the Multisectoral Table de Sargazo. Pattern often prensa@ / comunicaciones@ambiente.gob.do.",
+        "authority": "high",
+        "angle": "Provide the press/data kit (Copernicus/NOAA AFAI methodology + backtest) as a citable public resource and offer the embeddable widget for any public beach-conditions or sargassum-information page they maintain."
+      },
+      {
+        "name": "Fundación Grupo Puntacana (Sustainability & Marine Innovation Center)",
+        "type": "Destination-anchor foundation / environmental beach-management body",
+        "url": "https://www.puntacana.com/en/about/sustainable-development",
+        "whyRelevant": "Grupo Puntacana effectively created the Punta Cana destination, runs the airport (68% of DR air traffic), and its Foundation pioneered sargassum collection barriers and biodigesting; its sustainability audience and partners directly need real-time per-beach sargassum data.",
+        "contactHint": "Reach the Fundación Grupo Puntacana / Marine Innovation Center via the contact page on puntacana.com and the foundation's communications team; LinkedIn outreach to Grupo Puntacana sustainability staff also viable.",
+        "authority": "high",
+        "angle": "Co-citation: offer a guest data-story on Punta Cana/Bavaro sargassum trends using the backtested map, and propose embedding the widget on their sustainability/sargassum content as a live monitoring complement to their barrier program."
+      },
+      {
+        "name": "Embassy of the Dominican Republic in the United States — Tourism Information",
+        "type": "Government tourism-information page (official)",
+        "url": "http://www.domrep.org/tourinfo.html",
+        "whyRelevant": "This official US-facing government page directs prospective American visitors to Dominican Republic travel/beach information; US travelers are the core audience for a pre-trip sargassum-conditions tool for Punta Cana.",
+        "contactHint": "Contact via the embassy's general/press contact on domrep.org; ask the consular/tourism information officer to add a traveler resource link.",
+        "authority": "medium",
+        "angle": "Suggest adding the free live-map/per-beach conditions resource link under tourism information as a practical pre-travel tool (value-first, no commercial ask)."
+      },
+      {
+        "name": "ANAMAR — Autoridad Nacional de Asuntos Marítimos (Dominican Republic)",
+        "type": "Government maritime/coastal monitoring authority",
+        "url": "https://www.anamar.gob.do/",
+        "whyRelevant": "ANAMAR conducts daily review of sargassum forecasts (CLS/SAMtool) with the Dominican Navy to assess interventions; an independent, daily-refreshed satellite per-beach map is a directly relevant public-facing complement to their operational monitoring.",
+        "contactHint": "Contact via anamar.gob.do contact/press (comunicaciones) office; reference their daily sargassum forecast review workflow.",
+        "authority": "medium",
+        "angle": "Share the press/data kit (Copernicus/NOAA AFAI methodology + backtest) for cross-validation and offer the widget for any public sargassum-conditions page; position as a citable open data source."
+      },
+      {
+        "name": "Lopesan Costa Bávaro Resort, Spa & Casino",
+        "type": "All-inclusive resort group (Lopesan, Spain)",
+        "url": "https://www.lopesan.com/en/hotels/dominican-republic/punta-cana/playa-bavaro/costa-bavaro",
+        "whyRelevant": "1,000+ room beachfront resort on Bávaro with three more Punta Cana properties opening in 2026 — a brand actively building out Bávaro content. Bávaro is among the more sargassum-exposed stretches, so a live forecast is a genuine value-add for their pre-arrival info.",
+        "contactHint": "Corporate press/marketing via lopesan.com contact form and prensa@lopesan.com pattern; resort concierge for content collaboration; LinkedIn 'Lopesan Hotel Group'.",
+        "authority": "high",
+        "angle": "Embed the live-map widget on a Bávaro 'beach conditions' page and supply the press/data kit so their marketing can cite refreshed satellite data instead of vague 'beaches are cleaned daily' claims."
+      },
+      {
+        "name": "Meliá / Paradisus Punta Cana (Meliá Hotels International)",
+        "type": "All-inclusive chain (Paradisus, Meliá) blog/destination pages",
+        "url": "https://sites.melia.com/en-us/america/paradisus-punta-cana",
+        "whyRelevant": "Meliá runs several Bávaro/Punta Cana resorts (Paradisus Grand Cana, Palma Real, Meliá Punta Cana Beach) with a large content and concierge operation; beach-condition reassurance directly supports conversion for these beachfront all-inclusives.",
+        "contactHint": "Meliá corporate press room (melia.com 'Press'/comunicacion@melia.com pattern); destination-site editors; concierge teams at individual Paradisus properties.",
+        "authority": "high",
+        "angle": "Guest-experience blog post or destination-page module citing the weekly report, with the embeddable widget offered for a 'best beach today' concierge tool."
+      },
+      {
+        "name": "Barceló Bávaro Palace (Barceló Hotel Group)",
+        "type": "All-inclusive resort (global chain)",
+        "url": "https://www.bavaropalace.com/",
+        "whyRelevant": "Five-star beachfront resort on famous Bávaro Beach with its own branded domain and family-club content; guests planning their stay want current beach/water conditions, and Barceló's content team produces destination guides that could cite a live source.",
+        "contactHint": "Barceló Group corporate press (barcelogroup.com / prensa@barcelo.com pattern); resort marketing via bavaropalace.com contact; Instagram @barcelohotels DM.",
+        "authority": "high",
+        "angle": "Offer the iframe widget for a Bávaro Beach info/FAQ section and the press kit (with published backtest accuracy) as the trustworthy data source behind beach-condition messaging."
+      },
+      {
+        "name": "RIU Hotels & Resorts — Riu Palace Macao / Bavaro",
+        "type": "All-inclusive chain (RIU, TUI Group)",
+        "url": "https://www.riupalacemacao.com/",
+        "whyRelevant": "RIU operates a cluster of resorts on Arena Gorda/Macao beach — one of the more Atlantic-exposed, sargassum-prone stretches; pre-arrival beach-condition info is exactly what their high-volume guest base searches for.",
+        "contactHint": "RIU corporate press room (riu.com 'Press'/prensa@riu.com pattern); resort contact forms; LinkedIn 'RIU Hotels & Resorts'.",
+        "authority": "high",
+        "angle": "Pitch embedding the live-map widget on an Arena Gorda 'beach conditions' page and citing the weekly report in destination content."
+      },
+      {
+        "name": "Pearl Beach Club Punta Cana",
+        "type": "Standalone luxury beach club",
+        "url": "https://www.pearlbeachclub.com/",
+        "whyRelevant": "A flagship beachfront day-club at Cabeza de Toro selling beach-day experiences and events; bad-seaweed days directly hurt bookings, so a live conditions map is a genuine operational and marketing asset for them.",
+        "contactHint": "Reservations/marketing email via pearlbeachclub.com contact page; Instagram @pearlbeachclub DM (active social team); events team for partnership.",
+        "authority": "medium",
+        "angle": "Embed the widget on their site/booking page so guests can check conditions before reserving a day bed, with co-branded 'beach conditions today' content."
+      },
+      {
+        "name": "Punta Cana International Airport / Grupo Puntacana (Puntacana Resort & Club)",
+        "type": "Resort group + destination operator",
+        "url": "https://puntacana-do.com/en/",
+        "whyRelevant": "Grupo Puntacana operates the airport plus a resort, marina and beaches (Playa Blanca, Westin/Tortuga Bay); they shape first impressions of the destination and field constant beach-condition questions from arriving guests.",
+        "contactHint": "Grupo Puntacana communications via puntacana-do.com contact page; PuntaCana Resort & Club marketing; LinkedIn 'Grupo Puntacana'.",
+        "authority": "high",
+        "angle": "Embed the widget on a guest-information / 'plan your beach day' page and cite the weekly report; offer the data kit for their sustainability and guest-services communications."
+      },
+      {
+        "name": "Guide to Punta Cana (guidetopuntacana.com)",
+        "type": "Independent destination guide / beaches section",
+        "url": "http://www.guidetopuntacana.com/beaches",
+        "whyRelevant": "A dedicated beaches-section resource for the destination whose audience is choosing where to go; static beach descriptions are exactly the kind of content that benefits from a live conditions layer and forecast.",
+        "contactHint": "Site contact / email form on guidetopuntacana.com; reachable via the site's social profiles.",
+        "authority": "low",
+        "angle": "Embed the live-map widget on the beaches page and link the press/data kit so readers can check real-time conditions per beach before choosing."
+      },
+      {
+        "name": "Traveling Lifestyle (travelinglifestyle.net)",
+        "type": "High-traffic travel blog / digital magazine",
+        "url": "https://www.travelinglifestyle.net/dominican-republic-sargassum-season-2026/",
+        "whyRelevant": "Publishes a yearly-updated 'Dominican Republic Sargassum Season' feature with photos and forecast - a flagship sargassum article that ranks well. Their readers arrive specifically wanting current conditions, which their static photo-forecast format can't deliver; a live map fills that gap.",
+        "contactHint": "Contact form at /contact-us/; org is Traveling Lifestyle Network LLC (Miami). Editorial staff are named (Viktor Vincej, Maria Valencia - Chief Writer) so a pitch addressed to the chief writer about updating their sargassum season piece lands well. info@ pattern likely.",
+        "authority": "high",
+        "angle": "Pitch the free press/data kit (methodology + published backtest accuracy) so they can cite real-time numbers in their annual sargassum-season update, plus embed the widget as the 'current live conditions' block above their seasonal forecast."
+      },
+      {
+        "name": "Punta Cana Adventures (puntacanaadventures.com)",
+        "type": "Local excursions site + Punta Cana travel guide",
+        "url": "https://www.puntacanaadventures.com/seaweed-in-punta-cana/",
+        "whyRelevant": "Publishes a 'Seaweed in Punta Cana' guide plus a 2026 travel guide and 50+ excursions. Their audience books beach/island excursions and actively searches seaweed info, so live per-beach scores serve their exact intent.",
+        "contactHint": "Contact page on site (likely contact form / local WhatsApp). Pitch as a tool that helps their excursion customers plan around conditions.",
+        "authority": "medium",
+        "angle": "Embed the widget on their seaweed page and cite the weekly report as a 'plan your beach/excursion day' resource for customers."
+      },
+      {
+        "name": "Dominican Republic Sun (dominicanrepublicsun.com)",
+        "type": "DR news / travel content site",
+        "url": "https://dominicanrepublicsun.com/the-ultimate-guide-to-navigating-punta-canas-sargassum-season-in-2026/",
+        "whyRelevant": "Runs 'The Ultimate Guide to Navigating Punta Cana's Sargassum Season in 2026' - an editorial sargassum explainer for travelers. News-style content that benefits from a live, citable data source and embeddable visual.",
+        "contactHint": "Site contact/editor page; pitch the editor/newsdesk. A press-kit angle (free data + accuracy stats) suits a news outlet that wants a credible source to cite.",
+        "authority": "medium",
+        "angle": "Provide the free press/data kit as the citable source for their sargassum-season guide and offer the embeddable map as the article's live visual; positions the map as the outlet's go-to data reference."
       }
     ],
     "outreach": {
@@ -782,6 +1668,105 @@
         "contactHint": "Contact via cast.caribbeanhotelandtourism.com; pitch the CAST/CHTA resources coordinator.",
         "authority": "high",
         "angle": "Request inclusion in their Sargassum Watch resource list as a member-useful per-beach forecast tool with transparent, published accuracy."
+      },
+      {
+        "name": "Office de Tourisme de Saint-François (zewelcome.com / OTI Riviera du Levant)",
+        "type": "Municipal/local tourism office (Guadeloupe)",
+        "url": "https://zewelcome.com/en/tourism-office-st-francois",
+        "whyRelevant": "Saint-François (Raisins Clairs, Anse à la Baie) figure parmi les secteurs régulièrement touchés ; OT ouvert 6j/7 toute l'année conseillant une clientèle internationale qui demande où se baigner sans sargasses.",
+        "contactHint": "Via la page OT et le blog zewelcome (qui publie déjà sur les sargasses) — angle éditorial possible. Contact OTI Riviera du Levant pour la partie institutionnelle.",
+        "authority": "medium",
+        "angle": "Guest data-story sur leur blog (zewelcome publie déjà 'sargassum when/how to avoid') avec embed du widget + citation du backtest accuracy ; lien depuis la page OT."
+      },
+      {
+        "name": "SEMA Quintana Roo (Secretaría de Ecología y Medio Ambiente)",
+        "type": "State environmental authority / official sargazo semáforo",
+        "url": "https://sema.qroo.gob.mx/",
+        "whyRelevant": "Publica el 'Semáforo del Sargazo' oficial para 47-50 playas del estado, basado en monitoreo manual diario. Su audiencia (turistas, hoteleros, prensa) ya busca el estado de las playas; un mapa satelital live con pronóstico a 7 días complementa su semáforo cualitativo con datos objetivos y verificables.",
+        "contactHint": "Contacto institucional vía http://sema.qroo.gob.mx/sistemas/contactos/ y redes @semaqroo (Twitter/X). Proponer por escrito a la Dirección de Comunicación / área de gestión de zona costera; ofrecer colaboración de datos, no enlace.",
+        "authority": "high",
+        "angle": "Ofrecer el widget embebible (iframe de una línea) como capa satelital complementaria en su página del semáforo, y compartir el press/data kit con metodología Copernicus/NOAA AFAI + backtest publicado para que validen y citen la fuente."
+      },
+      {
+        "name": "Cancún Convention & Visitors Bureau (Oficina de Visitantes y Convenciones de Cancún)",
+        "type": "Convention & Visitors Bureau (CVB / DMO)",
+        "url": "https://www.cancun.travel/",
+        "whyRelevant": "DMO oficial de Cancún; su sitio guía a viajeros y planificadores de eventos que necesitan saber el estado de las playas antes de viajar. El sargazo es la objeción #1 de los visitantes y un recurso live citable reduce cancelaciones.",
+        "contactHint": "Sede en Centro de Convenciones de Cancún, Blvd. Kukulcán km 9; tel. +52 998-881-2745. Formulario de contacto en cancun.travel y DM en redes oficiales. Dirigir al área de marketing/PR del CVB.",
+        "authority": "high",
+        "angle": "Embed del widget live-map en una sección 'Condiciones de playa / Sargazo' de cancun.travel, y oferta del reporte semanal por playa para sus boletines a prensa y agencias."
+      },
+      {
+        "name": "Municipio de Benito Juárez (Gobierno de Cancún)",
+        "type": "Municipal government / beach-cleaning & sargazo operations page",
+        "url": "https://www.cancun.gob.mx/",
+        "whyRelevant": "Administra las 7 playas públicas de Cancún y publica boletines diarios de retiro de sargazo (toneladas, cuadrillas ZOFEMAT). Su sala de noticias ya documenta condiciones de playa; un mapa live aporta el dato satelital que sus comunicados no tienen.",
+        "contactHint": "Directorio municipal en cancun.gob.mx/directorio; Coordinación de Comunicación Social y Dirección de Servicios Públicos / ZOFEMAT. También Facebook @AytoCancun. Enfocar como recurso ciudadano gratuito.",
+        "authority": "medium",
+        "angle": "Citar el reporte semanal por playa en sus boletines de limpieza y embeber el widget en una página municipal de 'condiciones de playas públicas'; usar el press kit para respaldar cifras."
+      },
+      {
+        "name": "H. Ayuntamiento de Tulum",
+        "type": "Municipal government (zona de mayor afectación por sargazo)",
+        "url": "https://tulum.gob.mx/",
+        "whyRelevant": "Tulum recibe la mayor acumulación de sargazo de Q. Roo por su costa abierta; el municipio gestiona barreras y limpieza y ha lanzado S.O.S. público por el tema. Sus visitantes necesitan condiciones live antes de ir a la playa.",
+        "contactHint": "Portal tulum.gob.mx/Turismo y Facebook @AyuntamientoDeTulum. Dirigir a la Dirección de Turismo y Comunicación Social del municipio. Pitch: recurso gratuito para reducir quejas de turistas.",
+        "authority": "medium",
+        "angle": "Embed del widget en la sección Turismo del portal municipal centrado en playas de Tulum, más pronóstico a 7 días que su personal pueda citar al planear barreras y comunicar al turista."
+      },
+      {
+        "name": "Red de Monitoreo del Sargazo de Quintana Roo / Sargazo.info",
+        "type": "Citizen-science monitoring network (cuasi-oficial, citada por prensa y gobierno)",
+        "url": "https://en.sargazo.info/",
+        "whyRelevant": "Red de monitoreo ciudadano que alimenta semáforos y reportes diarios usados por medios y autoridades; misma audiencia (turistas que checan playa antes de salir). Complemento satelital natural a su data en tierra.",
+        "contactHint": "Contacto vía sargazo.info y Facebook @RedSargazo. Proponer intercambio de datos / cita cruzada con el coordinador de la red; relación de pares, no link request.",
+        "authority": "medium",
+        "angle": "Colaboración de datos: ellos aportan observación en playa, nosotros el composite satelital AFAI + forecast; cita mutua de fuentes y posible embed del mapa como capa regional."
+      },
+      {
+        "name": "Sistema de Monitoreo de Sargazo (Cancun Travel Info)",
+        "type": "Destination sargassum monitoring portal (asociado a Cancún)",
+        "url": "https://sargassum.cancuntravel.info/",
+        "whyRelevant": "Portal dedicado al monitoreo de sargazo enfocado en Cancún/Q. Roo; su único propósito es informar el estado de las playas, exactamente la audiencia que necesita un mapa live con Beach Score.",
+        "contactHint": "Contacto vía el sitio cancuntravel.info y sus canales asociados. Proponer integración del widget o cita del reporte semanal como dataset adicional.",
+        "authority": "medium",
+        "angle": "Embed del widget live-map y uso del data kit/backtest como respaldo metodológico que diferencie su portal con datos satelitales verificables."
+      },
+      {
+        "name": "LANOT - Laboratorio Nacional de Observación de la Tierra (UNAM) - Monitoreo de Sargazo",
+        "type": "National scientific lab / official satellite sargassum monitoring",
+        "url": "https://www.lanot.unam.mx/home/sargazo/",
+        "whyRelevant": "Laboratorio universitario nacional que monitorea sargazo por satélite para el Caribe mexicano; referencia científica citada por autoridades. Audiencia técnica/periodística que valora metodología y datos abiertos.",
+        "contactHint": "Contacto institucional en lanot.unam.mx (UNAM). Dirigir al responsable del proyecto de sargazo; pitch academia-a-academia con metodología y backtest, no enlace comercial.",
+        "authority": "high",
+        "angle": "Colaboración / cita científica: compartir el press-data kit con metodología Copernicus-NOAA AFAI y accuracy backtest para validación cruzada y posible referencia recíproca."
+      },
+      {
+        "name": "SECTUR - Secretaría de Turismo (Gobierno de México)",
+        "type": "National tourism ministry (fichas oficiales de destino)",
+        "url": "https://www.gob.mx/sectur",
+        "whyRelevant": "Publica fichas oficiales de destinos como Tulum y Riviera Maya en gob.mx; los viajeros nacionales consultan estas páginas. Un recurso live de condiciones de playa es información de servicio que su audiencia necesita.",
+        "contactHint": "Vía gob.mx/sectur (contacto institucional) y Dirección de Comunicación Social de SECTUR. Pitch como recurso de información de servicio público gratuito para el viajero.",
+        "authority": "high",
+        "angle": "Cita del reporte semanal por playa / mapa live como recurso de 'antes de viajar' en sus artículos de destino del Caribe mexicano; ofrecer press kit con metodología verificable."
+      },
+      {
+        "name": "H. Ayuntamiento de Solidaridad (Playa del Carmen)",
+        "type": "Municipal government (Playa del Carmen / corazón de Riviera Maya)",
+        "url": "https://www.solidaridad.gob.mx/",
+        "whyRelevant": "Gobierna Playa del Carmen, destino central de la Riviera Maya con barreras de 2,580 m contra sargazo. Sus visitantes y residentes buscan condiciones de playa actualizadas a diario.",
+        "contactHint": "Portal solidaridad.gob.mx; Dirección de Turismo y Comunicación Social. Redes oficiales del ayuntamiento. Enfocar como herramienta gratuita para reducir reclamaciones turísticas.",
+        "authority": "medium",
+        "angle": "Embed del widget en una página municipal de turismo/playas de Playa del Carmen y cita del pronóstico a 7 días para comunicar condiciones a visitantes."
+      },
+      {
+        "name": "Dirección de Turismo de Cozumel / This is Cozumel (info turística oficial)",
+        "type": "Island DMO / tourism information",
+        "url": "https://thisiscozumel.com/tourist-info",
+        "whyRelevant": "Cozumel se promueve como destino de playa limpia (lado leeward); confirmar y comunicar condiciones con datos satelitales refuerza su mensaje y ayuda a viajeros a planear snorkel/playa.",
+        "contactHint": "Contacto vía thisiscozumel.com y la Dirección de Turismo del municipio de Cozumel (cozumel.gob.mx). Pitch: dato satelital que respalda su reputación de aguas claras.",
+        "authority": "medium",
+        "angle": "Embed del widget filtrado a playas de Cozumel/lado oeste como prueba live de condiciones limpias, más cita del reporte semanal en su sección de información al turista."
       }
     ],
     "outreach": {

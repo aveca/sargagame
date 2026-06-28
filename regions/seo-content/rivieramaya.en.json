@@ -196,6 +196,106 @@
       ],
       "priority": "0.7",
       "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "cancun-seaweed-today",
+      "title": "Cancún Seaweed Today: Live Satellite Sargassum",
+      "desc": "Check Cancún seaweed today by live satellite. Per-beach Beach Score, clean/moderate/avoid status, and a 7-day forecast refreshed 4x daily. Measured, not guessed.",
+      "h1": "Cancún Seaweed Today — Live Satellite Sargassum Status",
+      "intro": "Want to know the seaweed conditions in Cancún today? Our live satellite map gives you each Cancún beach a current status — clean, moderate, or avoid — updated today from Copernicus and NOAA imagery, so you can see where the water is clear before you pack the car. Every beach gets a Beach Score from 0 to 100 plus a 7-day forecast, refreshed four times a day. Unlike crowd-sourced photo apps that show you yesterday's guess, we read the actual sargassum signal (AFAI) from orbit — measured, not guessed. When clouds block the view, we tell you that too, instead of pretending. Think of it as a watcher that scans the Caribbean while you sleep and reports each morning which Cancún beaches are worth your day. No invented numbers, no fake reviews — just the satellite, honestly read.",
+      "sections": [
+        {
+          "h2": "Which Cancún beaches are clean today?",
+          "text": "Sargassum never lands evenly along the Cancún Hotel Zone — one stretch can be clear while the next is buried. Our map scores each beach individually so you don't gamble. The northern beaches around Punta Cancún and Playa Caracol, where the coastline turns to face the calmer bay, often hold a cleaner status than the open east-facing shore, but this shifts with wind and current — which is exactly why you check the live status today rather than trust a fixed reputation. Open the map, look for the green (clean) and amber (moderate) markers, and avoid the red ones. Each marker carries today's Beach Score and a short read of conditions, drawn straight from the latest satellite pass — not from a photo someone posted last week."
+        },
+        {
+          "h2": "When does the seaweed clear in Cancún?",
+          "text": "Sargassum arrivals come in pulses, not a steady tide. A beach can be hit one morning and noticeably cleaner two or three days later once a band drifts past and crews clear the wrack line. That's why a single status reading isn't enough — you want the trend. Our 7-day per-beach forecast projects how each Cancún beach is likely to move from clean to moderate to avoid, so you can time a beach day or a snorkeling trip for the clearest window. The forecast leans on satellite-tracked sargassum offshore plus current and wind drift. We're honest about uncertainty: the further out the day, the wider the margin, and cloudy passes lower our confidence. We show that confidence rather than hide it."
+        },
+        {
+          "h2": "Where to go instead when Cancún is hit",
+          "text": "When the whole Cancún strip shows moderate or avoid, you have nearby options — and the same map covers them. Isla Mujeres, sheltered on its western side, frequently stays cleaner than the mainland's east-facing beaches, and the protected coves toward Puerto Morelos can ride out a pulse the open shore can't. Rather than drive blind, scan the live status across the Riviera Maya and pick the highest Beach Score within your range for the day. Because every location refreshes on the same four-times-daily satellite cycle, you're comparing real conditions side by side, not reputations. The goal is simple: one glance, and you know which water is worth the trip this morning — measured from orbit, reported plainly."
+        }
+      ],
+      "faq": [
+        {
+          "q": "How do I check seaweed in Cancún today?",
+          "a": "Open the live map and find your beach — each one shows a current status (clean, moderate, or avoid) and a Beach Score updated today from satellite imagery, so you know conditions before you leave."
+        },
+        {
+          "q": "How often is the Cancún sargassum data updated?",
+          "a": "Four times a day. We pull fresh Copernicus and NOAA AFAI satellite imagery and re-score every beach, so the status reflects recent conditions rather than an old photo or a single daily guess."
+        },
+        {
+          "q": "Are all Cancún beaches affected the same way?",
+          "a": "No. Sargassum lands unevenly, so one beach can be clean while a neighbor is buried. That's why we score each beach separately instead of giving the whole city one rating."
+        },
+        {
+          "q": "What happens when clouds block the satellite?",
+          "a": "We tell you. Cloud cover lowers our confidence for that pass, and we show that rather than inventing a clean reading. Honesty about uncertainty is core to how the Watcher works."
+        },
+        {
+          "q": "Can I see if Cancún will be clear later this week?",
+          "a": "Yes. Each beach has a 7-day forecast projecting how its status is likely to shift, so you can time a beach or snorkeling day for the clearest window. Confidence narrows the further out you look."
+        },
+        {
+          "q": "How much does access cost?",
+          "a": "A one-time PASS, starting at USD 5.99 — no subscription. It unlocks per-beach Beach Scores and the 7-day forecast across Cancún and the Riviera Maya."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "tulum-sargassum-today",
+      "title": "Tulum Sargassum Today: Live Beach Status",
+      "desc": "Check Tulum sargassum today by live satellite. Per-beach Beach Score, clean/moderate/avoid status, and a 7-day forecast refreshed 4x daily. Measured, not guessed.",
+      "h1": "Tulum Sargassum Today — Live Beach Status by Satellite",
+      "intro": "Planning a beach or photo day in Tulum and want to know the sargassum situation today? Our live satellite map gives each Tulum beach a current status — clean, moderate, or avoid — updated today from Copernicus and NOAA imagery, so you can find clear turquoise water before you arrive. Every beach carries a Beach Score from 0 to 100 and a 7-day forecast, refreshed four times a day. Instead of relying on a stranger's photo from last week, we read the actual sargassum signal (AFAI) from orbit — measured, not guessed. When clouds block the satellite's view, we say so rather than fake a clean reading. Picture a watcher scanning the Caribbean overnight, then telling you each morning which Tulum beaches are postcard-clear and which to skip. No invented percentages, no fake testimonials — just the satellite, read honestly, so your photos and your swim aren't ruined by a brown shoreline.",
+      "sections": [
+        {
+          "h2": "Which Tulum beaches are clear for photos today?",
+          "text": "Tulum's long beach is not one condition — the public stretch, the hotel zone, and the quieter southern sands toward Sian Ka'an can each show a different status on the same morning. For the clean, golden-and-turquoise shots Tulum is famous for, you need the specific beach, not the town's overall reputation. Our map scores each section individually so you can head straight to the clearest sand. Look for green (clean) and amber (moderate) markers and steer clear of red, and check the Beach Score on each before you commit your morning light to it. Conditions can flip beach to beach, so a quick scan of today's live status beats driving the coast hoping the next stretch is better."
+        },
+        {
+          "h2": "When will the sargassum clear in Tulum?",
+          "text": "Sargassum reaches Tulum in waves rather than a constant tide, so a beach that's covered today can clear within a few days once a band drifts on and crews rake the wrack line. Because timing matters for a photo trip, we give each beach a 7-day forecast that projects its likely move between clean, moderate, and avoid — letting you book your shoot or beach day for the best window. The forecast tracks sargassum offshore by satellite and factors in current and wind drift. We stay honest about the limits: confidence is highest for the next day or two and widens further out, and cloudy passes reduce certainty. We show you that confidence level instead of pretending every day is a sure bet."
+        },
+        {
+          "h2": "Where to go instead when Tulum is buried",
+          "text": "If the Tulum coast reads mostly moderate or avoid, the same map covers the rest of the Riviera Maya so you can pivot fast. Sheltered spots and cenotes inland stay sargassum-free year-round, and beaches toward Akumal or the protected bays north can hold a cleaner status when the open Tulum shore takes a hit. Rather than guess, scan the live status across the region and pick the highest Beach Score within driving range for the day. Every location updates on the same four-times-daily satellite cycle, so you're comparing real conditions, not reputations or old reviews. One look tells you where the clear water is this morning — measured from orbit, reported plainly, with no invented numbers."
+        }
+      ],
+      "faq": [
+        {
+          "q": "How do I check sargassum in Tulum today?",
+          "a": "Open the live map and find your beach — each shows a current status (clean, moderate, or avoid) and a Beach Score updated today from satellite imagery, so you know conditions before you go."
+        },
+        {
+          "q": "How often is the Tulum sargassum data refreshed?",
+          "a": "Four times a day. We pull fresh Copernicus and NOAA AFAI satellite imagery and re-score every beach, so the status reflects recent conditions rather than an old photo or one daily guess."
+        },
+        {
+          "q": "Is all of Tulum beach affected the same?",
+          "a": "No. The public beach, hotel zone, and southern stretch can each show different conditions on the same morning, so we score each section separately instead of rating the whole town at once."
+        },
+        {
+          "q": "Will my Tulum photos be ruined by seaweed?",
+          "a": "Not if you check first. The map flags clean beaches today and forecasts the clearest window this week, so you can aim your morning light at turquoise water instead of a brown wrack line."
+        },
+        {
+          "q": "What about when clouds block the satellite?",
+          "a": "We tell you. Cloud cover lowers our confidence for that pass, and we show that rather than inventing a clean reading. Being honest about uncertainty is core to how the Watcher works."
+        },
+        {
+          "q": "How much does it cost to see the full forecast?",
+          "a": "A one-time PASS, from USD 5.99 — no subscription. It unlocks per-beach Beach Scores and the 7-day forecast across Tulum and the wider Riviera Maya."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
     }
   ]
 }

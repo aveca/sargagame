@@ -329,6 +329,562 @@
       ],
       "priority": "0.7",
       "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-playa-del-carmen-hoy",
+      "title": "Sargazo en Playa del Carmen Hoy — Mapa en Vivo",
+      "desc": "Mira el sargazo en Playa del Carmen hoy con imágenes de satélite actualizadas 4 veces al día. Beach Score por playa, estado y pronóstico a 7 días.",
+      "h1": "Sargazo en Playa del Carmen Hoy — Mapa en Vivo por Satélite",
+      "intro": "¿Hay sargazo en Playa del Carmen hoy? La respuesta está en el mapa en vivo: cada playa muestra su estado del día —limpia, moderado o evitar— calculado con imágenes de satélite Copernicus y NOAA actualizadas 4 veces al día. Antes de salir a la playa, abre el mapa y revisa el Beach Score de tu zona, desde Playacar hasta las calas del norte. A diferencia de los reportes que alguien escribe a mano o repite de oídas, aquí no adivinamos: medimos el alga directamente desde el espacio con el índice AFAI. Somos El Vigía, el satélite que observa el mar mientras duermes y cada mañana te dice dónde está el agua limpia. Y cuando hay nubes que tapan la señal, lo decimos con claridad en vez de inventar un dato.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de Playa del Carmen están limpias hoy?",
+          "text": "El estado del sargazo cambia de una playa a otra según las corrientes y el viento, por eso medimos cada tramo por separado. En el mapa verás el Beach Score (de 0 a 100) de cada playa de Playa del Carmen: las zonas céntricas frente a la Quinta Avenida, Playacar al sur y las playas más resguardadas del norte como Punta Esmeralda o Xcalacoco. Un puntaje alto y la etiqueta \"limpia\" indican agua despejada en la última pasada de satélite; \"moderado\" significa presencia parcial, y \"evitar\" señala acumulación visible. Como la imagen se refresca varias veces al día, conviene revisar justo antes de salir. Si una zona está cubierta por nubes, el mapa lo indica en lugar de mostrar un dato falso."
+        },
+        {
+          "h2": "¿Cuándo se limpia el sargazo en Playa del Carmen?",
+          "text": "El sargazo no llega ni se va a una hora fija: depende del viento, las corrientes y la temporada, que suele ser más intensa entre la primavera y el final del verano. Por eso ofrecemos un pronóstico a 7 días por cada playa, basado en la persistencia del alga observada por satélite y la tendencia de los días anteriores. Esto te ayuda a planear: si hoy una playa está \"evitar\", el pronóstico puede mostrar cuándo es probable que mejore. No prometemos certezas que el mar no da; mostramos probabilidades medidas y somos honestos sobre la incertidumbre. Para una mañana concreta, lo más fiable siempre es el estado del día actualizado hoy en el mapa en vivo."
+        },
+        {
+          "h2": "¿A dónde ir si tu playa tiene sargazo?",
+          "text": "Si tu playa preferida aparece en \"evitar\", el mapa te muestra de un vistazo qué tramos cercanos están limpios hoy. Las calas resguardadas del norte de Playa del Carmen y algunos puntos de Playacar a veces conservan agua despejada cuando el centro está afectado. También puedes comparar con destinos cercanos de la Riviera Maya cubiertos por El Vigía, como Tulum o la Zona Hotelera de Cancún, para decidir tu salida según el Beach Score más alto del día. La idea es simple: en lugar de llegar a la orilla y descubrir el alga, llegas ya sabiendo dónde está el agua limpia, gracias a un dato medido por satélite y no a una corazonada."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en Playa del Carmen hoy?",
+          "a": "Consúltalo en el mapa en vivo: cada playa muestra su estado de hoy —limpia, moderado o evitar— con el Beach Score calculado a partir de imágenes de satélite actualizadas 4 veces al día."
+        },
+        {
+          "q": "¿Cada cuánto se actualiza el mapa de sargazo?",
+          "a": "Las imágenes de satélite Copernicus y NOAA se procesan 4 veces al día. Cuando las nubes tapan la señal, lo indicamos con claridad en lugar de mostrar un dato inventado."
+        },
+        {
+          "q": "¿Qué significa el Beach Score?",
+          "a": "Es un puntaje de 0 a 100 por playa que resume cuánto sargazo detecta el satélite. Un valor alto indica agua limpia; uno bajo, acumulación que conviene evitar ese día."
+        },
+        {
+          "q": "¿Puedo saber si mañana habrá sargazo?",
+          "a": "Sí. Cada playa incluye un pronóstico a 7 días basado en datos medidos por satélite y en la tendencia reciente. Mostramos probabilidades, no certezas, y somos honestos sobre la incertidumbre."
+        },
+        {
+          "q": "¿Cómo accedo a todas las playas y al pronóstico?",
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días, sin suscripción."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-tulum-hoy",
+      "title": "Sargazo en Tulum Hoy — Estado de Playas por Satélite",
+      "desc": "Estado del sargazo en Tulum hoy con imágenes de satélite actualizadas 4 veces al día. Beach Score por playa, mapa en vivo y pronóstico a 7 días.",
+      "h1": "Sargazo en Tulum Hoy — Estado de las Playas por Satélite",
+      "intro": "¿Cómo está el sargazo en Tulum hoy? El mapa en vivo te lo dice playa por playa: cada tramo de la costa de Tulum muestra su estado del día —limpia, moderado o evitar— con un Beach Score calculado a partir de imágenes de satélite Copernicus y NOAA refrescadas 4 veces al día. Si planeas un día de playa o una sesión de fotos frente al mar, revisa primero qué zona está despejada, desde la zona hotelera hasta las playas públicas del norte. Aquí no copiamos rumores ni reportes escritos a mano: medimos el alga directamente desde el espacio con el índice AFAI. Somos El Vigía, el satélite que vigila el Caribe mientras duermes y cada mañana te indica dónde el agua está limpia. Y si las nubes tapan la imagen, lo decimos con honestidad en lugar de inventar un número.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de Tulum están limpias hoy?",
+          "text": "En Tulum el sargazo no afecta a toda la costa por igual: varía según las corrientes, el relieve del arrecife y el viento. Por eso medimos cada tramo por separado y lo verás en el mapa con su propio Beach Score. Podrás distinguir entre la zona hotelera frente a los beach clubs, las playas públicas como Playa Paraíso o Playa Pescadores, y los tramos más al sur hacia Sian Ka'an. Un puntaje alto y la etiqueta \"limpia\" indican agua despejada en la última pasada de satélite; \"moderado\" señala presencia parcial y \"evitar\", acumulación visible. Como la señal se actualiza varias veces al día, lo ideal es mirar el mapa justo antes de salir, sobre todo si vas a fotografiar el mar turquesa."
+        },
+        {
+          "h2": "¿Cuándo desaparece el sargazo en Tulum?",
+          "text": "El sargazo llega en pulsos empujados por las corrientes del Atlántico, con temporada más fuerte entre la primavera y el final del verano, aunque puede aparecer fuera de ese rango. No hay una hora exacta de llegada o salida, así que para planear ofrecemos un pronóstico a 7 días por cada playa de Tulum, construido con la persistencia del alga observada por satélite y la tendencia reciente. Si hoy una playa marca \"evitar\", el pronóstico puede indicar cuándo es probable que mejore. No prometemos lo que el mar no garantiza: mostramos probabilidades medidas y somos transparentes con la incertidumbre. Para una mañana concreta, el dato más fiable es siempre el estado del día actualizado hoy."
+        },
+        {
+          "h2": "¿A dónde ir si Tulum tiene sargazo?",
+          "text": "Si tu playa marca \"evitar\", el mapa te muestra al instante qué tramos cercanos están limpios hoy. Dentro de Tulum, algunas calas resguardadas o sectores del norte pueden conservar agua despejada cuando el centro de la zona hotelera está afectado. También puedes comparar con otros puntos de la Riviera Maya que cubre El Vigía, como Playa del Carmen o la Zona Hotelera de Cancún, y elegir tu salida según el Beach Score más alto del día. Así evitas llegar a la orilla y descubrir el alga: sales ya sabiendo dónde está el agua limpia, con un dato medido por satélite y no con una suposición."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en Tulum hoy?",
+          "a": "Revísalo en el mapa en vivo: cada playa de Tulum muestra su estado de hoy —limpia, moderado o evitar— con el Beach Score derivado de imágenes de satélite actualizadas 4 veces al día."
+        },
+        {
+          "q": "¿Qué playa de Tulum suele tener menos sargazo?",
+          "a": "Depende del día y del viento. El mapa mide cada tramo por separado, así que en vez de generalizar te muestra cuál tiene hoy el Beach Score más alto y el agua más despejada."
+        },
+        {
+          "q": "¿Cada cuánto se actualizan los datos de Tulum?",
+          "a": "Procesamos imágenes Copernicus y NOAA 4 veces al día. Si las nubes tapan la señal sobre Tulum, lo indicamos con claridad en lugar de inventar un dato."
+        },
+        {
+          "q": "¿Puedo ver el pronóstico de sargazo de Tulum?",
+          "a": "Sí. Cada playa incluye un pronóstico a 7 días basado en datos medidos por satélite y la tendencia reciente. Mostramos probabilidades, no certezas, y somos honestos sobre la incertidumbre."
+        },
+        {
+          "q": "¿Es gratis o de pago?",
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99, sin suscripción) desbloqueas el detalle por playa de Tulum, el Beach Score completo y el pronóstico a 7 días."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-zona-hotelera-cancun-hoy",
+      "title": "Sargazo Zona Hotelera Cancún Hoy — Playa por Playa",
+      "desc": "Sargazo en la Zona Hotelera de Cancún hoy, playa por playa. Satélite actualizado 4 veces al día, Beach Score, estado y pronóstico a 7 días.",
+      "h1": "Sargazo en la Zona Hotelera de Cancún Hoy — Playa por Playa",
+      "intro": "¿Están limpias hoy las playas de la Zona Hotelera de Cancún? El mapa en vivo te responde playa por playa: Playa Delfines, Playa Marlín, Playa Chac Mool y el resto del bulevar Kukulcán muestran su estado del día —limpia, moderado o evitar— con un Beach Score calculado desde imágenes de satélite Copernicus y NOAA actualizadas 4 veces al día. Antes de bajar de tu hotel, abre el mapa y comprueba qué tramo tiene el agua más despejada. No repetimos rumores ni reportes escritos a mano: medimos el sargazo directamente desde el espacio con el índice AFAI. Somos El Vigía, el satélite que vigila el Caribe mientras duermes y cada mañana te dice dónde está limpio. Si las nubes tapan la señal sobre la Zona Hotelera, lo decimos con honestidad en vez de inventar una cifra.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de la Zona Hotelera están limpias hoy?",
+          "text": "La Zona Hotelera de Cancún tiene dos caras: el tramo norte, más resguardado en la Bahía de Mujeres, suele comportarse distinto al tramo este expuesto al mar abierto, donde está Playa Delfines. Como el sargazo no afecta por igual a toda la franja, medimos cada playa por separado y la verás en el mapa con su propio Beach Score. Podrás comparar Playa Delfines, Playa Marlín, Playa Chac Mool, Playa Ballenas y las playas del norte como Playa Las Perlas o Playa Tortugas. Un puntaje alto y \"limpia\" indican agua despejada en la última pasada de satélite; \"moderado\", presencia parcial; \"evitar\", acumulación visible. Al refrescarse varias veces al día, lo mejor es mirar el mapa justo antes de salir del hotel."
+        },
+        {
+          "h2": "¿Cuándo se limpian las playas de Cancún?",
+          "text": "El sargazo llega a Cancún en oleadas empujadas por las corrientes del Atlántico, con mayor intensidad entre la primavera y el final del verano, aunque puede presentarse fuera de temporada. No hay una hora fija de llegada o retiro, así que para ayudarte a planear damos un pronóstico a 7 días por cada playa de la Zona Hotelera, basado en la persistencia del alga observada por satélite y la tendencia de los días previos. Si hoy Playa Delfines marca \"evitar\", el pronóstico puede señalar cuándo es probable que mejore. No prometemos certezas que el mar no ofrece: mostramos probabilidades medidas y somos claros sobre la incertidumbre. Para una mañana concreta, el dato más fiable es el estado del día actualizado hoy."
+        },
+        {
+          "h2": "¿A dónde ir si tu playa tiene sargazo?",
+          "text": "Si el tramo frente a tu hotel marca \"evitar\", el mapa te muestra al instante qué playas cercanas de la Zona Hotelera están limpias hoy. A menudo, cuando el lado este expuesto acumula alga, las playas del norte en la Bahía de Mujeres conservan agua más despejada. También puedes comparar con otros destinos de la Riviera Maya cubiertos por El Vigía, como Playa del Carmen o Tulum, y elegir según el Beach Score más alto del día. En lugar de caminar por el bulevar Kukulcán buscando una playa limpia, sales ya sabiendo a dónde ir, con un dato medido por satélite y no con una suposición de recepción."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en la Zona Hotelera de Cancún hoy?",
+          "a": "Compruébalo en el mapa en vivo: cada playa, incluida Playa Delfines, muestra su estado de hoy —limpia, moderado o evitar— con el Beach Score de imágenes de satélite actualizadas 4 veces al día."
+        },
+        {
+          "q": "¿Playa Delfines tiene sargazo hoy?",
+          "a": "Consulta su Beach Score en el mapa en vivo. Medimos Playa Delfines por separado del resto de la Zona Hotelera porque está más expuesta al mar abierto y suele variar más."
+        },
+        {
+          "q": "¿Qué parte de la Zona Hotelera tiene menos sargazo?",
+          "a": "Suele variar: el tramo norte de la Bahía de Mujeres tiende a estar más resguardado que el este. El mapa mide cada playa y te muestra cuál está más limpia hoy."
+        },
+        {
+          "q": "¿Cada cuánto se actualiza el mapa?",
+          "a": "Procesamos imágenes Copernicus y NOAA 4 veces al día. Si las nubes tapan la señal sobre Cancún, lo indicamos con claridad en lugar de inventar un dato."
+        },
+        {
+          "q": "¿Cómo veo todas las playas y el pronóstico?",
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99, sin suscripción) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "cuando-se-va-el-sargazo-en-cancun",
+      "title": "¿Cuándo se va el Sargazo en Cancún? Temporada 2026",
+      "desc": "¿Cuándo se va el sargazo en Cancún? La temporada baja suele empezar entre noviembre y diciembre. Consulta el mapa satelital por playa, actualizado hoy.",
+      "h1": "¿Cuándo se va el Sargazo en Cancún? Temporada y Pronóstico",
+      "intro": "El sargazo en Cancún suele disminuir a partir de noviembre y los meses más limpios van de diciembre a marzo o abril. Los picos más fuertes llegan entre mayo y agosto, aunque cada año cambia y ninguna fecha es exacta. Eso dice la estadística de temporada; lo que no te dice es cómo está hoy tu playa concreta. Por eso preferimos medir antes que adivinar. El Vigía es un satélite que observa el mar mientras duermes y cada mañana te dice dónde el agua está limpia, usando imágenes Copernicus/NOAA AFAI que se actualizan 4 veces al día. A cada playa le asignamos un Beach Score (0-100) y un estado: limpio, moderado o evitar, más un pronóstico por playa a 7 días. Somos honestos cuando las nubes tapan la imagen: te decimos la incertidumbre en lugar de inventar un número.",
+      "sections": [
+        {
+          "h2": "¿En qué meses se va el sargazo en Cancún?",
+          "text": "Como referencia general, la llegada de sargazo al Caribe mexicano tiende a bajar hacia el final del año: a partir de noviembre suele aliviarse, y la ventana más limpia abarca de diciembre hasta marzo o principios de abril. La temporada alta concentra el mayor arribo entre mayo y agosto. Sin embargo, estos rangos son promedios de varios años, no una garantía: el clima, las corrientes y el viento pueden adelantar o retrasar todo en semanas. En lugar de fiarte solo del calendario, conviene revisar el estado real de la playa el día que vayas. En el mapa verás el Beach Score y el estado de cada playa actualizado hoy, para confirmar si la tendencia de la temporada se cumple en tu zona concreta antes de salir."
+        },
+        {
+          "h2": "¿Aclaran todas las playas al mismo tiempo?",
+          "text": "No. El sargazo no se reparte por igual: la orientación de la costa, las corrientes y las bahías hacen que dos playas cercanas tengan estados muy distintos el mismo día. Zonas resguardadas como Isla Mujeres o algunos tramos de la cara norte de Cancún suelen aclarar antes y con más frecuencia que la cara este, más expuesta al arribo abierto. Por eso un promedio de temporada para todo Cancún sirve poco si lo que quieres es entrar al agua mañana en una playa concreta. El Vigía mide cada playa por separado con la imagen satelital más reciente, así que puedes comparar el Beach Score de varias opciones y elegir la que esté limpia hoy, en lugar de asumir que toda la costa está igual."
+        },
+        {
+          "h2": "¿Puedo saber con antelación cuándo se irá?",
+          "text": "Hasta cierto punto. Publicamos un pronóstico por playa a 7 días basado en la evolución reciente del sargazo y en cómo se ha movido sobre la imagen satelital, no en suposiciones. Es útil para planificar los próximos días, pero ningún modelo predice semanas exactas: el mar cambia con el viento y las nubes pueden ocultar parte del composite. Cuando eso ocurre, lo decimos abiertamente y marcamos la incertidumbre en vez de rellenar con un dato inventado. También publicamos nuestra precisión de backtest para que veas qué tan bien acierta el sistema con el tiempo. La regla es simple: te damos la mejor lectura medida disponible y somos transparentes sobre lo que aún no se puede ver."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Cuándo se va el sargazo en Cancún?",
+          "a": "Suele disminuir a partir de noviembre, y los meses más limpios van de diciembre a marzo o abril. Son promedios de temporada, no fechas exactas: revisa el estado de tu playa actualizado hoy en el mapa."
+        },
+        {
+          "q": "¿Qué mes tiene menos sargazo en Cancún?",
+          "a": "Los meses con menor arribo suelen estar entre diciembre y marzo. Aun así, varía cada año; consulta el Beach Score por playa para confirmar la situación real del día que viajes."
+        },
+        {
+          "q": "¿En qué meses hay más sargazo?",
+          "a": "El mayor arribo se concentra normalmente entre mayo y agosto. Dentro de esos meses hay días y playas más limpias, por eso medimos cada playa por separado 4 veces al día."
+        },
+        {
+          "q": "¿Es seguro el pronóstico de cuándo se irá?",
+          "a": "Damos un pronóstico por playa a 7 días basado en datos satelitales medidos, no adivinados. Para ventanas más largas no hay certeza, y cuando las nubes tapan la imagen lo indicamos en lugar de inventar un número."
+        },
+        {
+          "q": "¿Toda la costa de Cancún aclara a la vez?",
+          "a": "No. Playas resguardadas pueden estar limpias mientras otras expuestas tienen sargazo el mismo día. Compara el estado de varias playas en el mapa antes de decidir."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "que-es-el-sargazo",
+      "title": "¿Qué es el Sargazo? Origen, Temporada y Cómo Saber",
+      "desc": "¿Qué es el sargazo? Es un alga marina parda que llega al Caribe en grandes masas. Conoce su origen, su temporada y cómo saber si hay en tu playa hoy.",
+      "h1": "¿Qué es el Sargazo? Origen, Temporada y Cómo Saber si Hay",
+      "intro": "El sargazo es un alga marina parda y flotante que vive en mar abierto y que, en los últimos años, llega al Caribe mexicano en grandes masas que se acumulan en la orilla. No es contaminación ni un alga tóxica en sí misma; es un fenómeno natural que se ha intensificado y que tiñe el agua de marrón y desprende mal olor al descomponerse en la playa. Eso explica qué es; lo que de verdad necesitas saber es si hay sargazo en tu playa hoy. Por eso medimos en vez de adivinar. El Vigía es un satélite que observa el mar mientras duermes y cada mañana te dice dónde el agua está limpia, con imágenes Copernicus/NOAA AFAI actualizadas 4 veces al día, un Beach Score (0-100) por playa, estado limpio/moderado/evitar y pronóstico a 7 días. Cuando las nubes tapan la imagen, lo decimos.",
+      "sections": [
+        {
+          "h2": "¿De dónde viene y por qué invade el Caribe?",
+          "text": "Gran parte del sargazo que llega a Cancún y la Riviera Maya procede de una enorme franja de alga que se forma en el Atlántico tropical, entre el Caribe y la costa de África y Brasil. Las corrientes y los vientos arrastran estas masas hacia el oeste hasta depositarlas en las playas del Caribe. Se cree que factores como el aporte de nutrientes y las condiciones del océano han favorecido que el fenómeno crezca y se repita cada año. Lo importante para tu viaje no es solo el origen, sino la cantidad que toca tierra en un punto concreto y un día concreto, algo que cambia constantemente. Por eso el mapa muestra cada playa por separado: el sargazo en mar abierto no equivale al sargazo en la orilla de tu hotel."
+        },
+        {
+          "h2": "¿Cuándo es la temporada de sargazo?",
+          "text": "La temporada alta de sargazo en el Caribe mexicano suele concentrarse entre mayo y agosto, cuando llega el mayor volumen a las costas. A partir de noviembre la afluencia tiende a bajar, y los meses de diciembre a marzo o abril suelen ser los más limpios. Aun así, son promedios de varios años: el viento, las corrientes y el clima pueden adelantar o retrasar la llegada, y dentro de un mes con sargazo siempre hay playas y días mejores que otros. Por eso un calendario general no sustituye a una medición del día. Si quieres saber cómo está realmente, revisa el estado y el Beach Score de tu playa actualizado hoy en lugar de asumir lo que toca por temporada."
+        },
+        {
+          "h2": "¿Es peligroso el sargazo?",
+          "text": "El sargazo flotante no es tóxico al tacto, pero cuando se acumula y se descompone en la playa libera gases con olor a huevo podrido que pueden molestar, sobre todo a personas sensibles, y vuelve el baño desagradable. Además puede ocultar fauna y dificultar la entrada al agua. No pretendemos darte consejo médico; lo que sí hacemos es ayudarte a evitar las playas más afectadas. En el mapa, el estado evitar señala las playas con mayor acumulación según la imagen satelital más reciente, y el estado limpio te orienta hacia el agua despejada. Así reduces la sorpresa al llegar y eliges con datos medidos, no con rumores ni fotos antiguas que circulan por redes."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Qué es exactamente el sargazo?",
+          "a": "Es un alga marina parda y flotante que vive en mar abierto y llega al Caribe en grandes masas que se acumulan en la orilla. No es basura ni un alga tóxica al tacto, sino un fenómeno natural intensificado."
+        },
+        {
+          "q": "¿De dónde viene el sargazo que llega a Cancún?",
+          "a": "Procede en gran parte de una franja de alga del Atlántico tropical, entre el Caribe, África y Brasil. Las corrientes y los vientos lo arrastran hasta las playas del Caribe mexicano."
+        },
+        {
+          "q": "¿El sargazo es peligroso o tóxico?",
+          "a": "Flotando no es tóxico al tacto, pero al descomponerse en la orilla libera gases molestos y vuelve el baño desagradable. El mapa marca como evitar las playas más acumuladas para que elijas mejor."
+        },
+        {
+          "q": "¿Cuándo hay más sargazo en el Caribe?",
+          "a": "La temporada alta suele ir de mayo a agosto. De diciembre a marzo o abril suele haber menos. Son promedios; revisa el estado de tu playa hoy para confirmar."
+        },
+        {
+          "q": "¿Cómo sé si hay sargazo en mi playa hoy?",
+          "a": "Consulta el mapa: cada playa tiene un Beach Score y un estado (limpio, moderado o evitar) basado en imágenes satelitales actualizadas 4 veces al día, con la incertidumbre marcada cuando hay nubes."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "como-saber-si-hay-sargazo",
+      "title": "Cómo Saber si Hay Sargazo Antes de Ir a la Playa",
+      "desc": "Para saber si hay sargazo antes de ir a la playa, consulta un mapa satelital por playa con Beach Score y estado actualizado hoy. Mide, no adivina.",
+      "h1": "Cómo Saber si Hay Sargazo Antes de Ir a la Playa",
+      "intro": "Para saber si hay sargazo antes de ir a la playa, lo más fiable es consultar un mapa satelital que mida cada playa por separado y se actualice el mismo día, no fiarte de fotos sueltas en redes que pueden ser de otra fecha. Las imágenes de satélite ven el alga en el agua desde arriba y permiten comparar varias playas en segundos. Eso es lo que hace El Vigía: un satélite que observa el mar mientras duermes y cada mañana te dice dónde el agua está limpia. Usamos imágenes Copernicus/NOAA AFAI actualizadas 4 veces al día, asignamos a cada playa un Beach Score (0-100) y un estado limpio, moderado o evitar, y publicamos un pronóstico por playa a 7 días. Medimos, no adivinamos: cuando las nubes tapan la imagen, te decimos la incertidumbre en lugar de inventar un dato.",
+      "sections": [
+        {
+          "h2": "Formas de comprobar el sargazo antes de salir",
+          "text": "Hay varias maneras de informarte, y conviene combinarlas. Las webcams de playa muestran un punto en tiempo real, pero solo ese punto y solo si la cámara funciona. Las fotos en redes sociales sirven de pista, aunque muchas veces no llevan fecha y se reciclan de temporadas pasadas. Preguntar al hotel ayuda, pero su respuesta depende de lo que vean en su tramo. La ventaja del satélite es que cubre toda la costa de forma homogénea y deja comparar playas con el mismo criterio. Por eso lo usamos como base: el mapa te da el Beach Score y el estado de cada playa actualizado hoy, y puedes contrastarlo con una webcam si quieres una doble confirmación antes de cargar el coche."
+        },
+        {
+          "h2": "Cómo leer el Beach Score y el estado",
+          "text": "Cada playa tiene un Beach Score de 0 a 100 y un estado en tres niveles. Limpio significa que la imagen reciente muestra poco o nada de alga en la orilla; moderado indica presencia parcial que conviene vigilar; evitar señala acumulación notable según el último composite. La idea es que de un vistazo sepas a dónde ir y qué descartar, sin interpretar imágenes técnicas. El estado se apoya en datos satelitales medidos, no en impresiones. Y si el cielo estaba nublado y la lectura es menos fiable, lo indicamos: preferimos avisarte de la duda antes que darte una falsa seguridad. Así decides con la información real disponible, incluida la honestidad sobre lo que el satélite no pudo ver ese día."
+        },
+        {
+          "h2": "¿A dónde ir si mi playa tiene sargazo?",
+          "text": "Si tu playa aparece en estado evitar, no significa que todo el Caribe esté igual. Como el sargazo se reparte de forma desigual, casi siempre hay alternativas más limpias a poca distancia: tramos resguardados, la cara norte de Cancún o zonas de Isla Mujeres suelen estar mejor cuando la costa expuesta recibe arribo. En el mapa puedes ordenar y comparar playas cercanas por su Beach Score y elegir la que esté limpia hoy, además de mirar el pronóstico a 7 días por si prefieres esperar un par de días. La gracia es no perder la mañana descubriendo el sargazo al llegar, sino salir ya sabiendo a qué playa vas con el agua despejada."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Cómo saber si hay sargazo antes de ir a la playa?",
+          "a": "Consulta un mapa satelital que mida cada playa por separado y se actualice hoy. El Vigía da un Beach Score y un estado (limpio, moderado o evitar) por playa con imágenes refrescadas 4 veces al día."
+        },
+        {
+          "q": "¿Las fotos de redes sociales son fiables?",
+          "a": "Solo como pista. Muchas no llevan fecha y se reciclan de otras temporadas. Es más seguro mirar datos satelitales actualizados hoy y, si quieres, contrastar con una webcam de playa."
+        },
+        {
+          "q": "¿Qué significa el Beach Score?",
+          "a": "Es una puntuación de 0 a 100 por playa que resume cuánto sargazo muestra la imagen satelital reciente. Se acompaña de un estado: limpio, moderado o evitar."
+        },
+        {
+          "q": "¿Qué pasa si hay nubes y no se ve la imagen?",
+          "a": "Lo decimos. Marcamos la incertidumbre en lugar de inventar un número, porque preferimos avisarte de la duda antes que darte una falsa seguridad."
+        },
+        {
+          "q": "¿A dónde voy si mi playa tiene sargazo?",
+          "a": "El sargazo es desigual, así que suele haber playas limpias cerca. En el mapa puedes comparar playas próximas por Beach Score y ver el pronóstico a 7 días para elegir la mejor opción."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-cozumel-hoy",
+      "title": "Sargazo en Cozumel Hoy — Costa Oeste y Palancar",
+      "desc": "¿Hay sargazo en Cozumel hoy? Revisa la costa oeste y Palancar por satélite Copernicus, con Beach Score por playa y estado limpio o con algas actualizado.",
+      "h1": "Sargazo en Cozumel Hoy — Costa Oeste y Palancar por Satélite",
+      "intro": "¿Hay sargazo en Cozumel hoy? En general no: la costa oeste de la isla —donde están Palancar, El Cielo, Paradise y la mayoría de los clubes de playa— mira hacia el canal protegido frente a Playa del Carmen, no hacia el Atlántico abierto, así que recibe muy poco sargazo incluso en plena temporada. Pero \"casi siempre limpio\" no es \"limpio hoy\", y por eso existimos. No adivinamos: leemos el mar con el índice AFAI sobre imágenes satelitales de Copernicus y NOAA, actualizadas cuatro veces al día, y le ponemos a cada punto de la costa oeste un Beach Score de 0 a 100 con su estado —limpio, moderado o evitar— y la hora exacta de la última lectura. Cuando una nube tapa la zona, lo decimos en vez de inventar. Así, antes de reservar tu tour de snorkel a Palancar, ves lo que el satélite vio esta mañana, no un promedio del año pasado.",
+      "sections": [
+        {
+          "h2": "¿La costa oeste de Cozumel tiene sargazo?",
+          "text": "Casi nunca, y la razón es geográfica. El sargazo llega desde el Atlántico empujado por la corriente del Caribe, que golpea la cara este de Quintana Roo. La costa oeste de Cozumel —Palancar, Paradise Beach, El Cielo, la zona hotelera frente al canal— está resguardada por la propia isla y mira a aguas tranquilas entre Cozumel y el continente. Por eso los arrecifes de snorkel y buceo suelen mantenerse cristalinos cuando Tulum o Playa del Carmen amanecen con algas. La cara este de la isla (Punta Morena, Chen Río, El Mirador), en cambio, sí recibe arribazones y por eso está casi deshabitada. En el mapa en vivo separamos ambas costas: revisa el Beach Score de los puntos del oeste para confirmar que tu playa o club está limpio hoy."
+        },
+        {
+          "h2": "Palancar y los arrecifes de snorkel",
+          "text": "Palancar, Colombia y El Cielo son arrecifes mar adentro en la cara protegida de la isla: el agua que importa ahí es la del canal, históricamente la más limpia de toda la zona de Cozumel. Aun así, en años de arribazón excepcional pueden colarse manchones aislados arrastrados por el viento, y ningún arrecife está blindado al 100%. Nuestro pronóstico por playa proyecta a siete días la trayectoria de cualquier mancha que el satélite detecte mar adentro, así que si algo viene en camino lo verás con días de anticipación. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. Consulta el Beach Score del sector Palancar antes de pagar tu tour de snorkel o buceo: si está en verde, el agua que verás bajo la superficie debería estar transparente."
+        },
+        {
+          "h2": "Si la costa oeste estuviera con algas, ¿a dónde ir?",
+          "text": "Es raro, pero si un manchón llegara a tu club de playa del oeste, tienes alternativas dentro de la misma zona. El extremo norte de Cozumel y los arrecifes más alejados del canal suelen quedar fuera del paso de cualquier mancha costera. Y si tu plan es snorkel o buceo, el Beach Score te dice en cuál de los arrecifes del oeste —Palancar, Colombia, Paraíso— el agua está más limpia ese día. Para una escapada de día completo sin algas, Isla Mujeres (Playa Norte) y Holbox, ambas resguardadas del Atlántico, casi nunca reciben sargazo. El mapa compara todos estos puntos lado a lado con datos satelitales del mismo día, para que elijas el agua más transparente sin adivinar."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en la costa oeste de Cozumel hoy?",
+          "a": "Lo más probable es que no: la costa oeste mira al canal protegido y casi nunca recibe sargazo. Pero para confirmarlo hoy, revisa el Beach Score en vivo de Palancar y la zona hotelera oeste en el mapa: te muestra el estado —limpio, moderado o evitar— con la hora exacta de la última lectura satelital de hoy, no un promedio."
+        },
+        {
+          "q": "¿Palancar está limpio para snorkel?",
+          "a": "Palancar es un arrecife en la cara protegida de la isla y suele estar cristalino incluso en temporada de sargazo. Aun así, antes de reservar tu tour mira el Beach Score del sector Palancar en el mapa en vivo: si está en verde, el agua bajo la superficie debería verse transparente hoy."
+        },
+        {
+          "q": "¿Por qué Cozumel oeste casi no tiene sargazo y Tulum sí?",
+          "a": "El sargazo llega desde el Atlántico y golpea la cara este de Quintana Roo, donde está Tulum. La costa oeste de Cozumel está resguardada por la propia isla y mira a un canal tranquilo, así que recibe muy poco. Es una cuestión de geografía, no de suerte."
+        },
+        {
+          "q": "¿Cada cuánto se actualizan los datos de Cozumel?",
+          "a": "Cuatro veces al día. Usamos el índice AFAI sobre imágenes de Copernicus y NOAA, las mismas que usa la NOAA para detectar sargazo flotante. Cada punto de la costa muestra su última hora de actualización y un nivel de confianza, y si una nube tapa la zona lo decimos en lugar de inventar un dato."
+        },
+        {
+          "q": "¿Puedo ver Cozumel sin pagar?",
+          "a": "Sí, puedes consultar el mapa y el estado general de la zona. El PASS de pago único (desde USD 5.99) desbloquea el Beach Score detallado por punto y el pronóstico a 7 días para cada arrecife, sin suscripción. Es un solo pago para tu viaje."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "playas-sin-sargazo-en-cancun-hoy",
+      "title": "Playas sin Sargazo en Cancún Hoy — Lista en Vivo",
+      "desc": "Lista en vivo de playas sin sargazo en Cancún hoy, por satélite Copernicus 4 veces al día. Beach Score por playa, estado limpio o con algas y pronóstico a 7 días.",
+      "h1": "Playas sin Sargazo en Cancún Hoy — Lista en Vivo",
+      "intro": "¿Buscas playas sin sargazo en Cancún hoy? La respuesta cambia cada mañana, así que en vez de darte una lista fija te damos una lista en vivo: el mapa marca en verde las playas de Cancún que el satélite ve limpias hoy y en rojo las que tienen algas, ahora mismo. Las apuestas más seguras suelen ser las que no miran al Atlántico abierto —Playa Norte en Isla Mujeres, Holbox— y, dentro de la zona hotelera, las playas resguardadas por bahía cerca de Punta Cancún. Pero no lo afirmamos de memoria. Leemos el mar con el índice AFAI sobre imágenes de Copernicus y NOAA, actualizadas cuatro veces al día, y le ponemos a cada playa un Beach Score de 0 a 100 con su estado del día. Cuando una nube tapa una playa, lo decimos en lugar de inventar. Mira la lista en vivo antes de cargar las toallas al taxi.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de Cancún suelen estar limpias?",
+          "text": "En la zona hotelera, las playas de la cara norte —cerca de Punta Cancún, donde la costa gira y queda protegida del oleaje del Atlántico— acumulan menos sargazo que el largo tramo recto que mira al este (boulevard hacia Punta Nizuc). Fuera de la ciudad, las apuestas más confiables son Playa Norte en Isla Mujeres y Holbox: ambas están resguardadas del Atlántico abierto y casi nunca reciben algas, incluso en pleno pico de temporada. Puerto Morelos, protegido por su arrecife, suele acumular menos que las playas abiertas. Pero \"suele\" no es \"hoy\": la lista en vivo del mapa te confirma cuáles de estas playas están realmente limpias esta mañana, con el Beach Score y la hora exacta de la última pasada satelital."
+        },
+        {
+          "h2": "¿Cómo funciona la lista en vivo?",
+          "text": "El mapa ordena las playas de Cancún por su Beach Score del día, de 0 a 100: arriba las más limpias, abajo las que tienen algas. Cada playa muestra su estado —limpio, moderado o evitar—, la hora de la última lectura y un nivel de confianza, porque las nubes a veces tapan la costa y preferimos decírtelo a inventar un dato. Los reportes de bañistas en la arena corrigen lo que el satélite no alcanza a ver. Así, en lugar de una guía estática que envejece, tienes un ranking que se recalcula cuatro veces al día. Abre la lista por la mañana, elige la playa que esté en verde más cerca de tu hotel, y sal con la certeza de lo que el satélite vio hoy, no el año pasado."
+        },
+        {
+          "h2": "Si toda la costa este está con algas, ¿a dónde voy?",
+          "text": "En días de arribazón fuerte, todo el frente que mira al Atlántico —de Cancún a Tulum— puede amanecer con algas a la vez. Cuando eso pasa, las islas resguardadas son tu mejor plan: Isla Mujeres (Playa Norte) y Holbox quedan fuera del paso de la corriente del Caribe y casi siempre se mantienen limpias. Son escapadas de día completo fáciles desde Cancún en ferry. La lista en vivo te confirma su estado antes de que compres el boleto, para que no cruces a una isla que también amaneció con algas ese día raro. Y con el pronóstico a 7 días por playa puedes ver si tu playa de la zona hotelera se va a limpiar mañana o conviene cambiar de plan desde ya."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Qué playa de Cancún está sin sargazo hoy?",
+          "a": "Depende del día. Abre la lista en vivo del mapa: ordena las playas de Cancún por Beach Score y marca en verde las que el satélite ve limpias hoy. Las más confiables suelen ser Playa Norte en Isla Mujeres y Holbox, pero la lista te confirma su estado real de esta mañana."
+        },
+        {
+          "q": "¿Cuál es la playa más segura para evitar el sargazo en Cancún?",
+          "a": "Playa Norte en Isla Mujeres y Holbox son las apuestas más seguras: ambas están resguardadas del Atlántico abierto y casi nunca reciben sargazo. Dentro de la zona hotelera, las playas de la cara norte cerca de Punta Cancún acumulan menos que el tramo recto que mira al este."
+        },
+        {
+          "q": "¿Cada cuánto se actualiza la lista de playas?",
+          "a": "Cuatro veces al día. Usamos el índice AFAI sobre imágenes satelitales de Copernicus y NOAA, las mismas que usa la NOAA para detectar sargazo flotante. Cada playa muestra la hora de su última lectura y un nivel de confianza, y si una nube la tapa lo decimos en vez de inventar."
+        },
+        {
+          "q": "¿La lista incluye Isla Mujeres y Holbox?",
+          "a": "Sí. Aunque buscas Cancún, incluimos las islas resguardadas porque son el mejor plan B en días de arribazón fuerte. El mapa las compara lado a lado con las playas de la zona hotelera usando datos del mismo día, para que elijas el agua más limpia sin adivinar."
+        },
+        {
+          "q": "¿Puedo saber si mi playa se limpiará mañana?",
+          "a": "Sí. Cada playa tiene un pronóstico a 7 días que proyecta la trayectoria de las manchas que el satélite detecta mar adentro. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. Se recalcula a diario con cada nueva pasada satelital."
+        },
+        {
+          "q": "¿Cuánto cuesta ver la lista completa?",
+          "a": "Consultar el mapa y el estado general es gratis. El PASS de pago único (desde USD 5.99, sin suscripción) desbloquea el Beach Score detallado por playa y el pronóstico a 7 días. Un solo pago cubre todo tu viaje."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-es-peligroso-para-la-salud",
+      "title": "¿El Sargazo es Peligroso para la Salud?",
+      "desc": "¿El sargazo es peligroso para la salud? Te explicamos el gas, el olor y la piel, qué riesgos reales hay y cómo evitar las playas con algas con datos por satélite.",
+      "h1": "¿El Sargazo es Peligroso para la Salud? Lo que Debes Saber",
+      "intro": "¿El sargazo es peligroso para la salud? El alga en sí no es tóxica ni venenosa al tocarla, y nadar cerca de manchones pequeños no suele representar un riesgo grave. El problema aparece cuando grandes cantidades se acumulan en la playa y se descomponen: al pudrirse liberan ácido sulfhídrico, el gas con olor a huevo podrido, que en concentraciones altas puede causar dolor de cabeza, náuseas e irritación de ojos, nariz y garganta —sobre todo a personas con asma o problemas respiratorios. Algunas personas también reportan irritación leve en la piel por el contacto directo o por pequeños organismos atrapados en el alga. No somos médicos y no inventamos cifras: para una preocupación de salud específica, consulta a un profesional. Lo que sí hacemos es ayudarte a evitar el problema de raíz, mostrándote por satélite —cuatro veces al día— qué playas están limpias hoy, para que ni siquiera tengas que acercarte al alga en descomposición.",
+      "sections": [
+        {
+          "h2": "El olor y el gas: qué es y a quién afecta",
+          "text": "El olor fuerte a huevo podrido que notas en playas con mucho sargazo es ácido sulfhídrico (sulfuro de hidrógeno), liberado cuando el alga acumulada se descompone en la arena. En concentraciones bajas es sobre todo molesto; en concentraciones altas y en zonas con mucha alga apilada puede provocar dolor de cabeza, mareo, náuseas e irritación de ojos y vías respiratorias. Las personas con asma, problemas respiratorios, embarazadas, bebés y adultos mayores son las más sensibles y deberían mantenerse alejadas de las acumulaciones grandes. El gas también puede ennegrecer joyería de plata y dañar aparatos electrónicos cercanos. La buena noticia: el riesgo está ligado a la cantidad de alga en descomposición, así que evitar las playas más cargadas evita el problema. Para dudas médicas concretas, consulta a un profesional de salud."
+        },
+        {
+          "h2": "¿Es seguro nadar o tocar el sargazo?",
+          "text": "Nadar cerca de manchones pequeños y flotantes no suele ser peligroso, aunque es incómodo y reduce la visibilidad. El contacto directo con el alga puede causar a algunas personas una irritación leve en la piel, en parte por pequeños organismos marinos (como larvas) atrapados entre las hojas. Si tienes piel sensible, enjuágate con agua dulce al salir. Conviene evitar meterte donde haya grandes masas de alga acumulada y en descomposición, tanto por el gas como porque el agua suele estar turbia. No somos médicos: si presentas una reacción cutánea o respiratoria, busca atención. Nuestra recomendación práctica es más simple —elige una playa que esté limpia hoy y no tendrás que decidir si es seguro entrar a un agua llena de algas."
+        },
+        {
+          "h2": "La mejor protección: evitar las playas con algas",
+          "text": "La forma más sencilla de protegerte del gas, el olor y la irritación es no estar donde se acumula el alga. Por eso construimos un vigía satelital: leemos el mar con el índice AFAI sobre imágenes de Copernicus y NOAA, cuatro veces al día, y le ponemos a cada playa un Beach Score de 0 a 100 con su estado del día —limpio, moderado o evitar—. Así, en lugar de llegar a una playa cargada y descubrir el olor al bajar del taxi, eliges desde el celular una que esté en verde. El pronóstico a 7 días por playa te dice además si la tuya se va a cargar de algas en los próximos días, para reprogramar a tiempo. No adivinamos ni inventamos números: si una nube tapa una playa, lo decimos. Medimos, no suponemos."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿El sargazo es tóxico o venenoso?",
+          "a": "El alga en sí no es tóxica ni venenosa al tocarla. El riesgo no viene del alga fresca, sino del gas (ácido sulfhídrico) que libera al descomponerse en grandes cantidades sobre la playa, que puede irritar ojos y vías respiratorias. No somos médicos: para una duda concreta, consulta a un profesional."
+        },
+        {
+          "q": "¿Es malo respirar el olor del sargazo?",
+          "a": "El olor a huevo podrido es ácido sulfhídrico. En concentraciones bajas es molesto; en altas, cerca de mucha alga apilada, puede causar dolor de cabeza, náuseas e irritación respiratoria, sobre todo en personas con asma, embarazadas, bebés y adultos mayores. La clave es la cantidad de alga: evitar las playas cargadas evita el gas."
+        },
+        {
+          "q": "¿Puedo nadar si hay sargazo en el agua?",
+          "a": "Nadar cerca de manchones pequeños no suele ser peligroso, aunque es incómodo y el agua se ve turbia. Conviene evitar las grandes masas de alga en descomposición por el gas y la irritación de piel. Más simple aún: elige una playa que el satélite vea limpia hoy y no tendrás que decidirlo."
+        },
+        {
+          "q": "¿El sargazo causa irritación en la piel?",
+          "a": "Algunas personas reportan irritación leve por contacto directo con el alga, en parte por pequeños organismos atrapados en ella. Si tienes piel sensible, enjuágate con agua dulce al salir. Si presentas una reacción, busca atención médica; no sustituimos el consejo de un profesional de salud."
+        },
+        {
+          "q": "¿Cómo evito las playas con sargazo?",
+          "a": "Revisa el mapa en vivo antes de salir: marca en verde las playas que el satélite ve limpias hoy y en rojo las que tienen algas, con datos de Copernicus y NOAA actualizados cuatro veces al día. Así eliges una playa limpia desde el celular en vez de descubrir el olor al llegar."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-isla-mujeres-playa-norte",
+      "title": "Sargazo en Isla Mujeres y Playa Norte Hoy",
+      "desc": "Consulta el estado del sargazo en Isla Mujeres y Playa Norte hoy con imagen satelital actualizada 4 veces al dia, Beach Score y pronostico a 7 dias.",
+      "h1": "Sargazo en Isla Mujeres y Playa Norte — Estado Hoy",
+      "intro": "Playa Norte, en Isla Mujeres, suele estar mas limpia que la costa del Caribe continental: mira hacia el oeste, protegida de la corriente que arrastra el sargazo, y por eso es una de las mejores opciones de playa limpia cerca de Cancun. Pero \"suele\" no es \"hoy\". Nosotros no adivinamos: medimos. El Vigia observa el mar mientras duermes con imagenes satelitales Copernicus y NOAA (AFAI) que se actualizan 4 veces al dia, y cada manana te dice el estado real de cada playa. Arriba veras el Beach Score (0-100) de Playa Norte actualizado hoy, su estado (limpio, moderado o evitar) y el pronostico por playa a 7 dias. No inventamos cifras ni testimonios: si hay nubes que tapan el satelite, te lo decimos con honestidad en vez de fingir certeza.",
+      "sections": [
+        {
+          "h2": "Por que Playa Norte suele librarse del sargazo",
+          "text": "Playa Norte mira al oeste y al norte de Isla Mujeres, del lado opuesto a las corrientes del Atlantico que empujan el sargazo contra la costa este de la Riviera Maya. Esa orientacion la convierte, la mayoria de los dias, en uno de los refugios de agua turquesa mas fiables de la zona. Aun asi, vientos del norte fuertes o frentes pueden meter arribazones puntuales, y la realidad cambia hora a hora. Por eso no te damos una regla fija: te damos el Beach Score de Playa Norte medido por satelite hoy. Si el estado marca limpio, planeas con confianza; si marca moderado, sabes que hay algo y decides con datos, no con suerte."
+        },
+        {
+          "h2": "Cuando se despeja y como leer el pronostico",
+          "text": "El sargazo llega por temporadas (mas frecuente entre mayo y octubre) y se mueve con el viento y la corriente, asi que una playa puede pasar de moderado a limpio en uno o dos dias. En lugar de prometer fechas, te mostramos el pronostico por playa a 7 dias basado en la persistencia medida y en la imagen satelital mas reciente. Cada actualizacion (4 veces al dia) recalibra el Beach Score. Tambien publicamos nuestra precision de backtest para que sepas cuanto confiar en la prevision. Cuando el satelite no ve bien por nubes, lo marcamos: preferimos decirte \"hay incertidumbre hoy\" antes que darte un numero falso."
+        },
+        {
+          "h2": "Si Playa Norte no esta limpia, a donde ir",
+          "text": "Si el Beach Score de Playa Norte hoy marca moderado o evitar, el mapa te muestra al instante que playas cercanas estan mejor: otras calas del lado oeste de Isla Mujeres, o puntos protegidos de la costa que el satelite ve limpios en la misma pasada. Comparas Beach Scores reales lado a lado y eliges sin recorrer la isla a ciegas. Un PASS unico (desde USD 5.99) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones del dia, sin suscripcion. Es la diferencia entre llegar y descubrir el sargazo, o saberlo antes de salir del hotel."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Hay sargazo en Playa Norte hoy?",
+          "a": "Consulta el Beach Score de Playa Norte arriba: se actualiza 4 veces al dia con imagen satelital y muestra el estado de hoy (limpio, moderado o evitar). No damos una respuesta fija porque las condiciones cambian; te damos la medicion real del dia."
+        },
+        {
+          "q": "Playa Norte siempre esta limpia de sargazo?",
+          "a": "Casi siempre esta mejor que la costa este por su orientacion al oeste, pero no es inmune. Vientos del norte o frentes pueden traer arribazones puntuales. Por eso medimos cada dia en vez de prometer que esta limpia."
+        },
+        {
+          "q": "Como saben el estado del sargazo en Isla Mujeres?",
+          "a": "Usamos imagenes satelitales Copernicus y NOAA (indice AFAI) actualizadas 4 veces al dia. Medimos el sargazo visible por playa y calculamos un Beach Score. No adivinamos ni inventamos cifras."
+        },
+        {
+          "q": "Que pasa si hay nubes y el satelite no ve?",
+          "a": "Te lo decimos. Marcamos la incertidumbre en lugar de dar un numero falso. Nuestra doctrina es medir, no adivinar: si la imagen del dia no es clara, lo veras indicado."
+        },
+        {
+          "q": "Cuanto cuesta ver todas las playas?",
+          "a": "Un PASS unico desde USD 5.99, sin suscripcion. Desbloquea el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-puerto-morelos-hoy",
+      "title": "Sargazo en Puerto Morelos Hoy — Mapa Satelital",
+      "desc": "Estado del sargazo en Puerto Morelos hoy con mapa satelital actualizado 4 veces al dia, Beach Score por playa, estado limpio o evitar y pronostico a 7 dias.",
+      "h1": "Sargazo en Puerto Morelos Hoy — Mapa Satelital de la Playa",
+      "intro": "Puerto Morelos esta protegido por su arrecife de coral, lo que muchas veces frena parte del sargazo y mantiene la laguna mas calmada que las playas abiertas de la Riviera Maya, pero el arrecife no es garantia: el estado real cambia cada dia con el viento y la corriente. Nosotros no adivinamos, medimos. El Vigia vigila el mar mientras duermes con imagenes satelitales Copernicus y NOAA (indice AFAI) que se actualizan 4 veces al dia, y cada manana te muestra el estado real de la playa. Arriba veras el mapa satelital con el Beach Score (0-100) de Puerto Morelos actualizado hoy, su estado (limpio, moderado o evitar) y el pronostico por playa a 7 dias. No inventamos numeros ni testimonios: cuando las nubes tapan el satelite, lo decimos con honestidad en vez de fingir certeza.",
+      "sections": [
+        {
+          "h2": "El arrecife ayuda, pero no decide por ti",
+          "text": "La barrera de coral frente a Puerto Morelos rompe el oleaje y a menudo retiene parte del sargazo antes de que llegue a la orilla, por eso la playa del pueblo suele estar mas tranquila que tramos abiertos cercanos. Pero el sargazo flota con el viento: un cambio de direccion puede meterlo dentro de la laguna en cuestion de horas. Por eso no te damos una regla, te damos la medicion del dia. El mapa satelital muestra exactamente que tan cargada esta hoy la franja de Puerto Morelos, con un Beach Score que se recalibra 4 veces al dia. Asi sabes si bajar a la playa o no antes de salir."
+        },
+        {
+          "h2": "Como leer el mapa y el pronostico a 7 dias",
+          "text": "El mapa usa el indice AFAI de Copernicus y NOAA para detectar el sargazo visible sobre el agua. Cada pasada (4 veces al dia) actualiza el Beach Score de Puerto Morelos y de las playas vecinas. Ademas del estado de hoy, veras el pronostico por playa a 7 dias, basado en la persistencia medida del sargazo y en la imagen mas reciente, no en suposiciones. Publicamos nuestra precision de backtest para que sepas cuanto confiar en la prevision. Y si las nubes impiden ver bien en una pasada, lo marcamos: preferimos avisarte de la incertidumbre antes que darte un dato inventado."
+        },
+        {
+          "h2": "Si Puerto Morelos no esta limpio hoy",
+          "text": "Si el Beach Score de Puerto Morelos marca moderado o evitar, el mapa te enseña al instante que playas cercanas estan mejor en la misma pasada de satelite. Comparas estados reales lado a lado, desde Cancun hasta la Riviera Maya, y eliges con datos en lugar de manejar al azar. Un PASS unico (desde USD 5.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar y toparte con el sargazo, o saber por la manana exactamente donde el agua esta limpia."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Hay sargazo en Puerto Morelos hoy?",
+          "a": "Mira el mapa y el Beach Score de Puerto Morelos arriba: se actualizan 4 veces al dia con imagen satelital y muestran el estado de hoy. Las condiciones cambian, por eso te damos la medicion real en lugar de una respuesta fija."
+        },
+        {
+          "q": "El arrecife protege la playa del sargazo?",
+          "a": "El arrecife frena parte del oleaje y a veces retiene sargazo, asi que la playa suele estar mas calmada. Pero un cambio de viento puede meterlo en la laguna. Por eso medimos cada dia en vez de confiar solo en el arrecife."
+        },
+        {
+          "q": "Cada cuanto se actualiza el mapa satelital?",
+          "a": "Cuatro veces al dia. Usamos imagenes Copernicus y NOAA con el indice AFAI para medir el sargazo visible y recalcular el Beach Score de cada playa."
+        },
+        {
+          "q": "Y si hay nubes sobre Puerto Morelos?",
+          "a": "Lo indicamos. Si el satelite no ve bien en una pasada, marcamos la incertidumbre en lugar de inventar un numero. Medimos, no adivinamos."
+        },
+        {
+          "q": "Que incluye el PASS y cuanto cuesta?",
+          "a": "Un pago unico desde USD 5.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-akumal-hoy",
+      "title": "Sargazo en Akumal Hoy — Estado de la Bahia",
+      "desc": "Estado del sargazo en la bahia de Akumal hoy por satelite: Beach Score actualizado 4 veces al dia, estado limpio o evitar y pronostico por playa a 7 dias.",
+      "h1": "Sargazo en Akumal Hoy — Estado de la Bahia por Satelite",
+      "intro": "Akumal, la bahia de las tortugas, es una ensenada semicerrada que muchas veces conserva agua tranquila y clara, ideal para nadar y hacer snorkel con tortugas, pero su forma de bahia tambien puede atrapar el sargazo cuando la corriente lo empuja dentro, asi que el estado real cambia dia a dia. Nosotros no adivinamos, medimos. El Vigia observa el mar mientras duermes con imagenes satelitales Copernicus y NOAA (indice AFAI) que se actualizan 4 veces al dia, y cada manana te dice el estado real de la bahia. Arriba veras el Beach Score (0-100) de Akumal actualizado hoy, su estado (limpio, moderado o evitar) y el pronostico por playa a 7 dias. No inventamos cifras ni testimonios: si las nubes tapan el satelite, lo decimos con honestidad en vez de fingir certeza.",
+      "sections": [
+        {
+          "h2": "Por que la bahia de Akumal es un caso especial",
+          "text": "Akumal es una bahia cerrada por puntas de roca y arrecife, lo que suele calmar el oleaje y mantener el agua clara para ver tortugas. Pero esa misma geografia tiene dos caras: cuando la corriente mete sargazo dentro, la ensenada puede retenerlo mas tiempo que una playa abierta. Por eso no te damos una regla fija sobre la bahia, te damos su medicion del dia. El Beach Score de Akumal, recalibrado 4 veces al dia con imagen satelital, te dice si la bahia esta clara hoy para entrar al agua o si conviene esperar o cambiar de plan. Datos reales, no rumores del recepcionista."
+        },
+        {
+          "h2": "Cuando se aclara y como funciona el pronostico",
+          "text": "El sargazo se mueve con el viento y la corriente, asi que una bahia puede pasar de moderado a limpio en uno o dos dias. En vez de prometer fechas, te mostramos el pronostico por playa a 7 dias, calculado con la persistencia medida del sargazo y la imagen satelital mas reciente. Cada pasada (4 veces al dia) actualiza el estado de Akumal. Publicamos nuestra precision de backtest para que sepas cuanto confiar en la prevision. Y cuando las nubes impiden una buena lectura, lo marcamos: preferimos avisar de la incertidumbre antes que darte un numero que no podemos respaldar."
+        },
+        {
+          "h2": "Si la bahia no esta clara, a donde ir",
+          "text": "Si el Beach Score de Akumal marca moderado o evitar hoy, el mapa te muestra al instante que playas y calas cercanas estan mejor en la misma pasada de satelite, para que no pierdas el dia de snorkel. Comparas estados reales lado a lado a lo largo de la Riviera Maya y eliges con datos. Un PASS unico (desde USD 5.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar a la bahia y encontrarla cargada, o saber por la manana exactamente donde el agua esta clara para las tortugas."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Hay sargazo en Akumal hoy?",
+          "a": "Consulta el Beach Score de la bahia de Akumal arriba: se actualiza 4 veces al dia por satelite y muestra el estado de hoy (limpio, moderado o evitar). Las condiciones cambian, por eso medimos en lugar de dar una respuesta fija."
+        },
+        {
+          "q": "Se puede ver tortugas en Akumal si hay sargazo?",
+          "a": "Con poco sargazo la visibilidad suele ser buena para snorkel; con la bahia cargada el agua se enturbia y entra menos luz. Revisa el estado del dia antes de ir: te decimos si la bahia esta clara hoy."
+        },
+        {
+          "q": "La bahia cerrada de Akumal retiene mas sargazo?",
+          "a": "Puede pasar: su forma de ensenada calma el oleaje pero tambien atrapa sargazo cuando la corriente lo mete. Por eso el satelite mide la bahia cada dia en lugar de asumir que siempre esta limpia."
+        },
+        {
+          "q": "De donde sacan los datos de sargazo?",
+          "a": "De imagenes satelitales Copernicus y NOAA con el indice AFAI, actualizadas 4 veces al dia. Medimos el sargazo visible por playa y calculamos un Beach Score. No inventamos cifras."
+        },
+        {
+          "q": "Cuanto cuesta y que incluye el PASS?",
+          "a": "Un pago unico desde USD 5.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones del dia."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
     }
   ]
 }

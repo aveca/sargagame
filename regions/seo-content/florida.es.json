@@ -141,5 +141,145 @@
     ],
     "citation": "Fuente: sargassummiami.com — datos satelitales Copernicus/NOAA, actualizados 4× al día",
     "contact": "support@sargassummiami.com"
-  }
+  },
+  "extraPages": [
+    {
+      "lang": "es",
+      "slug": "sargazo-en-miami-hoy",
+      "title": "Sargazo en Miami hoy: mapa satelital en vivo",
+      "desc": "Mira el estado del sargazo en las playas de Miami hoy. Mapa satelital actualizado 4 veces al dia, Beach Score por playa y pronostico a 7 dias.",
+      "h1": "Sargazo en Miami hoy: mapa satelital en vivo de las playas",
+      "intro": "El estado del sargazo en Miami hoy lo encuentras aqui, playa por playa, antes de salir de casa. Nuestro mapa satelital muestra para cada playa de Miami un Beach Score (0-100) y un estado (limpio, moderado o evitar) con datos actualizados hoy, no rumores ni fotos de ayer. A diferencia de un reporte general de la ciudad, leemos imagenes Copernicus y NOAA (AFAI) cuatro veces al dia y traducimos lo que ve el satelite en una respuesta clara para cada arena. Somos El Vigia: un satelite que observa el mar mientras duermes y cada manana te dice donde el agua esta limpia, medido y nunca adivinado. Cuando hay nubes que tapan la senal, lo decimos en vez de inventar; preferimos la honestidad a un numero falso. Asi decides hoy a que playa de Miami ir sin sorpresas al llegar a la orilla.",
+      "sections": [
+        {
+          "h2": "Que playas de Miami estan limpias hoy",
+          "text": "Cada playa de Miami tiene su propio Beach Score actualizado hoy, porque el sargazo no llega igual a South Beach, Mid-Beach, Bal Harbour, Key Biscayne o Sunny Isles. Una puede amanecer con estado limpio mientras la de al lado esta en moderado o evitar, segun la corriente y el viento de las ultimas horas. En el mapa abres la playa que te interesa y ves su puntaje y su estado del dia, leido de la imagen satelital mas reciente. No promediamos toda la costa en un solo verdicto: cada arena se mide por separado. Si una playa tiene nubes encima y la senal no es clara, lo marcamos en vez de fingir certeza, para que tu decision se base en lo que el satelite realmente alcanza a ver hoy."
+        },
+        {
+          "h2": "Cuando se despeja el sargazo y como cambia",
+          "text": "El sargazo se mueve con el viento y las corrientes, asi que una playa que hoy esta en evitar puede aclararse en uno o dos dias, o al reves. Por eso cada playa de Miami incluye un pronostico a 7 dias ademas del estado de hoy: ves la tendencia probable para planear con margen. Refrescamos las imagenes cuatro veces al dia, asi que el estado de la manana puede no ser el de la tarde, y el mapa lo refleja. El pronostico es una probabilidad medida sobre datos satelitales, no una promesa; publicamos nuestra precision real (backtest) para que sepas cuanto confiar. Cuando la cobertura de nubes reduce la confianza, lo indicamos. La idea es simple: que sepas no solo como esta el agua ahora, sino hacia donde va."
+        },
+        {
+          "h2": "Donde ir si tu playa amanece con sargazo",
+          "text": "Si tu playa preferida de Miami amanece en estado moderado o evitar, el mapa te muestra de un vistazo cuales playas cercanas estan en limpio hoy, ordenadas por su Beach Score. Asi cambias de plan en segundos en lugar de manejar a ciegas y descubrir el alga al llegar. Comparas Key Biscayne, Sunny Isles, Bal Harbour, Hollywood o las del norte y eliges la que el satelite ve mas despejada esta manana. Para quien viaja desde lejos o tiene un solo dia de playa, ese cambio a tiempo es lo que salva la salida. El acceso PASS (pago unico, desde USD 5.99) abre el detalle por playa, el pronostico a 7 dias y las alertas, sin suscripcion ni cobros recurrentes."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Hay sargazo en Miami hoy?",
+          "a": "Depende de la playa: cada una tiene su propio estado de hoy (limpio, moderado o evitar) y su Beach Score, leidos del satelite. Abre el mapa, elige tu playa y veras su verdicto actualizado hoy en lugar de un dato general para toda la ciudad."
+        },
+        {
+          "q": "Con que frecuencia se actualiza el mapa de sargazo?",
+          "a": "Refrescamos las imagenes satelitales (Copernicus y NOAA AFAI) cuatro veces al dia. Por eso el estado de la manana puede cambiar para la tarde, y el mapa muestra siempre la lectura mas reciente disponible."
+        },
+        {
+          "q": "Es exacto el estado del sargazo?",
+          "a": "Se basa en imagenes satelitales medidas, no en suposiciones. Publicamos nuestra precision real (backtest) y, cuando hay nubes que tapan la senal de una playa, lo decimos en vez de inventar un numero."
+        },
+        {
+          "q": "Que significa el Beach Score?",
+          "a": "Es un puntaje de 0 a 100 por playa que resume cuanta presencia de sargazo detecta el satelite hoy. A mayor puntaje, agua mas limpia; tambien lo traducimos en un estado simple: limpio, moderado o evitar."
+        },
+        {
+          "q": "Cuanto cuesta ver el detalle por playa?",
+          "a": "El acceso es un PASS de pago unico desde USD 5.99, sin suscripcion ni cobros recurrentes. Incluye el detalle por playa, el pronostico a 7 dias y las alertas."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "playas-sin-sargazo-en-florida",
+      "title": "Playas sin sargazo en Florida hoy (en vivo)",
+      "desc": "Encuentra que playas de Florida estan limpias de sargazo hoy. Mapa satelital con Beach Score por playa, estado en vivo y pronostico a 7 dias.",
+      "h1": "Playas sin sargazo en Florida hoy (estado en vivo)",
+      "intro": "Para saber que playas de Florida estan sin sargazo hoy, abre el mapa y ordena por Beach Score: las que aparecen en estado limpio son las que el satelite ve mas despejadas esta manana. En lugar de adivinar o fiarte de una foto de ayer, cada playa de Florida tiene su propio puntaje (0-100) y su estado del dia (limpio, moderado o evitar), leido de imagenes Copernicus y NOAA (AFAI) que refrescamos cuatro veces al dia. Asi comparas costa atlantica y golfo, Miami, Fort Lauderdale, Palm Beach, los Cayos o la costa oeste, y eliges sobre datos medidos. Somos El Vigia: un satelite que vigila el mar mientras duermes y cada manana te dice donde el agua esta limpia, medido y nunca adivinado. Cuando las nubes tapan una zona y la senal no es clara, lo decimos en vez de inventar; preferimos avisarte a darte un falso verde. Asi planeas tu dia de playa en Florida con la informacion mas fresca disponible.",
+      "sections": [
+        {
+          "h2": "Como encontrar las playas mas limpias hoy",
+          "text": "El mapa de Florida te deja ordenar las playas por su Beach Score del dia, asi que las mas limpias aparecen primero. Como el sargazo no llega igual a toda la costa, una playa del Atlantico puede estar en evitar mientras otra cercana, o una del golfo, amanece en limpio. Por eso medimos cada arena por separado en vez de dar un solo verdicto para todo el estado. Abres la lista, ves el estado de hoy de cada playa y eliges la mejor opcion para tu zona o tu ruta. Si una playa tiene nubes encima y la senal no alcanza, lo marcamos para que no la confundas con limpia. La meta es que en segundos sepas donde el agua esta despejada hoy, sin manejar a ciegas."
+        },
+        {
+          "h2": "Atlantico o golfo: que costa esta mejor",
+          "text": "El sargazo suele afectar mas la costa atlantica de Florida (Miami, Fort Lauderdale, Palm Beach, los Cayos), mientras el golfo (costa oeste) a menudo amanece mas limpio, aunque no siempre: todo depende del viento y la corriente de cada dia. El mapa te deja comparar ambas costas con el estado de hoy y elegir la que el satelite ve mas despejada. Para quien puede moverse, ese contraste entre costas es la forma mas rapida de encontrar agua limpia. Ademas del estado actual, cada playa trae un pronostico a 7 dias para anticipar si tu costa preferida va a mejorar o empeorar. Publicamos nuestra precision real (backtest) para que sepas cuanto pesa ese pronostico, y avisamos cuando las nubes reducen la confianza."
+        },
+        {
+          "h2": "Planea con el pronostico a 7 dias",
+          "text": "Si viajas por Florida o tienes pocos dias de playa, el pronostico a 7 dias por playa te ayuda a elegir el mejor dia y el mejor lugar antes de comprometerte. El sargazo cambia con el viento, asi que una playa en evitar hoy puede aclararse pronto, y el pronostico te muestra esa tendencia probable, medida sobre datos satelitales y no inventada. Combinado con el estado en vivo, que refrescamos cuatro veces al dia, decides con margen en vez de a ultima hora. El acceso PASS es de pago unico desde USD 5.99, sin suscripcion: abre el detalle por playa de toda Florida, el pronostico y las alertas para que el satelite te avise cuando tu playa vuelva a estar limpia."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Que playas de Florida estan sin sargazo hoy?",
+          "a": "Las que aparecen en estado limpio cuando ordenas el mapa por Beach Score. Cada playa de Florida se mide por separado con el satelite, asi que veras cuales estan despejadas hoy en lugar de un dato general del estado."
+        },
+        {
+          "q": "La costa del golfo tiene menos sargazo que el Atlantico?",
+          "a": "Suele tener menos, porque el sargazo afecta mas la costa atlantica, pero no siempre: depende del viento y la corriente del dia. El mapa te deja comparar ambas costas con el estado de hoy."
+        },
+        {
+          "q": "Cada cuanto se actualizan los datos?",
+          "a": "Refrescamos las imagenes satelitales Copernicus y NOAA (AFAI) cuatro veces al dia. El mapa muestra la lectura mas reciente, asi que el estado puede cambiar entre la manana y la tarde."
+        },
+        {
+          "q": "Puedo ver el pronostico de cada playa?",
+          "a": "Si. Cada playa de Florida incluye un pronostico a 7 dias ademas del estado de hoy, para anticipar si va a aclararse o empeorar. Es una probabilidad medida sobre datos, no una promesa."
+        },
+        {
+          "q": "Que tan confiable es la informacion?",
+          "a": "Se basa en imagenes satelitales, no en suposiciones, y publicamos nuestra precision real (backtest). Cuando las nubes tapan una playa y la senal no es clara, lo decimos en vez de marcarla como limpia."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "alga-marina-en-miami-hoy",
+      "title": "Alga marina en Miami hoy: donde el agua esta limpia",
+      "desc": "Mira donde hay alga marina (sargazo) en las playas de Miami hoy. Mapa satelital en vivo, estado por playa y pronostico a 7 dias antes de ir.",
+      "h1": "Alga marina en Miami hoy: donde el agua esta limpia",
+      "intro": "Para saber donde hay alga marina en Miami hoy y donde el agua esta limpia, abre el mapa: cada playa tiene su estado del dia (limpio, moderado o evitar) leido del satelite. Esa alga que llega a la orilla es el sargazo, y no cae igual en toda la ciudad, asi que damos una respuesta por playa en vez de un dato general. Leemos imagenes Copernicus y NOAA (AFAI) cuatro veces al dia y le ponemos a cada playa un Beach Score de 0 a 100, para que veas en segundos cual amanece despejada. Somos El Vigia: un satelite que observa el mar mientras duermes y cada manana te dice donde esta limpia el agua, medido y nunca adivinado. Cuando hay nubes que tapan una playa, lo decimos en vez de inventar un numero; preferimos avisarte a darte un falso verde. Asi eliges hoy donde meterte al mar en Miami sin encontrarte el alga al llegar.",
+      "sections": [
+        {
+          "h2": "Donde no hay alga marina en Miami hoy",
+          "text": "El mapa te muestra de un vistazo que playas de Miami amanecen sin alga (en estado limpio) y cuales tienen mas, ordenadas por Beach Score. Como el sargazo se reparte distinto entre South Beach, Mid-Beach, Bal Harbour, Key Biscayne o Sunny Isles, una puede estar despejada mientras la vecina esta en moderado o evitar. Por eso medimos cada arena por separado con el satelite, no toda la costa junta. Abres tu playa o la lista completa y ves donde el agua esta mas limpia esta manana. Si una playa tiene nubes encima y la senal no llega, lo marcamos para que no la tomes por limpia. En vez de adivinar o fiarte de una foto vieja, decides con la lectura satelital mas reciente del dia."
+        },
+        {
+          "h2": "Por que aparece el alga y cuando se va",
+          "text": "El alga marina que ves en Miami es sargazo que viaja por el mar y llega a la orilla empujado por el viento y las corrientes. Por eso una playa que hoy esta en evitar puede aclararse en uno o dos dias, o al reves: cambia rapido. Para que no te tome por sorpresa, cada playa incluye un pronostico a 7 dias ademas del estado de hoy, asi ves la tendencia probable. Refrescamos las imagenes cuatro veces al dia, asi que el estado puede variar entre la manana y la tarde y el mapa lo refleja. El pronostico es una probabilidad medida sobre datos satelitales, no una promesa; publicamos nuestra precision real (backtest) y avisamos cuando las nubes bajan la confianza."
+        },
+        {
+          "h2": "A que playa ir si la tuya tiene alga",
+          "text": "Si tu playa de Miami amanece con alga (estado moderado o evitar), el mapa te sugiere al instante cuales playas cercanas estan limpias hoy, ordenadas por Beach Score. Asi cambias de plan en segundos en vez de manejar y descubrir el alga al llegar. Comparas Key Biscayne, Sunny Isles, Bal Harbour, Hollywood o las del norte y eliges la que el satelite ve mas despejada esta manana. Para quien viene de visita o tiene un solo dia libre, ese cambio a tiempo salva la salida. El acceso PASS es de pago unico desde USD 5.99, sin suscripcion ni cobros recurrentes, y abre el detalle por playa, el pronostico a 7 dias y las alertas para que el satelite te avise cuando el agua vuelva a estar limpia."
+        }
+      ],
+      "faq": [
+        {
+          "q": "El alga marina en Miami es lo mismo que el sargazo?",
+          "a": "Si. El alga que llega a la orilla en Miami es sargazo, un alga que viaja por el mar. En el mapa veras su presencia por playa con el estado de hoy: limpio, moderado o evitar."
+        },
+        {
+          "q": "Donde esta el agua mas limpia en Miami hoy?",
+          "a": "Ordena el mapa por Beach Score y las playas en estado limpio apareceran primero. Cada playa de Miami se mide por separado con el satelite, asi que veras cual amanece mas despejada hoy."
+        },
+        {
+          "q": "Cada cuanto actualizan el estado del alga?",
+          "a": "Refrescamos las imagenes satelitales (Copernicus y NOAA AFAI) cuatro veces al dia. El estado de la manana puede cambiar para la tarde, y el mapa muestra siempre la lectura mas reciente."
+        },
+        {
+          "q": "Cuando desaparece el alga de la playa?",
+          "a": "Depende del viento y las corrientes: puede aclararse en uno o dos dias o seguir llegando. Por eso cada playa trae un pronostico a 7 dias, una probabilidad medida sobre datos, no una promesa."
+        },
+        {
+          "q": "Que tan confiable es el mapa?",
+          "a": "Se basa en imagenes satelitales medidas y publicamos nuestra precision real (backtest). Cuando hay nubes que tapan una playa, lo decimos en vez de marcarla como limpia con un dato inventado."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    }
+  ]
 }
