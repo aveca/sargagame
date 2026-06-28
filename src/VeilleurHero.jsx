@@ -6,6 +6,7 @@
  * onEnter() : ferme le hero et révèle la carte (l'utilitaire qui répond à l'intention).
  */
 import React, { useEffect } from "react"
+import { useSwipeClose } from "./useSwipeClose.js"
 
 const SCENE = `
 <svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;display:block">
@@ -70,9 +71,11 @@ const SCENE = `
 
 export default function VeilleurHero({ onEnter, lang }){
   const t=(fr,en,es)=> lang==="es"?es: lang==="en"?en: fr
+  // Swipe down pour entrer dans la carte (= le dismiss du hero). Pas de champ → guardInput off.
+  const sw=useSwipeClose(()=>onEnter&&onEnter(),{threshold:80})
   useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
   return (
-    <div role="dialog" aria-label="Le Veilleur" style={{
+    <div role="dialog" aria-label="Le Veilleur" ref={sw.ref} onTouchStart={sw.onTouchStart} onTouchMove={sw.onTouchMove} onTouchEnd={sw.onTouchEnd} style={{
       position:"fixed",inset:0,zIndex:3000,overflow:"hidden",background:"#0b0716",
       fontFamily:'"Anton","Arial Black",Impact,sans-serif'}}>
       <style>{`
