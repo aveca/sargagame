@@ -1,0 +1,250 @@
+{
+  "_note": "Cibles B2B hotels MQ/GP enrichies (email reel + hook perso) — carburant outreach B2B auto. Genere 28/06.",
+  "updatedAt": "2026-06-28T02:34:50.289Z",
+  "count": 27,
+  "contacts": [
+    {
+      "email": "contact@diamantlesbains.com",
+      "name": "Hôtel Diamant Les Bains",
+      "town": "Le Diamant",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre résidence hôtelière en bordure de la grande plage du Diamant, face au Rocher, est en première ligne pour les arrivages de sargasses qui peuvent gâcher l'expérience des clients sur cette baie exposée.",
+      "url": "https://www.diamant-les-bains.fr/"
+    },
+    {
+      "email": "admin@anoli-lodges.com",
+      "name": "Anoli Lodges",
+      "town": "Sainte-Anne",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos lodges du quartier Bellevue sont à 5 minutes de la plage des Salines, l'une des plages les plus exposées aux échouages de sargasses du sud de la Martinique — vos clients vous demandent sûrement souvent si la plage sera praticable pendant leur séjour.",
+      "url": "https://www.anoli-lodges.com/"
+    },
+    {
+      "email": "reservation@creolebeach.com",
+      "name": "La Créole Beach Hôtel & Spa",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre hôtel 4 étoiles est directement sur la plage de la Pointe de la Verdure au Gosier, en première ligne face aux échouages de sargasses qui touchent le sud Grande-Terre.",
+      "url": "https://www.creolebeach.com/"
+    },
+    {
+      "email": "reservations@majesty-palm.com",
+      "name": "Majesty Palm Hotel & Spa",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre établissement de standing à Saint-François, entre le golf et la Pointe des Châteaux, mérite des plages impeccables : un suivi sargasses quotidien sur les plages proches (Raisins Clairs, Anse à la Gourde) rassure vos clients suites et villas avant leur arrivée.",
+      "url": "https://www.majesty-palm.com/"
+    },
+    {
+      "email": "reservation@hotelbambou.fr",
+      "name": "Bambou Resort (Hôtel Bambou)",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre établissement les pieds dans l'eau à l'Anse Mitan est en première ligne face aux échouages de sargasses — une alerte fiable quelques jours à l'avance permettrait de rassurer vos clients avant leur arrivée.",
+      "url": "https://www.bambouresort.com/"
+    },
+    {
+      "email": "info@hotelpleinsoleil.fr",
+      "name": "Hôtel Plein Soleil",
+      "town": "Le François",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Niché à la Pointe Thalémont au François, votre hôtel donne directement sur la baie et ses fonds blancs — exactement le type de littoral que les échouages de sargasses peuvent gâcher en pleine saison, avec l'odeur qui se ressent jusqu'aux chambres face mer.",
+      "url": "https://www.hotelpleinsoleil.fr/"
+    },
+    {
+      "email": "reservation@la-suite-villa.com",
+      "name": "La Suite Villa",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Boutique hôtel 5 étoiles aux Trois-Îlets, à quelques pas des plages comme l'Anse Mitan — un secteur de la baie de Fort-de-France régulièrement exposé aux échouages de sargasses, là où une info fiable au jour le jour fait la différence pour vos clients haut de gamme.",
+      "url": "https://www.la-suite-villa.com/"
+    },
+    {
+      "email": "resa@hotel-bakoua.fr",
+      "name": "Hôtel Bakoua",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "resort",
+      "hook": "Votre hôtel 4 étoiles à la Pointe du Bout dispose d'un accès direct à une plage de sable fin — un atout majeur que les échouages de sargasses peuvent menacer en pleine saison.",
+      "url": "https://hotel-bakoua.fr/"
+    },
+    {
+      "email": "commercial@karibeahotel.com",
+      "name": "Karibea Hôtels & Résidences",
+      "town": "Sainte-Luce",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hôtel Karibea Sainte-Luce est sur la côte sud de la Martinique, une zone régulièrement touchée par les échouements de sargasses — un système d'alerte fiable peut éviter les mauvaises surprises à vos clients dès leur arrivée à la plage.",
+      "url": "https://www.karibea.com/"
+    },
+    {
+      "email": "info@iloma-martinique.com",
+      "name": "ILOMA Hotel & Spa (ex-Corail Résidence)",
+      "town": "Sainte-Luce",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hôtel en bord de mer à l'Anse Mabouya, Sainte-Luce, est en première ligne face aux échouages de sargasses sur la côte sud — une plage propre est un argument clé pour vos clients.",
+      "url": "https://www.hotel-corail-residence.com/"
+    },
+    {
+      "email": "resa@hotel-lapagerie.com",
+      "name": "Hôtel La Pagerie Tropical Garden",
+      "town": "Les Trois-Îlets",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre hôtel à la Pointe du Bout donne directement sur l'Anse Mitan, l'une des plages les plus exposées aux échouages de sargasses sur la côte caraïbe des Trois-Îlets — un suivi quotidien permettrait de rassurer vos clients avant leur arrivée.",
+      "url": "https://www.hotel-lapagerie.com/"
+    },
+    {
+      "email": "resa@fregatebleue.com",
+      "name": "Hôtel Frégate Bleue",
+      "town": "Le François",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Hôtel de charme face aux îlets du François, sur la côte atlantique sud-est exposée aux échouages de sargasses — un suivi quotidien des plages et de la baignoire de Joséphine rassurerait directement vos clients avant leur sortie en mer.",
+      "url": "https://www.hotellafregate.fr/"
+    },
+    {
+      "email": "domainesaintaubin@gmail.com",
+      "name": "Domaine Saint Aubin",
+      "town": "La Trinité",
+      "island": "MQ",
+      "fit": "hotel",
+      "hook": "Votre résidence de charme à Petite Rivière Salée met en avant les plages à 5 minutes : un bulletin sargasses quotidien sur la côte Atlantique de La Trinité rassurerait vos clients avant qu'ils ne planifient leur journée plage.",
+      "url": "https://www.domaine-saint-aubin.com/"
+    },
+    {
+      "email": "contact@ledomainedesbulles.com",
+      "name": "Le Domaine des Bulles",
+      "town": "Le Vauclin",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Vos bulles écologiques surplombant la baie du Vauclin offrent une vue mer exceptionnelle, mais la côte atlantique du Vauclin est en première ligne face aux échouages de sargasses : prévenir vos clients de l'état de la plage de Pointe Faula avant leur séjour protège votre réputation 4 étoiles.",
+      "url": "https://ledomainedesbulles.com/"
+    },
+    {
+      "email": "reception@arawakbeachresort.com",
+      "name": "Hotel Arawak Beach Resort",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "resort",
+      "hook": "Votre plage privée de la Pointe de la Verdure au Gosier est en première ligne sur l'arrivée des sargasses côté Atlantique — anticiper les arrivages permet de rassurer vos clients avant leur séjour.",
+      "url": "https://www.arawakbeachresort.com/"
+    },
+    {
+      "email": "info.iletoscar@gmail.com",
+      "name": "La Maison de l'Ilet Oscar",
+      "town": "Le François",
+      "island": "MQ",
+      "fit": "lodge-gite",
+      "hook": "Votre maison créole sur l'îlet, posée au ras des Fonds Blancs du François, vit au rythme du lagon — et c'est justement ce littoral à fleur d'eau qui est le premier exposé aux arrivées de sargasses.",
+      "url": "https://www.iletoscar.com/"
+    },
+    {
+      "email": "fortroyal@langley.eu",
+      "name": "Langley Resort Fort Royal",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "resort",
+      "hook": "Votre resort 4 étoiles est niché sur la côte Caraïbe sous le vent à Deshaies, mais la Grande Anse toute proche figure parmi les plages de Guadeloupe les plus exposées aux échouages de sargasses — un suivi quotidien rassure vos clients avant leur séjour.",
+      "url": "https://www.langley-resort-fort-royal.com/"
+    },
+    {
+      "email": "info@toubana.com",
+      "name": "La Toubana Hôtel & Spa",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Perché sur les hauteurs de Sainte-Anne avec sa plage privée tournée vers la mer des Caraïbes, La Toubana est en première ligne face aux échouages de sargasses qui touchent le sud Grande-Terre — une info plage fiable au quotidien est un vrai plus pour rassurer vos clients avant leur baignade.",
+      "url": "https://www.toubana.com/"
+    },
+    {
+      "email": "reservation@creolebeach.com",
+      "name": "La Créole Beach Hôtel & Spa",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "resort",
+      "hook": "En front de mer à la Pointe de la Verdure au Gosier, La Créole Beach a tout intérêt à savoir chaque matin si sa plage privée sera épargnée par les sargasses — une alerte fiable pour rassurer vos clients avant leur baignade.",
+      "url": "https://www.lacreolebeach.com/"
+    },
+    {
+      "email": "resa@tendacayou.com",
+      "name": "Tendacayou Ecolodge & SPA",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "lodge-gite",
+      "hook": "Votre ecolodge à Matouba surplombe Deshaies à deux pas de la plage de Grande Anse, l'une des plages de Guadeloupe les plus exposées aux échouages de sargasses : un suivi quotidien des arrivages permettrait de rassurer vos clients avant leur séjour.",
+      "url": "https://www.tendacayou.com/"
+    },
+    {
+      "email": "info@jardinmalanga.com",
+      "name": "Le Jardin Malanga",
+      "town": "Trois-Rivières",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre hôtel de charme à Trois-Rivières domine la mer face aux Saintes : sur cette côte sud de Basse-Terre, les arrivages de sargasses peuvent gâcher l'expérience des clients sur les plages voisines — un suivi quotidien permet de les rassurer avant chaque excursion.",
+      "url": "https://www.lejardinmalanga.com/"
+    },
+    {
+      "email": "infohotelhga@gmail.com",
+      "name": "Habitation Grande Anse",
+      "town": "Deshaies",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre hôtel résidentiel est à deux pas de la Grande Anse de Deshaies, l'une des plus belles plages de Guadeloupe mais aussi l'une des plus exposées aux échouements de sargasses — anticiper les arrivages permettrait de rassurer vos clients sur la qualité de leur séjour balnéaire.",
+      "url": "https://www.habitation-grande-anse.com/"
+    },
+    {
+      "email": "reservation@karibeagosier.com",
+      "name": "Karibea Résidence Prao (Karibea Beach Resort Gosier)",
+      "town": "Le Gosier",
+      "island": "GP",
+      "fit": "resort",
+      "hook": "Votre résidence à la Pointe de la Verdure donne directement sur la plage du Gosier, l'un des secteurs les plus exposés aux échouages de sargasses en Guadeloupe : anticiper les arrivages devient un vrai argument de réassurance pour vos clients.",
+      "url": "https://www.karibea-prao.com/"
+    },
+    {
+      "email": "hotelboisjoli971@gmail.com",
+      "name": "Hôtel Bois Joli",
+      "town": "Terre-de-Haut (Les Saintes)",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre hôtel face au Pain de Sucre avec accès direct à la plage : recevez chaque matin le verdict sargasses pour les baies de Terre-de-Haut et rassurez vos clients avant leur baignade.",
+      "url": "https://www.bois-joli.com/"
+    },
+    {
+      "email": "hotel@amaudo.com",
+      "name": "Hôtel Amaudo",
+      "town": "Saint-François",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Niché à Anse à la Barque à Saint-François, l'Hôtel Amaudo offre une vue mer directe — un atout que les échouages de sargasses sur la côte au vent de Grande-Terre peuvent vite gâcher pour vos clients en quête de baignade.",
+      "url": "https://www.hotel-amaudo.com/"
+    },
+    {
+      "email": "info@toubana.com",
+      "name": "La Toubana Hôtel & Spa",
+      "town": "Sainte-Anne",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Votre plage privée et le restaurant Toubana La Plage à Sainte-Anne sont en première ligne face aux échouages de sargasses : un suivi quotidien fiable aide à rassurer vos clients 5 étoiles avant leur arrivée.",
+      "url": "https://www.toubana.com/"
+    },
+    {
+      "email": "info@kawann-beach-hotel.com",
+      "name": "Kawann Beach Hôtel",
+      "town": "Grand-Bourg (Marie-Galante)",
+      "island": "GP",
+      "fit": "hotel",
+      "hook": "Seul grand hôtel de Marie-Galante, le Kawann borde Folle Anse, une plage naturelle classée site de ponte des tortues — un littoral directement exposé aux échouages de sargasses qui peuvent gâcher l'expérience clients comme la nidification.",
+      "url": "https://www.kawann-beach-hotel.com/"
+    }
+  ]
+}
