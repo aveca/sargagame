@@ -61,6 +61,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
      Reste sous hero 1050 / toast 1090 / paywall 1100. */
   position:fixed;bottom:0;left:0;right:0;z-index:1010;
   max-width:520px;margin:0 auto;
+  /* (standalone : descend la feuille jusqu'au bord physique — cf. règle plus bas) */
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
   transition:transform .35s cubic-bezier(.32,.72,0,1);
@@ -82,6 +83,13 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 /* Backdrop */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1005;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* iOS standalone : les overlays plein écran (inset:0) s'arrêtent au layout viewport
+   (~852) plus court que l'écran réel (896) → bande en bas. On les étend à --sg-vh.
+   Le backdrop est étendu (dim total) ; la feuille basse descend au bord physique
+   (bottom négatif = 100dvh − --sg-vh), son padding-bottom garde les boutons au-dessus
+   du home-indicator. (Safari : inset:0 inchangé, déjà correct.) */
+html.sg-standalone .backdrop{bottom:auto;height:var(--sg-vh,100dvh)}
+html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bottom:env(safe-area-inset-bottom,0px)}
 
 /* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
 

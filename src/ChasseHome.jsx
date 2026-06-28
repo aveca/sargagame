@@ -1776,6 +1776,10 @@ export const CSS=`
   animation:lc-detail-in .28s cubic-bezier(.22,1,.36,1) both}
 @keyframes lc-detail-in{0%{opacity:0;transform:scale(.88) rotate(-1.2deg)}55%{opacity:1}100%{opacity:1;transform:none}}
 .lc-reduce .lc-detail{animation:none}
+/* iOS standalone : inset:0 s'arrête au layout viewport (~852) plus court que l'écran
+   réel (896) → bande en bas (le dégradé orange de la fiche ne descend pas au bord).
+   On étend la fiche à la hauteur mesurée --sg-vh. (Safari : inchangé, inset:0 correct.) */
+html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 
 /* ============================================================
    FX COMIC-BOOK ANIMÉ « Marvel / Spider-Verse » (réf : clip

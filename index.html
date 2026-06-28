@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#E8A800" />
+    <!-- theme-color RETIRÉ : en Safari iOS il peignait la barre du bas en OR plein
+         (#E8A800) → « bande » jaune visible sous le contenu. Sans lui, Safari rend sa
+         barre translucide qui fond le contenu derrière (look bord-à-bord). En standalone
+         (app installée) il n'y a pas de barre ; le rendu plein écran est géré par
+         apple-mobile-web-app-status-bar-style + --sg-vh. Android : manifest background_color. -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
