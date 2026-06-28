@@ -34,6 +34,8 @@ const MQ_ONLY = [
   'sargasses-les-trois-ilets',
   'que-faire-sargasses-martinique',
   'en/what-to-do-sargassum-martinique',
+  // Communes MQ générées (commune-seo-pages.cjs) — interdites sur le domaine GP.
+  ...require('./commune-seo-pages.cjs').communeSlugsByIsland().mq,
 ]
 
 // Pages 100% Guadeloupe : interdites sur le domaine Martinique.
@@ -54,6 +56,8 @@ const GP_ONLY = [
   'sargasses-gosier',
   'sargasses-saint-francois',
   'sargasses-bouillante',
+  // Communes GP générées (commune-seo-pages.cjs) — interdites sur le domaine MQ.
+  ...require('./commune-seo-pages.cjs').communeSlugsByIsland().gp,
 ]
 
 // Slugs à supprimer pour une région donnée (= les pages de l'AUTRE île).
