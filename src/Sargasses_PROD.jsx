@@ -67,13 +67,36 @@ const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal"))
 // Vue Liste des plages (tab Plages) — alternative carte, montrée seulement sur view==="list".
 const BeachListView=lazyWithRetry(()=>import("./BeachListView"))
 // Scène « L'Alerte » (boucle SVG 9s) — illustration premium, hors first-paint.
-const AlertScene=lazyWithRetry(()=>import("./AlertScene"))
+export const AlertScene=lazyWithRetry(()=>import("./AlertScene"))
 // HeroScene — hero vectoriel golden-hour, montré dans les funnels (hors first-paint).
-const HeroScene=lazyWithRetry(()=>import("./HeroScene"))
+export const HeroScene=lazyWithRetry(()=>import("./HeroScene"))
 // SargaChat — assistant guidé (chips), ouvert via showChat (interaction-only).
 const SargaChat=lazyWithRetry(()=>import("./SargaChat"))
 // AlertHub — page /alertes/ (hub Premium), ouvert via showAlertHub (interaction-only).
 const AlertHub=lazyWithRetry(()=>import("./AlertHub"))
+// ScrollStory — film scrollytelling « la méthode » (5 temps SVG), monté dans les
+// funnels landing (GameFunnel + HeroVerdict) — cold, hors first-paint. Sous Suspense.
+export const ScrollStory=lazyWithRetry(()=>import("./ScrollStory"))
+// GameFunnel — landing « jeu-funnel » (bras A/B landing_funnel=game) — gated showHero,
+// hors first-paint. Sous Suspense.
+const GameFunnel=lazyWithRetry(()=>import("./GameFunnel"))
+// HeroVerdict — landing « control » (verdict plein cadre + scroll SpaceX) — gated
+// showHero, hors first-paint. Sous Suspense.
+const HeroVerdict=lazyWithRetry(()=>import("./HeroVerdict"))
+// WorldFeed — feed vertical « monde SVG » (+ cartes WorldCard/Carnet/Bonus/Challenge/
+// Premium/Info/Hotspot), ouvert via showWorld / ?world=1 — cold, hors first-paint.
+// WorldAfaiGauge & VerdictDuJourCard restent inline (réutilisés ailleurs). Sous Suspense.
+const WorldFeed=lazyWithRetry(()=>import("./WorldFeed"))
+// Solutions/éducation — DiscoveryStory (?decouverte=1), StationStory (routes /stations),
+// SolutionsStory (?solutions=1) + scènes Sol* + beats. Tout cold, route/flag-gated. Sous
+// Suspense. StoryEngine/miVeil restent inline (partagés avec MapIntroStory).
+const SolutionsStory=lazyWithRetry(()=>import("./SolutionsStory"))
+const DiscoveryStory=lazyWithRetry(()=>import("./SolutionsStory").then(m=>({default:m.DiscoveryStory})))
+const StationStory=lazyWithRetry(()=>import("./SolutionsStory").then(m=>({default:m.StationStory})))
+// BeachSheet — fiche plage LEGACY (data/scroll satellite). N'est rendue QUE comme
+// fallback d'ErrBound autour de BeachSheetComic (le chemin par défaut chaud) → cold,
+// jamais montée sur le happy-path. Lazy → DOIT être sous Suspense quand le fallback rend.
+const BeachSheet=lazyWithRetry(()=>import("./BeachSheet"))
 
 
 export class ErrBound extends Component{
@@ -99,11 +122,11 @@ export const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
 export const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
 // Unités impériales pour les régions US (Floride) — MQ/GP et régions métriques inchangées
-const US_UNITS = !!(IS_NEW_REGION && REGION.countryCode === "US")
-const fmtTemp=c=>US_UNITS?`${Math.round(c*9/5+32)}°F`:`${c}°C`
-const fmtWind=k=>US_UNITS?`${Math.round(k*0.621371)} mph`:`${k} km/h`
-const fmtHeight=m=>US_UNITS?`${(m*3.28084).toFixed(1)} ft`:`${m}m`
-const fmtRain=mm=>US_UNITS?`${(mm/25.4).toFixed(2)} in`:`${mm}mm`
+export const US_UNITS = !!(IS_NEW_REGION && REGION.countryCode === "US")
+export const fmtTemp=c=>US_UNITS?`${Math.round(c*9/5+32)}°F`:`${c}°C`
+export const fmtWind=k=>US_UNITS?`${Math.round(k*0.621371)} mph`:`${k} km/h`
+export const fmtHeight=m=>US_UNITS?`${(m*3.28084).toFixed(1)} ft`:`${m}m`
+export const fmtRain=mm=>US_UNITS?`${(mm/25.4).toFixed(2)} in`:`${mm}mm`
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
@@ -278,11 +301,11 @@ export const VEILLEUR_MOOD={
 // Chemin de la page « fiabilité » selon la région/langue : MQ/GP → /fiabilite/,
 // nouvelles régions → /reliability/ (EN) ou /fiabilidad/ (ES). Évite les 404 sur
 // les domaines US (la page n'existe qu'aux slugs régionaux, jamais /fiabilite/).
-function reliabilityHref(lang){return IS_NEW_REGION?(lang==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"}
-function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
+export function reliabilityHref(lang){return IS_NEW_REGION?(lang==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"}
+export function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
 export function moodFromStatus(s){return s==="clean"?"serein":s==="moderate"?"vigilant":s==="avoid"?"alerte":"scan"}
 // Verdict doublé texte+couleur+forme+emoji (jamais couleur seule — a11y). FR/EN/ES.
-function verdictMeta(status,lang){
+export function verdictMeta(status,lang){
   const M={
     clean:{color:"#22C55E",emoji:"😎",verb:_t(lang,"Vas-y","Go","Adelante")},
     moderate:{color:"#F59E0B",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
@@ -293,7 +316,7 @@ function verdictMeta(status,lang){
 // Carte de partage SPOILER-FREE (recherche valeur) — image golden-hour SANS lien (effet Wordle
 // = portée max sur les réseaux). Canvas PUR (réutilise les fonts déjà chargées), zéro dépendance.
 // navigator.share({files}) sur mobile, download sinon. Identité virale : la plage + le verdict du jour.
-async function shareBeachCard(beach,lang,forecast){
+export async function shareBeachCard(beach,lang,forecast){
   try{
     const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
     const x=cv.getContext("2d");if(!x)return false
@@ -337,7 +360,7 @@ function _scDomain(){try{if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&t
 // délègue à shareBeachCard (historique, intact). 'streak' = VEILLE-CARD DE SÉRIE :
 // le "Wordle de la mer" — la série du Veilleur en grille de pastilles, SANS lien
 // (portée max). Canvas pur, fonts déjà chargées, domaine du region-config.
-async function buildShareCard(opts){
+export async function buildShareCard(opts){
   opts=opts||{};const variant=opts.variant||"beach",lang=opts.lang||"fr"
   if(variant==="top")return _scTopCard(opts,lang)
   if(variant==="missed")return _scMissedCard(opts,lang)
@@ -470,7 +493,7 @@ export function Veilleur({mood="serein",size=44}){
   )
 }
 // Squircle candy du score 0-100 — réutilise l'esprit SG_BLOB du funnel.
-function ScoreBlob({score,color,size=84}){
+export function ScoreBlob({score,color,size=84}){
   return(
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" style={{display:"block"}}>
       <path d="M50 7 C79 7 93 21 93 50 C93 79 79 93 50 93 C21 93 7 79 7 50 C7 21 21 7 50 7 Z" fill={color}/>
@@ -553,7 +576,7 @@ try{if(typeof window!=="undefined"){window.sgToast=sgToast;window.sgDismissToast
 //    (sinon la scène se re-randomise à chaque render + casse SSR). Tirages dans un ordre fixe.
 function hashSeed(str){let h=2166136261>>>0;str=String(str==null?"":str);for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
 function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function pick(rnd,arr){return arr[Math.floor(rnd()*arr.length)]}
+export function pick(rnd,arr){return arr[Math.floor(rnd()*arr.length)]}
 function rangeR(rnd,a,b){return a+(b-a)*rnd()}
 function intR(rnd,a,b){return Math.floor(a+(b-a+1)*rnd())}
 function chance(rnd,p){return rnd()<p}
@@ -664,7 +687,7 @@ function buildBeachPlan(beach,lang,allBeaches,weeklyData){
   else if(coast==="sheltered"&&st==="clean")s.push({tone:"clean",title:_("Bon à savoir","Good to know","Bueno saber"),body:_("Côte abritée : reçoit rarement les sargasses, valeur sûre.","Sheltered coast: rarely gets sargassum, a safe bet.","Costa protegida: rara vez recibe sargazo, apuesta segura.")})
   return{sections:s}
 }
-function VisitPlan({beach,lang,allBeaches,weeklyData}){
+export function VisitPlan({beach,lang,allBeaches,weeklyData}){
   const plan=useMemo(()=>buildBeachPlan(beach,lang,allBeaches,weeklyData),[beach&&beach.id,beach&&beach.status,beach&&beach.afai,lang])
   if(!plan.sections.length)return null
   const tones={clean:"#22C55E",warn:"#F59E0B",avoid:"#E8522A",alt:"#5b3a8e",info:"#3fd07f"}
@@ -684,7 +707,7 @@ function VisitPlan({beach,lang,allBeaches,weeklyData}){
 // BEACH_PHASE DÉRIVE de SCENE_TOKENS (clés scène sky/seaT/seaB/glit/sun/rim) +
 // clés non-scène inline (cloud/rock/rockLit/trunk/frond, propres à chaque phase).
 // Sortie byte-identique à l'ancien littéral (vérifié) — source unique, zéro drift.
-const BEACH_PHASE=Object.fromEntries(Object.entries({
+export const BEACH_PHASE=Object.fromEntries(Object.entries({
   dawn:  {cloud:"#1A2440",rock:"#1b2a33",rockLit:"#F2A968",trunk:"#14100C",frond:"#1a2e26"},
   day:   {cloud:"#EAF6F6",rock:"#5d6f62",rockLit:"#A8C6AE",trunk:"#3A2E1A",frond:"#3F6B52"},
   golden:{cloud:"#10333E",rock:"#16242A",rockLit:"#FFD884",trunk:"#120F0A",frond:"#16120C"},
@@ -697,7 +720,7 @@ function beachLandmark(beach){
   if(/salines|saline|grande anse|bourg/.test(k))return "open"  // longue plage ouverte
   return "morne"                                      // baie + morne vert (défaut antillais)
 }
-function BeachScene({beach,reveal}){
+export function BeachScene({beach,reveal}){
   const ph=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
   const scene=useMemo(()=>buildBeachScene(beach),[beach&&beach.id])
@@ -799,7 +822,7 @@ function BeachScene({beach,reveal}){
 //    scroll→opacités de beats pilotées par l'ÉTAT (jamais vide), CSS auto-contenue,
 //    capture sur document, analytics par beat). GÉNÉRIQUE sur une config `beats` :
 //    chaque surface = une config, plus de recodage. ────────────────────────────
-function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBeat}){
+export function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBeat}){
   const boxRef=useRef(null)
   const [beat,setBeat]=useState(0)
   const beatRef=useRef(-1)
@@ -867,7 +890,7 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBe
 //    prod lit la géométrie FENÊTRE (faux ici) ; celui-ci lit le scroll du
 //    CONTENEUR (scrollRef.scrollTop) → scrub correct. Tailles posées en JS
 //    (vp = hauteur visible du conteneur ; section = N×). Catch cohérence 14/06.
-function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,scrollRef}){
+export function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,scrollRef}){
   const boxRef=useRef(null)
   const vpRef=useRef(null)
   const [beat,setBeat]=useState(0)
@@ -932,526 +955,6 @@ function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,
 
 // Config DÉCOUVERTE (éducatif SVG, « svg simple propriétaire instructif » :
 // la grande ceinture → la dérive → l'échouage/H2S → les solutions recyclage/tri).
-function discoveryBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  return[
-    {eyebrow:T("LA SOURCE","THE SOURCE","EL ORIGEN"),heading:T("Une ceinture de 8000 km","An 8,000 km belt","Un cinturón de 8000 km"),sub:T("Chaque année, une nappe d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes.","Every year a raft of seaweed crosses the Atlantic, from Africa to the Caribbean.","Cada año una masa de algas cruza el Atlántico, de África al Caribe."),
-      scene:<><rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="300" r="240" fill="#0A2E2A"/><circle cx="400" cy="300" r="240" fill="none" stroke="#1A5852" strokeWidth="2"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#7a5c14" strokeWidth="22" strokeLinecap="round" opacity=".85"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#a8862a" strokeWidth="8" strokeLinecap="round" strokeDasharray="4 14" opacity=".7"/><text x="246" y="372" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Afrique","Africa","África")}</text><text x="560" y="348" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Caraïbes","Caribbean","Caribe")}</text></>},
-    {eyebrow:T("LA DÉRIVE","THE DRIFT","LA DERIVA"),heading:T("Le vent décide","The wind decides","El viento decide"),sub:T("Courants et alizés poussent les bancs vers certaines plages — pas toutes, pas en même temps.","Currents and trade winds push the rafts onto some beaches — not all, not at once.","Las corrientes y los vientos empujan los bancos a ciertas playas."),
-      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#1A5852" strokeWidth="2" opacity=".5"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
-    {eyebrow:T("LE RISQUE","THE RISK","EL RIESGO"),heading:T("En décomposition, ça pique","Rotting, it stings","Al descomponerse, irrita"),sub:T("Les algues échouées libèrent du H2S (odeur d'œuf). On surveille pour t'éviter ça.","Stranded seaweed releases H2S (egg smell). We watch so you avoid it.","Las algas varadas liberan H2S (olor a huevo). Vigilamos para evitártelo."),
-      scene:<><rect width="800" height="600" fill="#0B2230"/><rect y="300" width="800" height="300" fill="#1C1712"/><g transform="translate(400,330)"><ellipse rx="180" ry="34" fill="#5d400e"/><ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/><ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/></g><g fill="#E8522A" opacity=".55"><circle cx="330" cy="280" r="4"/><circle cx="360" cy="250" r="3"/><circle cx="430" cy="262" r="3.5"/><circle cx="470" cy="238" r="2.6"/></g><text x="400" y="250" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="20" fill="#E8522A">H₂S</text></>},
-    {eyebrow:T("LES SOLUTIONS","THE SOLUTIONS","LAS SOLUCIONES"),heading:T("Barrer, récolter, recycler","Block, collect, recycle","Frenar, recoger, reciclar"),sub:T("Barrages flottants, ramassage rapide, et valorisation : engrais, bioplastique, énergie.","Floating booms, fast collection, and reuse: fertiliser, bioplastic, energy.","Barreras, recogida rápida y reciclaje: abono, bioplástico, energía."),cta:T("Voir ma plage du jour →","See my beach today →","Ver mi playa de hoy →"),
-      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#0A1714"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
-  ]
-}
-function DiscoveryStory({lang,onClose,onShowMap}){
-  return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:30,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
-      <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
-    </div>
-  )
-}
-
-function comprendreBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const d = discoveryBeats(lang)
-  if(d.length > 0) {
-    d[d.length - 1].cta = T("Voir les plages →", "See the beaches →", "Ver las playas →")
-  }
-  return d
-}
-
-function satelliteBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  return [
-    {
-      eyebrow: T("SURVEILLANCE", "SURVEILLANCE", "VIGILANCIA"),
-      heading: T("On regarde d'en haut", "Looking from above", "Mirando desde arriba"),
-      sub: T("Le satellite Sentinel-3 scanne l'Atlantique en continu pour détecter la signature lumineuse des algues.", "The Sentinel-3 satellite continuously scans the Atlantic to detect the light signature of the algae.", "El satélite Sentinel-3 escanea continuamente el Atlántico para detectar la firma luminosa de las algas."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06121A"/>
-          {[120,90,300,70,520,110,680,80,420,150,600,180].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
-          <circle cx="400" cy="380" r="160" fill="#155A5A" opacity=".3"/>
-          <path d="M400 150 L240 380 L560 380 Z" fill="#3fd07f" opacity="0.12"/>
-          {miVeil(400, 150, "#5b3a8e", "#3fd07f")}
-        </g>
-      )
-    },
-    {
-      eyebrow: T("L'INDICE AFAI", "THE AFAI INDEX", "EL ÍNDICE AFAI"),
-      heading: T("L'indice de détection", "The detection index", "El índice de detección"),
-      sub: T("L'indice AFAI mesure la concentration d'algues flottantes. En dessous de 0.15 la mer est propre, au-dessus de 0.40 l'alerte est maximale.", "The AFAI index measures floating algae concentration. Below 0.15 the sea is clean, above 0.40 it is a high alert.", "El índice AFAI mide la concentración de algas flotantes. Por debajo de 0.15 el mar está limpio, por encima de 0.40 la alerta es máxima."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#0A2E2A"/>
-          {[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0`} fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".4"/>))}
-          <path d="M400 50 L100 550 L700 550 Z" fill="#3fd07f" opacity="0.08"/>
-          <g transform="translate(320,380)"><ellipse rx="60" ry="14" fill="#7a5c14" opacity=".85"/><ellipse cx="-30" cy="-6" rx="35" ry="9" fill="#8a6c1c" opacity=".85"/></g>
-          <g transform="translate(480,420)"><ellipse rx="80" ry="18" fill="#5d400e" opacity=".85"/><ellipse cx="20" cy="-4" rx="40" ry="10" fill="#7a5c14" opacity=".85"/></g>
-          <line x1="0" y1="400" x2="800" y2="400" stroke="#FFC72C" strokeWidth="3" opacity="0.8"/>
-          <text x="400" y="370" fontFamily="ui-monospace,monospace" fontSize="14" fill="#FFC72C" textAnchor="middle">AFAI SCAN</text>
-        </g>
-      )
-    },
-    {
-      eyebrow: T("RÉSOLUTIONS & FRÉQUENCE", "RESOLUTION & FREQUENCY", "RESOLUCIÓN Y FRECUENCIA"),
-      heading: T("Scan toutes les 3 heures", "Scan every 3 hours", "Escaneo cada 3 horas"),
-      sub: T("La grille de détection a une précision de 300 mètres, actualisée plusieurs fois par jour pour anticiper les arrivées.", "The detection grid has a 300-meter precision, updated several times a day to anticipate arrivals.", "La cuadrícula de detección tiene una precisión de 300 metros, actualizada varias veces al día para anticipar llegadas."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06211E"/>
-          {Array.from({length:9}).map((_,i)=>(<line key={`v${i}`} x1={80+i*80} y1="100" x2={80+i*80} y2="500" stroke="#1A5852" strokeWidth="1" opacity=".5"/>))}
-          {Array.from({length:6}).map((_,i)=>(<line key={`h${i}`} x1="80" y1={100+i*80} x2="720" y2={100+i*80} stroke="#1A5852" strokeWidth="1" opacity=".5"/>))}
-          <rect x="320" y="260" width="80" height="80" fill="#FFE08A" opacity="0.25" stroke="#FFC72C" strokeWidth="2"/>
-          <text x="360" y="305" fontFamily="ui-monospace,monospace" fontSize="16" fill="#FFC72C" textAnchor="middle">300m</text>
-          {miVeil(600, 180, "#5b3a8e", "#3fd07f")}
-        </g>
-      )
-    },
-    {
-      eyebrow: T("TEMPS RÉEL", "REAL TIME", "TIEMPO REAL"),
-      heading: T("Ce que voit ta plage", "What your beach sees", "Lo que ve tu playa"),
-      sub: T("Grâce aux données satellite croisées en direct, tu sais si l'eau devant ta plage préférée est propre maintenant.", "Thanks to cross-referenced live satellite data, you know if the water in front of your favorite beach is clean right now.", "Gracias a los datos satelitales cruzados en vivo, sabes si el agua de tu playa favorita está limpia ahora."),
-      cta: T("Voir la carte en direct →", "See the live map →", "Ver el mapa en vivo →"),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#0B2230"/>
-          <path d="M0 380 Q400 350 800 380 L800 600 L0 600 Z" fill="#1C1712"/>
-          <path d="M0 380 Q400 370 800 380" fill="none" stroke="#FFE47A" strokeWidth="2" opacity=".4"/>
-          {miVeil(400, 200, "#5b3a8e", "#3fd07f")}
-          <g transform="translate(400,430)">
-            <ellipse rx="120" ry="24" fill="#22C55E" opacity=".8"/>
-            <text y="8" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#fff" textAnchor="middle">PROPRE / CLEAN</text>
-          </g>
-        </g>
-      )
-    }
-  ]
-}
-
-function h2sBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  return [
-    {
-      eyebrow: T("DANGER SANTE", "HEALTH HAZARD", "RIESGO DE SALUD"),
-      heading: T("Ça pourrit, ça pique", "It rots, it stings", "Se pudre, irrita"),
-      sub: T("En séchant au soleil, les algues sargasses échouées pourrissent et libèrent du sulfure d'hydrogène (H₂S), un gaz toxique qui sent l'œuf pourri.", "As they dry in the sun, stranded sargassum seaweed rots and releases hydrogen sulfide (H₂S), a toxic gas that smells of rotten eggs.", "Al secarse al sol, las algas de sargazo varadas se pudren y liberan sulfuro de hidrógeno (H₂S), un gas tóxico que huele a huevo podrido."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#0B2230"/>
-          <rect y="320" width="800" height="280" fill="#1C1712"/>
-          <g transform="translate(400,350)">
-            <ellipse rx="180" ry="34" fill="#5d400e"/>
-            <ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/>
-            <ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/>
-          </g>
-          <g fill="#CC28FF" opacity=".6">
-            <circle cx="330" cy="270" r="5"/>
-            <circle cx="360" cy="230" r="3.5"/>
-            <circle cx="430" cy="242" r="4"/>
-            <circle cx="470" cy="218" r="3"/>
-          </g>
-          <text x="400" y="220" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="26" fill="#CC28FF">H₂S</text>
-        </g>
-      )
-    },
-    {
-      eyebrow: T("POPULATIONS SENSIBLES", "SENSITIVE GROUPS", "GRUPOS SENSIBLES"),
-      heading: T("Qui est vulnérable ?", "Who is vulnerable?", "¿Quién es vulnerable?"),
-      sub: T("Les émanations de H₂S sont particulièrement irritantes pour les nourrissons, les femmes enceintes, et les personnes asthmatiques ou fragiles.", "H₂S fumes are particularly irritating for infants, pregnant women, and people with asthma or weak lungs.", "Las emanaciones de H₂S sont particulièrement irritantes pour nourrissons, femmes enceintes, et asthmatiques."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06121A"/>
-          <g transform="translate(400,220)">
-            <polygon points="0,-60 -60,40 60,40" fill="#E8522A" stroke="#EAF7F4" strokeWidth="2"/>
-            <text x="0" y="24" fontFamily="'Anton',sans-serif" fontSize="56" fill="#fff" textAnchor="middle">!</text>
-          </g>
-          <text x="400" y="340" fontFamily="system-ui,sans-serif" fontSize="16" fill="#3fd07f" textAnchor="middle">{T("Asthme · Nourrissons · Grossesse", "Asthma · Infants · Pregnancy", "Asma · Lactantes · Embarazo")}</text>
-        </g>
-      )
-    },
-    {
-      eyebrow: T("SEUILS & PRÉVENTION", "THRESHOLDS & CARE", "UMBRALES Y CUIDADO"),
-      heading: T("Aérer et s'éloigner", "Ventilate and stay away", "Ventilar y alejarse"),
-      sub: T("Au-dessus du seuil d'alerte, évitez de stationner près des échouages et fermez les fenêtres si vous habitez en bord de mer.", "Above the warning threshold, avoid staying near seaweed accumulations and close windows if you live by the coast.", "Por encima del umbral de alerta, evite permanecer cerca de las algas varadas y cierre las ventanas si vive en la costa."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06211E"/>
-          <g transform="translate(400,280)">
-            <path d="M-60 40 L-60 -20 L0 -60 L60 -20 L60 40 Z" fill="none" stroke="#3fd07f" strokeWidth="3"/>
-            <rect x="-20" y="-10" width="40" height="30" fill="none" stroke="#3fd07f" strokeWidth="2"/>
-            <line x1="0" y1="-10" x2="0" y2="20" stroke="#3fd07f" strokeWidth="1"/>
-          </g>
-          <path d="M100 240 Q220 220 280 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
-          <path d="M520 240 Q620 220 700 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
-        </g>
-      )
-    },
-    {
-      eyrow: T("ALERTE VEILLEUR", "WATCHMAN ALERTS", "ALERTA DEL VIGÍA"),
-      heading: T("Sois prévenu à temps", "Get warned in time", "Recibe alertas a tiempo"),
-      sub: T("Ne te laisse plus surprendre par l'odeur. Notre veilleur surveille les risques H₂S devant tes plages préférées.", "Never get caught off guard by the smell again. Our Watchman monitors H₂S risks in front of your favorite beaches.", "No te dejes sorprender por el olor. Nuestro Vigía monitorea los riesgos de H₂S frente a tus playas."),
-      cta: T("Activer Le Veilleur →", "Activate the Watcher →", "Activar el Vigía →"),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#120821"/>
-          {miVeil(400, 200, "#E8522A", "#F4845F")}
-          <circle cx="400" cy="200" r="140" fill="none" stroke="#E8522A" strokeWidth="2" strokeDasharray="6 8" opacity="0.4"/>
-          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#E8522A" textAnchor="middle">ALERT H₂S ENABLED</text>
-        </g>
-      )
-    }
-  ]
-}
-
-function nettoyerBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  return [
-    {
-      eyebrow: T("L'ACTION", "ACTION", "ACCIÓN"),
-      heading: T("Récolter avant le sable", "Collect before the sand", "Recoger antes de la arena"),
-      sub: T("La récolte des algues en mer est 10 fois plus écologique car elle préserve le sable et évite la dégradation en gaz toxique.", "Collecting seaweed at sea is 10 times more ecological because it preserves sand and avoids degradation into toxic gas.", "Recoger el alga en el mar es 10 veces más ecológico porque conserva la arena y evita los gases tóxicos."),
-      scene: (
-        <g>
-          <rect width="800" height="360" fill="#120821"/>
-          <rect y="360" width="800" height="240" fill="#08251F"/>
-          <g transform="translate(400,430)">
-            <ellipse rx="150" ry="12" fill="#7a5c14"/>
-          </g>
-          <g transform="translate(350,340)"><path d="M-60 20 L60 20 L48 40 L-48 40 Z" fill="#1A5852" stroke="#3fd07f" strokeWidth="2"/></g>
-        </g>
-      )
-    },
-    {
-      eyebrow: T("LE TRI", "THE SORTING", "LA CLASIFICACIÓN"),
-      heading: T("Séparer pour valoriser", "Sort to value", "Clasificar para valorizar"),
-      sub: T("L'algue récoltée passe par un système de tri mécanique pour séparer le sable et l'eau salée de la matière organique valorisable.", "The harvested algae goes through mechanical sorting to separate sand and saltwater from usable organic matter.", "El alga cosechada pasa por una clasificación mecánica para separar la arena y el agua de la materia orgánica."),
-      scene: <SolSortScene lang={lang}/>
-    },
-    {
-      eyebrow: T("LA TRANSFORMATION", "TRANSFORMATION", "TRANSFORMACIÓN"),
-      heading: T("Engrais, briques, énergie", "Fertilizer, bricks, energy", "Abono, ladrillos, energía"),
-      sub: T("Une fois triée et rincée, l'algue sargasse se transforme en compost agricole, en briques de construction ou en biogaz.", "Once sorted and rinsed, sargassum is transformed into agricultural compost, construction bricks or biogas.", "Una vez clasificada y enjuagada, el sargazo se transforma en compost agrícola, ladrillos o biogás."),
-      scene: <SolTransformScene lang={lang}/>
-    },
-    {
-      eyebrow: T("VALORISATION", "RECYCLING", "RECICLAJE"),
-      heading: T("Agir pour le climat", "Act for the climate", "Actuar por el clima"),
-      sub: T("Chaque tonne valorisée évite l'émanation de méthane en décomposition. Découvre toutes les initiatives locales.", "Each ton recycled avoids methane emissions from decomposition. Discover all local initiatives.", "Cada tonelada reciclada evita las emisiones de metano por descomposición. Descubre las iniciativas locales."),
-      cta: T("Voir les solutions →", "See the solutions →", "Ver las soluciones →"),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06211E"/>
-          <circle cx="400" cy="260" r="100" fill="none" stroke="#22C55E" strokeWidth="8"/>
-          <path d="M380 230 L400 210 L420 230" fill="none" stroke="#22C55E" strokeWidth="8" strokeLinecap="round"/>
-          <text x="400" y="275" fontFamily="'Anton',sans-serif" fontSize="48" fill="#22C55E" textAnchor="middle">CO₂</text>
-        </g>
-      )
-    }
-  ]
-}
-
-function methodeBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const relPct = (__REL && typeof __REL.cleanPct === "number") ? __REL.cleanPct : 79
-  const relReg = (__REL && __REL.regime === "high") ? T("saison haute", "high season", "temporada alta") : T("saison calme", "calm season", "temporada tranquila")
-  const relRateStr = T(`fiabilité de ${relPct}% sur nos prévisions « mer propre » vérifiées (${relReg})`, `accuracy of ${relPct}% on our verified “clean water” forecasts (${relReg})`, `fiabilidad del ${relPct}% en pronósticos “agua limpia” verificados (${relReg})`)
-  return [
-    {
-      eyebrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
-      heading: T("D'où vient la couleur ?", "Where does the color come from?", "¿De dónde viene el color?"),
-      sub: T("L'indice de couleur de nos cartes (propre, modéré, à éviter) provient de l'analyse automatisée de la signature satellite de l'océan.", "The color index on our maps (clean, moderate, avoid) comes from automated satellite signature analysis of the ocean.", "El índice de color de nuestros mapas (limpio, moderado, evitar) proviene del análisis automatizado de la firma satelital."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#0A2E2A"/>
-          <path d="M150 180 Q400 240 650 180" fill="none" stroke="#22C55E" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
-          <path d="M150 280 Q400 340 650 280" fill="none" stroke="#E8A800" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
-          <path d="M150 380 Q400 440 650 380" fill="none" stroke="#E8522A" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
-          {miVeil(400, 150, "#5b3a8e", "#3fd07f")}
-        </g>
-      )
-    },
-    {
-      eyebrow: T("VALIDATION TERRAIN", "GROUND TRUTH", "VALIDACIÓN DE CAMPO"),
-      heading: T("On croise les données", "Cross-referencing data", "Cruzando datos"),
-      sub: T("Les signalements terrain de nos veilleurs locaux et les capteurs valident quotidiennement les prévisions satellites pour éliminer les faux positifs.", "Ground reports from our local watchers and sensors daily validate satellite forecasts to eliminate false positives.", "Los informes de campo de nuestros vigías locales y sensores validan diariamente los pronósticos satelitales."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06121A"/>
-          <rect y="360" width="800" height="240" fill="#1C1712"/>
-          {[200,400,600].map((x,i)=>(
-            <g key={i} transform={`translate(${x},340)`}>
-              <circle r="12" fill="#22C55E"/>
-              <path d="M-6 0 L-2 4 L6 -4" fill="none" stroke="#fff" strokeWidth="2.5"/>
-            </g>
-          ))}
-          {miVeil(400, 140, "#5b3a8e", "#3fd07f")}
-        </g>
-      )
-    },
-    {
-      eyebrow: T("FIABILITÉ", "ACCURACY", "FIABILIDAD"),
-      heading: T("Transparence totale", "Total transparency", "Transparencia total"),
-      sub: T("Notre modèle affiche une " + relRateStr + ". Le taux est recalibré chaque semaine pour rester digne de confiance.", "Our model shows " + relRateStr + ". The rate is recalibrated every week to remain trustworthy.", "Nuestro modelo muestra una " + relRateStr + "."),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#06211E"/>
-          <g transform="translate(400,260)">
-            <circle r="80" fill="none" stroke="#3fd07f" strokeWidth="8"/>
-            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#3fd07f" textAnchor="middle">{relPct}%</text>
-          </g>
-          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{T("Indice de confiance mis à jour", "Confidence index updated", "Índice de confianza actualizado")}</text>
-        </g>
-      )
-    },
-    {
-      eyebrow: T("LA CARTE", "THE MAP", "EL MAPA"),
-      heading: T("Prêt pour la plage ?", "Ready for the beach?", "¿Listo para la playa?"),
-      sub: T("Ouvre la carte interactive pour voir l'état exact de tes plages aujourd'hui et planifier ta semaine en Martinique et Guadeloupe.", "Open the interactive map to see the exact state of your beaches today and plan your week in Martinique and Guadeloupe.", "Abre el mapa interactivo para ver el estado exacto de tus playas hoy y planificar tu semana."),
-      cta: T("Ouvrir la carte →", "Open the map →", "Abrir el mapa →"),
-      scene: (
-        <g>
-          <rect width="800" height="600" fill="#0B2230"/>
-          <path d="M100 250 Q400 220 700 250" fill="none" stroke="#FFE47A" strokeWidth="4" opacity=".5"/>
-          <g transform="translate(400,280)">
-            <path d="M0 -30 C-20 -30 -20 0 0 30 C20 0 20 -30 0 -30 Z" fill="#E8522A" stroke="#fff" strokeWidth="2"/>
-            <circle cx="0" cy="-10" r="10" fill="#fff"/>
-          </g>
-        </g>
-      )
-    }
-  ]
-}
-
-const STATION_BEATS = {
-  "comprendre-sargasses":      comprendreBeats,
-  "detection-satellite-sargasses": satelliteBeats,
-  "danger-sargasses-h2s":      h2sBeats,
-  "nettoyer-sargasses":        nettoyerBeats,
-  "methode-carte":             methodeBeats,
-  "en/understanding-sargassum":      comprendreBeats,
-  "en/satellite-sargassum-detection": satelliteBeats,
-}
-
-function StationStory({slug,lang,onExit,onCTA}){
-  const beatsFn = STATION_BEATS[slug] || discoveryBeats
-  const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
-  return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:30,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
-      <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
-        ev="sg_station_beat" onCTA={onCTA}
-        onBeat={(b,n)=>{try{track("sg_station_beat",{slug,b:b+1,n})}catch(_){}}}/>
-    </div>
-  )
-}
-
-
-// ── SolutionsStory — pages SVG sur les SOLUTIONS sargasses (mandat nuit 14/06) :
-//    problème global → on voit (satellite) → on agit (barrages+ramassage) → on
-//    transforme (recyclage+carburant) → on sort (escapable, jamais infernal).
-//    Scrollytelling via StoryEngine. Faits sûrs en v1, enrichis par recherche.
-// Scène INTERACTIVE (clic) du beat transformation : touche une ressource -> un fait.
-function SolTransformScene({lang}){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const[sel,setSel]=useState(null)
-  const items=[
-    {e:"🌱",x:230,y:210,l:T("Engrais","Fertilizer","Abono"),f:T("Riche en potassium : il nourrit les sols agricoles.","Potassium-rich: it feeds farm soils.","Rico en potasio: nutre los suelos.")},
-    {e:"🧱",x:400,y:182,l:T("Briques","Bricks","Ladrillos"),f:T("Sargablock : de vraies maisons bâties au Mexique.","Sargablock: real houses built in Mexico.","Sargablock: casas reales en México.")},
-    {e:"⚡",x:570,y:210,l:T("Biogaz","Biogas","Biogás"),f:T("Méthanisation : l'algue devient électricité.","Anaerobic digestion: the algae becomes electricity.","Digestión: el alga se vuelve electricidad.")},
-    {e:"📄",x:312,y:392,l:T("Papier","Paper","Papel"),f:T("Ses fibres font papier et carton.","Its fibres make paper and card.","Sus fibras hacen papel y cartón.")},
-    {e:"🧴",x:488,y:392,l:T("Bioplastique","Bioplastic","Bioplástico"),f:T("Des emballages compostables.","Compostable packaging.","Envases compostables.")},
-  ]
-  return(<g><defs><linearGradient id="sol4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
-    <rect width="800" height="600" fill="url(#sol4)"/>
-    <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p5)*.7)"}}/></g>
-    {items.map((o,i)=>(
-      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}}} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
-        <circle r="34" fill="#0A1714" stroke={sel===i?"#FFD884":"#1EC8B0"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
-      </g>))}
-    {sel==null
-      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
-      : <g><rect x="120" y="70" width="560" height="62" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="97" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{items[sel].e+"  "+items[sel].l}</text><text x="400" y="119" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{items[sel].f}</text></g>}
-  </g>)
-}
-// Scène INTERACTIVE « ON TRIE » : un convoyeur amène l'algue vers 3 bacs triés (engin
-// de chantier qui trie, demande fondateur). Tap un bac -> un fait. --p4 = remplissage.
-function SolSortScene({lang}){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const[sel,setSel]=useState(null)
-  const bins=[
-    {e:"♻️",x:300,c:"#22C55E",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
-    {e:"🌊",x:400,c:"#3E9BC4",l:T("Eau & sel","Water & salt","Agua y sal"),f:T("Pressée, l'eau salée repart à la mer.","Pressed out, the brine returns to the sea.","Prensada, el agua vuelve al mar.")},
-    {e:"🪨",x:500,c:"#9AA08A",l:T("Sable & résidus","Sand & residue","Arena y residuo"),f:T("Le sable rendu à la plage, les déchets écartés.","Sand returned to the beach, waste removed.","La arena vuelve a la playa.")},
-  ]
-  return(<g><defs><linearGradient id="solSort" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
-    <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear 1 both}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
-    <rect width="800" height="600" fill="url(#solSort)"/>
-    {/* convoyeur incliné */}
-    <path d="M110 220 L460 330" stroke="#0A1714" strokeWidth="26" strokeLinecap="round"/>
-    <path className="sol-belt" d="M110 220 L460 330" stroke="#1EC8B0" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
-    {[150,232,314,396].map((x,i)=>{const y=220+(x-110)*(110/350);return <ellipse key={i} cx={x} cy={y-16} rx="13" ry="6" fill="#8a6c1c" style={{opacity:"calc(var(--p4)*1.3 - "+(i*0.18)+")"}}/>})}
-    {/* tête de tri (l'engin) */}
-    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#0A1714"/><circle cx="1" cy="-42" r="3.6" fill="#1EC8B0"/></g>
-    {/* 3 bacs triés, cliquables, remplis par --p4 */}
-    {bins.map((b,i)=>(
-      <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}}} style={{cursor:"pointer"}}>
-        <clipPath id={"binc"+i}><path d="M-32 2 L32 2 L27 66 L-27 66 Z"/></clipPath>
-        <rect x="-32" y="6" width="64" height="60" fill={b.c} opacity=".4" clipPath={"url(#binc"+i+")"} style={{transform:"scaleY(var(--p4))",transformBox:"fill-box",transformOrigin:"center bottom"}}/>
-        <path d="M-32 2 L32 2 L27 66 L-27 66 Z" fill="none" stroke={sel===i?"#FFD884":b.c} strokeWidth={sel===i?2.6:1.6}/>
-        <text y="42" fontSize="24" textAnchor="middle">{b.e}</text>
-        <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#0A1714" textAnchor="middle" paintOrder="stroke" stroke="rgba(255,240,210,.6)" strokeWidth="2.4">{b.l}</text>
-      </g>))}
-    {sel==null
-      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
-      : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
-  </g>)
-}
-// LE DÉBAT (main d'œuvre / aides / argent) — 5 voix sur LA MÊME anse + vote diégétique
-// « où va l'argent ». Non-clivant : pas "qui a raison" mais "que finance-t-on". Click-driven,
-// mobile-safe (bande centrale). La donnée satellite = le point commun qui réconcilie tous.
-function SolDebateScene({lang}){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const[vi,setVi]=useState(0)
-  const[votes,setVotes]=useState(()=>{try{return JSON.parse(localStorage.getItem("sg_debate_votes")||"[3,5,2,4]")}catch(_){return[3,5,2,4]}})
-  const[voted,setVoted]=useState(false)
-  const V=[
-    {e:"🏠",n:T("Habitant","Resident","Vecino"),s:T("Ramassée vite, l'algue ne sent pas le H₂S près de l'école.","Collected fast, no H₂S smell near the school.","Recogida rápido, sin H₂S junto a la escuela.")},
-    {e:"🏖️",n:T("Tourisme","Tourism","Turismo"),s:T("Mes clients réservent si je promets une plage propre.","Guests book if I can promise a clean beach.","Reservan si prometo playa limpia.")},
-    {e:"🏛️",n:T("Collectivité","Public","Municipio"),s:T("La donnée dit OÙ ramasser : j'emploie là où c'est utile.","Data says WHERE to collect: I hire where it counts.","El dato dice DÓNDE recoger.")},
-    {e:"♻️",n:T("Recycleur","Recycler","Reciclador"),s:T("Captée fraîche et triée, l'algue vaut de l'or (engrais, biogaz).","Fresh & sorted, the algae is gold (fertilizer, biogas).","Fresca y clasificada, vale oro.")},
-    {e:"💶",n:T("Financier","Funder","Financiero"),s:T("Je finance ce qui se MESURE : la précision satellite horodatée.","I fund what's MEASURED: timestamped accuracy.","Financio lo que se MIDE.")},
-  ]
-  const O=[T("Collecte quartier","Local collect","Recogida"),T("Alerte H₂S","H₂S alert","Alerta H₂S"),T("Dashboard hôtels","Hotel dashboard","Panel hoteles"),T("Recyclage","Recycling","Reciclaje")]
-  const vote=i=>{if(voted)return;setVotes(v=>{const n=v.slice();n[i]=(n[i]||0)+1;try{localStorage.setItem("sg_debate_votes",JSON.stringify(n))}catch(_){}return n});setVoted(true);try{track("sg_debate_vote",{choice:i})}catch(_){}}
-  const tot=Math.max(1,votes.reduce((a,b)=>a+b,0)),v=V[vi]
-  return(<g><defs><linearGradient id="solDeb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
-    <rect width="800" height="600" fill="url(#solDeb)"/>
-    <circle cx="400" cy="250" r="58" fill="#FFD884" opacity=".5"/>
-    <rect y="372" width="800" height="228" fill="#10403A"/>
-    <path d="M120 466 Q400 440 680 466 L680 600 L120 600 Z" fill="#C9A86A"/>
-    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#0A1714"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
-    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#0A1714"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
-    <g opacity={vi===1||vi===3?1:.35} transform="translate(520,452)"><path d="M-24 0 l48 0 l-8 14 l-32 0 Z" fill="#13302A"/></g>
-    {vi===0&&<g><ellipse cx="317" cy="404" rx="34" ry="11" fill="#9AA08A" opacity=".4"/><text x="317" y="384" fontSize="13" textAnchor="middle">💨</text></g>}
-    {vi===4&&<g stroke="#FFD884" strokeWidth="2" fill="none" opacity=".7"><path d="M250 200 Q330 330 400 430"/><path d="M400 190 Q400 310 400 430"/><path d="M550 200 Q470 330 400 430"/></g>}
-    {miVeil(400,150,"#0A1714","#1EC8B0")}
-    {/* sélecteur de voix (bande centrale, mobile-safe) */}
-    <g role="button" tabIndex={0} aria-label="prev" onClick={()=>{const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}}} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
-    <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
-    <g><rect x="298" y="206" width="204" height="56" rx="14" fill="rgba(7,32,30,.92)" stroke="#FFD884" strokeWidth="1.3"/><text x="400" y="228" fontSize="13.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{v.e+" "+v.n}</text><text x="400" y="248" fontSize="10.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{v.s.length>52?v.s.slice(0,50)+"…":v.s}</text></g>
-    <text x="400" y="288" fontSize="10" fill="rgba(255,255,255,.5)" textAnchor="middle">{(vi+1)+"/5 · "+T("‹ › les 5 regards","‹ › the 5 views","‹ › las 5 miradas")}</text>
-    {/* vote 2×2 (safe band) ou résultat */}
-    {!voted
-      ? <g><text x="400" y="312" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
-          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();vote(i)}}} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#1EC8B0" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
-        </g>
-      : <g><text x="400" y="306" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
-          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#1EC8B0"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#1EC8B0">{pct+"%"}</text></g>)})}
-        </g>}
-  </g>)
-}
-function solutionsBeats(lang){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
-  const SEA=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>)
-  return[
-    // 0 — LE PROBLÈME : la ceinture atlantique qui dérive
-    {eyebrow:T("LE PROBLÈME","THE PROBLEM","EL PROBLEMA"),heading:T("Une ceinture de 8 000 km","An 8,000 km belt","Un cinturón de 8.000 km"),
-      sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes. En 2025, un record : 38 millions de tonnes — le double de 2022.","Since 2011 a tide of algae crosses the Atlantic, Africa to the Caribbean. In 2025 a record: 38 million tonnes — double 2022.","Desde 2011 una marea cruza el Atlántico. En 2025 un récord: 38 millones de toneladas — el doble que 2022."),
-      scene:<g><defs>{SKY("sol0")}</defs><rect width="800" height="600" fill="url(#sol0)"/>
-        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#08251F" opacity=".55"/>
-        <g style={{transform:"translateX(calc(var(--p0)*70px - 35px))"}}>{[200,258,316,374,432,490,548,606].map((x,i)=>(<ellipse key={i} cx={x} cy={310+Math.sin(i*1.3)*16} rx="24" ry="8.5" fill="#8a6c1c" opacity=".82"/>))}</g>
-        <circle cx="170" cy="312" r="9" fill="#1EC8B0"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
-        <circle cx="636" cy="312" r="9" fill="#FFD884"/><text x="636" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#FFD884" textAnchor="middle">{T("Caraïbes","Caribbean","Caribe")}</text>
-        <text x="400" y="150" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle" opacity=".9">2011 →</text>
-      </g>},
-    // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
-    {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit la signature des algues en mer (satellites NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watcher reads the algae's signature at sea (Copernicus/NOAA satellites) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee la firma de las algas en el mar (satélites NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
-      scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
-        {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
-        <rect y="360" width="800" height="240" fill="url(#sol1)"/>
-        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#1EC8B0" opacity={"calc(.08 + var(--p1)*.16)"}/>
-        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#0A1714","#1EC8B0")}</g>
-        {[330,400,470].map((x,i)=>(<circle key={i} cx={x} cy="400" r="7" fill="#FFD884" style={{opacity:"calc(var(--p1) - "+(i*0.18)+")"}}/>))}
-        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p1)"}}>{T("Algues en mer · scan","Algae at sea · scan","Algas en el mar · scan")}</text>
-      </g>},
-    // 2 — ON ARRÊTE EN MER : barrages flottants + bateau collecteur
-    {eyebrow:T("ON AGIT EN MER","WE ACT AT SEA","ACTUAMOS EN EL MAR"),heading:T("Stopper avant la plage","Stop it before the beach","Detenerla antes de la playa"),
-      sub:T("Des barrages flottants dévient l'algue, des bateaux la collectent au large. En 2025, le Mexique a posé 9 630 m de barrages et collecté 92 783 tonnes — avant le sable, avant l'odeur.","Floating booms divert the algae, boats collect it offshore. In 2025 Mexico laid 9,630 m of booms and collected 92,783 tonnes — before the sand, before the smell.","Barreras flotantes desvían el alga; barcos la recogen mar adentro. México: 9.630 m de barreras y 92.783 t en 2025."),
-      scene:<g><defs>{SKY("sol2s")}{SEA("sol2")}</defs><rect width="800" height="360" fill="url(#sol2s)"/>
-        <path d="M348 250 a52 52 0 0 1 104 0 Z" fill="#FFD884" opacity=".85"/>
-        <rect y="360" width="800" height="240" fill="url(#sol2)"/>
-        <path d="M250 520 Q400 500 560 518 L820 512 L820 620 L250 620 Z" fill="#C9A86A"/>
-        {/* barrage flottant (boom) — se remplit avec --p2 */}
-        <g><line x1="200" y1="408" x2="600" y2="408" stroke="#FFC72C" strokeWidth="4" strokeDasharray="10 6"/>{[230,290,350,410,470,530].map((x,i)=>(<circle key={i} cx={x} cy="408" r="6" fill="#FFC72C"/>))}</g>
-        <g style={{opacity:"var(--p2)"}}>{[260,330,400,470,540].map((x,i)=>(<ellipse key={i} cx={x} cy="392" rx="18" ry="6" fill="#7a5c14"/>))}</g>
-        {/* bateau collecteur arrive avec --p2 */}
-        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#0A1714"/><circle cx="155" cy="360" r="4" fill="#1EC8B0"/></g>
-      </g>},
-    // 3 — ON RAMASSE VITE : fenêtre 24-48h avant le H2S
-    {eyebrow:T("ON RAMASSE VITE","WE COLLECT FAST","RECOGEMOS RÁPIDO"),heading:T("48 heures, pas plus","48 hours, no more","48 horas, no más"),
-      sub:T("Ramassée dans les 24-48 h, l'algue reste une ressource propre. Trop tard, elle pourrit et dégage le H₂S — l'odeur d'œuf. Le timing change tout.","Collected within 24-48 h it stays a clean resource. Too late, it rots and releases H₂S — the egg smell. Timing is everything.","Recogida en 24-48 h sigue siendo limpia. Tarde, se pudre y libera H₂S."),
-      scene:<g><defs>{SKY("sol3")}</defs><rect width="800" height="360" fill="url(#sol3)"/>
-        <rect y="360" width="800" height="240" fill="#C9A86A"/>
-        {/* tas d'algues fraiches -> machine qui ramasse avec --p3 */}
-        <g style={{opacity:"calc(1 - var(--p3)*.85)"}}>{[300,360,420,480].map((x,i)=>(<ellipse key={i} cx={x} cy="430" rx="40" ry="14" fill="#6b7a1c"/>))}</g>
-        <g style={{transform:"translateX(calc(var(--p3)*260px - 120px))"}}><rect x="120" y="396" width="60" height="36" rx="6" fill="#155A5A"/><circle cx="138" cy="436" r="12" fill="#120821"/><circle cx="168" cy="436" r="12" fill="#120821"/><path d="M180 412 l40 -10 l0 22 l-40 6 Z" fill="#FFC72C"/></g>
-        {/* horloge / compte a rebours */}
-        <g transform="translate(620,150)" style={{opacity:"calc(.5 + var(--p3)*.5)"}}><circle r="40" fill="none" stroke="#FFD884" strokeWidth="4"/><line x1="0" y1="0" x2="0" y2="-26" stroke="#FFD884" strokeWidth="4" strokeLinecap="round" style={{transformBox:"fill-box",transformOrigin:"0px 0px",transform:"rotate(calc(var(--p3)*300deg))"}}/><text x="0" y="64" fontFamily="ui-monospace,monospace" fontSize="13" fill="#FFD884" textAnchor="middle">48h</text></g>
-      </g>},
-    // 4 — ON TRIE : convoyeur + 3 bacs (l'engin de chantier qui trie, demande fondateur)
-    {eyebrow:T("ON TRIE","WE SORT","SE CLASIFICA"),heading:T("Chaque chose à sa place","Everything in its place","Cada cosa en su sitio"),
-      sub:T("Avant d'être valorisée, l'algue passe au tri : la matière propre d'un côté, l'eau salée et le sable de l'autre. Touche un bac pour voir ce qu'il devient.","Before being reused, the algae is sorted: clean matter on one side, brine and sand on the other. Tap a bin to see what it becomes.","Antes de valorizarla, el sargazo se clasifica. Toca un contenedor."),
-      scene:<SolSortScene lang={lang}/>},
-    // 5 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
-    {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
-      sub:T("Engrais, briques, biochar, bioplastique, papier — et de l'énergie (biogaz). Captée fraîche, elle évite aussi le méthane qu'elle dégage en pourrissant (28× plus réchauffant que le CO₂).","Fertilizer, bricks, biochar, bioplastic, paper — and energy (biogas). Caught fresh, it also avoids the methane it releases when rotting (28× worse than CO₂).","Abono, ladrillos, biochar, bioplástico, papel — y energía (biogás). Recogida fresca evita el metano (28× peor que el CO₂)."),
-      scene:<SolTransformScene lang={lang}/>},
-    // 6 — LE DÉBAT : main d'œuvre / aides / argent (5 voix + vote)
-    {eyebrow:T("LE DÉBAT","THE DEBATE","EL DEBATE"),heading:T("Qui ramasse ? Où va l'argent ?","Who collects? Where's the money?","¿Quién recoge? ¿A dónde va el dinero?"),
-      sub:T("Habitant, tourisme, collectivité, recycleur, financier : 5 regards sur la même plage. Pas « qui a raison » mais « que finance-t-on ? ». La donnée satellite dit où ramasser — touche les 5 voix, puis vote.","Resident, tourism, public, recycler, funder: 5 views on the same beach. Not who's right but what we fund. Tap the 5 voices, then vote.","Vecino, turismo, municipio, reciclador, financiero: 5 miradas. Toca las 5 voces y vota."),
-      scene:<SolDebateScene lang={lang}/>},
-    // 7 — ESPOIR + SORTIE (escapable, jamais infernal)
-    {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
-      sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watcher keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
-      cta:T("Sortir & voir les plages →","Exit & see the beaches →","Salir y ver las playas →"),
-      scene:<g><defs>{SKY("sol5s")}{SEA("sol5")}</defs><rect width="800" height="360" fill="url(#sol5s)"/>
-        <path d="M340 230 a60 60 0 0 1 120 0 Z" fill="#FFD884"/>
-        <g style={{opacity:"calc(.5 + var(--p7)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
-        <rect y="360" width="800" height="240" fill="url(#sol5)"/>
-        <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
-        <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
-        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#0A1714","#1EC8B0")}</g>
-      </g>},
-  ]
-}
-function SolutionsStory({lang,onClose,onExit}){
-  // JEU data-unlock (INC2) : avancer dans le cycle DÉVERROUILLE nos données, palier par palier.
-  // Niveau monotone (ne décroît JAMAIS — pré-révélé au retour), reduced-motion = tout d'office.
-  const beats=solutionsBeats(lang),N=beats.length
-  const rm=(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})()
-  const[unlocked,setUnlocked]=useState(()=>{try{return rm?N:Math.max(0,parseInt(g("sg_sol_lvl",0))||0)}catch(_){return 0}})
-  const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
-  const pct=Math.round(100*Math.min(unlocked,N)/N)
-  return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(11px + env(safe-area-inset-top))",right:11,zIndex:31,width:44,height:44,background:"none",border:"none",padding:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}><span aria-hidden="true" style={{width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</span></button>
-      {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
-      <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
-        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#009E8E,#22C55E)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
-      </div>
-      {/* sol_exit_cta : le dernier CTA ouvre le premium (intent chaud post-éducation) */}
-      <StoryEngine beats={beats} lang={lang} accent="#1EC8B0" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
-    </div>
-  )
-}
-
 // ── MapIntroStory — landing SVG d'intro de la CARTE (design workflow 14/06).
 //    Overlay plein écran (le seul contexte où le moteur prod scrub bien) : le
 //    Veilleur présente la côte → compteurs RÉELS → comment lire un pin → ouvre
@@ -1529,7 +1032,7 @@ function MapIntroStory({lang,counts,onEnterMap}){
 //    jour (le Veilleur dérive, le score se révèle, scène par statut) ② DEMAIN
 //    (5 points de prévision réelle s'allument) ③ TON VEILLEUR (CTA). Anim en
 //    transform/opacity. Monté via PanelStoryEngine (scroll du conteneur sheet). ─
-function beachStoryBeats(beach,forecast,lang){
+export function beachStoryBeats(beach,forecast,lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const vm=verdictMeta(beach.status,lang)
   const mood=moodFromScore(beach.score)
@@ -1992,7 +1495,7 @@ export const NO_TRIAL=true
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
-const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+export const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 export const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2218,7 +1721,7 @@ function sgCollectInit(){
 //    émet un event d'INTENTION via track() → /collect.php (first-party) → KPI. Anti-slop, mesurable.
 function sgUnlockState(){try{return JSON.parse(localStorage.getItem("sg_unlocks")||'{"keys":[],"v":1}')}catch(_){return{keys:[],v:1}}}
 function sgHasUnlock(k){try{return sgUnlockState().keys.indexOf(k)>=0}catch(_){return false}}
-function sgUnlock(k,meta){try{const s=sgUnlockState();if(s.keys.indexOf(k)<0){s.keys.push(k);localStorage.setItem("sg_unlocks",JSON.stringify(s));try{track("sg_unlock",{key:k,total:s.keys.length,...(meta||{})})}catch(e){}}return true}catch(_){return false}}
+export function sgUnlock(k,meta){try{const s=sgUnlockState();if(s.keys.indexOf(k)<0){s.keys.push(k);localStorage.setItem("sg_unlocks",JSON.stringify(s));try{track("sg_unlock",{key:k,total:s.keys.length,...(meta||{})})}catch(e){}}return true}catch(_){return false}}
 function sgUnlockCount(){try{return sgUnlockState().keys.length}catch(_){return 0}}
 // Capture d'intention : QUEL problème/solution/plage intéresse l'user, où il s'attarde → KPI (stats.php).
 function sgIntent(name,params){try{track("sg_intent",{intent:name,...(params||{})})}catch(_){}}
@@ -2251,9 +1754,9 @@ function AbDebug(){
  * Our normalizeAfai() maps: raw 0.002→0.15, raw 0.005→0.40.
  * Sources: NOAA/AOML SIR v1.4, Wang & Hu 2016 (USF MODIS).
  */
-function statusFromAfai(afai){return afai<.15?"clean":afai<.40?"moderate":"avoid"}
+export function statusFromAfai(afai){return afai<.15?"clean":afai<.40?"moderate":"avoid"}
 
-function generateForecast(afai,lang="fr"){
+export function generateForecast(afai,lang="fr"){
   const LL=T[lang]||T.fr,now=new Date()
   return Array.from({length:7},(_,i)=>{
     const d=new Date(now);d.setDate(d.getDate()+i)
@@ -2300,7 +1803,7 @@ function interpolateIDW(beach,sentinels,k=3,power=2){
  * Rule-based from lat/lng/island — Anses d'Arlet + sud MQ restent atlantic
  * (contournement sud possible).
  */
-function classifyBeachCoast(lat,lng,island){
+export function classifyBeachCoast(lat,lng,island){
   if(island==="mq"){
     // Baie de Fort-de-France (Trois-Îlets, Schoelcher) : abritée
     if(lat>14.54&&lat<14.68&&lng<-61.02&&lng>-61.16)return"sheltered"
@@ -2488,7 +1991,7 @@ function FilterChip({label,icon,active,onClick,count}){
 /* ═══════════════════════════════════════════════════════════════════════════
    FORECAST CREDIBILITY — confidence bar + source + method
    ═══════════════════════════════════════════════════════════════════════════ */
-function ForecastCredibility({weeklyData,lang,sargData}){
+export function ForecastCredibility({weeklyData,lang,sargData}){
   const LL=T[lang]||T.fr
   const[showTip,setShowTip]=useState(false)
   const avgConf=weeklyData?.forecast?.[0]?.confidence||40
@@ -2787,7 +2290,7 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
-function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,weeklyData}){
+export function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,weeklyData}){
   // pw_beat (backlog #4) : l'intention CHAUDE forecast-lock = un BEAT du scroll IN-SCÈNE
   // (golden-hour + Veilleur + 1 promesse positive + 1 preuve chiffrée + 1 CTA), PAS un
   // modal posé. Le CTA mène ENSUITE au checkout (onPremiumClick, inchangé). ?pwbeat=1/0.
@@ -3072,7 +2575,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
 /* ═══════════════════════════════════════════════════════════════════════════
    METHODOLOGY LINK — "Comment c'est calcule?" expandable
    ═══════════════════════════════════════════════════════════════════════════ */
-function MethodologyLink({beach,lang,sargData}){
+export function MethodologyLink({beach,lang,sargData}){
   const[open,setOpen]=useState(false)
   if(!beach)return null
   const fr=lang!=="en"
@@ -3114,7 +2617,7 @@ function cachedFetch(url,cacheKey){
     return d
   })
 }
-function useWeather(beach){
+export function useWeather(beach){
   const[data,setData]=useState(null)
   useEffect(()=>{
     if(!beach)return setData(null)
@@ -3156,7 +2659,7 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    AXE 2: COMMUNITY REPORTS — "Tu es sur place ? Confirme le statut"
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachReport({beach,lang,communityReports}){
+export function BeachReport({beach,lang,communityReports}){
   const key="sg_breport_"+beach.id
   const cooldownKey="sg_breport_t_"+beach.id
   const[voted,setVoted]=useState(()=>{
@@ -3238,7 +2741,7 @@ function BeachReport({beach,lang,communityReports}){
    Displayed inside the beach sheet when fbPosts has entries for this beach.
    Hotlinks scontent CDN photos (legal: we don't re-host).
    ═══════════════════════════════════════════════════════════════════════════ */
-function FbPostsStrip({beach,fbPosts,lang}){
+export function FbPostsStrip({beach,fbPosts,lang}){
   const posts=fbPosts?.[beach?.id]||fbPosts?.[BEACH_TO_SARG?.[beach?.id]]||[]
   if(!posts.length)return null
   const statusEmoji=(s)=>s==="avoid"?"🚫":s==="moderate"?"⚠️":s==="clean"?"✅":"💬"
@@ -3375,7 +2878,7 @@ function PlanBThumb({i}){
 // jamais au load. Affichée seulement quand on n'a pas encore la position ET qu'elle a
 // une valeur évidente ici (distance d'une fiche, tri par proximité). Le prompt natif
 // du navigateur ne se déclenche qu'au clic (onAsk → requestGeo). i18n + region-agnostic.
-function GeoSoftAsk({lang,onAsk,label,src,style}){
+export function GeoSoftAsk({lang,onAsk,label,src,style}){
   if(typeof navigator!=="undefined"&&!navigator.geolocation)return null
   return(
     <button type="button" onClick={e=>{e.stopPropagation();try{onAsk&&onAsk(src||"softask")}catch(_){}}}
@@ -3386,7 +2889,7 @@ function GeoSoftAsk({lang,onAsk,label,src,style}){
     </button>
   )
 }
-function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose,onRequestGeo}){
+export function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose,onRequestGeo}){
   // plages PROPRES proches : on prend les 3 plus PROCHES (ou meilleur score sans
   // géoloc), puis on met la meilleure note en carte #1 (ruban « le + sûr »).
   const clean=useMemo(()=>{
@@ -3478,7 +2981,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
 const H2S_LV={low:{w:["faible","low","bajo"],c:"#22C55E",soft:"rgba(34,197,94,.16)",frac:.14},
   mod:{w:["modéré","moderate","moderado"],c:"#E8A800",soft:"rgba(232,168,0,.18)",frac:.5},
   high:{w:["élevé","high","alto"],c:"#E8522A",soft:"rgba(232,82,42,.20)",frac:.86}}
-function H2SBadge({beach,lang,weather,onPremiumClick}){
+export function H2SBadge({beach,lang,weather,onPremiumClick}){
   const [open,setOpen]=useState(false)
   const panelRef=useRef(null)
   // niveau : beach.h2s (pipeline) prioritaire ; sinon repli HONNÊTE sur le statut.
@@ -3876,716 +3379,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   )
 }
 
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts,onRequestGeo}){
-  const LL=T[lang]||T.fr
-  const weather=useWeather(beach)
-  // Use REAL forecast, then interpolated, then fallback generated
-  // If community reports override status, blend into forecast
-  const weeklyData=useMemo(()=>{
-    if(!beach||!sargData)return null
-    // Nouvelles régions : weekly{} de la pipeline est keyé par l'id de plage
-    // (pc001…) directement — BEACH_TO_SARG ne couvre que les 20 slugs MQ/GP.
-    const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
-    let w=null
-    if(sargId&&sargData.weekly?.[sargId])w=sargData.weekly[sargId]
-    else{
-      const interpKey=`_interp_${beach.id}`
-      w=sargData._enrichedWeekly?.[interpKey]||null
-    }
-    if(!w)return null
-    // Force sheltered beaches to never show arrival (geography rule)
-    const coast=beach.coast||classifyBeachCoast(beach.lat,beach.lng,beach.island)
-    if(coast==="sheltered"&&w.arrivalDetected){
-      return{...w,arrivalDetected:false,arrivalStrength:0}
-    }
-    return w
-  },[beach?.id,sargData])
-  const forecast=useMemo(()=>{
-    if(!beach)return null
-    let fc=weeklyData?.forecast||null
-    // 3. Math.sin fallback (should not happen with 20 sentinels)
-    if(!fc) fc=generateForecast(beach.afai,lang)
-    // 4. Blend community reports into forecast when terrain says worse
-    if(fc&&beach?._communityOverride){
-      const RANK={clean:0,moderate:1,avoid:2}
-      const STATUS_AFAI={clean:.05,moderate:.25,avoid:.60}
-      const communityAfai=STATUS_AFAI[beach.status]||.05
-      if(RANK[beach.status]>(RANK[fc[0]?.status]||0)){
-        fc=fc.map((d,i)=>{
-          // Day 1 = community status, then decay influence over 3 days
-          const w=Math.max(0,1-i*.33)
-          const blended=Math.round((communityAfai*w+d.afai*(1-w))*100)/100
-          const st=statusFromAfai(blended)
-          return {...d,afai:blended,status:st,sources:[...(d.sources||[]),...(i===0?["community"]:[])]}
-        })
-      }
-    }
-    return fc
-  },[beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
-  const isFav=favorites.includes(beach?.id)
-  const [scoreOpen,setScoreOpen]=useState(false)
-  const [photoScanOpen,setPhotoScanOpen]=useState(false)
-  const startY=useRef(0)
-  const sheetRef=useRef(null)
-  // A/B « la fiche EST le ScrollStory » (pw_beach_story) : story = PanelStoryEngine
-  // (verdict→demain→vas-y) sous le hero À LA PLACE du bloc score/verdict ; control =
-  // liste actuelle intacte. ?beachstory=1/0 force en QA. CTA premium inchangé.
-  const beachStory=(()=>{try{const s=window.location.search;if(/[?&]beachstory=1/.test(s))return true;if(/[?&]beachstory=0/.test(s))return false;return abVariant("pw_beach_story",["control","story"],[.5,.5])==="story"}catch(_){return false}})()
-  // A/B « Verdict du Jour » (pw_verdict_guess) : Devine-puis-Révèle DANS la fiche —
-  // l'user devine le statut de CETTE plage avant de voir la donnée (engagement +
-  // série). Additif (control = fiche inchangée), une fois par plage par jour.
-  // ?verdictguess=1/0 force en QA. Funnel premium en aval segmentable par bras.
-  const verdictGuess=(()=>{try{const q=window.location.search;if(/[?&]verdictguess=1/.test(q))return true;if(/[?&]verdictguess=0/.test(q))return false;return abVariant("pw_verdict_guess",["control","guess"],[.5,.5])==="guess"}catch(_){return false}})()
-  // A/B `pw_planb` : feature #2 « où aller maintenant » — quand CETTE plage est
-  // chargée (avoid/moderate), rail des plages PROPRES proches (data réelle).
-  // Additif (control = fiche inchangée), ?planb=1/0 force en QA. Réduit l'angoisse
-  // « journée gâchée » au moment vécu ; chaque pick = sg_planb_pick (segmentable).
-  const pwPlanb=(()=>{try{const q=window.location.search;if(/[?&]planb=1/.test(q))return true;if(/[?&]planb=0/.test(q))return false;return abVariant("pw_planb",["control","planb"],[.5,.5])==="planb"}catch(_){return false}})()
-  // A/B `pw_h2s` : badge Indice santé/H2S GRADUÉ (feature #4, le standout) — libre,
-  // toujours visible, panneau dépliable + alerte santé Premium. Remplace le warning
-  // binaire (control = warning sur avoid uniquement). ?h2s=1/0 force en QA.
-  const pwH2s=(()=>{try{const q=window.location.search;if(/[?&]h2s=1/.test(q))return true;if(/[?&]h2s=0/.test(q))return false;return abVariant("pw_h2s",["control","badge"],[.5,.5])==="badge"}catch(_){return false}})()
-  // A/B `fc_position` : ForecastChart remonté sous le verdict (valeur payante visible tôt)
-  // vs control (en bas après VisitPlan). ?fcup=1/0 force en QA.
-  const fcUp=(()=>{try{const q=window.location.search;if(/[?&]fcup=1/.test(q))return true;if(/[?&]fcup=0/.test(q))return false;return abVariant("fc_position",["control","top"],[.5,.5])==="top"}catch(_){return false}})()
-
-  // Scroll to top when beach changes
-  useEffect(()=>{
-    if(sheetRef.current)sheetRef.current.scrollTop=0
-  },[beach?.id])
-
-  // Nearby beaches: same COMMUNE first (SEO internal linking), then by distance
-  const nearby=useMemo(()=>{
-    if(!beach||!allBeaches)return[]
-    const others=allBeaches
-      .filter(b=>b.id!==beach.id&&b.island===beach.island)
-      .map(b=>({...b,dist:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
-    const sameCommune=others.filter(b=>b.commune===beach.commune).sort((a,b)=>a.dist-b.dist)
-    const diffCommune=others.filter(b=>b.commune!==beach.commune).sort((a,b)=>a.dist-b.dist)
-    return[...sameCommune,...diffCommune].slice(0,3)
-  },[beach?.id,allBeaches])
-
-  if(!beach)return null
-
-  // Hero 100% scène vectorielle golden-hour (BeachScene, auto-phase sur l'heure
-  // locale). Les photos externes ont été retirées — elles juraient avec le design.
-  const heroPh=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "day"}})()
-
-  const onTouchStart=e=>{startY.current=e.touches[0].clientY}
-  const onTouchMove=e=>{
-    // Only allow swipe-dismiss when sheet is scrolled to top (not mid-scroll)
-    if(sheetRef.current&&sheetRef.current.scrollTop>5)return
-    const dy=e.touches[0].clientY-startY.current
-    if(dy>0&&sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`
-  }
-  const onTouchEnd=e=>{
-    if(sheetRef.current&&sheetRef.current.scrollTop>5){sheetRef.current.style.transform="";return}
-    const dy=(e.changedTouches[0]?.clientY||0)-startY.current
-    if(dy>60)requestClose()
-    else if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}
-  }
-
-  // Fermeture SYMÉTRIQUE de l'ouverture (audit fluidité 2026-06-11) : la sheet
-  // glisse vers le bas + le backdrop fond, PUIS on démonte. L'animation .sheet-exit
-  // (to{translateY(100%)}) part de l'état courant — y compris mi-swipe.
-  const backdropRef=useRef(null)
-  const closingRef=useRef(false)
-  const requestClose=()=>{
-    if(closingRef.current)return
-    closingRef.current=true
-    try{
-      sheetRef.current&&sheetRef.current.classList.add("sheet-exit")
-      backdropRef.current&&backdropRef.current.classList.add("backdrop-exit")
-    }catch(_){}
-    setTimeout(()=>{closingRef.current=false;onClose()},260)
-  }
-
-  // Escape key to close
-  useEffect(()=>{
-    const h=e=>{if(e.key==="Escape")requestClose()}
-    document.addEventListener("keydown",h)
-    return()=>document.removeEventListener("keydown",h)
-  },[onClose])
-
-  const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
-
-  return(
-    <>
-      {/* Pass-through pin : si le tap tombe pile sur une pastille visible dans la
-          bande de carte au-dessus de la fiche, on SWITCHE de plage au lieu de
-          fermer — sinon le clic paraît « mort » (rapport user 2026-06-12).
-          elementsFromPoint AVANT fermeture (voit sous le backdrop) ; fermeture
-          sèche via onClose (le requestClose animé garderait un timer 260 ms qui
-          refermerait la NOUVELLE fiche). */}
-      <div className="backdrop" ref={backdropRef} onClick={(e)=>{
-        const x=e.clientX,y=e.clientY
-        // ARCHIPEL (carte SVG par défaut) : pastille [data-beach] sous le backdrop → switch direct
-        // de plage (remplace la dépendance aux marqueurs Leaflet pour le cohort world).
-        try{
-          const g=document.elementsFromPoint(x,y).map(el=>el.closest&&el.closest("[data-beach]")).find(Boolean)
-          if(g){const nb=allBeaches&&allBeaches.find(b=>b.id===g.getAttribute("data-beach"))
-            if(nb&&nb.id!==beach.id){track("sg_sheet_pin_switch",{via:"archipel"});onClose();setTimeout(()=>onBeachClick&&onBeachClick(nb),50);return}}
-        }catch(_){}
-        let pin=null
-        try{pin=document.elementsFromPoint(x,y).find(el=>el.classList&&el.classList.contains("leaflet-marker-icon"))}catch(_){}
-        if(pin){
-          track("sg_sheet_pin_switch",{})
-          onClose()
-          // Re-localiser le pin AU MOMENT du dispatch : la fermeture change
-          // selectedBeach → les markers sont RECONSTRUITS (garde par signature)
-          // → le nœud capturé ci-dessus est détaché. Boucle de frames le temps
-          // que le backdrop démonte + que les markers réapparaissent.
-          let tries=0
-          const fire=()=>{try{
-            const el=document.elementFromPoint(x,y)
-            const p2=el&&el.closest&&el.closest(".leaflet-marker-icon")
-            if(p2){p2.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}));return}
-            if(++tries<8)requestAnimationFrame(fire)
-          }catch(_){}}
-          requestAnimationFrame(fire)
-          return
-        }
-        requestClose()
-      }}/>
-      <div className="sheet" ref={sheetRef}
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <div className="sheet-handle"/>
-
-        {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
-            l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
-        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}}
-          style={{height:(()=>{try{const q=window.location.search;if(/[?&]heroh=1/.test(q))return "min(480px, 46svh)";if(/[?&]heroh=0/.test(q))return "min(600px, 70svh)";return abVariant("aw_hero_height",["control","short"],[.6,.4])==="short"?"min(480px, 46svh)":"min(600px, 70svh)"}catch(_){return "min(600px, 70svh)"}})(),background:"#0B2230",
-          borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
-          {/* SVG D'ABORD (directive 14/06 : « les images dépendent du jour,
-              remplace par du svg perso par heure/lieu, pas ce qu'on voit en
-              premier »). Scène vectorielle propre à la plage + personnalisée par
-              l'heure ET l'ÉTAT (nickel / en collecte / pleine, animé). La vraie
-              photo est reléguée « en cool » plus bas. */}
-          <BeachScene beach={beach} reveal/>
-          {/* Cinematic gradient overlay */}
-          <div style={{position:"absolute",inset:0,
-            background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
-          {/* Le Veilleur veille sur CETTE plage — humeur = état RÉEL du jour : le
-              « veilleur personnel » incarné dès le hero (pas juste une image). */}
-          <div aria-hidden="true" style={{position:"absolute",top:"43%",left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
-            <Veilleur mood={moodFromScore(beach.score)} size={82}/>
-          </div>
-          {/* Status glow — colored ambient light based on beach status */}
-          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",
-            background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
-            pointerEvents:"none"}}/>
-          {/* Close button */}
-          <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
-            width:44,height:44,borderRadius:22,
-            background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
-            border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
-            display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-          {/* Fav button on photo */}
-          <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}}
-            aria-label={isFav?_t(lang,"Retirer des favoris","Remove from favourites","Quitar de favoritos"):_t(lang,"Ajouter aux favoris","Add to favourites","Agregar a favoritos")}
-            style={{position:"absolute",top:12,left:12,
-              width:44,height:44,borderRadius:22,
-              background:isFav?"rgba(232,82,42,.2)":"rgba(0,0,0,.3)",
-              backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
-              border:isFav?"1px solid rgba(232,82,42,.4)":"1px solid rgba(255,255,255,.15)",
-              color:"#fff",fontSize:18,cursor:"pointer",
-              display:"flex",alignItems:"center",justifyContent:"center",
-              transition:"all .3s cubic-bezier(.22,1,.36,1)",
-            }}>{isFav?"❤️":"🤍"}</button>
-          {/* Floating status pill on photo */}
-          <div style={{position:"absolute",bottom:60,left:20,
-            display:"flex",alignItems:"center",gap:8,
-            padding:"6px 14px 6px 10px",borderRadius:100,
-            background:"rgba(0,0,0,.35)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-            border:"1px solid rgba(255,255,255,.12)"}}>
-            <span style={{width:10,height:10,borderRadius:5,
-              background:(ST[beach.status]||ST._loading).c,
-              boxShadow:`0 0 8px ${(ST[beach.status]||ST._loading).c}`,
-              animation:beach.status==="clean"?"none":"pulse 2s ease-in-out 2"}}/>
-            <span style={{fontSize:13,fontWeight:700,color:"#fff",letterSpacing:".01em"}}>
-              {lang==="es"?(ST[beach.status]||ST._loading).les:lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
-            </span>
-          </div>
-          {/* Tap-to-scan HUD overlay */}
-          {photoScanOpen&&<BeachPhotoScan beach={beach} lang={lang}/>}
-          {/* Scan hint (when overlay closed) */}
-          {!photoScanOpen&&<div style={{position:"absolute",bottom:14,right:14,
-            display:"flex",alignItems:"center",gap:4,opacity:.55,pointerEvents:"none"}}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="6" cy="6" r="4.5" stroke="#4ECDC4" strokeWidth="1"/>
-              <line x1="6" y1="1.5" x2="6" y2="3" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="6" y1="9" x2="6" y2="10.5" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="1.5" y1="6" x2="3" y2="6" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
-              <line x1="9" y1="6" x2="10.5" y2="6" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
-            </svg>
-            <span style={{fontSize:9,color:"#4ECDC4",fontWeight:700,letterSpacing:".08em"}}>
-              {lang==="en"?"SCAN":lang==="es"?"ESCANEAR":"ANALYSER"}
-            </span>
-          </div>}
-        </div>
-
-        <div style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
-          {/* Name — large, no duplicate status badge (already on photo) */}
-          <h2 className="anton" style={{fontSize:"clamp(24px,6vw,30px)",margin:"0 0 4px",lineHeight:1.15,
-            color:"var(--sg-ink)"}}>{beach.name}</h2>
-          <p style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",margin:"0 0 12px",
-            display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-            <span>{beach.commune}</span>
-            {typeof beach.drive==="number"&&<>
-              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
-              <span>{beach.drive} {LL.drive}</span>
-            </>}
-            {userPos&&beach.lat&&<>
-              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
-              <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
-            </>}
-            {/* Pas encore de position → soft-ask contextuel : la distance a une valeur
-                évidente ici (prompt natif au tap seulement, jamais au load). */}
-            {!userPos&&beach.lat&&onRequestGeo&&<>
-              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
-              <GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_sheet"
-                style={{padding:"2px 8px",fontSize:11.5}}/>
-            </>}
-          </p>
-
-          {/* PLAN-B « où aller maintenant » — quand CETTE plage est chargée
-              (avoid/moderate), rail des plages propres proches. A/B pw_planb. */}
-          {pwPlanb&&(beach.status==="avoid"||beach.status==="moderate")&&(
-            <PlanBPanel beach={beach} allBeaches={allBeaches} userPos={userPos} lang={lang}
-              sargData={sargData} onBeachClick={onBeachClick} onClose={onClose} onRequestGeo={onRequestGeo}/>
-          )}
-
-          {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero.
-              Masqué dans le bras story (absorbé par le beat ① VERDICT du ScrollStory). */}
-          {!beachStory&&typeof beach.score==="number"&&(
-            <div style={{position:"relative",margin:"4px 0 14px"}}>
-              <div aria-hidden="true" style={{position:"absolute",inset:-4,borderRadius:22,
-                background:`radial-gradient(120% 100% at 0% 0%, ${beach.scoreColor}1f 0%, transparent 60%)`,
-                filter:"blur(8px)",pointerEvents:"none"}}/>
-              <div style={{position:"relative",display:"flex",alignItems:"center",gap:16,
-                padding:"14px 16px",borderRadius:18,
-                background:"linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.55))",
-                backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-                border:`1px solid ${beach.scoreColor}22`,
-                boxShadow:`0 14px 34px -16px ${beach.scoreColor}3a, inset 0 1px 0 rgba(255,255,255,.5)`}}>
-                <div role="button" aria-label={`${beach.score}/100, ${scoreLabelFor(beach.scoreLabel,lang)}. ${_t(lang,"Comprendre ce score","Understand this score","Entender este puntaje")}`}
-                  onClick={()=>{setScoreOpen(v=>!v);track("sg_score_learn",{beach_id:beach.id,open:!scoreOpen})}}
-                  style={{position:"relative",width:84,height:84,flexShrink:0,cursor:"pointer"}}>
-                  <ScoreBlob score={beach.score} color={beach.scoreColor} size={84}/>
-                  {/* Le Veilleur perché, humeur = score RÉEL : le « veilleur personnel »
-                      rendu tangible AVANT le paywall (data pilote le visuel). */}
-                  <div style={{position:"absolute",top:-14,left:-13,pointerEvents:"none"}}>
-                    <Veilleur mood={moodFromScore(beach.score)} size={36}/>
-                  </div>
-                  <div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",
-                    background:beach.scoreColor,color:"#fff",fontSize:10,fontWeight:800,
-                    display:"flex",alignItems:"center",justifyContent:"center",
-                    boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}>{scoreOpen?"×":"?"}</div>
-                </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div className="anton" style={{fontSize:21,lineHeight:1.05,color:beach.scoreColor,
-                    letterSpacing:"-.015em",textTransform:"uppercase"}}>
-                    {scoreLabelFor(beach.scoreLabel,lang)}
-                  </div>
-                  <div style={{fontSize:12,color:"var(--sg-mid,#5A5A5A)",marginTop:5,lineHeight:1.4}}>
-                    {beach.scoreReason}
-                  </div>
-                  {((beach.scoreStrengths?.length||0)+(beach.scoreWeaknesses?.length||0))>0&&(
-                    <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:8}}>
-                      {(beach.scoreStrengths||[]).slice(0,3).map((s,i)=>(
-                        <span key={`s${i}`} style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:100,
-                          background:"rgba(34,197,94,.14)",color:"#16A34A",whiteSpace:"nowrap",letterSpacing:".01em"}}>
-                          ✓ {s}
-                        </span>
-                      ))}
-                      {(beach.scoreWeaknesses||[]).slice(0,2).map((w,i)=>(
-                        <span key={`w${i}`} style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:100,
-                          background:"rgba(224,120,0,.14)",color:"#E07800",whiteSpace:"nowrap",letterSpacing:".01em"}}>
-                          ⚠ {w}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {scoreOpen&&<ScoreReveal beach={beach} lang={lang}/>}
-
-          {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12).
-              Masquée dans le bras story (absorbée par le beat ① du ScrollStory). */}
-          {!beachStory&&ST[beach.status]&&(() => {
-            const verdictKey = beach.status==="clean"?"verdictGo":beach.status==="moderate"?"verdictModerate":beach.status==="avoid"?"verdictAvoid":"verdictUnknown"
-            const verdictText = LL[verdictKey]||LL.verdictUnknown
-            const verdictColor = ST[beach.status].c
-            return (
-              <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 0 14px",flexWrap:"wrap"}}>
-                <span aria-hidden="true" style={{width:4,height:24,borderRadius:2,background:verdictColor,flexShrink:0}}/>
-                <span className="anton" style={{fontSize:"clamp(18px,4.6vw,22px)",lineHeight:1.1,color:verdictColor,letterSpacing:"-.01em",textTransform:"uppercase"}}>
-                  {verdictText}
-                </span>
-                <span aria-hidden="true" style={{fontSize:20,lineHeight:1,flexShrink:0}}>{verdictMeta(beach.status,lang).emoji}</span>
-                {beach.status==="clean"&&__REL&&typeof __REL.cleanPct==="number"&&(
-                  <span style={{fontSize:10.5,fontWeight:700,padding:"3px 9px",borderRadius:100,
-                    background:"rgba(34,197,94,.12)",color:"#16A34A",border:"1px solid rgba(34,197,94,.25)",
-                    whiteSpace:"nowrap",flexShrink:0}}>
-                    ✓ {__REL.cleanPct}% {_t(lang,"fiables","reliable","fiables")}
-                  </span>
-                )}
-              </div>
-            )
-          })()}
-          {/* Freshness chip — satellite timestamp sous le verdict */}
-          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
-          {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
-              dans LES DEUX bras (additif) quand le vrai statut est connu. */}
-          {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
-          {/* La fiche EST le ScrollStory (bras story) : verdict → demain → vas-y.
-              Moteur panel-scroll (lit sheetRef.scrollTop). CTA premium INCHANGÉ. */}
-          {beachStory&&forecast&&forecast.length>=2&&(
-            <div style={{margin:"6px -20px 0"}}>
-              <PanelStoryEngine beats={beachStoryBeats(beach,forecast,lang)} scrollRef={sheetRef} lang={lang}
-                accent={verdictMeta(beach.status,lang).color} ev="sg_beach_beat"
-                onCTA={()=>{track("sg_beach_story_cta",{beach_id:beach.id,status:beach.status});onPremiumClick&&onPremiumClick("beach_story")}}/>
-              {/* PONT golden-hour : on FOND le monde immersif (gold du dernier beat)
-                  dans le détail clair — zéro couture dark→light, un seul flux continu. */}
-              <div aria-hidden style={{height:56,marginTop:-1,background:"linear-gradient(180deg,#11463E 0%,#C97E3A 42%,#FFE08A 74%,var(--sg-card,#fff) 100%)"}}/>
-            </div>
-          )}
-          <AfaiChip beach={beach} lang={lang}/>
-          {/* A/B fc_position="top" : ForecastChart remonte sous le verdict (avant les info-filler) */}
-          {fcUp&&forecast&&(<>
-            {weeklyData?.arrivalDetected&&<div style={{padding:"10px 12px",marginBottom:10,borderRadius:12,background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",border:"1px solid rgba(232,143,42,.35)",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:20}}>⚠</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>{_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}</div><div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>{_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}</div></div></div>}
-            <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
-          </>)}
-
-          {/* rel_hot_cta : badge fiabilité → openPremium (trust signal après ForecastChart en A/B).
-              Gating !isPremium && fcUp : n'empile PAS avec forecast_teaser dans le bras contrôle,
-              et n'affiche pas aux abonnés un bouton d'achat. */}
-          {!isPremium&&fcUp&&<button onClick={()=>{track("sg_reliability_open",{from:"beach_badge",hot:true});onPremiumClick("rel_hot_cta")}}
-            style={{display:"flex",alignItems:"center",gap:9,margin:"10px 0 2px",padding:"9px 12px",borderRadius:12,
-            background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer",
-            width:"100%",fontFamily:"inherit",textAlign:"left"}}>
-            <span aria-hidden="true" style={{fontSize:15,lineHeight:1}}>✅</span>
-            <span style={{flex:1,fontSize:12.5,fontWeight:700,color:"var(--sg-ink,#13241F)",lineHeight:1.3}}>
-              {(()=>{
-                // Chiffre RÉEL injecté au build (__RELIABILITY__, même source que /fiabilite/).
-                // On publie le clean-rate par régime (jamais le global %, cf. regimeReliability.note).
-                if(__REL&&typeof __REL.cleanPct==="number"){
-                  const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
-                  const n=(__REL.cleanN||0).toLocaleString(lang==="fr"?"fr-FR":lang==="es"?"es-ES":"en-US")
-                  return _t(lang,
-                    `${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg} (${n})`,
-                    `${__REL.cleanPct}% of our “clean water” forecasts proved correct · ${reg} (${n})`,
-                    `${__REL.cleanPct}% de pronósticos “agua limpia” verificados · ${reg} (${n})`)
-                }
-                if(__REL&&typeof __REL.global==="number"){
-                  return _t(lang,
-                    `Prévisions recoupées au satellite — ${__REL.global}% justes (30 j)`,
-                    `Forecasts cross-checked with satellite — ${__REL.global}% accurate (30 d)`,
-                    `Pronósticos contrastados con satélite — ${__REL.global}% exactos (30 d)`)
-                }
-                return _t(lang,"Prévisions recoupées au satellite, backtest quotidien","Forecasts cross-checked with satellite, daily backtest","Pronósticos contrastados con satélite, backtest diario")
-              })()}
-            </span>
-            <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
-          </button>}
-
-          {/* Photo externe retirée (juraient avec le design) — la scène vectorielle
-              golden-hour du hero porte déjà l'identité de la plage. */}
-
-          {/* Urgence-donnée : arrivage RÉEL prévu (weeklyData.forecast pipeline,
-              JAMAIS le fallback generateForecast) → CTA alerte. L'urgence vraie
-              est notre droit : c'est de l'info satellite, pas de la pression
-              (anti-pattern Booking, engagements UE 2020 — capture_intelligence). */}
-          {!isPremium&&(()=>{
-            const fc=weeklyData?.forecast
-            const RANK={clean:0,moderate:1,avoid:2}
-            let hit=null
-            if(fc&&fc.length>=2){
-              const today=RANK[fc[0]?.status]??RANK[beach.status]??0
-              for(let i=1;i<=3&&i<fc.length;i++){const r=RANK[fc[i]?.status];if(r!=null&&r>today){hit={i,d:fc[i]};break}}
-            }
-            const when=hit?(hit.i===1?_t(lang,"demain","tomorrow","mañana")
-              :(()=>{try{return new Date((hit.d.date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return null}})()):null
-            // Pas de dégradation prévue → capture email click-triggered (jamais
-            // les deux bandeaux empilés : un seul message sous le verdict).
-            if(!hit||!when)return <AlertCapture beach={beach} lang={lang}/>
-            const worse=hit.d.status==="avoid"
-            return(
-              <button onClick={()=>{track("sg_urgency_banner_cta",{beach_id:beach.id,day:hit.i,to:hit.d.status});onPremiumClick("urgency_banner")}}
-                style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",cursor:"pointer",
-                  background:worse?"rgba(232,82,42,.10)":"rgba(224,120,0,.10)",
-                  border:`1px solid ${worse?"rgba(232,82,42,.35)":"rgba(224,120,0,.35)"}`,
-                  borderRadius:14,padding:"11px 13px",margin:"0 0 14px",fontFamily:"inherit"}}>
-                <span style={{fontSize:18,flexShrink:0}}>⚠️</span>
-                <span style={{flex:1,minWidth:0,fontSize:12.5,lineHeight:1.45,color:"var(--sg-ink,#1A2B26)",fontWeight:600}}>
-                  {_t(lang,
-                    `Arrivage prévu ${when} sur cette plage (satellite). Sois prévenu si ça change.`,
-                    `Sargassum forecast to arrive ${when} at this beach (satellite). Get notified if it changes.`,
-                    `Llegada prevista ${when} en esta playa (satélite). Recibe el aviso si cambia.`)}
-                </span>
-                <span style={{flexShrink:0,fontSize:12,fontWeight:800,color:worse?"#E8522A":"#E07800"}}>
-                  {_t(lang,"Activer l'alerte →","Set the alert →","Activar alerta →")}
-                </span>
-              </button>
-            )
-          })()}
-
-          {/* Status description */}
-          {ST[beach.status]&&(
-            <p style={{fontSize:12,color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
-              padding:"6px 10px",background:beach._communityOverride?C.goldBg:beach.beachMemory?C.sargBg:ST[beach.status].bg,borderRadius:8}}>
-              {beach._communityOverride
-                ?_t(lang,
-                  `${beach._communityTotal} visiteurs signalent ce niveau sur place. Les signalements terrain priment sur les données satellite.`,
-                  `${beach._communityTotal} visitors report this level on site. Community reports take priority over satellite data.`,
-                  `${beach._communityTotal} visitantes reportan este nivel en el lugar. Los reportes en sitio tienen prioridad sobre los datos satelitales.`)
-                :beach.beachMemory
-                ?_t(lang,
-                  "Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.",
-                  "Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup.",
-                  "El satélite ya no detecta sargazo en alta mar, pero hubo llegadas en los últimos días. Las algas pueden permanecer en la playa de 7 a 14 días sin limpieza.")
-                :lang==="es"?ST[beach.status].descEs:lang==="en"?ST[beach.status].descEn:ST[beach.status].desc}
-            </p>
-          )}
-
-          {/* MethodologyLink removed — technical jargon (IDW, pipeline) doesn't help users */}
-
-          {/* INDICE SANTÉ / H2S — badge gradué (A/B pw_h2s, feature #4) ; sinon
-              warning binaire historique (control, sur avoid uniquement). */}
-          {pwH2s
-            ? <H2SBadge beach={beach} lang={lang} weather={weather} onPremiumClick={onPremiumClick}/>
-            : (ST[beach.status]?.h2s&&(
-                <div style={{padding:"10px 14px",borderRadius:12,background:C.redBg,
-                  color:C.red,fontSize:13,fontWeight:600,marginBottom:12,
-                  display:"flex",alignItems:"center",gap:8}}>
-                  ⚠️ {LL.h2sWarn}
-                </div>
-              ))}
-
-          {/* Email capture — above the fold, before forecast teaser */}
-          <InlineEmailCapture lang={lang} beachName={beach.name}/>
-
-          {/* Forecast teaser — masqué en fc_position=top (ForecastChart déjà visible) */}
-          {!isPremium&&!fcUp&&forecast&&forecast[1]&&(
-            <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
-              style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
-                background:"linear-gradient(135deg,#190c2c,#142824)",
-                border:"1px solid rgba(232,168,0,.2)",
-                display:"flex",alignItems:"center",gap:14,
-                boxShadow:"0 4px 20px rgba(0,0,0,.12)",
-                transition:"transform .2s",position:"relative",overflow:"hidden"}}>
-              {/* Ambient glow */}
-              <div style={{position:"absolute",top:"-50%",right:"-20%",width:"60%",height:"200%",
-                background:"radial-gradient(ellipse, rgba(232,168,0,.08) 0%, transparent 70%)",pointerEvents:"none"}}/>
-              <div style={{flex:1,position:"relative"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.4)",
-                  textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
-                  {_t(lang,"Prévision demain","Tomorrow forecast","Pronóstico de mañana")}
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:14,fontWeight:700,color:"#fff"}}>
-                    {beach.name}
-                  </span>
-                  <span style={{filter:"blur(6px)",userSelect:"none",fontSize:13,fontWeight:700,
-                    color:ST[forecast[1].status]?.c||"#999"}}>{lang==="es"?ST[forecast[1].status]?.les:lang==="en"?ST[forecast[1].status]?.le:ST[forecast[1].status]?.l||"?"}</span>
-                </div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:4}}>
-                  {NO_TRIAL
-                    ?_t(lang,"Débloquer les 7 jours","Unlock the 7-day forecast","Desbloquear los 7 días")
-                    :_t(lang,"Débloquer · 7 jours gratuit","Unlock with free trial","Desbloquear · 7 días gratis")}
-                </div>
-              </div>
-              <div style={{width:44,height:44,borderRadius:12,
-                background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:20,flexShrink:0,
-                boxShadow:"0 2px 12px rgba(232,168,0,.4)"}}>
-                🔓
-              </div>
-            </div>
-          )}
-
-          {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
-          <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
-
-          {/* ── FB POSTS: real visitor photos + quotes from public FB groups ── */}
-          <FbPostsStrip beach={beach} fbPosts={fbPosts} lang={lang}/>
-
-          {/* InlinePushCTA removed — OneSignal handles native push prompt */}
-
-          {/* Amenities — tappable chips */}
-          {(beach.kids||beach.snorkel||beach.parking)&&(
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-              {beach.kids&&<Tag icon="👶" label={LL.kids}/>}
-              {beach.snorkel&&<Tag icon="🤿" label={LL.snorkel}/>}
-              {beach.parking&&<Tag icon="🅿️" label={LL.parking}/>}
-            </div>
-          )}
-
-          {/* Actions — Waze + Share (Fav moved to photo hero) */}
-          <div style={{display:"flex",gap:8,marginBottom:16}}>
-            <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
-              style={{flex:1,textDecoration:"none",textAlign:"center",
-                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
-                padding:"14px 10px",borderRadius:16,background:"#0D0D0D",color:"#fff",fontSize:14,fontWeight:700}}>
-              <span style={{fontSize:16}}>🚗</span> {LL.directions}
-            </a>
-            <a href={`/plages/${getCanonicalSlug(beach.name)}/`} target="_blank" rel="noopener"
-              style={{flex:1,textDecoration:"none",textAlign:"center",
-                display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-                padding:"14px 10px",borderRadius:16,border:"1.5px solid var(--sg-border)",
-                background:"var(--sg-card)",color:"var(--sg-ink)",fontSize:14,fontWeight:700}}>
-              <span style={{fontSize:16}}>📄</span> {LL.fullSheet}
-            </a>
-            <button onClick={async()=>{
-              // PRIMAIRE : carte-image spoiler-free SANS lien (effet Wordle = portée max). Recherche valeur.
-              track("sg_share",{beach_id:beach.id,method:"card",status:beach.status})
-              if(await shareBeachCard(beach,lang,forecast))return
-              // FALLBACK (partage de fichier indispo) : texte + lien (référral si premium).
-              const slug=getCanonicalSlug(beach.name)
-              const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
-              const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
-              const isRef=!!refCode
-              const _st=ST[beach.status]||ST._loading
-              const _stl=lang==="es"?_st.les:lang==="en"?_st.le:_st.l
-              const _sc=typeof beach.score==="number"?` ${beach.score}/100`:""
-              const _txt=_t(lang,
-                `☀️ ${beach.name} — ${_stl}${_sc} aujourd'hui. La plage du jour !`,
-                `☀️ ${beach.name} — ${_stl}${_sc} today. Beach of the day!`,
-                `☀️ ${beach.name} — ${_stl}${_sc} hoy. ¡La playa del día!`)
-              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:_txt,url}).catch(()=>{})}
-              else{navigator.clipboard?.writeText(`${_txt} ${url}`);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
-            }} style={{flex:0,padding:"14px 18px",borderRadius:16,
-              border:"1.5px solid var(--sg-border)",
-              background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit",
-              display:"flex",alignItems:"center",justifyContent:"center"}}>
-              📤
-            </button>
-          </div>
-
-          {/* Nearby beaches — horizontal scroll carousel (above fold = browse loop) */}
-          {nearby.length>0&&(
-            <div style={{marginBottom:16}}>
-              <h3 style={{fontSize:14,fontWeight:700,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                {LL.nearby}
-                <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mid,#5A5A5A)"}}>
-                  {_t(lang,"Compare","Tap to compare","Toca para comparar")}
-                </span>
-              </h3>
-              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,
-                scrollbarWidth:"none",WebkitOverflowScrolling:"touch",margin:"0 -20px",padding:"0 20px 4px"}}>
-                {nearby.map(nb=>{
-                  const nst=ST[nb.status]||ST._loading
-                  return(
-                    <button key={nb.id} onClick={()=>{track("sg_nearby_click",{from:beach.id,to:nb.id,status:nb.status});onBeachClick(nb)}} style={{
-                      flex:"0 0 auto",width:140,padding:0,
-                      borderRadius:14,border:"1px solid var(--sg-border)",overflow:"hidden",
-                      background:"var(--sg-card,#fff)",cursor:"pointer",
-                      textAlign:"left",fontFamily:"inherit",
-                      boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-                    }}>
-                      <div style={{height:80,background:beachThumbBg(nb),
-                        position:"relative"}}>
-                        <span style={{position:"absolute",top:6,right:6,fontSize:9,fontWeight:700,
-                          padding:"2px 6px",borderRadius:100,background:nst.bg,color:nst.c,
-                          backdropFilter:"blur(4px)"}}>{nst.e} {lang==="es"?nst.les:lang==="en"?nst.le:nst.l}</span>
-                      </div>
-                      <div style={{padding:"8px 10px"}}>
-                        <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",
-                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{nb.name}</div>
-                        <div style={{fontSize:10,color:"var(--sg-mid)",marginTop:2}}>
-                          {Math.round(nb.dist)} km
-                        </div>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* LE PLAN DU VEILLEUR — ce qu'il faut faire ICI (data→conseil ancré aux problèmes
-              réels). DANS la fiche, pas un popup (feedback_no_ui_in_ui). */}
-          <VisitPlan beach={beach} lang={lang} allBeaches={allBeaches} weeklyData={weeklyData}/>
-
-          {/* Forecast (days 4-7 locked) — control only; "top" variant renders above */}
-          {!fcUp&&<h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>}
-          {/* v3: Arrival banner — strongest signal the app provides */}
-          {!fcUp&&weeklyData?.arrivalDetected&&(
-            <div style={{
-              padding:"10px 12px",marginBottom:10,borderRadius:12,
-              background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",
-              border:"1px solid rgba(232,143,42,.35)",
-              display:"flex",alignItems:"center",gap:10,
-            }}>
-              <span style={{fontSize:20}}>⚠</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>
-                  {_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}
-                </div>
-                <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>
-                  {_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}
-                </div>
-              </div>
-            </div>
-          )}
-          {!fcUp&&<ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}
-            weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>}
-          {/* Disclaimer : la clé machine forecastMethod (pipeline forecast.cjs +
-              'interpolated' côté client) est mappée vers une copy localisée —
-              ne JAMAIS rendre weeklyData.forecastDisclaimer brut (FR sans
-              accents servi tel quel sur les sites EN/ES). Clé inconnue :
-              fallback brut en FR uniquement, sinon rien. */}
-          {(()=>{
-            const m=weeklyData?.forecastMethod
-            const txt=m==="memory-decay"?_t(lang,"Données reconstruites (épisode passé) — prévision par décroissance naturelle seulement.","Reconstructed data (past event) — forecast from natural decay only.","Datos reconstruidos (evento pasado) — pronóstico solo por disipación natural.")
-              :m==="arrival-banks"?_t(lang,"Banc de sargasses détecté à proximité — arrivée possible dans 1-3 jours.","Sargassum mat detected nearby — possible arrival within 1-3 days.","Banco de sargazo detectado cerca — posible llegada en 1-3 días.")
-              :m==="banks-persistence"?_t(lang,"Persistance + bancs satellite + vent. Fiabilité décroissante après J+3.","Persistence + satellite mats + wind. Reliability drops after day 3.","Persistencia + bancos satelitales + viento. La fiabilidad baja después del día 3.")
-              :m==="persistence-wind"?_t(lang,"Persistance + vent Open-Meteo. Pas de banc détecté à proximité.","Persistence + Open-Meteo wind. No mat detected nearby.","Persistencia + viento de Open-Meteo. Ningún banco detectado cerca.")
-              :m==="persistence"?_t(lang,"Persistance simple (demi-vie 3,5 j). Pas de signal externe.","Simple persistence (3.5-day half-life). No external signal.","Persistencia simple (vida media de 3,5 días). Sin señal externa.")
-              :m==="interpolated"?_t(lang,"Interpolation des plages voisines surveillées.","Interpolated from monitored nearby beaches.","Interpolación de las playas vecinas monitoreadas.")
-              :(lang==="fr"?weeklyData?.forecastDisclaimer:null)
-            return txt?(
-              <div style={{fontSize:10,color:"var(--sg-mid,#999)",marginTop:4,fontStyle:"italic"}}>
-                {txt}
-              </div>
-            ):null
-          })()}
-
-          {/* Forecast confidence + source (credibility) */}
-          {weeklyData&&<ForecastCredibility weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
-
-          {/* Weather */}
-          {weather&&(
-            <>
-              <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                <WeatherCard icon="🌡️" label={LL.temp} value={fmtTemp(weather.temp)}/>
-                <WeatherCard icon="💨" label={LL.wind} value={fmtWind(weather.wind)}/>
-                <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
-              </div>
-              {/* Marine — only when significant */}
-              {(()=>{
-                const cards=[]
-                if(weather.waveHeight!=null&&weather.waveHeight>=1.5)cards.push(<WeatherCard key="w" icon="🌊" label={LL.waves} value={fmtHeight(weather.waveHeight)}/>)
-                if(weather.swellHeight!=null&&weather.swellHeight>=1.5)cards.push(<WeatherCard key="s" icon="🏄" label={LL.swell} value={fmtHeight(weather.swellHeight)}/>)
-                if(weather.precipitation>0)cards.push(<WeatherCard key="r" icon="💧" label={LL.rain} value={fmtRain(weather.precipitation)}/>)
-                return cards.length>0?<div style={{display:"grid",gridTemplateColumns:`repeat(${cards.length},1fr)`,gap:10,marginTop:10}}>{cards}</div>:null
-              })()}
-            </>
-          )}
-
-          {/* Email capture removed from bottom — moved above forecast teaser */}
-        </div>
-      </div>
-    </>
-  )
-}
-
-function Tag({icon,label}){
+export function Tag({icon,label}){
   return(
     <span style={{display:"inline-flex",alignItems:"center",gap:4,
       padding:"4px 10px",borderRadius:100,background:"var(--sg-bgD,#F7F5EF)",
@@ -4595,7 +3389,7 @@ function Tag({icon,label}){
   )
 }
 
-function WeatherCard({icon,label,value}){
+export function WeatherCard({icon,label,value}){
   return(
     <div style={{padding:"14px 12px",borderRadius:16,
       background:"var(--sg-bgD,#F7F5EF)",
@@ -6261,7 +5055,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE PUSH CTA — Contextual in beach sheet after 3rd beach view
    ═══════════════════════════════════════════════════════════════════════════ */
-function InlinePushCTA({lang,beachId}){
+export function InlinePushCTA({lang,beachId}){
   const[accepted,setAccepted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
@@ -6334,7 +5128,7 @@ function InlinePushCTA({lang,beachId}){
    INLINE EMAIL CAPTURE — Smart visit-based trigger (visit 3+)
    ═══════════════════════════════════════════════════════════════════════════ */
 /* ── BEACH PHOTO SCAN — tap la photo → HUD satellite cinématique */
-function BeachPhotoScan({beach,lang}){
+export function BeachPhotoScan({beach,lang}){
   const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
   const afai=beach.afai
   const zone=afai==null?"_":afai<0.15?"clean":afai<0.40?"moderate":"avoid"
@@ -6416,7 +5210,7 @@ function BeachPhotoScan({beach,lang}){
 }
 
 /* ── SCORE REVEAL — tap le score pour apprendre d'où il vient */
-function ScoreReveal({beach,lang}){
+export function ScoreReveal({beach,lang}){
   const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
   const afai=beach.afai||0
   const pct=Math.min(100,afai/0.8*100)
@@ -6473,7 +5267,7 @@ function ScoreReveal({beach,lang}){
 }
 
 /* ── AFAI CHIP — tap le verdict pour voir l'indice satellite brut */
-function AfaiChip({beach,lang}){
+export function AfaiChip({beach,lang}){
   const [open,setOpen]=useState(false)
   const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
   const afai=beach.afai
@@ -6853,7 +5647,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
   )
 }
 
-function InlineEmailCapture({lang,beachName,source="inline_beach"}){
+export function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
@@ -7473,7 +6267,7 @@ void main(){
    ~3-4 % pour les popups. Sous le verdict de la fiche, non-premium, masquée
    si email déjà capturé. Promesse VRAIE par construction : ces leads entrent
    dans l'email verdict du matin (drip-email.cjs accepte source beach_alert). */
-function AlertCapture({beach,lang}){
+export function AlertCapture({beach,lang}){
   const[open,setOpen]=useState(false)
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
@@ -7791,404 +6585,6 @@ const LF_OVERRIDE=(()=>{try{
    5 temps : l'orbite → le scan (médaillon preuve : footage NASA réel) → la
    dérive J+1→J+3 → le verdict 06:00 → le choix (CTA carte). Reduced-motion :
    pas de pin, pas de listener, frame finale statique. ── */
-function ScrollStory({lang,onShowMap}){
-  const boxRef=useRef(null)
-  const vidRef=useRef(null)
-  const vid2Ref=useRef(null)
-  const srcSetRef=useRef(false)
-  const srcSet2Ref=useRef(false)
-  const beatRef=useRef(-1)
-  const [vidSrc,setVidSrc]=useState(null)
-  const [vidSrc2,setVidSrc2]=useState(null)
-  const [beat,setBeat]=useState(0)
-  const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
-  const allowVid=(()=>{try{
-    if(rm)return false
-    const c=navigator.connection
-    if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))return false
-    return true
-  }catch(_){return true}})()
-  useEffect(()=>{
-    const box=boxRef.current;if(!box)return
-    const st=box.style
-    const SEG=(p,a,b)=>Math.max(0,Math.min(1,(p-a)/(b-a)))
-    const WIN=(p,ia,ib,oa,ob)=>Math.min(SEG(p,ia,ib),1-SEG(p,oa,ob))
-    const BACK=t=>{const c1=1.70158,c3=c1+1,u=t-1;return 1+c3*u*u*u+c1*u*u}
-    if(rm){
-      ;["--b1","--b2","--b3","--b4","--b5","--b5o"].forEach(v=>st.setProperty(v,"1"))
-      ;["--b1o","--b2o","--b3o","--b4o"].forEach(v=>st.setProperty(v,"0"))
-      st.setProperty("--b4s","1");setBeat(4)
-      return
-    }
-    let raf=0
-    const upd=()=>{
-      raf=0
-      const r=box.getBoundingClientRect()
-      const vh=window.innerHeight||1
-      const total=Math.max(1,r.height-vh)
-      const p=Math.max(0,Math.min(1,-r.top/total))
-      st.setProperty("--b1",SEG(p,0,.20).toFixed(4))
-      st.setProperty("--b2",SEG(p,.18,.42).toFixed(4))
-      st.setProperty("--b3",SEG(p,.42,.66).toFixed(4))
-      st.setProperty("--b4",SEG(p,.64,.84).toFixed(4))
-      st.setProperty("--b5",SEG(p,.82,1).toFixed(4))
-      // beat 1 reste plein pendant l'ENTREE de la section (p clampe a 0 tant que
-      // la sticky n'est pas epinglee) — sinon le storyvp affiche son fond #120821
-      // SANS contenu = "fond vert avec rien" signale par le user. b1o=1 a p=0.
-      st.setProperty("--b1o",(1-SEG(p,.17,.23)).toFixed(3))
-      st.setProperty("--b2o",WIN(p,.17,.23,.39,.45).toFixed(3))
-      st.setProperty("--b3o",WIN(p,.39,.45,.62,.68).toFixed(3))
-      st.setProperty("--b4o",WIN(p,.62,.68,.80,.86).toFixed(3))
-      st.setProperty("--b5o",SEG(p,.80,.88).toFixed(3))
-      st.setProperty("--b4s",(.4+.6*BACK(SEG(p,.68,.78))).toFixed(4))
-      const b=p<.18?0:p<.42?1:p<.64?2:p<.82?3:4
-      // tout (tracking, chargement médaillons, lecture) est conditionné à la
-      // visibilité réelle de la section — sinon le mount du landing chargeait
-      // les clips et trackait beat 1 pour tout le monde
-      const vis=r.top<vh&&r.bottom>0
-      if(vis&&b!==beatRef.current){
-        beatRef.current=b;setBeat(b)
-        track("sg_story_beat",{b:b+1})
-        if(b===0&&allowVid&&!srcSet2Ref.current){srcSet2Ref.current=true;setVidSrc2("/videos/sentinel6-orbit.mp4")}
-        if(b===1&&allowVid&&!srcSetRef.current){srcSetRef.current=true;setVidSrc("/videos/sentinel6.mp4")}
-      }
-      const v=vidRef.current
-      if(v){if(vis&&b===1){if(v.paused)v.play().catch(()=>{})}else if(!v.paused)v.pause()}
-      const v2=vid2Ref.current
-      if(v2){if(vis&&b===0){if(v2.paused)v2.play().catch(()=>{})}else if(!v2.paused)v2.pause()}
-    }
-    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
-    // capture sur document : on attrape le scroll quel que soit l'élément qui
-    // défile (dialog, wrapper interne, window) — sinon sur iOS le listener sur le
-    // seul dialog ne se déclenchait pas → upd() jamais rappelé → storyvp vide.
-    document.addEventListener("scroll",onScroll,{passive:true,capture:true})
-    window.addEventListener("resize",onScroll)
-    upd()
-    return()=>{document.removeEventListener("scroll",onScroll,{capture:true});window.removeEventListener("resize",onScroll);if(raf)cancelAnimationFrame(raf)}
-  },[])
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const beats=[
-    {o:"--b1o",k:T("L'ORBITE","THE ORBIT","LA ÓRBITA"),h:T("Un satellite veille sur vos plages","A satellite watches over your beaches","Un satélite vigila tus playas")},
-    {o:"--b2o",k:T("LE SCAN","THE SCAN","EL ESCANEO"),h:T("Il mesure l'océan, pixel par pixel","It measures the ocean, pixel by pixel","Mide el océano, píxel a píxel")},
-    {o:"--b3o",k:T("LA DÉRIVE","THE DRIFT","LA DERIVA"),h:T("Chaque banc est suivi, 7 jours devant","Every raft is tracked, 7 days ahead","Cada banco se sigue, 7 días por delante")},
-    {o:"--b4o",k:T("LE VERDICT","THE VERDICT","EL VEREDICTO"),h:T("Le verdict tombe avant 6h du matin","The verdict lands before 6 am","El veredicto llega antes de las 6")},
-    {o:"--b5o",k:T("VOTRE JOURNÉE","YOUR DAY","TU DÍA"),h:T("Vous choisissez la bonne plage","You pick the right beach","Eliges la playa correcta")},
-  ]
-  const fb={transformBox:"fill-box",transformOrigin:"center"}
-  const mono="ui-monospace,SFMono-Regular,monospace"
-  // Variables d'animation pilotées par l'ÉTAT `beat` (pas des littéraux figés) :
-  // au repos / après re-render / si le listener de scroll ne se rattache pas
-  // (iOS), l'inline style affiche TOUJOURS le bon temps — jamais le fond #120821
-  // nu (bug "scroll mobile vide", screenshot user 14/06). Le rAF lisse les fondus
-  // PENDANT le scroll par-dessus (DOM setProperty, hors du style React).
-  const sv=on=>on?1:0
-  const baseVars=rm
-    ?{"--b1":1,"--b2":1,"--b3":1,"--b4":1,"--b5":1,"--b1o":0,"--b2o":0,"--b3o":0,"--b4o":0,"--b5o":1,"--b4s":1}
-    :{"--b1":sv(beat>=1),"--b2":sv(beat>=2),"--b3":sv(beat>=3),"--b4":sv(beat>=4),"--b5":sv(beat>=4),
-      "--b1o":sv(beat===0),"--b2o":sv(beat===1),"--b3o":sv(beat===2),"--b4o":sv(beat===3),"--b5o":sv(beat>=4),"--b4s":beat>=4?1:.4}
-  return(
-    <section ref={boxRef} aria-label={T("La méthode","The method","El método")} style={{position:"relative",
-      height:rm?"auto":"430vh",...baseVars}}>
-      {/* CSS embarquée : ScrollStory est monté dans 2 bras A/B (control ET game).
-          La hauteur .sg-storyvp ne vivait QUE dans le <style> du bras control →
-          dans le bras game le viewport sticky avait height:0 → scène vide
-          (screenshots user 14/06). On rapatrie ici TOUT le CSS requis. */}
-      <style>{`.sg-storyvp{height:100vh}@supports(height:100svh){.sg-storyvp{height:100svh}}
-.sgst-ring{animation:sgstRing 2.6s ease-out 1 both}.sgst-ring2{animation:sgstRing 2.6s ease-out 1 both;animation-delay:1.3s}
-@keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
-.sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
-.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear 1 both}@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
-@media(prefers-reduced-motion:reduce){.sgst-ring,.sgst-ring2,.sgst-bob,.sg-flow{animation:none}}`}</style>
-      <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#120821",
-        height:rm?"min(72vh,560px)":undefined}}>
-        <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-          <defs>
-            <g id="sgstSarg">
-              <ellipse cx="0" cy="0" rx="16" ry="6" fill="#8a6a1a"/>
-              <ellipse cx="-9" cy="-3" rx="8" ry="4" fill="#9a7a22"/>
-              <ellipse cx="9" cy="-2" rx="9" ry="4" fill="#6b4a12"/>
-              <circle cx="-12" cy="-6" r="2.2" fill="#b8962e"/><circle cx="-2" cy="-7" r="2" fill="#b8962e"/><circle cx="8" cy="-6" r="2.2" fill="#b8962e"/>
-            </g>
-            <linearGradient id="sgstBeam" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFC72C" stopOpacity=".5"/><stop offset="1" stopColor="#FFC72C" stopOpacity="0"/>
-            </linearGradient>
-            <linearGradient id="sgstDawn" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#120821"/><stop offset="1" stopColor="#143029"/>
-            </linearGradient>
-          </defs>
-
-          {/* ════ B1 — L'ORBITE : espace, limbe terrestre, le satellite passe ════ */}
-          <g style={{opacity:"var(--b1o)"}}>
-            <rect width="800" height="600" fill="#04090B"/>
-            {[[64,48,1.3,.5],[178,108,.9,.32],[300,52,1.1,.45],[430,128,.8,.3],[558,66,1.4,.5],[688,118,.9,.35],[748,40,1.1,.4],[118,210,.8,.25],[372,224,1,.3],[642,232,.8,.28],[230,160,.7,.22],[506,180,.9,.3]].map((s,i)=>(
-              <circle key={i} cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]}/>
-            ))}
-            <circle cx="400" cy="1460" r="1010" fill="#07211D"/>
-            <circle cx="400" cy="1460" r="1010" fill="none" stroke="#5b3a8e" strokeWidth="2.5" opacity=".5"/>
-            <circle cx="400" cy="1460" r="1022" fill="none" stroke="#5b3a8e" strokeWidth="9" opacity=".1"/>
-            {/* trace orbitale */}
-            <path d="M40 232 Q400 168 760 232" fill="none" stroke="rgba(255,255,255,.14)" strokeWidth="1.4" strokeDasharray="2 7"/>
-            {/* le satellite (gabarit Sentinel-6 : corps or, ailes teal) */}
-            <g style={{transform:"translate(calc(610px - var(--b1)*330px),calc(160px + var(--b1)*36px))"}}>
-              <polygon className="sgst-beamP" points="-7,12 7,12 34,300 -34,300" fill="url(#sgstBeam)" opacity=".55"/>
-              <g className="sgst-ring" style={fb}><circle r="30" fill="none" stroke="#5b3a8e" strokeWidth="1.6"/></g>
-              <g className="sgst-ring2" style={fb}><circle r="30" fill="none" stroke="#5b3a8e" strokeWidth="1.3"/></g>
-              <rect x="-30" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
-              <rect x="12" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
-              <rect x="-13" y="-11" width="26" height="22" rx="3" fill="#5b3a8e"/>
-              <rect x="-13" y="-11" width="26" height="7" rx="3" fill="#FFC72C"/>
-              <circle cx="0" cy="16" r="3.2" fill="#E8EDF2"/>
-            </g>
-          </g>
-
-          {/* ════ B2 — LE SCAN : l'océan vu d'en haut, le faisceau balaie, détection ════ */}
-          <g style={{opacity:"var(--b2o)"}}>
-            <rect width="800" height="600" fill="#06211E"/>
-            {/* trame raster satellite */}
-            {[80,160,240,320,400,480,520].map((y,i)=>(
-              <line key={"h"+i} x1="0" y1={y+40} x2="800" y2={y+40} stroke="#5b3a8e" strokeWidth=".6" opacity=".07"/>
-            ))}
-            {[100,240,380,520,660].map((x,i)=>(
-              <line key={"v"+i} x1={x} y1="0" x2={x} y2="600" stroke="#5b3a8e" strokeWidth=".6" opacity=".07"/>
-            ))}
-            {/* houle (3 rangées, parallaxe au scroll) */}
-            <g style={{transform:"translateX(calc(var(--b2)*-46px))"}} opacity=".3">
-              {[120,300,470].map((y,i)=>(
-                <path key={i} d={`M-60 ${y} q40 -10 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#5b3a8e" strokeWidth="1.6"/>
-              ))}
-            </g>
-            <g style={{transform:"translateX(calc(var(--b2)*34px))"}} opacity=".18">
-              {[200,390,545].map((y,i)=>(
-                <path key={i} d={`M-80 ${y} q40 -9 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#3fd07f" strokeWidth="1.3"/>
-              ))}
-            </g>
-            {/* radeaux dans le champ */}
-            <g transform="translate(208,196) scale(.8)" opacity=".75"><use href="#sgstSarg"/></g>
-            <g transform="translate(610,420) scale(.7)" opacity=".7"><use href="#sgstSarg"/></g>
-            {/* le faisceau de scan balaie l'écran */}
-            <g style={{transform:"translateX(calc(var(--b2)*470px - 60px))"}}>
-              <rect x="0" y="0" width="120" height="600" fill="#FFC72C" opacity=".07"/>
-              <line x1="60" y1="0" x2="60" y2="600" stroke="#FFC72C" strokeWidth="1.6" opacity=".55" strokeDasharray="6 8"/>
-            </g>
-            {/* la détection : radeau cible + échos + mesure */}
-            <g transform="translate(430,330)"><use href="#sgstSarg"/></g>
-            <g style={{opacity:"calc(var(--b2)*4 - 2.2)"}}>
-              <g className="sgst-ring" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.8"/></g>
-              <g className="sgst-ring2" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
-              <line x1="430" y1="296" x2="430" y2="318" stroke="#5b3a8e" strokeWidth="1.4" strokeDasharray="3 4"/>
-              <rect x="398" y="270" width="64" height="20" rx="10" fill="rgba(10,23,20,.9)" stroke="#5b3a8e" strokeWidth="1.1"/>
-              <text x="430" y="284" textAnchor="middle" fontFamily={mono} fontSize="10.5" fontWeight="700" fill="#3fd07f">AFAI 0.42</text>
-            </g>
-          </g>
-
-          {/* ════ B3 — LA DÉRIVE : coupe mer→plage, le banc avance sur la prévision ════ */}
-          <g style={{opacity:"var(--b3o)"}}>
-            <rect width="800" height="600" fill="url(#sgstDawn)"/>
-            {/* ── ciel vivant : lueur d'aube, nuages dérivants, oiseaux ── */}
-            <circle cx="140" cy="128" r="160" fill="#FFC72C" opacity=".05"/>
-            <circle cx="140" cy="128" r="76" fill="#FFC72C" opacity=".06"/>
-            <g style={{transform:"translateX(calc(var(--b3)*-28px))"}} opacity=".5">
-              <path d="M178 96 q12 -22 42 -22 q16 -14 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill="#16322B"/>
-              <path d="M180 97 h138" stroke="#5b3a8e" strokeWidth="1.6" opacity=".3"/>
-            </g>
-            <g style={{transform:"translateX(calc(var(--b3)*-50px))"}} opacity=".4">
-              <path d="M486 66 q10 -18 34 -18 q14 -11 32 -7 q21 -6 30 9 q18 2 21 16 Z" fill="#16322B"/>
-            </g>
-            <g opacity=".4" stroke="#3fd07f" strokeWidth="1.8" fill="none" strokeLinecap="round">
-              <path d="M250 168 q6 -7 12 0 q6 -7 12 0"/><path d="M298 156 q5 -6 10 0 q5 -6 10 0"/>
-            </g>
-            {/* le satellite plane au-dessus du banc et le garde dans son faisceau (continuité B1/B2) */}
-            <g style={{transform:"translate(calc(96px + var(--b3)*424px),88px)"}}>
-              <polygon points="-7,12 7,12 26,232 -26,232" fill="url(#sgstBeam)" opacity=".4"/>
-              <g className="sgst-ring" style={fb}><circle r="20" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
-              <rect x="-22" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
-              <rect x="9" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
-              <rect x="-10" y="-8" width="20" height="16" rx="2.5" fill="#5b3a8e"/>
-              <rect x="-10" y="-8" width="20" height="5" rx="2.5" fill="#FFC72C"/>
-            </g>
-            {/* mer en coupe */}
-            <rect x="0" y="330" width="800" height="270" fill="#0E2E2A"/>
-            <path d="M0 330 q50 -8 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".5"/>
-            {/* courant marin : la dérive (flèches → vers la côte, le « comment ça arrive ») */}
-            <g opacity=".28" stroke="#3fd07f" strokeWidth="1.6" fill="none" strokeLinecap="round">
-              <path d="M60 384 h58 M110 378 l10 6 -10 6"/>
-              <path d="M36 426 h66 M94 420 l10 6 -10 6"/>
-              <path d="M168 406 h52 M212 400 l10 6 -10 6"/>
-            </g>
-            {/* d'autres bancs au large, suivis aussi (parallaxe + bob) */}
-            <g style={{transform:"translateX(calc(var(--b3)*-58px))"}} opacity=".55">
-              <g className="sgst-bob"><g transform="translate(286,356) scale(.6)"><use href="#sgstSarg"/></g></g>
-            </g>
-            <g style={{transform:"translateX(calc(var(--b3)*-88px))"}} opacity=".4">
-              <g className="sgst-bob"><g transform="translate(636,378) scale(.5)"><use href="#sgstSarg"/></g></g>
-            </g>
-            {/* la plage à droite (bord visible dès le crop mobile : x≥500) */}
-            <path d="M500 600 L572 388 Q610 358 800 346 L800 600 Z" fill="#1A2A23"/>
-            <path d="M560 402 Q620 370 790 358" stroke="#FFC72C" strokeWidth="1.4" fill="none" opacity=".5"/>
-            {/* palmier */}
-            <path d="M716 366 Q710 330 718 306" stroke="#2E4A3C" strokeWidth="5" fill="none" strokeLinecap="round"/>
-            <g fill="none" stroke="#3F6B52" strokeWidth="4" strokeLinecap="round">
-              <path d="M718 306 Q736 294 754 298"/><path d="M718 306 Q700 292 682 298"/>
-              <path d="M718 306 Q732 286 746 280"/><path d="M718 306 Q702 284 692 278"/>
-            </g>
-            {/* trajectoire prévue : pointillés + jalons J+1/J+2/J+3 */}
-            <path d="M90 318 C250 300 400 302 540 322" fill="none" stroke="rgba(255,199,44,.4)" strokeWidth="1.6" strokeDasharray="3 8"/>
-            {[[250,306,"J+1",.18],[390,302,"J+2",.48],[510,316,"J+3",.78]].map((t,i)=>(
-              <g key={i} style={{opacity:`calc((var(--b3) - ${t[3]})*5)`}}>
-                <line x1={t[0]} y1={t[1]-12} x2={t[0]} y2={t[1]+10} stroke="#FFC72C" strokeWidth="1.6"/>
-                <text x={t[0]} y={t[1]-20} textAnchor="middle" fontFamily={mono} fontSize="12" fontWeight="700" fill="#FFC72C">
-                  {lang==="es"?"D+"+(i+1):lang==="en"?"D+"+(i+1):t[2]}</text>
-              </g>
-            ))}
-            {/* le banc suivi (bob temporel + avancée au scroll) */}
-            <g style={{transform:"translateX(calc(var(--b3)*424px))"}}>
-              <g className="sgst-bob">
-                <g transform="translate(96,318)"><use href="#sgstSarg"/></g>
-                <g className="sgst-ring" style={fb}><circle cx="96" cy="318" r="14" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
-              </g>
-            </g>
-            {/* vent/courant */}
-            <g opacity=".35" stroke="#3fd07f" strokeWidth="2" fill="none" strokeLinecap="round">
-              <path d="M70 130 q26 -10 52 0 M96 142 q22 -8 44 0"/>
-              <path d="M180 100 q24 -9 48 0"/>
-            </g>
-          </g>
-
-          {/* ════ B4 — LE VERDICT : 06:00, l'alerte tombe, la pastille claque ════ */}
-          <g style={{opacity:"var(--b4o)"}}>
-            <rect width="800" height="600" fill="#120821"/>
-            <circle cx="120" cy="118" r="26" fill="#FFC72C" opacity=".9"/>
-            <circle cx="120" cy="118" r="44" fill="#FFC72C" opacity=".1"/>
-            <text x="166" y="126" fontFamily={mono} fontSize="22" fontWeight="700" fill="rgba(255,255,255,.8)">06:00</text>
-            {/* le fil de la donnée descend dans le téléphone */}
-            <line className="sg-flow" x1="400" y1="0" x2="400" y2="170" stroke="#FFC72C" strokeWidth="2"/>
-            {/* téléphone */}
-            <g transform="translate(310,176)">
-              <rect width="180" height="250" rx="22" fill="#10231E" stroke="rgba(255,255,255,.18)" strokeWidth="1.4"/>
-              <rect x="64" y="12" width="52" height="7" rx="3.5" fill="rgba(255,255,255,.18)"/>
-              <g style={{opacity:"calc(var(--b4)*2.4 - .3)",transform:"translateY(calc((1 - var(--b4))*-26px))"}}>
-                <rect x="14" y="36" width="152" height="64" rx="13" fill="#1A2F29" stroke="rgba(255,199,44,.5)" strokeWidth="1.2"/>
-                <path d="M30 64 v-7a8 8 0 0 1 16 0v7l2.5 3.5H27.5z M35 71a3.4 3.4 0 0 0 6 0" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <rect x="58" y="48" width="92" height="7" rx="3.5" fill="rgba(255,255,255,.6)"/>
-                <rect x="58" y="62" width="64" height="7" rx="3.5" fill="rgba(255,255,255,.3)"/>
-                <rect x="30" y="80" width="78" height="9" rx="4.5" fill="#FFC72C"/>
-              </g>
-              <rect x="14" y="116" width="152" height="46" rx="13" fill="rgba(255,255,255,.05)"/>
-              <rect x="14" y="170" width="152" height="46" rx="13" fill="rgba(255,255,255,.05)"/>
-            </g>
-            {/* la pastille verdict claque sur le brief (overshoot --b4s ; x≤530 : safe mobile) */}
-            <g style={{transform:"translate(466px,420px) scale(var(--b4s))"}}>
-              <circle r="46" fill="none" stroke="#FFC72C" strokeWidth="1.4" opacity=".35"/>
-              <rect x="-66" y="-21" width="132" height="42" rx="21" fill="#FFC72C"/>
-              <text x="8" y="7" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="19" fill="#120821" letterSpacing=".02">
-                {T("PROPRE","CLEAN","LIMPIA")}</text>
-              <path d="M-48 0 l8 8 14 -16" stroke="#120821" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-            </g>
-          </g>
-
-          {/* ════ B5 — LE CHOIX : la carte, l'itinéraire bascule vers la plage propre ════ */}
-          <g style={{opacity:"var(--b5o)"}}>
-            <rect width="800" height="600" fill="#120821"/>
-            {/* côtes stylisées */}
-            <path d="M-40 470 Q120 420 240 452 T520 470 T820 440" fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".22"/>
-            <path d="M-40 520 Q200 480 430 510 T820 500" fill="none" stroke="#5b3a8e" strokeWidth="1.4" opacity=".14"/>
-            {[[110,150],[688,128],[206,84],[560,70]].map((s,i)=>(
-              <circle key={i} cx={s[0]} cy={s[1]} r="1" fill="#fff" opacity=".25"/>
-            ))}
-            {/* plage ⚠ (banc arrivé) — x≥280 : safe crop mobile */}
-            <g transform="translate(292,368)">
-              <g transform="translate(0,16) scale(.8)"><use href="#sgstSarg"/></g>
-              <circle r="13" fill="#E8522A"/>
-              <text y="5" textAnchor="middle" fontSize="15" fontWeight="800" fill="#fff" fontFamily="inherit">!</text>
-            </g>
-            {/* plage ✓ (la bonne) — x≤530 : safe crop mobile */}
-            <g transform="translate(508,272)">
-              <path d="M0 -34 a22 22 0 1 1 .01 0 M0 -12 L0 6" stroke="#FFC72C" strokeWidth="3" fill="none"/>
-              <circle cy="-23" r="8" fill="#FFC72C"/>
-              <g className="sgst-ring" style={{...fb,opacity:"calc(var(--b5)*5 - 3.6)"}}>
-                <circle cy="-23" r="22" fill="none" stroke="#FFC72C" strokeWidth="1.8"/>
-              </g>
-            </g>
-            {/* l'itinéraire (point qui voyage au scroll) */}
-            <path d="M310 354 Q400 222 498 260" fill="none" stroke="rgba(255,199,44,.5)" strokeWidth="2.2" strokeDasharray="5 8"/>
-            <circle r="7" fill="#FFC72C" style={{offsetPath:"path('M310 354 Q400 222 498 260')",offsetDistance:"calc(var(--b5)*100%)"}}/>
-          </g>
-        </svg>
-
-        {/* médaillon orbite (B1) : la glisse réelle dans l'espace — NASA */}
-        <div aria-hidden style={{position:"absolute",top:"max(60px,8%)",left:"5%",width:"min(36vw,300px)",
-          borderRadius:18,overflow:"hidden",border:"1px solid rgba(255,255,255,.16)",
-          boxShadow:"0 18px 50px rgba(0,0,0,.5)",opacity:"var(--b1o)",
-          transform:"translateY(calc((1 - var(--b1))*40px))",pointerEvents:"none"}}>
-          <div style={{position:"relative",aspectRatio:"16/9",background:"#04090B"}}>
-            <img src="/videos/sentinel6-orbit-poster.jpg" alt="" loading="lazy"
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-            {vidSrc2&&<video ref={vid2Ref} src={vidSrc2} autoPlay muted loop playsInline preload="auto" aria-hidden
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>}
-            <span style={{position:"absolute",top:8,left:10,display:"inline-flex",alignItems:"center",gap:5,
-              fontSize:8.5,fontWeight:700,letterSpacing:".09em",color:"#fff",background:"rgba(10,23,20,.55)",
-              border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",borderRadius:999}}>
-              <span style={{width:5,height:5,borderRadius:"50%",background:"#FFC72C",boxShadow:"0 0 6px #FFC72C"}}/>
-              {T("EN ORBITE — NASA/JPL","IN ORBIT — NASA/JPL","EN ÓRBITA — NASA/JPL")}
-            </span>
-          </div>
-        </div>
-
-        {/* médaillon preuve (B2) : le vrai Sentinel-6, footage NASA */}
-        <div aria-hidden style={{position:"absolute",top:"max(60px,8%)",right:"5%",width:"min(36vw,300px)",
-          borderRadius:18,overflow:"hidden",border:"1px solid rgba(255,255,255,.16)",
-          boxShadow:"0 18px 50px rgba(0,0,0,.5)",opacity:"var(--b2o)",
-          transform:"translateY(calc((1 - var(--b2))*54px))",pointerEvents:"none"}}>
-          <div style={{position:"relative",aspectRatio:"16/9",background:"#04090B"}}>
-            <img src="/videos/sentinel6-poster.jpg" alt="" loading="lazy"
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-            {vidSrc&&<video ref={vidRef} src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
-              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>}
-            <span style={{position:"absolute",top:8,left:10,display:"inline-flex",alignItems:"center",gap:5,
-              fontSize:8.5,fontWeight:700,letterSpacing:".09em",color:"#fff",background:"rgba(10,23,20,.55)",
-              border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",borderRadius:999}}>
-              <span style={{width:5,height:5,borderRadius:"50%",background:"#5b3a8e",boxShadow:"0 0 6px #5b3a8e"}}/>
-              {T("LE VRAI — NASA/JPL","THE REAL ONE — NASA/JPL","EL REAL — NASA/JPL")}
-            </span>
-          </div>
-        </div>
-
-        {/* le récit, temps par temps */}
-        {beats.map((b,i)=>(
-          <div key={i} aria-hidden={!rm&&beat!==i} style={{position:"absolute",left:"6%",right:"6%",
-            bottom:"max(112px,15%)",opacity:`var(${b.o})`,pointerEvents:"none"}}>
-            <div style={{fontFamily:mono,fontSize:11,fontWeight:700,letterSpacing:".24em",color:"#5b3a8e",marginBottom:9}}>{b.k}</div>
-            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,5.6vw,52px)",lineHeight:1.02,
-              letterSpacing:".01em",textTransform:"uppercase",color:"#fff",maxWidth:560,
-              textShadow:"0 2px 26px rgba(0,0,0,.45)"}}>{b.h}</div>
-          </div>
-        ))}
-
-        {/* CTA du dernier temps */}
-        <div style={{position:"absolute",left:"6%",bottom:"max(38px,5.5%)",opacity:"var(--b5o)",
-          pointerEvents:beat===4?"auto":"none"}}>
-          <button onClick={onShowMap} className="gbtn" style={{background:"#FFC72C",color:"#120821",border:"none",
-            cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,padding:"14px 22px",borderRadius:999,
-            boxShadow:"0 8px 28px rgba(255,199,44,.3)"}}>
-            <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:7,display:"inline-block"}}/>
-            {T("Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
-          </button>
-        </div>
-
-        {/* progression discrète (droite) */}
-        {!rm&&<div aria-hidden style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",
-          display:"flex",flexDirection:"column",gap:7}}>
-          {beats.map((_,i)=>(
-            <span key={i} style={{width:5,height:beat===i?22:5,borderRadius:99,transition:"all .35s ease",
-              background:beat===i?"#FFC72C":"rgba(255,255,255,.22)"}}/>
-          ))}
-        </div>}
-      </div>
-    </section>
-  )
-}
-
 /* ── GameFunnel — la « page de départ » jeu-funnel (directive user 13/06 :
    « UX SVG 3D immersive de bout en bout, impliquer l'user comme un JV avec
    des choix graphiques », réf Zenly pré-2022 candy/vivant). Couche ADDITIVE
@@ -8201,918 +6597,6 @@ function ScrollStory({lang,onShowMap}){
    s'allument en cascade) → tap = fiche réelle (AHA + déclencheurs premium
    existants). Tout est skippable (« montre-moi la carte »). transforms/opacity
    only, 2 ressorts CSS nommés, reduced-motion = panneaux en fondu, complétable. ── */
-function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,onFav,onPremium,exiting}){
-  const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const [stage,setStage]=useState("vibe") // vibe → coast (sélection) → scan (LE SCAN, beat 2)
-  const [vibe,setVibe]=useState(null)
-  const [chosenBeach,setChosenBeach]=useState(null)
-  const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
-  useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos,funnel:"game"})},[])
-  // Jeton-preuve : la plus PROPRE maintenant (donnée réelle, score qui monte 0→N)
-  const proof=(pickBeaches&&pickBeaches[0])||beach
-  const [cnt,setCnt]=useState(()=>rm?(proof?.score??0):0)
-  useEffect(()=>{
-    if(rm)return
-    const target=proof?.score??0
-    let raf=0,start=0
-    const step=ts=>{if(!start)start=ts;const k=Math.min(1,(ts-start)/900);setCnt(Math.round(target*(1-Math.pow(1-k,3))));if(k<1)raf=requestAnimationFrame(step)}
-    raf=requestAnimationFrame(step)
-    return()=>cancelAnimationFrame(raf)
-  },[proof&&proof.id])
-  // Beat 2 LE SCAN : animations CSS pures (keyframes) déclenchées au montage de
-  // la scène — JAMAIS de rAF/var pilotée (un rAF throttlé rendrait la scène
-  // invisible). reduced-motion = état final statique (cf. <style>).
-  const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
-    return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
-  }catch(_){return""}})()
-  const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
-  const wordmark=IS_NEW_REGION
-    ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
-    :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
-  const VIBES=[
-    {k:"swim",label:T("Nager","Swim","Nadar"),g:["#2BB7C4","#0E6E78"]},
-    {k:"photo",label:T("Photos & Reels","Photos & Reels","Fotos & Reels"),g:["#F2B860","#C97E3A"]},
-    {k:"meet",label:T("Rencontrer","Meet up","Conocer"),g:["#F2A968","#D9646E"]},
-    {k:"family",label:T("Famille","Family","Familia"),g:["#7FC3A6","#2E8B6B"]},
-    {k:"escape",label:T("S'évader","Escape","Evadir"),g:["#9B8BE0","#5B4B9E"]},
-  ]
-  const vibeLabel=(VIBES.find(v=>v.k===vibe)||{}).label||""
-  const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
-  const statusShort=b=>b.status==="clean"?T("Propre","Clean","Limpia"):b.status==="moderate"?T("Modéré","Moderate","Moderada"):T("À éviter","Avoid","Evitar")
-  // Sélection RÉELLE pondérée par l'envie (champs réels : score, snorkel, kids,
-  // parking, drive, côte) — chaque envie donne un gagnant genuinement différent
-  // (jamais de fausse personnalisation, garde-fou du concept).
-  const ranked=useMemo(()=>{
-    const list=(pickBeaches||[]).filter(b=>b.status&&b.score!=null&&b.lat)
-    const sh=b=>{try{return classifyBeachCoast(b.lat,b.lng,b.island)==="sheltered"}catch(_){return false}}
-    const w=b=>{
-      let s=(b.score||0)
-      if(vibe==="swim")s+=(b.snorkel?6:0)+(sh(b)?8:0)
-      else if(vibe==="photo")s+=(sh(b)?4:0)+((b.score||0)>=80?6:0)
-      else if(vibe==="meet")s+=(b.parking?6:0)+((b.drive!=null&&b.drive<25)?9:0)
-      else if(vibe==="family")s+=(b.kids?12:0)+(b.parking?5:0)+(sh(b)?6:0)
-      else if(vibe==="escape")s+=((b.drive!=null&&b.drive>35)?10:0)+(b.snorkel?4:0)
-      return s
-    }
-    return [...list].sort((a,b)=>w(b)-w(a)).slice(0,5)
-  },[pickBeaches,vibe])
-  const pickVibe=v=>{setVibe(v.k);track("sg_funnel_vibe",{vibe:v.k});setStage("coast")}
-  const openBeach=b=>{track("sg_funnel_pick",{beach_id:b.id,vibe:vibe||"_",score:b.score});onOpenBeach&&onOpenBeach(b)}
-  // Beat 2 LE SCAN : taper une plage classée n'ouvre plus la fiche d'un coup —
-  // on entre d'abord dans le scan (le satellite analyse CETTE plage), puis « Voir
-  // le résultat » ouvre la vraie fiche. Garde tout le parcours actuel intact.
-  const goScan=b=>{setChosenBeach(b);setFaved(false);track("sg_funnel_scan_view",{beach_id:b.id,vibe:vibe||"_"});setStage("scan")}
-  // Beat 3 LE VERDICT : actions de capture photogéniques (partage social) +
-  // appropriation (favori = pont vers le veilleur). Partage = donnée publique.
-  const [faved,setFaved]=useState(false)
-  const shareBeach=b=>{
-    const txt=`${b.name} ${b.score}/100 · ${statusShort(b)} ${T("aujourd'hui","today","hoy")} ☀️`
-    const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
-    track("sg_share",{beach_id:b.id,method:"funnel"})
-    try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
-    try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
-  }
-  // toggleFav (onFav) gère DÉJÀ sg_fav_add/sg_fav_remove — ici un event funnel
-  // distinct pour l'attribution, sans double-fire ni event contradictoire.
-  const favBeach=b=>{setFaved(v=>!v);track("sg_funnel_fav",{beach_id:b.id});onFav&&onFav(b)}
-  // Beat 4 — honnêteté FTC/DSA : l'alerte n'existe QUE si le forecast J+1..J+2 de
-  // la plage choisie se dégrade VRAIMENT (jamais de fausse urgence). Sinon null →
-  // pas de pitch d'alerte, le verdict mène direct à la fiche.
-  const j2info=useMemo(()=>{
-    if(!chosenBeach)return null
-    const wkId=IS_NEW_REGION?chosenBeach.id:BEACH_TO_SARG[chosenBeach.id]
-    const fc=sargData&&sargData.weekly&&sargData.weekly[wkId]&&sargData.weekly[wkId].forecast
-    if(!fc||!fc.length)return null
-    const RANK={clean:0,moderate:1,avoid:2}
-    const today=(RANK[fc[0]&&fc[0].status]!=null?RANK[fc[0].status]:RANK[chosenBeach.status])||0
-    for(let i=1;i<=2&&i<fc.length;i++){
-      const r=RANK[fc[i]&&fc[i].status]
-      if(r!=null&&r>today)return{day:i,date:fc[i].date,status:fc[i].status}
-    }
-    return null
-  },[chosenBeach,sargData])
-  const dayName=j2info?(()=>{try{return new Date(j2info.date+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return""}})():""
-  const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
-  return(
-    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
-      background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
-      opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
-      transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
-      <style>{`
-.gf-cam{transition:transform .64s cubic-bezier(.34,1.56,.64,1)}
-.gf-chip{transition:transform .18s cubic-bezier(.175,.885,.32,1.275),box-shadow .2s ease}
-.gf-chip:active{transform:scale(.94)}
-.gf-card{transition:transform .18s cubic-bezier(.175,.885,.32,1.275),border-color .2s ease}
-.gf-card:active{transform:scale(.975)}
-.gf-pulse{animation:gfPulse 2.6s ease-in-out 1 both}
-@keyframes gfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.7}}
-.gf-panel{animation:gfRise .5s cubic-bezier(.22,.61,.36,1) both}
-@keyframes gfRise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-@keyframes gfIgnite{from{opacity:0;transform:translateY(14px) scale(.86)}to{opacity:1;transform:none}}
-@keyframes gfPx{from{opacity:0;transform:scale(.5)}to{opacity:.9;transform:none}}
-.gf-px{animation:gfPx .55s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--d,0ms);transform-box:fill-box;transform-origin:center}
-@keyframes gfScanGlow{0%,100%{opacity:.3}50%{opacity:.75}}
-@keyframes gfSweep{from{transform:translateY(140px)}to{transform:translateY(452px)}}
-.gf-scanline{animation:gfScanGlow 1.4s ease-in-out infinite,gfSweep 2.4s ease-in-out both}
-@keyframes gfSatDrop{from{transform:translate(400px,24px)}to{transform:translate(400px,142px)}}
-.gf-sat{animation:gfSatDrop 2.4s cubic-bezier(.4,0,.2,1) both}
-@keyframes gfFade{from{opacity:0}to{opacity:1}}
-.gf-scanfx{animation:gfFade .45s ease-out both}
-.gf-medal{animation:gfFade .5s ease-out .9s both}
-@keyframes gfBlobIn{from{transform:scale(.55)}to{transform:scale(1)}}
-.gf-blob{animation:gfBlobIn .6s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:center}
-@keyframes gfDotIn{from{transform:scale(.3)}to{transform:scale(1)}}
-.gf-dot{animation:gfDotIn .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--dd,0ms);transform-box:fill-box;transform-origin:center}
-@keyframes gfRing{to{stroke-dashoffset:-48}}
-.gf-ring{animation:gfRing 6s linear 1 both}
-@keyframes gfArrive{0%{transform:translateX(36px)}100%{transform:translateX(-8px)}}
-.gf-arrive{animation:gfArrive 5s ease-in-out 1 both alternate}
-@keyframes gfArrowDash{to{stroke-dashoffset:-24}}
-.gf-arrow{animation:gfArrowDash 1.8s linear 1 both}
-@keyframes gfAlertPulse{0%{transform:scale(.5);opacity:.7}100%{transform:scale(2.1);opacity:0}}
-.gf-alertpulse{animation:gfAlertPulse 2.2s ease-out 1 both}
-@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring,.gf-arrive,.gf-arrow,.gf-alertpulse{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
-      `}</style>
-      {/* PREMIER ÉCRAN (100svh) : le funnel-jeu. On peut ensuite SCROLLER dans le
-          même monde (méthode + veilleur) — le scroll-SVG est rebranché. */}
-      <section style={{position:"relative",height:"100svh",overflow:"hidden"}}>
-      {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
-      <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
-        transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="verdict"?"scale(1.2) translateY(-3%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
-        <ErrBound><Suspense fallback={null}><HeroScene/></Suspense></ErrBound>
-      </div>
-      <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
-        background:stage==="scan"
-          ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#120821 100%)"
-          :stage==="verdict"
-          ?"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,.1) 28%,rgba(10,23,20,.5) 50%,rgba(10,23,20,.9) 76%,#120821 100%)"
-          :stage==="alert"
-          ?"linear-gradient(180deg,rgba(4,11,22,.86) 0%,rgba(4,11,22,.62) 38%,rgba(6,16,18,.9) 72%,#120821 100%)"
-          :stage==="coast"
-          ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#120821 100%)"
-          :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#120821 100%)"}}/>
-      {/* BEAT 2 — LE SCAN : scène SVG (le satellite descend, faisceau, pixels de
-          la côte qui s'allument, médaillon-preuve Sentinel-6). opacity pilotée
-          par --gfs2 (rAF). Continuité du monde : même satellite/faisceau/teal
-          que HeroScene + ScrollStory. */}
-      {stage==="scan"&&(
-        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
-          <defs>
-            <linearGradient id="gfBeam" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFD884" stopOpacity=".5"/>
-              <stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-          {/* le satellite Sentinel-6 descend de l'orbite, faisceau vers la baie */}
-          <g className="gf-sat">
-            <polygon points="-8,16 8,16 44,330 -44,330" fill="url(#gfBeam)" opacity=".5"/>
-            <rect x="-30" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
-            <rect x="11" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
-            <rect x="-12" y="-11" width="24" height="21" rx="3" fill="#5b3a8e"/>
-            <rect x="-12" y="-11" width="24" height="7" rx="3" fill="#FFC72C"/>
-          </g>
-          {/* la ligne de scan balaie la baie */}
-          <rect className="gf-scanline" x="-40" width="880" height="3" rx="1.5" fill="#3fd07f"/>
-          {/* les pixels de la côte s'allument en cascade (teinte vers le statut) */}
-          <g>
-            {[...Array(15)].map((_,i)=>{
-              const col=i%5,row=Math.floor(i/5)
-              const c=["#5b3a8e","#5b3a8e","#FFC72C","#FFC72C","#F59E0B"][col]
-              return <rect key={i} className="gf-px" x={326+col*30} y={272+row*30} width="22" height="22" rx="5" fill={c}
-                style={{"--d":`${(row*5+col)*55}ms`}}/>
-            })}
-          </g>
-          {/* médaillon-preuve : Sentinel-6 / NASA-JPL / Copernicus */}
-          <g className="gf-medal" transform="translate(400,408)">
-            <circle r="34" fill="#08251F" stroke="#FFC72C" strokeWidth="2"/>
-            <circle r="34" fill="none" stroke="#5b3a8e" strokeWidth="1" strokeDasharray="3 6" opacity=".65"/>
-            <g transform="scale(.7)">
-              <rect x="-26" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
-              <rect x="11" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
-              <rect x="-9" y="-8" width="18" height="15" rx="2" fill="#5b3a8e"/>
-              <rect x="-9" y="-8" width="18" height="5" rx="2" fill="#FFC72C"/>
-            </g>
-          </g>
-        </svg>
-      )}
-      {/* BEAT 3 — LE VERDICT : score-blob (squircle candy) de la plage choisie +
-          les plages alternatives en orbite + glitter. SVG base-visible (jamais
-          gated sur une anim) ; les anims = pop d'entrée (scale) + ring rotatif. */}
-      {stage==="verdict"&&chosenBeach&&(()=>{
-        const bc=statusCol(chosenBeach)
-        const alts=ranked.filter(b=>b.id!==chosenBeach.id).slice(0,3)
-        const POS=[[400,182],[520,388],[280,388]],RR=[20,16,14]
-        return(
-        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
-          <circle cx="400" cy="306" r="106" fill="none" stroke="#5b3a8e" strokeWidth="1.2" strokeDasharray="3 9" opacity=".32" className="gf-ring"/>
-          {alts.map((b,i)=>(
-            <g key={b.id} transform={`translate(${POS[i][0]},${POS[i][1]})`}>
-              <g className="gf-dot" style={{"--dd":`${320+i*90}ms`}}>
-                <circle r={RR[i]} fill="#10231E" stroke="rgba(255,255,255,.14)" strokeWidth="1.5"/>
-                <text x="0" y={RR[i]*.34} textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize={RR[i]*.95} fill={statusCol(b)}>{b.score}</text>
-              </g>
-            </g>
-          ))}
-          <g className="gf-blob">
-            <path d="M400 216 C442 216 494 268 494 306 C494 348 442 396 400 396 C358 396 306 348 306 306 C306 268 358 216 400 216 Z" fill={bc} opacity=".16"/>
-            <path d="M400 232 C436 232 478 270 478 306 C478 344 436 380 400 380 C364 380 322 344 322 306 C322 270 364 232 400 232 Z" fill="none" stroke={bc} strokeWidth="2.5" opacity=".7"/>
-            <text x="400" y="318" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="78" fill={bc} letterSpacing=".02em">{chosenBeach.score}</text>
-            <text x="400" y="346" textAnchor="middle" fontSize="12.5" fill="rgba(255,255,255,.5)" fontWeight="700" letterSpacing=".14em">/100</text>
-          </g>
-        </svg>
-        )})()}
-      {/* BEAT 4 — L'ALERTE J+2 : scène de nuit, le banc qui dérive vers la côte,
-          flèche d'arrivée, notif téléphone. Honnête (seulement si vraie
-          dégradation). SVG base-visible. */}
-      {stage==="alert"&&chosenBeach&&(
-        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
-          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
-          <g opacity=".6">
-            <circle cx="96" cy="60" r="1.1" fill="#fff" opacity=".5"/><circle cx="238" cy="100" r=".9" fill="#fff" opacity=".4"/>
-            <circle cx="560" cy="84" r="1" fill="#fff" opacity=".45"/><circle cx="700" cy="120" r="1.1" fill="#fff" opacity=".5"/>
-            <circle cx="430" cy="150" r=".8" fill="#9ADCD4" opacity=".4"/>
-          </g>
-          <path d="M-40 432 Q200 412 430 422 Q640 430 840 450 L840 600 L-40 600Z" fill="#0A1A16"/>
-          <path d="M-40 432 Q200 412 430 422 Q640 430 840 450" fill="none" stroke="#1A4A44" strokeWidth="2" opacity=".55"/>
-          <g className="gf-arrive">
-            <g transform="translate(438,394) scale(.85)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/><ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#3d2c08"/></g>
-            <g transform="translate(486,378) scale(.6)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/></g>
-          </g>
-          <path className="gf-arrow" d="M520 296 Q488 342 455 386" fill="none" stroke="#E8522A" strokeWidth="2.5" strokeDasharray="5 7" opacity=".75"/>
-          <g transform="translate(300,248)">
-            <circle className="gf-alertpulse" r="46" fill="none" stroke="#E8522A" strokeWidth="1.5" opacity=".5" style={{transformBox:"fill-box",transformOrigin:"center"}}/>
-            <rect x="-30" y="-54" width="60" height="108" rx="11" fill="#10231E" stroke="rgba(255,255,255,.22)" strokeWidth="1.5"/>
-            <rect x="-23" y="-30" width="46" height="42" rx="7" fill="#1A3A2E"/>
-            <path d="M0 -22 l9 16 h-18 z" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinejoin="round"/>
-            <rect x="-.9" y="-12" width="1.8" height="6" rx=".9" fill="#FFC72C"/><circle cx="0" cy="-3.5" r="1.1" fill="#FFC72C"/>
-            <text x="0" y="24" textAnchor="middle" fontSize="7.5" fill="#FFC72C" fontWeight="700" letterSpacing=".04em">BANC J+{j2info?j2info.day:2}</text>
-          </g>
-        </svg>
-      )}
-      {/* barre haute */}
-      <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
-        padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
-        <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
-        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
-          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",padding:"5px 10px",borderRadius:999}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
-          LIVE{upd?` · ${upd}`:""}
-        </span>
-      </div>
-      {/* contenu bas */}
-      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(16px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto"}}>
-        {stage==="vibe"&&(
-          <div key="vibe" className="gf-panel">
-            {proof&&(
-              <div style={{display:"inline-flex",alignItems:"baseline",gap:8,marginBottom:14,
-                background:"rgba(10,23,20,.42)",border:"1px solid rgba(255,199,44,.3)",borderRadius:999,padding:"7px 13px"}}>
-                <span style={{fontSize:10,fontWeight:700,letterSpacing:".07em",color:"#FFC72C",textTransform:"uppercase"}}>{T("Plus propre maintenant","Cleanest now","Más limpia ahora")}</span>
-                <span style={{fontSize:12.5,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:130}}>{proof.name}</span>
-                <span style={{fontFamily:"'Anton',sans-serif",fontSize:18,color:"#FFC72C",letterSpacing:".02em"}}>{cnt}<span style={{fontSize:11,opacity:.7}}>/100</span></span>
-              </div>
-            )}
-            <div style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:8,textTransform:"uppercase"}}>
-              {dateLong} · {T("SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
-            </div>
-            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(34px,9vw,52px)",lineHeight:.98,
-              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
-              {T("Pourquoi la plage aujourd'hui ?","Why the beach today?","¿Por qué la playa hoy?")}
-            </h1>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5b3a8e",boxShadow:"0 0 10px #5b3a8e",flexShrink:0}}/>
-              <span style={{fontSize:13,color:"rgba(255,255,255,.74)",fontWeight:600}}>
-                {T("J'ai scanné tes côtes ce matin. Dis-moi ton envie.","I scanned your coast this morning. Tell me your mood.","Escaneé tu costa esta mañana. Dime tu plan.")}
-              </span>
-            </div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:9}}>
-              {VIBES.map(v=>(
-                <button key={v.k} className="gf-chip" onClick={()=>pickVibe(v)}
-                  style={{cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,color:"#120821",
-                    border:"none",borderRadius:999,padding:"13px 18px",
-                    background:`linear-gradient(135deg,${v.g[0]},${v.g[1]})`,
-                    boxShadow:`0 6px 18px ${v.g[1]}55,inset 0 1px 0 rgba(255,255,255,.4)`}}>
-                  {v.label}
-                </button>
-              ))}
-            </div>
-            <button onClick={onShowMap} style={{display:"block",margin:"16px auto 0",background:"none",border:"none",
-              color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
-              {T("Passer — montre-moi la carte","Skip — show me the map","Saltar — muéstrame el mapa")}
-            </button>
-          </div>
-        )}
-        {stage==="coast"&&(
-          <div key="coast" className="gf-panel">
-            <button onClick={()=>{setStage("vibe");setVibe(null)}} style={{display:"inline-flex",alignItems:"center",gap:5,
-              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
-              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
-              ‹ {T("Changer d'envie","Change mood","Cambiar plan")}
-            </button>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#FFC72C",marginBottom:8,textTransform:"uppercase"}}>
-              {T("Pour","For","Para")} {vibeLabel} · {T("aujourd'hui","today","hoy")}
-            </div>
-            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7vw,42px)",lineHeight:1,
-              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
-              {T("Tes plages, classées pour toi","Your beaches, ranked for you","Tus playas, en tu orden")}
-            </h1>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {ranked.map((b,i)=>(
-                <button key={b.id} className="gf-card" onClick={()=>goScan(b)}
-                  style={{animation:rm?"none":"gfIgnite .5s cubic-bezier(.34,1.56,.64,1) both",animationDelay:rm?undefined:`${i*70}ms`,
-                    display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
-                    background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.09)",borderRadius:15,
-                    padding:"13px 15px",cursor:"pointer",fontFamily:"inherit"}}>
-                  <span style={{width:12,height:12,flexShrink:0,borderRadius:6,background:statusCol(b),boxShadow:`0 0 10px ${statusCol(b)}`}}/>
-                  <span style={{flex:1,minWidth:0}}>
-                    <span style={{display:"block",fontWeight:800,fontSize:15,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span>
-                    <span style={{display:"block",fontSize:11.5,color:"rgba(255,255,255,.52)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                      {statusShort(b)}{b.commune?` · ${b.commune}`:""}{distTxt(b)?` · ${distTxt(b)}`:""}
-                    </span>
-                  </span>
-                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:statusCol(b),letterSpacing:".02em",lineHeight:1}}>{b.score}</span>
-                  <span style={{color:"rgba(255,255,255,.32)",fontSize:19,lineHeight:1}}>›</span>
-                </button>
-              ))}
-            </div>
-            <button onClick={onShowMap} style={{display:"block",margin:"14px auto 0",background:"none",border:"none",
-              color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
-              {T("Voir toutes les plages sur la carte","See every beach on the map","Ver todas las playas en el mapa")}
-            </button>
-          </div>
-        )}
-        {stage==="scan"&&chosenBeach&&(
-          <div key="scan" className="gf-panel">
-            <button onClick={()=>setStage("coast")} style={{display:"inline-flex",alignItems:"center",gap:5,
-              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
-              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
-              ‹ {T("Retour","Back","Volver")}
-            </button>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#3fd07f",boxShadow:"0 0 10px #3fd07f",flexShrink:0}}/>
-              <span style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#3fd07f",textTransform:"uppercase"}}>
-                {T("Le satellite scanne","Satellite scanning","El satélite escanea")}
-              </span>
-            </div>
-            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7vw,42px)",lineHeight:1,
-              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 8px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
-              {chosenBeach.name}
-            </h1>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",fontFamily:"ui-monospace,SFMono-Regular,monospace",marginBottom:16}}>
-              {T("Sentinel-6 analyse les nappes","Sentinel-6 reads the rafts","Sentinel-6 analiza las manchas")} · NASA/JPL · Copernicus
-            </div>
-            <button onClick={()=>setStage("verdict")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
-              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
-              {T("Voir le résultat →","See the result →","Ver el resultado →")}
-            </button>
-            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
-              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
-              {T("Passer — montre-moi la carte","Skip — show me the map","Saltar — muéstrame el mapa")}
-            </button>
-          </div>
-        )}
-        {stage==="verdict"&&chosenBeach&&(
-          <div key="verdict" className="gf-panel">
-            <button onClick={()=>setStage("coast")} style={{display:"inline-flex",alignItems:"center",gap:5,
-              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
-              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
-              ‹ {T("Autres plages","Other beaches","Otras playas")}
-            </button>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#FFC72C",marginBottom:8,textTransform:"uppercase"}}>
-              {T("Ta journée de plage","Your beach day","Tu día de playa")}
-            </div>
-            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(30px,8vw,46px)",lineHeight:1,
-              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 6px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
-              {chosenBeach.name}
-            </h1>
-            <div style={{fontSize:13.5,color:"rgba(255,255,255,.72)",fontWeight:600,marginBottom:16,lineHeight:1.4}}>
-              {chosenBeach.status==="clean"?T("Eau claire, sable propre — c'est le bon jour.","Clear water, clean sand — today's the day.","Agua clara, arena limpia — es el día.")
-               :chosenBeach.status==="moderate"?T("Correct aujourd'hui — surveille demain.","Okay today — keep an eye on tomorrow.","Bien hoy — ojo con mañana.")
-               :T("Sargasses présentes — regarde les alternatives autour.","Sargassum present — check the alternatives around.","Sargazo presente — mira las alternativas.")}
-            </div>
-            {j2info&&(
-              <button onClick={()=>{track("sg_funnel_alert_view",{beach_id:chosenBeach.id,day:j2info.day});setStage("alert")}}
-                className="gf-chip" style={{display:"flex",alignItems:"center",gap:9,width:"100%",textAlign:"left",cursor:"pointer",
-                fontFamily:"inherit",borderRadius:14,padding:"12px 14px",marginBottom:10,
-                background:"rgba(232,82,42,.12)",border:"1px solid rgba(232,82,42,.4)"}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4845F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
-                <span style={{flex:1,minWidth:0}}>
-                  <span style={{display:"block",fontWeight:800,fontSize:13.5,color:"#F4845F"}}>{T(`Sargasses prévues ${dayName}`,`Sargassum forecast ${dayName}`,`Sargazo previsto ${dayName}`)}</span>
-                  <span style={{display:"block",fontSize:12,color:"rgba(255,255,255,.6)"}}>{T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}</span>
-                </span>
-              </button>
-            )}
-            <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
-              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
-              {T("Voir la fiche complète →","See the full report →","Ver la ficha completa →")}
-            </button>
-            <div style={{display:"flex",gap:10,marginTop:10}}>
-              <button onClick={()=>shareBeach(chosenBeach)} className="gf-chip" style={{flex:1,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,
-                cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:14,color:"#fff",borderRadius:14,padding:"12px 14px",
-                background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.14)"}}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
-                {T("Partager","Share","Compartir")}
-              </button>
-              <button onClick={()=>favBeach(chosenBeach)} aria-pressed={faved} aria-label={T("Épingler","Pin","Fijar")} className="gf-chip" style={{flex:"none",width:52,display:"inline-flex",alignItems:"center",justifyContent:"center",
-                cursor:"pointer",borderRadius:14,padding:"12px",background:faved?"rgba(255,199,44,.16)":"rgba(16,35,30,.92)",
-                border:`1px solid ${faved?"rgba(255,199,44,.5)":"rgba(255,255,255,.14)"}`}}>
-                <svg width="19" height="19" viewBox="0 0 24 24" fill={faved?"#FFC72C":"none"} stroke={faved?"#FFC72C":"rgba(255,255,255,.7)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-              </button>
-            </div>
-            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
-              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
-              {T("Passer — toutes les plages","Skip — all beaches","Saltar — todas las playas")}
-            </button>
-          </div>
-        )}
-        {stage==="alert"&&chosenBeach&&(
-          <div key="alert" className="gf-panel">
-            <button onClick={()=>setStage("verdict")} style={{display:"inline-flex",alignItems:"center",gap:5,
-              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
-              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
-              ‹ {T("Retour","Back","Volver")}
-            </button>
-            <div style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#F4845F",marginBottom:8,textTransform:"uppercase"}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4845F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
-              {T("Prévision satellite","Satellite forecast","Pronóstico satelital")}
-            </div>
-            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7.5vw,44px)",lineHeight:1,
-              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 8px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.5)"}}>
-              {T(`Un banc arrive ${dayName}`,`A raft lands ${dayName}`,`Llega un banco el ${dayName}`)}
-            </h1>
-            <div style={{fontSize:13.5,color:"rgba(255,255,255,.74)",fontWeight:600,marginBottom:18,lineHeight:1.45}}>
-              {T(`Sur ${chosenBeach.name}, l'eau se trouble ${dayName}. Je te préviens la veille — à temps pour changer de plan.`,
-                 `At ${chosenBeach.name}, the water turns ${dayName}. I warn you the day before — in time to change plans.`,
-                 `En ${chosenBeach.name}, el agua empeora el ${dayName}. Te aviso la víspera — a tiempo para cambiar de plan.`)}
-            </div>
-            <button onClick={()=>onPremium&&onPremium("funnel_alert")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
-              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
-              {T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}
-            </button>
-            <button onClick={()=>openBeach(chosenBeach)} style={{display:"block",width:"100%",textAlign:"center",marginTop:10,
-              cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:14,color:"#fff",borderRadius:14,padding:"12px 16px",
-              background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.14)"}}>
-              {T("Voir la fiche d'abord","See the report first","Ver la ficha primero")}
-            </button>
-            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
-              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
-              {T("Passer — toutes les plages","Skip — all beaches","Saltar — todas las playas")}
-            </button>
-          </div>
-        )}
-      </div>
-      </section>
-      {/* INTÉGRATION fil rouge : le scroll-SVG revient — sous le funnel, on
-          CONTINUE dans le même monde (méthode scrollytelling + veilleur) au lieu
-          de s'arrêter au tap-funnel. Mobile retrouve son scroll ; le bras control
-          (HeroVerdict) reste inchangé. */}
-      <section style={{padding:"58px 22px 6px",maxWidth:560,margin:"0 auto"}}>
-        <div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}}>
-          {T("La méthode","The method","El método")}
-        </div>
-        <h2 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,letterSpacing:".01em",textTransform:"uppercase",margin:0,color:"#fff"}}>
-          {T("On regarde la mer pour toi","We watch the sea for you","Miramos el mar por ti")}
-        </h2>
-      </section>
-      <ScrollStory lang={lang} onShowMap={onShowMap}/>
-      <section style={{padding:"28px 22px calc(40px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto"}}>
-        <div style={{background:"linear-gradient(145deg,#10231E,#120821)",border:"1px solid rgba(255,199,44,.25)",borderRadius:20,padding:"24px 20px",textAlign:"center"}}>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:"#fff",letterSpacing:".02em",textTransform:"uppercase",marginBottom:6}}>{T("Ton veilleur personnel","Your personal watcher","Tu vigía personal")}</div>
-          <div style={{fontSize:13.5,color:"rgba(255,255,255,.66)",marginBottom:16,lineHeight:1.45}}>{T("Je surveille ta plage et je te préviens la veille où elle se trouble.","I watch your beach and warn you the day before it turns.","Vigilo tu playa y te aviso la víspera de que cambie.")}</div>
-          <button onClick={()=>onPremium&&onPremium("funnel_scroll")} className="gf-chip" style={{display:"block",width:"100%",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
-            {T("Découvrir le veilleur →","Meet the watcher →","Descubrir el vigía →")}
-          </button>
-          <button onClick={onShowMap} style={{display:"block",width:"100%",marginTop:10,background:"none",border:"none",color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
-            {T("Ou ouvrir la carte gratuite","Or open the free map","O abrir el mapa gratis")}
-          </button>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,pickBeaches,exiting}){
-  const [pickQ,setPickQ]=useState("")
-  useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
-  // Hero média = HeroScene (scène vectorielle, directive user 12/06). L'ancien
-  // empilement photo/WebGL/loops DepthFlow est démonté du hero — SceneCanvas et
-  // les loops (/videos/hero/, release depthflow-heroes) restent disponibles
-  // pour un réemploi (fiches, about). LCP = plus aucun fetch média en hero.
-  useEffect(()=>{
-    const h=e=>{if(e.key==="Escape")onShowMap()}
-    window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)
-  },[onShowMap])
-  // Landing scrollable (modèle SpaceX, demande user 2026-06-11) : hero 100svh
-  // puis sections — verdict du jour, méthode, premium — en scroll naturel.
-  // Reveals à l'IntersectionObserver (root = ce conteneur), sticky bar quand
-  // le hero sort du viewport, tout neutralisé par prefers-reduced-motion.
-  const wrapRef=useRef(null)
-  const heroRef=useRef(null)
-  const [stuck,setStuck]=useState(false)
-  useEffect(()=>{
-    const root=wrapRef.current;if(!root)return
-    const hero=heroRef.current
-    const io1=hero?new IntersectionObserver(es=>setStuck(!es[0].isIntersecting),{root,threshold:.06}):null
-    if(io1)io1.observe(hero)
-    const seen={}
-    const io2=new IntersectionObserver(es=>{for(const e of es){if(!e.isIntersecting)continue
-      e.target.classList.add("in")
-      const s=e.target.getAttribute("data-s")
-      if(s&&!seen[s]){seen[s]=1;track("sg_landing_view",{s})}
-      io2.unobserve(e.target)}},{root,threshold:.18})
-    root.querySelectorAll(".sg-rv").forEach(n=>io2.observe(n))
-    return()=>{io1&&io1.disconnect();io2.disconnect()}
-  },[])
-  const scrollNext=()=>{try{wrapRef.current?.querySelector("#sg-s2")?.scrollIntoView({behavior:"smooth",block:"start"})}catch(_){}}
-  const clean=beach.status==="clean"
-  const verdictTxt=clean?_t(lang,"PROPRE AUJOURD'HUI","CLEAN TODAY","SIN SARGAZO HOY")
-    :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
-    :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
-  const verdictBg=clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
-  // J+1 réel quand résolvable (weekly keyé par id sarg pour MQ/GP, id direct
-  // pour les nouvelles régions) — sinon pas de promesse.
-  const wkId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
-  const j1=sargData?.weekly?.[wkId]?.forecast?.[1]?.status||null
-  const sub=(()=>{
-    const parts=[]
-    if(clean&&j1&&j1!=="clean")parts.push(_t(lang,"⚠️ Banc prévu demain — on te dira où aller","⚠️ Mat forecast tomorrow — we'll tell you where to go","⚠️ Banco previsto mañana — te diremos adónde ir"))
-    else if(clean&&j1==="clean")parts.push(_t(lang,"Propre aussi demain","Clean tomorrow too","Limpia también mañana"))
-    if(beach.commune)parts.push(beach.commune)
-    if(userPos&&beach.lat){
-      const km=haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)
-      parts.push(US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`)
-    }
-    return parts.join(" · ")
-  })()
-  const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
-    return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
-  }catch(_){return""}})()
-  const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
-  const wordmark=IS_NEW_REGION
-    ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
-    :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
-  const statusShort=b=>b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
-    :b.status==="moderate"?_t(lang,"Modéré","Moderate","Moderada"):_t(lang,"À éviter","Avoid","Evitar")
-  const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
-  const ovl={fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}
-  const h2s={fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,
-    letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
-  const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
-  return(
-    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
-      background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
-      /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
-         opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
-      animation:"fadeIn .35s ease-out",
-      opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
-      transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
-      <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
-.sg-heroSec{position:relative;min-height:100vh}
-@supports(min-height:100svh){.sg-heroSec{min-height:100svh}}
-.sg-rv{opacity:0;transform:translateY(26px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
-.sg-rv.in{opacity:1;transform:none}
-.sg-stick{position:fixed;top:0;left:0;right:0;z-index:30;transform:translateY(-105%);transition:transform .32s cubic-bezier(.32,.72,.33,1)}
-.sg-stick.on{transform:translateY(0)}
-.sg-l-cards{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:none}
-.sg-l-cards::-webkit-scrollbar{display:none}
-.sg-l-card{scroll-snap-align:start;flex:0 0 200px;border-radius:18px;overflow:hidden;background:#10231E;
-  border:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:left;padding:0;font-family:inherit;
-  transition:transform .25s ease,border-color .25s ease}
-.sg-l-card:hover{transform:translateY(-3px);border-color:rgba(255,199,44,.45)}
-.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear 1 both}
-@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
-.sg-storyvp{height:100vh}
-@supports(height:100svh){.sg-storyvp{height:100svh}}
-.sgst-ring{animation:sgstRing 2.6s ease-out 1 both}
-.sgst-ring2{animation:sgstRing 2.6s ease-out 1 both;animation-delay:1.3s}
-@keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
-.sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}
-@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
-@media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
-.sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}.sg-flow{animation:none}
-.sgst-ring,.sgst-ring2,.sgst-bob{animation:none}}`}</style>
-
-      {/* STICKY BAR — apparaît quand le hero sort de l'écran (modèle SpaceX) */}
-      <div className={"sg-stick"+(stuck?" on":"")} aria-hidden={!stuck}>
-        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",
-          padding:"calc(8px + env(safe-area-inset-top)) 16px 8px",background:"rgba(10,23,20,.88)",
-          backdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
-          <span style={{fontFamily:"'Anton',sans-serif",fontSize:11.5,letterSpacing:".12em",color:"#fff",opacity:.92,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{wordmark}</span>
-          <button onClick={onShowMap} style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",
-            cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"9px 16px",borderRadius:999}}>
-            <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
-          </button>
-        </div>
-      </div>
-
-      {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
-      <section ref={heroRef} className="sg-heroSec">
-      <ErrBound><Suspense fallback={null}><HeroScene/></Suspense></ErrBound>
-      {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
-          l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
-          visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}
-      <div aria-hidden onClick={()=>{track("sg_hero_tap",{t:"media"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",inset:0,cursor:"pointer",
-        background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#120821 100%)"}}/>
-      {/* Bandeau haut : décoratif (wordmark + LIVE) mais AU-DESSUS du voile cliquable
-          → sans handler il avalait le tap (dead-clicks home). On lui donne le même
-          tap = ouvrir la fiche, pour récupérer ces clics morts. */}
-      <div onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
-        padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
-        <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
-        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
-          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",
-          padding:"5px 10px",borderRadius:999}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
-          LIVE{upd?` · ${upd}`:""}
-        </span>
-      </div>
-      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
-        maxWidth:560,margin:"0 auto"}}>
-        {userPos&&(
-          <div onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
-            color:"#FFC72C",marginBottom:8,cursor:"pointer"}}>
-            📍 {_t(lang,"LA PLUS PROCHE DE TOI","CLOSEST TO YOU","LA MÁS CERCA DE TI")}
-          </div>
-        )}
-        <div onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
-          {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
-        </div>
-        <h1 onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
-          letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",cursor:"pointer",
-          textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
-          {beach.name}
-        </h1>
-        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
-          fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
-          {verdictTxt}
-          {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
-        </div>
-        {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
-        {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
-            CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
-            home vs 72-98% "état maintenant", mais sur grand écran les
-            map-seekers doivent voir leur sortie sans chercher. Mobile : lien
-            discret sous le CTA (écran étroit, status-first). */}
-        {(typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(min-width:900px)").matches)?(
-          <div style={{display:"flex",gap:10}}>
-            <button onClick={onOpen} className="gbtn" style={{flex:1.5,textAlign:"center",
-              background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
-              fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
-              {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
-              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
-                {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
-              </span>
-            </button>
-            <button onClick={onShowMap} style={{flex:1,textAlign:"center",cursor:"pointer",fontFamily:"inherit",
-              background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.35)",
-              fontWeight:700,fontSize:15,padding:"16px 18px",borderRadius:18,backdropFilter:"blur(6px)"}}>
-              <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
-              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.7,marginTop:3}}>
-                {_t(lang,"toutes les plages, en direct","every beach, real time","todas las playas, en directo")}
-              </span>
-            </button>
-          </div>
-        ):(
-          <>
-            <button onClick={onOpen} className="gbtn" style={{display:"block",width:"100%",textAlign:"center",
-              background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
-              fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
-              {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
-              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
-                {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
-              </span>
-            </button>
-            <button onClick={()=>{track("sg_hero_map_cta",{src:"mobile"});onShowMap()}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",
-              marginTop:10,background:"rgba(10,23,20,.45)",color:"#fff",
-              border:"1.5px solid rgba(255,255,255,.35)",fontFamily:"inherit",fontWeight:700,fontSize:14,
-              padding:"14px 20px",borderRadius:18,backdropFilter:"blur(6px)",cursor:"pointer"}}>
-              <BrandIcon name="map" size={14} accent="#FFC72C" style={{verticalAlign:"-2px",display:"inline-block"}}/>{_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
-            </button>
-          </>
-        )}
-        {/* Invitation au scroll (un seul chevron, modèle SpaceX) */}
-        <button onClick={scrollNext} aria-label={_t(lang,"Découvrir","Discover","Descubrir")}
-          style={{display:"block",margin:"6px auto 0",background:"none",border:"none",cursor:"pointer",
-            color:"rgba(255,255,255,.55)",fontSize:22,lineHeight:1,padding:6}}>
-          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out 1 both"}}>⌄</span>
-        </button>
-      </div>
-      </section>
-
-      {/* ── ÉCRAN 2 : le verdict du jour, plage par plage ── */}
-      <section id="sg-s2" style={{...secPad,scrollMarginTop:54}}>
-        <div className="sg-rv" data-s="verdict">
-          <div style={ovl}>{_t(lang,"Aujourd'hui","Today","Hoy")}</div>
-          <h2 style={h2s}>{_t(lang,"Le verdict, plage par plage","The verdict, beach by beach","El veredicto, playa por playa")}</h2>
-          <p style={{fontSize:14,lineHeight:1.55,color:"rgba(255,255,255,.62)",margin:"0 0 18px"}}>
-            {_t(lang,"Pas d'avis, pas de promesses : la mesure satellite du matin.","No opinions, no promises: this morning's satellite measurement.","Sin opiniones ni promesas: la medición satelital de esta mañana.")}
-            {upd?` · LIVE ${upd}`:""}
-          </p>
-        </div>
-        {!!(topBeaches&&topBeaches.length)&&(
-          <div className="sg-l-cards sg-rv">
-            {topBeaches.map(b=>(
-              <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
-                <div style={{position:"relative",height:124,overflow:"hidden"}}>
-                  <BeachScene beach={b}/>
-                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:"#120821",
-                    fontWeight:800,fontSize:11,padding:"4px 9px",borderRadius:999}}>
-                    {statusShort(b)}{b.score!=null?` · ${b.score}`:""}
-                  </span>
-                </div>
-                <div style={{padding:"10px 12px 12px"}}>
-                  <div style={{fontWeight:800,fontSize:14,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
-                  {b.commune&&<div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:2}}>{b.commune}</div>}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-        {/* SÉLECTEUR — choisis ta plage directement depuis l'accueil (recherche
-            + liste live de toutes les plages, tap = fiche). Demande user 13/06. */}
-        {!!(pickBeaches&&pickBeaches.length>3)&&(()=>{
-          const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
-          const nq=norm(pickQ)
-          const list=pickBeaches.filter(b=>!nq||norm(b.name).includes(nq)||norm(b.commune).includes(nq)).slice(0,60)
-          return(
-            <div className="sg-rv" style={{marginTop:24}}>
-              <div style={{...ovl,marginBottom:8}}>{_t(lang,"Ta plage","Your beach","Tu playa")}</div>
-              <h3 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:21,letterSpacing:".01em",
-                textTransform:"uppercase",color:"#fff",margin:"0 0 12px"}}>
-                {_t(lang,"Choisis ta plage","Pick your beach","Elige tu playa")}
-              </h3>
-              {/* Recette .sg-field comic unique : loupe SVG mono-trait + bord 2.5 ink +
-                  ombre dure. input ≥16px (anti-zoom iOS). Tokens thème (comic + dark). */}
-              <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:10}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"
-                  style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
-                    color:"#5A5A5A",flexShrink:0,pointerEvents:"none"}}>
-                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.4"/>
-                  <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
-                </svg>
-                <input value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
-                  type="search" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
-                  onFocus={()=>track("sg_landing_pick_search",{})}
-                  placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
-                  style={{width:"100%",minHeight:48,boxSizing:"border-box",background:"var(--sg-card,#fff)",
-                    border:"2.5px solid #0D0D0D",borderRadius:12,padding:"13px 14px 13px 42px",
-                    color:"var(--sg-ink,#0D0D0D)",fontSize:16,fontWeight:600,fontFamily:"inherit",outline:"none",
-                    boxShadow:"2px 2px 0 #0D0D0D"}}/>
-              </div>
-              <div style={{maxHeight:312,overflowY:"auto",overflowX:"hidden",display:"flex",flexDirection:"column",gap:6,
-                WebkitOverflowScrolling:"touch",paddingRight:2}}>
-                {list.map(b=>(
-                  <button key={b.id} onClick={()=>onOpenBeach&&onOpenBeach(b)}
-                    style={{display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
-                      background:"#10231E",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,
-                      padding:"11px 14px",cursor:"pointer",fontFamily:"inherit"}}>
-                    <span style={{width:10,height:10,borderRadius:5,flexShrink:0,background:statusCol(b),
-                      boxShadow:`0 0 8px ${statusCol(b)}`}}/>
-                    <span style={{flex:1,minWidth:0}}>
-                      <span style={{display:"block",fontWeight:700,fontSize:14,color:"#fff",whiteSpace:"nowrap",
-                        overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span>
-                      {b.commune&&<span style={{display:"block",fontSize:11.5,color:"rgba(255,255,255,.5)",
-                        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.commune}{typeof b.drive==="number"?` · ${b.drive} min`:""}</span>}
-                    </span>
-                    <span style={{fontFamily:"'Anton',sans-serif",fontSize:17,color:statusCol(b),letterSpacing:".02em"}}>{b.score}</span>
-                    <span style={{color:"rgba(255,255,255,.3)",fontSize:18,lineHeight:1}}>›</span>
-                  </button>
-                ))}
-                {!list.length&&(
-                  <div className="sg-empty" style={{padding:"18px 8px"}}>
-                    <div className="sg-empty__veil"><Veilleur mood="serein" size={44}/></div>
-                    <div className="sg-empty__title" style={{fontSize:15}}>{_t(lang,"Aucune plage trouvée","No beach found","Ninguna playa encontrada")}</div>
-                    <div className="sg-empty__sub">{_t(lang,"Essaie une autre recherche — je veille sur le reste.","Try another search — I'm watching the rest.","Prueba otra búsqueda — vigilo el resto.")}</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })()}
-        <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-          width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
-          cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:14}}>
-          <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
-        </button>
-      </section>
-
-      {/* ── ÉCRAN 3 : la méthode — scrollytelling plein cadre (réf Zenly, 12/06) ── */}
-      <section style={{...secPad,paddingBottom:6}}>
-        <div className="sg-rv" data-s="methode">
-          <div style={ovl}>{_t(lang,"La méthode","The method","El método")}</div>
-          <h2 style={h2s}>{_t(lang,"On regarde la mer pour vous","We watch the sea for you","Miramos el mar por ti")}</h2>
-        </div>
-      </section>
-      {/* Le film au scroll : l'orbite → le scan → la dérive → le verdict → le choix */}
-      <ScrollStory lang={lang} onShowMap={onShowMap}/>
-      <section style={{...secPad,paddingTop:26}}>
-        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"14px 0 20px"}}>
-          {[
-            ["satellite",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],
-            ["score",_t(lang,"Un score 0-100 recalculé à chaque passage","A 0-100 score recomputed on every pass","Un score 0-100 recalculado en cada pasada")],
-            ["cal7",_t(lang,"Prévisions 7 jours, plage par plage","7-day forecast, beach by beach","Pronóstico de 7 días, playa por playa")],
-          ].map(([ic,txt],i)=>(
-            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,background:"#10231E",
-              border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px"}}>
-              <BrandIcon name={ic} size={22} style={{marginTop:1,color:"rgba(255,255,255,.92)"}}/>
-              <span style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",fontWeight:600}}>{txt}</span>
-            </div>
-          ))}
-        </div>
-        <button onClick={onOpen} className="sg-rv" style={{display:"block",background:"none",border:"none",cursor:"pointer",
-          fontFamily:"inherit",color:"#FFC72C",fontWeight:800,fontSize:15,padding:0}}>
-          {_t(lang,`Voir ${beach.name} en détail →`,`See ${beach.name} in detail →`,`Ver ${beach.name} en detalle →`)}
-        </button>
-      </section>
-
-      {/* ── ÉCRAN 4 : premium (le prix vit dans le paywall, source unique) ── */}
-      <section style={{...secPad,paddingBottom:24}}>
-        <div className="sg-rv" data-s="premium">
-          <div style={ovl}>Premium</div>
-          <h2 style={h2s}>{_t(lang,"Soyez prévenu avant tout le monde","Be the first to know","Entérate antes que nadie")}</h2>
-        </div>
-        <div className="sg-rv" style={{margin:"16px 0 6px"}}><ErrBound><Suspense fallback={null}><AlertScene/></Suspense></ErrBound></div>
-        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:10,margin:"14px 0 20px"}}>
-          {[
-            ["bell",_t(lang,"Une alerte quand VOTRE plage change d'état","An alert when YOUR beach changes","Una alerta cuando TU playa cambia")],
-            ["brief",_t(lang,"Le brief du matin dans votre boîte mail","The morning brief in your inbox","El brief de la mañana en tu correo")],
-            ["cal7",_t(lang,"Les 7 jours de prévisions, toutes les plages","The full 7-day forecast, every beach","Los 7 días de pronóstico, todas las playas")],
-          ].map(([ic,txt],i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:11,fontSize:14,fontWeight:600,
-              color:"rgba(255,255,255,.85)"}}>
-              <BrandIcon name={ic} size={19} style={{color:"rgba(255,255,255,.92)"}}/>{txt}
-            </div>
-          ))}
-        </div>
-        {onPremium&&(
-          <button onClick={onPremium} className="sg-rv gbtn" style={{display:"block",width:"100%",textAlign:"center",
-            background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
-            fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)"}}>
-            {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
-          </button>
-        )}
-        <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — remboursé en 1 email sous 30 j","One-time payment — refunded in 1 email within 30 days","Pago único — reembolso en 1 email en 30 días")}
-        </div>
-      </section>
-
-      <footer style={{padding:"44px 22px calc(30px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",
-        textAlign:"center",borderTop:"1px solid rgba(255,255,255,.07)",marginTop:36}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:6}}>{wordmark}</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.38)"}}>
-          🛰 {_t(lang,"Données : Copernicus Marine","Data: Copernicus Marine","Datos: Copernicus Marine")}{upd?` · LIVE ${upd}`:""}
-          {" · "}
-          <a href={IS_NEW_REGION?"/about/":"/a-propos/"} style={{color:"rgba(255,255,255,.38)"}}>
-            {_t(lang,"À propos","About","Acerca de")}
-          </a>
-          {/* /press/ existe pour les régions USD (kit média = backlinks/E-E-A-T) */}
-          {IS_NEW_REGION && <>{" · "}<a href="/press/" style={{color:"rgba(255,255,255,.38)"}}>
-            {_t(lang,"Presse","Press","Prensa")}
-          </a></>}
-          {!IS_NEW_REGION && <>{" · "}<a href="/widget/" style={{color:"rgba(255,255,255,.38)"}}>
-            {_t(lang,"Pro : widget gratuit","Pro: free widget","Pro: widget gratis")}
-          </a></>}
-        </div>
-        {/* Liens société/légaux — MQ/GP uniquement (pages 100% FR). Accessibles
-            partout pour les visiteurs : offres, fiabilité, CGV, mentions. */}
-        {!IS_NEW_REGION && (
-          <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
-            <a href="/offres/" style={{color:"rgba(255,255,255,.38)"}}>Offres</a>{" · "}
-            <a href="/fiabilite/" style={{color:"rgba(255,255,255,.38)"}}>Fiabilité</a>{" · "}
-            <a href="/cgv.html" style={{color:"rgba(255,255,255,.3)"}}>CGV</a>{" · "}
-            <a href="/remboursement.html" style={{color:"rgba(255,255,255,.3)"}}>Remboursement</a>{" · "}
-            <a href="/confidentialite.html" style={{color:"rgba(255,255,255,.3)"}}>Confidentialité</a>{" · "}
-            <a href="/mentions-legales.html" style={{color:"rgba(255,255,255,.3)"}}>Mentions légales</a>
-            <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
-          </div>
-        )}
-        {/* Liens société/légaux — régions USD/ES (pages générées EN/ES, slugs
-            localisés). Identité opérateur 97TECH visible partout, comme MQ/GP. */}
-        {IS_NEW_REGION && (() => {
-          const sl = lang==="es"?{t:"terminos",p:"privacidad",r:"reembolso",rel:"fiabilidad"}:{t:"terms",p:"privacy",r:"refund",rel:"reliability"}
-          const ls={color:"rgba(255,255,255,.38)"}, lsd={color:"rgba(255,255,255,.3)"}
-          return (
-            <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
-              <a href={`/${sl.rel}/`} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
-              <a href={`/${sl.t}/`} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
-              <a href={`/${sl.p}/`} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
-              <a href={`/${sl.r}/`} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
-              <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>{_t(lang,"Édité par","Operated by","Operado por")} 97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
-            </div>
-          )
-        })()}
-      </footer>
-    </div>
-  )
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
@@ -9124,7 +6608,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 // loopé, JAMAIS bloqué. Réutilise BeachScene/Veilleur/ScoreBlob/verdictMeta (le
 // 90% existant). Perf : BeachScene rendu seulement pour la carte active±1.
 // Additif (z 1005) : la fiche (1010) et le paywall (1100+) s'ouvrent AU-DESSUS.
-function WorldAfaiGauge({afai,lang}){
+export function WorldAfaiGauge({afai,lang}){
   // La science, simplement : l'échelle AFAI satellite avec un marqueur à la valeur réelle.
   const v=Math.max(0,Math.min(0.5,typeof afai==="number"?afai:0.1))
   const pct=Math.round((v/0.5)*100)
@@ -9141,90 +6625,6 @@ function WorldAfaiGauge({afai,lang}){
     </div>
   )
 }
-// Hotspot jouable « clic ici » posé sur la scène SVG.
-function WorldHotspot({x,y,label,onClick,delay}){
-  return(
-    <button onClick={onClick} aria-label={label} style={{position:"absolute",left:x,top:y,transform:"translate(-50%,-50%)",zIndex:3,width:38,height:38,borderRadius:"50%",border:"none",background:"none",cursor:"pointer",padding:0}}>
-      <span className="wf-hot" style={{display:"block",width:14,height:14,margin:"0 auto",borderRadius:"50%",background:"rgba(255,255,255,.95)",animationDelay:(delay||0)+"s"}}/>
-    </button>
-  )
-}
-function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
-  const status=beach.status||"clean"
-  const vm=verdictMeta(status,lang)
-  const hasScore=typeof beach.score==="number"
-  const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
-  const afai=typeof beach.afai==="number"?beach.afai:null
-  const[tip,setTip]=useState(null)
-  const TIPS={
-    sky:{t:_t(lang,"☀️ Le saviez-vous ?","☀️ Did you know?","☀️ ¿Sabías?"),b:_t(lang,"La ceinture de sargasses traverse l'Atlantique sur près de 8 000 km — visible depuis l'espace.","The sargassum belt crosses the Atlantic for nearly 8,000 km — visible from space.","El cinturón de sargazo cruza el Atlántico casi 8.000 km — visible desde el espacio.")},
-    sea:{t:_t(lang,"🛰️ Les algues, vues du ciel","🛰️ Algae from space","🛰️ Algas desde el cielo"),b:(afai!=null?"AFAI "+afai.toFixed(2)+" — ":"")+(status==="clean"?_t(lang,"signal faible : eau claire aujourd'hui.","low signal: clear water today.","señal baja: agua clara hoy."):status==="moderate"?_t(lang,"signal modéré : présence éparse, prudence.","moderate signal: scattered presence.","señal moderada: presencia dispersa."):_t(lang,"signal fort : échouage probable, évite.","strong signal: likely beaching.","señal fuerte: varazón probable."))},
-    veilleur:{t:_t(lang,"Le verdict du Veilleur","The Watchman's verdict","El veredicto del Vigía"),b:vm.verb+" — "+(hasScore?_t(lang,"score "+beach.score+"/100, ","score "+beach.score+"/100, ","puntuación "+beach.score+"/100, "):"")+_t(lang,"d'après le scan satellite du jour, recoupé sur 30 jours.","from today's satellite scan, cross-checked over 30 days.","según el escaneo de hoy, contrastado 30 días.")},
-  }
-  const show=k=>{setTip(TIPS[k]);try{track("sg_world_hotspot",{zone:k,beach_id:beach.id})}catch(_){}}
-  const vtRef=useRef(0)
-  const tapVeilleur=()=>{vtRef.current+=1;if(vtRef.current>=5){vtRef.current=0;setTip({t:_t(lang,"🛰️✨ Tu as réveillé le Veilleur !","🛰️✨ You woke the Watchman!","🛰️✨ ¡Despertaste al Vigía!"),b:_t(lang,"Il te fait un clin d'œil. Reviens chaque jour : la mer change, et lui aussi.","He winks at you. Come back each day: the sea changes, and so does he.","Te guiña. Vuelve cada día: el mar cambia, y él también.")});try{track("sg_world_easter",{egg:"veilleur5",beach_id:beach.id})}catch(_){}}else show("veilleur")}
-  return(
-    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
-      {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
-      <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,9,11,0) 36%,rgba(4,9,11,.34) 64%,rgba(4,9,11,.84) 100%)"}}/>
-      {/* HOTSPOTS jouables — touche la scène, la data se révèle in-world (pas un popup) */}
-      {active&&<><WorldHotspot x="24%" y="19%" label={TIPS.sky.t} onClick={()=>show("sky")} delay={0}/><WorldHotspot x="66%" y="49%" label={TIPS.sea.t} onClick={()=>show("sea")} delay={.9}/></>}
-      <div style={{position:"absolute",left:0,right:0,bottom:0,zIndex:4,padding:"0 22px calc(118px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
-        <div style={{display:"flex",alignItems:"flex-end",gap:12,marginBottom:4}}>
-          {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={64}/>}
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:7,fontSize:13,fontWeight:800,color:vm.color}}><span>{vm.emoji}</span><span>{vm.verb}</span></div>
-            <h2 style={{margin:"2px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.02,letterSpacing:".01em",textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
-            {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
-          </div>
-          <button onClick={tapVeilleur} aria-label={TIPS.veilleur.t} style={{background:"none",border:"none",padding:0,cursor:"pointer"}}><Veilleur mood={mood} size={42}/></button>
-        </div>
-        <WorldAfaiGauge afai={beach.afai} lang={lang}/>
-        <a href={reliabilityHref(lang)} onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
-          style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
-          🛰️ <span>{_t(lang,"Scan satellite • recoupé chaque jour","Satellite scan • cross-checked daily","Escaneo satélite • contrastado a diario")}</span> <span style={{color:"#3fd07f"}}>→</span>
-        </a>
-        <button onClick={()=>{try{track("sg_world_carnet",{beach_id:beach.id,status})}catch(_){}; onCarnet&&onCarnet(beach)}}
-          style={{display:"block",width:"100%",marginTop:14,padding:"14px",borderRadius:16,border:"none",cursor:"pointer",
-          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#07201E",
-          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 24px rgba(0,0,0,.35)"}}>
-          {_t(lang,"Le carnet du Veilleur →","The Watchman's log →","El cuaderno del Vigía →")}
-        </button>
-      </div>
-      {index===0&&!tip&&<div className="wf-hint" aria-hidden="true" style={{position:"absolute",left:0,right:0,bottom:"calc(94px + env(safe-area-inset-bottom))",zIndex:4,textAlign:"center",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:800,letterSpacing:".07em"}}>
-        👆 {_t(lang,"TOUCHE LA SCÈNE · SCROLLE ↓","TAP THE SCENE · SCROLL ↓","TOCA LA ESCENA · DESLIZA ↓")}
-      </div>}
-      {tip&&<button onClick={()=>setTip(null)} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",inset:0,zIndex:8,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(4,9,11,.42)",border:"none",cursor:"pointer"}}>
-        <div className="wf-pop" style={{maxWidth:332,background:"rgba(7,32,30,.95)",border:"1px solid rgba(95,211,201,.42)",borderRadius:18,padding:"18px 20px",textAlign:"left",boxShadow:"0 14px 44px rgba(0,0,0,.55)"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#3fd07f",marginBottom:7}}>{tip.t}</div>
-          <div style={{fontSize:14.5,lineHeight:1.5,color:"#fff"}}>{tip.b}</div>
-          <div style={{marginTop:12,fontSize:11,color:"rgba(255,255,255,.5)"}}>{_t(lang,"Touche pour fermer","Tap to close","Toca para cerrar")}</div>
-        </div>
-      </button>}
-    </section>
-  )
-}
-// Infos SVG INTERCALÉES entre les plages (la découverte, pas que du scroll).
-const WORLD_FACTS=[
-  {emoji:"🌊",t:l=>_t(l,"8 000 km d'algues","8,000 km of algae","8.000 km de algas"),b:l=>_t(l,"La grande ceinture atlantique relie l'Afrique au Brésil. On la suit par satellite, chaque jour.","The great Atlantic belt links Africa to Brazil. We track it by satellite, every day.","El gran cinturón atlántico une África y Brasil. Lo seguimos por satélite, cada día.")},
-  {emoji:"🛰️",t:l=>_t(l,"L'œil dans l'espace","The eye in space","El ojo en el espacio"),b:l=>_t(l,"Le Veilleur lit l'indice AFAI des satellites et le recoupe chaque jour : prévisions vérifiées au satellite.","The Watchman reads the satellites' AFAI index, cross-checked daily against satellite.","El Vigía lee el índice AFAI, contrastado a diario con satélite.")},
-  {emoji:"💨",t:l=>_t(l,"Le H₂S, c'est quoi ?","What is H₂S?","¿Qué es el H₂S?"),b:l=>_t(l,"En se décomposant, les sargasses dégagent du sulfure d'hydrogène — l'odeur d'œuf. On te prévient avant.","Decomposing sargassum releases hydrogen sulfide — the egg smell. We warn you first.","Al descomponerse libera sulfuro de hidrógeno — olor a huevo. Te avisamos antes.")},
-  {emoji:"♻️",t:l=>_t(l,"Une ressource ?","A resource?","¿Un recurso?"),b:l=>_t(l,"Ramassées tôt, les sargasses deviennent engrais, bioplastique ou énergie. Le timing change tout.","Collected early, sargassum becomes fertilizer, bioplastic or energy. Timing is everything.","Recogido a tiempo, el sargazo se vuelve fertilizante o energía. El tiempo lo es todo.")},
-]
-function WorldInfoCard({fact,lang}){
-  return(
-    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",overflow:"hidden",
-      background:"radial-gradient(120% 80% at 50% 20%,#11463E 0%,#0B2230 55%,#04090B 100%)",color:"#fff"}}>
-      <div className="wf-fact" style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 30px calc(120px + env(safe-area-inset-bottom))",maxWidth:540,margin:"0 auto",textAlign:"center"}}>
-        <div style={{fontSize:54,lineHeight:1}}>{fact.emoji}</div>
-        <h2 style={{margin:"16px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:32,lineHeight:1.05}}>{fact.t(lang)}</h2>
-        <p style={{margin:"12px 0 0",fontSize:15,lineHeight:1.55,color:"rgba(255,255,255,.88)"}}>{fact.b(lang)}</p>
-        <div style={{marginTop:22,fontSize:11.5,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.55)"}}>{_t(lang,"CONTINUE ↓","CONTINUE ↓","SIGUE ↓")}</div>
-      </div>
-    </section>
-  )
-}
 // LE DÉFI DU VEILLEUR — mini-jeu intercalé (blueprint « Place Your Bets ») : devine
 // le verdict AVANT le reveal, sur de la data réelle. Récompense + teach-back en boucle,
 // rejouable = passe-temps, nourrit la série 🔥 (raison de revenir / easter egg returning).
@@ -9235,7 +6635,7 @@ function WorldInfoCard({fact,lang}){
 // Sévérité par couleur statique + emoji + texte (jamais de clignotement, WCAG 2.3.1).
 // Une fois/plage/jour (lock localStorage). Série en clés DÉDIÉES (sg_vdj_*) pour ne
 // PAS clobber le jeu scroll (sg_world_streak). Réutilise verdictMeta/ScoreBlob/why.
-function VerdictDuJourCard({beach,lang}){
+export function VerdictDuJourCard({beach,lang}){
   const real=beach.status||"clean"
   const vm=verdictMeta(real,lang)
   const hasScore=typeof beach.score==="number"
@@ -9295,217 +6695,6 @@ function VerdictDuJourCard({beach,lang}){
           <div style={{marginTop:10,fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#9a9a9a)"}}>↓ {_t(lang,"Le détail ci-dessous","Full data below","Detalle abajo")}</div>
         </div>
       )}
-    </div>
-  )
-}
-function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
-  const real=beach.status||"clean"
-  const vm=verdictMeta(real,lang)
-  const hasScore=typeof beach.score==="number"
-  const afai=typeof beach.afai==="number"?beach.afai:null
-  const[guess,setGuess]=useState(null)
-  const correct=guess===real
-  const opts=[
-    {s:"clean",e:"😎",l:_t(lang,"Propre","Clean","Limpia"),c:"#22C55E"},
-    {s:"moderate",e:"😐",l:_t(lang,"Prudence","Careful","Cuidado"),c:"#F59E0B"},
-    {s:"avoid",e:"🚫",l:_t(lang,"Évite","Avoid","Evita"),c:"#E8522A"},
-  ]
-  const pick=s=>{if(guess)return;setGuess(s);try{track("sg_world_guess",{beach_id:beach.id,guess:s,correct:s===real})}catch(_){}; onGuess&&onGuess(s===real)}
-  const why=(afai!=null?"AFAI "+afai.toFixed(2)+" — ":"")+(real==="clean"?_t(lang,"signal satellite faible, eau claire.","low satellite signal, clear water.","señal baja, agua clara."):real==="moderate"?_t(lang,"signal modéré, présence éparse.","moderate signal, scattered.","señal moderada."):_t(lang,"signal fort, échouage probable.","strong signal, likely beaching.","señal fuerte."))
-  return(
-    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
-      {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
-      <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,9,11,.15) 0%,rgba(4,9,11,.2) 40%,rgba(4,9,11,.86) 100%)"}}/>
-      <div style={{position:"absolute",left:0,right:0,bottom:0,zIndex:4,padding:"0 22px calc(120px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
-        <div style={{fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🎯 {_t(lang,"DÉFI DU VEILLEUR","WATCHMAN'S CHALLENGE","DESAFÍO DEL VIGÍA")}{streak>0?" · 🔥 "+streak:""}</div>
-        <h2 style={{margin:"4px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:28,lineHeight:1.04,textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
-        {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
-        {!guess?(
-          <div className="wf-pop">
-            <p style={{margin:"14px 0 10px",fontSize:15,fontWeight:700}}>{_t(lang,"À ton avis, c'est comment aujourd'hui ?","Your call for today?","¿Cómo está hoy?")}</p>
-            <div style={{display:"flex",gap:8}}>
-              {opts.map(o=>(<button key={o.s} onClick={()=>pick(o.s)} style={{flex:1,padding:"13px 6px",borderRadius:14,border:"1px solid "+o.c+"66",cursor:"pointer",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:12.5,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                <span style={{fontSize:24}}>{o.e}</span>{o.l}</button>))}
-            </div>
-          </div>
-        ):(
-          <div className="wf-pop">
-            <div style={{fontSize:16,fontWeight:800,color:correct?"#22C55E":"#FFD884",margin:"14px 0 10px"}}>{correct?_t(lang,"Bravo ! 🎉 +1 série","Nailed it! 🎉 +1 streak","¡Bien! 🎉 +1 racha"):_t(lang,"Raté ! Le vrai verdict :","Missed! The real verdict:","¡Fallaste! El veredicto:")}</div>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
-              <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800,color:vm.color}}>{vm.emoji} {vm.verb}</div><div style={{fontSize:12.5,lineHeight:1.4,color:"rgba(255,255,255,.84)"}}>{why}</div></div>
-            </div>
-            {!correct&&<button onClick={async()=>{try{track("sg_share",{variant:"missed",beach_id:beach.id,guess})}catch(_){};try{await buildShareCard({variant:"missed",guess,streak,lang})}catch(_){}}}
-              style={{display:"block",width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,216,132,.5)",cursor:"pointer",background:"rgba(255,216,132,.1)",color:"#FFD884",fontWeight:800,fontSize:13.5,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
-              🌊 {_t(lang,"La mer m'a eu — tu ferais mieux ?","The sea fooled me — beat it?","El mar me engañó — ¿lo haces mejor?")}</button>}
-            <div style={{marginTop:14,fontSize:12,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.6)"}}>↓ {_t(lang,"PLAGE SUIVANTE","NEXT BEACH","SIGUIENTE")}</div>
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
-// BONUS débloqué par la série (jeu -> conversion) : célébration + une vraie reco
-// premium OFFERTE (la plage la plus propre maintenant = la "reco du jour" payante),
-// puis CTA Premium. Le jeu nourrit le funnel : data -> jeu -> vente. In-world.
-function WorldBonus({level,topBeach,lang,onPremium,onClose}){
-  const vm=topBeach?verdictMeta(topBeach.status||"clean",lang):null
-  return(
-    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Bonus débloqué","Bonus unlocked","Bono")} style={{position:"absolute",inset:0,zIndex:25,display:"flex",alignItems:"center",justifyContent:"center",padding:26,
-      background:"radial-gradient(120% 90% at 50% 28%,rgba(17,70,62,.96),rgba(4,9,11,.97))",animation:"wfBonusIn .4s cubic-bezier(.22,1,.36,1) both"}}>
-      <div className="wf-pop" style={{maxWidth:360,width:"100%",textAlign:"center",color:"#fff"}}>
-        <div style={{fontSize:48,lineHeight:1}}>🎁</div>
-        <div style={{marginTop:6,fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🔥 {_t(lang,"SÉRIE DE","STREAK OF","RACHA DE")} {level} · {_t(lang,"BONUS DÉBLOQUÉ","BONUS UNLOCKED","BONO DESBLOQUEADO")}</div>
-        <h2 style={{margin:"8px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.06}}>{_t(lang,"Tu as l'œil du Veilleur","You've got the Watchman's eye","Tienes el ojo del Vigía")}</h2>
-        {topBeach&&<div style={{margin:"16px 0 0",padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.07)",border:"1px solid rgba(95,211,201,.35)",textAlign:"left"}}>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#3fd07f",textTransform:"uppercase"}}>🎁 {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
-            {typeof topBeach.score==="number"&&<ScoreBlob score={topBeach.score} color={topBeach.scoreColor||vm.color} size={52}/>}
-            <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.emoji} {vm.verb}</div></div>
-          </div>
-          <button onClick={async()=>{try{track("sg_share",{variant:"top",beach_id:topBeach.id,score:topBeach.score})}catch(_){};try{await buildShareCard({variant:"top",beach:topBeach,forecast:topBeach.forecast,lang})}catch(_){}}}
-            style={{display:"block",width:"100%",marginTop:12,padding:"10px",borderRadius:12,border:"1px solid rgba(255,216,132,.5)",cursor:"pointer",background:"rgba(255,216,132,.1)",color:"#FFD884",fontWeight:800,fontSize:13,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
-            ☀️ {_t(lang,"Partager la plage du jour","Share beach of the day","Compartir la playa del día")}</button>
-        </div>}
-        {/* Veille-Card de Série AVANT le CTA premium : le partage frappe au pic
-            émotionnel (le "Wordle de la mer", actif d'acquisition organique). */}
-        <button onClick={async()=>{try{track("sg_share",{variant:"streak",level})}catch(_){}; let best=level;try{best=parseInt(localStorage.getItem("sg_world_best")||String(level))||level}catch(_){}; try{await buildShareCard({variant:"streak",streak:level,best,lang})}catch(_){}}}
-          style={{display:"block",width:"100%",marginTop:16,padding:"14px",borderRadius:16,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",
-          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#3fd07f",background:"rgba(95,211,201,.08)"}}>
-          🔥 {_t(lang,"Partager ma série","Share my streak","Compartir mi racha")}
-        </button>
-        <button onClick={()=>{try{track("sg_world_bonus_premium",{level})}catch(_){}; onPremium&&onPremium("world_bonus")}}
-          style={{display:"block",width:"100%",marginTop:10,padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
-          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15.5,fontWeight:800,color:"#07201E",
-          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 28px rgba(0,0,0,.4)"}}>
-          {_t(lang,"Le Veilleur veille pour toi chaque jour →","The Watchman watches for you daily →","El Vigía vigila para ti cada día →")}
-        </button>
-        <button onClick={onClose} style={{marginTop:14,background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,.7)",fontSize:13,fontWeight:700}}>
-          {_t(lang,"Continuer à jouer","Keep playing","Seguir jugando")}
-        </button>
-      </div>
-    </div>
-  )
-}
-// Le CARNET in-world (remplace le popup du bas) : data profonde + nudge premium, immersif.
-function WorldCarnet({beach,lang,onClose,onPremium}){
-  const status=beach.status||"clean"
-  const vm=verdictMeta(status,lang)
-  const hasScore=typeof beach.score==="number"
-  const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
-  return(
-    <div role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",
-      background:"linear-gradient(180deg,#04090B 0%,#0B2230 50%,#11463E 100%)",animation:"wfCarnetIn .32s cubic-bezier(.22,1,.36,1) both"}}>
-      <button onClick={onClose} style={{position:"sticky",top:"calc(12px + env(safe-area-inset-top))",marginLeft:14,zIndex:3,padding:"8px 14px",borderRadius:999,
-        background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",backdropFilter:"blur(8px)"}}>← {_t(lang,"Retour","Back","Volver")}</button>
-      <div style={{padding:"8px 22px calc(60px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",color:"#fff"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:6}}>
-          <Veilleur mood={mood} size={58}/>
-          <div style={{flex:1,minWidth:0}}>
-            <h2 style={{margin:0,fontFamily:"'Anton',system-ui,sans-serif",fontSize:28,lineHeight:1.04}}>{beach.name}</h2>
-            {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.78)"}}>{beach.commune}</div>}
-          </div>
-          {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
-        </div>
-        <div style={{marginTop:14,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)"}}>
-          <div style={{fontSize:12,fontWeight:800,letterSpacing:".06em",color:vm.color,textTransform:"uppercase"}}>{_t(lang,"Aujourd'hui · gratuit","Today · free","Hoy · gratis")}</div>
-          <div style={{marginTop:6,fontSize:16,fontWeight:800}}>{vm.emoji} {vm.verb}</div>
-          <WorldAfaiGauge afai={beach.afai} lang={lang}/>
-        </div>
-        <button onClick={()=>{try{track("sg_world_carnet_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("world_carnet")}}
-          style={{display:"block",width:"100%",marginTop:14,padding:"16px",borderRadius:16,border:"1px solid rgba(255,216,132,.4)",cursor:"pointer",textAlign:"left",
-          background:"linear-gradient(135deg,rgba(255,216,132,.14),rgba(242,176,94,.08))",color:"#fff"}}>
-          <div style={{fontSize:12,fontWeight:800,letterSpacing:".06em",color:"#FFD884"}}>🔒 {_t(lang,"AVEC LE VEILLEUR","WITH THE WATCHMAN","CON EL VIGÍA")}</div>
-          <div style={{marginTop:6,fontSize:15,fontWeight:700,lineHeight:1.4}}>{_t(lang,"Prévision 14 jours, historique, brief matin & alertes sur cette plage →","14-day forecast, history, morning brief & alerts for this beach →","Pronóstico 14 días, historial, resumen y alertas →")}</div>
-        </button>
-        <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"world_carnet"})}catch(_){}}}
-          style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:16,fontSize:12,fontWeight:700,color:"rgba(255,255,255,.82)",textDecoration:"none"}}>
-          🛰️ {_t(lang,"Comment on prévoit : notre fiabilité →","How we forecast: our reliability →","Cómo pronosticamos: nuestra fiabilidad →")}
-        </a>
-      </div>
-    </div>
-  )
-}
-function WorldPremiumCard({lang,onPremium,onRestart}){
-  return(
-    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",overflow:"hidden",
-      background:"linear-gradient(180deg,#04090B 0%,#0B2230 46%,#155A5A 100%)",color:"#fff"}}>
-      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px calc(110px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",textAlign:"center"}}>
-        <Veilleur mood="serein" size={74}/>
-        <h2 style={{margin:"16px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:34,lineHeight:1.05}}>{_t(lang,"Va plus loin que le verdict","Beyond the verdict","Más allá del veredicto")}</h2>
-        <p style={{margin:"10px 0 0",fontSize:14.5,lineHeight:1.5,color:"rgba(255,255,255,.86)"}}>
-          {_t(lang,"Prévision 14 jours, historique, brief matin et alertes sur tes plages favorites — toute notre science, pour toi.","14-day forecast, history, morning brief and alerts on your favourite beaches — all our science, for you.","Pronóstico 14 días, historial, resumen matutino y alertas en tus playas favoritas — toda nuestra ciencia, para ti.")}
-        </p>
-        <button onClick={()=>{try{track("sg_world_premium",{})}catch(_){}; onPremium&&onPremium("world")}}
-          style={{marginTop:20,padding:"14px 26px",borderRadius:16,border:"none",cursor:"pointer",
-          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#07201E",
-          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 28px rgba(0,0,0,.4)"}}>
-          {_t(lang,"Activer le Veilleur →","Activate the Watchman →","Activar el Vigía →")}
-        </button>
-        <button onClick={onRestart} style={{marginTop:16,background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,.72)",fontSize:13,fontWeight:700}}>
-          ↻ {_t(lang,"Revoir les plages","See beaches again","Ver playas otra vez")}
-        </button>
-      </div>
-    </section>
-  )
-}
-function WorldFeed({beaches,lang,onPremium,onClose,island}){
-  const scrollRef=useRef(null)
-  const[active,setActive]=useState(0)
-  const[carnet,setCarnet]=useState(null)
-  // Série 🔥 — passe-temps + raison de revenir (persistée, easter egg returning).
-  const[streak,setStreak]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_streak")||"0")||0}catch(_){return 0}})
-  const[best,setBest]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_best")||"0")||0}catch(_){return 0}})
-  const[bonus,setBonus]=useState(null) // palier de série atteint -> bonus débloqué (jeu -> conversion)
-  const onGuess=correct=>{const ns=correct?streak+1:0;setStreak(ns);try{localStorage.setItem("sg_world_streak",String(ns))}catch(_){};if(ns>best){setBest(ns);try{localStorage.setItem("sg_world_best",String(ns))}catch(_){}};if(correct&&(ns===3||ns===7||ns===14||ns===30))setBonus(ns);try{track("sg_world_guess_result",{correct,streak:ns})}catch(_){}}
-  const phaseGrad=useMemo(()=>{
-    let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
-    const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
-    return "linear-gradient(180deg,"+t.sky[0]+","+t.sky[2]+" 60%,"+t.seaB+")"
-  },[])
-  const list=useMemo(()=>(beaches||[]).filter(b=>b&&b.id&&b.name&&(!island||b.island===island)).slice(0,16),[beaches,island])
-  // La meilleure plage maintenant (data réelle) = la reco premium offerte par le bonus.
-  const topBeach=useMemo(()=>{const c=list.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,b)=>b.score-a.score);return c[0]||list.slice().sort((a,b)=>(b.score||0)-(a.score||0))[0]||null},[list])
-  // Items intercalés : 1 carte science toutes les 4 plages (info entre les plages).
-  const items=useMemo(()=>{
-    const out=[];let fi=0
-    list.forEach((b,i)=>{out.push({type:"beach",beach:b,bi:i})
-      if((i+1)%4===0&&i<list.length-1){out.push({type:"info",fact:WORLD_FACTS[fi%WORLD_FACTS.length]});fi++}
-      if((i+1)%5===0&&list.length>3){out.push({type:"challenge",beach:list[(i+3)%list.length]})}
-    })
-    out.push({type:"premium"})
-    return out
-  },[list])
-  useEffect(()=>{
-    const root=scrollRef.current;if(!root)return
-    const io=new IntersectionObserver(es=>{
-      es.forEach(e=>{if(e.isIntersecting){const i=parseInt(e.target.getAttribute("data-wf-card"));if(!isNaN(i))setActive(i)}})
-    },{root,threshold:0.55})
-    root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
-    return()=>io.disconnect()
-  },[items.length])
-  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line
-  const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
-  return(
-    <div role="region" aria-label={_t(lang,"Monde Sargasses","Sargassum World","Mundo Sargazo")} style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
-      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out 1 both}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out 1 both}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out 1 both}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes wfBonusIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
-        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
-      {streak>0&&<div aria-label={_t(lang,"Série","Streak","Racha")} style={{position:"absolute",top:"calc(15px + env(safe-area-inset-top))",left:14,zIndex:30,padding:"6px 12px",borderRadius:999,
-        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,216,132,.45)",color:"#FFD884",fontSize:12.5,fontWeight:800,backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>🔥 {streak}{best>streak?" · ⭐"+best:""}</div>}
-      <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",overflowX:"hidden",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
-        {items.map((it,idx)=>(
-          <div key={idx} data-wf-card={idx}>
-            {it.type==="beach"&&<WorldCard beach={it.beach} index={it.bi} active={Math.abs(idx-active)<=1} lang={lang} onCarnet={setCarnet} phaseGrad={phaseGrad}/>}
-            {it.type==="info"&&<WorldInfoCard fact={it.fact} lang={lang}/>}
-            {it.type==="challenge"&&<WorldChallengeCard beach={it.beach} active={Math.abs(idx-active)<=1} lang={lang} phaseGrad={phaseGrad} onGuess={onGuess} streak={streak}/>}
-            {it.type==="premium"&&<WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/>}
-          </div>
-        ))}
-      </div>
-      {carnet&&<WorldCarnet beach={carnet} lang={lang} onClose={()=>setCarnet(null)} onPremium={onPremium}/>}
-      {bonus&&<WorldBonus level={bonus} topBeach={topBeach} lang={lang} onPremium={onPremium} onClose={()=>setBonus(null)}/>}
     </div>
   )
 }
@@ -11666,6 +8855,7 @@ export default function App(){
             exiting={heroExiting}/>
           </Suspense></ErrBound>
         ):landingFunnel==="game"?(
+          <ErrBound><Suspense fallback={null}>
           <GameFunnel beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}
@@ -11682,7 +8872,9 @@ export default function App(){
             onFav={b=>toggleFav(b.id)}
             onPremium={src=>{dismissHero("funnel");openPremium(src||"funnel_alert")}}
             exiting={heroExiting}/>
+          </Suspense></ErrBound>
         ):(
+          <ErrBound><Suspense fallback={null}>
           <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
             topBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null
                 &&imageMap?.[b.id]&&!String(imageMap[b.id]).startsWith("sat-"))
@@ -11708,6 +8900,7 @@ export default function App(){
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
             }}
             exiting={heroExiting}/>
+          </Suspense></ErrBound>
         ))}
 
         {/* PREVISIONS LANDING — /previsions/ A/B `prev_az` (golden-hour + ForecastChart).
@@ -12012,6 +9205,7 @@ export default function App(){
           const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
           const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
           const _fallback=(
+            <Suspense fallback={null}>
             <BeachSheet beach={selectedBeach} onClose={closeSheet}
               favorites={favorites} onToggleFav={toggleFav} lang={lang}
               allBeaches={allBeaches} imageMap={imageMap}
@@ -12019,6 +9213,7 @@ export default function App(){
               historyData={historyData} sargData={sargData}
               dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}
               onRequestGeo={requestGeo}/>
+            </Suspense>
           )
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
@@ -12144,9 +9339,10 @@ export default function App(){
             </svg>
           </button>
         )}
-        {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
+        {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
 
         {showStation && stationSlug && (
+          <ErrBound><Suspense fallback={null}>
           <StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}
             onCTA={()=>{
@@ -12157,6 +9353,7 @@ export default function App(){
               else if(stationSlug.includes("nettoyer")){ setShowSolutions(true) }
               else { setView("map") }
             }}/>
+          </Suspense></ErrBound>
         )}
 
         {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
@@ -12174,8 +9371,8 @@ export default function App(){
             </svg>
           </button>
         )}
-        {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
-          onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/>}
+        {showSolutions&&<ErrBound><Suspense fallback={null}><SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
+          onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/></Suspense></ErrBound>}
 
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
@@ -12227,8 +9424,8 @@ export default function App(){
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
-        {showWorld&&<WorldFeed beaches={allBeaches} island={island} lang={lang}
-          onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
+        {showWorld&&<ErrBound><Suspense fallback={null}><WorldFeed beaches={allBeaches} island={island} lang={lang}
+          onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/></Suspense></ErrBound>}
         {/* FAB 🌊 World-feed RETIRÉ (IA unifiée 14/06) : l'Archipel 🧭 le supersède
             (carte + visite scroll). WorldFeed reste accessible en QA via ?world=1. */}
 
