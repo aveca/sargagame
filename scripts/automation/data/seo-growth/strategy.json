@@ -1,0 +1,160 @@
+{
+  "thesis": "The FR network has already proven the playbook works: sargasses-martinique.com ranks pos 1.7 on \"sargasse martinique en temps réel\" and converts at 21.7% CTR on its homepage (a +15pt lift over the position-expected curve) — that is authority and intent-match, not luck. The 10× is NOT hiding in the mature FR head terms; it is in the EN/ES sites, which sit in striking-distance purgatory (Florida pos 21.7, Punta Cana pos 13.4, Cancún home pos 51 but its /sargazo-salud-riesgos/ already at pos 8.1 with zero clicks captured) against a Spanish \"sargazo\" demand pool of 202 queries that is almost entirely un-clicked. The strategy is therefore three compounding levers, all GitHub-Actions-automated and honesty-bound: (1) drag EN/ES head + long-tail from pos 15-50 into the top 3 by porting the exact page archetypes that already win in FR, (2) flood untapped per-beach and intent long-tail with programmatic pages built from the live region JSON (data we already publish, so zero fabrication), and (3) transfer the FR sites' earned authority to the EN/ES siblings via a deliberate cross-network link map plus fresh backlinks. \"Le Veilleur\" — measured, never guessed, with published backtest accuracy and per-regime reliability — is the trust moat that lets these pages out-rank institutional NOAA/USF pages and blog spam on the exact \"is there sargassum today\" intent.",
+  "perSite": [
+    {
+      "site": "sargasses-martinique.com (FR, mature anchor)",
+      "currentState": "Dominant and converting. Home pos 4.7 with 21.7% CTR (+15pt over expected) = top authority node of the network. 'sargasse martinique en temps réel' pos 1.7 (344 clicks/678 impr), 'sargasse martinique aujourd'hui' pos 2.7 (252 clicks), 'meteo sargasse martinique' pos 2.7. 75 SEO URLs, EN home already pos 7.6 at 15.7% CTR. Mostly out of opportunity-room on head terms (winCount 8, opportunityCount 0).",
+      "bigMoves": [
+        "Use it as the authority donor: add contextual in-content links FR home + high-traffic pages → /en/ and the EN/ES sibling domains (sargassummiami.com etc.) to pass PageRank and intent relevance.",
+        "Defend and deepen long-tail: it already has per-commune pages (sargasses-le-diamant, sargasses-sainte-anne) — extend the same template to every remaining MQ commune/beach not yet covered (programmatic, capped 3/run).",
+        "Push 'sargasse martinique' (pos 3.5) and 'meteo sargasse martinique' (pos 2.7) to pos 1 via title/intro freshness (live date + today's clean-beach count from pipeline) and internal links from the winning real-time page.",
+        "Harvest the EN home (pos 7.6, 15.7% CTR) — it proves English intent exists even on the FR domain; route that EN equity toward the dedicated EN sites."
+      ],
+      "targetKeywords": [
+        "sargasse martinique (pos 3.5 → 1)",
+        "meteo sargasse martinique (2.7 → 1)",
+        "sargasse [commune] martinique (long-tail, new pages)",
+        "carte sargasses martinique temps réel"
+      ]
+    },
+    {
+      "site": "sargasses-guadeloupe.com (FR, mature anchor)",
+      "currentState": "Strong but under-instrumented in our snapshot (GSC query detail empty in last snapshot, yet brief shows 'sargasses guadeloupe' pos 4.6 / 5029 impr and many head terms pos 1-4). Has its own commune pages (deshaies, gosier, saint-francois, bouillante) and EN/best-beaches-guadeloupe.",
+      "bigMoves": [
+        "Fix tracking/coverage first (empty query map in snapshot suggests a GSC property or sitemap gap) so we can target precisely.",
+        "Mirror MQ's authority-donor role toward EN/ES siblings.",
+        "Complete commune/beach long-tail coverage for Basse-Terre + Grande-Terre beaches not yet paged.",
+        "Lift 'sargasses guadeloupe' from pos 4.6 toward top 3 with the same freshness + internal-link recipe that took MQ to pos 1.7."
+      ],
+      "targetKeywords": [
+        "sargasses guadeloupe (4.6 → top 3)",
+        "sargasses [commune] guadeloupe (long-tail)",
+        "meilleures plages guadeloupe sans sargasses",
+        "meteo sargasses guadeloupe"
+      ]
+    },
+    {
+      "site": "sargassummiami.com (EN, Florida — nascent, the clearest 10× lane)",
+      "currentState": "Striking-distance purgatory: home pos 21.7, only 47 impr / 3 clicks. Effectively no indexed depth (query map empty). EN primary, ES secondary. 12 beaches in region JSON (Miami Beach, South Beach, Fort Lauderdale, Key West) but 0 programmatic pages drafted. Competes only with institutional NOAA SIR / USF and a review blog — beatable on 'today' intent.",
+      "bigMoves": [
+        "Port the FR-winning archetypes to EN: 'sargassum-season-florida', 'best-beaches-no-sargassum-florida', 'sargassum-florida-this-week' (routes already defined in JSON) — ship them as real pages, not just route stubs.",
+        "Programmatic per-beach pages for all 12 FL beaches: 'sargassum miami beach today', 'sargassum south beach', 'sargassum key west today' — each fed live Beach Score + 7-day forecast (real data).",
+        "Receive authority links from FR anchors + new US backlinks (travel/Reddit/forum/Florida tourism).",
+        "Title/meta freshness with live date so 'today' queries match exactly — the single highest CTR-lever at this intent."
+      ],
+      "targetKeywords": [
+        "sargassum miami today / sargassum florida today (21.7 → top 3)",
+        "sargassum south beach / key west / fort lauderdale today (new long-tail)",
+        "is there seaweed in miami right now",
+        "best beaches in florida without seaweed"
+      ]
+    },
+    {
+      "site": "sargassumpuntacana.com (EN+ES, Dominican Republic — nascent)",
+      "currentState": "Home pos 13.4, 133 impr / 3 clicks — already closer to the fold than Miami, with more impressions. EN primary, ES secondary. 12 beaches (Bávaro, Macao, Cap Cana). 0 programmatic pages. High commercial intent (resort travelers checking before booking).",
+      "bigMoves": [
+        "Bilingual (EN+ES) per-beach pages: Bávaro / Macao / Cap Cana 'today' in both languages — DR demand splits EN tourist + ES local/regional.",
+        "Ship the three archetype routes (season / best-beaches / this-week) in EN and ES.",
+        "Lean into resort-name long-tail ('sargassum Bavaro resorts', 'Punta Cana beach today') where booking intent is highest — strongest PASS-conversion lane.",
+        "Pull authority from FR anchors + DR/Caribbean travel backlinks; pos 13.4 → top 3 is a realistic near-term win given existing impressions."
+      ],
+      "targetKeywords": [
+        "sargassum punta cana today (13.4 → top 3)",
+        "sargazo punta cana hoy (ES)",
+        "sargassum bavaro / macao / cap cana today",
+        "punta cana beach conditions today"
+      ]
+    },
+    {
+      "site": "sargassumcancun.com (ES-primary, Riviera Maya/Cancún — biggest demand pool)",
+      "currentState": "Home pos 51.3 (deep) BUT /sargazo-salud-riesgos/ already pos 8.1 with 0 clicks captured — proof the ES info-intent ranks; we just have almost no pages and no CTR capture. ES primary, EN secondary. Sits on the 202-query 'sargazo' pool that is overwhelmingly un-clicked. Routes defined (temporada-sargazo, mejores-playas-sin-sargazo, sargazo-rivieramaya-esta-semana).",
+      "bigMoves": [
+        "This is the single biggest untapped pool — go wide in Spanish: programmatic 'sargazo [playa] hoy' for Cancún, Playa del Carmen, Tulum, Riviera Maya beaches, each on live Beach Score + forecast.",
+        "Capture the already-ranking info cluster: build out 'sargazo salud / riesgos / pronóstico / temporada' pages (the salud page proves the cluster ranks at pos 8) and add a strong CTA + internal links to convert the 0 clicks.",
+        "Fix the home (pos 51) with the FR freshness recipe + internal links from the ranking salud page — the salud page is currently an orphan winner.",
+        "ES backlinks (Mexican travel blogs, forums, tripadvisor-style) + FR authority transfer."
+      ],
+      "targetKeywords": [
+        "sargazo cancun hoy (51 → top 5)",
+        "sargazo playa del carmen / tulum hoy (long-tail, new)",
+        "mejores playas sin sargazo riviera maya",
+        "pronóstico sargazo / temporada sargazo 2026",
+        "sargazo riviera maya esta semana"
+      ]
+    }
+  ],
+  "roadmap90d": [
+    {
+      "phase": "Phase 0 — Instrument & unblock (foundation, automated)",
+      "weeks": "Week 1",
+      "actions": [
+        "Fix the GP + EN/ES GSC coverage gaps (empty query maps in snapshot = missing property/sitemap submission) so weekly-seo-automation tracks every site's queries.",
+        "Confirm sitemaps for all 5 domains list EN/ES routes + every beach page; submit via existing seo-submit-urls.cjs + submit-indexnow.cjs.",
+        "Wire the cross-site authority link map (already designed) into the FR templates and the region JSON link blocks — ship as a single build.",
+        "Turn on live-date/clean-count freshness titles for EN/ES homes (freshTitles already true; verify pipeline date injection on each domain).",
+        "De-orphan sargassumcancun /sargazo-salud-riesgos/ (pos 8.1, 0 clicks): add internal links + CTA, it's a free striking-distance win."
+      ]
+    },
+    {
+      "phase": "Phase 1 — EN/ES striking-distance lift (port the FR archetypes)",
+      "weeks": "Weeks 2-5",
+      "actions": [
+        "Ship the 3 archetype pages (season / best-beaches / this-week) on Florida, Punta Cana, Cancún in their primary + secondary languages — routes already exist in region JSON, just need real content via the existing generator.",
+        "Apply MQ's exact freshness + internal-link recipe to EN/ES homes to move Florida 21.7→top10, Punta Cana 13.4→top5, Cancún 51→top15.",
+        "Build out the ES 'sargazo' info cluster on Cancún (salud/riesgos/pronóstico/temporada) — the cluster already ranks pos 8, expand it to own the 202-query pool.",
+        "Start backlink outreach (auto-outreach.cjs / weekly-outreach.yml) on the FR/EN/ES prospect lists; prioritize DR + Mexico travel sites for the highest-intent sites."
+      ]
+    },
+    {
+      "phase": "Phase 2 — Programmatic long-tail flood (per-beach 'today' pages)",
+      "weeks": "Weeks 5-9",
+      "actions": [
+        "Generate per-beach 'sargassum [beach] today' / 'sargazo [playa] hoy' pages for all 12 beaches × each EN/ES region, fed by live Beach Score + status + 7-day forecast (real data, honesty-safe). Lift the generator cap from 3/run on a temporary scheduled ramp to clear the backlog safely, then return to cap.",
+        "Complete FR commune/beach long-tail coverage for MQ + GP beaches not yet paged (defend the moat, capture the tail).",
+        "Each new page internally links up to its region home + archetype pages and out to a sibling-language version (hreflang) — compounding internal authority.",
+        "Run seo-cannibalization.cjs + seo-orphan-detector.cjs every cycle to keep the flood clean (no two pages fighting the same query, no orphans)."
+      ]
+    },
+    {
+      "phase": "Phase 3 — Authority compounding & conversion harvest",
+      "weeks": "Weeks 9-13",
+      "actions": [
+        "Second backlink wave targeting the now-ranking EN/ES pages (links land better once a page is already top-20).",
+        "CTR optimization pass via seo-ctr-diagnostic.cjs on every page that reached top-10 but under-converts vs the AWR curve — replicate the +15pt MQ home lift.",
+        "Convert captured ES/EN traffic: ensure the PASS CTA + 'Le Veilleur' trust framing is on every long-tail page (the 0-click salud page is the cautionary tale).",
+        "Lock winning A/B title variants; freeze the freshness + link recipe into the weekly automation so growth keeps compounding without manual work."
+      ]
+    }
+  ],
+  "x10Model": "Honest, math-backed. We separate the three compounding sources and state assumptions; 10× is a network-wide multiple on the EN/ES sites, NOT on the already-mature FR head terms.\n\nASSUMPTIONS (stated): CTR-by-position uses the AWR-style curve already used in seo-ctr-diagnostic (pos ~13-21 ≈ 0.5-2% CTR; pos 8 ≈ ~3-4%; pos 3 ≈ ~10-13%; pos 1-2 ≈ ~20-30%, consistent with our own MQ home at 21.7% pos 4.7). We do NOT assume we beat the curve on new pages (the MQ +15pt lift is upside we don't bank).\n\nLEVER 1 — Striking-distance lift on existing EN/ES pages. Florida home pos 21.7 (47 impr, 3 clicks ≈ 6% — anomalously high on tiny n, treat as noise). Realistic: these sites collectively have a few hundred impressions today at ~1% effective CTR. Moving Florida 21.7→3, Punta Cana 13.4→3, Cancún 51→~10 takes per-page CTR from ~0.5-1% to ~5-12%, i.e. a 6-12× lift on the SAME impressions — before any new impression supply. On current low base this is large in % but small in absolute clicks; it's the ignition, not the engine.\n\nLEVER 2 — New impression supply from programmatic long-tail (the real engine). The ES 'sargazo' pool alone = 202 queries almost entirely un-clicked. Per-beach × intent pages (12 beaches × 3 EN/ES regions × ~4 intent templates 'today/season/best/this-week' + the ES sargazo info cluster) = on the order of 150-300 new ranked pages. If even 60% reach top-10 (credible: thin competition is institutional NOAA/USF + blogs, and we have unique live data + freshness) at a conservative 50-200 impr/page/mo and ~4-6% CTR, that is roughly 150 pages × ~120 impr × ~5% ≈ ~900+ incremental clicks/mo on top of a current EN/ES base in the low tens. That alone is the bulk of a 10×.\n\nLEVER 3 — Authority transfer + backlinks. FR anchors convert at proven top-3 authority (MQ home 21.7% CTR). Internal links from FR home/winning pages + sibling hreflang links raise the EN/ES sites' baseline rankings by an estimated few positions network-wide, which in the CTR curve's steep zone (pos 8→4) roughly doubles CTR again. Backlinks accelerate indexation and defend the gains. Multiplicatively: Lever 1 (6-12× on existing) compounds with Lever 2 (the new-page volume that dwarfs today's base) and Lever 3 (a ~1.5-2× ranking-driven CTR boost) → a network-level ~10× on EN/ES organic clicks within ~90 days is the central, defensible estimate. FR sites add only incremental tail gains (~10-20%) since they're already near-saturated.\n\nWHAT MAKES IT FALL SHORT (honest): (a) indexation lag — Google may take weeks to crawl/rank the flood, pushing the 10× past 90 days; (b) thin programmatic pages getting filtered as low-value if the live-data differentiation isn't visibly strong per page (mitigated by per-beach Score + forecast = genuinely unique content); (c) seasonality — sargassum demand is peak Apr-Sep; launching into low season shrinks the pool; (d) cannibalization if 'today' and 'this-week' pages fight each other (mitigated by the cannibalization scanner); (e) the small-n noise in current numbers means today's base is uncertain, so the multiple is on a soft denominator. Realistic floor if 2-3 of these bite: ~3-5×. Realistic ceiling if we also beat the CTR curve like MQ does: >10×.",
+  "kpis": [
+    "Network organic clicks/mo (GSC) — segmented FR vs EN vs ES; primary 10× target lives on EN+ES.",
+    "Per-site avg position on tracked head terms (GSC, via seo-position-tracker.cjs): Florida 21.7→≤3, Punta Cana 13.4→≤3, Cancún 51→≤10, sargazo-salud 8.1→≤5.",
+    "Count of EN/ES queries with ≥1 click/mo (today the ES 'sargazo' 202-pool is ~all zero-click — track the un-zeroing).",
+    "Indexed page count per domain (GSC Coverage) — track the programmatic flood actually getting indexed, not just built.",
+    "CTR vs expected-CTR-curve gap per top-10 page (seo-ctr-diagnostic.cjs) — replicate MQ home's +15pt lift; flag pages ranking but under-clicking.",
+    "Striking-distance page count (pos 4-15) moving into top-3 week over week.",
+    "Long-tail clicks share: % of clicks from queries outside the top-10 head terms (proves the tail is firing).",
+    "Organic → PASS conversion by site (GA4 + Mollie) — traffic that doesn't convert is vanity; watch EN/ES especially.",
+    "Orphan + cannibalization counts (must trend to ~0 as volume grows)."
+  ],
+  "risks": [
+    "Programmatic-content filtering: hundreds of templated pages risk being seen as thin/spam. Mitigation: every page carries genuinely unique live data (per-beach Score, status, 7-day forecast) and the honesty/backtest framing — keep pages data-rich, never boilerplate; ramp the generator gradually, watch indexation.",
+    "Seasonality: sargassum search demand peaks Apr-Sep; a flood shipped in low season ranks but earns few clicks until the season returns — the 10× may realize on a lag.",
+    "Authority dilution: aggressively linking FR anchors out to siblings can leak too much equity or look like a link scheme if over-done. Mitigation: contextual, relevant, capped link counts; favor topical relevance over volume.",
+    "Honesty doctrine vs scale pressure: as pages multiply, the temptation to fabricate testimonials/global accuracy % grows. Hard rule (already in the codebase): per-regime reliability + published backtest only, never invented numbers — a single fake number can torch the trust moat that lets us beat NOAA.",
+    "GSC small-n noise: current EN/ES baselines (3-47 impr) are statistically thin, so the 10× denominator is soft — measure on rolling 28-90d windows, not single snapshots.",
+    "GitHub Actions quota: weekly-seo-automation was already cut Mon+Thu→Mon for budget; a programmatic ramp adds runtime. Mitigation: batch the flood into a few dispatch runs, then return to cadence; reuse existing concurrency guards.",
+    "Backlink outreach deliverability/reputation (same shared-domain email concerns flagged for cold-lead reengage) — keep outreach volume sane and personalized.",
+    "Cannibalization between 'today' / 'this-week' / 'season' templates on the same beach — must run seo-cannibalization.cjs every cycle and consolidate."
+  ],
+  "quickWins": [
+    "De-orphan sargassumcancun.com/sargazo-salud-riesgos/ — it already ranks pos 8.1 with ZERO clicks captured; add internal links + a clear CTA + freshness title. Free top-10 traffic the moment it's wired.",
+    "Turn on live-date + today's-clean-beach-count in the title/meta of the 3 EN/ES homes (freshTitles already true) so 'today/hoy' queries get an exact-match snippet — the single biggest CTR lever at this intent.",
+    "Ship the 3 already-defined archetype routes (season / best-beaches / this-week) as real pages on Florida, Punta Cana, Cancún — the routes exist in region JSON but the pages are stubs; this is content the generator can produce immediately.",
+    "Wire the pre-designed cross-site authority link map into the FR templates → push MQ/GP equity to the EN/ES siblings in one build.",
+    "Submit every EN/ES + beach URL via existing seo-submit-urls.cjs + submit-indexnow.cjs to force fast (re)indexation.",
+    "Fix the GP / EN-ES GSC coverage gap (empty query maps) so the weekly automation can actually target — you can't optimize what you can't see.",
+    "Generate the first batch of high-intent per-beach pages for the 3 ES/EN flagship beaches each (Miami Beach, Bávaro, Cancún/Playa del Carmen) within the current 3/run generator cap — start the long-tail engine immediately."
+  ]
+}

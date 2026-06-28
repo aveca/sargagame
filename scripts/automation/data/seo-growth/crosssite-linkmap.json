@@ -1,0 +1,296 @@
+{
+  "crossSite": [
+    {
+      "from": "sargasses-martinique.com/saison-sargasses-martinique/",
+      "to": "sargassummiami.com/sargassum-season-florida/",
+      "context": "FR season hub → EN season hub. Topical bridge: a Caribbean traveler reading about the MQ season is the exact audience for the US destinations. Place inside a contextual 'Voyage ailleurs aux Antilles ?' module at the foot of the season narrative (in-content, not footer), sculpting the strongest FR authority page toward the nascent EN season hub. dofollow.",
+      "anchorExamples": [
+        "Sargasses en Floride : la saison côté Atlantique",
+        "Vous voyagez aux Antilles ? La saison des sargasses à Miami",
+        "Et de l'autre côté : la saison à Miami (Floride)"
+      ]
+    },
+    {
+      "from": "sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+      "to": "sargassumpuntacana.com/sargassum-season-punta-cana/",
+      "context": "FR season hub → EN season hub. Same Caribbean-network bridge from the GP authority page toward Punta Cana's season hub. Contextual module 'Voyage aux Antilles ?'",
+      "anchorExamples": [
+        "La saison des sargasses à Punta Cana (Rép. dominicaine)",
+        "Vous partez en République dominicaine ? Suivez la saison à Punta Cana",
+        "Punta Cana : quand arrivent les sargasses"
+      ]
+    },
+    {
+      "from": "sargasses-martinique.com/saison-sargasses-martinique/",
+      "to": "sargassumcancun.com/es/temporada-sargazo-rivieramaya/",
+      "context": "FR season hub → ES season hub (Cancún). Caribbean bridge toward the Spanish-first nascent domain; useful for Francophone travelers heading to the Riviera Maya and signals topical relatedness FR→ES. Contextual module.",
+      "anchorExamples": [
+        "La saison du sargazo à Cancún (Riviera Maya)",
+        "Cancún / Riviera Maya : la saison côté Caraïbe mexicaine",
+        "Vous filez au Mexique ? Le sargazo à Cancún"
+      ]
+    },
+    {
+      "from": "sargasses-martinique.com/",
+      "to": "sargassummiami.com/",
+      "context": "FR homepage → EN homepage via a persistent but lightweight 'Le Veilleur veille ailleurs / The Watcher also watches' network module (shared component, max 3 sibling links, one per region cluster). Homepage→homepage is the backbone authority transfer; keep it a single curated module, not a link dump.",
+      "anchorExamples": [
+        "Caraïbe anglophone : Miami & la Floride",
+        "Le Veilleur en Floride",
+        "Sargassum in Florida (Miami)"
+      ]
+    },
+    {
+      "from": "sargasses-guadeloupe.com/",
+      "to": "sargassumpuntacana.com/",
+      "context": "FR homepage → EN homepage, same curated network module. GP pairs naturally with Punta Cana (close Caribbean travel corridor).",
+      "anchorExamples": [
+        "Punta Cana & République dominicaine",
+        "Le Veilleur à Punta Cana",
+        "Sargassum in Punta Cana"
+      ]
+    },
+    {
+      "from": "sargasses-martinique.com/",
+      "to": "sargassumcancun.com/es/",
+      "context": "FR homepage → ES homepage (Cancún) via the network module. Completes the 3-region curated set FR→{EN Miami, EN PuntaCana, ES Cancún}.",
+      "anchorExamples": [
+        "Cancún & Riviera Maya",
+        "El Vigía en Cancún",
+        "Sargazo en Cancún"
+      ]
+    },
+    {
+      "from": "sargassummiami.com/sargassum-health-risks/",
+      "to": "sargassumpuntacana.com/sargassum-health-risks/",
+      "context": "EN safety page → EN safety page. Topical safety bridge between EN siblings: health-risk content is destination-agnostic, so cross-linking the two EN safety pages builds a tight EN safety cluster and shares the limited EN authority laterally. Contextual 'Traveling elsewhere in the Caribbean?' module.",
+      "anchorExamples": [
+        "Sargassum safety in Punta Cana",
+        "Heading to the Dominican Republic? Same seaweed, same precautions",
+        "Punta Cana: is the sargassum dangerous?"
+      ]
+    },
+    {
+      "from": "sargassummiami.com/sargassum-season-florida/",
+      "to": "sargassumcancun.com/sargassum-season-cancun/",
+      "context": "EN season hub → EN season hub (Cancún's EN set via rivieramaya.en.json). Lateral EN authority sharing between season hubs across the Gulf/Caribbean; a Florida traveler comparing destinations is high-intent for Cancún.",
+      "anchorExamples": [
+        "Sargassum season in Cancún & the Riviera Maya",
+        "Comparing the Gulf side: Cancún's sargassum season",
+        "Also weighing Mexico? Cancún season guide"
+      ]
+    },
+    {
+      "from": "sargassumpuntacana.com/sargassum-season-punta-cana/",
+      "to": "sargassummiami.com/sargassum-season-florida/",
+      "context": "EN season hub → EN season hub. Closes the EN season triangle (Miami↔PuntaCana↔Cancún) so each nascent EN page has sibling inbound links and a shared topical cluster.",
+      "anchorExamples": [
+        "Sargassum season in Florida (Miami & the Keys)",
+        "Comparing with Florida? Here's Miami's season",
+        "Also looking at Florida? Season guide"
+      ]
+    },
+    {
+      "from": "sargassummiami.com/es/pronostico-sargazo/",
+      "to": "sargassumcancun.com/es/pronostico-sargazo/",
+      "context": "ES forecast hub → ES forecast hub. True-sibling ES cluster: Miami's Spanish surface links to Cancún's Spanish-first forecast, concentrating the scarce ES authority and serving the large Hispanophone Miami audience. Contextual '¿Viajas por el Caribe?' module.",
+      "anchorExamples": [
+        "Pronóstico del sargazo en Cancún",
+        "¿Viajas a México? El sargazo en Cancún día a día",
+        "Cancún y la Riviera Maya: pronóstico del sargazo"
+      ]
+    },
+    {
+      "from": "sargassumpuntacana.com/es/temporada-sargazo-punta-cana/",
+      "to": "sargassumcancun.com/es/temporada-sargazo-rivieramaya/",
+      "context": "ES season hub → ES season hub. Punta Cana's Spanish season page → Cancún's Spanish season page, reinforcing the ES season cluster and routing Punta Cana ES authority to the ES-primary domain.",
+      "anchorExamples": [
+        "Temporada de sargazo en Cancún",
+        "¿También miras México? Temporada en Cancún",
+        "Cancún: cuándo llega el sargazo"
+      ]
+    },
+    {
+      "from": "sargassumcancun.com/es/temporada-sargazo-rivieramaya/",
+      "to": "sargassumpuntacana.com/es/temporada-sargazo-punta-cana/",
+      "context": "ES season hub → ES season hub (reciprocal). Cancún being ES-primary and slightly stronger, a measured reciprocal link keeps the ES cluster mutually reinforced without over-concentrating. Contextual module.",
+      "anchorExamples": [
+        "Temporada de sargazo en Punta Cana",
+        "¿Caribe en vez del Golfo? Punta Cana día a día",
+        "Punta Cana (Rep. Dominicana): la temporada"
+      ]
+    },
+    {
+      "from": "sargasses-martinique.com/plages/",
+      "to": "sargassummiami.com/beaches-without-sargassum-today/",
+      "context": "FR beach pages (the 136-page long-tail corpus) → EN 'today' hub, but ONLY via the shared network module in the footer region, capped and rotated (1 sibling link per page, deterministic by beach-id hash) so the deep FR pages drip a little authority to the EN money-hub without creating 136 identical spammy links.",
+      "anchorExamples": [
+        "Travelling to Florida? Today's clean beaches in Miami",
+        "Cap sur Miami ? Les plages propres aujourd'hui",
+        "Le Veilleur en Floride"
+      ]
+    },
+    {
+      "from": "sargasses-martinique.com/carte-sargasses/",
+      "to": "sargassummiami.com/seaweed-map/",
+      "context": "FR live-map hub → EN live-map hub. Product-parity bridge: same satellite map, other coast. The map hub is a high-authority FR page; one contextual link ('Same map, Florida coast') transfers relevance to the EN map hub.",
+      "anchorExamples": [
+        "La même carte, côté Floride",
+        "Live seaweed map for Miami",
+        "Carte satellite de Miami (Floride)"
+      ]
+    },
+    {
+      "from": "sargasses-guadeloupe.com/carte-sargasses/",
+      "to": "sargassumpuntacana.com/seaweed-map/",
+      "context": "FR live-map hub (GP) → EN live-map hub (Punta Cana). Same product-parity map bridge for the GP→PuntaCana corridor.",
+      "anchorExamples": [
+        "La même carte, à Punta Cana",
+        "Live seaweed map for Punta Cana",
+        "Carte satellite de Punta Cana"
+      ]
+    }
+  ],
+  "hubs": [
+    {
+      "site": "sargassummiami.com",
+      "hub": "/seaweed-map/",
+      "spokes": [
+        "/beaches-without-sargassum-today/",
+        "/sargassum-forecast/",
+        "/sargassum-season-florida/",
+        "/best-beaches-no-sargassum-florida/",
+        "/sargassum-florida-this-week/",
+        "/sargassum-health-risks/",
+        "/beaches/<each-beach>/"
+      ],
+      "//": "Map = primary hub. Links DOWN to every spoke from a persistent in-content hub-nav block; each beach spoke links back UP to /seaweed-map/ and to /beaches-without-sargassum-today/ via breadcrumb + 'See the live map' CTA."
+    },
+    {
+      "site": "sargassummiami.com",
+      "hub": "/sargassum-season-florida/",
+      "spokes": [
+        "/sargassum-health-risks/",
+        "/best-beaches-no-sargassum-florida/",
+        "/sargassum-florida-this-week/",
+        "/sargassum-forecast/",
+        "/beaches-without-sargassum-today/"
+      ],
+      "//": "Season = secondary hub for the safety+best+month cluster. Season → health-risks (when it's bad, is it dangerous?), → best beaches (where to go instead), → forecast/today (act now). Each spoke links back to season in its intro ('part of the Florida sargassum season guide')."
+    },
+    {
+      "site": "sargassummiami.com",
+      "hub": "/sargassum-forecast/",
+      "spokes": [
+        "/sargassum-florida-this-week/",
+        "/beaches-without-sargassum-today/",
+        "/seaweed-map/",
+        "/beaches/<top-beaches>/"
+      ],
+      "//": "Forecast hub → 7-day this-week page and per-beach forecasts; spokes link back up to /sargassum-forecast/."
+    },
+    {
+      "site": "sargassumpuntacana.com",
+      "hub": "/seaweed-map/",
+      "spokes": [
+        "/beaches-without-sargassum-today/",
+        "/sargassum-forecast/",
+        "/sargassum-season-punta-cana/",
+        "/best-beaches-no-sargassum-punta-cana/",
+        "/sargassum-punta-cana-this-week/",
+        "/sargassum-health-risks/",
+        "/beaches/<each-beach>/",
+        "/resorts/<each-resort>/"
+      ],
+      "//": "Mirror of Miami. Resorts are extra spokes here (Punta Cana is resort-driven); each resort page links up to its parent beach and to the map."
+    },
+    {
+      "site": "sargassumpuntacana.com",
+      "hub": "/sargassum-season-punta-cana/",
+      "spokes": [
+        "/sargassum-health-risks/",
+        "/best-beaches-no-sargassum-punta-cana/",
+        "/sargassum-punta-cana-this-week/",
+        "/sargassum-forecast/",
+        "/beaches-without-sargassum-today/"
+      ],
+      "//": "Season secondary hub, same pattern as Miami."
+    },
+    {
+      "site": "sargassumcancun.com",
+      "hub": "/es/mapa-sargazo/",
+      "spokes": [
+        "/es/playas-sin-sargazo-hoy/",
+        "/es/pronostico-sargazo/",
+        "/es/temporada-sargazo-rivieramaya/",
+        "/es/mejores-playas-sin-sargazo-rivieramaya/",
+        "/es/sargazo-rivieramaya-esta-semana/",
+        "/playas/<each-playa>/"
+      ],
+      "//": "ES-primary site. Map hub links down to all ES spokes; each playa links back up to /es/mapa-sargazo/ and /es/playas-sin-sargazo-hoy/."
+    },
+    {
+      "site": "sargassumcancun.com",
+      "hub": "/es/temporada-sargazo-rivieramaya/",
+      "spokes": [
+        "/es/mejores-playas-sin-sargazo-rivieramaya/",
+        "/es/sargazo-rivieramaya-esta-semana/",
+        "/es/pronostico-sargazo/",
+        "/es/playas-sin-sargazo-hoy/"
+      ],
+      "//": "ES season hub clusters best-beaches + this-week + forecast. Cancún also exposes an EN set (sargassum-season-cancun etc.) hreflang-paired but the ES set carries the intra-site hub authority."
+    },
+    {
+      "site": "sargasses-martinique.com",
+      "hub": "/carte-sargasses/",
+      "spokes": [
+        "/previsions/",
+        "/meteo/",
+        "/bulletin/",
+        "/saison-sargasses-martinique/",
+        "/meilleures-plages-martinique-sargasses/",
+        "/sargasses-martinique-cette-semaine/",
+        "/plages/<each-of-136>/"
+      ],
+      "//": "FR flagship hub. Already strong; the job is to make sure each of the 136 beach spokes links UP to /carte-sargasses/ and to /previsions/ + /bulletin/ (breadcrumb + 'voir la carte' CTA), and that /carte-sargasses/ links DOWN to the regional hubs and a curated set of beaches (nearby/popular), not all 136 inline."
+    },
+    {
+      "site": "sargasses-martinique.com",
+      "hub": "/saison-sargasses-martinique/",
+      "spokes": [
+        "/meilleures-plages-martinique-sargasses/",
+        "/sargasses-martinique-cette-semaine/",
+        "/previsions/",
+        "/bulletin/"
+      ],
+      "//": "FR season hub mirrors the EN season-cluster pattern (season→best→this-week→forecast/bulletin), so the FR→EN season cross-links land on structurally identical pages (clean hreflang/topical parity)."
+    },
+    {
+      "site": "sargasses-guadeloupe.com",
+      "hub": "/carte-sargasses/",
+      "spokes": [
+        "/previsions/",
+        "/meteo/",
+        "/bulletin/",
+        "/saison-sargasses-guadeloupe/",
+        "/meilleures-plages-gp-sargasses/",
+        "/plages/<each-beach>/"
+      ],
+      "//": "GP flagship hub, same pattern as MQ."
+    }
+  ],
+  "rules": [
+    "LINK BUDGET: contextual (in-content) internal links capped at ~8 per page; the shared cross-site network module adds at most 3 sibling-domain links. Never exceed ~12 internal+network links total in body copy (excludes nav/breadcrumb/footer chrome).",
+    "TWO LINK CLASSES, kept separate: (1) CONTEXTUAL links live inside narrative copy with descriptive anchors and pass topical authority; (2) NETWORK-MODULE links live in a single labelled block ('Voyage aux Antilles ?' / 'Traveling the Caribbean?' / '¿Viajas por el Caribe?') and are capped + rotated. Do not duplicate the same target in both classes on one page.",
+    "ANCHOR VARIETY: never reuse the identical anchor string for the same target across the site; maintain ≥3 anchor variants per cross-site target (see anchorExamples) and rotate deterministically by source page id so the link graph looks editorial, not templated. No naked-URL or 'click here' anchors.",
+    "BREADCRUMBS on every spoke (BreadcrumbList JSON-LD already emitted by region-seo-pages.cjs): Home → Hub → Spoke. Breadcrumb links count as the guaranteed upward inbound link for beach/resort/month/safety spokes.",
+    "CROSS-SITE = FR→EN/ES is the authority-sculpting direction (strong→nascent) and should be present on the highest-authority FR pages (homepage, /carte-sargasses/, /saison.../). Reverse links (EN/ES→FR) are allowed ONLY as reciprocal hreflang on true translations or sparingly in the network module — do not bleed nascent authority back to the strong domains.",
+    "HREFLANG only between TRUE translations of the same destination (e.g. Cancún EN ↔ Cancún ES). Cross-DESTINATION links (Miami→Cancún) are plain contextual/network links, NEVER hreflang alternates — mislabelling them as hreflang would confuse Google's clustering.",
+    "RELEVANCE GATE for the network module: a FR beach/hub may link a sibling region only via the curated module, and only to that sibling's TOP hub (today/map/season) — never deep-link a FR page straight to a single foreign beach (low relevance, spam signal).",
+    "DETERMINISTIC ROTATION on the 136 FR beach pages: each page surfaces exactly ONE network-module sibling link, chosen by hash(beachId) % 3 across {Miami today, PuntaCana today, Cancún hoy}, so authority is spread evenly and no single EN/ES hub is hammered by 136 identical links.",
+    "HONESTY DOCTRINE in anchors/snippets: cross-site teasers may state the product ('live satellite map, refreshed 4×/day', 'Beach Score 0–100', 'published backtest accuracy') but must NOT quote a fabricated global reliability %, fake review counts, or testimonials. Reliability is stated per-regime or omitted.",
+    "VOICE: network-module and bridge anchors stay in the 'Le Veilleur / The Watcher / El Vigía' register ('Le Veilleur veille aussi à Miami') — measured, never hypey. One consistent module label per language.",
+    "HUB→SPOKE reciprocity is mandatory: if a hub lists a spoke, that spoke MUST link back to the hub (breadcrumb satisfies it for beaches; hubs/cluster pages need an explicit in-copy 'part of the … guide' link). Enforce in build with a link-graph assertion (every generated spoke has ≥1 same-site upward link AND its hub references it)."
+  ],
+  "orphanStrategy": "\"Guarantee ≥2 internal inbound links for every new/spoke page through three independent, build-enforced channels so no page depends on a single source. (1) BREADCRUMB inbound — every beach/resort/month/safety/best/this-week page is emitted with a BreadcrumbList whose Hub node is a real link (Home→Hub→page); this is the first guaranteed inbound from the cluster hub. (2) HUB-NAV block — each site's primary hub (/seaweed-map/, /carte-sargasses/, /es/mapa-sargazo/) renders a hub-nav listing every sibling hub + the season/safety/best/this-week pages, giving each of those a second guaranteed inbound; and each season hub lists its best/this-week/safety spokes (third inbound for those). (3) RELATED-IN-CLUSTER — beach/resort pages link to 2–3 nearby beaches/resorts in the same region (by geo proximity), and 'today'/'best' pages enumerate the top-N beaches by score, so deep pages collect multiple sibling-to-sibling inbounds beyond the breadcrumb. Cross-site network-module links are ADDITIVE, never counted toward the ≥2 minimum (a foreign-domain link doesn't cure an intrasite orphan). BUILD GUARD: add an assertion to region-seo-pages.cjs / vite.config.js that crawls the generated link graph and FAILS the build if any emitted page has <2 same-site inbound links, listing the offenders — the same guard that enforces hub↔spoke reciprocity. New drafted pages (safety, season variants) are wired into both the hub-nav and the season-cluster lists at generation time, so they are never shipped orphaned.\""
+}
