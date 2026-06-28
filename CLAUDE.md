@@ -42,6 +42,7 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 
 ## Règles de déploiement
 
+- **Pas de gel Shabbat** — déploiement autorisé **à tout moment**, week-end inclus. L'automation (GH Actions, IA, cron) tourne sans le fondateur ; aucune fenêtre de no-deploy. (Ancienne règle « ven 18h → sam 19h : ne RIEN déployer » **retirée le 2026-06-28** à la demande du fondateur.)
 - **Auto-deploy sur push main** : `daily-copernicus.yml` full build quand `github.event_name == 'push'`. Aucun `railway up` nécessaire (ce repo est full-static, pas de Railway).
 - **Workflows GitHub Actions autonomes** — ne pas créer de crons Claude dupliqués. Les 9 workflows couvrent daily data, SEO hebdo, content gen, email drip, UX reports.
 - **Concurrency guard** sur 4 workflows (daily-copernicus, content-generation, weekly-optimize, weekly-seo-automation) + `git rebase -X theirs` pour éviter les races sur les JSON générés.

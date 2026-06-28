@@ -220,5 +220,4 @@ node -e "require('esbuild').transform(require('fs').readFileSync('Sargasses_PROD
 - **OG = SVG propriétaire** : zéro image IA. Barre HomeAZ + `sg-design-system` (palette `--sg-*`, Le Veilleur 1 satellite serein, rassure ≠ surveille). Si le rendu ne passe pas → refaire à la main avant branchement. Garder verrouillé aux hubs tant que funnel non sain (cohérence `project_social_generators`).
 - **Additif + réversible** : control = comportement actuel pour chaque flag. `seo_og_dynamic` derrière `SEO_OG_DYNAMIC` env ; `nearme` derrière `?nearme=` ; titres en A/B period-based avec control = title HTML actuel.
 - **Slug = nom = SEO** : ne renommer aucune plage. Nouveaux slugs = pages, pas plages.
-- **Shabbat** : aucun deploy ven 18h → sam 19h. Build/vérif OK hors fenêtre, push après.
 - **Git** : `git pull --rebase` avant push ; stager fichier par fichier (jamais `git add -A`) ; bump `public/sw.js` `CACHE_NAME` si du code runtime change (étape 4b). Commit terminé par `Co-Authored-By: Claude ...`.

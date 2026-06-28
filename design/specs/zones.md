@@ -237,5 +237,4 @@ node -e "const fs=require('fs');['martinique-ftp','guadeloupe-ftp'].forEach(f=>{
 - **Doctrine calme** : repos = tableau (pas d'aquarium). `prefers-reduced-motion` = early-return / `animation:none` (proto L67). Le Veilleur = 1 satellite, œil mi-clos, ne fixe pas l'utilisateur (`rassure ≠ surveille`).
 - **Conversion** : `openPremium(source)` UNIQUE dans l'app ; le hub renvoie vers l'app, ne crée jamais un 2e checkout. `stripe-config.php` JAMAIS touché.
 - **Honnêteté data** : freshness <12 h sinon « vérification en cours » ; forecast = `weekly[].forecast[]` réel ; jamais de `cleanFloor` atlantique ; zéro image IA.
-- **Shabbat** : ven 18 h → sam 19 h, aucun deploy (GH Actions couvrent).
 - **Anti-cul-de-sac** : chaque hub/commune offre flyTo carte + fiche + zone parente (jamais une impasse).

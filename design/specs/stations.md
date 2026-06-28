@@ -240,4 +240,4 @@ node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sa
 - **Conversion = `openPremium(source)` UNIQUE** (déjà respecté : `openPremium("station_h2s")`). Ne pas dupliquer un autre chemin de paiement. `stripe-config.php` JAMAIS touché.
 - **Tracking `sg_*` cohérent** ; ne pas renommer/casser les events funnel existants (sinon récidive `funnel_tracking_gap`).
 - **Réutiliser les scènes existantes** (`discoveryBeats`, `SolSortScene`, `SolTransformScene`, proto-map-v2, proto-veilleur-clip-v2) plutôt qu'en redessiner — ne pas produire d'agent-slop ; tout proto agent se vérifie au navigateur et se refait à la main s'il ne passe pas la barre.
-- **Git** : `git pull --rebase` avant push ; stage fichier par fichier (jamais `git add -A`) ; bump `public/sw.js` `CACHE_NAME` à chaque deploy de code ; **Shabbat ven 18h → sam 19h : ne RIEN déployer.**
+- **Git** : `git pull --rebase` avant push ; stage fichier par fichier (jamais `git add -A`) ; bump `public/sw.js` `CACHE_NAME` à chaque deploy de code

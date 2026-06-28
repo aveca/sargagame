@@ -285,4 +285,4 @@ Une 2e session Claude bosse le MÊME repo (B2B `/pro/`, KPI checkout). Working t
 - Live prod (SW v202+) : `home_az`, `map_world`, `pw_beach_dive` (+ parité H2S), `/previsions/` (`prev_az`), `/plages-sans-sargasses/` (`clean_list`), `/alertes/`, stations, à-propos, conditions, 136 fiches SEO — A/B 50/50.
 
 ## Garde-fous
-EUR/MQ-GP smoke d'abord · `stripe-config.php` jamais committé · SW bump par deploy · **jamais `git add -A`** (session parallèle) · Shabbat ven 18h→sam 19h no-deploy.
+EUR/MQ-GP smoke d'abord · `stripe-config.php` jamais committé · SW bump par deploy · **jamais `git add -A`** (session parallèle).

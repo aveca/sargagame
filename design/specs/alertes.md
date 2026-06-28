@@ -232,5 +232,5 @@ Dans le rendu de App, à côté du bloc hero (l.11072), AVANT le shell carte, aj
 - **Additif strict** : `pw_alertes==="control"` = ZÉRO changement de comportement sur `/alertes/`. Hub gated derrière `pathname` ET flag.
 - **Forecast** : aucune `cleanFloor` atlantique ; tout « banc arrive » se branche UNIQUEMENT sur `weekly[id].forecast[].status/regime` réels (`feedback_forecast_floor_ban`).
 - **SEO** : ne pas supprimer/renommer la page ni son noscript ; ne pas modifier le pageShell (htaccess bloquant). Valider chaque href par `curl` avant ship.
-- **Shabbat** ven 18h → sam 19h : ne RIEN déployer. Bump `public/sw.js CACHE_NAME` à chaque deploy de code. `git pull --rebase` avant push, stage fichier par fichier (jamais `git add -A`).
+- Bump `public/sw.js CACHE_NAME` à chaque deploy de code. `git pull --rebase` avant push, stage fichier par fichier (jamais `git add -A`).
 - **Vérif navigateur obligatoire** avant tout ship ; si la capture n'atteint pas la barre HomeAZ, refaire à la main avant de porter (pas d'agent-slop en prod).

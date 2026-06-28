@@ -198,6 +198,5 @@ python -m http.server 8790 --bind 127.0.0.1   # background
 - **Honnêteté lastmod** = règle dure : pas de fraîcheur inventée (miroir SEO de la doctrine `feedback_data_reliability` + ban fausse fraîcheur du `sg-svg-scene`).
 - **`workflow_dispatch` interdit pour le step Indexing API** (`feedback_workflow_dispatch_sideeffects`) : `if: github.event_name == 'push' || 'schedule'` + `continue-on-error`. Sinon un retry manuel brûle le quota GSC (200/j).
 - **Per-island filtering** (`prepare-ftp.cjs:172-188`) est la correction de la cause racine 2026-04 : ne JAMAIS la retirer ni copier `dist/` complet vers les deux FTP. Si `martinique-ftp/plages` repasse à 136 dirs → duplicate cross-domain de retour.
-- **Shabbat ven 18h→sam 19h : aucun deploy** (GH Actions couvrent l'ops).
 - **`git pull --rebase` avant push** ; **jamais `git add -A`** (stage fichier par fichier) ; **bump `public/sw.js` `CACHE_NAME`** seulement si du code app change (ici non : ce sont des fichiers build/CI/.htaccess → pas de SW bump nécessaire, mais vérifier qu'aucun asset hashé ne change).
 - **Validation hrefs** (`feedback_validate_hrefs`) : tout chemin déclaré au sitemap DOIT répondre 200 — c'est désormais automatisé par le Changement 1.

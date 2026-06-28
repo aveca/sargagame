@@ -73,7 +73,6 @@ npm run build   # attendre "built in", vérifier chunk + 136 pages + 0 erreur
 - ❌ Aucune page supprimée **sans 301**. `slug=nom=SEO` (ne JAMAIS renommer une plage).
 - ❌ **Zéro image IA.** Doctrine calme (repos = tableau ; `prefers-reduced-motion` = plancher dur, early-return avant rAF).
 - ❌ Le Veilleur = **UN seul satellite**, **rassure ≠ surveille** (ne fixe JAMAIS l'utilisateur, pas d'œil-HAL ; œil mi-clos serein).
-- ❌ **Shabbat ven 18h → sam 19h : ne RIEN déployer** (GH Actions couvrent l'ops).
 - ❌ **NE JAMAIS supprimer un proto sans certitude absolue** (leçon : `proto-plage-plongee` purgé par erreur → restauré depuis la trace workflow). En doute → GARDER.
 - ❌ Pas d'agent-slop en prod : un proto produit par agent se **vérifie au navigateur + se refait à la main** s'il ne passe pas la barre, avant tout port.
 - ❌ `feedback_forecast_floor_ban` : jamais de `cleanFloor` atlantique ; la re-teinte au scrub se branche UNIQUEMENT sur `forecast[].status/regime`.

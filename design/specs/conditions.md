@@ -232,5 +232,4 @@ node -e "const f=require('./src/lib/conditions-filters.js');console.log(typeof f
 - **Pas d'UI flottante** par-dessus la scène (`feedback_no_ui_in_ui`) : CTA premium DANS la scène (bandeau ancré), pas en pop-up.
 - **Zéro image/vidéo IA.** Scène = SVG proto-map-v2 réutilisé.
 - **Slug = nom = SEO** : ne JAMAIS renommer un slug existant. Ajouts only ; suppression = 301 (interdit ici).
-- **Shabbat ven 18h → sam 19h : ne RIEN déployer.**
 - **Vérifier les hrefs** : `curl` les 14 pages buildées avant push (`feedback_validate_hrefs`) — aucune 404, canonical self correct.

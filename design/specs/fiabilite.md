@@ -204,5 +204,4 @@ npm run build   # attendre "built in", 0 erreur, vérifier dist/fiabilite/ + dis
 - **Additif + réversible** : control = octet pour octet la page actuelle ; le variant vit sous `.rel-v2` ; bascule client par `?rel_v2=1/0` + `sg_ab`. Aucun re-build requis pour revenir.
 - **Tracking `sg_*` à l'identique** : `sg_reliability_open` (entrants, ne pas renommer), `sg_rel_view` (impression variant), `sg_email_submit` (capture) ou `utm_source=fiabilite_capture` si hors-app. Jamais un schéma neuf.
 - **SEO intouchable** : `<head>` (title/meta/canonical/hreflang/JSON-LD/sitemap) inchangé ; slug figé ; pas de lien sans 301.
-- **Shabbat** : pas de deploy ven 18h→sam 19h (le build est OK, le push/FTP non).
 - **Page standalone** : zéro import React/SPA, zéro `innerHTML` côté générateur (HTML construit en template string, déjà le cas) ; le `<script>` client inline reste minimal et CSP-safe.
