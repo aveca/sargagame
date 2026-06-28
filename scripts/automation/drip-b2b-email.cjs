@@ -41,7 +41,10 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 const PRO_URL = 'https://sargasses-martinique.com/pro'
 const REPLY_HINT = 'Répondez simplement à cet email — c\'est nous (l\'équipe Sargasses) qui le recevons.'
 
-const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
+// Inclut les nouvelles sources d'INTENTION HAUTE de l'offre chiffrée (B2BModal 28/06 :
+// b2b_brief 29€ / b2b_pro 79€ / b2b_territoire) — ces leads veulent l'essai/le produit
+// payant, pas un brief gratuit perpétuel. La séquence vend l'essai 14j → abonnement.
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire'])
 
 // Noms lisibles des 20 plages suivies (miroir track-record / BEACHES_META).
 const BEACH_NAMES = {
@@ -138,9 +141,13 @@ function proofBlock(proof) {
 
 // ── Builders par étape (FR ; léger swap hôtel ↔ collectivité) ──
 function build(step, sub, ctx) {
-  const isColl = sub.source === 'b2b_collectivite_request'
+  const isColl = sub.source === 'b2b_collectivite_request' || sub.source === 'b2b_territoire'
+  const isBrief = sub.source === 'b2b_brief' // petit pro (gîte/resto/club) → 29€
   const who = isColl ? 'votre territoire' : 'votre établissement'
   const beaches = isColl ? 'vos plages' : 'votre plage'
+  // Prix par tier (grille B2BModal) : territoire 199 · brief 29 · pro/hôtel 79.
+  const priceShort = isColl ? 'dès 199 €/mois' : isBrief ? '29 €/mois' : '79 €/mois'
+  const priceLong = isColl ? 'dès 199 €/mois' : isBrief ? '29 €/mois (290 €/an, 2 mois offerts)' : '79 €/mois (790 €/an, 2 mois offerts)'
   const island = (sub.island || 'MQ').toUpperCase()
   const name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
   const domain = island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
@@ -160,7 +167,8 @@ function build(step, sub, ctx) {
         <li>Une fiabilité que nous <strong>publions et auditons chaque jour</strong>.</li>
       </ul>
       ${proofBlock(proof)}
-      <div style="text-align:center;margin-top:8px">${cta('Voir mes plages + activer le brief gratuit', proPath)}</div>
+      <div style="text-align:center;margin-top:8px">${cta('Démarrer mon essai 14 jours', proPath)}</div>
+      <div style="font-size:12px;color:#888;text-align:center;margin-top:8px">14 jours gratuits, sans carte · ensuite ${priceShort} · stop quand vous voulez</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -199,12 +207,15 @@ function build(step, sub, ctx) {
   }
 
   if (step === 'b13') {
-    const subject = `La prévision 7 jours de ${beaches}, en direct`
-    const inner = `${brandHeader('Quand vous voulez', 'Sargasses Pro', `${beaches} en direct, sans engagement`)}
+    // Conversion : fin de la fenêtre d'essai → on demande la souscription (prix explicite,
+    // annuel poussé). Self-serve via ?pro=1 (l'offre/checkout). Pas d'appel, pas de slides.
+    const price = priceLong
+    const subject = `Vos plages, surveillées toute la saison ?`
+    const inner = `${brandHeader('On continue ?', 'Sargasses Pro', `${beaches}, surveillées chaque matin`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Voyez la prévision 7 jours et le suivi daté sur ${beaches} exactement — en direct, maintenant. Le brief quotidien arrive ensuite par email, automatiquement.</div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pas de slides, pas d'appel : vos plages, vos chiffres, à l'écran.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Voir mes plages en direct', proPath)}</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">Vous avez vu ce que donne la surveillance de ${beaches} — l'état réel chaque matin + l'alerte avant l'échouage + la prévision 7 jours.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pour la garder toute la saison : <strong>${price}</strong>. Sans engagement, stop quand vous voulez. Activation immédiate, aucun appel.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Activer mon abonnement', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
