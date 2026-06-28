@@ -1,4 +1,18 @@
 {
   "_note": "Liens de paiement Mollie B2B (prépaiement annuel), générés par scripts/automation/mollie-paylinks.cjs dans le pipeline (clé MOLLIE_API_KEY). Lus par l'app + les emails. Vide tant que le 1er run n'a pas tourné → CTA repli vers /?pro=1.",
-  "links": {}
+  "links": {
+    "brief_annual": {
+      "id": "pl_Ej4vNayqbDBpqXVJCPdRu",
+      "url": "https://payment-links.mollie.com/payment/Ej4vNayqbDBpqXVJCPdRu",
+      "value": "290.00",
+      "createdAt": "2026-06-28T03:56:40.620Z"
+    },
+    "pro_annual": {
+      "id": "pl_rpmTS3hYrLBGwTiNSvTXL",
+      "url": "https://payment-links.mollie.com/payment/rpmTS3hYrLBGwTiNSvTXL",
+      "value": "790.00",
+      "createdAt": "2026-06-28T03:56:41.890Z"
+    }
+  },
+  "updatedAt": "2026-06-28T03:56:41.891Z"
 }

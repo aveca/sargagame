@@ -1,70 +1,70 @@
 {
-  "updatedAt": "2026-06-28T02:50:03.019Z",
+  "updatedAt": "2026-06-28T04:05:08.080Z",
   "signals": {
-    "paidSignal": "absent (pas de MOLLIE_API_KEY)",
-    "leadsSignal": "absent",
+    "paidSignal": "mollie",
+    "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 25,
-    "contacted": 0,
-    "lead": 0,
+    "discovered": 102,
+    "contacted": 5,
+    "lead": 3,
     "paid": 0
   },
   "funnel": {
     "9a9cdbd282d741fb6e56c1e35bfc0552": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Diamant Les Bains",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T04:02:19.500Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "21a1ce456cce137686a67f39bb046917": {
-      "stage": "discovered",
+      "stage": "lead",
       "name": "Anoli Lodges",
       "island": "MQ",
-      "contactedAt": null,
-      "isLead": false,
+      "contactedAt": "2026-06-28T03:59:33.859Z",
+      "isLead": true,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
     "197b77981fac3a014cfe1ad824390714": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Créole Beach Hôtel & Spa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T04:02:19.774Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "1ceed3e228efbf9500c9320992fbbb6c": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Majesty Palm Hotel & Spa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T04:02:20.085Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "68b608e279a86ea9df43e0515ff2e4e7": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Bambou Resort (Hôtel Bambou)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T04:02:22.037Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "62098b0361188b94d03b943ddd0323f7": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Plein Soleil",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T04:02:22.563Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "bca368d0780b1f676de05ed420fb1d57": {
       "stage": "discovered",
@@ -236,6 +236,771 @@
       "isLead": false,
       "isPaid": false,
       "nextAction": "à contacter (prospection auto)"
+    },
+    "f93adc42d207dddcf9f0a260c9d59eb3": {
+      "stage": "discovered",
+      "name": "Bao Beach",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "725711cb92e8a9b8503c6286f1631fc8": {
+      "stage": "discovered",
+      "name": "Maya Beach Club",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a5c5a1c206527b7b9bd0c5f8d0498178": {
+      "stage": "discovered",
+      "name": "Boucaniers Diving",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "7a4bbb48d7d2fa3b75986fe951858419": {
+      "stage": "discovered",
+      "name": "Kalinago Plongee",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "1771f5e2f2acce1876aa680fe243c518": {
+      "stage": "discovered",
+      "name": "Residence Turquoise",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c0b884660112b2eb6c1ab3a4ccf846a3": {
+      "stage": "discovered",
+      "name": "Hôtel Diamant Beach",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "8ca2a8da25e468897531179e5034526a": {
+      "stage": "discovered",
+      "name": "DSC Plongée (Diamant Sub Club)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c56edd2978a61f7d13b0a0af3081f287": {
+      "stage": "discovered",
+      "name": "Hôtel Carayou & SPA",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "24d78de1816ba79c5688b53fdaee6b54": {
+      "stage": "discovered",
+      "name": "Le Courbaril (Courbaril Village)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "da0d6771ae926af7b1a3ec1e53bf0d97": {
+      "stage": "discovered",
+      "name": "L'Impératrice Village",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "31de89ca85a74c2a9ef7e2ab0c01b812": {
+      "stage": "discovered",
+      "name": "Kawan Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "5fa9026168761be3a1a57ce07d19f5ee": {
+      "stage": "discovered",
+      "name": "Kariba Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "7fa5b59c71b0bf6fd6a2734e58e984f1": {
+      "stage": "discovered",
+      "name": "Résidence Brise Marine",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c0f27e563c9957717615f0aabc45bb71": {
+      "stage": "discovered",
+      "name": "Les Villas du Lagon (ex-Cap Est Lagoon Resort & Spa)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "82efa2491fb7fd1632b272166da2cdc5": {
+      "stage": "discovered",
+      "name": "Zenergie",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "e3200672cc3eae0f0f7e23a7274b676e": {
+      "stage": "discovered",
+      "name": "Hôtel Sable Bleu",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a544ca79573316aeccbb525080f7a381": {
+      "stage": "discovered",
+      "name": "Résidence des Îles",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a6b661c398aeed53d598a55401ebe606": {
+      "stage": "discovered",
+      "name": "LA VILLA Baie du Marin",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "14ae9a22608724489ca02cd0bc4aa7e3": {
+      "stage": "discovered",
+      "name": "Marin Plongée Martinique",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "dc8bcf98f3fca667c372b7d6727a4c6f": {
+      "stage": "discovered",
+      "name": "Madinina Kite Surf",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "04673909809c69b03fcdd284af773a60": {
+      "stage": "discovered",
+      "name": "Deep Turtle Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "507144809e57826592c02c3ad2ed84a3": {
+      "stage": "discovered",
+      "name": "Alpha Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "96c79a8adc8d8f6ea07fe0374c561f69": {
+      "stage": "discovered",
+      "name": "Aliotis Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "460d6671a76b9dc4ac2d9fcb5d7b2645": {
+      "stage": "discovered",
+      "name": "Anses d'Arlet Plongée",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "792208f610f4770bf68136d3fcbbfa74": {
+      "stage": "discovered",
+      "name": "Résid'Anses",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "ac3f6d4dad866ddc70aa8e26f1e678a5": {
+      "stage": "discovered",
+      "name": "Lez'arlet Plage",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "aa30953e68f513a09ba293c897d805bc": {
+      "stage": "discovered",
+      "name": "L'Escale",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "d800ce5d6ca947f01e57726b2b03336c": {
+      "stage": "discovered",
+      "name": "Hôtel French Coco",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "d110dbd92e83b9e57088270b321523df": {
+      "stage": "discovered",
+      "name": "Au Citron Vert Hébergements",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "de4fab14e0ce41d12e66116eacb1733c": {
+      "stage": "discovered",
+      "name": "Hôtel Le Manguier",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "49f4f276e5af5ed3677c7962d3a8fefc": {
+      "stage": "discovered",
+      "name": "Locations Vue Turquoise (bungalows & villas Tartane)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "ebdcea31cb4f0cb811c6d08cbbbde6ff": {
+      "stage": "discovered",
+      "name": "Village de la Pointe",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "64b2cd61d40db94ccdcf4537b2982df9": {
+      "stage": "discovered",
+      "name": "Cap Macabou Hotel-Restaurant",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "3a1f3e868bf62708801944d219e4fc7a": {
+      "stage": "discovered",
+      "name": "Les Plages de Macabou (Vacances Authentiques)",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "f5d0f041e4a78e0d94496f9c7ea2179f": {
+      "stage": "discovered",
+      "name": "Club Nautique du Vauclin",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c14ca19947f562213b3c05db3f0ef633": {
+      "stage": "discovered",
+      "name": "Martinique Kiteschool",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "651d24db148c0b806dafd76d677c4205": {
+      "stage": "discovered",
+      "name": "Dénébola - Les Plaisirs Nautiques",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "7d23eaac3c2bcedb59ccf5b512f331ac": {
+      "stage": "discovered",
+      "name": "La Voile - Marina du Robert",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "0881323f2fbfb74c2f06b72a3ad6d517": {
+      "stage": "discovered",
+      "name": "Le Mouillage",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "cc56f85b65d0ba6eedfc329ef9ffd7bd": {
+      "stage": "discovered",
+      "name": "L'Escale du Robert",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "1dc334ec31a26290dd3ed4a5889fb11b": {
+      "stage": "discovered",
+      "name": "La Yole Bleue",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "ef83c1620f4dceb6c69ed85d642e8392": {
+      "stage": "discovered",
+      "name": "Le Paradis d'Adam et Eve",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "37bb5715fcd1fb3ca6a25aea04b0d8f7": {
+      "stage": "discovered",
+      "name": "O'TAN'TIK EVASION",
+      "island": "MQ",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "f519642456364ef5067a4c79f391a221": {
+      "stage": "discovered",
+      "name": "Canella Beach Hôtel",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c401503422ddc683e4a1be3f39cff534": {
+      "stage": "discovered",
+      "name": "Hôtel Fleur d'Épée",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a98cea49e51c7b567547e907920369ab": {
+      "stage": "discovered",
+      "name": "Centre Nautique Bleu Outremer",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "e9bb88e4ef67c0782685aabe4e6ce94d": {
+      "stage": "discovered",
+      "name": "Villa La Playa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "9a0ca4f62c025df8a20605eaff1b5615": {
+      "stage": "discovered",
+      "name": "Gîte Ty Koko",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c3c1e6a65476a99990dfafd58e2004f3": {
+      "stage": "discovered",
+      "name": "Iguane Café",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "32b950cae1f71f7ca11b0581a7d11790": {
+      "stage": "discovered",
+      "name": "Noa Plongée",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "68f37f793c2c7fa74d320fd5b8a038e8": {
+      "stage": "discovered",
+      "name": "Restaurant Bar Le Kontiki",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "385281715704e1d2de81f9e265dda40f": {
+      "stage": "discovered",
+      "name": "Gîtes Kazasand",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "55fe1a626932ab8113cf029521017432": {
+      "stage": "discovered",
+      "name": "Les KAZ de Sainte-Anne (Ecolodges & Gîtes)",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "2b4950b5124eca7740f34caa220c14b2": {
+      "stage": "discovered",
+      "name": "Oasis Grande Anse",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "805dda28390871badeb4177570b176ba": {
+      "stage": "discovered",
+      "name": "Au Jardin des Colibris",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "6d2af35e323e35abdc71e4b0da5bdea4": {
+      "stage": "discovered",
+      "name": "Koté Lagon",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "bd2b1991669ae18fdf3a48ff7b91e574": {
+      "stage": "discovered",
+      "name": "Tropicalsub Diving",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "35d828094d5a78673922beff6fddca51": {
+      "stage": "discovered",
+      "name": "Calypso Plongée",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "2751322338abcfaf38e559cb9ec4ab26": {
+      "stage": "discovered",
+      "name": "CIP Guadeloupe (Centre International de Plongée)",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "ef556a3b23faa88334496f23d1eb833b": {
+      "stage": "discovered",
+      "name": "Les Heures Saines",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "611af0b761cddea656210b7921add07a": {
+      "stage": "discovered",
+      "name": "Le Rocher de Malendure",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "86df388ea2ab4bba586722f1d1642d42": {
+      "stage": "discovered",
+      "name": "Gîtes Couleur Caraïbes",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "80cb1526d83a5622af73a9cd0abab244": {
+      "stage": "discovered",
+      "name": "Les Lodges de Malendure",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "36089b2535413818fa6db4256139cd86": {
+      "stage": "discovered",
+      "name": "Gîte Mayo & Hylode's Song",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a7768e43c04cd8124105fbe7cb21f82d": {
+      "stage": "discovered",
+      "name": "Bik Karaïb",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "2e99c6daa2ecbdf586da0d0985a56eaf": {
+      "stage": "discovered",
+      "name": "Karukera Surf Club",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "102e4c17d947010ffd80e5dcb5fe6ce4": {
+      "stage": "discovered",
+      "name": "Résidence Tropicale",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "92c49fe52ce8b951f25d7dff14da8870": {
+      "stage": "discovered",
+      "name": "Kayali Studios & Spa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "354005124759b38845963df39d08e538": {
+      "stage": "discovered",
+      "name": "SeacretDive",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "a6ed3c0dfd7c16ef602a70d0768473ec": {
+      "stage": "discovered",
+      "name": "Eden Plongée",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c72b496aac834ea07927e98abe45affe": {
+      "stage": "discovered",
+      "name": "Le Poisson d'Or",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "51d8c090f740f25ca9949641acc40eed": {
+      "stage": "discovered",
+      "name": "Hôtel Kanaoa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "51e2ce6a1ac12be39eafab45a1e9dd8a": {
+      "stage": "discovered",
+      "name": "Les Petits Saints",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "95a693365eee699fa2e19dc1d5a2a3cc": {
+      "stage": "discovered",
+      "name": "LoBleu Hôtel",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "3182037431b0989e37489f9da99a9120": {
+      "stage": "discovered",
+      "name": "La Dive Bouteille",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "2720dd2d6b07a5e54b43e8590df4445f": {
+      "stage": "discovered",
+      "name": "Pisquettes Club de Plongée des Saintes",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "fed6ffa0ed8036ce09b47b690230caa6": {
+      "stage": "discovered",
+      "name": "Café de la Marine",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "4aae3c9bea2f084ea90ef035be62caae": {
+      "stage": "discovered",
+      "name": "Le Relais du Moulin - Hôtel de Charme & Spa",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "c58a1c3635d80c60b0fd0b83f45672e9": {
+      "stage": "discovered",
+      "name": "Résidence Les Eaux Bleues (Gîtes Sainte-Anne)",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "efc01d3ff7d31ede252d1e154671d1fe": {
+      "stage": "discovered",
+      "name": "Les Zitadines",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "78c049e8f1967ea8fd7ce9bcc6168207": {
+      "stage": "discovered",
+      "name": "Gîtes Mosaïques",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "3de1f1d453a40c5f984d30b4f1cf0c43": {
+      "stage": "discovered",
+      "name": "Pipirite Chantant",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "22677d4e42a07b6c48a2f6aba53e12a9": {
+      "stage": "discovered",
+      "name": "Habitation Saint Charles - Hôtel & Spa 4*",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "08b09ba455391935952e04495d2b9916": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "0e404c05882349b5ae5c5665cba465ca": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     }
   }
 }
