@@ -443,6 +443,15 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/aggregate-app-reports.cjs
 
+      # ── 2-pre-0a2. Bake des PHOTOS VISITEURS approuvées (preuve du présent) :
+      # fetch Apps Script ?action=beach_photos (status=approved uniquement) →
+      # public/api/community/photos.json, lu par BeachPhotos.jsx. continue-on-error :
+      # si Apps Script down ou vide, on garde le fichier existant (jamais d'écrasement).
+      - name: Bake approved visitor photos
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: node scripts/automation/build-community-photos.cjs
+
       # ── 2-pre-0b. Accuracy VALIDÉE CITOYEN (sprint #3) : aggregate-app-reports vient de
       # journaliser les signalements frais du jour (reports-log.json, append-only) ; on les
       # confronte aux prévisions figées (forecast-archive.json) → citizen-accuracy.json. La
@@ -626,6 +635,7 @@ jobs:
           # Sprint #3 — track-record validé citoyen : le journal des signalements DOIT être commité
           # (append-only inter-runs, sinon l'accumulation est perdue) + la métrique calculée.
           [ -f public/api/community/reports-log.json ] && git add public/api/community/reports-log.json
+          [ -f public/api/community/photos.json ] && git add public/api/community/photos.json
           [ -f public/api/copernicus/citizen-accuracy.json ] && git add public/api/copernicus/citizen-accuracy.json
           # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
           # chaque run — leur absence du commit gelait les scores (bug 2 mois).
