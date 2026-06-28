@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-28T04:05:08.080Z",
+  "updatedAt": "2026-06-28T08:57:17.543Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 102,
-    "contacted": 5,
+    "discovered": 97,
+    "contacted": 10,
     "lead": 3,
     "paid": 0
   },
@@ -67,49 +67,49 @@
       "nextAction": "attendre / relance programmée"
     },
     "bca368d0780b1f676de05ed420fb1d57": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Suite Villa",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T08:54:30.104Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "149125a95bc6c8c600198cb8b9399638": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Bakoua",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T08:54:30.553Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "34e3bf3520495bde3bd398bfa6abdf79": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Karibea Hôtels & Résidences",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T08:54:31.284Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "713ca6f5148332776e8ae2d48c51de33": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "ILOMA Hotel & Spa (ex-Corail Résidence)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T08:54:31.571Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "8e87822d3fe7e0f8e82242856cca7637": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel La Pagerie Tropical Garden",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-28T08:54:31.994Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "76690b3b63d61ac3b0f797410162ca55": {
       "stage": "discovered",
