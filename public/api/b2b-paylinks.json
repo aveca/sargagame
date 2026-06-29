@@ -1,5 +1,5 @@
 {
-  "_note": "Liens de paiement Mollie B2B (prépaiement annuel), générés par scripts/automation/mollie-paylinks.cjs dans le pipeline (clé MOLLIE_API_KEY). Lus par l'app + les emails. Vide tant que le 1er run n'a pas tourné → CTA repli vers /?pro=1.",
+  "_note": "Liens de paiement Mollie B2B (prépaiement annuel), générés par scripts/automation/mollie-paylinks.cjs dans le pipeline (clé MOLLIE_API_KEY). Lus par l'app + les emails. Vide tant que le 1er run n'a pas tourné → CTA repli vers /?pro=1. [pro_annual retiré 2026-06-29 → régénéré à 690€ au prochain run mollie-paylinks.cjs]",
   "links": {
     "brief_annual": {
       "id": "pl_Ej4vNayqbDBpqXVJCPdRu",
