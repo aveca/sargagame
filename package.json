@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "test": "node scripts/run-tests.cjs",
-    "build": "node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && vite build && node scripts/stamp-sw-hash.cjs",
+    "build": "node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs",
     "daily": "node scripts/sync-version.cjs && node scripts/scrape-copernicus.cjs && vite build && node scripts/stamp-sw-hash.cjs && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
     "preview": "vite preview",
     "martinique": "npm run build && node scripts/prepare-ftp.cjs",
