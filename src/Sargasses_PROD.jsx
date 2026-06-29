@@ -2180,6 +2180,11 @@ const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // src/supabasePhotos.js). S'active AUTOMATIQUEMENT dès que SUPABASE_URL + ANON_KEY
 // sont renseignés (sinon no-op). Détails : docs/visitor-photos-runbook.md.
 const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
+// Vrai PENDANT la capture photo (caméra/sélecteur ouverts → page en arrière-plan).
+// Ouvrir la caméra émet `visibilitychange:hidden` ; sans ce garde, l'exit-intent
+// monterait un overlay plein écran (ExitVeilleurCard) PAR-DESSUS la fiche au retour
+// = UI gelée. Prendre une photo n'est PAS « quitter le site ». Cf. fire()/onVis ci-dessous.
+let _sgCapturingPhoto=false
 function _sgReportStash(body){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_report_q",JSON.stringify(q))}catch(_){}}
 function _sgReportFlush(){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");if(!q.length)return;localStorage.removeItem("sg_report_q");q.forEach(body=>{try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).catch(()=>_sgReportStash(body))}catch(_){_sgReportStash(body)}})}catch(_){}}
 function sgCollectFlush(reason){
@@ -3232,7 +3237,7 @@ function BeachReport({beach,lang,communityReports}){
         <div style={{marginTop:10}}>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={onPickPhoto} style={{display:"none"}}/>
           {!photo&&photoState!=="sent"&&(
-            <button type="button" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={photoState==="busy"} style={{
+            <button type="button" onClick={()=>{_sgCapturingPhoto=true;fileRef.current&&fileRef.current.click()}} disabled={photoState==="busy"} style={{
               width:"100%",padding:"10px 8px",borderRadius:12,border:"1px dashed var(--sg-border,rgba(0,0,0,.18))",
               background:"var(--sg-card,#fff)",color:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",
               cursor:photoState==="busy"?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -11838,6 +11843,9 @@ export default function App(){
   useEffect(()=>{
     let idleT=null
     const fire=trigger=>{
+      // Capture photo en cours → le `hidden` vient de la caméra, pas d'un départ. Ne pas
+      // monter d'overlay (sinon il recouvre la fiche au retour = freeze signalé).
+      if(trigger==="hidden"&&_sgCapturingPhoto)return
       const gate=gameGateRef.current
       if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
       // HARMONIE par intention (décision fondateur 22/06) :
@@ -11872,7 +11880,7 @@ export default function App(){
       setShowGameToast(true)
       track("sg_game_toast_shown",{trigger})
     }
-    const reset=()=>{clearTimeout(idleT);idleT=setTimeout(()=>fire("idle"),45000)}
+    const reset=()=>{_sgCapturingPhoto=false;clearTimeout(idleT);idleT=setTimeout(()=>fire("idle"),45000)}
     const acts=["pointerdown","keydown","touchstart","wheel"]
     acts.forEach(a=>window.addEventListener(a,reset,{passive:true}))
     reset()
@@ -11894,7 +11902,7 @@ export default function App(){
     document.addEventListener("mousemove",exitFlick,{passive:true})
     // Bascule d'onglet / alt-tab (desktop ET mobile) = signal de départ fort : la carte est
     // prête au retour. fire() la garde 1×/session + snooze 14j au dismiss → jamais spammy.
-    const onVis=()=>{if(document.visibilityState==="hidden")fire("hidden")}
+    const onVis=()=>{if(document.visibilityState==="hidden")fire("hidden");else _sgCapturingPhoto=false}
     document.addEventListener("visibilitychange",onVis)
     let downAcc=0,lastY=0,lastT=0
     const onScroll=()=>{
