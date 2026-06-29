@@ -1221,14 +1221,16 @@
     "daily_sig": "Clearwater Beach|clean|93|clean|1|Tuesday",
     "j3": "2026-06-18T15:24:23.913Z",
     "j7": "2026-06-22T17:00:03.463Z",
-    "daily_count": 3
+    "daily_count": 3,
+    "j14": "2026-06-29T15:49:56.645Z"
   },
   "73847215716df27d0e0585585d502598": {
     "daily_last": "2026-06-29",
     "daily_sig": "Anse Madame|clean|83|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 3
+    "daily_count": 3,
+    "j14": "2026-06-29T15:49:58.831Z"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
     "daily_last": "2026-06-29",
@@ -1309,19 +1311,23 @@
     "daily_last": "2026-06-29",
     "daily_sig": "Anse Madame|clean|83|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 3
+    "daily_count": 3,
+    "j7": "2026-06-29T15:50:01.935Z"
   },
   "78e35993310c310a1e633390dc14d857": {
-    "j3": "2026-06-25T14:36:38.938Z"
+    "j3": "2026-06-25T14:36:38.938Z",
+    "j7": "2026-06-29T15:50:04.304Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
     "daily_last": "2026-06-29",
     "daily_sig": "Anse Madame|clean|83|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 3
+    "daily_count": 3,
+    "j7": "2026-06-29T15:50:06.123Z"
   },
   "c26807bb5ca87fa356eb13e3eb131b22": {
-    "j3": "2026-06-25T14:36:42.672Z"
+    "j3": "2026-06-25T14:36:42.672Z",
+    "j7": "2026-06-29T15:50:08.007Z"
   },
   "df28c95e078a1150efebcf9bb69e0088": {
     "daily_last": "2026-06-29",
@@ -1405,7 +1411,8 @@
   "384eedc45e1b0234f2c3a843467ab6c4": {
     "daily_last": "2026-06-29",
     "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3
+    "daily_count": 3,
+    "j3": "2026-06-29T15:50:09.261Z"
   },
   "8d2063e87c2ac7f9edca6b24deca5de8": {},
   "6ac712cbd475e0acf1268553193f8efe": {},
@@ -1430,5 +1437,10 @@
   "7907716a000324ef9ca586cfbca354a5": {},
   "93070a76ba5738686f5c05790f071d46": {},
   "6fb4b7a93b1479c0456153f3b7dc7d29": {},
-  "8eed02370a530f21c11bd53b5cd9b14b": {}
+  "8eed02370a530f21c11bd53b5cd9b14b": {},
+  "d19f636ff9475496c404d85a45e96d21": {},
+  "b43865b5351771dbce6f67041d543610": {},
+  "24246e3a77c5c07d14ab7ec20540359b": {},
+  "9f4131c30cda83ce04386dd90dbd62ab": {},
+  "703af46cb37db427244aba3f8a7dccc5": {}
 }

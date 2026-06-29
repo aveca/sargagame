@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-29T11:09:24.885Z",
+  "updatedAt": "2026-06-29T15:53:07.663Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 81,
-    "contacted": 26,
+    "discovered": 78,
+    "contacted": 29,
     "lead": 4,
     "paid": 1
   },
@@ -274,31 +274,31 @@
       "nextAction": "attendre / relance programmée"
     },
     "1771f5e2f2acce1876aa680fe243c518": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Residence Turquoise",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T15:50:21.127Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c0b884660112b2eb6c1ab3a4ccf846a3": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Diamant Beach",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T15:50:21.534Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "8ca2a8da25e468897531179e5034526a": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "DSC Plongée (Diamant Sub Club)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T15:50:21.859Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c56edd2978a61f7d13b0a0af3081f287": {
       "stage": "discovered",

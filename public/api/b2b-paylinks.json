@@ -12,7 +12,19 @@
       "url": "https://payment-links.mollie.com/payment/SuTXwLmch7sNCHd9rkFL6",
       "value": "690.00",
       "createdAt": "2026-06-29T11:03:47.338Z"
+    },
+    "brief_annual_usd": {
+      "id": "pl_LAWMDi57dmJr5Bax87uM2",
+      "url": "https://payment-links.mollie.com/payment/LAWMDi57dmJr5Bax87uM2",
+      "value": "390.00",
+      "createdAt": "2026-06-29T15:50:13.029Z"
+    },
+    "pro_annual_usd": {
+      "id": "pl_W2sAWEfKDqyHKwHBTUEtf",
+      "url": "https://payment-links.mollie.com/payment/W2sAWEfKDqyHKwHBTUEtf",
+      "value": "790.00",
+      "createdAt": "2026-06-29T15:50:13.985Z"
     }
   },
-  "updatedAt": "2026-06-29T11:03:47.339Z"
+  "updatedAt": "2026-06-29T15:50:13.985Z"
 }
