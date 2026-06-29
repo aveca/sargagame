@@ -357,13 +357,13 @@ function buildJ3(island, brief, email) {
     `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
   // NO_TRIAL partout (MQ/GP inclus depuis a9b3cf4e) : aucune promesse d'essai sur
   // une surface de paiement (cf. litige Stripe « copie trompeuse »). La réassurance
-  // = la garantie 30j réelle, identique à J7/J14/J21.
+  // = paiement unique / sans abonnement (garantie 30j volontaire RETIRÉE 2026-06-29).
   const ctaText = t('Recevoir ce brief chaque matin',
     'Get this brief every morning',
     'Recibir este brief cada mañana')
-  const reassurance = t('Paiement unique, sans abonnement · remboursé en un email',
-    'One-time payment, no subscription · refund in one email',
-    'Pago único, sin suscripción · reembolso en un email')
+  const reassurance = t('Paiement unique, sans abonnement · accès immédiat',
+    'One-time payment, no subscription · instant access',
+    'Pago único, sin suscripción · acceso inmediato')
   const dateLong = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : lang === 'en' ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
   // CTA 100% on-site (?paywall=1) — termine la migration on-site (J7/J14/J21 le sont
   // déjà). Débloque l'attribution : le front lit utm_source=email → metadata.source=
@@ -452,7 +452,7 @@ function buildJ7(island, cleanCount, email, brief) {
 
     <div style="text-align:center">
       ${ctaButton('Activer mon Pass', sitePaywall(domain, 'j7'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00B7 rembours\u00E9 en un email</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00B7 acc\u00E8s imm\u00E9diat</div>
     </div>
   </div>
 
@@ -519,7 +519,7 @@ function buildJ14(island, cleanCount, email, brief) {
 
     <div style="text-align:center;margin-bottom:16px">
       ${ctaButton('Activer mon Pass', sitePaywall(domain, 'j14'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00B7 rembours\u00E9 en un email</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">D\u00E8s 7,99\u00A0\u20AC \u00B7 paiement unique, sans abonnement \u00B7 acc\u00E8s imm\u00E9diat</div>
     </div>
 
     <div style="text-align:center;padding-top:12px;border-top:1px solid #f0f0f0">
@@ -541,7 +541,7 @@ function buildJ21(island, cleanCount, email) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Zéro risque', `3 semaines que le Veilleur surveille ${name} pour toi`, 'fr')}
+  ${header('Paiement unique', `3 semaines que le Veilleur surveille ${name} pour toi`, 'fr')}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:18px">
       Tu reçois nos bulletins depuis 3 semaines. La seule vraie raison de ne pas activer ton veilleur personnel, c'est le risque — et il n'y en a aucun.
@@ -550,9 +550,9 @@ function buildJ21(island, cleanCount, email) {
     <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="display:flex;align-items:center;margin-bottom:6px">
         <span style="font-size:22px;margin-right:10px">&#x1F6E1;&#xFE0F;</span>
-        <div style="font-size:15px;font-weight:800;color:#16A34A">Remboursé en un email · paiement unique</div>
+        <div style="font-size:15px;font-weight:800;color:#16A34A">Paiement unique · sans abonnement</div>
       </div>
-      <div style="font-size:13px;color:#555;line-height:1.5">Tu prends un pass, tu testes une fois. Ça ne te sert pas ? On te rembourse en un email, sans question. Paiement unique, pas d'abonnement. Tu ne perds rien — sauf les mauvaises surprises sur la plage.</div>
+      <div style="font-size:13px;color:#555;line-height:1.5">Tu prends un pass, tu testes une fois. Ça ne te sert pas ? Tu paies une fois, tu accèdes tout de suite. Pas d'abonnement, rien à résilier. Tu ne perds rien — sauf les mauvaises surprises sur la plage.</div>
     </div>
 
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Ce que tu actives</div>
@@ -567,7 +567,7 @@ function buildJ21(island, cleanCount, email) {
 
     <div style="text-align:center">
       ${ctaButton('Activer mon Pass', sitePaywall(domain, 'j21'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">Dès 7,99 € · paiement unique, sans abonnement · remboursé en un email</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">Dès 7,99 € · paiement unique, sans abonnement · accès immédiat</div>
     </div>
   </div>
   <div style="background:#fff;padding:14px 20px;border-top:1px solid #f0f0f0;text-align:center">
@@ -640,7 +640,7 @@ function buildJ7Region(island, brief, email) {
 
     <div style="text-align:center">
       ${ctaButton(t('Get the Pass', 'Activar mi pase'), sitePaywall(domain, 'j7'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">${t('From $5.99 · one-time, no subscription · refund in one email', 'Desde $5.99 · pago único, sin suscripción · reembolso en un email')}</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">${t('From $5.99 · one-time, no subscription · instant access', 'Desde $5.99 · pago único, sin suscripción · acceso inmediato')}</div>
     </div>
   </div>
 
@@ -754,7 +754,7 @@ function getSubject(step, island, cleanCount, brief) {
     case 'j14': return IS_HIGH_SEASON
       ? `Le satellite a vu quelque chose... 🛰️ (pour ton weekend)`
       : `Ne découvre pas les sargasses sur la plage`
-    case 'j21': return `Zéro risque : ton Pass Veilleur, remboursé en un email`
+    case 'j21': return `Ton Pass Veilleur : paiement unique, accès immédiat`
   }
 }
 
@@ -776,9 +776,9 @@ function getPreheader(step, island) {
     "A ruined weekend — or one glance Friday night that saves it. Your call.",
     "Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.")
   if (step === 'j21') return t(
-    "Paiement unique, sans abonnement. Ça ne te sert pas ? Remboursé en un email.",
-    "One-time, no subscription. Not for you? Refunded in one email.",
-    "Pago único, sin suscripción. ¿No te sirve? Reembolsado en un email.")
+    "Paiement unique, sans abonnement. Accès immédiat, rien à résilier.",
+    "One-time, no subscription. Instant access, nothing to cancel.",
+    "Pago único, sin suscripción. Acceso inmediato, nada que cancelar.")
   return ''
 }
 

@@ -84,7 +84,7 @@ function buildHtml(island) {
       <p>Depuis, le Veilleur s'est affiné : chaque matin il te dit <b>LA plage sans sargasses</b>, avec la prévision 7 jours, 136+ plages et les alertes. La carte reste <b>gratuite</b>.</p>
       <p>Si tu veux le matin sans mauvaise surprise : le <b>Pass</b> est un <b>paiement unique, sans abonnement</b> — 7 jours dès <b>7,99 €</b>, 14 jours <b>14,99 €</b>, 30 jours <b>24,99 €</b>.</p>
       <p style="text-align:center;margin:22px 0"><a href="${cta}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">Voir le Pass</a></p>
-      <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · remboursé en un email. <a href="${map}" style="color:#0E7C66">Ou reste sur la carte gratuite</a>.</p>
+      <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · accès immédiat. <a href="${map}" style="color:#0E7C66">Ou reste sur la carte gratuite</a>.</p>
     </div>`
 }
 

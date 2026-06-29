@@ -147,7 +147,7 @@ function build(step, sub, ctx) {
   const who = isColl ? 'votre territoire' : 'votre établissement'
   const beaches = isColl ? 'vos plages' : 'votre plage'
   // Offre B2B ARRÊTÉE et 100 % SELF-SERVE (pricing 2026-06-29) : Pro 79 €/mois ou
-  // 690 €/an (2 mois offerts), essai 30 j gratuit sans carte, garantie 30 j ; Brief
+  // 690 €/an (2 mois offerts), essai 30 j gratuit sans carte ; Brief
   // 29 €/mois (petit pro), Territory dès 199 €/mois. Tout s'active/se paie sur
   // /pro/espace/ (essai instantané, mensuel hébergé #215, annuel paylink). ZÉRO call :
   // jamais « parlons-en / rendez-vous ». (Ancien cadrage « en construction » = périmé.)
@@ -167,7 +167,7 @@ function build(step, sub, ctx) {
       <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Personne n'aime découvrir les algues une fois les valises ouvertes.</div>
       ${proofBlock(proof)}
       <div style="font-size:14px;color:#444;line-height:1.6">La preuve avant la promesse : nous publions nos erreurs, datées et par régime — 76 % à 79 % de prévisions justes selon la saison. Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/" style="color:#0D7C66">Voyez notre taux réel.</a></div>
-      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai dure <strong>30 jours, gratuit, sans carte</strong>. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours. Tout en libre-service.</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai dure <strong>30 jours, gratuit, sans carte</strong>. Ensuite 79 €/mois ou 690 €/an (2 mois offerts). Tout en libre-service.</div>
       <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai gratuit 30 jours", proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
@@ -201,7 +201,7 @@ function build(step, sub, ctx) {
       <div style="font-size:15px;color:#333;line-height:1.6">Les cartes gratuites donnent un risque régional, en moyenne. Nous, on lit la côte baie par baie — et surtout, on publie notre taux d'erreur, daté et par régime. C'est ça qu'un outil gratuit ne fait pas.</div>
       ${proofBlock(proof)}
       <div style="font-size:14px;color:#444;line-height:1.6">${roi} Le palmarès complet, daté, est sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>.</div>
-      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">Essai 30 jours, sans carte. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours${isBrief ? ' · Brief à 29 €/mois pour les plus petits' : ''}. Zéro appel, tout en libre-service.</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">Essai 30 jours, sans carte. Ensuite 79 €/mois ou 690 €/an (2 mois offerts)${isBrief ? ' · Brief à 29 €/mois pour les plus petits' : ''}. Zéro appel, tout en libre-service.</div>
       <div style="text-align:center;margin-top:18px">${cta('Activer mon essai 30 jours', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
@@ -238,7 +238,7 @@ function build(step, sub, ctx) {
       <div style="font-size:13.5px;color:#555;line-height:1.6;margin-top:12px">Ce verdict n'a rien inventé : il vient du satellite, et on publie notre fiabilité auditée par régime (≈ 76 % à 79 % selon la saison) sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>. L'argent ne touche jamais ce chiffre.</div>
       <div style="font-size:15px;color:#0D1E1C;line-height:1.6;margin-top:14px"><strong>Dans ~3 jours, l'essai se termine : le widget et les alertes s'éteignent.</strong> Gardez la veille allumée, sans interruption.</div>
       <div style="text-align:center;margin-top:18px">${cta('Verrouiller l\'année — 690 €', payUrl)}</div>
-      <div style="font-size:13px;color:#666;margin-top:12px;text-align:center;line-height:1.55">2 mois offerts vs 79 €/mois · garantie 30 jours. Vous préférez rester souple ? <a href="${espace}" style="color:#0D7C66">Passez en mensuel à 79 €/mois</a> depuis votre espace — résiliable à tout moment.</div>
+      <div style="font-size:13px;color:#666;margin-top:12px;text-align:center;line-height:1.55">2 mois offerts vs 79 €/mois. Vous préférez rester souple ? <a href="${espace}" style="color:#0D7C66">Passez en mensuel à 79 €/mois</a> depuis votre espace — résiliable à tout moment.</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }

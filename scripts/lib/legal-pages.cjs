@@ -165,12 +165,11 @@ function refundContent(lang, region) {
       title: 'Política de reembolso',
       lead: `Esta página describe la política de reembolso de las ofertas Premium de <strong>${esc(site)}</strong> (${esc(region.domain)}).`,
       sections: [
-        { h: 'Garantía de satisfacción — 30 días', html: `<div class="card"><p style="margin:0">Si el Servicio no te convence, puedes solicitar un <strong>reembolso íntegro en un plazo de 30 días</strong> tras tu primer pago (de tu Pase). No hace falta justificación. Es nuestro compromiso «satisfecho o reembolsado».</p></div>` },
-        { h: 'Derechos legales', html: `<p>Esta garantía de 30 días se suma a los derechos de protección al consumidor que la ley de tu país de residencia (${esc(region.country || '')}) te reconozca.</p>` },
-        { h: 'Pase de viaje (compra única)', html: `<p>El Pase de viaje de 7 días es reembolsable si no se ha utilizado de forma sustancial, previa solicitud en los 14 días siguientes a la compra. Una vez consumido en gran parte el periodo de acceso, el reembolso puede denegarse.</p>` },
-        { h: 'Pago único', html: `<p>El Pase es un <strong>pago único</strong>: no hay cobros recurrentes que detener. El <strong>reembolso</strong> te devuelve el importe pagado según las condiciones anteriores.</p>` },
-        { h: 'Cómo solicitar un reembolso', html: `<p>Escríbenos a <a href="mailto:${esc(support)}">${esc(support)}</a> indicando el correo electrónico utilizado para el pago. Tratamos las solicitudes en un plazo de 5 días hábiles.</p>` },
-        { h: 'Tramitación y plazo', html: `<p>Los pagos y reembolsos los procesa nuestro proveedor de pago autorizado (Comerciante de Registro). El reembolso se realiza en el medio de pago de origen, en ${esc(cur)}; el abono suele aparecer en 5 a 10 días hábiles según tu banco.</p>` },
+        { h: 'Acceso digital inmediato', html: `<div class="card"><p style="margin:0">El Pase da <strong>acceso digital inmediato</strong>. Al pagar, solicitas expresamente el inicio inmediato del servicio y reconoces que, una vez abierto el acceso, <strong>el Pase no es reembolsable</strong> por simple cambio de opinión.</p></div>` },
+        { h: 'Si el servicio no funciona', html: `<p>Lo anterior solo afecta al cambio de opinión. Si el servicio presenta un <strong>defecto</strong> o no se corresponde con lo descrito, escríbenos: buscaremos una solución (corrección o reembolso según el caso), conforme a la ley de tu país de residencia (${esc(region.country || '')}).</p>` },
+        { h: 'Pago único', html: `<p>El Pase es un <strong>pago único</strong>: no hay cobros recurrentes que detener.</p>` },
+        { h: 'Cómo contactarnos', html: `<p>Escríbenos a <a href="mailto:${esc(support)}">${esc(support)}</a> indicando el correo electrónico utilizado para el pago. Tratamos las solicitudes en un plazo de 5 días hábiles.</p>` },
+        { h: 'Tramitación y plazo', html: `<p>Los pagos los procesa nuestro proveedor de pago autorizado (Comerciante de Registro). Cualquier reembolso se realiza en el medio de pago de origen, en ${esc(cur)}; suele aparecer en 5 a 10 días hábiles según tu banco.</p>` },
       ],
     }
   }
@@ -178,12 +177,11 @@ function refundContent(lang, region) {
     title: 'Refund Policy',
     lead: `This page describes the refund policy for the Sargassum Pass of <strong>${esc(site)}</strong> (${esc(region.domain)}).`,
     sections: [
-      { h: '30-day money-back guarantee', html: `<div class="card"><p style="margin:0">If the Service isn’t right for you, you can request a <strong>full refund within 30 days</strong> of your first payment (of your Pass). No justification needed. That’s our “satisfied or refunded” commitment.</p></div>` },
-      { h: 'Your statutory rights', html: `<p>This 30-day guarantee is in addition to any consumer-protection rights granted to you by the law of your country of residence (${esc(region.country || '')}).</p>` },
-      { h: 'Trip Pass (one-time purchase)', html: `<p>The 7-day Trip Pass is refundable if it has not been substantially used, on request within 14 days of purchase. Once the access period has been largely consumed, a refund may be declined.</p>` },
-      { h: 'One-time payment', html: `<p>The Pass is a <strong>one-time payment</strong>: there are no recurring charges to stop. A <strong>refund</strong> returns the amount paid under the conditions above.</p>` },
-      { h: 'How to request a refund', html: `<p>Write to us at <a href="mailto:${esc(support)}">${esc(support)}</a> with the email address used for the payment. We process requests within 5 business days.</p>` },
-      { h: 'Processing and timeframe', html: `<p>Payments and refunds are processed by our authorized payment provider (Merchant of Record). The refund is made to the original payment method, in ${esc(cur)}; the credit usually appears within 5 to 10 business days depending on your bank.</p>` },
+      { h: 'Immediate digital access', html: `<div class="card"><p style="margin:0">The Pass grants <strong>immediate digital access</strong>. At checkout, you expressly request the service to start right away and acknowledge that, once access is opened, <strong>the Pass is non-refundable</strong> for a simple change of mind.</p></div>` },
+      { h: 'If the service does not work', html: `<p>The above only concerns change of mind. If the service is <strong>faulty</strong> or does not match its description, write to us — we’ll find a solution (fix or refund as appropriate), consistent with the consumer-protection law of your country of residence (${esc(region.country || '')}).</p>` },
+      { h: 'One-time payment', html: `<p>The Pass is a <strong>one-time payment</strong>: there are no recurring charges to stop.</p>` },
+      { h: 'How to contact us', html: `<p>Write to us at <a href="mailto:${esc(support)}">${esc(support)}</a> with the email address used for the payment. We process requests within 5 business days.</p>` },
+      { h: 'Processing and timeframe', html: `<p>Payments are processed by our authorized payment provider (Merchant of Record). Any refund is made to the original payment method, in ${esc(cur)}; it usually appears within 5 to 10 business days depending on your bank.</p>` },
     ],
   }
 }

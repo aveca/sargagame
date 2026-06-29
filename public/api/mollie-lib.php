@@ -209,7 +209,7 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
         . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
         . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
         . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
-        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment, garantie 30 jours.</p></div>';
+        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment.</p></div>';
     mol_send_mail($email, $titre, $html);
     return true;
 }

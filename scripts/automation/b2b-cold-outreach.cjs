@@ -167,7 +167,7 @@ function buildC0(c, key) {
     } else {
       T.pain = `D'habitude, une plage qui bascule dans la nuit, vous l'apprenez en même temps que le client — à l'accueil, déçu. Le Veilleur inverse l'ordre : un satellite veille la mer (Copernicus + NOAA), traduit en prévision <strong>par plage</strong>, J+1→J+7. L'alerte « le matin où ça bascule » arrive <strong>avant</strong> l'échouage.`
       T.flip = `Concret : un matin, ${dh ? dh.beach : 'votre plage'} vire au rouge. Prévenu la veille, vous orientez les arrivées du jour vers une crique abritée à 10 min — personne pris en traître, pas d'avis « plage pleine d'algues ».`
-      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : 79 €/mois ou 690 €/an, garantie 30 j. 100 % en ligne, à votre rythme.`
+      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : 79 €/mois ou 690 €/an. 100 % en ligne, à votre rythme.`
       T.ctaText = dh ? `Voir ${dh.beach} en direct · essai 30 j` : 'Voir mes plages · essai 30 j'
     }
   }

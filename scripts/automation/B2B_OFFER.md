@@ -1,6 +1,6 @@
 # Le Veilleur — Veille côtière (B2B) — pricing arrêté 2026-06-29
 
-> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 30 jours gratuit sans carte**, garantie 30 j sur l'annuel. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 30 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
+> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 30 jours gratuit sans carte**. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 30 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
 
 > Doc de référence pour la prospection B2B sortante (`b2b-outreach.cjs` + `data/b2b-targets.json`).
 > Cible : hôtels de bord de mer, clubs de plage, offices de tourisme, mairies littorales.
@@ -33,7 +33,7 @@ L'état de vos plages affiché sur votre site / page de réservation, à vos cou
   - affichage à vos couleurs (widget) + le Brief (palier 1) + badge « plage veillée au satellite ».
 - **Garde-fou honnêteté (intangible)** : la mise en avant est **clairement labellisée « Partenaire »** (placement payant assumé) et **n'influence JAMAIS le verdict sargasses** — un partenaire dont la plage est envahie reste affiché « à éviter ». La neutralité de la donnée est ce qui rend la mise en avant crédible ; on ne la vend pas.
 - **Prix** (arrêté 2026-06-29) :
-  - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 30 j gratuit sans carte · garantie 30 j sur l'annuel.
+  - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 30 j gratuit sans carte.
   - USD : **$89/mois** ou **$790/an**.
 
 ### 3. Territory — tout le littoral, baie par baie (haut de gamme)

@@ -197,7 +197,7 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 </td>
 </tr>
 </table>
-<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique, sans abonnement · remboursé en un email</p>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique, sans abonnement · accès immédiat</p>
 </td>
 </tr>
 </table>
@@ -248,7 +248,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     upKicker: 'Para ir más lejos', upTitle: 'Mira la mañana en que cambia, 7 días antes',
     upDesc: '"Tu playa pasa de Limpia → Moderada mañana — cámbiate a la siguiente."<br>El Pase desbloquea el pronóstico de 7 días detallado y la alerta la mañana en que una playa cambia. En temporada tranquila las alertas son raras y de baja confianza — así que no te lo vendemos como esencial.',
     upCta: 'Activar mi pase',
-    upFoot: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
+    upFoot: 'Desde $5.99 · pago único, sin suscripción · acceso inmediato',
     unsub: 'Darse de baja',
   } : {
     kicker: 'Welcome aboard',
@@ -263,7 +263,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     upKicker: 'Go further', upTitle: 'See the morning it turns, 7 days ahead',
     upDesc: '"Your beach goes Clean → Moderate tomorrow — switch to the next one."<br>The Pass unlocks the detailed 7-day forecast and the alert the morning a beach turns. In calm season, alerts are rare and low-confidence — so we don\'t sell it as essential.',
     upCta: 'Activate my Pass',
-    upFoot: 'From $5.99 · one-time, no subscription · refund in one email',
+    upFoot: 'From $5.99 · one-time, no subscription · instant access',
     unsub: 'Unsubscribe',
   }
   const island = region.id.toUpperCase()
