@@ -20,7 +20,6 @@
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
-import { WebcamPanel } from "./WebcamPanel.jsx"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -593,9 +592,6 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {ReportComp&&<div className="lc-detail-report" style={{margin:"16px 0 0"}}>
           <ReportComp beach={beach} lang={lang} communityReports={communityReports}/>
         </div>}
-        {/* Webcam plage EN DIRECT (gratuite) — la « preuve du présent » face au
-            concurrent. Rend null si la plage n'a pas de champ `webcam`. */}
-        <WebcamPanel beach={beach} lang={lang}/>
         {/* Hôtel partenaire (B2B « mise en avant », palier Pro) — encart discret,
             labellisé « Partenaire ». Rend null si aucun partenaire PAYANT sur cette
             plage. Le verdict ci-dessus reste 100% data ERDDAP, jamais influencé. */}
