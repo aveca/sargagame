@@ -80,5 +80,5 @@ curl_setopt_array($ch, [
 echo json_encode([
     'ok'    => true,
     'token' => $token,
-    'days'  => 21,
+    'days'  => 30,
 ]);

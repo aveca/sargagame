@@ -28,6 +28,11 @@ function B2BModal({lang,onClose}){
   const [email,setEmail]=useState("")
   const [org,setOrg]=useState("")
   const [sent,setSent]=useState(false)
+  const [token,setToken]=useState("")   // token Pro 30 j renvoyé par b2b-trial.php (essai INSTANTANÉ)
+  const [busy,setBusy]=useState(false)
+  // Flag rollback : ?b2btrial=0 → retombe sur l'ancien comportement (capture lead + « on
+  // vous recontacte sous 24h »), sans appel à l'endpoint. Loi : pas de flag = pas de merge.
+  const instantTrial=!/[?&]b2btrial=0/.test(typeof location!=="undefined"?location.search:"")
   const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
   const I=COMIC
   // Liens de paiement Mollie (self-service in-app) — chargés depuis le JSON publié par
@@ -53,11 +58,22 @@ function B2BModal({lang,onClose}){
   ]
   const cur=TIERS.find(t=>t.id===tier)||TIERS[1]
   const submit=()=>{
-    if(!valid||sent)return
+    if(!valid||sent||busy)return
     try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
     try{submitLead(email.trim(),cur.source)}catch(_){}
     try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
-    setSent(true)
+    // Tiers self-serve (brief/pro) = essai 30 j émis INSTANTANÉMENT par /api/b2b-trial.php
+    // (zéro call, zéro attente) → l'hôtel a son accès Pro tout de suite. Territoire (199 €+)
+    // = vraie vente → garde le contact humain 24 h. Flag ?b2btrial=0 → ancien flux capture.
+    if(!instantTrial||tier==="territoire"){setSent(true);return}
+    setBusy(true)
+    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
+    fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:email.trim(),name:org.trim(),island})})
+      .then(r=>r.json()).then(d=>{
+        if(d&&d.ok&&d.token){setToken(d.token);try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
+        setBusy(false);setSent(true)   // échec → fallback gracieux : lead déjà capturé, message 24 h
+      }).catch(()=>{setBusy(false);setSent(true)})
   }
   return(
     <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>
@@ -92,15 +108,21 @@ function B2BModal({lang,onClose}){
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
-          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{cur.cta}</button>
+          <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 30 jours, sans carte · −2 mois en annuel · stop quand vous voulez","30-day trial, no card · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
             <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
           </div>}
+        </>:token?<>
+          {/* Essai activé INSTANTANÉMENT : token Pro 30 j en main → on envoie l'hôtel
+             droit dans son espace (?k=token) déjà marque-blanche. Zéro attente, zéro call. */}
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Essai activé ✓","Trial activated ✓","Prueba activada ✓")}</div>
+          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"Votre accès Pro 30 jours est actif. Ouvrez votre espace pour brancher votre widget et vos alertes — on vient aussi de vous l'envoyer par email.","Your 30-day Pro access is live. Open your space to set up your widget and alerts — we've also just emailed it to you.","Su acceso Pro de 30 días está activo. Abra su espacio para configurar su widget y alertas — también se lo enviamos por email.")}</div>
+          <a href={`/pro/espace/?k=${encodeURIComponent(token)}`} onClick={()=>{try{track("sg_b2b_space_open",{tier:cur.id})}catch(_){}}} style={{display:"block",width:"100%",boxSizing:"border-box",textAlign:"center",textDecoration:"none",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Ouvrir mon espace Pro →","Open my Pro space →","Abrir mi espacio Pro →")}</a>
         </>:<>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","¡Recibido ✓")}</div>
-          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="widget"
-            ? _t(lang,"On vous envoie le lien d'installation du widget sous 24h.","We'll send your widget install link within 24h.","Le enviamos el enlace de instalación del widget en 24h.")
+          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="territoire"
+            ? _t(lang,"On vous recontacte sous 24h pour cadrer votre déploiement multi-plages.","We'll get back to you within 24h to scope your multi-beach rollout.","Le contactamos en 24h para definir su despliegue multiplaya.")
             : _t(lang,"On vous recontacte sous 24h pour activer votre surveillance et démarrer.","We'll get back to you within 24h to set up your monitoring.","Le contactamos en 24h para activar su monitoreo.")}</div>
           <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>
         </>}
