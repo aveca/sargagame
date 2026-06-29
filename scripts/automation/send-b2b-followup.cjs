@@ -60,7 +60,7 @@ async function main() {
 
   let sent = 0, failed = 0
   for (const f of pending) {
-    const from = f.island === 'GP' ? FROM_GP : FROM_MQ
+    const from = f.from || (f.island === 'GP' ? FROM_GP : FROM_MQ)
     if (!canSend) { console.log(`  ~ ${f.id} → ${logId(f.to)} : would send "${f.subject}"`); continue }
     try {
       const r = await sendEmail({ from, to: f.to, subject: f.subject, html: shell(f), preheader: f.subtitle || '', unsubUrl: unsubUrl(f.to, f.island === 'GP' ? 'GP' : 'MQ') })
