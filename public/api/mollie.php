@@ -329,6 +329,17 @@ if ($action === 'claim_referral_credit') {
 if ($action === 'verify_subscription') {
     $email = trim($input['email'] ?? '');
     if (!$email) { http_response_code(400); echo json_encode(['error' => 'missing email']); exit; }
+    // ── Comp / cadeau (ADDITIF) : accès OFFERT manuel, cross-device. Liste de hash
+    // sha1(email) committée (PII-safe) -> public/api/comps.php. Si l'email est comped
+    // et non expiré, on (re)cache un record Pass et on débloque partout par email.
+    // Priorité (c'est un cadeau) ; n'encaisse rien ; ne touche aucun flux de paiement.
+    $compEnd = mol_comp_lookup($email);
+    if ($compEnd > time()) {
+        $stored  = mol_pass_grant_store($email, 'comp', $compEnd); // override = pass_end exact
+        $passEnd = ($stored > 0 ? $stored : $compEnd);
+        echo json_encode(['active' => true, 'passEnd' => (int)$passEnd * 1000, 'kind' => 'pass', 'comp' => true]);
+        exit;
+    }
     $rec = mol_store_read($email);
     // ── Abonnement (comportement EXISTANT inchangé) : record avec 'customer'. ──────
     if ($rec && !empty($rec['customer'])) {
