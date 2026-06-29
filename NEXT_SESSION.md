@@ -1,5 +1,24 @@
 # NEXT_SESSION — sargagame
 
+> **🗓️ 2026-06-29 — REPÈRE DE SAISON sur la fiche plage B2C (#228 MERGÉ sur `main`). Orientation réservation 2-3 sem, honnête. 2 panels d'agents + audit honnêteté.**
+>
+> **Demande fondateur** : un voyageur qui réserve un hôtel (ex. Le Diamant) pour dans 2-3 sem veut savoir si ça vaut le coup à cette période — « sur la fiche plage complète, pas la preview ».
+>
+> **Ce qui a été VÉRIFIÉ (anti-faux-positif, sur la donnée déployée) avant de coder** : `coast`/`coastNormal` = **null pour les 136 plages** (→ « côte exposée/abritée » = physique fabriquée, INTERDIT) ; l'historique par-plage est **broadcast par cluster** (53 ids → 24 traces ; Salines/Caritan/Trabaud byte-identiques → PAS spécifique plage) ; mais `beach.status` EST par-plage et diffère. Donc l'orientation honnête = **2 entrées réelles seulement** : (A) phase climatologique **régionale sourcée** (Wang & Hu 2019 *Science*, USF SaWS, Météo-France/AFAI), (B) statut **mesuré** propre à la plage.
+>
+> **Livré & mergé (#228, LIVE)** :
+> - `scripts/lib/season-climatology.cjs` : `phaseForRegion` (4 régions clim. {hors/approche/pleine-saison}, **sourcé + éditable**, jamais inventé).
+> - `scripts/lib/orientation.cjs` : `beachSeasonRepere` (2 entrées, **jamais d'exposition ni d'historique par-plage**) + `regionOrientation`/noise-gate (réutilisable B2B). `orientation.test.cjs` = **14 assertions** (gate de bruit, jamais d'exposition, climatologie sourcée).
+> - Pipeline (`fetch-sargassum-live.cjs`) + build (`build-sargassum-json.cjs`) injectent `seasonOutlook {phase,source}` dans `sargassum.json` — **additif, ne touche JAMAIS `levels`/`weekly`/`scores`** (verdict 100% data ERDDAP intact).
+> - `src/ChasseHome.jsx` : composant `SeasonRepere` — **dernier bloc de la fiche, sous le verdict + la prévision** ; replié, MUET (aucune couleur de verdict), a11y `aria-expanded`, **reduced-motion inerte** (zéro anim), **zéro date / % / score `/fiabilite/`**, CTA = **follow gratuit** (jamais paywall), FR/EN/ES. Kill-switch **`?seasonOutlook=0`**.
+> - **Firewall honnêteté** : le repère ne sort QUE si la plage a un statut mesuré (sinon on se tait) ; la preview/le panel verdict restent 100% satellite, le repère n'y apparaît jamais.
+>
+> **Gate** : esbuild OK · build OK · budget **192.9/210 Ko** · `npm test` **4/4** (14 assert orientation) · smoke : **0 erreur JS, 0 bouton `lc-season` flaggé** (tokens résiduels = ressources externes bloquées par le sandbox, **identiques avant/après**, pré-existants). **Vérif deploy `daily-copernicus` (run sur `82df5fba`) + `curl` prod = à confirmer** (run lancé au merge).
+>
+> **RESTE / FOLLOW-UPS (non bloquant, leverage décroissant)** :
+> - **Email B2B « Orientation ramassage » collectivités (round-1 panel P0) — PAS encore câblé** : `regionOrientation` est construit + testé + prêt, MAIS il faut un **nouveau mécanisme d'envoi hebdo** (le drip est par-lead-une-fois) + marqueur région+semaine + step cron. ROI faible aujourd'hui (le noise-gate **supprime la tendance partout** tant que l'historique est court — vérifié : 5 régions `direction:null`), donc l'email se résumerait à « pleine saison + bancs au large ». À câbler quand l'historique se sera approfondi (la tendance multi-semaines devient l'info différenciante).
+> - **Approfondir l'historique** : à mesure que `history.json` grandit (>~6 sem propres), le noise-gate laissera passer une vraie tendance régionale → enrichit l'orientation (région ET, plus tard, ré-évaluer une vraie donnée d'exposition par-plage **backtest-validée** avant de réintroduire « côte exposée/abritée », aujourd'hui INTERDIT).
+
 > **📹 2026-06-29 — WEBCAMS LIVE RÉPARÉES + anti-gel (#226 MERGÉ sur `main`).**
 >
 > **Problème fondateur** : la webcam de Grande Anse d'Arlet (« grandence Darley ») ne marchait plus et **figeait l'app au tap**. **Cause racine** : les lives YouTube « 24/7 » (webcams touristiques) tournent leur `videoId` à chaque redémarrage → un id codé en dur finit en `"This live stream recording is not available"` ; sur un id mort, l'iframe pouvait happer le tap (fullscreen iOS PWA) et geler l'app.
