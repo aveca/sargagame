@@ -383,6 +383,73 @@ function PartnerCard({beach,lang,track}){
   )
 }
 
+/* ====================================================================
+   REPÈRE DE SAISON (orientation moyen terme, fiche plage B2C)
+   ------------------------------------------------------------------
+   Aide à la décision de RÉSERVATION (« vaut-il le coup de viser cette plage
+   dans 2-3 semaines ? ») — PAS une prévision. Panel d'agents 2026-06-29 +
+   audit honnêteté (vérifié sur la donnée déployée). DEUX entrées réelles
+   SEULEMENT : (A) phase climatologique RÉGIONALE sourcée (sargData.seasonOutlook,
+   produite par season-climatology.cjs) ; (B) statut MESURÉ propre à la plage
+   (beach.status). JAMAIS d'exposition (coast=null pour les 136 plages → physique
+   fabriquée), JAMAIS l'historique par-plage (broadcast cluster), JAMAIS de date,
+   de %, de couleur de verdict. Bloc MUET, replié par défaut, sous le verdict.
+   Firewall lexical : vocabulaire climatologique uniquement, le verdict garde
+   « mesuré au satellite / aujourd'hui ». Kill-switch ?seasonOutlook=0.
+   tone (miroir de scripts/lib/orientation.cjs beachSeasonRepere) :
+     hors-saison → 'calm' ; sinon clean → 'reassure' ; moderate/avoid → 'check'. */
+function seasonOutlookOn(){ try{ return !/[?&]seasonOutlook=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+const SEASON_I18N={
+  eyebrow:{fr:"REPÈRE DE SAISON",en:"SEASON OUTLOOK",es:"REFERENCIA DE TEMPORADA"},
+  notForecast:{fr:"pas une prévision",en:"not a forecast",es:"no es un pronóstico"},
+  teaser:{fr:"À quoi s'attendre pour cette période ?",en:"What to expect around this time?",es:"¿Qué esperar en esta época?"},
+  phase:{
+    "pleine-saison":{fr:"On est dans la période la plus active de l'année pour les sargasses dans la région — la haute saison va globalement du printemps à la fin de l'été (climatologie publiée).",en:"This is the most active part of the year for sargassum in the region — peak season runs roughly spring to late summer (published climatology).",es:"Es la parte más activa del año para el sargazo en la región — la temporada alta va aproximadamente de primavera a fin de verano (climatología publicada)."},
+    "approche-saison":{fr:"On est en bordure de la période d'afflux régional — la haute saison va globalement du printemps à la fin de l'été (climatologie publiée).",en:"We're at the edge of the regional influx period — peak season runs roughly spring to late summer (published climatology).",es:"Estamos al borde del periodo de llegada regional — la temporada alta va de primavera a fin de verano (climatología publicada)."},
+    "hors-saison":{fr:"On est hors de la période d'afflux principale — c'est généralement la période la plus calme de l'année dans la région (climatologie publiée).",en:"We're outside the main influx period — usually the calmest time of year in the region (published climatology).",es:"Estamos fuera del periodo principal de llegada — suele ser la época más tranquila del año en la región (climatología publicada)."},
+  },
+  statusWord:{clean:{fr:"propre",en:"clean",es:"limpia"},moderate:{fr:"modérée",en:"moderate",es:"moderada"},avoid:{fr:"chargée",en:"heavy",es:"cargada"}},
+  measured:(name,word,lang)=>({fr:`Au satellite, ${name} est mesurée « ${word.fr} » en ce moment.`,en:`On satellite, ${name} is measured "${word.en}" right now.`,es:`Por satélite, ${name} está medida «${word.es}» ahora mismo.`}[lang]||""),
+  close:{
+    reassure:{fr:"Rien n'est promis à deux ou trois semaines, mais c'est un repère encourageant pour caler vos dates.",en:"Nothing is promised two or three weeks out, but it's an encouraging marker to set your dates.",es:"Nada se promete a dos o tres semanas, pero es una señal alentadora para fijar tus fechas."},
+    check:{fr:"Aucune date n'est prévisible à deux ou trois semaines : repassez voir le verdict du jour quelques jours avant de venir, c'est lui qui tranche.",en:"No date can be predicted two or three weeks out: check the daily verdict a few days before you come — that's what decides.",es:"Ninguna fecha es predecible a dos o tres semanas: vuelve a ver el veredicto del día unos días antes de venir, es lo que decide."},
+    calm:{fr:"Aucune date n'est promise, mais la basse saison joue en votre faveur — vérifiez quand même le verdict du jour avant de venir.",en:"No date is promised, but the off-season is in your favor — still check the daily verdict before you come.",es:"Ninguna fecha se promete, pero la temporada baja juega a tu favor — revisa igual el veredicto del día antes de venir."},
+  },
+  disclaimer:{fr:"Repère saisonnier régional — le verdict du jour reste votre seule donnée datée.",en:"Regional seasonal marker — the daily verdict stays your only dated data.",es:"Referencia estacional regional — el veredicto del día sigue siendo tu único dato fechado."},
+  follow:{fr:"Suivre cette plage (gratuit)",en:"Follow this beach (free)",es:"Seguir esta playa (gratis)"},
+  followed:{fr:"Plage suivie ✓",en:"Beach followed ✓",es:"Playa seguida ✓"},
+}
+function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
+  const [open,setOpen]=useState(false)
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  if(!seasonOutlookOn())return null
+  const phase=sargData&&sargData.seasonOutlook&&sargData.seasonOutlook.phase
+  const status=beach&&beach.status
+  if(!phase||!SEASON_I18N.phase[phase])return null
+  if(status!=="clean"&&status!=="moderate"&&status!=="avoid")return null // pas de statut mesuré → on se tait
+  const tone=phase==="hors-saison"?"calm":(status==="clean"?"reassure":"check")
+  const toggle=()=>{ const n=!open; setOpen(n); if(n&&track)try{track("sg_season_repere_open",{beach_id:beach.id,phase,tone})}catch(_){} }
+  return (
+    <section className="lc-season" aria-label={_t(SEASON_I18N.eyebrow)}>
+      <button type="button" className="lc-season-h" aria-expanded={open} onClick={toggle}>
+        <span className="lc-season-eye">{_t(SEASON_I18N.eyebrow)}<i>· {_t(SEASON_I18N.notForecast)}</i></span>
+        <span className="lc-season-teaser">{_t(SEASON_I18N.teaser)}</span>
+        <span className="lc-season-chev" aria-hidden="true">{open?"−":"+"}</span>
+      </button>
+      {open&&(
+        <div className="lc-season-body">
+          <p>{_t(SEASON_I18N.phase[phase])}</p>
+          <p>{SEASON_I18N.measured(beach.name,SEASON_I18N.statusWord[status],lang)} {_t(SEASON_I18N.close[tone])}</p>
+          {onFollow&&<button type="button" className="lc-season-follow" onClick={()=>{ if(!followed){ onFollow(beach.id); if(track)try{track("sg_season_repere_follow",{beach_id:beach.id})}catch(_){} } }} disabled={followed}>
+            {followed?_t(SEASON_I18N.followed):_t(SEASON_I18N.follow)}
+          </button>}
+          <p className="lc-season-disc">{_t(SEASON_I18N.disclaimer)}</p>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,communityReports={}}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
@@ -572,6 +639,11 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             </div>
           </div>
         ) : null}
+
+        {/* REPÈRE DE SAISON — DERNIER bloc, sous le verdict + la prévision : orientation
+            réservation 2-3 sem, muette, repliée. Jamais sur la preview/le verdict. */}
+        <SeasonRepere beach={beach} sargData={sargData} lang={lang} track={track}
+          followed={favorites.includes(beach.id)} onFollow={onToggleFav}/>
       </div>
     </div>
   )
@@ -1904,6 +1976,24 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 /* strip 7 jours (case BD) */
 .lc-detail-fc{margin:4px 0 18px}
 .lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
+/* Repère de saison — bloc MUET, distinct du verdict (aucune couleur statut, pas
+   d'ombre BD agressive, pas d'animation). Firewall visuel : il ne doit jamais se
+   lire comme le verdict daté. Disclosure statique (reduced-motion-inert). */
+.lc-season{margin:20px 0 0;border-top:1px dashed #c9c3d2;padding-top:14px}
+.lc-season-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;
+  -webkit-appearance:none;appearance:none;background:#f3f1f7;border:1px solid #ddd8e6;
+  border-radius:10px;cursor:pointer;text-align:left;padding:9px 11px;color:#6a6478;font-family:inherit}
+.lc-season-eye{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:#6a6478}
+.lc-season-eye i{font-style:normal;font-weight:700;opacity:.75;font-size:11px;letter-spacing:.2px}
+.lc-season-teaser{flex:1;font-size:12.5px;font-weight:700;color:#6a6478}
+.lc-season-chev{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;color:#6a6478;line-height:1;width:18px;text-align:center}
+.lc-season-body{margin-top:8px}
+.lc-season-body p{font-size:13px;line-height:1.5;color:#4a4458;margin:0 0 9px}
+.lc-season-disc{font-size:11.5px;font-style:italic;color:#8a8498;margin:10px 0 0}
+.lc-season-follow{-webkit-appearance:none;appearance:none;background:#ece8f3;
+  border:1.5px solid #b7b0c2;border-radius:9px;padding:8px 12px;color:#5a5468;
+  font-weight:800;font-size:12.5px;font-family:inherit;cursor:pointer}
+.lc-season-follow:disabled{opacity:.6;cursor:default}
 .lc-detail-fc-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;cursor:pointer}
 .lc-fc-cell{border:2.5px solid var(--ink);border-radius:9px;padding:7px 2px;text-align:center;background:#fff;box-shadow:2px 2px 0 var(--ink);
   display:flex;flex-direction:column;align-items:center;gap:3px}

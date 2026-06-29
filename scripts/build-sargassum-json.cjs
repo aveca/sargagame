@@ -8,6 +8,16 @@ const fs = require('fs')
 const path = require('path')
 const { referenceConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
+const { phaseForRegion } = require('./lib/season-climatology.cjs')
+
+// Repère de saison (orientation moyen terme, fiche plage B2C) : phase climatologique
+// SOURCÉE, additive, jamais un verdict. Rafraîchie à CHAQUE build (mois courant) même
+// quand on garde la donnée ERDDAP-live — n'altère aucun champ du verdict.
+const REGION = process.env.VITE_REGION || 'mq'
+function seasonOutlook() {
+  const p = phaseForRegion(REGION)
+  return { phase: p.phase, source: p.source }
+}
 
 const SARGASSUM_REF = [
   { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "clean" },
@@ -33,7 +43,11 @@ try {
 } catch (_) {}
 
 if (existing && existing.source === 'erddap-live') {
-  console.log('OK: public/api/copernicus/sargassum.json (kept erddap-live data, not overwriting)')
+  // On garde la donnée verdict telle quelle, mais on rafraîchit le repère de saison
+  // (champ additif, mois courant). Ne touche jamais levels/weekly/scores.
+  existing.seasonOutlook = seasonOutlook()
+  fs.writeFileSync(outPath, JSON.stringify(existing), 'utf-8')
+  console.log('OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)')
 } else {
   const refConf = referenceConfidence()
   const levels = SARGASSUM_REF.map(l => ({
@@ -60,6 +74,7 @@ if (existing && existing.source === 'erddap-live') {
     pipelineVersion: '2.0',
     levels,
     weekly,
+    seasonOutlook: seasonOutlook(),
   }
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
   console.log('OK: public/api/copernicus/sargassum.json (reference fallback, pipeline v2.0)')
