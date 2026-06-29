@@ -24,11 +24,14 @@ Chaque matin, l'état réel des 3 à 5 plages les plus proches de votre établis
   - EUR (MQ/GP) : **29 €/mois** ou **290 €/an**.
   - USD (Riviera Maya / Punta Cana / Floride) : **$39/mois** ou **$390/an**.
 
-### 2. Pro — la preuve sur votre site (cœur de gamme)
+### 2. Pro — la preuve sur votre site ET dans l'app (cœur de gamme)
 L'état de vos plages affiché sur votre site / page de réservation, à vos couleurs, pour rassurer le visiteur AVANT qu'il réserve — la preuve datée plutôt qu'un adjectif. (Widget aux couleurs de l'établissement : piste de travail, pas un livrable promis aujourd'hui — voir « Cadre honnête ».)
 - **Cible** : hôtels avec site propre, offices de tourisme, résidences hôtelières.
 - **Valeur** : lever l'incertitude au moment de la décision (moins d'incertitude = moins d'abandon), et faire de la transparence un argument de vente.
-- **Inclus (cible)** : affichage à vos couleurs + le Brief (palier 1) + badge « plage veillée au satellite ».
+- **Inclus (cible)** :
+  - **Mise en avant dans l'app Le Veilleur** ⭐ — votre établissement présenté au voyageur **sur la fiche de VOTRE plage**, au moment EXACT où il vérifie l'état des sargasses avant de réserver. Encart « Partenaire » (logo + ligne + lien vers votre site/réservation). C'est le bénéfice phare : pas un coût, un **canal d'acquisition** sur l'audience la plus qualifiée qui soit. *Implémenté (`PartnerCard` sur la fiche plage) ; activé à la main quand le paiement Pro est confirmé.*
+  - affichage à vos couleurs (widget) + le Brief (palier 1) + badge « plage veillée au satellite ».
+- **Garde-fou honnêteté (intangible)** : la mise en avant est **clairement labellisée « Partenaire »** (placement payant assumé) et **n'influence JAMAIS le verdict sargasses** — un partenaire dont la plage est envahie reste affiché « à éviter ». La neutralité de la donnée est ce qui rend la mise en avant crédible ; on ne la vend pas.
 - **Prix de référence** (direction, non câblé) :
   - EUR : **79 €/mois** ou **790 €/an**.
   - USD : **$99/mois** ou **$990/an**.
@@ -69,7 +72,9 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > Et on est honnêtes jusqu'au bout : notre taux d'erreur est publié et audité chaque jour, par régime. En saison calme, 100 % de nos prévisions « mer propre » se sont vérifiées (2 805 contrôles, 2026-05-19 → 2026-06-18) ; tous régimes confondus on tourne autour de 75-78 %, et les rares alertes de saison calme sont affichées en faible confiance. Vous voyez nos réussites comme nos limites — c'est précisément ce que les outils gratuits ne publient pas.
 >
-> L'offre pour les établissements est en cours de finition (paliers Brief / Pro / Territory, à partir de 29 €/mois). Aujourd'hui, le mieux : parlons-en. Je vous montre l'état de vos plages en direct quand vous voulez — répondez simplement à cet email.
+> Et il y a un retour pour vous : avec le palier Pro, on **met votre établissement en avant DANS l'application**, sur la fiche de votre plage — donc juste au moment où le voyageur vérifie s'il y a des sargasses avant de réserver. C'est exactement votre futur client, au bon instant. Voici à quoi ça ressemblerait pour vous : [aperçu]. (Affiché « Partenaire », et ça ne touche jamais le verdict de la plage — c'est ce qui le rend crédible.)
+>
+> L'offre pour les établissements est en cours de finition (paliers Brief / Pro / Territory, à partir de 29 €/mois). Aujourd'hui, le mieux : parlons-en. Je vous montre l'état de vos plages en direct — et votre mise en avant — quand vous voulez ; répondez simplement à cet email.
 >
 > Bien à vous,
 > Le Veilleur · veille côtière opérée depuis la Martinique
@@ -84,7 +89,9 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > And we stay honest all the way: our miss rate is published and audited every day, by regime. In calm season, 100% of our "clean water" forecasts proved correct (2,805 checks, 2026-05-19 → 2026-06-18); across all regimes we run ~75-78%, and the rare calm-season alerts are flagged low-confidence. You see our wins and our limits — exactly what the free tools don't publish.
 >
-> The offer for businesses is still being finalized (Brief / Pro / Territory tiers, from $39/mo). Today, the best step: let's talk. I'll show you your beaches live whenever you like — just reply.
+> And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
+>
+> The offer for businesses is still being finalized (Brief / Pro / Territory tiers, from $39/mo). Today, the best step: let's talk. I'll show you your beaches live — and your placement — whenever you like; just reply.
 >
 > Best,
 > Le Veilleur · coastal watch, operated from Martinique

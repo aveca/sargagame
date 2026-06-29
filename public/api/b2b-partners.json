@@ -1,0 +1,25 @@
+{
+  "_note": "GÉNÉRÉ par scripts/automation/gen-b2b-partners.cjs depuis b2b-partner-meta.json — NE PAS éditer à la main (éditer le catalogue puis régénérer). `partners` = LIVE (active:true uniquement). `preview` = démo (?preview_partner=<slug>). Verdict sargasses = 100% data ERDDAP, jamais influencé.",
+  "updatedAt": "2026-06-29",
+  "partners": [],
+  "preview": [
+    {
+      "beachId": "mq016",
+      "slug": "diamant-les-bains",
+      "name": "Hôtel Diamant Les Bains",
+      "tagline": "Résidence hôtelière en bordure de plage, face au Rocher du Diamant.",
+      "url": "https://www.diamant-les-bains.fr/",
+      "area": "Le Diamant",
+      "logo": null
+    },
+    {
+      "beachId": "mq001",
+      "slug": "anoli-lodges",
+      "name": "Anoli Lodges",
+      "tagline": "Lodges au calme à Sainte-Anne, à 5 min de la plage des Salines.",
+      "url": "https://anoli-lodges.com",
+      "area": "Sainte-Anne",
+      "logo": null
+    }
+  ]
+}
