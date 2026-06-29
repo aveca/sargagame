@@ -10,13 +10,12 @@
 > - **#216 — Relance conversion essai J+18** : `drip-b2b-email.cjs` étape **`t18`** dédiée aux leads `b2b_trial` (gating essai↔essai, pas de nurture froide). Copy panel : perte de continuité (widget+alertes s'éteignent) + 1 CTA self-serve (annuel 690 € paylink + mensuel via espace). Dedup per-step.
 > - **Paylink annuel 690 € minté** (pipeline planifié, après #211/#212 retrait du 790 € + auto-heal `mollie-paylinks.cjs`). `b2b-paylinks.json` `pro_annual` = `690.00` LIVE.
 >
-> **⚠️ ACTION FONDATEUR (validation post-deploy, dashboard Mollie — toi seul)** :
-> 1. **1 vrai paiement test 79 €/mois** (checkout hébergé `/pro/espace/` → S'abonner) → confirme création abo récurrent + mandat.
-> 2. **1 vrai paiement test 690 €/an** (paylink) → confirme le lien régénéré.
-> 3. Confirmer que `mollie-config.php` (FTP) porte bien **`resend_key`** → sinon le token Pro (essai ET payant) n'est pas livré par email (l'abo se crée quand même, mais le lien d'accès n'arrive pas). C'est la seule dépendance qui peut faire échouer la boucle silencieusement.
+> **Mollie = DÉJÀ VALIDÉ** (tests réels + un vrai client a payé) → **PAS de paiement test à refaire** pour ces modifs additives. Seuls 2 points méritent un coup d'œil (pas un gate) :
+> - Le **seul mécanisme vraiment neuf** = le checkout hébergé récurrent *sans cardToken* (#215, `hosted:1`). Au 1er abo mensuel réel, vérifier d'un œil que l'abo + mandat se créent (sinon le flux carte-token B2C, lui, est prouvé).
+> - **`resend_key` dans `mollie-config.php` (FTP)** : si absent, le token Pro (essai ET payant) ne part pas par email (l'abo se crée quand même). Seule dépendance qui peut casser la boucle en silence.
 >
-> **RESTE (backlog B2B, par leverage décroissant — aucun client live aujourd'hui donc non urgent)** :
-> - **Copy froide drip b0-b13** (`drip-b2b-email.cjs`) porte ENCORE « en construction / parlons-en / interdit €-mois » (périmé : offre arrêtée + self-serve LIVE). À refondre en self-serve (panel copy) — viole ZÉRO-call. (Flaggé en #216.)
+> **RESTE (backlog B2B, par leverage décroissant — non urgent)** :
+> - ✅ **FAIT** : copy froide drip b0-b13 refondue en self-serve (plus de « parlons-en / en construction », CTA → /pro/espace/, pricing 79/690 + essai 21j).
 > - **Garantie 30 j self-serve** (remboursement Mollie 1-clic) — money-path (refund API).
 > - **PartnerCard auto-activation** (`active:true`) au paiement Pro confirmé → nécessite Supabase (le webhook PHP ne peut pas commit `b2b-partner-meta.json` en repo). Aucun partenaire live → non urgent.
 > - **Copy EN/ES** dans `b2b-outreach.cjs` (îles non-`gp` retombent sur le template FR).
