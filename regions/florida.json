@@ -84,13 +84,7 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "youtube",
-        "id": "g5BS95j2rmM",
-        "label": "Miami Beach — Collins Ave",
-        "provider": "ZeroEight"
-      }
+      "parking": true
     },
     {
       "id": "fl002",
@@ -114,13 +108,7 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "youtube",
-        "id": "1j1lgppb0PY",
-        "label": "Fort Lauderdale Beach",
-        "provider": "ElboTV"
-      }
+      "parking": true
     },
     {
       "id": "fl004",

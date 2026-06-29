@@ -412,34 +412,6 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/ux-watch.cjs --send
 
-      # Santé des webcams live : les flux YouTube « 24/7 » tournent leur videoId →
-      # un id codé en dur meurt (« recording not available ») ou se fige (was_live).
-      # Ce step détecte les morts/tournés via yt-dlp (repli watch-page) et les
-      # DÉSACTIVE (webcam.disabled=true, réversible) → WebcamPanel les masque.
-      # JAMAIS de désactivation sur signal ambigu (bot-wall) — seulement morts durs
-      # (immédiat) ou stale 2 passages consécutifs. schedule-only (idempotent).
-      - name: Webcam health (auto-disable flux morts)
-        if: github.event_name == 'schedule'
-        continue-on-error: true
-        env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: |
-          pip install -q yt-dlp 2>/dev/null || pip3 install -q yt-dlp 2>/dev/null || echo "yt-dlp absent → repli watch-page (curl)"
-          node scripts/automation/webcam-health.cjs --apply --send
-
-      - name: Commit webcam health state
-        if: github.event_name == 'schedule'
-        continue-on-error: true
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/webcam-health.json public/data/beaches-list.json regions/florida.json regions/puntacana.json regions/rivieramaya.json regions/barbados.json; do
-            [ -f "$f" ] && git add "$f"
-          done
-          if git diff --cached --quiet; then echo "Webcam state unchanged."; exit 0; fi
-          git commit -m "chore: webcam health $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push || (git pull --rebase -X theirs && git push)
-
       # ── 1b. Commit IMMÉDIAT des états email (anti-doublon). Leçon 2026-06-11 :
       # le commit de fin de workflow arrive APRÈS build/deploy — un step qui
       # plante entre les envois et ce commit = drip-sent.json jamais persisté

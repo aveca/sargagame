@@ -207,13 +207,7 @@
     "snorkel": true,
     "parking": true,
     "drive": 25,
-    "slug": "grande-anse-d-arlet",
-    "webcam": {
-      "type": "youtube",
-      "id": "CC0gjFqH_u4",
-      "label": "Grande Anse d’Arlet",
-      "provider": "Vision-Environnement"
-    }
+    "slug": "grande-anse-d-arlet"
   },
   {
     "id": "mq015",
