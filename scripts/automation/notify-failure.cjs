@@ -42,7 +42,7 @@ try {
   console.error('ops event write failed:', e.message)
 }
 
-const TO = 'aveca@aveca.fr'
+const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses Pipeline <alerte@sargasses-martinique.com>'
 
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')

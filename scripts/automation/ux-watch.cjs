@@ -29,7 +29,7 @@ const DO_SEND = process.argv.includes('--send')
 const DATA = path.join(__dirname, 'data')
 const REPORT = path.join(DATA, 'ux-report.json')
 const SEEN = path.join(DATA, 'ux-watch-seen.json')
-const TO = 'aveca@aveca.fr'
+const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses UX <alerte@sargasses-martinique.com>'
 const load = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 
