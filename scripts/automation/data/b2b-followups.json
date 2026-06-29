@@ -1,0 +1,16 @@
+{
+  "_note": "Outbox de follow-ups B2B personnalisés (envoyés une fois par send-b2b-followup.cjs, --send). Chaque entrée a un id unique ; une fois envoyée, son id est marqué dans b2b-followup-sent.json → jamais ré-envoyée. Ajoute une entrée pour un nouveau prospect chaud. bodyHtml = corps de l'email (le brandHeader + footer désabo sont ajoutés automatiquement).",
+  "updatedAt": "2026-06-29",
+  "followups": [
+    {
+      "id": "anoli-lodges-widget-fix-2026-06-29",
+      "to": "admin@anoli-lodges.com",
+      "island": "MQ",
+      "subject": "Votre widget sargasses pointe sur la mauvaise plage — je vous corrige ça",
+      "kicker": "Le Veilleur",
+      "title": "Un petit réglage sur votre widget",
+      "subtitle": "Il pointe sur le Bourg, pas sur Les Salines (la plage de vos clients).",
+      "bodyHtml": "<p style=\"margin:0 0 14px\">Bonjour,</p><p style=\"margin:0 0 14px\">J'ai vu que vous avez intégré notre widget sargasses sur votre site — merci, ça me touche vraiment. Un détail cependant : il est réglé sur la <strong>plage du Bourg</strong>, alors que vos clients, eux, descendent aux <strong>Salines</strong>, à 5 minutes de vos lodges. Il affiche donc la bonne info… mais pour la mauvaise plage.</p><p style=\"margin:0 0 10px\">Voici le code corrigé, réglé sur <strong>Les Salines</strong> — vous n'avez qu'à remplacer l'ancien :</p><pre style=\"background:#0D1E1C;color:#e8efe9;border-radius:10px;padding:13px 14px;font-size:12px;line-height:1.5;overflow-x:auto;white-space:pre;font-family:ui-monospace,Menlo,Consolas,monospace\">&lt;iframe\n  src=\"https://sargasses-martinique.com/widget/embed/?beach=plage-des-salines&amp;name=Plage%20des%20Salines&amp;lang=fr\"\n  style=\"width:100%;max-width:520px;height:230px;border:0;border-radius:14px\"\n  loading=\"lazy\" title=\"Sargasses — Plage des Salines en direct\"&gt;&lt;/iframe&gt;</pre><p style=\"margin:10px 0 16px;font-size:13px;color:#6b6b75\">(Vous pouvez l'accorder à votre charte : <code>&amp;accent=RRGGBB</code> pour la couleur, <code>&amp;theme=dark</code> pour un fond sombre.)</p><p style=\"margin:0 0 14px\">Et tant que j'y suis — puisque vous utilisez déjà Le Veilleur : avec l'offre <strong>Pro</strong>, on va plus loin que le widget sur votre site. <strong>On vous met en avant à l'intérieur de l'application</strong>, directement sur la fiche de la plage des Salines — c'est-à-dire pile au moment où un voyageur vérifie s'il y a des sargasses <strong>avant de réserver</strong>. Votre futur client, au bon endroit, au bon instant.</p><p style=\"margin:0 0 8px\">Voici à quoi ça ressemblerait pour vous — ouvrez le lien, puis touchez une plage :</p><p style=\"margin:0 0 16px\"><a href=\"https://sargasses-martinique.com/?preview_partner=anoli-lodges\" style=\"color:#0B7A6E;font-weight:700\">👉 Voir mon aperçu « Partenaire »</a></p><p style=\"margin:0 0 14px\">C'est affiché « Partenaire », et — promis — ça ne touche <strong>jamais</strong> le verdict de la plage : si Les Salines sont envahies un matin, c'est écrit, partenaire ou pas. C'est précisément ce qui rend la mise en avant crédible aux yeux du voyageur.</p><p style=\"margin:0 0 16px\">Si l'idée vous parle, répondez-moi simplement — je vous montre tout en 10 minutes.</p><p style=\"margin:0\">Bien à vous,<br>Le Veilleur — veille côtière, opérée depuis la Martinique</p>"
+    }
+  ]
+}

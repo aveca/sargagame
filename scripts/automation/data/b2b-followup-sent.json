@@ -1,0 +1,1 @@
+{ "_note": "Marqueur anti-doublon de send-b2b-followup.cjs : ids des follow-ups B2B déjà envoyés. NE PAS vider à la main (sinon ré-envoi).", "sent": [] }
