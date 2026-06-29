@@ -161,7 +161,9 @@ if ($action === 'applepay_session') {
 // ── Action: create_subscription — ABO. cardToken -> Customer + 1er paiement
 // sequenceType 'first' (mandat + periode 1). La Subscription est creee a 'paid'.
 if ($action === 'create_subscription') {
-    if (!mol_is_eur_region($island)) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
+    // Garde devise↔région appliqué APRÈS résolution du plan (voir plus bas) : ouvre le
+    // B2B USD (florida/puntacana/rivieramaya) sans jamais permettre un plan EUR sur région
+    // USD ni l'inverse. Le montant vient TOUJOURS de $sc (serveur), jamais du client.
     $cardToken = $input['cardToken'] ?? '';
     // Wallet (Apple Pay / Google Pay) : 1er paiement recurrent via checkout heberge
     // Mollie (le mandat est cree cote Mollie, exactement comme avec la carte). cf.
@@ -186,6 +188,10 @@ if ($action === 'create_subscription') {
     if ((!$cardToken && !$method && !$hosted) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
         http_response_code(400); echo json_encode(['error' => 'bad subscription params']); exit;
     }
+    // Cohérence devise↔région : région USD ⇒ plan USD, région EUR ⇒ plan EUR ; région
+    // inconnue ⇒ rejet. Bloque tout mismatch (ex. plan EUR sur florida) avant de charger.
+    $regCur = mol_region_currency($island);
+    if (!$regCur || $sc['currency'] !== $regCur) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
     // ── Parrainage (attribution capturée — récompense au go-live Mollie) ──────────
     // Mollie n'a NI coupon NI customer balance (contrairement à Stripe). On ne peut
     // donc pas créditer ici. On ENREGISTRE l'attribution (mon code en metadata

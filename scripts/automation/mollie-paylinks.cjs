@@ -27,8 +27,12 @@ const REDIRECT = 'https://sargasses-martinique.com/?pro_paid=1'
 // L'annuel reste l'ancre/option « verrouiller » ; le mensuel récurrent (79/29 €) est la
 // porte d'entrée par défaut, à câbler en plans Mollie (mollie-config.php, action fondateur).
 const TIERS = [
-  { id: 'brief_annual', value: '290.00', label: 'Sargasses Pro — Brief (abonnement annuel)' },
-  { id: 'pro_annual',   value: '690.00', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
+  // EUR (MQ/GP)
+  { id: 'brief_annual',     value: '290.00', currency: 'EUR', label: 'Sargasses Pro — Brief (abonnement annuel)' },
+  { id: 'pro_annual',       value: '690.00', currency: 'EUR', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
+  // USD (florida/puntacana/rivieramaya) — grille de réf. Pro $790 / Brief $390 (Mollie encaisse l'USD).
+  { id: 'brief_annual_usd', value: '390.00', currency: 'USD', label: 'Sargassum Pro — Brief (annual)' },
+  { id: 'pro_annual_usd',   value: '790.00', currency: 'USD', label: 'Sargassum Pro — Pro: white-label widget + brief + alerts (annual)' },
 ]
 
 function loadKey() {
@@ -49,7 +53,7 @@ async function createLink(key, tier) {
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       description: tier.label,
-      amount: { currency: 'EUR', value: tier.value },
+      amount: { currency: tier.currency || 'EUR', value: tier.value },
       redirectUrl: REDIRECT,
     }),
   })
