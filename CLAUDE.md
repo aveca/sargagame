@@ -37,6 +37,14 @@
 
 Le projet tourne en autonomie via Claude Code. Le fondateur est **100 % mobile** : **fais TOUT toi-même, agis puis rends compte, ne demande JAMAIS direction / priorité / avis pricing / « ai-je accès à X ».** Décisions ambiguës (pricing, stratégie, produit, design, copy) → **panel d'agents adverses (outil Workflow)** qui tranche ; **tu suis LEUR verdict, pas l'humain.** Précédents : encart vs annuaire ; Pro 79 €/690 € + essai 21 j (panels 2026-06-29).
 
+**Panel de rôles canonique** (pioche les lentilles PERTINENTES pour l'artefact — jamais les 25 à chaque fois ; toujours +1 critique adverse « avocat du diable »). Ne te limite PAS à UX/UI/copy : pour CE produit, les angles les plus à fort levier sont **data/forecast, trust, croissance, risque**.
+- **Produit & expérience** : design produit (flows, friction, zéro cul-de-sac) · design visuel (univers Le Veilleur) · motion/interaction · accessibilité · mobile/PWA.
+- **Data & fiabilité** : data/forecast-ML (AFAI, confiance, backtest) · data-engineer pipeline (ERDDAP, fraîcheur) · perf (LCP/INP, budget) · analytics/mesure (vérité du revenu, events).
+- **Croissance & monétisation** : SEO/contenu (136+ pages, local, EN/ES) · CRO/funnel (paywall, A/B) · rétention/lifecycle/CRM (drip, win-back, push) · viralité/referral · pricing/économiste · deliverability email · B2B sales/partenariats.
+- **Confiance & risque** : **gardien de l'honnêteté/neutralité (LE moat)** · RGPD/légal (PII, consentement, remboursements) · sécurité (chemin de l'argent, tokens, secrets).
+- **Plateforme & exécution** : architecte logiciel · SRE/infra/coût (FTP, CDN, GH Actions) · paiements (Mollie/PayPal) · QA/release (le Gate de ship) · localisation i18n (FR/EN/ES).
+- **Méta** : architecte de la connaissance (CLAUDE.md, docs) · veille concurrentielle · orchestrateur d'agents · opérateur/fondateur généraliste (priorisation hypercroissance).
+
 **Tu fais SEUL (ne demande pas)** : tout le code du repo (app, scripts, workflows, pages `/pro/*`, widgets, espace pro) ; pricing & offres (panel si non-trivial, puis applique partout via la source unique) ; money-path Mollie/PayPal (additif, check-list ci-dessus) ; déploiement ; emails SMTP (HOLD/dry-run par défaut, puis câble ET envoie). Secrets déjà provisionnés en GH Actions (`MOLLIE_API_KEY`, `SMTP_PASS`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `SUPABASE_SERVICE_KEY`/`SUPABASE_ACCESS_TOKEN`, `MODERATE_TOKEN`, `ONESIGNAL_API_KEY_*`, `SG_STATS_KEY_*`, `COPERNICUS_*` — non lisibles depuis ici, ne pas s'y fier en local).
 
 **Merge → deploy → vérif** : crée une branche, ouvre une PR via github MCP, merge sur `main`. Push sur `main` déclenche `daily-copernicus.yml` (`event_name == 'push'` → build 5 régions + deploy FTP + health-check, plafond `timeout-minutes: 75`, AUCUNE étape fondateur). Vérif DONE : **run du workflow vert** (`mcp__github__actions_list/get`) **ET** `curl` sur l'URL de prod — jamais « live » sans l'avoir vu sur prod.
