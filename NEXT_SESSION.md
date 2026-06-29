@@ -1,5 +1,24 @@
 # NEXT_SESSION — sargagame
 
+> **📨 2026-06-29 — MESSAGERIE : toutes les boîtes des 5 domaines REDIRIGENT vers le Gmail fondateur + 88 mails clients en retard récupérés. RÉSOLU.**
+>
+> **Contexte** : le fondateur ne relève QUE son Gmail (mobile). Les boîtes brandées (`alerte@/alerts@/support@/contact@…`) n'étaient pas relevées → réponses clients perdues. **Le client ne doit jamais voir le Gmail** (From + mailto restent brandés ; seul l'inbound est redirigé).
+>
+> **Livré (LIVE)** :
+> - **`.github/workflows/setup-mail-forwarders.yml`** (#238/#239/#242) : crée les forwarders via **API cPanel** (UAPI `Email::add_forwarder`, :2083). Les creds FTP du repo sont **FTP-only** (401) → on utilise les secrets **`CPANEL_USERNAME`/`CPANEL_PASSWORD`** (ajoutés par le fondateur) ; fallback partagé (un compte cPanel pour les 5 addon-domaines). **Run #4 = 45 forwarders créés, 0 échec** (9 adresses × 5 domaines, cancun inclus). Cible = secret **`FORWARD_TO`** (Gmail, non committé — repo public).
+> - **`.github/workflows/check-mail-backlog.yml`** (#242/#243) : relève `alerte@sargasses-martinique.com` en **IMAP** (`SMTP_PASS` déjà en secret) et **transfère** les mails accumulés vers le Gmail. ⚠️ **logs publics → ZÉRO contenu loggé** (compteurs seulement). **88/88 transférés** (run newest 60 + run `order=oldest` 28, 0 échec).
+> - Email lib (`email-send.cjs`) **inchangée** : un essai de `Reply-To: Gmail` a été **REVERTÉ** (le client ne doit pas connaître le Gmail). From reste `alerte@…` (SPF/DKIM).
+>
+> **Secrets ajoutés cette session** (par le fondateur) : `FORWARD_TO`, `CPANEL_USERNAME`, `CPANEL_PASSWORD`. Optionnel : les supprimer après coup (les forwarders persistent côté serveur ; secrets requis seulement pour re-créer/ajouter une boîte).
+> **Note rebonds** : les « Mail Delivery System » vers **`aveca@aveca.fr`** = vieux accusés de non-remise (ancienne adresse d'alertes, déjà rebasculée → Gmail en #200 ; **0 réf. dans le code**). Historiques/inoffensifs. Si de NOUVEAUX rebonds `aveca@aveca.fr` apparaissent → un réglage **serveur** (un `*-config.php` FTP ou un dashboard tiers) y pointe encore — à traquer. Filtre Gmail conseillé : `from:(mailer-daemon OR "Mail Delivery System")` → Archiver.
+
+> **🗓️ 2026-06-29 — REPÈRE DE SAISON (fiche plage B2C, #228) + ESPACE PRO i18n FR/EN/ES (#235). Tous deux LIVE + vérifiés `curl` prod.**
+>
+> - **#228 Repère de saison** : bloc replié/muet en bas de la fiche plage (jamais la preview/verdict), aide à la **réservation 2-3 sem**. 2 panels d'agents + **audit honnêteté vérifié** : `coast` null sur les 136 plages (→ exposition = physique fabriquée, INTERDITE) ; historique par-plage = broadcast cluster (non spécifique). Donc **2 entrées réelles only** : phase climatologique régionale **sourcée** (Wang & Hu 2019, USF, Météo-France) + statut **mesuré** de la plage. Zéro date/%/couleur/score. Libs `scripts/lib/season-climatology.cjs` + `orientation.cjs` (`beachSeasonRepere` + `regionOrientation`/noise-gate, 14 tests). `seasonOutlook` injecté dans `sargassum.json` (pipeline + build, additif). Flag `?seasonOutlook=0`. **Vérifié prod** : `seasonOutlook` présent dans le JSON live.
+> - **#235 Espace pro i18n** : `/pro/espace/` parlait FR + listait plages MQ/GP même sur domaines USD (cassé). Désormais langue par domaine (florida/puntacana=EN, rivieramaya=ES), **plages région-aware** (USD `id`=slug), prix/devise + liens fiabilité localisés, contact = adresse **brandée**. Vérifié navigateur : miami→EN \$89, cancun→ES, MQ→FR, 0 erreur JS.
+>
+> **RESTE (différé, non urgent)** : **email B2B « Orientation ramassage » collectivités** — la lib `regionOrientation` est prête + testée, mais le noise-gate **supprime la tendance partout** tant que l'historique est court (vérifié : 5 régions `direction:null`) → ROI faible aujourd'hui. À câbler (nouveau mécanisme d'envoi hebdo + marqueur région+semaine) quand `history.json` aura ~6+ semaines.
+
 > **🤝 2026-06-29 — B2B in-app : ESSAI PRO 30 J = SELF-SERVE INSTANTANÉ (zéro humain). #240 MERGÉ sur `main`.**
 >
 > **Ce qui était cassé** : la modale B2B in-app (`B2BModal`, `src/PremiumModal.jsx`) affichait le CTA « Démarrer l'essai 30 j / 30-day trial, no card » mais `submit()` ne faisait que **capturer le lead** + afficher « on vous recontacte sous 24h » (= rappel **humain**, anti-doctrine zéro-call). L'endpoint d'essai instantané `public/api/b2b-trial.php` (token Pro 30 j signé `sg_widget_sign`) existait déjà + était câblé dans `/pro/espace/`, mais **jamais appelé depuis l'app**.
