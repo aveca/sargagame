@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **📹 2026-06-29 — WEBCAMS LIVE RÉPARÉES + anti-gel (#226 MERGÉ sur `main`).**
+>
+> **Problème fondateur** : la webcam de Grande Anse d'Arlet (« grandence Darley ») ne marchait plus et **figeait l'app au tap**. **Cause racine** : les lives YouTube « 24/7 » (webcams touristiques) tournent leur `videoId` à chaque redémarrage → un id codé en dur finit en `"This live stream recording is not available"` ; sur un id mort, l'iframe pouvait happer le tap (fullscreen iOS PWA) et geler l'app.
+>
+> **Data (vérifié via `yt-dlp` — `live_status` réel)** : Anses d'Arlet `elhJf3krR94`→`CC0gjFqH_u4` (live ✓, Vision-Environnement). **Retiré** les mortes/tournées : florida South Beach (`IG04qlJFiz8`), rivieramaya Cancún×2 + Playa del Carmen, puntacana Bávaro×2. **Gardé** Miami (`g5BS95j2rmM`) + Fort Lauderdale (`1j1lgppb0PY`), live ✓. Pas d'ad-free live en Guadeloupe pour l'instant (seul SkylineWebcams = pub) → 0 cam GP.
+>
+> **Code — `src/WebcamPanel.jsx` robuste** (chunk lazy, hors budget eager) : (1) **façade** vignette+▶ → zéro iframe au render (anti-gel + perf) ; (2) **toujours refermable** (✕) ; (3) **détection de panne** via IFrame Player API `onError` + filet 12 s → un id mort dégrade en « momentanément indisponible » + Réessayer, jamais un gel.
+>
+> **⚠️ DETTE (rotation d'IDs)** : les cams MX/DR (webcamsdemexico, BFree) re-tournent souvent → les cams florida/rivieramaya/puntacana re-mourront. Le panel dégrade proprement, mais pour des cams USD durables il faudrait un **check-santé serveur** (cron `yt-dlp live_status` → auto-désactive/MAJ les `webcam.id` morts dans `regions/*.json`), ou des providers stables (Vision-Environnement = le plus fiable, ad-free). Non fait (hors scope de ce fix).
+>
+> **Outils** : `yt-dlp` = source fiable de `live_status`. Le navigateur headless du conteneur n'a PAS de réseau sortant (smoke `ERRORS=[...CONNECTION_CLOSED]` = artefact d'env, identique sur `main` non modifié — pas une régression).
+
 > **✅ 2026-06-29 — LOT B FAIT : offre B2B USD ENCAISSABLE (#224 MERGÉ sur `main`). Money-path revu en panel adverse (GO×3).**
 >
 > **Ce qui était cassé** : l'abo B2B était EUR-only (`mol_is_eur_region` bloquait l'USD avec une raison périmée « on laisse l'USD à Stripe » — Stripe est mort ; le B2C USD encaisse DÉJÀ via Mollie depuis le 26/06). On envoie de l'outreach EN/ES mais on ne pouvait pas encaisser un Pro USD.
