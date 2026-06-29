@@ -1,0 +1,122 @@
+name: Setup mail forwarders (cPanel → Gmail)
+
+# POURQUOI : le fondateur ne relève que son Gmail (mobile). Les boîtes brandées
+# (alerte@/alerts@/support@/contact@ des 5 domaines) doivent REDIRIGER vers le Gmail
+# pour qu'il suive support/B2B/B2C — sans que le client voie le Gmail (le From + les
+# mailto restent brandés ; seul l'inbound est redirigé côté serveur).
+#
+# Ce workflow appelle l'API cPanel (UAPI Email::add_forwarder, port 2083) avec les
+# identifiants de déploiement, pour créer les forwarders côté serveur. 100% self-serve,
+# idempotent (recréer un forwarder identique est sans effet).
+#
+# PRÉ-REQUIS (secrets) :
+#   - FORWARD_TO : l'adresse Gmail cible (NON committée — repo public). À ajouter dans
+#     Settings → Secrets and variables → Actions. Ex. : ******@gmail.com
+#   - cPanel : par défaut on réutilise FTP_USERNAME_<ID>/FTP_PASSWORD_<ID>/FTP_SERVER_<ID>
+#     (sur Namecheap le login FTP principal = le compte cPanel). Si ce sont des comptes
+#     FTP-only (401), ajouter CPANEL_USERNAME_<ID>/CPANEL_PASSWORD_<ID> et le workflow
+#     les préférera.
+#
+# Déclenchement : manuel (workflow_dispatch). Aucune planification (one-shot).
+
+on:
+  workflow_dispatch:
+    inputs:
+      port:
+        description: "Port API cPanel (2083 par défaut)"
+        required: false
+        default: "2083"
+
+jobs:
+  forwarders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create cPanel email forwarders → Gmail
+        env:
+          FORWARD_TO: ${{ secrets.FORWARD_TO }}
+          PORT: ${{ github.event.inputs.port }}
+          # MQ
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          CPANEL_USERNAME_MQ: ${{ secrets.CPANEL_USERNAME_MQ }}
+          CPANEL_PASSWORD_MQ: ${{ secrets.CPANEL_PASSWORD_MQ }}
+          # GP
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          CPANEL_USERNAME_GP: ${{ secrets.CPANEL_USERNAME_GP }}
+          CPANEL_PASSWORD_GP: ${{ secrets.CPANEL_PASSWORD_GP }}
+          # FLORIDA
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          CPANEL_USERNAME_FLORIDA: ${{ secrets.CPANEL_USERNAME_FLORIDA }}
+          CPANEL_PASSWORD_FLORIDA: ${{ secrets.CPANEL_PASSWORD_FLORIDA }}
+          # PUNTACANA
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          CPANEL_USERNAME_PUNTACANA: ${{ secrets.CPANEL_USERNAME_PUNTACANA }}
+          CPANEL_PASSWORD_PUNTACANA: ${{ secrets.CPANEL_PASSWORD_PUNTACANA }}
+          # RIVIERAMAYA
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+          CPANEL_USERNAME_RIVIERAMAYA: ${{ secrets.CPANEL_USERNAME_RIVIERAMAYA }}
+          CPANEL_PASSWORD_RIVIERAMAYA: ${{ secrets.CPANEL_PASSWORD_RIVIERAMAYA }}
+        run: |
+          set -u
+          PORT="${PORT:-2083}"
+          if [ -z "${FORWARD_TO:-}" ]; then
+            echo "::error::Secret FORWARD_TO manquant (l'adresse Gmail cible). Ajoute-le dans Settings → Secrets → Actions, puis relance."
+            exit 1
+          fi
+          # Adresses brandées exposées aux clients (mailto + From). On crée un forwarder
+          # par local-part vers FORWARD_TO. Liste large = robuste (forwarder en trop = inoffensif).
+          LOCALPARTS="alerte alerts support contact info hello bonjour reservations booking"
+
+          # region:domaine
+          MAP="MQ:sargasses-martinique.com GP:sargasses-guadeloupe.com FLORIDA:sargassummiami.com PUNTACANA:sargassumpuntacana.com RIVIERAMAYA:sargassumcancun.com"
+
+          fail=0; ok=0
+          for entry in $MAP; do
+            ID="${entry%%:*}"; DOMAIN="${entry##*:}"
+            # cPanel creds : CPANEL_* sinon fallback FTP_*
+            eval "HOST=\${FTP_SERVER_$ID:-}"
+            eval "CU=\${CPANEL_USERNAME_$ID:-}"; eval "FU=\${FTP_USERNAME_$ID:-}"
+            eval "CP=\${CPANEL_PASSWORD_$ID:-}"; eval "FP=\${FTP_PASSWORD_$ID:-}"
+            USER="${CU:-$FU}"; PASS="${CP:-$FP}"
+            if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$PASS" ]; then
+              echo "▷ $ID ($DOMAIN) : identifiants absents — skip."
+              continue
+            fi
+            echo "▷ $ID ($DOMAIN) via $HOST:$PORT (user masqué)"
+            for LP in $LOCALPARTS; do
+              CODE=$(curl -s -k -o /tmp/r.json -w "%{http_code}" \
+                -u "$USER:$PASS" \
+                "https://$HOST:$PORT/execute/Email/add_forwarder" \
+                --data-urlencode "domain=$DOMAIN" \
+                --data-urlencode "email=$LP" \
+                --data-urlencode "fwdopt=fwd" \
+                --data-urlencode "fwdemail=$FORWARD_TO" || echo "000")
+              # UAPI renvoie {"status":1} si OK. On ne logge JAMAIS la réponse brute (peut contenir des infos compte).
+              if [ "$CODE" = "200" ] && grep -q '"status":1' /tmp/r.json 2>/dev/null; then
+                echo "   ✓ $LP@$DOMAIN → (Gmail)"; ok=$((ok+1))
+              elif [ "$CODE" = "200" ]; then
+                # status:0 = souvent "existe déjà" (idempotent) ou refus métier → on ne fait pas échouer le job
+                echo "   = $LP@$DOMAIN : déjà présent ou non appliqué (HTTP 200)"
+              elif [ "$CODE" = "401" ] || [ "$CODE" = "403" ]; then
+                echo "   ✗ $LP@$DOMAIN : AUTH refusée (HTTP $CODE) — les creds FTP ne sont pas cPanel-capables pour ce domaine."; fail=$((fail+1))
+              else
+                echo "   ✗ $LP@$DOMAIN : HTTP $CODE (host/port injoignable ?)"; fail=$((fail+1))
+              fi
+            done
+          done
+          echo "—"
+          echo "Forwarders créés/confirmés : $ok | échecs : $fail"
+          if [ "$ok" = "0" ]; then
+            echo "::error::Aucun forwarder créé. Soit FORWARD_TO/creds manquants, soit les creds FTP ne donnent pas l'API cPanel (ajoute CPANEL_USERNAME_*/CPANEL_PASSWORD_*), soit le port n'est pas 2083. Fallback : cPanel UI."
+            exit 1
+          fi
+          echo "Note : le From et les mailto restent brandés — seul l'inbound est redirigé. Le client ne voit jamais le Gmail."
