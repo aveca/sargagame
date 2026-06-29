@@ -1,5 +1,18 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-06-29 — OUTREACH B2B SEGMENTÉ + DONNÉE RÉELLE (#222 mergé) + spec « Lot B : offre USD encaissable » (TODO).**
+>
+> **Fait (#222, LIVE)** : `lib/b2b-segment.cjs` (déterministe, région-aware MQ/GP+USD) — `inferType` (hôtel/collectivité), `dataHook` (vraie donnée plage : hôtel = jours « à éviter » la semaine passée ; collectivité = N plages / N à éviter ; gère le cas 0 = saison calme), `liveProof` (% live, remplace le chiffre figé périmé). `b2b-cold-outreach.cjs` C0 **FR** segmenté (hôtel=clients / collectivité=ramassage J+7 baie par baie). `b2b-outreach.cjs` closings FR/EN/ES → self-serve (fini « parlons-en/let's talk/en construction »). **Pourquoi** : sous plafond de délivrabilité, le levier = convertir mieux chaque email, pas en envoyer plus.
+>
+> **⏳ LOT B — rendre l'offre USD B2B ENCAISSABLE (money-path, turnkey)** :
+> 1. **Mollie USD B2B** : `mol_is_eur_region` (`mollie-lib.php:27`) bloque l'USD avec une raison PÉRIMÉE (« on laisse l'USD à Stripe » — Stripe est mort ; le B2C USD encaisse DÉJÀ via Mollie FX depuis le 26/06). → étendre `mol_b2b_plans()` avec des plans USD (Pro $89/mo, grille de réf.) + relâcher le gate pour le B2B. **Additif + revue adverse**.
+> 2. **Paylinks annuels USD** : `mollie-paylinks.cjs` TIERS est EUR codé en dur → ajouter tiers USD (Pro $790/an) ou param devise.
+> 3. **`/pro/espace/` sur domaines USD** : vérifier que `prepare-ftp.cjs`/`cross-domain-drops.cjs` shippe `/pro/espace/` (+ `/pro/pricing`, `/pro/hotels`) sur florida/puntacana/rivieramaya, et que l'espace affiche le prix USD + le bon paylink. (Aujourd'hui l'espace est EUR/690 € ; les builds mono-région USD droppent peut-être `/pro/*`.)
+> 4. **`domainFor()`** (`b2b-cold-outreach.cjs`) : USD island → domaine régional (sargassummiami/puntacana/cancun), pas le domaine FR. (Fait avec Lot B pour ne pas pointer vers un espace absent.)
+> 5. **Copy EN/ES segmentée** : drafts générés (panel `wf_629b98ae`) MAIS 3 bugs de placeholders à corriger avant intégration dans `buildC0` : (a) EN hôtel « clear water on {{AVOIDDAYS}} » INVERSE le sens (avoidDays = jours À ÉVITER) ; (b) EN collectivité utilise {{BEACH}}/{{AVOIDDAYS}} que le dataHook collectivité ne fournit pas (il donne nbeaches/navoid) ; (c) ES hôtel embarque un header custom au lieu du shell/brandHeader. → re-générer ou aligner sur le modèle de données.
+> 6. **Action fondateur** : 1 vrai paiement test USD (dashboard Mollie) post-deploy = gate money-path (comme l'EUR).
+> *(Note : tant que Lot B n'est pas fait, l'outreach USD doit rester prudent — pas de contacts USD enrichis aujourd'hui, donc latent.)*
+
 > **⏱️ 2026-06-29 — ESSAI B2B 21 j → 30 j (verdict panel d'agents, fondateur a délégué « ask agents not me »).** Raison : l'aha est *event-gated* (il faut qu'un épisode sargasses tombe pendant l'essai pour que l'alerte « le matin où ça bascule » se prouve). Couverture P(≥1 épisode) ≈ 88 % à 30 j vs ~62 % (pile ou face) à 21 j après décote fiabilité ; 30 j colle aussi à la garantie 30 j et au cycle de décision B2B. Appliqué partout (TTL `sg_widget_sign` 30 j, relance `t27` à J+27 = expiry−3, copy app/emails/outreach, docs). Toute mention « 21 j » antérieure dans ce fichier est **périmée**.
 
 > **💳 2026-06-29 — BOUCLE B2B SELF-SERVE COMPLÈTE (essai → relance → paiement mensuel/annuel). PR #213, #215, #216 MERGÉES sur `main`. Chaque change money-path revu en panel adverse (GO×3).**
