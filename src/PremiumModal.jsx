@@ -41,7 +41,7 @@ function B2BModal({lang,onClose}){
   useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}
     try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}
   },[])
-  const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
+  const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual",territoire:"territory_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
   // Grille B2B (pricing arrêté panel 2026-06-29) : 3 tiers payants, essai 30j sans carte,
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
@@ -54,7 +54,7 @@ function B2BModal({lang,onClose}){
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
     {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois","from €199/mo","desde 199 €/mes"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
-      cta:_t(lang,"Réserver une démo","Book a demo","Reservar demo"),source:"b2b_territoire"},
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_territoire"},
   ]
   const cur=TIERS.find(t=>t.id===tier)||TIERS[1]
   const submit=()=>{
@@ -62,10 +62,11 @@ function B2BModal({lang,onClose}){
     try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
     try{submitLead(email.trim(),cur.source)}catch(_){}
     try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
-    // Tiers self-serve (brief/pro) = essai 30 j émis INSTANTANÉMENT par /api/b2b-trial.php
-    // (zéro call, zéro attente) → l'hôtel a son accès Pro tout de suite. Territoire (199 €+)
-    // = vraie vente → garde le contact humain 24 h. Flag ?b2btrial=0 → ancien flux capture.
-    if(!instantTrial||tier==="territoire"){setSent(true);return}
+    // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j émis INSTANTANÉMENT par
+    // /api/b2b-trial.php (zéro call, zéro attente, zéro humain) → accès Pro tout de suite +
+    // lien de paiement annuel direct. Territoire inclus (décision fondateur : tout self-serve).
+    // Flag ?b2btrial=0 → ancien flux capture-lead + message 24 h.
+    if(!instantTrial){setSent(true);return}
     setBusy(true)
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
     fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
@@ -109,7 +110,7 @@ function B2BModal({lang,onClose}){
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 30 jours, sans carte · −2 mois en annuel · stop quand vous voulez","30-day trial, no card · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 jours, sans carte · −2 mois en annuel · stop quand vous voulez","30-day trial, no card · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
             <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
           </div>}
