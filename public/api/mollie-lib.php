@@ -136,6 +136,23 @@ function mol_pass_grant_store($email, $passKey, $passEndOverride = 0) {
     return $passEnd;
 }
 
+// ── Comp / accès OFFERT (cadeau manuel) — cross-device, SANS paiement ──────────
+// Liste de hash sha1(strtolower(trim(email))) -> pass_end (timestamp UNIX) committée
+// dans public/api/comps.php (PII-SAFE : QUE des hash, jamais d'email en clair, repo
+// public). Permet d'offrir un accès premium qui se RESTAURE par email sur n'importe
+// quel appareil (≠ ?pass= local à un navigateur). Retourne le pass_end (s) si l'email
+// est comped et NON expiré, sinon 0. Fichier absent/illisible -> 0 (aucun comp).
+function mol_comp_lookup($email) {
+    $email = strtolower(trim((string)$email));
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 0;
+    $f = __DIR__ . '/comps.php';
+    if (!is_file($f)) return 0;
+    $map = @include $f;
+    if (!is_array($map)) return 0;
+    $end = $map[sha1($email)] ?? 0;
+    return is_int($end) ? $end : (int)$end;
+}
+
 // ── Parrainage : LEDGER DE CRÉDIT par code parrain (REF-XXXXXX) ────────────────
 // Mollie ne peut NI couponner NI créditer au checkout (cf. mollie.php). La récompense
 // parrain est donc un CRÉDIT de jours de pass, stocké côté serveur par code, que l'app
