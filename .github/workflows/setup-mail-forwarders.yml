@@ -92,8 +92,16 @@ jobs:
               continue
             fi
             echo "▷ $ID ($DOMAIN) via $HOST:$PORT (user masqué)"
+            # Sonde de joignabilité (fail-fast) : si :PORT est filtré depuis le runner,
+            # on n'enchaîne pas 9 appels qui pendent. connect-timeout court.
+            PROBE=$(curl -s -k -o /dev/null -w "%{http_code}" --connect-timeout 8 --max-time 12 \
+              "https://$HOST:$PORT/" || echo "000")
+            if [ "$PROBE" = "000" ]; then
+              echo "   ✗ $DOMAIN : $HOST:$PORT INJOIGNABLE depuis le runner (port cPanel filtré ?). Skip."
+              fail=$((fail+1)); continue
+            fi
             for LP in $LOCALPARTS; do
-              CODE=$(curl -s -k -o /tmp/r.json -w "%{http_code}" \
+              CODE=$(curl -s -k -o /tmp/r.json -w "%{http_code}" --connect-timeout 8 --max-time 25 \
                 -u "$USER:$PASS" \
                 "https://$HOST:$PORT/execute/Email/add_forwarder" \
                 --data-urlencode "domain=$DOMAIN" \
