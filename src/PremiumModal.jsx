@@ -37,16 +37,16 @@ function B2BModal({lang,onClose}){
     try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}
   },[])
   const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
-  // Grille B2B (pricing arrêté panel 2026-06-29) : 3 tiers payants, essai 21j sans carte,
+  // Grille B2B (pricing arrêté panel 2026-06-29) : 3 tiers payants, essai 30j sans carte,
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
-  // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 21j time-boxé.
+  // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
   const TIERS=[
     {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
       pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
-      cta:_t(lang,"Démarrer l'essai 21 j","Start 21-day trial","Empezar prueba 21 días"),source:"b2b_brief"},
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
     {id:"pro",icon:"🔔",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
       pitch:_t(lang,"Mis en avant DANS l'app sur la fiche de votre plage (au moment où le voyageur vérifie avant de réserver) + widget marque-blanche + brief + alertes + prévision 7 j. Pour hôtels & resorts.","Featured IN the app on your beach's page (right when travelers check before booking) + white-label widget + brief + alerts + 7-day forecast. For hotels & resorts.","Destacado EN la app en la ficha de su playa (justo cuando el viajero comprueba antes de reservar) + widget marca blanca + informe + alertas + pronóstico 7 días. Para hoteles y resorts."),
-      cta:_t(lang,"Démarrer l'essai 21 j","Start 21-day trial","Empezar prueba 21 días"),source:"b2b_pro"},
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
     {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois","from €199/mo","desde 199 €/mes"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
       cta:_t(lang,"Réserver une démo","Book a demo","Reservar demo"),source:"b2b_territoire"},
@@ -93,7 +93,7 @@ function B2BModal({lang,onClose}){
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{cur.cta}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 21 jours, sans carte · −2 mois en annuel · stop quand vous voulez","21-day trial, no card · 2 months free yearly · stop anytime","Prueba 21 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 30 jours, sans carte · −2 mois en annuel · stop quand vous voulez","30-day trial, no card · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
             <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
           </div>}

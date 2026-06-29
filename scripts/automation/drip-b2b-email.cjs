@@ -43,7 +43,7 @@ const REPLY_HINT = 'Répondez simplement à cet email — c\'est nous (l\'équip
 
 // Inclut les nouvelles sources d'INTENTION HAUTE de l'offre chiffrée (B2BModal 28/06 :
 // b2b_brief 29€ / b2b_pro 79€ / b2b_territoire) — ces leads veulent l'essai/le produit
-// payant, pas un brief gratuit perpétuel. La séquence vend l'essai 21j → abonnement.
+// payant, pas un brief gratuit perpétuel. La séquence vend l'essai 30j → abonnement.
 const { payUrlFor } = require('./lib/b2b-paylinks.cjs')
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire', 'b2b_trial'])
 
@@ -147,14 +147,14 @@ function build(step, sub, ctx) {
   const who = isColl ? 'votre territoire' : 'votre établissement'
   const beaches = isColl ? 'vos plages' : 'votre plage'
   // Offre B2B ARRÊTÉE et 100 % SELF-SERVE (pricing 2026-06-29) : Pro 79 €/mois ou
-  // 690 €/an (2 mois offerts), essai 21 j gratuit sans carte, garantie 30 j ; Brief
+  // 690 €/an (2 mois offerts), essai 30 j gratuit sans carte, garantie 30 j ; Brief
   // 29 €/mois (petit pro), Territory dès 199 €/mois. Tout s'active/se paie sur
   // /pro/espace/ (essai instantané, mensuel hébergé #215, annuel paylink). ZÉRO call :
   // jamais « parlons-en / rendez-vous ». (Ancien cadrage « en construction » = périmé.)
   const island = (sub.island || 'MQ').toUpperCase()
   const name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
   const domain = island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
-  // Hub self-serve : /pro/espace/ (essai 21 j + abo mensuel/annuel). Aucun appel.
+  // Hub self-serve : /pro/espace/ (essai 30 j + abo mensuel/annuel). Aucun appel.
   const proPath = `https://${domain}/pro/espace/`
   const { proof, brief } = ctx
 
@@ -167,8 +167,8 @@ function build(step, sub, ctx) {
       <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Personne n'aime découvrir les algues une fois les valises ouvertes.</div>
       ${proofBlock(proof)}
       <div style="font-size:14px;color:#444;line-height:1.6">La preuve avant la promesse : nous publions nos erreurs, datées et par régime — 76 % à 79 % de prévisions justes selon la saison. Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/" style="color:#0D7C66">Voyez notre taux réel.</a></div>
-      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai dure <strong>21 jours, gratuit, sans carte</strong>. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours. Tout en libre-service.</div>
-      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai gratuit 21 jours", proPath)}</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai dure <strong>30 jours, gratuit, sans carte</strong>. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours. Tout en libre-service.</div>
+      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai gratuit 30 jours", proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -184,8 +184,8 @@ function build(step, sub, ctx) {
       <div style="font-size:22px;font-weight:800;color:#0A1714">${brief.bestName}</div>
       <div style="display:inline-block;background:#FFC72C;color:#0A1714;font-weight:800;font-size:14px;padding:7px 14px;border-radius:999px;margin:10px 0">${brief.bestStatus}${sc}</div>
       <div style="font-size:13px;color:#444;line-height:1.6;margin-top:8px">${brief.cleanCount}/${brief.totalCount} plages suivies sont propres en ce moment. C'est exactement la lecture quotidienne — par plage, avec la prévision 7 jours — que recevrait votre équipe. Le cadeau d'abord, sans engagement.</div>
-      <div style="font-size:13px;color:#666;line-height:1.55;margin-top:10px">Devenez celui qui connaît la fin de l'histoire avant ses invités. Voyez-le en direct sur ${beaches} : essai 21 jours, sans carte.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Voir mes plages en direct — essai 21 jours', proPath)}</div>
+      <div style="font-size:13px;color:#666;line-height:1.55;margin-top:10px">Devenez celui qui connaît la fin de l'histoire avant ses invités. Voyez-le en direct sur ${beaches} : essai 30 jours, sans carte.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Voir mes plages en direct — essai 30 jours', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -201,8 +201,8 @@ function build(step, sub, ctx) {
       <div style="font-size:15px;color:#333;line-height:1.6">Les cartes gratuites donnent un risque régional, en moyenne. Nous, on lit la côte baie par baie — et surtout, on publie notre taux d'erreur, daté et par régime. C'est ça qu'un outil gratuit ne fait pas.</div>
       ${proofBlock(proof)}
       <div style="font-size:14px;color:#444;line-height:1.6">${roi} Le palmarès complet, daté, est sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>.</div>
-      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">Essai 21 jours, sans carte. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours${isBrief ? ' · Brief à 29 €/mois pour les plus petits' : ''}. Zéro appel, tout en libre-service.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Activer mon essai 21 jours', proPath)}</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">Essai 30 jours, sans carte. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours${isBrief ? ' · Brief à 29 €/mois pour les plus petits' : ''}. Zéro appel, tout en libre-service.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Activer mon essai 30 jours', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -217,14 +217,14 @@ function build(step, sub, ctx) {
       <div style="font-size:15px;color:#333;line-height:1.6">La haute saison passe. Les algues, non. Septembre, octobre : c'est souvent là que ça frappe, quand plus personne ne regarde.</div>
       <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Vous, vous pouvez regarder déjà : verdict plage par plage, chaque matin, mesuré au satellite. Et nos erreurs restent publiques — 76 % à 79 % de prévisions justes selon la saison, sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>.</div>
       <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Restez celui qui connaît la fin de l'histoire avant ses invités, toute la saison.</div>
-      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai 21 jours est sans carte et garanti 30 jours. Pour verrouiller l'année : 690 € (2 mois offerts) — sinon 79 €/mois, en un clic.</div>
-      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai (21 j, sans carte)", proPath)}</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai 30 jours est sans carte et garanti 30 jours. Pour verrouiller l'année : 690 € (2 mois offerts) — sinon 79 €/mois, en un clic.</div>
+      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai (30 j, sans carte)", proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
-  if (step === 't18') {
-    // Relance conversion essai → payant (J+18, avant l'expiration J+21). L'offre B2B
+  if (step === 't27') {
+    // Relance conversion essai → payant (J+27, avant l'expiration J+30). L'offre B2B
     // est ARRÊTÉE et SELF-SERVE (pricing 2026-06-29) : annuel 690 € payable direct via
     // le paylink Mollie, mensuel 79 €/mois depuis l'espace (checkout hébergé #215).
     // Pivot émotionnel = perte de continuité (widget + alertes s'éteignent à la fin).
@@ -250,8 +250,8 @@ const STEPS = [
   { key: 'b2', days: 2 },
   { key: 'b6', days: 6 },
   { key: 'b13', days: 13 },
-  // Essai (source b2b_trial). t18 = relance conversion à J+18, avant l'expiration J+21.
-  { key: 't18', days: 18, trial: true },
+  // Essai (source b2b_trial). t27 = relance conversion à J+27, avant l'expiration J+30.
+  { key: 't27', days: 27, trial: true },
 ]
 
 async function trackToSheet(data) {
@@ -288,7 +288,7 @@ async function main() {
     const island = (sub.island || 'MQ').toUpperCase()
     const age = daysSince(sub.date)
     const record = sent[key] || {}
-    // Les leads b2b_trial (essai 21 j déjà ACTIVÉ via b2b-trial.php) ne reçoivent PAS
+    // Les leads b2b_trial (essai 30 j déjà ACTIVÉ via b2b-trial.php) ne reçoivent PAS
     // la séquence de nurture froide (b0-b13) : ils ont le produit en main. Ils ne
     // reçoivent QUE l'étape d'essai (t18 = relance conversion avant l'expiration).
     const isTrial = sub.source === 'b2b_trial'

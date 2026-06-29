@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **⏱️ 2026-06-29 — ESSAI B2B 21 j → 30 j (verdict panel d'agents, fondateur a délégué « ask agents not me »).** Raison : l'aha est *event-gated* (il faut qu'un épisode sargasses tombe pendant l'essai pour que l'alerte « le matin où ça bascule » se prouve). Couverture P(≥1 épisode) ≈ 88 % à 30 j vs ~62 % (pile ou face) à 21 j après décote fiabilité ; 30 j colle aussi à la garantie 30 j et au cycle de décision B2B. Appliqué partout (TTL `sg_widget_sign` 30 j, relance `t27` à J+27 = expiry−3, copy app/emails/outreach, docs). Toute mention « 21 j » antérieure dans ce fichier est **périmée**.
+
 > **💳 2026-06-29 — BOUCLE B2B SELF-SERVE COMPLÈTE (essai → relance → paiement mensuel/annuel). PR #213, #215, #216 MERGÉES sur `main`. Chaque change money-path revu en panel adverse (GO×3).**
 >
 > **Ce qui était cassé** : le mensuel 79 € (porte d'entrée par défaut) était câblé back (#210) mais SANS bouton d'achat ; l'essai n'envoyait pas le token par email (onglet fermé = accès perdu) ; aucune relance de conversion d'essai.

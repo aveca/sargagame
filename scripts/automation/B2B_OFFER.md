@@ -1,6 +1,6 @@
 # Le Veilleur — Veille côtière (B2B) — pricing arrêté 2026-06-29
 
-> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 21 jours gratuit sans carte**, garantie 30 j sur l'annuel. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 21 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
+> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 30 jours gratuit sans carte**, garantie 30 j sur l'annuel. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 30 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
 
 > Doc de référence pour la prospection B2B sortante (`b2b-outreach.cjs` + `data/b2b-targets.json`).
 > Cible : hôtels de bord de mer, clubs de plage, offices de tourisme, mairies littorales.
@@ -33,7 +33,7 @@ L'état de vos plages affiché sur votre site / page de réservation, à vos cou
   - affichage à vos couleurs (widget) + le Brief (palier 1) + badge « plage veillée au satellite ».
 - **Garde-fou honnêteté (intangible)** : la mise en avant est **clairement labellisée « Partenaire »** (placement payant assumé) et **n'influence JAMAIS le verdict sargasses** — un partenaire dont la plage est envahie reste affiché « à éviter ». La neutralité de la donnée est ce qui rend la mise en avant crédible ; on ne la vend pas.
 - **Prix** (arrêté 2026-06-29) :
-  - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 21 j gratuit sans carte · garantie 30 j sur l'annuel.
+  - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 30 j gratuit sans carte · garantie 30 j sur l'annuel.
   - USD : **$89/mois** ou **$790/an**.
 
 ### 3. Territory — tout le littoral, baie par baie (haut de gamme)
@@ -54,11 +54,11 @@ Pour les **mairies, offices de tourisme et groupes hôteliers** qui veillent plu
 | 2. Pro      | 79 €/mo · 690 €/an   | $89/mo · $790/an      | Hôtel avec site, résidence, office      |
 | 3. Territory| 199 €/mo · 1 990 €/an| $249/mo · sur devis   | Mairie, office, groupe hôtelier         |
 
-État réel (2026-06-29) : pricing **arrêté**. **Annuel self-serve LIVE** (liens Mollie `b2b-paylinks.json` : Pro 690 €, Brief 290 €). **Mensuel récurrent (79/29 €) câblé en repo** (`mol_b2b_plans`, #210). Essai 21 j = capture email (émission auto du token à câbler). Action B2B = **self-serve** (espace `/pro/espace/`, essai 21 j) — plus de « parlons-en ».
+État réel (2026-06-29) : pricing **arrêté**. **Annuel self-serve LIVE** (liens Mollie `b2b-paylinks.json` : Pro 690 €, Brief 290 €). **Mensuel récurrent (79/29 €) câblé en repo** (`mol_b2b_plans`, #210). Essai 30 j = capture email (émission auto du token à câbler). Action B2B = **self-serve** (espace `/pro/espace/`, essai 30 j) — plus de « parlons-en ».
 
 ## Pitch email (premier contact, consultatif)
 
-Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'état de vos plages en direct »). Ce doc décrit l'**upsell payant** quand l'établissement répond / clique. Sur une réponse chaude, le prospect se sert lui-même via `/pro/espace/` (essai 21 j, paiement en ligne) — aucun appel ; l'email reste le canal de réponse aux questions.
+Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'état de vos plages en direct »). Ce doc décrit l'**upsell payant** quand l'établissement répond / clique. Sur une réponse chaude, le prospect se sert lui-même via `/pro/espace/` (essai 30 j, paiement en ligne) — aucun appel ; l'email reste le canal de réponse aux questions.
 
 **Objet** : Vos plages, surveillées au satellite — pour vos clients
 
@@ -74,7 +74,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > Et il y a un retour pour vous : avec le palier Pro, on **met votre établissement en avant DANS l'application**, sur la fiche de votre plage — donc juste au moment où le voyageur vérifie s'il y a des sargasses avant de réserver. C'est exactement votre futur client, au bon instant. Voici à quoi ça ressemblerait pour vous : [aperçu]. (Affiché « Partenaire », et ça ne touche jamais le verdict de la plage — c'est ce qui le rend crédible.)
 >
-> Essayez gratuitement 21 jours, sans carte (Pro à partir de 79 €/mois, ou 690 €/an, deux mois offerts). Tout se fait en ligne, à votre rythme : voici votre espace, avec vos plages en direct, votre widget et votre mise en avant → [lien /pro/espace/].
+> Essayez gratuitement 30 jours, sans carte (Pro à partir de 79 €/mois, ou 690 €/an, deux mois offerts). Tout se fait en ligne, à votre rythme : voici votre espace, avec vos plages en direct, votre widget et votre mise en avant → [lien /pro/espace/].
 >
 > Bien à vous,
 > Le Veilleur · veille côtière opérée depuis la Martinique
