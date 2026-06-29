@@ -3,11 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <!-- theme-color RETIRÉ : en Safari iOS il peignait la barre du bas en OR plein
-         (#E8A800) → « bande » jaune visible sous le contenu. Sans lui, Safari rend sa
-         barre translucide qui fond le contenu derrière (look bord-à-bord). En standalone
-         (app installée) il n'y a pas de barre ; le rendu plein écran est géré par
-         apple-mobile-web-app-status-bar-style + --sg-vh. Android : manifest background_color. -->
+    <!-- theme-color piloté en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein → on l'a
+         d'abord RETIRÉ. Mais sans theme-color, Safari iOS (≥15, surtout la barre flottante
+         « Liquid Glass » d'iOS 26) ÉCHANTILLONNE la couleur du contenu derrière sa barre basse :
+         elle re-virait à l'or en captant le CTA doré, et changeait de teinte selon l'écran
+         (« bande » mouvante en bas, signalée en navigateur — pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = même fond que html (cadre sombre déjà utilisé
+         pour combler le standalone) → barre basse Safari constante, fond avec l'app, jamais dorée.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -20,6 +24,11 @@
          (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
       (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) → barre basse Safari iOS constante
+           (sinon elle échantillonne le contenu doré = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
         function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
         /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
            ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
@@ -111,6 +120,20 @@
        la hauteur MESURÉE --sg-vh (= screen.height en standalone, cf. <script> head). */
     #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
     html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
+    /* iOS 26+ Safari NAVIGATEUR : la barre basse « Liquid Glass » IGNORE theme-color et se
+       teinte en échantillonnant le background-color d'un élément position:fixed près du bord
+       bas (sinon fallback body) → elle captait le contenu doré = bande dorée qui « change
+       selon l'écran » (mécanisme confirmé : shadcn#8471, MUI#46953, WebKit/Safari 26 notes).
+       #sg-chin = ancre fixe sombre pleine largeur collée au bord bas → devient la cible
+       d'échantillonnage → barre basse Safari constante #0d1117 (= cadre app, même couleur
+       que html + theme-color legacy), jamais dorée. NAVIGATEUR SEULEMENT : caché en standalone
+       (pas de barre Safari, et un liseré sombre y serait visible). pointer-events:none ;
+       ~6px réels, cachés sous la barre Safari. */
+    #sg-chin{display:none;position:fixed;left:0;right:0;bottom:-8px;height:14px;width:100%;background:#0d1117;z-index:0;pointer-events:none}
+    /* iOS WebKit UNIQUEMENT (-webkit-touch-callout faux sur desktop Safari/Chrome/Firefox)
+       → pas de liseré sombre parasite en bas sur desktop/Android, où le bug n'existe pas. */
+    @supports (-webkit-touch-callout:none){#sg-chin{display:block}}
+    html.sg-standalone #sg-chin{display:none}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){
@@ -297,6 +320,11 @@
         <p>Notre réseau de surveillance sargasses dans la Caraïbe : <a href="https://sargasses-guadeloupe.com/" rel="noopener">Guadeloupe</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">Punta Cana</a> · <a href="https://sargassumcancun.com/" rel="noopener">Cancún &amp; Riviera Maya</a> · <a href="https://sargassummiami.com/" rel="noopener">Miami &amp; Florida</a>.</p>
       </noscript>
     </div>
+    <!-- Ancre de teinte barre basse Safari iOS 26+ (navigateur). Cf. <style> #sg-chin :
+         Safari échantillonne le background d'un élément fixed près du bord bas → cet
+         élément sombre force une barre constante #0d1117 au lieu d'une bande dorée
+         mouvante. Caché en standalone (PWA). aria-hidden : invisible pour l'a11y/SEO. -->
+    <div id="sg-chin" aria-hidden="true"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
     // Version check — purge caches + reload auto sur changement de version (zéro action user).
