@@ -168,10 +168,15 @@ if ($action === 'create_subscription') {
     // create_payment ci-dessus pour le detail du flux wallet.
     $method = preg_replace('/[^a-z]/', '', $input['method'] ?? '');
     $method = in_array($method, ['applepay', 'googlepay'], true) ? $method : '';
-    $planIn = ($input['plan'] ?? 'monthly') === 'annual' ? 'annual' : 'monthly';
+    // Plan demandé, validé contre l'allowlist (config B2C + mol_b2b_plans B2B). Un
+    // plan inconnu → fallback B2C 'monthly' (le montant vient TOUJOURS de $sc, jamais
+    // du client). B2C inchangé : 'monthly'/'annual' empruntent le même chemin qu'avant.
+    $b2bPlans = mol_b2b_plans();
+    $planReq = preg_replace('/[^a-z_]/', '', strtolower((string)($input['plan'] ?? 'monthly')));
+    $planIn = (isset($cfg['subscription'][$planReq]) || isset($b2bPlans[$planReq])) ? $planReq : 'monthly';
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
-    $sc = $cfg['subscription'][$planIn] ?? null;
+    $sc = $cfg['subscription'][$planIn] ?? ($b2bPlans[$planIn] ?? null);
     if ((!$cardToken && !$method) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
         http_response_code(400); echo json_encode(['error' => 'bad subscription params']); exit;
     }
@@ -200,7 +205,7 @@ if ($action === 'create_subscription') {
         'sequenceType' => 'first',
         'redirectUrl'  => $returnBase . '/?mollie_return=1',
         'webhookUrl'   => $returnBase . '/api/mollie-webhook.php',
-        'metadata'     => ['island' => ($island !== '' ? $island : 'mq'), 'plan' => $planIn, 'source' => $source, 'email' => $email, 'kind' => 'sub_first'],
+        'metadata'     => array_filter(['island' => ($island !== '' ? $island : 'mq'), 'plan' => $planIn, 'source' => $source, 'email' => $email, 'kind' => 'sub_first', 'b2b' => ((($sc['kind'] ?? '') === 'b2b') ? '1' : null)], function ($v) { return $v !== null; }),
     ];
     if ($cardToken) $payParams['cardToken'] = $cardToken;
     if ($method)    $payParams['method']    = $method; // wallet -> checkout heberge (mandat cote Mollie)
@@ -245,6 +250,10 @@ if ($action === 'payment_status') {
         if (($meta['kind'] ?? '') === 'sub_first') {
             $cust = $pay['customerId'] ?? '';
             if ($em && $cust) mol_create_subscription_once($cfg, $cust, $em, ($meta['plan'] ?? 'monthly'), $isl, $src);
+        }
+        // B2B : paiement Pro/Brief confirmé → émet+livre le token Pro (idempotent par pid).
+        if (($meta['b2b'] ?? '') === '1' || in_array(($meta['plan'] ?? ''), ['pro_monthly', 'brief_monthly'], true)) {
+            mol_b2b_grant_once($cfg, $pid, $em, ($meta['plan'] ?? ''));
         }
         // Parrainage : un filleul (referred_by) a payé → crédite le parrain (idempotent
         // par pid ; le webhook fait le même grant, le 1er qui passe gagne, anti-double).

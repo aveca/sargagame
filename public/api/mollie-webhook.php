@@ -59,6 +59,11 @@ if ($status === 'paid') {
         $cust = $pay['customerId'] ?? '';
         if ($email && $cust) mol_create_subscription_once($cfg, $cust, $email, ($meta['plan'] ?? 'monthly'), $island, $source);
     }
+    // B2B : paiement Pro/Brief confirmé (1er paiement OU renouvellement mensuel —
+    // nouveau pid à chaque facture) → émet+livre le token Pro (idempotent par pid).
+    if (($meta['b2b'] ?? '') === '1' || in_array(($meta['plan'] ?? ''), ['pro_monthly', 'brief_monthly'], true)) {
+        mol_b2b_grant_once($cfg, $pid, $email, ($meta['plan'] ?? ''));
+    }
     // Parrainage : crédite le parrain (referred_by). Idempotent par pid — le marqueur
     // mol_<pid> empêche déjà un 2e passage webhook, et mol_refcredit_grant dédup le pid.
     if (!empty($meta['referred_by'])) mol_refcredit_grant($meta['referred_by'], $pid);

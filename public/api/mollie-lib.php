@@ -132,7 +132,9 @@ function mol_refcredit_claim($code) {
 function mol_create_subscription_once($cfg, $customerId, $email, $planIn, $island, $source) {
     $existing = mol_store_read($email);
     if ($existing && !empty($existing['sub'])) return $existing['sub']; // deja cree
-    $sc = $cfg['subscription'][$planIn] ?? null;
+    // Plans B2C (config) + plans B2B (pro_monthly/brief_monthly) via mol_b2b_plans()
+    // — source unique, pour que CE chemin (webhook 3DS) résolve aussi les abos B2B.
+    $sc = $cfg['subscription'][$planIn] ?? (mol_b2b_plans()[$planIn] ?? null);
     if (!$sc) return null;
     $interval = $sc['interval'];                       // '1 month' | '12 months'
     $startDate = date('Y-m-d', strtotime('+' . $interval));
@@ -147,4 +149,65 @@ function mol_create_subscription_once($cfg, $customerId, $email, $planIn, $islan
     if ($code >= 400 || empty($sub['id'])) return null;
     mol_store_write($email, ['email' => $email, 'customer' => $customerId, 'sub' => $sub['id'], 'plan' => $planIn, 'ts' => time()]);
     return $sub['id'];
+}
+
+// ── B2B : plans mensuels récurrents (montants NON secrets, en repo) ───────────
+// Source UNIQUE chargée par mollie.php ET mollie-webhook.php (tous deux require ce
+// lib). 'kind'=>'b2b' = discriminant SERVEUR (non forgeable par le client) → grant
+// d'un token Pro à la confirmation. Décision pricing 2026-06-29 : Pro 79 €/mois,
+// Brief 29 €/mois (EUR). N'altère AUCUNE clé B2C ('monthly'/'annual' de la config).
+function mol_b2b_plans() {
+    return [
+        'pro_monthly'   => ['amount' => '79.00', 'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
+        'brief_monthly' => ['amount' => '29.00', 'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
+    ];
+}
+
+// ── B2B : grant + livraison du token Pro à la confirmation de paiement ────────
+// Idempotent par pid (marqueur fichier, même esprit que le marqueur webhook).
+// Émet un token Pro signé (sg_widget_sign — MÊME mécanisme que b2b-trial.php) et le
+// livre par email via Resend (cfg.resend_key, déjà partagé avec stripe/paypal — zéro
+// nouveau secret). Livraison best-effort : un échec d'envoi ne DOIT jamais faire
+// échouer la confirmation de paiement. Appelé par mollie.php (inline) ET le webhook
+// (3DS/renouvellements) — un nouveau pid à chaque facture mensuelle payée → le token
+// est ré-émis 400 j (roll-forward tant que l'abo est payé).
+function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
+    if (!is_string($pid) || $pid === '' || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+    $marker = $dir . '/b2bgrant_' . preg_replace('/[^a-zA-Z0-9_]/', '', $pid);
+    if (file_exists($marker)) return false;          // déjà accordé pour ce paiement
+    @file_put_contents($marker, date('c'));          // idempotence (posée avant l'email)
+
+    require_once __DIR__ . '/widget-token.php';
+    $k = sg_widget_sign($email, 400);                // token Pro 400 j (ré-émis chaque mois payé)
+
+    if (!empty($cfg['resend_key'])) {
+        $isPro  = (strpos((string)$plan, 'pro_') === 0);
+        $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
+        $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment, garantie 30 jours.</p></div>';
+        $payload = json_encode([
+            'from'    => 'Sargasses Pro <alerte@sargasses-martinique.com>',
+            'to'      => [$email],
+            'subject' => $titre,
+            'html'    => $html,
+        ]);
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        @curl_exec($ch);
+        @curl_close($ch);
+    }
+    return true;
 }
