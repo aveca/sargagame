@@ -181,8 +181,8 @@ function mol_b2b_plans() {
 // ── B2B : grant + livraison du token Pro à la confirmation de paiement ────────
 // Idempotent par pid (marqueur fichier, même esprit que le marqueur webhook).
 // Émet un token Pro signé (sg_widget_sign — MÊME mécanisme que b2b-trial.php) et le
-// livre par email via Resend (cfg.resend_key, déjà partagé avec stripe/paypal — zéro
-// nouveau secret). Livraison best-effort : un échec d'envoi ne DOIT jamais faire
+// livre par email via mol_send_mail (MTA cPanel ; Resend retiré). Livraison
+// best-effort : un échec d'envoi ne DOIT jamais faire
 // échouer la confirmation de paiement. Appelé par mollie.php (inline) ET le webhook
 // (3DS/renouvellements) — un nouveau pid à chaque facture mensuelle payée → le token
 // est ré-émis 400 j (roll-forward tant que l'abo est payé).
@@ -197,33 +197,20 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
     require_once __DIR__ . '/widget-token.php';
     $k = sg_widget_sign($email, 400);                // token Pro 400 j (ré-émis chaque mois payé)
 
-    if (!empty($cfg['resend_key'])) {
-        $isPro  = (strpos((string)$plan, 'pro_') === 0);
-        $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
-        $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
-        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
-            . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
-            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
-            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
-            . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
-            . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment, garantie 30 jours.</p></div>';
-        $payload = json_encode([
-            'from'    => 'Sargasses Pro <alerte@sargasses-martinique.com>',
-            'to'      => [$email],
-            'subject' => $titre,
-            'html'    => $html,
-        ]);
-        $ch = curl_init('https://api.resend.com/emails');
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payload,
-            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 10,
-        ]);
-        @curl_exec($ch);
-        @curl_close($ch);
-    }
+    // Email de bienvenue PAYANT (B2B Pro/Brief, caisse Mollie active) — via mol_send_mail
+    // (MTA cPanel ; Resend RETIRÉ → sans ça le client payait et ne recevait RIEN). Best-effort :
+    // le marker d'idempotence est déjà posé, un échec d'envoi n'annule pas le grant et le
+    // token reste valable (l'espace s'ouvre avec ?k=).
+    $isPro  = (strpos((string)$plan, 'pro_') === 0);
+    $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
+    $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
+    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
+        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
+        . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
+        . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
+        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment, garantie 30 jours.</p></div>';
+    mol_send_mail($email, $titre, $html);
     return true;
 }
 
@@ -232,7 +219,7 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
 // de suite ; mais si l'hôtel ferme l'onglet, il perd son accès. On lui envoie donc
 // AUSSI le lien de son espace (?k=token) par email — comme le fait mol_b2b_grant_once
 // au paiement, mais cadré « essai 30 j » (pas « abonnement actif »). MÊME mécanisme
-// Resend (cfg.resend_key, zéro nouveau secret). Best-effort : un échec d'envoi ne
+// d'envoi (mol_send_mail, MTA cPanel ; Resend retiré). Best-effort : un échec d'envoi ne
 // DOIT jamais faire échouer l'activation de l'essai (le token est déjà rendu au front).
 /**
  * mol_send_mail — envoi email HTML via le MTA local du cPanel (PHP mail()).
