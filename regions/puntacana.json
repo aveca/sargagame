@@ -86,13 +86,7 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "youtube",
-        "id": "Jr3FUP9olmE",
-        "label": "Bávaro — RIU Palace",
-        "provider": "Lvfree Adventures"
-      }
+      "parking": true
     },
     {
       "id": "pc002",
@@ -104,13 +98,7 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "youtube",
-        "id": "qc3I1LrjvPc",
-        "label": "Bávaro — Majestic Mirage",
-        "provider": "BFree & Adventures"
-      }
+      "parking": true
     },
     {
       "id": "pc003",
