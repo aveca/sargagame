@@ -1674,7 +1674,7 @@ export const T={
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Your sargassum watchman: morning brief, favourite-beach alerts, daily pick.",
     premiumPrice:"€4.99/mo",premiumCta:"Activate Premium — €4.99/mo",
-    premiumFeatures:["Full access right away — €4.99/mo, cancel in 2 clicks","Morning brief: your best beach, every day","Push alerts before sargassum hits your favourites","No ads · No commitment · 30-day guarantee"],
+    premiumFeatures:["Full immediate access to the 7-day forecast and alerts","Morning brief: your best beach, every day","Push alerts before sargassum hits your favourites","No ads · One-time payment · Instant access"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -1740,7 +1740,7 @@ export const T={
     kids:"Niños",snorkel:"Snorkel",parking:"Estacionamiento",
     premium:"Premium",premiumDesc:"Tu vigía del sargazo: resumen matutino, alertas de playas favoritas, recomendación del día.",
     premiumPrice:"4,99 €/mes",premiumCta:"Activar Premium — 4,99 €/mes",
-    premiumFeatures:["Acceso completo inmediato — 4,99 €/mes, cancela en 2 clics","Resumen matutino: tu mejor playa, cada día","Alertas push antes de que llegue el sargazo","Sin anuncios · Sin compromiso · Garantía de satisfacción"],
+    premiumFeatures:["Acceso completo inmediato a la previsión de 7 días y las alertas","Resumen matutino: tu mejor playa, cada día","Alertas push antes de que llegue el sargazo","Sin anuncios · Pago único · Acceso inmediato"],
     h2sWarn:"Si el sargazo está varado y en descomposición, aléjese (riesgo de H₂S). Fuente: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"EN VIVO",
     nClean:"{n} limpias",island_mq:"Martinica",island_gp:"Guadalupe",
@@ -11246,9 +11246,17 @@ export default function App(){
       if(!pEmail||!pEmail.includes("@"))return
       sgVerifySub(pEmail).then(d=>{
         if(d.active){
-          localStorage.setItem("sg_premium","1")
-          localStorage.setItem("sg_premium_email",pEmail)
-          if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+          // Pass one-time : accès TIME-BOXÉ (passEnd en ms) → sg_premium_pass_end, pas
+          // le flag permanent sg_premium. isPremium dérive du pass_end → setIsPremium(true) OK.
+          if(d.passEnd&&d.kind==="pass"){
+            localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+            localStorage.setItem("sg_premium_email",pEmail)
+            localStorage.setItem("sg_email",pEmail)
+          }else{
+            localStorage.setItem("sg_premium","1")
+            localStorage.setItem("sg_premium_email",pEmail)
+            if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+          }
           setIsPremium(true)
           setShowWelcome(true)
           track("sg_premium_unlock_from_email",{status:d.status||"unknown"})
@@ -11259,6 +11267,40 @@ export default function App(){
       params.delete("premium_email")
       const qs=params.toString()
       window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+    }catch{}
+  },[])
+
+  // « Retrouver mon accès » — deep-link ?restore=1 (depuis l'app, l'accusé de réception
+  // ou l'email d'excuses) : invite l'e-mail de paiement → sgVerifySub → débloque (gère le
+  // Pass time-boxé via passEnd, comme ?premium_email=). Pour tout ancien acheteur ayant
+  // perdu son accès (cross-device / migration). Jamais de cul-de-sac : email introuvable →
+  // toast + contact. Rollback ?restore=0.
+  useEffect(()=>{
+    if(isPremium)return
+    try{
+      const q=window.location.search
+      if(!/[?&]restore=1/.test(q)||/[?&]restore=0/.test(q))return
+      const em=window.prompt(_t(lang,"Entre l'e-mail utilisé pour ton paiement :","Enter the email used for your payment:","Introduce el email usado para tu pago:"))
+      if(em&&em.includes("@")){
+        const addr=em.trim()
+        sgVerifySub(addr).then(d=>{
+          if(d.active){
+            if(d.passEnd&&d.kind==="pass"){
+              localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+              localStorage.setItem("sg_premium_email",addr);localStorage.setItem("sg_email",addr)
+            }else{
+              localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",addr)
+              if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+            }
+            setIsPremium(true);setShowWelcome(true);track("sg_premium_unlock_from_email",{status:d.status||"restore_link"})
+          }else{
+            try{sgToast({tone:"info",title:_t(lang,"Accès introuvable","Access not found","Acceso no encontrado"),msg:_t(lang,"Aucun accès actif pour cet e-mail. Écris à alerte@sargasses-martinique.com et on règle ça.","No active access for this email. Email alerte@sargasses-martinique.com and we'll sort it.","Sin acceso activo para este email. Escribe a alerte@sargasses-martinique.com y lo resolvemos.")})}catch(_){}
+            track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive"})
+          }
+        }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
+      }
+      const params=new URLSearchParams(q);params.delete("restore")
+      const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
     }catch{}
   },[])
 

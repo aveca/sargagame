@@ -1,0 +1,65 @@
+name: Support reply (manual)
+
+# Répond à un client 1:1 depuis la boîte alerte@ (SMTP), via scripts/automation/
+# support-reply.cjs. Manuel (workflow_dispatch). HOLD par défaut : sans send=true,
+# c'est un dry-run (aucun envoi). Sert à répondre aux retours clients (accès Pass,
+# UX) que le conteneur web ne peut pas envoyer (pas de SMTP_PASS, port 465 filtré).
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: "Email du client destinataire"
+        required: true
+      name:
+        description: "Prénom/nom du client (personnalisation)"
+        required: false
+        default: ""
+      kind:
+        description: "Type de réponse"
+        required: true
+        type: choice
+        options:
+          - jc_access
+          - julien_ux
+          - access_generic
+      region:
+        description: "Région (domaine du lien)"
+        required: false
+        default: "guadeloupe"
+        type: choice
+        options:
+          - guadeloupe
+          - martinique
+      send:
+        description: "Envoyer pour de vrai ? (sinon dry-run)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  support-reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send support reply
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          TO: ${{ inputs.to }}
+          NAME: ${{ inputs.name }}
+          KIND: ${{ inputs.kind }}
+          REGION: ${{ inputs.region }}
+          SEND: ${{ inputs.send == 'true' && '1' || '0' }}
+        run: node scripts/automation/support-reply.cjs

@@ -54,6 +54,13 @@ if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
 if ($status === 'paid') {
     @file_put_contents($marker, ''); // marque APRES confirmation 'paid' (les statuts open/pending rappellent)
     mol_forward_fulfillment($cfg, $pid, $email, $cents, $currency, $island, $plan, $source);
+    // PASS one-time : persiste un record Pass côté serveur (cross-device restore via
+    // verify_subscription). Même helper partagé que payment_status → ne diverge pas.
+    // Idempotent (cumul max(), ne touche pas un abo) ; le marqueur mol_<pid> ci-dessus
+    // empêche déjà un 2e passage webhook.
+    if (!empty($meta['pass']) && $email) {
+        mol_pass_grant_store($email, $meta['pass']);
+    }
     // Abo : 1er paiement 'first' paye -> cree la Subscription (idempotent).
     if (($meta['kind'] ?? '') === 'sub_first') {
         $cust = $pay['customerId'] ?? '';

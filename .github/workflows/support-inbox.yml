@@ -1,0 +1,48 @@
+name: Support inbox (Niveau 1, déterministe)
+
+# Service client email "Niveau 1" — ZÉRO API LLM, 100 % règles mots-clés + gabarits.
+# Lit la boîte alerte@ en IMAP, classe les nouveaux messages (UNSEEN), envoie un
+# accusé de réception au client + un digest privé au fondateur (adresses réelles
+# pour qu'il réponde lui-même).
+#
+# SEND='0' par défaut sur le cron = DRY-RUN (valide la connexion IMAP sans rien
+# envoyer ni marquer \Seen). Passer en SEND='1' (dispatch send=true) une fois la
+# connexion validée pour activer les envois.
+#
+# PII : repo PUBLIC → logs PUBLICS. Le script ne logue que des compteurs/catégories,
+# jamais d'adresse ou de corps d'email.
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # toutes les 3 heures
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Envoyer pour de vrai (accusés + digest + \\Seen) ?"
+        type: choice
+        options:
+          - "false"
+          - "true"
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  support-inbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Read inbox + classify + reply (Niveau 1)
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          FOUNDER_EMAIL: ${{ secrets.FOUNDER_EMAIL }}
+          SEND: ${{ inputs.send == 'true' && '1' || '0' }}
+        run: node scripts/automation/support-inbox.cjs

@@ -1002,6 +1002,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
+  // Consentement RGPD/rétractation (renonciation au droit de rétractation 14 j contre
+  // fourniture immédiate, art. L221-28 13° C. conso). Case NON pré-cochée sur le chemin
+  // Pass B2C. DORMANTE par défaut : #250 a retenu le consentement IMPLICITE (« en validant
+  // l'achat, vous demandez l'exécution immédiate », CGV) sans case → on n'ajoute pas de
+  // friction money-path. Opt-in explicite via ?consent=1 si on veut afficher la case.
+  const consentFlag=(()=>{try{return /[?&]consent=1/.test(window.location.search)}catch(_){return false}})()
+  const[consentOk,setConsentOk]=useState(false)
   const stripeRef=useRef(null)
   const elementsRef=useRef(null)
   const setupSecretRef=useRef(null)
@@ -1194,6 +1201,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
       return
     }
+    // Consentement requis sur le chemin Pass B2C payant (renonciation rétractation 14 j).
+    // Pas de gate en capture (offre gratuite, pas de paiement) ni sur l'abo (passCtxRef null),
+    // ni si le flag ?consent=0 désactive la case.
+    if(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk){
+      setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
+      return
+    }
     // ── Mode CAPTURE : aucun paiement dispo → on enregistre l'email (waitlist) +
     // état succès. Relance à la réouverture (source 'mollie_waitlist'). ──────────
     if(PAY_CAPTURE_ONLY){
@@ -1227,7 +1241,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
           :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
@@ -1314,7 +1328,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
       track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
     }
-  },[lang,source,payBusy,onActivated,onClose])
+  },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
   const doSubscribeRef=useRef(doSubscribe)
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
   // ── Apple Pay / Google Pay (Mollie) ─────────────────────────────────────────
@@ -1334,7 +1348,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
-        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
         :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
@@ -1363,6 +1377,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payWithWallet=useCallback((method)=>{
     if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
     const _pc=passCtxRef.current
+    // Même garde de consentement que le bouton carte sur le chemin Pass B2C.
+    if(consentFlag&&_pc&&!consentOk){
+      setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
+      return
+    }
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
     const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
     if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
@@ -1397,7 +1416,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const token=JSON.stringify(ev.payment.token)
               const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
               const body=_pc
-                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
                 :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
@@ -1420,7 +1439,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     }
     // ── Fallback / Google Pay : redirect Mollie hébergé (marche sans domaine validé) ──
     walletRedirect(method)
-  },[lang,source,onActivated,onClose,walletRedirect])
+  },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
     if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
@@ -1507,8 +1526,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const em=prompt(_t(lang,"Entre l'email utilisé pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
     if(!em||!em.includes("@"))return
     sgVerifySub(em).then(d=>{
-      if(d.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em)
-        if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+      if(d.active){
+        // Pass one-time : accès TIME-BOXÉ (passEnd en ms) — on pose sg_premium_pass_end,
+        // PAS le flag permanent sg_premium (un pass n'est pas un abo à vie). Abo = inchangé.
+        if(d.passEnd&&d.kind==="pass"){localStorage.setItem("sg_premium_pass_end",String(d.passEnd));localStorage.setItem("sg_premium_email",em);localStorage.setItem("sg_email",em)}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em);if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))}
         track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
       else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
         sgToast({tone:"error",title:_t(lang,"Aucun abonnement trouvé","No subscription found","No se encontró suscripción"),msg:_t(lang,"Vérifie l'adresse, ou écris-moi à "+SUPPORT_EMAIL+".","Check the address, or write to me at "+SUPPORT_EMAIL+".","Verifica la dirección, o escríbeme a "+SUPPORT_EMAIL+".")})}
@@ -2402,9 +2424,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           if(!em||!em.includes("@"))return
           sgVerifySub(em).then(d=>{
             if(d.active){
-              localStorage.setItem("sg_premium","1")
-              localStorage.setItem("sg_premium_email",em)
-              if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+              // Pass one-time : accès TIME-BOXÉ (passEnd en ms) → sg_premium_pass_end,
+              // pas le flag permanent sg_premium. Abo (sg_premium=1) = comportement inchangé.
+              if(d.passEnd&&d.kind==="pass"){
+                localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+                localStorage.setItem("sg_premium_email",em)
+                localStorage.setItem("sg_email",em)
+              }else{
+                localStorage.setItem("sg_premium","1")
+                localStorage.setItem("sg_premium_email",em)
+                if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+              }
               track("sg_premium_already_success",{source:source||"unknown"})
               onActivated?.()
               onClose()
@@ -2611,10 +2641,26 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn sg-paygold"
+          {/* Consentement rétractation 14 j — chemin Pass B2C payant uniquement.
+              Case NON pré-cochée ; tant qu'elle n'est pas cochée, le bouton payer est
+              désactivé. Flag ?consent=0 → case retirée (comportement d'avant). */}
+          {consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&(
+            <label style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:16,padding:"11px 13px",
+              borderRadius:12,background:"#13261F",border:"1px solid rgba(255,255,255,.14)",cursor:"pointer"}}>
+              <input type="checkbox" checked={consentOk} onChange={e=>{setConsentOk(e.target.checked);if(e.target.checked)setPayError("")}}
+                style={{flexShrink:0,marginTop:2,width:18,height:18,accentColor:"#FFC72C",cursor:"pointer"}}/>
+              <span style={{fontSize:11.5,lineHeight:1.45,color:"rgba(255,255,255,.72)"}}>
+                {_t(lang,
+                  "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation).",
+                  "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU).",
+                  "Acepto que mi previsión de 7 días y mis alertas se me faciliten de inmediato, en cuanto pague, y reconozco que al solicitar este acceso inmediato pierdo mi derecho de desistimiento de 14 días una vez abierto el acceso (art. L221-28 13° del Código de Consumo francés).")}
+              </span>
+            </label>
+          )}
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)} className="gbtn sg-paygold"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
-              cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
-              opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              cursor:payBusy?"wait":((consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)?"not-allowed":"pointer"),fontFamily:"inherit",fontWeight:800,fontSize:15.5,
+              opacity:(payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk))?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :PAY_CAPTURE_ONLY

@@ -398,6 +398,11 @@ function PartnerCard({beach,lang,track}){
    tone (miroir de scripts/lib/orientation.cjs beachSeasonRepere) :
      hors-saison → 'calm' ; sinon clean → 'reassure' ; moderate/avoid → 'check'. */
 function seasonOutlookOn(){ try{ return !/[?&]seasonOutlook=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+/* Retour client (julien neveu, 24/06) : sur la fiche plage, le payeur voit l'aperçu
+   7 j mais le lien vers le détail jour-par-jour ("Fiche complète") était noyé en tout
+   petit parmi 3 boutons. Pour un premium, on remonte un CTA plein-largeur proéminent
+   juste sous l'aperçu. Additif, réversible : ?fulldetail=0 → ancien comportement. */
+function fullDetailOn(){ try{ return !/[?&]fulldetail=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
 const SEASON_I18N={
   eyebrow:{fr:"REPÈRE DE SAISON",en:"SEASON OUTLOOK",es:"REFERENCIA DE TEMPORADA"},
   notForecast:{fr:"pas une prévision",en:"not a forecast",es:"no es un pronóstico"},
@@ -584,6 +589,12 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
 
         {!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        </button>}
+        {/* Premium : CTA détail jour-par-jour proéminent (retour julien neveu). onFull
+            ouvre la fiche data complète. Flag ?fulldetail=0 → retombe sur l'ancien
+            bouton discret de la rangée d'actions ci-dessous. */}
+        {isPremium&&fullDetailOn()&&onFull&&<button type="button" className="lc-cta yel lc-detail-detailcta" onClick={()=>{ if(track)try{track("sg_chasse_full_detail",{beach_id:beach.id})}catch(_){}; onFull() }}>
+          {_t({fr:"VOIR LE DÉTAIL JOUR PAR JOUR →",en:"SEE THE DAY-BY-DAY DETAIL →",es:"VER EL DETALLE DÍA A DÍA →"})}
         </button>}
         {/* Signalement citoyen « note le niveau de sargasses » DIRECTEMENT sur la preview
             (retour fondateur : c'était seulement sur la fiche complète). BeachReport est
@@ -1966,6 +1977,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   box-shadow:2px 2px 0 var(--ink);transition:transform .08s,box-shadow .08s;white-space:nowrap}
 .lc-detail-full:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .lc-detail-full.lc-detail-go{background:var(--ink);color:#fff}
+.lc-detail-detailcta{margin-top:14px}
 .lc-detail-actions{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .lc-detail-actions .lc-detail-full{margin-top:0}
 .lc-detail-fav.on{color:#E8522A;background:#fff}
