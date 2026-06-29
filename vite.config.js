@@ -171,6 +171,24 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // ── Preload de la carte du first paint (WorldMapView) ──
+    // WorldMapView est la carte rendue au premier paint par défaut (bras A/B map_world="world",
+    // cf. Sargasses_PROD.jsx). Mais c'est un import LAZY → son chunk ne se télécharge qu'APRÈS
+    // que l'entry soit parsée + montée + ait décidé de le rendre (sérialisation = LCP retardé).
+    // On injecte un <link rel="modulepreload"> avec le nom de chunk hashé (résolu au build) pour
+    // qu'il se télécharge EN PARALLÈLE de l'entry → carte prête plus tôt = LCP plus bas.
+    // Resource hint pur : aucun changement de comportement. MQ/GP inchangés (même bundle).
+    {
+      name: 'preload-first-paint-map',
+      enforce: 'post',
+      transformIndexHtml(html, ctx) {
+        if (!ctx || !ctx.bundle) return html
+        const chunk = Object.keys(ctx.bundle).find(f => /assets\/WorldMapView-[^/]*\.js$/.test(f))
+        if (!chunk) return html
+        const tag = `  <link rel="modulepreload" crossorigin href="/${chunk}" />\n`
+        return html.replace('</head>', tag + '</head>')
+      },
+    },
     // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
     // MQ/GP strictement inchangés (REGION null ou id mq/gp → html retourné tel quel).
     {

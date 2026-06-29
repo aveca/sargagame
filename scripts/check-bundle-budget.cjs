@@ -11,9 +11,10 @@
  * (non compressé) → ~3× la taille transférée, donc non corrélé à ce que vit le
  * mobile sur 4G. Ici on gzip chaque chunk eager comme le ferait le serveur.
  *
- * Budget réglable : BUNDLE_BUDGET_KB (défaut 195). Au moment de l'ajout, l'eager
- * réel ≈ 177 Ko gzip → ~10 % de marge pour absorber les ajouts mineurs sans rougir,
- * assez serré pour attraper une régression (ex. un chunk lazy redevenu eager).
+ * Budget réglable : BUNDLE_BUDGET_KB (défaut 210). L'eager réel ≈ 193 Ko gzip
+ * (entry 168 + WorldMapView 15 préchargée comme carte du first paint + preact 9)
+ * → ~8 % de marge pour absorber les ajouts mineurs sans rougir, assez serré pour
+ * attraper une régression (ex. un GROS chunk lazy redevenu eager).
  *
  * Usage : node scripts/check-bundle-budget.cjs   (après `vite build`)
  */
@@ -22,7 +23,7 @@ const path = require('path')
 const zlib = require('zlib')
 
 const DIST = path.resolve(__dirname, '..', 'dist')
-const BUDGET_KB = Number(process.env.BUNDLE_BUDGET_KB || 195)
+const BUDGET_KB = Number(process.env.BUNDLE_BUDGET_KB || 210)
 const indexPath = path.join(DIST, 'index.html')
 
 if (!fs.existsSync(indexPath)) {
