@@ -271,7 +271,7 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-        run: node scripts/automation/welcome-paid.cjs --send
+        run: node scripts/automation/welcome-paid.cjs --recover --send
 
       # Dunning past_due (churn involontaire) : relance 1× les abonnés Stripe dont
       # le renouvellement a échoué → email factuel vers le Customer Portal (MàJ carte).
@@ -342,7 +342,7 @@ jobs:
           SMTP_PORT: '465'
           SMTP_USER: alerte@sargasses-martinique.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/welcome-paid-mollie.cjs --send
+        run: node scripts/automation/welcome-paid-mollie.cjs --recover --send
 
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne

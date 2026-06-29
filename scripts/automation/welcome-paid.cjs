@@ -24,6 +24,11 @@ const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
 const DO_SEND = args.includes('--send')
+// --recover : RÉCUPÉRATION d'accès — cible TOUS les abonnés entitled (active/trialing/
+// past_due) quelle que soit leur date de création (pas seulement <14j), pour que les
+// ANCIENS payeurs qui ont perdu l'accès (cross-device) le retrouvent en 1 clic. Évite
+// remboursements + SAV. Idempotent par hash (welcome-paid-sent.json) → 1 email/payeur.
+const DO_RECOVER = args.includes('--recover')
 const SINCE_DAYS = Number((args.find(a => a.startsWith('--since-days=')) || '--since-days=14').split('=')[1]) || 14
 
 function envVal(name) {
@@ -46,6 +51,12 @@ const REGIONS = Object.fromEntries(getAllRegions().map(r => [r.id, r]))
 const DOMAINS = { mq: 'sargasses-martinique.com', gp: 'sargasses-guadeloupe.com' }
 const regionDomain = island => DOMAINS[island] || (REGIONS[island] && REGIONS[island].domain) || 'sargasses-martinique.com'
 const unsubUrl = (email, island) => `${HOOK}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}`
+// Lien d'accès ONE-CLICK : ?premium_email=<email> → l'app vérifie l'abo (sgVerifySub →
+// Stripe/Mollie/comp) et débloque le premium sur CET appareil, sans mot de passe ni
+// formulaire. C'est CE lien qui répare le « payeur bloqué sur un nouvel appareil ».
+const oneClickUrl = (email, island) => `https://${regionDomain(island)}/?premium_email=${encodeURIComponent(email)}&utm_source=email&utm_medium=welcome_paid&utm_campaign=access`
+// Page « on publie nos erreurs » (le moat honnêteté), localisée par langue.
+const reliability = lang => ({ fr: ['/fiabilite/', 'on publie nos erreurs'], en: ['/reliability/', 'we publish our errors'], es: ['/fiabilidad/', 'publicamos nuestros errores'] }[lang] || ['/fiabilite/', 'on publie nos erreurs'])
 
 async function stripe(pathname) {
   const res = await fetch(`https://api.stripe.com/v1/${pathname}`, {
@@ -103,6 +114,16 @@ function copy(region) {
 
 function buildHTML(region, email) {
   const c = copy(region)
+  const lang = region.primaryLang || 'fr'
+  const oneClick = oneClickUrl(email, region.id)
+  const [relPath, relWord] = reliability(lang)
+  const relUrl = `https://${regionDomain(region.id)}${relPath}`
+  // Bandeau ACCÈS one-click EN HAUT (le plus visible) — répare le « payeur bloqué » :
+  // un clic, sans mot de passe, ça suit le compte sur tout appareil.
+  const accessL = { fr: ['Ton accès, en 1 clic ✅', 'Pas de mot de passe, rien à taper : tu cliques, c\'est débloqué — sur n\'importe quel appareil.', 'Activer mon accès'], en: ['Your access, in 1 click ✅', 'No password, nothing to type: click and you\'re in — on any device.', 'Unlock my access'], es: ['Tu acceso, en 1 clic ✅', 'Sin contraseña, nada que escribir: haz clic y entras — en cualquier dispositivo.', 'Activar mi acceso'] }[lang]
+  // Ligne preuve/honnêteté (le moat) — jamais de chiffre nu, lien obligatoire.
+  const proof = { fr: `Avant tout, va voir ce qu'on vaut vraiment : <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (prévisions datées vs réalité, ~76 % justes tous régimes, jusqu'à 79 % en saison).`, en: `First, see what we're really worth: <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (dated forecasts vs reality, ~76% accurate all regimes, up to 79% in season).`, es: `Antes de nada, mira lo que valemos: <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (previsiones fechadas vs realidad, ~76% acertadas, hasta 79% en temporada).` }[lang]
+  const accessBox = `<div style="background:#fff7e0;border:1px solid #FFC72C;border-radius:12px;padding:16px 18px;margin:0 0 6px"><p style="margin:0 0 4px;font-weight:800;color:#190c2c;font-size:14px">${accessL[0]}</p><p style="margin:0 0 12px;font-size:13px;color:#5a4a1a">${accessL[1]}</p><p style="margin:0;text-align:center"><a href="${oneClick}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:13px 28px;border-radius:11px;font-size:15px">${accessL[2]} →</a></p></div>`
   const steps = c.steps.map((s, i) => `<tr><td style="padding:0 0 15px"><table role="presentation" width="100%"><tr>
       <td width="34" valign="top"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FFE47A,#E8A800);color:#0A2A26;font-weight:800;text-align:center;line-height:28px;font-size:14px">${i + 1}</div></td>
       <td style="padding-left:12px"><div style="font-weight:800;color:#0D0D0D;font-size:15px;margin-bottom:2px">${s[0]}</div><div style="color:#555;font-size:13px;line-height:1.5">${s[1]}</div></td>
@@ -112,9 +133,11 @@ function buildHTML(region, email) {
   <table role="presentation" width="100%" style="background:#FDFCF7"><tr><td align="center" style="padding:24px 14px">
   <table role="presentation" width="100%" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.06)">
     <tr><td>${brandHeader(c.kicker, c.title, c.sub)}</td></tr>
-    <tr><td style="padding:24px 24px 6px"><table role="presentation" width="100%">${steps}</table></td></tr>
-    <tr><td style="padding:6px 24px 26px" align="center">
-      <a href="${c.ctaUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0A2A26;font-weight:800;font-size:15px;text-decoration:none;padding:14px 26px;border-radius:12px">${c.cta} →</a>
+    <tr><td style="padding:22px 24px 4px">${accessBox}</td></tr>
+    <tr><td style="padding:10px 24px 6px"><table role="presentation" width="100%">${steps}</table></td></tr>
+    <tr><td style="padding:0 24px 18px"><p style="margin:0;font-size:13px;color:#5a4a1a;line-height:1.5">${proof}</p></td></tr>
+    <tr><td style="padding:0 24px 26px" align="center">
+      <a href="${oneClick}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0A2A26;font-weight:800;font-size:15px;text-decoration:none;padding:14px 26px;border-radius:12px">${c.cta} →</a>
       <div style="color:#888;font-size:11px;margin-top:18px">${c.foot}</div>
       <div style="margin-top:10px"><a href="${unsubUrl(email, region.id)}" style="color:#aaa;font-size:11px">${c.unsub}</a></div>
     </td></tr>
@@ -126,9 +149,13 @@ async function main() {
   const sent = hashedSet(loadJSON(SENT_PATH, []))
   const bounced = hashedSet(loadJSON(BOUNCED_PATH, []))
   const cutoff = Date.now() - SINCE_DAYS * 86400000
-  const subs = [...await listAll('subscriptions?status=active'), ...await listAll('subscriptions?status=trialing')]
-  const recent = subs.filter(s => s.created * 1000 >= cutoff)
-  console.log(`${subs.length} abonnements (active+trialing) · ${recent.length} créés < ${SINCE_DAYS}j`)
+  // --recover : tous les statuts ENTITLED (past_due inclus : ils ont accès pendant le
+  // dunning) et AUCUN filtre de date → les anciens payeurs sont couverts. Sinon : abos
+  // récents active/trialing (onboarding normal du jour).
+  const statuses = DO_RECOVER ? ['active', 'trialing', 'past_due'] : ['active', 'trialing']
+  const subs = (await Promise.all(statuses.map(st => listAll(`subscriptions?status=${st}`)))).flat()
+  const recent = DO_RECOVER ? subs : subs.filter(s => s.created * 1000 >= cutoff)
+  console.log(`${subs.length} abonnement(s) entitled (${statuses.join('+')}) · ${recent.length} ${DO_RECOVER ? 'à (re)couvrir (recover: toutes dates)' : `créés < ${SINCE_DAYS}j`}`)
 
   const queue = []
   for (const s of recent) {
