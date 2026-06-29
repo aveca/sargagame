@@ -30,7 +30,17 @@ const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { computeScore } = require('./lib/score.cjs')
+const { phaseForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
+
+// Repère de SAISON (orientation moyen terme, B2C fiche plage). Phase climatologique
+// régionale SOURCÉE (season-climatology.cjs) — PAS une prévision, jamais datée, jamais
+// notée sur /fiabilite/. Le front la combine au statut MESURÉ de la plage. Champ additif :
+// n'altère JAMAIS le verdict (levels/weekly/scores restent 100% data ERDDAP).
+function seasonOutlookFor(regionId, atDate) {
+  const p = phaseForRegion(regionId, atDate)
+  return { phase: p.phase, source: p.source }
+}
 
 // ── Dossier de sortie ──────────────────────────────────────────────
 // Defaut: public/ du repo (comportement historique). SARG_OUT_DIR = sandbox de test.
@@ -1423,6 +1433,7 @@ async function runRegionPipeline(region, shared) {
     weekly,
     weather,
     scores,
+    seasonOutlook: seasonOutlookFor(region.id, updatedAt),
   }
   if (!grid) payload.fallbackReason = 'erddap-unreachable' // mode degrade documente
   fs.writeFileSync(path.join(regionDir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
@@ -1662,6 +1673,7 @@ async function main() {
     weekly,
     weather,  // per-island snapshot so client can re-compute scores for interpolated beaches
     scores,   // convenience map: beachId → {score, label, reason, breakdown}
+    seasonOutlook: seasonOutlookFor('mq', updatedAt), // racine = contrat MQ/GP (lesser-antilles)
   }
 
   const outPath = path.join(dir, 'sargassum.json')
