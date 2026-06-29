@@ -168,6 +168,12 @@ if ($action === 'create_subscription') {
     // create_payment ci-dessus pour le detail du flux wallet.
     $method = preg_replace('/[^a-z]/', '', $input['method'] ?? '');
     $method = in_array($method, ['applepay', 'googlepay'], true) ? $method : '';
+    // Checkout HÉBERGÉ Mollie (opt-in `hosted:1`) : 1er paiement récurrent SANS cardToken
+    // ni wallet → Mollie affiche sa propre page (carte + mandat), on renvoie checkoutUrl.
+    // Permet aux pages STATIQUES (/pro/espace/, /pro/pricing/) d'ouvrir un abonnement
+    // self-serve (ex. B2B 79 €/mois) sans embarquer Components. Le B2C (app React) envoie
+    // toujours un cardToken → son chemin est INCHANGÉ (hosted absent = comportement d'avant).
+    $hosted = !empty($input['hosted']);
     // Plan demandé, validé contre l'allowlist (config B2C + mol_b2b_plans B2B). Un
     // plan inconnu → fallback B2C 'monthly' (le montant vient TOUJOURS de $sc, jamais
     // du client). B2C inchangé : 'monthly'/'annual' empruntent le même chemin qu'avant.
@@ -177,7 +183,7 @@ if ($action === 'create_subscription') {
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
     $sc = $cfg['subscription'][$planIn] ?? ($b2bPlans[$planIn] ?? null);
-    if ((!$cardToken && !$method) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
+    if ((!$cardToken && !$method && !$hosted) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
         http_response_code(400); echo json_encode(['error' => 'bad subscription params']); exit;
     }
     // ── Parrainage (attribution capturée — récompense au go-live Mollie) ──────────
@@ -198,12 +204,17 @@ if ($action === 'create_subscription') {
     if ($cc >= 400 || empty($cust['id'])) { http_response_code(500); echo json_encode(['error' => 'customer create failed']); exit; }
     $customerId = $cust['id'];
     // 1er paiement = etablit le mandat ET facture la periode 1.
+    // Retour : B2C → racine app (mollie_return) ; checkout HÉBERGÉ B2B → /pro/espace/
+    // (l'hôtel revient sur SON espace, pas l'app conso). Le lien d'accès Pro (?k=token)
+    // est de toute façon livré par email au paiement (mol_b2b_grant_once). Chemin FIXE
+    // côté serveur (jamais d'URL fournie par le client → pas d'open-redirect).
+    $subRedirect = $hosted ? ($returnBase . '/pro/espace/?sub=ok') : ($returnBase . '/?mollie_return=1');
     $payParams = [
         'amount'       => ['currency' => $sc['currency'], 'value' => $sc['amount']],
         'description'  => 'Sargasses ' . $planIn,
         'customerId'   => $customerId,
         'sequenceType' => 'first',
-        'redirectUrl'  => $returnBase . '/?mollie_return=1',
+        'redirectUrl'  => $subRedirect,
         'webhookUrl'   => $returnBase . '/api/mollie-webhook.php',
         'metadata'     => array_filter(['island' => ($island !== '' ? $island : 'mq'), 'plan' => $planIn, 'source' => $source, 'email' => $email, 'kind' => 'sub_first', 'b2b' => ((($sc['kind'] ?? '') === 'b2b') ? '1' : null)], function ($v) { return $v !== null; }),
     ];
