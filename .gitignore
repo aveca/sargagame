@@ -136,3 +136,6 @@ _*.mjs
 qa-capture-tmp.cjs
 qa-*.cjs
 _*.cjs
+
+# Lighthouse CI artefacts locaux
+.lighthouseci/

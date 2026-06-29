@@ -2380,8 +2380,14 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
   },
   build: {
     // Carte Leaflet retirée (2026-06-21) → plus de chunk leaflet ni de filtre de preload.
+    // chunkSizeWarningLimit = RAW (non compressé) : le vrai garde-fou anti-régression est
+    // gzip et vit dans scripts/check-bundle-budget.cjs (mesure le JS eager transféré).
+    // 600 Ko raw garde le warning utile sur une vraie dérive sans spammer sur l'entry/hls connus.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        // preact (alias react/react-dom) isolé dans un vendor cacheable séparé → il ne se
+        // re-télécharge pas quand le code applicatif change (cache long terme).
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
         },

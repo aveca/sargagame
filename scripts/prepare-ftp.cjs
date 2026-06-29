@@ -586,8 +586,6 @@ function writeRegionIndex(region, out) {
     html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://www.clarity.ms" />
   <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
        connexions pendant le chargement de l'app rend le checkout on-site instantané.
@@ -598,8 +596,13 @@ function writeRegionIndex(region, out) {
   <link rel="dns-prefetch" href="https://api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
+  <!-- Polices AUTO-HÉBERGÉES (same-origin) — Google Fonts est bloqué par les navigateurs
+       anti-suivi (Edge « Prévention du suivi », Brave Shields) → rendu en police de secours
+       « gris/cheap ». Aligné sur l'index racine : plus aucune dépendance Google Fonts. -->
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
   <!-- OneSignal Push — SDK chargé à la demande -->
   <script>
     window.ONESIGNAL_APP_ID="${onesignalAppId}";
@@ -613,8 +616,9 @@ function writeRegionIndex(region, out) {
       };document.head.appendChild(s);
     };
   </script>
-  <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
+  <!-- Google Analytics 4 — gtag.js (159 Ko) DIFFÉRÉ à l'idle (injecté dans boot() ci-dessous),
+       sorti du chemin critique. Le stub gtag() + dataLayer mettent les events en file → ils
+       partent quand gtag.js arrive (zéro perte). Aligné sur l'index racine. -->
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
   gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
   gtag('js',new Date());gtag('config','G-Q31VV3LLM9',{transport_url:'https://www.google-analytics.com'});</script>
@@ -632,6 +636,8 @@ function writeRegionIndex(region, out) {
   <script>
   (function(){
     function boot(){
+      // GA4 gtag.js — injecté ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
+      var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9';document.head.appendChild(_ga);
       (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");
       if(!window.gtag)return;
       var sent={};
