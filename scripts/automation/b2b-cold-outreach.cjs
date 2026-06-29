@@ -23,6 +23,7 @@ const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, brandHeader } = require('./lib/email-send.cjs')
+const { inferType, dataHook, liveProof } = require('./lib/b2b-segment.cjs')
 
 const SRC_PATH = path.join(__dirname, 'data', 'b2b-enriched.json')
 const SENT_PATH = path.join(__dirname, 'data', 'b2b-cold-sent.json')
@@ -81,12 +82,38 @@ function buildC0(c, key) {
   const pro = `https://${domain}/pro/espace/?utm_source=email&utm_medium=b2b_cold&utm_campaign=c0${b}`
   const place = c.town || (c.island === 'GP' ? 'Guadeloupe' : 'Martinique')
   const L = localeFor(c)
+  // Segmentation déterministe (FR seul = marché B2B live MQ/GP ; EN/ES inchangés).
+  const seg = inferType(c)                 // 'hotel' | 'collectivite'
+  const dh = L === 'fr' ? dataHook(c, seg) : null  // vraie donnée plage(s), ou null
+  const pf = L === 'fr' ? liveProof() : null       // % LIVE (jamais figé)
+  // Phrase de donnée réelle, adaptative (saison calme vs épisode). null → copy générique.
+  let dataSentence = ''
+  if (dh) {
+    if (seg === 'collectivite') {
+      dataSentence = dh.navoid > 0
+        ? `Un constat d'abord, sur vos plages : la semaine dernière, sur vos <strong>${dh.nbeaches}</strong> plages suivies, <strong>${dh.navoid}</strong> ont connu au moins un jour « à éviter » — et pas les mêmes d'un jour à l'autre.`
+        : `Un constat d'abord : la semaine dernière, vos <strong>${dh.nbeaches}</strong> plages suivies sont restées propres. La saison est calme — c'est justement là que voir le jour où ça bascule, baie par baie, fait la différence pour le ramassage.`
+    } else {
+      dataSentence = dh.avoidDays > 0
+        ? `Un fait d'abord, sur votre plage : <strong>${dh.beach}</strong> semble avoir connu <strong>${dh.avoidDays} jour(s)</strong> « à éviter » la semaine dernière — autant de matins où un client a pu arriver sans le savoir.`
+        : `Un fait d'abord, sur votre plage : <strong>${dh.beach}</strong> est restée propre toute la semaine dernière — exactement le genre de certitude qu'on mesure et qu'on documente, jour après jour.`
+    }
+  }
+  // Preuve LIVE (remplace le chiffre figé qui se périme), forme hedgée canonique.
+  const proofFr = pf
+    ? `On ne promet pas, on montre. Notre fiabilité est publiée et auditée chaque jour, par régime, sur <strong>/fiabilite/</strong> : <strong>${pf.pct} % des prévisions « mer propre » vérifiées en saison calme</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('fr-FR')} comparaisons${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''} ; <strong>~76 % tous régimes confondus</strong>, les rares alertes de saison calme en faible confiance. Le verdict reste 100 % data — l'argent n'y touche jamais.`
+    : `On ne promet pas, on montre : fiabilité publiée et auditée par régime sur <strong>/fiabilite/</strong> (≈ 76 % à 79 % selon la saison, alertes de saison calme en faible confiance). Le verdict reste 100 % data — l'argent n'y touche jamais.`
+
   const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
     : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
-    : `${c.name} — l'état de vos plages chaque matin ?`
+    : seg === 'collectivite'
+      ? (dh && dh.navoid > 0 ? `Sur vos ${dh.nbeaches} plages, ${dh.navoid} étaient à éviter la semaine dernière` : `Anticiper le ramassage, baie par baie — ${place}`)
+      : (dh && dh.avoidDays > 0 ? `${dh.beach} : ${dh.avoidDays} jour(s) à éviter la semaine dernière` : `${c.name} — l'état de vos plages chaque matin ?`)
   const preheader = L === 'en' ? `Your beaches measured by satellite (Copernicus, NOAA) — alerted before the seaweed lands.`
     : L === 'es' ? `Sus playas medidas por satélite (Copernicus, NOAA) — avisados antes de que llegue el sargazo.`
-    : `Vos plages mesurées au satellite (Copernicus, NOAA) — prévenus avant l'échouage.`
+    : seg === 'collectivite'
+      ? `Voir baie par baie où les algues arrivent — quelques jours avant l'échouage, pour planifier le ramassage.`
+      : `Vos plages mesurées au satellite — l'alerte le matin où ça bascule, avant l'échouage.`
   const T = {
     fr: {
       hdrTitle: 'Le Veilleur', hdrSub: 'Vos plages, mesurées au satellite', hdrFor: `Pour ${c.name}, ${place}`,
@@ -119,10 +146,28 @@ function buildC0(c, key) {
       orReply: 'O responda simplemente “ok” y le envío la lectura fechada de sus playas.'
     }
   }[L]
+  // FR : copy SEGMENTÉE (hôtel = clients / collectivité = ramassage) + preuve LIVE.
+  // Écrase le copy générique figé. EN/ES inchangés (marché USD B2B pas encore live).
+  if (L === 'fr') {
+    T.proof = proofFr
+    if (seg === 'collectivite') {
+      T.hdrSub = 'Vos plages, baie par baie'
+      T.pain = `Aujourd'hui, l'échouage se découvre le matin même — algues déjà sur le sable, équipe pas encore mobilisée. Le Veilleur inverse l'ordre : prévision <strong>par plage, J+1→J+7</strong>, baie par baie, jamais une moyenne d'île.`
+      T.flip = `Concret : un J+5 qui passe au rouge sur une seule anse vous laisse la veille pour mobiliser l'équipe de ramassage, poser les barrages et flécher le budget là où ça compte — pas partout à l'aveugle.`
+      T.proof += ` Donnée publique et auditable — de quoi communiquer juste auprès des administrés.`
+      T.ask = `L'essai donne tout de suite la prévision sur l'ensemble de votre littoral : <strong>30 jours gratuits, sans carte</strong>. 100 % en libre-service.`
+      T.ctaText = dh ? `Voir vos ${dh.nbeaches} plages en direct · essai 30 j` : 'Voir vos plages · essai 30 j'
+    } else {
+      T.pain = `D'habitude, une plage qui bascule dans la nuit, vous l'apprenez en même temps que le client — à l'accueil, déçu. Le Veilleur inverse l'ordre : un satellite veille la mer (Copernicus + NOAA), traduit en prévision <strong>par plage</strong>, J+1→J+7. L'alerte « le matin où ça bascule » arrive <strong>avant</strong> l'échouage.`
+      T.flip = `Concret : un matin, ${dh ? dh.beach : 'votre plage'} vire au rouge. Prévenu la veille, vous orientez les arrivées du jour vers une crique abritée à 10 min — personne pris en traître, pas d'avis « plage pleine d'algues ».`
+      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : 79 €/mois ou 690 €/an, garantie 30 j. 100 % en ligne, à votre rythme.`
+      T.ctaText = dh ? `Voir ${dh.beach} en direct · essai 30 j` : 'Voir mes plages · essai 30 j'
+    }
+  }
   const inner = `${brandHeader(T.hdrTitle, T.hdrSub, T.hdrFor)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6">${T.hi}</div>
-    ${c.hook ? `<div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">${c.hook}</div>` : ''}
+    ${(L === 'fr' && dataSentence) ? `<div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">${dataSentence}</div>` : (c.hook ? `<div style="font-size:15px;color:#333;line-height:1.6;margin-top:10px">${c.hook}</div>` : '')}
     <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${T.pain}</div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-top:12px">${T.flip}</div>
     <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px;background:#FBF7E9;border-radius:10px;padding:12px 14px">${T.proof}</div>
