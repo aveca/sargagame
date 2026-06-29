@@ -139,6 +139,22 @@ if ($action === 'create_payment') {
     } elseif ($method) {
         $payParams['method'] = $method;       // wallet -> checkout heberge (fallback redirect)
     }
+    // ── Customer Mollie pour les PASS (ADDITIF, FAIL-OPEN) ────────────────────────
+    // Crée un Customer pour que le payeur du pass apparaisse dans l'onglet Clients de
+    // Mollie (visibilité dashboard + rattachement du paiement). Réutilise le pattern
+    // EXACT du flux abonnement (L207-211). IMPORTANT : on n'écrit PAS ce customerId dans
+    // le mol_store du Pass — le champ `customer` y déclencherait le chemin abonnement de
+    // verify_subscription et casserait la restauration des Pass (chemin Pass = pass_end).
+    // FAIL-OPEN : échec de création → on continue SANS customerId, jamais de blocage du
+    // paiement. Duplication de customers si même email re-paie = acceptée (volume faible).
+    if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $passCustParams = ['email' => $email];
+        if ($myRef) $passCustParams['metadata'] = ['referral_code' => $myRef];
+        list($cc, $cust) = mol_api('POST', '/customers', $passCustParams);
+        if ($cc < 400 && !empty($cust['id'])) {
+            $payParams['customerId'] = $cust['id'];
+        }
+    }
     list($code, $pay) = mol_api('POST', '/payments', $payParams);
     if ($code >= 400 || empty($pay['id'])) { http_response_code(500); echo json_encode(['error' => 'payment create failed']); exit; }
     echo json_encode([

@@ -6598,8 +6598,12 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif,onAccess,isPremium}){
   const LL=T[lang]||T.fr
+  // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
+  // paywall). Répond au « aucun tracking de mon paiement sur le site ». Flag rollback
+  // ?monacces=0 → masque l'entrée (comportement d'avant).
+  const showAccess=!!onAccess&&!(/[?&]monacces=0/.test(typeof window!=="undefined"?window.location.search:""))
   // EN DIRECT canonique : vivant SEULEMENT si source live ET fraîcheur réelle <12h
   // (formatFreshness retourne null au-delà → on bascule sur « vérification en cours »).
   const fresh=formatFreshness(updatedAt,lang)
@@ -6667,6 +6671,16 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
             </svg>
           </button>)
         })()}
+        {showAccess&&(
+          <button onClick={onAccess} aria-label={_t(lang,"Mon accès","My access","Mi acceso")}
+            title={_t(lang,"Mon accès","My access","Mi acceso")}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="2"/>
+              <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              {isPremium&&<circle cx="18" cy="6" r="2.4" fill="#FFC72C" stroke="#0d0b14" strokeWidth="1.2"/>}
+            </svg>
+          </button>
+        )}
         <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"}>
           {theme==="dark"
             ?<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -11270,16 +11284,12 @@ export default function App(){
     }catch{}
   },[])
 
-  // « Retrouver mon accès » — deep-link ?restore=1 (depuis l'app, l'accusé de réception
-  // ou l'email d'excuses) : invite l'e-mail de paiement → sgVerifySub → débloque (gère le
-  // Pass time-boxé via passEnd, comme ?premium_email=). Pour tout ancien acheteur ayant
-  // perdu son accès (cross-device / migration). Jamais de cul-de-sac : email introuvable →
-  // toast + contact. Rollback ?restore=0.
-  useEffect(()=>{
-    if(isPremium)return
+  // « Retrouver mon accès » — logique réutilisable (deep-link ?restore=1 ET entrée Header
+  // « Mon accès »). Invite l'e-mail de paiement → sgVerifySub → débloque (gère le Pass
+  // time-boxé via passEnd, comme ?premium_email=). Pour tout acheteur ayant perdu son accès
+  // (cross-device / migration). Jamais de cul-de-sac : email introuvable → toast + contact.
+  const openAccessCheck=useCallback((src)=>{
     try{
-      const q=window.location.search
-      if(!/[?&]restore=1/.test(q)||/[?&]restore=0/.test(q))return
       const em=window.prompt(_t(lang,"Entre l'e-mail utilisé pour ton paiement :","Enter the email used for your payment:","Introduce el email usado para tu pago:"))
       if(em&&em.includes("@")){
         const addr=em.trim()
@@ -11292,13 +11302,26 @@ export default function App(){
               localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",addr)
               if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
             }
-            setIsPremium(true);setShowWelcome(true);track("sg_premium_unlock_from_email",{status:d.status||"restore_link"})
+            setIsPremium(true);setShowWelcome(true)
+            try{sgToast({tone:"success",title:_t(lang,"Accès retrouvé ✅","Access restored ✅","Acceso recuperado ✅"),msg:_t(lang,"Ton Pass est de nouveau actif sur cet appareil.","Your Pass is active again on this device.","Tu Pase vuelve a estar activo en este dispositivo.")})}catch(_){}
+            track("sg_premium_unlock_from_email",{status:d.status||"restore_link",src:src||"restore_link"})
           }else{
             try{sgToast({tone:"info",title:_t(lang,"Accès introuvable","Access not found","Acceso no encontrado"),msg:_t(lang,"Aucun accès actif pour cet e-mail. Écris à alerte@sargasses-martinique.com et on règle ça.","No active access for this email. Email alerte@sargasses-martinique.com and we'll sort it.","Sin acceso activo para este email. Escribe a alerte@sargasses-martinique.com y lo resolvemos.")})}catch(_){}
-            track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive"})
+            track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive",src:src||"restore_link"})
           }
-        }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
+        }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network",src:src||"restore_link"}))
       }
+    }catch{}
+  },[lang])
+
+  // Deep-link ?restore=1 (app / accusé de réception / email de bienvenue) → openAccessCheck.
+  // Rollback ?restore=0.
+  useEffect(()=>{
+    if(isPremium)return
+    try{
+      const q=window.location.search
+      if(!/[?&]restore=1/.test(q)||/[?&]restore=0/.test(q))return
+      openAccessCheck("restore_link")
       const params=new URLSearchParams(q);params.delete("restore")
       const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
     }catch{}
@@ -13047,6 +13070,21 @@ export default function App(){
                 try{sessionStorage.removeItem("sg_hero_seen")}catch(_){}
                 setSelectedBeach(null);setShowHero(true)
                 track("sg_landing_replay",{})
+              }}
+              isPremium={isPremium}
+              onAccess={()=>{
+                // Premium → montre le statut (Pass actif + échéance si connue). Sinon →
+                // invite de restauration (jamais de cul-de-sac). Flag rollback ?monacces=0.
+                if(isPremium){
+                  let until=""
+                  try{const pe=parseInt(localStorage.getItem("sg_premium_pass_end")||"0",10)
+                    if(pe&&pe>Date.now())until=new Date(pe).toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long",year:"numeric"})}catch(_){}
+                  try{sgToast({tone:"success",title:_t(lang,"Pass actif","Pass active","Pase activo"),msg:until?_t(lang,"Actif jusqu'au "+until,"Active until "+until,"Activo hasta el "+until):_t(lang,"Premium actif sur cet appareil.","Premium active on this device.","Premium activo en este dispositivo.")})}catch(_){}
+                  try{track("sg_access_status_view",{has_end:!!until})}catch(_){}
+                }else{
+                  try{track("sg_access_check_open",{src:"header"})}catch(_){}
+                  openAccessCheck("header")
+                }
               }}
               onEnableNotif={()=>loadPushNow("header")}/>
           </div>
