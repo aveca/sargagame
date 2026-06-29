@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-28T19:28:36.018Z",
+  "updatedAt": "2026-06-29T04:17:33.180Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 87,
-    "contacted": 20,
+    "discovered": 84,
+    "contacted": 23,
     "lead": 3,
     "paid": 1
   },
@@ -211,22 +211,22 @@
       "nextAction": "à contacter (prospection auto)"
     },
     "90367996a9c7de95467ea9a7da99d26e": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Bois Joli",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T04:14:46.174Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "570b71d132173d5e5806ceb07224aa9b": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Amaudo",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T04:14:47.003Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "26c84124b4a366d93e3bc4c280759f88": {
       "stage": "discovered",
@@ -238,13 +238,13 @@
       "nextAction": "à contacter (prospection auto)"
     },
     "f93adc42d207dddcf9f0a260c9d59eb3": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Bao Beach",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T04:14:47.544Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "725711cb92e8a9b8503c6286f1631fc8": {
       "stage": "discovered",
