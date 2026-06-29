@@ -33,12 +33,14 @@ const hi = NAME ? `Bonjour ${NAME},` : 'Bonjour,'
 // le correctif de récupération cross-device).
 function restoreSteps() {
   return `
-  <ol style="margin:14px 0;padding-left:20px;font-size:15px;line-height:1.7;color:#23323a">
-    <li>Ouvrez l'app : <a href="${SITE}" style="color:#0E7C66;font-weight:700">${DOMAIN}</a></li>
-    <li>Touchez une plage, puis le cadenas / « Premium »</li>
-    <li>En bas du volet, touchez <strong>« Déjà payé ? Restaurer mon accès »</strong></li>
-    <li>Entrez l'<strong>e-mail utilisé pour le paiement</strong> (celui-ci) → votre Pass se débloque.</li>
-  </ol>`
+  <div style="text-align:center;margin:18px 0">
+    <a href="${SITE}/?restore=1" style="display:inline-block;background:#0E7C66;color:#fff;font-weight:800;
+       font-size:15px;text-decoration:none;padding:13px 22px;border-radius:10px">Retrouver mon accès en un clic →</a>
+    <div style="font-size:12px;color:#8a97a5;margin-top:8px">Entrez l'e-mail de paiement (celui-ci) quand on vous le demande.</div>
+  </div>
+  <p style="font-size:13px;color:#5a6b73;margin:10px 0 0">Ou manuellement : ouvrez
+    <a href="${SITE}" style="color:#0E7C66;font-weight:700">${DOMAIN}</a> → une plage → le cadenas →
+    <strong>« Déjà payé ? Restaurer mon accès »</strong> → votre e-mail de paiement.</p>`
 }
 
 function tmpl() {

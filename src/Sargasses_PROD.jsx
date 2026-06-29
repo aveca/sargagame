@@ -11269,6 +11269,40 @@ export default function App(){
     }catch{}
   },[])
 
+  // « Retrouver mon accès » — deep-link ?restore=1 (depuis l'app, l'accusé de réception
+  // ou l'email d'excuses) : invite l'e-mail de paiement → sgVerifySub → débloque (gère le
+  // Pass time-boxé via passEnd, comme ?premium_email=). Pour tout ancien acheteur ayant
+  // perdu son accès (cross-device / migration). Jamais de cul-de-sac : email introuvable →
+  // toast + contact. Rollback ?restore=0.
+  useEffect(()=>{
+    if(isPremium)return
+    try{
+      const q=window.location.search
+      if(!/[?&]restore=1/.test(q)||/[?&]restore=0/.test(q))return
+      const em=window.prompt(_t(lang,"Entre l'e-mail utilisé pour ton paiement :","Enter the email used for your payment:","Introduce el email usado para tu pago:"))
+      if(em&&em.includes("@")){
+        const addr=em.trim()
+        sgVerifySub(addr).then(d=>{
+          if(d.active){
+            if(d.passEnd&&d.kind==="pass"){
+              localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+              localStorage.setItem("sg_premium_email",addr);localStorage.setItem("sg_email",addr)
+            }else{
+              localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",addr)
+              if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+            }
+            setIsPremium(true);setShowWelcome(true);track("sg_premium_unlock_from_email",{status:d.status||"restore_link"})
+          }else{
+            try{sgToast({tone:"info",title:_t(lang,"Accès introuvable","Access not found","Acceso no encontrado"),msg:_t(lang,"Aucun accès actif pour cet e-mail. Écris à alerte@sargasses-martinique.com et on règle ça.","No active access for this email. Email alerte@sargasses-martinique.com and we'll sort it.","Sin acceso activo para este email. Escribe a alerte@sargasses-martinique.com y lo resolvemos.")})}catch(_){}
+            track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive"})
+          }
+        }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
+      }
+      const params=new URLSearchParams(q);params.delete("restore")
+      const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+    }catch{}
+  },[])
+
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
