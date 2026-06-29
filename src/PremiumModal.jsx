@@ -917,6 +917,27 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payStepRef=useRef(false)
   const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
   const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
+  // Swipe-down to go back depuis l'écran paiement on-site (overlay z1300, rendu
+  // hors du panel → ne bénéficie pas du swipe du paywall). Même geste que le
+  // paywall : ne déclenche que si l'overlay est scrollé tout en haut, glisse
+  // le contenu, et revient au paywall (setPayStep(false), JAMAIS onClose →
+  // l'user retombe sur le verdict gratuit, pas dans le vide).
+  const payScrollRef=useRef(null)
+  const payContentRef=useRef(null)
+  const payStartYRef=useRef(0)
+  const onTouchStartPay=e=>{payStartYRef.current=e.touches[0].clientY}
+  const onTouchMovePay=e=>{
+    if(payScrollRef.current&&payScrollRef.current.scrollTop>5)return
+    const dy=e.touches[0].clientY-payStartYRef.current
+    if(dy>0&&payContentRef.current)payContentRef.current.style.transform=`translateY(${dy}px)`
+  }
+  const onTouchEndPay=e=>{
+    const reset=()=>{if(payContentRef.current){payContentRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";payContentRef.current.style.transform="";setTimeout(()=>{if(payContentRef.current)payContentRef.current.style.transition=""},300)}}
+    if(payScrollRef.current&&payScrollRef.current.scrollTop>5){reset();return}
+    const dy=(e.changedTouches[0]?.clientY||0)-payStartYRef.current
+    if(dy>60){if(payContentRef.current)payContentRef.current.style.transform="";track("sg_pay_onsite_back",{plan:payPlanRef.current,via:"swipe"});setPayStep(false)}
+    else reset()
+  }
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
@@ -2356,13 +2377,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
           design maison : email + Apple/Google Pay + Payment Element (carte).
           TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
-      <div style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
+      <div ref={payScrollRef} onTouchStart={onTouchStartPay} onTouchMove={onTouchMovePay} onTouchEnd={onTouchEndPay}
+        style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
         display:"flex",flexDirection:"column",overflowX:"hidden",overflowY:"auto",
         // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
         // dans un conteneur hidden — le pré-mount resterait gelé)
         transform:payStep?"none":"translateX(-200vw)",
         pointerEvents:payStep?"auto":"none"}}>
-        <div style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"16px 20px 28px",flex:1,display:"flex",flexDirection:"column"}}>
+        {/* padding-top safe-area : sinon en PWA standalone iOS le bouton « Retour »
+            est coincé sous la barre d'état système (taps interceptés) → injoignable. */}
+        <div ref={payContentRef} style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"calc(16px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
             <button onClick={()=>{track("sg_pay_onsite_back",{plan:payPlanRef.current});setPayStep(false)}}
               className="sg-payplain"
