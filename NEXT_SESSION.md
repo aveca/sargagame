@@ -1,5 +1,21 @@
 # NEXT_SESSION — sargagame
 
+> **📧 2026-06-29 — ⚠️ ACTION FONDATEUR BLOQUANTE : REDIRIGER LES BOÎTES MAIL → GMAIL (réception support/B2B/B2C).**
+>
+> **Problème** : le fondateur n'a accès qu'à son **Gmail** (`yacovassaraf@gmail.com`) au quotidien (mobile). Les boîtes d'envoi/contact (`alerte@`/`alerts@`/`support@`/`contact@` sur les 5 domaines) **ne sont pas relevées** → toute réponse client tombe dans un trou noir. **Le client NE DOIT PAS voir le Gmail** : les boîtes restent brandées, elles **redirigent** vers le Gmail.
+>
+> **Côté code = DÉJÀ correct, ne rien changer** : From forcé sur `alerte@sargasses-martinique.com` (boîte authentifiée SPF/DKIM, `normalizeFrom` dans `email-send.cjs`) ; mailto des pages = adresse brandée du domaine servi (espace = `alerts@<domaine>`). **Pas de Reply-To Gmail** (un essai a été REVERTÉ : le client ne doit pas connaître le Gmail). Le maillon manquant est **uniquement la redirection inbound côté hébergeur**, hors repo.
+>
+> **Action (cPanel Namecheap `premium115.web-hosting.com`, ~5 min mobile)** : Email → **Default Address** (catch-all) de chaque domaine → forward `yacovassaraf@gmail.com` (attrape toutes les adresses du domaine d'un coup). **Priorité** : `alerte@sargasses-martinique.com` (= From de TOUS nos emails → couvre toutes les réponses). Puis catch-all sur `sargasses-guadeloupe.com`, `sargassummiami.com`, `sargassumpuntacana.com`, `sargassumcancun.com`. **Option** : Gmail « Envoyer en tant que » l'adresse brandée pour répondre sous la marque (besoin du mot de passe SMTP, déjà côté hébergeur). **Je ne peux pas le faire (aucun accès mail-host) — escaladé.**
+
+> **🌐 2026-06-29 — ESPACE PRO entièrement i18n FR/EN/ES + plages région-aware (#235 MERGÉ sur `main`). L'offre USD B2B est enfin « prête » bout-en-bout.**
+>
+> **Ce qui était cassé** : on fait de l'outreach B2B EN/ES mais `/pro/espace/` ne parlait qu'en FR et listait des plages MQ/GP même sur les domaines USD (slugs → plages MQ → sélecteur/widget cassés sur florida/puntacana/rivieramaya).
+>
+> **Livré (#235, LIVE)** : langue par domaine (florida/puntacana=EN, rivieramaya=ES, MQ/GP=FR) via dictionnaire complet (49 clés `data-i18n`) ; **listes de plages région-aware** (MQ/GP slugs SEO + USD `id`=slug accepté par `/widget/embed/`) → sélecteur/aperçu/widget pointent la bonne région+domaine ; libellés prix/devise localisés ($89/$790 EN/ES) ; liens fiabilité `/fiabilite/`·`/reliability/`·`/fiabilidad/` ; contact = adresse **brandée** du domaine (jamais le Gmail).
+>
+> **Vérif navigateur (host-resolver réel)** : miami→EN $89 + 12 plages FL · cancun→ES $89 + 12 plages Riviera Maya · localhost→FR 79 € + 20 plages MQ/GP · **0 erreur JS** · 49/49 clés traduites (check statique).
+
 > **📈 2026-06-29 — SEO : RÉPARATION /carte-sargasses/ GP (#231 MERGÉ sur `main`). Levier tranché par panel adverse sur data GSC/GA4 réelle.**
 >
 > **Recadrage trafic (donnée réelle, pas clics GSC)** : GA4 28 j = **~515 sessions/j réseau** (MQ ~240/j, GP ~232/j, florida ~25, cancun ~15, puntacana ~5). Le fondateur EST DÉJÀ >50-100/j ; objectif réel = **prochain 2-3×**. Le « blocage GSC fondateur » est en fait **RÉSOLU** (5 domaines vérifiés + sitemaps soumis via `provision-gsc.yml`/`.cjs` — GSC remonte de la data ; IndexNow Bing câblé ; rebuild+deploy 4×/j). Pas d'action console GSC en attente.
