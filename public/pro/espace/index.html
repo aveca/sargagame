@@ -223,6 +223,22 @@
     var token=(Q.get("k")||"").trim();
     var island=SLUG2ISL[beachSlug];
     var DOMAIN=island==="GP"?"sargasses-guadeloupe.com":"sargasses-martinique.com";
+    // Région réelle = le domaine servi : un espace USD doit parler à SON API + facturer en USD.
+    var HOST=(location.hostname||"").toLowerCase();
+    var USD_REGION=HOST.indexOf("miami")>-1?"florida":HOST.indexOf("cancun")>-1?"rivieramaya":HOST.indexOf("puntacana")>-1?"puntacana":null;
+    var CUR=USD_REGION?"USD":"EUR";
+    if(USD_REGION){island=USD_REGION;DOMAIN=HOST.replace(/^www\./,"");}
+    function money(v){return CUR==="USD"?("$"+v):(v+" €");}
+    var MO=CUR==="USD"?"89":"79", YR=CUR==="USD"?"790":"690";
+    var PLAN_MO=CUR==="USD"?"pro_monthly_usd":"pro_monthly";
+    var PLAN_YR_KEY=CUR==="USD"?"pro_annual_usd":"pro_annual";
+    // Affiche la bonne devise (HTML par défaut = EUR).
+    try{
+      var _pe=document.querySelector(".price"); if(_pe)_pe.innerHTML=money(MO);
+      var _pm=document.querySelector(".price-mo"); if(_pm)_pm.innerHTML="/ mois · ou "+money(YR)+"/an";
+      var _sm=document.getElementById("subMonthly"); if(_sm)_sm.textContent="S'abonner — "+money(MO)+"/mois →";
+      var _sa=document.getElementById("subscribe"); if(_sa)_sa.textContent="Verrouiller l'année — "+money(YR)+" →";
+    }catch(_){}
 
     if(hotel){$("hotelLine").innerHTML=" · <span class='hotel'>"+hotel+"</span>";document.title="Espace Pro — "+hotel;}
     $("pName").textContent=hotel||"Votre établissement";
@@ -297,16 +313,16 @@
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); var sr=$("subResult"); sr.style.display="block"; sr.textContent="Saisissez d'abord votre email pro ci-dessus."; return; }
       var btn=$("subMonthly"); btn.textContent="Redirection…"; btn.disabled=true;
-      fetch("https://"+DOMAIN+"/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:"pro_monthly",hosted:1,email:em,island:(island||"MQ").toLowerCase(),source:"b2b_espace_monthly"})})
+      fetch("https://"+DOMAIN+"/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:PLAN_MO,hosted:1,email:em,island:(island||"MQ").toLowerCase(),source:"b2b_espace_monthly"})})
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.checkoutUrl){ location.href=d.checkoutUrl; }
           else { btn.textContent="Réessayer"; btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent="Paiement momentanément indisponible — réessayez ou écrivez-nous."; }
-        }).catch(function(){ btn.textContent="S'abonner — 79 €/mois →"; btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent="Réseau indisponible — réessayez."; });
+        }).catch(function(){ btn.textContent="S'abonner — "+money(MO)+"/mois →"; btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent="Réseau indisponible — réessayez."; });
     }
     $("subMonthly").addEventListener("click",subscribeMonthly);
     // Option « verrouiller l'année » : lien Mollie pro_annual (690 €)
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
-      var u=d&&d.links&&d.links.pro_annual&&d.links.pro_annual.url;
+      var u=d&&d.links&&d.links[PLAN_YR_KEY]&&d.links[PLAN_YR_KEY].url;
       if(u)$("subscribe").href=u;
     }).catch(function(){});
 

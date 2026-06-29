@@ -22,10 +22,19 @@ function mol_api($method, $path, $body = null) {
     return [$code, json_decode($resp, true)];
 }
 
-// EUR seulement pour l'instant (compte Mollie EUR). USD = auto-converti ~2.5-3% FX
-// + ~1% payout multi-devises -> on laisse les regions USD a Stripe a son retour.
+// EUR : MQ/GP (+ vide = défaut MQ). USD : florida/puntacana/rivieramaya — Mollie encaisse
+// l'USD (FX ~2.5-3%), comme le B2C USD déjà live depuis le 26/06. Toute autre région = non
+// supportée. Sert de garde-fou de COHÉRENCE devise↔région sur create_subscription (B2B) :
+// une région USD ne peut souscrire qu'à un plan USD, une région EUR qu'à un plan EUR.
+function mol_region_currency($island) {
+    $i = strtolower((string)$island);
+    if (in_array($i, ['mq', 'gp', ''], true)) return 'EUR';
+    if (in_array($i, ['florida', 'puntacana', 'rivieramaya'], true)) return 'USD';
+    return null; // région inconnue → rejet
+}
+// Conservé pour rétro-compat (anciens appels). EUR-region = true.
 function mol_is_eur_region($island) {
-    return in_array($island, ['mq', 'gp', ''], true);
+    return mol_region_currency($island) === 'EUR';
 }
 
 // Forward fulfillment -> Apps Script, MEME shape que stripe-webhook.php (la Sheet
@@ -158,8 +167,14 @@ function mol_create_subscription_once($cfg, $customerId, $email, $planIn, $islan
 // Brief 29 €/mois (EUR). N'altère AUCUNE clé B2C ('monthly'/'annual' de la config).
 function mol_b2b_plans() {
     return [
-        'pro_monthly'   => ['amount' => '79.00', 'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
-        'brief_monthly' => ['amount' => '29.00', 'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
+        // EUR (MQ/GP) — décision 2026-06-29.
+        'pro_monthly'       => ['amount' => '79.00',  'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
+        'brief_monthly'     => ['amount' => '29.00',  'currency' => 'EUR', 'interval' => '1 month', 'kind' => 'b2b'],
+        // USD (florida/puntacana/rivieramaya) — grille de réf. Pro $89 / Brief $39. Mollie
+        // encaisse l'USD (comme le B2C USD). Le garde devise↔région (mol_region_currency)
+        // garantit qu'une région USD ne reçoit QUE ces plans, jamais les EUR.
+        'pro_monthly_usd'   => ['amount' => '89.00',  'currency' => 'USD', 'interval' => '1 month', 'kind' => 'b2b'],
+        'brief_monthly_usd' => ['amount' => '39.00',  'currency' => 'USD', 'interval' => '1 month', 'kind' => 'b2b'],
     ];
 }
 

@@ -57,7 +57,14 @@ function rampCap(firstSendISO) {
 // Langue = primaryLang du site de la région (cf. regions/<id>.json) : florida & puntacana
 // = EN-first (sargassummiami / sargassumpuntacana), rivieramaya = ES-first (sargassumcancun).
 function localeFor(c) { return (c.island === 'FL' || c.island === 'florida' || c.island === 'PC' || c.island === 'puntacana') ? 'en' : (c.island === 'RM' || c.island === 'rivieramaya') ? 'es' : 'fr' }
-function domainFor(c) { return c.island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com' }
+function domainFor(c) {
+  const i = String(c.island || '').toLowerCase()
+  if (i === 'gp') return 'sargasses-guadeloupe.com'
+  if (i === 'fl' || i === 'florida') return 'sargassummiami.com'
+  if (i === 'pc' || i === 'puntacana') return 'sargassumpuntacana.com'
+  if (i === 'rm' || i === 'rivieramaya') return 'sargassumcancun.com'
+  return 'sargasses-martinique.com'
+}
 
 function cta(text, url) {
   return `<a href="${url}" style="display:inline-block;padding:13px 26px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:800">${text}</a>`
