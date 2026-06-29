@@ -1,5 +1,24 @@
 # NEXT_SESSION — sargagame
 
+> **🔓 2026-06-29 — CLIENT BLOQUÉ → ACCÈS CROSS-DEVICE + ONBOARDING PREMIUM + RÉCUP ANCIENS PAYEURS (#253 + #254 MERGÉS sur `main`).**
+>
+> **Contexte** : un client B2C premium early (Jean-Christophe, `jcroulier@gmail.com`) restait « bloqué » — cause racine : le lien `?pass=` est **local à un navigateur** (ouvert dans l'aperçu Gmail puis perdu dans Safari). Et on n'avait aucun moyen propre d'**offrir** un accès cross-device. Risque fondateur : remboursements + SAV.
+>
+> **#253 — Accès offert cross-device (LIVE, vérifié prod)** :
+> - `public/api/comps.php` : liste `sha1(email) => pass_end` (**PII-safe**, repo public : QUE des hash). `mol_comp_lookup()` (`mollie-lib.php`) + hook **ADDITIF** dans `mollie.php` `verify_subscription` (grant-only, n'encaisse rien).
+> - `scripts/automation/gift-pass.cjs <email> [jours=30]` : offre un accès (hash en LOCAL, zéro PII committée), purge l'expiré, cumule. **JC comped 30 j (jusqu'au 2026-07-29)** — vérifié prod : `curl verify_subscription jcroulier@gmail.com → {active:true,comp:true}`.
+> - Déblocage : « J'ai déjà un pass » / « Mon accès » / lien one-click `/?premium_email=<email>` → marche sur **tout appareil**. `sgVerifySub` interroge déjà Mollie (pass/abo/**comp**) ET Stripe (abo legacy).
+> - **E-mail perso envoyé à JC = action FONDATEUR** (je ne peux pas SMTP depuis le conteneur ; copy « vous » prête, fournie en chat, à coller dans le fil Gmail). Lien : `https://sargasses-martinique.com/?premium_email=jcroulier@gmail.com`.
+>
+> **#254 — Onboarding premium + récupération anciens payeurs (LIVE)** — copy issue d'un **panel d'agents** (wf premium-onboarding-design) :
+> - `welcome-paid.cjs` (Stripe) + `welcome-paid-mollie.cjs` (Mollie) : CTA d'accès **one-click `?premium_email=`** (au lieu d'un lien nu / `?restore=1` qui laissaient bloqué) + ligne preuve `/fiabilite/` hedgée. Mode **`--recover`** : cible **tous** les payeurs entitled (Stripe active/trialing/past_due ; Mollie pass à accès **encore valide**), **toutes dates** (plus seulement <14 j). Idempotent (markers existants).
+> - `daily-copernicus.yml` : les 2 étapes welcome passent en `--recover --send`. ⚠️ **schedule-only** → la **vague de récup part au prochain run CRON** (pas au push). Surveiller : volumes dans les logs du prochain run planifié.
+> - `PaidOnboarding.jsx` : **4 étapes** (plages → **preuve `/fiabilite/` avant la demande notif** → alertes + honnêteté saison calme → 1ʳᵉ dépêche + Plan B + waouh « avant tout le monde »). Framing neutre (payeur ET offert). Budget 193.7≤210 Ko.
+>
+> **Gate #254** : esbuild ✅ · build ✅ · budget ✅ · smoke = faux-positifs environnementaux (externes bloqués sandbox + chips prévision, 16 boutons / 7 err), **0 label onboarding flaggé → 0 régression**.
+>
+> **RESTE / À SURVEILLER** : (1) **JC** — confirmer que le fondateur a collé l'e-mail + que JC voit bien J+2→J+7 ; sinon vrai bug → demander capture. (2) **Récup anciens payeurs** — vérifier au prochain run cron que `welcome-paid*.cjs --recover` envoie bien (logs : N payeurs couverts) ; ajuster si un ancien légitime est raté. (3) **Note Playwright** : le conteneur a chromium build 1194 mais npm tire playwright 1.59.1 (attend 1217) → smoke via symlink `/opt/pw-browsers/chromium-1217→1194` + `executablePath` sur `chromium-1194/chrome-linux/chrome` (download proxy bloqué). (4) Outil de cadeau réutilisable : `gift-pass.cjs` (founder/agent fournit l'email en privé → hash committé → merge → deploy).
+
 > **📨 2026-06-29 — MESSAGERIE : toutes les boîtes des 5 domaines REDIRIGENT vers le Gmail fondateur + 88 mails clients en retard récupérés. RÉSOLU.**
 >
 > **Contexte** : le fondateur ne relève QUE son Gmail (mobile). Les boîtes brandées (`alerte@/alerts@/support@/contact@…`) n'étaient pas relevées → réponses clients perdues. **Le client ne doit jamais voir le Gmail** (From + mailto restent brandés ; seul l'inbound est redirigé).
