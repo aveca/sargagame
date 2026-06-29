@@ -197,7 +197,7 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 </td>
 </tr>
 </table>
-<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique · sans abonnement · accès immédiat</p>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique, sans abonnement · accès immédiat</p>
 </td>
 </tr>
 </table>

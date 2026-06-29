@@ -1608,7 +1608,7 @@ export const T={
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Ton veilleur sargasses : brief matin, alertes plages favorites, reco du jour.",
     premiumPrice:"4,99 €/mois",premiumCta:"Activer Premium — 4,99 €/mois",
-    premiumFeatures:["Accès complet immédiat à la prévision 7 jours et aux alertes","Brief matin : ta meilleure plage, chaque jour","Alertes push avant que les sargasses arrivent","Sans pub · Paiement unique · Accès immédiat"],
+    premiumFeatures:["Accès complet immédiat — 4,99 €/mois, annulable en 2 clics","Brief matin : ta meilleure plage, chaque jour","Alertes push avant que les sargasses arrivent","Sans pub · Sans engagement · Paiement unique"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -1975,8 +1975,9 @@ export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
 // 2026-06-17 — Essai gratuit retiré PARTOUT : paiement IMMÉDIAT (USD + EUR, MQ/GP
 // inclus). Le serveur (create-checkout.php $noTrial=true) facture immédiatement ;
 // cette constante bascule toute la copy front en mode "accès immédiat". Le
-// renversement de risque devient la garantie satisfait-ou-remboursé 30j (sous le
-// CTA). Réversible : repasser à une logique par-région si besoin de A/B un essai.
+// renversement de risque s'appuie sur « paiement unique, sans abonnement » (la
+// garantie 30j volontaire a été RETIRÉE le 2026-06-29 : accès numérique consommé
+// immédiatement). Réversible : repasser à une logique par-région si besoin d'A/B.
 export const NO_TRIAL=true
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -3923,7 +3924,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <button className="bsc-gobtn sg-paygold" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
-            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"Paiement unique, rien ne se renouvelle · accès immédiat","One-time payment, nothing renews · instant access","Pago único, nada se renueva · acceso inmediato")}</div>
+            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"Pass unique, sans abonnement · rien à résilier","One-time pass, no subscription · nothing to cancel","Pase único, sin suscripción · nada que cancelar")}</div>
             {!IS_NEW_REGION&&<div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><svg width="12" height="12" viewBox="0 0 24 24" fill="#E8A800" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>}
           </>}
           <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
@@ -9941,7 +9942,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </button>
         )}
         <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique, rien ne se renouvelle · accès immédiat","One-time payment, nothing renews · instant access","Pago único, nada se renueva · acceso inmediato")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — sans abonnement, rien à résilier","One-time payment — no subscription, nothing to cancel","Pago único — sin suscripción, nada que cancelar")}
         </div>
       </section>
 
@@ -10134,7 +10135,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
           {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
         </button>
         <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
-          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique, rien ne se renouvelle · accès immédiat","One-time payment, nothing renews · instant access","Pago único, nada se renueva · acceso inmediato")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Paiement unique — sans abonnement, rien à résilier","One-time payment — no subscription, nothing to cancel","Pago único — sin suscripción, nada que cancelar")}
         </div>
 
         {/* Pli 6 — Sorties */}

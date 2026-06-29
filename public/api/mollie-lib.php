@@ -243,8 +243,8 @@ function mol_b2b_plans() {
 // ── B2B : grant + livraison du token Pro à la confirmation de paiement ────────
 // Idempotent par pid (marqueur fichier, même esprit que le marqueur webhook).
 // Émet un token Pro signé (sg_widget_sign — MÊME mécanisme que b2b-trial.php) et le
-// livre par email via Resend (cfg.resend_key, déjà partagé avec stripe/paypal — zéro
-// nouveau secret). Livraison best-effort : un échec d'envoi ne DOIT jamais faire
+// livre par email via mol_send_mail (MTA cPanel ; Resend retiré). Livraison
+// best-effort : un échec d'envoi ne DOIT jamais faire
 // échouer la confirmation de paiement. Appelé par mollie.php (inline) ET le webhook
 // (3DS/renouvellements) — un nouveau pid à chaque facture mensuelle payée → le token
 // est ré-émis 400 j (roll-forward tant que l'abo est payé).
@@ -259,33 +259,20 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
     require_once __DIR__ . '/widget-token.php';
     $k = sg_widget_sign($email, 400);                // token Pro 400 j (ré-émis chaque mois payé)
 
-    if (!empty($cfg['resend_key'])) {
-        $isPro  = (strpos((string)$plan, 'pro_') === 0);
-        $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
-        $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
-        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
-            . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
-            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
-            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
-            . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
-            . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment, garantie 30 jours.</p></div>';
-        $payload = json_encode([
-            'from'    => 'Sargasses Pro <alerte@sargasses-martinique.com>',
-            'to'      => [$email],
-            'subject' => $titre,
-            'html'    => $html,
-        ]);
-        $ch = curl_init('https://api.resend.com/emails');
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payload,
-            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 10,
-        ]);
-        @curl_exec($ch);
-        @curl_close($ch);
-    }
+    // Email de bienvenue PAYANT (B2B Pro/Brief, caisse Mollie active) — via mol_send_mail
+    // (MTA cPanel ; Resend RETIRÉ → sans ça le client payait et ne recevait RIEN). Best-effort :
+    // le marker d'idempotence est déjà posé, un échec d'envoi n'annule pas le grant et le
+    // token reste valable (l'espace s'ouvre avec ?k=).
+    $isPro  = (strpos((string)$plan, 'pro_') === 0);
+    $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
+    $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
+    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
+        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
+        . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
+        . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
+        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment.</p></div>';
+    mol_send_mail($email, $titre, $html);
     return true;
 }
 
@@ -294,10 +281,30 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
 // de suite ; mais si l'hôtel ferme l'onglet, il perd son accès. On lui envoie donc
 // AUSSI le lien de son espace (?k=token) par email — comme le fait mol_b2b_grant_once
 // au paiement, mais cadré « essai 30 j » (pas « abonnement actif »). MÊME mécanisme
-// Resend (cfg.resend_key, zéro nouveau secret). Best-effort : un échec d'envoi ne
+// d'envoi (mol_send_mail, MTA cPanel ; Resend retiré). Best-effort : un échec d'envoi ne
 // DOIT jamais faire échouer l'activation de l'essai (le token est déjà rendu au front).
+/**
+ * mol_send_mail — envoi email HTML via le MTA local du cPanel (PHP mail()).
+ * Resend est RETIRÉ (cf. scripts/automation/lib/email-send.cjs ligne 13 « PLUS de Resend » :
+ * Node envoie en SMTP authentifié alerte@ ; la clé SMTP_PASS n'est PAS exposée côté PHP).
+ * Le site PHP tourne SUR le cPanel premium115.web-hosting.com → mail() relaie via l'Exim
+ * local EN TANT QUE le domaine, From aligné alerte@sargasses-martinique.com (SPF/DKIM OK,
+ * aucune clé requise). Best-effort (bool). -f = envelope sender (Return-Path) → SPF.
+ * Sujet encodé MIME base64 UTF-8 (emoji/accents). Remplace les appels Resend B2B.
+ */
+function mol_send_mail($to, $subject, $html, $replyTo = '') {
+    $to = is_array($to) ? implode(',', $to) : (string)$to;
+    if ($to === '') return false;
+    $h  = "From: Sargasses Pro <alerte@sargasses-martinique.com>\r\n";
+    $h .= "MIME-Version: 1.0\r\n";
+    $h .= "Content-Type: text/html; charset=UTF-8\r\n";
+    if ($replyTo !== '' && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $h .= 'Reply-To: ' . $replyTo . "\r\n";
+    $subj = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    return @mail($to, $subj, $html, $h, '-falerte@sargasses-martinique.com');
+}
+
 function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
-    if (empty($cfg['resend_key']) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
     // Plafond PAR DESTINATAIRE (indépendant de l'IP) : le cap par IP de _ratelimit.php
     // est contournable (CF-Connecting-IP forgé en direct-origin) → on borne aussi le
     // volume d'emails vers UNE adresse à 1/h, pour protéger l'inbox de la victime ET
@@ -316,21 +323,44 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
         . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
         . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès d\'essai. Gardez ce lien privé : il porte votre clé. À la fin de l\'essai, vous pourrez verrouiller l\'année depuis votre espace.</p>'
         . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Il regarde la mer, jamais vos clients.</p></div>';
-    $payload = json_encode([
-        'from'    => 'Sargasses Pro <alerte@sargasses-martinique.com>',
-        'to'      => [$email],
-        'subject' => $titre,
-        'html'    => $html,
-    ]);
-    $ch = curl_init('https://api.resend.com/emails');
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 10,
-    ]);
-    @curl_exec($ch);
-    @curl_close($ch);
-    return true;
+    return mol_send_mail($email, $titre, $html);
+}
+
+/**
+ * mol_b2b_meeting_notify — notifie LE FONDATEUR (boîte Gmail) qu'une collectivité /
+ * groupe hôtelier (tier Territoire) a activé son accès ET demande un point/devis.
+ * Funnel HYBRIDE (décision fondateur) : l'accès reste 100% self-serve instantané, MAIS
+ * le secteur public a besoin d'un interlocuteur (devis, bon de commande, marché). Cet
+ * email transfère la demande au fondateur pour qu'il cale le RDV depuis son mobile.
+ * Envoi via mol_send_mail (MTA cPanel, Resend retiré). Best-effort.
+ * Throttle 1/h par email prospect (anti-doublon/relais). $d = {email, org, littoral, phone, island}.
+ */
+function mol_b2b_meeting_notify($cfg, $d) {
+    $email = trim((string)($d['email'] ?? ''));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+    $throttle = $dir . '/meeting_' . substr(hash('sha256', strtolower($email)), 0, 24);
+    if (file_exists($throttle) && (time() - @filemtime($throttle)) < 3600) return false;
+    @file_put_contents($throttle, date('c'));
+    $org      = substr(preg_replace('/[<>"]/', '', (string)($d['org'] ?? '')), 0, 80);
+    $littoral = substr(preg_replace('/[<>"]/', '', (string)($d['littoral'] ?? '')), 0, 120);
+    $phone    = substr(preg_replace('/[^0-9 +().-]/', '', (string)($d['phone'] ?? '')), 0, 30);
+    $island   = substr(preg_replace('/[^A-Za-z]/', '', (string)($d['island'] ?? '')), 0, 12);
+    $orgTxt   = $org !== '' ? $org : '(non précisé)';
+    $litTxt   = $littoral !== '' ? $littoral : '(non précisé)';
+    $telTxt   = $phone !== '' ? (' · tél ' . htmlspecialchars($phone)) : '';
+    $regTxt   = $island !== '' ? (' [' . htmlspecialchars(strtoupper($island)) . ']') : '';
+    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 10px;color:#b8860b">🟡 Territoire — ' . htmlspecialchars($orgTxt) . ' veut un point</h2>'
+        . '<p style="font-size:15px;line-height:1.6;margin:0 0 8px">Nouvelle demande <strong>Territoire</strong>' . $regTxt . ' — l\'accès essai 30 j est <strong>déjà activé</strong>.</p>'
+        . '<ul style="font-size:14px;line-height:1.7;margin:0 0 14px;padding-left:18px">'
+        . '<li>Collectivité / établissement : <strong>' . htmlspecialchars($orgTxt) . '</strong></li>'
+        . '<li>Littoral à couvrir : ' . htmlspecialchars($litTxt) . '</li>'
+        . '<li>Contact : <a href="mailto:' . htmlspecialchars($email) . '">' . htmlspecialchars($email) . '</a>' . $telTxt . '</li>'
+        . '</ul>'
+        . '<p style="font-size:13px;color:#444;line-height:1.55"><strong>Action</strong> : réponds en 1 ligne pour caler 15 min + préparer le devis (PDF). Achat public = devis daté + CGV + SIRET sur demande, bon de commande / mandat administratif acceptés.</p>'
+        . '<p style="font-size:12px;color:#999;margin-top:16px">Auto-alert from b2b-meeting.php — Le Veilleur</p></div>';
+    $subject = '🟡 Territoire — ' . $orgTxt . ' veut un point (' . $litTxt . ')';
+    return mol_send_mail('yacovassaraf@gmail.com', $subject, $html, $email);
 }

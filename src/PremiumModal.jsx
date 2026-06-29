@@ -23,6 +23,47 @@ import {
 // sg_b2b_intent avec le prix → mesure la WILLINGNESS-TO-PAY sur 2-3 semaines.
 // Vente B2B early = concierge (démo→facture) : le CTA capte l'intent, l'onboarding
 // est manuel au début. ZÉRO logique de paiement touchée (capture, pas billing).
+// Funnel HYBRIDE Territoire (mairies/offices/groupes hôteliers) : l'accès essai 30 j est
+// DÉJÀ ouvert (token émis) ; CE bloc est un OPT-IN pur « programmons un point » — le secteur
+// public a besoin d'un devis / bon de commande / interlocuteur qu'un clic ne remplace pas.
+// POST /api/b2b-meeting.php → email au fondateur (zéro paiement, zéro engagement). Synthèse
+// panel adverse 2026-06-29 (copywriter secteur public + DGS/office sceptiques) : accès
+// DÉCOUPLÉ de l'ask, « aucun prélèvement automatique » dit noir sur blanc, RGPD inline,
+// tarif indicatif HT, téléphone facultatif, lien /fiabilite/ avant de décider.
+function TerritoireMeeting({lang,email,org}){
+  const I=COMIC
+  const [littoral,setLittoral]=useState("")
+  const [phone,setPhone]=useState("")
+  const [sent,setSent]=useState(false)
+  const [busy,setBusy]=useState(false)
+  const submit=()=>{
+    if(sent||busy)return
+    setBusy(true)
+    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
+    try{track("sg_b2b_meeting_request",{})}catch(_){}
+    fetch("/api/b2b-meeting.php",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,org,littoral:littoral.trim(),phone:phone.trim(),island})})
+      .then(()=>{setBusy(false);setSent(true)}).catch(()=>{setBusy(false);setSent(true)})
+  }
+  if(sent)return(
+    <div style={{marginTop:14,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`}}>
+      <div style={{font:"800 14px/1.3 'Bricolage Grotesque'",color:"#1c8f4e"}}>{_t(lang,"C'est noté ✓","Noted ✓","Anotado ✓")}</div>
+      <div style={{font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#41414a",marginTop:5}}>{_t(lang,"On vous écrit pour caler 15 min et préparer votre devis (PDF). Votre accès reste ouvert en attendant.","We'll email you to set up 15 min and prepare your quote (PDF). Your access stays open meanwhile.","Le escribimos para reservar 15 min y preparar su presupuesto (PDF). Su acceso sigue abierto mientras tanto.")}</div>
+    </div>
+  )
+  return(
+    <div style={{marginTop:14,padding:"14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:I.blue,boxShadow:`3px 3px 0 ${I.ink}`}}>
+      <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>🏛️ {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>
+      <div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#2a2a32",margin:"5px 0 10px"}}>{_t(lang,"Votre accès est déjà ouvert — explorez seul si vous préférez. Un échange de 15 min seulement si VOUS le souhaitez : on cale vos plages, votre devis et votre bon de commande. L'essai ne déclenche aucun prélèvement.","Your access is already open — explore on your own if you prefer. A 15-min call only if YOU want it: we scope your beaches, your quote and your purchase order. The trial triggers no charge.","Su acceso ya está abierto — explore solo si prefiere. Una llamada de 15 min solo si USTED quiere: definimos sus playas, su presupuesto y su orden de compra. La prueba no genera ningún cobro.")}</div>
+      <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 13px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
+      <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 13px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
+      <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoi…","Sending…","Enviando…"):_t(lang,"Planifier un point · recevoir un devis →","Schedule a call · get a quote →","Reservar · recibir presupuesto →")}</button>
+      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#3a3a42",marginTop:9}}>{_t(lang,"Données satellite publiques (Copernicus/NOAA), auditables · Devis, bon de commande, facture — conforme RGPD & marché public · Un interlocuteur dédié. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable · Quote, purchase order, invoice — GDPR & public-procurement compliant · A dedicated contact. Indicative price excl. tax.","Datos satelitales públicos (Copernicus/NOAA), auditables · Presupuesto, orden de compra, factura — conforme RGPD · Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>
+      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#6a6a72",marginTop:6}}>{_t(lang,"Vos coordonnées servent uniquement à vous recontacter (intérêt légitime), conservées 12 mois, supprimées sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interés legítimo), conservados 12 meses, eliminados a petición.")} <a href="/fiabilite/" style={{color:I.ink,textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut →","See what we're worth first →","Vea primero lo que valemos →")}</a></div>
+    </div>
+  )
+}
+
 function B2BModal({lang,onClose}){
   const [tier,setTier]=useState("pro")
   const [email,setEmail]=useState("")
@@ -41,7 +82,7 @@ function B2BModal({lang,onClose}){
   useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}
     try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}
   },[])
-  const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
+  const payUrlOf=t=>{const m={pro:"pro_annual",brief:"brief_annual",territoire:"territory_annual"}[t];const l=paylinks&&m&&paylinks[m];return (l&&l.url)||null}
   // Grille B2B (pricing arrêté panel 2026-06-29) : 3 tiers payants, essai 30j sans carte,
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
@@ -54,7 +95,7 @@ function B2BModal({lang,onClose}){
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
     {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois","from €199/mo","desde 199 €/mes"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
-      cta:_t(lang,"Réserver une démo","Book a demo","Reservar demo"),source:"b2b_territoire"},
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_territoire"},
   ]
   const cur=TIERS.find(t=>t.id===tier)||TIERS[1]
   const submit=()=>{
@@ -62,10 +103,11 @@ function B2BModal({lang,onClose}){
     try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
     try{submitLead(email.trim(),cur.source)}catch(_){}
     try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
-    // Tiers self-serve (brief/pro) = essai 30 j émis INSTANTANÉMENT par /api/b2b-trial.php
-    // (zéro call, zéro attente) → l'hôtel a son accès Pro tout de suite. Territoire (199 €+)
-    // = vraie vente → garde le contact humain 24 h. Flag ?b2btrial=0 → ancien flux capture.
-    if(!instantTrial||tier==="territoire"){setSent(true);return}
+    // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j émis INSTANTANÉMENT par
+    // /api/b2b-trial.php (zéro call, zéro attente, zéro humain) → accès Pro tout de suite +
+    // lien de paiement annuel direct. Territoire inclus (décision fondateur : tout self-serve).
+    // Flag ?b2btrial=0 → ancien flux capture-lead + message 24 h.
+    if(!instantTrial){setSent(true);return}
     setBusy(true)
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
     fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
@@ -109,7 +151,7 @@ function B2BModal({lang,onClose}){
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
           <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{tier==="territoire"?_t(lang,"Réponse sous 24h · sans engagement","Reply within 24h · no commitment","Respuesta en 24h · sin compromiso"):_t(lang,"Essai 30 jours, sans carte · −2 mois en annuel · stop quand vous voulez","30-day trial, no card · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta · 2 meses gratis al año · pare cuando quiera")}</div>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prélèvement automatique · −2 mois en annuel · stop quand vous voulez","30-day trial, no card, no auto-charge · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta, sin cobro automático · 2 meses gratis al año · pare cuando quiera")}</div>
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
             <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
           </div>}
@@ -119,6 +161,9 @@ function B2BModal({lang,onClose}){
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Essai activé ✓","Trial activated ✓","Prueba activada ✓")}</div>
           <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"Votre accès Pro 30 jours est actif. Ouvrez votre espace pour brancher votre widget et vos alertes — on vient aussi de vous l'envoyer par email.","Your 30-day Pro access is live. Open your space to set up your widget and alerts — we've also just emailed it to you.","Su acceso Pro de 30 días está activo. Abra su espacio para configurar su widget y alertas — también se lo enviamos por email.")}</div>
           <a href={`/pro/espace/?k=${encodeURIComponent(token)}`} onClick={()=>{try{track("sg_b2b_space_open",{tier:cur.id})}catch(_){}}} style={{display:"block",width:"100%",boxSizing:"border-box",textAlign:"center",textDecoration:"none",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Ouvrir mon espace Pro →","Open my Pro space →","Abrir mi espacio Pro →")}</a>
+          {/* Territoire (mairies/communes) : accès déjà ouvert + opt-in « programmons un point »
+             → demande de devis/RDV transférée au fondateur (b2b-meeting.php). Funnel hybride. */}
+          {tier==="territoire"&&<TerritoireMeeting lang={lang} email={email.trim()} org={org.trim()}/>}
         </>:<>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","¡Recibido ✓")}</div>
           <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="territoire"
@@ -451,16 +496,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             engagement). Mêmes icônes, texte honnête vis-à-vis de ce qui se passe réellement. */}
         <div className="pww-trust">
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{captureMode?_t(lang,"Offert","On us","Gratis"):PAY_LABEL}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Paiement unique","One-time","Pago único")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Paiement unique","One-time","Pago único")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Sans abonnement","No subscription","Sin suscripción")}</em></div>
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
         </div>
 
-        {/* GARANTIE — masquée en capture : rien n'est facturé, un « remboursé » n'a pas
-            de sens (la promesse honnête est portée par le CTA + rassurances ci-dessus). */}
-        {!captureMode&&<div className="pww-guar">
-          <span className="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <span><b>{_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}</b><em>{_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}</em></span>
-        </div>}
+        {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : modèle pass
+            one-time, accès numérique consommé immédiatement → pas de garantie de remboursement
+            volontaire. Réassurance honnête portée par le CTA + les 3 badges ci-dessus. */}
 
         {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
@@ -711,16 +753,13 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           {!captureMode&&perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
             <div className="pwx-tc"><span className="ic">{captureMode?"🎁":"🛡"}</span><b>{captureMode?_t(lang,"Offert","On us","Gratis"):(PAY_PROVIDER==="mollie"?"Mollie":"Stripe")}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Paiement unique","One-time","Pago único")}</em></div>
+            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Paiement unique","One-time","Pago único")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Sans abonnement","No subscription","Sin suscripción")}</em></div>
             <div className="pwx-tc"><span className="ic">✕</span><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
           </div>
-          {!captureMode&&<div className="pwx-guar">
-            <span className="gic">🛡️</span>
-            <span><b>{_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}</b>
-            <em>{_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}</em></span>
-          </div>}
+          {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : pass one-time,
+              accès numérique immédiat → pas de garantie de remboursement volontaire. */}
           {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
-              sans abo) sous la garantie — cash d'avance, zéro churn. Chemin pay_once
+              sans abo) — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
           {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
@@ -964,10 +1003,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
   // Consentement RGPD/rétractation (renonciation au droit de rétractation 14 j contre
-  // fourniture immédiate, art. L221-28 13° C. conso). Case NON pré-cochée, requise sur
-  // le chemin Pass B2C avant de payer. Flag rollback ?consent=0 → case retirée, comportement
-  // d'avant (consentement traité comme acquis). Modèle de lecture = flags pwcomic/onboard.
-  const consentFlag=(()=>{try{return !/[?&]consent=0/.test(window.location.search)}catch(_){return true}})()
+  // fourniture immédiate, art. L221-28 13° C. conso). Case NON pré-cochée sur le chemin
+  // Pass B2C. DORMANTE par défaut : #250 a retenu le consentement IMPLICITE (« en validant
+  // l'achat, vous demandez l'exécution immédiate », CGV) sans case → on n'ajoute pas de
+  // friction money-path. Opt-in explicite via ?consent=1 si on veut afficher la case.
+  const consentFlag=(()=>{try{return /[?&]consent=1/.test(window.location.search)}catch(_){return false}})()
   const[consentOk,setConsentOk]=useState(false)
   const stripeRef=useRef(null)
   const elementsRef=useRef(null)
@@ -1910,7 +1950,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
               {icon:"🛡",title:PAY_LABEL,sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
-              {icon:"⏱",title:_t(lang,"Accès immédiat","Instant access","Acceso inmediato"),sub:_t(lang,"Paiement unique","One-time","Pago único")},
+              {icon:"⏱",title:_t(lang,"Paiement unique","One-time","Pago único"),sub:_t(lang,"Sans abonnement","No subscription","Sin suscripción")},
               {icon:"✕",title:NO_TRIAL?_t(lang,"2 clics","2 clicks","2 clics"):_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
               <div key={i} style={{padding:"10px 8px",borderRadius:10,
@@ -2349,19 +2389,19 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé "+PAY_LABEL,"No commitment · Cancel in 2 clicks · Secure "+PAY_LABEL+" payment","Sin permanencia · Cancela en 2 clics · Pago seguro "+PAY_LABEL)
             :_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
         </div>
-        {/* 2026-06-17 — GARANTIE proéminente : remplace l'essai gratuit comme
-            renversement de risque (#1 levier de conversion quand on retire le
-            trial — recherche paywall). Réelle (remboursement Stripe), ton calme. */}
+        {/* 2026-06-29 — Garantie « satisfait ou remboursé » RETIRÉE (pass one-time, accès
+            numérique immédiat). Réassurance = paiement unique / sans abonnement / accès direct,
+            ton calme. (Renversement de risque assuré par le verdict gratuit + le prix bas.) */}
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:12,
           padding:"11px 13px",borderRadius:13,background:"#0e3a28",forcedColorAdjust:"none",
           border:"2.5px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14"}}>
-          <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>🛡️</span>
+          <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>⚡</span>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-              {_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}
+              {_t(lang,"Paiement unique, sans abonnement","One-time payment, no subscription","Pago único, sin suscripción")}
             </div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:2,lineHeight:1.3}}>
-              {_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}
+              {_t(lang,"Tu paies une fois, tu accèdes tout de suite. Rien à résilier.","Pay once, access right away. Nothing to cancel.","Pagas una vez, accedes enseguida. Nada que cancelar.")}
             </div>
           </div>
         </div>

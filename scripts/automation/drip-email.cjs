@@ -357,7 +357,7 @@ function buildJ3(island, brief, email) {
     `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
   // NO_TRIAL partout (MQ/GP inclus depuis a9b3cf4e) : aucune promesse d'essai sur
   // une surface de paiement (cf. litige Stripe « copie trompeuse »). La réassurance
-  // = la garantie 30j réelle, identique à J7/J14/J21.
+  // = paiement unique / sans abonnement (garantie 30j volontaire RETIRÉE 2026-06-29).
   const ctaText = t('Recevoir ce brief chaque matin',
     'Get this brief every morning',
     'Recibir este brief cada mañana')
@@ -541,18 +541,18 @@ function buildJ21(island, cleanCount, email) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Avant de payer', `3 semaines que le Veilleur surveille ${name} pour toi`, 'fr')}
+  ${header('Paiement unique', `3 semaines que le Veilleur surveille ${name} pour toi`, 'fr')}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:18px">
-      Tu reçois nos bulletins depuis 3 semaines. Avant de te demander un centime, on préfère te montrer ce qu'on vaut vraiment : on publie notre taux d'erreur, prévision par prévision, sur notre page fiabilité.
+      Tu reçois nos bulletins depuis 3 semaines. La seule vraie raison de ne pas activer ton veilleur personnel, c'est le risque — et il n'y en a aucun.
     </div>
 
     <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="display:flex;align-items:center;margin-bottom:6px">
-        <span style="font-size:22px;margin-right:10px">&#x1F50D;</span>
-        <div style="font-size:15px;font-weight:800;color:#16A34A">On publie nos erreurs</div>
+        <span style="font-size:22px;margin-right:10px">&#x1F6E1;&#xFE0F;</span>
+        <div style="font-size:15px;font-weight:800;color:#16A34A">Paiement unique · sans abonnement</div>
       </div>
-      <div style="font-size:13px;color:#555;line-height:1.5">Mesuré au satellite, pas deviné. Va voir nos prévisions datées comparées au réel sur <a href="https://${domain}/fiabilite/" style="color:#16A34A;font-weight:700">notre page fiabilité</a>. Le verdict du jour reste gratuit. Si tu actives le Pass : paiement unique, pas d'abonnement, accès immédiat.</div>
+      <div style="font-size:13px;color:#555;line-height:1.5">Tu prends un pass, tu testes une fois. Ça ne te sert pas ? Tu paies une fois, tu accèdes tout de suite. Pas d'abonnement, rien à résilier. Tu ne perds rien — sauf les mauvaises surprises sur la plage.</div>
     </div>
 
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Ce que tu actives</div>
@@ -754,7 +754,7 @@ function getSubject(step, island, cleanCount, brief) {
     case 'j14': return IS_HIGH_SEASON
       ? `Le satellite a vu quelque chose... 🛰️ (pour ton weekend)`
       : `Ne découvre pas les sargasses sur la plage`
-    case 'j21': return `Avant de payer, va voir ce qu'on vaut vraiment`
+    case 'j21': return `Ton Pass Veilleur : paiement unique, accès immédiat`
   }
 }
 
@@ -776,9 +776,9 @@ function getPreheader(step, island) {
     "A ruined weekend — or one glance Friday night that saves it. Your call.",
     "Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.")
   if (step === 'j21') return t(
-    "On publie notre taux d'erreur sur /fiabilité. Verdict du jour gratuit, paiement unique, accès immédiat.",
-    "We publish our error rate on /reliability. Today's verdict is free, one-time payment, instant access.",
-    "Publicamos nuestra tasa de error en /fiabilidad. Veredicto de hoy gratis, pago único, acceso inmediato.")
+    "Paiement unique, sans abonnement. Accès immédiat, rien à résilier.",
+    "One-time, no subscription. Instant access, nothing to cancel.",
+    "Pago único, sin suscripción. Acceso inmediato, nada que cancelar.")
   return ''
 }
 

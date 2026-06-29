@@ -30,6 +30,9 @@ const TIERS = [
   // EUR (MQ/GP)
   { id: 'brief_annual',     value: '290.00', currency: 'EUR', label: 'Sargasses Pro — Brief (abonnement annuel)' },
   { id: 'pro_annual',       value: '690.00', currency: 'EUR', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
+  // Territory (mairies / offices / groupes hôteliers) : 199 €/mois → 1 990 €/an (2 mois offerts).
+  // Self-serve désormais bout-en-bout (essai 30 j in-app + ce lien annuel). Minté au prochain run.
+  { id: 'territory_annual', value: '1990.00', currency: 'EUR', label: 'Sargasses Pro — Territoire : tout le littoral baie par baie + rapports + API (abonnement annuel)' },
   // USD (florida/puntacana/rivieramaya) — grille de réf. Pro $790 / Brief $390 (Mollie encaisse l'USD).
   { id: 'brief_annual_usd', value: '390.00', currency: 'USD', label: 'Sargassum Pro — Brief (annual)' },
   { id: 'pro_annual_usd',   value: '790.00', currency: 'USD', label: 'Sargassum Pro — Pro: white-label widget + brief + alerts (annual)' },

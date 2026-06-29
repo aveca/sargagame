@@ -96,7 +96,7 @@ export function initHomeAZ(SR, HOST, opts){
     p3b3t:       {fr:"Les 7 jours, toutes les plages", en:"The 7 days, every beach", es:"Los 7 días, todas las playas"},
     p3b3s:       {fr:"Choisis ton jour : la semaine de prévisions, sur toutes les plages.", en:"Pick your day: the week of forecasts, across every beach.", es:"Elige tu día: la semana de pronósticos, en todas las playas."},
     ctaPremiumT: {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
-    reassure:    {fr:"Pass unique dès 7,99 € — pas d'abonnement, accès immédiat.", en:"One-time Pass from $5.99 — no subscription, instant access.", es:"Pass único desde $5.99 — sin suscripción, acceso inmediato."},
+    reassure:    {fr:"Pass unique, dès 7,99 € — pas d'abonnement, accès immédiat, rien à résilier.", en:"One-time Pass from $5.99 — no subscription, instant access, nothing to cancel.", es:"Pass único desde $5.99 — sin suscripción, acceso inmediato, nada que cancelar."},
     eb4:         {fr:"MESURÉ, PAS DEVINÉ", en:"MEASURED, NOT GUESSED", es:"MEDIDO, NO ADIVINADO"},
     footCredit:  {fr:"Données : Copernicus Marine · mise à jour en direct", en:"Data: Copernicus Marine · updated live", es:"Datos: Copernicus Marine · actualizado en directo"},
     aboutLink:   {fr:"À propos", en:"About", es:"Acerca de"},

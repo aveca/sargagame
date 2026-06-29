@@ -97,7 +97,6 @@ function copy(island) {
         ${btn('Abrir mi mapa', open)}
         <p style="font-size:13px;color:#1a2b3c">¿Un amigo sufre con el sargazo? <b>Compártele El Vigía</b> — ayúdale a no perder un día de playa.</p>
         <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · acceso inmediato.</p>
-        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Acceso inmediato: al activar tu Pase, solicitaste la entrega inmediata de tu previsión de 7 días y reconociste que renuncias a tu derecho de desistimiento de 14 días una vez abierto el acceso (art. L221-28 13° del Código de Consumo francés).</p>
       </div>`,
   }
   if (lang === 'en') return {
@@ -111,7 +110,6 @@ function copy(island) {
         ${btn('Open my map', open)}
         <p style="font-size:13px;color:#1a2b3c">A friend struggling with sargassum? <b>Share the Watchman</b> — help them never waste a beach day.</p>
         <p style="font-size:12px;color:#8a97a5">One-time · no subscription · instant access.</p>
-        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Instant access: by activating your Pass, you requested immediate delivery of your 7-day forecast and acknowledged that you waive your 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU).</p>
       </div>`,
   }
   return {
@@ -125,7 +123,6 @@ function copy(island) {
         ${btn('Ouvrir ma carte', open)}
         <p style="font-size:13px;color:#1a2b3c">Un ami galère avec les sargasses ? <b>Partage-lui Le Veilleur</b> — évite-lui de gâcher une journée plage.</p>
         <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · accès immédiat.</p>
-        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Accès immédiat : en activant ton Pass, tu as demandé la fourniture immédiate de ta prévision 7 jours et reconnu renoncer à ton droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° C. conso).</p>
       </div>`,
   }
 }

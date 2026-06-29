@@ -214,7 +214,7 @@ function buildEmailHTML(target) {
 </ul>
 <p>Et on ne vous demande pas de nous croire : notre fiabilité est <strong>publiée et auditable, par régime</strong>. Sur la fenêtre du 30 mai au 28 juin, 100 % de nos prévisions « mer propre » se sont vérifiées (2 274 comparaisons, saison calme) ; tous régimes confondus on tourne autour de 76 % de justesse, et les rares alertes de saison calme sont affichées en faible confiance. On se trompe parfois, on l'écrit.</p>
 <p><strong>Voyez l'état de vos plages en direct, maintenant</strong> : <a href="https://${site}/">${site}</a> — carte satellite, prévision 7 jours, gratuit.</p>
-<p>Envie d'alertes par plage + votre widget « plage mesurée au satellite » sur votre site ? C'est <strong>100 % en ligne, à votre rythme</strong> : essai <strong>30 jours gratuit, sans carte</strong>, puis 79 €/mois ou 690 €/an (garantie 30 j) → <a href="https://${site}/pro/espace/">${site}/pro/espace/</a>. Aucun rendez-vous, aucun appel.</p>
+<p>Envie d'alertes par plage + votre widget « plage mesurée au satellite » sur votre site ? C'est <strong>100 % en ligne, à votre rythme</strong> : essai <strong>30 jours gratuit, sans carte</strong>, puis 79 €/mois ou 690 €/an → <a href="https://${site}/pro/espace/">${site}/pro/espace/</a>. Aucun rendez-vous, aucun appel.</p>
 <p>Bien à vous,<br>
 <strong>L'équipe Le Veilleur · Sargasses ${region}</strong><br>
 <span style="color:#888;font-size:13px">Données satellite Copernicus Marine · ${site}</span></p>

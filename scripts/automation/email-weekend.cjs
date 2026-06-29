@@ -263,7 +263,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </tr>
 <tr>
 <td align="center" style="padding:14px 28px 30px 28px;">
-<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:1.5; color:#9FB2AD;">Dès 7,99 € · paiement unique · sans abonnement · accès immédiat</div>
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:1.5; color:#9FB2AD;">Dès 7,99 € · paiement unique, sans abonnement · accès immédiat</div>
 </td>
 </tr>
 </table>
