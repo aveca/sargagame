@@ -10,8 +10,15 @@
 const https = require('https')
 const { getAllRegions } = require('../../regions/index.cjs')
 
-// Toutes les régions (MQ/GP + nouvelles) : home + API data de chaque domaine.
-const SITES = getAllRegions().flatMap(r => [
+// Régions LIVE uniquement (domaine acheté + déployé). Une région préparée mais
+// non lancée (`live:false`, ex. barbados : domaine sargassumbarbados.com pas
+// encore enregistré) ferait échouer DNS/staleness → faux "issue detected" par
+// email à chaque run. Même convention que daily-copernicus.yml:752
+// (`r.live !== false`). NE PAS health-checker une région tant qu'elle n'est pas live.
+const LIVE_REGIONS = getAllRegions().filter(r => r.live !== false)
+
+// Régions LIVE (MQ/GP + nouvelles) : home + API data de chaque domaine.
+const SITES = LIVE_REGIONS.flatMap(r => [
   { name: r.name, url: `https://${r.domain}/` },
   { name: `${r.name} API`, url: `https://${r.domain}/api/copernicus/sargassum.json` },
 ])
@@ -72,7 +79,7 @@ async function check(site) {
 // Data staleness check — alert if any region's sargassum.json is too old
 async function checkStaleness() {
   const issues = []
-  for (const region of getAllRegions()) {
+  for (const region of LIVE_REGIONS) {
     try {
       const apiUrl = `https://${region.domain}/api/copernicus/sargassum.json`
       const body = await new Promise((resolve, reject) => {
@@ -116,7 +123,7 @@ const PAGE_CHECKS = [
 ]
 async function checkRealPages() {
   const issues = []
-  for (const region of getAllRegions()) {
+  for (const region of LIVE_REGIONS) {
     for (const pc of PAGE_CHECKS) {
       if (!pc.domains.includes(region.id)) continue
       const url = `https://${region.domain}${pc.path}`
