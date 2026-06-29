@@ -216,7 +216,7 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
 // b2b-trial.php renvoie le token au navigateur ET applique la marque blanche tout
 // de suite ; mais si l'hôtel ferme l'onglet, il perd son accès. On lui envoie donc
 // AUSSI le lien de son espace (?k=token) par email — comme le fait mol_b2b_grant_once
-// au paiement, mais cadré « essai 21 j » (pas « abonnement actif »). MÊME mécanisme
+// au paiement, mais cadré « essai 30 j » (pas « abonnement actif »). MÊME mécanisme
 // Resend (cfg.resend_key, zéro nouveau secret). Best-effort : un échec d'envoi ne
 // DOIT jamais faire échouer l'activation de l'essai (le token est déjà rendu au front).
 function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
@@ -231,11 +231,11 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
     if (file_exists($throttle) && (time() - @filemtime($throttle)) < 3600) return false; // déjà envoyé < 1 h
     @file_put_contents($throttle, date('c'));
     $hi     = $name !== '' ? (' ' . htmlspecialchars($name)) : '';
-    $titre  = 'Votre essai Sargasses Pro — 21 jours, sans carte';
+    $titre  = 'Votre essai Sargasses Pro — 30 jours, sans carte';
     $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($token);
     $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
         . '<h2 style="margin:0 0 12px">Votre essai Pro est actif</h2>'
-        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Bienvenue' . $hi . '. Votre accès Pro est ouvert pour <strong>21 jours</strong> : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app. Aucune carte, aucun engagement.</p>'
+        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Bienvenue' . $hi . '. Votre accès Pro est ouvert pour <strong>30 jours</strong> : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app. Aucune carte, aucun engagement.</p>'
         . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
         . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès d\'essai. Gardez ce lien privé : il porte votre clé. À la fin de l\'essai, vous pourrez verrouiller l\'année depuis votre espace.</p>'
         . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Il regarde la mer, jamais vos clients.</p></div>';

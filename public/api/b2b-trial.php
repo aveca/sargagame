@@ -1,11 +1,11 @@
 <?php
 /**
- * b2b-trial.php — démarre un essai Pro 21 jours, INSTANTANÉ et 100% self-serve.
+ * b2b-trial.php — démarre un essai Pro 30 jours, INSTANTANÉ et 100% self-serve.
  *
- * POST {email, name?, beach?, island?} → émet un TOKEN PRO temporaire (21 j) signé
+ * POST {email, name?, beach?, island?} → émet un TOKEN PRO temporaire (30 j) signé
  * (réutilise sg_widget_sign() de widget-token.php : la marque blanche du widget
  * passe active, vérifiée côté serveur à l'affichage). Le token est RENVOYÉ au front
- * → l'hôtel l'a tout de suite, aucune dépendance email/humain. À J+21 le token
+ * → l'hôtel l'a tout de suite, aucune dépendance email/humain. À J+30 le token
  * expire (sg_widget_verify rejette `exp` dépassé) → l'essai se termine proprement.
  *
  * Best-effort : (1) enregistre le lead (onglet 'emails' du Sheet, source b2b_trial)
@@ -51,9 +51,9 @@ $name   = substr(preg_replace('/[<>"]/', '', (string)($in['name'] ?? '')), 0, 60
 $island = strtoupper(preg_replace('/[^A-Za-z]/', '', (string)($in['island'] ?? 'MQ')));
 $island = in_array($island, ['MQ', 'GP'], true) ? $island : 'MQ';
 
-// Token Pro 21 jours. host = email (traçabilité) ; le widget ne vérifie que la
+// Token Pro 30 jours. host = email (traçabilité) ; le widget ne vérifie que la
 // validité/expiration du jeton, pas une correspondance de domaine.
-$token = sg_widget_sign($email, 21);
+$token = sg_widget_sign($email, 30);
 
 // Best-effort : livre le lien de l'espace (?k=token) par email → accès durable même
 // si l'onglet est fermé. Charge la config (resend_key) sans bloquer si absente en local.

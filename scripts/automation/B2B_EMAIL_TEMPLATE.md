@@ -1,6 +1,6 @@
 # Template email B2B (outreach hôtels) — forgé par panel storytelling 2026-06-29
 
-> Modèle réutilisable pour tout futur établissement. Remplace les {{placeholders}}, garde la colonne vertébrale (faille spécifique du prospect → cadeau widget corrigé → douleur du matin → guide+honnêteté → offre essai 21j → CTA espace perso). 100% self-serve, ZÉRO call. Adaptable EN/ES.
+> Modèle réutilisable pour tout futur établissement. Remplace les {{placeholders}}, garde la colonne vertébrale (faille spécifique du prospect → cadeau widget corrigé → douleur du matin → guide+honnêteté → offre essai 30j → CTA espace perso). 100% self-serve, ZÉRO call. Adaptable EN/ES.
 
 **Objet (A/B) :** Anoli, votre widget surveille la mauvaise plage / Anoli, votre widget surveille la mauvaise plage / Vos clients vont aux Salines. Votre widget regarde le Bourg. / Sainte-Anne : votre widget rassure vos clients à tort
 

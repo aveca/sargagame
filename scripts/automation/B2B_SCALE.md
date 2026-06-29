@@ -14,8 +14,8 @@
    **ramp auto** (5→50/j selon l'âge de campagne), token `&b=` par destinataire.
 4. **Widget → Pro** — `widget-convert.cjs` → tout installeur de widget (lead chaud)
    reçoit l'offre Pro + lien de paiement.
-5. **Drip B2B** — `drip-b2b-email.cjs` → essai 21j → conversion (b13) avec lien de paiement.
-   (⚠️ le code de `drip-b2b-email.cjs` référence encore 14j → à aligner sur 21j.)
+5. **Drip B2B** — `drip-b2b-email.cjs` → essai 30j → conversion (b13) avec lien de paiement.
+   (⚠️ le code de `drip-b2b-email.cjs` référence encore 14j → à aligner sur 30j.)
 6. **Funnel** — `b2b-funnel.cjs` → agrège chaque prospect (découvert→contacté→lead→payé)
    + prochaine action → `data/b2b-funnel.json` (pilotage).
 
