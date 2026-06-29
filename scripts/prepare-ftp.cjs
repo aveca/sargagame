@@ -588,6 +588,12 @@ function writeRegionIndex(region, out) {
        -> bande vide. On etend #root a la hauteur MESUREE --sg-vh (= screen.height). */
     #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
     html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
+    /* iOS 26+ Safari NAVIGATEUR : la barre basse ignore theme-color et se teinte en
+       echantillonnant le background d'un element fixed pres du bord bas -> ancre sombre
+       dediee = barre constante #0d1117, jamais doree. Navigateur SEULEMENT (cache en PWA). */
+    #sg-chin{display:none;position:fixed;left:0;right:0;bottom:-8px;height:14px;width:100%;background:#0d1117;z-index:0;pointer-events:none}
+    @supports (-webkit-touch-callout:none){#sg-chin{display:block}}
+    html.sg-standalone #sg-chin{display:none}
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
   <link rel="preconnect" href="https://www.clarity.ms" />
@@ -752,6 +758,8 @@ function writeRegionIndex(region, out) {
         <p>Notre réseau de surveillance sargasses dans la Caraïbe : <a href="https://sargasses-martinique.com/" rel="noopener">Martinique</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">Punta Cana</a> · <a href="https://sargassumcancun.com/" rel="noopener">Cancún &amp; Riviera Maya</a> · <a href="https://sargassummiami.com/" rel="noopener">Miami &amp; Florida</a>.</p>
       </noscript>
     </div>
+    <!-- Ancre teinte barre basse Safari iOS 26+ (navigateur) : force #0d1117, cache en PWA. -->
+    <div id="sg-chin" aria-hidden="true"></div>
     <script>
     (function(){
       var LOCAL_KEY='sg_v';
