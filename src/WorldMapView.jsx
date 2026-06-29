@@ -207,6 +207,7 @@ export default function WorldMapView({
   const reduceRef  = useRef(false)
   const labelLayerRef = useRef(null)
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
+  const bakedObjUrlRef = useRef(null)  // objectURL du PNG baké (toBlob) → à révoquer (anti-leak)
   const fxRef      = useRef(null)  // couche live des effets d'échouage (au-dessus du monde baké)
   const fieldRef   = useRef(null)  // couche live du champ de sargasses au large (dérive lente)
   const audioRef   = useRef(null)  // AudioContext (lazy, débloqué au 1er geste)
@@ -402,8 +403,18 @@ export default function WorldMapView({
         try{
           const cv=document.createElement('canvas'); cv.width=W; cv.height=H
           cv.getContext('2d').drawImage(img,0,0,W,H)
-          const png=cv.toDataURL('image/png')
-          if(!cancelled) setBakedUrl(png)
+          // toBlob (ASYNC, encode PNG hors-thread principal) au lieu de toDataURL (SYNCHRONE,
+          // bloquait ~2,2 s sous 4× CPU = le hotspot du mount). Même image → objectURL au lieu
+          // de data-URL (qu'on révoque pour éviter la fuite mémoire). Échec → fallback SVG live.
+          cv.toBlob(blob=>{
+            if(cancelled){ return }
+            if(!blob){ setBakedUrl(null); return }
+            const url=URL.createObjectURL(blob)
+            if(cancelled){ URL.revokeObjectURL(url); return }
+            if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
+            bakedObjUrlRef.current=url
+            setBakedUrl(url)
+          },'image/png')
         }catch(_){ if(!cancelled) setBakedUrl(null) }
       }
       img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
@@ -413,6 +424,9 @@ export default function WorldMapView({
     else idle=setTimeout(runBake,300)
     return ()=>{ cancelled=true; try{ (typeof cancelIdleCallback==="function"?cancelIdleCallback:clearTimeout)(idle) }catch(_){} }
   },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
+
+  // Révoque l'objectURL du PNG baké au démontage (anti-leak mémoire).
+  useEffect(()=>()=>{ if(bakedObjUrlRef.current){ try{ URL.revokeObjectURL(bakedObjUrlRef.current) }catch(_){} bakedObjUrlRef.current=null } },[])
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
   // Vue par défaut = ÎLE GRANDE et centrée (décision fondateur 22/06 soir : la vue régionale
