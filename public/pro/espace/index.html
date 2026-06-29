@@ -158,7 +158,11 @@
       <div class="card" id="subCard">
         <div style="font-family:Anton,sans-serif;font-size:25px;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;margin-bottom:8px">Essai 21 jours, gratuit — sans carte</div>
         <p style="color:rgba(255,255,255,.78);margin-bottom:18px;max-width:60ch">Le temps de traverser un vrai épisode de sargasses et de voir Le Veilleur vous prévenir « le matin où ça bascule ». Vous recevez votre accès Pro par email — widget à vos couleurs + mise en avant. Aucune carte, aucun engagement, vous arrêtez quand vous voulez.</p>
-        <div class="cta-row"><a class="cta" id="trialBtn" href="#">Activer mon essai 21 jours →</a></div>
+        <div id="trialForm" class="cta-row" style="align-items:stretch">
+          <input id="trialEmail" type="email" inputmode="email" autocomplete="email" placeholder="Votre email pro" style="flex:1 1 230px;min-width:0;font:inherit;font-size:15px;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:#0d1c27;color:#fff">
+          <button class="cta" id="trialBtn">Activer mon essai 21 jours →</button>
+        </div>
+        <div id="trialResult" style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(70,211,154,.12);border:1px solid rgba(70,211,154,.4);color:#cdeede;font-size:14px;line-height:1.55"></div>
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)">
           <div class="price-wrap"><span class="price">79&nbsp;€</span><span class="price-mo">/&nbsp;mois &nbsp;·&nbsp; ou 690&nbsp;€/an</span></div>
           <div class="price-note">2 mois offerts en annuel · résiliable à tout moment · garantie 30 jours satisfait-remboursé sur l'annuel</div>
@@ -262,13 +266,27 @@
     upd();
 
     // ── 5. abonnement self-serve ──
-    // Essai 21 j : demande par email (self-serve, zéro call), pré-remplie avec l'établissement
-    // + la plage. (L'émission auto du token Pro à la capture est en cours de câblage.)
-    var bn=SLUG2NAME[beachSlug];
-    var subj="Essai 21 jours Sargasses Pro"+(hotel?(" — "+hotel):"");
-    var body="Bonjour,\n\nJe souhaite activer l'essai Pro de 21 jours (gratuit, sans carte).\n\n"
-      +"Établissement : "+(hotel||"")+"\nPlage à surveiller : "+bn+"\nSite : \n\nMerci !";
-    $("trialBtn").href="mailto:alerte@sargasses-martinique.com?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+    // Essai 21 j INSTANTANÉ et self-serve : POST email → /api/b2b-trial.php émet un
+    // token Pro temporaire (21 j) renvoyé direct → on l'applique au widget (marque
+    // blanche active tout de suite), zéro call, zéro attente, zéro humain.
+    function activateTrial(){
+      var em=($("trialEmail").value||"").trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); return; }
+      var btn=$("trialBtn"); btn.textContent="Activation…"; btn.disabled=true;
+      fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,name:hotel,beach:beachSlug,island:island})})
+        .then(function(r){return r.json()}).then(function(d){
+          if(d&&d.ok&&d.token){
+            token=d.token; upd();            // applique le token → widget marque blanche
+            $("wlNote").innerHTML="✓ Essai Pro actif 21 jours — marque blanche du widget activée.";
+            var pb=$("proBanner"); if(pb)pb.style.display="flex";
+            var tf=$("trialForm"); if(tf)tf.style.display="none";
+            var tr=$("trialResult"); tr.style.display="block";
+            tr.innerHTML="✓ <b>Essai activé pour 21 jours.</b> Votre widget ci-dessus est déjà passé à vos couleurs (sans crédit Sargasses), et vos alertes démarrent. Conservez votre accès Pro :<br><code style=\"display:inline-block;margin-top:7px;font-size:11px;word-break:break-all;color:#9af2c9\">"+d.token+"</code>";
+          } else { btn.textContent="Réessayer →"; btn.disabled=false; }
+        }).catch(function(){ btn.textContent="Réessayer →"; btn.disabled=false; });
+    }
+    $("trialBtn").addEventListener("click",activateTrial);
+    $("trialEmail").addEventListener("keydown",function(e){if(e.key==="Enter")activateTrial();});
     // Option « verrouiller l'année » : lien Mollie pro_annual (690 €)
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var u=d&&d.links&&d.links.pro_annual&&d.links.pro_annual.url;
