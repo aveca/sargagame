@@ -182,7 +182,8 @@ function _origin(o) {
 
 export function WebcamPanel({ beach, lang = "fr" }) {
   const cam = beach && beach.webcam
-  if (!cam || (!cam.id && !cam.url)) return null
+  // `disabled` = posé par le cron webcam-health.cjs quand le flux est mort/tourné.
+  if (!cam || cam.disabled || (!cam.id && !cam.url)) return null
   const _t = (m) => (m && (m[lang] || m.fr)) || ""
   const label = cam.label || (beach.name + " — " + _t(T.title))
   const credit = cam.provider
