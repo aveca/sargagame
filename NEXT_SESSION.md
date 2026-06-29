@@ -1,5 +1,24 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-06-29 — LOT B FAIT : offre B2B USD ENCAISSABLE (#224 MERGÉ sur `main`). Money-path revu en panel adverse (GO×3).**
+>
+> **Ce qui était cassé** : l'abo B2B était EUR-only (`mol_is_eur_region` bloquait l'USD avec une raison périmée « on laisse l'USD à Stripe » — Stripe est mort ; le B2C USD encaisse DÉJÀ via Mollie depuis le 26/06). On envoie de l'outreach EN/ES mais on ne pouvait pas encaisser un Pro USD.
+>
+> **Livré & mergé (#224, LIVE)** :
+> - **`mollie-lib.php`** : `mol_b2b_plans()` gagne `pro_monthly_usd` ($89/mo) + `brief_monthly_usd` ($39/mo) ; nouveau `mol_region_currency($island)` → `EUR` (mq/gp/'') / `USD` (florida/puntacana/rivieramaya) / `null` (inconnu).
+> - **`mollie.php` `create_subscription`** : ancien gate `mol_is_eur_region` (EUR-only) remplacé par une **cohérence post-résolution** — `$regCur = mol_region_currency($island)` (île **dérivée de l'ORIGIN serveur**, jamais du body), rejet si `$regCur` inconnu OU si la devise du plan ≠ devise de la région. Airtight : pas de mix devise/région.
+> - **`mollie-paylinks.cjs`** : TIERS gagne un champ `currency` + tiers USD `pro_annual_usd` ($790) / `brief_annual_usd` ($390) ; `createLink` utilise `tier.currency||'EUR'`. (Le lien USD se frappe au prochain run pipeline avec `MOLLIE_API_KEY`.)
+> - **`/pro/espace/index.html`** : détection devise par hostname (`miami→florida`, `cancun→rivieramaya`, `puntacana→…`), helper `money(v)`, affichage prix dynamique $89/$790 vs 79/690, clé paylink + plan mensuel adaptés.
+> - **`b2b-cold-outreach.cjs` `domainFor()`** : île USD → domaine régional (sargassummiami/puntacana/cancun), plus de pointage vers le domaine FR.
+>
+> **Action fondateur (gate money-path, comme l'EUR)** : 1 vrai paiement test USD au dashboard Mollie post-deploy pour valider le checkout récurrent USD. (Mécanisme = checkout hébergé récurrent, déjà éprouvé en EUR #215 ; l'USD est le même flux, devise différente.)
+>
+> **RESTE (non bloquant, leverage décroissant)** :
+> - **`/pro/espace/` reste en langue FR sur les domaines USD** → i18n EN/ES de la page espace = prochain incrément (le prix s'affiche déjà en USD, mais le texte est FR).
+> - **`pro_annual_usd` paylink** : se frappe automatiquement au prochain run planifié du pipeline (clé en CI) — rien à faire.
+> - **Copy EN/ES segmentée outreach** : drafts du panel `wf_629b98ae` ont 3 bugs de placeholders (cf. ancienne entrée Lot B ci-dessous) → à aligner sur le modèle de données `dataHook` avant intégration dans `buildC0`. L'outreach USD utilise pour l'instant la copy EN/ES NON segmentée (déjà self-serve, locale corrigée #218).
+> - **Horizon J+14-21 « orientation » région (band RISQUE, demandé par le fondateur « intégrer ça proprement »)** : PAS encore construit. À faire en orientation clairement labellisée (niveau région, saison+tendance+bancs au large, AUCUN % de fiabilité inventé, SÉPARÉ du verdict audité par plage), utile surtout pour le ramassage collectivité. Le verdict par plage reste 100 % data ERDDAP, half-life 5,0 j, horizon utile ~4 j.
+
 > **🎯 2026-06-29 — OUTREACH B2B SEGMENTÉ + DONNÉE RÉELLE (#222 mergé) + spec « Lot B : offre USD encaissable » (TODO).**
 >
 > **Fait (#222, LIVE)** : `lib/b2b-segment.cjs` (déterministe, région-aware MQ/GP+USD) — `inferType` (hôtel/collectivité), `dataHook` (vraie donnée plage : hôtel = jours « à éviter » la semaine passée ; collectivité = N plages / N à éviter ; gère le cas 0 = saison calme), `liveProof` (% live, remplace le chiffre figé périmé). `b2b-cold-outreach.cjs` C0 **FR** segmenté (hôtel=clients / collectivité=ramassage J+7 baie par baie). `b2b-outreach.cjs` closings FR/EN/ES → self-serve (fini « parlons-en/let's talk/en construction »). **Pourquoi** : sous plafond de délivrabilité, le levier = convertir mieux chaque email, pas en envoyer plus.
