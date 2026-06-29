@@ -85,13 +85,19 @@ function copy(island) {
   const name = (region && region.name) || (island === 'gp' ? 'Guadeloupe' : 'Martinique')
   const brand = lang === 'es' ? 'Sargazo' : lang === 'en' ? 'Sargassum' : 'Sargasses'
   const open = `https://${regionDomain(island)}/?utm_source=email&utm_medium=welcome_pass`
+  // Suivi self-serve : lien ?restore=1 (deep-link app → invite email → débloque l'accès).
+  // Donne au client une preuve de paiement + un moyen de retrouver son accès à tout moment.
+  const restore = `https://${regionDomain(island)}/?restore=1&utm_source=email&utm_medium=welcome_pass`
   const btn = (label, href) => `<p style="text-align:center;margin:22px 0"><a href="${href}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">${label}</a></p>`
+  // Encart suivi/accès en HAUT du corps (bien visible) — répond au « aucun tracking sur le site ».
+  const trackBox = (title, sub, label) => `<div style="background:#fff7e0;border:1px solid #FFC72C;border-radius:12px;padding:16px 18px;margin:0 0 6px"><p style="margin:0 0 4px;font-weight:800;color:#190c2c;font-size:14px">${title}</p><p style="margin:0 0 10px;font-size:13px;color:#5a4a1a">${sub}</p><p style="margin:0"><a href="${restore}" style="display:inline-block;background:#190c2c;color:#FFC72C;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:10px;font-size:13px">${label}</a></p></div>`
   if (lang === 'es') return {
     from: `${brand} ${name} <alerte@sargasses-martinique.com>`,
     subject: 'Tu Vigía está vigilando — tu parte de la mañana 🌅',
     pre: 'Cada mañana, el veredicto de tu playa. Medido por satélite, nunca adivinado.',
     body: brandHeader('Tu Vigía vigila el mar', `${brand} ${name}`, 'Cada mañana, el veredicto de tu playa — medido, no adivinado.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
+        ${trackBox('Tu Pase está activo ✅', 'Verifica o recupera tu acceso en cualquier momento y desde cualquier dispositivo, aquí:', 'Ver mi acceso')}
         <p>¡Gracias! Tu Pase está activo. Cada mañana, el Vigía mira el mar mientras duermes — nunca a ti — y te da el veredicto de tu playa, su pronóstico de 7 días y la alerta la mañana en que cambia. Y cuando no estamos seguros, te lo decimos.</p>
         <p><b>Para empezar:</b> abre el mapa, añade tus playas favoritas (♥) y activa las alertas para avisarte la mañana en que una cambia. Si una playa se llena, tu Plan B — las 3 playas limpias más cercanas — ya está ahí.</p>
         ${btn('Abrir mi mapa', open)}
@@ -105,6 +111,7 @@ function copy(island) {
     pre: 'Every morning, your beach verdict. Measured by satellite, never guessed.',
     body: brandHeader('Your Watchman is on watch', `${brand} ${name}`, 'Every morning, your beach verdict — measured, not guessed.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
+        ${trackBox('Your Pass is active ✅', 'Check or restore your access anytime, on any device, right here:', 'View my access')}
         <p>Thank you! Your Pass is active. Every morning, the Watchman watches the sea while you sleep — never you — and gives you your beach verdict, its 7-day forecast and the alert the morning it turns. And when we're not sure, we tell you.</p>
         <p><b>To start:</b> open the map, add your favourite beaches (♥) and turn on alerts so we warn you the morning one turns. If a beach closes up, your Plan B — the 3 nearest clean beaches — is already there.</p>
         ${btn('Open my map', open)}
@@ -118,6 +125,7 @@ function copy(island) {
     pre: 'Chaque matin, le verdict de ta plage. Mesuré au satellite, jamais deviné.',
     body: brandHeader('Ton Veilleur veille la mer', `${brand} ${name}`, 'Chaque matin, le verdict de ta plage — mesuré, pas deviné.') +
       `<div style="background:#fff;padding:22px 20px;font-size:14px;line-height:1.55;color:#1a2b3c">
+        ${trackBox('Ton Pass est actif ✅', 'Vérifie ou retrouve ton accès à tout moment, sur n\'importe quel appareil, ici :', 'Voir mon accès')}
         <p>Merci ! Ton Pass est actif. Chaque matin, Le Veilleur regarde la mer pendant que tu dors — jamais toi — et te livre le verdict de ta plage, sa prévision 7 jours et l'alerte le matin où ça bascule. Et quand on n'est pas sûrs, on te le dit.</p>
         <p><b>Pour démarrer :</b> ouvre la carte, ajoute tes plages favorites (♥) et active les alertes pour qu'on te prévienne le matin où l'une tourne. Si une plage se ferme, ton Plan B — les 3 plages propres les plus proches — est déjà là.</p>
         ${btn('Ouvrir ma carte', open)}
