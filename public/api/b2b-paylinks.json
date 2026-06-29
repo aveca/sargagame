@@ -24,7 +24,13 @@
       "url": "https://payment-links.mollie.com/payment/W2sAWEfKDqyHKwHBTUEtf",
       "value": "790.00",
       "createdAt": "2026-06-29T15:50:13.985Z"
+    },
+    "territory_annual": {
+      "id": "pl_VdVWmGEq43nmxhGM7DU65",
+      "url": "https://payment-links.mollie.com/payment/VdVWmGEq43nmxhGM7DU65",
+      "value": "1990.00",
+      "createdAt": "2026-06-29T20:00:51.621Z"
     }
   },
-  "updatedAt": "2026-06-29T15:50:13.985Z"
+  "updatedAt": "2026-06-29T20:00:51.621Z"
 }

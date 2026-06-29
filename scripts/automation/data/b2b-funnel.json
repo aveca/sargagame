@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-06-29T15:53:07.663Z",
+  "updatedAt": "2026-06-29T20:03:45.691Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 78,
-    "contacted": 29,
-    "lead": 4,
+    "discovered": 75,
+    "contacted": 32,
+    "lead": 5,
     "paid": 1
   },
   "funnel": {
@@ -301,31 +301,31 @@
       "nextAction": "attendre / relance programmée"
     },
     "c56edd2978a61f7d13b0a0af3081f287": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Carayou & SPA",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T20:00:59.016Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "24d78de1816ba79c5688b53fdaee6b54": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Courbaril (Courbaril Village)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T20:00:59.632Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "da0d6771ae926af7b1a3ec1e53bf0d97": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "L'Impératrice Village",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T20:00:59.969Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "31de89ca85a74c2a9ef7e2ab0c01b812": {
       "stage": "discovered",
@@ -1003,6 +1003,15 @@
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
     "8eed02370a530f21c11bd53b5cd9b14b": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "5c95ee32a5e22aa29948066c273242f7": {
       "stage": "lead",
       "name": null,
       "island": null,
