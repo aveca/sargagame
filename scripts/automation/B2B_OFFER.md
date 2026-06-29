@@ -14,7 +14,7 @@
 - **La donnée existe déjà.** Indice AFAI par plage, croisé 4×/jour, prévision J+1→J+7, 136+ plages sur 5 régions, infra de diffusion en place. Le coût marginal d'un rivage de plus est proche de zéro.
 - **La demande s'est montrée seule.** Un hôtel a installé le widget public sans qu'on le lui demande — le besoin existe ; reste à le servir proprement, une fois le produit câblé.
 
-## Les 3 paliers (en cours de définition — non câblés)
+## Les 3 paliers (pricing arrêté 2026-06-29)
 
 ### 1. Brief — la dépêche du matin pour votre rivage (entrée de gamme)
 Chaque matin, l'état réel des 3 à 5 plages les plus proches de votre établissement : indice AFAI mesuré au satellite, tendance, prévision J+1→J+7, et l'alerte « le matin où ça bascule » — avant l'échouage, pas après.
