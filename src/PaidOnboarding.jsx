@@ -24,6 +24,10 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const [step, setStep] = useState(0)
   const [notifAsked, setNotifAsked] = useState(false)
   const reduce = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  // Page « on publie nos erreurs » (le moat honnêteté), localisée. Ouverte en nouvel
+  // onglet à l'étape PREUVE — placée AVANT la demande de notif (preuve avant permission).
+  const relPath = lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/"
+  const openReliability = () => { tk("sg_onboard_proof", {}); try { window.open(relPath, "_blank", "noopener") } catch (e) {} }
 
   function haversine(a, b, c, d) { const R = 6371, p = Math.PI / 180, x = (c - a) * p, y = (d - b) * p, h = Math.sin(x / 2) ** 2 + Math.cos(a * p) * Math.cos(c * p) * Math.sin(y / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)) }
 
@@ -68,14 +72,14 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
       {/* header : progression + passer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2].map(i => <span key={i} style={{ width: i === step ? 22 : 9, height: 9, borderRadius: 999, border: `2px solid ${INK}`, background: i <= step ? YEL : PAPER, transition: reduce ? "none" : "all .3s" }} />)}
+          {[0, 1, 2, 3].map(i => <span key={i} style={{ width: i === step ? 22 : 9, height: 9, borderRadius: 999, border: `2px solid ${INK}`, background: i <= step ? YEL : PAPER, transition: reduce ? "none" : "all .3s" }} />)}
         </div>
         <button onClick={() => done("skip")} style={{ ...btnGhost, marginTop: 0, minHeight: 44 }}>{t("Passer", "Skip", "Saltar")}</button>
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 480, width: "100%", margin: "0 auto", overflowY: "auto" }}>
         <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 6, font: "800 10px/1 'Bricolage Grotesque'", letterSpacing: ".09em", textTransform: "uppercase", color: INK, background: YEL, border: `2px solid ${INK}`, borderRadius: 6, padding: "5px 9px", boxShadow: `2px 2px 0 ${INK}`, marginBottom: 14 }}>
-          ⭐ {t("Pass activé · Le Veilleur est à son poste", "Pass active · Le Veilleur is on watch", "Pase activo · Le Veilleur está de guardia")} · {t("Étape", "Step", "Paso")} {step + 1}/3
+          ⭐ {t("Pass activé · Le Veilleur est à son poste", "Pass active · Le Veilleur is on watch", "Pase activo · Le Veilleur está de guardia")} · {t("Étape", "Step", "Paso")} {step + 1}/4
         </div>
 
         {step === 0 && (
@@ -108,10 +112,10 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
         {step === 1 && (
           <>
-            <h1 style={h1}>{t("Le matin où ça bascule, tu le sauras", "The morning it turns, you'll know", "La mañana en que cambie, lo sabrás")}</h1>
-            <p style={sub}>{t("Le Veilleur veille la mer pendant que tu dors, jamais toi. Une alerte seulement le matin où ta plage bascule — pour décider avant de charger la voiture. Pas de spam : la mer parle, pas nous.", "Le Veilleur watches the sea while you sleep — never you. One alert, only the morning your beach turns — so you decide before loading the car. No spam: the sea talks, not us.", "Le Veilleur vigila el mar mientras duermes, nunca a ti. Una alerta solo la mañana en que tu playa cambie — para decidir antes de cargar el coche. Sin spam: habla el mar, no nosotros.")}</p>
-            <button onClick={() => { setNotifAsked(true); try { onEnableNotif && onEnableNotif() } catch (e) {}; next() }} style={btnGold}>
-              {t("Activer les alertes", "Enable alerts", "Activar alertas")}
+            <h1 style={h1}>{t("D'abord, regarde ce qu'on vaut", "First, see what we're worth", "Primero, mira lo que valemos")}</h1>
+            <p style={sub}>{t("On ne devine rien : le verdict est mesuré au satellite. Et on publie nos erreurs — nos prévisions passées, datées, face à la réalité (~76 % justes tous régimes, jusqu'à 79 % en saison). Tu n'as aucune raison de nous croire sur parole : va vérifier.", "We guess nothing: the verdict is measured by satellite. And we publish our errors — our past forecasts, dated, against reality (~76% accurate all regimes, up to 79% in season). No reason to take our word for it: go check.", "No adivinamos nada: el veredicto se mide por satélite. Y publicamos nuestros errores — previsiones pasadas, fechadas, frente a la realidad (~76% acertadas, hasta 79% en temporada). No tienes por qué creernos: ve a comprobarlo.")}</p>
+            <button onClick={openReliability} style={btnGold}>
+              {t("Voir notre taux d'erreur", "See our error rate", "Ver nuestra tasa de error")}
             </button>
             <button onClick={next} style={btnGhost}>{t("Plus tard", "Later", "Más tarde")}</button>
           </>
@@ -119,8 +123,19 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
         {step === 2 && (
           <>
+            <h1 style={h1}>{t("Le matin où ça bascule, tu le sauras", "The morning it turns, you'll know", "La mañana en que cambie, lo sabrás")}</h1>
+            <p style={sub}>{t("Le Veilleur veille la mer pendant que tu dors, jamais toi. Une alerte seulement le matin où ta plage bascule — pour décider avant de charger la voiture. Pas de spam : la mer parle, pas nous. Et en saison calme, les sargasses sont rares : on ne te préviendra pas pour rien.", "Le Veilleur watches the sea while you sleep — never you. One alert, only the morning your beach turns — so you decide before loading the car. No spam: the sea talks, not us. And in the calm season sargassum is rare: we won't ping you for nothing.", "Le Veilleur vigila el mar mientras duermes, nunca a ti. Una alerta solo la mañana en que tu playa cambie — para decidir antes de cargar el coche. Sin spam: habla el mar, no nosotros. Y en temporada tranquila el sargazo es raro: no te avisaremos por nada.")}</p>
+            <button onClick={() => { setNotifAsked(true); try { onEnableNotif && onEnableNotif() } catch (e) {}; next() }} style={btnGold}>
+              {t("Activer les alertes", "Enable alerts", "Activar alertas")}
+            </button>
+            <button onClick={next} style={btnGhost}>{t("Plus tard", "Later", "Más tarde")}</button>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
             <h1 style={h1}>{t("Il y a toujours un demain à lire", "There's always a tomorrow to read", "Siempre hay un mañana por leer")}</h1>
-            <p style={sub}>{t("Chaque matin, ta dépêche t'attend en haut de l'app : l'état de tes plages mesuré au satellite cette nuit, plus la plage propre à viser aujourd'hui. Le Veilleur a déjà pris son poste — il a commencé à veiller la mer pour toi.", "Every morning, your dispatch waits at the top of the app: your beaches measured by satellite overnight, plus the clean beach to aim for today. Le Veilleur has taken his post — he's already watching the sea for you.", "Cada mañana, tu parte te espera arriba en la app: tus playas medidas por satélite esta noche, más la playa limpia a la que ir hoy. Le Veilleur ya está en su puesto — ya vigila el mar por ti.")}</p>
+            <p style={sub}>{t("Chaque matin, ta dépêche t'attend en haut de l'app : l'état de tes plages d'après la dernière mesure satellite, plus la plage propre à viser aujourd'hui. Tu vois venir le matin où ça bascule, avant tout le monde. Et si une crique rouge te tente, ton Plan B — les plages propres les plus proches — est déjà là. Le Veilleur a pris son poste : il veille pour toi.", "Every morning, your dispatch waits at the top of the app: your beaches from the latest satellite measure, plus the clean beach to aim for today. You see the morning it turns coming, before everyone else. And if a red cove tempts you, your Plan B — the nearest clean beaches — is already there. Le Veilleur has taken his post: he's watching for you.", "Cada mañana, tu parte te espera arriba en la app: tus playas según la última medición por satélite, más la playa limpia a la que ir hoy. Ves venir la mañana en que cambia, antes que nadie. Y si una cala roja te tienta, tu Plan B — las playas limpias más cercanas — ya está ahí. Le Veilleur está en su puesto: vigila por ti.")}</p>
             <button onClick={() => done("finish")} style={btnGold}>{t("Lire ma première dépêche", "Read my first dispatch", "Leer mi primer parte")}</button>
           </>
         )}
