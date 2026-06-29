@@ -9,12 +9,13 @@
 1. **Découverte / enrichissement** — `b2b-discover` (workflow) + `b2b-enrich` (workflow)
    → établissements littoraux MQ/GP avec email réel + hook perso → `data/b2b-enriched.json`.
 2. **Liens de paiement** — `mollie-paylinks.cjs` → crée (idempotent) les liens Mollie
-   annuels (Brief 290€, Pro 790€) → `public/api/b2b-paylinks.json`.
+   annuels (Brief 290€, Pro 690€) → `public/api/b2b-paylinks.json`.
 3. **Prospection froide** — `b2b-cold-outreach.cjs` → email perso (hook) + relance c4,
    **ramp auto** (5→50/j selon l'âge de campagne), token `&b=` par destinataire.
 4. **Widget → Pro** — `widget-convert.cjs` → tout installeur de widget (lead chaud)
    reçoit l'offre Pro + lien de paiement.
-5. **Drip B2B** — `drip-b2b-email.cjs` → essai 14j → conversion (b13) avec lien de paiement.
+5. **Drip B2B** — `drip-b2b-email.cjs` → essai 21j → conversion (b13) avec lien de paiement.
+   (⚠️ le code de `drip-b2b-email.cjs` référence encore 14j → à aligner sur 21j.)
 6. **Funnel** — `b2b-funnel.cjs` → agrège chaque prospect (découvert→contacté→lead→payé)
    + prochaine action → `data/b2b-funnel.json` (pilotage).
 

@@ -20,7 +20,7 @@ Deux modes de build :
 
 ### La gate `IS_NEW_REGION` (constant-folded)
 
-Présente à l'identique dans `vite.config.js`, `Sargasses_PROD.jsx` et `src/MapView.jsx` :
+Présente à l'identique dans `vite.config.js` et `Sargasses_PROD.jsx` :
 
 ```js
 const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
@@ -42,8 +42,9 @@ const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 
 ## 2. App principale
 
-- **`Sargasses_PROD.jsx`** (~5 300 lignes) — monolithe React 18, map-first ("25 % des clics = carte" d'après Clarity). Contient : état global, i18n FR/EN/ES, Beach Score UI, sheet/modal plage, paywall Premium, A/B testing, tracking funnel (events `sg_*` vers Apps Script), favoris, signalements communautaires, ErrorBoundary.
-- **`src/MapView.jsx`** — Leaflet extrait du monolithe et **lazy-loadé** (`React.lazy` + dynamic import) : ~150 KB en moins au first paint. Radar time-slider 5 jours (frames J0..J+4 depuis le forecast), clustering, routage des clics.
+- **`Sargasses_PROD.jsx`** (~13,4k lignes) — monolithe React 18, map-first ("25 % des clics = carte" d'après Clarity). Contient : état global, i18n FR/EN/ES, Beach Score UI, sheet/modal plage, paywall Premium, A/B testing, tracking funnel (events `sg_*` vers Apps Script), favoris, signalements communautaires, ErrorBoundary.
+- **Carte = SVG custom inline** (`WorldMapView` / `ArchipelView`, dans `Sargasses_PROD.jsx`) — plus de Leaflet (retiré ; `src/MapView.jsx` n'existe plus, ne survit qu'un commentaire de fallback legacy `?nav=map`). Radar time-slider 5 jours (frames J0..J+4 depuis le forecast).
+- **`src/PremiumModal.jsx`** — le seul chunk **lazy-loadé** (`React.lazy` + dynamic import) : le paywall Premium (PremiumModal + variantes World/Comic/B2B), sorti du monolithe pour alléger le first paint.
 - **`src/lib/score.js`** — Beach Score côté client (même formule que `scripts/lib/score.cjs`).
 - Fonts : Bricolage Grotesque + Anton. Pas de framework CSS.
 
@@ -109,7 +110,7 @@ Les JSON data (`/api/copernicus/...`) sont en network-first, donc rafraîchis sa
 
 Le projet est **full-static** (pas de serveur applicatif). Le backend se réduit à :
 
-- **Stripe Payment Links** par région (créés par `scripts/create-region-payment-links.cjs`, stockés dans `regions/<id>.json` → `paymentLinks{}`) — compte Stripe partagé entre plusieurs business, discriminé par `metadata.island`.
-- **`public/api/stripe-webhook.php`** sur l'hébergement mutualisé — filtre les events par `metadata.island` contre la liste `$KNOWN_REGIONS` (sync **manuelle** avec `regions/*.json`, parité vérifiée par `scripts/test-stripe-webhook.cjs`).
+- **Paiement B2C actif = Mollie on-site PARTOUT** (`public/api/mollie.php`, `PAY_PROVIDER` par défaut `'mollie'`) — carte via Mollie Components + Apple Pay natif, EUR (MQ/GP) **et** USD (florida/puntacana/rivieramaya, Mollie encaisse l'USD et règle en EUR). Modèle **PASS-ONLY** (paiement unique, plus d'abonnement). B2B mensuel récurrent câblé via `mol_b2b_plans` dans `public/api/mollie-lib.php`. Détails de la bascule : [MOLLIE_MIGRATION.md](../MOLLIE_MIGRATION.md).
+- **Stripe = legacy DORMANT** (plus une caisse) : `scripts/create-region-payment-links.cjs`, `public/api/stripe-webhook.php`, `STRIPE_PK` ne subsistent que pour les **16 abonnés EUR legacy** (source de vérité du MRR via `scripts/automation/data/daily-metrics.json`). Aucun nouveau CTA ne renvoie vers Stripe ; les liens USD Stripe sont désactivés.
 - **Google Apps Script** (funnel + emails) — URL de l'exec dans le secret `APPS_SCRIPT_URL`, déployé via clasp.
-- **SMTP** (nodemailer, boîte `alerte@sargasses-martinique.com` sur cPanel) pour TOUS les emails transactionnels/drip/outreach/alertes — couche partagée `scripts/automation/lib/email-send.cjs`, From normalisé sur cette boîte (SPF/DKIM). **OneSignal** pour le push (1 app par région). NB : le tracking opens/clicks (anciens webhooks Resend) n'existe plus en SMTP — l'engagement email se mesure désormais via Apps Script (envois/bounces) et l'attribution revenu Stripe `metadata.source`.
+- **SMTP** (nodemailer, boîte `alerte@sargasses-martinique.com` sur cPanel) pour TOUS les emails transactionnels/drip/outreach/alertes — couche partagée `scripts/automation/lib/email-send.cjs`, From normalisé sur cette boîte (SPF/DKIM). **OneSignal** pour le push (1 app par région). NB : le tracking opens/clicks (anciens webhooks Resend) n'existe plus en SMTP — l'engagement email se mesure désormais via Apps Script (envois/bounces) ; l'attribution revenu Stripe `metadata.source` ne couvre plus que la base legacy.

@@ -37,8 +37,8 @@ le joueur vers une « autre app ». Tout s'enchaîne comme des **cases de BD**.
 
 ## 3. LE BUSINESS (déjà en prod)
 
-- **Abonnement** 4,99 €/mois ou 39,99 €/an (Stripe, live). MRR actuel ~€75 / 15 actifs.
-- **Passes one-time** (7,99 / 14,99…) pour les touristes « juste mon séjour ».
+- **Modèle = PASS-ONLY** (paiement UNIQUE, plus d'abonnement) via **Mollie on-site** (carte Components + Apple Pay natif). EUR : 7,99 / 14,99 / 24,99 € · USD : $5.99 / $11.99 / $19.99.
+- **Stripe = legacy uniquement** : 16 abonnés EUR historiques y facturent encore (source de vérité MRR), mais Stripe **n'est plus une caisse** — aucun CTA ne doit y renvoyer. MRR actuel €79,84/mois / 16 actifs.
 - Le **jeu** = rétention (série quotidienne, collection) + acquisition (SEO plages).
 - La **conversion** se fait au point de valeur que le gratuit n'a pas : **la prévision
   + l'alerte**. Pas de peur en saison calme → vendre « sache où sera la mer demain ».
@@ -83,7 +83,7 @@ fond: halftone (radial dots) + dégradé golden-hour (bleu→ambre→orange)
 2. ❌ **L'app sombre « satellite qu'on scrolle »** (HeroVerdict) — le fondateur en a
    marre. Remplacée par l'arène + détail in-world. Reste à purger des bras morts.
 3. ❌ **Le paywall blanc générique** (cards blanches sur vert sombre) — **MOCHE, à
-   refaire en BD** (next, voir §6). Paiement Stripe à NE PAS casser.
+   refaire en BD** (next, voir §6). Paiement **Mollie on-site (Components + Apple Pay)** à NE PAS casser.
 4. ❌ **Styles inline éparpillés** → pas de design system. Migrer vers `.lc-` tokens.
 5. ❌ **Lenteur** : trop d'animations infinies simultanées → `content-visibility` sur
    les listes, foil seulement sur cartes possédées/visibles.
@@ -95,13 +95,14 @@ fond: halftone (radial dots) + dégradé golden-hour (bleu→ambre→orange)
 - [x] Couleurs rareté + paliers + tension du pull (19/06)
 - [ ] **Détail-carte « débouche sur plein de trucs »** : prévision 7j teaser, plages
       voisines, partage — EN COURS.
-- [x] **Refonte paywall en BD** (19/06) — `ComicPaywall` derrière A/B `pw_comic` 50/50
-      (override `?pwcomic=1/0`). Scène golden-hour + Veilleur, titre Anton chroma, cases
-      BD paper/ink, toggle + CTA encrés, trust + garantie comic. `startCheckout`/plans/
-      EUR/source **intacts** (overlay payStep hors panel = reste monté). Asset validé :
-      `design/proto-paywall-comic.html`. NEXT : confirmer rendu live (`?pwcomic=1`) → promouvoir défaut.
+- [x] **Refonte paywall en BD** (19/06) — le paywall est désormais le chunk lazy
+      `src/PremiumModal.jsx` (cf. §8), composant unique en prod (BottomNav retirée).
+      Scène golden-hour + Veilleur, titre Anton chroma, cases BD paper/ink, toggle + CTA
+      encrés, trust + garantie comic. Logique de paiement on-site (plans / EUR / source)
+      **intacte** (overlay payStep hors panel = reste monté). Asset de réf :
+      `design/proto-paywall-comic.html`.
 - [ ] **Transitions de case BD** entre booster → détail → premium.
-- [ ] Purge des A/B morts (paywall : ~25 flags non concluants à ce trafic).
+- [ ] Purge des A/B morts (paywall : ~25 flags non concluants à ce trafic). (`pw_comic` retiré — paywall figé sur `PremiumModal`.)
 - [ ] Mascotte Le Veilleur enrichie (réactions, micro-anim).
 
 ## 7. RÈGLES DE TRAVAIL (qualité)
@@ -110,7 +111,7 @@ fond: halftone (radial dots) + dégradé golden-hour (bleu→ambre→orange)
   (`/tmp/journey.mjs` copié en `_journey.mjs` dans le repo pour résoudre playwright).
 - ⚠️ Captures headless peuvent fuiter `forced-colors` → juger couleurs via computed styles.
 - **Jamais de WIP montré au fondateur** ; ship derrière flag si ça touche le revenu.
-- Le paiement Stripe est **sacré** : reskin visuel OK, logique de checkout NON touchée.
+- Le paiement **Mollie on-site (Components + Apple Pay)** est **sacré** : reskin visuel OK, logique de checkout NON touchée. (Stripe ne sert plus de caisse — il ne facture que les 16 abos EUR historiques ; aucun CTA n'y renvoie.)
 
 ## 8. INVENTAIRE DES ÉCRANS & CONNEXIONS (checklist du build « tout cohérent »)
 
@@ -144,4 +145,4 @@ Le détail comic (`ChasseDetail`) vit dans `ChasseHome.jsx` et dépend de son CS
 3. ✅ Routé : la carte/archipel `onOpenBeach` → `onMapBeach` → `openComicBeach(setComicBeach)`. **Default ON, rollback instantané `?mapdetail=0`** (PAS un nouveau flag A/B — 51 flags conversion déjà dilués → récolte). `onFull` = pont explicite vers la fiche data ; `onRelated`/Plan-B = ouvre un autre détail comic in-world ; `onPremium` = `openPremium` (porte conversion unique intacte).
 4. ✅ Vérifié Playwright (WebKit mobile, build prod sur 4173) : tap pin → `.lc-detail` (pos fixed, `--ink` résolu, nom/verdict/score/7j/H2S/CTA/Veilleur présents), close ✕ OK, **0 erreur console**, rollback `?mapdetail=0` n'ouvre PAS le comic (chemin fiche data). Screenshot golden-hour validé.
 5. (Plus tard, avec le fondateur) dé-dupliquer ChasseDetail ↔ ComicDetail en module partagé.
-**Boutons « blancs » (close ✕ / Partager / Fiche complète) = skin `.theme-comic button` existant** (classe sur `<body>`, ancêtre des DEUX montages → rendu identique à l'arène déjà shippée), 3px bordure encre + ombre = visibles, pas le bug « boutons invisibles ». Checkout Stripe jamais touché, tout réversible.
+**Boutons « blancs » (close ✕ / Partager / Fiche complète) = skin `.theme-comic button` existant** (classe sur `<body>`, ancêtre des DEUX montages → rendu identique à l'arène déjà shippée), 3px bordure encre + ombre = visibles, pas le bug « boutons invisibles ». Checkout Mollie on-site jamais touché, tout réversible.

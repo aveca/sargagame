@@ -1,8 +1,8 @@
 # Kit de prospection B2B — Le Veilleur Pro (sargasses)
 
-> But : décrocher **3 hôtels qui PAIENT en 14 jours** (le test décisif du mémo stratégique 28/06).
-> Méthode : **manuel d'abord** — 10 emails/jour, perso, depuis une adresse qui te ressemble
-> (pas alerte@). Relance J+3 et J+7. On automatise SEULEMENT quand ce message a converti 1 fois.
+> But : décrocher **3 hôtels qui PAIENT en 21 jours** (le test décisif du mémo stratégique 28/06).
+> Méthode : **outreach automatisé self-serve** — l'email amène le prospect sur `/pro/espace/`
+> où il démarre lui-même son **essai 21 jours, sans carte**. Relance J+3 et J+7. Zéro call, zéro activation manuelle.
 > La liste enrichie (emails réels) est dans `data/b2b-enriched.json` (généré par l'agent d'enrichissement).
 
 ---
@@ -12,10 +12,10 @@
 | Produit | Prix | Cible |
 |---|---|---|
 | **Brief** quotidien | 29 €/mois (290 €/an, 2 mois offerts) | gîtes, restos, clubs plage |
-| **Pro** (widget marque-blanche + brief + alertes + prévision 7j) | **79 €/mois** (790 €/an) | hôtels, resorts |
+| **Pro** (widget marque-blanche + brief + alertes + prévision 7j) | **79 €/mois** (690 €/an) | hôtels, resorts |
 | **Territoire** (multi-plages + rapports + API) | dès 199 €/mois | communes, offices |
 
-**Essai 14 jours gratuit, sans carte** (le brief tourne déjà → coût marginal nul). **Pousser l'annuel** (cash d'avance = immunise contre le creux hors-saison).
+**Essai 21 jours gratuit, sans carte** (le brief tourne déjà → coût marginal nul). **Pousser l'annuel** (cash d'avance = immunise contre le creux hors-saison).
 
 ---
 
@@ -44,14 +44,14 @@ Je propose aux hôtels un brief quotidien de VOS plages (état réel + alerte av
 échouage + prévision 7 jours), et un widget « plages surveillées » à mettre sur
 votre site pour rassurer avant la réservation.
 
-Je vous l'offre **14 jours, gratuitement, sans carte** — vous voyez si c'est utile.
-Ensuite c'est 79 €/mois si vous gardez. **Je vous active ça aujourd'hui, ça vous va ?**
+Vous l'essayez **21 jours, gratuitement, sans carte** — vous voyez si c'est utile.
+Ensuite c'est 79 €/mois si vous gardez. **Vous démarrez l'essai vous-même ici, en 2 min :**
+sargasses-martinique.com/pro/espace/
 
 {TonPrénom}
-{lien: sargasses-martinique.com}
 ```
 
-> La dernière phrase est le **forçage** : elle demande un oui/non explicite, pas « ça vous intéresse ? ».
+> Le CTA est **un lien self-serve** : le prospect lance lui-même l'essai sur `/pro/espace/`, pas de rendez-vous, pas d'activation manuelle.
 
 ---
 
@@ -65,7 +65,8 @@ Bonjour {Prénom},
 Juste au cas où mon message serait passé sous la pile — la saison sargasses bat son
 plein et c'est maintenant que le brief sert le plus.
 
-Je peux activer votre essai 14 jours en 5 minutes, sans engagement. Je le lance ?
+Vous démarrez votre essai 21 jours en 2 minutes, sans carte, sans engagement, ici :
+sargasses-martinique.com/pro/espace/
 
 {TonPrénom}
 ```
@@ -80,8 +81,8 @@ Bonjour {Prénom},
 Je ne vais pas insister davantage. Pour info, voici l'état de vos plages ce matin
 selon le satellite : {1 ligne réelle — ex: « Grande Anse : propre · Le Diamant : modéré »}.
 
-Si un jour vous voulez recevoir ça chaque matin (+ l'alerte avant échouage), répondez
-juste « ok » et je vous active l'essai.
+Si un jour vous voulez recevoir ça chaque matin (+ l'alerte avant échouage), vous
+démarrez l'essai 21 jours vous-même ici : sargasses-martinique.com/pro/espace/
 
 Bonne saison,
 {TonPrénom}
@@ -93,33 +94,34 @@ Bonne saison,
 
 **« Oui / ça m'intéresse / activez »**
 ```
-Super. Je vous active l'essai 14 jours tout de suite. Sur quelles plages voulez-vous
-le brief (les plus proches de l'hôtel) ? Et un email pour le recevoir chaque matin ?
-Je vous envoie aussi le bout de code du widget pour votre site si vous le voulez.
+Super. Tout est self-serve : vous démarrez l'essai 21 jours et choisissez vos plages
+directement ici → sargasses-martinique.com/pro/espace/. Le 1er brief part le lendemain
+matin, et le bout de code du widget est dans votre espace pour le coller sur votre site.
 ```
-→ Puis : crée le brief (le pipeline tourne), envoie le 1er email le lendemain matin. À J+12, relance : « On continue à 79 €/mois ? Je vous envoie le lien de paiement (ou −2 mois en annuel). »
+→ L'essai et le brief se configurent dans `/pro/espace/` (le pipeline tourne). À J+18, le drip relance automatiquement : « On continue à 79 €/mois ? Lien de paiement dans votre espace (ou −2 mois en annuel). »
 
 **« C'est combien ? »**
 ```
 79 €/mois pour l'hôtel (widget + brief quotidien + alertes + prévision 7 jours), ou
-790 €/an (2 mois offerts). Mais commencez par l'essai 14 jours gratuit — vous décidez
-après l'avoir vu tourner.
+690 €/an (2 mois offerts). Mais commencez par l'essai 21 jours gratuit, sans carte —
+vous le lancez vous-même ici et vous décidez après l'avoir vu tourner :
+sargasses-martinique.com/pro/espace/
 ```
 
 **« Envoyez-moi de la doc / je vais voir »**
 ```
-Bien sûr — le plus parlant c'est de le voir en vrai : laissez-moi activer l'essai
-gratuit sur vos plages, vous recevez le 1er brief demain matin et vous jugez sur pièce.
-Ça vous va ?
+Bien sûr — le plus parlant c'est de le voir en vrai : démarrez l'essai gratuit sur vos
+plages en 2 min, vous recevez le 1er brief demain matin et vous jugez sur pièce.
+Tout est ici → sargasses-martinique.com/pro/espace/
 ```
-→ Toujours ramener à **l'action** (activer l'essai), pas au PDF.
+→ Toujours ramener à **l'action self-serve** (le lien `/pro/espace/`), pas au PDF.
 
 ---
 
 ## RÈGLES (mémo)
 
-1. **Manuel d'abord.** Pas d'automation tant que ce message n'a pas converti 1 hôtel payant.
-2. **10/jour**, depuis une adresse perso (pas alerte@ — protège la délivrabilité du domaine drip).
+1. **Self-serve, zéro call.** Chaque email route vers `/pro/espace/` où le prospect lance lui-même l'essai 21j — aucune activation manuelle, aucun rendez-vous.
+2. **Délivrabilité** : envoyer depuis une adresse dédiée (pas alerte@ — protège le domaine drip).
 3. **Relance** systématique J+3 et J+7 (80 % des réponses viennent des relances).
 4. **La seule métrique qui compte : un PAIEMENT.** Pas un « intéressant », pas un email collecté.
-5. **Go/no-go à J+14 :** 3 hôtels payants → on industrialise (automation b2b déjà construite). 0-1 sur 30-40 sollicitations sérieuses → le marché local est trop mince / la vente ne tient pas → on accepte le plafond ou on repense un pivot.
+5. **Go/no-go à J+21 :** 3 hôtels payants → on industrialise. 0-1 sur 30-40 sollicitations sérieuses → le marché local est trop mince / la vente ne tient pas → on accepte le plafond ou on repense un pivot.

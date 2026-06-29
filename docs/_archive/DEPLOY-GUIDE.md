@@ -26,6 +26,8 @@ Si conflit concurrency (workflow déjà en cours sur une run précédente) : il 
 
 ## Deploy Apps Script (backend)
 
+> **⚠️ BLOQUÉ en mode autonome.** `clasp push` / `clasp deploy` exigent un ordinateur ; le fondateur est 100 % mobile → impossible. **Ne crée JAMAIS une nouvelle action `Code.js`** : réutilise les actions existantes. Tout NOUVEL état serveur piloté → **Supabase via HTTP** (pilotable au mobile), JAMAIS Apps Script. Les commandes ci-dessous sont conservées pour référence / le jour où un ordinateur est disponible.
+
 Le code canonique vit dans `scripts/appscript/Code.js`. Deploy en 2 commandes :
 
 ```bash
@@ -45,16 +47,12 @@ node scripts/prepare-ftp.cjs        # → martinique-ftp/ + guadeloupe-ftp/
 node scripts/manual-ftp-deploy.cjs  # besoin .env avec FTP creds
 ```
 
-## Métriques 2026-04-17
+## Métriques (vivantes — ne pas figer ici)
 
-- **MRR** : €34,93/mois (7 payants × 4,99)
-- **Subscribers** : 58 (était 42 le 12 avril, +38% en 5 jours)
-- **Funnel** : 8776 sessions → 184 modal opens → 28 CTA → 14 redirect → 7 paiements
-- **Leaks mesurés** : 85% modal dismiss, 50% CTA→redirect (fix shipped), 50% redirect→payment
-- **A/B tests live** : `pw_cta_order` (control/sample_first) + `pw_prelude` (direct/prelude)
-- **SEO MQ** : position ~3,8 (all-time best)
-- **SEO GP** : 119 clk/j peak après fix cannibalization (session 38)
-- **Pipeline** : ERDDAP-live, stable
+- **Source de vérité** : `scripts/automation/data/daily-metrics.json`. Le bloc `stripe` y est la source du MRR (snapshot actuel : **€79,84/mois · 16 abonnés actifs** — base Stripe legacy). Les chiffres du jour (payments / emails / feedbacks) sont la dernière entrée du fichier.
+- **Modèle de paiement** : **Mollie pass-only** (paiement unique, plus d'abonnement) — EUR 7,99 / 14,99 / 24,99 €. Stripe ne sert plus de caisse (16 abos EUR legacy continuent d'y facturer ; liens USD désactivés).
+- **Funnel / A/B / SEO** : voir les références dédiées (table ci-dessous) et `NEXT_SESSION.md` pour le snapshot courant.
+- **Pipeline** : ERDDAP-live, stable.
 
 ## Fichiers canoniques par topic
 
@@ -63,7 +61,8 @@ node scripts/manual-ftp-deploy.cjs  # besoin .env avec FTP creds
 | Deploy technique | Ce fichier + `memory/reference_deploy.md` |
 | FTP | `DEPLOI-FTP.md` + `scripts/prepare-ftp.cjs` |
 | Apps Script | `memory/reference_apps_script_deploy.md` |
-| Stripe | `memory/reference_stripe_checkout.md` |
+| Paiement (Mollie, actuel) | `MOLLIE_MIGRATION.md` + `public/api/mollie.php` |
+| Stripe (legacy — 16 abos EUR, MRR only) | `memory/reference_stripe_checkout.md` |
 | Email system | `memory/reference_email_system.md` |
 | SEO | `memory/reference_seo_strategy.md` |
 | A/B tests | `memory/reference_ab_tests.md` |

@@ -21,7 +21,7 @@ Live sargassum (seaweed) monitoring for Caribbean and Florida beaches. One codeb
 
 ## Stack
 
-- **Frontend** — React 18 + Vite, Leaflet (lazy-loaded), PWA with service worker. No backend server: fully static hosting per domain.
+- **Frontend** — React 18 + Vite, a custom SVG map (WorldMapView/ArchipelView), PWA with service worker. No backend server: fully static hosting per domain. (A legacy `?nav=map` fallback remains for the old map mode.)
 - **Data pipeline** — Node.js scripts run 4×/day by GitHub Actions; outputs are plain JSON committed to this repo and deployed over FTPS.
 - **Multi-region engine** — one config file per region under `regions/`; new regions build as dedicated single-page apps via `VITE_REGION=<id> npm run build`.
 - **SEO** — 136+ static pages generated at build time for the French sites (per-beach pages, editorial content, sitemaps).

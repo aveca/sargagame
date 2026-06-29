@@ -4,7 +4,7 @@ Procédure exacte et reproductible pour ajouter une verticale (un domaine = une 
 Modèle de référence : les régions USD (`regions/puntacana.json`, `regions/rivieramaya.json`, `regions/florida.json`).
 Source de vérité unique = `regions/<id>.json` validé par `regions/_schema.json` et chargé par `regions/index.cjs`.
 
-> Régrégion candidate déjà préparée par ce playbook : **`regions/barbados.json`** (Barbados, USD, prête à brancher — voir §0).
+> Région candidate déjà préparée par ce playbook : **`regions/barbados.json`** (Barbados, USD, prête à brancher — voir §0).
 
 ---
 
@@ -17,11 +17,11 @@ Grille de décision pour la « meilleure » prochaine géo sargasses :
 | Volume de recherche sargassum/sargazo | fort | déjà couvert par `rivieramaya` (beach `rm004` Tulum) | en partie couvert par `puntacana` | **non couvert, demande réelle US/UK/CA** |
 | Exposition sargasses (intensité) | fort | forte | forte | **forte côte est/sud, ouest abritée → split per-beach à forte valeur** |
 | Langue de paiement | moyen | es/en | en/es | **EN natif** (US/UK/CA) → moins de friction copy |
-| Devise / ARPU | moyen | USD | USD | **USD $9.99/$79/$5.99** (mirror US existant) |
+| Devise / ARPU | moyen | USD | USD | **USD $5.99/$11.99/$19.99** (mirror US existant, pass-only) |
 | Cannibalisation interne | fort | OUI (chevauche rivieramaya) | OUI (chevauche puntacana) | **NON (île distincte, bbox isolée)** |
 | Concurrent branded daily | bonus | existant (howisthesargassum) | faible | **aucun branded daily consumer** |
 
-→ **Barbados** : marché anglophone solide, sargasses sévères, AUCUN chevauchement avec une région existante (Tulum et la R.D. le sont déjà), et un angle produit fort (ouest abrité vs est/sud exposé qui varie au jour le jour). Le pricing reprend le miroir USD à 3 niveaux (mensuel + annuel + trip-pass) — ce qui est justement le « trou » à combler côté EUR, mais ici on lance directement avec les 3 offres.
+→ **Barbados** : marché anglophone solide, sargasses sévères, AUCUN chevauchement avec une région existante (Tulum et la R.D. le sont déjà), et un angle produit fort (ouest abrité vs est/sud exposé qui varie au jour le jour). Le pricing reprend le modèle PASS-ONLY (paiement unique, pas d'abonnement) du miroir USD à 3 paliers : $5.99 / $11.99 / $19.99 (géo EUR : 7,99 / 14,99 / 24,99 €).
 
 ---
 
@@ -40,26 +40,22 @@ Grille de décision pour la « meilleure » prochaine géo sargasses :
 ### 1.2 Brancher la région (étape volontairement NON faite ici)
 - **`regions/index.cjs`** : aucune modif de code requise — `loadAll()` scanne tout `*.json` non préfixé `_`. Déposer le fichier suffit. (Ce playbook livre le JSON SANS l'activer ailleurs ; le brancher = simplement laisser le fichier en place + faire les étapes ci-dessous.)
 
-### 1.3 Backend paiement
-- **`public/api/create-checkout.php`** — SYNC MANUEL obligatoire (PHP ne lit pas le CJS) :
+### 1.3 Backend paiement (Mollie on-site, pass-only)
+- **`public/api/mollie.php`** — SYNC MANUEL obligatoire (PHP ne lit pas le CJS) :
   - Ajouter le domaine dans `$allowed` (CORS).
   - Ajouter `'https://<domain>' => '<id>'` dans `$ISLAND_BY_ORIGIN`.
-- **`public/api/stripe-config.php`** (non versionné, voir `.example.php`) :
-  - Ajouter le bloc `prices_by_region['<id>'] = ['monthly'=>'price_…','yearly'=>'price_…','tripPass'=>'price_…']`.
-  - Devise gérée par le flag USD côté PHP (`$isUsd`) selon la région.
-- **Cohérence** : `scripts/test-stripe-webhook.cjs` vérifie l'alignement domaines ↔ régions ; le lancer après modif.
+  - Ajouter `'<id>' => 'USD'` (ou `'EUR'`) dans `$CUR_BY_ISLAND`.
+  - L'allowlist anti-tampering des cents est `$allowedByCur` dans `mollie.php` : vérifier que les paliers de la devise (USD `599/1199/1999`, EUR `799/1499/2499`) y figurent ; aucune valeur par région à ajouter, c'est par devise.
+- **`public/api/mollie-config.php`** (gitignored, DÉJÀ déployé par FTP, voir `mollie-config.example.php`) :
+  - Les passes one-time sont définis dans le bloc `passes` du config (`cents` = allowlist + `days` = durée d'accès). Pas de `stripe-config.php` ni de `prices_by_region` à toucher : le pass-only ne crée aucun prix Stripe.
+- **Cohérence** : la voie LIVE est Mollie ; vérifier après modif l'alignement domaines ↔ régions ↔ devises directement dans `mollie.php` (`$allowed` / `$ISLAND_BY_ORIGIN` / `$CUR_BY_ISLAND` cohérents). `scripts/test-stripe-webhook.cjs` ne valide QUE l'attribution Stripe legacy, PAS le checkout Mollie actif — ne pas s'y fier pour la nouvelle géo.
 
-### 1.4 Stripe (dashboard — actions fondateur)
-- Créer 3 prix (monthly/yearly/tripPass) en USD, reporter les `price_…` dans `stripeProducts` du JSON **et** dans `stripe-config.php`.
-- Créer 3 Payment Links correspondants, reporter dans `paymentLinks` du JSON.
-- Vérifier que `stripe-webhook.php` attribue bien `metadata.island = <id>` (lifecycle invoice/subscription).
-
-### 1.5 Analytics / push (actions fondateur)
+### 1.4 Analytics / push (actions fondateur)
 - OneSignal : créer l'app → `onesignalAppId`.
 - GA4 : nouvelle propriété → `ga4Id`.
 - Microsoft Clarity : nouveau projet → `clarityProjectId`.
 
-### 1.6 SEO & contenu
+### 1.5 SEO & contenu
 - `routes` : 3 slugs canoniques (`season`, `best`, `weekly`) — voir miroir EN de `puntacana.json`.
 - `seo.homeTitle` / `seo.homeDesc` : titre live + desc orientés intention pré-voyage. Garder `freshTitles:true` et `dateModifiedFromPipeline:true`.
 - Les 136+ pages plage SEO sont générées par `vite.config.js` à partir des `beaches` inline de la région ; aucun fichier à écrire à la main.
@@ -97,9 +93,10 @@ node scripts/manual-ftp-deploy.cjs               # déploiements suivants
 
 ## 4. Pricing — règle business
 
-- Régions USD : 3 niveaux (`$9.99/mo` + `$79/an` + `$5.99 trip-pass`). C'est le standard à reprendre.
-- Régions EUR (MQ/GP) : aujourd'hui mensuel seul (`4,99€`). Le trou identifié = annuel EUR + trip-pass EUR — à combler séparément, PAS dans ce playbook.
-- Pour une nouvelle géo USD : reprendre le triple niveau dès le lancement (ARPU + offre annuelle = rétention).
+- Modèle B2C = **PASS-ONLY** (paiement UNIQUE, AUCUN abonnement) via Mollie on-site partout.
+- Régions USD : 3 paliers `$5.99 / $11.99 / $19.99`. C'est le standard à reprendre.
+- Régions EUR (MQ/GP) : 3 paliers `7,99 / 14,99 / 24,99 €`.
+- Pour une nouvelle géo USD : reprendre les 3 paliers pass-only dès le lancement.
 
 ---
 
@@ -107,16 +104,15 @@ node scripts/manual-ftp-deploy.cjs               # déploiements suivants
 
 - [ ] `regions/<id>.json` valide (`node -e "require('./regions/index.cjs').loadAll()"` sans throw).
 - [ ] Toutes les plages : `island === id`, dans la bbox, `beachFilter.island === id`.
-- [ ] `create-checkout.php` : domaine dans `$allowed` + `$ISLAND_BY_ORIGIN`.
-- [ ] `stripe-config.php` : `prices_by_region['<id>']` rempli (monthly/yearly/tripPass).
-- [ ] 3 `price_…` Stripe + 3 Payment Links créés et reportés (JSON + PHP).
+- [ ] `mollie.php` : domaine dans `$allowed` + `$ISLAND_BY_ORIGIN` + devise dans `$CUR_BY_ISLAND`.
+- [ ] `mollie.php` : les 3 paliers de la devise (cents) sont dans `$allowedByCur` ; passes définis dans le bloc `passes` de `mollie-config.php`.
 - [ ] `onesignalAppId`, `ga4Id`, `clarityProjectId` réels (plus de PLACEHOLDER).
 - [ ] Domaine acheté, DNS + HTTPS OK, `domain` exact dans le JSON.
 - [ ] `VITE_REGION=<id> npm run build` OK + `prepare-ftp` + `verify-ftp-ready`.
 - [ ] Déploiement FTP `--provision` puis vérif live (carte, plages, paiement, push).
-- [ ] `scripts/test-stripe-webhook.cjs` passe (cohérence domaines ↔ régions).
+- [ ] Cohérence Mollie vérifiée dans `mollie.php` (`$allowed` ↔ `$ISLAND_BY_ORIGIN` ↔ `$CUR_BY_ISLAND`). (`test-stripe-webhook.cjs` ne couvre QUE le legacy Stripe, pas la voie Mollie active.)
 - [ ] Pipeline data : la région apparaît dans le cycle Copernicus/ERDDAP 4×/j.
-- [ ] Test paiement réel bout-en-bout (checkout on-site + Payment Link) sur le nouveau domaine.
+- [ ] Test paiement réel bout-en-bout (checkout Mollie on-site, pass-only) sur le nouveau domaine.
 
 ---
 
@@ -124,6 +120,6 @@ node scripts/manual-ftp-deploy.cjs               # déploiements suivants
 
 - **Bug Miami/Cancún 2026-06-10** : si `beaches[].island !== region.id`, le front filtre sur `b.island === REGION.id` → ZÉRO plage rendue. `index.cjs` throw maintenant au build, mais re-vérifier après toute édition.
 - **bbox trop serrée** : si une plage sort de la bbox, `geoDetect` la rate et seule la marge data (+0.8°) la sauve. Garder une bbox qui englobe TOUTES les plages.
-- **PHP ne lit pas le CJS** : tout ajout de région nécessite un sync MANUEL dans `create-checkout.php` (+ `stripe-config.php`). Oublier = CORS bloqué ou « no price configured ».
+- **PHP ne lit pas le CJS** : tout ajout de région nécessite un sync MANUEL dans `mollie.php` (`$allowed` + `$ISLAND_BY_ORIGIN` + `$CUR_BY_ISLAND`). Oublier = CORS bloqué ou `region_not_supported`.
 - **Cannibalisation SEO** : ne JAMAIS lancer une géo qui chevauche une région existante (Tulum ⊂ rivieramaya, R.D. ⊂ puntacana). Une île/zone distincte = une bbox isolée.
 - **Ne jamais casser l'A/B** : ne pas toucher `abVariant()` ni le copy sous test dans `Sargasses_PROD.jsx` en branchant une région.

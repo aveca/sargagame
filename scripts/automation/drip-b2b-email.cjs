@@ -43,7 +43,7 @@ const REPLY_HINT = 'Répondez simplement à cet email — c\'est nous (l\'équip
 
 // Inclut les nouvelles sources d'INTENTION HAUTE de l'offre chiffrée (B2BModal 28/06 :
 // b2b_brief 29€ / b2b_pro 79€ / b2b_territoire) — ces leads veulent l'essai/le produit
-// payant, pas un brief gratuit perpétuel. La séquence vend l'essai 14j → abonnement.
+// payant, pas un brief gratuit perpétuel. La séquence vend l'essai 21j → abonnement.
 const { payUrlFor } = require('./lib/b2b-paylinks.cjs')
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire'])
 
