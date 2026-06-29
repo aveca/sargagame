@@ -496,16 +496,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             engagement). Mêmes icônes, texte honnête vis-à-vis de ce qui se passe réellement. */}
         <div className="pww-trust">
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{captureMode?_t(lang,"Offert","On us","Gratis"):PAY_LABEL}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Paiement unique","One-time","Pago único")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Sans abonnement","No subscription","Sin suscripción")}</em></div>
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
         </div>
 
-        {/* GARANTIE — masquée en capture : rien n'est facturé, un « remboursé » n'a pas
-            de sens (la promesse honnête est portée par le CTA + rassurances ci-dessus). */}
-        {!captureMode&&<div className="pww-guar">
-          <span className="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b><em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
-        </div>}
+        {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : modèle pass
+            one-time, accès numérique consommé immédiatement → pas de garantie de remboursement
+            volontaire. Réassurance honnête portée par le CTA + les 3 badges ci-dessus. */}
 
         {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
@@ -756,16 +753,13 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           {!captureMode&&perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
             <div className="pwx-tc"><span className="ic">{captureMode?"🎁":"🛡"}</span><b>{captureMode?_t(lang,"Offert","On us","Gratis"):(PAY_PROVIDER==="mollie"?"Mollie":"Stripe")}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Paiement unique","One-time","Pago único")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Sans abonnement","No subscription","Sin suscripción")}</em></div>
             <div className="pwx-tc"><span className="ic">✕</span><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
           </div>
-          {!captureMode&&<div className="pwx-guar">
-            <span className="gic">🛡️</span>
-            <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b>
-            <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
-          </div>}
+          {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : pass one-time,
+              accès numérique immédiat → pas de garantie de remboursement volontaire. */}
           {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
-              sans abo) sous la garantie — cash d'avance, zéro churn. Chemin pay_once
+              sans abo) — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
           {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
@@ -1934,7 +1928,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
               {icon:"🛡",title:PAY_LABEL,sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
-              {icon:"⏱",title:_t(lang,"30 jours","30 days","30 días"),sub:_t(lang,"Satisfait ou remboursé","Money-back","Reembolso garantizado")},
+              {icon:"⏱",title:_t(lang,"Paiement unique","One-time","Pago único"),sub:_t(lang,"Sans abonnement","No subscription","Sin suscripción")},
               {icon:"✕",title:NO_TRIAL?_t(lang,"2 clics","2 clicks","2 clics"):_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
               <div key={i} style={{padding:"10px 8px",borderRadius:10,
@@ -2373,19 +2367,19 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé "+PAY_LABEL,"No commitment · Cancel in 2 clicks · Secure "+PAY_LABEL+" payment","Sin permanencia · Cancela en 2 clics · Pago seguro "+PAY_LABEL)
             :_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
         </div>
-        {/* 2026-06-17 — GARANTIE proéminente : remplace l'essai gratuit comme
-            renversement de risque (#1 levier de conversion quand on retire le
-            trial — recherche paywall). Réelle (remboursement Stripe), ton calme. */}
+        {/* 2026-06-29 — Garantie « satisfait ou remboursé » RETIRÉE (pass one-time, accès
+            numérique immédiat). Réassurance = paiement unique / sans abonnement / accès direct,
+            ton calme. (Renversement de risque assuré par le verdict gratuit + le prix bas.) */}
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:12,
           padding:"11px 13px",borderRadius:13,background:"#0e3a28",forcedColorAdjust:"none",
           border:"2.5px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14"}}>
-          <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>🛡️</span>
+          <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>⚡</span>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-              {_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso de 30 días")}
+              {_t(lang,"Paiement unique, sans abonnement","One-time payment, no subscription","Pago único, sin suscripción")}
             </div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:2,lineHeight:1.3}}>
-              {_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}
+              {_t(lang,"Tu paies une fois, tu accèdes tout de suite. Rien à résilier.","Pay once, access right away. Nothing to cancel.","Pagas una vez, accedes enseguida. Nada que cancelar.")}
             </div>
           </div>
         </div>

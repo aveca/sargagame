@@ -41,7 +41,7 @@ Un satellite surveille la mer — données publiques Copernicus + NOAA — tradu
 
 Ce que le Pro inclut : alerte par plage · prévision 7 j · widget à votre marque · encart « Partenaire — {{nom}} » sur la fiche de {{plage}}, quand un voyageur vérifie avant de réserver (il ne touche jamais le verdict de la plage).
 
-**Essai : {{jours_essai}} jours gratuits, sans carte.** Ensuite, si ça vous sert : **{{prix_mois}}/mois** ou **{{prix_an}}/an**, garantie 30 j, résiliable. 100 % libre-service, zéro appel.
+**Essai : {{jours_essai}} jours gratuits, sans carte.** Ensuite, si ça vous sert : **{{prix_mois}}/mois** ou **{{prix_an}}/an**, résiliable. 100 % libre-service, zéro appel.
 
 **→ [Voir mes plages en direct & activer l'essai](https://{{domaine}}/pro/espace/?beach={{slug}}&name={{nom_url}}&partner={{partner}})**
 

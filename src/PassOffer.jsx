@@ -200,13 +200,9 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
           <p style={{ margin: "11px 0 0", textAlign: "center", fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.6)" }}>{_t(lang, <>Paiement <span style={G}>unique</span> · accès immédiat · aucun compte à créer</>, <>One-time <span style={G}>payment</span> · instant access · no account</>, <>Pago <span style={G}>único</span> · acceso inmediato · sin cuenta</>)}</p>
         </div>
 
-        {/* money-back */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 9, margin: "16px 0 0", padding: "0 2px" }}>
-          <span style={{ flex: "0 0 auto", marginTop: 1 }}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
-          </span>
-          <span style={{ fontSize: 12, lineHeight: 1.45, fontWeight: 600, color: "rgba(234,247,244,.7)" }}>{_t(lang, <>Pas la bonne plage ? <b style={{ color: "#fff", fontWeight: 800 }}>Remboursé, un seul email.</b> Sans condition.</>, <>Wrong beach? <b style={{ color: "#fff", fontWeight: 800 }}>Refunded, one email.</b> No questions.</>, <>¿Playa equivocada? <b style={{ color: "#fff", fontWeight: 800 }}>Reembolsado, un email.</b> Sin condiciones.</>)}</span>
-        </div>
+        {/* money-back « remboursé » RETIRÉ (2026-06-29 : pass one-time, accès numérique
+            immédiat → pas de garantie de remboursement volontaire). Réassurance « paiement
+            unique · accès immédiat » portée par la ligne ci-dessus. */}
 
         <div style={{ margin: "14px 0 2px", textAlign: "center", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           {_t(lang, "Paiement sécurisé Mollie · Pas d'abonnement · Pas de renouvellement", "Secure Mollie payment · No subscription · No auto-renew", "Pago seguro Mollie · Sin suscripción · Sin renovación")}

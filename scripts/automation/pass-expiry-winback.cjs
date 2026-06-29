@@ -111,7 +111,7 @@ function copy(island) {
         <p>Tu acceso al Vigía ha terminado. El sargazo no espera — la playa limpia de hoy puede no serlo mañana.</p>
         <p><b>Retoma un pase</b> y vuelve a recibir cada mañana LA playa sin sargazo, con pronóstico de 7 días y alertas.</p>
         <p style="text-align:center;margin:22px 0"><a href="${pay}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">Reactivar mi vigía</a></p>
-        <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · reembolso con un solo email. <a href="${map}" style="color:#0E7C66">O sigue con el mapa gratis</a>.</p>
+        <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · acceso inmediato. <a href="${map}" style="color:#0E7C66">O sigue con el mapa gratis</a>.</p>
       </div>`,
   }
   if (lang === 'en') return {
@@ -123,7 +123,7 @@ function copy(island) {
         <p>Your Watcher access has ended. Sargassum doesn't wait — today's clean beach may not be clean tomorrow.</p>
         <p><b>Grab a pass</b> and get THE sargassum-free beach every morning again, with the 7-day forecast and alerts.</p>
         <p style="text-align:center;margin:22px 0"><a href="${pay}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">Reactivate my watcher</a></p>
-        <p style="font-size:12px;color:#8a97a5">One-time · no subscription · refunded with one email. <a href="${map}" style="color:#0E7C66">Or keep using the free map</a>.</p>
+        <p style="font-size:12px;color:#8a97a5">One-time · no subscription · instant access. <a href="${map}" style="color:#0E7C66">Or keep using the free map</a>.</p>
       </div>`,
   }
   return {
@@ -135,7 +135,7 @@ function copy(island) {
         <p>Ton accès au Veilleur est terminé. Les sargasses n'attendent pas — la plage propre d'aujourd'hui ne le sera peut-être plus demain.</p>
         <p><b>Reprends un pass</b> et retrouve chaque matin LA plage sans sargasses, avec la prévision 7 jours et les alertes.</p>
         <p style="text-align:center;margin:22px 0"><a href="${pay}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">Réactiver mon veilleur</a></p>
-        <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · remboursé en un email. <a href="${map}" style="color:#0E7C66">Ou reste sur la carte gratuite</a>.</p>
+        <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · accès immédiat. <a href="${map}" style="color:#0E7C66">Ou reste sur la carte gratuite</a>.</p>
       </div>`,
   }
 }
