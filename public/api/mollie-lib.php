@@ -234,8 +234,28 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
 // au paiement, mais cadré « essai 30 j » (pas « abonnement actif »). MÊME mécanisme
 // Resend (cfg.resend_key, zéro nouveau secret). Best-effort : un échec d'envoi ne
 // DOIT jamais faire échouer l'activation de l'essai (le token est déjà rendu au front).
+/**
+ * mol_send_mail — envoi email HTML via le MTA local du cPanel (PHP mail()).
+ * Resend est RETIRÉ (cf. scripts/automation/lib/email-send.cjs ligne 13 « PLUS de Resend » :
+ * Node envoie en SMTP authentifié alerte@ ; la clé SMTP_PASS n'est PAS exposée côté PHP).
+ * Le site PHP tourne SUR le cPanel premium115.web-hosting.com → mail() relaie via l'Exim
+ * local EN TANT QUE le domaine, From aligné alerte@sargasses-martinique.com (SPF/DKIM OK,
+ * aucune clé requise). Best-effort (bool). -f = envelope sender (Return-Path) → SPF.
+ * Sujet encodé MIME base64 UTF-8 (emoji/accents). Remplace les appels Resend B2B.
+ */
+function mol_send_mail($to, $subject, $html, $replyTo = '') {
+    $to = is_array($to) ? implode(',', $to) : (string)$to;
+    if ($to === '') return false;
+    $h  = "From: Sargasses Pro <alerte@sargasses-martinique.com>\r\n";
+    $h .= "MIME-Version: 1.0\r\n";
+    $h .= "Content-Type: text/html; charset=UTF-8\r\n";
+    if ($replyTo !== '' && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $h .= 'Reply-To: ' . $replyTo . "\r\n";
+    $subj = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    return @mail($to, $subj, $html, $h, '-falerte@sargasses-martinique.com');
+}
+
 function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
-    if (empty($cfg['resend_key']) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
     // Plafond PAR DESTINATAIRE (indépendant de l'IP) : le cap par IP de _ratelimit.php
     // est contournable (CF-Connecting-IP forgé en direct-origin) → on borne aussi le
     // volume d'emails vers UNE adresse à 1/h, pour protéger l'inbox de la victime ET
@@ -254,23 +274,7 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
         . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
         . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès d\'essai. Gardez ce lien privé : il porte votre clé. À la fin de l\'essai, vous pourrez verrouiller l\'année depuis votre espace.</p>'
         . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Il regarde la mer, jamais vos clients.</p></div>';
-    $payload = json_encode([
-        'from'    => 'Sargasses Pro <alerte@sargasses-martinique.com>',
-        'to'      => [$email],
-        'subject' => $titre,
-        'html'    => $html,
-    ]);
-    $ch = curl_init('https://api.resend.com/emails');
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 10,
-    ]);
-    @curl_exec($ch);
-    @curl_close($ch);
-    return true;
+    return mol_send_mail($email, $titre, $html);
 }
 
 /**
@@ -279,11 +283,10 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
  * Funnel HYBRIDE (décision fondateur) : l'accès reste 100% self-serve instantané, MAIS
  * le secteur public a besoin d'un interlocuteur (devis, bon de commande, marché). Cet
  * email transfère la demande au fondateur pour qu'il cale le RDV depuis son mobile.
- * Réutilise le transport Resend de mol_b2b_trial_email (zéro secret nouveau). Best-effort.
+ * Envoi via mol_send_mail (MTA cPanel, Resend retiré). Best-effort.
  * Throttle 1/h par email prospect (anti-doublon/relais). $d = {email, org, littoral, phone, island}.
  */
 function mol_b2b_meeting_notify($cfg, $d) {
-    if (empty($cfg['resend_key'])) return false;
     $email = trim((string)($d['email'] ?? ''));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
     $dir = __DIR__ . '/data';
@@ -309,22 +312,6 @@ function mol_b2b_meeting_notify($cfg, $d) {
         . '</ul>'
         . '<p style="font-size:13px;color:#444;line-height:1.55"><strong>Action</strong> : réponds en 1 ligne pour caler 15 min + préparer le devis (PDF). Achat public = devis daté + CGV + SIRET sur demande, bon de commande / mandat administratif acceptés.</p>'
         . '<p style="font-size:12px;color:#999;margin-top:16px">Auto-alert from b2b-meeting.php — Le Veilleur</p></div>';
-    $payload = json_encode([
-        'from'     => 'Sargasses Pro <alerte@sargasses-martinique.com>',
-        'to'       => ['yacovassaraf@gmail.com'],
-        'reply_to' => $email,
-        'subject'  => '🟡 Territoire — ' . $orgTxt . ' veut un point (' . $litTxt . ')',
-        'html'     => $html,
-    ]);
-    $ch = curl_init('https://api.resend.com/emails');
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 10,
-    ]);
-    @curl_exec($ch);
-    @curl_close($ch);
-    return true;
+    $subject = '🟡 Territoire — ' . $orgTxt . ' veut un point (' . $litTxt . ')';
+    return mol_send_mail('yacovassaraf@gmail.com', $subject, $html, $email);
 }
