@@ -29,6 +29,10 @@ on:
         description: "Dossier IMAP"
         required: false
         default: "INBOX"
+      order:
+        description: "newest (les plus récents) ou oldest (les plus anciens, pour finir un backlog déjà entamé)"
+        required: false
+        default: "newest"
 
 jobs:
   backlog:
@@ -43,6 +47,7 @@ jobs:
           MAILBOX_IN: ${{ github.event.inputs.mailbox }}
           FOLDER: ${{ github.event.inputs.folder }}
           MAXN: ${{ github.event.inputs.max }}
+          ORDER: ${{ github.event.inputs.order }}
         run: |
           set -u
           MAILBOX="${MAILBOX_IN:-alerte@sargasses-martinique.com}"
@@ -67,8 +72,13 @@ jobs:
           fi
           echo "Messages présents dans la boîte : $TOTAL"
 
-          # 2) Garder les MAXN plus récents (numéros de séquence les plus hauts).
-          PICK=$(printf '%s\n' "$NUMS" | sort -n | tail -n "$MAXN")
+          # 2) Sélection : MAXN plus récents (tail) ou plus anciens (head, pour finir un
+          #    backlog déjà entamé sans re-transférer les mêmes mails).
+          if [ "${ORDER:-newest}" = "oldest" ]; then
+            PICK=$(printf '%s\n' "$NUMS" | sort -n | head -n "$MAXN")
+          else
+            PICK=$(printf '%s\n' "$NUMS" | sort -n | tail -n "$MAXN")
+          fi
           sent=0; failed=0
           for n in $PICK; do
             # Récupère le message brut (RFC822) — JAMAIS imprimé.
