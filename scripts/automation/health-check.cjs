@@ -153,7 +153,7 @@ async function sendAlert(subject, issues) {
   </div>`
   const { error } = await sendAlertMail({
     from: 'Sargasses Pipeline <alerte@sargasses-martinique.com>',
-    to: 'aveca@aveca.fr',
+    to: 'yacovassaraf@gmail.com',
     subject: `[Sargasses] ${subject}`,
     html,
   })
