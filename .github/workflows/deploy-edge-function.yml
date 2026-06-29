@@ -1,0 +1,32 @@
+name: Deploy Supabase Edge Function (moderate)
+
+# Déploie la fonction `moderate` (boutons ✅/❌ des emails de modération photo) SANS que le
+# fondateur touche l'éditeur Supabase. Déclenché à la main (workflow_dispatch). Inerte tant
+# que le secret SUPABASE_ACCESS_TOKEN n'est pas posé.
+#
+# Pré-requis (action fondateur, 1 fois) : Supabase → Account → Access Tokens → Generate →
+# ajouter le jeton en secret GitHub `SUPABASE_ACCESS_TOKEN`. Le `MODERATE_TOKEN` (déjà secret
+# GitHub, utilisé par notify-photos) est réutilisé comme secret de fonction.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: rswdmjtdzrucqzzukfmd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy moderate function (JWT off)
+        run: supabase functions deploy moderate --project-ref "$PROJECT_REF" --no-verify-jwt
+      - name: Set MODERATE_TOKEN function secret
+        run: supabase secrets set MODERATE_TOKEN="${{ secrets.MODERATE_TOKEN }}" --project-ref "$PROJECT_REF"
