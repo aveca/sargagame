@@ -1,5 +1,26 @@
 # NEXT_SESSION — sargagame
 
+> **💳 2026-06-29 — BOUCLE B2B SELF-SERVE COMPLÈTE (essai → relance → paiement mensuel/annuel). PR #213, #215, #216 MERGÉES sur `main`. Chaque change money-path revu en panel adverse (GO×3).**
+>
+> **Ce qui était cassé** : le mensuel 79 € (porte d'entrée par défaut) était câblé back (#210) mais SANS bouton d'achat ; l'essai n'envoyait pas le token par email (onglet fermé = accès perdu) ; aucune relance de conversion d'essai.
+>
+> **Livré & mergé (LIVE)** :
+> - **#213 — Token d'essai livré par email** : `b2b-trial.php` appelle `mol_b2b_trial_email()` (`mollie-lib.php`, Resend, zéro nouveau secret, throttle par destinataire 1/h) → l'hôtel reçoit le lien `/pro/espace/?k=token` (accès durable). + `sg_rate_limit('b2b_trial', 6)` (l'envoi d'email rendait l'endpoint relais-able). Réponse `{ok,token,days}` inchangée.
+> - **#215 — Mensuel 79 € achetable en self-serve** : `mollie.php create_subscription` option opt-in **`hosted`** (1er paiement récurrent SANS cardToken → Mollie héberge la page carte+mandat, retour `/pro/espace/`). Bouton **« S'abonner — 79 €/mois »** sur `/pro/espace/`. B2C (cardToken Components) INCHANGÉ. Au `paid`, le webhook (#210) crée l'abo + émet le token Pro.
+> - **#216 — Relance conversion essai J+18** : `drip-b2b-email.cjs` étape **`t18`** dédiée aux leads `b2b_trial` (gating essai↔essai, pas de nurture froide). Copy panel : perte de continuité (widget+alertes s'éteignent) + 1 CTA self-serve (annuel 690 € paylink + mensuel via espace). Dedup per-step.
+> - **Paylink annuel 690 € minté** (pipeline planifié, après #211/#212 retrait du 790 € + auto-heal `mollie-paylinks.cjs`). `b2b-paylinks.json` `pro_annual` = `690.00` LIVE.
+>
+> **⚠️ ACTION FONDATEUR (validation post-deploy, dashboard Mollie — toi seul)** :
+> 1. **1 vrai paiement test 79 €/mois** (checkout hébergé `/pro/espace/` → S'abonner) → confirme création abo récurrent + mandat.
+> 2. **1 vrai paiement test 690 €/an** (paylink) → confirme le lien régénéré.
+> 3. Confirmer que `mollie-config.php` (FTP) porte bien **`resend_key`** → sinon le token Pro (essai ET payant) n'est pas livré par email (l'abo se crée quand même, mais le lien d'accès n'arrive pas). C'est la seule dépendance qui peut faire échouer la boucle silencieusement.
+>
+> **RESTE (backlog B2B, par leverage décroissant — aucun client live aujourd'hui donc non urgent)** :
+> - **Copy froide drip b0-b13** (`drip-b2b-email.cjs`) porte ENCORE « en construction / parlons-en / interdit €-mois » (périmé : offre arrêtée + self-serve LIVE). À refondre en self-serve (panel copy) — viole ZÉRO-call. (Flaggé en #216.)
+> - **Garantie 30 j self-serve** (remboursement Mollie 1-clic) — money-path (refund API).
+> - **PartnerCard auto-activation** (`active:true`) au paiement Pro confirmé → nécessite Supabase (le webhook PHP ne peut pas commit `b2b-partner-meta.json` en repo). Aucun partenaire live → non urgent.
+> - **Copy EN/ES** dans `b2b-outreach.cjs` (îles non-`gp` retombent sur le template FR).
+
 > **🧭 2026-06-29 — AUDIT DE COHÉRENCE REPO (docs + code) vs apex `CLAUDE.md`. Branche `claude/ultracode-repo-audit-llo9lx`, PR #212. Forgé par orchestration multi-agents (workflows Ultracode : audit → vérif adverse → édition experts-rôles → critique → revue money-path ; ~80 agents).**
 >
 > **Pourquoi** : le nouveau `CLAUDE.md` fait autorité (état + mandat + money-path). Tout le repo (les `.md` actifs ET le code réel) a été croisé contre lui, chaque contradiction **prouvée par grep/node sur le code ACTUEL** (anti-faux-positif ; 1 faux positif écarté par la passe adverse — « 5 sites » est correct).
