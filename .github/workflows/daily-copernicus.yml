@@ -129,6 +129,15 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
 
+      # Segment « clients payants » (payments × subscription_events, moins désabos/bounces)
+      # → data/payers.json, consommé par relance-payers.cjs (envoi MANUEL, jamais auto).
+      - name: Build payers segment
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-payers.cjs
+
       # Weekend email « Bulletin du Veilleur » : DÉPLACÉ vers son propre workflow
       # .github/workflows/weekend-email.yml (cron 0 12 * * 5, SANS gate horaire).
       # Raison : l'ancienne gate `hour==12||13` ici sautait de façon FIABLE — les

@@ -1,0 +1,22 @@
+{
+  "_note": "Contenu de la relance ciblée aux CLIENTS PAYANTS (consommé par relance-payers.cjs). Édite librement subject/kicker/title/subtitle/bodyHtml/ctaText/ctaUrl par langue. {{NAME}} non dispo (on n'a que l'email) ; reste générique et chaleureux. L'envoi reste manuel : node scripts/automation/relance-payers.cjs --send (dry-run sans --send).",
+  "updatedAt": "2026-06-29",
+  "fr": {
+    "subject": "Une nouveauté pour vous (clients du Veilleur)",
+    "kicker": "Réservé à nos clients",
+    "title": "Merci d'être client — voici la suite",
+    "subtitle": "Vous faites partie des premiers à nous avoir fait confiance.",
+    "bodyHtml": "<p>Bonjour,</p><p>Vous avez débloqué la prévision sargasses du Veilleur — merci. On prépare des nouveautés pour les clients comme vous, et on voulait vous prévenir en premier.</p><p><strong>[Décris ici la nouveauté / l'offre.]</strong></p><p>Un mot, une question, une idée ? Répondez simplement à cet email, on lit tout.</p>",
+    "ctaText": "Ouvrir Le Veilleur",
+    "ctaUrl": "https://sargasses-martinique.com/"
+  },
+  "en": {
+    "subject": "Something new for you (Le Veilleur members)",
+    "kicker": "For our customers",
+    "title": "Thanks for being a customer — here's what's next",
+    "subtitle": "You were among the first to trust us.",
+    "bodyHtml": "<p>Hi,</p><p>You unlocked Le Veilleur's sargassum forecast — thank you. We're building new things for customers like you, and wanted you to hear it first.</p><p><strong>[Describe the new feature / offer here.]</strong></p><p>A word, a question, an idea? Just reply to this email — we read everything.</p>",
+    "ctaText": "Open Le Veilleur",
+    "ctaUrl": "https://sargasses-martinique.com/"
+  }
+}
