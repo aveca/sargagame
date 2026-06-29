@@ -3,11 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <!-- theme-color RETIRÉ : en Safari iOS il peignait la barre du bas en OR plein
-         (#E8A800) → « bande » jaune visible sous le contenu. Sans lui, Safari rend sa
-         barre translucide qui fond le contenu derrière (look bord-à-bord). En standalone
-         (app installée) il n'y a pas de barre ; le rendu plein écran est géré par
-         apple-mobile-web-app-status-bar-style + --sg-vh. Android : manifest background_color. -->
+    <!-- theme-color piloté en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein → on l'a
+         d'abord RETIRÉ. Mais sans theme-color, Safari iOS (≥15, surtout la barre flottante
+         « Liquid Glass » d'iOS 26) ÉCHANTILLONNE la couleur du contenu derrière sa barre basse :
+         elle re-virait à l'or en captant le CTA doré, et changeait de teinte selon l'écran
+         (« bande » mouvante en bas, signalée en navigateur — pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = même fond que html (cadre sombre déjà utilisé
+         pour combler le standalone) → barre basse Safari constante, fond avec l'app, jamais dorée.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -20,6 +24,11 @@
          (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
       (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) → barre basse Safari iOS constante
+           (sinon elle échantillonne le contenu doré = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
         function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
         /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
            ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0

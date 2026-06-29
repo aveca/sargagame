@@ -508,7 +508,8 @@ function writeRegionIndex(region, out) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <!-- theme-color retire : peignait la barre Safari iOS en or plein (bande jaune). -->
+    <!-- theme-color pilote en JS (#0d1117 = cadre sombre app) : sinon Safari iOS echantillonne
+         le contenu dore derriere sa barre basse -> bande or mouvante en navigateur (pas en PWA). -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -517,6 +518,9 @@ function writeRegionIndex(region, out) {
          bas reel -> bande vide en bas. On mesure la vraie hauteur (window.innerHeight =
          plein ecran sous viewport-fit=cover) -> --sg-vh, #root + html/body s'y collent. */
       (function(){var d=document.documentElement;
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
         function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
         if(isSA())d.classList.add('sg-standalone')
         function vh(){var h=window.innerHeight;if(isSA()&&window.screen&&screen.height>h)h=screen.height;d.style.setProperty('--sg-vh',h+'px')}
