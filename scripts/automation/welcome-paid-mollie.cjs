@@ -97,6 +97,7 @@ function copy(island) {
         ${btn('Abrir mi mapa', open)}
         <p style="font-size:13px;color:#1a2b3c">¿Un amigo sufre con el sargazo? <b>Compártele El Vigía</b> — ayúdale a no perder un día de playa.</p>
         <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · acceso inmediato.</p>
+        <p style="font-size:10.5px;color:#aab4bd;margin-top:6px">Solicitaste el acceso inmediato a tu pase: al haberse abierto el contenido digital, el derecho de desistimiento de 14 días ya no se aplica.</p>
       </div>`,
   }
   if (lang === 'en') return {
@@ -110,6 +111,7 @@ function copy(island) {
         ${btn('Open my map', open)}
         <p style="font-size:13px;color:#1a2b3c">A friend struggling with sargassum? <b>Share the Watchman</b> — help them never waste a beach day.</p>
         <p style="font-size:12px;color:#8a97a5">One-time · no subscription · instant access.</p>
+        <p style="font-size:10.5px;color:#aab4bd;margin-top:6px">You requested immediate access to your pass: as the digital content has been opened, the 14-day right of withdrawal no longer applies.</p>
       </div>`,
   }
   return {
@@ -123,6 +125,7 @@ function copy(island) {
         ${btn('Ouvrir ma carte', open)}
         <p style="font-size:13px;color:#1a2b3c">Un ami galère avec les sargasses ? <b>Partage-lui Le Veilleur</b> — évite-lui de gâcher une journée plage.</p>
         <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · accès immédiat.</p>
+        <p style="font-size:10.5px;color:#aab4bd;margin-top:6px">Tu as demandé l'accès immédiat à ton pass : le contenu numérique étant ouvert, le droit de rétractation de 14 j ne s'applique plus.</p>
       </div>`,
   }
 }

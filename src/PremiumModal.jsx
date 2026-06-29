@@ -2682,6 +2682,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               ?_t(lang,"Sans engagement · Annule en 2 clics · "+PAY_LABEL+" sécurisé","No commitment · Cancel in 2 clicks · Secured by "+PAY_LABEL,"Sin compromiso · Cancela en 2 clics · "+PAY_LABEL+" seguro")
               :_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
           </div>
+          {/* Consentement contenu numérique (verdict panel 2026-06-29 : disclosure légère
+              cadrée « gain », JAMAIS une case bloquante « je renonce »). Porte les 2 volets
+              légaux (accès immédiat demandé + rétractation 14 j caduque) ; le consentement
+              est porté par l'acte de paiement, tracé en metadata Mollie (create_payment).
+              Masquée si ?consent=1 (case explicite dormante affichée) → pas de doublon. */}
+          {!consentFlag&&!PAY_CAPTURE_ONLY&&<div style={{textAlign:"center",marginTop:8,fontSize:10,lineHeight:1.45,color:"rgba(255,255,255,.34)"}}>
+            {_t(lang,"Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert.","Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open.","Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso.")}{" "}
+            <a href="/cgv.html" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
+          </div>}
           {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout
               100% on-site). En cas d'échec de montage : bouton Réessayer (recharge
               propre), jamais de redirect off-site. */}

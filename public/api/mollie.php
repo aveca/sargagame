@@ -103,6 +103,18 @@ if ($action === 'create_payment') {
     $myRef = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['myReferralCode'] ?? ''));
     if (!preg_match('/^REF-[A-Z0-9]{6}$/', $myRef)) $myRef = '';
     if ($referredBy && $myRef && $referredBy === $myRef) $referredBy = ''; // anti-auto-parrainage
+    // Consentement « contenu numérique fourni immédiatement » (preuve opposable : le client a
+    // demandé l'accès immédiat et reconnu la caducité du droit de rétractation 14 j). Tracé en
+    // metadata Mollie + horodatage front. Cf. /remboursement.html + disclosure au checkout.
+    $consentMeta = [];
+    $consentIn = $input['consent'] ?? null;
+    $consentGiven = is_array($consentIn) ? !empty($consentIn['accepted']) : !empty($consentIn);
+    if ($consentGiven) {
+        $consentMeta['consent_immediate_access'] = '1';
+        $cv = preg_replace('/[^0-9-]/', '', is_array($consentIn) ? (string)($consentIn['v'] ?? '') : '');
+        if ($cv !== '') $consentMeta['consent_version'] = substr($cv, 0, 20);
+        $consentMeta['consent_ts'] = gmdate('c'); // horodatage SERVEUR (preuve plus fiable que le client)
+    }
     $value = number_format($cents / 100, 2, '.', '');
     $payParams = [
         'amount'      => ['currency' => $currency, 'value' => $value],
@@ -111,6 +123,7 @@ if ($action === 'create_payment') {
         'webhookUrl'  => $returnBase . '/api/mollie-webhook.php',
         'metadata'    => array_merge(
             ['island' => ($island !== '' ? $island : 'mq'), 'pass' => $passKey, 'plan' => $passKey, 'source' => $source, 'email' => $email],
+            $consentMeta,
             $referredBy ? ['referred_by' => $referredBy] : [],
             $myRef ? ['referral_code' => $myRef] : []
         ),
