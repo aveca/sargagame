@@ -22,10 +22,13 @@ const OUT_PATH = path.join(__dirname, '..', '..', 'public', 'api', 'b2b-paylinks
 const DRY = process.argv.includes('--dry')
 const REDIRECT = 'https://sargasses-martinique.com/?pro_paid=1'
 
-// Grille B2B annuelle (prépaiement). 2 mois offerts vs mensuel (29/79 ×10).
+// Grille B2B annuelle (prépaiement). Décision pricing 2026-06-29 (panel) : Pro annuel
+// 790→690 € (sous la barre des 700, « 2 mois offerts » vs 79 €/mois). Brief inchangé.
+// L'annuel reste l'ancre/option « verrouiller » ; le mensuel récurrent (79/29 €) est la
+// porte d'entrée par défaut, à câbler en plans Mollie (mollie-config.php, action fondateur).
 const TIERS = [
   { id: 'brief_annual', value: '290.00', label: 'Sargasses Pro — Brief (abonnement annuel)' },
-  { id: 'pro_annual',   value: '790.00', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
+  { id: 'pro_annual',   value: '690.00', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
 ]
 
 function loadKey() {

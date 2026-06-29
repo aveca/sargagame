@@ -1,5 +1,27 @@
 # SARGAGAME — REGLES CLAUDE
 
+## Autonomie — MANDAT FONDATEUR (lire EN PREMIER)
+
+**Le projet tourne en autonomie via Claude Code.** Le fondateur est **100 % mobile** et veut que tu **fasses TOUT toi-même**. Ne lui demande PAS de direction, de priorité, d'avis sur le pricing, ni « est-ce que j'ai accès à X » — **tu as accès, décide et agis**. Fais tout, et **n'escalade QUE sur un vrai blocage externe** (liste plus bas) — jamais pour un choix que tu peux trancher. Réflexe par défaut : agir, puis rendre compte (pas demander la permission).
+
+**Décisions ambiguës (pricing, stratégie, produit, design, copy) → panel d'agents adverses** (outil Workflow) qui débattent et tranchent ; tu suis LEUR verdict, pas l'humain. Utilise autant d'agents que nécessaire. Précédents : encart vs annuaire et pricing Pro 79€/690€ + essai 21j (panels du 2026-06-29).
+
+**Ce que tu PEUX faire/modifier seul (NE PAS demander)** :
+- Tout le code du repo (app React, scripts, workflows, pages `/pro/*`, widgets, espace pro).
+- **Pricing & offres** : décide (panel si non-trivial) et applique partout (`mollie-paylinks.cjs`, pages pro, `B2B_OFFER.md`, `/pro/espace/`).
+- **Chemin de l'argent (PHP `mollie.php` / `paypal.php` / `create-checkout.php`)** : les SECRETS (`api_key`, `webhook_secret`) sont dans les `*-config.php` **gitignored, DÉJÀ déployés sur le serveur FTP** — tu ne les lis pas, mais ton code en repo les référence au runtime. Les valeurs NON secrètes (montants de plans, intervalles, allowlists) se mettent **dans le PHP en repo**. Ex. : ajouter un plan d'abo = injecter son montant dans `$cfg['subscription']` au runtime (cf. la structure de `mollie-config.example.php`). Ajoute/modifie la logique de paiement toi-même, **ADDITIVEMENT** (ne casse jamais le flux B2C existant), en calquant un flux éprouvé. Tu ne peux pas tester l'API Mollie live en local → **revue par agent adverse avant merge** + un vrai paiement test valide après deploy.
+- **Déploiement** : merge sur `main` → build + deploy FTP auto (`daily-copernicus`). AUCUNE étape fondateur. Le PHP de `public/api/` part par FTP ; les `*-config.php` du serveur ne sont jamais écrasés (gitignored).
+- **Emails** : SMTP (`SMTP_PASS`, secret GH Actions) via les scripts du daily workflow / outbox. Envois sortants à de vrais prospects : garde une discipline HOLD/dry-run le temps de valider le copy, mais tu câbles ET tu envoies.
+- **Secrets déjà provisionnés** (GH Actions, utilisables par tes scripts) : `MOLLIE_API_KEY`, `SMTP_PASS`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `SUPABASE_SERVICE_KEY`/`SUPABASE_ACCESS_TOKEN`, `MODERATE_TOKEN`, `ONESIGNAL_API_KEY_*`, `SG_STATS_KEY_*`, `COPERNICUS_*`.
+
+**⚠️ Les SEULS vrais blocages (à escalader, et seulement ceux-là)** :
+- **Apps Script (`scripts/appscript/Code.js`)** : toute modif ⇒ `clasp push` ⇒ un ORDINATEUR ⇒ fondateur mobile ⇒ **BLOQUÉ**. Donc **ne crée JAMAIS de nouvelle action Code.js**. Réutilise les actions EXISTANTES (ex. `POST {type:'email_signup', email, source, island}` sur l'URL `exec` → ajoute à l'onglet `emails`, zéro push). Pour tout NOUVEL état serveur piloté → **Supabase** (HTTP, pilotable au mobile, déjà en place pour les photos), JAMAIS Apps Script.
+- Un compte / secret tiers neuf que tu ne peux pas auto-provisionner ; une action physique ou légale ; une dépense que tu ne peux pas autoriser.
+
+**Ce qui n'est PAS un blocage (ne demande PAS)** : le pricing, le copy/storytelling, quelle feature construire, « puis-je toucher X », l'ordre des priorités, le design. Tu tranches (seul ou par agents) et tu livres.
+
+**Principe produit (DUR)** : tout en **self-service, ZÉRO call**. La vente se fait 100 % par email + site (dashboards prêts, paiement self-serve). Jamais de « parlons-en / appelez-moi / prenons rendez-vous ».
+
 ## Session Startup
 
 **Raccourci** : `npm run session` → `scripts/cursor-session-startup.cjs` regroupe les checks ci-dessous + load mémoire projet.
