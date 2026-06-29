@@ -24,6 +24,10 @@
  *   IMAP_PASS / SMTP_PASS  mot de passe de la boîte alerte@ (jamais loggué)
  *   FOUNDER_EMAIL          destinataire du digest (défaut hardcodé ci-dessous)
  *   SEND                   '1' pour envoyer + marquer \Seen ; sinon dry-run
+ *   SEAL                   '1' = marque TOUS les UNSEEN actuels \Seen SANS rien
+ *                          envoyer (scelle les messages déjà traités à la main
+ *                          AVANT d'activer le cron en SEND=1, pour éviter un
+ *                          accusé redondant). Priorité sur SEND. One-shot manuel.
  */
 const path = require('path')
 const { ImapFlow } = require('imapflow')
@@ -31,6 +35,7 @@ const { simpleParser } = require('mailparser')
 const { sendEmail, brandHeader } = require(path.join(__dirname, 'lib', 'email-send.cjs'))
 
 const SEND = process.env.SEND === '1'
+const SEAL = process.env.SEAL === '1'
 const CAP = 50
 
 // IMAP — même boîte que l'envoi. Host/user/port non sensibles ; seul le pass l'est.
@@ -176,6 +181,30 @@ async function main() {
   } catch (e) {
     console.error('Connexion/auth IMAP échouée :', e && e.message ? e.message : 'erreur inconnue')
     process.exit(1)
+  }
+
+  // ── Mode SEAL (priorité sur SEND) : marque TOUS les UNSEEN actuels \Seen sans
+  //    rien envoyer ni classer. Sert à sceller les messages déjà traités à la main
+  //    (ex. JC, julien) AVANT d'activer le cron en SEND=1, pour ne PAS leur envoyer
+  //    d'accusé redondant. Aucun cap : on scelle l'inbox entière. Zéro PII loggué.
+  if (SEAL) {
+    let lockS
+    let sealed = 0
+    try {
+      lockS = await client.getMailboxLock('INBOX')
+      const uids = await client.search({ seen: false }, { uid: true })
+      if (uids && uids.length) {
+        await client.messageFlagsAdd(uids, ['\\Seen'], { uid: true })
+        sealed = uids.length
+      }
+    } catch (e) {
+      console.error('[support-inbox] SEAL — échec marquage \\Seen :', e && e.message)
+    } finally {
+      if (lockS) lockS.release()
+    }
+    console.log(`[support-inbox] SEAL — ${sealed} message(s) UNSEEN scellé(s) \\Seen (aucun envoi).`)
+    await client.logout()
+    return
   }
 
   const items = [] // {uid, from, subject, snippet, cat}
