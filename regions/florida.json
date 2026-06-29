@@ -102,13 +102,7 @@
       "status": "avoid",
       "kids": true,
       "snorkel": false,
-      "parking": true,
-      "webcam": {
-        "type": "youtube",
-        "id": "IG04qlJFiz8",
-        "label": "South Beach — Collins Ave",
-        "provider": "ZeroEight"
-      }
+      "parking": true
     },
     {
       "id": "fl003",
