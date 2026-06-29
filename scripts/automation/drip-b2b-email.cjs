@@ -146,35 +146,30 @@ function build(step, sub, ctx) {
   const isBrief = sub.source === 'b2b_brief' // petit pro (gîte/resto/club) → 29€
   const who = isColl ? 'votre territoire' : 'votre établissement'
   const beaches = isColl ? 'vos plages' : 'votre plage'
-  // Prix par tier (grille B2BModal) : territoire 199 · brief 29 · pro/hôtel 79.
-  // B2B est PASS-ONLY comme le grand public et l'offre dédiée est EN CONSTRUCTION
-  // (paliers Brief/Pro/Territory non câblés — Truth Pack). On ne chiffre donc PAS
-  // un abonnement mensuel ici (interdit : « abonnement », « €/mois », « 2 mois offerts »).
-  // L'action B2B aujourd'hui = « parlons-en ». Variables prix neutralisées.
-  const priceShort = ''
-  const priceLong = ''
+  // Offre B2B ARRÊTÉE et 100 % SELF-SERVE (pricing 2026-06-29) : Pro 79 €/mois ou
+  // 690 €/an (2 mois offerts), essai 21 j gratuit sans carte, garantie 30 j ; Brief
+  // 29 €/mois (petit pro), Territory dès 199 €/mois. Tout s'active/se paie sur
+  // /pro/espace/ (essai instantané, mensuel hébergé #215, annuel paylink). ZÉRO call :
+  // jamais « parlons-en / rendez-vous ». (Ancien cadrage « en construction » = périmé.)
   const island = (sub.island || 'MQ').toUpperCase()
   const name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
   const domain = island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
-  // Self-serve : le deep-link ?pro=1 ouvre l'activation du brief gratuit dans
-  // l'app (aucun appel). Remplace les anciennes landings /pro/* (inexistantes).
-  const proPath = `https://${domain}/?pro=1`
+  // Hub self-serve : /pro/espace/ (essai 21 j + abo mensuel/annuel). Aucun appel.
+  const proPath = `https://${domain}/pro/espace/`
   const { proof, brief } = ctx
 
   if (step === 'b0') {
-    const subject = 'Le Veilleur Pro — vos plages, et notre fiabilité publiée'
+    const subject = 'Votre plage, surveillée. Et vos clients prévenus avant vous.'
     const inner = `${brandHeader('Bienvenue', 'Le Veilleur · Veille côtière', `L'état réel de ${beaches} au service de ${who}.`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Merci de votre intérêt. Une plage envahie un matin, c'est un client déçu, parfois un avis amer — et vous l'apprenez souvent en même temps que lui. Le Veilleur vous fait passer de l'autre côté : celui qui connaît la fin de l'histoire avant ses clients. En clair, pour ${who} :</div>
-      <ul style="font-size:14px;color:#444;line-height:1.7;padding-left:18px;margin:14px 0">
-        <li>L'état réel de ${beaches} <strong>chaque matin</strong>, mesuré au satellite — pas une moyenne d'île.</li>
-        <li>L'alerte <strong>avant</strong> l'échouage, pour anticiper le ramassage et prévenir vos clients.</li>
-        <li>Une fiabilité que nous <strong>publions et auditons chaque jour</strong>.</li>
-      </ul>
+      <div style="font-size:15px;color:#333;line-height:1.6">Vous avez voulu en savoir plus sur Le Veilleur. Sans détour, voici ce qu'il fait pour ${who}.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Il regarde la mer, jamais vos clients. Un widget à vos couleurs affiche l'état de ${beaches}. Des alertes plage par plage dès que le vent tourne. Une prévision à 7 jours, chaque matin.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Personne n'aime découvrir les algues une fois les valises ouvertes.</div>
       ${proofBlock(proof)}
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:4px">La veille côtière dédiée à ${who} est <strong>en cours de construction</strong> — l'offre se précise. En attendant, voyez l'état réel de ${beaches} en direct, gratuitement, et si l'idée vous parle, on en discute.</div>
-      <div style="text-align:center;margin-top:14px">${cta('Voir ' + beaches + ' en direct', proPath)}</div>
-      <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT} Envie d'aller plus loin ? Répondez « parlons-en ».</div>
+      <div style="font-size:14px;color:#444;line-height:1.6">La preuve avant la promesse : nous publions nos erreurs, datées et par régime — 76 % à 79 % de prévisions justes selon la saison. Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/" style="color:#0D7C66">Voyez notre taux réel.</a></div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai dure <strong>21 jours, gratuit, sans carte</strong>. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours. Tout en libre-service.</div>
+      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai gratuit 21 jours", proPath)}</div>
+      <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
@@ -188,8 +183,9 @@ function build(step, sub, ctx) {
       <div style="font-size:13px;color:#666;margin-bottom:6px">Meilleure plage suivie aujourd'hui (${name})</div>
       <div style="font-size:22px;font-weight:800;color:#0A1714">${brief.bestName}</div>
       <div style="display:inline-block;background:#FFC72C;color:#0A1714;font-weight:800;font-size:14px;padding:7px 14px;border-radius:999px;margin:10px 0">${brief.bestStatus}${sc}</div>
-      <div style="font-size:13px;color:#444;line-height:1.6;margin-top:8px">${brief.cleanCount}/${brief.totalCount} plages suivies sont propres en ce moment. C'est exactement la lecture quotidienne — par plage, avec la prévision 7 jours — que recevrait votre équipe.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Le voir sur ' + beaches, proPath)}</div>
+      <div style="font-size:13px;color:#444;line-height:1.6;margin-top:8px">${brief.cleanCount}/${brief.totalCount} plages suivies sont propres en ce moment. C'est exactement la lecture quotidienne — par plage, avec la prévision 7 jours — que recevrait votre équipe. Le cadeau d'abord, sans engagement.</div>
+      <div style="font-size:13px;color:#666;line-height:1.55;margin-top:10px">Devenez celui qui connaît la fin de l'histoire avant ses invités. Voyez-le en direct sur ${beaches} : essai 21 jours, sans carte.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Voir mes plages en direct — essai 21 jours', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -204,23 +200,25 @@ function build(step, sub, ctx) {
     <div style="background:#fff;padding:24px 20px">
       <div style="font-size:15px;color:#333;line-height:1.6">Les cartes gratuites donnent un risque régional, en moyenne. Nous, on lit la côte baie par baie — et surtout, on publie notre taux d'erreur, daté et par régime. C'est ça qu'un outil gratuit ne fait pas.</div>
       ${proofBlock(proof)}
-      <div style="font-size:14px;color:#444;line-height:1.6">${roi}</div>
-      <div style="text-align:center;margin-top:18px">${cta('Voir le palmarès complet', 'https://' + domain + '/fiabilite/')}</div>
+      <div style="font-size:14px;color:#444;line-height:1.6">${roi} Le palmarès complet, daté, est sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>.</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">Essai 21 jours, sans carte. Ensuite 79 €/mois ou 690 €/an (2 mois offerts), garantie 30 jours${isBrief ? ' · Brief à 29 €/mois pour les plus petits' : ''}. Zéro appel, tout en libre-service.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Activer mon essai 21 jours', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
 
   if (step === 'b13') {
-    // B2B sous-construction : pas de checkout abonnement ici (interdit). On boucle
-    // sur l'outcome et on demande l'échange humain — « parlons-en » (B2B arc).
-    const subject = `Veiller ${beaches} toute la saison — on en parle ?`
-    const inner = `${brandHeader('On en parle ?', 'Le Veilleur · Veille côtière', `${beaches}, veillées chaque matin`)}
+    // Closing self-serve (offre arrêtée + payable en ligne) : statut + saison qui ne
+    // s'arrête pas + UN CTA self-serve (essai/verrouiller l'année). ZÉRO « parlons-en ».
+    const subject = `La mer ne s'arrête pas le 1er septembre`
+    const inner = `${brandHeader('Toute la saison', 'Le Veilleur · Veille côtière', `${beaches}, veillées chaque matin`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">Ces derniers jours, vous avez vu ce que donne Le Veilleur sur ${beaches} — l'état réel chaque matin, l'alerte <em>avant</em> l'échouage, la prévision 7 jours, et une fiabilité publiée plutôt que promise.</div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">L'outcome est simple : <strong>zéro surprise pour le client qui réserve, donc zéro déception, donc un avis serein.</strong></div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">La veille côtière dédiée aux établissements est <strong>en cours de construction</strong> ; l'offre se précise. Plutôt que de vous vendre un palier qui n'existe pas encore, je préfère vous montrer vos plages et caler ensemble ce qui aurait du sens pour ${who}.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Répondre : parlons-en', 'mailto:' + FROM.replace(/.*<|>.*/g, '') + '?subject=' + encodeURIComponent('Veille côtière — ' + name))}</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">La haute saison passe. Les algues, non. Septembre, octobre : c'est souvent là que ça frappe, quand plus personne ne regarde.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Vous, vous pouvez regarder déjà : verdict plage par plage, chaque matin, mesuré au satellite. Et nos erreurs restent publiques — 76 % à 79 % de prévisions justes selon la saison, sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Restez celui qui connaît la fin de l'histoire avant ses invités, toute la saison.</div>
+      <div style="font-size:14px;color:#0D1E1C;line-height:1.6;margin-top:12px">L'essai 21 jours est sans carte et garanti 30 jours. Pour verrouiller l'année : 690 € (2 mois offerts) — sinon 79 €/mois, en un clic.</div>
+      <div style="text-align:center;margin-top:18px">${cta("Démarrer l'essai (21 j, sans carte)", proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
