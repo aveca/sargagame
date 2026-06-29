@@ -68,8 +68,14 @@ async function main() {
   if (!key) { console.log('MOLLIE_API_KEY absent — no-op (rien créé).'); saveOut(out); return }
   if (key.startsWith('test_')) console.log('⚠️  clé TEST (test_) — liens en mode test (pas de vrai argent).')
   for (const tier of TIERS) {
-    if (out.links[tier.id] && out.links[tier.id].url) { console.log(`  = ${tier.id} déjà présent`); continue }
-    if (DRY) { console.log(`  ~ ${tier.id} (${tier.value} €) serait créé`); continue }
+    const existing = out.links[tier.id]
+    // Idempotent : un lien déjà présent au BON montant n'est pas recréé.
+    if (existing && existing.url && existing.value === tier.value) { console.log(`  = ${tier.id} déjà présent (${tier.value} €)`); continue }
+    // Auto-réparation : si le montant du tier a changé (ex. pricing panel 790→690 €),
+    // le lien stocké est périmé → on en frappe un neuf qui écrase l'ancien (sinon le
+    // garde idempotent figerait l'ancien prix indéfiniment).
+    if (existing && existing.url && existing.value !== tier.value) { console.log(`  ~ ${tier.id} prix changé ${existing.value}→${tier.value} € — recrée le lien`) }
+    if (DRY) { console.log(`  ~ ${tier.id} (${tier.value} €) serait ${existing ? 'recréé' : 'créé'}`); continue }
     try {
       const link = await createLink(key, tier)
       out.links[tier.id] = { ...link, createdAt: new Date().toISOString() }
