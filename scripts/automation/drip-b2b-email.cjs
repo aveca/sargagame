@@ -45,7 +45,7 @@ const REPLY_HINT = 'Répondez simplement à cet email — c\'est nous (l\'équip
 // b2b_brief 29€ / b2b_pro 79€ / b2b_territoire) — ces leads veulent l'essai/le produit
 // payant, pas un brief gratuit perpétuel. La séquence vend l'essai 21j → abonnement.
 const { payUrlFor } = require('./lib/b2b-paylinks.cjs')
-const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire'])
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request', 'b2b_brief', 'b2b_pro', 'b2b_territoire', 'b2b_trial'])
 
 // Noms lisibles des 20 plages suivies (miroir track-record / BEACHES_META).
 const BEACH_NAMES = {
@@ -225,6 +225,25 @@ function build(step, sub, ctx) {
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
+  if (step === 't18') {
+    // Relance conversion essai → payant (J+18, avant l'expiration J+21). L'offre B2B
+    // est ARRÊTÉE et SELF-SERVE (pricing 2026-06-29) : annuel 690 € payable direct via
+    // le paylink Mollie, mensuel 79 €/mois depuis l'espace (checkout hébergé #215).
+    // Pivot émotionnel = perte de continuité (widget + alertes s'éteignent à la fin).
+    const payUrl = payUrlFor('pro') || `https://${domain}/pro/espace/`
+    const espace = `https://${domain}/pro/espace/`
+    const subject = `Dans 3 jours, votre veille s'éteint`
+    const inner = `${brandHeader('Votre essai se termine', 'Le Veilleur · Veille côtière', `${beaches}, veillées chaque matin`)}
+    <div style="background:#fff;padding:24px 20px">
+      <div style="font-size:15px;color:#333;line-height:1.6">Depuis ~18 jours, votre widget regarde la mer pour vous : sur votre site, plage par plage, le verdict du jour s'affiche tout seul et vos alertes partent dès que la mer bascule. Vous êtes devenu celui qui connaît la fin de l'histoire avant ses invités.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Personne, dans un hôtel, n'aime découvrir les algues une fois la serviette posée.</div>
+      <div style="font-size:13.5px;color:#555;line-height:1.6;margin-top:12px">Ce verdict n'a rien inventé : il vient du satellite, et on publie notre fiabilité auditée par régime (≈ 76 % à 79 % selon la saison) sur <a href="https://${domain}/fiabilite/" style="color:#0D7C66">/fiabilite/</a>. L'argent ne touche jamais ce chiffre.</div>
+      <div style="font-size:15px;color:#0D1E1C;line-height:1.6;margin-top:14px"><strong>Dans ~3 jours, l'essai se termine : le widget et les alertes s'éteignent.</strong> Gardez la veille allumée, sans interruption.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Verrouiller l\'année — 690 €', payUrl)}</div>
+      <div style="font-size:13px;color:#666;margin-top:12px;text-align:center;line-height:1.55">2 mois offerts vs 79 €/mois · garantie 30 jours. Vous préférez rester souple ? <a href="${espace}" style="color:#0D7C66">Passez en mensuel à 79 €/mois</a> depuis votre espace — résiliable à tout moment.</div>
+    </div>`
+    return { subject, html: shell(inner, name, domain, sub.email, island) }
+  }
   return null
 }
 
@@ -233,6 +252,8 @@ const STEPS = [
   { key: 'b2', days: 2 },
   { key: 'b6', days: 6 },
   { key: 'b13', days: 13 },
+  // Essai (source b2b_trial). t18 = relance conversion à J+18, avant l'expiration J+21.
+  { key: 't18', days: 18, trial: true },
 ]
 
 async function trackToSheet(data) {
@@ -269,8 +290,13 @@ async function main() {
     const island = (sub.island || 'MQ').toUpperCase()
     const age = daysSince(sub.date)
     const record = sent[key] || {}
+    // Les leads b2b_trial (essai 21 j déjà ACTIVÉ via b2b-trial.php) ne reçoivent PAS
+    // la séquence de nurture froide (b0-b13) : ils ont le produit en main. Ils ne
+    // reçoivent QUE l'étape d'essai (t18 = relance conversion avant l'expiration).
+    const isTrial = sub.source === 'b2b_trial'
 
     for (const step of STEPS) {
+      if (!!step.trial !== isTrial) continue // étapes essai ↔ leads essai uniquement
       if (record[step.key]) continue
       if (age < step.days && !FORCE) continue
       const ctx = { proof, brief: briefFor(island) }
