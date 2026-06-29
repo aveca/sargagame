@@ -281,7 +281,7 @@
             var pb=$("proBanner"); if(pb)pb.style.display="flex";
             var tf=$("trialForm"); if(tf)tf.style.display="none";
             var tr=$("trialResult"); tr.style.display="block";
-            tr.innerHTML="✓ <b>Essai activé pour 21 jours.</b> Votre widget ci-dessus est déjà passé à vos couleurs (sans crédit Sargasses), et vos alertes démarrent. Conservez votre accès Pro :<br><code style=\"display:inline-block;margin-top:7px;font-size:11px;word-break:break-all;color:#9af2c9\">"+d.token+"</code>";
+            tr.innerHTML="✓ <b>Essai activé pour 21 jours.</b> Votre widget ci-dessus est déjà passé à vos couleurs (sans crédit Sargasses), et vos alertes démarrent. <b>On vient de vous envoyer le lien de votre espace par email</b> — il garde votre accès même si vous fermez cette page. Vous pouvez aussi le conserver ici :<br><code style=\"display:inline-block;margin-top:7px;font-size:11px;word-break:break-all;color:#9af2c9\">"+d.token+"</code>";
           } else { btn.textContent="Réessayer →"; btn.disabled=false; }
         }).catch(function(){ btn.textContent="Réessayer →"; btn.disabled=false; });
     }
