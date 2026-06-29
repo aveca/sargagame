@@ -4,6 +4,7 @@
   "followups": [
     {
       "id": "anoli-lodges-widget-fix-2026-06-29",
+      "hold": true,
       "to": "admin@anoli-lodges.com",
       "island": "MQ",
       "subject": "Votre widget sargasses pointe sur la mauvaise plage — je vous corrige ça",

@@ -50,7 +50,11 @@ async function main() {
   try { marker = JSON.parse(fs.readFileSync(MARKER, 'utf-8')) } catch { marker = { sent: [] } }
   const sentIds = new Set((marker.sent || []).map(s => s.id || s))
 
-  const pending = (outbox.followups || []).filter(f => f && f.id && f.to && !sentIds.has(f.id))
+  // `hold:true` = brouillon en cours de validation → on NE l'envoie pas (sécurité
+  // pour les emails à fort enjeu qu'on copywrite avant de lâcher).
+  const pending = (outbox.followups || []).filter(f => f && f.id && f.to && !f.hold && !sentIds.has(f.id))
+  const held = (outbox.followups || []).filter(f => f && f.hold).length
+  if (held) console.log(`(${held} follow-up(s) en HOLD — non envoyés, validation copy en attente)`)
   if (!pending.length) { console.log('Aucun follow-up en attente (tous déjà envoyés).'); return }
   console.log(`${pending.length} follow-up(s) en attente.`)
 
