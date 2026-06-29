@@ -22,6 +22,49 @@
 
 **Principe produit (DUR)** : tout en **self-service, ZÉRO call**. La vente se fait 100 % par email + site (dashboards prêts, paiement self-serve). Jamais de « parlons-en / appelez-moi / prenons rendez-vous ».
 
+## Doctrine produit & exécution (lire AVANT de construire)
+
+> Distillé pour ne PLUS avoir à le redire chaque session. Ce sont des **défauts d'exécution** : applique-les sans demander, tranche les écarts par agents.
+
+### IA pilote, hypercroissance, automatisation, verticalité
+- **L'IA est l'opérateur du projet**, pas un assistant. Le fondateur est absent/mobile : tu conçois, codes, déploies, vends, mesures. Objectif = **hypercroissance** avec **zéro humain dans la boucle**.
+- **Tout doit être codé, idempotent, automatisable, scalable** : si une tâche se répète, elle devient un script + un step GH Actions (cron), jamais un geste manuel. Marginal cost ≈ 0 → on optimise le **VOLUME** (nb de clients/logos/pages), pas la marge unitaire.
+- **Construis pour N, pas pour 1** : patterns réutilisables (outbox d'emails, templates `{{placeholders}}`, pages token-gated `?k=`, params d'URL `?beach&name&partner`, génération SEO de pages). Un nouveau client/plage/marché = changer des données, pas écrire du code.
+- **Verticalité** : on possède toute la chaîne (donnée satellite → pipeline → app → widget → B2C paywall → B2B → paiement → relance). Chaque maillon doit se brancher aux autres sans couture. Avant de bâtir, vérifie ce qui existe déjà (souvent 80 % est là).
+- **Idempotence partout** (markers `*-sent.json`, dédup par id/pid), **anti-doublon**, **dry-run/HOLD** par défaut sur tout envoi sortant, **gitignore la PII** (emails en clair jamais commités).
+
+### UX (app sargasses)
+- **Honnêteté = le moat.** « Mesuré au satellite, pas deviné » ; on **publie notre taux d'erreur** (`/fiabilite/`). Ne JAMAIS survendre ni laisser l'argent influencer un verdict (encart Partenaire ≠ verdict).
+- **Verdict par plage**, jamais une moyenne d'île. Friction minimale (molo géoloc figé, pas de prompt à froid). **Jamais de cul-de-sac** : toujours une action utile (plan B « où aller plutôt », lien carte).
+- **Mobile-first + PWA** : push OneSignal, nudge install, crop standalone iOS (`#root` top/right/bottom/left:0 SANS width/height:100%). a11y (role=dialog, Échap, focus), `reduced-motion` respecté. Squelette UI réel inline AVANT mount.
+- **Perf = revenu** : budget gzip eager (`check-bundle-budget.cjs` ≤210 Ko), chunks lazy hors first-paint, `WorldMapView` = carte vedette funnel → **jamais de refacto sans screenshot de régression**.
+
+### UI / web design
+- **Univers « Le Veilleur »** : BD/comic + golden-hour océan, la mascotte Veilleur, « il regarde la mer, jamais vos clients ». Chaleureux, insider, jamais corporate.
+- **Système visuel** : fonts **Anton** (display/titres) + **Bricolage Grotesque** (corps) ; or **#FFC72C**, ink sombre ; tokens `colors_and_type.css`. Thème pro sombre `#0a1620`. **Cohérence** app ↔ widget ↔ pages `/pro/*` ↔ emails (`lib/email-send.cjs` `brandHeader` golden-hour).
+
+### Storytelling (réf. `docs/B2C_NARRATIVE.md`)
+- **Colonne vertébrale** : le client est le héros, Le Veilleur est le guide ; scène concrète → tension (« le matin où ça bascule ») → renversement (« devenez celui qui connaît la fin de l'histoire avant ses invités »). Curiosité, micro-cliffhanger, rythme.
+- À appliquer **partout** : onboarding, paywall, emails drip, pages pro. Un email pro doit se lire comme une bonne histoire.
+
+### Copywriting (réf. `scripts/automation/B2B_EMAIL_TEMPLATE.md`)
+- **Preuve avant pitch** ; **cadeau avant l'ask** (réciprocité) ; **claims hedgés** (« semble… si c'est bien le cas ») ; **prix tôt**, pas après 600 mots ; **un seul CTA** self-serve ; zéro jargon/survente ; honnêteté (« vérifiez avant de nous croire » > chiffre tape-à-l'œil).
+- **Copy à fort enjeu → panel d'agents** : N frameworks (StoryBrand, BAB, PAS, réciprocité, preuve, âme locale, spine B2C) → critique d'un persona sceptique → synthèse. C'est comme ça qu'on a forgé l'email Anoli.
+
+### B2B (réf. `scripts/automation/B2B_OFFER.md`, `/pro/espace/`)
+- **Self-serve, zéro call.** Pricing arrêté : **Pro 79 €/mois ou 690 €/an** (2 mois offerts) · **essai 21 j gratuit sans carte** · garantie 30 j. Brief 29 €/mois (decoy). USD : 89 $/mo · 790 $/an.
+- **Funnel** : email (template) → **espace pro perso** `/pro/espace/?beach&name&partner` (plages live + widget + mise en avant + abonnement) → essai instantané (`/api/b2b-trial.php` émet le token Pro) → paiement self-serve. Chaque hôtel = mêmes briques, params différents.
+- **Outils** : `gen-b2b-partners.cjs` (encart Partenaire, gate `active:true`), `fetch-payers.cjs`/`relance-payers.cjs` (segment payeurs), `send-b2b-followup.cjs` (outbox follow-ups perso, HOLD). Token Pro = `sg_widget_sign` (`widget-token.php`). Garde-fou : le verdict reste 100 % data ERDDAP.
+
+### B2C (réf. `Sargasses_PROD.jsx`, `mollie.php`)
+- **PASS-ONLY Mollie on-site** (carte Components + Apple/Google Pay). L'email est **capturé au checkout** (`submitLead` → onglet `emails` + `payments` + Customer Mollie) → **le B2C n'est PAS anonyme**, on peut relancer.
+- Premium = flag `localStorage` posé après `payment_status.paid` + récup cross-device via `sgVerifySub(email)`. Paywall **storytellé** (WorldPaywall). **MRR = source de vérité Stripe** (legacy) ; **revenu = Stripe/Mollie, JAMAIS le funnel Apps Script** (sous-compte ~7×).
+
+### Défauts d'exécution (à faire sans demander)
+- **Décision ambiguë → panel d'agents adverses** (Workflow), suis le verdict. **Money-path → revue agent adverse + additif + `php -l`** avant merge ; B2C jamais cassé.
+- **Livrer = merger sur `main`** (auto-deploy FTP). Vérifier le déploiement par `curl` (le full build+FTP prend jusqu'à ~75 min). Valider le JS par `node --check`, le PHP par `php -l`.
+- **Mémoire** : tenir `NEXT_SESSION.md` (handoff) à jour à chaque session.
+
 ## Session Startup
 
 **Raccourci** : `npm run session` → `scripts/cursor-session-startup.cjs` regroupe les checks ci-dessous + load mémoire projet.
