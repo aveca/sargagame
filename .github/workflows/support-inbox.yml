@@ -5,9 +5,13 @@ name: Support inbox (Niveau 1, déterministe)
 # accusé de réception au client + un digest privé au fondateur (adresses réelles
 # pour qu'il réponde lui-même).
 #
-# SEND='0' par défaut sur le cron = DRY-RUN (valide la connexion IMAP sans rien
-# envoyer ni marquer \Seen). Passer en SEND='1' (dispatch send=true) une fois la
-# connexion validée pour activer les envois.
+# Le CRON envoie POUR DE VRAI (SEND=1) : accusé client + digest fondateur + \Seen,
+# uniquement sur les NOUVEAUX messages (UNSEEN). Idempotent (\Seen = déjà traité).
+# Les messages déjà traités à la main ont été scellés \Seen via le dispatch
+# `mode: seal-existing` (marque \Seen sans rien envoyer) AVANT cette activation.
+#
+# Dispatch manuel (mode) : dry-run (défaut, valide IMAP sans rien faire) ·
+# send (force un envoi immédiat) · seal-existing (scelle les UNSEEN sans envoyer).
 #
 # PII : repo PUBLIC → logs PUBLICS. Le script ne logue que des compteurs/catégories,
 # jamais d'adresse ou de corps d'email.
@@ -17,13 +21,14 @@ on:
     - cron: '0 */3 * * *' # toutes les 3 heures
   workflow_dispatch:
     inputs:
-      send:
-        description: "Envoyer pour de vrai (accusés + digest + \\Seen) ?"
+      mode:
+        description: "Mode d'exécution"
         type: choice
         options:
-          - "false"
-          - "true"
-        default: "false"
+          - "dry-run"       # valide la connexion IMAP, aucun envoi, aucun \Seen
+          - "send"          # envoie accusés + digest + marque \Seen
+          - "seal-existing" # marque \Seen les UNSEEN actuels SANS rien envoyer
+        default: "dry-run"
 
 permissions:
   contents: read
@@ -44,5 +49,8 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           IMAP_PASS: ${{ secrets.IMAP_PASS }}
           FOUNDER_EMAIL: ${{ secrets.FOUNDER_EMAIL }}
-          SEND: ${{ inputs.send == 'true' && '1' || '0' }}
+          # Schedule = envoi réel. Dispatch : send → envoi ; seal-existing → SEAL ;
+          # dry-run (défaut) → ni envoi ni \Seen.
+          SEND: ${{ (github.event_name == 'schedule' || inputs.mode == 'send') && '1' || '0' }}
+          SEAL: ${{ inputs.mode == 'seal-existing' && '1' || '0' }}
         run: node scripts/automation/support-inbox.cjs
