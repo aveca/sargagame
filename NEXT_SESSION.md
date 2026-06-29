@@ -1,5 +1,15 @@
 # NEXT_SESSION — sargagame
 
+> **🤝 2026-06-29 — B2B in-app : ESSAI PRO 30 J = SELF-SERVE INSTANTANÉ (zéro humain). #240 MERGÉ sur `main`.**
+>
+> **Ce qui était cassé** : la modale B2B in-app (`B2BModal`, `src/PremiumModal.jsx`) affichait le CTA « Démarrer l'essai 30 j / 30-day trial, no card » mais `submit()` ne faisait que **capturer le lead** + afficher « on vous recontacte sous 24h » (= rappel **humain**, anti-doctrine zéro-call). L'endpoint d'essai instantané `public/api/b2b-trial.php` (token Pro 30 j signé `sg_widget_sign`) existait déjà + était câblé dans `/pro/espace/`, mais **jamais appelé depuis l'app**.
+>
+> **Livré (#240, LIVE)** : `B2BModal.submit()` des tiers self-serve (**brief**/**pro**) POST l'email → `/api/b2b-trial.php` → reçoit le token → envoie l'hôtel droit dans son espace marque-blanche (`/pro/espace/?k=token`, activé au chargement L334). **Accès instantané, zéro attente, zéro humain** ; l'email du lien espace part aussi (déjà côté PHP). **Territoire (199 €+)** garde le contact 24 h (vraie vente). Échec endpoint → fallback gracieux message 24 h (lead déjà capturé, jamais de cul-de-sac). **Flag rollback `?b2btrial=0`**. `island` dérivé de `REGION.id`. Bug corrigé : réponse `days` 21→30 (token signé 30 j).
+>
+> **Gate** : esbuild ✅ · `php -l` ✅ · build ✅ · budget **192.9 ≤ 210 Ko** ✅ · smoke = faux-positifs environnementaux **count-identiques baseline `main`** (7 err + 15 boutons ; B2BModal hors parcours smoke). **Additif, ne touche aucun flux de paiement** (token n'encaisse rien → pas de paiement test requis). **À surveiller** : event `sg_b2b_trial_activated` (activations réelles) + `sg_b2b_space_open`.
+>
+> **Note connexe (#237 MERGÉ)** : `health-check.cjs` filtrait pas les régions non-live → spammait un email `[barbados] ENOTFOUND sargassumbarbados.com` à chaque run (domaine pas acheté). Corrigé (`r.live !== false`, même conv. que `daily-copernicus.yml:752`). **Barbados NON urgent** : 3 domaines USD déjà live à ~0 trafic → faire convertir l'existant > ajouter un 4ᵉ site. Réintègre le health-check auto quand `live:true`.
+
 > **📧 2026-06-29 — ⚠️ ACTION FONDATEUR BLOQUANTE : REDIRIGER LES BOÎTES MAIL → GMAIL (réception support/B2B/B2C).**
 >
 > **Problème** : le fondateur n'a accès qu'à son **Gmail** (`yacovassaraf@gmail.com`) au quotidien (mobile). Les boîtes d'envoi/contact (`alerte@`/`alerts@`/`support@`/`contact@` sur les 5 domaines) **ne sont pas relevées** → toute réponse client tombe dans un trou noir. **Le client NE DOIT PAS voir le Gmail** : les boîtes restent brandées, elles **redirigent** vers le Gmail.
