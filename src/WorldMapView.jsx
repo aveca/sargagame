@@ -383,24 +383,35 @@ export default function WorldMapView({
   useEffect(()=>{
     const svg=bakeRef.current
     if(!svg||!outline){ setBakedUrl(null); return }
-    let cancelled=false
+    let cancelled=false, idle=null
     const S=2.5, W=Math.round(800*S), H=Math.round(600*S)
-    let xml
-    try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
-    xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
-    const img=new Image()
-    img.onload=()=>{
+    // Le bake (sérialisation SVG + Image decode + drawImage 2.5× + toDataURL PNG) est un GROS
+    // bloc main-thread — profilé comme le hotspot n°1 du mount (~282 ms non-throttlé, ~1 s sous
+    // 4× CPU mobile). On le DIFFÈRE à l'idle : le SVG live (Stage 1) peint et reste interactif
+    // d'abord (= le fallback bakedUrl=null déjà en place), puis le bake se fait HORS fenêtre
+    // critique et swappe la texture GPU. Rendu final + optim pan/zoom inchangés ; seul le TIMING
+    // change → LCP/TTI/TBT améliorés. Échec/annulation → on reste sur le SVG live (zéro régression).
+    const runBake=()=>{
       if(cancelled) return
-      try{
-        const cv=document.createElement('canvas'); cv.width=W; cv.height=H
-        cv.getContext('2d').drawImage(img,0,0,W,H)
-        const png=cv.toDataURL('image/png')
-        if(!cancelled) setBakedUrl(png)
-      }catch(_){ if(!cancelled) setBakedUrl(null) }
+      let xml
+      try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
+      xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
+      const img=new Image()
+      img.onload=()=>{
+        if(cancelled) return
+        try{
+          const cv=document.createElement('canvas'); cv.width=W; cv.height=H
+          cv.getContext('2d').drawImage(img,0,0,W,H)
+          const png=cv.toDataURL('image/png')
+          if(!cancelled) setBakedUrl(png)
+        }catch(_){ if(!cancelled) setBakedUrl(null) }
+      }
+      img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
     }
-    img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
-    return ()=>{ cancelled=true }
+    if(typeof requestIdleCallback==="function") idle=requestIdleCallback(runBake,{timeout:2000})
+    else idle=setTimeout(runBake,300)
+    return ()=>{ cancelled=true; try{ (typeof cancelIdleCallback==="function"?cancelIdleCallback:clearTimeout)(idle) }catch(_){} }
   },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
