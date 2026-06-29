@@ -156,13 +156,18 @@
       <h2><span class="n">5</span> Activer votre abonnement</h2>
       <p class="h2sub">Tout en ligne, tout de suite. Pas de rendez-vous, pas d'engagement de durée.</p>
       <div class="card" id="subCard">
-        <div class="price-wrap"><span class="price">790&nbsp;€</span><span class="price-mo">/&nbsp;an &nbsp;·&nbsp; soit ≈ 66&nbsp;€/mois</span></div>
-        <div class="price-note">2 mois offerts vs le mensuel (79&nbsp;€/mois) · résiliable à tout moment</div>
-        <div class="cta-row">
-          <a class="cta" id="subscribe" href="https://sargasses-martinique.com/pro/pricing/">S'abonner à Pro →</a>
-          <a class="cta sec" href="https://sargasses-martinique.com/pro/pricing/">Voir tous les paliers</a>
+        <div style="font-family:Anton,sans-serif;font-size:25px;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;margin-bottom:8px">Essai 21 jours, gratuit — sans carte</div>
+        <p style="color:rgba(255,255,255,.78);margin-bottom:18px;max-width:60ch">Le temps de traverser un vrai épisode de sargasses et de voir Le Veilleur vous prévenir « le matin où ça bascule ». Vous recevez votre accès Pro par email — widget à vos couleurs + mise en avant. Aucune carte, aucun engagement, vous arrêtez quand vous voulez.</p>
+        <div class="cta-row"><a class="cta" id="trialBtn" href="#">Activer mon essai 21 jours →</a></div>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)">
+          <div class="price-wrap"><span class="price">79&nbsp;€</span><span class="price-mo">/&nbsp;mois &nbsp;·&nbsp; ou 690&nbsp;€/an</span></div>
+          <div class="price-note">2 mois offerts en annuel · résiliable à tout moment · garantie 30 jours satisfait-remboursé sur l'annuel</div>
+          <div class="cta-row">
+            <a class="cta sec" id="subscribe" href="https://sargasses-martinique.com/pro/pricing/">Verrouiller l'année — 690 € →</a>
+            <a class="cta sec" href="https://sargasses-martinique.com/pro/pricing/">Tous les paliers</a>
+          </div>
         </div>
-        <p class="reassure">Paiement sécurisé Mollie (carte / virement). Dès le paiement, vous recevez votre <strong>token Pro</strong> par email — il active la marque blanche du widget et votre mise en avant. Une question ? <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
+        <p class="reassure">Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
       </div>
     </section>
   </main>
@@ -256,7 +261,15 @@
     $("copy").addEventListener("click",function(){navigator.clipboard.writeText(code.textContent).then(function(){$("copy").textContent="Copié ✓";setTimeout(function(){$("copy").textContent="Copier le code"},1700);});});
     upd();
 
-    // ── 5. abonnement self-serve : lien Mollie pro_annual ──
+    // ── 5. abonnement self-serve ──
+    // Essai 21 j : demande par email (self-serve, zéro call), pré-remplie avec l'établissement
+    // + la plage. (L'émission auto du token Pro à la capture est en cours de câblage.)
+    var bn=SLUG2NAME[beachSlug];
+    var subj="Essai 21 jours Sargasses Pro"+(hotel?(" — "+hotel):"");
+    var body="Bonjour,\n\nJe souhaite activer l'essai Pro de 21 jours (gratuit, sans carte).\n\n"
+      +"Établissement : "+(hotel||"")+"\nPlage à surveiller : "+bn+"\nSite : \n\nMerci !";
+    $("trialBtn").href="mailto:alerte@sargasses-martinique.com?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+    // Option « verrouiller l'année » : lien Mollie pro_annual (690 €)
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var u=d&&d.links&&d.links.pro_annual&&d.links.pro_annual.url;
       if(u)$("subscribe").href=u;
