@@ -1,5 +1,21 @@
 # NEXT_SESSION — sargagame
 
+> **⚡📱 2026-06-29 — UX MOBILE + PERFORMANCE (PR #191, branche `claude/mobile-ux-optimization-c6rnlg`, PRÊT REVIEW, CI verte). Analytics = 100% mobile.**
+>
+> **Méthode** : audit UX multi-agents (12 dimensions, 106 findings) croisé avec data first-party (`scripts/automation/data/ux-report.json`). 0 logique paiement/prix/tracking touchée. Tout réversible.
+>
+> **Shipé (commits sur la branche)** :
+> - **UX** : labels carte tapables (corrige **5653 dead-clicks + 374 rage-clicks/j sur `/`**, `ux-report` 26/06 — les labels étaient `pointerEvents:none`) · safe-area paywall (CTA jamais sous le home-indicator iOS) · inputs 16px (fin du zoom iOS) · validation e-mail (focus+bordure) · tap targets ≥44px (croix/pins/chips) · `:focus-visible` + clavier SVG + contraste · `useSwipeClose` verrouillage d'axe.
+> - **Perf LCP** : **chunk d'entrée 170→109 Ko gzip (−36%)** via lazy-extraction de 12 composants froids → `src/{WhatsNewJournal,BeachListView,AlertScene,HeroScene,SargaChat,AlertHub,ScrollStory,GameFunnel,HeroVerdict,WorldFeed,SolutionsStory,BeachSheet}.jsx` (helpers rendus `export`, usages sous Suspense/ErrBound, corps verbatim) · **prefetch** carte (1er écran) + idle-warm PremiumModal/ChasseHome (`src/main.jsx`) · fonts self-host+preload Anton sur app ET homepages FTP (`prepare-ftp.cjs` — chargeaient Google Fonts, bloqué Brave/Edge) · `will-change`/RAF/reduced-motion.
+> - **Perf images** : pages SEO plages en `<picture>` WebP+fallback JPG (−58% global, −85% grosses photos). `scripts/optimize-beach-images.cjs` (sharp) génère les `.webp` ; **gitignorés**, régénérés par `npm run build`/`daily` (idempotent). ⚠️ **Relancer le script si on ajoute des photos plages.**
+> - **Perf INP** : `WorldMapView` en `React.memo` + props stabilisées (`arrivals`→useMemo, `onClose`/`onCaptureEmail`→useCallback) → la carte ne re-rend plus au tap d'une plage / bruit d'App. Hot-path pan déjà optimisé (laissé tel quel).
+>
+> **⚠️ DETTE DE VÉRIF (à faire au déploiement)** : les serveurs de preview (`vite preview` ET `python http.server`) **ne se lançaient pas** dans l'env de session → la **vérif live interactive n'a PAS pu tourner** sur les commits perf. Tout est **build-vert** (`npm run build` OK) + analysé. **Spot-check requis sur le déploiement** : (1) carte s'affiche + tap plage ouvre la feuille + changer le jour fait suivre les pins (valide le `React.memo` map) ; (2) ouvrir une fiche → paywall → flux Mollie intact (valide l'extraction `BeachSheet`/funnels) ; (3) une page `/plages/<x>/` sert bien le `.webp`. Chaque pièce est réversible isolément.
+>
+> **NON fait (décisions data-driven)** : réorg paywall (funnel non fiable <23/07, A/B actifs) · WebP pour l'app (elle utilise des **dégradés**, pas de photo sur le hot path) · INP plus profond (refacto monolithe → **mesurer en RUM d'abord**, risque sinutile à l'aveugle).
+>
+> ---
+>
 > **📖🌅 2026-06-28 — REFONTE STORYTELLING GLOBALE (la saga « Le Veilleur »). 8 PRs mergées sur `main` (#180→#187, auto-deploy 5 domaines). NE PAS REFAIRE.**
 >
 > **Source de vérité = `design/STORY/` (11 docs, mergé).** Point d'entrée `design/STORY/00-README.md` ; suite à dérouler dans `10-ROLLOUT-AND-COHERENCE.md`.
