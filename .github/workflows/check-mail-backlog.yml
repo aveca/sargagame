@@ -1,0 +1,94 @@
+name: Check mail backlog (IMAP → forward to Gmail)
+
+# POURQUOI : avant la mise en place des redirections, les RÉPONSES clients se sont
+# accumulées dans la boîte alerte@sargasses-martinique.com (le From de TOUS nos emails).
+# Le fondateur ne les a jamais vues. Ce workflow lit cette boîte en IMAP (mot de passe
+# SMTP déjà en secret) et TRANSFÈRE chaque message vers le Gmail (FORWARD_TO).
+#
+# ⚠️ CONFIDENTIALITÉ : les logs Actions sont PUBLICS. On ne logge JAMAIS expéditeur /
+# objet / corps — uniquement des COMPTEURS. Le contenu ne transite que vers le Gmail.
+#
+# Secrets : SMTP_PASS (mot de passe de la boîte), FORWARD_TO (Gmail cible).
+# Optionnels : IMAP_HOST / SMTP_HOST (défaut premium115.web-hosting.com), MAILBOX.
+#
+# Manuel (workflow_dispatch). Idempotent imparfait (relancer renvoie les mêmes mails) →
+# à lancer 1 fois ; cap d'envoi pour éviter une avalanche.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "Nombre max de messages à transférer (les plus récents)"
+        required: false
+        default: "60"
+      mailbox:
+        description: "Boîte à relever"
+        required: false
+        default: "alerte@sargasses-martinique.com"
+      folder:
+        description: "Dossier IMAP"
+        required: false
+        default: "INBOX"
+
+jobs:
+  backlog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read inbox via IMAP and forward to Gmail (counts only in logs)
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          FORWARD_TO: ${{ secrets.FORWARD_TO }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          MAILBOX_IN: ${{ github.event.inputs.mailbox }}
+          FOLDER: ${{ github.event.inputs.folder }}
+          MAXN: ${{ github.event.inputs.max }}
+        run: |
+          set -u
+          MAILBOX="${MAILBOX_IN:-alerte@sargasses-martinique.com}"
+          IHOST="${IMAP_HOST:-premium115.web-hosting.com}"
+          SHOST="${SMTP_HOST:-premium115.web-hosting.com}"
+          FOLDER="${FOLDER:-INBOX}"
+          MAXN="${MAXN:-60}"
+          if [ -z "${SMTP_PASS:-}" ]; then echo "::error::SMTP_PASS manquant."; exit 1; fi
+          if [ -z "${FORWARD_TO:-}" ]; then echo "::error::FORWARD_TO manquant (Gmail cible)."; exit 1; fi
+
+          # 1) Lister les messages (SEARCH ALL) — on n'imprime QUE le compte.
+          SEARCH=$(curl -s -k --max-time 40 --url "imaps://$IHOST:993/$FOLDER" \
+            -u "$MAILBOX:$SMTP_PASS" -X "SEARCH ALL" 2>/tmp/err || true)
+          # Extraire les numéros de séquence de la ligne "* SEARCH ..."
+          NUMS=$(printf '%s\n' "$SEARCH" | tr -d '\r' | sed -n 's/^\*\? *SEARCH //p' | tr ' ' '\n' | grep -E '^[0-9]+$' || true)
+          TOTAL=$(printf '%s\n' "$NUMS" | grep -c '^[0-9]\+$' || true)
+          if [ -z "$NUMS" ]; then
+            echo "Connexion IMAP : aucune réponse exploitable (auth/host ?). Boîte : (masquée)."
+            echo "Diag (sans secret) : $(head -c 200 /tmp/err | tr -d '\n')"
+            echo "::error::IMAP n'a renvoyé aucun message — vérifier IMAP_HOST (défaut premium115.web-hosting.com:993) ou le mot de passe de la boîte."
+            exit 1
+          fi
+          echo "Messages présents dans la boîte : $TOTAL"
+
+          # 2) Garder les MAXN plus récents (numéros de séquence les plus hauts).
+          PICK=$(printf '%s\n' "$NUMS" | sort -n | tail -n "$MAXN")
+          sent=0; failed=0
+          for n in $PICK; do
+            # Récupère le message brut (RFC822) — JAMAIS imprimé.
+            curl -s -k --max-time 30 --url "imaps://$IHOST:993/$FOLDER;MAILINDEX=$n" \
+              -u "$MAILBOX:$SMTP_PASS" -o /tmp/m.eml 2>/dev/null
+            if [ ! -s /tmp/m.eml ]; then failed=$((failed+1)); continue; fi
+            # Réexpédie tel quel vers le Gmail (enveloppe from = la boîte, alignée SPF).
+            if curl -s -k --max-time 30 --url "smtps://$SHOST:465" --ssl-reqd \
+                 --mail-from "$MAILBOX" --mail-rcpt "$FORWARD_TO" \
+                 -u "$MAILBOX:$SMTP_PASS" -T /tmp/m.eml >/dev/null 2>&1; then
+              sent=$((sent+1))
+            else
+              failed=$((failed+1))
+            fi
+            rm -f /tmp/m.eml
+          done
+          echo "—"
+          echo "Transférés vers le Gmail : $sent | échecs : $failed | total boîte : $TOTAL"
+          echo "(Aucun expéditeur/objet n'est loggé — logs publics. Le contenu n'est allé QUE vers le Gmail.)"
+          if [ "$sent" = "0" ]; then
+            echo "::error::0 message transféré (échecs SMTP ou boîte vide au-delà du cap)."
+            exit 1
+          fi

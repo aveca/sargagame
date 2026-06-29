@@ -35,6 +35,12 @@ jobs:
         env:
           FORWARD_TO: ${{ secrets.FORWARD_TO }}
           PORT: ${{ github.event.inputs.port }}
+          # Identifiants cPanel PARTAGÉS (fallback) : si tous les domaines sont des addon
+          # d'UN seul compte cPanel, ajoute juste ces 2 (ou 3) secrets — le workflow les
+          # utilise pour tous les domaines. (Les FTP_* du repo sont FTP-only → 401.)
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_PASSWORD: ${{ secrets.CPANEL_PASSWORD }}
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
           # MQ
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
@@ -83,10 +89,12 @@ jobs:
           for entry in $MAP; do
             ID="${entry%%:*}"; DOMAIN="${entry##*:}"
             # cPanel creds : CPANEL_* sinon fallback FTP_*
-            eval "HOST=\${FTP_SERVER_$ID:-}"
+            eval "HOSTR=\${FTP_SERVER_$ID:-}"
             eval "CU=\${CPANEL_USERNAME_$ID:-}"; eval "FU=\${FTP_USERNAME_$ID:-}"
             eval "CP=\${CPANEL_PASSWORD_$ID:-}"; eval "FP=\${FTP_PASSWORD_$ID:-}"
-            USER="${CU:-$FU}"; PASS="${CP:-$FP}"
+            # Priorité : cPanel par région > cPanel partagé > FTP (souvent FTP-only → 401).
+            USER="${CU:-${CPANEL_USERNAME:-$FU}}"; PASS="${CP:-${CPANEL_PASSWORD:-$FP}}"
+            HOST="${CPANEL_HOST:-$HOSTR}"
             if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$PASS" ]; then
               echo "▷ $ID ($DOMAIN) : identifiants absents — skip."
               continue
