@@ -1,5 +1,21 @@
 # NEXT_SESSION — sargagame
 
+> **🎫 2026-06-29 — VUE « MON ACCÈS » + CUSTOMER MOLLIE PASS + SERVICE SUPPORT IMAP + POLITIQUE REMBOURSEMENT (#245 + #252 MERGÉS, déployés vérifiés `curl`). ⚠️ SESSION PARALLÈLE — chevauche #253/#254/#255 (accès cross-device) : convergence, pas de casse.**
+>
+> **Contexte** : session lancée sur retours clients (JC « payé, pas d'accès, remboursez-moi » ; julien neveu UX). A convergé avec l'autre session sur l'accès cross-device → 2 conflits de merge résolus (pris #250/#255 canoniques pour copy/légal, gardé mes features fonctionnelles).
+>
+> **#245 (mergé, déployé)** : (a) réconcilié avec #250 (garantie « satisfait ou remboursé » retirée → consentement implicite) ; (b) **fix accès Pass récupérable par email** — `mollie.php verify_subscription` fast-path `kind=pass` + **self-heal** (balaie `/payments` par `metadata.email`, ≤5 pages, fail-safe) + `mol_pass_grant_store`/`mol_pass_days` (mollie-lib) + persistance pass à `paid` (mollie.php + webhook) ; (c) deep-link **`?restore=1`** ; (d) UX fiche CTA « détail jour par jour » (`?fulldetail=0`) ; (e) outils support : `support-reply.cjs/.yml` (1:1) + **`support-inbox.cjs/.yml`** (Niveau 1, ZÉRO LLM : IMAP `alerte@` → classe par mots-clés → accusé client + digest fondateur). NB : consentement-checkout paywall **DORMANT** (`?consent=1` pour l'activer ; #250 a retenu l'implicite).
+>
+> **#252 (mergé, déployé)** : (a) **Customer Mollie pour les Pass** dans `create_payment` (additif, fail-open → payeur visible onglet Clients ; n'écrit PAS le customerId dans `mol_store` sinon casse le pass-restore) ; (b) **vue « Mon accès »** Header (statut Pass + échéance / restauration self-serve ; `openAccessCheck()` ; flag `?monacces=0`) ; (c) lien suivi `?restore=1` dans l'email de confirmation. Gate vert, budget 193.7≤210, curl prod OK (homepage 200, mollie.php 405=POST-only).
+>
+> **⚠️ Chevauchement #253/#254/#255** : l'autre session a fait l'accès cross-device via `comps.php` + one-click `?premium_email=<email>` (**meilleur** que mon `?restore=1`, pas de saisie) + a DÉJÀ comped JC (`jcroulier@gmail.com`, 30 j). Les deux coexistent (additifs). `welcome-paid-mollie.cjs` touché par les deux → #255 a remis `?premium_email=` (canonique). **NE PAS refaire l'accès-recovery.**
+>
+> **RESTE (2 tâches — prompt complet fourni au fondateur)** :
+> 1. **GATING SERVEUR J+2→J+7** (priorité) : `public/api/copernicus/sargassum.json` sert les 7 jours **en clair** → tronquer à J+0/J+1 (`fetch-sargassum-live.cjs` + writer région + `build-sargassum-json.cjs`), servir le futur via endpoint PHP signé (`verify_subscription` email / `sg_widget_sign`). Pièges : lecteurs FREE de `forecast[2..6]` (ex. `forecast?.[3]`) cassent → re-router ; fichier full privé bloqué `.htaccess Deny` ; screenshot WorldMapView ; **curl prod obligatoire** (token→J+2-7 ; sans→403 ; fichier privé→403). Plan détaillé déjà fait (agent Plan). Additif, php -l, PR draft + validation avant merge (touche le verdict = moat).
+> 2. **ACTIVER `support-inbox` en envoi** : IMAP `alerte@` validé (compte réel, run cron success). Cron en `SEND=0` (dry-run) → passer `SEND=1`, MAIS d'abord marquer `\Seen` les mails actuels (JC/julien déjà traités à la main) pour éviter un accusé redondant. Remboursement jamais auto.
+>
+> **RÈGLE : une seule session à la fois sur ce repo** (éditions concurrentes `mollie.php`/`welcome-paid-mollie.cjs` = 2 conflits de merge cette session).
+
 > **🔓 2026-06-29 — CLIENT BLOQUÉ → ACCÈS CROSS-DEVICE + ONBOARDING PREMIUM + RÉCUP ANCIENS PAYEURS (#253 + #254 MERGÉS sur `main`).**
 >
 > **Contexte** : un client B2C premium early (Jean-Christophe, `jcroulier@gmail.com`) restait « bloqué » — cause racine : le lien `?pass=` est **local à un navigateur** (ouvert dans l'aperçu Gmail puis perdu dans Safari). Et on n'avait aucun moyen propre d'**offrir** un accès cross-device. Risque fondateur : remboursements + SAV.
