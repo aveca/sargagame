@@ -42,11 +42,37 @@ App (BeachReport)                     Supabase                       App (BeachP
 ## Modération (avant affichage public)
 
 Les photos arrivent en `status='pending'`. **Seules les `approved` sont affichées**
-(garanti par RLS). Pour modérer, **depuis le téléphone** :
+(garanti par RLS). Deux façons de modérer, **100 % depuis le téléphone** :
 
-- Dashboard Supabase → *Table Editor* → table `photos` → vérifier la photo (colonne
-  `url`) → passer `status` de `pending` à `approved` (ou `rejected`).
-- Suppression : `rejected` (disparaît aussitôt) + supprimer l'objet dans *Storage* si besoin.
+### A. Alerte email + validation 1-tap (recommandé)
+
+Tu reçois un email à **chaque** nouvelle photo, avec l'image + boutons **✅ Approuver /
+❌ Rejeter** qui s'appliquent **directement depuis l'email** (sans ouvrir l'app).
+Pièces : Edge Function `moderate` (`supabase/functions/moderate/`) + GitHub Action
+`notify-photos.yml` (poll toutes les 30 min) + `notify-new-photos.cjs`.
+
+**Setup (une fois, au téléphone) :**
+1. **Colonne de suivi** : SQL Editor → lancer
+   `alter table public.photos add column if not exists notified boolean not null default false;`
+   (déjà inclus si tu relances `supabase/schema.sql`).
+2. **Jeton** : choisis une chaîne aléatoire (= `MODERATE_TOKEN`, ex. 20+ caractères).
+3. **Edge Function** : dashboard → *Edge Functions* → *Create function* `moderate` →
+   coller le contenu de `supabase/functions/moderate/index.ts` → **Deploy**.
+   - ⚠️ **Désactiver « Verify JWT »** (le lien email n'a pas de JWT ; on protège par le jeton).
+   - *Function secret* : `MODERATE_TOKEN` = ta chaîne.
+4. **Clé secrète Supabase** : dashboard → *Project Settings → API* → copier la clé
+   **`secret`** (`sb_secret_…`, NE PAS la mettre dans le code).
+5. **Secrets GitHub** : repo → *Settings → Secrets and variables → Actions* → ajouter
+   `SUPABASE_SERVICE_KEY` = la clé secrète, et `MODERATE_TOKEN` = la même chaîne qu'en (2/3).
+
+→ Dès qu'un visiteur poste une photo, tu reçois l'email dans ≤30 min et tu valides en 1 tap.
+(Test immédiat : onglet *Actions* → *Notify new visitor photos* → *Run workflow*.)
+
+### B. À la main (toujours dispo)
+
+Dashboard → *Table Editor* → table `photos` → vérifier la photo (colonne `url`) →
+passer `status` de `pending` à `approved` (ou `rejected`). Suppression : `rejected`
++ supprimer l'objet dans *Storage* si besoin.
 
 ## Privacy / légal
 

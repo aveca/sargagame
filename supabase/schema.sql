@@ -17,6 +17,10 @@ create table if not exists public.photos (
   status      text not null default 'pending'  -- pending | approved | rejected
 );
 
+-- Colonne `notified` : suivi des alertes email (évite de re-notifier). Idempotent →
+-- safe à (re)lancer sur une table déjà créée.
+alter table public.photos add column if not exists notified boolean not null default false;
+
 create index if not exists photos_beach_approved_idx
   on public.photos (beach_id, status, created_at desc);
 
