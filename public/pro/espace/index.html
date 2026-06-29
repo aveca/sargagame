@@ -167,9 +167,11 @@
           <div class="price-wrap"><span class="price">79&nbsp;€</span><span class="price-mo">/&nbsp;mois &nbsp;·&nbsp; ou 690&nbsp;€/an</span></div>
           <div class="price-note">2 mois offerts en annuel · résiliable à tout moment · garantie 30 jours satisfait-remboursé sur l'annuel</div>
           <div class="cta-row">
+            <button class="cta" id="subMonthly">S'abonner — 79 €/mois →</button>
             <a class="cta sec" id="subscribe" href="https://sargasses-martinique.com/pro/pricing/">Verrouiller l'année — 690 € →</a>
-            <a class="cta sec" href="https://sargasses-martinique.com/pro/pricing/">Tous les paliers</a>
           </div>
+          <div id="subResult" style="display:none;margin-top:12px;font-size:13px;color:#cdeede"></div>
+          <p style="font-size:12px;color:rgba(255,255,255,.5);margin:10px 0 0">Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.</p>
         </div>
         <p class="reassure">Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
       </div>
@@ -287,6 +289,21 @@
     }
     $("trialBtn").addEventListener("click",activateTrial);
     $("trialEmail").addEventListener("keydown",function(e){if(e.key==="Enter")activateTrial();});
+
+    // Abonnement MENSUEL self-serve (79 €/mois) : POST create_subscription (plan pro_monthly,
+    // hosted:1) → Mollie héberge la page carte+mandat → redirection. À 'paid', le webhook
+    // (#210) crée l'abo récurrent + émet le token Pro par email. Zéro Components ici.
+    function subscribeMonthly(){
+      var em=($("trialEmail").value||"").trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); var sr=$("subResult"); sr.style.display="block"; sr.textContent="Saisissez d'abord votre email pro ci-dessus."; return; }
+      var btn=$("subMonthly"); btn.textContent="Redirection…"; btn.disabled=true;
+      fetch("https://"+DOMAIN+"/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:"pro_monthly",hosted:1,email:em,island:(island||"MQ").toLowerCase(),source:"b2b_espace_monthly"})})
+        .then(function(r){return r.json()}).then(function(d){
+          if(d&&d.checkoutUrl){ location.href=d.checkoutUrl; }
+          else { btn.textContent="Réessayer"; btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent="Paiement momentanément indisponible — réessayez ou écrivez-nous."; }
+        }).catch(function(){ btn.textContent="S'abonner — 79 €/mois →"; btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent="Réseau indisponible — réessayez."; });
+    }
+    $("subMonthly").addEventListener("click",subscribeMonthly);
     // Option « verrouiller l'année » : lien Mollie pro_annual (690 €)
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var u=d&&d.links&&d.links.pro_annual&&d.links.pro_annual.url;
