@@ -96,7 +96,8 @@ function copy(island) {
         <p><b>Para empezar:</b> abre el mapa, añade tus playas favoritas (♥) y activa las alertas para avisarte la mañana en que una cambia. Si una playa se llena, tu Plan B — las 3 playas limpias más cercanas — ya está ahí.</p>
         ${btn('Abrir mi mapa', open)}
         <p style="font-size:13px;color:#1a2b3c">¿Un amigo sufre con el sargazo? <b>Compártele El Vigía</b> — ayúdale a no perder un día de playa.</p>
-        <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · reembolso con un solo email.</p>
+        <p style="font-size:12px;color:#8a97a5">Pago único · sin suscripción · acceso inmediato.</p>
+        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Acceso inmediato: al activar tu Pase, solicitaste la entrega inmediata de tu previsión de 7 días y reconociste que renuncias a tu derecho de desistimiento de 14 días una vez abierto el acceso (art. L221-28 13° del Código de Consumo francés).</p>
       </div>`,
   }
   if (lang === 'en') return {
@@ -109,7 +110,8 @@ function copy(island) {
         <p><b>To start:</b> open the map, add your favourite beaches (♥) and turn on alerts so we warn you the morning one turns. If a beach closes up, your Plan B — the 3 nearest clean beaches — is already there.</p>
         ${btn('Open my map', open)}
         <p style="font-size:13px;color:#1a2b3c">A friend struggling with sargassum? <b>Share the Watchman</b> — help them never waste a beach day.</p>
-        <p style="font-size:12px;color:#8a97a5">One-time · no subscription · refunded with one email.</p>
+        <p style="font-size:12px;color:#8a97a5">One-time · no subscription · instant access.</p>
+        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Instant access: by activating your Pass, you requested immediate delivery of your 7-day forecast and acknowledged that you waive your 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU).</p>
       </div>`,
   }
   return {
@@ -122,7 +124,8 @@ function copy(island) {
         <p><b>Pour démarrer :</b> ouvre la carte, ajoute tes plages favorites (♥) et active les alertes pour qu'on te prévienne le matin où l'une tourne. Si une plage se ferme, ton Plan B — les 3 plages propres les plus proches — est déjà là.</p>
         ${btn('Ouvrir ma carte', open)}
         <p style="font-size:13px;color:#1a2b3c">Un ami galère avec les sargasses ? <b>Partage-lui Le Veilleur</b> — évite-lui de gâcher une journée plage.</p>
-        <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · remboursé en un email.</p>
+        <p style="font-size:12px;color:#8a97a5">Paiement unique · sans abonnement · accès immédiat.</p>
+        <p style="font-size:10.5px;color:#aab4ad;line-height:1.5;margin-top:14px;border-top:1px solid #eef1ef;padding-top:10px">Accès immédiat : en activant ton Pass, tu as demandé la fourniture immédiate de ta prévision 7 jours et reconnu renoncer à ton droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° C. conso).</p>
       </div>`,
   }
 }

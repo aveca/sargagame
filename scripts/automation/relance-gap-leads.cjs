@@ -89,7 +89,7 @@ function buildHtml(domain, island) {
   <p style="font-size:15px;color:#444;margin:0 0 6px">Le Veilleur te dit chaque matin LA plage sans sargasses : prévision 7 jours, 136+ plages, alertes.</p>
   <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> 7 jours dès <b>7,99 €</b>, 14 jours <b>14,99 €</b>, 30 jours <b>24,99 €</b>.</p>
   <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Activer mon pass →</a>
-  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · accès immédiat · ${domain}</p>
 </div>`
 }
 
@@ -104,7 +104,7 @@ function buildHtmlDiscovery(domain, island) {
   <p style="font-size:15px;color:#444;margin:0 0 6px">Tu reçois déjà nos infos sargasses. Va plus loin : le Veilleur te dit chaque matin <b>LA plage sans sargasses</b> — prévision 7 jours, 136+ plages, alertes.</p>
   <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> 7 jours dès <b>7,99 €</b>, 14 jours <b>14,99 €</b>, 30 jours <b>24,99 €</b>.</p>
   <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Découvrir le Pass →</a>
-  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · accès immédiat · ${domain}</p>
 </div>`
 }
 
@@ -119,10 +119,10 @@ function buildHtmlUS(domain, lang) {
     ? 'Ya recibes nuestra info sobre sargazo. Ve más allá: el Vigía te dice cada mañana <b>LA playa sin sargazo</b> — pronóstico de 7 días, alertas.'
     : 'You already get our sargassum updates. Go further: the Watchman tells you each morning <b>THE sargassum-free beach</b> — 7-day forecast, alerts.'
   const p2 = es
-    ? '<b>Un pase, pago único — sin suscripción.</b> 7 días desde <b>$5.99</b>, 14 días <b>$11.99</b>, 30 días <b>$19.99</b>. Reembolso en un email.'
-    : '<b>One pass, one-time payment — no subscription.</b> 7 days from <b>$5.99</b>, 14 days <b>$11.99</b>, 30 days <b>$19.99</b>. Refunded with one email.'
+    ? '<b>Un pase, pago único — sin suscripción.</b> 7 días desde <b>$5.99</b>, 14 días <b>$11.99</b>, 30 días <b>$19.99</b>. Acceso inmediato.'
+    : '<b>One pass, one-time payment — no subscription.</b> 7 days from <b>$5.99</b>, 14 days <b>$11.99</b>, 30 days <b>$19.99</b>. Instant access.'
   const ctaLabel = es ? 'Obtener el Pase →' : 'Get the Pass →'
-  const foot = es ? 'Pago único · sin suscripción · reembolso en un email · ' : 'One-time payment · no subscription · refund in one email · '
+  const foot = es ? 'Pago único · sin suscripción · acceso inmediato · ' : 'One-time payment · no subscription · instant access · '
   return `<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
   <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">${eyebrow}</div>
   <h1 style="font-size:23px;margin:0 0 8px">${title}</h1>

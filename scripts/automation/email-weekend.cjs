@@ -263,7 +263,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </tr>
 <tr>
 <td align="center" style="padding:14px 28px 30px 28px;">
-<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:1.5; color:#9FB2AD;">Dès 7,99 € · paiement unique, sans abonnement · remboursé en un email</div>
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:1.5; color:#9FB2AD;">Dès 7,99 € · paiement unique · sans abonnement · accès immédiat</div>
 </td>
 </tr>
 </table>
@@ -415,7 +415,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 para el sábado — puntuación sobre 100:',
     premiumKick: 'El Pase del Vigía', premiumTitle: 'Sabe el sábado desde el lunes',
     premiumDesc: '7 días por delante, playa por playa — medido por satélite, no adivinado.<br>Un aviso la mañana en que se despeja una playa, para que salgas sabiéndolo ya.',
-    premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
+    premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · acceso inmediato',
     mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
     unsub: 'Darse de baja',
   } : {
@@ -425,7 +425,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 for Saturday — score out of 100:',
     premiumKick: 'The Watchman Pass', premiumTitle: 'Know Saturday by Monday',
     premiumDesc: '7 days ahead, beach by beach — measured by satellite, not guessed.<br>A push the morning a clean beach opens up, so you leave already knowing.',
-    premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · refund in one email',
+    premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · instant access',
     mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
     unsub: 'Unsubscribe',
   }

@@ -451,7 +451,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             engagement). Mêmes icônes, texte honnête vis-à-vis de ce qui se passe réellement. */}
         <div className="pww-trust">
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{captureMode?_t(lang,"Offert","On us","Gratis"):PAY_LABEL}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Paiement unique","One-time","Pago único")}</em></div>
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
         </div>
 
@@ -459,7 +459,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             de sens (la promesse honnête est portée par le CTA + rassurances ci-dessus). */}
         {!captureMode&&<div className="pww-guar">
           <span className="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b><em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
+          <span><b>{_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}</b><em>{_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}</em></span>
         </div>}
 
         {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
@@ -711,13 +711,13 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           {!captureMode&&perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
             <div className="pwx-tc"><span className="ic">{captureMode?"🎁":"🛡"}</span><b>{captureMode?_t(lang,"Offert","On us","Gratis"):(PAY_PROVIDER==="mollie"?"Mollie":"Stripe")}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Paiement unique","One-time","Pago único")}</em></div>
             <div className="pwx-tc"><span className="ic">✕</span><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
           </div>
           {!captureMode&&<div className="pwx-guar">
             <span className="gic">🛡️</span>
-            <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b>
-            <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
+            <span><b>{_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}</b>
+            <em>{_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}</em></span>
           </div>}
           {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
               sans abo) sous la garantie — cash d'avance, zéro churn. Chemin pay_once
@@ -963,6 +963,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
+  // Consentement RGPD/rétractation (renonciation au droit de rétractation 14 j contre
+  // fourniture immédiate, art. L221-28 13° C. conso). Case NON pré-cochée, requise sur
+  // le chemin Pass B2C avant de payer. Flag rollback ?consent=0 → case retirée, comportement
+  // d'avant (consentement traité comme acquis). Modèle de lecture = flags pwcomic/onboard.
+  const consentFlag=(()=>{try{return !/[?&]consent=0/.test(window.location.search)}catch(_){return true}})()
+  const[consentOk,setConsentOk]=useState(false)
   const stripeRef=useRef(null)
   const elementsRef=useRef(null)
   const setupSecretRef=useRef(null)
@@ -1155,6 +1161,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
       return
     }
+    // Consentement requis sur le chemin Pass B2C payant (renonciation rétractation 14 j).
+    // Pas de gate en capture (offre gratuite, pas de paiement) ni sur l'abo (passCtxRef null),
+    // ni si le flag ?consent=0 désactive la case.
+    if(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk){
+      setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
+      return
+    }
     // ── Mode CAPTURE : aucun paiement dispo → on enregistre l'email (waitlist) +
     // état succès. Relance à la réouverture (source 'mollie_waitlist'). ──────────
     if(PAY_CAPTURE_ONLY){
@@ -1188,7 +1201,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
           :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
@@ -1275,7 +1288,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
       track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
     }
-  },[lang,source,payBusy,onActivated,onClose])
+  },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
   const doSubscribeRef=useRef(doSubscribe)
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
   // ── Apple Pay / Google Pay (Mollie) ─────────────────────────────────────────
@@ -1295,7 +1308,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
-        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
         :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
@@ -1324,6 +1337,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payWithWallet=useCallback((method)=>{
     if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
     const _pc=passCtxRef.current
+    // Même garde de consentement que le bouton carte sur le chemin Pass B2C.
+    if(consentFlag&&_pc&&!consentOk){
+      setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
+      return
+    }
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
     const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
     if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
@@ -1358,7 +1376,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const token=JSON.stringify(ev.payment.token)
               const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
               const body=_pc
-                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
                 :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
@@ -1381,7 +1399,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     }
     // ── Fallback / Google Pay : redirect Mollie hébergé (marche sans domaine validé) ──
     walletRedirect(method)
-  },[lang,source,onActivated,onClose,walletRedirect])
+  },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
     if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
@@ -1889,7 +1907,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
               {icon:"🛡",title:PAY_LABEL,sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
-              {icon:"⏱",title:_t(lang,"30 jours","30 days","30 días"),sub:_t(lang,"Satisfait ou remboursé","Money-back","Reembolso garantizado")},
+              {icon:"⏱",title:_t(lang,"Accès immédiat","Instant access","Acceso inmediato"),sub:_t(lang,"Paiement unique","One-time","Pago único")},
               {icon:"✕",title:NO_TRIAL?_t(lang,"2 clics","2 clicks","2 clics"):_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
               <div key={i} style={{padding:"10px 8px",borderRadius:10,
@@ -2337,10 +2355,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>🛡️</span>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-              {_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso de 30 días")}
+              {_t(lang,"Tu sais ce que tu achètes","You know what you're buying","Sabes lo que compras")}
             </div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:2,lineHeight:1.3}}>
-              {_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}
+              {_t(lang,"Verdict du jour gratuit, taux d'erreur publié sur /fiabilité. Paiement unique. Remboursé si l'accès ne s'ouvre pas ou si on s'est trompé de plage.","Today's verdict is free, error rate published on /reliability. One-time payment. Refunded if access won't open or we billed the wrong beach.","Veredicto de hoy gratis, tasa de error publicada en /fiabilidad. Pago único. Reembolso si el acceso no se abre o si cobramos la playa equivocada.")}
             </div>
           </div>
         </div>
@@ -2572,10 +2590,26 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn sg-paygold"
+          {/* Consentement rétractation 14 j — chemin Pass B2C payant uniquement.
+              Case NON pré-cochée ; tant qu'elle n'est pas cochée, le bouton payer est
+              désactivé. Flag ?consent=0 → case retirée (comportement d'avant). */}
+          {consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&(
+            <label style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:16,padding:"11px 13px",
+              borderRadius:12,background:"#13261F",border:"1px solid rgba(255,255,255,.14)",cursor:"pointer"}}>
+              <input type="checkbox" checked={consentOk} onChange={e=>{setConsentOk(e.target.checked);if(e.target.checked)setPayError("")}}
+                style={{flexShrink:0,marginTop:2,width:18,height:18,accentColor:"#FFC72C",cursor:"pointer"}}/>
+              <span style={{fontSize:11.5,lineHeight:1.45,color:"rgba(255,255,255,.72)"}}>
+                {_t(lang,
+                  "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation).",
+                  "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU).",
+                  "Acepto que mi previsión de 7 días y mis alertas se me faciliten de inmediato, en cuanto pague, y reconozco que al solicitar este acceso inmediato pierdo mi derecho de desistimiento de 14 días una vez abierto el acceso (art. L221-28 13° del Código de Consumo francés).")}
+              </span>
+            </label>
+          )}
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)} className="gbtn sg-paygold"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
-              cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
-              opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              cursor:payBusy?"wait":((consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)?"not-allowed":"pointer"),fontFamily:"inherit",fontWeight:800,fontSize:15.5,
+              opacity:(payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk))?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :PAY_CAPTURE_ONLY

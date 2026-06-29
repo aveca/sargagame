@@ -205,7 +205,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
           <span style={{ flex: "0 0 auto", marginTop: 1 }}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
           </span>
-          <span style={{ fontSize: 12, lineHeight: 1.45, fontWeight: 600, color: "rgba(234,247,244,.7)" }}>{_t(lang, <>Pas la bonne plage ? <b style={{ color: "#fff", fontWeight: 800 }}>Remboursé, un seul email.</b> Sans condition.</>, <>Wrong beach? <b style={{ color: "#fff", fontWeight: 800 }}>Refunded, one email.</b> No questions.</>, <>¿Playa equivocada? <b style={{ color: "#fff", fontWeight: 800 }}>Reembolsado, un email.</b> Sin condiciones.</>)}</span>
+          <span style={{ fontSize: 12, lineHeight: 1.45, fontWeight: 600, color: "rgba(234,247,244,.7)" }}>{_t(lang, <><b style={{ color: "#fff", fontWeight: 800 }}>Paiement unique, rien ne se renouvelle.</b> Remboursé si l'accès ne s'ouvre pas.</>, <><b style={{ color: "#fff", fontWeight: 800 }}>One-time payment, nothing renews.</b> Refunded if access won't open.</>, <><b style={{ color: "#fff", fontWeight: 800 }}>Pago único, nada se renueva.</b> Reembolso si el acceso no se abre.</>)}</span>
         </div>
 
         <div style={{ margin: "14px 0 2px", textAlign: "center", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
