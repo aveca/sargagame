@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **📈 2026-06-29 — SEO : RÉPARATION /carte-sargasses/ GP (#231 MERGÉ sur `main`). Levier tranché par panel adverse sur data GSC/GA4 réelle.**
+>
+> **Recadrage trafic (donnée réelle, pas clics GSC)** : GA4 28 j = **~515 sessions/j réseau** (MQ ~240/j, GP ~232/j, florida ~25, cancun ~15, puntacana ~5). Le fondateur EST DÉJÀ >50-100/j ; objectif réel = **prochain 2-3×**. Le « blocage GSC fondateur » est en fait **RÉSOLU** (5 domaines vérifiés + sitemaps soumis via `provision-gsc.yml`/`.cjs` — GSC remonte de la data ; IndexNow Bing câblé ; rebuild+deploy 4×/j). Pas d'action console GSC en attente.
+>
+> **Gisement n°1 = Guadeloupe** (Google la crawle déjà → effet en jours/sem, vs incubation lente US). GSC GP : `sargasses guadeloupe` 3785 impr/mois pos 4 CTR 5.3% · `carte des sargasses` 138 impr pos 8.8 **CTR 0%** · `sargasses en guadeloupe aujourd'hui` 291 impr pos 8.2.
+>
+> **Livré (#231, `vite.config.js`, additif)** : (1) **bug H1 réparé** (vérifié curl prod) — le H1 carte `Martinique et Guadeloupe` était un composite protégé du swap MQ→GP (L866/878) → « Martinique » parasitait la page GP (title↔H1 désalignés) ; H1 rendu swappable (L655) → `Carte des sargasses Guadeloupe aujourd'hui…` sur `_gp/`, corps pan-Antilles 53 MQ+83 GP intact ; (2) **title carte** +intent « aujourd'hui » (L518) ; (3) **`faqSchemas['carte-sargasses']`** (L660) 3 Q&R île-neutres hedgées (76-79% + /fiabilite/). **Titre home FR partagé MQ↔GP JAMAIS touché** → vache à lait MQ (pos 3.1 CTR 23%) protégée.
+>
+> **Gate PASSÉ** : esbuild ✅, build ✅, budget 192.9≤210 Ko ✅, smoke = faux-positifs **environnementaux** (analytics externes bloqués sandbox + heuristique boutons) **prouvés identiques au baseline `main`** (7 err + 15 boutons des 2 côtés) → zéro régression. **À confirmer J+7-14 GSC** : mouvement position/CTR cluster carte/aujourd'hui GP.
+>
+> **Pistes SEO suivantes (écartées ce tour par le panel)** : (a) dé-cannibalisation GP `/`↔`/carte-sargasses/` via canonical (plus risqué) ; (b) câble mort `meta-overrides.json` (chargé jamais consommé, cible `/plages/<slug>/` où `_enrichments` fait déjà le title live → gain faible) ; (c) US extraPages = volume mais incubation lente. NE PAS spammer de pages minces (doorway/cannibalisation).
+
 > **🗓️ 2026-06-29 — REPÈRE DE SAISON sur la fiche plage B2C (#228 MERGÉ sur `main`). Orientation réservation 2-3 sem, honnête. 2 panels d'agents + audit honnêteté.**
 >
 > **Demande fondateur** : un voyageur qui réserve un hôtel (ex. Le Diamant) pour dans 2-3 sem veut savoir si ça vaut le coup à cette période — « sur la fiche plage complète, pas la preview ».
