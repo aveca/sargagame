@@ -1,5 +1,20 @@
 # NEXT_SESSION — sargagame
 
+> **⚡ 2026-06-29 — PERF chargement/affichage : mesure terrain (RUM) + garde-fous CI + optim carte vedette. PR #201 `claude/app-performance-metrics-pq5c19` (DRAFT, 5 commits, en attente CI `perf`/merge). Doc complète = `docs/PERFORMANCE.md`.**
+>
+> **Pourquoi** : on optimisait à l'aveugle (CrUX laggé, non segmenté ; aucun gate perf en CI). Ce batch pose la **mesure** d'abord, puis attaque le plus gros poste profilé.
+>
+> **Livré (vérifié build + LHCI + smoke + régression visuelle screenshot)** :
+> 1. **RUM web-vitals → GA4** (`src/perf-vitals.js`, idle, chunk lazy 2,8 Ko) : LCP/INP/CLS/FCP/TTFB **réels** segmentés `sg_region`+`effective_type`. ⏳ **Action fondateur GA4** : enregistrer `metric_name/metric_value/metric_rating/sg_region/effective_type` en dimensions perso (collecte tourne déjà).
+> 2. **Preload carte first-paint** (`WorldMapView`, plugin Vite `modulepreload` du chunk hashé) → **LCP 7,6→6,8 s** (Lighthouse local, serveur NON compressé = pessimiste).
+> 3. **Bake SVG→PNG** de `WorldMapView` **différé à l'idle** + **encodé off-thread** (`toBlob` vs `toDataURL`) → coût main-thread **2237→684 ms** (profil 4× CPU). Gain **INP terrain** (lab plat car bake post-TTI).
+> 4. **Fix template FTP GP** : Google Fonts (bloqué anti-suivi) → self-hosted + preloads ; GA4 différé idle. Preload polices latin (root).
+> 5. **Garde-fous CI** : `scripts/check-bundle-budget.cjs` (budget gzip eager **bloquant** ≤210 Ko) + `lighthouserc.json` + `.github/workflows/perf-budget.yml` (LHCI mobile, **report-only** → promouvoir en `error` post-baseline).
+>
+> **Acquis / NE PAS REFAIRE** : **compression+cache déjà optimaux** dans `public/.htaccess` (mod_brotli/deflate + `immutable 1an`) → pré-compresser au build = inutile. **CLS=0** (swap skeleton→app parfait). Dep ajoutée : `web-vitals@5.3.0` (lockfile sync).
+>
+> **Suite data-driven** (sur RUM réel, PAS sur le lab local non compressé) : (a) alléger `drawImage` du bake (résolution 2,5→2×, **régression visuelle obligatoire**) ; (b) découper le monolithe `Sargasses_PROD.jsx` (entry 82 % inutilisé au first paint) ; (c) **CDN Cloudflare** devant le FTP (levier TTFB Floride/Caraïbes, décision infra). ⚠️ `WorldMapView` = carte vedette funnel/revenu → jamais de refacto sans screenshot de régression.
+
 > **📹📸 2026-06-28 — PREUVE DU PRÉSENT vs concurrent sargazowatch.com (webcams + photos visiteurs). PR #192 + #196 MERGÉES sur `main`, LIVE (auto-deploy 5 domaines). NE PAS REFAIRE.**
 >
 > **Pourquoi** : analyse du concurrent direct **sargazowatch.com** → il ne nous bat que sur la « preuve du présent » (1) webcams live, (2) photos visiteurs. Tout le reste (forecast+confiance, alertes push, PWA, SEO, multi-marchés, paiement) = on est déjà devant. Les deux gaps sont comblés. Analyse complète : `docs/competitor-sargazowatch.md`.
