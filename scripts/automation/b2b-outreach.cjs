@@ -171,7 +171,7 @@ function buildEmailHTML(target) {
 </ul>
 <p>And you don't have to take our word for it: our reliability is <strong>published and auditable, by regime</strong>. Over the May 30 – June 28 window, 100% of our "clean water" forecasts proved correct (2,274 comparisons, calm season); across all regimes we run around 76% accuracy, and the rare calm-season alerts are shown as low-confidence. When we miss, we write it down.</p>
 <p><strong>See your beaches live, right now</strong>: <a href="https://${site}/">${site}</a> — satellite map, 7-day forecast, free.</p>
-<p>A coastal watch dedicated to your property is in the works. If that resonates, <strong>just reply to this email — let's talk</strong>: I'll walk you through your beaches first.</p>
+<p>Want per-beach alerts + a "satellite-measured beach" widget on your own site? A <strong>free 30-day trial</strong> (no card) is rolling out for ${region} — reply <strong>TRIAL</strong> and I'll send your private access link. 100% online, no call, no meeting.</p>
 <p>Best,<br>
 <strong>The Watchman team · Sargassum ${region}</strong><br>
 <span style="color:#888;font-size:13px">Copernicus Marine satellite data · ${site}</span></p>
@@ -193,7 +193,7 @@ function buildEmailHTML(target) {
 </ul>
 <p>Y no tiene que creernos: nuestra fiabilidad está <strong>publicada y es auditable, por régimen</strong>. En la ventana del 30 de mayo al 28 de junio, el 100% de nuestros pronósticos de "agua limpia" se confirmaron (2.274 comparaciones, temporada tranquila); en todos los regímenes rondamos el 76% de acierto, y las raras alertas de temporada tranquila se muestran como baja confianza. Cuando nos equivocamos, lo escribimos.</p>
 <p><strong>Vea sus playas en vivo, ahora</strong>: <a href="https://${site}/">${site}</a> — mapa satelital, pronóstico 7 días, gratis.</p>
-<p>Una vigilancia costera dedicada a su establecimiento está en construcción. Si le interesa, <strong>responda a este correo — hablémoslo</strong>: primero le muestro sus playas.</p>
+<p>¿Quiere alertas playa por playa + un widget "playa medida por satélite" en su propio sitio? Una <strong>prueba gratuita de 30 días</strong> (sin tarjeta) se está activando para ${region} — responda <strong>PRUEBA</strong> y le envío su enlace de acceso privado. 100% en línea, sin llamada, sin cita.</p>
 <p>Un saludo,<br>
 <strong>El equipo El Vigía · Sargazo ${region}</strong><br>
 <span style="color:#888;font-size:13px">Datos satelitales Copernicus Marine · ${site}</span></p>
@@ -214,7 +214,7 @@ function buildEmailHTML(target) {
 </ul>
 <p>Et on ne vous demande pas de nous croire : notre fiabilité est <strong>publiée et auditable, par régime</strong>. Sur la fenêtre du 30 mai au 28 juin, 100 % de nos prévisions « mer propre » se sont vérifiées (2 274 comparaisons, saison calme) ; tous régimes confondus on tourne autour de 76 % de justesse, et les rares alertes de saison calme sont affichées en faible confiance. On se trompe parfois, on l'écrit.</p>
 <p><strong>Voyez l'état de vos plages en direct, maintenant</strong> : <a href="https://${site}/">${site}</a> — carte satellite, prévision 7 jours, gratuit.</p>
-<p>Une veille côtière dédiée à votre établissement est en cours de construction. Si l'idée vous parle, <strong>répondez à cet email — parlons-en</strong> : je vous montre vos plages avant d'aller plus loin.</p>
+<p>Envie d'alertes par plage + votre widget « plage mesurée au satellite » sur votre site ? C'est <strong>100 % en ligne, à votre rythme</strong> : essai <strong>30 jours gratuit, sans carte</strong>, puis 79 €/mois ou 690 €/an (garantie 30 j) → <a href="https://${site}/pro/espace/">${site}/pro/espace/</a>. Aucun rendez-vous, aucun appel.</p>
 <p>Bien à vous,<br>
 <strong>L'équipe Le Veilleur · Sargasses ${region}</strong><br>
 <span style="color:#888;font-size:13px">Données satellite Copernicus Marine · ${site}</span></p>
