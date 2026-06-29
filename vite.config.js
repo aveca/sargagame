@@ -1790,9 +1790,16 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               }
             }
             const extraSections = `${todayConditions}${accessSection}${driveContext}${orientationSection}${condBaignade}${activitySection}${seasonSection}${tagsHtml}`
-            // Beach photo for noscript (Google Images indexing)
+            // Beach photo for noscript (Google Images indexing) — servie en <picture>
+            // WebP (≈−85% sur les grosses photos) + fallback JPG intact (vieux
+            // navigateurs + indexation image). WebP générés par
+            // scripts/optimize-beach-images.cjs (à relancer si on ajoute des photos).
             const beachImgTag = _beachImages[b.id]
-              ? `<img src="/beaches/${_beachImages[b.id]}" alt="${b.name} — plage ${b.commune}, ${island}" width="800" height="450" loading="lazy" />`
+              ? (() => {
+                  const fn = _beachImages[b.id]
+                  const webp = fn.replace(/\.(jpe?g|png)$/i, '.webp')
+                  return `<picture><source srcset="/beaches/${webp}" type="image/webp" /><img src="/beaches/${fn}" alt="${b.name} — plage ${b.commune}, ${island}" width="800" height="450" loading="lazy" /></picture>`
+                })()
               : ''
             // Footer réseau USD : MQ/GP (domaines forts, pos 3-8) irriguent les
             // jeunes domaines — jusqu'ici seule la homepage linkait le réseau,

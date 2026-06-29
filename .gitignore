@@ -136,3 +136,6 @@ _*.mjs
 qa-capture-tmp.cjs
 qa-*.cjs
 _*.cjs
+
+# WebP plages générés par scripts/optimize-beach-images.cjs (build) — pas versionnés
+public/beaches/*.webp
