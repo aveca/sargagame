@@ -1,0 +1,35 @@
+name: Notify new visitor photos
+
+# Alerte email des nouvelles photos visiteurs à modérer (1-tap depuis l'email).
+# Poll Supabase (pending & non notifiées) toutes les 30 min + déclenchement manuel.
+# Zéro état committé : le marquage "notified" se fait dans Supabase.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify-photos
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Notify founder of pending photos
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MODERATE_TOKEN: ${{ secrets.MODERATE_TOKEN }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/notify-new-photos.cjs
