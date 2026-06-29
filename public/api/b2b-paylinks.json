@@ -6,7 +6,13 @@
       "url": "https://payment-links.mollie.com/payment/Ej4vNayqbDBpqXVJCPdRu",
       "value": "290.00",
       "createdAt": "2026-06-28T03:56:40.620Z"
+    },
+    "pro_annual": {
+      "id": "pl_SuTXwLmch7sNCHd9rkFL6",
+      "url": "https://payment-links.mollie.com/payment/SuTXwLmch7sNCHd9rkFL6",
+      "value": "690.00",
+      "createdAt": "2026-06-29T11:03:47.338Z"
     }
   },
-  "updatedAt": "2026-06-29T04:14:39.831Z"
+  "updatedAt": "2026-06-29T11:03:47.339Z"
 }

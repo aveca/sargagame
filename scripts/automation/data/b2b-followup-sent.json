@@ -1,1 +1,9 @@
-{ "_note": "Marqueur anti-doublon de send-b2b-followup.cjs : ids des follow-ups B2B déjà envoyés. NE PAS vider à la main (sinon ré-envoi).", "sent": [] }
+{
+  "_note": "Marqueur anti-doublon de send-b2b-followup.cjs : ids des follow-ups B2B déjà envoyés. NE PAS vider à la main (sinon ré-envoi).",
+  "sent": [
+    {
+      "id": "anoli-lodges-widget-fix-2026-06-29",
+      "ts": "2026-06-29T11:03:48.237Z"
+    }
+  ]
+}

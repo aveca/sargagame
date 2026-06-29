@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-06-29T04:17:33.180Z",
+  "updatedAt": "2026-06-29T11:09:24.885Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 84,
-    "contacted": 23,
-    "lead": 3,
+    "discovered": 81,
+    "contacted": 26,
+    "lead": 4,
     "paid": 1
   },
   "funnel": {
@@ -247,31 +247,31 @@
       "nextAction": "attendre / relance programmée"
     },
     "725711cb92e8a9b8503c6286f1631fc8": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Maya Beach Club",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T11:06:38.863Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a5c5a1c206527b7b9bd0c5f8d0498178": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Boucaniers Diving",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T11:06:38.974Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "7a4bbb48d7d2fa3b75986fe951858419": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Kalinago Plongee",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-29T11:06:39.250Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "1771f5e2f2acce1876aa680fe243c518": {
       "stage": "discovered",
@@ -994,6 +994,15 @@
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
     "0e404c05882349b5ae5c5665cba465ca": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "8eed02370a530f21c11bd53b5cd9b14b": {
       "stage": "lead",
       "name": null,
       "island": null,
