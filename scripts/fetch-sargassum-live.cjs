@@ -29,6 +29,7 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
+const { gateWeekly } = require('./lib/forecast-gate.cjs')
 const { computeScore } = require('./lib/score.cjs')
 const { phaseForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
@@ -107,6 +108,22 @@ const NEARBY_RADIUS_KM = 30   // direct threat zone
 const OFFSHORE_RADIUS_KM = 100 // incoming threat zone (east/northeast)
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+
+// Gating J+2→J+7 : écrit la prévision FULL dans <baseDir>/_private/forecast-full.json
+// (+ .htaccess Deny) que seul forecast.php restitue après auth. Le fichier est
+// COLOCALISÉ avec sargassum.json + forecast.php du même domaine → l'endpoint lit
+// __DIR__/_private/forecast-full.json, pas besoin de déduire la région.
+function writePrivateForecastFile(baseDir, privateForecasts, updatedAt) {
+  const privDir = path.join(baseDir, '_private')
+  fs.mkdirSync(privDir, { recursive: true })
+  const htPath = path.join(privDir, '.htaccess')
+  if (!fs.existsSync(htPath)) fs.writeFileSync(htPath, 'Require all denied\n', 'utf-8')
+  fs.writeFileSync(
+    path.join(privDir, 'forecast-full.json'),
+    JSON.stringify({ updatedAt, weekly: privateForecasts }),
+    'utf-8'
+  )
+}
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -1422,6 +1439,9 @@ async function runRegionPipeline(region, shared) {
   if (stale) {
     console.warn(`  ⚠️  [${region.id}] STALE: composite satellite ${Math.round(dataAgeMinutes / 60)}h (> ${SAT_STALE_HOURS}h)`)
   }
+  // Gating J+2→J+7 : le JSON public ne sert que J+0/J+1 ; la série complète part
+  // dans _private/forecast-full.json (servi par forecast.php après auth).
+  const { publicWeekly, privateForecasts, truncated } = gateWeekly(weekly)
   const payload = {
     source: grid ? 'erddap-live' : 'erddap-fallback',
     updatedAt,
@@ -1430,13 +1450,14 @@ async function runRegionPipeline(region, shared) {
     stale,
     pipelineVersion: '3.1',
     levels,
-    weekly,
+    weekly: publicWeekly,
     weather,
     scores,
     seasonOutlook: seasonOutlookFor(region.id, updatedAt),
   }
   if (!grid) payload.fallbackReason = 'erddap-unreachable' // mode degrade documente
   fs.writeFileSync(path.join(regionDir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
+  if (truncated) writePrivateForecastFile(regionDir, privateForecasts, updatedAt)
 
   // 7. History regional (valeurs satellite BRUTES, comme la racine)
   updateHistory(regionDir, rawLevels)
@@ -1662,6 +1683,9 @@ async function main() {
   if (stale) {
     console.warn(`  ⚠️  STALE: composite satellite ${Math.round(dataAgeMinutes / 60)}h (> ${SAT_STALE_HOURS}h) — ERDDAP ne se rafraichit plus, donnees republiees telles quelles`)
   }
+  // Gating J+2→J+7 : payload public = J+0/J+1 seulement ; full → _private. On gate
+  // une COPIE (publicWeekly) — `weekly` reste FULL pour l'archive append-only ci-dessous.
+  const { publicWeekly, privateForecasts, truncated } = gateWeekly(weekly)
   const payload = {
     source: 'erddap-live',
     updatedAt,
@@ -1670,7 +1694,7 @@ async function main() {
     stale,        // true => le composite satellite depasse SAT_STALE_HOURS (freshness check fiable)
     pipelineVersion: '3.1', // +Beach Score
     levels,
-    weekly,
+    weekly: publicWeekly,
     weather,  // per-island snapshot so client can re-compute scores for interpolated beaches
     scores,   // convenience map: beachId → {score, label, reason, breakdown}
     seasonOutlook: seasonOutlookFor('mq', updatedAt), // racine = contrat MQ/GP (lesser-antilles)
@@ -1678,6 +1702,7 @@ async function main() {
 
   const outPath = path.join(dir, 'sargassum.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
+  if (truncated) writePrivateForecastFile(dir, privateForecasts, updatedAt)
   console.log(`OK: ${outPath}`)
   console.log(`   source: erddap-live | updatedAt: ${updatedAt.slice(0, 19)} | sat: ${erddapTimestamp ? erddapTimestamp.slice(0, 19) : 'n/a'}${stale ? ' [STALE]' : ''}`)
 

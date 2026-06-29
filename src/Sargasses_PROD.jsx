@@ -2130,6 +2130,31 @@ export async function sgVerifySub(email){
   return m||s||{active:false}
 }
 export function sgReferredBy(){try{const raw=localStorage.getItem("sg_referred_by");if(!raw)return "";let code="",ts=0;try{const o=JSON.parse(raw);code=o.code||"";ts=o.ts||0}catch(_){code=raw}/* rétro-compat string legacy */if(!/^REF-[A-Z0-9]{6}$/.test(code))return "";if(ts&&Date.now()-ts>30*86400000)return ""/* attribution expirée */;if(code===sgMyReferralCode())return ""/* anti-auto-parrainage */;return code}catch(_){return ""}}
+
+// ── Gating J+2→J+7 (le verdict J+0/J+1 reste 100% gratuit) ─────────────────────
+// Le JSON public ne sert que J+0/J+1 ; la série complète vit derrière forecast.php
+// (auth email/pass/abo/comp OU token widget Pro). Flag rollback front `?gating=0`
+// → on n'appelle pas l'endpoint (le front se contente du public, sans tenter le merge).
+export const GATING=(()=>{try{return !/[?&]gating=0/.test(window.location.search)}catch(_){return true}})()
+// Récupère la prévision COMPLÈTE si on a une credential serveur-vérifiable (token
+// widget ?k= OU email payeur en localStorage). Retourne la map {beachId:[7j]} ou
+// null. Lecture seule, n'encaisse rien ; 403 propre si pas d'accès → null.
+export async function fetchFullForecast(){
+  try{
+    if(!GATING)return null
+    let k="";try{k=new URLSearchParams(window.location.search).get("k")||""}catch(_){}
+    if(k){
+      const r=await fetch(`/api/copernicus/forecast.php?k=${encodeURIComponent(k)}`)
+      if(r.ok){const j=await r.json();if(j&&j.ok&&j.weekly)return j.weekly}
+    }
+    let email="";try{email=localStorage.getItem("sg_email")||""}catch(_){}
+    if(email){
+      const r=await fetch("/api/copernicus/forecast.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})})
+      if(r.ok){const j=await r.json();if(j&&j.ok&&j.weekly)return j.weekly}
+    }
+  }catch(_){}
+  return null
+}
 function _sgcEnsureBuf(){
   if(_sgc.buf)return
   const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
@@ -2803,8 +2828,24 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // v3: cap visible days at J+3 (horizon beyond that is unreliable per backtest)
   // Memory beaches: show only J+1 reliably
   const reliableHorizon=weeklyData?.reliableHorizon||3
-  const visibleDays=Math.min(forecast.length,Math.max(4,reliableHorizon+1))
-  const visible=forecast.slice(0,visibleDays)
+  const targetDays=Math.max(4,reliableHorizon+1)
+  const visible=forecast.slice(0,targetDays)
+  // Gating J+2→J+7 : le JSON public ne porte que J+0/J+1. Pour le NON-premium on
+  // complète l'aperçu jusqu'à targetDays avec des barres CADENAS NEUTRES (status
+  // _loading gris, afai null — JAMAIS une valeur fabriquée). Le détail réel J+2-6
+  // se débloque côté premium (forecast complet servi par forecast.php). Premium
+  // sans merge (rare : pass local sans email) → on n'invente rien, on montre le réel.
+  if(!isPremium&&visible.length<targetDays){
+    const _DOW=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]
+    const last=forecast[forecast.length-1]
+    const lastDate=last&&last.date?last.date:null
+    for(let i=visible.length;i<targetDays;i++){
+      let date=null,day=null
+      if(lastDate){const dd=new Date(lastDate+"T00:00:00Z");dd.setUTCDate(dd.getUTCDate()+(i-(forecast.length-1)));date=dd.toISOString().slice(0,10);day=_DOW[dd.getUTCDay()]}
+      visible.push({date,day,afai:null,status:"_loading",confidence:null,type:"horizon",_ph:true})
+    }
+  }
+  const visibleDays=visible.length
   // Guard: a single NaN/undefined afai would poison max → NaN heights (React warning)
   const max=Math.max(...visible.map(d=>d.afai).filter(Number.isFinite),.1)
   // free1 A/B test ended: control (1 free day) 3.29% vs two_free 2.99% — 1 free day wins.
@@ -2916,7 +2957,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     {pwBeat&&beatOpen&&(()=>{
       const mood=VEILLEUR_MOOD[moodFromStatus(visible[0]?.status||"clean")]||VEILLEUR_MOOD.serein
       const allClean=visible.every(d=>d.status==="clean")
-      const stCol=s=>s==="clean"?"#3fd07f":s==="moderate"?"#FFD27A":"#F4845F"
+      const stCol=s=>s==="clean"?"#3fd07f":s==="moderate"?"#FFD27A":s==="avoid"?"#F4845F":"#8a8f93" // _loading/placeholder gaté → gris neutre (jamais "avoid" fabriqué)
       const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
       const promiseEl=allClean
         ?(lang==="es"?(<>Tu costa está limpia. <span style={G}>Mañana</span>, el Vigía ya lo ha visto.</>):lang==="en"?(<>Your coast is clear. <span style={G}>Tomorrow</span>, the Watchman has already seen it.</>):(<>Ta côte est propre. <span style={G}>Demain</span>, le Veilleur l'a déjà vu.</>))
@@ -3792,6 +3833,20 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   if(!beach)return null
   const isFav=favorites&&favorites.includes(beach.id)
   const fcDays=(forecast||[]).slice(0,7)
+  // Gating J+2→J+7 : la prévision publique ne porte que J+0/J+1. Le header annonce
+  // « 7 jours » → pour le NON-premium on complète avec des barres CADENAS NEUTRES
+  // (status _loading, déjà floutées car i>0) ; jamais de couleur/valeur fabriquée.
+  if(!isPremium&&fcDays.length>0&&fcDays.length<7){
+    const _DOW=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]
+    const _realLen=fcDays.length
+    const _last=fcDays[_realLen-1]
+    const _ld=_last&&_last.date?_last.date:null
+    for(let i=_realLen;i<7;i++){
+      let day=null
+      if(_ld){const dd=new Date(_ld+"T00:00:00Z");dd.setUTCDate(dd.getUTCDate()+(i-(_realLen-1)));day=_DOW[dd.getUTCDay()]}
+      fcDays.push({day,status:"_loading",afai:null,_ph:true})
+    }
+  }
 
   // CTA — region-aware social proof (chiffres modestes & réels)
   const socialN=200
@@ -11149,6 +11204,15 @@ export default function App(){
     if(w){s("sg_premium_welcome",false)}
     return w
   })
+  // Gating J+2→J+7 : re-déclenche le fetch principal (donc fetchFullForecast +
+  // recalcul de l'interpolation) quand l'utilisateur DEVIENT premium en cours de
+  // session (paiement/restauration) → il voit J+2-6 sans recharger. Pas de double
+  // run au mount pour un premium déjà connu (garde par ref).
+  const[premiumTick,setPremiumTick]=useState(0)
+  const _premWasTrue=useRef(isPremium) // snapshot initial (premium déjà connu au mount)
+  useEffect(()=>{
+    if(isPremium&&!_premWasTrue.current){ _premWasTrue.current=true; setPremiumTick(t=>t+1) }
+  },[isPremium])
   // « Premium activé » — confirmation EXPLICITE + robuste (non-lazy) AVANT l'onboarding.
   // Sans elle, le client qui vient de payer atterrit sur « choisis tes plages » et croit que
   // « ça fait rien » → panique/remboursement. zÉRO logique paiement, réversible ?paidsplash=0.
@@ -12070,10 +12134,24 @@ export default function App(){
       // app-reports.json = snapshot des reports IN-APP (le live Apps Script ~2,5 s reste en différé
       // pour la fraîcheur) ; fb-reports.json = signaux Facebook scrapés. On fusionne les deux.
       fetch("/api/community/app-reports.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null)
-    ]).then(([beachData,sargResult,beachWx,appReports,fbReports])=>{
+      fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
+      // Gating J+2→J+7 : si on a une credential (token widget / email payeur), on
+      // récupère la prévision COMPLÈTE EN PARALLÈLE → merge AVANT l'interpolation
+      // ci-dessous (sinon les plages interpolées n'auraient pas leurs J+2-6).
+      fetchFullForecast()
+    ]).then(([beachData,sargResult,beachWx,appReports,fbReports,fcFull])=>{
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)
+      // Merge prévision complète (premium/abonné/widget) dans sargResult.weekly
+      // AVANT toute interpolation. Non-premium ou 403 → fcFull null → reste gaté.
+      if(sargResult&&sargResult.weekly&&fcFull){
+        for(const id in sargResult.weekly){
+          const full=fcFull[id]
+          if(Array.isArray(full)&&full.length>2){
+            sargResult.weekly[id]={...sargResult.weekly[id],forecast:full,gated:false}
+          }
+        }
+      }
       // 1. Build full beach list (strip stale status/afai from JSON)
       let beaches=IS_NEW_REGION
         ?REGION.beaches.map(b=>({...b}))   // plages inline de la région (status placeholder jusqu'à la pipeline dédiée)
@@ -12219,7 +12297,7 @@ export default function App(){
       }
       setAllBeaches(beaches)
     })
-  },[])
+  },[premiumTick]) // re-run sur upgrade premium (gating : récupère J+2-6 + ré-interpole)
 
   // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data.
   // Merges two sources: (1) Apps Script /beach_reports (in-app user reports)

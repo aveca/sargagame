@@ -8,7 +8,22 @@ const fs = require('fs')
 const path = require('path')
 const { referenceConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
+const { gateWeekly } = require('./lib/forecast-gate.cjs')
 const { phaseForRegion } = require('./lib/season-climatology.cjs')
+
+// Gating J+2→J+7 : écrit la prévision FULL dans _private/forecast-full.json (+ Deny).
+// Idempotent : n'écrase le privé que si une vraie troncature a eu lieu.
+function writePrivateForecastFile(baseDir, privateForecasts, updatedAt) {
+  const privDir = path.join(baseDir, '_private')
+  fs.mkdirSync(privDir, { recursive: true })
+  const htPath = path.join(privDir, '.htaccess')
+  if (!fs.existsSync(htPath)) fs.writeFileSync(htPath, 'Require all denied\n', 'utf-8')
+  fs.writeFileSync(
+    path.join(privDir, 'forecast-full.json'),
+    JSON.stringify({ updatedAt, weekly: privateForecasts }),
+    'utf-8'
+  )
+}
 
 // Repère de saison (orientation moyen terme, fiche plage B2C) : phase climatologique
 // SOURCÉE, additive, jamais un verdict. Rafraîchie à CHAQUE build (mois courant) même
@@ -44,10 +59,16 @@ try {
 
 if (existing && existing.source === 'erddap-live') {
   // On garde la donnée verdict telle quelle, mais on rafraîchit le repère de saison
-  // (champ additif, mois courant). Ne touche jamais levels/weekly/scores.
+  // (champ additif, mois courant). Ne touche jamais levels/scores.
   existing.seasonOutlook = seasonOutlook()
+  // Gating : si le JSON conservé contient encore la série FULL (1er déploiement
+  // avant que le pipeline ait gaté), on tronque ici + on génère le fichier privé.
+  // Déjà gaté → no-op (truncated=false, on ne touche pas le privé).
+  const { publicWeekly, privateForecasts, truncated } = gateWeekly(existing.weekly)
+  existing.weekly = publicWeekly
   fs.writeFileSync(outPath, JSON.stringify(existing), 'utf-8')
-  console.log('OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)')
+  if (truncated) writePrivateForecastFile(dir, privateForecasts, existing.updatedAt || new Date().toISOString())
+  console.log(`OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook${truncated ? ', gated J+2-7' : ''})`)
 } else {
   const refConf = referenceConfidence()
   const levels = SARGASSUM_REF.map(l => ({
@@ -66,16 +87,19 @@ if (existing && existing.source === 'erddap-live') {
   } catch (_) {}
 
   const weekly = buildHonestForecast(levels, null, historyEntries, null)
+  const _ts = new Date().toISOString()
+  const { publicWeekly, privateForecasts, truncated } = gateWeekly(weekly)
   const payload = {
     source: 'reference',
-    updatedAt: new Date().toISOString(),
+    updatedAt: _ts,
     erddapTimestamp: null,
     dataAgeMinutes: null,
     pipelineVersion: '2.0',
     levels,
-    weekly,
+    weekly: publicWeekly,
     seasonOutlook: seasonOutlook(),
   }
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
-  console.log('OK: public/api/copernicus/sargassum.json (reference fallback, pipeline v2.0)')
+  if (truncated) writePrivateForecastFile(dir, privateForecasts, _ts)
+  console.log('OK: public/api/copernicus/sargassum.json (reference fallback, pipeline v2.0, gated J+2-7)')
 }
