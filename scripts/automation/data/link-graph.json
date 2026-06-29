@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-06-22T16:08:55.013Z",
+  "generatedAt": "2026-06-29T15:04:30.982Z",
   "sites": {
     "mq": {
-      "pageCount": 308,
-      "noIncomingCount": 188,
-      "fewIncomingCount": 29,
+      "pageCount": 328,
+      "noIncomingCount": 189,
+      "fewIncomingCount": 27,
       "phantomCount": 10,
       "noIncoming": [
         {
           "url": "/404.html",
           "in": 0,
-          "out": 5
+          "out": 4
         },
         {
           "url": "/agir/",
@@ -40,7 +40,7 @@
         {
           "url": "/comic-cartes.html",
           "in": 0,
-          "out": 0
+          "out": 1
         },
         {
           "url": "/conditions/",
@@ -96,6 +96,11 @@
           "url": "/pro/plan-sargasses-collectivite/",
           "in": 0,
           "out": 7
+        },
+        {
+          "url": "/pro/widget-config/",
+          "in": 0,
+          "out": 2
         },
         {
           "url": "/sarg_carte_satellite_app.html",
@@ -251,23 +256,18 @@
           "url": "/widget/embed/anse-champagne/",
           "in": 0,
           "out": 0
-        },
-        {
-          "url": "/widget/embed/anse-charpentier/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 8
+          "out": 18
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 13
         },
         {
           "url": "/en/sargassum-health/",
@@ -311,11 +311,6 @@
         },
         {
           "url": "/bilan-sargasses-2025/",
-          "in": 2,
-          "out": 4
-        },
-        {
-          "url": "/confidentialite.html",
           "in": 2,
           "out": 4
         },
@@ -370,11 +365,6 @@
           "out": 5
         },
         {
-          "url": "/mentions-legales.html",
-          "in": 2,
-          "out": 4
-        },
-        {
           "url": "/meteo-sargasses-martinique/",
           "in": 2,
           "out": 7
@@ -385,9 +375,9 @@
           "out": 7
         },
         {
-          "url": "/pro/widget-sargasses-hotel/",
+          "url": "/pro/espace/",
           "in": 2,
-          "out": 6
+          "out": 4
         },
         {
           "url": "/research/",
@@ -408,22 +398,22 @@
       "topTargets": [
         {
           "url": "/",
-          "in": 162,
+          "in": 169,
           "out": 17
         },
         {
-          "url": "/carte-sargasses/",
-          "in": 83,
-          "out": 13
-        },
-        {
           "url": "/previsions/",
-          "in": 78,
+          "in": 97,
           "out": 7
         },
         {
+          "url": "/carte-sargasses/",
+          "in": 94,
+          "out": 13
+        },
+        {
           "url": "/alertes/",
-          "in": 77,
+          "in": 91,
           "out": 6
         },
         {
@@ -432,29 +422,29 @@
           "out": 55
         },
         {
+          "url": "/saison-sargasses-martinique/",
+          "in": 28,
+          "out": 14
+        },
+        {
+          "url": "/meilleures-plages-martinique-sargasses/",
+          "in": 27,
+          "out": 12
+        },
+        {
+          "url": "/fiabilite/",
+          "in": 25,
+          "out": 8
+        },
+        {
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
           "out": 24
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "in": 20,
+          "in": 21,
           "out": 10
-        },
-        {
-          "url": "/plages/plages-sud-martinique/",
-          "in": 19,
-          "out": 21
-        },
-        {
-          "url": "/fiabilite/",
-          "in": 18,
-          "out": 1
-        },
-        {
-          "url": "/plages/plages-cote-atlantique-martinique/",
-          "in": 18,
-          "out": 20
         }
       ],
       "topDonors": [
@@ -464,14 +454,9 @@
           "out": 55
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 36
-        },
-        {
           "url": "/conditions/uv-fort/",
           "in": 6,
-          "out": 30
+          "out": 34
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -489,24 +474,29 @@
           "out": 20
         },
         {
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 18
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 18
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
+          "out": 18
+        },
+        {
           "url": "/",
-          "in": 162,
+          "in": 169,
           "out": 17
         },
         {
-          "url": "/sargasses-sainte-anne-martinique/",
-          "in": 9,
+          "url": "/sargasses-la-trinite/",
+          "in": 3,
           "out": 16
-        },
-        {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
-          "out": 15
-        },
-        {
-          "url": "/sargasses-sainte-luce/",
-          "in": 6,
-          "out": 14
         }
       ],
       "phantom": [
@@ -577,15 +567,15 @@
       ]
     },
     "gp": {
-      "pageCount": 339,
-      "noIncomingCount": 190,
-      "fewIncomingCount": 32,
+      "pageCount": 364,
+      "noIncomingCount": 192,
+      "fewIncomingCount": 29,
       "phantomCount": 10,
       "noIncoming": [
         {
           "url": "/404.html",
           "in": 0,
-          "out": 5
+          "out": 4
         },
         {
           "url": "/agir/",
@@ -615,7 +605,7 @@
         {
           "url": "/comic-cartes.html",
           "in": 0,
-          "out": 0
+          "out": 1
         },
         {
           "url": "/conditions/",
@@ -683,6 +673,11 @@
           "out": 7
         },
         {
+          "url": "/pro/widget-config/",
+          "in": 0,
+          "out": 2
+        },
+        {
           "url": "/sarg_carte_satellite_app.html",
           "in": 0,
           "out": 1
@@ -691,6 +686,11 @@
           "url": "/sargasses-aujourdhui/",
           "in": 0,
           "out": 10
+        },
+        {
+          "url": "/sargasses-bouillante/",
+          "in": 0,
+          "out": 13
         },
         {
           "url": "/sargasses-juin-2026/",
@@ -821,28 +821,18 @@
           "url": "/widget/embed/anse-canot-marie-galante/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-caritan/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-ceron/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 16
+          "out": 29
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 11
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -905,11 +895,6 @@
           "out": 10
         },
         {
-          "url": "/sargasses-deshaies/",
-          "in": 1,
-          "out": 10
-        },
-        {
           "url": "/sargasses-guadeloupe-cette-semaine/",
           "in": 1,
           "out": 11
@@ -935,11 +920,6 @@
           "out": 8
         },
         {
-          "url": "/confidentialite.html",
-          "in": 2,
-          "out": 4
-        },
-        {
           "url": "/en/best-beaches-guadeloupe/",
           "in": 2,
           "out": 1
@@ -960,50 +940,55 @@
           "out": 5
         },
         {
-          "url": "/mentions-legales.html",
-          "in": 2,
-          "out": 4
-        },
-        {
           "url": "/methode-carte/",
           "in": 2,
           "out": 7
         },
         {
-          "url": "/plages/ile-de-la-petite-terre/",
+          "url": "/pro/espace/",
           "in": 2,
-          "out": 9
-        },
-        {
-          "url": "/pro/widget-sargasses-hotel/",
-          "in": 2,
-          "out": 6
+          "out": 4
         },
         {
           "url": "/research/",
           "in": 2,
           "out": 5
+        },
+        {
+          "url": "/sargasses-deshaies/",
+          "in": 2,
+          "out": 10
+        },
+        {
+          "url": "/sargasses-record-2026/",
+          "in": 2,
+          "out": 9
+        },
+        {
+          "url": "/sargasses-sainte-anne-guadeloupe/",
+          "in": 2,
+          "out": 13
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 286,
+          "in": 293,
           "out": 15
         },
         {
-          "url": "/carte-sargasses/",
-          "in": 112,
-          "out": 13
-        },
-        {
           "url": "/previsions/",
-          "in": 108,
+          "in": 132,
           "out": 7
         },
         {
+          "url": "/carte-sargasses/",
+          "in": 128,
+          "out": 13
+        },
+        {
           "url": "/alertes/",
-          "in": 105,
+          "in": 124,
           "out": 6
         },
         {
@@ -1017,24 +1002,24 @@
           "out": 38
         },
         {
+          "url": "/meilleures-plages-guadeloupe-sargasses/",
+          "in": 31,
+          "out": 16
+        },
+        {
+          "url": "/saison-sargasses-guadeloupe/",
+          "in": 30,
+          "out": 12
+        },
+        {
+          "url": "/fiabilite/",
+          "in": 25,
+          "out": 8
+        },
+        {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
           "out": 27
-        },
-        {
-          "url": "/plages/plages-iles-guadeloupe/",
-          "in": 23,
-          "out": 25
-        },
-        {
-          "url": "/plages/plage-de-malendure/",
-          "in": 21,
-          "out": 10
-        },
-        {
-          "url": "/plages/la-grande-anse-deshaies/",
-          "in": 19,
-          "out": 9
         }
       ],
       "topDonors": [
@@ -1049,14 +1034,24 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/mer-calme/",
           "in": 6,
-          "out": 36
+          "out": 30
+        },
+        {
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 29
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 28
         },
         {
           "url": "/conditions/uv-fort/",
           "in": 6,
-          "out": 36
+          "out": 28
         },
         {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
@@ -1069,23 +1064,13 @@
           "out": 25
         },
         {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 16
-        },
-        {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
-          "in": 12,
+          "in": 31,
           "out": 16
         },
         {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 15
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
+          "url": "/sargasses-sainte-rose/",
+          "in": 3,
           "out": 15
         }
       ],

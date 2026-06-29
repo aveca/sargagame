@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-22T16:08:56.106Z",
+  "generatedAt": "2026-06-29T15:04:32.252Z",
   "sites": {
     "mq": {
-      "pageCount": 308,
+      "pageCount": 328,
       "medianWords": 12,
-      "thinCount": 199,
-      "richCount": 65,
+      "thinCount": 194,
+      "richCount": 68,
       "thinPages": [
         {
           "url": "/en/best-beaches-martinique/",
@@ -146,36 +146,36 @@
           "words": 1894
         },
         {
+          "url": "/plages/grande-anse-d-arlet/",
+          "words": 1846
+        },
+        {
+          "url": "/plages/plage-du-marin/",
+          "words": 1838
+        },
+        {
+          "url": "/plages/plage-du-bourg-sainte-anne/",
+          "words": 1833
+        },
+        {
           "url": "/arena-v2.html",
           "words": 1832
         },
         {
-          "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1739
+          "url": "/plages/anse-corps-de-garde/",
+          "words": 1822
         },
         {
-          "url": "/plages/grande-anse-d-arlet/",
-          "words": 1706
-        },
-        {
-          "url": "/plages/plage-des-salines/",
-          "words": 1702
-        },
-        {
-          "url": "/plages/plage-du-marin/",
-          "words": 1700
-        },
-        {
-          "url": "/plages/plage-du-diamant/",
-          "words": 1700
+          "url": "/plages/anse-mitan/",
+          "words": 1821
         }
       ]
     },
     "gp": {
-      "pageCount": 339,
-      "medianWords": 13,
-      "thinCount": 193,
-      "richCount": 96,
+      "pageCount": 364,
+      "medianWords": 160,
+      "thinCount": 194,
+      "richCount": 99,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -316,28 +316,28 @@
           "words": 1894
         },
         {
-          "url": "/arena-v2.html",
-          "words": 1832
-        },
-        {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1743
+          "words": 1885
         },
         {
           "url": "/plages/plage-de-la-caravelle/",
-          "words": 1735
-        },
-        {
-          "url": "/plages/ile-de-la-petite-terre/",
-          "words": 1711
+          "words": 1881
         },
         {
           "url": "/plages/plage-de-deshaies/",
-          "words": 1710
+          "words": 1852
+        },
+        {
+          "url": "/plages/plage-de-malendure/",
+          "words": 1844
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1705
+          "words": 1839
+        },
+        {
+          "url": "/plages/plage-du-gosier/",
+          "words": 1838
         }
       ]
     }

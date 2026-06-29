@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-22T16:08:55.693Z",
+  "generatedAt": "2026-06-29T15:04:31.802Z",
   "sites": {
     "mq": {
-      "pageCount": 308,
-      "uniqueTitles": 151,
-      "uniqueDescs": 134,
+      "pageCount": 328,
+      "uniqueTitles": 171,
+      "uniqueDescs": 154,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,8 +31,14 @@
           ]
         }
       ],
-      "issueCount": 479,
+      "issueCount": 487,
       "issues": [
+        {
+          "file": "404.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Le Veilleur a perdu celle-ci · Sargasses Martinique & Guadeloupe"
+        },
         {
           "file": "404.html",
           "kind": "missing-desc"
@@ -52,11 +58,6 @@
           "kind": "title-too-long",
           "length": 72,
           "value": "Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel"
-        },
-        {
-          "file": "alertes/index.html",
-          "kind": "desc-length-warn",
-          "length": 164
         },
         {
           "file": "arena-v2.html",
@@ -81,9 +82,15 @@
           "value": "Bulletin sargasses Martinique du jour — état des plages aujourd'hui"
         },
         {
-          "file": "bulletin-sargasses-martinique/index.html",
-          "kind": "desc-length-warn",
-          "length": 199
+          "file": "cgv.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Conditions générales de vente · Sargasses Martinique & Guadeloupe"
+        },
+        {
+          "file": "cgv.html",
+          "kind": "desc-too-long",
+          "length": 211
         },
         {
           "file": "comic-cartes.html",
@@ -96,9 +103,9 @@
           "value": "Comprendre les sargasses : origines, prolifération et prévision (2026)"
         },
         {
-          "file": "conditions/baignade-ideale/index.html",
+          "file": "comprendre-sargasses/index.html",
           "kind": "desc-length-warn",
-          "length": 166
+          "length": 98
         },
         {
           "file": "conditions/index.html",
@@ -112,35 +119,20 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 170
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 166
-        },
-        {
-          "file": "conditions/plages-enfants/index.html",
-          "kind": "desc-length-warn",
-          "length": 166
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 169
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec UV très fort aujourd’hui — Martinique (protégez-vous)"
-        },
-        {
-          "file": "conditions/uv-fort/index.html",
-          "kind": "desc-length-warn",
-          "length": 170
         },
         {
           "file": "confidentialite.html",
@@ -160,7 +152,7 @@
         {
           "file": "danger-sargasses-h2s/index.html",
           "kind": "desc-length-warn",
-          "length": 163
+          "length": 98
         },
         {
           "file": "detection-satellite-sargasses/index.html",
@@ -189,13 +181,25 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
+        },
+        {
+          "file": "en/sargassum-health/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
+        },
+        {
+          "file": "en/satellite-sargassum-detection/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
         }
       ]
     },
     "gp": {
-      "pageCount": 339,
-      "uniqueTitles": 182,
-      "uniqueDescs": 166,
+      "pageCount": 364,
+      "uniqueTitles": 207,
+      "uniqueDescs": 191,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -221,8 +225,14 @@
           ]
         }
       ],
-      "issueCount": 516,
+      "issueCount": 535,
       "issues": [
+        {
+          "file": "404.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Le Veilleur a perdu celle-ci · Sargasses Guadeloupe & Martinique"
+        },
         {
           "file": "404.html",
           "kind": "missing-desc"
@@ -242,11 +252,6 @@
           "kind": "title-too-long",
           "length": 72,
           "value": "Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel"
-        },
-        {
-          "file": "alertes/index.html",
-          "kind": "desc-length-warn",
-          "length": 164
         },
         {
           "file": "arena-v2.html",
@@ -271,9 +276,15 @@
           "value": "Bulletin sargasses Guadeloupe du jour — état des plages aujourd'hui"
         },
         {
-          "file": "bulletin-sargasses-guadeloupe/index.html",
+          "file": "cgv.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Conditions générales de vente · Sargasses Guadeloupe & Martinique"
+        },
+        {
+          "file": "cgv.html",
           "kind": "desc-too-long",
-          "length": 201
+          "length": 211
         },
         {
           "file": "comic-cartes.html",
@@ -286,9 +297,9 @@
           "value": "Comprendre les sargasses : origines, prolifération et prévision (2026)"
         },
         {
-          "file": "conditions/baignade-ideale/index.html",
+          "file": "comprendre-sargasses/index.html",
           "kind": "desc-length-warn",
-          "length": 170
+          "length": 98
         },
         {
           "file": "conditions/index.html",
@@ -302,35 +313,20 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 170
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 170
-        },
-        {
-          "file": "conditions/plages-enfants/index.html",
-          "kind": "desc-length-warn",
-          "length": 170
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 169
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec UV très fort aujourd’hui — Guadeloupe (protégez-vous)"
-        },
-        {
-          "file": "conditions/uv-fort/index.html",
-          "kind": "desc-length-warn",
-          "length": 170
         },
         {
           "file": "confidentialite.html",
@@ -350,7 +346,7 @@
         {
           "file": "danger-sargasses-h2s/index.html",
           "kind": "desc-length-warn",
-          "length": 163
+          "length": 98
         },
         {
           "file": "detection-satellite-sargasses/index.html",
@@ -379,6 +375,18 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
+        },
+        {
+          "file": "en/sargassum-health/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
+        },
+        {
+          "file": "en/satellite-sargassum-detection/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
         }
       ]
     }
