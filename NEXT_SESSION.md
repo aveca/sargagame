@@ -1,5 +1,23 @@
 # NEXT_SESSION — sargagame
 
+> **💼 2026-06-29 — B2B HÔTELS : mise en avant in-app + espace pro self-serve + pricing arrêté + 1ère vente (Anoli). Branche `claude/hotel-promotion-b2b-poqqwh` — PR #203/#206 MERGÉES, #208 OUVERTE (suite des commits).**
+>
+> **Principe fondateur (DUR)** : tout en **self-service, ZÉRO call**, vente automatique par email + site, dashboards prêts, scalable. Quand une décision est ambiguë → **panel d'agents adverses qui tranchent**, on suit leur verdict (pas l'humain).
+>
+> **Livré & mergé (LIVE)** :
+> - **Encart « Partenaire » sur la fiche plage (#203)** : `PartnerCard` dans `src/ChasseHome.jsx` (sous la webcam), labellisé « Partenaire », i18n, lien `sponsored`, events `sg_b2b_partner_view/click`. Source = `public/api/b2b-partners.json` `partners[]` (LIVE) généré par `scripts/automation/gen-b2b-partners.cjs` UNIQUEMENT depuis `b2b-partner-meta.json` `active:true` (gate anti-fausse-affirmation ; **0 partenaire live aujourd'hui**). Démo : `?preview_partner=<slug>`. Kill : `?partners=0`. **RÈGLE DURE** : le verdict sargasses reste 100 % data ERDDAP, l'argent ne le touche jamais.
+> - **Segment « clients payants » (#206)** : `fetch-payers.cjs` (croise onglets Sheet `payments`×`subscription_events`, moins désabos/bounces → `data/payers.json`, gitignored) + `relance-payers.cjs` (envoi ciblé, DRY-RUN par défaut). Step `Build payers segment` dans daily workflow. **On a déjà l'email de chaque payeur** (capture au checkout B2C → onglet `emails` + `payments` + Customer Mollie ; le B2C n'est PAS anonyme).
+> - **Espace Pro self-serve `/pro/espace/`** (#208) : page statique tout-en-un (plages live + configurateur widget + aperçu mise en avant + souscription). Perso via `?beach=&name=&accent=&partner=&k=`. Bouton « S'abonner » → lien Mollie `pro_annual`. Pages `/pro/pricing` + `/pro/hotels` + `B2B_OFFER.md` alignées (plus de « parlons-en »).
+>
+> **⭐ PRICING ARRÊTÉ (panel d'agents 2026-06-29)** : le blocage des 0 conversions = le **packaging** (790 € upfront), pas le prix. **Pro = 79 €/mois ou 690 €/an** (2 mois offerts, sous 700) · **essai 21 j gratuit SANS carte** (couvre un épisode sargasses) + relances J-3/J-0 · **garantie 30 j** sur l'annuel · **PAS** de prix d'appel cassé. Mensuel = porte d'entrée par défaut. USD : 89 $/mo · 790 $/an. Brief 29 €/290 € conservé (decoy). Appliqué : `mollie-paylinks.cjs` (790→690), espace, pages, B2B_OFFER.
+>
+> **⚠️ RESTE À CÂBLER (action fondateur / non fait)** :
+> 1. **Mensuel récurrent Mollie (79/29 €/mo)** = LE déblocage conversions. Le webhook gère DÉJÀ les abos (`sub_first→mol_create_subscription_once`, mandat, renouvellements) → **ajout de plans dans `mollie-config.php`** (secrets, hors repo, mobile). C'est le seul vrai blocage.
+> 2. Émission **auto du token d'essai 21 j** à la capture email (réutiliser `sg_widget_sign` de `widget-token.php`) — aujourd'hui l'espace capte par **mailto** (semi-manuel).
+> 3. Garantie 30 j self-serve (remboursement Mollie 1-clic). 4. Nudge annuel J+30. 5. Copy EN/ES dans `b2b-outreach.cjs`. 6. Auto-activation `PartnerCard` (`active:true`) sur paiement Pro confirmé (webhook) — aujourd'hui à la main.
+>
+> **🔒 EMAIL ANOLI EN HOLD (ne PAS envoyer sans relire)** : `data/b2b-followups.json` entrée `anoli-lodges-…` `hold:true` → `send-b2b-followup.cjs` la saute. Email = fix widget (leur widget pointe `plage-du-bourg-sainte-anne` au lieu de `plage-des-salines` — bon snippet dedans) + pitch essai 21 j + CTA `/pro/espace/`. **Pour l'envoyer** : passer `hold:false`, le step `Send B2B personal follow-ups` (daily, `--send`) l'envoie 1× (marqueur `b2b-followup-sent.json`). NB diagnostic widget : app (statusFromAfai) et widget (status API) cohérents sur les 20 plages — le « rouge » vu = soit cache PWA, soit le Bourg≠Salines (deux plages distinctes).
+
 > **⚡ 2026-06-29 — PERF chargement/affichage : mesure terrain (RUM) + garde-fous CI + optim carte vedette. PR #201 `claude/app-performance-metrics-pq5c19` (DRAFT, 5 commits, en attente CI `perf`/merge). Doc complète = `docs/PERFORMANCE.md`.**
 >
 > **Pourquoi** : on optimisait à l'aveugle (CrUX laggé, non segmenté ; aucun gate perf en CI). Ce batch pose la **mesure** d'abord, puis attaque le plus gros poste profilé.
