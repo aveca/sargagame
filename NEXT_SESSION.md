@@ -16,9 +16,10 @@
 >
 > **RESTE (backlog B2B, par leverage décroissant — non urgent)** :
 > - ✅ **FAIT** : copy froide drip b0-b13 refondue en self-serve (plus de « parlons-en / en construction », CTA → /pro/espace/, pricing 79/690 + essai 21j).
-> - **Garantie 30 j self-serve** (remboursement Mollie 1-clic) — money-path (refund API).
+> - ✅ **FAIT (#218)** : copy EN/ES outreach — elle existait déjà ; corrigé un vrai bug de locale (`b2b-cold-outreach.cjs` envoyait ES à Punta Cana / EN à la Riviera Maya, inversés) + reframe self-serve C0/C4 (plus de « parlons-en »).
+> - **Garantie 30 j self-serve** (remboursement Mollie 1-clic) — money-path (refund API). Aujourd'hui honorée par email (manuel) ; le 1-clic est un plus, pas un blocage.
 > - **PartnerCard auto-activation** (`active:true`) au paiement Pro confirmé → nécessite Supabase (le webhook PHP ne peut pas commit `b2b-partner-meta.json` en repo). Aucun partenaire live → non urgent.
-> - **Copy EN/ES** dans `b2b-outreach.cjs` (îles non-`gp` retombent sur le template FR).
+> - **B2B USD pas câblé bout-en-bout** (latent) : checkout EUR-only (`mol_is_eur_region`), `domainFor()` de `b2b-cold-outreach.cjs` mappe tout non-GP → domaine FR, et `/pro/espace/` pas garanti déployé sur les domaines USD. Enrichissement outreach = MQ/GP only aujourd'hui (donc latent). Avant d'activer l'outreach USD : domaines régionaux dans `domainFor`, paylinks USD, `mol_b2b_plans` USD, `/pro/espace/` sur domaines USD.
 
 > **🧭 2026-06-29 — AUDIT DE COHÉRENCE REPO (docs + code) vs apex `CLAUDE.md`. Branche `claude/ultracode-repo-audit-llo9lx`, PR #212. Forgé par orchestration multi-agents (workflows Ultracode : audit → vérif adverse → édition experts-rôles → critique → revue money-path ; ~80 agents).**
 >
