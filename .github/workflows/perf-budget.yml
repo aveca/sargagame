@@ -1,0 +1,39 @@
+name: Perf Budget + Lighthouse
+
+# Garde-fou perf sur les PR (et push main) : build → budget gzip du JS eager (bloquant)
+# → Lighthouse CI mobile (report-only pour l'instant, cf. lighthouserc.json). Empêche une
+# régression du chemin critique (ex. un chunk lazy redevenu eager) de partir en prod.
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Une PR qui pousse plusieurs fois → on annule les runs perf obsolètes.
+concurrency:
+  group: perf-budget-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  perf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Bundle budget (gzip, eager JS) — bloquant
+        run: node scripts/check-bundle-budget.cjs
+
+      - name: Lighthouse CI (mobile) — report-only
+        run: npx --yes @lhci/cli@0.14.x autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

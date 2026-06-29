@@ -207,6 +207,7 @@ export default function WorldMapView({
   const reduceRef  = useRef(false)
   const labelLayerRef = useRef(null)
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
+  const bakedObjUrlRef = useRef(null)  // objectURL du PNG baké (toBlob) → à révoquer (anti-leak)
   const fxRef      = useRef(null)  // couche live des effets d'échouage (au-dessus du monde baké)
   const fieldRef   = useRef(null)  // couche live du champ de sargasses au large (dérive lente)
   const audioRef   = useRef(null)  // AudioContext (lazy, débloqué au 1er geste)
@@ -383,25 +384,49 @@ export default function WorldMapView({
   useEffect(()=>{
     const svg=bakeRef.current
     if(!svg||!outline){ setBakedUrl(null); return }
-    let cancelled=false
+    let cancelled=false, idle=null
     const S=2.5, W=Math.round(800*S), H=Math.round(600*S)
-    let xml
-    try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
-    xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
-    const img=new Image()
-    img.onload=()=>{
+    // Le bake (sérialisation SVG + Image decode + drawImage 2.5× + toDataURL PNG) est un GROS
+    // bloc main-thread — profilé comme le hotspot n°1 du mount (~282 ms non-throttlé, ~1 s sous
+    // 4× CPU mobile). On le DIFFÈRE à l'idle : le SVG live (Stage 1) peint et reste interactif
+    // d'abord (= le fallback bakedUrl=null déjà en place), puis le bake se fait HORS fenêtre
+    // critique et swappe la texture GPU. Rendu final + optim pan/zoom inchangés ; seul le TIMING
+    // change → LCP/TTI/TBT améliorés. Échec/annulation → on reste sur le SVG live (zéro régression).
+    const runBake=()=>{
       if(cancelled) return
-      try{
-        const cv=document.createElement('canvas'); cv.width=W; cv.height=H
-        cv.getContext('2d').drawImage(img,0,0,W,H)
-        const png=cv.toDataURL('image/png')
-        if(!cancelled) setBakedUrl(png)
-      }catch(_){ if(!cancelled) setBakedUrl(null) }
+      let xml
+      try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
+      xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
+      const img=new Image()
+      img.onload=()=>{
+        if(cancelled) return
+        try{
+          const cv=document.createElement('canvas'); cv.width=W; cv.height=H
+          cv.getContext('2d').drawImage(img,0,0,W,H)
+          // toBlob (ASYNC, encode PNG hors-thread principal) au lieu de toDataURL (SYNCHRONE,
+          // bloquait ~2,2 s sous 4× CPU = le hotspot du mount). Même image → objectURL au lieu
+          // de data-URL (qu'on révoque pour éviter la fuite mémoire). Échec → fallback SVG live.
+          cv.toBlob(blob=>{
+            if(cancelled){ return }
+            if(!blob){ setBakedUrl(null); return }
+            const url=URL.createObjectURL(blob)
+            if(cancelled){ URL.revokeObjectURL(url); return }
+            if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
+            bakedObjUrlRef.current=url
+            setBakedUrl(url)
+          },'image/png')
+        }catch(_){ if(!cancelled) setBakedUrl(null) }
+      }
+      img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
     }
-    img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
-    return ()=>{ cancelled=true }
+    if(typeof requestIdleCallback==="function") idle=requestIdleCallback(runBake,{timeout:2000})
+    else idle=setTimeout(runBake,300)
+    return ()=>{ cancelled=true; try{ (typeof cancelIdleCallback==="function"?cancelIdleCallback:clearTimeout)(idle) }catch(_){} }
   },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
+
+  // Révoque l'objectURL du PNG baké au démontage (anti-leak mémoire).
+  useEffect(()=>()=>{ if(bakedObjUrlRef.current){ try{ URL.revokeObjectURL(bakedObjUrlRef.current) }catch(_){} bakedObjUrlRef.current=null } },[])
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
   // Vue par défaut = ÎLE GRANDE et centrée (décision fondateur 22/06 soir : la vue régionale

@@ -134,6 +134,13 @@
   <!-- fonts.css = QUE des @font-face (display:swap) → non render-blocking : le navigateur peint
        en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
        4G avant le 1er paint. (Pattern media=print→onload ; noscript fallback.) -->
+  <!-- Preload des 2 sous-ensembles LATIN above-the-fold (corps Bricolage + titres Anton) :
+       lance le download de la police DÈS le parse HTML, sans attendre que fonts.css soit chargé
+       puis parsé → réduit la durée de FOUT et le décalage (CLS) du swap tardif. `crossorigin`
+       OBLIGATOIRE même same-origin (les polices sont fetchées en mode CORS). Seuls les subsets
+       latin sont préchargés (les FR/EN/ES n'utilisent que U+0000–00FF). -->
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
   <link rel="preconnect" href="https://www.clarity.ms" />
