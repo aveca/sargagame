@@ -272,3 +272,59 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
     @curl_close($ch);
     return true;
 }
+
+/**
+ * mol_b2b_meeting_notify — notifie LE FONDATEUR (boîte Gmail) qu'une collectivité /
+ * groupe hôtelier (tier Territoire) a activé son accès ET demande un point/devis.
+ * Funnel HYBRIDE (décision fondateur) : l'accès reste 100% self-serve instantané, MAIS
+ * le secteur public a besoin d'un interlocuteur (devis, bon de commande, marché). Cet
+ * email transfère la demande au fondateur pour qu'il cale le RDV depuis son mobile.
+ * Réutilise le transport Resend de mol_b2b_trial_email (zéro secret nouveau). Best-effort.
+ * Throttle 1/h par email prospect (anti-doublon/relais). $d = {email, org, littoral, phone, island}.
+ */
+function mol_b2b_meeting_notify($cfg, $d) {
+    if (empty($cfg['resend_key'])) return false;
+    $email = trim((string)($d['email'] ?? ''));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+    $throttle = $dir . '/meeting_' . substr(hash('sha256', strtolower($email)), 0, 24);
+    if (file_exists($throttle) && (time() - @filemtime($throttle)) < 3600) return false;
+    @file_put_contents($throttle, date('c'));
+    $org      = substr(preg_replace('/[<>"]/', '', (string)($d['org'] ?? '')), 0, 80);
+    $littoral = substr(preg_replace('/[<>"]/', '', (string)($d['littoral'] ?? '')), 0, 120);
+    $phone    = substr(preg_replace('/[^0-9 +().-]/', '', (string)($d['phone'] ?? '')), 0, 30);
+    $island   = substr(preg_replace('/[^A-Za-z]/', '', (string)($d['island'] ?? '')), 0, 12);
+    $orgTxt   = $org !== '' ? $org : '(non précisé)';
+    $litTxt   = $littoral !== '' ? $littoral : '(non précisé)';
+    $telTxt   = $phone !== '' ? (' · tél ' . htmlspecialchars($phone)) : '';
+    $regTxt   = $island !== '' ? (' [' . htmlspecialchars(strtoupper($island)) . ']') : '';
+    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 10px;color:#b8860b">🟡 Territoire — ' . htmlspecialchars($orgTxt) . ' veut un point</h2>'
+        . '<p style="font-size:15px;line-height:1.6;margin:0 0 8px">Nouvelle demande <strong>Territoire</strong>' . $regTxt . ' — l\'accès essai 30 j est <strong>déjà activé</strong>.</p>'
+        . '<ul style="font-size:14px;line-height:1.7;margin:0 0 14px;padding-left:18px">'
+        . '<li>Collectivité / établissement : <strong>' . htmlspecialchars($orgTxt) . '</strong></li>'
+        . '<li>Littoral à couvrir : ' . htmlspecialchars($litTxt) . '</li>'
+        . '<li>Contact : <a href="mailto:' . htmlspecialchars($email) . '">' . htmlspecialchars($email) . '</a>' . $telTxt . '</li>'
+        . '</ul>'
+        . '<p style="font-size:13px;color:#444;line-height:1.55"><strong>Action</strong> : réponds en 1 ligne pour caler 15 min + préparer le devis (PDF). Achat public = devis daté + CGV + SIRET sur demande, bon de commande / mandat administratif acceptés.</p>'
+        . '<p style="font-size:12px;color:#999;margin-top:16px">Auto-alert from b2b-meeting.php — Le Veilleur</p></div>';
+    $payload = json_encode([
+        'from'     => 'Sargasses Pro <alerte@sargasses-martinique.com>',
+        'to'       => ['yacovassaraf@gmail.com'],
+        'reply_to' => $email,
+        'subject'  => '🟡 Territoire — ' . $orgTxt . ' veut un point (' . $litTxt . ')',
+        'html'     => $html,
+    ]);
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $cfg['resend_key'], 'Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 10,
+    ]);
+    @curl_exec($ch);
+    @curl_close($ch);
+    return true;
+}
