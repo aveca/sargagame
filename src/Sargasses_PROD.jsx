@@ -11245,9 +11245,17 @@ export default function App(){
       if(!pEmail||!pEmail.includes("@"))return
       sgVerifySub(pEmail).then(d=>{
         if(d.active){
-          localStorage.setItem("sg_premium","1")
-          localStorage.setItem("sg_premium_email",pEmail)
-          if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+          // Pass one-time : accès TIME-BOXÉ (passEnd en ms) → sg_premium_pass_end, pas
+          // le flag permanent sg_premium. isPremium dérive du pass_end → setIsPremium(true) OK.
+          if(d.passEnd&&d.kind==="pass"){
+            localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+            localStorage.setItem("sg_premium_email",pEmail)
+            localStorage.setItem("sg_email",pEmail)
+          }else{
+            localStorage.setItem("sg_premium","1")
+            localStorage.setItem("sg_premium_email",pEmail)
+            if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+          }
           setIsPremium(true)
           setShowWelcome(true)
           track("sg_premium_unlock_from_email",{status:d.status||"unknown"})

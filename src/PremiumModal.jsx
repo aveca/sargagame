@@ -1486,8 +1486,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const em=prompt(_t(lang,"Entre l'email utilisé pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
     if(!em||!em.includes("@"))return
     sgVerifySub(em).then(d=>{
-      if(d.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em)
-        if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+      if(d.active){
+        // Pass one-time : accès TIME-BOXÉ (passEnd en ms) — on pose sg_premium_pass_end,
+        // PAS le flag permanent sg_premium (un pass n'est pas un abo à vie). Abo = inchangé.
+        if(d.passEnd&&d.kind==="pass"){localStorage.setItem("sg_premium_pass_end",String(d.passEnd));localStorage.setItem("sg_premium_email",em);localStorage.setItem("sg_email",em)}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em);if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))}
         track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
       else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
         sgToast({tone:"error",title:_t(lang,"Aucun abonnement trouvé","No subscription found","No se encontró suscripción"),msg:_t(lang,"Vérifie l'adresse, ou écris-moi à "+SUPPORT_EMAIL+".","Check the address, or write to me at "+SUPPORT_EMAIL+".","Verifica la dirección, o escríbeme a "+SUPPORT_EMAIL+".")})}
@@ -2381,9 +2384,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           if(!em||!em.includes("@"))return
           sgVerifySub(em).then(d=>{
             if(d.active){
-              localStorage.setItem("sg_premium","1")
-              localStorage.setItem("sg_premium_email",em)
-              if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+              // Pass one-time : accès TIME-BOXÉ (passEnd en ms) → sg_premium_pass_end,
+              // pas le flag permanent sg_premium. Abo (sg_premium=1) = comportement inchangé.
+              if(d.passEnd&&d.kind==="pass"){
+                localStorage.setItem("sg_premium_pass_end",String(d.passEnd))
+                localStorage.setItem("sg_premium_email",em)
+                localStorage.setItem("sg_email",em)
+              }else{
+                localStorage.setItem("sg_premium","1")
+                localStorage.setItem("sg_premium_email",em)
+                if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+              }
               track("sg_premium_already_success",{source:source||"unknown"})
               onActivated?.()
               onClose()

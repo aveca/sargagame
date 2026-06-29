@@ -264,6 +264,12 @@ if ($action === 'payment_status') {
         $src = $meta['source'] ?? 'unknown';
         $em = $meta['email'] ?? '';
         mol_forward_fulfillment($cfg, $pid, $em, $cents, $currency, $isl, $plan, $src);
+        // PASS one-time : persiste un record Pass côté serveur (cross-device restore via
+        // verify_subscription). ADDITIF, idempotent (mol_pass_grant_store ne touche pas un
+        // abo et cumule max() sur re-jeu). N'altère PAS l'encaissement (best-effort).
+        if (!empty($meta['pass']) && $em) {
+            mol_pass_grant_store($em, $meta['pass']);
+        }
         if (($meta['kind'] ?? '') === 'sub_first') {
             $cust = $pay['customerId'] ?? '';
             if ($em && $cust) mol_create_subscription_once($cfg, $cust, $em, ($meta['plan'] ?? 'monthly'), $isl, $src);
@@ -295,13 +301,63 @@ if ($action === 'verify_subscription') {
     $email = trim($input['email'] ?? '');
     if (!$email) { http_response_code(400); echo json_encode(['error' => 'missing email']); exit; }
     $rec = mol_store_read($email);
-    if (!$rec || empty($rec['customer'])) { echo json_encode(['active' => false, 'reason' => 'no_subscription']); exit; }
-    list($code, $list) = mol_api('GET', '/customers/' . rawurlencode($rec['customer']) . '/subscriptions');
-    $active = false;
-    foreach (($list['_embedded']['subscriptions'] ?? []) as $s) {
-        if (in_array(($s['status'] ?? ''), ['active', 'pending'], true)) { $active = true; break; }
+    // ── Abonnement (comportement EXISTANT inchangé) : record avec 'customer'. ──────
+    if ($rec && !empty($rec['customer'])) {
+        list($code, $list) = mol_api('GET', '/customers/' . rawurlencode($rec['customer']) . '/subscriptions');
+        $active = false;
+        foreach (($list['_embedded']['subscriptions'] ?? []) as $s) {
+            if (in_array(($s['status'] ?? ''), ['active', 'pending'], true)) { $active = true; break; }
+        }
+        echo json_encode(['active' => $active]);
+        exit;
     }
-    echo json_encode(['active' => $active]);
+    // ── PASS one-time (ADDITIF) : restauration cross-device d'un pass payé. ────────
+    // (a) fast-path : record Pass déjà en cache, encore valide → on rend passEnd (ms).
+    if ($rec && ($rec['kind'] ?? '') === 'pass' && (int)($rec['pass_end'] ?? 0) > time()) {
+        echo json_encode(['active' => true, 'passEnd' => (int)$rec['pass_end'] * 1000, 'kind' => 'pass']);
+        exit;
+    }
+    // (b) self-heal pour les payeurs EXISTANTS (record absent, ex. achat d'avant cette
+    // feature) : on balaie les paiements Mollie 'paid' avec metadata.pass + metadata.email
+    // == $email, on prend le plus récent encore valide, on (re)cache et on rend passEnd.
+    // Borné à ~5 pages (250/page) ; toute erreur API → {active:false} proprement.
+    $best = 0; // pass_end (timestamp s) le plus lointain trouvé
+    $path = '/payments?limit=250';
+    $pages = 0;
+    while ($path && $pages < 5) {
+        $pages++;
+        list($pc, $pl) = mol_api('GET', $path);
+        if ($pc >= 400 || !is_array($pl)) break; // erreur API → on s'arrête (pas d'exception)
+        foreach (($pl['_embedded']['payments'] ?? []) as $p) {
+            if (($p['status'] ?? '') !== 'paid') continue;
+            $pm = $p['metadata'] ?? [];
+            $pPass = $pm['pass'] ?? '';
+            $pEmail = strtolower(trim((string)($pm['email'] ?? '')));
+            if ($pPass === '' || $pEmail === '' || $pEmail !== strtolower(trim($email))) continue;
+            $paidAt = $p['paidAt'] ?? ($p['createdAt'] ?? '');
+            $base = $paidAt ? strtotime($paidAt) : 0;
+            if (!$base) continue;
+            $end = $base + mol_pass_days($pPass) * 86400;
+            if ($end > $best) $best = $end;
+        }
+        // Pagination Mollie : _links.next.href est une URL ABSOLUE → on extrait le path v2.
+        $next = $pl['_links']['next']['href'] ?? null;
+        if ($next) {
+            $pp = parse_url($next, PHP_URL_PATH);
+            $pq = parse_url($next, PHP_URL_QUERY);
+            $path = $pp ? (preg_replace('#^/v2#', '', $pp) . ($pq ? ('?' . $pq) : '')) : null;
+        } else {
+            $path = null;
+        }
+    }
+    if ($best > time()) {
+        // Cache le record pour les prochaines vérifs (mol_pass_grant_store cumule max()).
+        $stored = mol_pass_grant_store($email, 'p7', $best); // passKey indicatif ; pass_end = $best (override)
+        $passEnd = ($stored > 0 ? $stored : $best);
+        echo json_encode(['active' => true, 'passEnd' => (int)$passEnd * 1000, 'kind' => 'pass']);
+        exit;
+    }
+    echo json_encode(['active' => false, 'reason' => 'no_subscription']);
     exit;
 }
 

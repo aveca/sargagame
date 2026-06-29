@@ -74,6 +74,68 @@ function mol_store_read($email) {
 }
 function mol_store_write($email, $data) { @file_put_contents(mol_store_path($email), json_encode($data)); }
 
+// ── PASS one-time : durée (jours) par passKey + persistance serveur cross-device ─
+// Le Pass B2C (paiement unique) ne vivait QU'EN localStorage → un acheteur qui change
+// d'appareil perdait son accès. On enregistre désormais un record Pass côté serveur
+// (mol_store) pour que verify_subscription puisse restaurer l'accès par email.
+//
+// MAP passKey -> jours : MIROIR EXACT du front (PassOffer.jsx + PremiumModal.jsx).
+//   p7/trip7/trip = 7 j · p30 = 30 j · saison/season = 210 j · pNN = NN j (cap 120 j,
+//   même règle que ?pass=pNN dans Sargasses_PROD.jsx). passKey inconnu → 7 j (défaut
+//   front `_pc.days||7`). passKey déjà sanitisé [a-z0-9] côté create_payment.
+function mol_pass_days($passKey) {
+    $k = strtolower(preg_replace('/[^a-z0-9]/', '', (string)$passKey));
+    $map = [
+        'p7'    => 7,
+        'trip7' => 7,
+        'trip'  => 7,
+        'p30'   => 30,
+        'saison' => 210,
+        'season' => 210,
+    ];
+    if (isset($map[$k])) return $map[$k];
+    if (preg_match('/^p(\d{1,3})$/', $k, $m)) { // pNN générique (miroir du front)
+        return max(1, min(120, (int)$m[1]));
+    }
+    return 7; // défaut = 7 j (miroir `_pc.days||7`)
+}
+
+// Enregistre/cumule un record PASS pour cet email (cross-device restore). IDEMPOTENT
+// et ADDITIF : NE TOUCHE JAMAIS un record d'abonnement (présence d'un 'customer' →
+// on n'écrase pas un abonné). Si un record Pass existe déjà, on garde max(existant,
+// nouveau) sur pass_end (pass cumulables / referral / re-achat) — rejouable par
+// payment_status ET le webhook sans doubler la durée. Verrou fichier (race
+// payment_status vs webhook). $passEndOverride : si fourni (>0), borne pass_end à
+// cette valeur (utilisé par le self-heal qui calcule depuis paidAt) ; sinon
+// pass_end = maintenant + durée(passKey).
+function mol_pass_grant_store($email, $passKey, $passEndOverride = 0) {
+    $email = strtolower(trim((string)$email));
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 0;
+    $newEnd = ($passEndOverride > 0) ? (int)$passEndOverride : (time() + mol_pass_days($passKey) * 86400);
+    $f = mol_store_path($email);
+    $lock = fopen($f . '.lock', 'c');
+    if ($lock) flock($lock, LOCK_EX);
+    $rec = is_file($f) ? (json_decode(@file_get_contents($f), true) ?: null) : null;
+    // Abonnement présent (customer) → on ne touche RIEN (additif, on ne dégrade pas un abo).
+    if (is_array($rec) && !empty($rec['customer'])) {
+        if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
+        return (int)($rec['pass_end'] ?? 0);
+    }
+    $prevEnd = (is_array($rec) && ($rec['kind'] ?? '') === 'pass') ? (int)($rec['pass_end'] ?? 0) : 0;
+    $passEnd = max($prevEnd, $newEnd); // cumul : on ne raccourcit jamais un pass existant
+    $out = [
+        'email'    => $email,
+        'kind'     => 'pass',
+        'pass'     => preg_replace('/[^a-z0-9]/', '', strtolower((string)$passKey)),
+        'plan'     => preg_replace('/[^a-z0-9]/', '', strtolower((string)$passKey)),
+        'pass_end' => $passEnd,
+        'ts'       => time(),
+    ];
+    @file_put_contents($f, json_encode($out));
+    if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
+    return $passEnd;
+}
+
 // ── Parrainage : LEDGER DE CRÉDIT par code parrain (REF-XXXXXX) ────────────────
 // Mollie ne peut NI couponner NI créditer au checkout (cf. mollie.php). La récompense
 // parrain est donc un CRÉDIT de jours de pass, stocké côté serveur par code, que l'app
