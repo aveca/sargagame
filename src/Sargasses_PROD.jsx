@@ -8565,6 +8565,13 @@ export default function App(){
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
   },[captureGate])
+  // Props STABILISÉES pour <WorldMapView> (memoïsé) : sans ça, l'objet arrivals et les
+  // arrows onClose/onCaptureEmail étaient recréés à CHAQUE render d'App → memo inutile,
+  // la carte (~1400 lignes) se re-rendait au tap d'une plage / toast / bannière. Ici elles
+  // ne changent que quand leurs vraies deps changent → carte stable hors changement data.
+  const mapArrivals=useMemo(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m},[allBeaches,sargData])
+  const onMapCaptureEmail=useCallback(em=>{try{submitLead(em,"map_world")}catch(_){}},[])
+  const onMapClose=useCallback(()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})},[])
   // onChangeView déclaré APRÈS openPremium pour pouvoir l'appeler directement (évite la stale closure).
   // Les bug fixes (source correcte + capture gate) s'appliquent aux deux bras A/B.
   const onChangeView=useCallback(v=>{
@@ -9395,10 +9402,10 @@ export default function App(){
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium}
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
-                arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m})()}
-                onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
+                arrivals={mapArrivals}
+                onCaptureEmail={onMapCaptureEmail}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
-                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+                onClose={onMapClose}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
 

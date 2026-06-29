@@ -192,7 +192,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 // Ellipses de relief (Martinique uniquement)
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
-export default function WorldMapView({
+function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0,
 }){
   const wrapRef    = useRef(null)
@@ -1444,3 +1444,11 @@ export default function WorldMapView({
     </div>
   )
 }
+
+// React.memo : la carte est la surface la plus lourde et la plus interagie. Sans memo,
+// chaque setState de l'App (ouverture de feuille, toast, bannière, état premium…)
+// re-rendait tout le corps (~1400 lignes : reprojection des pins, etc.) PENDANT
+// l'interaction → coût INP direct au tap d'une plage. Memo + props stabilisées côté
+// App (arrivals useMemo, onClose/onCaptureEmail useCallback) = la carte ne re-rend
+// que quand SES données changent (beaches/jour/sargData), pas sur du bruit d'App.
+export default React.memo(WorldMapView)
