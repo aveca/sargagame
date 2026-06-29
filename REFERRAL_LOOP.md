@@ -1,5 +1,7 @@
 # REFERRAL_LOOP.md — Parrainage incité « Invite un ami, vous gagnez tous les deux 1 mois »
 
+> ⚠️ **SUPERSEDED (2026-06-29) — implémenté dans le chemin Mollie pass-only** (ledger pass-days dans `public/api/mollie.php` + crédit au webhook `paid`, action `claim_referral_credit`). Cette spec Stripe (coupon / balance-credit, `create-checkout.php`, crédit 4,99 €/mois récurrent) est **HISTORIQUE** : le modèle B2C est passé en **PASS-ONLY Mollie** (paiement unique, plus d'abonnement), donc les coupons d'abonnement et le balance-credit Stripe **ne s'appliquent plus**. La récompense vit désormais comme un **ledger de jours de pass** côté `mollie.php` (metadata customer `referral_code` / `referred_by`, crédit au webhook `paid`, réclamation via l'action `claim_referral_credit`). Stripe ne sert plus de caisse (16 abos EUR legacy uniquement). L'en-tête du §4 pointe désormais vers `mollie.php` / le webhook Mollie ; **tout le reste de cette spec (§0 TL;DR, §2 schéma, §4 détail, §7-§10) décrit la mécanique Stripe d'origine et est conservé tel quel pour l'historique de conception** — ne PAS l'appliquer en l'état (coupon / balance-credit / 4,99 € récurrent obsolètes). L'implémentation qui fait foi est le ledger pass-days de `mollie.php`.
+
 > Spec d'implémentation. **Ne modifie PAS `src/Sargasses_PROD.jsx`** (un autre agent y travaille) — ce doc décrit le QUOI et le OÙ (numéros de ligne précis) ; l'écriture du code est faite ensuite par l'agent qui a la main sur le fichier.
 >
 > ⚠️ **Les numéros de ligne ci-dessous sont relevés le 2026-06-24 mais `Sargasses_PROD.jsx` est en cours d'édition par un autre agent** → ils peuvent dériver de quelques dizaines de lignes. Toujours re-localiser par **ancre textuelle** (donnée à côté de chaque ligne) avant d'éditer, pas par numéro brut. Ancres stables : `action:"subscribe"`, `sg_referred_by`, `sg_referral_code`, `REFERRAL LANDING BANNER`, `openPremium("referral_banner")`.
@@ -100,7 +102,9 @@ Contraintes :
 
 ---
 
-## 4. Récompense Stripe (`public/api/create-checkout.php`)
+## 4. Récompense (HISTORIQUE Stripe `create-checkout.php` — voir bannière : implémenté en pass-days Mollie)
+
+> ⚠️ **Le bloc §4 ci-dessous décrit l'ancienne mécanique Stripe** (coupon filleul + balance-credit parrain dans `create-checkout.php`). **NON retenu** : sous le modèle pass-only, la récompense est implémentée dans `public/api/mollie.php` — attribution via metadata customer Mollie (`referral_code` du parrain, `referred_by` du filleul, posés au `subscribe`/checkout, cf. `mollie.php`), crédit de **jours de pass** posé au **webhook Mollie `paid`** (et non un coupon d'abonnement ni un balance-credit), réclamés par l'app du parrain via l'action `claim_referral_credit`. Lire ci-dessous pour l'intention de conception (cap anti-abus, fenêtre d'attribution, idempotence), mais transposer les call-sites Stripe → `mollie.php` / webhook Mollie et la devise « −4,99 € / mois » → « jours de pass offerts ».
 
 ### 4.1 — Coupon filleul (1er mois gratuit)
 
@@ -229,7 +233,7 @@ else navigator.clipboard?.writeText(txt+" "+url)
 > `alerte@`, `scripts/automation/lib/email-send.cjs` via nodemailer). Au go-live Mollie,
 > l'email de récompense parrain doit utiliser ce transport SMTP, pas Resend.
 
-Quand un crédit est appliqué, le parrain n'a pas de feedback temps réel (le crédit se fait serveur-à-serveur). **v1 simple** : afficher dans le hub (§5.1) le compteur de crédits si on l'expose, OU envoyer un **email Resend** au parrain (réutiliser `resend()` dans `create-checkout.php`, déclenché dans `sg_credit_referrer`). Recommandation v1 : **email** « 🎁 Un ami s'est abonné — 1 mois t'est offert ». C'est tangible et n'exige aucune nouvelle surface front.
+Quand un crédit est appliqué, le parrain n'a pas de feedback temps réel (le crédit se fait serveur-à-serveur, au webhook Mollie `paid`). **v1 simple** : afficher dans le hub (§5.1) le compteur de jours de pass crédités si on l'expose, OU envoyer un **email SMTP** au parrain (transport `scripts/automation/lib/email-send.cjs` via nodemailer ; **Resend abandonné**, ne pas réutiliser `resend()`), déclenché côté serveur quand le crédit est posé. Recommandation v1 : **email** « 🎁 Un ami s'est abonné — des jours de pass te sont offerts ». C'est tangible et n'exige aucune nouvelle surface front.
 
 ### 5.4 — Bandeau filleul (déjà là, copy à MAJ)
 
@@ -266,7 +270,7 @@ const REF_COPY = {
                       en:"Tap to activate — 1st month free",
                       es:"Toca para activar — 1er mes gratis" },
 
-  // Email parrain (§5.3) — sujet + corps Resend (FR/EN selon lang du filleul; défaut FR)
+  // Email parrain (§5.3) — sujet + corps SMTP (FR/EN selon lang du filleul; défaut FR)
   rewardEmailSubject: { fr:"🎁 Un ami s'est abonné — 1 mois t'est offert",
                         en:"🎁 A friend subscribed — 1 month is on us",
                         es:"🎁 Un amigo se suscribió — 1 mes de regalo" },
@@ -330,7 +334,7 @@ KPI à suivre (skill `sargasses` / daily-metrics) :
 2. Écrire `metadata[referral_code]` sur le customer (§4.4).
 3. Appliquer `$subParams['coupon']` si `$validRef` (§4.1).
 4. Ajouter la fonction `sg_credit_referrer` (§4.3) + l'appeler dans le bloc fire-and-forget (§4.2).
-5. (Optionnel) email parrain via `resend()` dans `sg_credit_referrer` (§5.3).
+5. (Optionnel) email parrain via SMTP (`scripts/automation/lib/email-send.cjs`, **pas `resend()`** — Resend abandonné) au moment du crédit (§5.3).
 - **Test** : `scripts/test-stripe-webhook.cjs` (cohérence) + un abonnement test bout-en-bout en mode test Stripe (carte 4242, avec et sans `?ref=`).
 
 **Étape 3 — Front : propagation (`Sargasses_PROD.jsx`, par l'agent du fichier)** :

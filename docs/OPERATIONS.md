@@ -90,8 +90,8 @@ Dans l'ordre. `<id>` = code court minuscule (ex. `jamaica`), `<ID>` = majuscules
 2. **Domaine + hosting** : acheter le domaine, créer l'hébergement, créer le compte FTP **`claudedeploy@<domaine>`** (convention des comptes deploy).
 3. **3 secrets GitHub FTP** : `gh secret set FTP_SERVER_<ID>`, `FTP_USERNAME_<ID>`, `FTP_PASSWORD_<ID>` (repo aveca/sargagame).
 4. **`daily-copernicus.yml`** : ajouter les 3 `FTP_*_<ID>` au bloc `env:` du step "Deploy FTPS toutes régions" (et `ONESIGNAL_API_KEY_<ID>` au step "Send notifications" une fois l'app créée — étape 7). Le reste du workflow découvre la région tout seul via `regions/index.cjs`.
-5. **Stripe** : `node scripts/create-region-payment-links.cjs <id>` (clé via `STRIPE_KEY` env ou `STRIPE_SECRET_KEY` dans `.env` ; tester d'abord en `sk_test_`). Idempotent ; écrit `paymentLinks{}` dans `regions/<id>.json`.
-6. **⚠️ PIÈGE — `public/api/stripe-webhook.php`** : ajouter `'<id>'` à `$KNOWN_REGIONS` **à la main** (PHP ne lit pas `regions/index.cjs`). Sans ça, les paiements de la région sont **ignorés silencieusement** (HTTP 200 + ignore). Vérifier la parité : `node scripts/test-stripe-webhook.cjs`. Redéployer le PHP par FTP.
+5. **Paiement Mollie on-site** (caisse active = Mollie, plus de Stripe) — dans `public/api/mollie.php` : ajouter le domaine à `$allowed` **et** à `$ISLAND_BY_ORIGIN` (mapping origin → `<id>`), puis ajouter `'<id>' => 'EUR'` ou `'USD'` à `$CUR_BY_ISLAND`. Le `mollie-config.php` (secrets `api_key`/`webhook_secret`) est **déployé par FTP** et **jamais committé** (gitignored) — ne pas le toucher en repo. Redéployer le PHP par FTP.
+6. **Régions USD** : activer `MOLLIE_LIVE_USD` côté front pour la région (kill-switch `PAY_CAPTURE_ONLY` par surface tant que l'USD n'est pas validé par un vrai paiement). Stripe (`scripts/create-region-payment-links.cjs`, `public/api/stripe-webhook.php`, `$KNOWN_REGIONS`) = **legacy uniquement** (16 abos EUR historiques) ; ne PAS y câbler une nouvelle région ni y renvoyer un CTA.
 7. **OneSignal** : créer l'app de la région, copier l'`onesignalAppId` dans `regions/<id>.json`, créer une clé REST API nommée **`github-actions`**, la poser : `gh secret set ONESIGNAL_API_KEY_<ID>`.
 8. **Clarity** : créer le projet **manuellement** (pas d'API), copier `clarityProjectId` dans `regions/<id>.json`.
 9. **GSC + GA4** : `gh workflow run provision-gsc.yml -f regions="<id>"` puis `gh workflow run provision-ga4.yml -f regions="<id>"` ; reporter le `ga4Id` (G-XXXX) dans `regions/<id>.json`.
@@ -104,4 +104,5 @@ Dans l'ordre. `<id>` = code court minuscule (ex. `jamaica`), `<ID>` = majuscules
 - **Session startup** : `npm run session` (freshness pipeline, métriques, funnel, workflows récents, mémoire projet).
 - **Pipeline STALE (>12 h)** : `gh workflow run daily-copernicus.yml --repo aveca/sargagame --ref main`.
 - **`.env` racine** (gitignoré) : mêmes clés que les secrets GitHub (`FTP_SERVER_MQ`, …, `STRIPE_SECRET_KEY`) pour les deploys locaux.
-- **Fichiers jamais committés** : `.env`, `**/stripe-config.php`, `copernicustxt.txt`, `*-ftp/`, clés service account `*.json`, `SECRETS-GITHUB.txt`, `.fb-session*/`.
+- **Clé de caisse active** : `MOLLIE_API_KEY` (secret GitHub Actions provisionné) est la clé du provider de paiement actif (Mollie on-site). `STRIPE_SECRET_KEY` = legacy uniquement (16 abos EUR historiques).
+- **Fichiers jamais committés** : `.env`, `**/mollie-config.php`, `**/stripe-config.php` (legacy), `copernicustxt.txt`, `*-ftp/`, clés service account `*.json`, `SECRETS-GITHUB.txt`, `.fb-session*/`.

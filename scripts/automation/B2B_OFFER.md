@@ -1,6 +1,6 @@
 # Le Veilleur — Veille côtière (B2B) — pricing arrêté 2026-06-29
 
-> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 21 jours gratuit sans carte**, garantie 30 j sur l'annuel. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = à câbler** (plans Mollie dans `mollie-config.php`, action fondateur) ; **essai 21 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
+> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 21 jours gratuit sans carte**, garantie 30 j sur l'annuel. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 21 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
 
 > Doc de référence pour la prospection B2B sortante (`b2b-outreach.cjs` + `data/b2b-targets.json`).
 > Cible : hôtels de bord de mer, clubs de plage, offices de tourisme, mairies littorales.
@@ -34,7 +34,7 @@ L'état de vos plages affiché sur votre site / page de réservation, à vos cou
 - **Garde-fou honnêteté (intangible)** : la mise en avant est **clairement labellisée « Partenaire »** (placement payant assumé) et **n'influence JAMAIS le verdict sargasses** — un partenaire dont la plage est envahie reste affiché « à éviter ». La neutralité de la donnée est ce qui rend la mise en avant crédible ; on ne la vend pas.
 - **Prix** (arrêté 2026-06-29) :
   - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 21 j gratuit sans carte · garantie 30 j sur l'annuel.
-  - USD : **$99/mois** ou **$990/an**.
+  - USD : **$89/mois** ou **$790/an**.
 
 ### 3. Territory — tout le littoral, baie par baie (haut de gamme)
 Pour les **mairies, offices de tourisme et groupes hôteliers** qui veillent plusieurs plages à la fois : la même mer, lue crique par crique sur tout votre territoire.
@@ -54,11 +54,11 @@ Pour les **mairies, offices de tourisme et groupes hôteliers** qui veillent plu
 | 2. Pro      | 79 €/mo · 690 €/an   | $89/mo · $790/an      | Hôtel avec site, résidence, office      |
 | 3. Territory| 199 €/mo · 1 990 €/an| $249/mo · sur devis   | Mairie, office, groupe hôtelier         |
 
-État réel (2026-06-29) : pricing **arrêté**. **Annuel self-serve LIVE** (liens Mollie `b2b-paylinks.json` : Pro 690 €, Brief 290 €). **Mensuel récurrent (79/29 €) à câbler** (plans Mollie). Essai 21 j = capture email (émission auto du token à câbler). Action B2B = **self-serve** (espace `/pro/espace/`, essai 21 j) — plus de « parlons-en ».
+État réel (2026-06-29) : pricing **arrêté**. **Annuel self-serve LIVE** (liens Mollie `b2b-paylinks.json` : Pro 690 €, Brief 290 €). **Mensuel récurrent (79/29 €) câblé en repo** (`mol_b2b_plans`, #210). Essai 21 j = capture email (émission auto du token à câbler). Action B2B = **self-serve** (espace `/pro/espace/`, essai 21 j) — plus de « parlons-en ».
 
 ## Pitch email (premier contact, consultatif)
 
-Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'état de vos plages en direct »). Ce doc décrit l'**upsell payant** quand l'établissement répond / clique. Le fondateur prend le relais humain sur les réponses chaudes.
+Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'état de vos plages en direct »). Ce doc décrit l'**upsell payant** quand l'établissement répond / clique. Sur une réponse chaude, le prospect se sert lui-même via `/pro/espace/` (essai 21 j, paiement en ligne) — aucun appel ; l'email reste le canal de réponse aux questions.
 
 **Objet** : Vos plages, surveillées au satellite — pour vos clients
 
@@ -91,7 +91,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
 >
-> The offer for businesses is still being finalized (Brief / Pro / Territory tiers, from $39/mo). Today, the best step: let's talk. I'll show you your beaches live — and your placement — whenever you like; just reply.
+> Try it free for 21 days, no card (Pro from $89/mo, or $790/yr, two months free). It's all online, at your own pace: here's your space, with your beaches live, your widget and your in-app placement → [/pro/espace/ link]. Annual is payable online today; just reply if you have a question.
 >
 > Best,
 > Le Veilleur · coastal watch, operated from Martinique
@@ -101,6 +101,6 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 Le pricing est arrêté et l'annuel est déjà payable en self-serve. Ce qui reste à câbler pour le 100 % automatique (sans humain) :
 
 - Brancher un copy EN/ES dans `b2b-outreach.cjs` (`buildEmailHTML`) selon `target.island` (florida/rivieramaya → EN, puntacana → ES/EN). Aujourd'hui, tout island ≠ `gp` retombe sur le template FR/Martinique.
-- Créer les Payment Links / prix correspondants (3 paliers × 2 devises × mensuel/annuel) puis les référencer dans `regions/<id>.json`. (B2C neuf = Mollie pass-only ; le B2B récurrent reste à trancher techniquement — ne pas réutiliser les liens USD Stripe désactivés.)
+- Créer les Payment Links / prix correspondants (3 paliers × 2 devises × mensuel/annuel) puis les référencer dans `regions/<id>.json`. (B2C neuf = Mollie pass-only ; le B2B mensuel récurrent est **câblé** via Mollie `mol_b2b_plans` (#210) — restent les paylinks annuels par devise ; ne pas réutiliser les liens USD Stripe désactivés.)
 - Le palier Pro (affichage à vos couleurs) : ajouter un flag `?brand=<id>&hideLogo=1` au widget `public/widget/embed`, servi uniquement aux clients payants (token). Tant que non livré, ne pas l'annoncer comme white-label.
 - L'API (palier Territory) : exposer la donnée publique `public/api/copernicus/sargassum.json` derrière une clé (compteur d'appels, pas de nouveau pipeline).

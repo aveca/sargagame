@@ -1,6 +1,6 @@
 # Routine SEO & Analytics — Sargasses Martinique & Guadeloupe
 
-*Mis à jour 2026-04-17. 90% de cette routine est désormais AUTOMATISÉE via GH Actions. Ce doc sert de backup pour les checks manuels + rappels de config.*
+*Mis à jour 2026-06-29. 90% de cette routine est désormais AUTOMATISÉE via GH Actions. Ce doc sert de backup pour les checks manuels + rappels de config.*
 
 ## Outils connectés
 
@@ -58,7 +58,7 @@ Outreach backlinks + social.
 ```bash
 curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"
 ```
-Source de vérité revenu : `payments_real` + `revenue_real` + rates.
+Source de vérité revenu : le bloc `stripe` de `scripts/automation/data/daily-metrics.json` (MRR + abonnés actifs). Le funnel Apps Script **sous-compte ~7×** (l'event de conversion ne se déclenche pas après le redirect) → ne l'utiliser QUE pour les taux d'engagement (modal→CTA, CTA→redirect).
 
 ## Commandes Claude utiles
 
@@ -68,7 +68,7 @@ Source de vérité revenu : `payments_real` + `revenue_real` + rates.
 
 ## Métriques clés à surveiller
 
-| Métrique | Objectif | Actuel (2026-04-17) | Source |
+| Métrique | Objectif | Actuel (2026-06-29) | Source |
 |----------|----------|---------------------|--------|
 | Pages indexées | >30 MQ + >30 GP | 136 total (54 MQ + 83 GP sitemap) | GSC Indexation |
 | Clics organiques/semaine | >200 MQ+GP combiné | ~1200 MQ + 400 GP | GSC Performances |
@@ -77,8 +77,8 @@ Source de vérité revenu : `payments_real` + `revenue_real` + rates.
 | Taux de rebond | <60% | à vérifier | GA4 |
 | Rage clicks | <3% des sessions | variable | Clarity |
 | Erreurs 404 | 0 | 0 | GSC |
-| MRR | 100 €/mois (3m) | 34,93 €/mois | Apps Script funnel |
-| Subscribers | 50 (2 sem) | 58 | Apps Script funnel |
+| MRR | 100 €/mois (3m) | €79,84/mois (Stripe/daily-metrics) | Stripe/daily-metrics |
+| Subscribers | 50 (2 sem) | 16 actifs (legacy Stripe) | Stripe/daily-metrics |
 
 ## Checklist mensuelle (le 1er du mois)
 
@@ -87,7 +87,7 @@ Source de vérité revenu : `payments_real` + `revenue_real` + rates.
 - [ ] Mots-clés position 5-15 : opportunités gain rapide
 - [ ] Validité données structurées (GSC > Améliorations)
 - [ ] Trafic mois N vs mois N-1 : tendance
-- [ ] Revenue trend (Stripe Dashboard + Apps Script `payments` sheet)
+- [ ] Revenue trend (Mollie Dashboard = revenu pass B2C ; Stripe Dashboard = abos legacy uniquement)
 
 ## Architecture technique
 

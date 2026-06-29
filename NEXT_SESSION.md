@@ -1,5 +1,16 @@
 # NEXT_SESSION — sargagame
 
+> **🧭 2026-06-29 — AUDIT DE COHÉRENCE REPO (docs + code) vs apex `CLAUDE.md`. Branche `claude/ultracode-repo-audit-llo9lx`, PR #212. Forgé par orchestration multi-agents (workflows Ultracode : audit → vérif adverse → édition experts-rôles → critique → revue money-path ; ~80 agents).**
+>
+> **Pourquoi** : le nouveau `CLAUDE.md` fait autorité (état + mandat + money-path). Tout le repo (les `.md` actifs ET le code réel) a été croisé contre lui, chaque contradiction **prouvée par grep/node sur le code ACTUEL** (anti-faux-positif ; 1 faux positif écarté par la passe adverse — « 5 sites » est correct).
+>
+> **Corrigé (Stripe→Mollie / pass-only / pricing / autonomie)** :
+> - **Money-path** : `b2b-paylinks.json` lien `pro_annual` périmé (790 €) retiré → regen 690 € au prochain run pipeline (CTA repli `/?pro=1` en attendant) ; `mollie-paylinks.cjs` **auto-réparation** sur changement de montant (ne fige plus un vieux prix). Essai B2B **14 j → 21 j** dans `PremiumModal.jsx` + `drip-b2b-email.cjs`.
+> - **Docs réécrits** : `AUTONOMOUS_LOOP` (guardrail Stripe→Mollie+pass-only, mandat panel + Supabase-over-AppsScript, méthode « par chunk » fusionnée depuis AUTONOMOUS_BUILD), `AGENT_WORKFLOW` (Mollie LIVE, panel pas fondateur, branche par item), `PRODUCT` §3, `B2B_OFFER`/`B2B_SCALE`/`B2B_OUTREACH_KIT` (790→690, 14j→21j, manuel→self-serve), `README` (Leaflet→SVG), `docs/ARCHITECTURE` (§7 Mollie, carte SVG WorldMapView, monolithe ~13,4k l), `docs/OPERATIONS`, `DEPLOY-GUIDE`, `MOLLIE_MIGRATION` (état LIVE), `NEW_VERTICAL_PLAYBOOK` (money-path Mollie), `docs/SUPABASE-DECISION`, `REFERRAL_LOOP` (banner superseded → ledger Mollie), `STORY/07` (banner « parlons-en » superseded), `ROUTINE-SEO-ANALYTICS`.
+> - **Archivés** (`docs/_archive/`, pré-Mollie) : `AUTONOMOUS_BUILD`, `NEXT-SESSION-PROMPT` (×2), `HANDOFF-SCOPE`.
+> - **Clarifié** : B2C = pass-only ; B2B = récurrent Mollie (#210) — coexistence, pas contradiction. Stripe = legacy 16 abos EUR (source MRR), jamais de CTA.
+> - **Vérif** : `npm test` 16/16 OK · `vite build` OK · `esbuild` PremiumModal OK · `node --check` OK · revue adverse money-path (3 lentilles). **Reste** : vrai paiement test du lien 690 € post-deploy (lien minté au 1er run pipeline avec `MOLLIE_API_KEY`).
+>
 > **💼 2026-06-29 — B2B HÔTELS : mise en avant in-app + espace pro self-serve + pricing arrêté + 1ère vente (Anoli). Branche `claude/hotel-promotion-b2b-poqqwh` — PR #203/#206 MERGÉES, #208 OUVERTE (suite des commits).**
 >
 > **Principe fondateur (DUR)** : tout en **self-service, ZÉRO call**, vente automatique par email + site, dashboards prêts, scalable. Quand une décision est ambiguë → **panel d'agents adverses qui tranchent**, on suit leur verdict (pas l'humain).
@@ -12,7 +23,7 @@
 > **⭐ PRICING ARRÊTÉ (panel d'agents 2026-06-29)** : le blocage des 0 conversions = le **packaging** (790 € upfront), pas le prix. **Pro = 79 €/mois ou 690 €/an** (2 mois offerts, sous 700) · **essai 21 j gratuit SANS carte** (couvre un épisode sargasses) + relances J-3/J-0 · **garantie 30 j** sur l'annuel · **PAS** de prix d'appel cassé. Mensuel = porte d'entrée par défaut. USD : 89 $/mo · 790 $/an. Brief 29 €/290 € conservé (decoy). Appliqué : `mollie-paylinks.cjs` (790→690), espace, pages, B2B_OFFER.
 >
 > **⚠️ RESTE À CÂBLER (action fondateur / non fait)** :
-> 1. **Mensuel récurrent Mollie (79/29 €/mo)** = LE déblocage conversions. Le webhook gère DÉJÀ les abos (`sub_first→mol_create_subscription_once`, mandat, renouvellements) → **ajout de plans dans `mollie-config.php`** (secrets, hors repo, mobile). C'est le seul vrai blocage.
+> 1. ✅ **FAIT (#210, mergé)** : **mensuel récurrent Mollie B2B câblé EN REPO** — `mol_b2b_plans()` dans `public/api/mollie-lib.php` (`pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo, ZÉRO action fondateur) + grant token Pro au paiement, résolu dans `mollie.php` ET le webhook. Plus un blocage. (Ancien texte « ajout de plans dans `mollie-config.php`, seul vrai blocage » = périmé.)
 > 2. Émission **auto du token d'essai 21 j** à la capture email (réutiliser `sg_widget_sign` de `widget-token.php`) — aujourd'hui l'espace capte par **mailto** (semi-manuel).
 > 3. Garantie 30 j self-serve (remboursement Mollie 1-clic). 4. Nudge annuel J+30. 5. Copy EN/ES dans `b2b-outreach.cjs`. 6. Auto-activation `PartnerCard` (`active:true`) sur paiement Pro confirmé (webhook) — aujourd'hui à la main.
 >
