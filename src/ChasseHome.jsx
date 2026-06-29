@@ -321,6 +321,68 @@ function fcTrend(fc){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
+/* ── HÔTEL PARTENAIRE (B2B « mise en avant », bénéfice phare du palier Pro 79€).
+   Encart DISCRET sur la fiche plage : un établissement PAYANT présenté au voyageur
+   À L'INSTANT EXACT où il vérifie SA plage. Trois règles dures, non négociables :
+     1) label « Partenaire » explicite (jamais déguisé en reco éditoriale) ;
+     2) le VERDICT sargasses reste 100% data ERDDAP — l'argent ne le touche JAMAIS ;
+        un partenaire sur une plage envahie reste affiché « à éviter », point ;
+     3) source = public/api/b2b-partners.json, tableau `partners` généré UNIQUEMENT
+        depuis les hôtels paid:true du funnel (aucune auto-insertion possible).
+   Outil de vente : ?preview_partner=<slug> force l'affichage d'UNE fiche (tableau
+   `preview`, étiquetée « aperçu ») sans qu'elle soit publique — pour montrer à un
+   hôtel sa future mise en avant. Kill-switch : ?partners=0. Additif, réversible,
+   ZÉRO logique paiement (un clic = lien sortant `sponsored` + event de mesure). */
+let _partnersCache=null
+function loadPartners(){
+  if(_partnersCache) return _partnersCache
+  _partnersCache=(typeof fetch!=="undefined"
+    ? fetch("/api/b2b-partners.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>({partners:(d&&d.partners)||[],preview:(d&&d.preview)||[]})).catch(()=>({partners:[],preview:[]}))
+    : Promise.resolve({partners:[],preview:[]}))
+  return _partnersCache
+}
+function usePartner(beachId){
+  const [p,setP]=useState(null)
+  useEffect(()=>{
+    let live=true
+    try{ if(/[?&]partners=0/.test(window.location.search)) return }catch(_){}
+    let preview=null
+    try{ const m=window.location.search.match(/[?&]preview_partner=([^&]+)/); if(m) preview=decodeURIComponent(m[1]) }catch(_){}
+    loadPartners().then(d=>{
+      if(!live) return
+      if(preview){ const hit=(d.preview||[]).concat(d.partners||[]).find(x=>x.slug===preview); setP(hit?{...hit,_preview:true}:null); return }
+      setP((d.partners||[]).find(x=>x.beachId===beachId)||null)
+    })
+    return ()=>{live=false}
+  },[beachId])
+  return p
+}
+function PartnerCard({beach,lang,track}){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  const p=usePartner(beach&&beach.id)
+  useEffect(()=>{ if(p&&track)try{track("sg_b2b_partner_view",{beach_id:beach&&beach.id,slug:p.slug||null,preview:p._preview?1:0})}catch(_){} },[p&&p.slug]) // eslint-disable-line
+  if(!p) return null
+  const ink="#1a1726"
+  return (
+    <div style={{margin:"16px 0 0",padding:"11px 13px",borderRadius:14,border:"2px solid rgba(13,11,20,.16)",background:"#fff",boxShadow:"2px 2px 0 rgba(13,11,20,.07)",display:"flex",alignItems:"center",gap:12,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+      {p.logo
+        ? <img src={p.logo} alt="" width={42} height={42} style={{flex:"0 0 auto",borderRadius:10,objectFit:"cover",border:"1.5px solid rgba(13,11,20,.12)"}}/>
+        : <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,background:"#f1ede2",border:"1.5px solid rgba(13,11,20,.12)"}}>🏨</span>}
+      <div style={{flex:"1 1 auto",minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+          <span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:"#7a7320",background:"#fbf2c4",border:"1px solid rgba(13,11,20,.18)",borderRadius:4,padding:"2px 5px"}}>{_t({fr:"Partenaire",en:"Partner",es:"Socio"})}</span>
+          {p._preview&&<span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",color:"#b4540a"}}>{_t({fr:"aperçu",en:"preview",es:"vista previa"})}</span>}
+        </div>
+        <div style={{font:"800 13.5px/1.2 'Bricolage Grotesque'",color:ink,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</div>
+        {p.tagline&&<div style={{font:"600 11.5px/1.35 'Bricolage Grotesque'",color:"#6b6b75",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{p.tagline}</div>}
+      </div>
+      {p.url&&<a href={p.url} target="_blank" rel="noopener noreferrer sponsored"
+        onClick={()=>{ if(track)try{track("sg_b2b_partner_click",{beach_id:beach&&beach.id,slug:p.slug||null})}catch(_){} }}
+        style={{flex:"0 0 auto",font:"800 11.5px/1 'Bricolage Grotesque'",color:ink,textDecoration:"none",border:`2px solid ${ink}`,borderRadius:10,padding:"8px 11px",boxShadow:`2px 2px 0 ${ink}`,whiteSpace:"nowrap"}}>{_t({fr:"Voir →",en:"View →",es:"Ver →"})}</a>}
+    </div>
+  )
+}
+
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,communityReports={}}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
@@ -467,6 +529,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {/* Webcam plage EN DIRECT (gratuite) — la « preuve du présent » face au
             concurrent. Rend null si la plage n'a pas de champ `webcam`. */}
         <WebcamPanel beach={beach} lang={lang}/>
+        {/* Hôtel partenaire (B2B « mise en avant », palier Pro) — encart discret,
+            labellisé « Partenaire ». Rend null si aucun partenaire PAYANT sur cette
+            plage. Le verdict ci-dessus reste 100% data ERDDAP, jamais influencé. */}
+        <PartnerCard beach={beach} lang={lang} track={track}/>
         <div className="lc-detail-actions">
           {onToggleFav&&<button type="button" className={"lc-detail-full lc-detail-fav"+(favorites.includes(beach.id)?" on":"")} aria-pressed={favorites.includes(beach.id)}
             onClick={()=>{ if(track)try{track(favorites.includes(beach.id)?"sg_chasse_unfav":"sg_chasse_fav",{beach_id:beach.id})}catch(_){}; onToggleFav(beach.id) }}>

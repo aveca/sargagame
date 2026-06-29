@@ -19,7 +19,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const TOKEN = process.env.MODERATE_TOKEN || ''
-const TO = 'aveca@aveca.fr'
+const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses Photos <alerte@sargasses-martinique.com>'
 
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
@@ -82,4 +82,7 @@ async function main() {
   } catch (e) { console.warn('[photos-notify] marquage échoué:', e.message) }
 }
 
-main()
+// process.exit explicite : le transport SMTP (nodemailer) garde l'event loop vivant
+// après l'envoi → sans ça le runner CI traîne ~3 min. main() a déjà awaité l'email + le
+// PATCH notified=true, donc rien n'est coupé.
+main().then(() => process.exit(0)).catch(() => process.exit(0))

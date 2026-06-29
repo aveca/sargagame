@@ -772,17 +772,32 @@ jobs:
           if [ "${{ steps.check_build.outputs.full }}" = "true" ]; then
             WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
             [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
-            MISMATCH=""
-            TS=$(date +%s)
-            for D in $DOMAINS; do
-              GOT=$(curl -sL --max-time 15 "https://$D/sw.js?t=$TS" | grep -o "sargasses-v[0-9]*" | head -1)
-              if [ "$GOT" != "$WANT" ]; then MISMATCH="$MISMATCH $D($GOT)"; fi
+            # Vérif TOLÉRANTE : la propagation FTP/CDN a parfois un léger retard (faux
+            # positif, surtout domaines USD type puntacana). On re-vérifie UNIQUEMENT les
+            # domaines encore en écart, jusqu'à 4× × 20 s, avant de déclarer un VRAI échec
+            # → fini les fausses alertes « deploy failed » alors que le site se déploie bien.
+            check_sw() {
+              local out=""
+              for D in $1; do
+                GOT=$(curl -sL --max-time 15 "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
+                [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
+              done
+              echo "$out"
+            }
+            MISMATCH=$(check_sw "$DOMAINS")
+            TRIES=0
+            while [ -n "$MISMATCH" ] && [ "$TRIES" -lt 4 ]; do
+              TRIES=$((TRIES+1))
+              echo "::notice::SW pas encore propagé (essai $TRIES/4) :$MISMATCH — nouvelle vérif dans 20s"
+              sleep 20
+              PENDING=$(echo "$MISMATCH" | sed 's/([^)]*)//g')
+              MISMATCH=$(check_sw "$PENDING")
             done
             if [ -n "$MISMATCH" ]; then
-              echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris"
+              echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris (après $TRIES re-essai(s))"
               exit 1
             fi
-            echo "SW version OK sur toutes les régions: $WANT"
+            if [ "$TRIES" -gt 0 ]; then echo "SW version OK après $TRIES re-essai(s): $WANT"; else echo "SW version OK sur toutes les régions: $WANT"; fi
           fi
           # ── Gardes email : incident d'excuses bloqué >24h + plafond Resend ──
           node -e "try{const i=require('./scripts/automation/data/incidents.json');const stuck=i.filter(x=>(x.recipients||[]).some(h=>!(x.sent||{})[h])&&Date.now()-new Date(x.created)>864e5);if(stuck.length)console.log('::warning::Incident(s) excuse en attente >24h: '+stuck.map(x=>x.id).join(','))}catch(e){}"
