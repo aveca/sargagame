@@ -4,7 +4,7 @@
   "followups": [
     {
       "id": "anoli-lodges-widget-fix-2026-06-29",
-      "hold": true,
+      "hold": false,
       "to": "admin@anoli-lodges.com",
       "island": "MQ",
       "subject": "Anoli, votre widget surveille la mauvaise plage",
