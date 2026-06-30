@@ -202,7 +202,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -231,6 +231,10 @@ export default function WorldMapView({
   // (haversine), tapable. Basé sur le statut du jour VISIBLE uniquement (gratuit = figé
   // J0 = data publique, zéro fuite de prévision premium). Rollback : ?mapdecide=0.
   const mapDecideOff = (()=>{try{return /[?&]mapdecide=0/.test(window.location.search)}catch(_){return false}})()
+  // Carte partageable (boucle virale, growth) : bouton « partager ma plage » sur la plage
+  // sélectionnée → carte canvas golden-hour spoiler-free (réutilise shareBeachCard du parent,
+  // navigator.share natif). Rollback : ?mapshare=0.
+  const mapShareOff = (()=>{try{return /[?&]mapshare=0/.test(window.location.search)}catch(_){return false}})()
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -967,6 +971,17 @@ export default function WorldMapView({
     return best?{beach:best,km:bestD}:null
   },[mapDecideOff,selected,day,beachList])
 
+  // Partage de la plage sélectionnée — délègue à shareBeachCard (parent). Forecast = 3 jours
+  // (statut + libellé), statut du jour = days[0]. Spoiler-free, data réelle.
+  const onShareSel=useCallback(()=>{
+    if(!onShare||!selected) return
+    try{
+      const fc=[0,1,2].map(d=>({status:(selected.days&&selected.days[d])||"unknown",day:ti(lang,DAY_LBL[d])}))
+      onShare({name:selected.name,status:(selected.days&&selected.days[0])||"unknown",score:selected.score},lang,fc)
+      try{track&&track("sg_map_share",{island})}catch(_){}
+    }catch(_){}
+  },[onShare,selected,lang,track,island])
+
   // Verdict « ma semaine » (Premium) — agrégat île sur days[0..5], calcul PUR (zéro
   // fabrication) : meilleur jour (max plages propres CONNUES) + « valeur sûre » = la plage
   // propre le plus de jours. Glanceable, 1 carte, affichée seulement hors sélection (pas
@@ -1587,6 +1602,21 @@ export default function WorldMapView({
             background:"#fdf6e3",color:INK,border:`2.5px solid ${INK}`,fontSize:17,
             borderRadius:999,cursor:"pointer",boxShadow:`3px 3px 0 ${INK}`,
           }}>{muted?<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>}</button>
+
+        {/* Partager ma plage (carte virale golden-hour) — sur la plage sélectionnée, au-dessus
+            du mute dans la pile droite. Pastille encre + picto blanc (recette sg-mapchip,
+            lisible garanti). Rollback ?mapshare=0. */}
+        {selected&&onShare&&!mapShareOff&&(
+          <button className="sg-mapchip" aria-label={_t(lang,"Partager ma plage","Share my beach","Compartir mi playa")}
+            onClick={onShareSel}
+            style={{
+              position:"absolute",right:16,bottom:"calc(176px + env(safe-area-inset-bottom))",
+              pointerEvents:"auto",width:42,height:42,display:"inline-flex",alignItems:"center",justifyContent:"center",
+              cursor:"pointer",
+            }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fdfcf7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+          </button>
+        )}
 
         {/* Scrub jours — Gratuit : J0 libre · J1-5 verrouillés → Premium.
             Premium (mapPremium) : 6 jours déverrouillés, prévision RÉELLE par plage,
