@@ -656,6 +656,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
+          [ -f public/api/copernicus/climatology.json ] && git add public/api/copernicus/climatology.json
           # Prévision privée J+2-7 (servie par forecast.php) : DOIT être committée à
           # chaque run live, sinon le repo garde un privé périmé qu'un push-deploy
           # ultérieur redéploie tel quel (FTP) → régression « pins gris premium » quand
@@ -687,7 +688,6 @@ jobs:
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/incidents.json ] && git add scripts/automation/data/incidents.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
-          [ -f scripts/automation/data/climatology-monthly.json ] && git add scripts/automation/data/climatology-monthly.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json

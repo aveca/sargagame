@@ -93,7 +93,7 @@ function DayCell({ st, tier, active, label, sub }){
 
 export default function WeekHub({
   lang="fr", onClose, beachList=[], weekDigest=null, updatedAt=null,
-  reliableHorizon=3, pos=null, seasonOff=false, seasonOutlook=null,
+  reliableHorizon=3, pos=null, seasonOff=false, seasonOutlook=null, island="mq",
   onSelectBeach, onPickDay, onPlannerOptin, track,
 }){
   const panelRef = useRef(null)
@@ -116,6 +116,16 @@ export default function WeekHub({
         if(ok&&c&&c.cleanReliabilityPct!=null&&c.cleanSamples>=20) setCalmProof({pct:c.cleanReliabilityPct, n:c.cleanSamples, fa:c.falseAlarmRatePct})
       }catch(_){}
     }).catch(()=>{})
+    return ()=>{ ok=false }
+  },[])
+
+  // Climatologie OBSERVÉE (état B planner) : pour une date future, on donne l'estimation
+  // approximative demandée par le fondateur — le taux propre RÉELLEMENT observé pour ce
+  // mois sur la côte, étiqueté « observé, pas prédit » + N. Honnête : si pas assez
+  // d'historique pour ce mois → on ne fabrique rien, on retombe sur la tendance récente.
+  const [climatology, setClimatology] = useState(null)
+  useEffect(()=>{ let ok=true
+    fetch("/api/copernicus/climatology.json").then(r=>r.json()).then(d=>{ if(ok&&d&&Array.isArray(d.cells)) setClimatology(d) }).catch(()=>{})
     return ()=>{ ok=false }
   },[])
   const tierOf = (d, cf) => d>=4 ? "low" : (cf>=55?"high":cf>=38?"med":"low")
@@ -220,6 +230,17 @@ export default function WeekHub({
         `Te abrimos el veredicto diario el ${fmt(open)} (D-7) y te avisamos.`)
     }catch(_){ return null }
   },[planDate, lang])
+  // Estimation OBSERVÉE pour la date choisie (le « à peu près » demandé) : taux propre réel
+  // du mois de la date, par côte, depuis la climatologie. « Observé », jamais « prédit ».
+  const planEstimate = useMemo(()=>{
+    if(!planDate || !climatology) return null
+    let m; try{ m = new Date(planDate+"T12:00:00").getMonth()+1 }catch(_){ return null }
+    const monthName = (()=>{ try{ return new Date(2000,m-1,1).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{month:"long"}) }catch(_){ return "" } })()
+    const cells = climatology.cells.filter(c=>c.island===island && c.month===m)
+    if(!cells.length) return { none:true, monthName }
+    const atl = cells.find(c=>c.coast==="atlantic"), shel = cells.find(c=>c.coast==="sheltered")
+    return { none:false, monthName, atl, shel }
+  },[planDate, climatology, island, lang])
   const sendPlan = useCallback(()=>{
     try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}
     // Capture l'intention planner (relançable) ; la planif d'alerte J-7 côté serveur = chantier
@@ -434,6 +455,16 @@ export default function WeekHub({
                     <button onClick={sendPlan} disabled={!planDate}
                       style={{flex:"0 0 auto", minHeight:44, font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:planDate?GOLD:"#e8e0cc", border:`2.5px solid ${INK}`, borderRadius:999, padding:"0 16px", cursor:planDate?"pointer":"default", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Préviens-moi","Notify me","Avísame")}</button>
                   </div>
+                  {planEstimate && (
+                    <div style={{font:"600 11px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>
+                      {planEstimate.none
+                        ? _t(lang,`On n'a pas encore assez d'historique observé pour ${planEstimate.monthName} — on s'appuie sur la tendance récente ci-dessus, pas sur un chiffre inventé.`,`Not enough observed history yet for ${planEstimate.monthName} — we lean on the recent trend above, not a made-up figure.`,`Aún no hay suficiente historial observado para ${planEstimate.monthName} — nos apoyamos en la tendencia reciente, no en un número inventado.`)
+                        : _t(lang,
+                            `Observé en ${planEstimate.monthName}${planEstimate.atl?` — côte au vent : ${planEstimate.atl.clean_rate}% de jours propres (${planEstimate.atl.n_samples} relevés)`:""}${planEstimate.shel?` · côte abritée : ${planEstimate.shel.clean_rate}%`:""}. Tendance observée, PAS une prévision de ta date.`,
+                            `Observed in ${planEstimate.monthName}${planEstimate.atl?` — windward coast: ${planEstimate.atl.clean_rate}% clean days (${planEstimate.atl.n_samples} records)`:""}${planEstimate.shel?` · sheltered coast: ${planEstimate.shel.clean_rate}%`:""}. Observed trend, NOT a forecast for your date.`,
+                            `Observado en ${planEstimate.monthName}${planEstimate.atl?` — costa de barlovento: ${planEstimate.atl.clean_rate}% días limpios (${planEstimate.atl.n_samples} registros)`:""}${planEstimate.shel?` · costa abrigada: ${planEstimate.shel.clean_rate}%`:""}. Tendencia observada, NO un pronóstico de tu fecha.`)}
+                    </div>
+                  )}
                   {planMsg && <div style={{font:"600 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8}}>{planMsg}</div>}
                 </>
               ) : (
