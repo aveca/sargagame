@@ -38,13 +38,15 @@ function Watcher({ size=40 }){
   )
 }
 
-export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], onToggleFav, onEnableNotif, onDone, island, userPos, track }){
+export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], onToggleFav, onEnableNotif, onDone, onSaveEmail, island, userPos, track }){
   const panelRef = useRef(null), closeRef = useRef(null), reduced = useRef(false), prechecked = useRef(false)
   // Convention UX mobile (loi du repo) : feuille plein écran fermable par swipe-down depuis le haut.
   const swipe = useSwipeClose(()=>{ try{ track&&track("sg_onboard_done",{src:"swipe"}) }catch(_){}; onDone&&onDone() })
   const setPanel = useCallback((el)=>{ panelRef.current=el; swipe.ref.current=el },[swipe])
   const [notifAsked, setNotifAsked] = useState(false)
   const [weekAck, setWeekAck] = useState(false)
+  const [email, setEmail] = useState(()=>{ try{ return localStorage.getItem("sg_premium_email")||"" }catch(_){ return "" } })
+  const [emailSaved, setEmailSaved] = useState(()=>{ try{ return !!localStorage.getItem("sg_premium_email") }catch(_){ return false } })
   const seenAct = useRef({})
   const tk = (e,p)=>{ try{ track && track(e,p||{}) }catch(_){} }
   const act = (section)=>{ if(seenAct.current[section]) return; seenAct.current[section]=1; tk("sg_onboard_section_act",{section}) }
@@ -96,6 +98,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
   const exit = (src)=>{ tk("sg_onboard_done",{favs:picked, src}); onDone && onDone() }
   const enableAlerts = ()=>{ act("alert"); setNotifAsked(true); try{ onEnableNotif && onEnableNotif() }catch(_){} }
   const openProof = ()=>{ act("proof"); tk("sg_onboard_proof",{}); try{ window.open(relPath,"_blank","noopener") }catch(_){} }
+  const saveEmail = ()=>{ const e=(email||"").trim(); if(!e||!e.includes("@")||!e.includes(".")) return; act("email"); try{ localStorage.setItem("sg_premium_email",e) }catch(_){}; try{ onSaveEmail&&onSaveEmail(e) }catch(_){}; setEmailSaved(true) }
 
   const h2 = { font:"400 15px/1 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:".01em" }
   const subTxt = { font:"500 clamp(13px,3.6vw,14px)/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:SUB }
@@ -168,6 +171,26 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
               })}
               {!suggestions.length && <div style={subTxt}>{_t(lang,"Tu pourras choisir tes plages favorites depuis la carte.","You can pick favorite beaches from the map.","Podrás elegir tus playas favoritas desde el mapa.")}</div>}
             </div>
+          </div>
+
+          {/* [B2] EMAIL — accès cross-device + brief matin (soft-collect, skippable) */}
+          <div style={card}>
+            <div style={{display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:8}}>
+              <span style={h2}>{_t(lang,"Où t'envoyer ton brief ?","Where to send your brief?","¿Dónde enviarte tu informe?")}</span>
+              {emailSaved && okBadge(_t(lang,"enregistré","saved","guardado"))}
+            </div>
+            <div style={{...subTxt, margin:"5px 0 10px"}}>{_t(lang,"Ton brief du matin par email + ton accès retrouvé sur tous tes appareils. Pas de spam.","Your morning brief by email + your access on all your devices. No spam.","Tu informe matinal por email + tu acceso en todos tus dispositivos. Sin spam.")}</div>
+            {!emailSaved ? (
+              <div style={{display:"flex", gap:7, flexWrap:"wrap"}}>
+                <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
+                  placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                  style={{flex:"1 1 160px", minHeight:44, fontSize:16, padding:"10px 12px", border:`2px solid ${INK}`, borderRadius:11, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
+                <button onClick={saveEmail} disabled={!(email&&email.includes("@")&&email.includes("."))}
+                  style={{...goldBtn, width:"auto", flex:"0 0 auto", padding:"0 16px", opacity:(email&&email.includes("@")&&email.includes("."))?1:.55}}>{_t(lang,"Recevoir","Get it","Recibir")}</button>
+              </div>
+            ) : (
+              <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"Ton brief part chaque matin. Accès retrouvé partout.","Your brief ships every morning. Access restored everywhere.","Tu informe sale cada mañana. Acceso restaurado en todas partes.")}</div>
+            )}
           </div>
 
           {/* [C] ALERTES — coeur n°2, encart inline 1-tap */}
