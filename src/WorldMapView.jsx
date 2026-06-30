@@ -9,6 +9,7 @@
  *         onClose, rootMode, track
  */
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react"
+import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -1640,12 +1641,15 @@ export default function WorldMapView({
           {/* DÉCISION — verdict « ma semaine » (Premium, hors sélection pour ne pas se
               superposer au tooltip). Agrégat île RÉEL : meilleur jour + valeur sûre. */}
           {weekDigest&&!selected&&(
-            <button ref={digestBtnRef} type="button"
+            // <div role=button> (PAS <button> : le skin de thème .theme-comic button{bg/bordure
+            // !important} efface la pastille). Activation clavier Entrée/Espace gérée à la main.
+            <div ref={digestBtnRef}
+              role={weekhubOff?undefined:"button"} tabIndex={weekhubOff?undefined:0}
               aria-haspopup={weekhubOff?undefined:"dialog"} aria-expanded={weekhubOff?undefined:showHub}
               aria-label={weekhubOff?undefined:_t(lang,"Ouvrir le hub prévision de ta semaine","Open your week forecast hub","Abrir tu centro de pronóstico")}
               onClick={weekhubOff?undefined:()=>{setShowHub(true);try{track&&track("sg_weekhub_open_cta",{island})}catch(_){}}}
+              onKeyDown={weekhubOff?undefined:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setShowHub(true);try{track&&track("sg_weekhub_open_cta",{island})}catch(_){}}}}
               style={{
-              WebkitAppearance:"none",appearance:"none",font:"inherit",
               pointerEvents:weekhubOff?"none":"auto",cursor:weekhubOff?"default":"pointer",
               maxWidth:300,textAlign:"center",
               background:"#eafaf1",color:INK,border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,
@@ -1674,7 +1678,7 @@ export default function WorldMapView({
                   `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
               </>)}
               {!weekhubOff&&<span aria-hidden="true" style={{position:"absolute",top:3,right:6,font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#0a7d33"}}>↗</span>}
-            </button>
+            </div>
           )}
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
@@ -1863,21 +1867,24 @@ export default function WorldMapView({
           </button>
         )}
 
-        {/* HUB « Ma semaine » (La Vigie) — lazy, monté seulement à l'ouverture (tap encart digest).
-            Restaure le focus sur l'encart à la fermeture (a11y). Flag ?weekhub=0. */}
-        {showHub && !weekhubOff && (
-          <Suspense fallback={null}>
-            <LazyWeekHub
-              lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
-              reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} track={track}
-              onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
-              onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
-              onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
-              onPlannerOptin={(meta)=>{ try{ const em=localStorage.getItem("sg_email"); if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){}; try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
-            />
-          </Suspense>
-        )}
       </div>
+      {/* HUB « Ma semaine » (La Vigie) — lazy + PORTAL sur document.body : la carte est en
+          touchAction:none avec des handlers de pan ; rendu en descendant, le hub n'aurait pas
+          pu scroller au doigt (events captés par le pan). Le portail le sort de cette couche.
+          Restaure le focus sur l'encart à la fermeture (a11y). Flag ?weekhub=0. */}
+      {showHub && !weekhubOff && typeof document!=="undefined" && createPortal(
+        <Suspense fallback={null}>
+          <LazyWeekHub
+            lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
+            reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} track={track}
+            onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
+            onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
+            onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
+            onPlannerOptin={(meta)=>{ try{ const em=localStorage.getItem("sg_email"); if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){}; try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
+          />
+        </Suspense>,
+        document.body
+      )}
     </div>
   )
 }
