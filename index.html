@@ -103,7 +103,12 @@
        → couvre TOUTE l'app (nav, modales, boutons), pas juste les surfaces SVG. Sinon les
        fonds inline étaient remappés en gris/blanc système (rapport fondateur : « cases grises
        écritures grises sur les boutons »). Justifié : couleur = sens (statuts vert/ambre/corail). */
-    html{forced-color-adjust:none}
+    /* ⚠️ forced-color-adjust N'EST PAS hérité (spec CSS) → `html{}` seul n'exemptait QUE
+       l'élément html, pas les boutons descendants : en forced-colors, les <button> (près de
+       moi, « hôtel ? ») voyaient leur fond crème inline remappé en transparent + texte noir
+       système → illisibles (rapport fondateur, plusieurs fois). On applique à TOUS les
+       éléments. Justifié : couleur = sens (statuts vert/ambre/corail, golden-hour). */
+    html,html *{forced-color-adjust:none}
     /* PWA standalone : la zone derrière l'app (safe-area home-indicator + tout gap
        sous 100dvh sur iOS) montrait le BLANC du body (thème clair) → bande blanche en
        bas (« crop » écran d'accueil). On peint le <html> en sombre (= manifest
