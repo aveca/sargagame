@@ -47,6 +47,15 @@ function isStale(updatedAt){
   try{ return (Date.now()-new Date(updatedAt).getTime())/3.6e6 >= 36 }catch(_){ return false }
 }
 
+// Distance grand-cercle (km) entre 2 plages {lat,lng} — pour « où aller plutôt » (plan B).
+function haversineKm(a, b){
+  if(a==null||b==null||a.lat==null||a.lng==null||b.lat==null||b.lng==null) return Infinity
+  const R=6371, toR=x=>x*Math.PI/180
+  const dLat=toR(b.lat-a.lat), dLng=toR(b.lng-a.lng)
+  const s=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(s)))
+}
+
 // Couleur antenne Veilleur selon proportion propres
 function vantColor(beachList, day){
   // Compte parmi les statuts CONNUS uniquement : tant que rien n'est chargé, œil NEUTRE (gris),
@@ -217,6 +226,11 @@ export default function WorldMapView({
   // primaire + 2 bannières). Donnée 100% réelle (days/conf/firstHit/drift), 0 fabrication.
   const mapFriseOff = (()=>{try{return /[?&]mapfrise=0/.test(window.location.search)}catch(_){return false}})()
   const friseOn = mapPremium && !mapFriseOff
+  // Couche DÉCISION — « où aller plutôt » (plan B, loi anti-cul-de-sac) : si la plage
+  // tapée est moderate/avoid le jour AFFICHÉ, on propose la plage PROPRE la plus proche
+  // (haversine), tapable. Basé sur le statut du jour VISIBLE uniquement (gratuit = figé
+  // J0 = data publique, zéro fuite de prévision premium). Rollback : ?mapdecide=0.
+  const mapDecideOff = (()=>{try{return /[?&]mapdecide=0/.test(window.location.search)}catch(_){return false}})()
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -935,6 +949,23 @@ export default function WorldMapView({
     if(c) selectBeach(c)
     try{ track&&track("sg_map_near_me",{island}) }catch(_){}
   },[beachList,day,selectBeach,track,island])
+
+  // « Où aller plutôt » (plan B) — plage PROPRE la plus proche de la plage tapée, le jour
+  // affiché. Calcul pur sur lat/lng réels (haversine), zéro fabrication. Null si la plage
+  // tapée n'est pas moderate/avoid, ou si aucune plage propre connue ailleurs.
+  const planB = useMemo(()=>{
+    if(mapDecideOff||!selected) return null
+    const st=selected.days&&selected.days[day]
+    if(st!=="moderate"&&st!=="avoid") return null
+    if(selected.lat==null||selected.lng==null) return null
+    let best=null,bestD=Infinity
+    for(const b of beachList){
+      if(b.id===selected.id||b.days[day]!=="clean") continue
+      const d=haversineKm(selected,b)
+      if(d<bestD){bestD=d;best=b}
+    }
+    return best?{beach:best,km:bestD}:null
+  },[mapDecideOff,selected,day,beachList])
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
   if(loadErr) return null  // laisse l'ArchipelView control se montrer (ErrBound parent)
@@ -1681,6 +1712,22 @@ export default function WorldMapView({
               </div>
             )}
             {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Confiance forte J0-J2, tendance au-delà — 76 à 79 % de justesse selon la saison.","Strong confidence days 0-2, trend after — 76-79% accuracy by season.","Confianza alta días 0-2, tendencia después — 76-79 % de acierto según temporada.")}</div>}
+            {/* DÉCISION — « où aller plutôt » (plan B, loi anti-cul-de-sac). Tapable :
+                sélectionne la plage propre la plus proche. pointerEvents:auto (le tooltip
+                est en pointerEvents:none). Vert = « vas-y », data réelle. */}
+            {planB&&(()=>{
+              const km=planB.km<1?_t(lang,"< 1 km","< 1 km","< 1 km"):`${Math.round(planB.km)} km`
+              return(
+                <button onClick={(e)=>{try{e.stopPropagation()}catch(_){}; selectBeach(planB.beach); try{track&&track("sg_map_planb",{island})}catch(_){}}}
+                  style={{pointerEvents:"auto",cursor:"pointer",marginTop:7,display:"flex",alignItems:"center",gap:5,
+                    background:"#0f5132",color:"#eafaf0",border:`2px solid ${INK}`,borderRadius:999,padding:"5px 9px",
+                    textAlign:"left",whiteSpace:"normal",maxWidth:172,
+                    font:"800 9.5px/1.15 'Bricolage Grotesque',system-ui,sans-serif",boxShadow:`2px 2px 0 ${INK}`}}>
+                  <span aria-hidden="true" style={{fontSize:12,flexShrink:0}}>→</span>
+                  <span>{_t(lang,`Plutôt ${planB.beach.name} · ${km}, propre`,`Better: ${planB.beach.name} · ${km}, clean`,`Mejor: ${planB.beach.name} · ${km}, limpia`)}</span>
+                </button>
+              )
+            })()}
           </div>
         )}
 
