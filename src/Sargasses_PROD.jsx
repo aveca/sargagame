@@ -2143,6 +2143,14 @@ export async function fetchFullForecast(){
   try{
     if(!GATING)return null
     let k="";try{k=new URLSearchParams(window.location.search).get("k")||""}catch(_){}
+    // Token signé ?k= (lien pass marketing/manuel OU widget Pro) : on le PERSISTE
+    // → il survit à la navigation/reload, donc un premium par lien signé (sans
+    // sg_email) garde J+2-7 sans avoir le ?k= à chaque visite. URL gagne (refresh),
+    // sinon on retombe sur le token stocké.
+    try{
+      if(k)localStorage.setItem("sg_fc_token",k)
+      else k=localStorage.getItem("sg_fc_token")||""
+    }catch(_){}
     if(k){
       const r=await fetch(`/api/copernicus/forecast.php?k=${encodeURIComponent(k)}`)
       if(r.ok){const j=await r.json();if(j&&j.ok&&j.weekly)return j.weekly}
