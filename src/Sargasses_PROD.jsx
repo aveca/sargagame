@@ -2155,7 +2155,12 @@ export async function fetchFullForecast(){
       const r=await fetch(`/api/copernicus/forecast.php?k=${encodeURIComponent(k)}`)
       if(r.ok){const j=await r.json();if(j&&j.ok&&j.weekly)return j.weekly}
     }
-    let email="";try{email=localStorage.getItem("sg_email")||""}catch(_){}
+    // sg_email OU sg_premium_email : un accès par lien/comp (?premium_email) pose
+    // sg_premium_email même quand sg_email est absent (ex. pass anonyme upgradé). On
+    // tente les deux — la SÉCURITÉ est côté serveur (forecast.php → mol_access_for_email
+    // → 403 pour un non-payeur), pas côté client : un email gratuit posé par une
+    // inscription newsletter renvoie 403 et reste gaté, aucune fuite.
+    let email="";try{email=localStorage.getItem("sg_email")||localStorage.getItem("sg_premium_email")||""}catch(_){}
     if(email){
       const r=await fetch("/api/copernicus/forecast.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})})
       if(r.ok){const j=await r.json();if(j&&j.ok&&j.weekly)return j.weekly}
@@ -11243,6 +11248,7 @@ export default function App(){
   // session (paiement/restauration) → il voit J+2-6 sans recharger. Pas de double
   // run au mount pour un premium déjà connu (garde par ref).
   const[premiumTick,setPremiumTick]=useState(0)
+  const fcRetryRef=useRef(0) // retry borné (1) de la prévision étendue si premium + forecast.php KO transitoire
   const _premWasTrue=useRef(isPremium) // snapshot initial (premium déjà connu au mount)
   useEffect(()=>{
     if(isPremium&&!_premWasTrue.current){ _premWasTrue.current=true; setPremiumTick(t=>t+1) }
@@ -11367,6 +11373,7 @@ export default function App(){
           }else{
             localStorage.setItem("sg_premium","1")
             localStorage.setItem("sg_premium_email",pEmail)
+            localStorage.setItem("sg_email",pEmail) // canonique : fetchFullForecast + lead capture lisent sg_email
             if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
           }
           setIsPremium(true)
@@ -12186,6 +12193,15 @@ export default function App(){
           }
         }
       }
+      // Retry borné (1×) HORS chemin critique : un premium actif dont forecast.php a
+      // échoué transitoirement (fcFull null) → on re-déclenche UN fetch après délai SANS
+      // bloquer le rendu du verdict (déjà affiché). Si ça re-échoue → reste gris (honnête),
+      // jamais de couleur fabriquée. Le gratuit (pas de credential) ne retry jamais.
+      try{
+        const _premActive=!!localStorage.getItem("sg_premium")||(parseInt(localStorage.getItem("sg_premium_pass_end")||"0")>Date.now())
+        const _hasCred=!!(localStorage.getItem("sg_email")||localStorage.getItem("sg_premium_email")||localStorage.getItem("sg_fc_token"))
+        if(_premActive&&_hasCred&&!fcFull&&fcRetryRef.current<1){ fcRetryRef.current++; setTimeout(()=>setPremiumTick(t=>t+1),1500) }
+      }catch(_){}
       // 1. Build full beach list (strip stale status/afai from JSON)
       let beaches=IS_NEW_REGION
         ?REGION.beaches.map(b=>({...b}))   // plages inline de la région (status placeholder jusqu'à la pipeline dédiée)
