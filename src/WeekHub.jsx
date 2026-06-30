@@ -343,7 +343,7 @@ export default function WeekHub({
           {/* BLOC 4 — OÙ NE PAS ALLER + Plan B */}
           {avoidList.length>0 && (
             <div style={{...card, background:"#fff3e0"}}>
-              <div style={{...h2, marginBottom:9}}>{_t(lang,"Où ne pas aller","Where not to go","Adónde no ir")}</div>
+              <div style={{...h2, marginBottom:9}}>{_t(lang,"À surveiller · ton plan B","Keep an eye · your plan B","A vigilar · tu plan B")}</div>
               <div style={{display:"flex", flexDirection:"column", gap:8}}>
                 {avoidList.map(({b,flip,actionable,alt})=>(
                   <div key={b.id} style={{background:"#fffaf3", border:`2px solid ${INK}`, borderRadius:10, padding:"8px 10px"}}>
@@ -361,7 +361,7 @@ export default function WeekHub({
                         background:"#0f5132", color:"#eafaf0", border:`2px solid ${INK}`, borderRadius:999, padding:"6px 10px", cursor:"pointer",
                         font:"800 11px/1.15 'Bricolage Grotesque',system-ui,sans-serif", boxShadow:`2px 2px 0 ${INK}`}}>
                         <span aria-hidden="true" style={{fontSize:13}}>→</span>
-                        <span>{_t(lang,`Plutôt ${alt.beach.name} · ${alt.km<1?"< 1":Math.round(alt.km)} km, propre`,`Better: ${alt.beach.name} · ${alt.km<1?"< 1":Math.round(alt.km)} km, clean`,`Mejor: ${alt.beach.name} · ${alt.km<1?"< 1":Math.round(alt.km)} km, limpia`)}</span>
+                        <span>{_t(lang,`Vise plutôt ${alt.beach.name} · ${alt.km<1?"< 1":Math.round(alt.km)} km, c'est propre`,`Aim for ${alt.beach.name} instead · ${alt.km<1?"< 1":Math.round(alt.km)} km, it's clean`,`Mejor ${alt.beach.name} · ${alt.km<1?"< 1":Math.round(alt.km)} km, está limpia`)}</span>
                       </button>
                     ) : !actionable ? (
                       <div style={{marginTop:5, font:"600 10.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478"}}>{_t(lang,"Faible certitude à cet horizon — on garde l'œil et on te préviendra.","Low certainty at this range — we keep watch and will warn you.","Baja certeza a este horizonte — seguimos vigilando y te avisaremos.")}</div>
