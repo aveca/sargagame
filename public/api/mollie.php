@@ -305,7 +305,7 @@ if ($action === 'payment_status') {
         }
         // B2B : paiement Pro/Brief confirmé → émet+livre le token Pro (idempotent par pid).
         if (($meta['b2b'] ?? '') === '1' || in_array(($meta['plan'] ?? ''), ['pro_monthly', 'brief_monthly'], true)) {
-            mol_b2b_grant_once($cfg, $pid, $em, ($meta['plan'] ?? ''));
+            mol_b2b_grant_once($cfg, $pid, $em, ($meta['plan'] ?? ''), $isl);
         }
         // Parrainage : un filleul (referred_by) a payé → crédite le parrain (idempotent
         // par pid ; le webhook fait le même grant, le 1er qui passe gagne, anti-double).
