@@ -1,5 +1,15 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-06-30 — CONTRASTE RÉSOLU (texte BLANC) + CARTE PREMIUM PR3 (décision « où aller plutôt »). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Contraste chips carte — FIX FINAL (#295, LIVE & curl-vérifié)** : après 3 tentatives « pastille crème + texte ink » qui restaient noires sur iPhone (le fond crème ne peignait pas de façon fiable), bascule sur la **recette FAB prouvée** : **texte BLANC `#fdfcf7` sur pastille SOMBRE opaque `#190c2c`**. La couleur du texte EST blanche → ne peut jamais virer noir, indépendamment du rendu du fond. Inline JSX (« près de moi » + « hôtel ») + règle `.sg-mapchip` alignées. **Vérifié prod** : `WorldMapView-wd1wz1UX.js` contient `fdfcf7`. **Leçon clé re-confirmée** : le « toujours noir » = **timing deploy** (prod servait l'ancien build à chaque test), pas un fix raté — toujours curl le CONTENU prod avant de re-diagnostiquer.
+>
+> **Carte premium PR3 — couche DÉCISION « où aller plutôt » (#296)** : tape une plage moderate/avoid sur le jour affiché → tooltip propose la **plage propre la plus proche** (haversine `lat`/`lng` réels), **pastille verte tapable** → la sélectionne. Loi anti-cul-de-sac sur la vedette. Gardé hors premium-gate exprès : basé sur le **jour AFFICHÉ** (gratuit figé J0 = data publique, zéro fuite prévision ; renforce funnel free→premium). Helper `haversineKm` module-scope. Rollback `?mapdecide=0`. Budget 198,4/210.
+>
+> **RESTE plan carte premium** : **PR3b** = verdict « ma semaine » (N propres · bascule jeudi, agrégat île — `favorites` PAS encore prop de `WorldMapView`, à plomber si on veut favoris-en-tête) + digest meilleure plage/jour. À placer SANS bandeau qui se superpose (grief fondateur passé). **PR4** = craft (swipe-to-scrub `?mapswipe=0`, moment « aha » premium one-shot `sg_premium_welcome`, saison calme valorisée, carte partageable via `shareBeachCard` `Sargasses_PROD.jsx:286`).
+>
+> **⚠️ Dette tokens comic (non corrigée, large)** : classe `theme-comic` sur `<body>` mais tokens crème/ink sur `:root.theme-comic` (`<html>`) → surcharges de variables du thème inertes (l'app tourne sur tokens base blanc/noir d'`index.html:96`). Règles descendantes `body.theme-comic …` OK. Fix = poser la classe sur `<html>` OU sélecteur `body.theme-comic` → **régression visuelle globale, panel + screenshots avant/après obligatoires**, chunk dédié.
+
 > **🩹 2026-06-30 — CONTRASTE BAS-DE-CARTE : RACINE TROUVÉE + FIX LIVE & VÉRIFIÉ (#293 + #294). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Pourquoi « toujours noir » malgré 3 fixes** = **timing de déploiement, pas un fix raté.** À chaque test fondateur, prod servait un build **d'AVANT** le fix (runs `daily-copernicus` en file/concurrency). Vérifié : au moment du diagnostic, prod n'avait NI `sg-mapchip` NI `forced-color-adjust:auto` (ajoutés par #293) — le run #1662 (#293) était `in_progress`. Une fois fini, prod a basculé (`WorldMapView-eSMKt6yD`→`Dc9WyUBj`, hash changé = deploy OK). **Leçon : après un merge, attendre le run vert ET curl le CONTENU avant de conclure ; ne jamais re-diagnostiquer un fix CSS sur prod stale.**
