@@ -18,7 +18,10 @@
  */
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
+const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie réelle du modèle (5,0 j) — jamais re-coder en dur
 const path = require('path')
+const HL_FR = String(HALF_LIFE_DAYS).replace('.', ',') // 5,0 → "5"
+const HL_NUM = String(HALF_LIFE_DAYS)
 
 const ROOT = path.resolve(__dirname, '..', '..')
 
@@ -75,13 +78,16 @@ const fmtDateTimeUTC = (lang, iso) => {
 const I18N = {
   fr: {
     back: 'Retour à la carte',
+    sig: 'On regarde la mer pour vous.',
+    faNote: 'En saison calme, presque aucun échouage réel à confirmer : ce taux compte des pixels propres faussement signalés, ce n’est pas une fiabilité d’alerte de 76 %.',
+    capConsent: '1 email/jour max · désinscription en 1 clic · voir Confidentialité',
     h1a: 'Nos prévisions,', h1b: 'vérifiées',
     lead: "Aucune promesse, des mesures : chaque jour, la prévision de la veille est comparée à ce que le satellite observe réellement. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
     l1: 'La méthode', h2m: 'Comment naît une prévision',
     m1t: 'Satellite Copernicus / NOAA, 4 passages par jour',
     m1s: "L'indice AFAI (algues flottantes) est échantillonné au large de chaque plage, pixel par pixel — jamais une moyenne régionale.",
     m2t: 'Un modèle de dérive, pas une boule de cristal',
-    m2s: 'Persistance des échouages (demi-vie 3,5 jours), vent et bancs détectés au large : la prévision 7 jours est recalculée à chaque passage satellite.',
+    m2s: `Persistance des échouages (demi-vie ${HL_FR} jours), vent et bancs détectés au large : la prévision 7 jours est recalculée à chaque passage satellite.`,
     m3t: 'Un backtest automatique, tous les jours',
     m3s: "Chaque prévision est archivée puis confrontée à l'observation satellite du jour J. Le calcul est automatique — personne ne retouche les chiffres.",
     m4t: "Quand la donnée manque, on n'affiche rien",
@@ -113,13 +119,16 @@ const I18N = {
   },
   en: {
     back: 'Back to the map',
+    sig: 'We watch the sea for you.',
+    faNote: 'In calm season there is almost no real beaching to confirm: this rate counts clean pixels wrongly flagged, not a 76% alert reliability.',
+    capConsent: '1 email/day max · 1-click unsubscribe · see Privacy',
     h1a: 'Our forecasts,', h1b: 'verified',
     lead: 'No promises — measurements. Every day, yesterday’s forecast is compared with what the satellite actually observed. Here is the method, and the numbers — including the ones we miss.',
     l1: 'The method', h2m: 'How a forecast is made',
     m1t: 'Copernicus / NOAA satellite, 4 passes a day',
     m1s: 'The AFAI floating-algae index is sampled offshore of every beach, pixel by pixel — never a regional average.',
     m2t: 'A drift model, not a crystal ball',
-    m2s: 'Beaching persistence (3.5-day half-life), wind and offshore mats: the 7-day forecast is recomputed at every satellite pass.',
+    m2s: `Beaching persistence (${HL_NUM}-day half-life), wind and offshore mats: the 7-day forecast is recomputed at every satellite pass.`,
     m3t: 'An automatic backtest, every single day',
     m3s: 'Every forecast is archived, then checked against the satellite observation on the target day. Fully automatic — nobody edits the numbers.',
     m4t: 'When data is missing, we show nothing',
@@ -151,20 +160,23 @@ const I18N = {
   },
   es: {
     back: 'Volver al mapa',
+    sig: 'Miramos el mar por ti.',
+    faNote: 'En temporada tranquila casi no hay recales reales que confirmar: esta tasa cuenta píxeles limpios mal señalados, no es una fiabilidad de alerta del 76%.',
+    capConsent: '1 email/día máx · baja en 1 clic · ver Privacidad',
     h1a: 'Nuestros pronósticos,', h1b: 'verificados',
     lead: 'Sin promesas — mediciones. Cada día, el pronóstico de ayer se compara con lo que el satélite observó realmente. Este es el método, y las cifras — incluidas las que fallamos.',
     l1: 'El método', h2m: 'Cómo se hace un pronóstico',
     m1t: 'Satélite Copernicus / NOAA, 4 pasadas al día',
     m1s: 'El índice AFAI (algas flotantes) se muestrea frente a cada playa, píxel por píxel — nunca un promedio regional.',
     m2t: 'Un modelo de deriva, no una bola de cristal',
-    m2s: 'Persistencia de los recales (vida media de 3,5 días), viento y bancos detectados mar adentro: el pronóstico de 7 días se recalcula en cada pasada satelital.',
+    m2s: `Persistencia de los recales (vida media de ${HL_FR} días), viento y bancos detectados mar adentro: el pronóstico de 7 días se recalcula en cada pasada satelital.`,
     m3t: 'Un backtest automático, todos los días',
     m3s: 'Cada pronóstico se archiva y luego se compara con la observación satelital del día previsto. Todo automático — nadie retoca las cifras.',
     m4t: 'Cuando falta el dato, no mostramos nada',
     m4s: 'Ninguna cifra inventada: si una medición no existe, la sección desaparece antes que adivinar.',
     l2: 'La precisión, medida', h2p: 'Cuánto valen nuestros pronósticos',
     pIntro: (from, to, pairs, beaches) => `Del ${from} al ${to}, ${pairs} pronósticos se compararon con la observación satelital en ${beaches} playas.`,
-    statJ1: 'estado correcto a 1 día', statJ3: 'estado correct a 3 días', statAll: 'todos los horizontes',
+    statJ1: 'estado correcto a 1 día', statJ3: 'estado correcto a 3 días', statAll: 'todos los horizontes',
     hitDef: mae => `Un pronóstico es un «acierto» cuando el estado anunciado (limpia, moderada, evitar) coincide con el estado observado por el satélite el día previsto. Error medio en el índice AFAI: ${mae}.`,
     thH: 'Horizonte', thHit: 'Acierto', thN: 'Comparaciones', thConf: 'Confianza mostrada',
     horizon: i => `Día +${i}`,
@@ -341,10 +353,10 @@ function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regio
         ? (lang === 'es' ? 'temporada tranquila' : lang === 'en' ? 'calm season' : 'saison calme') 
         : (lang === 'es' ? 'temporada alta' : lang === 'en' ? 'high season' : 'saison haute')
       txt = lang === 'es' 
-        ? `<b>${pct}%</b> de pronósticos «agua limpia» correctos · ${fmtInt(lang, rd.cleanSamples)} pruebas · ${regimeLabelText}`
+        ? `<b>${pct}%</b> de pronósticos «agua limpia» correctos · ${fmtInt(lang, rd.cleanSamples)} pruebas · ${regimeLabelText} · ${bt.overall.statusHitRate}% en todos los regímenes · alertas raras señaladas con baja confianza`
         : lang === 'en'
-        ? `<b>${pct}%</b> correct \"clean water\" forecasts · ${fmtInt(lang, rd.cleanSamples)} checks · ${regimeLabelText}`
-        : `<b>${pct} %</b> des prévisions « mer propre » vérifiées · ${fmtInt(lang, rd.cleanSamples)} comparaisons · ${regimeLabelText}`
+        ? `<b>${pct}%</b> correct \"clean water\" forecasts · ${fmtInt(lang, rd.cleanSamples)} checks · ${regimeLabelText} · ${bt.overall.statusHitRate}% across all regimes · rare alerts flagged low-confidence`
+        : `<b>${pct} %</b> des prévisions « mer propre » vérifiées · ${fmtInt(lang, rd.cleanSamples)} comparaisons · ${regimeLabelText} · ${bt.overall.statusHitRate} % toutes saisons confondues · alertes rares signalées à faible confiance`
     } else {
       txt = lang === 'es'
         ? `<b>${pct}%</b> de acierto global · ${fmtInt(lang, bt.totalPairs)} comparaciones`
@@ -363,7 +375,7 @@ function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regio
   if (rr && rr.regimes && rr.regimes[dominantRegime]) {
     const rd = rr.regimes[dominantRegime]
     const titleClean = t.rgClean
-    const descClean = lang === 'es' ? `Correctos a ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} muestras)` : lang === 'en' ? `Correct at ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} samples)` : `Vérifiées à ${rd.cleanReliabilityPct} % (${fmtInt(lang, rd.cleanSamples)} échantillons)`
+    const descClean = lang === 'es' ? `Correctos a ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} muestras) · ${bt.overall.statusHitRate}% todas las temporadas` : lang === 'en' ? `Correct at ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} samples) · ${bt.overall.statusHitRate}% all-season` : `Vérifiées à ${rd.cleanReliabilityPct} % (${fmtInt(lang, rd.cleanSamples)} échantillons) · ${bt.overall.statusHitRate} % toutes saisons`
 
     let alertCard = ''
     if (rd.alertSamples > 0 && typeof rd.falseAlarmRatePct === 'number') {
@@ -393,6 +405,7 @@ function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regio
         ${alertCard}
       </div>
       ${windowText}
+      ${alertCard ? `<p class="note">${esc(t.faNote)}</p>` : ''}
     </div>`
   }
 
@@ -540,7 +553,7 @@ if (capForm) {
   h1 em{font-style:normal;color:var(--gold-d)}
   .lead{color:var(--mut);font-size:15.5px;line-height:1.55;max-width:460px}
   section{margin-top:42px;padding-top:32px;border-top:1px solid var(--line)}
-  .lbl{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+  .lbl{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
   h2{font-family:var(--font-display);font-size:27px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:8px;font-weight:400;color:var(--ink)}
   p{color:var(--mut);font-size:14.5px;margin-bottom:10px}
   .rows{display:flex;flex-direction:column;gap:12px;margin-top:16px}
@@ -551,7 +564,7 @@ if (capForm) {
   .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
   .stat{background:linear-gradient(158deg,var(--night) 0%,var(--night-2) 100%);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 10px;text-align:center}
   .stat .n{font-family:var(--font-display);font-size:clamp(26px,6.5vw,34px);font-weight:400;color:var(--gold);line-height:1.05;white-space:nowrap}
-  .stat .l{font-size:11px;color:rgba(255,255,255,.62);margin-top:5px;line-height:1.35}
+  .stat .l{font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;line-height:1.35}
   .stat .l strong{color:#fff;font-weight:700}
   .tablecard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 8px;margin-top:16px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -576,6 +589,8 @@ if (capForm) {
   .foot-nav.legal a{color:rgba(255,255,255,.52);font-weight:500;font-size:12px}
   .foot-co{margin-top:12px;font-size:11px;color:rgba(255,255,255,.45);line-height:1.7}
   .foot-co a{color:rgba(255,255,255,.6);text-decoration:none}
+  .foot-sig{font-style:italic;color:var(--gold);font-size:13px;margin-bottom:12px;letter-spacing:.01em}
+  .capture-consent{margin-top:10px;font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;position:relative;z-index:1}
   .cta{display:inline-block;margin-top:18px;background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#0D1E1C;font-weight:800;font-size:14.5px;padding:14px 24px;border-radius:14px;text-decoration:none;box-shadow:0 8px 22px rgba(232,168,0,.3)}
 
   /* A/B Test classes */
@@ -639,7 +654,7 @@ if (capForm) {
   }
   .capture-desc {
     font-size: 13px;
-    color: rgba(255,255,255,.66);
+    color: rgba(255,255,255,.75);
     margin-bottom: 12px;
     position: relative;
     z-index: 1;
@@ -755,9 +770,10 @@ if (capForm) {
         <button type="submit" class="capture-btn">${esc(t.capBtn)}</button>
       </div>
     </form>
+    <div class="capture-consent">${esc(t.capConsent)}</div>
   </div>
 
-  <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}${lang === 'fr' ? `
+  <div class="foot"><div class="foot-sig">${esc(t.sig)}</div>${esc(siteName.toUpperCase())} · ${esc(t.fdata)}${lang === 'fr' ? `
     <nav class="foot-nav"><a href="/">Carte en temps réel</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
     <nav class="foot-nav legal"><a href="/cgv.html">CGV</a><a href="/remboursement.html">Remboursement</a><a href="/confidentialite.html">Confidentialité</a><a href="/mentions-legales.html">Mentions légales</a></nav>
     <div class="foot-co">97TECH — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a> · © 2026 97TECH</div>` : ''}</div>

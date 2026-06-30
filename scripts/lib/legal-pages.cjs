@@ -191,8 +191,8 @@ const CONTENT = { terms: termsContent, privacy: privacyContent, refund: refundCo
 // ── Chrome HTML (style inline — legal.css est strippé sur les domaines USD) ───
 function pageStyle() {
   return `@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
-:root{--bg:#FDFCF7;--card:#fff;--ink:#0D0D0D;--mid:#686868;--gold:#E8A800;--gold-l:#FFC72C;--teal:#009E8E;--night:#0D1E1C;--night-2:#0A1714;--border:rgba(0,0,0,.08);--font-display:'Anton','Bricolage Grotesque',system-ui,sans-serif;--font-body:'Bricolage Grotesque',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--mid:#9aa4af;--border:rgba(255,255,255,.10)}}
+:root{--bg:#FDFCF7;--card:#fff;--ink:#0D0D0D;--mid:#686868;--gold:#E8A800;--gold-l:#FFC72C;--link:#8A6A00;--teal:#009E8E;--night:#0D1E1C;--night-2:#0A1714;--border:rgba(0,0,0,.08);--font-display:'Anton','Bricolage Grotesque',system-ui,sans-serif;--font-body:'Bricolage Grotesque',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--mid:#9aa4af;--border:rgba(255,255,255,.10);--link:#FFC72C}}
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:clamp(15px,1.4vw + 11px,17px);-webkit-text-size-adjust:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--ink);line-height:1.68;-webkit-font-smoothing:antialiased}
@@ -205,8 +205,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--ink);line-hei
 .wrap .lead{color:var(--mid);font-size:1.08rem;line-height:1.6;margin-bottom:28px}
 .wrap h2{font-family:var(--font-body);font-size:1.12rem;font-weight:800;letter-spacing:-.01em;margin:30px 0 9px}
 .wrap p,.wrap li{margin-bottom:11px;font-size:1rem}
-.wrap a{color:var(--gold);text-decoration:none;font-weight:700}
-.wrap a:hover{text-decoration:underline}
+.wrap a{color:var(--link);text-decoration:underline;text-underline-offset:2px;font-weight:700}
+.wrap a:hover{color:var(--gold)}
 .wrap ul{padding-left:20px;margin-bottom:14px}
 .wrap .card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:14px;padding:16px 18px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .wrap .upd{color:var(--mid);font-size:.85rem;margin-top:26px}
