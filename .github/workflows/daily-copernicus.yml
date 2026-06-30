@@ -559,6 +559,11 @@ jobs:
               cp public/api/copernicus/sargassum-banks.json "$DIR/api/copernicus/" 2>/dev/null || true
               cp public/api/copernicus/forecast-archive.json "$DIR/api/copernicus/" 2>/dev/null || true
               cp public/api/copernicus/track-record.json "$DIR/api/copernicus/" 2>/dev/null || true
+              # Gating J+2→J+7 : rafraîchir la prévision PRIVÉE complète (sinon premium
+              # verrait des J+2-6 périmés après un refresh data-only) + son .htaccess Deny.
+              mkdir -p "$DIR/api/copernicus/_private"
+              cp public/api/copernicus/_private/forecast-full.json "$DIR/api/copernicus/_private/" 2>/dev/null || true
+              cp public/api/copernicus/_private/.htaccess "$DIR/api/copernicus/_private/" 2>/dev/null || true
               echo "Updated data in $DIR"
             fi
           done
@@ -591,6 +596,17 @@ jobs:
               for (const f of ['sargassum.json', 'history.json']) {
                 const s = path.join(src, f);
                 if (fs.existsSync(s)) fs.copyFileSync(s, path.join(dest, f));
+              }
+              // Gating J+2→J+7 : prévision PRIVÉE complète de la région + .htaccess Deny
+              // (sinon forecast.php de la région → 503 / J+2-6 périmés pour le premium).
+              const priv = path.join(src, '_private', 'forecast-full.json');
+              if (fs.existsSync(priv)) {
+                const pdest = path.join(dest, '_private');
+                fs.mkdirSync(pdest, { recursive: true });
+                fs.copyFileSync(priv, path.join(pdest, 'forecast-full.json'));
+                const ht = path.join(src, '_private', '.htaccess');
+                if (fs.existsSync(ht)) fs.copyFileSync(ht, path.join(pdest, '.htaccess'));
+                else fs.writeFileSync(path.join(pdest, '.htaccess'), 'Require all denied\n');
               }
               console.log('Updated data in ' + dest);
             }
