@@ -205,7 +205,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -1869,7 +1869,7 @@ export default function WorldMapView({
           <Suspense fallback={null}>
             <LazyWeekHub
               lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
-              reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} track={track}
+              reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} track={track}
               onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
               onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
               onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
