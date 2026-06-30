@@ -235,6 +235,10 @@ export default function WorldMapView({
   // sélectionnée → carte canvas golden-hour spoiler-free (réutilise shareBeachCard du parent,
   // navigator.share natif). Rollback : ?mapshare=0.
   const mapShareOff = (()=>{try{return /[?&]mapshare=0/.test(window.location.search)}catch(_){return false}})()
+  // Swipe-to-scrub : flick horizontal sur la carte = jour ±1. DEFAULT OFF (opt-in
+  // ?mapswipe=1) — additif, zéro preventDefault, le pan/zoom reste intact ; isolé pour
+  // ne RIEN changer aux utilisateurs par défaut (la vedette est protégée).
+  const mapSwipe = (()=>{try{return /[?&]mapswipe=1/.test(window.location.search)}catch(_){return false}})()
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -247,6 +251,7 @@ export default function WorldMapView({
   const ptrsRef    = useRef({})
   const pinchRef   = useRef(null)
   const lastTapRef = useRef(0)
+  const swipeRef   = useRef(null) // swipe-to-scrub (opt-in) : départ d'un flick mono-pointeur
   const tagTimerRef= useRef(null)
   const hintTimerRef= useRef(null)  // hint Premium one-shot au déverrouillage du scrub
   const reduceRef  = useRef(false)
@@ -804,7 +809,11 @@ export default function WorldMapView({
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       moved=false
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
-      if(Object.keys(ptrsRef.current).length===2){
+      const nptr=Object.keys(ptrsRef.current).length
+      // Swipe-to-scrub (opt-in) : mémorise le départ d'un flick mono-pointeur ; un 2e doigt
+      // (pinch) l'annule.
+      if(mapSwipe){ swipeRef.current = nptr===1 ? {x:e.clientX,y:e.clientY,t:Date.now(),id:e.pointerId} : null }
+      if(nptr===2){
         const pts=Object.values(ptrsRef.current)
         pinchRef.current={d:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),k0:camRef.current.k}
         try{ e.currentTarget.setPointerCapture(e.pointerId) }catch(_){}
@@ -861,6 +870,13 @@ export default function WorldMapView({
       // alors un faux « tap » → double-tap fantôme = bascule zoom au simple survol.
       // (Bug coin fondateur 22/06, confirmé par MutationObserver : hover → scale 2.5↔0.85.)
       if(e.type!=="pointerup") return
+      // Swipe-to-scrub (opt-in) : flick horizontal rapide = jour ±1 (gauche → +1, droite → −1).
+      // Additif (le pan a aussi eu lieu, léger) ; isolé derrière ?mapswipe=1.
+      if(mapSwipe&&swipeRef.current&&swipeRef.current.id===e.pointerId){
+        const s0=swipeRef.current, ddx=e.clientX-s0.x, ddy=e.clientY-s0.y, ddt=Date.now()-s0.t
+        swipeRef.current=null
+        if(ddt<450&&Math.abs(ddx)>70&&Math.abs(ddx)>2.2*Math.abs(ddy)){ goDayRef.current(ddx<0?1:-1); return }
+      }
       if(!wasMoved){
         // Double-tap = bascule zoom
         const now=Date.now()
@@ -981,6 +997,19 @@ export default function WorldMapView({
       try{track&&track("sg_map_share",{island})}catch(_){}
     }catch(_){}
   },[onShare,selected,lang,track,island])
+
+  // Changement de jour par swipe (réf. mise à jour CHAQUE render → jamais de closure périmée
+  // dans l'effet gestes). Respecte le gating : free verrouillé au-delà de J0 → paywall.
+  const goDayRef = useRef(()=>{})
+  goDayRef.current = (delta)=>{
+    setDay(d=>{
+      const t=Math.max(0,Math.min(5,d+delta))
+      if(t===d) return d
+      if(t>=1&&!mapPremium){ try{track&&track("sg_map_swipe_locked",{day:t})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return d }
+      try{track&&track("sg_map_swipe",{day:t,island})}catch(_){}
+      return t
+    })
+  }
 
   // Verdict « ma semaine » (Premium) — agrégat île sur days[0..5], calcul PUR (zéro
   // fabrication) : meilleur jour (max plages propres CONNUES) + « valeur sûre » = la plage

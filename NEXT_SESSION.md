@@ -1,5 +1,24 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-06-30 — CARTE PREMIUM : décision + craft LIVRÉS (PR3a→PR4) + 2 fixes contraste. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Contraste — 2 vagues, recette FINALE = texte BLANC sur pastille sombre** (le crème ne peignait pas fiable sur iOS) :
+> - chips bas-de-carte « près de moi » + « hôtel » → `.sg-mapchip` (#295, LIVE).
+> - CTA « Voir la plage » (le skin strippait le gradient or → noir illisible) → `.sg-mapcta` (#299, LIVE) : pastille encre `#190c2c` + **bordure or** + texte blanc, distinct des chips utilitaires.
+> - Pattern réutilisable : **doublé-classe `.X.X` (spécificité 0,2,0) bat `.theme-comic button` (0,1,1)** + valeurs codées en dur (jamais `var(--sg-*)`, cf. dette tokens ci-dessous). Tout nouveau bouton sur fond carte sombre → texte BLANC, pas ink.
+>
+> **Carte premium — couche DÉCISION + CRAFT (tous LIVE, flag commun `?mapdecide=0` sauf partage)** :
+> - **PR3a** « où aller plutôt » (#296) : plage moderate/avoid → plage propre la plus proche (haversine), pastille verte tapable. Hors premium-gate (jour affiché = data publique).
+> - **PR3b** verdict « ma semaine » (#297) : carte hors-sélection, meilleur jour + valeur sûre, agrégat île réel. Premium-only.
+> - **PR4a** saison calme valorisée (#298) : ≥90% propre + 0 « éviter » → « 🌴 Toute ta semaine au vert — on surveille, alerte à la bascule ». Retourne le creux en moat.
+> - **PR4 partage** (#300) : FAB « partager ma plage » (pile droite, plage sélectionnée) → `shareBeachCard` (carte virale golden-hour). Prop `onShare` câblée depuis `Sargasses_PROD`. Flag `?mapshare=0`.
+>
+> **Craft NON shippé (jugement « tu juges » assumé)** : **swipe-to-scrub** = risque conflit pan/zoom vedette, non régression-testable headless → à faire DEFAULT-OFF (`?mapswipe=1`) si demandé. **Aha overlay** = redondant avec greeting « ma semaine ». **Micro-réactions mascotte** = cosmétique faible valeur. Favoris-en-tête = `favorites` pas prop de `WorldMapView` (à plomber).
+>
+> **⚠️ Méthode deploy re-confirmée** : « toujours noir » = **timing** (prod servait l'ancien build à chaque test). Toujours **curl le CONTENU prod** (chunk/CSS) après merge, pas juste le statut « success ». Helper poll : `until curl … | grep -q <marqueur>; do sleep 30; done`.
+>
+> **⚠️ Dette tokens comic (non corrigée, large)** : classe `theme-comic` sur `<body>` mais tokens crème/ink sur `:root.theme-comic` (`<html>`) → surcharges variables inertes (app sur tokens base blanc/noir d'`index.html:96`). Fix = classe sur `<html>` OU sélecteur `body.theme-comic` → régression visuelle globale, panel + screenshots, chunk dédié.
+
 > **✅ 2026-06-30 — CONTRASTE RÉSOLU (texte BLANC) + CARTE PREMIUM PR3 (décision « où aller plutôt »). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Contraste chips carte — FIX FINAL (#295, LIVE & curl-vérifié)** : après 3 tentatives « pastille crème + texte ink » qui restaient noires sur iPhone (le fond crème ne peignait pas de façon fiable), bascule sur la **recette FAB prouvée** : **texte BLANC `#fdfcf7` sur pastille SOMBRE opaque `#190c2c`**. La couleur du texte EST blanche → ne peut jamais virer noir, indépendamment du rendu du fond. Inline JSX (« près de moi » + « hôtel ») + règle `.sg-mapchip` alignées. **Vérifié prod** : `WorldMapView-wd1wz1UX.js` contient `fdfcf7`. **Leçon clé re-confirmée** : le « toujours noir » = **timing deploy** (prod servait l'ancien build à chaque test), pas un fix raté — toujours curl le CONTENU prod avant de re-diagnostiquer.
