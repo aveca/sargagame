@@ -298,6 +298,7 @@ if ($action === 'payment_status') {
         // abo et cumule max() sur re-jeu). N'altère PAS l'encaissement (best-effort).
         if (!empty($meta['pass']) && $em) {
             mol_pass_grant_store($em, $meta['pass']);
+            mol_pass_grant_once($cfg, $pid, $em, $meta['pass'], $isl); // email d'accès INSTANTANÉ (idempotent par pid)
         }
         if (($meta['kind'] ?? '') === 'sub_first') {
             $cust = $pay['customerId'] ?? '';

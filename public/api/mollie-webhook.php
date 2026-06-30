@@ -60,6 +60,7 @@ if ($status === 'paid') {
     // empêche déjà un 2e passage webhook.
     if (!empty($meta['pass']) && $email) {
         mol_pass_grant_store($email, $meta['pass']);
+        mol_pass_grant_once($cfg, $pid, $email, $meta['pass'], $island); // email d'accès INSTANTANÉ (idempotent par pid)
     }
     // Abo : 1er paiement 'first' paye -> cree la Subscription (idempotent).
     if (($meta['kind'] ?? '') === 'sub_first') {
