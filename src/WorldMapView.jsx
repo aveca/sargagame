@@ -651,11 +651,15 @@ export default function WorldMapView({
     // Confiance basse assumée (cf. frise). Jour 0 / gratuit → 0 décalage.
     const dd=(mapPremium&&!mapDriftOff&&day>=1)?day:0
     const DX=-6.6*dd, DY=-3.2*dd
+    // En mode premium-scrub (jour futur), on CALME le sway sinusoïdal continu (×0.28) :
+    // le déplacement O/N-O par jour suffit à montrer le mouvement, le sway permanent
+    // faisait « écran de veille » (revue product-design). Au repos (J0) : sway normal.
+    const swayK=dd>0?0.28:1
     const place=(n,t)=>{
       if(reduced){ n.g.setAttribute("transform",`translate(${(n.bx+DX).toFixed(1)} ${(n.by+DY).toFixed(1)})`); return }
       const ph=n.seed*0.137
-      const sx=Math.sin(t*0.061+ph)*7 + Math.sin(t*0.0987+ph*1.31)*4 + Math.sin(t*0.1473+ph*0.71)*2.4
-      const sy=Math.sin(t*0.047+ph*1.1)*3.4 + Math.sin(t*0.0814+ph*0.53)*2.1
+      const sx=(Math.sin(t*0.061+ph)*7 + Math.sin(t*0.0987+ph*1.31)*4 + Math.sin(t*0.1473+ph*0.71)*2.4)*swayK
+      const sy=(Math.sin(t*0.047+ph*1.1)*3.4 + Math.sin(t*0.0814+ph*0.53)*2.1)*swayK
       n.g.setAttribute("transform",`translate(${(n.bx+sx+DX).toFixed(1)} ${(n.by+sy+DY).toFixed(1)})`)
     }
     if(reduced){ nodes.forEach(n=>place(n,0)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
@@ -1194,10 +1198,12 @@ export default function WorldMapView({
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
-                {/* PREMIUM — anneau « à éviter » du jour AFFICHÉ (scrub J+1+) : pulse si anim,
-                    STATIQUE pointillé si reduced-motion (corrige le trou a11y : le signal avoid
-                    ne disparaît plus sans animation). */}
-                {mapPremium&&st==="avoid"&&day>=1&&(
+                {/* PREMIUM — anneau « à éviter » du jour AFFICHÉ : UNIQUEMENT sur le pin
+                    SÉLECTIONNÉ (1 à l'écran) — l'anneau pulsant sur N pins faisait « gadget »
+                    (revue product-design). Le pin rouge porte déjà le statut ; le badge
+                    « bascule J+N » reste le seul signal d'ambiance. Pulse si anim, pointillé
+                    statique si reduced-motion (a11y). */}
+                {mapPremium&&st==="avoid"&&day>=1&&isSel&&(
                   noAnim
                     ? <circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2" strokeDasharray="3 2.4" aria-hidden="true"/>
                     : <circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2"
@@ -1583,6 +1589,14 @@ export default function WorldMapView({
               }}>
                 {ti(lang,lbl)}
                 {locked&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" style={{position:"absolute",top:1,right:2}}><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>}
+                {/* Confiance par jour (premium déverrouillé) : plein J0-2 · demi J3 · pointillé J4-5
+                    → l'utilisateur SAIT quand il entre en zone « tendance » (honnêteté, revue design). */}
+                {mapPremium&&!locked&&i>=1&&(()=>{const tier=i>=4?"low":i===3?"med":"high";return(
+                  <span aria-hidden="true" style={{display:"block",width:4,height:4,borderRadius:"50%",margin:"3px auto 0",boxSizing:"border-box",
+                    background:tier==="high"?INK:"transparent",
+                    backgroundImage:tier==="med"?`linear-gradient(90deg,${INK} 0 50%,transparent 50% 100%)`:"none",
+                    border:tier==="low"?`1px dotted ${INK}`:tier==="med"?`1px solid ${INK}`:"none"}}/>
+                )})()}
               </button>
             )})}
           </div>
