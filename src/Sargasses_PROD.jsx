@@ -5855,7 +5855,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             flex:1,minWidth:0,
             padding:"8px 10px",borderRadius:9,
             border:"2px solid #0D0D0D",
-            fontSize:15,fontFamily:"inherit",
+            fontSize:16,fontFamily:"inherit",
             background:"#fff",
             color:"#0D0D0D",outline:"none",
           }}
@@ -7636,7 +7636,7 @@ function FeedbackWidget(){
           <textarea value={text} onChange={e=>setText(e.target.value)}
             placeholder={rating>=4?_t(lang,"Ce que j'utilise le plus...","What I use the most...","Lo que más uso..."):_t(lang,"Ce qui me manque...","What I'm missing...","Lo que me falta...")}
             style={{width:"100%",height:60,borderRadius:10,border:"1.5px solid var(--sg-border)",
-              padding:"8px 10px",fontSize:13,fontFamily:"inherit",resize:"none",
+              padding:"8px 10px",fontSize:16,fontFamily:"inherit",resize:"none",
               background:"var(--sg-bgD)",color:"var(--sg-ink)"}}/>
           <button onClick={submit} style={{width:"100%",marginTop:8,padding:"10px",
             borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",
@@ -8190,7 +8190,7 @@ function AlertCapture({beach,lang}){
       <input type="email" inputMode="email" autoComplete="email" required autoFocus
         placeholder={_t(lang,"Ton email — verdict chaque matin","Your email — verdict every morning","Tu email — veredicto cada mañana")}
         value={email} onChange={e=>setEmail(e.target.value)}
-        style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:13,fontFamily:"inherit",
+        style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:16,fontFamily:"inherit",
           border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
       <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",
         fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14}}>OK</button>

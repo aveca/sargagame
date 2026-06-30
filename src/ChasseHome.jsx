@@ -1903,7 +1903,7 @@ export const CSS=`
 .lc-coll-sub{font-size:12px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700;margin-top:7px}
 /* outils Pokédex : recherche + filtres */
 .lc-coll-tools{margin:0 0 13px}
-.lc-coll-search{width:100%;font-family:"Comic Neue",system-ui,sans-serif;font-size:15px;font-weight:700;color:var(--ink);
+.lc-coll-search{width:100%;font-family:"Comic Neue",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
   background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:10px 13px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
 .lc-coll-search::placeholder{color:#9a93a8}
 .lc-coll-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
@@ -2103,7 +2103,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-cap-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
 .lc-cap-card .lc-sub{margin:7px 0 11px;color:#2a2536;font-weight:700;font-size:13px}
 .lc-cap-row{display:flex;gap:8px}
-.lc-cap-in{flex:1;min-width:0;font-family:"Comic Neue",system-ui,sans-serif;font-size:15px;font-weight:700;color:var(--ink);
+.lc-cap-in{flex:1;min-width:0;font-family:"Comic Neue",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
   background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:11px 13px;box-shadow:2px 2px 0 var(--ink) inset;forced-color-adjust:none}
 .lc-cap-in::placeholder{color:#9a93a8}
 .lc-cap-btn{width:auto!important;flex:0 0 auto;padding:11px 16px!important;font-size:15px!important}
