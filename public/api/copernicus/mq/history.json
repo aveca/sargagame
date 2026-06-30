@@ -5135,7 +5135,7 @@
       "levels": [
         {
           "id": "mq001",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -5145,12 +5145,12 @@
         },
         {
           "id": "mq003",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq004",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -5205,32 +5205,32 @@
         },
         {
           "id": "mq015",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq016",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq017",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq019",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq020",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "mq021",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -5240,7 +5240,7 @@
         },
         {
           "id": "mq023",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -5365,7 +5365,7 @@
         },
         {
           "id": "mq055",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {

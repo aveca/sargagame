@@ -1240,12 +1240,12 @@
       "levels": [
         {
           "id": "pc001",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "pc002",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -1260,7 +1260,7 @@
         },
         {
           "id": "pc005",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -1270,7 +1270,7 @@
         },
         {
           "id": "pc007",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1881,14 +1881,14 @@
       "beach": "pc001",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.1
+      "afai": 0.11
     },
     {
       "date": "2026-06-30",
       "beach": "pc002",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.1
+      "afai": 0.11
     },
     {
       "date": "2026-06-30",
@@ -1909,7 +1909,7 @@
       "beach": "pc005",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.11
+      "afai": 0.12
     },
     {
       "date": "2026-06-30",
@@ -1923,7 +1923,7 @@
       "beach": "pc007",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.12
+      "afai": 0.13
     },
     {
       "date": "2026-06-30",
