@@ -105,6 +105,19 @@ export default function WeekHub({
   const setPanel = useCallback((el)=>{ panelRef.current=el; swipe.ref.current=el },[swipe])
   const REL = Math.max(1, Math.min(5, reliableHorizon||3))
   const D = [0,1,2,3,4,5]
+  // Preuve d'honnêteté SURFACÉE in-app (le moat) : l'asymétrie régime calme — nos « mer propre »
+  // sont quasi infaillibles, mais les rares alertes de saison calme sont peu fiables → on les
+  // donne à faible confiance, « on ne crie pas au loup ». Source = track-record.json (public,
+  // auditable, même que /fiabilite/). Affiché seulement en saison calme, avec N réel.
+  const [calmProof, setCalmProof] = useState(null)
+  useEffect(()=>{ let ok=true
+    fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{
+      try{ const c=d&&d.byRegime&&d.byRegime.calm
+        if(ok&&c&&c.cleanReliabilityPct!=null&&c.cleanSamples>=20) setCalmProof({pct:c.cleanReliabilityPct, n:c.cleanSamples, fa:c.falseAlarmRatePct})
+      }catch(_){}
+    }).catch(()=>{})
+    return ()=>{ ok=false }
+  },[])
   const tierOf = (d, cf) => d>=4 ? "low" : (cf>=55?"high":cf>=38?"med":"low")
 
   const [activeDay, setActiveDay] = useState(()=>{
@@ -260,6 +273,12 @@ export default function WeekHub({
                 <>
                   <div style={{font:"400 18px/1.05 'Anton',sans-serif"}}>🌴 {_t(lang,"Toute ta semaine au vert","Your whole week is green","Toda tu semana en verde")}</div>
                   <div style={{font:"500 12px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:5}}>{_t(lang,"On surveille la mer pour toi — alerte à la seconde où ça bascule.","We watch the sea for you — alerted the second it shifts.","Vigilamos el mar por ti — aviso en cuanto cambie.")}</div>
+                  {calmProof && (
+                    <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>{_t(lang,
+                      `En saison calme, ${calmProof.pct}% de nos « mer propre » se sont vérifiées (${calmProof.n.toLocaleString("fr-FR")} cas). Les rares alertes, on les donne à faible confiance — on ne crie pas au loup. 76-79% tous régimes confondus, détail sur /fiabilite/.`,
+                      `In calm season, ${calmProof.pct}% of our “clean water” calls held up (${calmProof.n.toLocaleString("en-US")} cases). The rare alerts we give low-confidence — we don't cry wolf. 76-79% across all regimes, details on /reliability/.`,
+                      `En temporada calma, ${calmProof.pct}% de nuestros “agua limpia” se cumplieron (${calmProof.n.toLocaleString("es-ES")} casos). Las raras alertas las damos con baja confianza — no gritamos lobo. 76-79% en todos los regímenes, detalle en /fiabilidad/.`)}</div>
+                  )}
                 </>
               ) : hero.safe ? (
                 <>
