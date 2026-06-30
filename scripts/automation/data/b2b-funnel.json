@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-30T14:24:37.365Z",
+  "updatedAt": "2026-06-30T20:03:56.368Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 57,
-    "contacted": 50,
+    "discovered": 51,
+    "contacted": 56,
     "lead": 5,
     "paid": 2
   },
@@ -490,58 +490,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "d110dbd92e83b9e57088270b321523df": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Au Citron Vert Hébergements",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:07.247Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "de4fab14e0ce41d12e66116eacb1733c": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Le Manguier",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:07.632Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "49f4f276e5af5ed3677c7962d3a8fefc": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Locations Vue Turquoise (bungalows & villas Tartane)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:08.021Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "ebdcea31cb4f0cb811c6d08cbbbde6ff": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Village de la Pointe",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:08.452Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "64b2cd61d40db94ccdcf4537b2982df9": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Cap Macabou Hotel-Restaurant",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:09.022Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "3a1f3e868bf62708801944d219e4fc7a": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Plages de Macabou (Vacances Authentiques)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T20:01:10.582Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "f5d0f041e4a78e0d94496f9c7ea2179f": {
       "stage": "discovered",
