@@ -528,8 +528,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           <div className="lc-detail-fc">
             <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
             <div className="lc-fc-cap">{fcConfJ1!=null
-              ? _t({fr:`Mesuré au satellite · fiable ~4 j · ${fcConfJ1}% demain`,en:`Satellite-measured · reliable ~4 d · ${fcConfJ1}% tomorrow`,es:`Medido por satélite · fiable ~4 d · ${fcConfJ1}% mañana`})
-              : _t({fr:"Mesuré au satellite ce matin",en:"Satellite-measured this morning",es:"Medido por satélite esta mañana"})}</div>
+              ? _t({fr:`7 jours, sans trou. Plus on s'éloigne, moins on est sûr — on te le dit. ${fcConfJ1}% pour demain.`,en:`7 days, no blanks. The further out, the less sure — and we tell you. ${fcConfJ1}% for tomorrow.`,es:`7 días, sin huecos. Cuanto más lejos, menos seguros — y te lo decimos. ${fcConfJ1}% para mañana.`})
+              : _t({fr:"7 jours, sans trou — estimés jour par jour.",en:"7 days, no blanks — estimated day by day.",es:"7 días, sin huecos — estimados día a día."})}</div>
             <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=fc7[i]
@@ -563,7 +563,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               })}
             </div>
             <div className={"lc-fc-line"+(isPremium||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
-              isPremium ? _t({fr:"Prévision 7 jours débloquée — Le Veilleur veille pour toi.",en:"7-day forecast unlocked — The Watcher watches for you.",es:"Pronóstico 7 días desbloqueado — El Vigía vela por ti."})
+              isPremium ? _t({fr:"7 jours débloqués. Si ça bascule avant, on te prévient le matin même.",en:"7 days unlocked. If it turns sooner, we warn you that morning.",es:"7 días desbloqueados. Si cambia antes, te avisamos esa mañana."})
               : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — The Watcher watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
               : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. The Watcher warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
               : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
@@ -576,6 +576,17 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               {Array.from({length:7}).map((_,i)=>{
                 const d=new Date(Date.now()+i*864e5)
                 const dl=["D","L","M","M","J","V","S"][d.getDay()]
+                // Premium sans série (plage non couverte) : estimation par PERSISTANCE du
+                // statut du jour (confiance basse, jamais de carré gris muet — un payant
+                // doit toujours voir une donnée). Gratuit → cadenas (verrou intentionnel).
+                if(isPremium&&i>0&&v.st){
+                  return (
+                    <div key={i} className={`lc-fc-cell s-${v.st} now estimated`}>
+                      <span className="lc-fc-day">{dl}</span>
+                      <span className="lc-fc-dot">~</span>
+                    </div>
+                  )
+                }
                 return (
                   <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
                     <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
@@ -584,6 +595,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
               })}
             </div>
+            {isPremium&&<div className="lc-fc-line ok">{_t({fr:"Estimation jour par jour — confiance basse, jamais de trou. On affine chaque matin.",en:"Day-by-day estimate — low confidence, never blank. We sharpen it each morning.",es:"Estimación día a día — confianza baja, nunca en blanco. La afinamos cada mañana."})}</div>}
           </div>
         )}
 
@@ -2011,6 +2023,13 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
 .lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
 .lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
+/* PREMIUM estimé (persistance, confiance basse) : couleur du statut MAIS atténuée +
+   liseré pointillé → honnête « estimation, pas certitude », jamais un gris muet. */
+.lc-fc-cell.estimated{opacity:.82;border-style:dashed}
+.lc-fc-cell.estimated .lc-fc-dot{opacity:.85}
+/* Jour PERSISTÉ (horizon) sur le chemin premium réel : même traitement « estimé »
+   pointillé que .estimated → un report dégradé ne ressemble JAMAIS à une mesure ferme. */
+.lc-fc-cell.now.far{opacity:.82;border-style:dashed}
 /* aperçu prévision réelle (item 09) — teinte du statut (la « forme », estompée) + cadenas + confiance.
    Frontière calquée sur ForecastChart : on laisse SENTIR la couleur du verdict, sans révéler le détail. */
 .lc-fc-cap{font:700 10px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.7;margin:-3px 0 7px}
