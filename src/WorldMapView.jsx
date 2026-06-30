@@ -204,6 +204,12 @@ export default function WorldMapView({
   const mapForecastOff = (()=>{try{return /[?&]mapforecast=0/.test(window.location.search)}catch(_){return false}})()
   const mapPremium = !!isPremium && !mapForecastOff
   const [premiumHint, setPremiumHint] = useState(false)
+  // Mode « dérive Premium » sur les jours futurs : échouage en BOUCLE (sensation
+  // d'arrivée continue) + halo qui pulse sur les plages prévues touchées + badge
+  // « touchée J+N » + sens de dérive. Tout piloté par la donnée RÉELLE (days[day]/drift/
+  // firstHit) — jamais de trajectoire inventée. Rollback : ?mapdrift=0 → retombe sur
+  // l'échouage once+fade + pins statiques (= comportement gratuit/aujourd'hui).
+  const mapDriftOff = (()=>{try{return /[?&]mapdrift=0/.test(window.location.search)}catch(_){return false}})()
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -331,7 +337,8 @@ export default function WorldMapView({
       .filter(b=>b&&b.lat!=null&&b.lng!=null&&(isEUR?b.island===island:true))
       .map(b=>{
         const[vx,vy]=toVB(b.lat,b.lng)
-        const fc=forecastByBeach&&forecastByBeach[b.id]
+        const entry=forecastByBeach&&forecastByBeach[b.id]
+        const fc=entry&&entry.d // série jour-par-jour [{st,c,date}]
         const days=[b.status||null]
         const conf=[null]
         for(let d=1;d<6;d++){
@@ -339,7 +346,12 @@ export default function WorldMapView({
           days.push(cell&&cell.st?cell.st:null) // pas de prévision → null (gris), jamais inventé
           conf.push(cell&&cell.c!=null?cell.c:null)
         }
-        return{...b,vx,vy,days,conf,fc:fc||null}
+        // Premier jour d'échouage prévu (réel) : index du 1er 'avoid' dans la série,
+        // sinon arrivalDay du signal d'arrivée. Sert au badge « touchée J+N ».
+        let firstHit=null
+        for(let d=0;d<days.length;d++){ if(days[d]==="avoid"){ firstHit=d; break } }
+        if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
+        return{...b,vx,vy,days,conf,fc:fc||null,drift:(entry&&entry.drift)||null,firstHit}
       })
   },[beaches,island,toVB,forecastByBeach])
 
@@ -542,17 +554,35 @@ export default function WorldMapView({
     // sur la carte (le pin rouge porte le statut). Rejoue seulement au changement de donnée/jour. Quand
     // tout est joué+fadé → le rAF s'éteint (0 % CPU, carte propre). Badge « J+N » = ETA, transitoire.
     const CYCLE=3.35 // durée d'un échouage : banc → splat → dépôt → FADE complet (plus rien à la fin)
+    // PREMIUM jour futur : échouage en BOUCLE (arrivée continue) au lieu de once+fade.
+    // Délai mort (GAP) entre cycles + période DÉSYNCHRONISÉE par plage → pas de pop
+    // collectif (la carte respire). Le gratuit/aujourd'hui garde once+fade (loopMode=false).
+    const loopMode = mapPremium && day>=1 && !mapDriftOff
+    const GAP=1.15
     const insts=hits.map((b,i)=>{
       const a=arr(b)
-      const eta=force?(i+1):(a?a.d:(b.days[day]==="avoid"?0:null)) // 0=déjà là, 1-3=jour prévu, null=aucun
+      // En loopMode (premium futur), on SUPPRIME le badge ETA natif de l'échouage
+      // (eta=null) : il se répétait/chevauchait en boucle (« AUJ AUJ » illisible). Le
+      // badge propre « touchée +Nj » sur le pin (firstHit) porte l'info, c'est plus net.
+      const eta=loopMode?null:(force?(i+1):(a?a.d:(b.days[day]==="avoid"?0:null))) // 0=déjà là, 1-3=jour prévu, null=aucun
       const inst=_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131,eta)
       const strength=Math.min(1.3,.72+(((a&&a.s)||0)*3.5)+(b.days[day]==="avoid"?.28:0)) // + sévère = boump + fort
-      return {inst,delay:i*0.55,settled:false,boumped:false,strength}
+      return {inst,delay:i*0.55,settled:false,boumped:false,strength,period:CYCLE+GAP+(i%3)*0.4}
     })
     if(reduceRef.current){ insts.forEach(o=>o.inst.render(CYCLE)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } } // reduced = rien (fadé), le pin suffit
     let raf=0,t0=0
     const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; let active=false
       for(const o of insts){ if(o.settled) continue
+        if(loopMode){
+          // BOUCLE : phase locale (modulo période), délai mort = rien affiché (render(CYCLE) = fadé).
+          const lt=t-o.delay
+          if(lt<0){ active=true; continue }
+          const ph=lt%o.period
+          o.inst.render(ph<CYCLE?ph:CYCLE)
+          if(!o.boumped && lt>=1.18 && lt<o.period){ o.boumped=true; playBoump(o.strength) } // 1 seul boump (1er cycle)
+          active=true
+          continue
+        }
         const lt=t-o.delay
         if(lt<CYCLE){ o.inst.render(Math.max(0,lt)); active=true // joue jusqu'au fondu complet
           if(!o.boumped && lt>=1.18){ o.boumped=true; playBoump(o.strength) } // SON « boump » pile à l'impact (T_IM)
@@ -563,10 +593,10 @@ export default function WorldMapView({
     }
     raf=requestAnimationFrame(loop)
     const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} }
-      else if(!raf && insts.some(o=>!o.settled)){ t0=0; raf=requestAnimationFrame(loop) } }
+      else if(!raf && (loopMode || insts.some(o=>!o.settled))){ t0=0; insts.forEach(o=>{o.boumped=true}); raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
-  },[beachList,day,soundReplay]) // eslint-disable-line
+  },[beachList,day,soundReplay,mapPremium,mapDriftOff]) // eslint-disable-line
 
   // ── CHAMP DE SARGASSES AU LARGE (live, dérive LENTE) : les vraies cellules satellite rendues en
   // bancs comic (LOD near/far), qui dérivent doucement vers l'O/N-O (courant Caraïbe) avec WRAP
@@ -883,6 +913,10 @@ export default function WorldMapView({
   if(loadErr) return null  // laisse l'ArchipelView control se montrer (ErrBound parent)
 
   const noAnim   = reduceRef.current
+  // Animation Premium « dérive » sur jour futur : halo qui pulse sur les plages prévues
+  // touchées (respecte reduced-motion via !noAnim). Les marqueurs INFO (badge J+N, sens
+  // de dérive) restent affichés même en reduced-motion (statiques) = info, pas animation.
+  const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
   const cleanCnt  = beachList.filter(b=>b.days[day]==="clean").length // inconnu ≠ propre (anti-flash)
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
@@ -1019,6 +1053,7 @@ export default function WorldMapView({
       <style>{`
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes wmHalo{0%,100%{opacity:.45}50%{opacity:.8}}
+        @keyframes wmAvoidPulse{0%{opacity:.55;transform:scale(.7)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
         @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
       `}</style>
@@ -1136,6 +1171,27 @@ export default function WorldMapView({
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
+                {/* PREMIUM — halo ROUGE qui pulse sur les plages prévues touchées CE jour-là (réel, day>=1) */}
+                {driftFuture&&st==="avoid"&&<circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2"
+                  style={{transformBox:"fill-box",transformOrigin:"center",animation:"wmAvoidPulse 1.9s ease-out infinite",animationDelay:`${((Math.abs(b.vx*7+b.vy*13))%900)/1000}s`}} aria-hidden="true"/>}
+                {/* PREMIUM — badge « touchée J+N » : jour RÉEL du 1er échouage prévu (firstHit), visible sur tout jour */}
+                {mapPremium&&!mapDriftOff&&b.firstHit!=null&&b.firstHit>=1&&(
+                  <g transform="translate(0 -31)" aria-hidden="true">
+                    <rect x="-14" y="-7" width="28" height="13.5" rx="6.75" fill="#FFC72C" stroke={INK} strokeWidth="1.4"/>
+                    <text x="0" y="2.7" textAnchor="middle" fontSize="8" fontWeight="800" fill="#0d0b14"
+                      fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
+                  </g>
+                )}
+                {/* PREMIUM — sens de dérive du banc, UNIQUEMENT quand il BOUGE (approche/disperse) :
+                    ↗ se rapproche (rouge) / ↘ se disperse (vert). « stable » → pas de glyphe (anti-clutter). */}
+                {mapPremium&&!mapDriftOff&&(b.drift==="up"||b.drift==="down")&&(st==="avoid"||st==="moderate")&&(()=>{
+                  const up=b.drift==="up"
+                  return(<g transform="translate(13 -13)" aria-hidden="true">
+                    <circle r="6.6" fill="#fdf6e3" stroke={INK} strokeWidth="1.2"/>
+                    <g transform={`rotate(${up?-45:45})`}><path d="M-3 0 H3 M0.7 -2.5 L3.2 0 L0.7 2.5" stroke={up?"#E8522A":"#22C55E"} strokeWidth="1.9"
+                      fill="none" strokeLinecap="round" strokeLinejoin="round"/></g>
+                  </g>)
+                })()}
                 {/* ombre au sol */}
                 <ellipse cx="0" cy="1" rx={5*s} ry={2*s} fill="#062033" opacity=".4"/>
                 {/* corps teardrop : pointe en bas (cy=0), bulbe au-dessus */}
@@ -1434,6 +1490,10 @@ export default function WorldMapView({
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
           {mapPremium&&day>=1&&(()=>{
             const far=day>=4
+            const hitCount=beachList.filter(b=>b.days[day]==="avoid").length
+            const hitStr=hitCount>0
+              ? _t(lang,`${hitCount} ${hitCount>1?"plages touchées":"plage touchée"}`,`${hitCount} ${hitCount>1?"beaches hit":"beach hit"}`,`${hitCount} ${hitCount>1?"playas afectadas":"playa afectada"}`)
+              : _t(lang,"aucune plage touchée prévue","no beaches forecast hit","ninguna playa afectada prevista")
             const dateStr=(()=>{try{const c=beachList.find(b=>b.fc&&b.fc[day]&&b.fc[day].date);const ds=c&&c.fc[day].date;if(!ds)return null;const dt=new Date(ds);return dt.toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{weekday:"short",day:"numeric",month:"short"})}catch(_){return null}})()
             return(
               <div role="status" style={{
@@ -1442,7 +1502,7 @@ export default function WorldMapView({
                 border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:12,
                 padding:"6px 12px",font:"700 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif",
               }}>
-                <b style={{fontWeight:800}}>{_t(lang,"Prévu","Forecast","Previsto")} {ti(lang,DAY_LBL[day])}{dateStr?` · ${dateStr}`:""}</b><br/>
+                <b style={{fontWeight:800}}>{_t(lang,"Prévu","Forecast","Previsto")} {ti(lang,DAY_LBL[day])}{dateStr?` · ${dateStr}`:""} · {hitStr}</b><br/>
                 {far
                   ? _t(lang,"Horizon lointain — indicatif, faible confiance. Mesuré au satellite, pas deviné.","Far horizon — indicative, low confidence. Measured by satellite, not guessed.","Horizonte lejano — indicativo, baja confianza. Medido por satélite, no adivinado.")
                   : _t(lang,"~76–79 % de fiabilité selon la saison. Mesuré au satellite, pas deviné.","~76–79% reliability depending on season. Measured by satellite, not guessed.","~76–79 % de fiabilidad según la temporada. Medido por satélite, no adivinado.")}

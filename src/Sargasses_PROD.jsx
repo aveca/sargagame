@@ -13549,7 +13549,7 @@ export default function App(){
                 lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
                 arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m})()}
-                forecastByBeach={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const wk=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];const fc=wk&&wk.forecast;if(fc&&fc.length){m[b.id]=fc.slice(0,6).map(d=>({st:d.status,c:d.confidence,date:d.date}));}}}catch(_){}return m})()}
+                forecastByBeach={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const wk=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];const fc=wk&&wk.forecast;if(fc&&fc.length){m[b.id]={d:fc.slice(0,6).map(d=>({st:d.status,c:d.confidence,date:d.date})),drift:wk.drift||null,arrivalDay:(wk.arrivalDetected&&wk.arrivalDay!=null)?wk.arrivalDay:null};}}}catch(_){}return m})()}
                 onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
