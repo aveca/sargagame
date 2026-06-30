@@ -123,6 +123,15 @@ node -e "require('./regions/index.cjs').assertAllRegionsValid()"   # invariant r
 
 Grep ne reproduit pas → faux positif, classé sans suite. Finding « vrai en théorie » mais build vert + smoke `ERRORS=[]` localement = non actionnable.
 
+### Self-review UI AVANT ship — le fondateur n'est PAS la QA (loi née d'un grief dur)
+
+> **Le headless du conteneur force les couleurs/polices → les bugs VISUELS ne se voient pas ici et tombent sur le fondateur.** Interdit de faire vérifier le fondateur écran par écran. Avant tout ship touchant l'UI : **passer la diff au crible des classes de bugs récurrentes** (lecture de code, pas capture), idéalement via un panel adverse (`scratchpad/audit-team.js` relançable). Checklist DURE :
+- **Skin de thème qui écrase l'inline** : un `<button>` sous `.theme-comic`/portalisé sur `document.body` reçoit `.theme-comic button{background/border/box-shadow !important}` → fond/bordure inline EFFACÉS. Fix : `<div role="button">` OU `className="sg-onink-scope"` sur la racine OU classe doublée `.x.x{…!important}`. (Vu 3×: chips carte, pastille digest, hub/onboarding portalisés.)
+- **Feuille montée dans `WorldMapView`** (carte `touchAction:none` + handlers de pan) → ne scrolle pas au doigt, events captés par le pan. Fix : `createPortal(…, document.body)` **+ `className="sg-onink-scope"`** (le portal sort de la couche carte MAIS atterrit sous `.theme-comic` → re-câbler les 2).
+- **Contraste** texte sombre sur fond sombre/teal (juger en computed-style serait idéal mais le headless ment → lire les paires couleur/fond dans le code).
+- **Convention mobile oubliée** : swipe-down (`useSwipeClose`), 4 voies de sortie, `clamp()` typo, ≥44px (cf. §Doctrine UX « Mobile-first : LOIS »).
+- **i18n** : pas de texte FR en dur (toujours `_t(fr,en,es)`).
+
 ### Déjà-validé — ne pas re-auditer (sauf preuve grep d'une régression)
 
 - Cascade SEO (génération pages plages, balisage)
