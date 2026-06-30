@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **🌍 RÈGLE PERMANENTE (fondateur 2026-06-30) — i18n TOTALE = loi.** App internationale : **chaque langue (FR/EN/ES) sur chaque localisation, sur CHAQUE canal** (email, in-app, pages `/pro/*`, widget). Une surface non traduite = livrable INCOMPLET. Mapping région→langue+domaine = `regionBrand`/`mol_b2b_region_brand` (florida/puntacana=EN, rivieramaya=ES, MQ/GP=FR). Ne jamais hardcoder MQ/FR.
+
+> **🗂️ 2026-06-30 — PROGRAMME ONBOARDING/I18N EN COURS (branche `claude/b2b-funnels-forecasting-o8qeof`, plusieurs PR).**
+>
+> **Mandat fondateur de la session** : onboarding/accueil SOIGNÉ B2B+B2C sur tous les canaux (email+in-app), architecture scalable/éditable, expérience « Aha moment par profil », i18n totale. Agir sans redemander.
+>
+> **✅ EN PROD** : #269 falaise J+30 (conversion essai→payant `/pro/espace/`, flag `?trialconv=0`) + cap outreach 5→8. · #270 audit onboarding #1-7 (drip essai t30/t33, claims hedgés EN/ES, USD emails dérivés, copy B2C positive + `/fiabilite/`, a11y modales `useModalA11y`, pricing self-serve).
+>
+> **🔄 EN COURS / FILE** :
+> - **Drip B2B i18n** : `b0/b2/b6/b13/t27` localisés FR/EN/ES via `regionBrand` (étaient FR-only + USD-cassés). Vérifié (25 combos, dry-run OK) → en cours de merge.
+> - **Pages `/pro/*` i18n** : FR-only, `/pro/en/` partiel, `/pro/es/` inexistant → **sweep EN/ES complet à faire** (prochain gros lot).
+> - **Carte soignée** (vedette, screenshots avant/après) : pastille fraîcheur qui wrap (`WorldMapView.jsx:1216` manque `whiteSpace:nowrap`+`flexShrink:0`), recherche tronquée en mode STALE, étiquettes qui se chevauchent (déclutter existe L444, à durcir), mascotte/œil coupé bord droit (`g translate(666 44)`). Investigué, pas encore codé.
+> - **Aperçu in-app mort** (`/pro/espace/` « Voir l'aperçu » → carte nue si pas de `?partner=<slug>` existant dans `b2b-partners.json`) · **B2B invisible sur 1er écran carte** (rampe `onOpenPro` enterrée dans panel « Mon espace ») · **réengagement leads météo-déclenché** (proposé) · audit #8 (offre B2BModal ≠ pricing).
+
 > **💰 2026-06-30 — FALAISE J+30 B2B TUÉE (conversion essai→payant) + CAP OUTREACH 5→8. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Contexte** : panel adverse « conseil de guerre » (8 lentilles + avocat du diable + synthèse) sur « vendre plus / scaler / revenu récurrent ». Verdict : **pas de problème produit/offre/prix/UX — problème de distribution + conversion.** Les 2 idées du fondateur (prévisions sur carte / accès B2B simple) **tranchées NO-GO** (la carte a DÉJÀ le day-switcher J+0-7 cadenassé ; l'accès B2B est déjà self-serve instantané). Le vrai trou = la **falaise J+30**.
