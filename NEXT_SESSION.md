@@ -13,7 +13,9 @@
 >
 > **Lien rejouer onboarding** : `https://sargasses-martinique.com/?pass=p120&onboard=1&paidsplash=0`.
 >
-> **RESTE roadmap audit (Wave 2 + Later — direction fondateur)** : capture email proactive (avant paywall + onboarding payeur, `sg_premium_email`) · expliquer les tiers de confiance in-context · reformuler jargon B2B « widget marque-blanche » → bénéfice · voix Veilleur sur Plan B/« où ne pas aller » · taux fausse-alerte in-app (régime calme) · **alerte J-7 serveur (Supabase)** · séquences lifecycle/upsell · climatologie chiffrée (data ~3 mois) · mascotte carte animée. Roadmap complète : `tasks/w0kql3s1l.output`.
+> **WAVE 2 (partiel) SHIPPÉ** : #311 voix Veilleur (« À surveiller · ton plan B », « Vise plutôt X ») + jargon B2B « widget marque-blanche » → bénéfice « Devenez LA référence sargasses » + titre onboarding letterSpacing. #312 **capture email onboarding payeur** (`sg_premium_email` + `submitLead('onboard_premium')`, soft-collect skippable) → accès cross-device + drip. + **loi self-review UI** dans `CLAUDE.md` (§Anti-faux-positif) : checklist des classes de bugs récurrentes (skin thème écrase inline, portal+scroll+onink, contraste, conventions mobile, i18n) — le fondateur n'est PAS la QA.
+>
+> **RESTE roadmap audit (Wave 2 fin + Later — chantiers plus lourds)** : expliquer les tiers de confiance in-context (légende fiches/carte) · taux fausse-alerte in-app régime calme (data dans `confidence.cjs/regimeConfidenceSummary`, à threader au front) · **alerte J-7 serveur** (Supabase : table planner intents + cron D-7 → ⚠️ création table = action console fondateur) · séquences lifecycle/upsell (drip) · climatologie chiffrée (data ~3 mois) · mascotte carte animée (scan, reduced-motion safe). Roadmap complète : `tasks/w0kql3s1l.output`.
 
 
 > **🎓 2026-06-30 — ONBOARDING PREMIUM « Le Poste de Veille » LIVE (#304) + signal saison hub (#303). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
