@@ -35,6 +35,24 @@ function freshLabel(updatedAt, lang){
   }catch(_){ return null }
 }
 
+// Signal saison HONNÊTE = label ordinal sourcé (season-climatology.cjs), zéro %, zéro date.
+// On le dit au présent (« où on en est dans la saison »), jamais une prévision de jour.
+function seasonPhaseMsg(phase, lang){
+  if(phase==="pleine-saison") return _t(lang,
+    "On est en pleine saison sargasses : les arrivées par vagues sont fréquentes. Le Veilleur surveille la mer pour toi, jour par jour.",
+    "We're in peak sargassum season: arrivals come in waves. Le Veilleur watches the sea for you, day by day.",
+    "Estamos en plena temporada de sargazo: las llegadas vienen en oleadas. Le Veilleur vigila el mar por ti, día a día.")
+  if(phase==="approche-saison") return _t(lang,
+    "La saison sargasses approche : ça peut commencer à bouger. On garde l'œil ouvert pour toi.",
+    "Sargassum season is approaching: things may start to move. We keep watch for you.",
+    "La temporada de sargazo se acerca: puede empezar a moverse. Seguimos vigilando por ti.")
+  if(phase==="hors-saison") return _t(lang,
+    "On est hors saison sargasses : les arrivées sont rares en ce moment. Profite — on te prévient si ça change.",
+    "We're out of sargassum season: arrivals are rare right now. Enjoy — we'll warn you if it changes.",
+    "Estamos fuera de temporada de sargazo: las llegadas son raras ahora. Disfruta — te avisamos si cambia.")
+  return null
+}
+
 // Mascotte Veilleur minimale (satellite/oeil) — autonome pour éviter l'import circulaire.
 function Watcher({ size=42 }){
   return (
@@ -74,7 +92,7 @@ function DayCell({ st, tier, active, label, sub }){
 
 export default function WeekHub({
   lang="fr", onClose, beachList=[], weekDigest=null, updatedAt=null,
-  reliableHorizon=3, pos=null, seasonOff=false,
+  reliableHorizon=3, pos=null, seasonOff=false, seasonOutlook=null,
   onSelectBeach, onPickDay, onPlannerOptin, track,
 }){
   const panelRef = useRef(null)
@@ -359,6 +377,9 @@ export default function WeekHub({
           {!seasonOff && (
             <div style={{...card, background:"#fff8e8"}}>
               <div style={{...h2, marginBottom:8}}>{_t(lang,"Tu pars dans 2 semaines ?","Travelling in 2 weeks?","¿Viajas en 2 semanas?")}</div>
+              {seasonOutlook && seasonOutlook.phase && seasonPhaseMsg(seasonOutlook.phase, lang) && (
+                <div style={{font:"600 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginBottom:9, paddingBottom:9, borderBottom:`1.5px dashed rgba(13,11,20,.25)`}}>{seasonPhaseMsg(seasonOutlook.phase, lang)}</div>
+              )}
               {coastStab && (coastStab.eastFlips!==coastStab.westFlips) && (
                 <div style={{font:"600 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>
                   {(()=>{ const stableEast=coastStab.eastFlips<coastStab.westFlips
