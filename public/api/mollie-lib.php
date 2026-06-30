@@ -153,6 +153,55 @@ function mol_comp_lookup($email) {
     return is_int($end) ? $end : (int)$end;
 }
 
+// ── Accès premium par email (BOOL) — pour le gating de la prévision payante ─────
+// MIROIR de la décision de mollie.php `verify_subscription`, condensée en booléen :
+// (1) comp/cadeau non expiré ; (2) abonnement Mollie actif (record 'customer') ;
+// (3) pass valide (record en cache) ; (4) self-heal borné (paiements 'paid' par
+// metadata.email) pour un payeur jamais caché. ADDITIF : ne crée AUCUN paiement,
+// n'altère RIEN du flux d'argent — lecture seule + cache d'un record pass existant.
+// Requiert $cfg global défini par le caller (pour mol_api). Retourne true/false.
+function mol_access_for_email($email) {
+    $email = trim((string)$email);
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    // (1) Comp / cadeau
+    if (mol_comp_lookup($email) > time()) return true;
+    $rec = mol_store_read($email);
+    // (2) Abonnement actif
+    if ($rec && !empty($rec['customer'])) {
+        list($code, $list) = mol_api('GET', '/customers/' . rawurlencode($rec['customer']) . '/subscriptions');
+        foreach (($list['_embedded']['subscriptions'] ?? []) as $s) {
+            if (in_array(($s['status'] ?? ''), ['active', 'pending'], true)) return true;
+        }
+    }
+    // (3) Pass valide en cache
+    if ($rec && ($rec['kind'] ?? '') === 'pass' && (int)($rec['pass_end'] ?? 0) > time()) return true;
+    // (4) Self-heal borné (≤5 pages) pour un payeur Pass jamais caché.
+    $best = 0; $path = '/payments?limit=250'; $pages = 0;
+    while ($path && $pages < 5) {
+        $pages++;
+        list($pc, $pl) = mol_api('GET', $path);
+        if ($pc >= 400 || !is_array($pl)) break;
+        foreach (($pl['_embedded']['payments'] ?? []) as $p) {
+            if (($p['status'] ?? '') !== 'paid') continue;
+            $pm = $p['metadata'] ?? [];
+            $pPass = $pm['pass'] ?? '';
+            $pEmail = strtolower(trim((string)($pm['email'] ?? '')));
+            if ($pPass === '' || $pEmail === '' || $pEmail !== strtolower(trim($email))) continue;
+            $base = strtotime($p['paidAt'] ?? ($p['createdAt'] ?? '')) ?: 0;
+            if (!$base) continue;
+            $end = $base + mol_pass_days($pPass) * 86400;
+            if ($end > $best) $best = $end;
+        }
+        $next = $pl['_links']['next']['href'] ?? null;
+        if ($next) {
+            $pp = parse_url($next, PHP_URL_PATH); $pq = parse_url($next, PHP_URL_QUERY);
+            $path = $pp ? (preg_replace('#^/v2#', '', $pp) . ($pq ? ('?' . $pq) : '')) : null;
+        } else { $path = null; }
+    }
+    if ($best > time()) { mol_pass_grant_store($email, 'p7', $best); return true; }
+    return false;
+}
+
 // ── Parrainage : LEDGER DE CRÉDIT par code parrain (REF-XXXXXX) ────────────────
 // Mollie ne peut NI couponner NI créditer au checkout (cf. mollie.php). La récompense
 // parrain est donc un CRÉDIT de jours de pass, stocké côté serveur par code, que l'app
