@@ -13729,6 +13729,7 @@ export default function App(){
                     onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>
                 : <LazyWelcomePoste lang={lang} allBeaches={allBeaches} favorites={favorites}
                     onToggleFav={toggleFav} onEnableNotif={()=>forceEnablePush("onboard")}
+                    onSaveEmail={em=>{try{localStorage.setItem("sg_premium_email",em)}catch(_){}; try{submitLead(em,"onboard_premium")}catch(_){}}}
                     onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>}
             </Suspense>
           </ErrBound>
