@@ -11342,12 +11342,28 @@ export default function App(){
       if(params.get("manage")!=="1")return
       const urlEmail=params.get("email")||""
       const em=urlEmail||localStorage.getItem("sg_premium_email")
-      // Gestion abo, provider-aware. Mollie n'a PAS de portail hébergé → annulation
-      // directe après confirmation (action cancel_subscription). Stripe legacy garde
-      // son Customer Portal (redirect {url}). Conformité : un abonné Mollie DOIT
-      // pouvoir résilier. Dormant tant que mode capture (aucun abo Mollie encore).
+      // Gestion abo, provider-aware. On route vers le provider où vit RÉELLEMENT
+      // l'abonnement, PAS le provider de checkout courant (PAY_PROVIDER) : tous les
+      // abos récurrents B2C sont sur Stripe legacy, Mollie B2C = pass-only (zéro abo
+      // récurrent — le chemin Mollie reste dormant). On honore d'abord ?prov= (posé
+      // par l'email de bienvenue qui CONNAÎT le provider du payeur), sinon défaut
+      // Stripe (Customer Portal hébergé : résilier, changer de carte, voir les
+      // factures). Avant ce fix, le défaut PAY_PROVIDER='mollie' envoyait tout abonné
+      // Stripe vers un cancel Mollie → 404 « no subscription » → cul-de-sac « écris-moi ».
+      const prov=(params.get("prov")||"").toLowerCase()
       const doManage=(addr)=>{
-        if(PAY_PROVIDER==="mollie"){
+        if(prov==="paypal"){
+          if(!window.confirm(_t(lang,"Annuler ton abonnement Premium ? Tu gardes l'accès jusqu'à la fin de la période déjà payée.","Cancel your Premium subscription? You keep access until the end of the paid period.","¿Cancelar tu suscripción Premium? Conservas el acceso hasta el final del período pagado.")))return
+          track("sg_manage_cancel_click",{provider:"paypal"})
+          fetch("/api/paypal.php",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"cancel_subscription",email:addr})
+          }).then(r=>r.json()).then(d=>{
+            if(d.cancelled){track("sg_manage_cancel_ok");sgToast({tone:"success",title:_t(lang,"Abonnement annulé","Subscription cancelled","Suscripción cancelada"),msg:_t(lang,"Tu gardes l'accès jusqu'à la fin de la période payée.","You keep access until the end of the paid period.","Conservas el acceso hasta el final del período pagado.")})}
+            else{track("sg_manage_cancel_error",{error:d.error||"not_cancelled"});sgToast({tone:"error",title:_t(lang,"Annulation impossible","Couldn't cancel","No se pudo cancelar"),msg:_t(lang,"Écris-moi à "+SUPPORT_EMAIL+" et je m'en occupe.","Write to me at "+SUPPORT_EMAIL+" and I'll handle it.","Escríbeme a "+SUPPORT_EMAIL+" y me encargo.")})}
+          }).catch(e=>{track("sg_manage_cancel_error",{error:e?.message||"network"});sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection failed","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})})
+          return
+        }
+        if(prov==="mollie"){
           if(!window.confirm(_t(lang,"Annuler ton abonnement Premium ? Tu gardes l'accès jusqu'à la fin de la période déjà payée.","Cancel your Premium subscription? You keep access until the end of the paid period.","¿Cancelar tu suscripción Premium? Conservas el acceso hasta el final del período pagado.")))return
           track("sg_manage_cancel_click",{provider:"mollie"})
           fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},
@@ -11425,6 +11441,21 @@ export default function App(){
   // (cross-device / migration). Jamais de cul-de-sac : email introuvable → toast + contact.
   const openAccessCheck=useCallback((src)=>{
     try{
+      // Abonné RÉCURRENT actif (flag sg_premium="1", PAS un Pass time-boxé qui ne fait
+      // qu'expirer) : « Mon accès » devient GÉRER / RÉSILIER, à tout moment et 100 %
+      // self-serve (le client résilie seul, sans nous écrire — conformité + zéro SAV).
+      // On déclenche le flux ?manage=1 (Customer Portal Stripe : résilier, carte,
+      // factures). Rollback ?manageaccess=0 → ancien comportement « restaurer » partout.
+      const manageOff=/[?&]manageaccess=0/.test(window.location.search)
+      const subEmail=localStorage.getItem("sg_premium_email")||localStorage.getItem("sg_email")||""
+      const isRecurringSub=localStorage.getItem("sg_premium")==="1"&&!localStorage.getItem("sg_premium_pass_end")
+      if(!manageOff&&isRecurringSub&&subEmail.includes("@")){
+        track("sg_manage_open_from_access",{src:src||"header"})
+        const u=new URL(window.location.href)
+        u.searchParams.set("manage","1");u.searchParams.set("email",subEmail);u.searchParams.set("prov","stripe")
+        window.location.assign(u.pathname+u.search)
+        return
+      }
       const em=window.prompt(_t(lang,"Entre l'e-mail utilisé pour ton paiement :","Enter the email used for your payment:","Introduce el email usado para tu pago:"))
       if(em&&em.includes("@")){
         const addr=em.trim()

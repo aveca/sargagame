@@ -92,7 +92,7 @@ function copy(region) {
     steps: [['Elige tus playas', 'Abre la app y toca ♥ en 1 a 3 playas. Tu vigía las vigila por ti.'],
             ['Recibe alertas', 'Te avisamos la mañana en que una de ellas cambia — sin spam.'],
             ['Tu brief matinal', 'Cada mañana, el estado de tus playas y la recomendación del día te esperan arriba.']],
-    cta: 'Abrir mi vigía', ctaUrl: app, foot: `Gestiona tu suscripción en la app · ${name}`, unsub: 'Darse de baja',
+    cta: 'Abrir mi vigía', ctaUrl: app, foot: `${name}`, manage: 'Gestionar o cancelar mi suscripción', unsub: 'Darse de baja',
   }
   if (lang === 'en') return {
     subject: 'Your watchman is live', kicker: 'Welcome', pre: 'Pick your beaches and get an alert when the water changes.',
@@ -100,7 +100,7 @@ function copy(region) {
     steps: [['Pick your beaches', 'Open the app and tap ♥ on 1 to 3 beaches. Your watchman keeps an eye on them.'],
             ['Get alerts', 'We warn you the morning one of them changes — no spam.'],
             ['Your morning brief', 'Every morning, your beaches’ status and the daily pick wait at the top of the app.']],
-    cta: 'Open my watchman', ctaUrl: app, foot: `Manage your subscription in the app · ${name}`, unsub: 'Unsubscribe',
+    cta: 'Open my watchman', ctaUrl: app, foot: `${name}`, manage: 'Manage or cancel my subscription', unsub: 'Unsubscribe',
   }
   return {
     subject: 'Ton veilleur est en place', kicker: 'Bienvenue', pre: 'Choisis tes plages et reçois une alerte quand l’eau change.',
@@ -108,7 +108,7 @@ function copy(region) {
     steps: [['Choisis tes plages', 'Ouvre l’app et touche ♥ sur 1 à 3 plages. Ton veilleur les surveille pour toi.'],
             ['Reçois les alertes', 'On te prévient le matin où l’une d’elles bascule — sans spam.'],
             ['Ton brief du matin', 'Chaque matin, l’état de tes plages et la reco du jour t’attendent en haut de l’app.']],
-    cta: 'Ouvrir mon veilleur', ctaUrl: app, foot: `Gère ton abonnement dans l’app · ${name}`, unsub: 'Se désabonner',
+    cta: 'Ouvrir mon veilleur', ctaUrl: app, foot: `${name}`, manage: 'Gérer ou résilier mon abonnement', unsub: 'Se désabonner',
   }
 }
 
@@ -116,6 +116,11 @@ function buildHTML(region, email) {
   const c = copy(region)
   const lang = region.primaryLang || 'fr'
   const oneClick = oneClickUrl(email, region.id)
+  // Lien GÉRER / RÉSILIER self-serve (le client a explicitement le pouvoir d'annuler
+  // sans nous écrire — conformité + zéro SAV). ?manage=1 ouvre le Customer Portal
+  // Stripe (résilier, changer de carte, voir les factures). prov=stripe : CET email
+  // ne cible QUE des abonnés Stripe (welcome-paid liste les subscriptions Stripe).
+  const manageUrl = `https://${regionDomain(region.id)}/?manage=1&email=${encodeURIComponent(email)}&prov=stripe&utm_source=email&utm_medium=welcome_paid&utm_campaign=manage`
   const [relPath, relWord] = reliability(lang)
   const relUrl = `https://${regionDomain(region.id)}${relPath}`
   // Bandeau ACCÈS one-click EN HAUT (le plus visible) — répare le « payeur bloqué » :
@@ -138,7 +143,8 @@ function buildHTML(region, email) {
     <tr><td style="padding:0 24px 18px"><p style="margin:0;font-size:13px;color:#5a4a1a;line-height:1.5">${proof}</p></td></tr>
     <tr><td style="padding:0 24px 26px" align="center">
       <a href="${oneClick}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0A2A26;font-weight:800;font-size:15px;text-decoration:none;padding:14px 26px;border-radius:12px">${c.cta} →</a>
-      <div style="color:#888;font-size:11px;margin-top:18px">${c.foot}</div>
+      <div style="margin-top:18px"><a href="${manageUrl}" style="color:#5a4a1a;font-size:13px;font-weight:700;text-decoration:underline">${c.manage}</a></div>
+      <div style="color:#888;font-size:11px;margin-top:8px">${c.foot}</div>
       <div style="margin-top:10px"><a href="${unsubUrl(email, region.id)}" style="color:#aaa;font-size:11px">${c.unsub}</a></div>
     </td></tr>
   </table></td></tr></table></body></html>`
