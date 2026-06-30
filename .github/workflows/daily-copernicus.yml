@@ -386,6 +386,15 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/backtest-forecast.cjs
 
+      # Climatologie OBSERVÉE par côte/mois (tendance saison HONNÊTE pour le planner) — pur
+      # agrégat de history.json, gate N>=60 jours-plage, AUCUN secret. Tant que l'historique
+      # est court peu de cellules passent (voulu : on préfère le vide à un faux). S'enrichit
+      # mois après mois ; le bloc planner du hub « s'allumera » quand la donnée sera là.
+      - name: Aggregate observed climatology (honest season trend)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/automation/aggregate-climatology.cjs
+
       # Track record PUBLIC auditable (preuve B2B « X% justes par plage ») — pur
       # transform de backtest-results.json → /api/copernicus/track-record.json.
       # DOIT tourner APRÈS le backtest (sa source unique). Consommé par les pages
@@ -678,6 +687,7 @@ jobs:
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/incidents.json ] && git add scripts/automation/data/incidents.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
+          [ -f scripts/automation/data/climatology-monthly.json ] && git add scripts/automation/data/climatology-monthly.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
