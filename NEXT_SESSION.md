@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **⭐ 2026-06-30 — VALEUR PERÇUE PREMIUM : carte déverrouillée + alerte exclusive + fulfillment clients. 5 PR EN PROD, vérifiées par curl. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Bug racine corrigé (#281)** : `WorldMapView` (= la home) ne recevait **jamais** `isPremium` → le scrub jours restait verrouillé J+1-5 **même pour un payant** (plaintes JC). Fix : la carte reçoit `isPremium` + `forecastByBeach` (prévision **RÉELLE** par plage, résolue parent via `weekly`/`_enrichedWeekly`). Premium = 6 jours déverrouillés, zéro cadenas, couleurs réelles ; plage sans donnée → **pin gris** (les jours **mock seed-aléatoires sont SUPPRIMÉS** — loi du moat). Bandeau confiance honnête (date réelle + ~76-79 % J+1-3 / « horizon lointain » J+4-5) + hint ⭐. Gratuit inchangé (cadenas → paywall, figé J0). Flag `?mapforecast=0`. Vérifié dans le bundle prod (`WorldMapView-BADasFHF.js` contient `mapforecast`/`forecastByBeach`/`map_scrub_forecast`).
+>
+> **Alerte exclusive Premium (#283)** : `send-notifications.cjs` — l'alerte push perso « ta plage bascule » (vendue comme bénéfice Premium mais envoyée à TOUS les favoris) est désormais **AND `sg_premium=1`** (OneSignal gauche→droite : `(fav_a OR fav_b) AND premium`). Gratuit garde le broadcast quotidien. Échappatoire `ALERT_PREMIUM_GATE=0`. + lien honnêteté cliquable « avant de payer, voyez nos erreurs → » `/fiabilite/` dans `PassOffer.jsx` (storytelling temps 5), flag `?rellink=0`.
+>
+> **Fulfillment clients (comps PII-safe, `gift-pass.cjs`)** : #282 fondateur `yacovassaraf@gmail.com` 365 j · #284 `jcroulier@gmail.com` 365 j · #285 `boris.minga@gmail.com` 365 j. Tous vérifiés LIVE via `mollie.php?action=verify_subscription` → `active:true`. **Découverte** : Boris avait DÉJÀ son accès serveur (record pass réel ~30 j, paiement honoré) — seul l'email de bienvenue manquait (corrigé par #280 `mol_pass_grant_once`). Emails support FR (Le Veilleur) rédigés pour JC + Boris, **envoyés par le fondateur**.
+>
+> **Lien d'inspection fondateur** : `https://sargasses-martinique.com/?pass=p120&onboard=1` (Premium 120 j local + rejoue l'onboarding) OU `?premium_email=yacovassaraf@gmail.com` (cross-device, comp live).
+>
+> **⚠️ Note environnement web** : `vite preview` se fait tuer par le sandbox + `sleep` foreground bloqué (exit 144) + Chromium route localhost via le proxy → le smoke `ux-smoke.mjs` ne passe PAS ici (erreurs externes GA/Clarity/GTM bloquées proxy, zéro erreur APP). Workaround vérif visuelle : serveur HTTP **in-process** (même process que Playwright) + `/api/*`→`{}`, juger en `getComputedStyle`. Gate réel ici = esbuild + `npm run build` + `check-bundle-budget` + vérif visuelle ciblée + curl prod (contenu, pas juste hash).
+>
+> **RESTE** : SEO international (track séparé, cf. plus bas). Idée non faite : mettre `/fiabilite/` aussi dans le drip B2C (`drip-email.cjs`) — aujourd'hui seulement paywall + B2B.
+
 > **🏁 2026-06-30 — FILE RESTANTE TRAITÉE : 10 PR EN PROD. Seul reste le SEO international (track de contenu séparé).**
 >
 > **Session = onboarding/i18n/carte/leads, 10 PR mergées** : #269 falaise J+30+cap · #270 audit onboarding · #271 drip B2B i18n · #272 pages /pro EN/ES · #273 carte soignée · #274 découvrabilité B2B · #275 handoff · #276 aperçu in-app · #277 déclutter étiquettes (±4) + audit #8 (offre « Brief » → « Widget » sur pricing, fini la contradiction) · #278 **réengagement leads météo-déclenché** (`weather-reengage.cjs`, DRY-RUN câblé dans daily-copernicus avant cold-lead-reengage ; baseline-init au prochain cron, fondateur ajoute `--send` après relecture logs ; swing ≥6 plages/15 %, garde-fous calqués cold-reengage, copy positive hedgée).
