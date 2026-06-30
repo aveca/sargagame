@@ -1308,7 +1308,7 @@ export default function WorldMapView({
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
                 placeholder={_t(lang,"ton@email — le verdict du matin, gratuit","email — the morning verdict, free","tu@email — el veredicto de la mañana, gratis")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
-                  padding:"6px 9px",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
+                  padding:"6px 9px",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
               <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
                 style={{flexShrink:0,border:`2px solid ${INK}`,
                   background:(emailVal&&emailVal.includes("@"))?"#ffd23f":"rgba(13,11,20,.08)",
