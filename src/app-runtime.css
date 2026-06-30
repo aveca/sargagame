@@ -212,6 +212,12 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
 .sg-mapchip.sg-mapchip svg{stroke:#fdfcf7 !important}
+/* CTA « Voir la plage » (carte) — même cause : le skin de thème strippait le gradient
+   or → texte noir illisible. Pastille encre + bordure OR + texte BLANC (CTA primaire
+   distinct des chips utilitaires). Doublé-classe (0,2,0) bat .theme-comic button (0,1,1). */
+.sg-mapcta.sg-mapcta{background:#190c2c !important;color:#fdfcf7 !important;
+  border:2.5px solid #FFC72C !important;box-shadow:4px 4px 0 #0d0b14 !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
 /* FAB stack — pictos SVG ink, recette comic */
 .sg-fab svg{width:24px;height:24px;display:block}
 /* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
