@@ -466,7 +466,7 @@ export default function WorldMapView({
       const L=parseFloat(el.style.left)||0, T=parseFloat(el.style.top)||0
       boxes.push({el, sel:el.dataset.sel==='1', rank:RANK[el.dataset.status]??3,
         vy:parseFloat(el.dataset.vy)||0,
-        l:L-w/2-2, r:L+w/2+2, t:T-h-2, b:T+2})
+        l:L-w/2-4, r:L+w/2+4, t:T-h-4, b:T+4})
     })
     boxes.sort((a,b)=> a.sel!==b.sel ? (a.sel?-1:1) : (a.rank!==b.rank ? a.rank-b.rank : a.vy-b.vy))
     const kept=[]
