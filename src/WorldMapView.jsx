@@ -193,10 +193,17 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
+  // Prévision 7j sur la carte = bénéfice Premium n°1 (le « waouh » qui retire les
+  // cadenas pour un client payant). Rollback : ?mapforecast=0 → revient au teaser
+  // verrouillé pour TOUT le monde. La donnée affichée reste 100% RÉELLE (forecastByBeach,
+  // composite ERDDAP+forecast) ou absente (pin gris) — JAMAIS fabriquée (loi du moat).
+  const mapForecastOff = (()=>{try{return /[?&]mapforecast=0/.test(window.location.search)}catch(_){return false}})()
+  const mapPremium = !!isPremium && !mapForecastOff
+  const [premiumHint, setPremiumHint] = useState(false)
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -210,6 +217,7 @@ export default function WorldMapView({
   const pinchRef   = useRef(null)
   const lastTapRef = useRef(0)
   const tagTimerRef= useRef(null)
+  const hintTimerRef= useRef(null)  // hint Premium one-shot au déverrouillage du scrub
   const reduceRef  = useRef(false)
   const labelLayerRef = useRef(null)
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
@@ -310,7 +318,12 @@ export default function WorldMapView({
     ]
   },[outline])
 
-  // Liste des plages enrichies : position viewBox + prévisions mock J0-J5
+  // Liste des plages enrichies : position viewBox + prévision RÉELLE J0-J5.
+  // days[0] = statut du jour autoritatif (b.status, avec override communautaire).
+  // days[1..5] = prévision RÉELLE (forecastByBeach, composite ERDDAP+forecast) si
+  // disponible, sinon `null` → pin gris « donnée non disponible » (loi du moat :
+  // jamais de couleur fabriquée). Ces jours ne sont LUS que par un Premium ayant
+  // déverrouillé le scrub → zéro régression pour le gratuit (figé à J0).
   const beachList = useMemo(()=>{
     if(!toVB) return []
     const isEUR = island==="mq"||island==="gp"
@@ -318,15 +331,17 @@ export default function WorldMapView({
       .filter(b=>b&&b.lat!=null&&b.lng!=null&&(isEUR?b.island===island:true))
       .map(b=>{
         const[vx,vy]=toVB(b.lat,b.lng)
-        const seed=(b.id||b.name||"x").split("").reduce((a,c)=>a+c.charCodeAt(0),0)
-        const days=[b.status||null] // null = statut PAS encore chargé → pin gris (jamais vert par défaut)
+        const fc=forecastByBeach&&forecastByBeach[b.id]
+        const days=[b.status||null]
+        const conf=[null]
         for(let d=1;d<6;d++){
-          const r=((seed*9301+d*49297)%233280)/233280
-          days.push(r<.62?"clean":r<.86?"moderate":"avoid")
+          const cell=fc&&fc[d]
+          days.push(cell&&cell.st?cell.st:null) // pas de prévision → null (gris), jamais inventé
+          conf.push(cell&&cell.c!=null?cell.c:null)
         }
-        return{...b,vx,vy,days}
+        return{...b,vx,vy,days,conf,fc:fc||null}
       })
-  },[beaches,island,toVB])
+  },[beaches,island,toVB,forecastByBeach])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -1408,33 +1423,68 @@ export default function WorldMapView({
             borderRadius:999,cursor:"pointer",boxShadow:`3px 3px 0 ${INK}`,
           }}>{muted?<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>}</button>
 
-        {/* Scrub jours (J0 libre · J1-5 → Premium) */}
+        {/* Scrub jours — Gratuit : J0 libre · J1-5 verrouillés → Premium.
+            Premium (mapPremium) : 6 jours déverrouillés, prévision RÉELLE par plage,
+            ZÉRO cadenas. C'est LE bénéfice premium visible sur la home (la carte). */}
         <div style={{
           position:"absolute",left:0,right:0,bottom:"calc(120px + env(safe-area-inset-bottom))",
-          display:"flex",justifyContent:"center",pointerEvents:"none",
+          display:"flex",flexDirection:"column",alignItems:"center",gap:7,pointerEvents:"none",
         }}>
+          {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
+              tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
+          {mapPremium&&day>=1&&(()=>{
+            const far=day>=4
+            const dateStr=(()=>{try{const c=beachList.find(b=>b.fc&&b.fc[day]&&b.fc[day].date);const ds=c&&c.fc[day].date;if(!ds)return null;const dt=new Date(ds);return dt.toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{weekday:"short",day:"numeric",month:"short"})}catch(_){return null}})()
+            return(
+              <div role="status" style={{
+                pointerEvents:"none",maxWidth:340,textAlign:"center",
+                background:far?"#fff3e0":"#eafaf1",color:INK,
+                border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:12,
+                padding:"6px 12px",font:"700 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif",
+              }}>
+                <b style={{fontWeight:800}}>{_t(lang,"Prévu","Forecast","Previsto")} {ti(lang,DAY_LBL[day])}{dateStr?` · ${dateStr}`:""}</b><br/>
+                {far
+                  ? _t(lang,"Horizon lointain — indicatif, faible confiance. Mesuré au satellite, pas deviné.","Far horizon — indicative, low confidence. Measured by satellite, not guessed.","Horizonte lejano — indicativo, baja confianza. Medido por satélite, no adivinado.")
+                  : _t(lang,"~76–79 % de fiabilité selon la saison. Mesuré au satellite, pas deviné.","~76–79% reliability depending on season. Measured by satellite, not guessed.","~76–79 % de fiabilidad según la temporada. Medido por satélite, no adivinado.")}
+              </div>
+            )
+          })()}
+          {/* Hint Premium one-shot au déverrouillage */}
+          {mapPremium&&premiumHint&&(
+            <div role="status" style={{
+              pointerEvents:"none",maxWidth:300,textAlign:"center",
+              background:"#FFC72C",color:"#0d0b14",
+              border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:12,
+              padding:"6px 12px",font:"800 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif",
+            }}>
+              ⭐ {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
+            </div>
+          )}
           <div style={{
             pointerEvents:"auto",display:"flex",gap:4,
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:4,
           }}>
-            {DAY_LBL.map((lbl,i)=>(
-              <button key={i} style={{
+            {DAY_LBL.map((lbl,i)=>{
+              const locked = i>=1 && !mapPremium
+              return(
+              <button key={i} aria-label={ti(lang,lbl)+(locked?" 🔒":"")} style={{
                 WebkitAppearance:"none",appearance:"none",
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
-                background:day===i?"#ff7a2f":"transparent",
+                background:day===i?"#ff7a2f":(mapPremium&&i>=1?"rgba(255,199,44,.18)":"transparent"),
                 color:INK,
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 padding:"7px 10px",borderRadius:999,cursor:"pointer",
               }} onClick={()=>{
-                if(i>=1){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
+                if(locked){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
                 setDay(i)
-                try{track&&track("sg_map_scrub",{day:i,island})}catch(_){}
+                if(i>=1&&mapPremium){ setPremiumHint(true); try{clearTimeout(hintTimerRef.current)}catch(_){}; hintTimerRef.current=setTimeout(()=>setPremiumHint(false),3200) }
+                try{track&&track("sg_map_scrub",{day:i,island,premium:!!mapPremium})}catch(_){}
               }}>
                 {ti(lang,lbl)}
-                {i>=1&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" style={{position:"absolute",top:1,right:2}}><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>}
+                {locked&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" style={{position:"absolute",top:1,right:2}}><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>}
               </button>
-            ))}
+            )})}
           </div>
         </div>
 
