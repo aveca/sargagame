@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **📋 2026-06-30 — SESSION ONBOARDING/I18N/CARTE : 6 PR EN PROD + file restante.**
+>
+> **Livré & vérifié prod** : #269 falaise J+30 + cap 5→8 · #270 audit onboarding (drip t30/t33, claims hedgés EN/ES, USD emails, copy B2C positive, a11y `useModalA11y`, pricing self-serve) · #271 drip B2B i18n (b0/b2/b6/b13/t27 FR/EN/ES) · #272 pages `/pro` cœur EN/ES + hreflang · #273 carte soignée (pastille/recherche/email) · #274 découvrabilité B2B carte (entrée discrète légende, `?promap=0`).
+>
+> **⚠️ APERÇU IN-APP — investigué, NON résolu (chunk dédié à faire, ne pas refaire l'analyse)** : `/pro/espace/` « Voir l'aperçu » → l'app **atterrit toujours sur la carte SVG** (`setShowArchipel(true)` auto, `Sargasses_PROD.jsx:11842`), or la carte « Partenaire » ne se rend **QUE dans `ChasseHome` (`:616`)** — pas dans la fiche `ChasseDetail`, pas sur la carte SVG. Le synthétiseur d'aperçu (carte `{slug:'preview',name,_preview}` depuis `?preview_name=`) marchait dans `usePartner` (ChasseHome) mais le lien n'atterrit pas là où la carte s'affiche. **Pour finir** : soit (a) router le preview vers `ChasseHome` (touche la machine d'état de vue), soit (b) rendre `PartnerCard` sur la fiche `ChasseDetail` + un handler deep-link `?beach=` (l'app n'en a PAS aujourd'hui). Edits revertés (zéro demi-fix). Garde-fou : l'argent ne touche jamais le verdict (encart `sponsored`).
+>
+> **File** : aperçu in-app (ci-dessus) · réengagement leads météo-déclenché (proposé, prêt à câbler, nouveau script additif dry-run) · collision étiquettes carte si récurrent (déclutter `WorldMapView.jsx:444`, durcir le padding) · audit #8 (offre B2BModal ≠ pricing, besoin arbitrage) · SEO international (pages `/pro` longue-traîne FR → pages ciblées EN/ES, track séparé).
+
 > **🏨 2026-06-30 — DÉCOUVRABILITÉ B2B sur la carte (1er écran). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 > Problème fondateur : « sur la carte on ne sait pas qu'il y a un espace pro » (rampe `onOpenPro` enterrée dans le panel « Mon espace » de ChasseHome). Ajouté une entrée **discrète** « 🏨 Vous gérez un hôtel ? » en 4ᵉ ligne de la légende `WorldMapView` (texte muté, `pointerEvents:auto`, FR/EN/ES) → ouvre B2BModal via nouvelle prop `onOpenPro` câblée au montage (`setShowProB2B`). Moat respecté (discret). Flag `?promap=0`. Vérifié screenshot + smoke baseline + budget 194.7.
 
