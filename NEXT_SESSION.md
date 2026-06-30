@@ -1,5 +1,8 @@
 # NEXT_SESSION — sargagame
 
+> **🗺️ 2026-06-30 — CARTE (WorldMapView, vedette) : haut de carte soigné. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+> Baseline screenshot → bugs reproduits : pastille fraîcheur « EN DIRECT/DONNÉE EN RETARD · il y a X » cassée sur 3-4 lignes (manquait `whiteSpace:nowrap`+`flexShrink:0`, `WorldMapView.jsx:1216`) ; barre email placeholder tronqué (`:1310` trop long) ; recherche qui débordait après fix pastille (conteneur `:1234` sans `minWidth:0`). **Fixés + vérifiés screenshot avant/après** : pastille 1 ligne, email « verdict gratuit » complet, recherche « Chercher… » dans le cadre, œil non coupé. Gate vert (build, budget 194.5, smoke baseline 7/16). **Reste carte** (si récurrent) : collision étiquettes en arrangement dense (déclutter `:444` existe, à durcir le padding si ça réapparaît) — non reproduit dans mes captures.
+
 > **🌍 RÈGLE PERMANENTE (fondateur 2026-06-30) — i18n TOTALE = loi.** App internationale : **chaque langue (FR/EN/ES) sur chaque localisation, sur CHAQUE canal** (email, in-app, pages `/pro/*`, widget). Une surface non traduite = livrable INCOMPLET. Mapping région→langue+domaine = `regionBrand`/`mol_b2b_region_brand` (florida/puntacana=EN, rivieramaya=ES, MQ/GP=FR). Ne jamais hardcoder MQ/FR.
 
 > **🗂️ 2026-06-30 — PROGRAMME ONBOARDING/I18N EN COURS (branche `claude/b2b-funnels-forecasting-o8qeof`, plusieurs PR).**
