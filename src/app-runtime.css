@@ -200,6 +200,16 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-util button+button{border-left:2.5px solid var(--sg-ink,#0d0b14)!important}
 .sg-util .sg-lang{font-family:"Bricolage Grotesque",sans-serif!important;font-weight:800!important;font-size:14px;letter-spacing:.02em}
 .sg-util svg{width:18px;height:18px}
+/* CHIPS DE CARTE (« près de moi », « Vous gérez un hôtel ? ») — FIX LISIBILITÉ.
+   CAUSE : le skin de thème .theme-comic button{background:var(--sg-card)!important} force
+   le fond de TOUS les boutons ; sur la carte (hors scope) --sg-card est INDÉFINIE → fond
+   transparent + texte ink sur fond violet sombre = NOIR ILLISIBLE (rapport fondateur,
+   plusieurs fois). Le style inline crème ne pouvait pas battre le !important du thème.
+   FIX : pastille crème + texte/contour encre, !important + double-classe (spécificité
+   0,2,0 > .theme-comic button 0,1,1) pour battre le skin, sur les 2 thèmes. */
+.sg-mapchip.sg-mapchip{background:#fdf6e3 !important;color:#0d0b14 !important;
+  border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
+  text-shadow:none !important;-webkit-text-fill-color:#0d0b14 !important;border-radius:999px !important}
 /* FAB stack — pictos SVG ink, recette comic */
 .sg-fab svg{width:24px;height:24px;display:block}
 /* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
