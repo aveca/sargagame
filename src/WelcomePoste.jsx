@@ -121,7 +121,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
           <Watcher size={40}/>
           <div style={{flex:1, minWidth:0}}>
             <span style={{display:"inline-block", font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing:".06em", textTransform:"uppercase", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:6, padding:"3px 7px", marginBottom:5}}>⭐ {_t(lang,"Pass activé","Pass active","Pase activo")}</span>
-            <div style={{font:"400 clamp(22px,6vw,30px)/1.06 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:"-.005em", textTransform:"uppercase"}}>{_t(lang,"Le Veilleur a pris son poste","Le Veilleur is on watch","Le Veilleur está de guardia")}</div>
+            <div style={{font:"400 clamp(22px,6vw,30px)/1.06 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:"0", textTransform:"uppercase"}}>{_t(lang,"Le Veilleur a pris son poste","Le Veilleur is on watch","Le Veilleur está de guardia")}</div>
             <div style={{...subTxt, marginTop:3}}>{_t(lang,"Voici ce qu'il garde pour toi.","Here's what he's keeping for you.","Esto es lo que cuida para ti.")}</div>
           </div>
           <button ref={closeRef} onClick={()=>exit("close")} aria-label={_t(lang,"Entrer dans l'app","Enter the app","Entrar en la app")}
