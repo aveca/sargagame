@@ -197,6 +197,10 @@ export default function WorldMapView({
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
+  // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
+  // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
+  // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
+  const previewHotel = (()=>{try{const m=window.location.search.match(/[?&]preview_name=([^&]+)/);return m?decodeURIComponent(m[1]).replace(/[<>]/g,"").slice(0,48):null}catch(_){return null}})()
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
   const camRef     = useRef({ tx:0, ty:0, k:1 })
@@ -1335,6 +1339,27 @@ export default function WorldMapView({
             </div>
           )}
         </div>
+
+        {/* Aperçu vendeur B2B : carte « Partenaire (aperçu) » flottante (depuis /pro/espace/,
+            ?preview_name=). Montre à l'hôtelier son futur encart. Verdict = 100% data, intact. */}
+        {previewHotel&&(
+          <div style={{position:"absolute",left:"50%",top:"min(33%, 300px)",transform:"translateX(-50%)",
+            width:"calc(100% - 40px)",maxWidth:380,pointerEvents:"auto",
+            background:"#fff",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:14,padding:"12px 14px",
+            fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}>
+              <span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:"#7a7320",background:"#fbf2c4",border:`1px solid ${INK}`,borderRadius:4,padding:"2px 6px"}}>{_t(lang,"Partenaire","Partner","Socio")}</span>
+              <span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",color:"#b4540a"}}>{_t(lang,"aperçu","preview","vista previa")}</span>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:11}}>
+              <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,background:"#f1ede2",border:`1.5px solid ${INK}`}}>🏨</span>
+              <div style={{flex:"1 1 auto",minWidth:0}}>
+                <div style={{font:"800 14px/1.2 'Bricolage Grotesque'",color:"#1a1726",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewHotel}</div>
+                <div style={{font:"600 11px/1.35 'Bricolage Grotesque'",color:"#6b6b75",marginTop:2}}>{_t(lang,"Votre encart, sur la fiche de votre plage. Le verdict reste 100 % data.","Your spot, on your beach's page. The verdict stays 100% data.","Tu marca, en la ficha de tu playa. El veredicto sigue 100 % datos.")}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Légende */}
         <div style={{

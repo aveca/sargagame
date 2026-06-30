@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-06-30 — APERÇU IN-APP RÉSOLU (le finding « NON résolu » plus bas est CLOS).** Approche (faible risque, auto-contenue, zéro touche à la machine d'état de vue) : `WorldMapView` lit `?preview_name=<hôtel>` → rend une **carte « Partenaire · APERÇU » flottante** sur la carte SVG (là où l'hôtelier atterrit), stylée à l'identique de l'encart in-app, « le verdict reste 100 % data » affiché (moat). `/pro/espace/` « Voir l'aperçu » passe `?preview_partner=preview&preview_name=<hôtel>`. L'aperçu inline `.partner` de l'espace reste la preuve immédiate. Vérifié screenshot (« Hôtel La Baie » rendu) + smoke baseline + budget 195.2≤210.
+
 > **📋 2026-06-30 — SESSION ONBOARDING/I18N/CARTE : 6 PR EN PROD + file restante.**
 >
 > **Livré & vérifié prod** : #269 falaise J+30 + cap 5→8 · #270 audit onboarding (drip t30/t33, claims hedgés EN/ES, USD emails, copy B2C positive, a11y `useModalA11y`, pricing self-serve) · #271 drip B2B i18n (b0/b2/b6/b13/t27 FR/EN/ES) · #272 pages `/pro` cœur EN/ES + hreflang · #273 carte soignée (pastille/recherche/email) · #274 découvrabilité B2B carte (entrée discrète légende, `?promap=0`).
