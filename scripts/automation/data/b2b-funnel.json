@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-30T03:50:24.573Z",
+  "updatedAt": "2026-06-30T09:47:04.371Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 69,
-    "contacted": 38,
+    "discovered": 63,
+    "contacted": 44,
     "lead": 5,
     "paid": 1
   },
@@ -382,58 +382,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "a544ca79573316aeccbb525080f7a381": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Résidence des Îles",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:16.084Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a6b661c398aeed53d598a55401ebe606": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "LA VILLA Baie du Marin",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:16.399Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "14ae9a22608724489ca02cd0bc4aa7e3": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Marin Plongée Martinique",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:17.019Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "dc8bcf98f3fca667c372b7d6727a4c6f": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Madinina Kite Surf",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:17.331Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "04673909809c69b03fcdd284af773a60": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Deep Turtle Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:18.250Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "507144809e57826592c02c3ad2ed84a3": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Alpha Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T09:44:18.899Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "96c79a8adc8d8f6ea07fe0374c561f69": {
       "stage": "discovered",
