@@ -156,6 +156,58 @@ function mol_pass_grant_store($email, $passKey, $passEndOverride = 0) {
     return $passEnd;
 }
 
+// Email de bienvenue INSTANTANÉ pour un PASS B2C (caisse Mollie), au moment du paiement.
+// Mirror de mol_b2b_grant_once : idempotent par pid (marqueur passmail_<pid>), best-effort
+// (marqueur posé AVANT l'envoi → un échec SMTP n'annule pas l'accès déjà accordé).
+// AVANT ce correctif : le webhook accordait l'accès (mol_pass_grant_store) mais N'ENVOYAIT
+// AUCUN email instantané — seul le cron welcome-paid-mollie le faisait (~4×/j). Le client
+// payait, l'accès existait côté serveur, mais il ne recevait RIEN et ne savait pas comment
+// y accéder cross-device (« j'ai payé, pas d'accès, pas d'email », même sur Safari/Chrome).
+// Le lien ?premium_email= ouvre l'accès sur N'IMPORTE QUEL appareil (sgVerifySub → pass).
+function mol_pass_grant_once($cfg, $pid, $email, $pass, $island = '') {
+    if (!is_string($pid) || $pid === '' || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+    $marker = $dir . '/passmail_' . preg_replace('/[^a-zA-Z0-9_]/', '', $pid);
+    if (file_exists($marker)) return false;          // déjà envoyé pour ce paiement
+    @file_put_contents($marker, date('c'));          // idempotence (posée avant l'email)
+
+    $brand  = mol_b2b_region_brand($island);         // domaine + langue dérivés de la région
+    $domain = $brand['domain'];
+    $lang   = $brand['lang'];
+    $days   = (int) mol_pass_days($pass);
+    $access = 'https://' . $domain . '/?premium_email=' . rawurlencode(strtolower(trim((string)$email)));
+    $btn    = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;display:inline-block;padding:13px 26px';
+
+    if ($lang === 'en') {
+        $titre = 'Your premium access is active';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Your premium access is active &#127881;</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Thank you! Your ' . $days . '-day pass is live. You now get the beach-by-beach forecast, up to 7 days ahead &mdash; measured by satellite, not guessed.</p>'
+            . '<p style="margin:0 0 20px"><a href="' . htmlspecialchars($access) . '" style="' . $btn . '">Open my forecast &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">This link signs you in on <b>any device</b> (phone, computer, Safari or Chrome) &mdash; keep it. You can also tap <b>&laquo;&nbsp;My access&nbsp;&raquo;</b> in the app and enter this email.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    } elseif ($lang === 'es') {
+        $titre = 'Tu acceso premium está activo';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Tu acceso premium está activo &#127881;</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">&iexcl;Gracias! Tu pase de ' . $days . ' d&iacute;as est&aacute; activo. Ya tienes el pron&oacute;stico playa por playa, hasta 7 d&iacute;as &mdash; medido por sat&eacute;lite, no adivinado.</p>'
+            . '<p style="margin:0 0 20px"><a href="' . htmlspecialchars($access) . '" style="' . $btn . '">Abrir mi pron&oacute;stico &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">Este enlace te conecta en <b>cualquier dispositivo</b> (m&oacute;vil, ordenador, Safari o Chrome) &mdash; gu&aacute;rdalo. Tambi&eacute;n puedes tocar <b>&laquo;&nbsp;Mi acceso&nbsp;&raquo;</b> en la app e introducir este correo.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    } else {
+        $titre = 'Votre accès premium est actif';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Votre acc&egrave;s premium est actif &#127881;</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci&nbsp;! Votre pass de ' . $days . ' jours est actif. Vous avez maintenant la pr&eacute;vision plage par plage, jusqu&rsquo;&agrave; 7 jours &mdash; mesur&eacute;e au satellite, pas devin&eacute;e.</p>'
+            . '<p style="margin:0 0 20px"><a href="' . htmlspecialchars($access) . '" style="' . $btn . '">Ouvrir mes pr&eacute;visions &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">Ce lien vous connecte sur <b>n&rsquo;importe quel appareil</b> (t&eacute;l&eacute;phone, ordinateur, Safari ou Chrome) &mdash; gardez-le. Vous pouvez aussi toucher <b>&laquo;&nbsp;Mon acc&egrave;s&nbsp;&raquo;</b> dans l&rsquo;app et entrer cet email.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    }
+    mol_send_mail($email, $titre, $html);
+    return true;
+}
+
 // ── Comp / accès OFFERT (cadeau manuel) — cross-device, SANS paiement ──────────
 // Liste de hash sha1(strtolower(trim(email))) -> pass_end (timestamp UNIX) committée
 // dans public/api/comps.php (PII-SAFE : QUE des hash, jamais d'email en clair, repo
