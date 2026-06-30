@@ -402,6 +402,8 @@ export default function WeekHub({
                   <label style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ta date d'arrivée :","Your arrival date:","Tu fecha de llegada:")}</label>
                   <div style={{display:"flex", gap:7, flexWrap:"wrap"}}>
                     <input type="date" value={planDate} onChange={e=>setPlanDate(e.target.value)}
+                      min={(()=>{try{return new Date().toISOString().slice(0,10)}catch(_){return undefined}})()}
+                      max={(()=>{try{return new Date(Date.now()+30*864e5).toISOString().slice(0,10)}catch(_){return undefined}})()}
                       style={{flex:"1 1 150px", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
                     <button onClick={sendPlan} disabled={!planDate}
                       style={{flex:"0 0 auto", minHeight:44, font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:planDate?GOLD:"#e8e0cc", border:`2.5px solid ${INK}`, borderRadius:999, padding:"0 16px", cursor:planDate?"pointer":"default", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Préviens-moi","Notify me","Avísame")}</button>

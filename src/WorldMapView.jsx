@@ -1022,7 +1022,18 @@ export default function WorldMapView({
     for(const b of beachList){ for(const d of D){ const s=b.days[d]
       if(s==="clean"||s==="moderate"||s==="avoid"){ cells++; if(s==="clean")cleanCells++; if(s==="avoid")anyAvoid=true } } }
     const calm = cells>0 && !anyAvoid && cleanCells/cells>=0.9
-    return {bestDay,bestN,safe:safeK>=2?safe:null,safeK,calm}
+    // PROACTIVITÉ (grief fondateur) : l'info vient à l'utilisateur. On résume le MOUVEMENT de la
+    // semaine — combien de plages basculent en « à éviter » dans l'horizon fiable (J0-J3) et quel
+    // jour la 1re bascule. Sert l'encart compact « rien ne bouge » / « N à surveiller, bascule X ».
+    const REL=3
+    let flips=0, flipDay=-1
+    for(const b of beachList){
+      let fh=null
+      if(b.days[0]==="avoid") fh=0
+      else for(let d=1;d<=5;d++){ if(b.days[d]==="avoid"){ fh=d; break } }
+      if(fh!=null && fh<=REL){ flips++; if(flipDay<0||fh<flipDay) flipDay=fh }
+    }
+    return {bestDay,bestN,safe:safeK>=2?safe:null,safeK,calm,flips,flipDay}
   },[mapDecideOff,mapPremium,beachList])
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
@@ -1638,11 +1649,18 @@ export default function WorldMapView({
           position:"absolute",left:0,right:0,bottom:"calc(120px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",alignItems:"center",gap:7,pointerEvents:"none",
         }}>
-          {/* DÉCISION — verdict « ma semaine » (Premium, hors sélection pour ne pas se
-              superposer au tooltip). Agrégat île RÉEL : meilleur jour + valeur sûre. */}
-          {weekDigest&&!selected&&(
-            // <div role=button> (PAS <button> : le skin de thème .theme-comic button{bg/bordure
-            // !important} efface la pastille). Activation clavier Entrée/Espace gérée à la main.
+          {/* DÉCISION — pastille « Ta semaine » COMPACTE + PROACTIVE (griefs fondateur : ne pas
+              gâcher l'UI + l'info vient à l'utilisateur). UNE ligne : rien ne bouge / N à surveiller
+              + bascule. Le détail vit dans le hub (tap). Se cache derrière le hub quand il est ouvert.
+              <div role=button> (PAS <button> : le skin .theme-comic button efface la pastille). */}
+          {weekDigest&&!selected&&(()=>{
+            const lbl = weekDigest.calm
+              ? _t(lang,"Cette semaine : rien en vue","This week: nothing in sight","Esta semana: nada a la vista")
+              : weekDigest.flips>0
+                ? _t(lang,`Cette semaine : ${weekDigest.flips} à surveiller · bascule ${ti(lang,DAY_LBL[weekDigest.flipDay])}`,`This week: ${weekDigest.flips} to watch · flips ${ti(lang,DAY_LBL[weekDigest.flipDay])}`,`Esta semana: ${weekDigest.flips} a vigilar · cambia ${ti(lang,DAY_LBL[weekDigest.flipDay])}`)
+                : _t(lang,`Cette semaine : ${weekDigest.bestN} plages propres · meilleur ${ti(lang,DAY_LBL[weekDigest.bestDay])}`,`This week: ${weekDigest.bestN} clean · best ${ti(lang,DAY_LBL[weekDigest.bestDay])}`,`Esta semana: ${weekDigest.bestN} limpias · mejor ${ti(lang,DAY_LBL[weekDigest.bestDay])}`)
+            const emoji = weekDigest.calm ? "🌴" : weekDigest.flips>0 ? "👁" : "📅"
+            return (
             <div ref={digestBtnRef}
               role={weekhubOff?undefined:"button"} tabIndex={weekhubOff?undefined:0}
               aria-haspopup={weekhubOff?undefined:"dialog"} aria-expanded={weekhubOff?undefined:showHub}
@@ -1650,36 +1668,19 @@ export default function WorldMapView({
               onClick={weekhubOff?undefined:()=>{setShowHub(true);try{track&&track("sg_weekhub_open_cta",{island})}catch(_){}}}
               onKeyDown={weekhubOff?undefined:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setShowHub(true);try{track&&track("sg_weekhub_open_cta",{island})}catch(_){}}}}
               style={{
-              pointerEvents:weekhubOff?"none":"auto",cursor:weekhubOff?"default":"pointer",
-              maxWidth:300,textAlign:"center",
+              pointerEvents:(weekhubOff||showHub)?"none":"auto",cursor:weekhubOff?"default":"pointer",
+              opacity:showHub?0:1,transition:"opacity .2s ease",
+              display:"inline-flex",alignItems:"center",gap:6,whiteSpace:"nowrap",
               background:"#eafaf1",color:INK,border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,
-              borderRadius:12,padding:"6px 12px",position:"relative",
-              fontWeight:800,fontSize:11,lineHeight:1.25,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+              borderRadius:999,padding:"7px 13px",
+              fontWeight:800,fontSize:11.5,lineHeight:1,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
             }}>
-              {weekDigest.calm?(
-                <>
-                  <div>{_t(lang,
-                    "🌴 Toute ta semaine au vert",
-                    "🌴 Your whole week is green",
-                    "🌴 Toda tu semana en verde")}</div>
-                  <div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
-                    "On surveille pour toi — alerte à la seconde où ça bascule.",
-                    "We watch for you — alerted the second it shifts.",
-                    "Vigilamos por ti — aviso en cuanto cambie.")}</div>
-                </>
-              ):(<>
-                <div>{_t(lang,
-                  `📅 Ta semaine — meilleur jour ${ti(lang,DAY_LBL[weekDigest.bestDay])} : ${weekDigest.bestN} plage${weekDigest.bestN>1?"s":""} propre${weekDigest.bestN>1?"s":""}`,
-                  `📅 Your week — best day ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} clean beach${weekDigest.bestN>1?"es":""}`,
-                  `📅 Tu semana — mejor día ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} playa${weekDigest.bestN>1?"s":""} limpia${weekDigest.bestN>1?"s":""}`)}</div>
-                {weekDigest.safe&&<div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
-                  `Valeur sûre : ${weekDigest.safe.name} — propre ${weekDigest.safeK}/6 j`,
-                  `Safe bet: ${weekDigest.safe.name} — clean ${weekDigest.safeK}/6 d`,
-                  `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
-              </>)}
-              {!weekhubOff&&<span aria-hidden="true" style={{position:"absolute",top:3,right:6,font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#0a7d33"}}>↗</span>}
+              <span aria-hidden="true">{emoji}</span>
+              <span>{lbl}</span>
+              {!weekhubOff&&<span aria-hidden="true" style={{fontWeight:800,color:"#0a7d33"}}>↗</span>}
             </div>
-          )}
+            )
+          })()}
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
           {/* Bannières d'origine — UNIQUEMENT en rollback ?mapfrise=0 (sinon l'info vit dans la frise) */}
