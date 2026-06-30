@@ -1065,7 +1065,19 @@ Sitemap: https://${domain}/sitemap.xml
       const src = path.join(regionDataDir, f)
       if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outCopernicus, f))
     }
-    console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays MQ purgés, banks/grid régionaux si présents)`)
+    // Gating J+2→J+7 : le purge ci-dessus a supprimé le _private/ MQ venu de dist/.
+    // On (re)pose le _private/ RÉGIONAL (prévision complète + .htaccess Deny) sinon
+    // forecast.php de la région renverrait 503 → premium USD privé de ses J+2-7.
+    const regPriv = path.join(regionDataDir, '_private')
+    if (fs.existsSync(path.join(regPriv, 'forecast-full.json'))) {
+      const outPriv = path.join(outCopernicus, '_private')
+      fs.mkdirSync(outPriv, { recursive: true })
+      fs.copyFileSync(path.join(regPriv, 'forecast-full.json'), path.join(outPriv, 'forecast-full.json'))
+      const htSrc = path.join(regPriv, '.htaccess')
+      if (fs.existsSync(htSrc)) fs.copyFileSync(htSrc, path.join(outPriv, '.htaccess'))
+      else fs.writeFileSync(path.join(outPriv, '.htaccess'), 'Require all denied\n')
+    }
+    console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays MQ purgés, banks/grid régionaux si présents, _private/ gaté si présent)`)
   } else {
     console.warn(`   ⚠ pas de public/api/copernicus/${region.id}/sargassum.json — lance d'abord node scripts/fetch-sargassum-live.cjs`)
   }
