@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **💰 2026-06-30 — FALAISE J+30 B2B TUÉE (conversion essai→payant) + CAP OUTREACH 5→8. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Contexte** : panel adverse « conseil de guerre » (8 lentilles + avocat du diable + synthèse) sur « vendre plus / scaler / revenu récurrent ». Verdict : **pas de problème produit/offre/prix/UX — problème de distribution + conversion.** Les 2 idées du fondateur (prévisions sur carte / accès B2B simple) **tranchées NO-GO** (la carte a DÉJÀ le day-switcher J+0-7 cadenassé ; l'accès B2B est déjà self-serve instantané). Le vrai trou = la **falaise J+30**.
+>
+> **Diag corrigé (faux blocage du panel)** : le panel a inventé un « blocage délivrabilité ». Vérif DNS réelle : `sargasses-martinique.com` a **SPF + DKIM + DMARC complets**, domaine **chaud** (engagement B2C). L'outreach B2B tourne DÉJÀ (`daily-copernicus.yml` → `b2b-cold-outreach.cjs --send`). Pas de mur. → **cap 5→8** (réversible).
+>
+> **LA FALAISE (cause racine, `public/pro/espace/index.html`)** : le token d'essai 30 j **est un token Pro valide** → `widget-token.php?k=` répond `pro:true` → la page croyait l'hôtelier **déjà abonné** et **masquait toute la carte d'abo** (`subCard.style.display="none"`). Le prospect en essai ne voyait **JAMAIS** le CTA payant ; à J+30 le token meurt en silence (seule relance = email t27).
+>
+> **FIX (additif, flag `?trialconv=0`)** : décodage client-side du payload `{h,exp}` du token → `dleft` (jours restants). `dleft ≤ 60` (essai=30 j vs payant=400 j) → **garde la carte d'abo visible** + bandeau urgence « X jours restants » (or >7 j, rouge ≤7) + **email pré-rempli** (1 clic → `subscribeMonthly`) + masque le bloc « démarrer l'essai ». `dleft>60` (vrai abonné) → inchangé (carte masquée + bandeau Pro). **Money-path NON touché** (page statique, pas de PHP ; `create_subscription` hosted existe déjà). 1er abo réel = test live du récurrent (dashboard Mollie) = action fondateur quand ça tombe.
+>
+> **Gate** : esbuild ✓ · build ✓ · budget 194.6≤210 ✓ · smoke = baseline conteneur (7 err CDN-bloqués + 16 chips transparents, hors-parcours) · logique unit-testée (essai 30/3/1 j → carte visible ; payant 400 j → masquée).
+>
+> **RESTE** : (1) curl prod `/pro/espace/?k=<token>`. (2) Suite du plan panel : drip fin d'essai renforcé J-3/J0/J+2 (t27 existe seul) ; **Pass-Saison B2C** forfaitaire reconduit (~19,99 €, panel pricing avant câblage) ; cibler nominativement hôtels MQ/GP (data la + dense) pour 1-2 logos. (3) Note Playwright : smoke via symlinks `/opt/pw-browsers/chromium*-1217 → 1194` + binaire headless `→ chromium-1194/chrome-linux/chrome`.
+
 > **🟢 2026-06-30 — FAUX VERT CÔTE CARAÏBE NORD (Anse Céron/Couleuvre) : HONNÊTETÉ (#263 MERGÉ+DÉPLOYÉ) + VRAIE PRÉDICTION (#264 DRAFT, CI verte).**
 >
 > **Déclencheur** : post FB SOS Sargasses (2026-06-29) — échouage massif Anse Céron + Anse Couleuvre (Le Prêcheur, côte caraïbe nord) « première fois que je vois ça », alors que l'app affichait ces plages **vertes sans réserve**.
