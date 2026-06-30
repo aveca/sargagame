@@ -309,6 +309,25 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/pass-expiry-winback.cjs --send
 
+      # Weather-reengage (SWING MÉTÉO) : recontacte les leads froids NON-acheteurs quand la
+      # donnée propre de LEUR région CHUTE d'un coup (un épisode de sargasses arrive) —
+      # value-first « voici les criques qui restent propres ». Source = subscribers.json
+      # (fetché plus haut) + public/api/copernicus/<region>/sargassum.json. EUR/FR, cadence
+      # 21j, cap 4/lead, exclut acheteurs/bounced/désabo/B2B/test. Baseline + idempotence :
+      # weather-reengage-state.json / -sent.json (committés plus bas → le baseline persiste).
+      # ⚠️ DRY-RUN volontaire (pas de « --send ») : le fondateur relit copy + volumes (logs)
+      # puis ajoute « --send » pour activer (même trajectoire que cold-lead-reengage). Le
+      # baseline se construit dès maintenant (1er run = baseline-init, zéro envoi).
+      - name: Weather-reengage swing (DRY-RUN — passer en --send après vérif)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/weather-reengage.cjs
+
       # Cold-lead RÉ-ENGAGE (nurture long-traîne) : recontacte à cadence BASSE les leads
       # devenus FROIDS (60-365j, jamais convertis, welcome/drip/relance finis) pour les
       # ramener au Pass. Source = subscribers.json (déjà fetché plus haut). EUR/FR only,
@@ -423,7 +442,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json public/api/b2b-paylinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
