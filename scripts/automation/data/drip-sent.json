@@ -1021,9 +1021,11 @@
     "j3": "2026-06-11T02:50:02.175Z",
     "j7": "2026-06-15T01:16:06.027Z",
     "j14": "2026-06-22T11:57:17.853Z",
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "1a648b907d94ca371248a1833b6a16e1": {
     "j3": "2026-06-13T08:58:25.527Z",
@@ -1036,12 +1038,14 @@
     "j14": "2026-06-24T14:32:55.811Z"
   },
   "6743b255cf696f319ba3ee1435452f4c": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-14T13:49:01.798Z",
     "j7": "2026-06-18T15:24:20.702Z",
     "j14": "2026-06-25T14:36:29.229Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "62fcad51d46db98e65f42dd15fdefed4": {
     "j3": "2026-06-14T13:49:03.735Z",
@@ -1054,12 +1058,14 @@
     "j14": "2026-06-25T20:00:50.436Z"
   },
   "579476888eb0d4415798b2a4770151ed": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Clearwater Beach|clean|93|clean|1|Tuesday",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Miami Beach|clean|93|clean|0|",
     "j3": "2026-06-14T20:59:33.636Z",
     "j7": "2026-06-18T20:26:09.693Z",
     "j14": "2026-06-26T03:43:54.688Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "d90c0fff335b3cc0d2f12b24a97a9631": {
     "j3": "2026-06-15T00:34:59.984Z",
@@ -1072,20 +1078,24 @@
     "j14": "2026-06-26T03:43:57.606Z"
   },
   "56c8db20918240754ce1bfae61e9326b": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
     "j7": "2026-06-19T10:26:18.113Z",
     "j14": "2026-06-26T09:27:07.949Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
     "j7": "2026-06-19T10:26:19.849Z",
     "j14": "2026-06-26T09:27:09.664Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "8703e57cadda6d7ee1b5d10e7809412a": {
     "j3": "2026-06-15T12:14:18.438Z",
@@ -1123,44 +1133,54 @@
     "j14": "2026-06-27T03:30:33.363Z"
   },
   "57d2c9d5767ea846082974a34085c3f5": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-16T07:42:01.171Z",
     "j7": "2026-06-20T08:56:31.162Z",
     "j14": "2026-06-27T08:39:05.394Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "f5433f11d994cfdea97c9a28051b2230": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-16T10:16:09.348Z",
     "j7": "2026-06-20T14:04:22.219Z",
-    "daily_count": 3,
-    "j14": "2026-06-27T13:42:58.433Z"
+    "daily_count": 4,
+    "j14": "2026-06-27T13:42:58.433Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "7ea96f3a91816d70abc7dac28f7c6fa7": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-16T11:43:35.578Z",
     "j7": "2026-06-20T14:04:23.601Z",
-    "daily_count": 3,
-    "j14": "2026-06-27T13:43:00.635Z"
+    "daily_count": 4,
+    "j14": "2026-06-27T13:43:00.635Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "a06e34affbd9b0b02bac52c51da38802": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-16T12:33:21.371Z",
     "j7": "2026-06-20T14:04:24.853Z",
-    "daily_count": 3,
-    "j14": "2026-06-27T13:43:02.485Z"
+    "daily_count": 4,
+    "j14": "2026-06-27T13:43:02.485Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "6023d811323298320ce8ca49b4121adf": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-16T12:33:22.814Z",
     "j7": "2026-06-20T14:04:26.311Z",
-    "daily_count": 3,
-    "j14": "2026-06-27T13:43:03.789Z"
+    "daily_count": 4,
+    "j14": "2026-06-27T13:43:03.789Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "824a7b53f1f68745929343bc9f17c617": {
     "j3": "2026-06-16T15:01:41.983Z",
@@ -1178,12 +1198,14 @@
     "j14": "2026-06-28T03:53:50.492Z"
   },
   "3ecb65d5060987817fbfba6fe115916c": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-17T04:08:06.170Z",
     "j7": "2026-06-21T04:13:35.292Z",
-    "daily_count": 3,
-    "j14": "2026-06-28T03:53:52.422Z"
+    "daily_count": 4,
+    "j14": "2026-06-28T03:53:52.422Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "d6ebd84f1a796343c69fc8645ffca415": {
     "j3": "2026-06-17T07:52:38.793Z",
@@ -1196,20 +1218,24 @@
     "j14": "2026-06-28T19:22:53.590Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 3,
-    "j14": "2026-06-28T19:22:55.176Z"
+    "daily_count": 4,
+    "j14": "2026-06-28T19:22:55.176Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 3,
-    "j14": "2026-06-29T04:11:47.484Z"
+    "daily_count": 4,
+    "j14": "2026-06-29T04:11:47.484Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "a834cb4133d4a707846673399dd1c1e7": {
     "j3": "2026-06-17T20:45:42.245Z",
@@ -1217,28 +1243,34 @@
     "j14": "2026-06-29T04:11:49.316Z"
   },
   "e6a566c20d0d640645292652dcc83adb": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Clearwater Beach|clean|93|clean|1|Tuesday",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Miami Beach|clean|93|clean|0|",
     "j3": "2026-06-18T15:24:23.913Z",
     "j7": "2026-06-22T17:00:03.463Z",
-    "daily_count": 3,
-    "j14": "2026-06-29T15:49:56.645Z"
+    "daily_count": 4,
+    "j14": "2026-06-29T15:49:56.645Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "73847215716df27d0e0585585d502598": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 3,
-    "j14": "2026-06-29T15:49:58.831Z"
+    "daily_count": 4,
+    "j14": "2026-06-29T15:49:58.831Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-18T20:26:12.876Z",
     "j7": "2026-06-22T20:48:43.358Z",
-    "daily_count": 3,
-    "j14": "2026-06-29T20:00:42.532Z"
+    "daily_count": 4,
+    "j14": "2026-06-29T20:00:42.532Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "95dcdea29924b127e1c2df2477b69ba5": {
     "j3": "2026-06-18T20:26:14.508Z",
@@ -1246,12 +1278,14 @@
     "j14": "2026-06-29T20:00:45.121Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 3,
-    "j14": "2026-06-30T03:41:53.530Z"
+    "daily_count": 4,
+    "j14": "2026-06-30T03:41:53.530Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "faaa8e1922c2cbf5fffbffc20e792a0b": {
     "j3": "2026-06-19T15:17:50.043Z",
@@ -1264,34 +1298,42 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "c21792fe1e73217c3afef1be97e58ce4": {
     "j3": "2026-06-20T08:56:34.275Z",
     "j7": "2026-06-24T09:36:13.074Z"
   },
   "9d9a6914023cedce8049f0b9439b25da": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Clearwater Beach|clean|93|clean|1|Tuesday",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Miami Beach|clean|93|clean|0|",
     "j3": "2026-06-20T19:26:32.375Z",
     "j7": "2026-06-24T19:48:40.949Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3,
-    "j7": "2026-06-27T13:43:05.532Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_count": 4,
+    "j7": "2026-06-27T13:43:05.532Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "324c0139f551d07758f699db12ec97f3": {},
   "97532088d9fed647d3d6725194ad09b7": {
@@ -1311,43 +1353,51 @@
     "j7": "2026-06-29T11:00:04.264Z"
   },
   "d1d35f18f6c8be599cec77d79fd44473": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 3,
-    "j7": "2026-06-29T15:50:01.935Z"
+    "daily_count": 4,
+    "j7": "2026-06-29T15:50:01.935Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "78e35993310c310a1e633390dc14d857": {
     "j3": "2026-06-25T14:36:38.938Z",
     "j7": "2026-06-29T15:50:04.304Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 3,
-    "j7": "2026-06-29T15:50:06.123Z"
+    "daily_count": 4,
+    "j7": "2026-06-29T15:50:06.123Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "c26807bb5ca87fa356eb13e3eb131b22": {
     "j3": "2026-06-25T14:36:42.672Z",
     "j7": "2026-06-29T15:50:08.007Z"
   },
   "df28c95e078a1150efebcf9bb69e0088": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j3": "2026-06-25T20:00:52.774Z",
-    "daily_count": 3,
-    "j7": "2026-06-29T20:00:47.416Z"
+    "daily_count": 4,
+    "j7": "2026-06-29T20:00:47.416Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "ddc57c36d6d16c8e798ddbf03c8ab15a": {
     "j3": "2026-06-26T09:27:12.353Z",
     "j7": "2026-06-30T09:38:34.294Z"
   },
   "a47d1cd69aa0c7b03b7f9253d74f48b3": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Playa Holbox|clean|93|clean|9|martes",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Playa Holbox|clean|91|clean|4|miércoles",
     "j3": "2026-06-26T14:27:34.021Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "cbc614f9eb4e33eac732958043a88141": {
     "j3": "2026-06-26T14:27:30.063Z"
@@ -1365,28 +1415,34 @@
     "j3": "2026-06-26T14:27:41.629Z"
   },
   "afcbae2953c21270ddfdd78b25c4c247": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
     "j3": "2026-06-26T14:27:43.321Z",
-    "daily_count": 3
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "9ac6eaf7b99bc2b7b61ba0c3fc1bc994": {
     "j3": "2026-06-26T19:48:12.316Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 3,
-    "j3": "2026-06-27T13:43:09.354Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
+    "daily_count": 4,
+    "j3": "2026-06-27T13:43:09.354Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "f43bb7311615324fe54e244176553426": {
     "j3": "2026-06-27T13:43:08.014Z"
   },
   "e383942c9c243956a6078128ed7d57c7": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3,
-    "j3": "2026-06-27T19:22:50.065Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_count": 4,
+    "j3": "2026-06-27T19:22:50.065Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "9ac40f1c408db3dcebac25cada3aa27e": {
     "j3": "2026-06-27T19:22:51.957Z"
@@ -1402,10 +1458,12 @@
     "j3": "2026-06-29T04:11:51.630Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 3,
-    "j3": "2026-06-29T04:11:53.346Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Anse Madame|clean|78|clean|0|",
+    "daily_count": 4,
+    "j3": "2026-06-29T04:11:53.346Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "b4961a88580a34c3bc273e3069a8e118": {
     "j3": "2026-06-29T04:11:54.665Z"
@@ -1414,10 +1472,12 @@
     "j3": "2026-06-29T11:00:05.597Z"
   },
   "384eedc45e1b0234f2c3a843467ab6c4": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3,
-    "j3": "2026-06-29T15:50:09.261Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_count": 4,
+    "j3": "2026-06-29T15:50:09.261Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "8d2063e87c2ac7f9edca6b24deca5de8": {
     "j3": "2026-06-29T20:00:48.834Z"
@@ -1426,10 +1486,12 @@
     "j3": "2026-06-30T03:41:56.386Z"
   },
   "957ae125ebdae3434302a66e39a079dc": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mardi",
-    "daily_count": 3,
-    "j3": "2026-06-30T03:41:57.982Z"
+    "daily_last": "2026-06-30",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_count": 4,
+    "j3": "2026-06-30T03:41:57.982Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-06-30"
   },
   "3f7c962878fdb74cf5b62ce1f847325d": {
     "j3": "2026-06-30T09:38:36.302Z"
@@ -1440,9 +1502,9 @@
   "4f7f336ccf2977233549fe9ad72408a2": {},
   "31d217f2fc3d85c717a798b313117621": {},
   "1c56dfd2baf9fbf5d30d6880f9a29759": {
-    "daily_last": "2026-06-29",
-    "daily_sig": "Clearwater Beach|clean|93|clean|1|Tuesday",
-    "daily_count": 2
+    "daily_last": "2026-06-30",
+    "daily_sig": "Miami Beach|clean|93|clean|0|",
+    "daily_count": 3
   },
   "4ca1b5327f723211a2c652b43238779e": {},
   "ec8e1f26801274778c94a170235fd6fb": {},
