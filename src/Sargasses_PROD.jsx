@@ -2354,6 +2354,30 @@ function classifyBeachCoast(lat,lng,island){
 }
 
 /**
+ * isImmuneBay — distingue une baie RÉELLEMENT fermée (arrivée physiquement quasi-
+ * impossible → vert confiant SANS réserve) d'une côte « sous-le-vent » qui est
+ * rarement touchée MAIS peut l'être en régime exceptionnel (côte caraïbe nord MQ
+ * type Prêcheur/Grand'Rivière/Anse Céron/Anse Couleuvre — observé le 2026-06-29).
+ * Sur ces côtes lee on n'a AUCUNE sentinelle satellite : un « propre » interpolé est
+ * une lecture INDIRECTE → il doit porter la réserve d'honnêteté (_satBlind), jamais
+ * un vert affirmé. Seules les baies vraiment fermées restent sans réserve.
+ * MQ : Baie de Fort-de-France (Trois-Îlets/Schoelcher) + Anses d'Arlet nord.
+ * GP : pas de baie fermée équivalente — la côte ouest Basse-Terre est une façade lee.
+ */
+function isImmuneBay(lat,lng,island){
+  if(island==="mq"){
+    // Baie de Fort-de-France (Trois-Îlets, Schoelcher) : baie fermée, immune réelle
+    if(lat>14.54&&lat<14.68&&lng<-61.02&&lng>-61.16)return true
+    // Anses d'Arlet nord (Anse Noire, Anse Dufour) : poche sud-ouest très abritée
+    if(lat>14.52&&lat<14.55&&lng<-61.08)return true
+    // NB : la côte nord-ouest (lat>14.78) est une côte sous-le-vent, PAS une baie
+    // fermée → volontairement absente ici (elle doit porter la réserve _satBlind).
+    return false
+  }
+  return false
+}
+
+/**
  * Interpolate forecast for non-sentinel beaches by IDW-blending K nearest sentinels
  * v3: propagates arrivalDetected, forecastMethod, reliableHorizon from sentinels
  * v3.1: caribbean beaches never show arrivalDetected (geography rule)
@@ -3917,7 +3941,9 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
             <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:COMIC.ink}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {(beach._satBlind&&status==="clean"&&!beach._communityOverride)
+              ? _t(lang,"estimé · pas de lecture directe ici","estimated · no direct read here","estimado · sin lectura directa aquí")
+              : _t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
           </div>
         </div>
 
@@ -12231,6 +12257,10 @@ export default function App(){
             }
           }
           // IDW interpolation for non-sentinel beaches
+          // Rollback : ?leeblind=0 → revient à l'ancien comportement (réserve sur côte
+          // ATLANTIQUE seule ; la côte caraïbe nord redevient « propre » sans réserve).
+          let _leeBlindOff=false
+          try{_leeBlindOff=/[?&]leeblind=0/.test(window.location.search)}catch(_){}
           for(let i=0;i<beaches.length;i++){
             if(beaches[i]._src==="live")continue
             const same=sentinels.filter(s=>
@@ -12238,13 +12268,19 @@ export default function App(){
             const interp=interpolateIDW(beaches[i],same.length>0?same:sentinels)
             if(interp!==null){
               // Honnêteté couverture satellite : l'AFAI voit les radeaux AU LARGE, pas le
-              // sargasse déjà échoué ni piégé dans les baies. Sur la côte ATLANTIQUE exposée
-              // (où le sargasse arrive et s'accumule), un statut « propre » obtenu par
-              // interpolation (pas une lecture directe) ne peut PAS garantir l'état du rivage.
-              // On le flagge pour ne plus affirmer « propre » sans réserve sur ces plages.
+              // sargasse déjà échoué ni piégé dans les baies. Un statut « propre » obtenu par
+              // interpolation (pas une lecture directe) ne peut PAS garantir l'état du rivage —
+              // ni sur la côte ATLANTIQUE exposée, ni sur la côte CARAÏBE sous-le-vent
+              // (Prêcheur/Grand'Rivière/Anse Céron/Anse Couleuvre, touchée le 2026-06-29 alors
+              // qu'on l'affichait verte sans réserve). On le flagge pour ne plus affirmer
+              // « propre » sans réserve. SEULES les baies vraiment fermées (Baie de FDF, Anses
+              // d'Arlet nord) restent sans réserve, via isImmuneBay().
               let _coast=beaches[i].coast
               try{if(!_coast)_coast=classifyBeachCoast(beaches[i].lat,beaches[i].lng,beaches[i].island)}catch(_){_coast="atlantic"}
-              beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated",_satBlind:_coast==="atlantic"}
+              const _satBlind=_leeBlindOff
+                ? _coast==="atlantic"
+                : !isImmuneBay(beaches[i].lat,beaches[i].lng,beaches[i].island)
+              beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated",_satBlind}
             }
           }
           // Beach Score 0-100 — year-round multi-factor (pipeline v3.1+)
