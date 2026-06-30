@@ -210,6 +210,13 @@ export default function WorldMapView({
   // firstHit) — jamais de trajectoire inventée. Rollback : ?mapdrift=0 → retombe sur
   // l'échouage once+fade + pins statiques (= comportement gratuit/aujourd'hui).
   const mapDriftOff = (()=>{try{return /[?&]mapdrift=0/.test(window.location.search)}catch(_){return false}})()
+  // « La Frise » (panel UX 2026-06-30) : prévision 7j GLANCEABLE sans slider — frise
+  // 6 cases dans le tooltip de la plage tapée + badge « bascule J+N » ambiant sur les
+  // pins. Supprime les 2 bannières superposées + le hint « fais glisser ». Le slider
+  // reste câblé mais OPTIONNEL. Rollback : ?mapfrise=0 → ancien comportement (slider
+  // primaire + 2 bannières). Donnée 100% réelle (days/conf/firstHit/drift), 0 fabrication.
+  const mapFriseOff = (()=>{try{return /[?&]mapfrise=0/.test(window.location.search)}catch(_){return false}})()
+  const friseOn = mapPremium && !mapFriseOff
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -1171,26 +1178,38 @@ export default function WorldMapView({
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
-                {/* PREMIUM — halo ROUGE qui pulse sur les plages prévues touchées CE jour-là (réel, day>=1) */}
-                {driftFuture&&st==="avoid"&&<circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2"
-                  style={{transformBox:"fill-box",transformOrigin:"center",animation:"wmAvoidPulse 1.9s ease-out infinite",animationDelay:`${((Math.abs(b.vx*7+b.vy*13))%900)/1000}s`}} aria-hidden="true"/>}
-                {/* PREMIUM — badge « touchée J+N » : jour RÉEL du 1er échouage prévu (firstHit), visible sur tout jour */}
-                {mapPremium&&!mapDriftOff&&b.firstHit!=null&&b.firstHit>=1&&(
-                  <g transform="translate(0 -31)" aria-hidden="true">
-                    <rect x="-14" y="-7" width="28" height="13.5" rx="6.75" fill="#FFC72C" stroke={INK} strokeWidth="1.4"/>
-                    <text x="0" y="2.7" textAnchor="middle" fontSize="8" fontWeight="800" fill="#0d0b14"
-                      fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
-                  </g>
+                {/* PREMIUM — anneau « à éviter » du jour AFFICHÉ (scrub J+1+) : pulse si anim,
+                    STATIQUE pointillé si reduced-motion (corrige le trou a11y : le signal avoid
+                    ne disparaît plus sans animation). */}
+                {mapPremium&&st==="avoid"&&day>=1&&(
+                  noAnim
+                    ? <circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2" strokeDasharray="3 2.4" aria-hidden="true"/>
+                    : <circle r="11" cy="-9" fill="none" stroke="#E8522A" strokeWidth="2"
+                        style={{transformBox:"fill-box",transformOrigin:"center",animation:"wmAvoidPulse 1.9s ease-out infinite",animationDelay:`${((Math.abs(b.vx*7+b.vy*13))%900)/1000}s`}} aria-hidden="true"/>
                 )}
-                {/* PREMIUM — sens de dérive du banc, UNIQUEMENT quand il BOUGE (approche/disperse) :
-                    ↗ se rapproche (rouge) / ↘ se disperse (vert). « stable » → pas de glyphe (anti-clutter). */}
-                {mapPremium&&!mapDriftOff&&(b.drift==="up"||b.drift==="down")&&(st==="avoid"||st==="moderate")&&(()=>{
-                  const up=b.drift==="up"
-                  return(<g transform="translate(13 -13)" aria-hidden="true">
-                    <circle r="6.6" fill="#fdf6e3" stroke={INK} strokeWidth="1.2"/>
-                    <g transform={`rotate(${up?-45:45})`}><path d="M-3 0 H3 M0.7 -2.5 L3.2 0 L0.7 2.5" stroke={up?"#E8522A":"#22C55E"} strokeWidth="1.9"
-                      fill="none" strokeLinecap="round" strokeLinejoin="round"/></g>
-                  </g>)
+                {/* PREMIUM — badge d'AMBIANCE « bascule J+N » : on lit d'un coup d'œil, sans rien taper,
+                    quelles plages basculent et quand. Corail (imminent) / pâle+petit (horizon lointain) /
+                    ✓ vert UNIQUEMENT si la semaine entière est mesurée ET propre (jamais sur données
+                    partielles). En rollback ?mapfrise=0 → ancien badge or « +Nj ». */}
+                {mapPremium&&(()=>{
+                  if(mapFriseOff){
+                    if(b.firstHit==null||b.firstHit<1)return null
+                    return(<g transform="translate(0 -31)" aria-hidden="true">
+                      <rect x="-14" y="-7" width="28" height="13.5" rx="6.75" fill="#FFC72C" stroke={INK} strokeWidth="1.4"/>
+                      <text x="0" y="2.7" textAnchor="middle" fontSize="8" fontWeight="800" fill="#0d0b14" fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
+                    </g>)
+                  }
+                  if(b.firstHit!=null&&b.firstHit>=1){
+                    const far=b.firstHit>=4, w=far?25:28
+                    return(<g transform="translate(0 -31)" aria-label={`${_t(lang,"bascule","flips","cambia")} ${ti(lang,DAY_LBL[b.firstHit])}`}>
+                      <rect x={-w/2} y="-7" width={w} height="13.5" rx="6.75" fill={far?"#F2A57A":"#E8522A"} stroke={INK} strokeWidth="1.4"/>
+                      <text x="0" y="2.7" textAnchor="middle" fontSize={far?7:8} fontWeight="800" fill="#fff" fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
+                    </g>)
+                  }
+                  // Pas de badge « ✓ propre » d'ambiance : en saison calme ce serait sur quasi tous
+                  // les pins (clutter). Le pin vert = propre aujourd'hui ; la frise (au tap) montre
+                  // la semaine propre complète. On ne marque QUE ce qui mérite l'attention (bascule).
+                  return null
                 })()}
                 {/* ombre au sol */}
                 <ellipse cx="0" cy="1" rx={5*s} ry={2*s} fill="#062033" opacity=".4"/>
@@ -1488,7 +1507,8 @@ export default function WorldMapView({
         }}>
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
-          {mapPremium&&day>=1&&(()=>{
+          {/* Bannières d'origine — UNIQUEMENT en rollback ?mapfrise=0 (sinon l'info vit dans la frise) */}
+          {mapPremium&&mapFriseOff&&day>=1&&(()=>{
             const far=day>=4
             const hitCount=beachList.filter(b=>b.days[day]==="avoid").length
             const hitStr=hitCount>0
@@ -1509,8 +1529,8 @@ export default function WorldMapView({
               </div>
             )
           })()}
-          {/* Hint Premium one-shot au déverrouillage */}
-          {mapPremium&&premiumHint&&(
+          {/* Hint Premium one-shot — UNIQUEMENT en rollback ?mapfrise=0 (plus de slider à expliquer) */}
+          {mapPremium&&mapFriseOff&&premiumHint&&(
             <div role="status" style={{
               pointerEvents:"none",maxWidth:300,textAlign:"center",
               background:"#FFC72C",color:"#0d0b14",
@@ -1538,7 +1558,7 @@ export default function WorldMapView({
               }} onClick={()=>{
                 if(locked){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
                 setDay(i)
-                if(i>=1&&mapPremium){ setPremiumHint(true); try{clearTimeout(hintTimerRef.current)}catch(_){}; hintTimerRef.current=setTimeout(()=>setPremiumHint(false),3200) }
+                if(i>=1&&mapPremium&&mapFriseOff){ setPremiumHint(true); try{clearTimeout(hintTimerRef.current)}catch(_){}; hintTimerRef.current=setTimeout(()=>setPremiumHint(false),3200) }
                 try{track&&track("sg_map_scrub",{day:i,island,premium:!!mapPremium})}catch(_){}
               }}>
                 {ti(lang,lbl)}
@@ -1585,6 +1605,45 @@ export default function WorldMapView({
               <span>{ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"])}</span>
             </div>
             {selected.commune&&<div style={{font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
+            {/* ── LA FRISE (Premium) : 7 jours d'un coup d'œil, sans slider. Statut RÉEL par jour
+                (gris hachuré si non mesuré, jamais inventé) + point de confiance (plein/demi/creux
+                pointillé en horizon lointain) + 🚩 sur le jour de bascule + sens de dérive. ── */}
+            {friseOn&&selected.days&&(
+              <div role="group" aria-label={_t(lang,`Prévision 7 jours ${selected.name}`,`7-day forecast ${selected.name}`,`Pronóstico 7 días ${selected.name}`)}
+                style={{marginTop:8,display:"flex",alignItems:"flex-start",gap:3}}>
+                {[0,1,2,3,4,5].map(d=>{
+                  const st=selected.days[d]
+                  const isHit=d===selected.firstHit
+                  const bg=st?STATUS_C[st]:null
+                  const cf=selected.conf?selected.conf[d]:null
+                  const tier=cf==null?null:(d>=4?"low":cf>=55?"high":cf>=38?"med":"low")
+                  const lbl=ti(lang,DAY_LBL[d])
+                  const stLbl=ti(lang,STATUS_LBL[st]||["—","—","—"])
+                  return(
+                    <div key={d} role="img" aria-label={`${lbl} · ${stLbl}${tier==="low"?" · "+_t(lang,"indicatif","indicative","indicativo"):""}`}
+                      style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,width:17,position:"relative"}}>
+                      {isHit&&<span aria-hidden="true" style={{position:"absolute",top:-9,fontSize:8,lineHeight:1}}>🚩</span>}
+                      <span style={{font:"800 7px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:isHit?3:0}}>{lbl}</span>
+                      <div style={{width:15,height:15,borderRadius:4,boxSizing:"border-box",
+                        background:bg||"#efe9da",
+                        backgroundImage:bg?"none":"repeating-linear-gradient(45deg,#d2ccbd 0 3px,#efe9da 3px 6px)",
+                        border:`${st==="avoid"?2.4:1.4}px solid ${INK}`,
+                        boxShadow:isHit?`0 0 0 1.6px #FFC72C`:"none"}}/>
+                      <span aria-hidden="true" style={{width:5,height:5,borderRadius:"50%",boxSizing:"border-box",
+                        background:tier==="high"?INK:"transparent",
+                        backgroundImage:tier==="med"?`linear-gradient(90deg,${INK} 0 50%,transparent 50% 100%)`:"none",
+                        border:tier==="low"?`1px dotted ${INK}`:tier==="med"?`1px solid ${INK}`:tier?"none":"none",
+                        opacity:tier?1:0}}/>
+                    </div>
+                  )
+                })}
+                {(selected.drift==="up"||selected.drift==="down")&&(
+                  <span aria-label={selected.drift==="up"?_t(lang,"le banc se rapproche","bank approaching","el banco se acerca"):_t(lang,"le banc se disperse","bank dispersing","el banco se dispersa")}
+                    style={{font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:selected.drift==="up"?"#E8522A":"#22C55E",marginLeft:2,marginTop:8}}>{selected.drift==="up"?"↗":"↘"}</span>
+                )}
+              </div>
+            )}
+            {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:152,whiteSpace:"normal"}}>{_t(lang,"Mesuré au satellite, pas deviné · ~76–79 % selon la saison","Measured by satellite, not guessed · ~76–79% by season","Medido por satélite, no adivinado · ~76–79 % según temporada")}</div>}
           </div>
         )}
 
