@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **🏛️ 2026-06-30 — HUB PRÉVISION PREMIUM « La Vigie » LIVE (#302) + panels en cours. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Conçu par PANEL ADVERSE** (workflow ultracode, 25 agents : 6 propositions × 3 personas critiques + synthèse `effort:high`). Scripts : `scratchpad/panel-premium-forecast.js` (relançable). Ossature gagnante « La Vigie ».
+>
+> **`src/WeekHub.jsx` (LAZY) — hub décision premium**, ouvert au tap sur l'encart digest « Ta semaine » de `WorldMapView` (devenu `role=button`, focus restauré). UN écran : (1) hero « coup sûr » (valeur sûre + meilleur jour, **chiffre or borné aux jours ≤ horizon** « 4/4 confirmés +2 tendance ») · (2) où aller (jour actif, top 3 tapables → `selectBeach`) · (3) ruban 6j tapable+clavier ←/→ (re-cale bloc 2 ; « voir sur la carte » → `setDay`) · (4) où ne pas aller + Plan B doré · (5) frontière honnêteté sobre → bloc planner opt-in (stabilité-côte **mesurée** + engagement daté J-7). **3 lois moat** : le mur coupe l'ACTION au-delà de l'horizon fiable (pas de CTA/date sèche), chiffre or borné, ZÉRO chiffre saison fabriqué. a11y dialog/Échap/focus-trap/clavier/reduced-motion. Flags `?weekhub=0` / `?weekhubseason=0`. Budget 199,8/210 (chunk lazy séparé `WeekHub-*.js`). **SWIPE-to-scrub RETIRÉ** (conflit pan confirmé).
+>
+> **⚠️ Test premium** : `https://sargasses-martinique.com/?pass=p120` puis taper l'encart « Ta semaine » (en bas, au-dessus du curseur jours). Vérif device : a11y/reduced-motion/placement (headless ne juge pas).
+>
+> **RESTE (séquence demandée par le fondateur : panels + ultracode + cohérence globale, sans précipiter)** :
+> - **Workflow B — onboarding** : remplacer le tunnel linéaire (`ArenaOnboarding`/`PaidOnboarding`, `step++`) par des **accès explorables** ; corriger police (Anton 30px fixe + eyebrow Bricolage 800 illisibles, pas de breakpoint <360px) + a11y (pas de focus-trap/Échap). Investigation faite (composants/problèmes/briques réutilisables mappés).
+> - **Passe COHÉRENCE GLOBALE** : un seul langage premium hub ↔ onboarding ↔ carte ↔ fiches.
+> - **Chantier DATA climatologie** (allume le « état B » du bloc planner) : table `beach_climatology` Supabase (region/coast/month/clean_rate/n_samples) depuis l'historique ERDDAP, cron GH Actions, exposée au build. Le hub marche sans (état A honnête déjà livré).
+> - **Câblage alerte J-7 planner** (l'opt-in capture l'intention mais ne PROMET pas de ping auto tant que non câblé — honnêteté). Côté serveur → Supabase, jamais Apps Script.
+
 > **🎯 2026-06-30 — CARTE PREMIUM : décision + craft LIVRÉS (PR3a→PR4) + 2 fixes contraste. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Contraste — 2 vagues, recette FINALE = texte BLANC sur pastille sombre** (le crème ne peignait pas fiable sur iOS) :
