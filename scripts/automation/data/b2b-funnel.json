@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-29T20:03:45.691Z",
+  "updatedAt": "2026-06-30T03:50:24.573Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 75,
-    "contacted": 32,
+    "discovered": 69,
+    "contacted": 38,
     "lead": 5,
     "paid": 1
   },
@@ -328,58 +328,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "31de89ca85a74c2a9ef7e2ab0c01b812": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Kawan Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:36.873Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "5fa9026168761be3a1a57ce07d19f5ee": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Kariba Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:37.178Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "7fa5b59c71b0bf6fd6a2734e58e984f1": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Résidence Brise Marine",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:37.626Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c0f27e563c9957717615f0aabc45bb71": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Villas du Lagon (ex-Cap Est Lagoon Resort & Spa)",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:38.127Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "82efa2491fb7fd1632b272166da2cdc5": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Zenergie",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:38.412Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "e3200672cc3eae0f0f7e23a7274b676e": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Sable Bleu",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T03:47:39.066Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a544ca79573316aeccbb525080f7a381": {
       "stage": "discovered",
