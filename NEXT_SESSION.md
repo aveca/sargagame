@@ -1,5 +1,8 @@
 # NEXT_SESSION — sargagame
 
+> **🏨 2026-06-30 — DÉCOUVRABILITÉ B2B sur la carte (1er écran). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+> Problème fondateur : « sur la carte on ne sait pas qu'il y a un espace pro » (rampe `onOpenPro` enterrée dans le panel « Mon espace » de ChasseHome). Ajouté une entrée **discrète** « 🏨 Vous gérez un hôtel ? » en 4ᵉ ligne de la légende `WorldMapView` (texte muté, `pointerEvents:auto`, FR/EN/ES) → ouvre B2BModal via nouvelle prop `onOpenPro` câblée au montage (`setShowProB2B`). Moat respecté (discret). Flag `?promap=0`. Vérifié screenshot + smoke baseline + budget 194.7.
+
 > **🗺️ 2026-06-30 — CARTE (WorldMapView, vedette) : haut de carte soigné. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 > Baseline screenshot → bugs reproduits : pastille fraîcheur « EN DIRECT/DONNÉE EN RETARD · il y a X » cassée sur 3-4 lignes (manquait `whiteSpace:nowrap`+`flexShrink:0`, `WorldMapView.jsx:1216`) ; barre email placeholder tronqué (`:1310` trop long) ; recherche qui débordait après fix pastille (conteneur `:1234` sans `minWidth:0`). **Fixés + vérifiés screenshot avant/après** : pastille 1 ligne, email « verdict gratuit » complet, recherche « Chercher… » dans le cadre, œil non coupé. Gate vert (build, budget 194.5, smoke baseline 7/16). **Reste carte** (si récurrent) : collision étiquettes en arrangement dense (déclutter `:444` existe, à durcir le padding si ça réapparaît) — non reproduit dans mes captures.
 

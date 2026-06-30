@@ -193,8 +193,10 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro,
 }){
+  // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
+  const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
   const camRef     = useRef({ tx:0, ty:0, k:1 })
@@ -1348,6 +1350,15 @@ export default function WorldMapView({
               <div style={{width:10,height:10,borderRadius:"50%",background:c,border:`1.5px solid ${INK}`}}/>{l}
             </div>
           ))}
+          {!proMapOff&&onOpenPro&&(
+            <button onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
+              style={{pointerEvents:"auto",marginTop:5,display:"inline-flex",alignItems:"center",gap:5,
+                background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0,
+                font:"700 10.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
+                color:"rgba(255,255,255,.8)",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>
+              <span aria-hidden="true">🏨</span>{_t(lang,"Vous gérez un hôtel ?","Run a hotel?","¿Gestionas un hotel?")}
+            </button>
+          )}
         </div>
 
         {/* Bouton Près de moi */}
