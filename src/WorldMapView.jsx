@@ -1796,17 +1796,18 @@ export default function WorldMapView({
         {/* CTA Voir la plage — ouvre la fiche dès le pointerdown, en capturant la plage
             sélectionnée AVANT toute déselection par la couche carte (fix P0 tap au doigt). */}
         {selected&&(
-          <button onClick={openBeach}
+          <button className="sg-mapcta" onClick={openBeach}
             onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ lastPtrOpenRef.current=Date.now(); try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
             style={{
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
             transform:"translateX(-50%)",pointerEvents:"auto",touchAction:"manipulation",
             display:"inline-flex",alignItems:"center",gap:8,
-            background:"linear-gradient(180deg,#FFE07A,#FFC72C)",
-            color:INK,border:`2.5px solid ${INK}`,
+            // Fond/texte forcés en CSS (.sg-mapcta) pour battre le skin de thème qui
+            // strippait le gradient or → texte noir illisible sur carte sombre (rapport
+            // fondateur). Pastille encre + bordure or + TEXTE BLANC = lisible garanti.
+            color:"#fdfcf7",
             font:"800 13.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-            padding:"13px 18px",borderRadius:999,
-            boxShadow:`4px 4px 0 ${INK}`,cursor:"pointer",
+            padding:"13px 18px",borderRadius:999,cursor:"pointer",
             animation:"wmSlide .25s cubic-bezier(.34,1.56,.64,1) both",
           }}>
             {_t(lang,"Voir la plage","Open beach","Ver la playa")} <span style={{fontWeight:800}}>→</span>
