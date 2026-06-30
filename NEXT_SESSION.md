@@ -1,5 +1,21 @@
 # NEXT_SESSION — sargagame
 
+> **🏭 2026-06-30 — AUDIT ÉQUIPE (8 départements, 92 trouvailles) + P0 & WAVE 1 EXÉCUTÉS. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Méthode demandée par le fondateur** : il en a marre d'être ma QA (« je ne peux pas voir l'écran rendu → les bugs visuels lui tombent dessus »). Solution = **système** : (1) audit multi-agents façon équipe (script `scratchpad/audit-team.js`, relançable) ; (2) **self-review avant chaque ship UI** contre les classes de bugs connues ; (3) conventions documentées dans `CLAUDE.md`. Le fondateur devient le **goût/stratégie**, pas le testeur de pixels.
+>
+> **SHIPPÉ cette session (P0 + Wave 1, tout live)** :
+> - **#308 P0 #1** : hub/onboarding rendus corrects — `WeekHub`/`WelcomePoste` portalisés sur `document.body` (qui porte `.theme-comic`) sans `sg-onink-scope` → le skin aplatissait leurs boutons. Fix = `className="sg-onink-scope"` sur les 2 racines. **C'est la classe de bug n°1 du fondateur, attrapée par l'audit, que j'avais ré-introduite en portalisant.**
+> - **#308 push** : cloche 🔔 **muette** (one-shot guard `sg_push_loaded_once` no-op si OneSignal déjà chargé sans abo) → `forceEnablePush` (bypass guard + re-`requestPermission` ×2 pour geste iOS + toast). AppId prod OK (`d628363e` MQ). **iOS PWA push** marche si : iOS≥16.4 + app installée + permission accordée. Si iOS a marqué « refusé » d'un essai avalé → réautoriser dans Réglages iOS.
+> - **#309** : encart « Ta semaine » **compact + proactif** (griefs fondateur) — pastille 1-ligne « rien en vue / N à surveiller · bascule {jour} » (via `weekDigest.flips/flipDay`), s'efface derrière le hub. + **P0 #2** contraste B2B (texte gris→clair sur teal). + date planner bornée min/max.
+> - **#310** : copy paywall positive (lockbar « Vois 5 jours d'avance »), hub état calme « ✓ rien à éviter ».
+> - **#306** : swipe-down ferme hub+onboarding (`useSwipeClose`) + **loi mobile-first dans CLAUDE.md**.
+>
+> **Lien rejouer onboarding** : `https://sargasses-martinique.com/?pass=p120&onboard=1&paidsplash=0`.
+>
+> **RESTE roadmap audit (Wave 2 + Later — direction fondateur)** : capture email proactive (avant paywall + onboarding payeur, `sg_premium_email`) · expliquer les tiers de confiance in-context · reformuler jargon B2B « widget marque-blanche » → bénéfice · voix Veilleur sur Plan B/« où ne pas aller » · taux fausse-alerte in-app (régime calme) · **alerte J-7 serveur (Supabase)** · séquences lifecycle/upsell · climatologie chiffrée (data ~3 mois) · mascotte carte animée. Roadmap complète : `tasks/w0kql3s1l.output`.
+
+
 > **🎓 2026-06-30 — ONBOARDING PREMIUM « Le Poste de Veille » LIVE (#304) + signal saison hub (#303). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Conçu par PANEL ADVERSE** (workflow ultracode, 21 agents). Script `scratchpad/panel-onboarding.js`. Modèle gagnant : les 3 personas ont TUÉ le hub de tuiles (paradoxe du choix) → **VALEUR d'abord, accès ensuite, zéro porte fermée**.
