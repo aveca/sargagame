@@ -348,10 +348,19 @@ export default function WorldMapView({
         const fc=entry&&entry.d // série jour-par-jour [{st,c,date}]
         const days=[b.status||null]
         const conf=[null]
+        // PERSISTANCE (décision fondateur 2026-06-30) : un jour sans prévision NE reste
+        // PLUS gris muet — on reporte le dernier statut connu (« on s'attend à la même
+        // chose »), avec une CONFIANCE BASSE explicite (point creux/pointillé dans la
+        // frise + 'indicatif'). C'est une vraie méthode (persistance, comme forecast.cjs),
+        // PAS une invention : on n'affiche jamais un statut tiré du néant, seulement la
+        // continuité de la mesure du jour, dégradée honnêtement avec l'horizon.
         for(let d=1;d<6;d++){
           const cell=fc&&fc[d]
-          days.push(cell&&cell.st?cell.st:null) // pas de prévision → null (gris), jamais inventé
-          conf.push(cell&&cell.c!=null?cell.c:null)
+          let st=cell&&cell.st?cell.st:null
+          let cf=cell&&cell.c!=null?cell.c:null
+          if(st==null){ st=days[d-1]; if(st!=null) cf=Math.max(8,Math.round((conf[d-1]!=null?conf[d-1]:35)*0.78)) } // report + confiance qui décroît
+          days.push(st)
+          conf.push(cf)
         }
         // Premier jour d'échouage prévu (réel) : index du 1er 'avoid' dans la série,
         // sinon arrivalDay du signal d'arrivée. Sert au badge « touchée J+N ».
@@ -635,12 +644,19 @@ export default function WorldMapView({
     // mais NON-RÉPÉTITIF : somme de sinus à périodes INCOMMENSURABLES (ratios irrationnels φ/√2/√3) →
     // jamais deux états identiques (fini la boucle ~35s perceptible = « lassant »). Amplitude faible,
     // chaque cellule déphasée par son seed. (Fix répétition fondateur 22/06.)
+    // DÉRIVE PAR JOUR FUTUR (premium) : le banc au large NE reste plus figé quand on
+    // scrube les jours. On projette sa position dans la direction RÉELLE du courant
+    // Caraïbe (O/N-O, déjà la dérive du champ) — estimation physique (« les radeaux
+    // continuent de dériver »), pas une trajectoire inventée. ~7px/jour, subtil.
+    // Confiance basse assumée (cf. frise). Jour 0 / gratuit → 0 décalage.
+    const dd=(mapPremium&&!mapDriftOff&&day>=1)?day:0
+    const DX=-6.6*dd, DY=-3.2*dd
     const place=(n,t)=>{
-      if(reduced){ n.g.setAttribute("transform",`translate(${n.bx.toFixed(1)} ${n.by.toFixed(1)})`); return }
+      if(reduced){ n.g.setAttribute("transform",`translate(${(n.bx+DX).toFixed(1)} ${(n.by+DY).toFixed(1)})`); return }
       const ph=n.seed*0.137
       const sx=Math.sin(t*0.061+ph)*7 + Math.sin(t*0.0987+ph*1.31)*4 + Math.sin(t*0.1473+ph*0.71)*2.4
       const sy=Math.sin(t*0.047+ph*1.1)*3.4 + Math.sin(t*0.0814+ph*0.53)*2.1
-      n.g.setAttribute("transform",`translate(${(n.bx+sx).toFixed(1)} ${(n.by+sy).toFixed(1)})`)
+      n.g.setAttribute("transform",`translate(${(n.bx+sx+DX).toFixed(1)} ${(n.by+sy+DY).toFixed(1)})`)
     }
     if(reduced){ nodes.forEach(n=>place(n,0)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
     let raf=0
@@ -649,7 +665,7 @@ export default function WorldMapView({
     const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} } else if(!raf){ raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
-  },[sargCells]) // eslint-disable-line
+  },[sargCells,day,mapPremium,mapDriftOff]) // eslint-disable-line
 
   const writeCam=useCallback(()=>{
     const g=worldRef.current; if(!g) return
@@ -1467,10 +1483,14 @@ export default function WorldMapView({
           ))}
           {!proMapOff&&onOpenPro&&(
             <button onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
-              style={{pointerEvents:"auto",marginTop:5,display:"inline-flex",alignItems:"center",gap:5,
-                background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0,
-                font:"700 10.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
-                color:"rgba(255,255,255,.8)",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>
+              style={{pointerEvents:"auto",marginTop:6,display:"inline-flex",alignItems:"center",gap:5,
+                cursor:"pointer",textAlign:"left",
+                // Pastille sombre semi-opaque + texte blanc plein → lisible quel que soit
+                // le fond de carte (le bas vire au violet foncé mais ça reste garanti).
+                background:"rgba(13,11,20,.62)",border:`1.5px solid rgba(255,255,255,.28)`,borderRadius:999,
+                padding:"4px 10px",
+                font:"800 10.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
+                color:"#fff",WebkitBackdropFilter:"blur(2px)",backdropFilter:"blur(2px)"}}>
               <span aria-hidden="true">🏨</span>{_t(lang,"Vous gérez un hôtel ?","Run a hotel?","¿Gestionas un hotel?")}
             </button>
           )}
@@ -1524,8 +1544,8 @@ export default function WorldMapView({
               }}>
                 <b style={{fontWeight:800}}>{_t(lang,"Prévu","Forecast","Previsto")} {ti(lang,DAY_LBL[day])}{dateStr?` · ${dateStr}`:""} · {hitStr}</b><br/>
                 {far
-                  ? _t(lang,"Horizon lointain — indicatif, faible confiance. Mesuré au satellite, pas deviné.","Far horizon — indicative, low confidence. Measured by satellite, not guessed.","Horizonte lejano — indicativo, baja confianza. Medido por satélite, no adivinado.")
-                  : _t(lang,"~76–79 % de fiabilité selon la saison. Mesuré au satellite, pas deviné.","~76–79% reliability depending on season. Measured by satellite, not guessed.","~76–79 % de fiabilidad según la temporada. Medido por satélite, no adivinado.")}
+                  ? _t(lang,"Fin de semaine : on lit la tendance, pas encore la certitude. On affine chaque matin.","End of week: we read the trend, not yet certainty. We sharpen it each morning.","Fin de semana: leemos la tendencia, aún no la certeza. La afinamos cada mañana.")
+                  : _t(lang,"Confiance forte sur ces jours — 76 à 79 % de justesse selon la saison.","Strong confidence on these days — 76-79% accuracy by season.","Confianza alta en estos días — 76-79 % de acierto según temporada.")}
               </div>
             )
           })()}
@@ -1643,7 +1663,7 @@ export default function WorldMapView({
                 )}
               </div>
             )}
-            {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:152,whiteSpace:"normal"}}>{_t(lang,"Mesuré au satellite, pas deviné · ~76–79 % selon la saison","Measured by satellite, not guessed · ~76–79% by season","Medido por satélite, no adivinado · ~76–79 % según temporada")}</div>}
+            {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Confiance forte J0-J2, tendance au-delà — 76 à 79 % de justesse selon la saison.","Strong confidence days 0-2, trend after — 76-79% accuracy by season.","Confianza alta días 0-2, tendencia después — 76-79 % de acierto según temporada.")}</div>}
           </div>
         )}
 

@@ -2383,6 +2383,32 @@ function isImmuneBay(lat,lng,island){
 }
 
 /**
+ * padForecast — PERSISTANCE HONNÊTE : complète une série de prévision courte (souvent
+ * 2 jours quand forecast.php n'a pas répondu) jusqu'à `len` jours, en REPORTANT le
+ * dernier jour MESURÉ : on réutilise son afai RÉEL (jamais un afai inventé), on dérive
+ * le statut de cet afai, et on fait DÉCROÎTRE la confiance (×0.78/jour, plancher 8) en
+ * marquant type:'horizon' + _persisted:true. C'est une vraie méthode (persistance, cf.
+ * scripts/lib/forecast.cjs) → aucune surface (carte/fiche/graphe) n'affiche plus de gris
+ * muet à un premium qui a payé ; l'incertitude reste VISIBLE (confiance basse + 'horizon').
+ * Réutilise la même formule que WorldMapView.jsx (cohérence inter-surfaces). Rollback : ?persist=0.
+ */
+function padForecast(fc, len = 7) {
+  if (!Array.isArray(fc) || !fc.length || fc.length >= len) return fc
+  try { if (/[?&]persist=0/.test(window.location.search)) return fc } catch (_) {}
+  const out = fc.slice()
+  const lastReal = out.length - 1
+  const last = out[lastReal]
+  const _DOW = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
+  for (let d = out.length; d < len; d++) {
+    const conf = Math.max(8, Math.round((last.confidence != null ? last.confidence : 35) * Math.pow(0.78, d - lastReal)))
+    let date = last.date, day = last.day
+    try { if (last.date) { const dd = new Date(last.date + "T00:00:00Z"); dd.setUTCDate(dd.getUTCDate() + (d - lastReal)); date = dd.toISOString().slice(0, 10); day = _DOW[dd.getUTCDay()] } } catch (_) {}
+    out.push({ day, date, afai: last.afai, status: last.status, confidence: conf, type: 'horizon', regime: last.regime, sources: ['persistence'], _persisted: true })
+  }
+  return out
+}
+
+/**
  * Interpolate forecast for non-sentinel beaches by IDW-blending K nearest sentinels
  * v3: propagates arrivalDetected, forecastMethod, reliableHorizon from sentinels
  * v3.1: caribbean beaches never show arrivalDetected (geography rule)
@@ -12190,6 +12216,18 @@ export default function App(){
           const full=fcFull[id]
           if(Array.isArray(full)&&full.length>2){
             sargResult.weekly[id]={...sargResult.weekly[id],forecast:full,gated:false}
+          }
+        }
+      }
+      // PERSISTANCE (cause racine du « gris ») : TOUTE série encore courte (forecast.php
+      // KO, premium pass-only, etc.) est complétée à 7 jours par report honnête AVANT
+      // l'interpolation → les sentinelles ET les plages interpolées héritent de 7 jours.
+      // Plus aucune surface n'affiche de gris muet à un premium. Rollback : ?persist=0.
+      if(sargResult&&sargResult.weekly){
+        for(const id in sargResult.weekly){
+          const w=sargResult.weekly[id]
+          if(w&&Array.isArray(w.forecast)&&w.forecast.length>0&&w.forecast.length<7){
+            sargResult.weekly[id]={...w,forecast:padForecast(w.forecast,7)}
           }
         }
       }

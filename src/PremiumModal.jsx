@@ -761,7 +761,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
             registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
         {recordProof
-          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")}</em></span></div>
+          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em></span></div>
           :totalCount>0&&<div className="pwx-proof">{cleanCount>0
             ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
             :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
