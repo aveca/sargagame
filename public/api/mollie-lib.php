@@ -37,6 +37,26 @@ function mol_is_eur_region($island) {
     return mol_region_currency($island) === 'EUR';
 }
 
+// Dérive domaine public + langue d'un email B2B à partir de l'island (MÊME mapping que
+// /pro/espace/, create-checkout.php, mollie.php et b2b-cold-outreach.cjs). Sans ça un
+// hôtelier USD (florida/puntacana/rivieramaya) recevait un email FR pointant vers le
+// domaine MQ. ADDITIF : par défaut MQ/FR (rétro-compat des appels existants sans island).
+//   - florida   → sargassummiami.com    · EN
+//   - puntacana → sargassumpuntacana.com · EN
+//   - rivieramaya → sargassumcancun.com  · ES
+//   - gp        → sargasses-guadeloupe.com · FR
+//   - mq / vide / inconnu → sargasses-martinique.com · FR
+function mol_b2b_region_brand($island) {
+    $i = strtolower(trim((string)$island));
+    switch ($i) {
+        case 'florida':   return ['domain' => 'sargassummiami.com',     'lang' => 'en'];
+        case 'puntacana': return ['domain' => 'sargassumpuntacana.com', 'lang' => 'en'];
+        case 'rivieramaya': return ['domain' => 'sargassumcancun.com',  'lang' => 'es'];
+        case 'gp':        return ['domain' => 'sargasses-guadeloupe.com', 'lang' => 'fr'];
+        default:          return ['domain' => 'sargasses-martinique.com', 'lang' => 'fr'];
+    }
+}
+
 // Forward fulfillment -> Apps Script, MEME shape que stripe-webhook.php (la Sheet
 // 'payments' dedoublonne par id). $type permet annulation/echec (cycle de vie).
 function mol_forward_fulfillment($cfg, $id, $email, $cents, $currency, $island, $plan, $source, $type = 'checkout.session.completed') {
@@ -314,7 +334,7 @@ function mol_b2b_plans() {
 // échouer la confirmation de paiement. Appelé par mollie.php (inline) ET le webhook
 // (3DS/renouvellements) — un nouveau pid à chaque facture mensuelle payée → le token
 // est ré-émis 400 j (roll-forward tant que l'abo est payé).
-function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
+function mol_b2b_grant_once($cfg, $pid, $email, $plan, $island = '') {
     if (!is_string($pid) || $pid === '' || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
     $dir = __DIR__ . '/data';
     if (!is_dir($dir)) @mkdir($dir, 0755, true);
@@ -325,19 +345,43 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan) {
     require_once __DIR__ . '/widget-token.php';
     $k = sg_widget_sign($email, 400);                // token Pro 400 j (ré-émis chaque mois payé)
 
+    // Domaine + langue dérivés de l'island (un hôtelier USD recevait un email FR vers MQ).
+    $brand  = mol_b2b_region_brand($island);
+    $domain = $brand['domain'];
+    $lang   = $brand['lang'];
+    $espace = 'https://' . $domain . '/pro/espace/?k=' . rawurlencode($k);
+
     // Email de bienvenue PAYANT (B2B Pro/Brief, caisse Mollie active) — via mol_send_mail
     // (MTA cPanel ; Resend RETIRÉ → sans ça le client payait et ne recevait RIEN). Best-effort :
     // le marker d'idempotence est déjà posé, un échec d'envoi n'annule pas le grant et le
     // token reste valable (l'espace s'ouvre avec ?k=).
     $isPro  = (strpos((string)$plan, 'pro_') === 0);
-    $titre  = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
-    $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($k);
-    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
-        . '<h2 style="margin:0 0 12px">' . $titre . '</h2>'
-        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
-        . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
-        . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
-        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Résiliable à tout moment.</p></div>';
+    $btn    = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px';
+    if ($lang === 'en') {
+        $titre = $isPro ? 'Your Sargassum Pro subscription is active' : 'Your Sargassum Brief subscription is active';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">' . htmlspecialchars($titre) . '</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Thank you, and welcome. Your Pro access is live: a widget in your colours (no credit line of ours), per-beach alerts and featured placement in the app.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Open my Pro dashboard &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Your dashboard opens already signed in to your Pro access. Keep this link private: it carries your key.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. Cancel anytime.</p></div>';
+    } elseif ($lang === 'es') {
+        $titre = $isPro ? 'Su suscripción Sargazo Pro está activa' : 'Su suscripción Sargazo Brief está activa';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">' . htmlspecialchars($titre) . '</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Gracias y bienvenido. Su acceso Pro está activo: un widget con sus colores (sin nuestro crédito), alertas por playa y posición destacada en la app.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Abrir mi espacio Pro &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Su espacio se abre ya conectado a su acceso Pro. Mantenga este enlace privado: contiene su clave.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. Cancele cuando quiera.</p></div>';
+    } else {
+        $titre = $isPro ? 'Votre abonnement Sargasses Pro est actif' : 'Votre abonnement Sargasses Brief est actif';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">' . htmlspecialchars($titre) . '</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Merci, et bienvenue. Votre accès Pro est actif : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Ouvrir mon espace Pro &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès Pro. Gardez ce lien privé : il porte votre clé.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. Résiliable à tout moment.</p></div>';
+    }
     mol_send_mail($email, $titre, $html);
     return true;
 }
@@ -369,7 +413,7 @@ function mol_send_mail($to, $subject, $html, $replyTo = '') {
     return @mail($to, $subj, $html, $h, '-falerte@sargasses-martinique.com');
 }
 
-function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
+function mol_b2b_trial_email($cfg, $email, $token, $name = '', $island = '') {
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
     // Plafond PAR DESTINATAIRE (indépendant de l'IP) : le cap par IP de _ratelimit.php
     // est contournable (CF-Connecting-IP forgé en direct-origin) → on borne aussi le
@@ -380,15 +424,38 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '') {
     $throttle = $dir . '/trialmail_' . substr(hash('sha256', strtolower($email)), 0, 24);
     if (file_exists($throttle) && (time() - @filemtime($throttle)) < 3600) return false; // déjà envoyé < 1 h
     @file_put_contents($throttle, date('c'));
+    // Domaine + langue dérivés de l'island (un hôtelier USD recevait un email FR vers MQ).
+    $brand  = mol_b2b_region_brand($island);
+    $domain = $brand['domain'];
+    $lang   = $brand['lang'];
     $hi     = $name !== '' ? (' ' . htmlspecialchars($name)) : '';
-    $titre  = 'Votre essai Sargasses Pro — 30 jours, sans carte';
-    $espace = 'https://sargasses-martinique.com/pro/espace/?k=' . rawurlencode($token);
-    $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
-        . '<h2 style="margin:0 0 12px">Votre essai Pro est actif</h2>'
-        . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Bienvenue' . $hi . '. Votre accès Pro est ouvert pour <strong>30 jours</strong> : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app. Aucune carte, aucun engagement.</p>'
-        . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px">Ouvrir mon espace Pro &rarr;</a></p>'
-        . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès d\'essai. Gardez ce lien privé : il porte votre clé. À la fin de l\'essai, vous pourrez verrouiller l\'année depuis votre espace.</p>'
-        . '<p style="font-size:12px;color:#999;margin-top:18px">Sargasses Martinique &mdash; Le Veilleur. Il regarde la mer, jamais vos clients.</p></div>';
+    $espace = 'https://' . $domain . '/pro/espace/?k=' . rawurlencode($token);
+    $btn    = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px';
+    if ($lang === 'en') {
+        $titre = 'Your Sargassum Pro trial — 30 days, no card';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Your Pro trial is active</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Welcome' . $hi . '. Your Pro access is open for <strong>30 days</strong>: a widget in your colours (no credit line of ours), per-beach alerts and featured placement in the app. No card, no commitment.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Open my Pro dashboard &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Your dashboard opens already signed in to your trial access. Keep this link private: it carries your key. When the trial ends, you can lock in the year right from your dashboard.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. He watches the sea, never your guests.</p></div>';
+    } elseif ($lang === 'es') {
+        $titre = 'Su prueba Sargazo Pro — 30 días, sin tarjeta';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Su prueba Pro está activa</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Bienvenido' . $hi . '. Su acceso Pro está abierto durante <strong>30 días</strong>: un widget con sus colores (sin nuestro crédito), alertas por playa y posición destacada en la app. Sin tarjeta, sin compromiso.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Abrir mi espacio Pro &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Su espacio se abre ya conectado a su acceso de prueba. Mantenga este enlace privado: contiene su clave. Al terminar la prueba, podrá asegurar el año desde su espacio.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. Mira el mar, nunca a sus clientes.</p></div>';
+    } else {
+        $titre = 'Votre essai Sargasses Pro — 30 jours, sans carte';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Votre essai Pro est actif</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Bienvenue' . $hi . '. Votre accès Pro est ouvert pour <strong>30 jours</strong> : widget à votre marque (sans notre crédit), alertes par plage et mise en avant dans l\'app. Aucune carte, aucun engagement.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($espace) . '" style="display:inline-block;padding:13px 26px;' . $btn . '">Ouvrir mon espace Pro &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#666;line-height:1.55">Votre espace s\'ouvre déjà connecté à votre accès d\'essai. Gardez ce lien privé : il porte votre clé. À la fin de l\'essai, vous pourrez verrouiller l\'année depuis votre espace.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur. Il regarde la mer, jamais vos clients.</p></div>';
+    }
     return mol_send_mail($email, $titre, $html);
 }
 

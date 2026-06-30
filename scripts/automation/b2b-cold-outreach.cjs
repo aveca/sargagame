@@ -92,7 +92,7 @@ function buildC0(c, key) {
   // Segmentation déterministe (FR seul = marché B2B live MQ/GP ; EN/ES inchangés).
   const seg = inferType(c)                 // 'hotel' | 'collectivite'
   const dh = L === 'fr' ? dataHook(c, seg) : null  // vraie donnée plage(s), ou null
-  const pf = L === 'fr' ? liveProof() : null       // % LIVE (jamais figé)
+  const pf = liveProof()                           // % LIVE (jamais figé) — langue-agnostique
   // Phrase de donnée réelle, adaptative (saison calme vs épisode). null → copy générique.
   let dataSentence = ''
   if (dh) {
@@ -106,10 +106,19 @@ function buildC0(c, key) {
         : `Un fait d'abord, sur votre plage : <strong>${dh.beach}</strong> est restée propre toute la semaine dernière — exactement le genre de certitude qu'on mesure et qu'on documente, jour après jour.`
     }
   }
-  // Preuve LIVE (remplace le chiffre figé qui se périme), forme hedgée canonique.
+  // Preuve LIVE (remplace le chiffre figé qui se périme), forme hedgée canonique — FR/EN/ES.
+  // Même source live (pf) ; les 5 qualificatifs obligatoires (fenêtre datée, N comparaisons,
+  // « saison calme », ~76 % tous régimes, faible confiance sur les alertes) sont TOUJOURS là,
+  // jamais un « 100 % » nu. Lien honnêteté localisé : /fiabilite/ · /reliability/ · /fiabilidad/.
   const proofFr = pf
     ? `On ne promet pas, on montre. Notre fiabilité est publiée et auditée chaque jour, par régime, sur <strong>/fiabilite/</strong> : <strong>${pf.pct} % des prévisions « mer propre » vérifiées en saison calme</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('fr-FR')} comparaisons${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''} ; <strong>~76 % tous régimes confondus</strong>, les rares alertes de saison calme en faible confiance. Le verdict reste 100 % data — l'argent n'y touche jamais.`
     : `On ne promet pas, on montre : fiabilité publiée et auditée par régime sur <strong>/fiabilite/</strong> (≈ 76 % à 79 % selon la saison, alertes de saison calme en faible confiance). Le verdict reste 100 % data — l'argent n'y touche jamais.`
+  const proofEn = pf
+    ? `We don't promise, we show. Our reliability is published and audited daily, by regime, on <strong>/reliability/</strong>: <strong>${pf.pct}% of "clean-sea" forecasts verified in calm season</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('en-US')} comparisons${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''}; <strong>~76% across all regimes</strong>, with the rare calm-season alerts flagged low-confidence. The verdict stays 100% data — money never touches it.`
+    : `We don't promise, we show: reliability published and audited by regime on <strong>/reliability/</strong> (~76% to 79% depending on the season, calm-season alerts flagged low-confidence). The verdict stays 100% data — money never touches it.`
+  const proofEs = pf
+    ? `No prometemos, mostramos. Nuestra fiabilidad se publica y se audita cada día, por régimen, en <strong>/fiabilidad/</strong>: <strong>${pf.pct} % de los pronósticos de "mar limpio" verificados en temporada calmada</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('es-ES')} comparaciones${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''}; <strong>~76 % en todos los regímenes</strong>, con las raras alertas de temporada calmada marcadas como baja confianza. El veredicto sigue siendo 100 % datos — el dinero nunca lo toca.`
+    : `No prometemos, mostramos: fiabilidad publicada y auditada por régimen en <strong>/fiabilidad/</strong> (~76 % a 79 % según la temporada, alertas de temporada calmada marcadas como baja confianza). El veredicto sigue siendo 100 % datos — el dinero nunca lo toca.`
 
   const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
     : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
@@ -127,7 +136,7 @@ function buildC0(c, key) {
       hi: 'Bonjour,',
       pain: `Je fais <strong>Le Veilleur</strong> — un projet indépendant, opéré depuis la Martinique, qui mesure les sargasses plage par plage au satellite (Copernicus Marine, NOAA), 4 fois par jour. Pour un établissement comme le vôtre, une plage envahie = clients déçus, avis, parfois remboursements — et vous l'apprenez souvent en même temps qu'eux.`,
       flip: `Avec Le Veilleur, vous connaissez la fin de l'histoire avant vos clients : l'alerte arrive <strong>avant</strong> les sargasses, avec une prévision 7 jours. Vous prévenez, vous ne subissez pas.`,
-      proof: `On ne promet pas, on montre. La fiabilité est publiée et auditée chaque jour, par régime : <strong>100 % des prévisions « mer propre » vérifiées en saison calme</strong> sur 2 274 échantillons (fenêtre 2026-05-30 → 2026-06-28) ; <strong>~76 % de justesse tous régimes confondus</strong>, les alertes de saison calme étant explicitement en faible confiance. Vous voyez nos réussites comme nos limites.`,
+      proof: '', // écrasé plus bas par proofFr (preuve LIVE hedgée, jamais un « 100 % » figé)
       ask: `Côté pro, c'est simple et sans engagement : un <strong>essai 30 jours gratuit, sans carte</strong> (widget à vos couleurs sur votre site + alertes par plage), puis 79 €/mois ou 690 €/an. Tout en ligne, à votre rythme — voici l'état réel de vos plages, et vous activez l'essai en un clic.`,
       ctaText: 'Voir mes plages · essai 30 j',
       orReply: 'Ou répondez simplement « ok » et je vous envoie le rendu daté de vos plages.'
@@ -137,7 +146,7 @@ function buildC0(c, key) {
       hi: 'Hi,',
       pain: `I run <strong>Le Veilleur</strong> — an independent project, operated from Martinique, that measures sargassum beach by beach via satellite (Copernicus Marine, NOAA), four times a day. For a property like yours, an invaded beach means disappointed guests, bad reviews, sometimes refunds — and you often learn it at the same time they do.`,
       flip: `With Le Veilleur, you know how the story ends before your guests do: the alert lands <strong>before</strong> the seaweed, with a 7-day forecast. You warn them instead of taking the hit.`,
-      proof: `We don't promise, we show. Reliability is published and audited every day, by regime: <strong>100% of “clean-sea” forecasts verified in calm season</strong> over 2,274 samples (window 2026-05-30 → 2026-06-28); <strong>~76% accuracy across all regimes</strong>, with calm-season alerts explicitly flagged low-confidence. You see our hits and our limits.`,
+      proof: '', // écrasé plus bas par proofEn (preuve LIVE hedgée, jamais un « 100 % » figé)
       ask: `The pro side is simple and commitment-free: a <strong>free 30-day trial, no card</strong> (a widget in your colours on your site + per-beach alerts), then €79/mo or €690/yr. All online, at your pace — here's the real state of your beaches, and you start the trial in one click.`,
       ctaText: 'See my beaches · 30-day trial',
       orReply: 'Or just reply “ok” and I’ll send you the dated readout of your beaches.'
@@ -147,14 +156,18 @@ function buildC0(c, key) {
       hi: 'Hola,',
       pain: `Soy <strong>Le Veilleur</strong> — un proyecto independiente, operado desde Martinica, que mide el sargazo playa por playa vía satélite (Copernicus Marine, NOAA), cuatro veces al día. Para un establecimiento como el suyo, una playa invadida significa huéspedes decepcionados, malas reseñas, a veces reembolsos — y a menudo se entera al mismo tiempo que ellos.`,
       flip: `Con Le Veilleur, usted conoce el final de la historia antes que sus huéspedes: la alerta llega <strong>antes</strong> que el sargazo, con un pronóstico a 7 días. Usted avisa en lugar de sufrirlo.`,
-      proof: `No prometemos, mostramos. La fiabilidad se publica y se audita cada día, por régimen: <strong>100 % de los pronósticos de “mar limpio” verificados en temporada calmada</strong> sobre 2.274 muestras (ventana 2026-05-30 → 2026-06-28); <strong>~76 % de acierto en todos los regímenes</strong>, con las alertas de temporada calmada marcadas explícitamente como baja confianza. Usted ve nuestros aciertos y nuestros límites.`,
+      proof: '', // écrasé plus bas por proofEs (preuve LIVE hedgée, jamais un « 100 % » figé)
       ask: `La parte pro es simple y sin compromiso: una <strong>prueba gratuita de 30 días, sin tarjeta</strong> (un widget con sus colores en su sitio + alertas por playa), luego 79 €/mes o 690 €/año. Todo en línea, a su ritmo — aquí está el estado real de sus playas, y activa la prueba en un clic.`,
       ctaText: 'Ver mis playas · prueba 30 d',
       orReply: 'O responda simplemente “ok” y le envío la lectura fechada de sus playas.'
     }
   }[L]
+  // Preuve LIVE hedgée pour les marchés USD (EN/ES) : remplace le « 100 % » figé +
+  // les samples/fenêtre en dur (qui se périmaient et violaient le moat). Même source
+  // live que le FR, mêmes 5 qualificatifs obligatoires.
+  if (L === 'en') T.proof = proofEn
+  else if (L === 'es') T.proof = proofEs
   // FR : copy SEGMENTÉE (hôtel = clients / collectivité = ramassage) + preuve LIVE.
-  // Écrase le copy générique figé. EN/ES inchangés (marché USD B2B pas encore live).
   if (L === 'fr') {
     T.proof = proofFr
     if (seg === 'collectivite') {

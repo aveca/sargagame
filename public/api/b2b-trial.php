@@ -48,8 +48,15 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 $name   = substr(preg_replace('/[<>"]/', '', (string)($in['name'] ?? '')), 0, 60);
-$island = strtoupper(preg_replace('/[^A-Za-z]/', '', (string)($in['island'] ?? 'MQ')));
-$island = in_array($island, ['MQ', 'GP'], true) ? $island : 'MQ';
+// Island : EUR (MQ/GP) + USD (florida/puntacana/rivieramaya), même périmètre que la
+// caisse Mollie. Sans les USD, un hôtelier florida/puntacana/rivieramaya retombait sur
+// MQ → email FR vers le mauvais domaine. Normalisation insensible à la casse, inconnu → MQ.
+$islandRaw = strtolower(preg_replace('/[^A-Za-z]/', '', (string)($in['island'] ?? 'mq')));
+$ISLAND_MAP = [
+    'mq' => 'MQ', 'gp' => 'GP',
+    'florida' => 'florida', 'puntacana' => 'puntacana', 'rivieramaya' => 'rivieramaya',
+];
+$island = $ISLAND_MAP[$islandRaw] ?? 'MQ';
 
 // Token Pro 30 jours. host = email (traçabilité) ; le widget ne vérifie que la
 // validité/expiration du jeton, pas une correspondance de domaine.
@@ -59,7 +66,7 @@ $token = sg_widget_sign($email, 30);
 // si l'onglet est fermé. Charge la config (resend_key) sans bloquer si absente en local.
 $cfg = @include __DIR__ . '/mollie-config.php';
 if (!is_array($cfg)) $cfg = [];
-if (function_exists('mol_b2b_trial_email')) { @mol_b2b_trial_email($cfg, $email, $token, $name); }
+if (function_exists('mol_b2b_trial_email')) { @mol_b2b_trial_email($cfg, $email, $token, $name, $island); }
 
 // Best-effort : enregistre le lead via l'action Apps Script EXISTANTE (zéro clasp).
 // Échec silencieux : ne JAMAIS bloquer l'activation de l'essai sur ce log.

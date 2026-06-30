@@ -140,6 +140,19 @@ function proofBlock(proof) {
   </div>`
 }
 
+// Domaine public + langue dérivés de l'island (MÊME mapping que /pro/espace/, mollie.php,
+// mol_b2b_region_brand côté PHP, b2b-cold-outreach.cjs). Les steps essai t30/t33 sont
+// localisés FR/EN/ES (les hôteliers florida/puntacana = EN, rivieramaya = ES) ; sans ça
+// un lead USD recevait un email FR vers sargasses-martinique.com.
+function regionBrand(island) {
+  const i = String(island || '').toLowerCase()
+  if (i === 'florida' || i === 'fl') return { domain: 'sargassummiami.com', lang: 'en', name: 'Florida' }
+  if (i === 'puntacana' || i === 'pc') return { domain: 'sargassumpuntacana.com', lang: 'en', name: 'Punta Cana' }
+  if (i === 'rivieramaya' || i === 'rm') return { domain: 'sargassumcancun.com', lang: 'es', name: 'Cancún' }
+  if (i === 'gp') return { domain: 'sargasses-guadeloupe.com', lang: 'fr', name: 'Guadeloupe' }
+  return { domain: 'sargasses-martinique.com', lang: 'fr', name: 'Martinique' }
+}
+
 // ── Builders par étape (FR ; léger swap hôtel ↔ collectivité) ──
 function build(step, sub, ctx) {
   const isColl = sub.source === 'b2b_collectivite_request' || sub.source === 'b2b_territoire'
@@ -242,6 +255,104 @@ function build(step, sub, ctx) {
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
   }
+
+  // ── Essai : J+30 (jour d'expiration) et J+33 (J+2 après, dernière chance) ──
+  // Réutilise la mécanique de t27 : mêmes CTA (paylink annuel + /pro/espace/ mensuel),
+  // même idempotence drip-b2b-sent.json. Localisé FR/EN/ES selon l'island (USD inclus).
+  // Copy POSITIVE (mener par le statut/gain) + fiabilité hedgée vers la page honnêteté.
+  if (step === 't30' || step === 't33') {
+    const rb = regionBrand(sub.island)
+    const dom = rb.domain
+    const lang = rb.lang
+    const payUrl = payUrlFor('pro') || `https://${dom}/pro/espace/`
+    const espace = `https://${dom}/pro/espace/`
+    // Page honnêteté localisée + bande hedgée (jamais un « 100 % » nu).
+    const relPath = lang === 'en' ? '/reliability/' : lang === 'es' ? '/fiabilidad/' : '/fiabilite/'
+    const relUrl = `https://${dom}${relPath}`
+    const relBand = lang === 'en'
+      ? `measured by satellite, audited by regime (≈ 76% to 79% depending on the season; rare calm-season alerts flagged low-confidence) on <a href="${relUrl}" style="color:#0D7C66">${relPath}</a>`
+      : lang === 'es'
+      ? `medido por satélite, auditado por régimen (≈ 76 % a 79 % según la temporada; las raras alertas de temporada calmada en baja confianza) en <a href="${relUrl}" style="color:#0D7C66">${relPath}</a>`
+      : `mesuré au satellite, audité par régime (≈ 76 % à 79 % selon la saison ; les rares alertes de saison calme en faible confiance) sur <a href="${relUrl}" style="color:#0D7C66">${relPath}</a>`
+    // « vos plages » localisé pour le sous-titre d'en-tête (beaches est FR par défaut).
+    const beachesLoc = lang === 'en' ? (isColl ? 'your beaches' : 'your beach')
+      : lang === 'es' ? (isColl ? 'sus playas' : 'su playa') : beaches
+    const watched = lang === 'en' ? 'watched every morning' : lang === 'es' ? 'vigiladas cada mañana' : 'veillées chaque matin'
+
+    if (step === 't30') {
+      // Jour d'expiration : positif — « gardez la veille allumée », pas la peur.
+      const T = lang === 'en' ? {
+        sub: `Today, keep your watch on`,
+        hdr1: 'Your trial ends today', hdr2: 'Le Veilleur · Coastal watch',
+        l1: `For ~30 days, your widget has watched the sea for you — beach by beach, the day's verdict on your site, alerts the moment the sea turns. You became the one who knows how the story ends before your guests do.`,
+        l2: `Nothing here was invented: ${relBand}. Money never touches that figure.`,
+        l3: `<strong>Today the trial closes.</strong> Keep the watch on, without a gap — stay the one who knows first.`,
+        cta: 'Lock in the year — €690',
+        alt: `2 months free vs €79/mo. Prefer to stay flexible? <a href="${espace}" style="color:#0D7C66">Switch to €79/mo monthly</a> from your dashboard — cancel anytime.`,
+      } : lang === 'es' ? {
+        sub: `Hoy, mantenga su vigilancia encendida`,
+        hdr1: 'Su prueba termina hoy', hdr2: 'Le Veilleur · Vigilancia costera',
+        l1: `Durante ~30 días, su widget vigiló el mar por usted — playa por playa, el veredicto del día en su sitio, alertas en cuanto el mar cambia. Se convirtió en quien conoce el final de la historia antes que sus huéspedes.`,
+        l2: `Nada se inventó aquí: ${relBand}. El dinero nunca toca esa cifra.`,
+        l3: `<strong>Hoy la prueba se cierra.</strong> Mantenga la vigilancia encendida, sin interrupción — siga siendo quien lo sabe primero.`,
+        cta: 'Asegurar el año — 690 €',
+        alt: `2 meses gratis vs 79 €/mes. ¿Prefiere flexibilidad? <a href="${espace}" style="color:#0D7C66">Pase a 79 €/mes mensual</a> desde su espacio — cancele cuando quiera.`,
+      } : {
+        sub: `Aujourd'hui, gardez votre veille allumée`,
+        hdr1: 'Votre essai se termine aujourd\'hui', hdr2: 'Le Veilleur · Veille côtière',
+        l1: `Depuis ~30 jours, votre widget regarde la mer pour vous — plage par plage, le verdict du jour sur votre site, l'alerte dès que la mer bascule. Vous êtes devenu celui qui connaît la fin de l'histoire avant ses invités.`,
+        l2: `Rien ici n'a été inventé : ${relBand}. L'argent ne touche jamais ce chiffre.`,
+        l3: `<strong>Aujourd'hui, l'essai se ferme.</strong> Gardez la veille allumée, sans interruption — restez celui qui sait le premier.`,
+        cta: 'Verrouiller l\'année — 690 €',
+        alt: `2 mois offerts vs 79 €/mois. Vous préférez rester souple ? <a href="${espace}" style="color:#0D7C66">Passez en mensuel à 79 €/mois</a> depuis votre espace — résiliable à tout moment.`,
+      }
+      const inner = `${brandHeader(T.hdr1, T.hdr2, `${beachesLoc}, ${watched}`)}
+    <div style="background:#fff;padding:24px 20px">
+      <div style="font-size:15px;color:#333;line-height:1.6">${T.l1}</div>
+      <div style="font-size:13.5px;color:#555;line-height:1.6;margin-top:12px">${T.l2}</div>
+      <div style="font-size:15px;color:#0D1E1C;line-height:1.6;margin-top:14px">${T.l3}</div>
+      <div style="text-align:center;margin-top:18px">${cta(T.cta, payUrl)}</div>
+      <div style="font-size:13px;color:#666;margin-top:12px;text-align:center;line-height:1.55">${T.alt}</div>
+    </div>`
+      return { subject: T.sub, html: shell(inner, rb.name, dom, sub.email, island) }
+    }
+
+    // step === 't33' : J+2 après expiration — réactivation, dernière relance positive.
+    const T = lang === 'en' ? {
+      sub: `Your watch is one click from coming back`,
+      hdr1: 'Reactivate your watch', hdr2: 'Le Veilleur · Coastal watch',
+      l1: `Your trial closed two days ago — the widget and the per-beach alerts went quiet. The sea didn't: it's exactly off-season, late summer, when an episode lands while no one's watching.`,
+      l2: `You don't have to start over: one click brings your watch back, beach by beach, with the 7-day forecast — ${relBand}.`,
+      l3: `Be again the one who knows how the story ends before your guests.`,
+      cta: 'Turn my watch back on — €690/yr',
+      alt: `Rather stay flexible? <a href="${espace}" style="color:#0D7C66">Reactivate at €79/mo monthly</a> — cancel anytime, fully self-serve.`,
+    } : lang === 'es' ? {
+      sub: `Su vigilancia vuelve con un clic`,
+      hdr1: 'Reactive su vigilancia', hdr2: 'Le Veilleur · Vigilancia costera',
+      l1: `Su prueba se cerró hace dos días — el widget y las alertas por playa se apagaron. El mar no: es justo temporada baja, fin de verano, cuando un episodio llega sin que nadie mire.`,
+      l2: `No tiene que empezar de cero: un clic devuelve su vigilancia, playa por playa, con el pronóstico a 7 días — ${relBand}.`,
+      l3: `Vuelva a ser quien conoce el final de la historia antes que sus huéspedes.`,
+      cta: 'Reactivar mi vigilancia — 690 €/año',
+      alt: `¿Prefiere flexibilidad? <a href="${espace}" style="color:#0D7C66">Reactive a 79 €/mes mensual</a> — cancele cuando quiera, todo en autoservicio.`,
+    } : {
+      sub: `Votre veille revient en un clic`,
+      hdr1: 'Réactivez votre veille', hdr2: 'Le Veilleur · Veille côtière',
+      l1: `Votre essai s'est fermé il y a deux jours — le widget et les alertes par plage se sont tus. La mer, non : c'est justement l'arrière-saison, fin d'été, quand un épisode frappe alors que plus personne ne regarde.`,
+      l2: `Pas besoin de tout recommencer : un clic rallume votre veille, plage par plage, avec la prévision 7 jours — ${relBand}.`,
+      l3: `Redevenez celui qui connaît la fin de l'histoire avant ses invités.`,
+      cta: 'Rallumer ma veille — 690 €/an',
+      alt: `Vous préférez rester souple ? <a href="${espace}" style="color:#0D7C66">Réactivez en mensuel à 79 €/mois</a> — résiliable à tout moment, 100 % en libre-service.`,
+    }
+    const inner = `${brandHeader(T.hdr1, T.hdr2, `${beachesLoc}, ${watched}`)}
+    <div style="background:#fff;padding:24px 20px">
+      <div style="font-size:15px;color:#333;line-height:1.6">${T.l1}</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">${T.l2}</div>
+      <div style="font-size:15px;color:#0D1E1C;line-height:1.6;margin-top:14px">${T.l3}</div>
+      <div style="text-align:center;margin-top:18px">${cta(T.cta, payUrl)}</div>
+      <div style="font-size:13px;color:#666;margin-top:12px;text-align:center;line-height:1.55">${T.alt}</div>
+    </div>`
+    return { subject: T.sub, html: shell(inner, rb.name, dom, sub.email, island) }
+  }
   return null
 }
 
@@ -250,8 +361,13 @@ const STEPS = [
   { key: 'b2', days: 2 },
   { key: 'b6', days: 6 },
   { key: 'b13', days: 13 },
-  // Essai (source b2b_trial). t27 = relance conversion à J+27, avant l'expiration J+30.
+  // Essai (source b2b_trial). Séquence de conversion autour de l'expiration J+30 :
+  //   t27 = relance avant expiration · t30 = jour d'expiration (« gardez la veille
+  //   allumée ») · t33 = J+2 après (réactivation/dernière chance). Sans t30/t33,
+  //   l'essai mourait en silence à J+30. Tous localisés FR/EN/ES (regionBrand).
   { key: 't27', days: 27, trial: true },
+  { key: 't30', days: 30, trial: true },
+  { key: 't33', days: 33, trial: true },
 ]
 
 async function trackToSheet(data) {

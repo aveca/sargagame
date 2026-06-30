@@ -16,6 +16,39 @@ import {
   track, walletAvail
 } from "./Sargasses_PROD.jsx"
 
+// useModalA11y — plancher a11y des modales du chemin de l'argent (paywall B2C + B2BModal).
+// Plancher dur CLAUDE.md : role=dialog (posé inline sur le panel) + Échap + focus-trap +
+// restauration du focus au close. Léger (zéro dep — ce chunk est budget-sensible), même
+// esprit que les modales de ChasseHome (Escape + focus initial) mais avec un VRAI piège Tab.
+// - panelRef : ref du conteneur du dialog (où vivent les éléments focusables).
+// - onClose : appelé sur Échap (passe `false` à `escClose` si l'Échap est déjà géré ailleurs,
+//   ex. PremiumModal a son propre handler tracké → on ne double pas le close).
+function useModalA11y(panelRef,onClose,escClose=true){
+  useEffect(()=>{
+    const panel=panelRef.current
+    const prevFocus=(typeof document!=="undefined"&&document.activeElement)||null
+    const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    const focusables=()=>panel?Array.prototype.filter.call(panel.querySelectorAll(SEL),el=>el.offsetParent!==null||el===document.activeElement):[]
+    // Focus initial DANS le dialog (1er focusable) sans voler le focus à un champ déjà actif.
+    try{if(panel&&!panel.contains(document.activeElement)){const f=focusables();(f[0]||panel).focus&&(f[0]||panel).focus()}}catch(_){}
+    const onKey=e=>{
+      // Si un AUTRE dialog est ouvert PAR-DESSUS ce panel (ex. B2BModal au-dessus du paywall),
+      // ne pas piéger : la cible vit dans un dialog distinct → on laisse le dialog du dessus gérer.
+      const inOther=(()=>{try{const t=e.target;const d=t&&t.closest&&t.closest('[role="dialog"][aria-modal="true"]');return d&&panel&&d!==panel&&!panel.contains(d)}catch(_){return false}})()
+      if(e.key==="Escape"){if(escClose&&!inOther){e.stopPropagation();onClose&&onClose()}return}
+      if(e.key!=="Tab"||!panel||inOther)return
+      const f=focusables();if(!f.length){e.preventDefault();return}
+      const first=f[0],last=f[f.length-1],a=document.activeElement
+      if(e.shiftKey&&(a===first||!panel.contains(a))){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",onKey,true)
+    return()=>{document.removeEventListener("keydown",onKey,true)
+      try{prevFocus&&prevFocus.focus&&prevFocus.focus()}catch(_){}}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+}
+
 // B2BModal — OFFRE PRO réelle et chiffrée (pivot B2B, juin 2026). 3 tiers (Widget
 // gratuit / Pro Alertes 79€/mois / Territoire sur devis). Capture d'INTENTION HAUTE
 // (pas juste « brief gratuit ») : le pro choisit un tier payant → on enregistre
@@ -65,6 +98,8 @@ function TerritoireMeeting({lang,email,org}){
 }
 
 function B2BModal({lang,onClose}){
+  const dlgRef=useRef(null)
+  useModalA11y(dlgRef,onClose)   // role/aria-modal posés sur le panel ; Échap + focus-trap + restauration
   const [tier,setTier]=useState("pro")
   const [email,setEmail]=useState("")
   const [org,setOrg]=useState("")
@@ -119,7 +154,7 @@ function B2BModal({lang,onClose}){
   }
   return(
     <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",
+      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Offre Pro — Hôtels & collectivités","Pro offer — Hotels & towns","Oferta Pro — Hoteles y municipios")} onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",
         background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
         border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",
         fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>
@@ -917,12 +952,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     if(dy>60)onClose()
     else if(panelRef.current){panelRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";panelRef.current.style.transform="";setTimeout(()=>{if(panelRef.current)panelRef.current.style.transition=""},300)}
   }
-  // Escape key to close
+  // Escape key to close (close TRACKÉ → géré ici, pas dans useModalA11y : escClose=false)
   useEffect(()=>{
     const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
+  // a11y plancher : focus-trap (Tab piégé dans le panel) + restauration du focus au close.
+  // Échap déjà géré juste au-dessus (tracké) → escClose=false pour ne pas doubler onClose.
+  useModalA11y(panelRef,onClose,false)
   // Annuel par défaut (best practice SaaS : AOV +60%, churn plus bas, cash
   // upfront) quand un lien annuel existe — sinon mensuel. Le badge -33% et le
   // prix /mois équivalent vendent l'annuel sans forcer l'user à diviser.
@@ -1639,7 +1677,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     let _nextDeg=null
     if(_fc&&_fc.length>=2){const RANK={clean:0,moderate:1,avoid:2};const _t0=RANK[_fc[0]?.status]??0;for(let i=1;i<=5&&i<_fc.length;i++){const r=RANK[_fc[i]?.status];if(r!=null&&r>_t0){try{const dow=new Date((_fc[i].date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"});_nextDeg={when:dow,status:_fc[i].status}}catch(_){}break}}}
     return(
-      <div style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Alerte sargasses","Sargassum alert","Alerta de sargazo")} style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
         <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">
           <defs>
             <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#6a2f9e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>
@@ -1720,7 +1758,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   return(
     <>
       <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
-      <div ref={panelRef} className="sg-modal-panel" onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
+      <div ref={panelRef} className="sg-modal-panel" role="dialog" aria-modal="true" aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")} onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         // Refonte CONTINUATION DE SCÈNE (arm constellation = défaut) : le golden-hour
         // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium

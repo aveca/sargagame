@@ -355,6 +355,15 @@ function buildJ3(island, brief, email) {
     `La seule prévision 7 jours, plage par plage, ${meta.inRegion} — fiable à 3 jours, tendance jusqu'à 7.`,
     `The only beach-by-beach 7-day forecast ${meta.inRegion} — solid to day 3, trend through day 7.`,
     `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
+  // Honnêteté auditée = preuve (défaut #4 : le drip B2C ne citait jamais /fiabilite/).
+  // Forme HEDGÉE obligatoire : plancher ~76 % tous régimes, jamais un « 100 % » nu.
+  // Route localisée au build (reliability-page.cjs) : /fiabilite/ FR · /reliability/ EN · /fiabilidad/ ES.
+  const relPath = lang === 'en' ? 'reliability' : lang === 'es' ? 'fiabilidad' : 'fiabilite'
+  const proofLine = t(
+    `Avant de payer, allez voir ce qu'on vaut vraiment : on publie nos erreurs — ~76 % de verdicts justes tous régimes confondus (jusqu'à 79 % en saison calme), dates et comparaisons à l'appui.`,
+    `Before you pay, see what we're really worth: we publish our misses — ~76% of verdicts right across all conditions (up to 79% in calm season), with dates and comparisons.`,
+    `Antes de pagar, mira lo que valemos de verdad: publicamos nuestros errores — ~76 % de veredictos acertados en todas las condiciones (hasta 79 % en temporada tranquila), con fechas y comparaciones.`)
+  const proofCta = t('Voir notre fiabilité', 'See our reliability', 'Ver nuestra fiabilidad')
   // NO_TRIAL partout (MQ/GP inclus depuis a9b3cf4e) : aucune promesse d'essai sur
   // une surface de paiement (cf. litige Stripe « copie trompeuse »). La réassurance
   // = paiement unique / sans abonnement (garantie 30j volontaire RETIRÉE 2026-06-29).
@@ -385,6 +394,10 @@ function buildJ3(island, brief, email) {
     <div style="font-size:13px;color:#686868;line-height:1.5;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0">
       ${monopole}
     </div>
+    <div style="font-size:12.5px;color:#686868;line-height:1.55;margin-top:14px;padding:12px 14px;background:#F7F5EF;border:1px solid #ECE7DA;border-radius:10px">
+      ${proofLine}
+      <div style="margin-top:8px"><a href="https://${domain}/${relPath}/?utm_source=email&utm_medium=drip_j3&utm_content=proof" style="color:#E89400;font-weight:700;text-decoration:none">${proofCta} →</a></div>
+    </div>
     <div style="text-align:center;margin-top:20px">
       ${ctaButton(ctaText, ctaHref)}
       <div style="font-size:11px;color:#999;margin-top:8px">${reassurance}</div>
@@ -407,12 +420,12 @@ function buildJ7(island, cleanCount, email, brief) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Arr\u00EAte de v\u00E9rifier', `On surveille ${cleanCount} plages pour toi`)}
+  ${header('Le copain qui ne se trompe jamais de crique', `On surveille ${cleanCount} plages pour toi`)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
       ${IS_HIGH_SEASON
-        ? `\u00C7a fait une semaine que tu v\u00E9rifies la carte. Les sargasses bougent vite en ce moment. Et si on te pr\u00E9venait <strong>avant</strong> que tu partes\u00A0?`
-        : `\u00C7a fait une semaine que tu utilises la carte. Et si tu n'avais <strong>plus besoin de l'ouvrir</strong>\u00A0?`}
+        ? `Une semaine que tu suis la carte. Deviens <strong>celui qui conna\u00EEt la fin de l'histoire</strong>\u00A0: on te dit la bonne plage chaque matin, et on te pr\u00E9vient si elle change avant que tu partes.`
+        : `Une semaine que tu suis la carte. Deviens <strong>celui qui ne se trompe jamais de crique</strong>\u00A0: le verdict du jour t'arrive avant le caf\u00E9, sans rien ouvrir.`}
     </div>
 
     <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Voil\u00E0 ce que tu recevrais</div>
@@ -477,13 +490,13 @@ function buildJ14(island, cleanCount, email, brief) {
   const seasonStart = new Date(now.getFullYear(), 3, 20) // ~20 April
   const daysToSeason = Math.max(0, Math.ceil((seasonStart - now) / (1000 * 60 * 60 * 24)))
   const urgencyLine = daysToSeason > 0
-    ? `La saison sargasses commence dans <strong>${daysToSeason} jours</strong>. Apr\u00E8s, les plages changent chaque jour.`
-    : `La saison sargasses est l\u00E0. Les plages changent <strong>chaque jour</strong>.`
+    ? `La saison sargasses commence dans <strong>${daysToSeason} jours</strong> \u2014 le bon moment pour prendre une longueur d'avance.`
+    : `On est en pleine saison \u2014 la plage du jour, c'est exactement \u00E0 \u00E7a qu'on sert.`
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Ne d\u00E9couvre pas \u00E7a sur la plage', `${cleanCount} plages propres \u2014 pour l'instant`)}
+  ${header('Deviens celui qui conna\u00EEt la fin de l\u2019histoire', `${cleanCount} plages propres aujourd\u2019hui`)}
   <div style="background:#fff;padding:24px 20px">
 
     <div style="background:rgba(232,82,42,.06);border:1px solid rgba(232,82,42,.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#C0392B;line-height:1.5">
@@ -491,10 +504,10 @@ function buildJ14(island, cleanCount, email, brief) {
     </div>
 
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Imagine : tu arrives à ${best} samedi avec les enfants. Sargasses partout. Weekend gâché.
+      Samedi, tu pr\u00E9vois ${best} avec les enfants. Vendredi soir, ton <strong>veilleur personnel</strong> te dit : \u00AB\u00A0\u00E7a bascule, va plut\u00F4t \u00E0 ${alt}\u00A0\u00BB. Tu arrives sur le sable, c\u2019est propre.
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Ton <strong>veilleur personnel</strong> t'aurait prévenu dès vendredi soir. Tu aurais changé pour ${alt}. Weekend sauvé.
+      C\u2019est \u00E7a, \u00EAtre <strong>le copain qui ne se trompe jamais de crique</strong> : tu connais la fin de l\u2019histoire avant tout le monde.
     </div>
 
     <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
@@ -593,13 +606,13 @@ function buildJ7Region(island, brief, email) {
   const sw = s => STATUS_LOC[lang][s] || s || ''
 
   const watchedLine = t(
-    `You've been checking the map for a week. Sargassum moves fast right now. What if we warned you <strong>before</strong> you head out?`,
-    `Llevas una semana revisando el mapa. El sargazo se mueve rápido ahora. ¿Y si te avisáramos <strong>antes</strong> de salir?`)
+    `A week of checking the map. Become <strong>the one who knows how the story ends</strong>: your best beach every morning, and a heads-up if it changes before you head out.`,
+    `Una semana revisando el mapa. Conviértete en <strong>quien sabe cómo termina la historia</strong>: tu mejor playa cada mañana, y un aviso si cambia antes de salir.`)
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(t('Stop checking', 'Deja de revisar'), t(`We watch ${brief.totalCount} beaches for you`, `Vigilamos ${brief.totalCount} playas por ti`), lang)}
+  ${header(t('The friend who always picks the right beach', 'El amigo que siempre acierta con la playa'), t(`We watch ${brief.totalCount} beaches for you`, `Vigilamos ${brief.totalCount} playas por ti`), lang)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">${watchedLine}</div>
 
@@ -659,13 +672,13 @@ function buildJ14Region(island, brief, email) {
   const price = (brief.pricing && brief.pricing.monthly) || '$9.99'
   const altName = brief.alt || best.name
   const urgencyLine = IS_HIGH_SEASON
-    ? t('Sargassum season is on. Beaches change <strong>every day</strong>.', 'La temporada de sargazo está activa. Las playas cambian <strong>cada día</strong>.')
-    : t('Sargassum can land overnight. Beaches change <strong>without warning</strong>.', 'El sargazo puede llegar de un día a otro. Las playas cambian <strong>sin aviso</strong>.')
+    ? t('Sargassum season is on — the perfect time to stay one step ahead.', 'La temporada de sargazo está activa — el momento ideal para ir un paso por delante.')
+    : t('Beaches shift fast — the daily verdict is exactly what it’s for.', 'Las playas cambian rápido — para eso sirve el veredicto del día.')
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(t("Don't find out on the beach", 'No lo descubras en la playa'), t(`${brief.cleanCount} clean beaches — for now`, `${brief.cleanCount} playas limpias — por ahora`), lang)}
+  ${header(t('Be the one who knows how the story ends', 'Sé quien sabe cómo termina la historia'), t(`${brief.cleanCount} clean beaches today`, `${brief.cleanCount} playas limpias hoy`), lang)}
   <div style="background:#fff;padding:24px 20px">
 
     <div style="background:rgba(232,82,42,.06);border:1px solid rgba(232,82,42,.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#C0392B;line-height:1.5">
@@ -673,12 +686,12 @@ function buildJ14Region(island, brief, email) {
     </div>
 
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      ${t(`Picture it: you get to ${best.name} on Saturday, towels and kids in tow. Sargassum everywhere. Day ruined.`,
-          `Imagínalo: llegas a ${best.name} el sábado con toallas y niños. Sargazo por todas partes. Día arruinado.`)}
+      ${t(`Saturday you’re heading to ${best.name} with the kids. Friday night your <strong>sargassum watcher</strong> says: “it’s shifting, go to ${altName} instead.” You hit the sand — it’s clean.`,
+          `El sábado vas a ${best.name} con los niños. El viernes por la noche tu <strong>vigía del sargazo</strong> te dice: «está cambiando, mejor ve a ${altName}». Llegas a la arena — está limpia.`)}
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      ${t(`With the <strong>sargassum watcher</strong>, you'd have known Friday night — and switched to ${altName}. Day saved.`,
-          `Con el <strong>vigía del sargazo</strong>, lo habrías sabido el viernes por la noche — y habrías ido a ${altName}. Día salvado.`)}
+      ${t(`That’s being <strong>the friend who always picks the right cove</strong> — you know how the story ends before everyone else.`,
+          `Eso es ser <strong>el amigo que siempre acierta con la playa</strong> — sabes cómo termina la historia antes que nadie.`)}
     </div>
 
     <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
@@ -741,19 +754,19 @@ function getSubject(step, island, cleanCount, brief) {
   if (rMeta && rMeta.regionId && brief) {
     const t = (en, es) => rMeta.lang === 'es' ? es : en
     if (step === 'j7') return IS_HIGH_SEASON
-      ? t('Tired of checking the map? 😴 Let me do it.', '\u00BFSintiendo cansancio de revisar el mapa? 😴 Yo lo hago por ti.')
-      : t('What if you never had to open the map again?', '\u00BFY si no tuvieras que abrir el mapa?')
+      ? t('🌅 Be the one who knows how the story ends', '🌅 Sé quien sabe cómo termina la historia')
+      : t('🌅 The friend who always picks the right cove', '🌅 El amigo que siempre acierta con la playa')
     if (step === 'j14') return IS_HIGH_SEASON
-      ? t(`The satellite saw something... 🛰️ (at ${brief.best.name})`, `El sat\u00E9lite vio algo... 🛰️ (en ${brief.best.name})`)
-      : t("Don't find out on the beach", 'No lo descubras en la playa')
+      ? t(`🛰️ The satellite saw something for your weekend (at ${brief.best.name})`, `🛰️ El sat\u00E9lite vio algo para tu finde (en ${brief.best.name})`)
+      : t('🌅 The right beach, always — without thinking about it', '🌅 La playa correcta, siempre — sin pensarlo')
   }
   switch (step) {
     case 'j7':  return IS_HIGH_SEASON
-      ? `Marre de vérifier la carte ? 😴 Laisse-moi faire.`
-      : `Et si tu n'avais plus besoin d'ouvrir la carte ?`
+      ? `🌅 Deviens celui qui connaît la fin de l'histoire`
+      : `🌅 Le copain qui ne se trompe jamais de crique`
     case 'j14': return IS_HIGH_SEASON
-      ? `Le satellite a vu quelque chose... 🛰️ (pour ton weekend)`
-      : `Ne découvre pas les sargasses sur la plage`
+      ? `🛰️ Le satellite a vu quelque chose pour ton weekend`
+      : `🌅 La bonne plage, toujours — sans y penser`
     case 'j21': return `Ton Pass Veilleur : paiement unique, accès immédiat`
   }
 }
@@ -772,9 +785,9 @@ function getPreheader(step, island) {
     "Save 5 minutes every morning. Activate your personal watcher.",
     "Gana 5 minutos cada mañana. Activa tu vigía personal.")
   if (step === 'j14') return t(
-    "Le weekend gâché — ou évité d'un coup d'œil vendredi soir. À toi de voir.",
-    "A ruined weekend — or one glance Friday night that saves it. Your call.",
-    "Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.")
+    "Vendredi soir, tu sais déjà où poser la serviette samedi.",
+    "Friday night, you already know where to lay your towel Saturday.",
+    "El viernes ya sabes dónde poner la toalla el sábado.")
   if (step === 'j21') return t(
     "Paiement unique, sans abonnement. Accès immédiat, rien à résilier.",
     "One-time, no subscription. Instant access, nothing to cancel.",
