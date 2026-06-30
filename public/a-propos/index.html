@@ -113,7 +113,7 @@
 
   /* ---------- topbar ---------- */
   .tb{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--sg-border-m);background:var(--sg-bg)}
-  .tb-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sg-ink);font-weight:600;text-decoration:none}
+  .tb-back{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;color:var(--sg-ink);font-weight:600;text-decoration:none}
   .tb-lang{display:flex;gap:4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--sg-mid)}
   .tb-lang b{color:var(--sg-ink)}
 
@@ -125,7 +125,7 @@
     repeating-linear-gradient(0deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px),
     repeating-linear-gradient(90deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px);
     pointer-events:none;mask:radial-gradient(80% 60% at 50% 30%,#000 30%,transparent 70%)}
-  .hero-eyebrow{position:relative;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .hero-eyebrow{position:relative;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:16px;display:flex;align-items:center;gap:8px}
   .hero-eyebrow::before{content:"";width:18px;height:1px;background:var(--sg-teal)}
   .hero h1{position:relative;font-family:var(--sg-font-display);font-weight:900;font-size:40px;line-height:.98;letter-spacing:-.025em;margin:0 0 18px;color:var(--sg-ink);text-transform:uppercase}
   .hero h1 em{font-style:normal;color:var(--sg-gold);font-family:var(--sg-font-display);position:relative}
@@ -137,7 +137,7 @@
   /* ---------- section chrome ---------- */
   section{padding:40px 24px;border-top:1px solid var(--sg-border-m)}
   .sec-num{font-family:var(--sg-font-mono);font-size:10px;color:var(--sg-mid);letter-spacing:.1em}
-  .sec-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:14px}
+  .sec-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:14px}
   .sec-h{font-family:var(--sg-font-display);font-size:28px;line-height:1.02;letter-spacing:-.02em;margin:0 0 6px;text-transform:uppercase}
   .sec-sub{font-size:13px;color:var(--sg-mid);margin:0 0 24px;line-height:1.55}
 
@@ -147,7 +147,7 @@
   .src-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
   .src-name{font-size:15px;font-weight:800;letter-spacing:-.01em}
   .src-org{font-size:10px;color:var(--sg-mid);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
-  .src-badge{font-family:var(--sg-font-mono);font-size:9px;letter-spacing:.08em;padding:4px 7px;border-radius:4px;background:var(--sg-teal-bg);color:var(--sg-teal);font-weight:700;white-space:nowrap}
+  .src-badge{font-family:var(--sg-font-mono);font-size:9px;letter-spacing:.08em;padding:4px 7px;border-radius:4px;background:var(--sg-teal-bg);color:#00786C;font-weight:700;white-space:nowrap}
   .src-desc{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:0 0 14px}
   .src-meta{display:flex;align-items:center;gap:12px;font-size:10.5px;color:var(--sg-mid);border-top:1px dashed var(--sg-border-m);padding-top:10px}
   .src-meta b{color:var(--sg-ink);font-weight:700}
@@ -170,7 +170,7 @@
   .team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--sg-gold-ll),var(--sg-gold));display:flex;align-items:center;justify-content:center;font-family:var(--sg-font-display);font-size:28px;color:var(--sg-night);flex-shrink:0;position:relative}
   .team-avatar::after{content:"";position:absolute;inset:-4px;border:1px dashed var(--sg-gold);border-radius:50%;opacity:.5}
   .team-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
-  .team-role{font-size:11px;color:var(--sg-teal);font-weight:700;letter-spacing:.04em;margin-top:2px;text-transform:uppercase}
+  .team-role{font-size:11px;color:#00786C;font-weight:700;letter-spacing:.04em;margin-top:2px;text-transform:uppercase}
   .team-bio{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:10px 0 0}
   .team-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
   .team-tag{font-size:10px;padding:3px 8px;background:var(--sg-gold-bg);color:#8a6a00;border-radius:var(--sg-r-pill);font-weight:600}
@@ -191,7 +191,7 @@
   /* ---------- guarantee ---------- */
   .g-grid{display:grid;gap:10px}
   .g{display:flex;gap:14px;padding:18px;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);align-items:flex-start}
-  .g-icon{width:36px;height:36px;border-radius:50%;background:var(--sg-teal-bg);color:var(--sg-teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:800}
+  .g-icon{width:36px;height:36px;border-radius:50%;background:var(--sg-teal-bg);color:#00786C;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:800}
   .g-title{font-size:14px;font-weight:800;letter-spacing:-.01em}
   .g-desc{font-size:12px;color:var(--sg-mid);margin-top:3px;line-height:1.5}
 
@@ -371,7 +371,7 @@
         </div>
       </div>
     </div>
-    <p class="team-note">L'app est opérée depuis la Martinique, serveurs en France (OVH Paris). RGPD-ready · aucune revente de données · aucun tracker publicitaire.</p>
+    <p class="team-note">L'app est opérée depuis la Martinique, serveurs en France (OVH Paris). RGPD-ready · aucune revente de données · aucun tracker publicitaire (mesure d'audience anonyme uniquement).</p>
   </section>
 
   <!-- TESTIMONIALS -->
@@ -380,7 +380,7 @@
     <div class="sec-label">Preuve</div>
     <h2 class="sec-h">On ne fabrique pas d'avis.</h2>
     <p class="sec-sub">Beaucoup de sites affichent de faux témoignages. Nous, non. Juge-nous sur ce qui est mesurable : la méthode ci-dessus, et la fiabilité publiée — recalculée chaque jour, échantillon et dates compris.</p>
-    <p style="margin-top:16px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:var(--sg-gold);font-weight:700;text-decoration:none">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
+    <p style="margin-top:16px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#8A6A00;font-weight:700;text-decoration:underline;text-underline-offset:3px">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
     <p style="margin-top:8px"><a href="/recherche/" style="display:inline-flex;align-items:center;gap:7px;color:var(--sg-mid);font-weight:700;text-decoration:none">Espace recherche &amp; données ouvertes → /recherche/</a></p>
   </section>
 

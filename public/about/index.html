@@ -12,12 +12,12 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
-  :root{--bg:#FDFCF7;--ink:#0D0D0D;--card:#FFFFFF;--night:#10231E;--night-2:#0D1E1C;--gold:#FFC72C;--gold-d:#E8A800;--teal:#009E8E;--mut:#5E5E5E;--line:rgba(0,0,0,.08);--font-display:'Anton','Bricolage Grotesque',system-ui,sans-serif;--font-body:'Bricolage Grotesque',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  :root{--bg:#FDFCF7;--ink:#0D0D0D;--card:#FFFFFF;--night:#10231E;--night-2:#0D1E1C;--gold:#FFC72C;--gold-d:#E8A800;--teal:#00786C;--mut:#5E5E5E;--line:rgba(0,0,0,.08);--font-display:'Anton','Bricolage Grotesque',system-ui,sans-serif;--font-body:'Bricolage Grotesque',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.65}
   .page{max-width:560px;margin:0 auto;padding:0 22px calc(40px + env(safe-area-inset-bottom))}
   .tb{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 0 14px}
-  .tb a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;opacity:.85}
+  .tb a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;opacity:.85}
   .wordmark{font-weight:800;font-size:11px;letter-spacing:.16em;color:var(--mut)}
   h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
   h1 em{font-style:normal;color:var(--gold-d)}
@@ -36,7 +36,8 @@
   ul.credits a{color:var(--teal);text-decoration:none;font-weight:600}
   .foot{margin-top:54px;margin-left:-22px;margin-right:-22px;padding:30px 22px calc(34px + env(safe-area-inset-bottom));background:radial-gradient(120% 160% at 12% -30%,rgba(255,199,44,.12),transparent 58%),linear-gradient(158deg,var(--night) 0%,var(--night-2) 100%);text-align:center;font-size:11.5px;color:rgba(255,255,255,.5)}
   .cta{display:inline-block;margin-top:18px;background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#0D1E1C;font-weight:800;font-size:14.5px;padding:14px 24px;border-radius:14px;text-decoration:none;box-shadow:0 8px 22px rgba(232,168,0,.3)}
-  .vlink{display:inline-block;margin-top:14px;color:var(--teal);text-decoration:none;font-size:13px;font-weight:700}
+  .vlink{display:inline-block;margin-top:14px;color:var(--teal);text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
+  .sig{font-style:italic;color:var(--gold);font-size:13.5px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -45,6 +46,7 @@
 
   <h1><span data-i="h1a">Why</span> <em data-i="h1b">trust</em> <span data-i="h1c">us</span></h1>
   <p class="lead" data-i="lead">No opinions, no promises — measurements. Here is exactly how every verdict on this site is made.</p>
+  <p class="lead" style="margin-top:14px" data-i="story"></p>
 
   <section>
     <div class="lbl" data-i="l1"></div>
@@ -84,6 +86,7 @@
   </section>
 
   <footer class="foot" style="line-height:1.85">
+    <div class="sig" data-i="sig"></div>
     <nav style="margin-bottom:9px">
       <a id="lk-terms" style="color:inherit;text-decoration:underline;text-underline-offset:2px;margin:0 7px"></a>
       <a id="lk-privacy" style="color:inherit;text-decoration:underline;text-underline-offset:2px;margin:0 7px"></a>
@@ -113,7 +116,9 @@ g2t:'A pass, not a subscription',g2s:'One-time payment, from €7.99 / $5.99. No
 g3t:'Secure payment',g3s:'Paid on-site via Mollie (card + Apple Pay). We never see or store your card details. Kept in France (OVH Paris), zero ad trackers, no data resale.',
 cta:'See today’s verdict →',
 l3:'Credits',h2c:'Photos & data',cint:'Beach photos come from official sources, Google Places and Wikimedia Commons contributors:',
-cmore:'Other photos: Google Places, official tourism sources.',fdata:'Data: Copernicus Marine Service'},
+cmore:'Other photos: Google Places, official tourism sources.',fdata:'Data: Copernicus Marine Service',
+story:'It started with a plain question one morning facing the sea: “Is the water clean in front of this beach, right now?” Nobody could answer — so we chose to answer by measurement, not guesswork.',
+sig:'We watch the sea for you.'},
 es:{back:'Volver al mapa',h1a:'Por qué',h1b:'confiar',h1c:'',lead:'Sin opiniones ni promesas — mediciones. Así se hace exactamente cada veredicto de este sitio.',
 l1:'El método',h2m:'Cómo se hace un veredicto',
 m1t:'Satélite Copernicus, 4 pasadas al día',m1s:'Datos oceánicos de Copernicus + NOAA — las mismas fuentes públicas que usan los investigadores. Medido, no adivinado. Cada playa, cada pasada. Si la imagen satelital tiene más de 36h, lo decimos en vez de fingir.',
@@ -127,15 +132,18 @@ g2t:'Un pase, no una suscripción',g2s:'Pago único, desde $5.99. Nada que cance
 g3t:'Pago seguro',g3s:'Pago en el sitio vía Mollie (tarjeta + Apple Pay). Nunca vemos ni guardamos los datos de tu tarjeta. Alojado en Francia (OVH París), sin rastreadores, sin reventa de datos.',
 cta:'Ver el veredicto de hoy →',
 l3:'Créditos',h2c:'Fotos y datos',cint:'Las fotos de playas provienen de fuentes oficiales, Google Places y contribuidores de Wikimedia Commons:',
-cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos: Copernicus Marine Service'},
+cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos: Copernicus Marine Service',
+story:'Empezó con una pregunta simple una mañana frente al mar: “¿El agua está limpia frente a esta playa, ahora mismo?” Nadie sabía responder — así que elegimos responder con mediciones, no con suposiciones.',
+sig:'Miramos el mar por ti.'},
 }[LANG]
 document.documentElement.lang=LANG
 document.getElementById('wm').textContent=SITE
 document.getElementById('wm2').textContent=SITE
-// Page « preuve » : /fiabilite/ sur les domaines FR (sargasses-*), sinon l'espace
-// recherche localisé — ES /investigacion/, EN /research/ (les anciens /reliability/
-// & /fiabilidad/ n'existaient pas → 404 sur les sites USD, désormais corrigés).
-document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':LANG==='es'?'/investigacion/':'/research/'
+// Page « preuve » chiffrée : /fiabilite/ sur les domaines FR (sargasses-*), et la
+// page fiabilité localisée sur les domaines USD — EN /reliability/, ES /fiabilidad/
+// (générées par reliability-page.cjs pour chaque région USD, HTTP 200 vérifié).
+// « Avant de payer, allez voir ce qu'on vaut vraiment » → on route vers le backtest chiffré.
+document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':LANG==='es'?'/fiabilidad/':'/reliability/'
 document.querySelectorAll('[data-i]').forEach(n=>{
   const v=T[n.getAttribute('data-i')]
   if(v!=null)n.textContent=v
