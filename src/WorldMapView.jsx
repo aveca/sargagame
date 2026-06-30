@@ -1488,7 +1488,7 @@ export default function WorldMapView({
             </div>
           ))}
           {!proMapOff&&onOpenPro&&(
-            <button onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
+            <button className="sg-mapchip" onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
               style={{pointerEvents:"auto",marginTop:6,display:"inline-flex",alignItems:"center",gap:5,
                 cursor:"pointer",textAlign:"left",
                 // Pastille sombre semi-opaque + texte blanc plein → lisible quel que soit
@@ -1503,7 +1503,7 @@ export default function WorldMapView({
         </div>
 
         {/* Bouton Près de moi */}
-        <button style={{
+        <button className="sg-mapchip" style={{
           position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
           background:"#fdf6e3",
