@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-06-30T09:47:04.371Z",
+  "updatedAt": "2026-06-30T14:24:37.365Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 63,
-    "contacted": 44,
+    "discovered": 57,
+    "contacted": 50,
     "lead": 5,
-    "paid": 1
+    "paid": 2
   },
   "funnel": {
     "9a9cdbd282d741fb6e56c1e35bfc0552": {
@@ -436,58 +436,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "96c79a8adc8d8f6ea07fe0374c561f69": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Aliotis Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:48.941Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "460d6671a76b9dc4ac2d9fcb5d7b2645": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Anses d'Arlet Plongée",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:49.255Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "792208f610f4770bf68136d3fcbbfa74": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Résid'Anses",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:50.908Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "ac3f6d4dad866ddc70aa8e26f1e678a5": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Lez'arlet Plage",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:51.218Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "aa30953e68f513a09ba293c897d805bc": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "L'Escale",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:51.534Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "d800ce5d6ca947f01e57726b2b03336c": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel French Coco",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-06-30T14:21:51.868Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "d110dbd92e83b9e57088270b321523df": {
       "stage": "discovered",
@@ -1019,6 +1019,15 @@
       "isLead": true,
       "isPaid": false,
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "1799efe3caf4b263aed3e15fce240e1a": {
+      "stage": "paid",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": true,
+      "nextAction": "onboarding + relance renouvellement"
     },
     "bf819a41db0f3e6744fa07d5e6b56e5f": {
       "stage": "paid",
