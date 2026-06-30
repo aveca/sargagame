@@ -237,7 +237,7 @@ jobs:
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          CAP_NEW: '5'
+          CAP_NEW: '8'
         run: node scripts/automation/b2b-cold-outreach.cjs --send
 
       # Funnel B2B : agrège chaque prospect (découvert→contacté→lead→payé) + prochaine
