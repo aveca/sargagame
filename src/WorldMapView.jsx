@@ -1491,27 +1491,30 @@ export default function WorldMapView({
             <button className="sg-mapchip" onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
               style={{pointerEvents:"auto",marginTop:6,display:"inline-flex",alignItems:"center",gap:5,
                 cursor:"pointer",textAlign:"left",
-                // Pastille sombre semi-opaque + texte blanc plein → lisible quel que soit
-                // le fond de carte (le bas vire au violet foncé mais ça reste garanti).
-                background:"rgba(13,11,20,.62)",border:`1.5px solid rgba(255,255,255,.28)`,borderRadius:999,
+                // Pastille sombre OPAQUE + texte blanc plein → lisible quel que soit
+                // le fond de carte (solide, pas de semi-transparence qui laisse passer le sombre).
+                background:"#190c2c",border:`1.5px solid rgba(255,255,255,.28)`,borderRadius:999,
                 padding:"4px 10px",
                 font:"800 10.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
-                color:"#fff",WebkitBackdropFilter:"blur(2px)",backdropFilter:"blur(2px)"}}>
+                color:"#fdfcf7",textShadow:"0 1px 2px rgba(0,0,0,.55)"}}>
               <span aria-hidden="true">🏨</span>{_t(lang,"Vous gérez un hôtel ?","Run a hotel?","¿Gestionas un hotel?")}
             </button>
           )}
         </div>
 
-        {/* Bouton Près de moi */}
+        {/* Bouton Près de moi — TEXTE BLANC sur pastille SOMBRE OPAQUE (recette FAB,
+            prouvée sur cette carte). Le texte ne peut JAMAIS virer noir-illisible :
+            la couleur EST blanche, indépendante du fond de pastille (le crème ne
+            peignait pas de façon fiable sur iOS → texte ink sur carte sombre = noir). */}
         <button className="sg-mapchip" style={{
           position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
-          background:"#fdf6e3",
-          color:INK,border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-          padding:"11px 14px",borderRadius:999,cursor:"pointer",
+          background:"#190c2c",
+          color:"#fdfcf7",border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+          padding:"11px 14px",borderRadius:999,cursor:"pointer",textShadow:"0 1px 2px rgba(0,0,0,.55)",
           boxShadow:`3px 3px 0 ${INK}`,
         }} onClick={nearMe}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke={INK} strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdf6e3" stroke="none"/></svg> {_t(lang,"Une plage propre près de moi","A clean beach near me","Una playa limpia cerca")}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke="#fdfcf7" strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdfcf7" stroke="none"/></svg> {_t(lang,"Une plage propre près de moi","A clean beach near me","Una playa limpia cerca")}
         </button>
 
         {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}

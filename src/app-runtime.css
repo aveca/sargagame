@@ -201,15 +201,17 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-util .sg-lang{font-family:"Bricolage Grotesque",sans-serif!important;font-weight:800!important;font-size:14px;letter-spacing:.02em}
 .sg-util svg{width:18px;height:18px}
 /* CHIPS DE CARTE (« près de moi », « Vous gérez un hôtel ? ») — FIX LISIBILITÉ.
-   CAUSE : le skin de thème .theme-comic button{background:var(--sg-card)!important} force
-   le fond de TOUS les boutons ; sur la carte (hors scope) --sg-card est INDÉFINIE → fond
-   transparent + texte ink sur fond violet sombre = NOIR ILLISIBLE (rapport fondateur,
-   plusieurs fois). Le style inline crème ne pouvait pas battre le !important du thème.
-   FIX : pastille crème + texte/contour encre, !important + double-classe (spécificité
-   0,2,0 > .theme-comic button 0,1,1) pour battre le skin, sur les 2 thèmes. */
-.sg-mapchip.sg-mapchip{background:#fdf6e3 !important;color:#0d0b14 !important;
+   HISTOIRE : une pastille CRÈME + texte ink était censée marcher, mais sur iOS le fond
+   crème ne peignait PAS de façon fiable → texte ink sur carte sombre = NOIR ILLISIBLE
+   (rapporté plusieurs fois, MÊME après le fix crème déployé & vérifié en prod).
+   FIX ROBUSTE (recette FAB, prouvée sur cette carte) : pastille SOMBRE OPAQUE + texte
+   BLANC. La couleur du texte EST blanche → elle ne peut JAMAIS virer noir, peu importe
+   si le fond de pastille peint ou non. !important + double-classe (spécificité 0,2,0 >
+   .theme-comic button 0,1,1) pour battre le skin de thème, sur les 2 thèmes. */
+.sg-mapchip.sg-mapchip{background:#190c2c !important;color:#fdfcf7 !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
-  text-shadow:none !important;-webkit-text-fill-color:#0d0b14 !important;border-radius:999px !important}
+  text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
+.sg-mapchip.sg-mapchip svg{stroke:#fdfcf7 !important}
 /* FAB stack — pictos SVG ink, recette comic */
 .sg-fab svg{width:24px;height:24px;display:block}
 /* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
