@@ -11551,6 +11551,25 @@ export default function App(){
     setShowPushPrimer(false)
   },[])
 
+  // INTENTION EXPLICITE (cloche header, bouton onboarding « Activer les alertes ») : on FORCE.
+  // Bug corrigé : le one-shot guard `sg_push_loaded_once` rendait la cloche MUETTE (no-op
+  // silencieux) si OneSignal avait déjà été chargé une fois sans abonnement réel — l'utilisateur
+  // tapait, rien ne se passait, aucun prompt « à aucun moment ». Ici on bypasse le guard ET on
+  // re-pousse requestPermission via OneSignalDeferred (iOS PWA exige un geste : le re-push depuis
+  // le tap remet la demande en contexte ; un 2e essai à 1,5 s couvre le chargement async du SDK).
+  const forceEnablePush=useCallback((trigger)=>{
+    try{
+      pushLoadedRef.current=true
+      try{s("sg_push_loaded_once",1)}catch(_){}
+      window.loadOneSignal?.()
+      const ask=()=>{ try{ window.OneSignalDeferred=window.OneSignalDeferred||[]; window.OneSignalDeferred.push(function(O){ try{ O&&O.Notifications&&O.Notifications.requestPermission&&O.Notifications.requestPermission() }catch(_){} }) }catch(_){} }
+      ask(); setTimeout(ask,1500)
+      try{sgToast({tone:"info",msg:_t(lang,"On prépare tes alertes — accepte la demande qui s'affiche 🔔","Setting up your alerts — accept the prompt that appears 🔔","Preparando tus alertas — acepta el aviso que aparece 🔔")})}catch(_){}
+      try{track("sg_push_force_enable",{trigger})}catch(_){}
+    }catch(e){}
+    setShowPushPrimer(false)
+  },[])
+
   useEffect(()=>{
     if(g("sg_push_loaded_once",0))return
     const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream
@@ -13297,7 +13316,7 @@ export default function App(){
                   openAccessCheck("header")
                 }
               }}
-              onEnableNotif={()=>loadPushNow("header")}/>
+              onEnableNotif={()=>forceEnablePush("header")}/>
           </div>
         </div>
 
@@ -13706,10 +13725,10 @@ export default function App(){
             <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1450}}/>}>
               {POSTE_OFF
                 ? <LazyPaidOnboarding lang={lang} allBeaches={allBeaches} favorites={favorites}
-                    onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
+                    onToggleFav={toggleFav} onEnableNotif={()=>forceEnablePush("onboard")}
                     onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>
                 : <LazyWelcomePoste lang={lang} allBeaches={allBeaches} favorites={favorites}
-                    onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
+                    onToggleFav={toggleFav} onEnableNotif={()=>forceEnablePush("onboard")}
                     onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>}
             </Suspense>
           </ErrBound>
