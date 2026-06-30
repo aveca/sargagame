@@ -8,8 +8,11 @@
  * Props : beaches, island, updatedAt, lang, onOpenBeach, onPremium,
  *         onClose, rootMode, track
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+
+// Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
+const LazyWeekHub = React.lazy(()=>import("./WeekHub"))
 
 
 const STATUS_C = { clean: "#22C55E", moderate: "#B87A00", avoid: "#E8522A" }
@@ -235,10 +238,14 @@ export default function WorldMapView({
   // sélectionnée → carte canvas golden-hour spoiler-free (réutilise shareBeachCard du parent,
   // navigator.share natif). Rollback : ?mapshare=0.
   const mapShareOff = (()=>{try{return /[?&]mapshare=0/.test(window.location.search)}catch(_){return false}})()
-  // Swipe-to-scrub : flick horizontal sur la carte = jour ±1. DEFAULT OFF (opt-in
-  // ?mapswipe=1) — additif, zéro preventDefault, le pan/zoom reste intact ; isolé pour
-  // ne RIEN changer aux utilisateurs par défaut (la vedette est protégée).
-  const mapSwipe = (()=>{try{return /[?&]mapswipe=1/.test(window.location.search)}catch(_){return false}})()
+  // (Swipe-to-scrub retiré 2026-06-30 : conflit avec le pan de la carte, confirmé fondateur.)
+  // Hub « Ma semaine » (« La Vigie », panel 2026-06-30) : l'encart digest devient tapable ->
+  // ouvre le hub prévision premium (lazy). Rollback : ?weekhub=0 (l'encart redevient un simple
+  // résumé non cliquable, état actuel exact) ; ?weekhubseason=0 masque le seul BLOC 5 planner.
+  const weekhubOff = (()=>{try{return /[?&]weekhub=0/.test(window.location.search)}catch(_){return false}})()
+  const weekhubSeasonOff = (()=>{try{return /[?&]weekhubseason=0/.test(window.location.search)}catch(_){return false}})()
+  const [showHub, setShowHub] = useState(false)
+  const digestBtnRef = useRef(null) // restauration du focus à la fermeture du hub
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
   // pour montrer à un hôtelier (depuis /pro/espace/) comment il apparaîtra. L'argent ne
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
@@ -251,7 +258,6 @@ export default function WorldMapView({
   const ptrsRef    = useRef({})
   const pinchRef   = useRef(null)
   const lastTapRef = useRef(0)
-  const swipeRef   = useRef(null) // swipe-to-scrub (opt-in) : départ d'un flick mono-pointeur
   const tagTimerRef= useRef(null)
   const hintTimerRef= useRef(null)  // hint Premium one-shot au déverrouillage du scrub
   const reduceRef  = useRef(false)
@@ -810,9 +816,6 @@ export default function WorldMapView({
       moved=false
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       const nptr=Object.keys(ptrsRef.current).length
-      // Swipe-to-scrub (opt-in) : mémorise le départ d'un flick mono-pointeur ; un 2e doigt
-      // (pinch) l'annule.
-      if(mapSwipe){ swipeRef.current = nptr===1 ? {x:e.clientX,y:e.clientY,t:Date.now(),id:e.pointerId} : null }
       if(nptr===2){
         const pts=Object.values(ptrsRef.current)
         pinchRef.current={d:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),k0:camRef.current.k}
@@ -870,13 +873,6 @@ export default function WorldMapView({
       // alors un faux « tap » → double-tap fantôme = bascule zoom au simple survol.
       // (Bug coin fondateur 22/06, confirmé par MutationObserver : hover → scale 2.5↔0.85.)
       if(e.type!=="pointerup") return
-      // Swipe-to-scrub (opt-in) : flick horizontal rapide = jour ±1 (gauche → +1, droite → −1).
-      // Additif (le pan a aussi eu lieu, léger) ; isolé derrière ?mapswipe=1.
-      if(mapSwipe&&swipeRef.current&&swipeRef.current.id===e.pointerId){
-        const s0=swipeRef.current, ddx=e.clientX-s0.x, ddy=e.clientY-s0.y, ddt=Date.now()-s0.t
-        swipeRef.current=null
-        if(ddt<450&&Math.abs(ddx)>70&&Math.abs(ddx)>2.2*Math.abs(ddy)){ goDayRef.current(ddx<0?1:-1); return }
-      }
       if(!wasMoved){
         // Double-tap = bascule zoom
         const now=Date.now()
@@ -997,19 +993,6 @@ export default function WorldMapView({
       try{track&&track("sg_map_share",{island})}catch(_){}
     }catch(_){}
   },[onShare,selected,lang,track,island])
-
-  // Changement de jour par swipe (réf. mise à jour CHAQUE render → jamais de closure périmée
-  // dans l'effet gestes). Respecte le gating : free verrouillé au-delà de J0 → paywall.
-  const goDayRef = useRef(()=>{})
-  goDayRef.current = (delta)=>{
-    setDay(d=>{
-      const t=Math.max(0,Math.min(5,d+delta))
-      if(t===d) return d
-      if(t>=1&&!mapPremium){ try{track&&track("sg_map_swipe_locked",{day:t})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return d }
-      try{track&&track("sg_map_swipe",{day:t,island})}catch(_){}
-      return t
-    })
-  }
 
   // Verdict « ma semaine » (Premium) — agrégat île sur days[0..5], calcul PUR (zéro
   // fabrication) : meilleur jour (max plages propres CONNUES) + « valeur sûre » = la plage
@@ -1657,11 +1640,17 @@ export default function WorldMapView({
           {/* DÉCISION — verdict « ma semaine » (Premium, hors sélection pour ne pas se
               superposer au tooltip). Agrégat île RÉEL : meilleur jour + valeur sûre. */}
           {weekDigest&&!selected&&(
-            <div role="status" style={{
-              pointerEvents:"none",maxWidth:300,textAlign:"center",
+            <button ref={digestBtnRef} type="button"
+              aria-haspopup={weekhubOff?undefined:"dialog"} aria-expanded={weekhubOff?undefined:showHub}
+              aria-label={weekhubOff?undefined:_t(lang,"Ouvrir le hub prévision de ta semaine","Open your week forecast hub","Abrir tu centro de pronóstico")}
+              onClick={weekhubOff?undefined:()=>{setShowHub(true);try{track&&track("sg_weekhub_open_cta",{island})}catch(_){}}}
+              style={{
+              WebkitAppearance:"none",appearance:"none",font:"inherit",
+              pointerEvents:weekhubOff?"none":"auto",cursor:weekhubOff?"default":"pointer",
+              maxWidth:300,textAlign:"center",
               background:"#eafaf1",color:INK,border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,
-              borderRadius:12,padding:"6px 12px",
-              font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",
+              borderRadius:12,padding:"6px 12px",position:"relative",
+              fontWeight:800,fontSize:11,lineHeight:1.25,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
             }}>
               {weekDigest.calm?(
                 <>
@@ -1684,7 +1673,8 @@ export default function WorldMapView({
                   `Safe bet: ${weekDigest.safe.name} — clean ${weekDigest.safeK}/6 d`,
                   `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
               </>)}
-            </div>
+              {!weekhubOff&&<span aria-hidden="true" style={{position:"absolute",top:3,right:6,font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#0a7d33"}}>↗</span>}
+            </button>
           )}
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
@@ -1871,6 +1861,21 @@ export default function WorldMapView({
           }}>
             {_t(lang,"Voir la plage","Open beach","Ver la playa")} <span style={{fontWeight:800}}>→</span>
           </button>
+        )}
+
+        {/* HUB « Ma semaine » (La Vigie) — lazy, monté seulement à l'ouverture (tap encart digest).
+            Restaure le focus sur l'encart à la fermeture (a11y). Flag ?weekhub=0. */}
+        {showHub && !weekhubOff && (
+          <Suspense fallback={null}>
+            <LazyWeekHub
+              lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
+              reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} track={track}
+              onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
+              onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
+              onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
+              onPlannerOptin={(meta)=>{ try{ const em=localStorage.getItem("sg_email"); if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){}; try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
+            />
+          </Suspense>
         )}
       </div>
     </div>
