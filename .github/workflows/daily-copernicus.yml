@@ -647,6 +647,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
+          # Prévision privée J+2-7 (servie par forecast.php) : DOIT être committée à
+          # chaque run live, sinon le repo garde un privé périmé qu'un push-deploy
+          # ultérieur redéploie tel quel (FTP) → régression « pins gris premium » quand
+          # une sentinelle vient d'être ajoutée (cas 'precheur' 2026-06-30). Root + régions.
+          git add public/api/copernicus/_private/forecast-full.json 2>/dev/null || true
+          git add public/api/copernicus/*/_private/forecast-full.json 2>/dev/null || true
           # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
           # banks/grid régionaux inclus : persistance inter-runs = signal d'arrivée forecast
           # Chaque pathspec ajouté SÉPARÉMENT — `git add a b c` est ATOMIQUE : si UN

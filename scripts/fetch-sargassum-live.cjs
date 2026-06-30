@@ -29,7 +29,24 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
-const { gateWeekly } = require('./lib/forecast-gate.cjs')
+const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
+
+// Guard fail-loud : n'écrit le privé QUE s'il couvre chaque sentinelle (levels) avec
+// 7 jours. Sinon → erreur visible + run rouge (process.exitCode=1), SANS écrire un
+// privé incomplet (cas 'precheur' : sentinelle ajoutée mais absente du privé). Honnête :
+// on bloque/alerte, on ne fabrique jamais une série manquante. SG_GATING=0 = pas de gating.
+function writePrivateGuarded(label, dir, privateForecasts, truncated, levels, updatedAt) {
+  if (!truncated) return
+  if (process.env.SG_GATING !== '0') {
+    const { ok, missing, short } = assertPrivateComplete(privateForecasts, (levels || []).map(l => l.id), { requireDays: 7 })
+    if (!ok) {
+      console.error(`[${label}] PRIVÉ INCOMPLET — non écrit : missing=[${missing.join(',')}] short=${JSON.stringify(short)}`)
+      process.exitCode = 1
+      return
+    }
+  }
+  writePrivateForecastFile(dir, privateForecasts, updatedAt)
+}
 const { computeScore } = require('./lib/score.cjs')
 const { phaseForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
@@ -1467,7 +1484,7 @@ async function runRegionPipeline(region, shared) {
   }
   if (!grid) payload.fallbackReason = 'erddap-unreachable' // mode degrade documente
   fs.writeFileSync(path.join(regionDir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
-  if (truncated) writePrivateForecastFile(regionDir, privateForecasts, updatedAt)
+  writePrivateGuarded(region.id, regionDir, privateForecasts, truncated, levels, updatedAt)
 
   // 7. History regional (valeurs satellite BRUTES, comme la racine)
   updateHistory(regionDir, rawLevels)
@@ -1712,7 +1729,7 @@ async function main() {
 
   const outPath = path.join(dir, 'sargassum.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
-  if (truncated) writePrivateForecastFile(dir, privateForecasts, updatedAt)
+  writePrivateGuarded('root', dir, privateForecasts, truncated, levels, updatedAt)
   console.log(`OK: ${outPath}`)
   console.log(`   source: erddap-live | updatedAt: ${updatedAt.slice(0, 19)} | sat: ${erddapTimestamp ? erddapTimestamp.slice(0, 19) : 'n/a'}${stale ? ' [STALE]' : ''}`)
 
