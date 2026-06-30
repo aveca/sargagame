@@ -967,6 +967,29 @@ export default function WorldMapView({
     return best?{beach:best,km:bestD}:null
   },[mapDecideOff,selected,day,beachList])
 
+  // Verdict « ma semaine » (Premium) — agrégat île sur days[0..5], calcul PUR (zéro
+  // fabrication) : meilleur jour (max plages propres CONNUES) + « valeur sûre » = la plage
+  // propre le plus de jours. Glanceable, 1 carte, affichée seulement hors sélection (pas
+  // de superposition avec le tooltip). Rollback ?mapdecide=0 (couche décision).
+  const weekDigest = useMemo(()=>{
+    if(mapDecideOff||!mapPremium||!beachList.length) return null
+    const D=[0,1,2,3,4,5]
+    let bestDay=-1,bestN=-1
+    D.forEach(d=>{
+      const known=beachList.filter(b=>{const s=b.days[d];return s==="clean"||s==="moderate"||s==="avoid"}).length
+      if(!known) return
+      const n=beachList.filter(b=>b.days[d]==="clean").length
+      if(n>bestN){bestN=n;bestDay=d}
+    })
+    if(bestDay<0) return null
+    let safe=null,safeK=-1
+    for(const b of beachList){
+      const k=D.filter(d=>b.days[d]==="clean").length
+      if(k>safeK){safeK=k;safe=b}
+    }
+    return {bestDay,bestN,safe:safeK>=2?safe:null,safeK}
+  },[mapDecideOff,mapPremium,beachList])
+
   // ─── RENDER ────────────────────────────────────────────────────────────────
   if(loadErr) return null  // laisse l'ArchipelView control se montrer (ErrBound parent)
 
@@ -1565,6 +1588,25 @@ export default function WorldMapView({
           position:"absolute",left:0,right:0,bottom:"calc(120px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",alignItems:"center",gap:7,pointerEvents:"none",
         }}>
+          {/* DÉCISION — verdict « ma semaine » (Premium, hors sélection pour ne pas se
+              superposer au tooltip). Agrégat île RÉEL : meilleur jour + valeur sûre. */}
+          {weekDigest&&!selected&&(
+            <div role="status" style={{
+              pointerEvents:"none",maxWidth:300,textAlign:"center",
+              background:"#eafaf1",color:INK,border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,
+              borderRadius:12,padding:"6px 12px",
+              font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",
+            }}>
+              <div>{_t(lang,
+                `📅 Ta semaine — meilleur jour ${ti(lang,DAY_LBL[weekDigest.bestDay])} : ${weekDigest.bestN} plage${weekDigest.bestN>1?"s":""} propre${weekDigest.bestN>1?"s":""}`,
+                `📅 Your week — best day ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} clean beach${weekDigest.bestN>1?"es":""}`,
+                `📅 Tu semana — mejor día ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} playa${weekDigest.bestN>1?"s":""} limpia${weekDigest.bestN>1?"s":""}`)}</div>
+              {weekDigest.safe&&<div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
+                `Valeur sûre : ${weekDigest.safe.name} — propre ${weekDigest.safeK}/6 j`,
+                `Safe bet: ${weekDigest.safe.name} — clean ${weekDigest.safeK}/6 d`,
+                `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
+            </div>
+          )}
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
               tier de confiance décroissant (J+5 = faible), « mesuré au satellite ». */}
           {/* Bannières d'origine — UNIQUEMENT en rollback ?mapfrise=0 (sinon l'info vit dans la frise) */}
