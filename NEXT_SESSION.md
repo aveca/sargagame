@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **🟢 2026-06-30 — FAUX VERT CÔTE CARAÏBE NORD (Anse Céron/Couleuvre) : HONNÊTETÉ (#263 MERGÉ+DÉPLOYÉ) + VRAIE PRÉDICTION (#264 DRAFT, CI verte).**
+>
+> **Déclencheur** : post FB SOS Sargasses (2026-06-29) — échouage massif Anse Céron + Anse Couleuvre (Le Prêcheur, côte caraïbe nord) « première fois que je vois ça », alors que l'app affichait ces plages **vertes sans réserve**.
+>
+> **Cause racine** (vérifiée `src/Sargasses_PROD.jsx`) : ces plages = **0 sentinelle satellite** (les 20 sont sud/est/baies) → verdict **interpolé** (IDW) depuis des baies abritées propres à ~30 km → vert mécanique. Le flag d'honnêteté **`_satBlind`** (réserve « vu du ciel rien au large, mais l'échoué ne se voit pas — signale-le » + CTA photo, `~L3863`) était gaté `_coast==='atlantic'` → absent sur la côte caraïbe nord classée `'sheltered'`.
+>
+> **#263 (MERGÉ `main`, run deploy #28411719559)** — *panel adverse 4 lentilles, unanime A+* : `isImmuneBay(lat,lng,island)` distingue baie **vraiment fermée** (Baie de FDF + Anses d'Arlet nord → restent vertes sans réserve) de **côte sous-le-vent** (porte la réserve). `_satBlind = !isImmuneBay(...)` pour toute plage interpolée. Sous-titre fiche : `« estimé · pas de lecture directe ici »` au lieu de `« mesuré au satellite »` sur ces plages. **Aucun rouge auto, verdict 100 % ERDDAP.** Rollback `?leeblind=0`.
+>
+> **#264 (DRAFT, à merger une fois perf-budget vert)** — la **vraie prédiction** : sentinelle **`precheur`** ancrée Anse Céron (mq033) qui échantillonne directement l'AFAI ERDDAP au large de la façade caraïbe nord. **Validé live** : AFAI 0.07, conf **77 %**, méthode `combined-642near-2900off` (le satellite couvre la zone). 3 fichiers : `fetch-sargassum-live.cjs` (20→21 sentinelles, coast:'atlantic', coastNormal 290), `sarg-to-beach.cjs` + `SARG_TO_BEACH` front (mapping precheur→mq033, 2 copies sync). Données 21-niveaux produites au **prochain run cron** (live-fetch gaté hors push) → d'ici là front interpole avec réserve (dégradation propre).
+>
+> **RESTE** : (1) **merger #264** dès perf-budget vert + curl prod. (2) **Vérifier au prochain run cron** que `precheur` apparaît bien dans `sargassum.json` (21 levels) et que la fiche Anse Céron lit `_src:live`. (3) Suite possible : backtest dédié de la sentinelle Prêcheur ; étendre la logique sentinelle aux façades lee GP (Basse-Terre ouest) si pertinent. (4) **Note Playwright** : smoke via wrapper `executablePath:/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (npm tire pw 1.5x attendant build 1217, image=1194) ; `ERR_CONNECTION_CLOSED` = CDN externes bloqués sandbox, **identiques au baseline** = pas une régression.
+
 > **🔒 2026-06-30 — GATING SERVEUR J+2→J+7 (LE MOAT DERRIÈRE AUTH) + SERVICE SUPPORT ACTIVÉ EN ENVOI. #257 + #258 + #259 + #260 MERGÉS sur `main`, déployés, VÉRIFIÉS `curl` prod sur les 5 régions.**
 >
 > **1. GATING J+2→J+7 (#258, + complétude #259/#260) — LE GROS MORCEAU, validé fondateur avant merge (touche la donnée du verdict).**
@@ -15,6 +27,17 @@
 > **2. SERVICE SUPPORT NIVEAU 1 ACTIVÉ EN ENVOI (#257).** `support-inbox.yml` cron 3h passe en **SEND=1** (accusé client + digest fondateur + `\Seen`, sur les seuls UNSEEN, idempotent). Nouveau mode **SEAL** (`support-inbox.cjs`) + dispatch `mode: seal-existing`. Les mails déjà traités à la main (JC, julien) ont été **scellés `\Seen` AVANT activation** (dispatch `seal-existing` sur la branche, run success) → **pas d'accusé redondant**. Dispatch refondé `mode` : dry-run / send / seal-existing. **Remboursement = jamais auto** (inchangé, digest note « décision fondateur »). À surveiller : le prochain tick cron ne traite que les NOUVEAUX mails.
 >
 > **RÈGLE : une seule session à la fois sur ce repo.**
+> **🟢 2026-06-30 — FAUX VERT CÔTE CARAÏBE NORD (Anse Céron/Couleuvre) : HONNÊTETÉ (#263 MERGÉ+DÉPLOYÉ) + VRAIE PRÉDICTION (#264 DRAFT, CI verte).**
+>
+> **Déclencheur** : post FB SOS Sargasses (2026-06-29) — échouage massif Anse Céron + Anse Couleuvre (Le Prêcheur, côte caraïbe nord) « première fois que je vois ça », alors que l'app affichait ces plages **vertes sans réserve**.
+>
+> **Cause racine** (vérifiée `src/Sargasses_PROD.jsx`) : ces plages = **0 sentinelle satellite** (les 20 sont sud/est/baies) → verdict **interpolé** (IDW) depuis des baies abritées propres à ~30 km → vert mécanique. Le flag d'honnêteté **`_satBlind`** (réserve « vu du ciel rien au large, mais l'échoué ne se voit pas — signale-le » + CTA photo, `~L3863`) était gaté `_coast==='atlantic'` → absent sur la côte caraïbe nord classée `'sheltered'`.
+>
+> **#263 (MERGÉ `main`, run deploy #28411719559)** — *panel adverse 4 lentilles, unanime A+* : `isImmuneBay(lat,lng,island)` distingue baie **vraiment fermée** (Baie de FDF + Anses d'Arlet nord → restent vertes sans réserve) de **côte sous-le-vent** (porte la réserve). `_satBlind = !isImmuneBay(...)` pour toute plage interpolée. Sous-titre fiche : `« estimé · pas de lecture directe ici »` au lieu de `« mesuré au satellite »` sur ces plages. **Aucun rouge auto, verdict 100 % ERDDAP.** Rollback `?leeblind=0`.
+>
+> **#264 (DRAFT, à merger une fois perf-budget vert)** — la **vraie prédiction** : sentinelle **`precheur`** ancrée Anse Céron (mq033) qui échantillonne directement l'AFAI ERDDAP au large de la façade caraïbe nord. **Validé live** : AFAI 0.07, conf **77 %**, méthode `combined-642near-2900off` (le satellite couvre la zone). 3 fichiers : `fetch-sargassum-live.cjs` (20→21 sentinelles, coast:'atlantic', coastNormal 290), `sarg-to-beach.cjs` + `SARG_TO_BEACH` front (mapping precheur→mq033, 2 copies sync). Données 21-niveaux produites au **prochain run cron** (live-fetch gaté hors push) → d'ici là front interpole avec réserve (dégradation propre).
+>
+> **RESTE** : (1) **merger #264** dès perf-budget vert + curl prod. (2) **Vérifier au prochain run cron** que `precheur` apparaît bien dans `sargassum.json` (21 levels) et que la fiche Anse Céron lit `_src:live`. (3) Suite possible : backtest dédié de la sentinelle Prêcheur ; étendre la logique sentinelle aux façades lee GP (Basse-Terre ouest) si pertinent. (4) **Note Playwright** : smoke via wrapper `executablePath:/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (npm tire pw 1.5x attendant build 1217, image=1194) ; `ERR_CONNECTION_CLOSED` = CDN externes bloqués sandbox, **identiques au baseline** = pas une régression.
 
 > **🎫 2026-06-29 — VUE « MON ACCÈS » + CUSTOMER MOLLIE PASS + SERVICE SUPPORT IMAP + POLITIQUE REMBOURSEMENT (#245 + #252 MERGÉS, déployés vérifiés `curl`). ⚠️ SESSION PARALLÈLE — chevauche #253/#254/#255 (accès cross-device) : convergence, pas de casse.**
 >
