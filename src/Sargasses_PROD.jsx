@@ -11206,6 +11206,11 @@ export default function App(){
   const[whatsNew,setWhatsNew]=useState(null)
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
+    // ?pass= RÉ-ARME TOUJOURS l'accueil onboarding, MÊME pour un premium de retour (sinon les
+    // early-returns ci-dessous — sg_premium / sg_premium_pass_end actifs — sautaient le bloc qui
+    // pose sg_premium_welcome → l'onboarding « ne faisait rien » au 2e chargement du lien). Bug
+    // fondateur. Le flag est consommé par le useState showWelcome plus bas.
+    try{ const pp=new URLSearchParams(window.location.search).get("pass"); if(pp&&(pp==="trip"||/^p\d{1,3}$/.test(pp))) s("sg_premium_welcome",true) }catch(_){}
     if(g("sg_premium",false))return true
     // Zero-friction 24h sample: local trial, no card required. Used at most once per device.
     try{
