@@ -60,6 +60,10 @@ const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
 // le toast 5s par un mini-setup (favoris→notif→brief). Lazy → DOIT être sous Suspense.
 const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
+// Accueil premium VERDICT-FIRST « Le Poste de Veille » (panel 2026-06-30) — remplace le tunnel
+// PaidOnboarding. Rollback ?poste=0 → retombe sur le tunnel linéaire.
+const LazyWelcomePoste=lazyWithRetry(()=>import("./WelcomePoste"))
+const POSTE_OFF=(()=>{try{return /[?&]poste=0/.test(window.location.search)}catch(_){return false}})()
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
 const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
@@ -13669,9 +13673,13 @@ export default function App(){
         {showWelcome&&(!paidSplashOn||splashDone)&&pwOnboard==="onboard"&&(
           <ErrBound fallback={null}>
             <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1450}}/>}>
-              <LazyPaidOnboarding lang={lang} allBeaches={allBeaches} favorites={favorites}
-                onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
-                onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>
+              {POSTE_OFF
+                ? <LazyPaidOnboarding lang={lang} allBeaches={allBeaches} favorites={favorites}
+                    onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
+                    onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>
+                : <LazyWelcomePoste lang={lang} allBeaches={allBeaches} favorites={favorites}
+                    onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
+                    onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>}
             </Suspense>
           </ErrBound>
         )}

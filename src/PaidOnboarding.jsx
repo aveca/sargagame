@@ -45,7 +45,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const picked = suggestions.filter(b => favSet.has(b.id)).length + favorites.filter(id => !suggestions.some(b => b.id === id)).length
 
   // ── Design-system COMIC (PRODUCT.md §4) ──────────────────────────────────────
-  const INK = "#0d0b14", PAPER = "#fdf6e3", YEL = "#ffd23f", SUB = "#4a4636"
+  const INK = "#0d0b14", PAPER = "#fdf6e3", YEL = "#FFC72C", SUB = "#4a4636"
   const wrap = {
     forcedColorAdjust: "none",
     position: "fixed", inset: 0, zIndex: 1450, display: "flex", flexDirection: "column",
