@@ -1235,7 +1235,11 @@ export default function WorldMapView({
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" style={{opacity:.5,flexShrink:0}}><circle cx="10" cy="10" r="6.5"/><path d="m20 20-5-5"/></svg>
               <input value={query} onChange={e=>setQuery(e.target.value)}
                 placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
-                style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
+                /* font-size 16px OBLIGATOIRE : iOS Safari zoome la page dès qu'un <input>
+                   focus a un font-size < 16px, et NE réinitialise PAS ce zoom quand l'overlay
+                   plein écran (ChasseDetail, position:fixed) s'ouvre au clic d'un résultat →
+                   fiche « zoomée »/décalée, interface cassée. Garder ≥16px. */
+                style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
               {query&&<button onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
             </div>
             {matches.length>0&&(
