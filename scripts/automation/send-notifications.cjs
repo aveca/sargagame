@@ -584,6 +584,16 @@ async function sendFavoriteAlert(beachChange, type, opts = {}) {
     if (i > 0) filters.push({ operator: 'OR' })
     filters.push({ field: 'tag', key: 'fav_' + k, relation: '=', value: '1' })
   })
+  // PREMIUM GATE : l'alerte PERSONNALISÉE « ta plage bascule demain matin » est
+  // VENDUE dans le paywall comme un bénéfice Premium → on la réserve aux Premium
+  // (tag sg_premium=1, posé par le front quand isPremium). Le gratuit garde le
+  // broadcast quotidien général : il sait « ça bouge en MQ », le Premium sait « TA
+  // plage, ce matin ». OneSignal évalue les filtres de GAUCHE À DROITE sans
+  // précédence → (fav_a OR fav_b) puis AND sg_premium = exactement le ciblage voulu.
+  // Échappatoire : ALERT_PREMIUM_GATE=0 (revient à l'ancien envoi à tous les favoris).
+  if (process.env.ALERT_PREMIUM_GATE !== '0') {
+    filters.push({ field: 'tag', key: 'sg_premium', relation: '=', value: '1' })
+  }
 
   const payload = {
     app_id: config.appId,

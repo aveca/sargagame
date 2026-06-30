@@ -100,6 +100,14 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
           <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>100%</span>
           {_t(lang, "de nos prévisions « mer propre » se sont vérifiées (saison calme, sur 2274) · ~76% tous régimes confondus · mesuré au satellite, jamais deviné.", "of our \"clean water\" calls proved correct (calm season, over 2274) · ~76% across all regimes · measured by satellite, never guessed.", "de nuestros pronósticos de \"agua limpia\" se cumplieron (temporada tranquila, sobre 2274) · ~76% en todos los regímenes · medido por satélite, nunca adivinado.")}
         </div>
+        {/* Honnêteté auditée AVANT le prix (storytelling temps 5) : lien cliquable vers
+            la page « on publie nos erreurs ». Localisé FR/EN/ES. Rollback : ?rellink=0. */}
+        {(() => { try { return !/[?&]rellink=0/.test(window.location.search) } catch (e) { return true } })() && (
+          <a href={lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/"} target="_blank" rel="noopener"
+            style={{ display: "block", textAlign: "center", margin: "9px 0 0", fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
+            {_t(lang, "Avant de payer, allez voir nos erreurs →", "Before you pay, go see our errors →", "Antes de pagar, vea nuestros errores →")}
+          </a>
+        )}
 
         {/* Preuve sociale + fraîcheur (A/B-gated côté parent : community=0 / freshTs=null → masqué).
             Valeurs HONNÊTES : community = plancher réel des leads email ; freshTs = updatedAt réel du pipeline. */}
