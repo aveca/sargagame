@@ -1215,6 +1215,7 @@ export default function WorldMapView({
           {/* Pill EN DIRECT */}
           <div style={{
             display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
+            whiteSpace:"nowrap",flexShrink:0,
             padding:"6px 12px 6px 10px",borderRadius:999,
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
@@ -1230,11 +1231,11 @@ export default function WorldMapView({
             {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
-          <div style={{position:"relative",flex:1,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
+          <div style={{position:"relative",flex:1,minWidth:0,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
             <div style={{display:"flex",alignItems:"center",gap:6,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,padding:"6px 10px"}}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" style={{opacity:.5,flexShrink:0}}><circle cx="10" cy="10" r="6.5"/><path d="m20 20-5-5"/></svg>
               <input value={query} onChange={e=>setQuery(e.target.value)}
-                placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+                placeholder={_t(lang,"Chercher…","Search…","Buscar…")}
                 /* font-size 16px OBLIGATOIRE : iOS Safari zoome la page dès qu'un <input>
                    focus a un font-size < 16px, et NE réinitialise PAS ce zoom quand l'overlay
                    plein écran (ChasseDetail, position:fixed) s'ouvre au clic d'un résultat →
@@ -1306,7 +1307,7 @@ export default function WorldMapView({
               <input type="email" inputMode="email" autoComplete="email"
                 value={emailVal} onChange={e=>setEmailVal(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
-                placeholder={_t(lang,"ton@email — le verdict du matin, gratuit","email — the morning verdict, free","tu@email — el veredicto de la mañana, gratis")}
+                placeholder={_t(lang,"ton@email — verdict gratuit","your@email — free verdict","tu@email — veredicto gratis")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
                   padding:"6px 9px",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
               <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
