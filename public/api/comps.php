@@ -13,6 +13,7 @@
 // Une entrée expirée (valeur < maintenant) est ignorée ; gift-pass.cjs purge
 // automatiquement les entrées expirées à chaque ajout.
 return [
+    '07f1dfd34b8bb821558d303fe34a59993770c2a7' => 1814375438,
     '2e6ab039c64f4785d8521c172d9b71309edc431b' => 1814374956,
     'a29463e2f6dc145c89e4d7cf8b1e5a9b2005ffe0' => 1814374039,
 ];
