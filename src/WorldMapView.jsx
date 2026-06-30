@@ -1877,7 +1877,7 @@ export default function WorldMapView({
         <Suspense fallback={null}>
           <LazyWeekHub
             lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
-            reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} track={track}
+            reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} island={island} track={track}
             onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
             onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
             onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}

@@ -24,7 +24,8 @@ const fs = require('fs')
 const path = require('path')
 
 const HISTORY = path.join(__dirname, '../../public/api/copernicus/history.json')
-const OUT = path.join(__dirname, 'data/climatology-monthly.json')
+// Chemin SERVI (déployé FTP, fetché par le front pour le bloc planner « état B »).
+const OUT = path.join(__dirname, '../../public/api/copernicus/climatology.json')
 const MIN_SAMPLES = 60 // jours-plage minimum par cellule côte-mois pour publier
 
 // Carte plage → {island, coast} (source : scripts/fetch-sargassum-live.cjs, BEACHES).
