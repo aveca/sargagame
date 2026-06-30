@@ -373,9 +373,12 @@
     if(hotel){$("hotelLine").innerHTML=" · <span class='hotel'>"+hotel+"</span>";document.title=tr("docTitle")+" — "+hotel;}
     $("pName").textContent=hotel||tr("pNameDefault");
     if(Q.get("tagline"))$("pTag").textContent=Q.get("tagline").slice(0,90);
-    // lien aperçu in-app : si un slug partenaire est fourni (?partner=), deep-link preview
+    // lien aperçu in-app : on passe le nom de l'hôtel → l'app affiche une carte
+    // « Partenaire (aperçu) » flottante sur la carte (là où l'hôtelier atterrit),
+    // même sans slug au catalogue. (L'aperçu inline ci-dessus reste la preuve immédiate.)
     var partner=(Q.get("partner")||"").replace(/[^a-z0-9-]/g,"");
-    $("previewLink").href="https://"+DOMAIN+"/"+(partner?("?preview_partner="+partner):"");
+    var pvName=encodeURIComponent((hotel||tr("pNameDefault")).slice(0,48));
+    $("previewLink").href="https://"+DOMAIN+"/?preview_partner="+(partner||"preview")+"&preview_name="+pvName;
 
     // ── 1. plages en direct ──
     function relAge(u){var h=(Date.now()-new Date(u).getTime())/3.6e6;if(!(h>=0))return null;var unit=LANG==="es"?{m:" min",h:" h",d:" d"}:LANG==="en"?{m:" min",h:" h",d:" d"}:{m:" min",h:" h",d:" j"};return h<1?Math.max(1,Math.round(h*60))+unit.m:(h<36?Math.round(h)+unit.h:Math.round(h/24)+unit.d);}
