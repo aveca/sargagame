@@ -70,6 +70,16 @@ const BEACHES = [
   { id: 'sainte-anne',    lat: 14.4305, lng: -60.8850, island: 'mq', coast: 'atlantic', coastNormal: 170 },  // faces S-SSE
   { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq', coast: 'atlantic', coastNormal: 180 },  // pointe sud, faces plein sud
   { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq', coast: 'atlantic', coastNormal: 110 },  // cote est, faces ESE
+  // Côte caraïbe NORD (Le Prêcheur) — sentinelle ajoutée le 2026-06-30 après un
+  // échouage massif observé à Anse Céron / Anse Couleuvre (post FB SOS Sargasses,
+  // « première fois que je vois ça ») alors que ces plages, interpolées depuis des
+  // baies abritées propres, s'affichaient VERTES. Anchor = Anse Céron (mq033). On
+  // échantillonne donc directement l'AFAI au large de cette façade au lieu de
+  // recopier des baies sud/est. coast:'atlantic' VOLONTAIRE (ne cache pas le risque,
+  // cf. ligne ~1303) ; coastNormal 290 = face WNW (mer des Caraïbes, d'où dérive le
+  // banc sur la côte sous-le-vent). Les anses voisines (mq030/mq032/mq066) interpolent
+  // désormais depuis cette lecture directe.
+  { id: 'precheur',       lat: 14.8334, lng: -61.2247, island: 'mq', coast: 'atlantic', coastNormal: 290 },  // Anse Céron, Le Prêcheur — côte caraïbe nord, faces WNW
   { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp', coast: 'sheltered', coastNormal: 270 }, // Basse-Terre cote ouest
   { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp', coast: 'sheltered', coastNormal: 270 }, // Bouillante, cote ouest
   { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp', coast: 'atlantic', coastNormal: 170 },  // Grande-Terre sud, faces S-SSE

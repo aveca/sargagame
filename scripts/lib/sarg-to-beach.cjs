@@ -21,6 +21,7 @@ const SARG_TO_BEACH = {
   "sainte-anne": "mq004",
   "les-salines": "mq001",
   "vauclin": "mq044",
+  "precheur": "mq033",
   "gp-grande-anse": "gp021",
   "gp-malendure": "gp031",
   "gp-sainte-anne": "gp010",
