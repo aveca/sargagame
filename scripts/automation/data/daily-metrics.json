@@ -1940,7 +1940,7 @@
   },
   {
     "date": "2026-06-30",
-    "time": "2026-06-30T17:35:52.622Z",
+    "time": "2026-06-30T20:08:11.563Z",
     "payments": 15,
     "revenue": 90.85,
     "emails": 279,
@@ -1969,7 +1969,7 @@
       }
     },
     "email": {
-      "sent": 1945,
+      "sent": 1948,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -2018,8 +2018,8 @@
     "ga4": {
       "date": "2026-06-29",
       "mq": {
-        "sessions": 318,
-        "users": 999
+        "sessions": 317,
+        "users": 1083
       },
       "gp": {
         "sessions": 170,
