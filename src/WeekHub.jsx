@@ -371,6 +371,13 @@ export default function WeekHub({
               </div>
             </div>
           )}
+          {/* État calme : pas de trou silencieux — on rassure (s'enchaîne avec la proactivité). */}
+          {avoidList.length===0 && (
+            <div style={{...card, background:"#eafaf1"}}>
+              <div style={{font:"800 12.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"Aucune plage à éviter cette semaine","No beach to avoid this week","Ninguna playa a evitar esta semana")}</div>
+              <div style={{font:"500 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:4}}>{_t(lang,"On garde l'œil ouvert — tu seras prévenu le matin où ça bascule.","We keep watch — you'll be warned the morning it shifts.","Seguimos vigilando — te avisaremos la mañana en que cambie.")}</div>
+            </div>
+          )}
 
           {/* SÉPARATEUR HONNÊTETÉ (sobre) */}
           {!seasonOff && (

@@ -482,7 +482,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
               </div>
             ))}
           </div>
-          <div className="pww-lockbar"><Lock s={13}/><b>{_t(lang,"Débloque les 5 jours suivants","Unlock the next 5 days","Desbloquea los 5 días siguientes")}</b></div>
+          <div className="pww-lockbar"><Lock s={13}/><b>{_t(lang,"Vois 5 jours d'avance","See 5 days ahead","Ve 5 días por delante")}</b></div>
         </div>
 
         {/* 3 PERKS */}
