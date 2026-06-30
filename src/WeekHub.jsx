@@ -12,6 +12,7 @@
 // Lazy → hors budget eager. a11y plancher : role=dialog, Échap, focus piégé+restauré,
 // ruban clavier ←/→, prefers-reduced-motion (fallback statique). Flags ?weekhub=0 / ?weekhubseason=0.
 import React, { useEffect, useRef, useMemo, useState, useCallback } from "react"
+import { useSwipeClose } from "./useSwipeClose"
 
 const DAY_LBL = [["Auj","Today","Hoy"],["+1j","+1d","+1d"],["+2j","+2d","+2d"],["+3j","+3d","+3d"],["+4j","+4d","+4d"],["+5j","+5d","+5d"]]
 const ti = (lang, a) => lang === "en" ? a[1] : lang === "es" ? a[2] : a[0]
@@ -98,6 +99,10 @@ export default function WeekHub({
   const panelRef = useRef(null)
   const closeRef = useRef(null)
   const reduced = useRef(false)
+  // Convention UX (loi du repo) : toute feuille plein écran se ferme par swipe-down depuis le
+  // haut. Hook canonique useSwipeClose (guardInput → pas de fermeture en pleine saisie du planner).
+  const swipe = useSwipeClose(onClose, { guardInput:true })
+  const setPanel = useCallback((el)=>{ panelRef.current=el; swipe.ref.current=el },[swipe])
   const REL = Math.max(1, Math.min(5, reliableHorizon||3))
   const D = [0,1,2,3,4,5]
   const tierOf = (d, cf) => d>=4 ? "low" : (cf>=55?"high":cf>=38?"med":"low")
@@ -218,7 +223,9 @@ export default function WeekHub({
     <div role="dialog" aria-modal="true" aria-label={_t(lang,"Hub prévision de ta semaine","Your week forecast hub","Tu centro de pronóstico semanal")}
       style={{position:"fixed", inset:0, zIndex:1300, background:"rgba(13,11,20,.55)", display:"flex", justifyContent:"center", alignItems:"flex-end"}}
       onClick={(e)=>{ if(e.target===e.currentTarget){ onClose && onClose() } }}>
-      <div ref={panelRef} data-wkhub="1" style={{
+      <div ref={setPanel} data-wkhub="1"
+        onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
+        style={{
         width:"100%", maxWidth:560, maxHeight:"94vh", overflowY:"auto", WebkitOverflowScrolling:"touch",
         background:`linear-gradient(180deg,#2bb6ef 0%,#62c8ee 28%,#ffc187 78%,#ff944a 100%)`,
         borderTopLeftRadius:22, borderTopRightRadius:22, border:`3px solid ${INK}`, borderBottom:"none",

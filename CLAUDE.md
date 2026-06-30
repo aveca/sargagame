@@ -164,8 +164,16 @@ Grep ne reproduit pas → faux positif, classé sans suite. Finding « vrai en t
 - Aucun écran ne se termine sur une impasse. Plage rouge → **« où aller plutôt »** (alternative la plus proche) + lien carte. Erreur réseau / data absente → message + action de retry, jamais un blanc. Paywall fermé → retour au verdict gratuit, pas au vide.
 - **Tout ajout conversion DOIT avoir son flag rollback `?xxx=0`** (switch on/off, modèle `pwOnboard` ci-dessus ; liste maintenue dans le code). Pas de flag = pas de merge. ⚠️ `?preview_partner=<slug>` n'est PAS un flag rollback (c'est une valeur, `ChasseHome.jsx:350`) — ne pas le ranger dans cette catégorie.
 
+### Mobile-first : LOIS pour CHAQUE nouvel écran (fondateur 100 % mobile — ne PAS attendre qu'il le redemande)
+> **Le fondateur bosse sur mobile. L'UX mobile est en tête EN PERMANENCE, pas écran par écran sur demande.** Tout nouvel écran/feuille/modale applique ces lois par DÉFAUT, sinon il est incomplet. (Loi née d'un grief récurrent : conventions ré-oubliées à chaque écran.)
+- **Fermeture par swipe-down** : toute feuille/modale plein écran se ferme par **glissement vers le bas depuis le haut** — via le hook canonique **`useSwipeClose`** (`src/useSwipeClose.js`, déjà utilisé `BeachSheet`/`ChasseDetail`/`VeilleurHero`/`WeekHub`/`WelcomePoste`). Poser son `ref` sur le scroller + spread des 3 handlers tactiles ; `guardInput:true` si l'écran a un champ de saisie. **Ne JAMAIS réécrire un geste maison.**
+- **4 voies de sortie minimum** : ✕ (≥44px) · Échap · tap backdrop · swipe-down. Jamais d'écran qui piège.
+- **Rendu hors couche gestes carte** : une feuille montée dans `WorldMapView` (carte en `touchAction:none` + handlers de pan) **DOIT** se rendre via `createPortal(…, document.body)` — sinon elle ne scrolle pas au doigt (events captés par le pan). Leçon `WeekHub`.
+- **Une décision/un écran, lisible au pouce sans scroll obligatoire** ; cibles ≥44px ; typo responsive `clamp()` (jamais un titre fixe qui déborde <360px, jamais de gras 800 écrasé/rotation/ombre qui nuit) ; tester 360/390/430.
+- **Simplifier la navigation** : minimiser les taps vers la valeur, zéro indirection inutile, zéro cul-de-sac (toujours un retour/plan B). Desktop hérite, mais mobile prime.
+
 ### Accessibilité (plancher dur)
-- Toute modale : **`role="dialog"`, fermeture par Échap, focus piégé + restauré** au close (patterns présents `PremiumModal`/`ArenaSplash`/`ComicDetail` — ne pas régresser).
+- Toute modale : **`role="dialog"`, fermeture par Échap, focus piégé + restauré** au close (patterns présents `PremiumModal`/`ArenaSplash`/`ComicDetail`/`WeekHub`/`WelcomePoste` — ne pas régresser).
 - **`prefers-reduced-motion` = plancher** : toute animation (golden-hour, paper/ink saturé, transitions de scène) a son fallback statique. Pas de variante reduced-motion = livrable incomplet.
 - Contraste suffisant sur ink/paper et thème pro sombre `#0a1620` ; cibles tap ≥44px ; jamais d'info portée par la couleur seule.
 

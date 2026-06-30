@@ -8,7 +8,8 @@
 // recopiés verbatim) → onboarding et hub premium indiscernables. Typo entièrement en clamp()
 // (fin du 800 écrasé / rotation / ombre portée — le grief central). a11y : role=dialog, focus
 // ✕ à l'ouverture, focus-trap (1 seul niveau), Échap, reduced-motion. Flag ?poste=0.
-import React, { useEffect, useRef, useMemo, useState } from "react"
+import React, { useEffect, useRef, useMemo, useState, useCallback } from "react"
+import { useSwipeClose } from "./useSwipeClose"
 
 const INK = "#0d0b14", PAPER = "#fdf6e3", GOLD = "#FFC72C", SUB = "#4a4458"
 const STATUS_C = { clean:"#22C55E", moderate:"#B87A00", avoid:"#E8522A" }
@@ -39,6 +40,9 @@ function Watcher({ size=40 }){
 
 export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], onToggleFav, onEnableNotif, onDone, island, userPos, track }){
   const panelRef = useRef(null), closeRef = useRef(null), reduced = useRef(false), prechecked = useRef(false)
+  // Convention UX mobile (loi du repo) : feuille plein écran fermable par swipe-down depuis le haut.
+  const swipe = useSwipeClose(()=>{ try{ track&&track("sg_onboard_done",{src:"swipe"}) }catch(_){}; onDone&&onDone() })
+  const setPanel = useCallback((el)=>{ panelRef.current=el; swipe.ref.current=el },[swipe])
   const [notifAsked, setNotifAsked] = useState(false)
   const [weekAck, setWeekAck] = useState(false)
   const seenAct = useRef({})
@@ -100,7 +104,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
 
   return (
     <div role="dialog" aria-modal="true" aria-label={_t(lang,"Bienvenue · le poste du Veilleur","Welcome · the Watcher's post","Bienvenida · el puesto del Vigía")}
-      ref={panelRef} style={{
+      ref={setPanel} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} style={{
         position:"fixed", inset:0, zIndex:1450, overflowY:"auto", WebkitOverflowScrolling:"touch",
         background:`linear-gradient(180deg,#2bb6ef 0%,#62c8ee 28%,#ffc187 78%,#ff944a 100%)`,
         color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
