@@ -69,6 +69,22 @@ if (existing && existing.source === 'erddap-live') {
   fs.writeFileSync(outPath, JSON.stringify(existing), 'utf-8')
   if (truncated) writePrivateForecastFile(dir, privateForecasts, existing.updatedAt || new Date().toISOString())
   console.log(`OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook${truncated ? ', gated J+2-7' : ''})`)
+  // Anti-staleness (WARN-ONLY — ne bloque PAS le deploy, cf. revue adverse) : un
+  // push-deploy ne relance PAS fetch-sargassum-live → le privé committé peut être
+  // plus vieux que le public ou lui manquer une sentinelle (cas 'precheur' ajouté
+  // par un merge). On le SIGNALE (run visible) sans fabriquer le privé ici (build
+  // n'a pas la donnée ERDDAP → reconstruire = inventer). Fix durable = le workflow
+  // commit le privé frais à chaque run live (cf. daily-copernicus.yml).
+  try {
+    const privPath = path.join(dir, '_private', 'forecast-full.json')
+    const priv = JSON.parse(fs.readFileSync(privPath, 'utf-8'))
+    const pubKeys = Object.keys(existing.weekly || {})
+    const missing = pubKeys.filter(id => !(priv.weekly && priv.weekly[id]))
+    const stalePriv = priv.updatedAt && existing.updatedAt && new Date(priv.updatedAt) < new Date(existing.updatedAt)
+    if (missing.length || stalePriv) {
+      console.warn(`⚠️ PRIVÉ FORECAST STALE/INCOMPLET vs public — manque=[${missing.join(',')}] | privé ${priv.updatedAt} ${stalePriv ? '<' : '>='} public ${existing.updatedAt}. Relancer fetch-sargassum-live (schedule/dispatch) pour régénérer la série J+2-7.`)
+    }
+  } catch (_) { /* pas de privé encore → première mise en place, rien à signaler */ }
 } else {
   const refConf = referenceConfidence()
   const levels = SARGASSUM_REF.map(l => ({

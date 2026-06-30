@@ -59,4 +59,29 @@ function gateWeekly(weekly) {
   return { publicWeekly, privateForecasts, truncated }
 }
 
-module.exports = { gateWeekly, FREE_DAYS }
+/**
+ * assertPrivateComplete — garde additive PURE (zéro effet de bord, ne fabrique
+ * RIEN). Vérifie que la prévision privée (J+2-7) couvre chaque sentinelle attendue
+ * avec au moins `requireDays` jours. Sert au pipeline live à DÉTECTER une régression
+ * (sentinelle absente / série tronquée) AVANT d'écrire/déployer un privé incomplet —
+ * le cas 'precheur' (sentinelle ajoutée → absente du privé du run précédent).
+ *
+ * @param {Object} privateForecasts  map id -> forecast[] (7j) — sortie de gateWeekly
+ * @param {string[]} expectedIds      ids qui DOIVENT avoir une série complète (= levels)
+ * @param {{requireDays?:number}} [opts]
+ * @returns {{ok:boolean, missing:string[], short:{id:string,days:number}[]}}
+ */
+function assertPrivateComplete(privateForecasts, expectedIds, opts = {}) {
+  const requireDays = opts.requireDays || 7
+  const missing = []
+  const short = []
+  const pf = privateForecasts && typeof privateForecasts === 'object' ? privateForecasts : {}
+  for (const id of expectedIds || []) {
+    const fc = pf[id]
+    if (!Array.isArray(fc)) { missing.push(id); continue }
+    if (fc.length < requireDays) short.push({ id, days: fc.length })
+  }
+  return { ok: missing.length === 0 && short.length === 0, missing, short }
+}
+
+module.exports = { gateWeekly, FREE_DAYS, assertPrivateComplete }
