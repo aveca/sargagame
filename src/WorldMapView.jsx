@@ -987,7 +987,14 @@ export default function WorldMapView({
       const k=D.filter(d=>b.days[d]==="clean").length
       if(k>safeK){safeK=k;safe=b}
     }
-    return {bestDay,bestN,safe:safeK>=2?safe:null,safeK}
+    // Saison calme valorisée : quasi tout vert sur la semaine + zéro « à éviter » → on
+    // retourne le « creux » en bénéfice (la valeur du Veilleur = l'alerte à la bascule),
+    // au lieu de laisser le premium penser « tout est vert, pourquoi j'ai payé ».
+    let cells=0,cleanCells=0,anyAvoid=false
+    for(const b of beachList){ for(const d of D){ const s=b.days[d]
+      if(s==="clean"||s==="moderate"||s==="avoid"){ cells++; if(s==="clean")cleanCells++; if(s==="avoid")anyAvoid=true } } }
+    const calm = cells>0 && !anyAvoid && cleanCells/cells>=0.9
+    return {bestDay,bestN,safe:safeK>=2?safe:null,safeK,calm}
   },[mapDecideOff,mapPremium,beachList])
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
@@ -1597,14 +1604,27 @@ export default function WorldMapView({
               borderRadius:12,padding:"6px 12px",
               font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",
             }}>
-              <div>{_t(lang,
-                `📅 Ta semaine — meilleur jour ${ti(lang,DAY_LBL[weekDigest.bestDay])} : ${weekDigest.bestN} plage${weekDigest.bestN>1?"s":""} propre${weekDigest.bestN>1?"s":""}`,
-                `📅 Your week — best day ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} clean beach${weekDigest.bestN>1?"es":""}`,
-                `📅 Tu semana — mejor día ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} playa${weekDigest.bestN>1?"s":""} limpia${weekDigest.bestN>1?"s":""}`)}</div>
-              {weekDigest.safe&&<div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
-                `Valeur sûre : ${weekDigest.safe.name} — propre ${weekDigest.safeK}/6 j`,
-                `Safe bet: ${weekDigest.safe.name} — clean ${weekDigest.safeK}/6 d`,
-                `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
+              {weekDigest.calm?(
+                <>
+                  <div>{_t(lang,
+                    "🌴 Toute ta semaine au vert",
+                    "🌴 Your whole week is green",
+                    "🌴 Toda tu semana en verde")}</div>
+                  <div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
+                    "On surveille pour toi — alerte à la seconde où ça bascule.",
+                    "We watch for you — alerted the second it shifts.",
+                    "Vigilamos por ti — aviso en cuanto cambie.")}</div>
+                </>
+              ):(<>
+                <div>{_t(lang,
+                  `📅 Ta semaine — meilleur jour ${ti(lang,DAY_LBL[weekDigest.bestDay])} : ${weekDigest.bestN} plage${weekDigest.bestN>1?"s":""} propre${weekDigest.bestN>1?"s":""}`,
+                  `📅 Your week — best day ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} clean beach${weekDigest.bestN>1?"es":""}`,
+                  `📅 Tu semana — mejor día ${ti(lang,DAY_LBL[weekDigest.bestDay])}: ${weekDigest.bestN} playa${weekDigest.bestN>1?"s":""} limpia${weekDigest.bestN>1?"s":""}`)}</div>
+                {weekDigest.safe&&<div style={{font:"700 9px/1.2 'Bricolage Grotesque',system-ui,sans-serif",opacity:.82,marginTop:2}}>{_t(lang,
+                  `Valeur sûre : ${weekDigest.safe.name} — propre ${weekDigest.safeK}/6 j`,
+                  `Safe bet: ${weekDigest.safe.name} — clean ${weekDigest.safeK}/6 d`,
+                  `Apuesta segura: ${weekDigest.safe.name} — limpia ${weekDigest.safeK}/6 d`)}</div>}
+              </>)}
             </div>
           )}
           {/* Bandeau confiance (Premium, jour futur sélectionné) — honnêteté : date réelle +
