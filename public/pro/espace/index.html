@@ -332,6 +332,14 @@
     var hotel=(Q.get("name")||"").replace(/[<>]/g,"").slice(0,48);
     var accent=(Q.get("accent")||"").replace(/[^0-9a-fA-F]/g,"").slice(0,6);
     var token=(Q.get("k")||"").trim();
+    // Conversion essai→payant : rollback ?trialconv=0. Décode le payload {h,exp} du
+    // token (base64url, NON vérifié — l'auth réelle reste serveur via widget-token.php).
+    var TRIALCONV_OFF=/[?&]trialconv=0/.test(location.search);
+    function decodeTokenPayload(t){try{var p=(t||"").split(".")[0];if(!p)return null;p=p.replace(/-/g,"+").replace(/_/g,"/");while(p.length%4)p+="=";return JSON.parse(atob(p));}catch(_){return null;}}
+    function trialUrgencyMsg(n){var soft=n>7;
+      if(LANG==="en")return soft?"<b>Pro trial active — "+n+" days left.</b> Subscribe now to keep your watch running without a gap.":"<b>"+(n<=1?"Last day of your trial.":n+" days left in your trial.")+"</b> Switch to Pro to keep your alerts without interruption.";
+      if(LANG==="es")return soft?"<b>Prueba Pro activa — "+n+" días restantes.</b> Suscríbete ahora para no perder tu vigilancia.":"<b>"+(n<=1?"Último día de tu prueba.":"Quedan "+n+" días de prueba.")+"</b> Pasa a Pro para conservar tus alertas sin interrupción.";
+      return soft?"<b>Essai Pro actif — "+n+" jours restants.</b> Abonnez-vous dès maintenant pour ne pas perdre votre veille.":"<b>"+(n<=1?"Dernier jour de votre essai.":"Plus que "+n+" jours d'essai.")+"</b> Passez en Pro pour garder vos alertes sans coupure.";}
     var island=SLUG2ISL[beachSlug];
     var DOMAIN=island==="GP"?"sargasses-guadeloupe.com":"sargasses-martinique.com";
     if(USD_REGION){island=USD_REGION;DOMAIN=HOST.replace(/^www\./,"");}
@@ -455,13 +463,30 @@
       if(u)$("subscribe").href=u;
     }).catch(function(){});
 
-    // ── token Pro : si valide → bandeau « vous êtes Pro » + masque la marque blanche ──
+    // ── token valide → distinguer ESSAI (≈30 j) d'un ABONNÉ payant (≈400 j) ──
+    // Essai : on GARDE la carte d'abo visible + bandeau d'urgence + email pré-rempli
+    // (le token essai répond pro:true → sans ça, la carte d'abo était masquée et le
+    // prospect ne voyait JAMAIS le CTA payant = la « falaise J+30 »). Rollback ?trialconv=0.
     if(token){
       fetch("https://"+DOMAIN+"/api/widget-token.php?k="+encodeURIComponent(token),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
-        if(j&&j.pro){
+        if(!(j&&j.pro))return;
+        $("wlNote").innerHTML=tr("wlActiveNote");
+        var pl=decodeTokenPayload(token);
+        var dleft=pl&&pl.exp?Math.max(0,Math.ceil((pl.exp*1000-Date.now())/86400000)):999;
+        if(dleft<=60&&!TRIALCONV_OFF){
+          // En essai : masque le bloc « démarrer l'essai », surface le bloc payant.
+          var em=(j.host||(pl&&pl.h)||"").trim();
+          if(em){var te=$("trialEmail");if(te)te.value=em;}            // pré-rempli → 1 clic
+          var tf=$("trialForm");if(tf)tf.style.display="none";
+          ["trialTitle","trialDesc"].forEach(function(k){var e=document.querySelector('[data-i18n="'+k+'"]');if(e)e.style.display="none";});
+          var bn=document.createElement("div");
+          bn.style.cssText="background:"+(dleft>7?"rgba(255,199,44,.16)":"rgba(255,107,107,.18)")+";border:1px solid "+(dleft>7?"rgba(255,199,44,.5)":"rgba(255,107,107,.55)")+";color:#fff;padding:13px 16px;border-radius:14px;margin-bottom:18px;font-size:14px;line-height:1.5";
+          bn.innerHTML=trialUrgencyMsg(dleft);
+          var sc=$("subCard");if(sc)sc.insertBefore(bn,sc.firstChild);
+        } else {
+          // Abonné payant (token ≈400 j) ou rollback : bandeau Pro + masque la carte d'abo.
           $("proBanner").style.display="flex";
-          $("wlNote").innerHTML=tr("wlActiveNote");
-          var sc=$("subCard");if(sc)sc.style.display="none";
+          var sc2=$("subCard");if(sc2)sc2.style.display="none";
         }
       }).catch(function(){});
     }
