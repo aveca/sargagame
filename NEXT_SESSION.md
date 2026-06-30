@@ -1,5 +1,18 @@
 # NEXT_SESSION — sargagame
 
+> **🎓 2026-06-30 — ONBOARDING PREMIUM « Le Poste de Veille » LIVE (#304) + signal saison hub (#303). Branche `claude/b2b-funnels-forecasting-o8qeof`.**
+>
+> **Conçu par PANEL ADVERSE** (workflow ultracode, 21 agents). Script `scratchpad/panel-onboarding.js`. Modèle gagnant : les 3 personas ont TUÉ le hub de tuiles (paradoxe du choix) → **VALEUR d'abord, accès ensuite, zéro porte fermée**.
+>
+> **`src/WelcomePoste.jsx` (LAZY) — accueil premium VERDICT-FIRST**, remplace le tunnel `PaidOnboarding` (fallback `?poste=0`). UN écran scrollable, UN dialog : [A] héro verdict réel plage proche (cadeau 0 tap) · [B] picker favoris **pré-coché** (geste cœur quasi-fait) · [C] alertes inline 1-tap · [D] preuve /fiabilite/ · [E] aperçu semaine (enseigne la grammaire, pas de fausse data) · [F] sortie nette. Zéro compteur, zéro cul-de-sac. **Typo clamp() intégrale** (fin du 800 écrasé/rotation/ombre — le grief), Anton plancher 22px, corps non-gras. a11y dialog/focus-✕/focus-trap-1-niveau/Échap/reduced-motion. **Cohérence verrouillée sur le CODE de WeekHub** (card/STATUS_C/DayCell/Watcher/gradient recopiés verbatim). **Or unifié #FFC72C** (PaidOnboarding corrigé). Câblé Sargasses_PROD (`POSTE_OFF`, remplace mount `LazyPaidOnboarding` L13669). Activation cœur préservée + `sg_onboard_section_act`. Budget 199,9/210.
+> **⚠️ Test** : déclenché à l'activation premium (splash → onboarding). Pour le revoir : `?premium=1` ou `?pass=trip` selon le code de `sg_premium_welcome`. Vérif device : 360/390/430 sans débordement titre, Tab/Échap, reduced-motion.
+>
+> **COHÉRENCE GLOBALE — substantiellement atteinte** : hub `WeekHub` ↔ onboarding `WelcomePoste` partagent le MÊME code (card/Watcher/STATUS_C/gradient/ton). La carte/fiches utilisent déjà les mêmes tokens `--sg-*` + `.lc-`. (Un panel de cohérence dédié reste possible mais le verrou « copier le code, pas la mémoire » l'a largement réglé.)
+>
+> **RESTE (chantiers data/infra, PAS des quick-fix UI)** :
+> - **Climatologie chiffrée** (« état B » du bloc planner) : BLOQUÉ par maturité data — historique = **45 j** (`history.json`, 31 entrées), N<30/mois → publierait un faux (viole le moat). Infra prête (investigation faite : `aggregate-climatology.cjs` à écrire, gate N≥30, JSON committé modèle `backtest-results.json`, bake build, pas de table Supabase à créer). **S'allume tout seul dans ~3 mois** quand l'historique mûrit. En attendant l'état A honnête (label ordinal `seasonOutlook` #303 + stabilité-côte mesurée) est LIVE.
+> - **Alerte J-7 planner** : l'opt-in du hub capture l'intention (relançable) MAIS ne PROMET pas de ping auto (honnêteté). Câbler la planif serveur → Supabase (stocker date+email, cron qui vérifie les dates approchant J-7), jamais Apps Script.
+
 > **🏛️ 2026-06-30 — HUB PRÉVISION PREMIUM « La Vigie » LIVE (#302) + panels en cours. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Conçu par PANEL ADVERSE** (workflow ultracode, 25 agents : 6 propositions × 3 personas critiques + synthèse `effort:high`). Scripts : `scratchpad/panel-premium-forecast.js` (relançable). Ossature gagnante « La Vigie ».
