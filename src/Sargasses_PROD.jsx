@@ -3335,17 +3335,26 @@ function BeachReport({beach,lang,communityReports}){
     return(last&&Date.now()-last<12*3600*1000)?g(evtKey,null):null
   })
   const[approvedEvents,setApprovedEvents]=useState(null)
+  const[evtBusy,setEvtBusy]=useState(false)
+  const[evtErr,setEvtErr]=useState(false)
   useEffect(()=>{
     if(!RAMASSAGE_ENABLED||!beach||!beach.id)return
     let alive=true
     fetchApprovedReports(beach.id).then(list=>{if(alive)setApprovedEvents(list||[])}).catch(()=>{})
     return()=>{alive=false}
   },[beach&&beach.id])
+  // Honnête : on ne confirme QUE si l'insert a réellement réussi. Si le backend
+  // n'est pas prêt (table absente) ou hors-ligne → pas de faux « Merci », le
+  // bouton reste actif. (0 fabrication, loi du moat.)
   const sendEvent=(event)=>{
-    if(evtDone)return
-    setEvtDone(event);s(evtKey,event);s("sg_bevent_t_"+beach.id,Date.now())
+    if(evtDone||evtBusy)return
+    setEvtBusy(true);setEvtErr(false)
     try{track("sg_beach_event",{beach_id:beach.id,event,satellite_status:beach.status,island:beach.island})}catch(_){}
-    submitBeachReport({beach,event}).catch(()=>{})
+    submitBeachReport({beach,event}).then(ok=>{
+      setEvtBusy(false)
+      if(ok){setEvtDone(event);s(evtKey,event);s("sg_bevent_t_"+beach.id,Date.now())}
+      else setEvtErr(true)
+    }).catch(()=>{setEvtBusy(false);setEvtErr(true)})
   }
   const _recentEvents=(approvedEvents||[]).filter(e=>{try{return Date.now()-new Date(e.ts).getTime()<48*3600*1000}catch(_){return false}})
   const cleanupCount=_recentEvents.filter(e=>e.event==="cleanup").length
@@ -3404,18 +3413,21 @@ function BeachReport({beach,lang,communityReports}){
           <div style={{display:"flex",gap:8}}>
             {[{id:"beaching",e:"🌊",l:"Algues arrivées",le:"Sargassum arrived",les:"Llegó sargazo",c:C.stMod,bg:C.amberBg},
               {id:"cleanup",e:"🧹",l:"Ramassé",le:"Cleaned up",les:"Recogido",c:C.green,bg:C.greenBg}].map(ev=>(
-              <button key={ev.id} type="button" onClick={()=>sendEvent(ev.id)} disabled={!!evtDone} style={{
-                flex:1,padding:"10px 8px",borderRadius:12,border:"none",cursor:evtDone?"default":"pointer",
+              <button key={ev.id} type="button" onClick={()=>sendEvent(ev.id)} disabled={!!evtDone||evtBusy} style={{
+                flex:1,padding:"10px 8px",borderRadius:12,border:"none",cursor:(evtDone||evtBusy)?"default":"pointer",
                 background:evtDone===ev.id?ev.bg:"var(--sg-card,#fff)",
                 color:evtDone===ev.id?ev.c:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",transition:"all .2s",
                 boxShadow:evtDone===ev.id?"inset 0 0 0 1.5px "+ev.c:"0 1px 4px rgba(0,0,0,.04)",
-                opacity:evtDone&&evtDone!==ev.id?.4:1,
+                opacity:((evtDone&&evtDone!==ev.id)||evtBusy)?.4:1,
                 display:"flex",alignItems:"center",justifyContent:"center",gap:5,
               }}><span aria-hidden="true">{ev.e}</span>{lang==="es"?ev.les:lang==="en"?ev.le:ev.l}</button>
             ))}
           </div>
           {evtDone&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
             {_t(lang,"Merci ! Ton signalement sera vérifié.","Thanks! Your report will be reviewed.","¡Gracias! Tu reporte será revisado.")}
+          </div>}
+          {evtErr&&!evtDone&&<div style={{marginTop:6,fontSize:11,color:"var(--sg-mid,#7a7768)",textAlign:"center",fontWeight:500}}>
+            {_t(lang,"Signalement indisponible pour l'instant — réessaie plus tard.","Reporting unavailable right now — try again later.","Reporte no disponible ahora — reinténtalo más tarde.")}
           </div>}
         </div>
       )}
