@@ -866,6 +866,7 @@ const SPACE_I18N={
   proOn:{fr:"Premium actif",en:"Premium active",es:"Premium activo"},
   proOnSub:{fr:"Prévision 7 jours + l'alerte le matin où ça bascule, débloquées sur tes plages. Le Veilleur veille la mer pour toi.",en:"7-day forecast + the alert the morning it flips, unlocked on your beaches. The Watcher watches the sea for you.",es:"Pronóstico 7 días + la alerta la mañana en que cambia, desbloqueados en tus playas. El Vigía mira el mar por ti."},
   manage:{fr:"Gérer mon Pass →",en:"Manage my Pass →",es:"Gestionar mi Pase →"},
+  manageSub:{fr:"Gérer / résilier mon abonnement →",en:"Manage / cancel my subscription →",es:"Gestionar / cancelar mi suscripción →"},
   proOff:{fr:"Passe en Premium",en:"Go Premium",es:"Hazte Premium"},
   proOffSub:{fr:"Débloque la prévision 7 jours plage par plage + l'alerte le jour exact où ça bascule.",en:"Unlock the 7-day forecast beach by beach + the alert the exact day it flips.",es:"Desbloquea el pronóstico 7 días playa por playa + la alerta el día exacto en que cambia."},
   favH:{fr:"MES PLAGES ♥",en:"MY BEACHES ♥",es:"MIS PLAYAS ♥"},
@@ -895,8 +896,37 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
           <div className="lc-space-pro on">
             <div className="lc-space-pro-badge">✓ {_t(SPACE_I18N.proOn)}</div>
             <div className="lc-space-pro-sub">{_t(SPACE_I18N.proOnSub)}</div>
-            {!captureMode&&<a className="lc-space-manage" href="/?manage=1"
-              onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>}
+            {!captureMode&&(()=>{
+              // Entrée de gestion AUDIENCE-AWARE (le moat = honnêteté ; loi anti-cul-de-sac).
+              //  · Abonné RÉCURRENT (legacy : sg_premium="1" sans pass_end) → entrée de
+              //    résiliation PERSISTANTE et correctement libellée (?manage=1 → portail/cancel
+              //    provider-aware). Conformité UE « bouton de résiliation », 100% self-serve.
+              //  · PASS one-time (sg_premium_pass_end) → RIEN à résilier : on affiche la date
+              //    d'expiration + la vérité « il expire seul », JAMAIS un portail qui renvoie
+              //    "no subscription" → cul-de-sac "écris-moi". Rollback : ?cancelinfo=0.
+              let cancelOff=false,passEnd=0,recurring=false
+              try{
+                cancelOff=/[?&]cancelinfo=0/.test(window.location.search)
+                passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0",10)||0
+                recurring=localStorage.getItem("sg_premium")==="1"&&!passEnd
+              }catch(_){}
+              if(cancelOff||recurring){
+                return <a className="lc-space-manage" href="/?manage=1"
+                  onClick={()=>{ if(track)try{track("sg_space_manage",{kind:recurring?"recurring":"legacy"})}catch(_){} }}>
+                  {_t(recurring?SPACE_I18N.manageSub:SPACE_I18N.manage)}</a>
+              }
+              if(passEnd>0){
+                let dstr=""
+                try{ const d=new Date(passEnd); if(!isNaN(d.getTime())) dstr=d.toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long",year:"numeric"}) }catch(_){}
+                return <div className="lc-space-passinfo">{_t({
+                  fr:"Pass actif"+(dstr?" jusqu'au "+dstr:"")+". Paiement unique — rien à résilier, il expire tout seul.",
+                  en:"Pass active"+(dstr?" until "+dstr:"")+". One-time payment — nothing to cancel, it expires on its own.",
+                  es:"Pase activo"+(dstr?" hasta el "+dstr:"")+". Pago único — nada que cancelar, expira solo."})}</div>
+              }
+              // Premium sans signal pass/abo clair → fallback prudent vers le lien de gestion existant.
+              return <a className="lc-space-manage" href="/?manage=1"
+                onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>
+            })()}
           </div>
           {/* Hub PARRAINAGE (premium uniquement) — c'est ici qu'on émet enfin
               sg_referral_share (déjà whitelisté). Le code stable est généré à
@@ -2402,6 +2432,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-space-pro-badge{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;color:var(--ink);letter-spacing:.4px}
 .lc-space-pro-sub{font-size:13px;color:#3a4a52;margin:4px 0 10px;line-height:1.4}
 .lc-space-manage{display:inline-block;font-weight:800;font-size:13px;color:#0d2330;text-decoration:none;border-bottom:3px solid var(--yel);padding-bottom:1px}
+.lc-space-passinfo{font-size:12.5px;color:#3a4a52;line-height:1.45;margin-top:2px}
 .lc-space-pro .lc-cta{margin-top:2px}
 .lc-space-sec-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;color:var(--ink);margin:18px 0 9px}
 .lc-space-fav-list{display:flex;flex-direction:column;gap:8px}
