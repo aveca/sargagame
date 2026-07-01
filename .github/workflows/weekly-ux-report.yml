@@ -47,9 +47,17 @@ jobs:
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
         run: node scripts/automation/seo-audit.cjs
 
-      # ── 2. Generate UX report ────────────────────────────
+      # ── 2. Generate UX report (+ coupables dead-click NOMMÉS via stats.php
+      #       first-party top_dead_els, indépendant de GA4/Clarity) ──
       - name: UX Audit (report)
         if: steps.seo-audit.outcome == 'success'
+        env:
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+          SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
+          SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
+          SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
         run: node scripts/automation/ux-audit.cjs
 
       # ── 3. Commit report AVANT le capture audit ─────────────────────────
