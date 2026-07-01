@@ -250,6 +250,11 @@ export default function WorldMapView({
   // sélectionnée → carte canvas golden-hour spoiler-free (réutilise shareBeachCard du parent,
   // navigator.share natif). Rollback : ?mapshare=0.
   const mapShareOff = (()=>{try{return /[?&]mapshare=0/.test(window.location.search)}catch(_){return false}})()
+  // Dead/rage-click carte (audit : carte = surface la + tapée-sans-réponse) : cibles tactiles
+  // pins ≥44px (hit-zone transparente élargie, art inchangé) + noms de plage TAPABLES (le nom
+  // à côté du pin invite le tap → ouvre la fiche). Purement additif. Rollback : ?mappinhit=0 / ?maplabeltap=0.
+  const mapPinHitOff = (()=>{try{return /[?&]mappinhit=0/.test(window.location.search)}catch(_){return false}})()
+  const mapLabelTapOff = (()=>{try{return /[?&]maplabeltap=0/.test(window.location.search)}catch(_){return false}})()
   // (Swipe-to-scrub retiré 2026-06-30 : conflit avec le pan de la carte, confirmé fondateur.)
   // Hub « Ma semaine » (« La Vigie », panel 2026-06-30) : l'encart digest devient tapable ->
   // ouvre le hub prévision premium (lazy). Rollback : ?weekhub=0 (l'encart redevient un simple
@@ -1287,7 +1292,7 @@ export default function WorldMapView({
               return(
                 <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
-                  <circle r="8" fill="transparent"/>
+                  <circle r={mapPinHitOff?"8":"12"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
                 </g>
               )
@@ -1306,6 +1311,8 @@ export default function WorldMapView({
                   selectBeach(b)
                   if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_pin"})}catch(_){}; onOpenBeach(b) }
                 }}>
+                {/* Hit-zone tactile ≥44px (transparente, art inchangé) — fix dead/rage-clicks carte. */}
+                {!mapPinHitOff&&<circle r="22" cy="-9" fill="transparent"/>}
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
@@ -1396,18 +1403,21 @@ export default function WorldMapView({
           const st=b.days[day]
           const col=STATUS_C[st]||"#888"
           const li=lang==="en"?1:lang==="es"?2:0
+          const openB=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } }
           return(
             <div key={b.id}
               data-vx={b.vx}
               data-vy={b.vy}
               data-status={st}
               data-sel={selected?.id===b.id?"1":"0"}
+              {...(!mapLabelTapOff?{role:"button",tabIndex:0,"aria-label":b.name,onClick:openB,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openB(e)}}}:{})}
               style={{
                 position:"absolute",left:0,top:0,
                 transform:"translate(-50%,-100%)",
-                paddingBottom:8,
+                paddingBottom:mapLabelTapOff?8:14,
                 textAlign:"center",
                 whiteSpace:"nowrap",
+                ...(mapLabelTapOff?{}:{pointerEvents:"auto",cursor:"pointer"}),
               }}>
               <div style={{
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
