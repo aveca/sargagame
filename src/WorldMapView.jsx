@@ -207,6 +207,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 
 export default function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  onAccess=null, onEnableNotif=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -216,6 +217,16 @@ export default function WorldMapView({
   // composite ERDDAP+forecast) ou absente (pin gris) — JAMAIS fabriquée (loi du moat).
   const mapForecastOff = (()=>{try{return /[?&]mapforecast=0/.test(window.location.search)}catch(_){return false}})()
   const mapPremium = !!isPremium && !mapForecastOff
+  // Contrôles compte + notifications VISIBLES sur l'accueil-carte. Avant : le Header
+  // standard (cloche + « Mon accès ») était rendu SOUS la chrome fixed de la carte
+  // (zIndex 10) → invisible ; on ne pouvait ni activer les alertes ni gérer/résilier
+  // son abonnement depuis l'écran principal. Verdict panel adverse : NE PAS enterrer
+  // sous un menu ≡ (ça recrée l'invisibilité + cache la résiliation) → 2 boutons
+  // sticker DIRECTEMENT visibles. Rollback : ?mapnav=0. rootMode only (accueil-carte ;
+  // hors rootMode le Header réel est visible au-dessus).
+  const mapNavOff = (()=>{try{return /[?&]mapnav=0/.test(window.location.search)}catch(_){return false}})()
+  const showMapNav = rootMode && !mapNavOff && (onAccess || onEnableNotif)
+  const notifGranted = (()=>{try{return typeof Notification!=="undefined" && Notification.permission==="granted"}catch(_){return false}})()
   const [premiumHint, setPremiumHint] = useState(false)
   // Mode « dérive Premium » sur les jours futurs : échouage en BOUCLE (sensation
   // d'arrivée continue) + halo qui pulse sur les plages prévues touchées + badge
@@ -1483,9 +1494,43 @@ export default function WorldMapView({
           }}>✕</button>}
         </div>
 
-        {/* H1 + jauge */}
+        {/* Contrôles PERSO VISIBLES sur l'accueil-carte — cluster vertical top-right,
+            SOUS la barre (ne compresse pas la recherche). Notifications + compte
+            (gérer/résilier). Classe .sg-mapnav (doublé-classe + !important) : bat le
+            skin theme-comic dont le var(--sg-card) est inerte sur body (dette tokens). */}
+        {showMapNav&&(
+          <div style={{position:"absolute",right:16,
+            top:topInset?(topInset+62)+"px":"calc(62px + env(safe-area-inset-top))",
+            display:"flex",flexDirection:"row",gap:9,pointerEvents:"auto",zIndex:3}}>
+            {onEnableNotif&&(
+              <button className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_notif_click",{})}catch(_){}; onEnableNotif()}}
+                aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+                title={_t(lang,"Alertes","Alerts","Alertas")}>
+                <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
+                  <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={notifGranted?"currentColor":"none"}/>
+                  <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+            {onAccess&&(
+              <button className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_access_click",{premium:!!isPremium})}catch(_){}; onAccess()}}
+                aria-label={isPremium?_t(lang,"Mon compte — gérer ou résilier l'abonnement","My account — manage or cancel subscription","Mi cuenta — gestionar o cancelar suscripción"):_t(lang,"Mon accès","My access","Mi acceso")}
+                title={isPremium?_t(lang,"Mon compte","My account","Mi cuenta"):_t(lang,"Mon accès","My access","Mi acceso")}
+                style={{position:"relative"}}>
+                <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                {isPremium&&<span aria-hidden="true" style={{position:"absolute",top:-4,right:-4,width:13,height:13,borderRadius:"50%",background:"#FFC72C",border:"2px solid #190c2c"}}/>}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* H1 + jauge — décalé sous le cluster contrôles quand il est visible (showMapNav)
+            → header 2 rangées propre (recherche + contrôles), zéro chevauchement 360/390/430. */}
         <div style={{
-          position:"absolute",top:topInset?(topInset+58)+"px":"calc(58px + env(safe-area-inset-top))",
+          position:"absolute",top:topInset?(topInset+58+(showMapNav?54:0))+"px":`calc(${58+(showMapNav?54:0)}px + env(safe-area-inset-top))`,
           left:0,right:0,maxWidth:560,margin:"0 auto",padding:"0 18px",pointerEvents:"none",
         }}>
           <h2 style={{
