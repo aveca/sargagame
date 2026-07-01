@@ -133,6 +133,16 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/backtest-forecast.cjs
 
+      # Auto-calage du half-life échoué : no-op tant que la saison est calme (gate
+      # min-échantillon) ; dès qu'il y a de vraies plages chargées, recale (borné +
+      # lissé) le JSON lu par forecast.cjs et email le fondateur à chaque changement.
+      - name: "[Wednesday] Recalibrate beached half-life"
+        if: steps.day.outputs.task == 'wednesday'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/beached-calibrate.cjs --send
+
       - name: "[Wednesday] Health check both sites + staleness"
         if: steps.day.outputs.task == 'wednesday'
         continue-on-error: true
@@ -151,8 +161,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add scripts/automation/data/daily-metrics.json scripts/automation/data/backtest-results.json || true
+          git add scripts/automation/data/beached-calibration.json scripts/automation/data/beached-calibration-seen.json || true
           git diff --cached --quiet || git commit -m "chore: wednesday data quality check $(date -u +'%Y-%m-%d')"
-          git push || true
+          git push || (git pull --rebase -X theirs && git push) || true
 
       # ── JEUDI: A/B mid-week check + email stats ──
       - name: "[Thursday] Fetch A/B data from GA4 (mid-week)"

@@ -23,6 +23,8 @@
  *   - Day 4+: persistence only + wider uncertainty (marked as horizon)
  */
 
+const fs = require('fs')
+const path = require('path')
 const {
   forecastConfidence,
   classifyRegime,
@@ -31,6 +33,7 @@ const {
   HALF_LIFE_DAYS,
   DECAY_LAMBDA,
   BEACHED_DECAY_LAMBDA,
+  BEACHED_HALF_LIFE_DAYS,
 } = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
@@ -46,9 +49,34 @@ const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
 // over weeks if untouched, but flagship beaches are cleaned ~daily, so 12d is a
 // deliberate middle, biased neither to "gone in days" nor "red for a month").
 const BEACHED_HOLD_ON = process.env.SG_BEACHED_HOLD !== '0'
-const BEACHED_LAMBDA = process.env.SG_BEACHED_HALF_LIFE
-  ? Math.LN2 / Math.max(1, parseFloat(process.env.SG_BEACHED_HALF_LIFE))
-  : BEACHED_DECAY_LAMBDA
+// Generated calibration file (written by beached-calibrate.cjs once real
+// échouage data lets the pipeline fit the half-life). Read lazily & cached; a
+// missing/invalid file is normal (calm season) → fall back to the prior.
+const BEACHED_CALIB_PATH = path.join(__dirname, '../automation/data/beached-calibration.json')
+let _calibCache
+function calibratedHalfLifeDays() {
+  if (_calibCache === undefined) {
+    try {
+      const j = JSON.parse(fs.readFileSync(BEACHED_CALIB_PATH, 'utf-8'))
+      const v = parseFloat(j.halfLifeDays)
+      _calibCache = isFinite(v) && v > 0 ? v : null
+    } catch { _calibCache = null }
+  }
+  return _calibCache
+}
+// Resolve the beached-hold half-life per call. Precedence:
+//   env SG_BEACHED_HALF_LIFE (manual pin / kill)  >  overrideDays (sweep/opts)
+//   >  generated calibration JSON  >  provisional prior (BEACHED_HALF_LIFE_DAYS).
+// Clamped ≥1d. Resolving per call (not once at require) lets the calibration
+// sweep vary it via opts without reloading the module.
+function resolveBeachedLambda(overrideDays) {
+  let days = BEACHED_HALF_LIFE_DAYS
+  const calib = calibratedHalfLifeDays()
+  if (calib != null) days = calib
+  if (overrideDays != null && isFinite(overrideDays)) days = overrideDays
+  if (process.env.SG_BEACHED_HALF_LIFE) days = parseFloat(process.env.SG_BEACHED_HALF_LIFE)
+  return Math.LN2 / Math.max(1, days)
+}
 // A beach only counts as "beached" (grounded stock that persists) above a clear
 // load, with hysteresis above the 0.15 clean/moderate line so a beach chattering
 // at the boundary — or a transient OFFSHORE-water AFAI blip that the trades blow
@@ -398,8 +426,12 @@ function onshoreWindGate(beach, hourlyWind) {
  * @param {Array} [banks] - sargassum-banks.json entries (optional)
  * @param {object} [communityReports] - { beachId: { clean, moderate, avoid, total } } (optional)
  */
-function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports, marineData) {
+function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports, marineData, opts) {
   const weekly = {}
+  // Beached-hold half-life resolved once per call (env pin > opts override >
+  // calibration JSON > prior). opts.beachedHalfLifeDays lets the calibration
+  // sweep test candidates without reloading the module.
+  const beachedLambda = resolveBeachedLambda(opts && opts.beachedHalfLifeDays)
   // Generique multi-regions: windForecast est cle par island/region (mq, gp, puntacana, ...)
   const hasWind = !!(windForecast && Object.values(windForecast).some(w => w?.hourly?.length))
   const hasBanks = Array.isArray(banks) && banks.length > 0
@@ -498,7 +530,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // half-life (decision made ONCE above from the observed day-0 load).
         // Calm beaches are clean at day0 so beachedHold is false → the calm-season
         // false-alarm calibration stays byte-identical.
-        const dayLambda = beachedHold ? BEACHED_LAMBDA : DECAY_LAMBDA
+        const dayLambda = beachedHold ? beachedLambda : DECAY_LAMBDA
         const dayDecay = Math.exp(-dayLambda) // ~0.87/d (sea) or ~0.94/d (beached hold)
 
         // Wind: small contribution, weaker as days increase
