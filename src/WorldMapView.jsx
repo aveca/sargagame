@@ -1488,12 +1488,12 @@ export default function WorldMapView({
                    plein écran (ChasseDetail, position:fixed) s'ouvre au clic d'un résultat →
                    fiche « zoomée »/décalée, interface cassée. Garder ≥16px. */
                 style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
-              {query&&<button onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
+              {query&&<button type="button" onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
             </div>
             {matches.length>0&&(
               <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 4px 0 ${INK}`,borderRadius:12,overflow:"hidden",zIndex:20}}>
                 {matches.map(b=>(
-                  <button key={b.id} onClick={()=>{try{track&&track("sg_map_search_open",{id:b.id})}catch(_){}; setQuery(""); onOpenBeach&&onOpenBeach(b)}}
+                  <button type="button" key={b.id} onClick={()=>{try{track&&track("sg_map_search_open",{id:b.id})}catch(_){}; setQuery(""); onOpenBeach&&onOpenBeach(b)}}
                     style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",background:"none",border:"none",borderBottom:"1px solid rgba(13,11,20,.12)",padding:"9px 11px",cursor:"pointer",font:"700 12.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
                     <span style={{width:9,height:9,borderRadius:"50%",background:STATUS_C[b.status]||"#9aa0a8",flexShrink:0}}/>
                     <span style={{flex:1}}>{b.name}</span>
@@ -1504,7 +1504,7 @@ export default function WorldMapView({
             )}
           </div>
           {/* Fermer (hors rootMode) */}
-          {!rootMode&&<button onClick={onClose} style={{
+          {!rootMode&&<button type="button" onClick={onClose} style={{
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
             background:"#fdf6e3",
             color:INK,font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
@@ -1521,7 +1521,7 @@ export default function WorldMapView({
             top:topInset?(topInset+62)+"px":"calc(62px + env(safe-area-inset-top))",
             display:"flex",flexDirection:"row",gap:9,pointerEvents:"auto",zIndex:3}}>
             {onEnableNotif&&(
-              <button className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_notif_click",{})}catch(_){}; onEnableNotif()}}
+              <button type="button" className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_notif_click",{})}catch(_){}; onEnableNotif()}}
                 aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
                 title={_t(lang,"Alertes","Alerts","Alertas")}>
                 <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
@@ -1531,7 +1531,7 @@ export default function WorldMapView({
               </button>
             )}
             {onAccess&&(
-              <button className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_access_click",{premium:!!isPremium})}catch(_){}; onAccess()}}
+              <button type="button" className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_access_click",{premium:!!isPremium})}catch(_){}; onAccess()}}
                 aria-label={isPremium?_t(lang,"Mon compte — gérer ou résilier l'abonnement","My account — manage or cancel subscription","Mi cuenta — gestionar o cancelar suscripción"):_t(lang,"Mon accès","My access","Mi acceso")}
                 title={isPremium?_t(lang,"Mon compte","My account","Mi cuenta"):_t(lang,"Mon accès","My access","Mi acceso")}
                 style={{position:"relative"}}>
@@ -1592,12 +1592,12 @@ export default function WorldMapView({
                 placeholder={_t(lang,"ton@email — verdict gratuit","your@email — free verdict","tu@email — veredicto gratis")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
                   padding:"6px 9px",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
-              <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
+              <button type="button" onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
                 style={{flexShrink:0,border:`2px solid ${INK}`,
                   background:(emailVal&&emailVal.includes("@"))?"#ffd23f":"rgba(13,11,20,.08)",
                   color:INK,font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
                   padding:"7px 11px",borderRadius:8,cursor:(emailVal&&emailVal.includes("@"))?"pointer":"not-allowed"}}>OK</button>
-              <button onClick={()=>{try{localStorage.setItem("sg_hero_email_dismiss","1")}catch(_){}; setEmailHidden(true); try{track&&track("sg_map_email_dismiss",{})}catch(_){}}}
+              <button type="button" onClick={()=>{try{localStorage.setItem("sg_hero_email_dismiss","1")}catch(_){}; setEmailHidden(true); try{track&&track("sg_map_email_dismiss",{})}catch(_){}}}
                 aria-label={_t(lang,"Fermer","Close","Cerrar")}
                 style={{flexShrink:0,background:"none",border:"none",color:INK,opacity:.5,
                   fontSize:16,lineHeight:1,cursor:"pointer",padding:"0 2px"}}>×</button>
@@ -1652,7 +1652,7 @@ export default function WorldMapView({
             </div>
           ))}
           {!proMapOff&&onOpenPro&&(
-            <button className="sg-mapchip" onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
+            <button type="button" className="sg-mapchip" onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
               style={{pointerEvents:"auto",marginTop:6,display:"inline-flex",alignItems:"center",gap:5,
                 cursor:"pointer",textAlign:"left",
                 // Pastille sombre OPAQUE + texte blanc plein → lisible quel que soit
@@ -1670,7 +1670,7 @@ export default function WorldMapView({
             prouvée sur cette carte). Le texte ne peut JAMAIS virer noir-illisible :
             la couleur EST blanche, indépendante du fond de pastille (le crème ne
             peignait pas de façon fiable sur iOS → texte ink sur carte sombre = noir). */}
-        <button className="sg-mapchip" style={{
+        <button type="button" className="sg-mapchip" style={{
           position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
           background:"#190c2c",
@@ -1682,7 +1682,7 @@ export default function WorldMapView({
         </button>
 
         {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}
-        <button aria-label={muted?_t(lang,"Activer le son d'échouage","Enable beaching sound","Activar sonido"):_t(lang,"Couper le son d'échouage","Mute beaching sound","Silenciar")}
+        <button type="button" aria-label={muted?_t(lang,"Activer le son d'échouage","Enable beaching sound","Activar sonido"):_t(lang,"Couper le son d'échouage","Mute beaching sound","Silenciar")}
           onClick={()=>{ const m=!muted; setMuted(m); mutedRef.current=m; if(!m){ ensureAudio(); playBoump(.9) } }}
           style={{
             position:"absolute",right:16,bottom:"calc(124px + env(safe-area-inset-bottom))",
@@ -1695,7 +1695,7 @@ export default function WorldMapView({
             du mute dans la pile droite. Pastille encre + picto blanc (recette sg-mapchip,
             lisible garanti). Rollback ?mapshare=0. */}
         {selected&&onShare&&!mapShareOff&&(
-          <button className="sg-mapchip" aria-label={_t(lang,"Partager ma plage","Share my beach","Compartir mi playa")}
+          <button type="button" className="sg-mapchip" aria-label={_t(lang,"Partager ma plage","Share my beach","Compartir mi playa")}
             onClick={onShareSel}
             style={{
               position:"absolute",right:16,bottom:"calc(176px + env(safe-area-inset-bottom))",
@@ -1788,7 +1788,7 @@ export default function WorldMapView({
             {DAY_LBL.map((lbl,i)=>{
               const locked = i>=1 && !mapPremium
               return(
-              <button key={i} aria-label={ti(lang,lbl)+(locked?" 🔒":"")} style={{
+              <button type="button" key={i} aria-label={ti(lang,lbl)+(locked?" 🔒":"")} style={{
                 WebkitAppearance:"none",appearance:"none",
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
                 background:day===i?"#ff7a2f":(mapPremium&&i>=1?"rgba(255,199,44,.18)":"transparent"),
@@ -1828,7 +1828,7 @@ export default function WorldMapView({
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:5,
           }}>
-            <button onClick={onClose} style={{
+            <button type="button" onClick={onClose} style={{
               display:"flex",alignItems:"center",gap:6,border:`2px solid ${INK}`,
               background:"#ffd23f",color:INK,
               font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
@@ -1907,7 +1907,7 @@ export default function WorldMapView({
             {planB&&(()=>{
               const km=planB.km<1?_t(lang,"< 1 km","< 1 km","< 1 km"):`${Math.round(planB.km)} km`
               return(
-                <button onClick={(e)=>{try{e.stopPropagation()}catch(_){}; selectBeach(planB.beach); try{track&&track("sg_map_planb",{island})}catch(_){}}}
+                <button type="button" onClick={(e)=>{try{e.stopPropagation()}catch(_){}; selectBeach(planB.beach); try{track&&track("sg_map_planb",{island})}catch(_){}}}
                   style={{pointerEvents:"auto",cursor:"pointer",marginTop:7,display:"flex",alignItems:"center",gap:5,
                     background:"#0f5132",color:"#eafaf0",border:`2px solid ${INK}`,borderRadius:999,padding:"5px 9px",
                     textAlign:"left",whiteSpace:"normal",maxWidth:172,
@@ -1923,7 +1923,7 @@ export default function WorldMapView({
         {/* CTA Voir la plage — ouvre la fiche dès le pointerdown, en capturant la plage
             sélectionnée AVANT toute déselection par la couche carte (fix P0 tap au doigt). */}
         {selected&&(
-          <button className="sg-mapcta" onClick={openBeach}
+          <button type="button" className="sg-mapcta" onClick={openBeach}
             onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ lastPtrOpenRef.current=Date.now(); try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
             style={{
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
