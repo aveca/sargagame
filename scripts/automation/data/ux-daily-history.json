@@ -2,85 +2,38 @@
   {
     "date": "2026-07-01",
     "region": "mq",
-    "sessions": 190,
+    "sessions": 306,
     "friction": 4,
-    "dead_rate": 0.368,
+    "dead_rate": 0.347,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.376,
-      "n": 364
+      "rate": 0.355,
+      "n": 608
     },
     "top_dead_els": [
       {
         "el": "svg[role=img]",
-        "count": 77
-      },
-      {
-        "el": "div",
-        "count": 20
+        "count": 122
       },
       {
         "el": "div.sg-onink-scope",
-        "count": 15
+        "count": 34
+      },
+      {
+        "el": "div",
+        "count": 28
+      },
+      {
+        "el": "div.lc-detail-body",
+        "count": 4
       },
       {
         "el": "div.lc-detail-head",
+        "count": 4
+      },
+      {
+        "el": "span.lc-detail-fact",
         "count": 3
-      },
-      {
-        "el": "div#bc0",
-        "count": 3
-      },
-      {
-        "el": "body.theme-comic",
-        "count": 3
-      }
-    ],
-    "bored_worst": {
-      "screen": "world",
-      "rate": 0.21
-    },
-    "modal_to_cta": 0,
-    "cta_to_redirect": 0,
-    "redirect_to_conversion": 0,
-    "session_to_conversion": 0,
-    "session_to_email": 0
-  },
-  {
-    "date": "2026-07-01",
-    "region": "gp",
-    "sessions": 74,
-    "friction": 2,
-    "dead_rate": 0.301,
-    "dead_worst": {
-      "screen": "world",
-      "rate": 0.324,
-      "n": 148
-    },
-    "top_dead_els": [
-      {
-        "el": "svg[role=img]",
-        "count": 19
-      },
-      {
-        "el": "div.sg-onink-scope",
-        "count": 8
-      },
-      {
-        "el": "div",
-        "count": 5
-      },
-      {
-        "el": "rect",
-        "count": 3
-      },
-      {
-        "el": "circle",
-        "count": 2
-      },
-      {
-        "el": "div.lc-detail-sub",
-        "count": 1
       }
     ],
     "bored_worst": {
@@ -95,20 +48,75 @@
   },
   {
     "date": "2026-07-01",
-    "region": "florida",
-    "sessions": 16,
-    "friction": 0,
-    "dead_rate": 0.222,
-    "dead_worst": null,
+    "region": "gp",
+    "sessions": 203,
+    "friction": 2,
+    "dead_rate": 0.362,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.386,
+      "n": 352
+    },
     "top_dead_els": [
       {
         "el": "svg[role=img]",
-        "count": 2
+        "count": 68
+      },
+      {
+        "el": "div.sg-onink-scope",
+        "count": 25
+      },
+      {
+        "el": "div",
+        "count": 15
+      },
+      {
+        "el": "circle",
+        "count": 8
+      },
+      {
+        "el": "span.lc-detail-fact",
+        "count": 7
+      },
+      {
+        "el": "rect",
+        "count": 4
       }
     ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.13
+      "rate": 0.24
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-01",
+    "region": "florida",
+    "sessions": 36,
+    "friction": 0,
+    "dead_rate": 0.667,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.667,
+      "n": 42
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 17
+      },
+      {
+        "el": "svg[role=img]",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.17
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -119,11 +127,16 @@
   {
     "date": "2026-07-01",
     "region": "puntacana",
-    "sessions": 4,
+    "sessions": 7,
     "friction": 0,
-    "dead_rate": 0,
+    "dead_rate": 0.5,
     "dead_worst": null,
-    "top_dead_els": [],
+    "top_dead_els": [
+      {
+        "el": "svg[role=img]",
+        "count": 1
+      }
+    ],
     "bored_worst": null,
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -134,14 +147,22 @@
   {
     "date": "2026-07-01",
     "region": "rivieramaya",
-    "sessions": 6,
+    "sessions": 8,
     "friction": 0,
-    "dead_rate": 0.286,
+    "dead_rate": 0.364,
     "dead_worst": null,
     "top_dead_els": [
       {
         "el": "div.sg-onink-scope",
         "count": 2
+      },
+      {
+        "el": "svg[role=img]",
+        "count": 1
+      },
+      {
+        "el": "span.lc-detail-fact",
+        "count": 1
       }
     ],
     "bored_worst": null,

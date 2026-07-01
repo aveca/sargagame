@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T10:02:38.325Z",
+  "generated": "2026-07-01T14:52:08.020Z",
   "date": "2026-07-01",
   "days": 1,
   "regions": [
@@ -10,6 +10,38 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "eb030f32",
+      "subject": "Session Sargatrack : /fiabilite/ prélude + wallet-gate + partage viral + GTT slice1 (#385)"
+    },
+    {
+      "h": "d2ec02c4",
+      "subject": "feat(gtt): modèle simple — Approuver applique le SENS du signalement au verdict (bidirectionnel) (#386)"
+    },
+    {
+      "h": "7675b199",
+      "subject": "fix(carte): rattrape les clics morts du fond de carte + déclencheur /ux self-serve (#383)"
+    },
+    {
+      "h": "da50ba46",
+      "subject": "Réponse Sargatrack : analyse concurrentielle + recrutement galerie photos vide (#379)"
+    },
+    {
+      "h": "92b46199",
+      "subject": "feat(gtt): lane descente — calque « Terrain » dans la fiche plage (Phase 2a) (#384)"
+    },
+    {
+      "h": "ca0ecb9e",
+      "subject": "chore: update Copernicus data 2026-07-01 10:02 UTC"
+    },
+    {
+      "h": "f36b4cba",
+      "subject": "chore: email state 2026-07-01 10:02 UTC"
+    },
+    {
+      "h": "addb1870",
+      "subject": "Démarrage : supprimer la fuite body.theme-comic (#382)"
+    },
     {
       "h": "2fa81656",
       "subject": "feat(reports): submit-report Edge Function (Phase 0.3) + redirect fiche plage post-modération (#378)"
@@ -77,125 +109,43 @@
     {
       "h": "983069b2",
       "subject": "Carte : labels de plage zoom-aware — vue large = 5 plus impactées, zoom = alertes du viewport (#351)"
-    },
-    {
-      "h": "32ec12eb",
-      "subject": "Perf carte : précharge le contour côtier régional (pins/côte 1 aller-retour plus tôt) (#352)"
-    },
-    {
-      "h": "11f76efc",
-      "subject": "Cloche : ouvre « Mon accès » (section Alertes) au lieu d'un no-op silencieux (#350)"
-    },
-    {
-      "h": "93c6c88a",
-      "subject": "Carte : supprime le glitch de chargement (labels qui apparaissent puis sautent) (#349)"
-    },
-    {
-      "h": "7627e49c",
-      "subject": "Carte : noms à côté du pin pour les ~5 plages les plus impactées (fix roster) (#348)"
-    },
-    {
-      "h": "3f08ea7a",
-      "subject": "Mon accès : feuille compte (email affiché + alertes gérées) via l'icône personnage (#347)"
-    },
-    {
-      "h": "efd45d16",
-      "subject": "Carte : roster « plages impactées » hors littoral + labels côte impactés-seuls (#346)"
-    },
-    {
-      "h": "dbea6931",
-      "subject": "Carte : fix freeze — clavier iOS ouvert au tap des jours (type=button) (#345)"
-    },
-    {
-      "h": "3be559c6",
-      "subject": "DEFER items: map empty-tap hint + gesture-scoped rect cache (both flagged) (#343)"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 190,
+      "sessions": 306,
       "friction": 4,
-      "dead_rate": 0.368,
+      "dead_rate": 0.347,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.376,
-        "n": 364
+        "rate": 0.355,
+        "n": 608
       },
       "top_dead_els": [
         {
           "el": "svg[role=img]",
-          "count": 77
-        },
-        {
-          "el": "div",
-          "count": 20
+          "count": 122
         },
         {
           "el": "div.sg-onink-scope",
-          "count": 15
+          "count": 34
+        },
+        {
+          "el": "div",
+          "count": 28
+        },
+        {
+          "el": "div.lc-detail-body",
+          "count": 4
         },
         {
           "el": "div.lc-detail-head",
+          "count": 4
+        },
+        {
+          "el": "span.lc-detail-fact",
           "count": 3
-        },
-        {
-          "el": "div#bc0",
-          "count": 3
-        },
-        {
-          "el": "body.theme-comic",
-          "count": 3
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.21
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": null,
-      "changes": [
-        "(pas de veille — premier cliché)"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 74,
-      "friction": 2,
-      "dead_rate": 0.301,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.324,
-        "n": 148
-      },
-      "top_dead_els": [
-        {
-          "el": "svg[role=img]",
-          "count": 19
-        },
-        {
-          "el": "div.sg-onink-scope",
-          "count": 8
-        },
-        {
-          "el": "div",
-          "count": 5
-        },
-        {
-          "el": "rect",
-          "count": 3
-        },
-        {
-          "el": "circle",
-          "count": 2
-        },
-        {
-          "el": "div.lc-detail-sub",
-          "count": 1
         }
       ],
       "bored_worst": {
@@ -213,20 +163,78 @@
       ]
     },
     {
-      "region": "florida",
-      "sessions": 16,
-      "friction": 0,
-      "dead_rate": 0.222,
-      "dead_worst": null,
+      "region": "gp",
+      "sessions": 203,
+      "friction": 2,
+      "dead_rate": 0.362,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.386,
+        "n": 352
+      },
       "top_dead_els": [
         {
           "el": "svg[role=img]",
-          "count": 2
+          "count": 68
+        },
+        {
+          "el": "div.sg-onink-scope",
+          "count": 25
+        },
+        {
+          "el": "div",
+          "count": 15
+        },
+        {
+          "el": "circle",
+          "count": 8
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 7
+        },
+        {
+          "el": "rect",
+          "count": 4
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.13
+        "rate": 0.24
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 36,
+      "friction": 0,
+      "dead_rate": 0.667,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.667,
+        "n": 42
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 17
+        },
+        {
+          "el": "svg[role=img]",
+          "count": 11
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.17
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -240,11 +248,16 @@
     },
     {
       "region": "puntacana",
-      "sessions": 4,
+      "sessions": 7,
       "friction": 0,
-      "dead_rate": 0,
+      "dead_rate": 0.5,
       "dead_worst": null,
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "svg[role=img]",
+          "count": 1
+        }
+      ],
       "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -258,14 +271,22 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 6,
+      "sessions": 8,
       "friction": 0,
-      "dead_rate": 0.286,
+      "dead_rate": 0.364,
       "dead_worst": null,
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
           "count": 2
+        },
+        {
+          "el": "svg[role=img]",
+          "count": 1
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 1
         }
       ],
       "bored_worst": null,

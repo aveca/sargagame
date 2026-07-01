@@ -1315,27 +1315,27 @@
         },
         {
           "id": "rm003",
-          "afai": 0.18,
-          "status": "moderate"
-        },
-        {
-          "id": "rm004",
           "afai": 0.19,
           "status": "moderate"
         },
         {
-          "id": "rm005",
+          "id": "rm004",
           "afai": 0.2,
           "status": "moderate"
         },
         {
+          "id": "rm005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
           "id": "rm006",
-          "afai": 0.08,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "rm007",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -1355,7 +1355,7 @@
         },
         {
           "id": "rm011",
-          "afai": 0.2,
+          "afai": 0.21,
           "status": "moderate"
         },
         {
