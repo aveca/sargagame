@@ -30,10 +30,30 @@ const {
   regimeConfidenceSummary,
   HALF_LIFE_DAYS,
   DECAY_LAMBDA,
+  BEACHED_DECAY_LAMBDA,
 } = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
+
+// Beached-persistence ratchet — kill-switch + tunable (adversarial panel 2026-07-01).
+// The verdict path gets a reversible flag ("pas de flag = pas de merge"): set env
+// SG_BEACHED_HOLD=0 in the pipeline to fall back to pure sea-dispersion decay (the
+// old behaviour, a total no-op of this feature) without touching code. The hold
+// half-life is also env-tunable (SG_BEACHED_HALF_LIFE, days) so the founder can
+// dial it from the workflow once real échouage-season data lets us fit it — the
+// 12d default is a PROVISIONAL physics prior (literature: beached Sargassum rots
+// over weeks if untouched, but flagship beaches are cleaned ~daily, so 12d is a
+// deliberate middle, biased neither to "gone in days" nor "red for a month").
+const BEACHED_HOLD_ON = process.env.SG_BEACHED_HOLD !== '0'
+const BEACHED_LAMBDA = process.env.SG_BEACHED_HALF_LIFE
+  ? Math.LN2 / Math.max(1, parseFloat(process.env.SG_BEACHED_HALF_LIFE))
+  : BEACHED_DECAY_LAMBDA
+// A beach only counts as "beached" (grounded stock that persists) above a clear
+// load, with hysteresis above the 0.15 clean/moderate line so a beach chattering
+// at the boundary — or a transient OFFSHORE-water AFAI blip that the trades blow
+// past in a day — doesn't get frozen red. 0.20 = clearly moderate, not noise.
+const BEACHED_TRIGGER_AFAI = 0.20
 
 // --- Regime-aware arrival gating (2026-06-15) ----------------------------
 // The re-forecast backtest proved that in the CALM regime the arrival-banks
@@ -430,6 +450,20 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // Starting AFAI for Day 0: satellite + community bias (clamped)
     const day0Raw = clamp01(level.afai + cBias)
 
+    // BEACHED HOLD decision — made ONCE from the OBSERVED day-0 load, not from the
+    // self-held projection, so the ratchet can't self-reinforce day over day.
+    //  - only for a clearly-loaded, NON-sheltered beach (sheltered coasts are
+    //    protected — arrivalSignalFromBanks already returns 0 for them; mirror it
+    //    here so a stray reading can't freeze them red);
+    //  - RELEASED to fast sea-dispersion by CLEARING EVIDENCE. Ground truth wins:
+    //    a community "clean" consensus (humans see the SAND) is the primary release.
+    //    Satellite trend only corroborates — it senses WATER, not sand, so it must
+    //    be a STRONG, sustained fall (slope < -0.02, r²-gated) before it may unlatch
+    //    a beached hold, never a shallow slope that noise can trip.
+    const clearingEvidence = cBias < 0 || (trend && trend.slope < -0.02)
+    const beachedHold = BEACHED_HOLD_ON && !!beach && beach.coast !== 'sheltered'
+      && day0Raw >= BEACHED_TRIGGER_AFAI && !clearingEvidence
+
     for (let i = 0; i < 7; i++) {
       const d = new Date(t)
       d.setDate(d.getDate() + i)
@@ -457,8 +491,15 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // PHYSICAL MODEL: afai(d) = afai(d-1) * decay_1day + arrivals - dispersion
         const prevAfai = series[i - 1]?.afai || day0Raw
 
-        // 1 day decay
-        const dayDecay = Math.exp(-DECAY_LAMBDA) // ~0.87 per day @ half-life 5.0
+        // 1 day decay — SEA vs BEACHED (two physics, cf. confidence.cjs).
+        // Floating sargassum disperses fast (5d half-life). But sargassum already
+        // grounded on the sand does not clear on that timescale without
+        // collection/boom/retreating swell: hold it with the slower beached
+        // half-life (decision made ONCE above from the observed day-0 load).
+        // Calm beaches are clean at day0 so beachedHold is false → the calm-season
+        // false-alarm calibration stays byte-identical.
+        const dayLambda = beachedHold ? BEACHED_LAMBDA : DECAY_LAMBDA
+        const dayDecay = Math.exp(-dayLambda) // ~0.87/d (sea) or ~0.94/d (beached hold)
 
         // Wind: small contribution, weaker as days increase
         const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
@@ -554,14 +595,26 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = `Persistance simple (half-life ${HALF_LIFE_DAYS}j). Pas de signal externe.`
     }
 
+    // Beach held by the beached ratchet (loaded today, no clearing evidence, no
+    // fresh arrival): the honest story is NOT "dispersion" — the algae are on the
+    // sand and stay until removed. Front label stays plain + temporal + hedged
+    // (guide voice, answers "how long"); the mechanism ("sans ramassage…") lives
+    // one layer down in the disclaimer, never promise a dispersion we don't measure.
+    const beachedPersist = beachedHold && !arrivalDetected
+
     const driftDir = arrivalDetected ? 'up'
+      : beachedPersist ? 'stable'
       : meaningfulTrend > 0.05 ? 'up'
       : meaningfulTrend < -0.05 ? 'down'
       : 'stable'
     const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
+      : beachedPersist ? 'Sargasses probablement encore la quelques jours'
       : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
       : meaningfulTrend < -0.05 ? 'Dispersion attendue'
       : 'Stable'
+    if (beachedPersist) {
+      forecastDisclaimer = 'Sargasses probablement echouees : sans ramassage/barrage, la dispersion marine seule ne les enleve pas — persistance probable quelques jours.'
+    }
 
     weekly[level.id] = {
       forecast: series,

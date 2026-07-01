@@ -99,6 +99,7 @@ const I18N = {
     thH: 'Échéance', thHit: 'Réussite', thN: 'Comparaisons', thConf: 'Confiance affichée',
     horizon: i => `J+${i}`,
     confNote: 'Le modèle publie aussi sa propre confiance : élevée à J+1, faible à J+6. Quand elle est basse, lisez la prévision comme une tendance, pas une certitude.',
+    beachedNote: "Quand une plage est déjà chargée, nous la gardons « rouge » tant qu'aucune donnée (satellite en nette baisse ou signalement terrain) ne confirme qu'elle s'est vidée : les sargasses échouées ne partent pas sans ramassage. C'est un choix conservateur — il peut nous faire sur-alerter sur une plage nettoyée entre-temps.",
     missT: "Ce qu'on rate",
     missIntro: (good, total) => `${good} plages sur ${total} dépassent 90 % de réussite. Les plus difficiles à prévoir — publiées quand même :`,
     missWhy: "Les plages exposées dont l'état oscille autour d'un seuil (propre / modéré) restent les plus dures à prévoir.",
@@ -140,6 +141,7 @@ const I18N = {
     thH: 'Horizon', thHit: 'Hit rate', thN: 'Checks', thConf: 'Displayed confidence',
     horizon: i => `Day +${i}`,
     confNote: 'The model also publishes its own confidence: high at day +1, low at day +6. When it is low, read the forecast as a trend, not a certainty.',
+    beachedNote: "When a beach is already loaded, we keep it 'red' until data (a clear satellite drop or a ground report) confirms it cleared: beached sargassum doesn't leave without collection. A conservative choice — it can make us over-alert on a beach that was cleaned in the meantime.",
     missT: 'What we miss',
     missIntro: (good, total) => `${good} of ${total} beaches score above 90%. The hardest ones to predict — published anyway:`,
     missWhy: 'Exposed beaches whose state hovers around a threshold (clean / moderate) remain the hardest to predict.',
@@ -181,6 +183,7 @@ const I18N = {
     thH: 'Horizonte', thHit: 'Acierto', thN: 'Comparaciones', thConf: 'Confianza mostrada',
     horizon: i => `Día +${i}`,
     confNote: 'El modelo también publica su propia confianza: alta a 1 día, baja a 6 días. Cuando es baja, lee el pronóstico como una tendencia, no una certeza.',
+    beachedNote: 'Cuando una playa ya está cargada, la mantenemos «roja» hasta que un dato (una caída neta del satélite o un reporte en el terreno) confirme que se limpió: el sargazo varado no se va sin recogida. Una elección conservadora — puede hacernos sobrealertar en una playa limpiada mientras tanto.',
     missT: 'Lo que fallamos',
     missIntro: (good, total) => `${good} de ${total} playas superan el 90% de acierto. Las más difíciles de predecir — publicadas igualmente:`,
     missWhy: 'Las playas expuestas cuyo estado oscila alrededor de un umbral (limpia / moderada) siguen siendo las más difíciles de predecir.',
@@ -254,7 +257,7 @@ function precisionSection(lang, bt, regionName) {
   const table = rows.length ? `<div class="tablecard"><table>
 <thead><tr><th>${esc(t.thH)}</th><th>${esc(t.thHit)}</th><th>${esc(t.thN)}</th><th>${esc(t.thConf)}</th></tr></thead>
 <tbody>${rows.join('')}</tbody></table></div>
-<p class="note">${esc(t.confNote)}</p>` : ''
+<p class="note">${esc(t.confNote)}</p>${t.beachedNote ? `\n<p class="note">${esc(t.beachedNote)}</p>` : ''}` : ''
 
   // « Ce qu'on rate » — pires plages réelles, publiées telles quelles
   let miss = ''
