@@ -238,6 +238,38 @@ function writeLayer(outDir, beaches, note) {
   return outPath
 }
 
+// Persistance append-only : accumule chaque PASSAGE satellite (clé = obsDate réelle,
+// PAS la date de run — la révisite ~5j fait que plusieurs runs voient le même passage,
+// on dédup donc sur obsDate). C'est ce qui rendra POSSIBLE le backtest FAI vs réalisé
+// sur /fiabilite/ (gate d'activation du flag). Cappé 120 j. Sans ce fichier durable,
+// le signal s'évaporerait à chaque run et aucune calibration ne serait vérifiable.
+function updateS2History(outDir, beaches) {
+  const ids = Object.keys(beaches)
+  if (!ids.length) return
+  const histPath = path.join(outDir, 'sentinel2-history.json')
+  let hist = { observations: [] }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(histPath, 'utf-8'))
+    if (parsed && Array.isArray(parsed.observations)) hist = parsed
+  } catch (_) {}
+  // Une entrée par obsDate ; on écrase si le même passage a déjà été enregistré
+  // (ex. re-run le même jour), on n'empile pas de doublons.
+  for (const id of ids) {
+    const b = beaches[id]
+    if (!b || !b.obsDate || b.afaiLike == null) continue
+    const idx = hist.observations.findIndex(o => o.id === id && o.obsDate === b.obsDate)
+    const rec = { id, obsDate: b.obsDate, fai: b.fai, afaiLike: b.afaiLike, coverage: b.coverage }
+    if (idx >= 0) hist.observations[idx] = rec
+    else hist.observations.push(rec)
+  }
+  // Cap 120 jours (par obsDate).
+  const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10)
+  hist.observations = hist.observations.filter(o => o.obsDate >= cutoff)
+  hist.updatedAt = new Date().toISOString()
+  fs.writeFileSync(histPath, JSON.stringify(hist, null, 2), 'utf-8')
+  console.log('OK:', histPath, '|', hist.observations.length, 'observation(s) accumulée(s)')
+}
+
 async function main() {
   const outDir = process.env.SARG_OUT_DIR
     ? path.join(path.resolve(process.env.SARG_OUT_DIR), 'api', 'copernicus')
@@ -276,6 +308,7 @@ async function main() {
     console.log(`  ${b.id}: FAI=${beaches[b.id].fai} → afaiLike=${afaiLike} cov=${s.coverage} obs=${s.obsDate} (${ageDays}j) n=${s.nPixels}`)
   }
   writeLayer(outDir, beaches, Object.keys(beaches).length ? null : 'no-valid-passes')
+  updateS2History(outDir, beaches)
 }
 
 main().catch(err => {
