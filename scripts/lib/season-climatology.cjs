@@ -89,4 +89,19 @@ function phaseForRegion(island, date) {
   return { phase: PHASES[phaseIdx], region, source: profile.source, monthIndex }
 }
 
-module.exports = { phaseForRegion, canonicalRegion, PHASES, CLIMATOLOGY }
+/**
+ * Profil saisonnier 12 mois d'une région (index 0 = janvier … 11 = décembre),
+ * en phases ordinales SOURCÉES. Sert au front (WeekHub planner) à répondre
+ * honnêtement « à quelle période l'afflux est historiquement le plus rare »
+ * pour une date de réservation lointaine — SANS prétendre prédire une couleur
+ * de plage à une date précise (le moat = honnêteté).
+ * @param {string} island
+ * @returns {{ region:string, source:string, months:string[] }}
+ */
+function monthsForRegion(island) {
+  const region = canonicalRegion(island)
+  const profile = CLIMATOLOGY[region] || CLIMATOLOGY['lesser-antilles']
+  return { region, source: profile.source, months: profile.months.map(i => PHASES[i]) }
+}
+
+module.exports = { phaseForRegion, canonicalRegion, monthsForRegion, PHASES, CLIMATOLOGY }

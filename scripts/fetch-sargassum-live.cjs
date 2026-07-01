@@ -48,7 +48,7 @@ function writePrivateGuarded(label, dir, privateForecasts, truncated, levels, up
   writePrivateForecastFile(dir, privateForecasts, updatedAt)
 }
 const { computeScore } = require('./lib/score.cjs')
-const { phaseForRegion } = require('./lib/season-climatology.cjs')
+const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
 
 // Repère de SAISON (orientation moyen terme, B2C fiche plage). Phase climatologique
@@ -57,7 +57,8 @@ const { getAllRegions } = require('../regions/index.cjs')
 // n'altère JAMAIS le verdict (levels/weekly/scores restent 100% data ERDDAP).
 function seasonOutlookFor(regionId, atDate) {
   const p = phaseForRegion(regionId, atDate)
-  return { phase: p.phase, source: p.source }
+  const m = monthsForRegion(regionId)
+  return { phase: p.phase, source: p.source, months: m.months }
 }
 
 // ── Dossier de sortie ──────────────────────────────────────────────

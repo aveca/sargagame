@@ -19,6 +19,14 @@ const ti = (lang, a) => lang === "en" ? a[1] : lang === "es" ? a[2] : a[0]
 const _t = (lang, fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
 const STATUS_C = { clean:"#22C55E", moderate:"#B87A00", avoid:"#E8522A" }
 const STATUS_LBL = { clean:["Propre","Clean","Limpia"], moderate:["Modéré","Moderate","Moderado"], avoid:["À éviter","Avoid","Evitar"] }
+// Phases saisonnières (season-climatology.cjs) : couleur + libellé court, du plus calme au
+// plus chargé. Sert le planner « quand réserver » — tendance sourcée, jamais un verdict daté.
+const PHASE_META = {
+  "hors-saison":     { c:"#22C55E", lbl:["Calme","Calm","Tranquilo"] },
+  "approche-saison": { c:"#D9920A", lbl:["Épaule","Shoulder","Transición"] },
+  "pleine-saison":   { c:"#E8522A", lbl:["Chargé","Busy","Cargado"] },
+}
+const monthName = (mi, lang, style="long") => { try{ return new Date(2000,mi,1).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{month:style}).replace(/\.$/,"") }catch(_){ return "" } }
 const INK = "#0d0b14", PAPER = "#fdf6e3", GOLD = "#FFC72C"
 
 function haversineKm(a, b){
@@ -34,24 +42,6 @@ function freshLabel(updatedAt, lang){
     if(h<1.5) return _t(lang,"mesuré à l'instant","measured just now","medido ahora")
     return _t(lang,`mesuré il y a ${Math.round(h)} h`,`measured ${Math.round(h)}h ago`,`medido hace ${Math.round(h)} h`)
   }catch(_){ return null }
-}
-
-// Signal saison HONNÊTE = label ordinal sourcé (season-climatology.cjs), zéro %, zéro date.
-// On le dit au présent (« où on en est dans la saison »), jamais une prévision de jour.
-function seasonPhaseMsg(phase, lang){
-  if(phase==="pleine-saison") return _t(lang,
-    "On est en pleine saison sargasses : les arrivées par vagues sont fréquentes. Le Veilleur surveille la mer pour toi, jour par jour.",
-    "We're in peak sargassum season: arrivals come in waves. Le Veilleur watches the sea for you, day by day.",
-    "Estamos en plena temporada de sargazo: las llegadas vienen en oleadas. Le Veilleur vigila el mar por ti, día a día.")
-  if(phase==="approche-saison") return _t(lang,
-    "La saison sargasses approche : ça peut commencer à bouger. On garde l'œil ouvert pour toi.",
-    "Sargassum season is approaching: things may start to move. We keep watch for you.",
-    "La temporada de sargazo se acerca: puede empezar a moverse. Seguimos vigilando por ti.")
-  if(phase==="hors-saison") return _t(lang,
-    "On est hors saison sargasses : les arrivées sont rares en ce moment. Profite — on te prévient si ça change.",
-    "We're out of sargassum season: arrivals are rare right now. Enjoy — we'll warn you if it changes.",
-    "Estamos fuera de temporada de sargazo: las llegadas son raras ahora. Disfruta — te avisamos si cambia.")
-  return null
 }
 
 // Mascotte Veilleur minimale (satellite/oeil) — autonome pour éviter l'import circulaire.
@@ -246,13 +236,32 @@ export default function WeekHub({
     const atl = cells.find(c=>c.coast==="atlantic"), shel = cells.find(c=>c.coast==="sheltered")
     return { none:false, monthName, atl, shel }
   },[planDate, climatology, island, lang])
-  const sendPlan = useCallback(()=>{
-    try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}
-    // Intention DIRECTE (aucun email) : on note la date localement et on rappelle que le verdict
-    // jour-par-jour s'ouvrira à J-7 — l'utilisateur revient le consulter. Zéro ping, zéro adresse.
-    try{ onPlannerOptin && onPlannerOptin({ source:"weekhub_planner", date:planDate }) }catch(_){}
-    setPlanSent(true)
-  },[onPlannerOptin, planDate, track])
+  // Tendance SAISONNIÈRE pour la date choisie (le « quand réserver » demandé) : phase
+  // climatologique SOURCÉE du mois de la date + les mois les plus calmes à venir. Couvre TOUS
+  // les mois (même à plusieurs mois de la date), là où planEstimate (observé) manque encore
+  // d'historique. Honnête : « tendance saisonnière (littérature publiée), pas une prévision datée ».
+  const seasonMonths = seasonOutlook && Array.isArray(seasonOutlook.months) ? seasonOutlook.months : null
+  const seasonForDate = useMemo(()=>{
+    if(!planDate || !seasonMonths) return null
+    let d; try{ d = new Date(planDate+"T12:00:00") }catch(_){ return null }
+    if(isNaN(d)) return null
+    const mi = d.getMonth()
+    const phase = seasonMonths[mi] || "hors-saison"
+    const nowM = new Date().getMonth()
+    const calm = []
+    for(let k=0;k<12;k++){ const idx=(nowM+k)%12; if(seasonMonths[idx]==="hors-saison") calm.push(idx) }
+    const calmNames = calm.slice(0,4).map(idx=>monthName(idx, lang)).filter(Boolean)
+    return { phase, mName: monthName(mi, lang), mi, calmNames, isCalm: phase==="hors-saison" }
+  },[planDate, seasonMonths, lang])
+  // Calendrier 12 mois à venir (depuis le mois courant) : phase par mois, mois choisi surligné.
+  const seasonStrip = useMemo(()=>{
+    if(!seasonMonths) return null
+    const nowM = new Date().getMonth()
+    const chosenMi = seasonForDate ? seasonForDate.mi : -1
+    return Array.from({length:12},(_,k)=>{ const idx=(nowM+k)%12; return { idx, phase:seasonMonths[idx]||"hors-saison", label:monthName(idx,lang,"short"), chosen: idx===chosenMi } })
+  },[seasonMonths, seasonForDate, lang])
+  // NB : l'opt-in planner se déclenche désormais directement au choix de la date (input onChange
+  // ci-dessous) — DIRECT, zéro email, zéro ping. planSent sert juste à ne l'émettre qu'une fois.
 
   const card = { background:PAPER, border:`2.5px solid ${INK}`, boxShadow:`3px 3px 0 ${INK}`, borderRadius:14, padding:"13px 14px" }
   const h2 = { font:"400 15px/1 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:".01em" }
@@ -432,13 +441,13 @@ export default function WeekHub({
             </div>
           )}
 
-          {/* BLOC 5 — PLUS LOIN QUE 7 JOURS (planner, opt-in) */}
+          {/* BLOC 5 — RÉSERVER PLUS TARD (planner saisonnier). Au-delà de 7 j on ne prédit pas
+              le jour ; on donne la TENDANCE saisonnière SOURCÉE (season-climatology) pour choisir
+              SA période — « quand est le bon moment ». Zéro prévision datée, zéro chiffre inventé. */}
           {!seasonOff && (
             <div style={{...card, background:"#fff8e8"}}>
-              <div style={{...h2, marginBottom:8}}>{_t(lang,"Tu pars dans 2 semaines ?","Travelling in 2 weeks?","¿Viajas en 2 semanas?")}</div>
-              {seasonOutlook && seasonOutlook.phase && seasonPhaseMsg(seasonOutlook.phase, lang) && (
-                <div style={{font:"600 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginBottom:9, paddingBottom:9, borderBottom:`1.5px dashed rgba(13,11,20,.25)`}}>{seasonPhaseMsg(seasonOutlook.phase, lang)}</div>
-              )}
+              <div style={{...h2, marginBottom:6}}>{_t(lang,"Tu réserves pour plus tard ?","Booking for later?","¿Reservas para más adelante?")}</div>
+              <div style={{font:"600 11px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>{_t(lang,"Choisis ta date, même dans plusieurs mois : on te dit si la période est historiquement calme ou chargée — pour réserver au bon moment.","Pick your date, even months out: we tell you whether that time of year is historically calm or busy — so you book at the right moment.","Elige tu fecha, aunque sea dentro de meses: te decimos si esa época es históricamente tranquila o cargada — para reservar en el momento justo.")}</div>
               {coastStab && (coastStab.eastFlips!==coastStab.westFlips) && (
                 <div style={{font:"600 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>
                   {(()=>{ const stableEast=coastStab.eastFlips<coastStab.westFlips
@@ -449,32 +458,73 @@ export default function WeekHub({
                   })()}
                 </div>
               )}
-              {!planSent ? (
-                <>
-                  <label style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ta date d'arrivée :","Your arrival date:","Tu fecha de llegada:")}</label>
-                  <div style={{display:"flex", gap:7, flexWrap:"wrap"}}>
-                    <input type="date" value={planDate} onChange={e=>setPlanDate(e.target.value)}
-                      min={(()=>{try{return new Date().toISOString().slice(0,10)}catch(_){return undefined}})()}
-                      max={(()=>{try{return new Date(Date.now()+30*864e5).toISOString().slice(0,10)}catch(_){return undefined}})()}
-                      style={{flex:"1 1 150px", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
-                    <button onClick={sendPlan} disabled={!planDate}
-                      style={{flex:"0 0 auto", minHeight:44, font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:planDate?GOLD:"#e8e0cc", border:`2.5px solid ${INK}`, borderRadius:999, padding:"0 16px", cursor:planDate?"pointer":"default", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Préviens-moi","Notify me","Avísame")}</button>
+              <label style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ta date d'arrivée (même dans plusieurs mois) :","Your arrival date (even months away):","Tu fecha de llegada (aunque falten meses):")}</label>
+              <input type="date" value={planDate}
+                onChange={e=>{ const v=e.target.value; setPlanDate(v); if(v && !planSent){ try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}; try{ onPlannerOptin && onPlannerOptin({source:"weekhub_planner",date:v}) }catch(_){}; setPlanSent(true) } }}
+                min={(()=>{try{return new Date().toISOString().slice(0,10)}catch(_){return undefined}})()}
+                max={(()=>{try{return new Date(Date.now()+330*864e5).toISOString().slice(0,10)}catch(_){return undefined}})()}
+                style={{width:"100%", boxSizing:"border-box", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
+
+              {/* Réponse SAISONNIÈRE pour la date choisie (le « quand ») */}
+              {seasonForDate && (
+                <div style={{marginTop:9, padding:"9px 11px", borderRadius:10, border:`2px solid ${INK}`,
+                  background: seasonForDate.isCalm?"#eafaf1":seasonForDate.phase==="pleine-saison"?"#fdeee7":"#fdf6e3"}}>
+                  <div style={{font:"800 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:INK}}>
+                    {(()=>{ const cn=seasonForDate.calmNames.join(", "), M=seasonForDate.mName
+                      if(seasonForDate.phase==="pleine-saison") return "⚠️ "+_t(lang,
+                        `${M} tombe en pleine saison sargasses par ici : historiquement, c'est là que les afflux aux côtes sont les plus fréquents.${cn?` Si tu peux choisir ta période, les mois les plus calmes sont ${cn}.`:""}`,
+                        `${M} falls in peak sargassum season here: historically when coastal arrivals are most frequent.${cn?` If you can pick your dates, the calmest months are ${cn}.`:""}`,
+                        `${M} cae en plena temporada de sargazo aquí: históricamente cuando las llegadas a la costa son más frecuentes.${cn?` Si puedes elegir, los meses más tranquilos son ${cn}.`:""}`)
+                      if(seasonForDate.phase==="approche-saison") return _t(lang,
+                        `${M} est une épaule de saison : ça peut commencer à bouger, sans la pression du pic.${cn?` Les mois les plus calmes : ${cn}.`:""}`,
+                        `${M} is a shoulder month: things may start to move, without the peak's pressure.${cn?` Calmest months: ${cn}.`:""}`,
+                        `${M} es un mes de transición: puede empezar a moverse, sin la presión del pico.${cn?` Meses más tranquilos: ${cn}.`:""}`)
+                      return "✓ "+_t(lang,
+                        `Bon créneau : ${M} est hors saison sargasses par ici — historiquement, les afflux aux côtes y sont rares.`,
+                        `Good window: ${M} is out of sargassum season here — historically, coastal arrivals are rare then.`,
+                        `Buena ventana: ${M} está fuera de temporada de sargazo aquí — históricamente, las llegadas a la costa son raras entonces.`)
+                    })()}
                   </div>
-                  {planEstimate && (
-                    <div style={{font:"600 11px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>
-                      {planEstimate.none
-                        ? _t(lang,`On n'a pas encore assez d'historique observé pour ${planEstimate.monthName} — on s'appuie sur la tendance récente ci-dessus, pas sur un chiffre inventé.`,`Not enough observed history yet for ${planEstimate.monthName} — we lean on the recent trend above, not a made-up figure.`,`Aún no hay suficiente historial observado para ${planEstimate.monthName} — nos apoyamos en la tendencia reciente, no en un número inventado.`)
-                        : _t(lang,
-                            `Observé en ${planEstimate.monthName}${planEstimate.atl?` — côte au vent : ${planEstimate.atl.clean_rate}% de jours propres (${planEstimate.atl.n_samples} relevés)`:""}${planEstimate.shel?` · côte abritée : ${planEstimate.shel.clean_rate}%`:""}. Tendance observée, PAS une prévision de ta date.`,
-                            `Observed in ${planEstimate.monthName}${planEstimate.atl?` — windward coast: ${planEstimate.atl.clean_rate}% clean days (${planEstimate.atl.n_samples} records)`:""}${planEstimate.shel?` · sheltered coast: ${planEstimate.shel.clean_rate}%`:""}. Observed trend, NOT a forecast for your date.`,
-                            `Observado en ${planEstimate.monthName}${planEstimate.atl?` — costa de barlovento: ${planEstimate.atl.clean_rate}% días limpios (${planEstimate.atl.n_samples} registros)`:""}${planEstimate.shel?` · costa abrigada: ${planEstimate.shel.clean_rate}%`:""}. Tendencia observada, NO un pronóstico de tu fecha.`)}
+                  {/* Bonus si historique OBSERVÉ dispo pour ce mois (sinon on ne fabrique rien) */}
+                  {planEstimate && !planEstimate.none && (
+                    <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:7, paddingTop:7, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>
+                      {_t(lang,
+                        `Observé en ${planEstimate.monthName}${planEstimate.atl?` — côte au vent : ${planEstimate.atl.clean_rate}% de jours propres (${planEstimate.atl.n_samples} relevés)`:""}${planEstimate.shel?` · côte abritée : ${planEstimate.shel.clean_rate}%`:""}.`,
+                        `Observed in ${planEstimate.monthName}${planEstimate.atl?` — windward coast: ${planEstimate.atl.clean_rate}% clean days (${planEstimate.atl.n_samples} records)`:""}${planEstimate.shel?` · sheltered coast: ${planEstimate.shel.clean_rate}%`:""}.`,
+                        `Observado en ${planEstimate.monthName}${planEstimate.atl?` — costa de barlovento: ${planEstimate.atl.clean_rate}% días limpios (${planEstimate.atl.n_samples} registros)`:""}${planEstimate.shel?` · costa abrigada: ${planEstimate.shel.clean_rate}%`:""}.`)}
                     </div>
                   )}
-                  {planMsg && <div style={{font:"600 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8}}>{planMsg}</div>}
-                </>
-              ) : (
-                <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"C'est noté. ","Noted. ","Anotado. ")}{planMsg || _t(lang,"Ton verdict jour par jour sera prêt à J-7 — reviens le consulter à ce moment-là.","Your day-by-day verdict will be ready at D-7 — come back then to read it.","Tu veredicto diario estará listo en D-7 — vuelve entonces a consultarlo.")}</div>
+                </div>
               )}
+
+              {/* Calendrier 12 mois à venir — phase par mois, ta date surlignée */}
+              {seasonStrip && (
+                <div style={{marginTop:10}}>
+                  <div style={{display:"flex", gap:3, alignItems:"flex-end"}}>
+                    {seasonStrip.map(m=>(
+                      <div key={m.idx} style={{flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3}}>
+                        <span style={{width:"100%", height:14, borderRadius:4, boxSizing:"border-box",
+                          background:(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
+                          border: m.chosen?`2.5px solid ${INK}`:`1px solid rgba(13,11,20,.3)`,
+                          boxShadow: m.chosen?`0 0 0 1.5px ${GOLD}`:"none"}}/>
+                        <span style={{font:`${m.chosen?"800":"600"} 8px/1 'Bricolage Grotesque',system-ui,sans-serif`, color:m.chosen?INK:"#6b6478"}}>{m.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{display:"flex", gap:10, justifyContent:"center", marginTop:8, flexWrap:"wrap"}}>
+                    {["hors-saison","approche-saison","pleine-saison"].map(p=>(
+                      <span key={p} style={{display:"inline-flex", alignItems:"center", gap:4, font:"600 9px/1 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>
+                        <span style={{width:9,height:9,borderRadius:3,background:PHASE_META[p].c,border:`1px solid rgba(13,11,20,.4)`}}/>
+                        {_t(lang,PHASE_META[p].lbl[0],PHASE_META[p].lbl[1],PHASE_META[p].lbl[2])}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{font:"600 9px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478", textAlign:"center", marginTop:6}}>{_t(lang,"Tendance saisonnière (littérature publiée) — pas une prévision de ta date.","Seasonal trend (published literature) — not a forecast for your date.","Tendencia estacional (literatura publicada) — no un pronóstico de tu fecha.")}</div>
+                </div>
+              )}
+
+              {/* Le jour EXACT reste gaté à J-7 : on dit quand la fenêtre fiable s'ouvre */}
+              {planMsg && <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:9, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>{planMsg}</div>}
             </div>
           )}
 

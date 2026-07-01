@@ -9,7 +9,7 @@ const path = require('path')
 const { referenceConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
 const { gateWeekly } = require('./lib/forecast-gate.cjs')
-const { phaseForRegion } = require('./lib/season-climatology.cjs')
+const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
 
 // Gating J+2→J+7 : écrit la prévision FULL dans _private/forecast-full.json (+ Deny).
 // Idempotent : n'écrase le privé que si une vraie troncature a eu lieu.
@@ -31,7 +31,8 @@ function writePrivateForecastFile(baseDir, privateForecasts, updatedAt) {
 const REGION = process.env.VITE_REGION || 'mq'
 function seasonOutlook() {
   const p = phaseForRegion(REGION)
-  return { phase: p.phase, source: p.source }
+  const m = monthsForRegion(REGION)
+  return { phase: p.phase, source: p.source, months: m.months }
 }
 
 const SARGASSUM_REF = [
