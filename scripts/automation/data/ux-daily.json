@@ -1,0 +1,275 @@
+{
+  "generated": "2026-07-01T04:10:18.600Z",
+  "date": "2026-07-01",
+  "days": 1,
+  "regions": [
+    "mq",
+    "gp",
+    "florida",
+    "puntacana",
+    "rivieramaya"
+  ],
+  "shipped": [
+    {
+      "h": "6639416d",
+      "subject": "Perf bundle : sort 3 overlays hors first-paint en chunks lazy (-20,7 Ko gzip eager) (#359)"
+    },
+    {
+      "h": "b830e5ae",
+      "subject": "Cloche = interrupteur alertes ON/OFF : remplit la barre + permet de désactiver (#358)"
+    },
+    {
+      "h": "749b327b",
+      "subject": "Carte : priorité stricte rouge/jaune avant vert dans les labels (#357)"
+    },
+    {
+      "h": "94c957f1",
+      "subject": "Carte : au zoom, nommer aussi les plages propres (vertes) du viewport (#355)"
+    },
+    {
+      "h": "843dd697",
+      "subject": "Header/carte : retire la cloche (redondante avec « Mon accès »), un seul hub (#354)"
+    },
+    {
+      "h": "983069b2",
+      "subject": "Carte : labels de plage zoom-aware — vue large = 5 plus impactées, zoom = alertes du viewport (#351)"
+    },
+    {
+      "h": "32ec12eb",
+      "subject": "Perf carte : précharge le contour côtier régional (pins/côte 1 aller-retour plus tôt) (#352)"
+    },
+    {
+      "h": "11f76efc",
+      "subject": "Cloche : ouvre « Mon accès » (section Alertes) au lieu d'un no-op silencieux (#350)"
+    },
+    {
+      "h": "93c6c88a",
+      "subject": "Carte : supprime le glitch de chargement (labels qui apparaissent puis sautent) (#349)"
+    },
+    {
+      "h": "7627e49c",
+      "subject": "Carte : noms à côté du pin pour les ~5 plages les plus impactées (fix roster) (#348)"
+    },
+    {
+      "h": "3f08ea7a",
+      "subject": "Mon accès : feuille compte (email affiché + alertes gérées) via l'icône personnage (#347)"
+    },
+    {
+      "h": "efd45d16",
+      "subject": "Carte : roster « plages impactées » hors littoral + labels côte impactés-seuls (#346)"
+    },
+    {
+      "h": "dbea6931",
+      "subject": "Carte : fix freeze — clavier iOS ouvert au tap des jours (type=button) (#345)"
+    },
+    {
+      "h": "3be559c6",
+      "subject": "DEFER items: map empty-tap hint + gesture-scoped rect cache (both flagged) (#343)"
+    },
+    {
+      "h": "ffa3f023",
+      "subject": "feat(terrain): capture échouement/ramassage par plage (signal affiché modéré) (#339)"
+    },
+    {
+      "h": "4d2e1daf",
+      "subject": "Carte : retire les gros encarts blancs des labels de plage (régression #329) (#338)"
+    },
+    {
+      "h": "05b3715a",
+      "subject": "Dead-click wave 2: map chrome + archipel reading + paywall preview tappable (#335)"
+    },
+    {
+      "h": "523dd633",
+      "subject": "SEO géo B2B + maillage /pro + sitemap + purge Barbados (#334)"
+    },
+    {
+      "h": "b03bbee7",
+      "subject": "feat(seo): EN B2B geo-landing — sargassum forecast for Miami & South Florida hotels (#332)"
+    },
+    {
+      "h": "ff361efd",
+      "subject": "feat(seo): EN B2B geo-landing — sargassum forecast for Cancún hotels (#331)"
+    },
+    {
+      "h": "04b729e0",
+      "subject": "Home dead-click: tappable hero mascot, streak chip & daily-pack (#330)"
+    },
+    {
+      "h": "054d82b2",
+      "subject": "Carte dead/rage-click: ≥44px pin hit-targets + tappable beach labels (#329)"
+    },
+    {
+      "h": "9e965b8f",
+      "subject": "SEO EN/ES : 6 pages /pro longue-traîne (#327)"
+    },
+    {
+      "h": "363878c3",
+      "subject": "SEO EN/ES : page coût sargasses hôtels + hreflang + sitemap (#325)"
+    },
+    {
+      "h": "8e47f634",
+      "subject": "Carte accueil : contrôles compte + notifications VISIBLES (fin du header masqué) (#324)"
+    }
+  ],
+  "perRegion": [
+    {
+      "region": "mq",
+      "sessions": 108,
+      "friction": 4,
+      "dead_rate": 0.334,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.344,
+        "n": 276
+      },
+      "top_dead_els": [
+        {
+          "el": "svg[role=img]",
+          "count": 50
+        },
+        {
+          "el": "div",
+          "count": 20
+        },
+        {
+          "el": "div.lc-detail-head",
+          "count": 3
+        },
+        {
+          "el": "body.theme-comic",
+          "count": 3
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 2
+        },
+        {
+          "el": "div.lc-detail-body",
+          "count": 2
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.25
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "gp",
+      "sessions": 34,
+      "friction": 2,
+      "dead_rate": 0.354,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.371,
+        "n": 89
+      },
+      "top_dead_els": [
+        {
+          "el": "svg[role=img]",
+          "count": 10
+        },
+        {
+          "el": "div.sg-onink-scope",
+          "count": 8
+        },
+        {
+          "el": "div",
+          "count": 3
+        },
+        {
+          "el": "rect",
+          "count": 1
+        },
+        {
+          "el": "div.lc-detail-sub",
+          "count": 1
+        },
+        {
+          "el": "div.lc-fc-cell",
+          "count": 1
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.26
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 10,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 1,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 5,
+      "friction": 0,
+      "dead_rate": 0.286,
+      "dead_worst": null,
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 2
+        }
+      ],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    }
+  ]
+}
