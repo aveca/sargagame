@@ -935,33 +935,6 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
                 onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>
             })()}
           </div>
-          {/* Hub PARRAINAGE (premium uniquement) — c'est ici qu'on émet enfin
-              sg_referral_share (déjà whitelisté). Le code stable est généré à
-              l'activation premium (Sargasses_PROD.jsx). Réversible : ?referral=0. */}
-          {(()=>{
-            let referral0=false; try{referral0=/[?&]referral=0/.test(window.location.search)}catch(_){}
-            const code=(()=>{try{return localStorage.getItem("sg_referral_code")||""}catch(_){return ""}})()
-            if(referral0||!/^REF-[A-Z0-9]{6}$/.test(code))return null
-            const url=(typeof window!=="undefined"?window.location.origin:"")+"/?ref="+code
-            const onShare=()=>{
-              const txt=_t({fr:"Chaque matin, Le Veilleur regarde la mer pour moi et me dit quelle plage est sans sargasses — mesuré au satellite, pas deviné. Avec mon lien, on gagne tous les deux un Pass 30 jours offert 👇",en:"Every morning, The Watcher looks at the sea for me and tells me which beach is sargassum-free — measured by satellite, not guessed. With my link, we both get a free 30-day Pass 👇",es:"Cada mañana, El Vigía mira el mar por mí y me dice qué playa está sin sargazo — medido por satélite, no adivinado. Con mi enlace, los dos ganamos un Pase de 30 días gratis 👇"})
-              try{track&&track("sg_referral_share",{method:(navigator.share?"native":"clipboard"),code})}catch(_){}
-              if(navigator.share){navigator.share({title:"Sargasses",text:txt,url}).catch(()=>{})}
-              else{try{navigator.clipboard&&navigator.clipboard.writeText(txt+" "+url);setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)}catch(_){}}
-            }
-            return (
-              <div style={{marginTop:12,padding:"14px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(124,58,237,.10),rgba(168,85,247,.10))",border:"1px solid rgba(168,85,247,.25)"}}>
-                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un proche, offre-lui la mer claire 🎁",en:"Gift a friend a clear sea 🎁",es:"Regala a alguien el mar tranquilo 🎁"})}</div>
-                <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Invite un proche : vous gagnez tous les deux un Pass 30 jours offert.",en:"Invite a friend: you both get a free 30-day Pass.",es:"Invita a alguien: los dos ganáis un Pase de 30 días gratis."})}</div>
-                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                  <code style={{flex:"1 1 170px",fontSize:11.5,background:"rgba(0,0,0,.18)",padding:"8px 10px",borderRadius:8,wordBreak:"break-all"}}>{url}</code>
-                  <button type="button" onClick={onShare} className="lc-cta yel" style={{whiteSpace:"nowrap"}}>
-                    {refCopied?_t({fr:"Lien copié ✓",en:"Link copied ✓",es:"Enlace copiado ✓"}):_t({fr:"Partager mon invitation",en:"Share my invite",es:"Compartir mi invitación"})}
-                  </button>
-                </div>
-              </div>
-            )
-          })()}
           </>
         ) : (
           <div className="lc-space-pro">
@@ -972,6 +945,35 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
             </button>
           </div>
         )}
+
+        {/* Hub PARRAINAGE — exposé à TOUS (premium ET free) : les free engagés sont
+            les meilleurs partageurs ; récompense créditée au paiement du filleul
+            (mol_refcredit) → financée par une vraie vente. Code généré pour tout le
+            monde (Sargasses_PROD). Émet sg_referral_share (whitelisté). Rollback ?referral=0. */}
+        {(()=>{
+          let referral0=false; try{referral0=/[?&]referral=0/.test(window.location.search)}catch(_){}
+          const code=(()=>{try{return localStorage.getItem("sg_referral_code")||""}catch(_){return ""}})()
+          if(referral0||!/^REF-[A-Z0-9]{6}$/.test(code))return null
+          const url=(typeof window!=="undefined"?window.location.origin:"")+"/?ref="+code
+          const onShare=()=>{
+            const txt=_t({fr:"Chaque matin, Le Veilleur regarde la mer pour moi et me dit quelle plage est sans sargasses — mesuré au satellite, pas deviné. Avec mon lien, on gagne tous les deux un Pass 30 jours offert 👇",en:"Every morning, The Watcher looks at the sea for me and tells me which beach is sargassum-free — measured by satellite, not guessed. With my link, we both get a free 30-day Pass 👇",es:"Cada mañana, El Vigía mira el mar por mí y me dice qué playa está sin sargazo — medido por satélite, no adivinado. Con mi enlace, los dos ganamos un Pase de 30 días gratis 👇"})
+            try{track&&track("sg_referral_share",{method:(navigator.share?"native":"clipboard"),code})}catch(_){}
+            if(navigator.share){navigator.share({title:"Sargasses",text:txt,url}).catch(()=>{})}
+            else{try{navigator.clipboard&&navigator.clipboard.writeText(txt+" "+url);setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)}catch(_){}}
+          }
+          return (
+            <div style={{marginTop:12,padding:"14px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(124,58,237,.10),rgba(168,85,247,.10))",border:"1px solid rgba(168,85,247,.25)"}}>
+              <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un proche, offre-lui la mer claire 🎁",en:"Gift a friend a clear sea 🎁",es:"Regala a alguien el mar tranquilo 🎁"})}</div>
+              <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Invite un proche : vous gagnez tous les deux un Pass 30 jours offert.",en:"Invite a friend: you both get a free 30-day Pass.",es:"Invita a alguien: los dos ganáis un Pase de 30 días gratis."})}</div>
+              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                <code style={{flex:"1 1 170px",fontSize:11.5,background:"rgba(0,0,0,.18)",padding:"8px 10px",borderRadius:8,wordBreak:"break-all"}}>{url}</code>
+                <button type="button" onClick={onShare} className="lc-cta yel" style={{whiteSpace:"nowrap"}}>
+                  {refCopied?_t({fr:"Lien copié ✓",en:"Link copied ✓",es:"Enlace copiado ✓"}):_t({fr:"Partager mon invitation",en:"Share my invite",es:"Compartir mi invitación"})}
+                </button>
+              </div>
+            </div>
+          )
+        })()}
 
         <div className="lc-space-sec-h">{_t(SPACE_I18N.favH)}</div>
         {favBeaches.length ? (
