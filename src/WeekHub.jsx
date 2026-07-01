@@ -473,7 +473,7 @@ export default function WeekHub({
                   {planMsg && <div style={{font:"600 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8}}>{planMsg}</div>}
                 </>
               ) : (
-                <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"C'est noté. Ton verdict jour par jour sera prêt vers J-7 — reviens le consulter à ce moment-là.","Noted. Your day-by-day verdict will be ready around D-7 — come back then to read it.","Anotado. Tu veredicto diario estará listo hacia D-7 — vuelve entonces a consultarlo.")}</div>
+                <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"C'est noté. ","Noted. ","Anotado. ")}{planMsg || _t(lang,"Ton verdict jour par jour sera prêt à J-7 — reviens le consulter à ce moment-là.","Your day-by-day verdict will be ready at D-7 — come back then to read it.","Tu veredicto diario estará listo en D-7 — vuelve entonces a consultarlo.")}</div>
               )}
             </div>
           )}
