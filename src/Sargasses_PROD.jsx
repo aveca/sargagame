@@ -10035,7 +10035,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone,onRequestGeo}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone,onRequestGeo,dataReady=true}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const pendingCenterRef=useRef(false) // P6 « Près de moi » : centrer dès que la géoloc arrive
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
@@ -10340,10 +10340,12 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
             </defs>
             {/* SOCLE DE CÔTE : la terre douce LÀ où sont les plages — concave (gère les baies),
                 zéro fake-île. + HALOS de rivage golden-hour (« les plages scintillent sur l'eau »). */}
-            <g>{proj.map(p=>(<circle key={"gr"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="46" fill="url(#awGround)"/>))}</g>
-            <g style={{mixBlendMode:"screen"}}>{proj.map(p=>(<circle key={"hl"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="50" fill="url(#awShoreGlow)"/>))}</g>
+            <g>{(dataReady?proj:[]).map(p=>(<circle key={"gr"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="46" fill="url(#awGround)"/>))}</g>
+            <g style={{mixBlendMode:"screen"}}>{(dataReady?proj:[]).map(p=>(<circle key={"hl"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="50" fill="url(#awShoreGlow)"/>))}</g>
           </g>}
-          {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx,r=sc!=null?5+sc/15:6,fog=fogOn&&!me&&!consultedRef.current.has(b.id)
+          {/* Pins verdict — gate `dataReady` : la scène (socle+halos+pins) apparaît UNE fois,
+              complète et colorée, jamais fallback gris→réel. La mer (fond) reste visible. */}
+          {(dataReady?proj:[]).map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx,r=sc!=null?5+sc/15:6,fog=fogOn&&!me&&!consultedRef.current.has(b.id)
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
               onPointerDown={pv?(()=>{pressStartRef.current=Date.now();pressedRef.current=b.id;setPressed(b.id)}):undefined}
               onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;if(pv&&pressStartRef.current&&Date.now()-pressStartRef.current>280)return;markConsulted(b.id);diveBeach(i,b)}}>
@@ -10366,7 +10368,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       {/* rootMode (navWorld) : le monde EST l'app → pas de ✕ qui fermerait sur du vide
           (Leaflet retiré). En fallback ?nav=map, le ✕ ferme vers la carte Leaflet. */}
       {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>}
-      {ready&&(lecture||my)&&tour==null&&<div {...(lectureTapOn&&my?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir "+my.name,"See "+my.name,"Ver "+my.name),onClick:e=>{e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)}}}:{})} style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff",cursor:(lectureTapOn&&my)?"pointer":"default"}}>
+      {dataReady&&ready&&(lecture||my)&&tour==null&&<div {...(lectureTapOn&&my?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir "+my.name,"See "+my.name,"Ver "+my.name),onClick:e=>{e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)}}}:{})} style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff",cursor:(lectureTapOn&&my)?"pointer":"default"}}>
         <Veilleur mood={moodFromStatus((lecture&&lecture.mood)||(my&&my.status)||"clean")} size={26}/>
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Le Veilleur · lecture du jour","The Watcher · today's reading","El Vigía · lectura del día")}</div>
@@ -11033,26 +11035,31 @@ export default function App(){
     }catch(_){}
   },[])
 
-  // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h
-  const[showRecoveryBanner,setShowRecoveryBanner]=useState(false)
+  // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h.
+  // Éligibilité calculée SYNCHRONIQUEMENT (initialiseur useState) → le bandeau est connu
+  // dès le 1er render : plus de false→true post-mount qui faisait SAUTER le header de +96px
+  // (padding recalculé). L'analytics track() reste en effet léger (pas de setState visuel).
+  const[showRecoveryBanner,setShowRecoveryBanner]=useState(()=>{
+    try{
+      if(isPremium)return false
+      const raw=localStorage.getItem("sg_checkout_abandoned")
+      if(!raw)return false
+      const{email,ts}=JSON.parse(raw)
+      if(Date.now()-ts<24*60*60*1000&&email)return true
+      localStorage.removeItem("sg_checkout_abandoned") // Expired — clean up
+    }catch{try{localStorage.removeItem("sg_checkout_abandoned")}catch(_){}}
+    return false
+  })
   // Hauteur RÉELLE de la bannière du haut (recovery/pass-expiré) — mesurée pour décaler
   // le header d'autant (sinon, sur 2-3 lignes en haute saison, le titre était CROPPÉ).
-  const[bannerH,setBannerH]=useState(0)
+  // Défaut 96 (= le fallback déjà utilisé côté padding) → pas de 0→96 au montage.
+  const[bannerH,setBannerH]=useState(96)
   useEffect(()=>{
-    if(isPremium)return
+    if(!showRecoveryBanner)return
     try{
-      const raw=localStorage.getItem("sg_checkout_abandoned")
-      if(!raw)return
-      const{email,ts}=JSON.parse(raw)
-      const age=Date.now()-ts
-      if(age<24*60*60*1000&&email){
-        setShowRecoveryBanner(true)
-        track("sg_checkout_recovery_eligible",{age_hours:Math.round(age/3600000),island})
-      }else{
-        // Expired — clean up
-        localStorage.removeItem("sg_checkout_abandoned")
-      }
-    }catch{localStorage.removeItem("sg_checkout_abandoned")}
+      const{ts}=JSON.parse(localStorage.getItem("sg_checkout_abandoned"))
+      track("sg_checkout_recovery_eligible",{age_hours:Math.round((Date.now()-ts)/3600000),island})
+    }catch(_){}
   },[])
 
   // Relance in-app à l'EXPIRATION du pass 7j offert (capture) : sans ça l'accès se
@@ -11060,18 +11067,17 @@ export default function App(){
   // ratée au moment exact où l'utilisateur a goûté la valeur. Un seul affichage
   // (sg_pass_expired_seen). Gated PAY_CAPTURE_ONLY → réversible ; au go-live Mollie
   // le CTA openPremium route vers le vrai paiement (cohérent).
-  const[showPassExpired,setShowPassExpired]=useState(false)
-  useEffect(()=>{
-    if(!PAY_CAPTURE_ONLY||isPremium)return
+  // Éligibilité SYNCHRONE (initialiseur) → connu au 1er render, plus de saut de header.
+  const[showPassExpired,setShowPassExpired]=useState(()=>{
     try{
-      if(localStorage.getItem("sg_pass_expired_seen"))return
+      if(!PAY_CAPTURE_ONLY||isPremium)return false
+      if(localStorage.getItem("sg_pass_expired_seen"))return false
       const passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
-      if(passEnd>0&&passEnd<=Date.now()){
-        setShowPassExpired(true)
-        track("sg_pass_expired_eligible",{island})
-      }
+      if(passEnd>0&&passEnd<=Date.now())return true
     }catch(_){}
-  },[])
+    return false
+  })
+  useEffect(()=>{ if(showPassExpired){try{track("sg_pass_expired_eligible",{island})}catch(_){}} },[])
   // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
   //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
@@ -11095,6 +11101,25 @@ export default function App(){
   const[fbPosts,setFbPosts]=useState({})
   const[beachesWeather,setBeachesWeather]=useState({})
   const[hasActiveThreat,setHasActiveThreat]=useState(false)
+
+  // ── CHARGEMENT DÉFINITIF (anti-glitch boot) ────────────────────────────────
+  // Les surfaces qui portent le verdict (pins carte, verdict) ne peignent JAMAIS
+  // l'état fallback (gris) pour ensuite le remplacer par la donnée réelle : on gate
+  // leur rendu sur `dataReady` (donnée fusionnée prête) → apparition UNIQUE, finale.
+  // Le squelette / fond baké reste visible en attendant (jamais d'écran vide).
+  // Garde-fou : `bootSafety` force l'affichage après 5s si le fetch ne résout jamais
+  // (le fetch a des .catch → dataSource bascule toujours, mais ceinture+bretelles).
+  // Rollback : ?bootgate=0 → ancien comportement (rendu immédiat, fallback visible).
+  const bootGateOff=(()=>{try{return /[?&]bootgate=0/.test(window.location.search)}catch(_){return false}})()
+  const[bootSafety,setBootSafety]=useState(false)
+  useEffect(()=>{ if(bootGateOff)return; const t=setTimeout(()=>setBootSafety(true),5000); return ()=>clearTimeout(t) },[bootGateOff])
+  const dataReady = bootGateOff || bootSafety || dataSource!=="loading"
+
+  // Props objets pour la carte — MÉMOÏSÉES (avant : IIFE inline recréées à CHAQUE render
+  // parent → beachList de WorldMapView recalculé à chaque fois → tiers/labels re-arbitrés
+  // en boucle = reshuffle/flicker répété). Ne recalcule que quand allBeaches/sargData change.
+  const mapArrivals = useMemo(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m},[allBeaches,sargData])
+  const mapForecastByBeach = useMemo(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const wk=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];const fc=wk&&wk.forecast;if(fc&&fc.length){m[b.id]={d:fc.slice(0,6).map(d=>({st:d.status,c:d.confidence,date:d.date})),drift:wk.drift||null,arrivalDay:(wk.arrivalDetected&&wk.arrivalDay!=null)?wk.arrivalDay:null};}}}catch(_){}return m},[allBeaches,sargData])
 
   // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
   // 1×/session (sessionStorage), jamais pendant une activation premium.
@@ -12379,7 +12404,7 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
-        {showHero&&heroPick&&(chasse?(
+        {showHero&&dataReady&&heroPick&&(chasse?(
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
@@ -12996,9 +13021,9 @@ export default function App(){
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
-                rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
-                arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m})()}
-                forecastByBeach={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const wk=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];const fc=wk&&wk.forecast;if(fc&&fc.length){m[b.id]={d:fc.slice(0,6).map(d=>({st:d.status,c:d.confidence,date:d.date})),drift:wk.drift||null,arrivalDay:(wk.arrivalDetected&&wk.arrivalDay!=null)?wk.arrivalDay:null};}}}catch(_){}return m})()}
+                rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
+                arrivals={mapArrivals}
+                forecastByBeach={mapForecastByBeach}
                 onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
                 onShare={shareBeachCard}
                 seasonOutlook={sargData?.seasonOutlook||null}
@@ -13007,7 +13032,7 @@ export default function App(){
                 onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
-          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
 
         )}
 
