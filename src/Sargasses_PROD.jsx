@@ -64,6 +64,11 @@ const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
 // PaidOnboarding. Rollback ?poste=0 → retombe sur le tunnel linéaire.
 const LazyWelcomePoste=lazyWithRetry(()=>import("./WelcomePoste"))
 const POSTE_OFF=(()=>{try{return /[?&]poste=0/.test(window.location.search)}catch(_){return false}})()
+// AccountSheet — « Mon accès » ouvert par l'icône personnage du Header : affiche l'email lié
+// (fin du re-prompt à chaque clic) + gère les notifications (fin de la cloche Header inerte).
+// Rollback ?account=0 → retombe sur le toast/prompt d'avant + cloche toujours visible.
+const LazyAccountSheet=lazyWithRetry(()=>import("./AccountSheet"))
+const ACCOUNT_OFF=(()=>{try{return /[?&]account=0/.test(window.location.search)}catch(_){return false}})()
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
 const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
@@ -6882,6 +6887,10 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
         {onEnableNotif&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=perm==="granted"
+          // Alertes déjà accordées : la cloche ne servait plus à rien (grief fondateur) — la gestion
+          // vit désormais dans « Mon accès ». On la masque (sauf rollback ?account=0). Tant que non
+          // accordées, la cloche reste le raccourci opt-in 1-tap (friction minimale).
+          if(on&&!ACCOUNT_OFF&&showAccess)return null
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
           return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
             onClick={()=>{
@@ -11315,6 +11324,7 @@ export default function App(){
   // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
+  const[showAccount,setShowAccount]=useState(false)
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
@@ -11602,6 +11612,13 @@ export default function App(){
       }
     }catch{}
   },[lang])
+
+  // « Mon accès » (icône personnage Header) → feuille compte AccountSheet : AFFICHE l'email lié
+  // (fin du re-prompt) + gère les notifications. Rollback ?account=0 → toast/prompt d'avant.
+  const openAccount=useCallback((src)=>{
+    try{track("sg_account_open",{src:src||"header"})}catch(_){}
+    setShowAccount(true)
+  },[])
 
   // Deep-link ?restore=1 (app / accusé de réception / email de bienvenue) → openAccessCheck.
   // Rollback ?restore=0.
@@ -13426,8 +13443,9 @@ export default function App(){
               }}
               isPremium={isPremium}
               onAccess={()=>{
-                // Premium → montre le statut (Pass actif + échéance si connue). Sinon →
-                // invite de restauration (jamais de cul-de-sac). Flag rollback ?monacces=0.
+                // Défaut : feuille « Mon accès » (affiche l'email lié quand premium, gère les
+                // alertes). Rollback ?account=0 → ancien toast statut / prompt restauration.
+                if(!ACCOUNT_OFF){ openAccount("header"); return }
                 if(isPremium){
                   let until=""
                   try{const pe=parseInt(localStorage.getItem("sg_premium_pass_end")||"0",10)
@@ -13636,6 +13654,16 @@ export default function App(){
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
 
+        {/* MON ACCÈS — feuille compte (email lié + alertes) ouverte par l'icône personnage.
+            Restaurer/gérer réutilisent openAccessCheck (recurring → ?manage=1). */}
+        {showAccount&&<ErrBound><Suspense fallback={null}><LazyAccountSheet lang={lang} isPremium={isPremium}
+          onClose={()=>setShowAccount(false)}
+          onEnableNotif={()=>forceEnablePush("account")}
+          onRestore={()=>{setShowAccount(false);openAccessCheck("account")}}
+          onManage={()=>{setShowAccount(false);openAccessCheck("account")}}
+          onUpgrade={()=>{setShowAccount(false);openPremium("account")}}
+          supportEmail={SUPPORT_EMAIL} track={track}/></Suspense></ErrBound>}
+
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
             Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}
         {whatsNew&&!showHero&&!showPrevLanding&&!showOnboarding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
@@ -13770,7 +13798,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
-                onAccess={()=>openAccessCheck("map")} onEnableNotif={()=>loadPushNow("map")}
+                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>loadPushNow("map")}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
