@@ -1489,6 +1489,15 @@ export default function ChasseHome(props){
   const [alertsOpen,setAlertsOpen]=useState(false)
   const spaceEnabled=useMemo(()=>spaceOnFlag(),[])
   const [spaceOpen,setSpaceOpen]=useState(false)
+  // Dead-click home (audit : home = hotspot n°1, 5653 dead-clicks) : mascotte, série et pack
+  // du jour INVITENT le tap mais étaient inertes → on les rend actionnables (mascotte/série
+  // ouvrent l'espace ; le pack scrolle vers les cartes à révéler). Additif, réversible.
+  const veilTapOn=useMemo(()=>{try{return !/[?&]veiltap=0/.test(window.location.search)}catch(_){return true}},[])
+  const streakTapOn=useMemo(()=>{try{return !/[?&]streaktap=0/.test(window.location.search)}catch(_){return true}},[])
+  const packTapOn=useMemo(()=>{try{return !/[?&]packtap=0/.test(window.location.search)}catch(_){return true}},[])
+  const _openSpaceTap=(ev)=>{ try{track&&track(ev)}catch(_){}; setSpaceOpen(true) }
+  const _packTap=()=>{ try{track&&track("sg_chasse_packtap")}catch(_){}; try{document.querySelector(".lc-guesses")?.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){} }
+  const _kd=(fn)=>(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fn() } }
   /* plages à scruter = celles affichées (pickBeaches) ∪ collectées, dédupliquées par id */
   const alertBeaches = useMemo(()=>{
     if(!alertsEnabled) return []
@@ -1521,12 +1530,12 @@ export default function ChasseHome(props){
 
       {/* ---- barre haute : Veilleur + EN DIRECT + série ---- */}
       <div className="lc-top">
-        <div className="lc-veilwrap"><Veilleur mood={mood} size={52}/></div>
+        <div className="lc-veilwrap" {...(spaceEnabled&&veilTapOn?{role:"button",tabIndex:0,"aria-label":_t({fr:"Ouvrir mon espace",en:"Open my space",es:"Abrir mi espacio"}),onClick:()=>_openSpaceTap("sg_veiltap"),onKeyDown:_kd(()=>_openSpaceTap("sg_veiltap"))}:{})}><Veilleur mood={mood} size={52}/></div>
         <div className="lc-live">
           <span className="lc-eyebrow">{_t(I18N.eyebrow)}</span>
           <span className="lc-date">{dateLbl}{fresh?" · maj "+fresh:""}</span>
         </div>
-        <div className="lc-streak" title={_t(I18N.streak)}>
+        <div className="lc-streak" title={_t(I18N.streak)} {...(spaceEnabled&&streakTapOn?{role:"button",tabIndex:0,"aria-label":_t(I18N.streak),onClick:()=>_openSpaceTap("sg_streak_tap"),onKeyDown:_kd(()=>_openSpaceTap("sg_streak_tap"))}:{})}>
           <span className="lc-fire">🔥</span><b>{st.streak}</b>
           <small>{_t(I18N.best)} {st.best}</small>
         </div>
@@ -1566,7 +1575,7 @@ export default function ChasseHome(props){
         {!beach ? <div className="lc-fanwrap"/> : !revealed ? (
           <>
             {/* PACK FERMÉ */}
-            <div className="lc-pack">
+            <div className="lc-pack" {...(packTapOn?{role:"button",tabIndex:0,"aria-label":_t({fr:"Voir les cartes à révéler",en:"See the cards to reveal",es:"Ver las cartas por revelar"}),onClick:_packTap,onKeyDown:_kd(_packTap)}:{})}>
               <div className="lc-pack-shine" aria-hidden="true"/>
               <div className="lc-pack-top"><Veilleur mood="scan" size={84}/></div>
               <div className="lc-pack-lbl">{_t({fr:"PACK DU JOUR",en:"DAILY PACK",es:"PACK DEL DÍA"})}</div>
@@ -1875,6 +1884,8 @@ export const CSS=`
 /* barre haute */
 .lc-top{display:flex;align-items:center;gap:10px;max-width:520px;margin:0 auto 6px}
 .lc-veilwrap{flex:0 0 auto;filter:drop-shadow(2px 2px 0 rgba(13,11,20,.4))}
+.lc-veilwrap[role="button"],.lc-streak[role="button"],.lc-pack[role="button"]{cursor:pointer}
+.lc-veilwrap[role="button"]:focus-visible,.lc-streak[role="button"]:focus-visible,.lc-pack[role="button"]:focus-visible{outline:2px solid var(--gold,#FFC72C);outline-offset:2px}
 .lc-live{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .lc-date{font-weight:700;font-size:11px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.6)}
 .lc-gomap{display:flex;align-items:center;gap:11px;width:100%;margin:12px 0 2px;cursor:pointer;text-align:left;
