@@ -90,3 +90,51 @@ drop policy if exists "anon insert planner" on public.planner_alerts;
 create policy "anon insert planner" on public.planner_alerts
   for insert to anon
   with check (notified = false);
+
+-- =====================================================================
+-- beach_reports — ÉVÉNEMENTS terrain par plage (échouement / ramassage).
+-- Le satellite voit le banc au large ; il NE VOIT PAS deux transitions réelles :
+--   • beaching  : les algues viennent d'échouer sur le sable.
+--   • cleanup   : la commune a ramassé → saut instantané vers propre.
+-- On les capture ici (donnée terrain, pas de l'argent). En V1 = SIGNAL AFFICHÉ
+-- modéré à côté du verdict (badge « signalé par X visiteurs · en cours de
+-- vérification ») — il NE TOUCHE PAS la couleur du verdict (100 % data ERDDAP).
+-- La fusion au verdict viendra plus tard, derrière un flag + backtest, quand le
+-- volume de reports le justifiera (panel adverse 2026-07-01).
+-- Modération = même pipeline que `photos` : insert 'pending', lecture 'approved'.
+-- Idempotent → safe à (re)coller sur une base déjà créée.
+-- =====================================================================
+
+create table if not exists public.beach_reports (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  beach_id    text not null,
+  beach_name  text,
+  island      text,
+  event       text not null,   -- 'beaching' | 'cleanup'
+  note        text,            -- note libre courte (modérée), optionnelle
+  photo_url   text,            -- preuve optionnelle (URL Storage beach-photos)
+  status      text not null default 'pending',  -- pending | approved | rejected
+  notified    boolean not null default false
+);
+
+create index if not exists beach_reports_approved_idx
+  on public.beach_reports (beach_id, status, created_at desc);
+
+alter table public.beach_reports enable row level security;
+
+-- a) N'importe qui peut SIGNALER un événement, mais FORCÉMENT en 'pending'
+--    et sur un `event` de la liste blanche (aucun autre type n'entre).
+drop policy if exists "anon insert beach_report" on public.beach_reports;
+create policy "anon insert beach_report" on public.beach_reports
+  for insert to anon
+  with check (status = 'pending' and event in ('beaching', 'cleanup'));
+
+-- b) N'importe qui ne peut LIRE que les événements 'approved' (modérés)
+drop policy if exists "anon read beach_report" on public.beach_reports;
+create policy "anon read beach_report" on public.beach_reports
+  for select to anon
+  using (status = 'approved');
+
+-- (Modération = passer status à 'approved' au dashboard / clé service_role.
+--  L'anon NE PEUT PAS update/delete : aucune policy.)

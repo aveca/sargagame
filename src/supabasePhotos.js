@@ -85,6 +85,52 @@ export async function fetchApprovedPhotos(beachId, limit = 12) {
 }
 
 /**
+ * Signale un ÉVÉNEMENT terrain sur une plage — `beaching` (algues arrivées) ou
+ * `cleanup` (ramassage effectué). Deux transitions que le satellite ne voit pas.
+ * → table `beach_reports` en status 'pending' (modération avant affichage, comme
+ * les photos). Best-effort : toute erreur (table absente, réseau) est avalée →
+ * jamais bloquant. Renvoie true si l'insert a réussi.
+ * @param {object} p - { beach, event: 'beaching'|'cleanup', note?, photoUrl? }
+ */
+export async function submitBeachReport({ beach, event, note, photoUrl } = {}) {
+  if (!supabaseConfigured()) return false
+  if (!beach || !beach.id) return false
+  if (event !== "beaching" && event !== "cleanup") return false
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports`, {
+      method: "POST",
+      headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify({
+        beach_id: beach.id,
+        beach_name: beach.name || null,
+        island: beach.island || null,
+        event,
+        note: note ? String(note).trim().slice(0, 280) : null,
+        photo_url: photoUrl || null,
+        status: "pending",
+      }),
+    })
+    return res.ok
+  } catch (_) { return false }
+}
+
+/**
+ * Événements terrain APPROUVÉS d'une plage (récent → ancien). RLS ne sert que
+ * status='approved'. Renvoie [{event, ts, note}].
+ */
+export async function fetchApprovedReports(beachId, limit = 20) {
+  if (!supabaseConfigured()) return []
+  const q = `beach_id=eq.${encodeURIComponent(beachId)}&status=eq.approved` +
+    `&select=event,note,created_at&order=created_at.desc&limit=${limit}`
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?${q}`, { headers: headers() })
+    if (!res.ok) return []
+    const rows = await res.json()
+    return (Array.isArray(rows) ? rows : []).map((r) => ({ event: r.event, ts: r.created_at, note: r.note || "" }))
+  } catch (_) { return [] }
+}
+
+/**
  * Dépose une intention de séjour « planner » (hub premium La Vigie) → table
  * `planner_alerts` (RLS insert-only, la lecture reste privée côté service). Le cron
  * scripts/automation/planner-alerts.cjs enverra le rappel J-7. Fire-and-forget,

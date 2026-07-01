@@ -85,6 +85,36 @@ async function ensureTable() {
   } catch (e) { console.warn('[planner] ensure échouée (non bloquant):', e.message) }
 }
 
+// 1bis) Best-effort : crée la table beach_reports (événements terrain échouement/
+// ramassage) si absente. Co-localisée ici (même projet Supabase, même pattern
+// Management API) → zéro action fondateur si SUPABASE_ACCESS_TOKEN est posé ;
+// fallback = coller le bloc de supabase/schema.sql. Idempotent, non bloquant.
+async function ensureBeachReportsTable() {
+  if (!ACCESS_TOKEN) return
+  const sql = `
+    create table if not exists public.beach_reports (
+      id uuid primary key default gen_random_uuid(),
+      created_at timestamptz not null default now(),
+      beach_id text not null, beach_name text, island text,
+      event text not null, note text, photo_url text,
+      status text not null default 'pending', notified boolean not null default false );
+    create index if not exists beach_reports_approved_idx on public.beach_reports (beach_id, status, created_at desc);
+    alter table public.beach_reports enable row level security;
+    drop policy if exists "anon insert beach_report" on public.beach_reports;
+    create policy "anon insert beach_report" on public.beach_reports for insert to anon with check (status = 'pending' and event in ('beaching', 'cleanup'));
+    drop policy if exists "anon read beach_report" on public.beach_reports;
+    create policy "anon read beach_report" on public.beach_reports for select to anon using (status = 'approved');`
+  try {
+    const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + ACCESS_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: sql }),
+      signal: AbortSignal.timeout(20000),
+    })
+    console.log(res.ok ? '[beach_reports] table ensured (Management API)' : `[beach_reports] ensure HTTP ${res.status} (fallback = coller schema.sql)`)
+  } catch (e) { console.warn('[beach_reports] ensure échouée (non bloquant):', e.message) }
+}
+
 function buildEmail(row, daysLeft) {
   const lang = row.lang === 'en' || row.lang === 'es' ? row.lang : 'fr'
   const domain = (row.domain && /^[a-z0-9.-]+$/i.test(row.domain)) ? row.domain : 'sargasses-martinique.com'
@@ -162,6 +192,7 @@ async function main() {
   if (SEND && !mailReady()) { console.error('SMTP_PASS manquant — impossible d\'envoyer (--send).'); process.exit(1) }
 
   await ensureTable()
+  await ensureBeachReportsTable()
 
   const today = isoDay(Date.now())
   const horizonMax = isoDay(Date.now() + HORIZON_DAYS * 864e5)

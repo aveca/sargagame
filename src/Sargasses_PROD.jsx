@@ -12,7 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import BeachPhotos from "./BeachPhotos.jsx"
-import { uploadBeachPhoto, supabaseConfigured } from "./supabasePhotos.js"
+import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -2249,6 +2249,11 @@ const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // src/supabasePhotos.js). S'active AUTOMATIQUEMENT dès que SUPABASE_URL + ANON_KEY
 // sont renseignés (sinon no-op). Détails : docs/visitor-photos-runbook.md.
 const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
+// Événements terrain (échouement / ramassage) — capture Supabase `beach_reports`,
+// SIGNAL AFFICHÉ modéré à côté du verdict (ne touche PAS la couleur = 100 % data
+// ERDDAP ; panel adverse 2026-07-01). Flag rollback : ?ramassage=0 → OFF. Inerte
+// tant que Supabase pas configuré (no-op), comme les photos.
+const RAMASSAGE_ENABLED=supabaseConfigured()&&!(typeof location!=="undefined"&&/[?&]ramassage=0/.test(location.search||""))
 // Vrai PENDANT la capture photo (caméra/sélecteur ouverts → page en arrière-plan).
 // Ouvrir la caméra émet `visibilitychange:hidden` ; sans ce garde, l'exit-intent
 // monterait un overlay plein écran (ExitVeilleurCard) PAR-DESSUS la fiche au retour
@@ -3322,6 +3327,38 @@ function BeachReport({beach,lang,communityReports}){
       .then(ok=>setPhotoState(ok?"sent":"error"))
       .catch(()=>setPhotoState("error"))
   }
+  // ── Événements terrain (échouement / ramassage) — signal AFFICHÉ modéré, ne
+  //    touche PAS la couleur du verdict (100 % data ERDDAP ; panel 2026-07-01).
+  const evtKey="sg_bevent_"+beach.id
+  const[evtDone,setEvtDone]=useState(()=>{
+    const last=g("sg_bevent_t_"+beach.id,0)
+    return(last&&Date.now()-last<12*3600*1000)?g(evtKey,null):null
+  })
+  const[approvedEvents,setApprovedEvents]=useState(null)
+  const[evtBusy,setEvtBusy]=useState(false)
+  const[evtErr,setEvtErr]=useState(false)
+  useEffect(()=>{
+    if(!RAMASSAGE_ENABLED||!beach||!beach.id)return
+    let alive=true
+    fetchApprovedReports(beach.id).then(list=>{if(alive)setApprovedEvents(list||[])}).catch(()=>{})
+    return()=>{alive=false}
+  },[beach&&beach.id])
+  // Honnête : on ne confirme QUE si l'insert a réellement réussi. Si le backend
+  // n'est pas prêt (table absente) ou hors-ligne → pas de faux « Merci », le
+  // bouton reste actif. (0 fabrication, loi du moat.)
+  const sendEvent=(event)=>{
+    if(evtDone||evtBusy)return
+    setEvtBusy(true);setEvtErr(false)
+    try{track("sg_beach_event",{beach_id:beach.id,event,satellite_status:beach.status,island:beach.island})}catch(_){}
+    submitBeachReport({beach,event}).then(ok=>{
+      setEvtBusy(false)
+      if(ok){setEvtDone(event);s(evtKey,event);s("sg_bevent_t_"+beach.id,Date.now())}
+      else setEvtErr(true)
+    }).catch(()=>{setEvtBusy(false);setEvtErr(true)})
+  }
+  const _recentEvents=(approvedEvents||[]).filter(e=>{try{return Date.now()-new Date(e.ts).getTime()<48*3600*1000}catch(_){return false}})
+  const cleanupCount=_recentEvents.filter(e=>e.event==="cleanup").length
+  const beachingCount=_recentEvents.filter(e=>e.event==="beaching").length
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
@@ -3366,6 +3403,45 @@ function BeachReport({beach,lang,communityReports}){
       {queued&&(
         <div style={{marginTop:8,fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",display:"flex",alignItems:"center",gap:6}}>
           <span aria-hidden="true">📡</span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
+        </div>
+      )}
+      {RAMASSAGE_ENABLED&&(
+        <div style={{marginTop:10}}>
+          <div style={{fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",marginBottom:6}}>
+            {_t(lang,"Un changement depuis hier ?","A change since yesterday?","¿Un cambio desde ayer?")}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {[{id:"beaching",e:"🌊",l:"Algues arrivées",le:"Sargassum arrived",les:"Llegó sargazo",c:C.stMod,bg:C.amberBg},
+              {id:"cleanup",e:"🧹",l:"Ramassé",le:"Cleaned up",les:"Recogido",c:C.green,bg:C.greenBg}].map(ev=>(
+              <button key={ev.id} type="button" onClick={()=>sendEvent(ev.id)} disabled={!!evtDone||evtBusy} style={{
+                flex:1,padding:"10px 8px",borderRadius:12,border:"none",cursor:(evtDone||evtBusy)?"default":"pointer",
+                background:evtDone===ev.id?ev.bg:"var(--sg-card,#fff)",
+                color:evtDone===ev.id?ev.c:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",transition:"all .2s",
+                boxShadow:evtDone===ev.id?"inset 0 0 0 1.5px "+ev.c:"0 1px 4px rgba(0,0,0,.04)",
+                opacity:((evtDone&&evtDone!==ev.id)||evtBusy)?.4:1,
+                display:"flex",alignItems:"center",justifyContent:"center",gap:5,
+              }}><span aria-hidden="true">{ev.e}</span>{lang==="es"?ev.les:lang==="en"?ev.le:ev.l}</button>
+            ))}
+          </div>
+          {evtDone&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
+            {_t(lang,"Merci ! Ton signalement sera vérifié.","Thanks! Your report will be reviewed.","¡Gracias! Tu reporte será revisado.")}
+          </div>}
+          {evtErr&&!evtDone&&<div style={{marginTop:6,fontSize:11,color:"var(--sg-mid,#7a7768)",textAlign:"center",fontWeight:500}}>
+            {_t(lang,"Signalement indisponible pour l'instant — réessaie plus tard.","Reporting unavailable right now — try again later.","Reporte no disponible ahora — reinténtalo más tarde.")}
+          </div>}
+        </div>
+      )}
+      {RAMASSAGE_ENABLED&&(cleanupCount>0||beachingCount>0)&&(
+        <div style={{marginTop:10,padding:"9px 12px",borderRadius:12,
+          background:cleanupCount>=beachingCount?C.greenBg:C.amberBg,border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:6}}>
+            {cleanupCount>=beachingCount
+              ?<><span aria-hidden="true">🧹</span>{_t(lang,`Ramassage signalé par ${cleanupCount} visiteur${cleanupCount>1?"s":""}`,`Cleanup reported by ${cleanupCount} visitor${cleanupCount>1?"s":""}`,`Recogida reportada por ${cleanupCount} visitante${cleanupCount>1?"s":""}`)}</>
+              :<><span aria-hidden="true">🌊</span>{_t(lang,`Échouement signalé par ${beachingCount} visiteur${beachingCount>1?"s":""}`,`Sargassum arrival reported by ${beachingCount} visitor${beachingCount>1?"s":""}`,`Llegada reportada por ${beachingCount} visitante${beachingCount>1?"s":""}`)}</>}
+          </div>
+          <div style={{marginTop:3,fontSize:10,color:"var(--sg-mid)"}}>
+            {_t(lang,"Signalé au sol · 48 h · le verdict reste mesuré au satellite","Reported on-site · 48h · the verdict stays satellite-measured","Reportado in situ · 48h · el veredicto sigue medido por satélite")}
+          </div>
         </div>
       )}
       {PHOTO_UPLOAD_ENABLED&&(
