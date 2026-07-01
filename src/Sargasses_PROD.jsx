@@ -1632,17 +1632,32 @@ const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
 // ERDDAP ; panel adverse 2026-07-01). Flag rollback : ?ramassage=0 → OFF. Inerte
 // tant que Supabase pas configuré (no-op), comme les photos.
 const RAMASSAGE_ENABLED=supabaseConfigured()&&!(typeof location!=="undefined"&&/[?&]ramassage=0/.test(location.search||""))
-// Lane DESCENTE terrain (GTT Étage 2, docs/GROUND_TRUTH_TERRAIN.md) : un ramassage APPROUVÉ
-// ET confirmé par le modérateur (clé 2 → downgradeConfirmedAt) affiche un calque « Terrain »
-// d'1 cran plus bas, EN TEMPS RÉEL, avec la mesure satellite montrée à côté (jamais un vert
-// franc auto — c'est un clic humain qui l'autorise). Flag rollback : ?descente=0 → OFF (retombe
-// satellite pur). Sous-ensemble de RAMASSAGE_ENABLED (?ramassage=0 coupe montée + descente).
+// Correction terrain sur le VERDICT affiché (docs/GROUND_TRUTH_TERRAIN.md). Modèle simple
+// (décision fondateur) : un signalement APPROUVÉ (par toi, à l'email) applique SON SENS au
+// niveau affiché — `beaching` MONTE d'1 cran, `cleanup` BAISSE d'1 cran — en temps réel, 48 h,
+// avec la mesure satellite nommée à côté (jamais un niveau terrain présenté comme satellite).
+// Ton approbation = le verrou anti-triche (un hôtel ne peut pas la fabriquer). Flag rollback :
+// ?descente=0 → OFF (retombe satellite pur). Sous-ensemble de RAMASSAGE_ENABLED (?ramassage=0
+// coupe tout le terrain). Le forecast J+1-7 reste 100 % satellite (tableau distinct).
 const DESCENTE_ENABLED=RAMASSAGE_ENABLED&&!(typeof location!=="undefined"&&/[?&]descente=0/.test(location.search||""))
 // Partage au moment de fierté POST-contribution photo : le contributeur vient
 // d'aider, c'est le pic d'engagement (le mécanisme viral que le concurrent
 // exploite sur Facebook). On réutilise la carte golden-hour spoiler-free
 // (buildShareCard variant 'beach', SANS lien = portée max). Flag rollback ?vshare=0.
 const VSHARE_ENABLED=!(typeof location!=="undefined"&&/[?&]vshare=0/.test(location.search||""))
+// Statut AFFICHÉ corrigé par le terrain : à partir des signalements APPROUVÉS < 48 h de la
+// plage, on applique le sens du plus fort signal — un `beaching` frais MONTE d'1 cran (priorité
+// sécurité : la mauvaise nouvelle l'emporte), sinon un `cleanup` frais BAISSE d'1 cran. Borné
+// clean..avoid. Renvoie null si aucun signal frais (→ satellite pur).
+function terrainDisplayStatus(satStatus,events){
+  if(!DESCENTE_ENABLED||!satStatus||!(satStatus in {clean:0,moderate:0,avoid:0}))return null
+  const R={clean:0,moderate:1,avoid:2},INV=["clean","moderate","avoid"]
+  const fresh=ev=>(events||[]).some(e=>{try{return e.event===ev&&Date.now()-new Date(e.ts).getTime()<48*3600*1000}catch(_){return false}})
+  let r=R[satStatus]
+  if(fresh("beaching"))r=Math.min(2,r+1)        // signalé arrivé → monte (sécurité d'abord)
+  else if(fresh("cleanup"))r=Math.max(0,r-1)    // signalé ramassé → baisse
+  return INV[r]!==satStatus?INV[r]:null
+}
 // Vrai PENDANT la capture photo (caméra/sélecteur ouverts → page en arrière-plan).
 // Ouvrir la caméra émet `visibilitychange:hidden` ; sans ce garde, l'exit-intent
 // monterait un overlay plein écran (ExitVeilleurCard) PAR-DESSUS la fiche au retour
@@ -2743,12 +2758,10 @@ function BeachReport({beach,lang,communityReports}){
   const _recentEvents=(approvedEvents||[]).filter(e=>{try{return Date.now()-new Date(e.ts).getTime()<48*3600*1000}catch(_){return false}})
   const cleanupCount=_recentEvents.filter(e=>e.event==="cleanup").length
   const beachingCount=_recentEvents.filter(e=>e.event==="beaching").length
-  // Lane DESCENTE (GTT Étage 2) : un ramassage confirmé par le modérateur (downgradeConfirmedAt,
-  // < 48 h) autorise un calque « Terrain » d'1 cran plus bas que le satellite. JAMAIS en auto —
-  // le clic humain (clé 2) est le verrou anti-forge. On ne descend jamais sous 'clean'.
-  const _stRank={clean:0,moderate:1,avoid:2},_stInv=["clean","moderate","avoid"]
-  const _terrainConfirmed=DESCENTE_ENABLED&&(approvedEvents||[]).some(e=>{try{return e.event==="cleanup"&&e.downgradeConfirmedAt&&Date.now()-new Date(e.downgradeConfirmedAt).getTime()<48*3600*1000}catch(_){return false}})
-  const terrainStatus=(_terrainConfirmed&&beach.status&&_stRank[beach.status]>0)?_stInv[_stRank[beach.status]-1]:null
+  // Correction terrain : un signalement APPROUVÉ < 48 h applique son sens au niveau affiché
+  // (beaching monte, cleanup baisse). Calque « Terrain » nommé, satellite montré à côté.
+  const _stRank2={clean:0,moderate:1,avoid:2}
+  const terrainStatus=terrainDisplayStatus(beach.status,approvedEvents)
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
@@ -2828,10 +2841,15 @@ function BeachReport({beach,lang,communityReports}){
             <span aria-hidden="true">🌍</span>{_t(lang,`Terrain : ${ST[terrainStatus].l}`,`Ground: ${ST[terrainStatus].le}`,`Terreno: ${ST[terrainStatus].les}`)}
           </div>
           <div style={{marginTop:3,fontSize:10.5,color:"var(--sg-mid)",lineHeight:1.4}}>
-            {_t(lang,
-              `Ramassage confirmé sur place · 48 h. 🛰️ Satellite : ${ST[beach.status].l} — la situation peut évoluer.`,
-              `Cleanup confirmed on-site · 48h. 🛰️ Satellite: ${ST[beach.status].le} — conditions may change.`,
-              `Limpieza confirmada in situ · 48h. 🛰️ Satélite: ${ST[beach.status].les} — puede cambiar.`)}
+            {(_stRank2[terrainStatus]>_stRank2[beach.status]
+              ? _t(lang,
+                  `Échouement signalé sur place · 48 h. 🛰️ Satellite : ${ST[beach.status].l} — la situation peut évoluer.`,
+                  `Sargassum arrival reported on-site · 48h. 🛰️ Satellite: ${ST[beach.status].le} — conditions may change.`,
+                  `Llegada reportada in situ · 48h. 🛰️ Satélite: ${ST[beach.status].les} — puede cambiar.`)
+              : _t(lang,
+                  `Ramassage signalé sur place · 48 h. 🛰️ Satellite : ${ST[beach.status].l} — la situation peut évoluer.`,
+                  `Cleanup reported on-site · 48h. 🛰️ Satellite: ${ST[beach.status].le} — conditions may change.`,
+                  `Limpieza reportada in situ · 48h. 🛰️ Satélite: ${ST[beach.status].les} — puede cambiar.`))}
           </div>
         </div>
       )}
@@ -3328,6 +3346,14 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
   const [showProof,setShowProof]=useState(false)
+  // Correction terrain : signalements approuvés de cette plage (appliquent leur sens au verdict).
+  const [terrainEvents,setTerrainEvents]=useState(null)
+  useEffect(()=>{
+    if(!DESCENTE_ENABLED||!beach||!beach.id){setTerrainEvents(null);return}
+    let alive=true
+    fetchApprovedReports(beach.id).then(list=>{if(alive)setTerrainEvents(list||[])}).catch(()=>{})
+    return()=>{alive=false}
+  },[beach&&beach.id])
 
   // ── Forecast réel (même résolution que BeachSheet : weekly réel → interpolé → généré)
   const forecast=useMemo(()=>{
@@ -3340,7 +3366,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     return fc
   },[beach?.id,sargData,forecastProp,lang])
 
-  const status=beach?.status||"_loading"
+  const _satStatus=beach?.status||"_loading"
+  // Le niveau AFFICHÉ suit le terrain si un signalement approuvé < 48 h l'exige (beaching monte,
+  // cleanup baisse), sinon le satellite. Provenance nommée dans le bandeau ci-dessous → jamais
+  // « mesuré au satellite » sur un niveau terrain. Forecast J+1-7 (fcDays) reste 100 % satellite.
+  const _terrainStatus=terrainDisplayStatus(beach?.status,terrainEvents)
+  const status=_terrainStatus||_satStatus
   const sc=comicStatusColor(status)
   const hasScore=typeof beach?.score==="number"
   const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
@@ -3494,15 +3525,19 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
             <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:COMIC.ink}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {(beach._satBlind&&status==="clean"&&!beach._communityOverride)
-              ? _t(lang,"estimé · pas de lecture directe ici","estimated · no direct read here","estimado · sin lectura directa aquí")
-              : _t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_terrainStatus
+              ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
+                  ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
+                  : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
+              : (beach._satBlind&&status==="clean"&&!beach._communityOverride)
+                ? _t(lang,"estimé · pas de lecture directe ici","estimated · no direct read here","estimado · sin lectura directa aquí")
+                : _t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
           </div>
         </div>
 
         {/* Honnêteté couverture satellite — côte exposée non observée directement.
             Le satellite voit le large, pas l'échoué : on ne dit pas « propre » sans réserve. */}
-        {beach._satBlind&&status==="clean"&&!beach._communityOverride&&(
+        {beach._satBlind&&status==="clean"&&!beach._communityOverride&&!_terrainStatus&&(
           <div style={{display:"flex",gap:9,padding:"11px 13px",margin:"0 0 12px",background:COMIC.cream,border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={COMIC.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0,marginTop:1}}><path d="M5 13l-2-2a2.8 2.8 0 0 1 0-4l2-2a2.8 2.8 0 0 1 4 0l2 2a2.8 2.8 0 0 1 0 4l-2 2a2.8 2.8 0 0 1-4 0z"/><path d="M11 11l4 4M13 7l4 4a2.8 2.8 0 0 1 0 4M9 17a2.8 2.8 0 0 1-4 0"/></svg>
             <div style={{font:"700 11.5px/1.45 'Bricolage Grotesque'",color:COMIC.ink}}>{_t(lang,

@@ -19,6 +19,28 @@
 > **DÉCISION FONDATEUR** : seul écart = **Saint-Martin** (Sargatrack l'a, pas nous) → **ABANDONNÉ** (petit marché, on reste MQ/GP+USD).
 >
 > **NON FAISABLE PAR L'AGENT (pas un bug)** : poster dans leurs groupes FB (action brand) ; créer de fausses photos pour remplir les galeries (loi 0-fabrication). Le supply photo reste organique — le nudge #379 l'amorce.
+>
+> **SUITE DE SESSION (PR #385, panel adverse convoqué par le fondateur → 3 leviers conversion/viral shippés)** : (1) `feat(paywall)` lien /fiabilite/ à l'écran « Avant de payer » (moat au checkout, `?pwrel=0`) ; (2) `fix(paywall)` gate Apple/Google Pay par capacité device dans `PassOffer` (plus de bouton wallet mort, `?wcap=0`) ; (3) `feat(viral)` partage post-contribution photo « Montre ta plage aux copains » (réutilise `buildShareCard` spoiler-free, `?vshare=0`). ⚠️ Note : le helper `groundReliabilityDelta` (confidence.cjs) référence l'ancien modèle 2-clés ; le modèle GTT a été simplifié depuis (#386, cf. entrée 🌊 ci-dessous) — le rabais fiabilité reste à câbler/aligner sur le modèle simple. Runners-up panel non faits : push win-back dormants PWA, nudge renouvellement pré-expiration.
+
+> **🌊 2026-07-01 (suite) — GTT PHASE 2 SHIPPÉE + MODÈLE SIMPLIFIÉ. PRs #384 #386 mergées.**
+>
+> Le terrain bouge maintenant le **verdict affiché** (calque `BeachReport` + gros header
+> `BeachSheetComic`, reroute de la const `status` = chokepoint unique). **Modèle simple
+> (décision fondateur, #386)** : le système à 2 clés était confus → **un seul bouton** :
+> **Approuver** applique le SENS du signalement (`beaching` monte 1 cran, `cleanup` baisse 1
+> cran, 48 h, borné clean..avoid, beaching prioritaire), **Rejeter** ignore. Verrou anti-triche
+> = l'approbation humaine. Provenance nommée « relevé/corrigé sur place · satellite : X »
+> (jamais un niveau terrain présenté comme satellite). Helper `terrainDisplayStatus` (testé 9
+> cas). Action `moderate?confirm_downgrade` + colonne `downgrade_confirmed_at` **abandonnées**
+> (colonne inoffensive laissée). Flag `?descente=0`. Détail : `docs/GROUND_TRUTH_TERRAIN.md`.
+>
+> **RESTE (non fait, faible priorité)** : recolorage pins carte (utilisent `scoreColor` météo,
+> pas le statut sargasses → peu de valeur) ; GPS consent front (`onSite`) ; calibration offline
+> Phase 1 (prématurée sans volume). Le smoke UI complet ne tourne pas dans le conteneur web
+> (ressources externes bloquées → `ERR_CONNECTION_CLOSED`, identique sur main propre) : vérif ici
+> = esbuild+build+budget + smoke DIFFÉRENTIEL (0 nouvelle erreur JS) + self-review + tests logique
+> isolés ; le smoke complet tourne en CI. Pour rejouer le smoke local : patch temporaire
+> `executablePath` + `SMOKE_CHROME=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 
 > **🌊 2026-07-01 — GROUND-TRUTH TERRAIN (GTT) : signalements visiteurs corrigent le verdict, PHASE 0 SHIPPÉE. Branche `claude/signalement-unavailable-krji28`. PRs #367 #375 #376 #378 mergées.**
 >
