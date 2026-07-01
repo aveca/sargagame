@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **⚡ 2026-07-01 (suite) — VITESSE, GAINS RÉELS MERGÉS : bake carte + ScrollStory lazy. PRs #370 + #371.**
+>
+> Après la mesure (LCP = image bakée `WorldMapView`), deux gains **mesurés** shippés :
+> - **#370 — bake carte calé sur le DPR** (`WorldMapView.jsx`, `S=min(2.5,max(2,devicePixelRatio))` au lieu de 2,5× fixe). Sur écrans 2× (Android courant, iPhone SE) : **LCP 2124→1664 ms (−460), TBT 718→495 ms (−223)**, médiane 3 runs, 4× CPU. iPhone 3× inchangé. Screenshots régression carte = identiques.
+> - **#371 — `ScrollStory` (écran 3 hero, below-fold) en chunk lazy** → **entry 153,3→148,9 Ko gzip (−4,4)**, total eager 179,8. Pattern `lazyWithRetry`+Suspense (fallback 430vh anti-CLS). Vérifié : charge au scroll, zéro erreur JS.
+>
+> **RESTE (non fait, jugé pas rentable/risqué)** : lazy `BeachSheet` (~966 l., **43 exports** à exposer — gros blast-radius sur la fiche plage, gain parse-only ~5 Ko, pas le LCP) ; dead-code `SceneCanvas`/`MethodScene`/`SatelliteFilm` (**0,5 Ko réel** en bundle, pas les 4,3 Ko source ; suppression casse les commentaires GLSL → pas rentable). **Le LCP est bake-bound** : les splits d'entry ne grattent que le parse (~50-100 ms), pas le LCP. Bilan : l'app était déjà bien optimisée, le bake était LE levier.
+
 > **⚡ 2026-07-01 — SESSION VITESSE : mesures honnêtes > intuitions. PRs #364 + #368 mergées. Branche `claude/sargasses-bundle-entry-split-q4i9q1`.**
 >
 > **Demande** : « gagner énormément en rapidité, sans action fondateur ». Après mesure Playwright (4× CPU throttle, localhost), le diagnostic a **invalidé plusieurs intuitions** :
