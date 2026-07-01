@@ -6887,13 +6887,14 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
         {onEnableNotif&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=perm==="granted"
-          // Alertes déjà accordées : la cloche ne servait plus à rien (grief fondateur) — la gestion
-          // vit désormais dans « Mon accès ». On la masque (sauf rollback ?account=0). Tant que non
-          // accordées, la cloche reste le raccourci opt-in 1-tap (friction minimale).
-          if(on&&!ACCOUNT_OFF&&showAccess)return null
+          // Défaut : la cloche OUVRE « Mon accès » (section Alertes : activer / statut / guidage
+          // iOS·bloqué) → un clic fait TOUJOURS quelque chose de visible (fin du « ça ne fait rien »
+          // : le prompt natif direct pouvait échouer en silence). Rollback ?account=0 → prompt direct.
+          const viaAccount=!ACCOUNT_OFF&&showAccess&&!!onAccess
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
-          return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+          return(<button aria-label={on?_t(lang,"Alertes sargasses (activées)","Sargassum alerts (on)","Alertas de sargazo (activadas)"):_t(lang,"Alertes sargasses","Sargassum alerts","Alertas de sargazo")}
             onClick={()=>{
+              if(viaAccount){try{track("sg_push_bell_open_account",{granted:on?1:0})}catch(_){}; onAccess(); return}
               if(on){try{sgToast({tone:"success",msg:_t(lang,"Le Veilleur t'écrit déjà chaque matin 🔔","The Watchman already writes you each morning 🔔","El Vigía ya te escribe cada mañana 🔔")})}catch(_){}; return}
               if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
               if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
@@ -13802,7 +13803,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
-                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>loadPushNow("map")}
+                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){openAccount("map_bell");return} loadPushNow("map") }}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
