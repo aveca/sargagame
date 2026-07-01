@@ -2874,7 +2874,7 @@ function BeachReport({beach,lang,communityReports}){
       {voted&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
         {_t(lang,"Merci pour ton signalement !","Thanks for your report!","¡Gracias por tu reporte!")}
       </div>}
-      <BeachPhotos beach={beach} lang={lang}/>
+      <BeachPhotos beach={beach} lang={lang} canContribute={PHOTO_UPLOAD_ENABLED}/>
     </div>
   )
 }
