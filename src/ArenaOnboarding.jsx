@@ -5,8 +5,22 @@ import React,{useState,useEffect} from "react";
    N'altère ni le moteur ni le paywall. Palette ink/yel/blu/grn/red/paper. */
 const L=(o,lang)=>(o&&(o[lang]||o.fr))||"";
 
+// Copie locale de _relHref (PremiumModal.jsx ~L21) — anti-import-circulaire (ce chunk
+// est lazy, ne pas tirer Sargasses_PROD). Même sémantique build-time via le define
+// global __REGION__ (vite.config.js) : région US → /reliability/ (EN) ou /fiabilidad/
+// (ES) ; MQ/GP → /fiabilite/. Build-time (pas de sniff hostname) : correct aussi en
+// dev/preview d'un build US, où /fiabilite/ n'est pas générée.
+const _NR=(()=>{try{const r=(typeof __REGION__!=="undefined"&&__REGION__)||null;return !!(r&&r.id!=="mq"&&r.id!=="gp")}catch(_){return false}})();
+const relHref=(l)=>_NR?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/";
+
 export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=null}){
   const [step,setStep]=useState(0);
+  // Flags rollback (pattern inline Sargasses_PROD ~L11148, ex. /[?&]onboard=0/) :
+  // ?onbscan=0 fige le scan satellite (état statique d'origine) ; ?fiabcta=0 masque
+  // le lien preuve /fiabilite/. Défaut ON.
+  const _q=(typeof window!=="undefined"&&window.location.search)||"";
+  const SCAN_ON=!/[?&]onbscan=0/.test(_q);
+  const FIAB_ON=!/[?&]fiabcta=0/.test(_q);
   // Instrumentation : sans elle, on est aveugle sur le premier écran que voient TOUS
   // les nouveaux visiteurs (« les clients en disent rien » → seul le comportement parle).
   // sg_arena_onb_step (1→3) = entonnoir de complétion ; _skip = abandon (avec l'étape) ;
@@ -34,6 +48,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     s1:{fr:"<b>Copernicus &amp; NOAA mesurent</b> les radeaux de sargasses au large — données publiques, auditables.",en:"<b>Copernicus &amp; NOAA measure</b> the sargassum rafts offshore — public, auditable data.",es:"<b>Copernicus y NOAA miden</b> las balsas de sargazo mar adentro — datos públicos y auditables."},
     s2:{fr:"On croise <b>7 facteurs</b> : sargasses, houle, vent, eau, ciel, UV, marée.",en:"We cross <b>7 factors</b>: sargassum, swell, wind, water, sky, UV, tide.",es:"Cruzamos <b>7 factores</b>: sargazo, oleaje, viento, agua, cielo, UV, marea."},
     s3:{fr:"Ta plage devient une <b>carte, score / 100</b> : Baignade OK, À surveiller ou Évite.",en:"Your beach becomes a <b>card, score / 100</b>: Swim OK, Watch out, or Avoid.",es:"Tu playa se vuelve una <b>carta, puntuación / 100</b>: Baño OK, Atención o Evita."},
+    fiab:{fr:"Vérifie notre registre d'erreurs →",en:"Check our error log →",es:"Consulta nuestro registro de errores →"},
     cta2:{fr:"Suivant",en:"Next",es:"Siguiente"},
     cta2s:{fr:"Plus qu'une étape",en:"One step left",es:"Queda un paso"},
     // étape 3
@@ -64,7 +79,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     <div className={"arena-onb bg-"+bg} role="dialog" aria-modal="true">
       <style>{`
         .arena-onb{position:fixed;inset:0;z-index:2900;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-          font-family:"Comic Neue",system-ui,sans-serif;color:#fff;
+          font-family:"Bricolage Grotesque",system-ui,sans-serif;color:#fff;
           padding:max(18px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));
           display:flex;flex-direction:column;animation:arenaOnbIn .35s ease}
         @keyframes arenaOnbIn{from{opacity:0}to{opacity:1}}
@@ -108,6 +123,24 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
         .arena-onb .dots{display:flex;gap:6px;justify-content:center;margin-top:12px}
         .arena-onb .dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);border:1.5px solid #0d0b14}
         .arena-onb .dots i.on{background:#ffd23f}
+        /* ── Scan satellite animé (step 2) — « mesuré au satellite, pas deviné ».
+           Compositing only (transform/opacity). Anims gatées sur .aonb-anim
+           (absente si ?onbscan=0 → état statique d'origine). */
+        .arena-onb .aonb-beamwrap{position:absolute;top:50px;left:50%;width:2px;height:60px;margin-left:-1px}
+        .arena-onb .aonb-beam{position:absolute;inset:0;background:linear-gradient(180deg,#27c46b,transparent);opacity:.7}
+        .arena-onb .aonb-glow{position:absolute;left:50%;bottom:-6px;width:28px;height:12px;margin-left:-14px;
+          border-radius:50%;background:radial-gradient(closest-side,rgba(63,208,127,.65),transparent 72%);opacity:0}
+        .arena-onb .aonb-anim .aonb-beamwrap{animation:aonbSweep 2.4s ease-in-out infinite alternate}
+        @keyframes aonbSweep{from{transform:translateX(-104px)}to{transform:translateX(104px)}}
+        .arena-onb .aonb-anim .aonb-glow{animation:aonbGlowPulse 1.2s ease-in-out infinite}
+        @keyframes aonbGlowPulse{0%,100%{opacity:.25}50%{opacity:.55}}
+        .arena-onb .aonb-anim .aonb-pow{animation:aonbPow .5s cubic-bezier(.18,1.4,.4,1) .9s both}
+        @keyframes aonbPow{0%{transform:rotate(-3deg) scale(0)}70%{transform:rotate(-3deg) scale(1.3)}100%{transform:rotate(-3deg) scale(1)}}
+        @media(prefers-reduced-motion:reduce){
+          .arena-onb .aonb-anim .aonb-beamwrap,.arena-onb .aonb-anim .aonb-glow,
+          .arena-onb .aonb-anim .aonb-pow{animation:none}
+          .arena-onb .aonb-anim .aonb-glow{opacity:.35}
+        }
         @media(min-height:760px){.arena-onb{justify-content:center}}
       `}</style>
 
@@ -119,12 +152,15 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
       {step===0 && (<>
         <div style={{textAlign:"center",marginTop:18,filter:"drop-shadow(3px 4px 0 rgba(0,0,0,.35))"}}>
           <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" style={{display:'block',margin:"0 auto"}}>
-            <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+            {/* Mascotte canonique = Veilleur de ChasseHome.jsx (markup copié, anti-import-
+                circulaire) : panneaux BLEUS #1c7fb0, corps crème, antenne or. Iris FIXE or
+                (pas de mood : aucune plage choisie ici, un vert/rouge serait un état fabriqué). */}
+            <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
             <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
             <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
             <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
             <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
-            <circle cx="60" cy="62" r="14" fill="#27c46b"/>
+            <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
             <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
             <circle cx="64" cy="58" r="2.5" fill="#fff"/>
             <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
@@ -148,12 +184,13 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
       {step===1 && (<>
         <h1>{L(t.scan,lang)[0]}<br/>{L(t.scan,lang)[1]}</h1>
         <div className="sub">{L(t.scanSub,lang)}</div>
-        <div style={{position:"relative",marginTop:16,height:150,border:"4px solid #0d0b14",borderRadius:16,
+        <div className={SCAN_ON?"aonb-anim":undefined} style={{position:"relative",marginTop:16,height:150,border:"4px solid #0d0b14",borderRadius:16,
           background:"radial-gradient(circle at 50% 22%,rgba(95,208,255,.45),transparent 60%),linear-gradient(180deg,#0c2a3a,#10202b)",
           overflow:"hidden",boxShadow:"5px 5px 0 #0d0b14"}}>
           <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",filter:"drop-shadow(2px 2px 0 rgba(0,0,0,.5))"}}>
             <svg viewBox="0 0 120 120" width="64" height="64" aria-hidden="true" style={{display:'block'}}>
-              <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+              {/* Mascotte canonique (cf. commentaire step 1) : panneaux #1c7fb0, iris fixe or. */}
+              <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
               <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
               <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
               <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
@@ -165,12 +202,24 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
               <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
             </svg>
           </div>
-          <div style={{position:"absolute",top:50,left:"50%",width:2,height:60,transform:"translateX(-50%)",background:"linear-gradient(180deg,#27c46b,transparent)"}}/>
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:46,background:"repeating-linear-gradient(90deg,#1d6b3f,#1d6b3f 10px,#27c46b 10px,#27c46b 20px)"}}/>
-          <div style={{position:"absolute",bottom:30,right:14}}><span className="pow" style={{background:"#ffd23f",color:"#0d0b14"}}>BIP BIP!</span></div>
+          {/* Faisceau + glow d'impact APRÈS la côte (peint au-dessus = point d'impact
+              visible). Le sweep vit sur le wrapper (transform only, cf. gfSweep). */}
+          <div className="aonb-beamwrap" aria-hidden="true">
+            <div className="aonb-beam"/>
+            <div className="aonb-glow"/>
+          </div>
+          <div style={{position:"absolute",bottom:30,right:14}}><span className="pow aonb-pow" style={{background:"#ffd23f",color:"#0d0b14"}}>BIP BIP!</span></div>
         </div>
         <div className="panel" style={{marginTop:14,display:"flex",flexDirection:"column",gap:9}}>
           <div style={{display:"flex",gap:10,alignItems:"center"}}><span className="num" style={{background:"#e8322a"}}>1</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.s1,lang)}}/></div>
+          {/* Preuve, pas CTA de vente : lien sobre vers le registre d'erreurs public.
+              Zone tap ≥44px (minHeight) compensée par marges négatives (voisins non cliquables). */}
+          {FIAB_ON && <a href={relHref(lang)} target="_blank" rel="noopener"
+            onClick={()=>T("sg_reliability_open",{from:"onboarding"})}
+            style={{marginLeft:36,marginTop:-8,marginBottom:-8,minHeight:44,display:"flex",alignItems:"center",
+              width:"fit-content",paddingRight:10,color:"#241f30",textDecoration:"underline",textUnderlineOffset:2,
+              font:"700 13px/1.3 'Bricolage Grotesque',sans-serif"}}>{L(t.fiab,lang)}</a>}
           <div style={{display:"flex",gap:10,alignItems:"center"}}><span className="num" style={{background:"#ffd23f",color:"#0d0b14"}}>2</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.s2,lang)}}/></div>
           <div style={{display:"flex",gap:10,alignItems:"center"}}><span className="num" style={{background:"#27c46b"}}>3</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.s3,lang)}}/></div>
         </div>

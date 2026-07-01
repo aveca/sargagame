@@ -60,7 +60,8 @@ export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES 
       <div className="eyebrow">{L("eyebrow")}</div>
       <div className="orbe" aria-hidden="true">
         <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" style={{display:'block'}}>
-          <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+          {/* panneaux solaires BLEUS #1c7fb0 = canon Veilleur (ChasseHome.jsx) */}
+          <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
           <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
           <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
           <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
