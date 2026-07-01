@@ -580,14 +580,20 @@ export default function WorldMapView({
         vy:parseFloat(el.dataset.vy)||0,
         l:L-w/2-4, r:L+w/2+4, t:T-h-4, b:T+4})
     })
+    // Tri = priorité : sélectionnée d'abord, puis GRAVITÉ (avoid=rouge < moderate=jaune < clean=vert),
+    // puis nord→sud. Les rouges/jaunes sont donc TOUJOURS traitées avant les vertes.
     boxes.sort((a,b)=> a.sel!==b.sel ? (a.sel?-1:1) : (a.rank!==b.rank ? a.rank-b.rank : a.vy-b.vy))
     const kept=[]
     boxes.forEach(bx=>{
       if(!bx.inView){ bx.el.style.visibility='hidden'; return }
-      // Vertes/inconnues (rank>=2) : nommées UNIQUEMENT en vue zoomée (sauf ?maplabelcap=0). En vue
-      // large on garde la côte lisible = impactées seules (décision fondateur).
-      if(!mapLabelCapOff && wide && bx.rank>=2){ bx.el.style.visibility='hidden'; return }
-      if(kept.length>=MAX){ bx.el.style.visibility='hidden'; return }
+      const impacted = bx.rank<=1  // rouge (avoid) ou jaune (moderate)
+      // Vertes/inconnues : nommées UNIQUEMENT en vue zoomée (sauf ?maplabelcap=0). En vue large on
+      // garde la côte lisible = impactées seules (décision fondateur).
+      if(!mapLabelCapOff && wide && !impacted){ bx.el.style.visibility='hidden'; return }
+      // Cap : en vue large, 5 max (impactées seules). En vue zoomée, PRIORITÉ ROUGE/JAUNE — les
+      // impactées en champ passent TOUJOURS ; les vertes ne remplissent que la place restante (≤MAX).
+      const capped = mapLabelCapOff ? false : (wide ? kept.length>=5 : (!impacted && kept.length>=MAX))
+      if(capped){ bx.el.style.visibility='hidden'; return }
       const hit=kept.some(kb=> !(bx.r<kb.l||bx.l>kb.r||bx.b<kb.t||bx.t>kb.b))
       if(hit){ bx.el.style.visibility='hidden' }
       else { bx.el.style.visibility='visible'; kept.push(bx) }
