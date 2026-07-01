@@ -63,6 +63,34 @@ function classify(text) {
   return 'feedback'
 }
 
+// ─── Détection du BRUIT MACHINE : bounces (Mailer-Daemon / DSN) + auto-réponses
+//     (postmaster "not monitored", out-of-office, accusés automatiques). Ces
+//     messages ne sont PAS des clients : sans ce filtre, on leur renvoie un accusé
+//     "On a bien reçu votre message" (ping-pong de robots, réputation d'envoi
+//     dégradée) et on pollue le digest fondateur avec de faux "feedback".
+//     Priorité aux HEADERS (RFC 3834 = fiable), fallback sur l'expéditeur + objet.
+//     Renvoie true = à ignorer (marqué \Seen, ni accusé ni digest actionnable). ───
+function isMachineNoise(parsed, from, subject) {
+  const f = String(from || '').toLowerCase()
+  // 1) Expéditeur robot / enveloppe nulle (bounce) — un vrai client a toujours un from.
+  if (!f || !f.includes('@')) return true
+  if (/^(mailer-daemon|postmaster|no-?reply|noreply|donotreply|do-not-reply|bounce|bounces|mdaemon)@/.test(f)) return true
+  if (f.includes('mailer-daemon')) return true
+  // 2) Headers canoniques (auto-submitted ≠ no, suppression, DSN multipart/report).
+  let raw = ''
+  try {
+    if (Array.isArray(parsed.headerLines)) raw = parsed.headerLines.map(h => h.line || '').join('\n')
+  } catch { /* headers absents : on retombe sur l'objet ci-dessous */ }
+  if (/^auto-submitted:\s*(?!no\b)/im.test(raw)) return true
+  if (/^x-auto-response-suppress:/im.test(raw)) return true
+  if (/^precedence:\s*(auto_reply|bulk|junk|list)/im.test(raw)) return true
+  if (/^content-type:\s*multipart\/report/im.test(raw) && /report-type=["']?delivery-status/im.test(raw)) return true
+  // 3) Objet caractéristique (bounce ou absence), FR/EN/ES.
+  const s = String(subject || '')
+  if (/undeliverable|mail delivery (failed|subsystem)|delivery status notification|delivery has failed|returned mail|failure notice|non[- ]?remis|automatic reply|auto[- ]?reply|out of office|absence du bureau|r[ée]ponse automatique|respuesta autom[aá]tica|fuera de (la )?oficina/i.test(s)) return true
+  return false
+}
+
 // HTML → texte brut (échappe rien : on n'imprime jamais le corps client en log).
 function esc(s) {
   return String(s == null ? '' : s)
@@ -131,7 +159,7 @@ function suggestedReply(cat) {
 }
 
 // ─── DIGEST fondateur (un email par run). Contient les adresses réelles. ───
-function digestTemplate(items) {
+function digestTemplate(items, noiseCount = 0) {
   const rows = items.map((it, i) => {
     const sg = suggestedReply(it.cat)
     return `<div style="border:1px solid #E4E0D6;border-radius:10px;padding:14px 16px;margin:12px 0;background:#fff">
@@ -151,6 +179,7 @@ function digestTemplate(items) {
        réception a été envoyé à chaque client. À toi de répondre depuis la boîte
        (les adresses sont ci-dessous).</p>
     ${rows}
+    ${noiseCount ? `<p style="color:#9a8f78;font-size:13px;margin-top:6px">🤖 ${noiseCount} message(s) machine ignoré(s) (bounces / auto-réponses) — ni accusé ni action requise.</p>` : ''}
     <p style="color:#686868;font-size:13px;margin-top:18px">Classé par mots-clés (déterministe, zéro IA) · accusé auto envoyé aux clients · marqué lu en IMAP.</p>
   </div>`
   return {
@@ -208,6 +237,7 @@ async function main() {
   }
 
   const items = [] // {uid, from, subject, snippet, cat}
+  const noiseUids = [] // bounces / auto-réponses : marqués \Seen, jamais ackés ni digérés
   let lock
   try {
     lock = await client.getMailboxLock('INBOX')
@@ -226,6 +256,8 @@ async function main() {
 
       const from = (parsed.from && parsed.from.value && parsed.from.value[0] && parsed.from.value[0].address) || ''
       const subject = parsed.subject || ''
+      // Bruit machine (bounce/DSN/auto-réponse) → sceller, jamais acké ni digéré.
+      if (isMachineNoise(parsed, from, subject)) { noiseUids.push(uid); continue }
       const body = (parsed.text || '').replace(/\s+/g, ' ').trim()
       const snippet = body.slice(0, 400)
       const cat = classify(`${subject}\n${body}`)
@@ -238,15 +270,31 @@ async function main() {
   // Compteurs SEULEMENT (zéro PII).
   const counts = items.reduce((a, it) => { a[it.cat] = (a[it.cat] || 0) + 1; return a }, {})
   const summary = Object.entries(counts).map(([c, n]) => `${n} ${c}`).join(', ') || '(aucune)'
-  console.log(`[support-inbox] ${items.length} message(s) UNSEEN traité(s) — catégories : ${summary}`)
-
-  if (!items.length) { await client.logout(); return }
+  console.log(`[support-inbox] ${items.length} message(s) UNSEEN traité(s) — catégories : ${summary} · ${noiseUids.length} bruit machine (bounce/auto-réponse) ignoré(s)`)
 
   if (!SEND) {
     console.log('[support-inbox] DRY-RUN — aucun envoi, aucun \\Seen. (Passer SEND=1 pour activer.)')
     await client.logout()
     return
   }
+
+  // ── SEND : sceller d'abord le bruit machine (bounces/auto-réponses) en \Seen —
+  //    JAMAIS d'accusé ni de ligne actionnable, mais on évite de le re-traiter
+  //    tous les 3 h. Fait même si aucun message client à traiter. Zéro PII loggué.
+  if (noiseUids.length) {
+    let lockN
+    try {
+      lockN = await client.getMailboxLock('INBOX')
+      await client.messageFlagsAdd(noiseUids, ['\\Seen'], { uid: true })
+      console.log(`[support-inbox] ${noiseUids.length} message(s) machine marqué(s) \\Seen (ni accusé ni digest)`)
+    } catch (e) {
+      console.error('[support-inbox] échec marquage \\Seen bruit machine :', e && e.message)
+    } finally {
+      if (lockN) lockN.release()
+    }
+  }
+
+  if (!items.length) { await client.logout(); return }
 
   // ── Mode SEND ──
   const { mailReady } = require(path.join(__dirname, 'lib', 'email-send.cjs'))
@@ -271,7 +319,7 @@ async function main() {
   console.log(`[support-inbox] accusés : ${ackOk} envoyé(s), ${ackFail} échec/sans-adresse`)
 
   // 2) Digest fondateur (un seul email).
-  const dig = digestTemplate(items)
+  const dig = digestTemplate(items, noiseUids.length)
   const { error: digErr } = await sendEmail({
     from: FROM, to: FOUNDER_EMAIL,
     subject: dig.subject, html: dig.html, preheader: dig.preheader,
@@ -295,8 +343,14 @@ async function main() {
   await client.logout()
 }
 
-main().catch((e) => {
-  // Ne jamais logguer un objet d'erreur brut (peut contenir des headers/PII).
-  console.error('[support-inbox] ERREUR :', e && e.message ? e.message : 'erreur inconnue')
-  process.exit(1)
-})
+// Exécution directe seulement (require.main) → permet de require ce module pour
+// tester isMachineNoise/classify sans déclencher la connexion IMAP.
+if (require.main === module) {
+  main().catch((e) => {
+    // Ne jamais logguer un objet d'erreur brut (peut contenir des headers/PII).
+    console.error('[support-inbox] ERREUR :', e && e.message ? e.message : 'erreur inconnue')
+    process.exit(1)
+  })
+}
+
+module.exports = { isMachineNoise, classify }
