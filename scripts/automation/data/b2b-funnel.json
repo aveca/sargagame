@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-01T09:55:09.787Z",
+  "updatedAt": "2026-07-01T14:44:38.106Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 39,
-    "contacted": 68,
+    "discovered": 33,
+    "contacted": 74,
     "lead": 5,
     "paid": 2
   },
@@ -652,58 +652,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "e9bb88e4ef67c0782685aabe4e6ce94d": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Villa La Playa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:50.744Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "9a0ca4f62c025df8a20605eaff1b5615": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Gîte Ty Koko",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:51.417Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c3c1e6a65476a99990dfafd58e2004f3": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Iguane Café",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:51.692Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "32b950cae1f71f7ca11b0581a7d11790": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Noa Plongée",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:51.968Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "68f37f793c2c7fa74d320fd5b8a038e8": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Restaurant Bar Le Kontiki",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:52.246Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "385281715704e1d2de81f9e265dda40f": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Gîtes Kazasand",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T14:41:52.531Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "55fe1a626932ab8113cf029521017432": {
       "stage": "discovered",
