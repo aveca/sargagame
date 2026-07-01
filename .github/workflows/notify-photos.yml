@@ -19,7 +19,7 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +27,20 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      # Pré-filtre NSFW GRATUIT (nsfwjs / TensorFlow.js auto-hébergé, zéro clé, zéro crédit IA).
+      # AVANT l'email : les photos clairement explicites sont auto-rejetées, les propres
+      # auto-approuvées → seule la ZONE GRISE (Sexy / confiance moyenne) reste pending et déclenche
+      # l'email 1-tap ci-dessous. Deps installées à la volée (hors package.json). Dégradation sûre :
+      # si le modèle/décodage échoue, la photo reste pending (donc emailée). Kill-switch : variable
+      # de repo AUTO_MODERATE_PHOTOS=0.
+      - name: Auto-moderate visitor photos (NSFW pre-filter)
+        if: ${{ vars.AUTO_MODERATE_PHOTOS != '0' }}
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          AUTO_MODERATE_PHOTOS: ${{ vars.AUTO_MODERATE_PHOTOS }}
+        run: |
+          npm install --no-save --no-audit --no-fund nsfwjs@4 @tensorflow/tfjs@4 jpeg-js pngjs
+          node scripts/automation/auto-moderate-photos.cjs
       - name: Notify founder of pending photos
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
