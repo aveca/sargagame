@@ -50,11 +50,27 @@ const DOMAINS = (() => {
   } catch (_) {}
   return map
 })()
-const slugify = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-// URL fiche plage (schéma /plages/<slug>/, cf. prepare-ftp.cjs). null si non calculable.
+// beach_id → slug réel de la fiche plage (source = public/data/beaches-list.json, la même
+// table qui alimente la génération SEO). On mappe l'ID (mq001…) vers le slug (plage-des-salines),
+// PAS un slugify(beach_name) qui tombe à côté et produisait des 404.
+const SLUGS = (() => {
+  const map = {}
+  try {
+    const list = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'data', 'beaches-list.json'), 'utf8'))
+    const arr = Array.isArray(list) ? list : (list.beaches || [])
+    for (const b of arr) if (b && b.id && b.slug) map[b.id] = b.slug
+  } catch (_) {}
+  return map
+})()
+// URL fiche plage (schéma /plages/<slug>/). ⚠️ Les fiches ne sont bâties QUE pour mq/gp
+// (vite.config.js ~1691 itère beaches-list = MQ+GP ; les régions USD florida/puntacana/
+// rivieramaya n'ont AUCUNE fiche /plages/ → y rediriger = 404 garanti). On ne renvoie donc
+// une URL que si l'île est mq/gp ET le slug résolu ; sinon null → moderate affiche sa propre
+// page de confirmation propre (jamais un 404).
 function beachUrl(r) {
+  if (r.island !== 'mq' && r.island !== 'gp') return null
   const dom = DOMAINS[r.island]
-  const slug = slugify(r.beach_name)
+  const slug = SLUGS[r.beach_id]
   return dom && slug ? `https://${dom}/plages/${slug}/` : null
 }
 
@@ -65,13 +81,42 @@ async function main() {
   // 1) signalements en attente, pas encore notifiés
   let rows
   try {
-    const q = 'status=eq.pending&notified=is.false&select=id,beach_id,beach_name,island,event,note,photo_url,within_150m,created_at&order=created_at.asc&limit=50'
+    const q = 'status=eq.pending&notified=is.false&select=id,beach_id,beach_name,island,event,note,photo_url,within_150m,submitter_hash,created_at&order=created_at.asc&limit=50'
     const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?${q}`, { headers: svcHeaders(), signal: AbortSignal.timeout(20000) })
     if (res.status === 404) { console.log('[reports-notify] table beach_reports absente (appliquer schema.sql) — skip'); return }
     if (!res.ok) { console.warn(`[reports-notify] lecture HTTP ${res.status}`); return }
     rows = await res.json()
   } catch (e) { console.warn('[reports-notify] lecture échouée:', e.message); return }
   if (!Array.isArray(rows) || !rows.length) { console.log('[reports-notify] aucun nouveau signalement'); return }
+
+  // 1.5) Anti-fatigue + garde-fou moat. On ne sollicite le fondateur QUE pour un signalement
+  // qui mérite une décision de véracité humaine :
+  //   • soit il porte une PHOTO (preuve regardable en 1 tap) ;
+  //   • soit il atteint un CONSENSUS = ≥3 empreintes distinctes sur la MÊME plage + événement
+  //     dans les 48 h (seuil déjà utilisé par l'app pour afficher un signal communautaire,
+  //     Sargasses_PROD.jsx ~2784 : total>=3).
+  // Un signalement photo-less ISOLÉ ne bouge JAMAIS le verdict tout seul (loi « 0 fabrication » :
+  // une réclamation unique non vérifiée ne doit pas peser sur la couleur affichée). Il reste
+  // donc `pending` (invisible, défaut sûr) SANS email — et on le laisse `notified=false` pour
+  // qu'il continue de compter vers un futur consensus. Rien n'est jamais auto-approuvé ici.
+  const CONSENSUS_MIN = 3
+  const RECENT_MS = 48 * 3600 * 1000
+  const now = Date.now()
+  const clusterKey = (r) => `${r.beach_id || r.beach_name}|${r.event}`
+  const distinct = {}
+  for (const r of rows) {
+    let t; try { t = new Date(r.created_at).getTime() } catch (_) { t = now }
+    if (!(now - t <= RECENT_MS)) continue // hors fenêtre 48 h → ne compte pas dans le consensus
+    const k = clusterKey(r)
+    ;(distinct[k] = distinct[k] || new Set()).add(r.submitter_hash || r.id)
+  }
+  const emailWorthy = (r) => !!r.photo_url || ((distinct[clusterKey(r)] || new Set()).size >= CONSENSUS_MIN)
+  const worthy = rows.filter(emailWorthy)
+  if (!worthy.length) {
+    console.log(`[reports-notify] ${rows.length} pending mais aucun ne requiert de validation (photo-less isolés, sous consensus) — pas d'email`)
+    return
+  }
+  rows = worthy
 
   // 2) email récap avec liens 1-tap. `back` = fiche plage → après approbation/rétrogradation,
   // le fondateur atterrit sur la fiche (pas sur la page technique de la fonction). Le rejet
