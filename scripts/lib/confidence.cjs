@@ -262,6 +262,63 @@ function regimeConfidenceSummary(regime) {
   return { regime, cleanReliability: r.clean, alertReliability: r.alert }
 }
 
+// ---------------------------------------------------------------------------
+// GROUND-TRUTH TERRAIN — DISPLAY-ONLY reliability haircut (v3.3, 2026-07-01)
+//
+// When the founder validates a cleanup (clé 2 « Rétrograder », GTT spec
+// docs/GROUND_TRUTH_TERRAIN.md), the satellite verdict was contradicted by
+// verified ground truth → the DISPLAYED reliability for that beach should drop
+// (honesty: we were wrong on the ground). This is a SEPARATE lane from the
+// numeric confidence: it is NEVER fed into satelliteConfidence /
+// forecastConfidence / regimeCeiling / regimeAdjustedConfidence, so the
+// satellite-pure verdict and the /fiabilite/ calibration stay 100% satellite
+// (loi moat : « /fiabilite/ sur satellite pur, le calque terrain n'y entre
+// JAMAIS »). It only lowers a DISPLAY note. Max −25, floor 15, half-life 1 day,
+// TTL 48 h (a downgrade's relevance fades fast; the satellite re-anchors at the
+// next pass). Pure function, injectable clock → unit-testable, deterministic.
+// ---------------------------------------------------------------------------
+const GROUND_REL_MAX_DELTA = 25       // strongest haircut, at the moment of validation
+const GROUND_REL_FLOOR = 15           // never show a reliability below this
+const GROUND_REL_TTL_DAYS = 2.0       // 48 h, matches the descente overlay TTL
+const GROUND_REL_HALF_LIFE_DAYS = 1.0
+const GROUND_REL_LAMBDA = Math.LN2 / GROUND_REL_HALF_LIFE_DAYS
+
+/**
+ * DISPLAY-ONLY reliability delta from a founder-validated ground-truth downgrade.
+ * Returns a NON-POSITIVE number (0 or negative) to ADD to a displayed reliability %.
+ * ISOLATED: never enters the numeric confidence pipeline. Returns 0 when there is
+ * no confirmation, it is in the future, it has expired (>48 h), or the input is
+ * unparseable.
+ * @param {number|string|null|undefined} confirmedAt - downgrade_confirmed_at (ms epoch or ISO)
+ * @param {number} [nowMs] - current time in ms (injectable for tests/determinism)
+ * @returns {number} delta in [-25, 0]
+ */
+function groundReliabilityDelta(confirmedAt, nowMs) {
+  if (confirmedAt == null) return 0
+  const t = typeof confirmedAt === 'number' ? confirmedAt : Date.parse(confirmedAt)
+  if (!isFinite(t)) return 0
+  const now = (typeof nowMs === 'number' && isFinite(nowMs)) ? nowMs : Date.now()
+  const daysAgo = (now - t) / 86400000
+  if (daysAgo < 0 || daysAgo > GROUND_REL_TTL_DAYS) return 0
+  const decayed = GROUND_REL_MAX_DELTA * Math.exp(-GROUND_REL_LAMBDA * daysAgo)
+  return -Math.round(decayed)
+}
+
+/**
+ * Apply the ground-truth haircut to a DISPLAYED reliability %, clamped to the
+ * floor. Pure display; never touches numeric confidence. If there is no active
+ * downgrade the input is returned unchanged.
+ * @param {number} displayedPct - satellite-derived reliability % (e.g. cleanReliabilityPct)
+ * @param {number|string|null|undefined} confirmedAt
+ * @param {number} [nowMs]
+ * @returns {number}
+ */
+function applyGroundReliability(displayedPct, confirmedAt, nowMs) {
+  const delta = groundReliabilityDelta(confirmedAt, nowMs)
+  if (!delta) return displayedPct
+  return Math.max(GROUND_REL_FLOOR, Math.round(displayedPct + delta))
+}
+
 module.exports = {
   satelliteConfidence,
   memoryConfidence,
@@ -277,4 +334,9 @@ module.exports = {
   DECAY_LAMBDA,
   BEACHED_HALF_LIFE_DAYS,
   BEACHED_DECAY_LAMBDA,
+  groundReliabilityDelta,
+  applyGroundReliability,
+  GROUND_REL_MAX_DELTA,
+  GROUND_REL_FLOOR,
+  GROUND_REL_TTL_DAYS,
 }
