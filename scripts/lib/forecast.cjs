@@ -30,6 +30,7 @@ const {
   regimeConfidenceSummary,
   HALF_LIFE_DAYS,
   DECAY_LAMBDA,
+  BEACHED_DECAY_LAMBDA,
 } = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
@@ -457,8 +458,20 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // PHYSICAL MODEL: afai(d) = afai(d-1) * decay_1day + arrivals - dispersion
         const prevAfai = series[i - 1]?.afai || day0Raw
 
-        // 1 day decay
-        const dayDecay = Math.exp(-DECAY_LAMBDA) // ~0.87 per day @ half-life 5.0
+        // 1 day decay — SEA vs BEACHED (two physics, cf. confidence.cjs).
+        // Floating sargassum disperses fast (5d half-life). But once a beach is
+        // already LOADED (prevAfai >= moderate = échouage on the sand), it does
+        // not clear on that timescale without collection/boom/retreating swell:
+        // hold it with the slower beached half-life. RELEASE to fast dispersion
+        // only on CLEARING EVIDENCE — a clearly falling r²-gated satellite trend
+        // (water genuinely dispersing / less resupply) or a community "clean"
+        // consensus (boats/visitors see the sand cleared). Calm beaches are clean
+        // at day0 (prevAfai < 0.15) so this branch never fires for them → the
+        // calm-season false-alarm calibration stays byte-identical.
+        const beachedLoaded = prevAfai >= 0.15
+        const clearingEvidence = (trend && trend.slope < -0.01) || cBias < 0
+        const dayLambda = (beachedLoaded && !clearingEvidence) ? BEACHED_DECAY_LAMBDA : DECAY_LAMBDA
+        const dayDecay = Math.exp(-dayLambda) // ~0.87/d (sea) or ~0.94/d (beached hold)
 
         // Wind: small contribution, weaker as days increase
         const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
@@ -554,14 +567,27 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = `Persistance simple (half-life ${HALF_LIFE_DAYS}j). Pas de signal externe.`
     }
 
+    // Beach already loaded today and held by the beached ratchet (no clearing
+    // evidence, no fresh arrival): the honest story is NOT "dispersion" — the
+    // algae are on the sand and stay until removed. Say so, never promise a
+    // dispersion we don't measure.
+    const day0Loaded = statusFromAfai(day0Raw) !== 'clean'
+    const clearingEvidenceOverall = (trend && trend.slope < -0.01) || cBias < 0
+    const beachedPersist = day0Loaded && !clearingEvidenceOverall && !arrivalDetected
+
     const driftDir = arrivalDetected ? 'up'
+      : beachedPersist ? 'stable'
       : meaningfulTrend > 0.05 ? 'up'
       : meaningfulTrend < -0.05 ? 'down'
       : 'stable'
     const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
+      : beachedPersist ? 'Algues echouees : persistance probable sans ramassage'
       : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
       : meaningfulTrend < -0.05 ? 'Dispersion attendue'
       : 'Stable'
+    if (beachedPersist) {
+      forecastDisclaimer = 'Algues deja echouees : sans ramassage/barrage, la dispersion marine seule ne les enleve pas — persistance probable.'
+    }
 
     weekly[level.id] = {
       forecast: series,

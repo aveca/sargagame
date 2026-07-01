@@ -547,6 +547,23 @@ function selfTest() {
     return n === PUBLISH_WINDOW_DAYS
   })())
 
+  // 7. BEACHED RATCHET (2026-07-01): a loaded beach must not green overnight.
+  // Flat history (no trend), no banks/community → the beached half-life holds it.
+  const loadBeach = { id: 'L', lat: 14.45, lng: -60.88, island: 'mq', coast: 'atlantic', coastNormal: 170 }
+  const flatHist = []
+  for (let k = 0; k < 7; k++) flatHist.push({ date: `2026-05-2${k + 1}`, levels: [{ id: 'L', afai: 0.20, status: 'moderate' }] })
+  const fcL = (level, hist) => buildHonestForecast([level], null, hist || flatHist, [loadBeach], null, null, null).L
+  const wl = fcL({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 })
+  ok('beached moderate does NOT green by J+3 (was clean under sea half-life)', wl.forecast[3].status !== 'clean')
+  ok('beached ratchet flagged as persistence, not dispersion', wl.driftLabel.includes('echouees') && wl.drift !== 'down')
+
+  // 8. RELEASE VALVE: a clearly falling satellite trend restores fast dispersion.
+  const fallHist = []
+  const fallVals = [0.60, 0.50, 0.40, 0.30, 0.22, 0.20]
+  for (let k = 0; k < fallVals.length; k++) fallHist.push({ date: `2026-05-2${k + 1}`, levels: [{ id: 'L', afai: fallVals[k], status: fallVals[k] >= 0.15 ? 'moderate' : 'clean' }] })
+  const wf2 = fcL({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 }, fallHist)
+  ok('falling-trend beach clears FASTER than the held one (release valve works)', wf2.forecast[3].afai < wl.forecast[3].afai)
+
   if (fails.length) { console.error(`\nSELF-TEST FAILED (${fails.length}): ${fails.join(' | ')}`); process.exit(1) }
   console.log('\nAll invariants hold. ✓')
 }

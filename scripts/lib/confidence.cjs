@@ -19,6 +19,20 @@
 const HALF_LIFE_DAYS = 5.0
 const DECAY_LAMBDA = Math.LN2 / HALF_LIFE_DAYS
 
+// v3.2 (2026-07-01): SEPARATE the two physics. The 5-day half-life above models
+// SEA dispersion — floating sargassum drifts/scatters in days. But sargassum
+// already BEACHED on the sand does NOT clear on that timescale: without
+// collection (ramassage), a boom (barrage) or a strong retreating swell it stays
+// and rots over WEEKS. Applying the sea half-life to an already-loaded beach is
+// why a red beach absurdly greened in 3-6 days — and it matches the measured
+// over-prediction of "clean" at J+2..J+4 (forecast.cjs backtest header). The
+// beach STOCK gets this slower half-life; it is a physics prior (no active-season
+// ground truth in the current calm window to fit it), re-tune against the
+// reforecast backtest once échouage data accumulates. Only ever applied to a
+// beach already ≥moderate with no clearing evidence, so calm season is untouched.
+const BEACHED_HALF_LIFE_DAYS = 12.0
+const BEACHED_DECAY_LAMBDA = Math.LN2 / BEACHED_HALF_LIFE_DAYS
+
 /**
  * Score a direct satellite measurement.
  * @param {string} method - extraction method string from extractBeachAfai()
@@ -261,4 +275,6 @@ module.exports = {
   REGIME_RELIABILITY,
   HALF_LIFE_DAYS,
   DECAY_LAMBDA,
+  BEACHED_HALF_LIFE_DAYS,
+  BEACHED_DECAY_LAMBDA,
 }
