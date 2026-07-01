@@ -380,15 +380,27 @@ function compute1DCorrection(beach, grid7D, grid1D) {
 // Produit par scripts/fetch-sentinel2.cjs (CDSE FAI 10-20m au ras de la côte),
 // lu ici comme INPUT. Applique la MÊME philosophie que la correction 1D :
 // additif, cappé, pondéré (couverture × fraîcheur), JAMAIS un blend/override.
-// Derrière SG_SENTINEL2=1 (défaut OFF) tant que les seuils FAI ne sont pas
-// calibrés vs /fiabilite/ → zéro impact sur le verdict publié. Honnêteté d'abord.
-const SENTINEL2_ENABLED = process.env.SG_SENTINEL2 === '1'
+// Activation PILOTÉE PAR LA DONNÉE : sentinel2-calibrate.cjs écrit
+// sentinel2-calibration.json {active} quand le S2 a PROUVÉ qu'il colle au réel
+// (accord ≥ seuil sur assez d'échantillons). Le pipeline lit ce flag → le S2
+// s'active TOUT SEUL, sans édition de workflow. Overrides : SG_SENTINEL2=0 =
+// kill-switch (force OFF), SG_SENTINEL2=1 = force ON (test). Zéro impact verdict
+// tant que active=false. Honnêteté d'abord.
 const S2_MAX_AGE_DAYS = 3      // au-delà, le passage S2 est trop vieux pour corriger le J+0
 const S2_MIN_COVERAGE = 0.25   // sous 25% de pixels valides = trop nuageux, on ignore
 const S2_MIN_DIFF = 0.10       // ne corrige que si l'écart est significatif (comme le 1D)
 
+function sentinel2Active(dir) {
+  if (process.env.SG_SENTINEL2 === '0') return false // kill-switch
+  if (process.env.SG_SENTINEL2 === '1') return true  // force ON (test)
+  try {
+    const cal = JSON.parse(fs.readFileSync(path.join(dir, 'sentinel2-calibration.json'), 'utf-8'))
+    return !!cal.active
+  } catch (_) { return false }
+}
+
 function loadSentinel2Layer(dir) {
-  if (!SENTINEL2_ENABLED) return null
+  if (!sentinel2Active(dir)) return null
   try {
     const p = path.join(dir, 'sentinel2-nearshore.json')
     const raw = JSON.parse(fs.readFileSync(p, 'utf-8'))

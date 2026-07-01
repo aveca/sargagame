@@ -75,12 +75,24 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-beach-weather.cjs
 
-      # ── 0b. Sentinel-2 near-shore (PROTOTYPE, additif, non-bloquant) ──
-      # Produit public/api/copernicus/sentinel2-nearshore.json (input du pipeline).
+      # ── 0a. Sentinel-2 AUTO-CALIBRATION (avant la collecte, lit l'historique persisté)
+      # Apparie l'historique S2 au réalisé, ré-estime les seuils, et écrit
+      # sentinel2-calibration.json {active, thresholds}. AUTO-ACTIVE le S2 le jour où
+      # l'accord dépasse la barre — sans main humaine. Kill-switch : secret SG_SENTINEL2=0.
+      # Non-bloquant. --send = email au fondateur sur transition OFF→ON.
+      - name: Sentinel-2 auto-calibration
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SG_SENTINEL2: ${{ secrets.SG_SENTINEL2 }}
+        run: node scripts/automation/sentinel2-calibrate.cjs --send
+
+      # ── 0b. Sentinel-2 near-shore : collecte CDSE (FAI eau-only near-shore) ──
+      # Produit sentinel2-nearshore.json (input) + accumule sentinel2-history.json.
       # No-op propre sans credentials CDSE → n'échoue jamais (continue-on-error).
-      # Le pipeline ne CONSOMME ce signal que si SG_SENTINEL2=1 (défaut OFF, non set
-      # ici) : tant que les seuils FAI ne sont pas calibrés vs /fiabilite/, zéro
-      # impact sur le verdict publié. Voir scripts/fetch-sentinel2.cjs.
+      # Le pipeline ne CONSOMME ce signal que si sentinel2-calibration.json a active=true
+      # (piloté par la donnée, cf. 0a) OU SG_SENTINEL2=1. Voir scripts/fetch-sentinel2.cjs.
       - name: Fetch Sentinel-2 near-shore (prototype)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -98,6 +110,8 @@ jobs:
         id: erddap
         if: github.event_name != 'push'
         continue-on-error: true
+        env:
+          SG_SENTINEL2: ${{ secrets.SG_SENTINEL2 }} # kill-switch : =0 force OFF le S2
         run: node scripts/fetch-sargassum-live.cjs
 
       - name: Check if ERDDAP produced live data
@@ -475,17 +489,6 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/deliverability-watch.cjs --send
 
-      # Garde de maturité Sentinel-2 : quand sentinel2-history.json a accumulé assez
-      # de passages, envoie UN email au fondateur avec le prompt exact à lancer pour
-      # calibrer + activer SG_SENTINEL2. Dédup sentinel2-readiness-sent.json (1 seule
-      # fois), schedule-only. Supprime la dernière action fondateur (se souvenir).
-      - name: Sentinel-2 readiness alert (prompt de calibration)
-        if: github.event_name == 'schedule'
-        continue-on-error: true
-        env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/sentinel2-readiness.cjs --send
-
       # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
       # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
       # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
@@ -516,7 +519,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/sentinel2-readiness-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json public/api/b2b-paylinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -774,6 +777,9 @@ jobs:
           # à chaque run et le backtest (gate d'activation du flag) reste impossible.
           [ -f public/api/copernicus/sentinel2-nearshore.json ] && git add public/api/copernicus/sentinel2-nearshore.json
           [ -f public/api/copernicus/sentinel2-history.json ] && git add public/api/copernicus/sentinel2-history.json
+          # calibration.json = état d'activation auto-calculé (thresholds + active) — DOIT
+          # persister (c'est lui qui allume/éteint le S2 d'un run à l'autre).
+          [ -f public/api/copernicus/sentinel2-calibration.json ] && git add public/api/copernicus/sentinel2-calibration.json
           if git diff --cached --quiet; then
             echo "No data file changes to commit"
           else

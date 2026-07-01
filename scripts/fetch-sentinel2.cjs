@@ -62,17 +62,30 @@ const TARGET_BEACHES = [
 const SEAWARD_OFFSET_KM = 1.5 // décalage du centre de la boîte vers le large
 
 // ── FAI → afaiLike (0-1), MÊME échelle normalisée que normalizeAfai() côté ERDDAP ──
-// FAI (réflectances) sur l'eau : ~0 = eau claire, >0 = végétation flottante ; les
-// nappes de sargasses denses montent typiquement à 0.01-0.05. SEUILS PROVISOIRES,
-// calqués sur les bornes AFAI (0.15 clean/moderate, 0.40 moderate/avoid) pour rester
-// cohérent avec statusFromAfai(). À CALIBRER vs vérité terrain avant d'activer le flag.
-function faiToAfaiLike(fai) {
+// FAI (réflectances) sur l'eau : ~0 = eau claire, >0 = végétation flottante. Les seuils
+// fai→statut (clean/mod) sont AUTO-CALIBRÉS par sentinel2-calibrate.cjs (grid-search
+// vs réalisé) et lus depuis sentinel2-calibration.json ; DEFAULT_TH sinon. Les paliers
+// afaiLike (0.12/0.28/0.55) sont choisis pour tomber dans les bonnes classes de
+// statusFromAfai (<0.15 clean, <0.40 modéré, ≥0.40 à éviter).
+const DEFAULT_TH = { clean: 0.005, mod: 0.015 }
+function loadCalibratedThresholds(outDir) {
+  try {
+    const cal = JSON.parse(fs.readFileSync(path.join(outDir, 'sentinel2-calibration.json'), 'utf-8'))
+    if (cal && cal.thresholds && cal.thresholds.clean != null && cal.thresholds.mod != null) {
+      console.log(`Sentinel-2: seuils calibrés clean≤${cal.thresholds.clean} mod≤${cal.thresholds.mod} (active=${!!cal.active})`)
+      return cal.thresholds
+    }
+  } catch (_) {}
+  return DEFAULT_TH
+}
+function faiToAfaiLike(fai, th) {
+  const t = th || DEFAULT_TH
   if (fai == null || Number.isNaN(fai)) return null
-  if (fai <= 0.0) return 0.05      // eau claire (baseline, aligné NO_DATA_AFAI)
-  if (fai <= 0.005) return 0.15    // trace / limite propre-modéré
-  if (fai <= 0.015) return 0.40    // modéré / limite à-éviter
-  if (fai <= 0.030) return 0.65
-  return Math.min(1, 0.65 + (fai - 0.030) * 10) // nappes denses
+  if (fai <= 0.0) return 0.05        // eau claire (baseline, aligné NO_DATA_AFAI)
+  if (fai <= t.clean) return 0.12    // clean
+  if (fai <= t.mod) return 0.28      // modéré
+  if (fai <= t.mod + 0.015) return 0.55 // à éviter (bas)
+  return Math.min(1, 0.55 + (fai - (t.mod + 0.015)) * 10) // nappes denses
 }
 
 // Evalscript Sentinel Hub : sort FAI (1 bande float) + dataMask (EAU uniquement).
@@ -290,10 +303,11 @@ async function main() {
 
   const beaches = {}
   const today = Date.now()
+  const th = loadCalibratedThresholds(outDir)
   for (const b of TARGET_BEACHES) {
     const s = await fetchBeachStats(token, b)
     if (!s) continue
-    const afaiLike = faiToAfaiLike(s.fai)
+    const afaiLike = faiToAfaiLike(s.fai, th)
     const ageDays = s.obsDate
       ? Math.round((today - new Date(s.obsDate + 'T12:00:00Z').getTime()) / 86400000)
       : null
