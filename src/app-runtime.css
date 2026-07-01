@@ -215,6 +215,15 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    gardant le tap : doublé-classe (0,2,0) bat le skin, on ne retire QUE fond/bordure/ombre —
    le texte blanc + son ink-shadow (inline sur les enfants) survivent = look « comme avant ». */
 .sg-maplabel.sg-maplabel{background:none !important;border:none !important;box-shadow:none !important;border-radius:0 !important}
+/* Roster « plages impactées » (carte) : chips NOM-SEUL des plages rouge/orange, sorties HORS
+   du littoral (grief fondateur 2026-07-01 : voir d'un coup d'œil les plages impactées, noms
+   en dehors de la côte). Ce sont des <button> → le skin de thème leur colle var(--sg-card) +
+   rayon 11px + ombre 3px. Doublé-classe (0,2,0) bat .theme-comic button (0,1,1) : pilule
+   crème/ink, valeurs codées en dur (var(--sg-*) inerte sur body.theme-comic — dette tokens). */
+.sg-maproster.sg-maproster{background:#fdf6e3 !important;color:#0d0b14 !important;
+  border:2px solid #0d0b14 !important;box-shadow:2px 2px 0 #0d0b14 !important;
+  border-radius:999px !important;text-shadow:none !important;-webkit-text-fill-color:#0d0b14 !important}
+.sg-maproster.sg-maproster:active{box-shadow:0 0 0 #0d0b14 !important;transform:translate(2px,2px) !important}
 .sg-mapchip.sg-mapchip{background:#190c2c !important;color:#fdfcf7 !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
