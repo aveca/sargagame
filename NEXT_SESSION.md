@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-07-01 — CLÔTURE ROADMAP AUDIT (Vague 2 fin) + RÉSILIATION + PLANNER « DIRECT SANS EMAIL ». Branche `claude/b2b-funnels-forecasting-o8qeof`. 3 PR mergées (#318, #321, #322).**
+>
+> **#318 — Entrée de résiliation audience-aware** (MON ESPACE) : l'abonné RÉCURRENT legacy voit « Gérer / résilier mon abonnement → » (`?manage=1`, cancel provider-aware, conformité UE) ; le détenteur de PASS one-time voit « Pass actif jusqu'au {date} — rien à résilier, il expire seul » (fin du cul-de-sac « écris-moi »). i18n, rollback `?cancelinfo=0`. **Déployé vert.**
+>
+> **#321 — Vague 2 (les 2 dernières finitions audable) :** (a) **légende tiers de confiance** étendue hors du hub → fiche plage (« le chiffre = notre confiance % ») + carte (décodeur plein/demi/pointillé = mesuré/tendance/horizon), rollback `?conflegend=0` ; (b) champ email soft-capture dans le planner — **RETIRÉ ensuite par #322**. **Déployé vert.**
+>
+> **#322 — Planner DIRECT, ZÉRO email (décision fondateur, tranchée en session) :** le planner du hub donne l'estimation OBSERVÉE (`planEstimate`, #317) directement à l'écran dès qu'une date est choisie — la valeur vient à l'utilisateur, on ne quémande pas d'adresse. Retiré : le champ email (#321), le stockage Supabase `savePlannerAlert` (#319, débranché), le step DRY-RUN `planner-alerts` du workflow. **On N'A PAS basculé `--send`.** Le script `planner-alerts.cjs` + table `planner_alerts` restent DORMANTS/réversibles en repo. `#322` en cours de déploiement au moment du handoff → **vérifier hash prod `curl version.json`**.
+>
+> **Roadmap audit 92 trouvailles = SOLDÉE** : P0 (2) + Vague 1 (7) + Vague 2 (7) tous ✅. « Later » : l'alerte J-7 (seul item ex-bloquant) a été shippée en #319 PUIS retirée côté front par décision fondateur « direct sans email » (backend dormant). Restent 5 chantiers de polish différés à dessein (mascotte animée, drip lifecycle HOLD, extraction Watcher SVG, A/B Season Pass, `--sg-vh` rotation). **Plus rien d'actionnable non bloqué.**
+>
+> **Parallèle (autres sessions, mergées) :** #319 (J-7 planner Supabase — front débranché par #322, infra dormante), #320 (télémétrie dead/rage-click + INP). Gate vert partout (budget ~200,9 Ko ≤ 210).
+
 > **📊 2026-07-01 — ANALYSE DATA TRACKING → TÉLÉMÉTRIE dead/rage-click + INP. Branche `claude/analyze-user-tracking-data-pqinmp` — PR #320 (mergée).**
 >
 > **Demande fondateur** : analyser TOUTES les données de tracking (mouvements, clics, rage/dead-clicks) et corriger l'UX ; + purger les vieilles données >1 semaine.
