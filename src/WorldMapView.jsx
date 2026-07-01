@@ -258,9 +258,9 @@ export default function WorldMapView({
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
   // Labels carte (grief fondateur 2026-07-01) : le NOM reste À CÔTÉ DU PIN sur la côte (pas de
-  // liste en haut — on se perd), mais UNIQUEMENT pour les QUELQUES plages LES PLUS IMPACTÉES
-  // (rouge=à éviter d'abord, puis orange=modéré, triées par gravité/score) — cap 5 par défaut
-  // pour ne pas encombrer la côte. Rollback ?maplabelcap=0 → lève le cap (tous les impactés nommés).
+  // liste en haut — on se perd), uniquement pour les plages PAS PROPRES (orange/rouge). Le nombre
+  // est ZOOM-AWARE (arbitré au repos par declutter) : vue large île → 5 plus impactées ; dès qu'on
+  // ZOOME → toutes les alertes DANS LE VIEWPORT. Rollback ?maplabelcap=0 → lève le cap large.
   const mapLabelCapOff = (()=>{try{return /[?&]maplabelcap=0/.test(window.location.search)}catch(_){return false}})()
   const relHref = (island==="mq"||island==="gp") ? "/fiabilite/" : (lang==="es" ? "/fiabilidad/" : "/reliability/")
   const _relGo = ()=>{ try{track&&track("sg_map_live_tap",{island})}catch(_){}; try{window.location.href=relHref}catch(_){} }
@@ -466,17 +466,13 @@ export default function WorldMapView({
   const labeledIds = useMemo(()=>{
     const ids=new Set()
     if(!beachList.length) return ids
-    // Fondateur 2026-07-01 : nommer UNIQUEMENT les QUELQUES plages LES PLUS IMPACTÉES (pas propres)
-    // — rouge=à éviter d'abord, puis orange=modéré, triées par gravité puis score décroissant.
-    // Cap 5 par défaut pour garder la côte lisible (rollback ?maplabelcap=0 → tous les impactés).
-    const RANK={avoid:0,moderate:1}
-    const impacted=beachList
-      .filter(b=>{ const st=b.days[day]; return st==="moderate"||st==="avoid" })
-      .sort((a,b)=>{ const ra=RANK[a.days[day]]??2, rb=RANK[b.days[day]]??2; return ra!==rb?ra-rb:((b.score||0)-(a.score||0)) })
-    const cap = mapLabelCapOff ? impacted.length : 5
-    impacted.slice(0,cap).forEach(b=>ids.add(b.id))
+    // Fondateur 2026-07-01 : nommer les plages PAS PROPRES (orange=modéré / rouge=à éviter).
+    // Le NOMBRE affiché est arbitré AU REPOS par le déclutter, zoom-aware : vue large (île entière)
+    // → 5 plus impactées ; dès qu'on ZOOME → toutes les alertes DANS LE VIEWPORT (vers où on zoome).
+    // On rend donc ici TOUTES les impactées ; le déclutter cache le surplus / le hors-champ.
+    beachList.forEach(b=>{ const st=b.days[day]; if(st==="moderate"||st==="avoid") ids.add(b.id) })
     return ids
-  },[beachList,day,mapLabelCapOff])
+  },[beachList,day])
 
   // Ellipses de relief en coordonnées viewBox (MQ only)
   const reliefEls = useMemo(()=>{
@@ -560,24 +556,36 @@ export default function WorldMapView({
   const declutterRef=useRef(0)
   const declutter=useCallback(()=>{
     const layer=labelLayerRef.current; if(!layer) return
+    const wrap=wrapRef.current
+    const W=(wrap&&wrap.clientWidth)||0, H=(wrap&&wrap.clientHeight)||0
+    // Zoom-aware (grief fondateur 2026-07-01) : vue LARGE (île entière, k≈1) → cap aux 5 plages
+    // les plus impactées, pour ne pas encombrer la côte ; dès qu'on ZOOME → on montre TOUTES les
+    // alertes DANS LE VIEWPORT (celles vers où on zoome), la place se libère. Rollback
+    // ?maplabelcap=0 → lève le cap large (toutes les impactées en champ, quel que soit le zoom).
+    const camK=camRef.current.k
+    const MAX = mapLabelCapOff ? Infinity : (camK<=1.35 ? 5 : 14)
     const els=layer.querySelectorAll('[data-vx]')
     const RANK={avoid:0,moderate:1,clean:2}
     const boxes=[]
     els.forEach(el=>{
       const w=el.offsetWidth, h=el.offsetHeight
       const L=parseFloat(el.style.left)||0, T=parseFloat(el.style.top)||0
-      boxes.push({el, sel:el.dataset.sel==='1', rank:RANK[el.dataset.status]??3,
+      // Dans le viewport ? (le label pointe vers le haut depuis le pin → marge tolérante en haut)
+      const inView = (W===0||H===0) ? true : (L>=-30 && L<=W+30 && T>=-10 && T<=H+50)
+      boxes.push({el, inView, sel:el.dataset.sel==='1', rank:RANK[el.dataset.status]??3,
         vy:parseFloat(el.dataset.vy)||0,
         l:L-w/2-4, r:L+w/2+4, t:T-h-4, b:T+4})
     })
     boxes.sort((a,b)=> a.sel!==b.sel ? (a.sel?-1:1) : (a.rank!==b.rank ? a.rank-b.rank : a.vy-b.vy))
     const kept=[]
     boxes.forEach(bx=>{
-      const hit=kept.some(k=> !(bx.r<k.l||bx.l>k.r||bx.b<k.t||bx.t>k.b))
+      if(!bx.inView){ bx.el.style.visibility='hidden'; return }
+      if(kept.length>=MAX){ bx.el.style.visibility='hidden'; return }
+      const hit=kept.some(kb=> !(bx.r<kb.l||bx.l>kb.r||bx.b<kb.t||bx.t>kb.b))
       if(hit){ bx.el.style.visibility='hidden' }
       else { bx.el.style.visibility='visible'; kept.push(bx) }
     })
-  },[])
+  },[mapLabelCapOff])
   // Déclutter des PINS (bugs « pins superposés / noms illisibles ») : dans un cluster dense au zoom
   // courant, on garde les prioritaires (sélectionné > score) en pin entier, les autres deviennent un
   // petit POINT cliquable. Recalc AU REPOS (jamais pendant le geste). Zoom in → le seuil viewBox
