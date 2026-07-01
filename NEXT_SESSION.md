@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **🔧 2026-07-01 — AUDIT QUALITÉ PROCESS/WORKFLOWS (ultracode, mandat fondateur « nouveau modèle ») : 5 fixes latents shippés, ~12 faux positifs classés.**
+>
+> Audit multi-agents (3 explorateurs : workflows GH / pipeline data / automation) → chaque finding à fort impact **reproduit sur le working tree** avant action (loi anti-faux-positif), implémentation fan-out 4 agents + revue adverse multi-lentilles (2 fixes réfutés par le panel et corrigés avant ship : rebase sur arbre sale, tripwire en code mort CI).
+> **Shippé** :
+> 1. **MOAT P0** — `runRegionPipeline` : grille ERDDAP régionale absente → early-return `exitCode=1` SANS écrire (miroir loi racine). Avant : fausse carte verte 0.05 « clean » publiée sur les régions USD payantes + placeholders datés du jour dans `history.json` régional. `verify-ftp-ready.cjs` étendu aux `sargassum.json` régionaux (il ne gardait que la racine).
+> 2. **Gardes NaN** (corrections 1D/S2, wind/trend forecast, accumulation) : plus de statut 'avoid' ni de boost de confiance fabriqués par NaN.
+> 3. **daily-copernicus** : commit anti-doublon email en push-first + retry ×5 `rebase --autostash -X theirs` + `::error` (l'ancien `push||pull` échouait en silence sur race ET sur arbre sale — cause racine de l'incident 17×).
+> 4. **weekly-optimize/ux-report** : 5 push `|| true` → retry ×5 + `exit 1` (rapport perdu = run rouge) ; `git fetch` protégé sous `bash -e` dans les 6 boucles.
+> 5. **Tripwire beached-ratchet** émise en `::warning` depuis le mode archive (celui qui tourne en CI) — n'existait qu'en `--reforecast`, jamais invoqué par les workflows.
+> **Faux positifs classés (ne pas ré-auditer)** : `git add || true` par pattern (voulu, gel régional 15-17/06) ; parse SOURCE (bash -e couvre) ; step daily-brief gate horaire (dry-run, zéro envoi) ; markers daily-brief/dunning (flush incrémental déjà correct) ; caps drip/b2b-cold (corrects) ; baseline deliverability (persist sur succès seulement) ; weightedAvg /0 (théorique) ; reforecast n'écrase PAS backtest-results (fichiers séparés).
+> **Veille méthodologique (non-bugs, à surveiller)** : biais chronologique fenêtre backtest (les snapshots récents n'ont que les horizons courts) ; floor confiance calm-clean (68→40) à re-vérifier mensuellement contre le taux observé ; mineurs de revue notés : garde régionale verify-ftp = all-or-nothing sur `source` seul (pas de cap fraîcheur/pic-vert par région) ; une exception région (vent/marine) est avalée par le catch de `main()` (run vert) ; nouvelle verticale dont le 1er run échoue = domaine sans fichier data (404) non détecté.
+
 > **🛰️ 2026-07-01 — SENTINEL-2 NEAR-SHORE : AUTO-CALIBRANT + AUTO-ACTIVANT, DÉPLOYÉ. PRs #394 #398 #399 #400 #401 mergées. Auth CDSE validée par un vrai run.**
 >
 > **⚡ MAJ (#401) — l'activation n'est PLUS manuelle : elle est AUTOMATIQUE, pilotée par la donnée.** `scripts/automation/sentinel2-calibrate.cjs` (step CI avant la collecte) apparie l'historique S2 au réalisé (`history.json`), grid-search les seuils `fai→statut`, écrit `sentinel2-calibration.json {active,thresholds,agreement,n}`. **Gate strict : `active:true` seulement si ≥20 paires ET accord ≥0.72.** `fetch-sargassum-live` lit `active` depuis ce fichier (plus `SG_SENTINEL2=1`). **Kill-switch** : secret `SG_SENTINEL2=0` force OFF, `=1` force ON (test). **Email fondateur sur OFF→ON.** Le notifier « readiness » (#400) a été RETIRÉ (activation désormais auto). → **Zéro action fondateur** : ça se calibre + s'allume tout seul une fois prouvé. **Le fondateur veut archiver.**

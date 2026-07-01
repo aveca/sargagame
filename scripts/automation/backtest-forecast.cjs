@@ -196,11 +196,29 @@ function buildRegimeReliabilitySummary(cells, byRegime, method, window) {
   }
 }
 
+// Tripwire beached-ratchet : le prior BEACHED_HALF_LIFE_DAYS=12 n'a jamais été
+// calibré vérité-terrain (saison calme = aucune obs élevée pour le fitter). Dès
+// que l'historique contient de l'échouage réel (AFAI≥0.20 = seuil du ratchet),
+// il devient ACTIF sur données réelles → crier, pas laisser tourner en silence.
+// Appelée par main() (mode archive = celui qui tourne en CI, 4×/j) ET par
+// reforecastBacktest() (exécution locale) : l'annotation ::warning n'est utile
+// que si elle s'imprime dans un run CI réel. console.log = stdout (flux garanti
+// parsé par le runner pour les workflow commands).
+function beachedRatchetTripwire(history) {
+  const elevated = history.flatMap(e => (e.levels || []).filter(l => typeof l.afai === 'number' && l.afai >= 0.20))
+  if (!elevated.length) return
+  console.warn(`\n⚠️  BEACHED-RATCHET TRIPWIRE: ${elevated.length} elevated obs (AFAI≥0.20) in history.`)
+  console.warn('   The beached-hold prior (BEACHED_HALF_LIFE_DAYS=12, unfit) is now ACTIVE on real data.')
+  console.warn('   → RECALIBRATE it (try 8/10/12/16/20) via --reforecast, then update /fiabilite.')
+  console.log(`::warning title=Beached-ratchet à recalibrer::${elevated.length} obs élevées (AFAI≥0.20) dans l'historique — le prior BEACHED_HALF_LIFE_DAYS=12 (jamais calibré) est ACTIF sur données réelles : lancer node scripts/automation/backtest-forecast.cjs --reforecast, recalibrer, puis mettre à jour /fiabilite.`)
+}
+
 function main() {
   console.log('=== Forecast Backtest ===')
 
   const archive = loadJSON(ARCHIVE_PATH, { snapshots: [] })
   const historyData = loadJSON(HISTORY_PATH, { history: [] })
+  beachedRatchetTripwire(historyData.history || [])
 
   if (!archive.snapshots.length) {
     console.log('No forecast archive yet. Will accumulate over pipeline runs.')
@@ -427,12 +445,7 @@ function reforecastBacktest() {
   // trigger), it activates — so shout, don't let an unfit constant run silently in
   // peak season. When this fires: recalibrate the half-life against this backtest AND
   // switch the /fiabilite over-alert note from methodology to a measured figure.
-  const elevated = history.flatMap(e => (e.levels || []).filter(l => typeof l.afai === 'number' && l.afai >= 0.20))
-  if (elevated.length) {
-    console.warn(`\n⚠️  BEACHED-RATCHET TRIPWIRE: ${elevated.length} elevated obs (AFAI≥0.20) in history.`)
-    console.warn('   The beached-hold prior (BEACHED_HALF_LIFE_DAYS=12, unfit) is now ACTIVE on real data.')
-    console.warn('   → RECALIBRATE it against this reforecast (try 8/10/12/16/20), then update /fiabilite.')
-  }
+  beachedRatchetTripwire(history)
 
   const byDate = {}
   for (const e of history) { byDate[e.date] = {}; for (const l of e.levels) byDate[e.date][l.id] = { afai: l.afai, status: l.status } }

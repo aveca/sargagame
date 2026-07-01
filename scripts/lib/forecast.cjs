@@ -534,11 +534,15 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         const dayDecay = Math.exp(-dayLambda) // ~0.87/d (sea) or ~0.94/d (beached hold)
 
         // Wind: small contribution, weaker as days increase
-        const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
+        // Garde NaN (moat) : un effet non-fini (vent/slope corrompu) ne doit pas
+        // contaminer `raw` → NaN → statusFromAfai fabriquerait un 'avoid'.
+        let windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
+        if (!Number.isFinite(windEffect)) windEffect = 0
 
         // Trend: only if r² passed gate (computeSatelliteTrend returns null otherwise)
         // Apply only for days 1-3 where short-term trend matters
         let trendEffect = trend && i <= 3 ? trend.slope * 0.5 : 0
+        if (!Number.isFinite(trendEffect)) trendEffect = 0
         // In a calm stretch, don't extrapolate a RISING trend from quiet-water
         // noise — it was the co-driver of the residual calm false alarms. Falling
         // trends (dispersion) pass through untouched: they only ever help. This is
