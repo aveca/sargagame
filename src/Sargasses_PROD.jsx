@@ -10946,6 +10946,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   if(consultedRef.current===null){try{consultedRef.current=new Set(JSON.parse(localStorage.getItem("sg_consulted")||"[]"))}catch(_){consultedRef.current=new Set()}}
   const[,setFogTick]=useState(0)
   const fogOn=(()=>{try{return !/[?&]fog=0/.test(window.location.search)}catch(_){return true}})()
+  // Dead-click : la carte « lecture du jour » (haut de l'archipel) montre le verdict de TA côte
+  // et invite le tap → on la rend tapable (plonge dans la plage). Additif. Rollback : ?lecturetap=0.
+  const lectureTapOn=(()=>{try{return !/[?&]lecturetap=0/.test(window.location.search)}catch(_){return true}})()
   const markConsulted=id=>{if(id&&!consultedRef.current.has(id)){consultedRef.current.add(id);try{localStorage.setItem("sg_consulted",JSON.stringify([...consultedRef.current].slice(-400)))}catch(_){};setFogTick(v=>v+1)}}
   return(
     <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
@@ -11039,7 +11042,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       {/* rootMode (navWorld) : le monde EST l'app → pas de ✕ qui fermerait sur du vide
           (Leaflet retiré). En fallback ?nav=map, le ✕ ferme vers la carte Leaflet. */}
       {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>}
-      {ready&&(lecture||my)&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
+      {ready&&(lecture||my)&&tour==null&&<div {...(lectureTapOn&&my?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir "+my.name,"See "+my.name,"Ver "+my.name),onClick:e=>{e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();try{track("sg_lecture_tap",{beach_id:my.id})}catch(_){};markConsulted(my.id);diveBeach(myIdx,my)}}}:{})} style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff",cursor:(lectureTapOn&&my)?"pointer":"default"}}>
         <Veilleur mood={moodFromStatus((lecture&&lecture.mood)||(my&&my.status)||"clean")} size={26}/>
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Le Veilleur · lecture du jour","The Watcher · today's reading","El Vigía · lectura del día")}</div>

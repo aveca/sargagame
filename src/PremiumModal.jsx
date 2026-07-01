@@ -286,7 +286,8 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-sub{font-size:13px;font-weight:600;color:#1c2c2c;margin:0 0 13px;line-height:1.32}
       .pww-sub b{color:var(--ink)}
       /* APERÇU 7 JOURS */
-      .pww-fcast{position:relative;border:2.5px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:4px 4px 0 var(--ink);background:#fff;margin-bottom:13px}
+      .pww-fcast{position:relative;border:2.5px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:4px 4px 0 var(--ink);background:#fff;margin-bottom:13px;cursor:pointer}
+      .pww-fcast:focus-visible{outline:2px solid var(--gold,#FFC72C);outline-offset:2px}
       .pww-fcast-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg,#10343a,#0c272b);border-bottom:2.5px solid var(--ink)}
       .pww-fcast-top .ttl{font-size:11px;letter-spacing:.6px;color:#fff}
       .pww-fcast-top .loc{font-size:10px;font-weight:800;color:var(--goldL)}
@@ -454,7 +455,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         <p className="pww-sub">{_t(lang,<>Le gratuit te dit <b>aujourd'hui</b>. Le Veilleur te montre toute ta semaine — et t'alerte le jour où ça bascule.</>,<>Free tells you <b>today</b>. The Watcher shows you your whole week — and alerts you the day it flips.</>,<>Lo gratis te dice <b>hoy</b>. El Vigía te muestra toda tu semana — y te avisa el día que cambia.</>)}</p>
 
         {/* APERÇU PRÉVISION 7 JOURS — illustratif (Auj/Dem verts, J+2…J+6 verrouillés) */}
-        <div className="pww-fcast" aria-label={_t(lang,"Aperçu de la prévision 7 jours","7-day forecast preview","Vista previa pronóstico 7 días")}>
+        <div className="pww-fcast" role="button" tabIndex={0} onClick={()=>onStart()} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onStart()}}} aria-label={_t(lang,"Aperçu de la prévision 7 jours — débloquer","7-day forecast preview — unlock","Vista previa pronóstico 7 días — desbloquear")}>
           <div className="pww-fcast-top">
             <span className="ttl pww-anton">{_t(lang,"Ta prévision · 7 jours","Your forecast · 7 days","Tu pronóstico · 7 días")}</span>
             {ctxLoc&&<span className="loc">{ctxLoc}</span>}
