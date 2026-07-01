@@ -1,6 +1,6 @@
 # NEXT_SESSION — sargagame
 
-> **🖱️ 2026-07-01 — SESSION TRACKING/UX : télémétrie qui NOMME les coupables + tracking journalier + fixes dead-click home & carte. Branche `claude/analyze-user-tracking-data-pqinmp`. 5 PR mergées : #320, #326, #329, #330 (+ handoff).**
+> **🖱️ 2026-07-01 — SESSION TRACKING/UX : télémétrie qui NOMME les coupables + tracking journalier + TOUT le SHIP-NOW de la chasse dead-click. Branche `claude/analyze-user-tracking-data-pqinmp`. 7 PR mergées : #320 #326 #329 #330 #335 (+ handoffs #333). Prod 200.**
 >
 > **Demande fondateur** : analyser TOUTE la data de tracking (clics, rage/dead-clicks, navigation), corriger l'UX, générer un tracking JOURNALIER pour voir l'impact des changements, et purger les vieilles data.
 >
@@ -12,14 +12,12 @@
 >
 > **⚠️ DATA D'AUDIT PÉRIMÉE (vérifié) : `ux-report.json`/`audit-summary.json` = snapshot figé du vendredi 26/06** (weekly-ux-report.yml, cred-gated GA4/Clarity), ~35 commits UI en retard. J'ai déclenché une régé (`workflow_dispatch`). **Ne PAS piloter de fix sur ces magnitudes** — utiliser `stats.php`/`ux-daily.json` (first-party, vivant). **Décision fondateur : NE RIEN SUPPRIMER** (les data/ sont de l'état vivant re-committé chaque jour ; supprimer = re-envoi emails / perte suppression-bounce / perte historique MRR).
 >
-> **RESTE DE LA CHASSE ULTRACODE (17/18 confirmés, plan complet dans `tasks/wfza1o0h1.output` → `result.plan`)** — SHIP-NOW restants, tous additifs/flag-gardés, grep-reproductibles :
-> - **PR-4** WorldMapView : pastille EN-DIRECT tapable (`?maplivetap=0`, href région-correct `/fiabilite/`|`/reliability/`|`/fiabilidad/` depuis `island`, PAS en dur) + sticker compte-propres → `nearMe()` (`?mapcleantap=0`).
-> - **PR-5** Sargasses_PROD ~L11042 ArchipelView : carte « lecture du jour » tapable → `diveBeach` (`?lecturetap=0`, gate `!!my`, `stopPropagation`).
-> - **PR-6** PremiumModal/PassOffer : wallet-gate (masquer Apple/Google Pay si indispo, via prop `wallets`=`walletAvail()`, `?wgate=0`) + `.pww-fcast` role=button→`onStart`. (**PR-6.2 proof-`<a>` ÉCARTÉ** : lien fiabilité déjà présent 2 lignes sous la carte.)
+> **CHASSE ULTRACODE — SHIP-NOW ENTIÈREMENT LIVRÉ (17/18 confirmés, plan dans `tasks/wfza1o0h1.output` → `result.plan`)** :
+> - ✅ **#330** PR-2 home (mascotte/série/pack) · ✅ **#329** PR-3 carte (pins ≥44px + labels tapables) · ✅ **#335** PR-4 (pastille EN-DIRECT→fiabilité région-correcte + sticker propres→nearMe) + PR-5 (archipel « lecture du jour »→dive) + PR-6.3 (aperçu prévision paywall→onStart).
 > - **DEFER (needs regression screenshot Playwright WebKit 390×844)** : ArchipelView empty-sea single-tap plan-B (`?maptap=0`) + WorldMapView rect-caching pan/pinch INP.
-> - **ÉCARTÉ** : PR-1 defer `track()` (perdrait les events critiques checkout/conversion à la navigation — gain INP déjà pris par #320) · ComicPaywall pwx-panel→checkout (dark-pattern/conversion-risk).
+> - **ÉCARTÉ** : PR-1 defer `track()` (perd events checkout à la navigation ; gain INP déjà pris #320) · PR-6.1 wallet-gate (soustractif UI paiement, faux-négatif `walletAvail`=vente perdue → check device requis) · PR-6.2 proof-`<a>` (lien fiabilité déjà 2 lignes sous) · ComicPaywall pwx-panel (dark-pattern).
 >
-> **SUITE IMMÉDIATE** : (1) après 1 cycle, lire `ux-daily.json` + `stats.php top_dead_els`/`sg_friction.el` → voir les coupables réels post-fix ; (2) shipper PR-4/5/6 ; (3) vérifier la régé du weekly-ux-report (creds GA4). Optionnel : brancher `ux-audit.cjs` sur `top_dead_els` pour que `ux-report.json` + alerte `ux-watch` nomment le coupable.
+> **SUITE IMMÉDIATE** : (1) après 1 cycle, lire `ux-daily.json` + `stats.php top_dead_els`/`sg_friction.el` → mesurer la baisse dead-clicks post-fix ; (2) les 2 DEFER quand une session peut faire les screenshots WebKit ; (3) vérifier la régé weekly-ux-report (creds GA4). Optionnel : brancher `ux-audit.cjs` sur `top_dead_els`.
 
 > **🌍 2026-07-01 — SEO INTERNATIONAL EN/ES : TRACK /pro LONGUE-TRAÎNE COMPLET (8 pages, 2 PR) + gap sitemap comblé. Branche `claude/todays-remaining-tasks-wgtmay` (session // à `b2b-funnels`).**
 >
