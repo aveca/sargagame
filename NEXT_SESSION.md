@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **🌍 2026-07-01 — SEO INTERNATIONAL EN/ES : TRACK /pro LONGUE-TRAÎNE COMPLET (8 pages, 2 PR) + gap sitemap comblé. Branche `claude/todays-remaining-tasks-wgtmay` (session // à `b2b-funnels`).**
+>
+> **Contexte** : les 4 pages `/pro/*` longue-traîne (cout, préparer-saison, barrières-vs-prévision, plan-collectivité) n'existaient qu'en FR. Déclinées **EN + ES**, ciblées mots-clés de chaque marché (US/Caraïbe anglo, Mexique/RD) — **PAS des traductions de slug**.
+> - **#325** : page coût (`en/cost-of-sargassum-hotels`, `es/costo-sargazo-hoteles`). **Déployé + vérifié prod (contenu).**
+> - **#327** : les 3 autres sujets × 2 langues (`prepare-hotel-sargassum-season`/`preparar-hotel-temporada-sargazo`, `sargassum-barrier-vs-forecast`/`barrera-vs-pronostico-sargazo`, `sargassum-plan-coastal-towns`/`plan-sargazo-municipios`). **Mergé, deploy vérifié prod (contenu).**
+> - **Méthode ultracode** : 6 sous-agents // pour générer, puis **workflow de vérif adversariale** (6 auditeurs indépendants) — 5/6 PASS, 1 divergence stat corrigée (`~76%`→`~75-78%` pour coller à la source FR). Moat : chiffre fiabilité = fetch live `track-record.json`, claims hedgés, 0 « 100% » nu, 0 stat inventée.
+> - **Câblage** : hreflang cluster fr/en/es/x-default sur chaque page + **réciproque ajouté aux 4 pages FR** (elles n'en avaient pas). Liens `/reliability/` (EN) `/fiabilidad/` (ES). Sitemap `vite.config.js` : +8 URLs **+ comblé un gap pré-existant** (`pro/en/pricing`, `pro/en/collectivites`, tout `pro/es/*` étaient absents) → **89 URLs, guard vert**.
+>
+> **⚠️ Leçon deploy re-confirmée** : le `200` seul MENT (SPA catch-all sert 200 pour tout chemin inconnu). Toujours vérifier le **contenu réel** (canonical == URL de la page), pas le code HTTP.
+>
+> **DÉFÉRÉ (documenté, pas oublié)** — **Purge Stripe Barbados** : retirer `barbados` de `$KNOWN_REGIONS` (`stripe-webhook.php`) **casse le test de parité** (`test-stripe-webhook.cjs` exige `KNOWN_REGIONS == ids regions/*.json` ; barbados.json reste une région préparée). La partie faisable seule (retirer les placeholders bidon de `barbados.json`) est cosmétique. → à faire **au moment du câblage Mollie** de Barbados (tâche à creds fondateur), pas isolément.
+>
+> **NOTE inter-session** : le J-7 planner que j'avais câblé (#319, backend d'alerte Supabase, resté inerte dans main) était une fausse piste — le fondateur voulait « date → estimation, sans email », livré par l'autre session (#322 « DIRECT SANS EMAIL »). Backend #319 inerte (cron dry-run, table jamais créée) ; à nettoyer par la session qui possède le planner si souhaité.
+
 > **✅ 2026-07-01 — CLÔTURE ROADMAP AUDIT (Vague 2 fin) + RÉSILIATION + PLANNER « DIRECT SANS EMAIL ». Branche `claude/b2b-funnels-forecasting-o8qeof`. 3 PR mergées (#318, #321, #322).**
 >
 > **#318 — Entrée de résiliation audience-aware** (MON ESPACE) : l'abonné RÉCURRENT legacy voit « Gérer / résilier mon abonnement → » (`?manage=1`, cancel provider-aware, conformité UE) ; le détenteur de PASS one-time voit « Pass actif jusqu'au {date} — rien à résilier, il expire seul » (fin du cul-de-sac « écris-moi »). i18n, rollback `?cancelinfo=0`. **Déployé vert.**
