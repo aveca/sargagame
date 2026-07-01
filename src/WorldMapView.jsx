@@ -205,7 +205,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 
 export default function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
-  onAccess=null, onEnableNotif=null,
+  onAccess=null, onEnableNotif=null, alertsOn=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -225,6 +225,9 @@ export default function WorldMapView({
   const mapNavOff = (()=>{try{return /[?&]mapnav=0/.test(window.location.search)}catch(_){return false}})()
   const showMapNav = rootMode && !mapNavOff && (onAccess || onEnableNotif)
   const notifGranted = (()=>{try{return typeof Notification!=="undefined" && Notification.permission==="granted"}catch(_){return false}})()
+  // Cloche = interrupteur ON/OFF : plein si alertes actives (permission + pas opt-out), barré
+  // sinon. `alertsOn` (piloté par le parent) prime ; fallback = permission navigateur seule.
+  const bellOn = alertsOn!=null ? !!alertsOn : notifGranted
   const [premiumHint, setPremiumHint] = useState(false)
   // Mode « dérive Premium » sur les jours futurs : échouage en BOUCLE (sensation
   // d'arrivée continue) + halo qui pulse sur les plages prévues touchées + badge
@@ -1555,12 +1558,13 @@ export default function WorldMapView({
             top:topInset?(topInset+62)+"px":"calc(62px + env(safe-area-inset-top))",
             display:"flex",flexDirection:"row",gap:9,pointerEvents:"auto",zIndex:3}}>
             {onEnableNotif&&(
-              <button type="button" className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_notif_click",{})}catch(_){}; onEnableNotif()}}
-                aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
-                title={_t(lang,"Alertes","Alerts","Alertas")}>
+              <button type="button" className="sg-mapnav" onClick={()=>{try{track&&track("sg_map_notif_click",{on:bellOn?1:0})}catch(_){}; onEnableNotif()}}
+                aria-label={bellOn?_t(lang,"Désactiver les alertes sargasses","Turn off sargassum alerts","Desactivar alertas de sargazo"):_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+                title={bellOn?_t(lang,"Alertes activées — couper","Alerts on — turn off","Alertas activadas — apagar"):_t(lang,"Alertes","Alerts","Alertas")}>
                 <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
-                  <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={notifGranted?"currentColor":"none"}/>
+                  <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={bellOn?"currentColor":"none"}/>
                   <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  {!bellOn&&<path d="M4 4L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
                 </svg>
               </button>
             )}

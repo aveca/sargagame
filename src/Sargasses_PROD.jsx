@@ -2147,6 +2147,21 @@ export async function sgVerifySub(email){
 }
 export function sgReferredBy(){try{const raw=localStorage.getItem("sg_referred_by");if(!raw)return "";let code="",ts=0;try{const o=JSON.parse(raw);code=o.code||"";ts=o.ts||0}catch(_){code=raw}/* rétro-compat string legacy */if(!/^REF-[A-Z0-9]{6}$/.test(code))return "";if(ts&&Date.now()-ts>30*86400000)return ""/* attribution expirée */;if(code===sgMyReferralCode())return ""/* anti-auto-parrainage */;return code}catch(_){return ""}}
 
+// ── Interrupteur alertes push ON/OFF (honnête) ────────────────────────────────
+// On ne peut PAS révoquer la permission navigateur en JS → on (dés)abonne la
+// PushSubscription OneSignal (optOut/optIn, SDK v16) et on mémorise le choix en
+// localStorage (`sg_alerts_off`) pour l'appliquer même quand le SDK n'est pas
+// encore chargé. « Alertes ON » = permission accordée ET pas opt-out.
+export function sgAlertsOff(){try{return localStorage.getItem("sg_alerts_off")==="1"}catch(_){return false}}
+export function sgApplyPushOptin(on){
+  try{window.loadOneSignal&&window.loadOneSignal()}catch(_){}
+  try{
+    window.OneSignalDeferred=window.OneSignalDeferred||[]
+    window.OneSignalDeferred.push(function(O){try{const ps=O&&O.User&&O.User.PushSubscription;if(!ps)return;if(on){ps.optIn&&ps.optIn()}else{ps.optOut&&ps.optOut()}}catch(_){}})
+  }catch(_){}
+}
+export function sgSetAlerts(on){try{localStorage.setItem("sg_alerts_off",on?"0":"1")}catch(_){};sgApplyPushOptin(on)}
+
 // ── Gating J+2→J+7 (le verdict J+0/J+1 reste 100% gratuit) ─────────────────────
 // Le JSON public ne sert que J+0/J+1 ; la série complète vit derrière forecast.php
 // (auth email/pass/abo/comp OU token widget Pro). Flag rollback front `?gating=0`
@@ -6829,7 +6844,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif,onAccess,isPremium}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
   // paywall). Répond au « aucun tracking de mon paiement sur le site ». Flag rollback
@@ -6881,14 +6896,24 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
         </a>
 
-      {/* Cloche alertes — RETIRÉE du header par défaut : deux icônes (cloche + personnage)
-          ouvrant le MÊME panneau = redondant/inutile (grief fondateur). Les alertes se gèrent
-          dans « Mon accès » (icône personnage → section « Alertes sargasses »). Conservée
-          UNIQUEMENT sous rollback ?account=0 (opt-in push direct historique). */}
+      {/* Cloche alertes = INTERRUPTEUR ON/OFF (fonction distincte de l'icône compte → zéro
+          redondance ; remplit la barre). Plein = alertes actives ; barré = coupées. Un clic
+          bascule (optIn/optOut OneSignal) + toast. Rollback ?account=0 → ancien opt-in direct. */}
       <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")}>
-        {onEnableNotif&&ACCOUNT_OFF&&(()=>{
+        {(onToggleAlerts||onEnableNotif)&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
-          const on=perm==="granted"
+          const on=!ACCOUNT_OFF?!!alertsOn:(perm==="granted")
+          if(!ACCOUNT_OFF&&onToggleAlerts){
+            return(<button aria-label={on?_t(lang,"Désactiver les alertes sargasses","Turn off sargassum alerts","Desactivar alertas de sargazo"):_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+              title={on?_t(lang,"Alertes activées — couper","Alerts on — turn off","Alertas activadas — apagar"):_t(lang,"Activer les alertes","Enable alerts","Activar alertas")}
+              onClick={()=>onToggleAlerts("header")}>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={on?"currentColor":"none"}/>
+                <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                {!on&&<path d="M4 4L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>}
+              </svg>
+            </button>)
+          }
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
           return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
             onClick={()=>{
@@ -6896,7 +6921,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
               if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
               if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
               try{track("sg_push_header_cta",{})}catch(_){}
-              onEnableNotif()
+              onEnableNotif&&onEnableNotif()
             }}>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={on?"currentColor":"none"}/>
@@ -11323,6 +11348,7 @@ export default function App(){
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
+  const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
@@ -11706,6 +11732,53 @@ export default function App(){
       try{track("sg_push_force_enable",{trigger})}catch(_){}
     }catch(e){}
     setShowPushPrimer(false)
+  },[])
+
+  // Interrupteur alertes ON/OFF (cloche header + carte + « Mon accès »). Un clic fait
+  // TOUJOURS quelque chose de visible : bascule d'état + toast. « ON » = permission accordée
+  // ET pas opt-out. Désactiver = optOut OneSignal (les push cessent, permission navigateur
+  // intacte). alertsTick force le recalcul du rendu après la bascule.
+  const perm0=(typeof Notification!=="undefined")?Notification.permission:"default"
+  const alertsOn=perm0==="granted"&&!sgAlertsOff()
+  const toggleAlerts=useCallback((src)=>{
+    const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
+    const granted=perm==="granted"
+    const off=sgAlertsOff()
+    if(granted&&!off){ // ON → OFF
+      sgSetAlerts(false)
+      try{sgToast({tone:"info",title:_t(lang,"Alertes désactivées 🔕","Alerts turned off 🔕","Alertas desactivadas 🔕"),msg:_t(lang,"Le Veilleur ne t'enverra plus de push. Réactive quand tu veux.","Le Veilleur won't push you anymore. Re-enable anytime.","Le Vigía ya no te enviará push. Reactiva cuando quieras.")})}catch(_){}
+      try{track("sg_alerts_toggle",{to:"off",src:src||"bell"})}catch(_){}
+      setAlertsTick(t=>t+1); return
+    }
+    if(granted&&off){ // OFF (mais permission OK) → ON
+      sgSetAlerts(true)
+      try{sgToast({tone:"success",msg:_t(lang,"Alertes réactivées 🔔 Le Veilleur t'écrit chaque matin.","Alerts back on 🔔 Le Veilleur writes you each morning.","Alertas reactivadas 🔔 El Vigía te escribe cada mañana.")})}catch(_){}
+      try{track("sg_alerts_toggle",{to:"on",src:src||"bell"})}catch(_){}
+      setAlertsTick(t=>t+1); return
+    }
+    if(perm==="denied"){
+      try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}
+      return
+    }
+    const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
+    if(iosBrowser){
+      try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}
+      return
+    }
+    // pas encore accordé → demande native (+ efface un éventuel opt-out)
+    try{localStorage.setItem("sg_alerts_off","0")}catch(_){}
+    forceEnablePush(src||"toggle")
+    setTimeout(()=>setAlertsTick(t=>t+1),1800)
+  },[lang,forceEnablePush])
+
+  // Sync backend : si l'utilisateur a désactivé alors que le SDK n'était pas chargé,
+  // ré-applique l'opt-out dès que possible (idempotent).
+  useEffect(()=>{ if(alertsOn===false&&sgAlertsOff()){try{sgApplyPushOptin(false)}catch(_){}} },[])
+  // Recheck au retour au premier plan (permission changée hors app).
+  useEffect(()=>{
+    const sync=()=>setAlertsTick(t=>t+1)
+    window.addEventListener("focus",sync); document.addEventListener("visibilitychange",sync)
+    return ()=>{window.removeEventListener("focus",sync); document.removeEventListener("visibilitychange",sync)}
   },[])
 
   useEffect(()=>{
@@ -13459,7 +13532,8 @@ export default function App(){
                   openAccessCheck("header")
                 }
               }}
-              onEnableNotif={()=>forceEnablePush("header")}/>
+              onEnableNotif={()=>forceEnablePush("header")}
+              alertsOn={alertsOn} onToggleAlerts={toggleAlerts}/>
           </div>
         </div>
 
@@ -13660,6 +13734,7 @@ export default function App(){
             Restaurer/gérer réutilisent openAccessCheck (recurring → ?manage=1). */}
         {showAccount&&<ErrBound><Suspense fallback={null}><LazyAccountSheet lang={lang} isPremium={isPremium}
           onClose={()=>setShowAccount(false)}
+          alertsOn={alertsOn} onToggleAlerts={()=>toggleAlerts("account")}
           onEnableNotif={()=>forceEnablePush("account")}
           onRestore={()=>{setShowAccount(false);openAccessCheck("account")}}
           onManage={()=>{setShowAccount(false);openAccessCheck("account")}}
@@ -13800,7 +13875,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
-                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={ACCOUNT_OFF?(()=>loadPushNow("map")):null}
+                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
