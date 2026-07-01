@@ -33,9 +33,20 @@ jobs:
           MODERATE_TOKEN: ${{ secrets.MODERATE_TOKEN }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/notify-new-photos.cjs
-      # Signalements terrain (beach_reports) : même modération 1-tap que les photos.
-      # Sans ce step, les reports approuvés ne s'affichent jamais (RLS ne sert que 'approved').
-      - name: Notify founder of pending field reports
+      # Signalements terrain (beach_reports) : AUTO-modération sans fondateur (panel 2026-07-01).
+      # Consensus ≥3 empreintes distinctes (≥2 « sur place »), garde-fous déterministes
+      # (excessif / incompatible-satellite / incompréhensible), verdict satellite-first.
+      # Kill-switch : variable de repo AUTO_MODERATE_REPORTS=0 → ce step no-op et le fallback
+      # email 1-tap (notify-new-reports) prend le relais.
+      - name: Auto-moderate pending field reports
+        if: ${{ vars.AUTO_MODERATE_REPORTS != '0' }}
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          AUTO_MODERATE_REPORTS: ${{ vars.AUTO_MODERATE_REPORTS }}
+        run: node scripts/automation/auto-moderate-reports.cjs
+      # FALLBACK legacy : email 1-tap au fondateur (uniquement si l'auto-modération est coupée).
+      - name: Notify founder of pending field reports (fallback)
+        if: ${{ vars.AUTO_MODERATE_REPORTS == '0' }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           MODERATE_TOKEN: ${{ secrets.MODERATE_TOKEN }}

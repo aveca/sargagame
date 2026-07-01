@@ -1,0 +1,10 @@
+{
+  "_comment": "Blocklist d'insultes FR/EN/ES pour sanitizeNote (scripts/automation/lib/sanitize-note.cjs). Comparaison insensible à la casse ET aux accents, en sous-chaîne sur la note désaccentuée. Volontairement court et déterministe (zéro LLM). Une note qui matche est NULLIFIÉE (le signalement beaching/cleanup reste valide — le sens ne dépend jamais du texte).",
+  "words": [
+    "connard", "connasse", "salope", "salaud", "enculé", "encule", "putain",
+    "pute", "merde", "batard", "bâtard", "ta gueule", "ferme ta", "nique",
+    "fdp", "ntm", "abruti", "débile", "cretin", "crétin",
+    "fuck", "fucking", "shit", "bitch", "asshole", "bastard", "cunt", "dickhead", "motherfucker", "retard",
+    "puta", "puto", "cabron", "cabrón", "gilipollas", "mierda", "pendejo", "coño", "hijo de puta", "maricon", "maricón"
+  ]
+}
