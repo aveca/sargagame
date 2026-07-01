@@ -255,6 +255,12 @@ export default function WorldMapView({
   // à côté du pin invite le tap → ouvre la fiche). Purement additif. Rollback : ?mappinhit=0 / ?maplabeltap=0.
   const mapPinHitOff = (()=>{try{return /[?&]mappinhit=0/.test(window.location.search)}catch(_){return false}})()
   const mapLabelTapOff = (()=>{try{return /[?&]maplabeltap=0/.test(window.location.search)}catch(_){return false}})()
+  // Dead-click chrome carte : la pastille EN-DIRECT (preuve) et le sticker compte-propres
+  // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
+  const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
+  const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
+  const relHref = (island==="mq"||island==="gp") ? "/fiabilite/" : (lang==="es" ? "/fiabilidad/" : "/reliability/")
+  const _relGo = ()=>{ try{track&&track("sg_map_live_tap",{island})}catch(_){}; try{window.location.href=relHref}catch(_){} }
   // (Swipe-to-scrub retiré 2026-06-30 : conflit avec le pan de la carte, confirmé fondateur.)
   // Hub « Ma semaine » (« La Vigie », panel 2026-06-30) : l'encart digest devient tapable ->
   // ouvre le hub prévision premium (lazy). Rollback : ?weekhub=0 (l'encart redevient un simple
@@ -1451,11 +1457,12 @@ export default function WorldMapView({
           padding:"calc(12px + env(safe-area-inset-top)) 16px 12px",
           maxWidth:560,margin:"0 auto",
         }}>
-          {/* Pill EN DIRECT */}
-          <div style={{
+          {/* Pill EN DIRECT — tapable → notre page fiabilité (preuve « on publie nos erreurs »). */}
+          <div {...(!mapLiveTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir notre fiabilité","See our reliability","Ver nuestra fiabilidad"),onClick:_relGo,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();_relGo()}}}:{})} style={{
             display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
             whiteSpace:"nowrap",flexShrink:0,
-            padding:"6px 12px 6px 10px",borderRadius:999,
+            padding:"6px 12px 6px 10px",borderRadius:999,minHeight:mapLiveTapOff?undefined:44,boxSizing:"border-box",
+            cursor:mapLiveTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
@@ -1551,8 +1558,9 @@ export default function WorldMapView({
           }}>
             {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
-          <div style={{
+          <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir les plages propres près de moi","See clean beaches near me","Ver playas limpias cerca"),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
             marginTop:9,display:"inline-flex",alignItems:"center",gap:9,pointerEvents:"auto",
+            cursor:mapCleanTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
