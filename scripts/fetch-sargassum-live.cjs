@@ -375,6 +375,52 @@ function compute1DCorrection(beach, grid7D, grid1D) {
   return cappedCorr * factor
 }
 
+// ── Sentinel-2 near-shore (signal correctif additif, FLAGGÉ) ──────────
+// Produit par scripts/fetch-sentinel2.cjs (CDSE FAI 10-20m au ras de la côte),
+// lu ici comme INPUT. Applique la MÊME philosophie que la correction 1D :
+// additif, cappé, pondéré (couverture × fraîcheur), JAMAIS un blend/override.
+// Derrière SG_SENTINEL2=1 (défaut OFF) tant que les seuils FAI ne sont pas
+// calibrés vs /fiabilite/ → zéro impact sur le verdict publié. Honnêteté d'abord.
+const SENTINEL2_ENABLED = process.env.SG_SENTINEL2 === '1'
+const S2_MAX_AGE_DAYS = 3      // au-delà, le passage S2 est trop vieux pour corriger le J+0
+const S2_MIN_COVERAGE = 0.25   // sous 25% de pixels valides = trop nuageux, on ignore
+const S2_MIN_DIFF = 0.10       // ne corrige que si l'écart est significatif (comme le 1D)
+
+function loadSentinel2Layer(dir) {
+  if (!SENTINEL2_ENABLED) return null
+  try {
+    const p = path.join(dir, 'sentinel2-nearshore.json')
+    const raw = JSON.parse(fs.readFileSync(p, 'utf-8'))
+    if (raw && raw.beaches && typeof raw.beaches === 'object') {
+      console.log(`  Sentinel-2 layer: ${Object.keys(raw.beaches).length} plage(s) (source=${raw.source}, provisional=${!!raw.provisional})`)
+      return raw.beaches
+    }
+  } catch (_) {
+    console.log('  Sentinel-2 layer absent/illisible → correction S2 ignorée (no-op).')
+  }
+  return null
+}
+
+/**
+ * Correction near-shore Sentinel-2 pour une plage. Miroir de compute1DCorrection :
+ * diff = afaiLike(S2) - afaiSat(ERDDAP), cappé ±0.15, pondéré par la couverture
+ * nuage-libre. Ne s'applique que si le passage S2 est frais (≤3j) et couvrant (≥25%).
+ * Retourne 0 si désactivé, absent, périmé ou peu couvrant.
+ */
+function computeSentinel2Correction(beach, s2Layer, afaiSat) {
+  if (!s2Layer) return 0
+  const s = s2Layer[beach.id]
+  if (!s || s.afaiLike == null) return 0
+  if (s.coverage == null || s.coverage < S2_MIN_COVERAGE) return 0
+  if (s.ageDays == null || s.ageDays > S2_MAX_AGE_DAYS) return 0
+  const diff = s.afaiLike - afaiSat
+  if (Math.abs(diff) < S2_MIN_DIFF) return 0
+  // Gain 0.6 (plus prudent que le 1D à 0.7 car seuils FAI provisoires) puis
+  // pondération par la couverture nuage-libre : peu de pixels = peu de confiance.
+  const capped = Math.max(-0.15, Math.min(0.15, diff * 0.6))
+  return capped * Math.min(1, s.coverage)
+}
+
 /**
  * For a given beach, compute sargassum threat level from the OFFSHORE grid.
  *
@@ -1269,7 +1315,7 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx 
  * 7D + correction 1D). gridOf/grid1DOf resolvent la grille par plage: la
  * racine MQ+GP a deux grilles (une par ile), une region n'en a qu'une.
  */
-function computeBeachLevels(beaches, gridOf, grid1DOf) {
+function computeBeachLevels(beaches, gridOf, grid1DOf, s2Layer) {
   const levels = []
   for (const beach of beaches) {
     const grid = gridOf(beach)
@@ -1277,16 +1323,20 @@ function computeBeachLevels(beaches, gridOf, grid1DOf) {
     const result = extractBeachAfai(beach, grid)
     // Apply 1D rapid-change correction (detects recent arrivals/clearances ~24h before 7D)
     const correction1D = compute1DCorrection(beach, grid, grid1D)
-    const afaiRaw = result.afai + correction1D
+    // Correction near-shore Sentinel-2 (additive, flaggée SG_SENTINEL2, appliquée
+    // sur l'AFAI satellite AVANT le 1D pour rester dans l'espace normalisé). No-op
+    // si le flag est OFF ou si aucun passage S2 frais/couvrant n'existe pour la plage.
+    const correctionS2 = computeSentinel2Correction(beach, s2Layer, result.afai)
+    const afaiRaw = result.afai + correction1D + correctionS2
     const afai = Math.round(Math.max(0, Math.min(1, afaiRaw)) * 100) / 100
     const status = statusFromAfai(afai)
     levels.push({
       id: beach.id, afai, status,
-      confidence: result.confidence + (correction1D !== 0 ? 5 : 0), // multi-source boost
+      confidence: result.confidence + (correction1D !== 0 ? 5 : 0) + (correctionS2 !== 0 ? 5 : 0), // multi-source boost
       source: 'erddap-satellite',
-      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : ''),
+      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : '') + (correctionS2 !== 0 ? '+S2' : ''),
     })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}] conf=${result.confidence}%`)
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}${correctionS2 ? ' S2:' + (correctionS2 > 0 ? '+' : '') + correctionS2.toFixed(2) : ''}] conf=${result.confidence}%`)
   }
   return levels
 }
@@ -1569,10 +1619,13 @@ async function main() {
   // 2. Extract AFAI for each beach
   console.log('')
   console.log('[2/3] Extracting beach AFAI values...')
+  // Sentinel-2 near-shore : chargé une fois (no-op si SG_SENTINEL2 non set).
+  const s2Layer = loadSentinel2Layer(path.join(OUT_PUBLIC, 'api', 'copernicus'))
   const levels = computeBeachLevels(
     BEACHES,
     beach => (beach.island === 'mq' ? mqGrid : gpGrid),
     beach => (beach.island === 'mq' ? mqGrid1D : gpGrid1D),
+    s2Layer,
   )
 
   // 2b. Apply beach memory (accumulation decay from recent history)

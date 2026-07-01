@@ -75,6 +75,24 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-beach-weather.cjs
 
+      # ── 0b. Sentinel-2 near-shore (PROTOTYPE, additif, non-bloquant) ──
+      # Produit public/api/copernicus/sentinel2-nearshore.json (input du pipeline).
+      # No-op propre sans credentials CDSE → n'échoue jamais (continue-on-error).
+      # Le pipeline ne CONSOMME ce signal que si SG_SENTINEL2=1 (défaut OFF, non set
+      # ici) : tant que les seuils FAI ne sont pas calibrés vs /fiabilite/, zéro
+      # impact sur le verdict publié. Voir scripts/fetch-sentinel2.cjs.
+      - name: Fetch Sentinel-2 near-shore (prototype)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SENTINEL_HUB_CLIENT_ID: ${{ secrets.SENTINEL_HUB_CLIENT_ID }}
+          SENTINEL_HUB_CLIENT_SECRET: ${{ secrets.SENTINEL_HUB_CLIENT_SECRET }}
+          CDSE_USERNAME: ${{ secrets.CDSE_USERNAME }}
+          CDSE_PASSWORD: ${{ secrets.CDSE_PASSWORD }}
+          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+        run: node scripts/fetch-sentinel2.cjs
+
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
         id: erddap
