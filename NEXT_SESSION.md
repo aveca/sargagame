@@ -56,10 +56,11 @@
 >
 > **CHASSE ULTRACODE — SHIP-NOW ENTIÈREMENT LIVRÉ (17/18 confirmés, plan dans `tasks/wfza1o0h1.output` → `result.plan`)** :
 > - ✅ **#330** PR-2 home (mascotte/série/pack) · ✅ **#329** PR-3 carte (pins ≥44px + labels tapables) · ✅ **#335** PR-4 (pastille EN-DIRECT→fiabilité région-correcte + sticker propres→nearMe) + PR-5 (archipel « lecture du jour »→dive) + PR-6.3 (aperçu prévision paywall→onStart).
-> - **DEFER (needs regression screenshot Playwright WebKit 390×844)** : ArchipelView empty-sea single-tap plan-B (`?maptap=0`) + WorldMapView rect-caching pan/pinch INP.
-> - **ÉCARTÉ** : PR-1 defer `track()` (perd events checkout à la navigation ; gain INP déjà pris #320) · PR-6.1 wallet-gate (soustractif UI paiement, faux-négatif `walletAvail`=vente perdue → check device requis) · PR-6.2 proof-`<a>` (lien fiabilité déjà 2 lignes sous) · ComicPaywall pwx-panel (dark-pattern).
+> - ✅ **#343 (ex-DEFER, tous 2 livrés, flag-gardés)** : indice tap-mer-vide ArchipelView (`?maptap=0`, pill éphémère pointerEvents:none, zéro sémantique de geste changée) + cache rect scopé-au-geste WorldMapView (`?rectcache=0`, writeCam, math d'ancrage intouchée). ⚠️ Pinch réel PAS testé WebKit ici → **valider le pinch-zoom sur device, basculer `?rectcache=0` si drift**.
+> - ✅ **#340** : `ux-audit.cjs` nomme le coupable dead-click (`top_dead_els`) dans `ux-report.json` + email `ux-watch`.
+> - **ÉCARTÉ (jugement adverse, pas oubli)** : PR-1 defer `track()` (perd events checkout à la navigation ; gain INP déjà pris #320) · PR-6.1 wallet-gate (soustractif UI paiement, faux-négatif `walletAvail`=vente perdue → check device requis) · PR-6.2 proof-`<a>` (lien fiabilité déjà 2 lignes sous) · ComicPaywall pwx-panel (dark-pattern).
 >
-> **SUITE IMMÉDIATE** : (1) après 1 cycle, lire `ux-daily.json` + `stats.php top_dead_els`/`sg_friction.el` → mesurer la baisse dead-clicks post-fix ; (2) les 2 DEFER quand une session peut faire les screenshots WebKit ; (3) vérifier la régé weekly-ux-report (creds GA4). Optionnel : brancher `ux-audit.cjs` sur `top_dead_els`.
+> **SESSION = TERMINÉE. 11 PR mergées, prod 200. SUITE IMMÉDIATE** : (1) après 1 cycle, lire `ux-daily.json` + `stats.php top_dead_els`/`sg_friction.el` → mesurer la baisse dead-clicks post-fix (home/carte) ; (2) **valider le pinch-zoom carte sur device réel** (flag `?rectcache=0` prêt si souci) ; (3) surveiller la régé weekly-ux-report (creds GA4 OK, data fraîche du 01/07 en place).
 
 > **🌍 2026-07-01 — SEO INTERNATIONAL EN/ES : TRACK /pro LONGUE-TRAÎNE COMPLET (8 pages, 2 PR) + gap sitemap comblé. Branche `claude/todays-remaining-tasks-wgtmay` (session // à `b2b-funnels`).**
 >
