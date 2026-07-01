@@ -217,6 +217,12 @@ export default function WeekHub({
   // Engagement daté planner
   const [planDate, setPlanDate] = useState("")
   const [planSent, setPlanSent] = useState(false)
+  // Soft-capture email du BRIEF GRATUIT (finding audit Vague 2) : non bloquant, pré-rempli si
+  // déjà connu, skippable (le bouton part avec la date seule). Valeur RÉELLE promise = le brief
+  // matinal gratuit (drip existant), jamais un ping J-7 auto non câblé (honnêteté). Rollback ?hubmail=0.
+  const hubMailOff = (()=>{ try{ return /[?&]hubmail=0/.test(window.location.search) }catch(_){ return false } })()
+  const [planEmail, setPlanEmail] = useState(()=>{ try{ return localStorage.getItem("sg_email")||localStorage.getItem("sg_premium_email")||"" }catch(_){ return "" } })
+  const [planEmailSaved, setPlanEmailSaved] = useState(false)
   const planMsg = useMemo(()=>{
     if(!planDate) return null
     try{
@@ -245,12 +251,16 @@ export default function WeekHub({
     return { none:false, monthName, atl, shel }
   },[planDate, climatology, island, lang])
   const sendPlan = useCallback(()=>{
-    try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}
-    // Capture l'intention planner (relançable) ; la planif d'alerte J-7 côté serveur = chantier
-    // à part → on NE promet PAS un ping automatique tant qu'il n'est pas câblé (honnêteté).
-    try{ onPlannerOptin && onPlannerOptin({ source:"weekhub_planner", date:planDate }) }catch(_){}
+    const em=(planEmail||"").trim()
+    const emailOk = /.+@.+\..+/.test(em)
+    if(emailOk){ try{ localStorage.setItem("sg_email", em) }catch(_){} setPlanEmailSaved(true) }
+    try{ track && track("sg_weekhub_planner_optin",{ email:emailOk }) }catch(_){}
+    // Capture l'intention planner + l'email du brief GRATUIT (relançable via le drip existant) ;
+    // la planif d'alerte J-7 côté serveur = chantier à part → on NE promet PAS un ping automatique
+    // tant qu'il n'est pas câblé (honnêteté). onPlannerOptin porte l'email → submitLead côté hôte.
+    try{ onPlannerOptin && onPlannerOptin({ source:"weekhub_planner", date:planDate, email:emailOk?em:undefined }) }catch(_){}
     setPlanSent(true)
-  },[onPlannerOptin, planDate, track])
+  },[onPlannerOptin, planDate, track, planEmail])
 
   const card = { background:PAPER, border:`2.5px solid ${INK}`, boxShadow:`3px 3px 0 ${INK}`, borderRadius:14, padding:"13px 14px" }
   const h2 = { font:"400 15px/1 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:".01em" }
@@ -469,9 +479,20 @@ export default function WeekHub({
                     </div>
                   )}
                   {planMsg && <div style={{font:"600 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8}}>{planMsg}</div>}
+                  {/* Soft-capture email BRIEF GRATUIT — non bloquant (la date seule suffit). */}
+                  {!hubMailOff && (
+                    <div style={{marginTop:10, paddingTop:9, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>
+                      <label htmlFor="wkhub-mail" style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ton email (facultatif) — reçois le brief gratuit chaque matin :","Your email (optional) — get the free brief every morning:","Tu email (opcional) — recibe el brief gratis cada mañana:")}</label>
+                      <input id="wkhub-mail" type="email" inputMode="email" autoComplete="email" value={planEmail} onChange={e=>setPlanEmail(e.target.value)}
+                        placeholder={_t(lang,"toi@email.com","you@email.com","tu@email.com")}
+                        style={{width:"100%", boxSizing:"border-box", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
+                    </div>
+                  )}
                 </>
               ) : (
-                <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"C'est noté. Ton verdict jour par jour sera prêt vers J-7 — reviens le consulter à ce moment-là.","Noted. Your day-by-day verdict will be ready around D-7 — come back then to read it.","Anotado. Tu veredicto diario estará listo hacia D-7 — vuelve entonces a consultarlo.")}</div>
+                <div style={{font:"700 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {planEmailSaved
+                  ? _t(lang,"C'est noté — et on t'envoie le brief gratuit chaque matin. Ton verdict jour par jour se précise vers J-7 : reviens le consulter.","Noted — and we'll send you the free brief every morning. Your day-by-day verdict sharpens around D-7: come back to read it.","Anotado — y te enviamos el brief gratis cada mañana. Tu veredicto diario se afina hacia D-7: vuelve a consultarlo.")
+                  : _t(lang,"C'est noté. Ton verdict jour par jour sera prêt vers J-7 — reviens le consulter à ce moment-là.","Noted. Your day-by-day verdict will be ready around D-7 — come back then to read it.","Anotado. Tu veredicto diario estará listo hacia D-7 — vuelve entonces a consultarlo.")}</div>
               )}
             </div>
           )}

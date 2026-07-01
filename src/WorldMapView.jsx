@@ -1829,6 +1829,15 @@ export default function WorldMapView({
               </div>
             )}
             {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Confiance forte J0-J2, tendance au-delà — 76 à 79 % de justesse selon la saison.","Strong confidence days 0-2, trend after — 76-79% accuracy by season.","Confianza alta días 0-2, tendencia después — 76-79 % de acierto según temporada.")}</div>}
+            {/* Décodeur des pastilles de confiance sous la frise — même grammaire que le hub La Vigie
+                (finding audit Vague 2 : tiers plein/demi/pointillé montrés mais jamais expliqués). Rollback ?conflegend=0. */}
+            {friseOn&&(()=>{ let off=false; try{off=/[?&]conflegend=0/.test(window.location.search)}catch(_){}; if(off) return null
+              return <div style={{display:"flex",alignItems:"center",gap:5,marginTop:4,maxWidth:170,flexWrap:"wrap"}} aria-hidden="true">
+                <span style={{display:"inline-flex",alignItems:"center",gap:2.5,font:"700 7px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478"}}><span style={{width:5,height:5,borderRadius:"50%",background:INK}}/>{_t(lang,"mesuré","measured","medido")}</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:2.5,font:"700 7px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478"}}><span style={{width:5,height:5,borderRadius:"50%",backgroundImage:`linear-gradient(90deg,${INK} 0 50%,transparent 50% 100%)`,border:`1px solid ${INK}`,boxSizing:"border-box"}}/>{_t(lang,"tendance","trend","tendencia")}</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:2.5,font:"700 7px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478"}}><span style={{width:5,height:5,borderRadius:"50%",border:`1px dotted ${INK}`,boxSizing:"border-box"}}/>{_t(lang,"horizon","horizon","horizonte")}</span>
+              </div>
+            })()}
             {/* DÉCISION — « où aller plutôt » (plan B, loi anti-cul-de-sac). Tapable :
                 sélectionne la plage propre la plus proche. pointerEvents:auto (le tooltip
                 est en pointerEvents:none). Vert = « vas-y », data réelle. */}
@@ -1882,10 +1891,11 @@ export default function WorldMapView({
             onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
             onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
             onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
-            onPlannerOptin={(meta)=>{ let em=null; try{ em=localStorage.getItem("sg_email") }catch(_){}; try{ if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){};
+            onPlannerOptin={(meta)=>{ let em=null; try{ em=(meta&&meta.email)||localStorage.getItem("sg_email") }catch(_){}; try{ if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){};
               // Persiste l'intention de séjour (date) → Supabase pour le rappel J-7 (cron
-              // planner-alerts.cjs). Fire-and-forget, opt-out ?planalert=0. Sans email → on
-              // ne stocke rien (pas de ping possible) : l'app ne promet donc aucun ping ici.
+              // planner-alerts.cjs). Fire-and-forget, opt-out ?planalert=0. L'email fraîchement
+              // saisi dans le hub (meta.email) alimente directement l'alerte — sans email, rien
+              // n'est stocké (pas de ping possible) : l'app ne promet donc aucun ping ici.
               try{ const off=/[?&]planalert=0/.test(typeof location!=="undefined"?location.search:""); if(em&&meta&&meta.date&&!off) savePlannerAlert({ email:em, region:island, tripDate:meta.date, lang }) }catch(_){}
               try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
           />
