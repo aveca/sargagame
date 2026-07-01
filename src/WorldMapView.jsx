@@ -1412,6 +1412,7 @@ export default function WorldMapView({
           const openB=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } }
           return(
             <div key={b.id}
+              className="sg-maplabel"
               data-vx={b.vx}
               data-vy={b.vy}
               data-status={st}

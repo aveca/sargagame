@@ -208,6 +208,13 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    BLANC. La couleur du texte EST blanche → elle ne peut JAMAIS virer noir, peu importe
    si le fond de pastille peint ou non. !important + double-classe (spécificité 0,2,0 >
    .theme-comic button 0,1,1) pour battre le skin de thème, sur les 2 thèmes. */
+/* Labels de plage sur la carte (nom + état) : ce sont des LABELS texte, pas des boutons
+   visuels. #329 les a rendus tapables (role=button, fix dead-click) → le skin de thème
+   .theme-comic/.theme-soft [role="button"] (0,1,1) leur a collé un ENCART blanc + bordure
+   3px + ombre (feedback fondateur « gros encarts moches »). On DÉBRANCHE le box tout en
+   gardant le tap : doublé-classe (0,2,0) bat le skin, on ne retire QUE fond/bordure/ombre —
+   le texte blanc + son ink-shadow (inline sur les enfants) survivent = look « comme avant ». */
+.sg-maplabel.sg-maplabel{background:none !important;border:none !important;box-shadow:none !important;border-radius:0 !important}
 .sg-mapchip.sg-mapchip{background:#190c2c !important;color:#fdfcf7 !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
