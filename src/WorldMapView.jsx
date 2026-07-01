@@ -205,7 +205,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 
 export default function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
-  onAccess=null, onEnableNotif=null, alertsOn=null,
+  onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -643,14 +643,19 @@ export default function WorldMapView({
     if(declutterRef.current) clearTimeout(declutterRef.current)
     declutterRef.current=setTimeout(()=>{ declutterRef.current=0; recomputeTiers(); declutter() },90)
   },[declutter,recomputeTiers])
-  // Recalc aussi quand données/sélection changent (positions prêtes la frame d'après).
-  useEffect(()=>{ const id=requestAnimationFrame(()=>recomputeTiers()); return ()=>cancelAnimationFrame(id) },[recomputeTiers])
+  // Recalc quand données/sélection changent. useLayoutEffect = SYNCHRONE avant paint :
+  // le 1er rendu des pins a déjà ses bons tiers (dot vs full) → plus de "pin plein qui
+  // apparaît puis rétrécit en point" (glitch de chargement). Les gestes pan/zoom passent
+  // toujours par scheduleDeclutter (débounce 90ms) ci-dessus, inchangé.
+  useLayoutEffect(()=>{ recomputeTiers() },[recomputeTiers])
   // Ré-arbitre les LABELS quand l'ensemble affiché change SANS geste (changement de jour
   // du curseur prévision, sélection, ajout/retrait de plages) : writeCam n'est alors pas
   // rappelé, donc scheduleDeclutter non plus. Comme les labels naissent visibility:hidden,
   // sans ce déclutter les NOUVEAUX labels resteraient masqués jusqu'au prochain geste.
-  // Positions inchangées (vx/vy fixes) → un simple declutter() suffit, la frame d'après.
-  useEffect(()=>{ const id=requestAnimationFrame(()=>declutter()); return ()=>cancelAnimationFrame(id) },[day,labeledIds,selected,declutter])
+  // Positions inchangées (vx/vy fixes) → un simple declutter() suffit. useLayoutEffect =
+  // SYNCHRONE avant paint : les labels gardés sont révélés dans le MÊME frame que leur
+  // apparition → plus de "noms qui popent 90ms après les pins" (glitch de chargement).
+  useLayoutEffect(()=>{ declutter() },[day,labeledIds,selected,declutter])
 
   // ── EFFET D'ÉCHOUAGE (live, GATÉ RÉALISME) : seules les plages PRÉVUES touchées (statut `avoid`
   // au jour affiché) voient un banc s'échouer ; plages propres/modérées = rien (jamais de fausse
@@ -1355,8 +1360,11 @@ export default function WorldMapView({
               disparaître quand on interagit). */}
           <g ref={fxRef} aria-hidden="true" style={{pointerEvents:"none"}}/>
 
-          {/* Pins plages — marqueurs comic teardrop ink-outline */}
-          {beachList.map(b=>{
+          {/* Pins plages — marqueurs comic teardrop ink-outline.
+              Gate `dataReady` : on ne peint PAS les pins tant que la donnée réelle n'est
+              pas prête → apparition UNIQUE et définitive (jamais gris→couleur). Le fond
+              de carte baké reste visible en attendant (pas de cul-de-sac). */}
+          {(dataReady?beachList:[]).map(b=>{
             const st=b.days[day] // null tant que le statut n'est pas chargé → pin GRIS, pas vert
             const isSel=selected?.id===b.id
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
@@ -1474,7 +1482,7 @@ export default function WorldMapView({
       {/* Labels plages — couche HTML screen-space (hors transform SVG → taille pixel constante).
           Nom À CÔTÉ DU PIN, uniquement pour les ~5 plages les plus impactées (labeledIds). */}
       <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
-        {beachList.filter(b=>labeledIds.has(b.id)).map(b=>{
+        {(dataReady?beachList:[]).filter(b=>labeledIds.has(b.id)).map(b=>{
           const st=b.days[day]
           const col=STATUS_C[st]||"#888"
           const li=lang==="en"?1:lang==="es"?2:0
