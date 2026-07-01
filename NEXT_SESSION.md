@@ -1,5 +1,20 @@
 # NEXT_SESSION — sargagame
 
+> **📊 2026-07-01 — ANALYSE DATA TRACKING → TÉLÉMÉTRIE dead/rage-click + INP. Branche `claude/analyze-user-tracking-data-pqinmp` — PR #320 (mergée).**
+>
+> **Demande fondateur** : analyser TOUTES les données de tracking (mouvements, clics, rage/dead-clicks) et corriger l'UX ; + purger les vieilles données >1 semaine.
+>
+> **Ce que dit la data ACCESSIBLE dans le repo** (`scripts/automation/data/ux-report.json` = Clarity + CrUX ; le reste — heatmap first-party par bucket, funnel GA4, sessions — vit côté serveur `stats.php` FTP / consoles, HORS conteneur) :
+> - **Dead-clicks massifs, universels** : home MQ `/` **5653**, carte MQ **1049**, home GP `/` **3451**, home Florida **421** + map 199, rivieramaya `/` 182. Rage-clicks concentrés home (MQ 374, GP 423).
+> - **CrUX INP mobile 464–496 ms** (2,3× budget 200 ms) MQ+GP → tap lent = re-tap = rage-click. LCP 3086/3126 ms.
+> - **Angle mort** : le pont Clarity envoie `target:""` (vide partout) et la heatmap ne stocke que le bucket → l'ÉLÉMENT coupable n'est JAMAIS enregistré. Tous les fixes passés devinaient.
+>
+> **SHIPPÉ (PR #320, additif, budget 200,7/210)** : (1) `sgCollectClick` + détecteur rage attachent un descripteur SANS PII de l'élément (`tag#id.classe[role]`) ; `stats.php` → `clicks[screen].top_dead_els` ; `sg_friction.el`. → le prochain cycle NOMME le coupable. (2) INP : `sgCollectClick` (qui appelle `getComputedStyle` = reflow) sorti du chemin critique du tap via `requestIdleCallback` (snapshot sync, agrégation différée ; rage reste sync).
+>
+> **CLEANUP data — décision fondateur = NE RIEN SUPPRIMER.** Enquête : TOUS les fichiers `data/` sont réécrits + re-committés chaque jour par les workflows (`daily-copernicus.yml` fait `git add`). Ce sont des marqueurs d'idempotence (`*-sent`/`*-seen` → re-envoi emails si supprimés), la suppression anti-bounce (`bounced-emails.json`), l'historique MRR/SEO (`daily-metrics`/`position-history`/`cwv-history`). Rien de « périmé oublié » ; les snapshots d'audit se régénèrent seuls. Suppression = dangereuse ou inutile.
+>
+> **SUITE** : après 1 cycle de collecte, lire `stats.php ...top_dead_els` + `sg_friction.el` (GA4) → NOMMER les coupables home+carte → PR de fix ciblé. (`ux-audit.cjs` lit Clarity, pas encore `top_dead_els` — l'y brancher ferait remonter le coupable dans `ux-report.json` + alerte `ux-watch`.)
+
 > **⏰ 2026-07-01 — ALERTE J-7 « PLANNER » CÂBLÉE (le dernier chantier resté ouvert des sessions hub). Branche `claude/todays-remaining-tasks-wgtmay`.**
 >
 > **Contexte** : la climatologie « état B » a été livrée (#314/#317). Restait UN chantier vraiment non fait, cité de session en session : l'**alerte J-7 du planner**. Le hub premium « La Vigie » (`WeekHub`) capturait l'intention de séjour `{date}` mais `onPlannerOptin` ne faisait que tracker — **rien ne stockait la date ni ne pinguait**. Pire : le preview du planner **promettait déjà** *« et on te prévient » / « we'll ping you »* → **promesse cassée live = violation du moat honnêteté**.

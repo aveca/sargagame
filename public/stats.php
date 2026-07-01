@@ -144,6 +144,13 @@ foreach ($sessions as $d) {
     if (!empty($o['b']) && is_array($o['b'])) foreach ($o['b'] as $k => $c) { $out['clicks'][$s]['b'][$k] = ($out['clicks'][$s]['b'][$k] ?? 0) + $c; }
     if (!empty($o['d']) && is_array($o['d'])) foreach ($o['d'] as $k => $c) { $out['clicks'][$s]['d'][$k] = ($out['clicks'][$s]['d'][$k] ?? 0) + $c; $out['clicks'][$s]['dead'] += $c; }
   }
+  // Coupables NOMMÉS des dead-clicks (élément, pas juste bucket) — remontés par le client (de).
+  // Transforme « dead-clicks sur l'écran X » en « dead-clicks sur <tag#id.classe> » → fix ciblé.
+  if (!empty($d['de']) && is_array($d['de'])) foreach ($d['de'] as $s => $m) {
+    if (!isset($out['clicks'][$s])) $out['clicks'][$s] = array('n'=>0,'dead'=>0,'b'=>array(),'d'=>array());
+    if (!isset($out['clicks'][$s]['de'])) $out['clicks'][$s]['de'] = array();
+    if (is_array($m)) foreach ($m as $desc => $c) { $out['clicks'][$s]['de'][$desc] = ($out['clicks'][$s]['de'][$desc] ?? 0) + $c; }
+  }
 
   // A/B CROSS-TAB : par test -> par variante -> sessions + présence d'events funnel + engagement.
   // Permet l'éval A/B automatisée (quelle variante convertit/engage le mieux) sans Google.
@@ -178,6 +185,7 @@ foreach ($out['clicks'] as $s => &$c) {
   $c['dead_rate'] = $c['n'] ? round($c['dead'] / $c['n'], 3) : 0;
   arsort($c['b']); arsort($c['d']);
   $c['top_dead_buckets'] = array_slice($c['d'], 0, 6, true);
+  if (!empty($c['de'])) { arsort($c['de']); $c['top_dead_els'] = array_slice($c['de'], 0, 8, true); }
 }
 unset($c);
 // Écrans triés par volume de clics décroissant (le + cliqué en tête).
