@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **🥊 2026-07-01 — RÉPONSE CONCURRENT SARGATRACK : intel + supply photos. PR #379 MERGÉE + DÉPLOYÉE + VÉRIFIÉE (run #1755 vert, curl prod 200).**
+>
+> **Question fondateur** : « Sargatrack fait du bruit sur Facebook, nous dépassent-ils ? » → **NON.** Sargatrack (Samuel Fourmy, lancé mi-avril 2026, MQ/GP/Saint-Martin, ~850 inscrits) = **signalement citoyen viral, gratuit, cible résident/décideur**. Il ne prend AUCUN levier de moat : forecast+confiance auditée, alertes/PWA, monétisation, SEO profond, multi-marchés. Son avantage = **distribution/participation** (bruit FB), pas le produit. Doc : `docs/competitor-sargatrack.md` (miroir de `competitor-sargazowatch.md`).
+>
+> **SHIPPÉ (#379)** : nos 136 galeries `BeachPhotos` rendaient `null` quand vides (vitrines mortes) → désormais **nudge de rareté** (« Personne n'a encore montré cette plage aujourd'hui — ta photo sera la première ») qui **cadre le bouton d'upload existant** (pas de 2e bouton), rendu **uniquement si Supabase prêt + `canContribute`**. Attaque leur moteur de participation, coût ~0. Flag rollback **`?vseed=0`** (nouveau). Verdict 100 % ERDDAP inchangé.
+>
+> **SEO — investigué, RIEN à conquérir (on domine déjà)** : les pages plages FR ciblent déjà exactement leurs requêtes — title `Sargasses [plage] aujourd'hui — état en temps réel`, H1+verdict live+score, « Conditions du jour (date) » datée, timestamp satellite `LIVE HH:MM UTC`, JSON-LD Beach/FAQ/Breadcrumb, sitemap `lastmod` quotidien (`vite.config.js:1691-2109`). Une app de photos citoyennes ne rankera pas contre ça. **Ne PAS fabriquer de busywork SEO.**
+>
+> **DÉCISION FONDATEUR** : seul écart = **Saint-Martin** (Sargatrack l'a, pas nous) → **ABANDONNÉ** (petit marché, on reste MQ/GP+USD).
+>
+> **NON FAISABLE PAR L'AGENT (pas un bug)** : poster dans leurs groupes FB (action brand) ; créer de fausses photos pour remplir les galeries (loi 0-fabrication). Le supply photo reste organique — le nudge #379 l'amorce.
+
 > **🌊 2026-07-01 — GROUND-TRUTH TERRAIN (GTT) : signalements visiteurs corrigent le verdict, PHASE 0 SHIPPÉE. Branche `claude/signalement-unavailable-krji28`. PRs #367 #375 #376 #378 mergées.**
 >
 > **Déclencheur** : le message « Signalement indisponible pour l'instant » venait de la table Supabase `beach_reports` **absente de la prod** (le SQL existait mais n'était appliqué que par `planner-alerts.cjs`, script dé-planifié). Puis le fondateur a voulu que les signalements terrain **pèsent sur le niveau affiché du jour** (pas le forecast), **dans les deux sens**, en **temps réel avant le satellite**, avec **validation manuelle** (il reçoit déjà l'email photo).
