@@ -84,18 +84,52 @@ export async function fetchApprovedPhotos(beachId, limit = 12) {
   return (Array.isArray(rows) ? rows : []).map((r) => ({ url: r.url, ts: r.created_at, level: r.level || "" }))
 }
 
+// Identifiant device stable (anonyme, localStorage) — sert d'entrée à l'empreinte serveur
+// `submitter_hash` (l'Edge Function y ajoute l'IP + un salt secret). Pas de PII : aléa opaque.
+// Best-effort si localStorage est indisponible (mode privé strict).
+function sgUid() {
+  try {
+    let u = localStorage.getItem("sg_uid")
+    if (!u) { u = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("sg_uid", u) }
+    return u
+  } catch (_) { return "" }
+}
+
 /**
  * Signale un ÉVÉNEMENT terrain sur une plage — `beaching` (algues arrivées) ou
  * `cleanup` (ramassage effectué). Deux transitions que le satellite ne voit pas.
- * → table `beach_reports` en status 'pending' (modération avant affichage, comme
- * les photos). Best-effort : toute erreur (table absente, réseau) est avalée →
- * jamais bloquant. Renvoie true si l'insert a réussi.
- * @param {object} p - { beach, event: 'beaching'|'cleanup', note?, photoUrl? }
+ * Passe par l'Edge Function `submit-report` (empreinte serveur submitter_hash + throttle
+ * 12 h + within_150m ; cf. supabase/functions/submit-report). Fallback = insert REST direct
+ * si la fonction est indisponible (résilience : ne jamais casser le signalement). Le row
+ * reste `status='pending'` → modéré avant affichage, ne touche jamais la couleur du verdict.
+ * Renvoie true si le signalement est passé.
+ * @param {object} p - { beach, event:'beaching'|'cleanup', note?, photoUrl?, onSite? }
  */
-export async function submitBeachReport({ beach, event, note, photoUrl } = {}) {
+export async function submitBeachReport({ beach, event, note, photoUrl, onSite } = {}) {
   if (!supabaseConfigured()) return false
   if (!beach || !beach.id) return false
   if (event !== "beaching" && event !== "cleanup") return false
+  const trimmedNote = note ? String(note).trim().slice(0, 280) : null
+  // 1) Chemin nominal : Edge Function (empreinte serveur + throttle).
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/submit-report`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        beach_id: beach.id,
+        beach_name: beach.name || null,
+        island: beach.island || null,
+        event,
+        note: trimmedNote,
+        photo_url: photoUrl || null,
+        uid: sgUid(),
+        on_site: typeof onSite === "boolean" ? onSite : undefined,
+      }),
+    })
+    if (res.ok) return true
+    if (res.status >= 400 && res.status < 500) return false // refus légitime (payload) → pas de fallback
+  } catch (_) { /* réseau/fonction KO → fallback ci-dessous */ }
+  // 2) Fallback : insert REST direct (submitter_hash restera NULL, sans effet sur la modération).
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports`, {
       method: "POST",
@@ -105,7 +139,7 @@ export async function submitBeachReport({ beach, event, note, photoUrl } = {}) {
         beach_name: beach.name || null,
         island: beach.island || null,
         event,
-        note: note ? String(note).trim().slice(0, 280) : null,
+        note: trimmedNote,
         photo_url: photoUrl || null,
         status: "pending",
       }),

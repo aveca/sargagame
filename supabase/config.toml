@@ -5,3 +5,9 @@ project_id = "rswdmjtdzrucqzzukfmd"
 # le lien cliqué depuis l'email n'a pas de JWT — on protège par le jeton MODERATE_TOKEN.
 [functions.moderate]
 verify_jwt = false
+
+# Fonction `submit-report` (signalements terrain). verify_jwt = false : appel anonyme depuis
+# l'app — protégé par empreinte serveur (submitter_hash) + throttle 12 h, jamais par un JWT.
+# Ne touche jamais la couleur du verdict (insert status='pending').
+[functions.submit-report]
+verify_jwt = false
