@@ -2103,8 +2103,15 @@ function engInit(){
     //   "ça marche pas / je suis bloqué". Émis first-party (sg_friction) → nourrit
     //   l'alerte analyze-ux.cjs pour qu'on construise le fix (svg/marketing/code).
     let _rc=[]
-    window.addEventListener("click",e=>{try{sgCollectClick(e)}catch(_){}const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
-      if(_rc.length>=3){const a=_rc[0],b=_rc[_rc.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<44){_rc=[];try{track("sg_friction",{type:"rage",screen:_eng.screen||"?"})}catch(_){}}}},{passive:true})
+    const _ric=window.requestIdleCallback||(f=>setTimeout(f,0))
+    window.addEventListener("click",e=>{
+      // Heatmap/dead-click hors chemin critique du tap (getComputedStyle = reflow synchrone) :
+      // on capture un snapshot léger puis on agrège en idle → protège l'INP (mesuré 464-496ms).
+      const snap={target:e.target,clientX:e.clientX,clientY:e.clientY}
+      _ric(()=>{try{sgCollectClick(snap)}catch(_){}})
+      const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
+      if(_rc.length>=3){const a=_rc[0],b=_rc[_rc.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<44){_rc=[];try{track("sg_friction",{type:"rage",screen:_eng.screen||"?",el:_sgElDesc(snap.target)})}catch(_){}}}
+    },{passive:true})
   }catch(e){}
 }
 
@@ -2176,11 +2183,27 @@ function _sgcEnsureBuf(){
   if(_sgc.buf)return
   const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
   let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
-  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{}}
+  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{},de:{}}
 }
 // Mini-heatmap FIRST-PARTY (remplace Clarity, 100% organique) : chaque clic est bucket-quantifié
 // par écran (grille 16×24, coords NORMALISÉES → résolution-agnostique, AUCUNE coord brute, zéro PII)
 // + dead-click (clic sur un non-interactif = frustration). Agrégé client-side → payload minuscule.
+// Descripteur COMPACT et SANS PII d'un élément (tag + #id|.classe + [role]), pour NOMMER
+// le coupable d'un dead/rage-click — Clarity ne donne que la PAGE (target vide), la heatmap
+// que le bucket. Zéro texte libre, zéro .value → aucune donnée utilisateur, juste l'identité
+// du nœud UI. Transforme « 5653 dead-clicks sur / » en « 5653 dead-clicks sur <l'élément> ».
+function _sgElDesc(t){
+  try{
+    if(!t||t.nodeType!==1)return "?"
+    let s=(t.tagName||"?").toLowerCase()
+    if(t.id&&typeof t.id==="string")s+="#"+t.id.slice(0,24)
+    else if(typeof t.className==="string"&&t.className.trim()){const c=t.className.trim().split(/\s+/)[0];if(c)s+="."+c.slice(0,24)}
+    try{const role=t.getAttribute&&t.getAttribute("role");if(role)s+="[role="+String(role).slice(0,16)+"]"}catch(_){}
+    return s.slice(0,48)
+  }catch(_){return "?"}
+}
+// e = event OU snapshot léger {target,clientX,clientY} (appelé en requestIdleCallback →
+// getComputedStyle sort du chemin critique du tap, protège l'INP mesuré 464-496ms mobile).
 function sgCollectClick(e){
   try{
     _sgcEnsureBuf();if(!_sgc.buf||!_sgc.buf.clk)return
@@ -2188,14 +2211,17 @@ function sgCollectClick(e){
     const W=window.innerWidth||1,H=window.innerHeight||1
     const gx=Math.max(0,Math.min(15,Math.floor((e.clientX/W)*16))),gy=Math.max(0,Math.min(23,Math.floor((e.clientY/H)*24)))
     const k=gx+"_"+gy
-    let dead=true
-    try{const t=e.target
+    let dead=true;const tgt=e.target
+    try{const t=tgt
       if(t&&t.closest&&t.closest('button,a,input,select,textarea,label,[role="button"],.leaflet-marker-icon,[data-beach]'))dead=false
       else if(t&&t.nodeType===1){const cs=getComputedStyle(t);if(cs&&cs.cursor==="pointer")dead=false}
     }catch(_){dead=false}
     const o=_sgc.buf.clk[scr]||(_sgc.buf.clk[scr]={b:{},d:{},n:0})
     if(o.b[k]==null&&Object.keys(o.b).length>=240)return // cap buckets/écran (anti-abus payload)
     o.b[k]=(o.b[k]||0)+1;if(dead)o.d[k]=(o.d[k]||0)+1;o.n++;_sgc.dirty=true
+    // NOMME le coupable du dead-click (élément, pas juste bucket) → fix ciblé, plus de devinette.
+    if(dead&&tgt){const de=_sgc.buf.de||(_sgc.buf.de={});const m=de[scr]||(de[scr]={});const dk=_sgElDesc(tgt)
+      if(m[dk]!=null||Object.keys(m).length<24)m[dk]=(m[dk]||0)+1}
   }catch(_){}
 }
 function sgCollectEvent(event,params){
