@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **⚡ 2026-07-01 — PERF BUNDLE : 3 OVERLAYS HORS FIRST-PAINT EN CHUNKS LAZY (−20,7 Ko gzip eager). Branche `claude/sargasses-bundle-entry-split-q4i9q1`. PR #359 mergée (squash) sur `main` → run daily-copernicus 1729 (in_progress au moment du handoff), déploiement FTP en cours.**
+>
+> **Problème** : entry JS eager du chemin critique ≈ 203,5 Ko gzip (budget 210) = quasi zéro marge. Le monolithe `src/Sargasses_PROD.jsx` embarquait en eager des overlays purement conditionnels (déclenchés au clic/flag) inutiles au 1er écran.
+>
+> **Fait (additif, réversible d'un commit, ZÉRO changement de comportement)** — 3 overlays extraits en chunks `lazyWithRetry(()=>import(...))` sous `<Suspense fallback={null}>` + `<ErrBound>` :
+> - **`src/StoryScenes.jsx`** (18,7 Ko lazy) : `StoryEngine` + `DiscoveryStory`/`StationStory`/`SolutionsStory`/`MapIntroStory` (+ beats & scènes SVG). `STATION_BEATS` y vit ; l'App valide le slug via un `STATION_SLUGS` (Set) léger en repo.
+> - **`src/SargaChat.jsx`** (4,0 Ko lazy) : assistant chat (`showChat`, ouvert au clic).
+> - **`src/WhatsNewJournal.jsx`** (2,4 Ko lazy) : journal nouveautés par release (`whatsNew` null au mount).
+> - Helpers partagés exposés en exports nommés (`Veilleur`, `g`, `s`, `sgUnlock`) importés par les chunks — zéro duplication. `miVeil`/`PanelStoryEngine`/`BeachScene` **restent** eager (partagés). **`WorldMapView` intact** (funnel vedette non touché).
+>
+> **Mesure (`check-bundle-budget.cjs`)** : entry **172,8 → 152,2 Ko** gzip · total eager **203,5 → 182,8 Ko** (marge budget repassée à ~27 Ko). Gate : build vert, budget vert, esbuild OK sur 4 fichiers, 3 overlays montés sans erreur JS en preview (`?decouverte=1`/`?mapintro=1`/clic chat), smoke parcours sans erreur JS nouvelle (les `net::ERR_*` = ressources externes bloquées par proxy, identiques baseline).
+>
+> **À VÉRIFIER au prochain check-in** : run 1729 vert + `curl` prod (`assets/StoryScenes-*.js` en 200 sur sargasses-martinique.com, entry hash changé de `index-B6rNTO6P.js`). Prochaine cible perf possible (hors funnel, plus risqué) : cluster `World*` cards ou `AlertHub` (nécessite exporter des scènes proches du funnel → screenshots régression requis).
+
 > **🏖️ 2026-07-01 — TRACKING TERRAIN ÉCHOUEMENT/RAMASSAGE (données visiteurs). Branche `claude/beach-forecast-j-plus-x-9qbend`. PR #339 mergée + live prod (curl : `beach_reports` dans le bundle).**
 >
 > **Demande fondateur** : le verdict ne doit pas reposer que sur la dérive satellite → tracker l'état RÉEL des plages, l'**échouement** et le **ramassage**, via données utilisateur + satellite (le satellite ne voit ni l'arrivée sur le sable ni l'enlèvement par la commune = cause des flips rouge→vert du J+0).
