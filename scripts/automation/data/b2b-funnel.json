@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-01T04:02:50.629Z",
+  "updatedAt": "2026-07-01T09:55:09.787Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 45,
-    "contacted": 62,
+    "discovered": 39,
+    "contacted": 68,
     "lead": 5,
     "paid": 2
   },
@@ -598,58 +598,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "1dc334ec31a26290dd3ed4a5889fb11b": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Yole Bleue",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:22.862Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "ef83c1620f4dceb6c69ed85d642e8392": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Paradis d'Adam et Eve",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:22.976Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "37bb5715fcd1fb3ca6a25aea04b0d8f7": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "O'TAN'TIK EVASION",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:23.084Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "f519642456364ef5067a4c79f391a221": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Canella Beach Hôtel",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:23.687Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c401503422ddc683e4a1be3f39cff534": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Fleur d'Épée",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:24.093Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a98cea49e51c7b567547e907920369ab": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Centre Nautique Bleu Outremer",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T09:52:24.210Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "e9bb88e4ef67c0782685aabe4e6ce94d": {
       "stage": "discovered",

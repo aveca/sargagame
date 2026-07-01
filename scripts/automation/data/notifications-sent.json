@@ -63,6 +63,9 @@
     "puntacana:pc006:clean>moderate",
     "puntacana:pc007:clean>moderate",
     "puntacana:pc011:clean>moderate",
-    "puntacana:pc012:clean>moderate"
+    "puntacana:pc012:clean>moderate",
+    "puntacana:pc008:moderate>clean",
+    "puntacana:pc009:moderate>clean",
+    "puntacana:pc010:moderate>clean"
   ]
 }
