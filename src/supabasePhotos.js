@@ -155,12 +155,14 @@ export async function submitBeachReport({ beach, event, note, photoUrl, onSite }
 export async function fetchApprovedReports(beachId, limit = 20) {
   if (!supabaseConfigured()) return []
   const q = `beach_id=eq.${encodeURIComponent(beachId)}&status=eq.approved` +
-    `&select=event,note,created_at&order=created_at.desc&limit=${limit}`
+    `&select=event,note,created_at,downgrade_confirmed_at&order=created_at.desc&limit=${limit}`
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?${q}`, { headers: headers() })
     if (!res.ok) return []
     const rows = await res.json()
-    return (Array.isArray(rows) ? rows : []).map((r) => ({ event: r.event, ts: r.created_at, note: r.note || "" }))
+    // downgradeConfirmedAt = clé 2 du modérateur (Étage 2 GTT) : autorise la lane descente à
+    // afficher un calque « Terrain » d'1 cran plus bas. null tant que non confirmé.
+    return (Array.isArray(rows) ? rows : []).map((r) => ({ event: r.event, ts: r.created_at, note: r.note || "", downgradeConfirmedAt: r.downgrade_confirmed_at || null }))
   } catch (_) { return [] }
 }
 

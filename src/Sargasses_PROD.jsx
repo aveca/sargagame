@@ -1632,6 +1632,12 @@ const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
 // ERDDAP ; panel adverse 2026-07-01). Flag rollback : ?ramassage=0 → OFF. Inerte
 // tant que Supabase pas configuré (no-op), comme les photos.
 const RAMASSAGE_ENABLED=supabaseConfigured()&&!(typeof location!=="undefined"&&/[?&]ramassage=0/.test(location.search||""))
+// Lane DESCENTE terrain (GTT Étage 2, docs/GROUND_TRUTH_TERRAIN.md) : un ramassage APPROUVÉ
+// ET confirmé par le modérateur (clé 2 → downgradeConfirmedAt) affiche un calque « Terrain »
+// d'1 cran plus bas, EN TEMPS RÉEL, avec la mesure satellite montrée à côté (jamais un vert
+// franc auto — c'est un clic humain qui l'autorise). Flag rollback : ?descente=0 → OFF (retombe
+// satellite pur). Sous-ensemble de RAMASSAGE_ENABLED (?ramassage=0 coupe montée + descente).
+const DESCENTE_ENABLED=RAMASSAGE_ENABLED&&!(typeof location!=="undefined"&&/[?&]descente=0/.test(location.search||""))
 // Vrai PENDANT la capture photo (caméra/sélecteur ouverts → page en arrière-plan).
 // Ouvrir la caméra émet `visibilitychange:hidden` ; sans ce garde, l'exit-intent
 // monterait un overlay plein écran (ExitVeilleurCard) PAR-DESSUS la fiche au retour
@@ -2732,6 +2738,12 @@ function BeachReport({beach,lang,communityReports}){
   const _recentEvents=(approvedEvents||[]).filter(e=>{try{return Date.now()-new Date(e.ts).getTime()<48*3600*1000}catch(_){return false}})
   const cleanupCount=_recentEvents.filter(e=>e.event==="cleanup").length
   const beachingCount=_recentEvents.filter(e=>e.event==="beaching").length
+  // Lane DESCENTE (GTT Étage 2) : un ramassage confirmé par le modérateur (downgradeConfirmedAt,
+  // < 48 h) autorise un calque « Terrain » d'1 cran plus bas que le satellite. JAMAIS en auto —
+  // le clic humain (clé 2) est le verrou anti-forge. On ne descend jamais sous 'clean'.
+  const _stRank={clean:0,moderate:1,avoid:2},_stInv=["clean","moderate","avoid"]
+  const _terrainConfirmed=DESCENTE_ENABLED&&(approvedEvents||[]).some(e=>{try{return e.event==="cleanup"&&e.downgradeConfirmedAt&&Date.now()-new Date(e.downgradeConfirmedAt).getTime()<48*3600*1000}catch(_){return false}})
+  const terrainStatus=(_terrainConfirmed&&beach.status&&_stRank[beach.status]>0)?_stInv[_stRank[beach.status]-1]:null
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
@@ -2802,6 +2814,20 @@ function BeachReport({beach,lang,communityReports}){
           {evtErr&&!evtDone&&<div style={{marginTop:6,fontSize:11,color:"var(--sg-mid,#7a7768)",textAlign:"center",fontWeight:500}}>
             {_t(lang,"Signalement indisponible pour l'instant — réessaie plus tard.","Reporting unavailable right now — try again later.","Reporte no disponible ahora — reinténtalo más tarde.")}
           </div>}
+        </div>
+      )}
+      {terrainStatus&&(
+        <div style={{marginTop:10,padding:"10px 12px",borderRadius:12,
+          background:ST[terrainStatus].bg,border:`1.5px dashed ${ST[terrainStatus].c}`}}>
+          <div style={{fontSize:12,fontWeight:800,color:ST[terrainStatus].c,display:"flex",alignItems:"center",gap:6}}>
+            <span aria-hidden="true">🌍</span>{_t(lang,`Terrain : ${ST[terrainStatus].l}`,`Ground: ${ST[terrainStatus].le}`,`Terreno: ${ST[terrainStatus].les}`)}
+          </div>
+          <div style={{marginTop:3,fontSize:10.5,color:"var(--sg-mid)",lineHeight:1.4}}>
+            {_t(lang,
+              `Ramassage confirmé sur place · 48 h. 🛰️ Satellite : ${ST[beach.status].l} — la situation peut évoluer.`,
+              `Cleanup confirmed on-site · 48h. 🛰️ Satellite: ${ST[beach.status].le} — conditions may change.`,
+              `Limpieza confirmada in situ · 48h. 🛰️ Satélite: ${ST[beach.status].les} — puede cambiar.`)}
+          </div>
         </div>
       )}
       {RAMASSAGE_ENABLED&&(cleanupCount>0||beachingCount>0)&&(
