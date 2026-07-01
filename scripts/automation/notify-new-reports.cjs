@@ -27,6 +27,8 @@ const TOKEN = process.env.MODERATE_TOKEN || ''
 const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses Terrain <alerte@sargasses-martinique.com>'
 
+const fs = require('fs')
+const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
 
 function svcHeaders(extra) {
@@ -34,6 +36,27 @@ function svcHeaders(extra) {
 }
 const esc = (s) => String(s == null ? '' : s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]))
 const EVT = { beaching: '🌊 Algues arrivées', cleanup: '🧹 Ramassage' }
+
+// Domaine de prod par région (island === region id, cf. regions/*.json + beachFilter.island).
+// Sert à bâtir l'URL de la fiche plage pour la redirection post-approbation.
+const DOMAINS = (() => {
+  const map = {}
+  try {
+    const dir = path.join(__dirname, '..', '..', 'regions')
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.json') || f.startsWith('_')) continue
+      try { const r = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); if (r.id && r.domain) map[r.id] = r.domain } catch (_) {}
+    }
+  } catch (_) {}
+  return map
+})()
+const slugify = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+// URL fiche plage (schéma /plages/<slug>/, cf. prepare-ftp.cjs). null si non calculable.
+function beachUrl(r) {
+  const dom = DOMAINS[r.island]
+  const slug = slugify(r.beach_name)
+  return dom && slug ? `https://${dom}/plages/${slug}/` : null
+}
 
 async function main() {
   if (!SERVICE_KEY || !TOKEN) { console.log('[reports-notify] SUPABASE_SERVICE_KEY ou MODERATE_TOKEN manquant — skip'); return }
@@ -50,15 +73,19 @@ async function main() {
   } catch (e) { console.warn('[reports-notify] lecture échouée:', e.message); return }
   if (!Array.isArray(rows) || !rows.length) { console.log('[reports-notify] aucun nouveau signalement'); return }
 
-  // 2) email récap avec liens 1-tap
-  const link = (id, action) => `${SUPABASE_URL}/functions/v1/moderate?id=${encodeURIComponent(id)}&action=${action}&table=beach_reports&token=${encodeURIComponent(TOKEN)}`
+  // 2) email récap avec liens 1-tap. `back` = fiche plage → après approbation/rétrogradation,
+  // le fondateur atterrit sur la fiche (pas sur la page technique de la fonction). Le rejet
+  // reste sur une page de confirmation (rien à voir).
+  const link = (id, action, back) => `${SUPABASE_URL}/functions/v1/moderate?id=${encodeURIComponent(id)}&action=${action}&table=beach_reports&token=${encodeURIComponent(TOKEN)}` +
+    (back && action !== 'reject' ? `&back=${encodeURIComponent(back)}` : '')
   const btn = (href, bg, label) => `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px;margin:0 8px 8px 0">${label}</a>`
   const cards = rows.map((r) => {
+    const back = beachUrl(r)
     const gps = r.within_150m === true ? ' · 📍 GPS sur place' : r.within_150m === false ? ' · 📍 hors zone' : ''
     // Clé 2 (« Rétrograder ») uniquement sur un ramassage : c'est le seul event qui peut
     // faire DESCENDRE la couleur, et seulement après ce tap humain explicite (Étage 2).
     const downgrade = r.event === 'cleanup'
-      ? `<div style="margin-top:4px">${btn(link(r.id, 'confirm_downgrade'), '#b45309', '⬇️ Rétrograder le verdict (clé 2)')}</div>
+      ? `<div style="margin-top:4px">${btn(link(r.id, 'confirm_downgrade', back), '#b45309', '⬇️ Rétrograder le verdict (clé 2)')}</div>
          <p style="font-size:11px;color:#999;margin:2px 0 0">La clé 2 ne s'utilise que si la photo prouve un ramassage RÉEL et LARGE (pas un cadrage), et que la plage n'est pas en alerte satellite fraîche. 1 cran, 48 h, mesure satellite gardée à côté.</p>`
       : ''
     return `
@@ -67,7 +94,7 @@ async function main() {
       <div style="color:#1d2b3a;margin-bottom:8px">${EVT[r.event] || esc(r.event)}${gps}</div>
       ${r.note ? `<p style="color:#555;font-size:13px;margin:0 0 10px">« ${esc(r.note)} »</p>` : ''}
       ${r.photo_url ? `<img src="${esc(r.photo_url)}" alt="" style="width:100%;max-width:420px;border-radius:10px;display:block;margin-bottom:12px">` : ''}
-      <div>${btn(link(r.id, 'approve'), '#16a34a', '✅ Approuver')}${btn(link(r.id, 'reject'), '#dc2626', '❌ Rejeter')}</div>
+      <div>${btn(link(r.id, 'approve', back), '#16a34a', '✅ Approuver')}${btn(link(r.id, 'reject'), '#dc2626', '❌ Rejeter')}</div>
       ${downgrade}
     </div>`
   }).join('')

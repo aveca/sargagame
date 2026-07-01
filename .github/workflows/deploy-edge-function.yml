@@ -28,5 +28,7 @@ jobs:
           version: latest
       - name: Deploy moderate function (JWT off)
         run: supabase functions deploy moderate --project-ref "$PROJECT_REF" --no-verify-jwt
+      - name: Deploy submit-report function (JWT off)
+        run: supabase functions deploy submit-report --project-ref "$PROJECT_REF" --no-verify-jwt
       - name: Set MODERATE_TOKEN function secret
         run: supabase secrets set MODERATE_TOKEN="${{ secrets.MODERATE_TOKEN }}" --project-ref "$PROJECT_REF"

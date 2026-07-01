@@ -19,6 +19,24 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 // Tables modérables (allowlist stricte : aucune autre table n'est atteignable).
 const TABLES = new Set(["photos", "beach_reports"])
 
+// Domaines de prod (allowlist anti-open-redirect). Après approbation, le lien `back` de
+// l'email (fiche plage) ne redirige QUE vers un de ces hôtes — jamais une URL arbitraire.
+const REDIRECT_HOSTS = new Set([
+  "sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassummiami.com",
+  "sargassumpuntacana.com", "sargassumcancun.com", "sargassumbarbados.com",
+])
+function safeBack(raw: string | null): string | null {
+  if (!raw) return null
+  try {
+    const u = new URL(raw)
+    const host = u.hostname.replace(/^www\./, "")
+    return (u.protocol === "https:" && REDIRECT_HOSTS.has(host)) ? u.toString() : null
+  } catch { return null }
+}
+function redirect(to: string): Response {
+  return new Response(null, { status: 302, headers: { location: to } })
+}
+
 function page(emoji: string, msg: string, code = 200): Response {
   return new Response(
     `<!doctype html><meta charset="utf-8">` +
@@ -36,6 +54,8 @@ Deno.serve(async (req) => {
   const action = url.searchParams.get("action")
   const token = url.searchParams.get("token")
   const table = url.searchParams.get("table") || "photos"
+
+  const back = safeBack(url.searchParams.get("back")) // fiche plage (redirection post-approbation)
 
   const expected = Deno.env.get("MODERATE_TOKEN")
   if (!expected || token !== expected) return page("⛔", "Lien invalide ou expiré.", 403)
@@ -58,12 +78,17 @@ Deno.serve(async (req) => {
       .update({ status: "approved", downgrade_confirmed_at: new Date().toISOString() })
       .eq("id", id).eq("event", "cleanup")
     if (error) return page("⚠️", "Erreur : " + error.message, 500)
-    return page("⬇️", "Verdict rétrogradé — le calque « Terrain » s'appliquera (1 cran, 48 h, la mesure satellite reste affichée à côté).")
+    // Redirige vers la fiche plage pour voir le calque appliqué (sinon page de confirmation).
+    return back ? redirect(back) : page("⬇️", "Verdict rétrogradé — le calque « Terrain » s'appliquera (1 cran, 48 h, la mesure satellite reste affichée à côté).")
   }
 
   const status = action === "approve" ? "approved" : "rejected"
   const { error } = await supabase.from(table).update({ status }).eq("id", id)
   if (error) return page("⚠️", "Erreur : " + error.message, 500)
+
+  // Approbation → on emmène le fondateur voir le résultat sur la fiche plage (si `back` fourni
+  // et sur un domaine autorisé). Le rejet reste sur une page de confirmation (rien à voir).
+  if (action === "approve" && back) return redirect(back)
 
   const isPhoto = table === "photos"
   return action === "approve"
