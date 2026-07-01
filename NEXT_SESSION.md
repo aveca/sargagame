@@ -1,6 +1,8 @@
 # NEXT_SESSION — sargagame
 
-> **🛰️ 2026-07-01 — SENTINEL-2 NEAR-SHORE INTÉGRÉ + DÉPLOYÉ (flag OFF, dormant). PRs #394 + #398 mergées. Auth CDSE validée par un vrai run.**
+> **🛰️ 2026-07-01 — SENTINEL-2 NEAR-SHORE : AUTO-CALIBRANT + AUTO-ACTIVANT, DÉPLOYÉ. PRs #394 #398 #399 #400 #401 mergées. Auth CDSE validée par un vrai run.**
+>
+> **⚡ MAJ (#401) — l'activation n'est PLUS manuelle : elle est AUTOMATIQUE, pilotée par la donnée.** `scripts/automation/sentinel2-calibrate.cjs` (step CI avant la collecte) apparie l'historique S2 au réalisé (`history.json`), grid-search les seuils `fai→statut`, écrit `sentinel2-calibration.json {active,thresholds,agreement,n}`. **Gate strict : `active:true` seulement si ≥20 paires ET accord ≥0.72.** `fetch-sargassum-live` lit `active` depuis ce fichier (plus `SG_SENTINEL2=1`). **Kill-switch** : secret `SG_SENTINEL2=0` force OFF, `=1` force ON (test). **Email fondateur sur OFF→ON.** Le notifier « readiness » (#400) a été RETIRÉ (activation désormais auto). → **Zéro action fondateur** : ça se calibre + s'allume tout seul une fois prouvé. **Le fondateur veut archiver.**
 >
 > **Question fondateur** : « utiliser les données de SargaTrack pour alimenter l'app ? » → **NON** au concurrent (pas d'API, republier son algo violerait le moat), **OUI** à sa source ouverte manquante : **Sentinel-2** (10-20 m), la lecture near-shore fine que la grille ERDDAP ~4 km dilue. On a ingéré *la source*, pas *le concurrent*.
 > **Livré & déployé (flag OFF)** :
