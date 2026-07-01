@@ -421,6 +421,19 @@ function reforecastBacktest() {
   const banks = (loadJSON(BANKS_PATH, { banks: [] }).banks) || []
   if (history.length < 6) { console.log('Not enough history to re-forecast.'); return }
 
+  // BEACHED-RATCHET TRIPWIRE (adversarial panel 2026-07-01). The beached-hold prior
+  // (BEACHED_HALF_LIFE_DAYS=12) is a NO-OP while history is all-clean and could not
+  // be fit on calm data. The moment real échouage appears (AFAI ≥ 0.20 = the ratchet
+  // trigger), it activates — so shout, don't let an unfit constant run silently in
+  // peak season. When this fires: recalibrate the half-life against this backtest AND
+  // switch the /fiabilite over-alert note from methodology to a measured figure.
+  const elevated = history.flatMap(e => (e.levels || []).filter(l => typeof l.afai === 'number' && l.afai >= 0.20))
+  if (elevated.length) {
+    console.warn(`\n⚠️  BEACHED-RATCHET TRIPWIRE: ${elevated.length} elevated obs (AFAI≥0.20) in history.`)
+    console.warn('   The beached-hold prior (BEACHED_HALF_LIFE_DAYS=12, unfit) is now ACTIVE on real data.')
+    console.warn('   → RECALIBRATE it against this reforecast (try 8/10/12/16/20), then update /fiabilite.')
+  }
+
   const byDate = {}
   for (const e of history) { byDate[e.date] = {}; for (const l of e.levels) byDate[e.date][l.id] = { afai: l.afai, status: l.status } }
   const obsByBeach = indexObsByBeach(history)
@@ -547,22 +560,29 @@ function selfTest() {
     return n === PUBLISH_WINDOW_DAYS
   })())
 
-  // 7. BEACHED RATCHET (2026-07-01): a loaded beach must not green overnight.
+  // 7. BEACHED RATCHET (2026-07-01): a clearly-loaded beach must not green overnight.
   // Flat history (no trend), no banks/community → the beached half-life holds it.
   const loadBeach = { id: 'L', lat: 14.45, lng: -60.88, island: 'mq', coast: 'atlantic', coastNormal: 170 }
-  const flatHist = []
-  for (let k = 0; k < 7; k++) flatHist.push({ date: `2026-05-2${k + 1}`, levels: [{ id: 'L', afai: 0.20, status: 'moderate' }] })
-  const fcL = (level, hist) => buildHonestForecast([level], null, hist || flatHist, [loadBeach], null, null, null).L
-  const wl = fcL({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 })
+  const shelteredBeach = { id: 'S', lat: 14.55, lng: -61.05, island: 'mq', coast: 'sheltered', coastNormal: 270 }
+  const flatHist = (id, v) => { const h = []; for (let k = 0; k < 7; k++) h.push({ date: `2026-05-2${k + 1}`, levels: [{ id, afai: v, status: v >= 0.15 ? 'moderate' : 'clean' }] }); return h }
+  const fcOn = (level, beach, hist) => buildHonestForecast([level], null, hist, [beach], null, null, null)[level.id]
+  const wl = fcOn({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 }, loadBeach, flatHist('L', 0.20))
   ok('beached moderate does NOT green by J+3 (was clean under sea half-life)', wl.forecast[3].status !== 'clean')
-  ok('beached ratchet flagged as persistence, not dispersion', wl.driftLabel.includes('echouees') && wl.drift !== 'down')
+  ok('beached ratchet flagged as persistence, not dispersion', wl.driftLabel.toLowerCase().includes('sargasses') && wl.drift !== 'down')
 
-  // 8. RELEASE VALVE: a clearly falling satellite trend restores fast dispersion.
-  const fallHist = []
+  // 8. RELEASE VALVE: a strong r²-gated falling trend (slope < -0.02) restores fast dispersion.
   const fallVals = [0.60, 0.50, 0.40, 0.30, 0.22, 0.20]
-  for (let k = 0; k < fallVals.length; k++) fallHist.push({ date: `2026-05-2${k + 1}`, levels: [{ id: 'L', afai: fallVals[k], status: fallVals[k] >= 0.15 ? 'moderate' : 'clean' }] })
-  const wf2 = fcL({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 }, fallHist)
+  const fallHist = fallVals.map((v, k) => ({ date: `2026-05-2${k + 1}`, levels: [{ id: 'L', afai: v, status: v >= 0.15 ? 'moderate' : 'clean' }] }))
+  const wf2 = fcOn({ id: 'L', afai: 0.20, status: 'moderate', confidence: 80 }, loadBeach, fallHist)
   ok('falling-trend beach clears FASTER than the held one (release valve works)', wf2.forecast[3].afai < wl.forecast[3].afai)
+
+  // 9. SHELTERED GUARD: a sheltered beach is never ratcheted (mirror arrival logic).
+  const ws = fcOn({ id: 'S', afai: 0.20, status: 'moderate', confidence: 80 }, shelteredBeach, flatHist('S', 0.20))
+  ok('sheltered beach NOT held by the ratchet (decays at sea rate)', ws.forecast[3].afai < wl.forecast[3].afai)
+
+  // 10. HYSTERESIS: a beach just below the 0.20 trigger is not frozen (boundary/offshore-blip guard).
+  const wlow2 = fcOn({ id: 'L', afai: 0.17, status: 'moderate', confidence: 80 }, loadBeach, flatHist('L', 0.17))
+  ok('sub-trigger load (0.17) decays at sea rate, not frozen', wlow2.forecast[3].afai < 0.15 || wlow2.forecast[3].afai < wl.forecast[3].afai)
 
   if (fails.length) { console.error(`\nSELF-TEST FAILED (${fails.length}): ${fails.join(' | ')}`); process.exit(1) }
   console.log('\nAll invariants hold. ✓')
