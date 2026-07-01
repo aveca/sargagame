@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-01T14:44:38.106Z",
+  "updatedAt": "2026-07-01T20:02:06.583Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 33,
-    "contacted": 74,
+    "discovered": 27,
+    "contacted": 80,
     "lead": 5,
     "paid": 2
   },
@@ -706,58 +706,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "55fe1a626932ab8113cf029521017432": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les KAZ de Sainte-Anne (Ecolodges & Gîtes)",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:19.241Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "2b4950b5124eca7740f34caa220c14b2": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Oasis Grande Anse",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:19.562Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "805dda28390871badeb4177570b176ba": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Au Jardin des Colibris",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:20.019Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "6d2af35e323e35abdc71e4b0da5bdea4": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Koté Lagon",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:20.375Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "bd2b1991669ae18fdf3a48ff7b91e574": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Tropicalsub Diving",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:20.734Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "35d828094d5a78673922beff6fddca51": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Calypso Plongée",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T19:59:21.057Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "2751322338abcfaf38e559cb9ec4ab26": {
       "stage": "discovered",
