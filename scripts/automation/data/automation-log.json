@@ -1,23 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-06-01T16:43:16.385Z",
-      "dryRun": false,
-      "script": "seo-sitemap-check",
-      "action": "check",
-      "sites": 2,
-      "total404": 0,
-      "totalMissing": 2
-    },
-    {
-      "timestamp": "2026-06-01T16:43:16.462Z",
-      "dryRun": false,
-      "script": "seo-image-audit",
-      "action": "audit",
-      "sites": 2,
-      "totalIssues": 0
-    },
-    {
       "timestamp": "2026-06-01T16:43:16.507Z",
       "dryRun": false,
       "script": "seo-orphan-healer",
@@ -1566,6 +1549,65 @@
         "https://sargasses-martinique.com/plages-sans-sargasses/",
         "https://sargasses-martinique.com/bilan-sargasses-2025/"
       ]
+    },
+    {
+      "timestamp": "2026-07-01T01:07:33.185Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 37,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "gp": {
+          "indexed": 90,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "florida": {
+          "indexed": 10,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "puntacana": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 14,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-07-01T01:07:33.234Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 113,
+        "critical": 47,
+        "warnings": 66
+      }
     }
   ]
 }
