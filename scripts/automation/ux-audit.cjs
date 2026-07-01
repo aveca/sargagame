@@ -16,7 +16,49 @@ const DATA_DIR = resolve(__dirname, 'data')
 const AUDIT_PATH = resolve(DATA_DIR, 'audit-summary.json')
 const REPORT_PATH = resolve(DATA_DIR, 'ux-report.json')
 
-function main() {
+// ── First-party (stats.php) : NOMME le coupable des dead-clicks ────────────────
+// Clarity (audit-summary) ne donne que la PAGE (target vide). La heatmap first-party
+// (top_dead_els, PR #320) donne l'ÉLÉMENT. On enrichit le rapport → ux-watch email
+// nomme le coupable au lieu de « ? ». Zéro Google, gracieux si pas de clé.
+function _statsRegions() {
+  const sites = [{ id: 'mq', domain: 'sargasses-martinique.com' }, { id: 'gp', domain: 'sargasses-guadeloupe.com' }]
+  try { const { getAllRegions } = require('../../regions/index.cjs'); for (const r of getAllRegions()) if (r && r.domain && !sites.some(s => s.id === r.id)) sites.push({ id: r.id, domain: r.domain }) } catch (e) {}
+  return sites
+}
+function _statsKeys() {
+  const map = {}, env = process.env.SG_STATS_KEY
+  try { Object.assign(map, JSON.parse(readFileSync(resolve(DATA_DIR, 'stats-keys.json'), 'utf8'))) } catch (e) {}
+  for (const k of Object.keys(process.env)) { const m = k.match(/^SG_STATS_KEY_([A-Z0-9]+)$/); if (m && process.env[k]) map[m[1].toLowerCase()] = process.env[k] }
+  return { env, map }
+}
+async function _fetchStats(domain, key) {
+  const res = await fetch(`https://${domain}/stats.php?key=${encodeURIComponent(key)}&days=7`, { headers: { 'User-Agent': 'sarga-ux-audit' } })
+  const j = JSON.parse(await res.text()); if (j.error) throw new Error(j.error); return j
+}
+// Agrège top_dead_els (par écran) → coupables nommés par région, ajoute des issues au rapport.
+async function enrichNamedDeadClicks(report) {
+  const { env, map } = _statsKeys()
+  if (!env && !Object.keys(map).length) { console.log('[named dead-clicks] pas de clé stats — enrichissement sauté.'); return }
+  for (const site of _statsRegions()) {
+    const key = map[site.id] || env; if (!key) continue
+    let data; try { data = await _fetchStats(site.domain, key) } catch (e) { console.error(`  [${site.id}] stats.php: ${e.message}`); continue }
+    const els = {}
+    for (const c of Object.values(data.clicks || {})) for (const [el, n] of Object.entries(c.top_dead_els || {})) els[el] = (els[el] || 0) + n
+    const top = Object.entries(els).sort((a, b) => b[1] - a[1]).slice(0, 6).filter(([, n]) => n >= 8)
+    if (!top.length) continue
+    if (!report.sites[site.id]) report.sites[site.id] = { domain: site.domain, issues: [], crux: null, stats: { total: 0, critical: 0, warnings: 0 } }
+    const S = report.sites[site.id]
+    for (const [el, n] of top) {
+      const severity = n >= 20 ? 'critical' : 'warning'
+      S.issues.push({ type: 'dead-click-el', severity, page: 'app', target: el, metric: `${n} dead clicks on ${el}`, recommendation: 'First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised.' })
+      S.stats.total++; S.stats[severity === 'critical' ? 'critical' : 'warnings']++
+      report.summary.totalIssues++; report.summary[severity === 'critical' ? 'critical' : 'warnings']++
+      console.log(`  [${site.id}] NAMED dead-click: ${el} (${n}) → ${severity}`)
+    }
+  }
+}
+
+async function main() {
   console.log('=== UX Audit ===\n')
 
   if (!existsSync(AUDIT_PATH)) {
@@ -149,6 +191,9 @@ function main() {
     }
   }
 
+  // Enrichissement first-party : NOMME les coupables dead-click (top_dead_els).
+  try { await enrichNamedDeadClicks(report) } catch (e) { console.error('[named dead-clicks]', e.message) }
+
   writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2))
   console.log(`\n✓ UX report saved to ${REPORT_PATH}`)
 
@@ -159,4 +204,4 @@ function main() {
   })
 }
 
-main()
+main().catch(e => { console.error(e.message); process.exit(1) })
