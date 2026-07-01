@@ -10662,6 +10662,10 @@ export default function App(){
         if(isPremium)O.User.addTag("sg_premium","1")
         else O.User.removeTag("sg_premium")
         O.User.addTag("sg_island",island)
+        // Dernière visite en JOURS epoch (entier) → cible du win-back push dormants
+        // (push-winback.cjs filtre sg_last_seen < aujourd'hui-N). Coût nul, mis à jour
+        // à chaque ouverture ; la seule donnée de dormance côté push (l'email l'a déjà).
+        try{O.User.addTag("sg_last_seen",String(Math.floor(Date.now()/86400000)))}catch(_){}
         const cur=Array.isArray(favorites)?favorites:[]
         for(const fid of syncedFavsRef.current){ if(!cur.includes(fid))O.User.removeTag("fav_"+fid) }
         for(const fid of cur)O.User.addTag("fav_"+fid,"1")
