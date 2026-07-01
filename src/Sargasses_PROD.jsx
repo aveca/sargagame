@@ -1638,6 +1638,11 @@ const RAMASSAGE_ENABLED=supabaseConfigured()&&!(typeof location!=="undefined"&&/
 // franc auto — c'est un clic humain qui l'autorise). Flag rollback : ?descente=0 → OFF (retombe
 // satellite pur). Sous-ensemble de RAMASSAGE_ENABLED (?ramassage=0 coupe montée + descente).
 const DESCENTE_ENABLED=RAMASSAGE_ENABLED&&!(typeof location!=="undefined"&&/[?&]descente=0/.test(location.search||""))
+// Partage au moment de fierté POST-contribution photo : le contributeur vient
+// d'aider, c'est le pic d'engagement (le mécanisme viral que le concurrent
+// exploite sur Facebook). On réutilise la carte golden-hour spoiler-free
+// (buildShareCard variant 'beach', SANS lien = portée max). Flag rollback ?vshare=0.
+const VSHARE_ENABLED=!(typeof location!=="undefined"&&/[?&]vshare=0/.test(location.search||""))
 // Vrai PENDANT la capture photo (caméra/sélecteur ouverts → page en arrière-plan).
 // Ouvrir la caméra émet `visibilitychange:hidden` ; sans ce garde, l'exit-intent
 // monterait un overlay plein écran (ExitVeilleurCard) PAR-DESSUS la fiche au retour
@@ -2871,8 +2876,20 @@ function BeachReport({beach,lang,communityReports}){
             </div>
           )}
           {photoState==="sent"&&(
-            <div style={{fontSize:11,color:C.green,textAlign:"center",fontWeight:600}}>
-              {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:11,color:C.green,fontWeight:600}}>
+                {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
+              </div>
+              {VSHARE_ENABLED&&(
+                <button type="button" onClick={async()=>{
+                  try{track("sg_share",{variant:"contribution",beach_id:beach.id,island:beach.island})}catch(_){}
+                  try{await buildShareCard({variant:"beach",beach,lang})}catch(_){}
+                }} style={{marginTop:9,width:"100%",padding:"10px 8px",borderRadius:12,border:"none",
+                  background:C.green,color:"#fff",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <span aria-hidden="true">📣</span>{_t(lang,"Montre ta plage aux copains","Show your beach to friends","Muestra tu playa a tus amigos")}
+                </button>
+              )}
             </div>
           )}
           {photoState==="error"&&(
