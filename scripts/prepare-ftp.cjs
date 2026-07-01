@@ -582,7 +582,7 @@ function writeRegionIndex(region, out) {
     html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
     html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
     html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
-    html{background:#0d1117}body{background:radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%) !important}
+    html{background:#0d1117}body{background:#0d1117 !important}
     /* Safari/defaut : position:fixed;inset:0 atteint le vrai bas -> NE PAS toucher.
        iOS standalone UNIQUEMENT : layout viewport ~44px plus court que l'ecran reel
        -> bande vide. On etend #root a la hauteur MESUREE --sg-vh (= screen.height). */
@@ -702,7 +702,7 @@ function writeRegionIndex(region, out) {
     window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
     </script>
     <div id="root">
-      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%);z-index:0;padding-top:env(safe-area-inset-top,0)">
+      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:#0d1117;z-index:0;padding-top:env(safe-area-inset-top,0)">
         <style>
           @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
           @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
@@ -1023,7 +1023,11 @@ Sitemap: https://${domain}/sitemap.xml
           ? `Mapa de sargazo en vivo y estado diario de las playas de ${title}.`
           : `Live sargassum map and daily beach status for ${title}.`,
       lang: region.primaryLang || 'en',
-      theme_color: (region.brand && region.brand.primary) || base.theme_color,
+      // Chrome de l'app = TOUJOURS sombre #0d1117 (= html + #sg-chin + background_color + meta
+      // theme-color posé en JS). On NE prend PAS brand.primary : sinon la barre système mobile
+      // (nav bar Android en bas, barre navigateur) se teinte de la couleur de marque (bleu #0EA5E9)
+      // ou de l'orange du manifest de base → flash coloré « en bas » au démarrage. Sombre partout.
+      theme_color: '#0d1117',
     }
     // Shortcuts hérités MQ/GP : libellés FR vers /carte-sargasses/ et /previsions/
     // qui n'existent pas sur les nouvelles régions (SPA mono-page) → 404 PWA.

@@ -127,13 +127,12 @@
     html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
     html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
     html{background:#0d1117}
-    /* Fond = dégradé chaud IDENTIQUE à la carte (WorldMapView warm, seul défaut) → aucune
-       frame blanche avant que --sg-bg résolve, et continuité totale body→squelette→carte
-       (le body est de toute façon masqué par #root fixe après le mount). */
-    /* !important : bat le body{background:var(--sg-bg)} du bundle CSS (chargé APRÈS ce
-       <style>) → le tout premier sous-frame avant que le squelette se révèle est chaud,
-       jamais blanc. Body est de toute façon masqué par #root fixe après le mount. */
-    body{background:radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%) !important}
+    /* Fond = cadre sombre de l'app (#0d1117, = html + #sg-chin + manifest background_color +
+       meta theme-color posé en JS). !important : bat le body{background:var(--sg-bg)} du bundle
+       CSS (chargé APRÈS ce <style>) → aucun sous-frame blanc ni coloré avant le squelette. Body
+       est de toute façon masqué par #root fixe après le mount. Neutre : ni blanc, ni teal, ni
+       orange — un cadre sombre discret, comme un splash d'app. */
+    body{background:#0d1117 !important}
     /* Safari/par défaut : position:fixed;inset:0 atteint le vrai bas (au-dessus de la
        toolbar) — NE PAS y toucher. iOS standalone UNIQUEMENT (html.sg-standalone) :
        le layout viewport (innerHeight ~852) est ~44px plus court que l'écran réel
@@ -293,7 +292,7 @@
            écran noir plusieurs secondes sur réseau mobile Caraïbe = abandons avant le paywall.
            createRoot(#root).render() REMPLACE ces enfants au montage React → disparaît seul.
            Visuel-only (pas de texte) → neutre pour les 5 domaines/langues. -->
-      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%);z-index:0;padding-top:env(safe-area-inset-top,0)">
+      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:#0d1117;z-index:0;padding-top:env(safe-area-inset-top,0)">
         <style>
           @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
           @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
