@@ -261,6 +261,12 @@ export default function WorldMapView({
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
   const relHref = (island==="mq"||island==="gp") ? "/fiabilite/" : (lang==="es" ? "/fiabilidad/" : "/reliability/")
   const _relGo = ()=>{ try{track&&track("sg_map_live_tap",{island})}catch(_){}; try{window.location.href=relHref}catch(_){} }
+  // INP/perf pan : writeCam lit getBoundingClientRect à CHAQUE frame de pan (reflow). On met
+  // en cache le rect UNIQUEMENT pendant un geste actif (frais au pointerdown, purgé au pointerup)
+  // → le conteneur ne bouge pas pendant un geste, donc c'est sûr ; hors geste = lecture live.
+  // Rollback : ?rectcache=0. (Ne touche PAS la math d'ancrage pinch/wheel, correctness-critique.)
+  const rectCacheOff = (()=>{try{return /[?&]rectcache=0/.test(window.location.search)}catch(_){return false}})()
+  const gestRectRef = useRef(null)
   // (Swipe-to-scrub retiré 2026-06-30 : conflit avec le pan de la carte, confirmé fondateur.)
   // Hub « Ma semaine » (« La Vigie », panel 2026-06-30) : l'encart digest devient tapable ->
   // ouvre le hub prévision premium (lazy). Rollback : ?weekhub=0 (l'encart redevient un simple
@@ -728,7 +734,7 @@ export default function WorldMapView({
     const{tx,ty,k}=camRef.current
     g.setAttribute("transform",`translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})`)
     const layer=labelLayerRef.current; if(!layer) return
-    const r=wrapRef.current?.getBoundingClientRect(); if(!r) return
+    const r=((!rectCacheOff&&gestRectRef.current)||wrapRef.current?.getBoundingClientRect()); if(!r) return
     const s=Math.min(r.width/800,r.height/600)
     const ox=(r.width-800*s)/2, oy=(r.height-600*s)/2
     const els=layer.querySelectorAll('[data-vx]')
@@ -837,6 +843,7 @@ export default function WorldMapView({
       // et vole le clic au bouton → fiche jamais ouverte). Laisse l'événement au bouton.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       moved=false
+      if(!rectCacheOff)gestRectRef.current=el.getBoundingClientRect() // rect frais pour toute la durée du geste
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       const nptr=Object.keys(ptrsRef.current).length
       if(nptr===2){
@@ -888,6 +895,7 @@ export default function WorldMapView({
       const wasMoved=moved
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
+      if(Object.keys(ptrsRef.current).length===0) gestRectRef.current=null // fin de geste → retour lecture live (inertie incluse)
       // Sur un contrôle chrome (CTA « Voir la plage », dock, capture…) : pas de double-tap
       // zoom ni de vol de clic — mais le nettoyage ci-dessus a déjà eu lieu.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
