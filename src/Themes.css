@@ -20,11 +20,15 @@
   --sg-card-shadow:5px 5px 0 #0d0b14;
 }
 body.theme-comic{
-  background:
-    radial-gradient(rgba(13,11,20,.14) 1.3px, transparent 1.4px) 0 0/9px 9px,
-    radial-gradient(rgba(13,11,20,.14) 1.3px, transparent 1.4px) 4.5px 4.5px/9px 9px,
-    linear-gradient(170deg,#2bb6ef 0%,#62c8ee 34%,#ffc187 72%,#ff944a 100%) !important;
-  background-attachment:fixed !important; color:var(--sg-ink);
+  /* Backdrop = cadre sombre #0d1117 (= html + #sg-chin + manifest). L'ancien dégradé
+     bleu→pêche→orange à pois (background-attachment:fixed) FUYAIT par le bas au démarrage :
+     en standalone iOS, #root vaut 100dvh (plus court que l'écran) tant que --sg-vh n'est pas
+     mesuré → le body débordait sous #root et montrait sa bande orange pointillée en bas (+ le
+     bleu en haut). Le body est de toute façon masqué par #root une fois --sg-vh posé, donc ce
+     dégradé n'était jamais un fond voulu — seulement une fuite. Sombre = zéro fuite colorée.
+     (Le « papier comic » voulu vit sur les cartes via --sg-card:#fdf6e3, inchangé.) */
+  background:#0d1117 !important;
+  color:var(--sg-ink);
   font-family:"Bricolage Grotesque","Comic Neue",system-ui,sans-serif;
 }
 .theme-comic h1,.theme-comic h2,.theme-comic h3,.theme-comic [class*="-title"]{
