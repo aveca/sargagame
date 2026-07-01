@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **🧩 2026-07-01 — GTT : slice 1 (helper fiabilité isolé) ajoutée · COLLISION 2-sessions détectée sur Phase 2. PR #385.**
+>
+> Après la réponse Sargatrack, j'ai voulu enchaîner GTT Phase 2 → **une AUTRE session l'a déjà avancée** (commit `92b46199` « feat(gtt): lane descente » @10:19, sur `main`). **Loi collision 2-sessions → je me retire de GTT pour ne pas dupliquer.**
+> - **DÉJÀ SUR MAIN (pas moi)** : overlay descente dans `BeachReport` (`Sargasses_PROD.jsx` ~L2741-2832) — `terrainStatus` 1 cran max jamais < clean, pastille dashed « contestée », satellite affiché à côté, flag `DESCENTE_ENABLED`/`?descente=0`. `fetchApprovedReports` renvoie déjà `downgradeConfirmedAt`.
+> - **AJOUTÉ PAR MOI (#385, isolé, testé, PAS ENCORE CÂBLÉ)** : `groundReliabilityDelta`/`applyGroundReliability` dans `scripts/lib/confidence.cjs` (rabais fiabilité AFFICHÉE sur ramassage validé, −25 max, plancher 15, demi-vie 1j, TTL 48h). **N'entre jamais dans le confidence numérique / `/fiabilite/` (satellite pur).**
+> - **⚠️ GAP DE CÂBLAGE (décision à prendre, pas encore faite)** : le rabais doit s'appliquer à `cleanReliabilityPct` **au RUNTIME dans le front** (`PremiumModal.jsx:843`, `ChasseHome.jsx:1402`, `WeekHub.jsx:116`), MAIS **le front n'importe PAS `confidence.cjs`**. Options : (a) importer le .cjs dans le front (attention budget, cjs non tree-shakeable), (b) réimplémenter le mini-helper inline côté front. À trancher avec la session qui possède GTT pour éviter double implémentation.
+> - **RESTE GTT** (à la session propriétaire) : le câblage du rabais ci-dessus · consentement GPS dans `BeachReport` · durcissement montée (escalade `~L11443`) · Phase 1 calibration offline (prématurée sans volume).
+
 > **🥊 2026-07-01 — RÉPONSE CONCURRENT SARGATRACK : intel + supply photos. PR #379 MERGÉE + DÉPLOYÉE + VÉRIFIÉE (run #1755 vert, curl prod 200).**
 >
 > **Question fondateur** : « Sargatrack fait du bruit sur Facebook, nous dépassent-ils ? » → **NON.** Sargatrack (Samuel Fourmy, lancé mi-avril 2026, MQ/GP/Saint-Martin, ~850 inscrits) = **signalement citoyen viral, gratuit, cible résident/décideur**. Il ne prend AUCUN levier de moat : forecast+confiance auditée, alertes/PWA, monétisation, SEO profond, multi-marchés. Son avantage = **distribution/participation** (bruit FB), pas le produit. Doc : `docs/competitor-sargatrack.md` (miroir de `competitor-sargazowatch.md`).
