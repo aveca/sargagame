@@ -1059,12 +1059,12 @@
     "j14": "2026-06-25T20:00:50.436Z"
   },
   "579476888eb0d4415798b2a4770151ed": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Miami Beach|clean|93|clean|0|",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Key Largo|clean|94|clean|0|",
     "j3": "2026-06-14T20:59:33.636Z",
     "j7": "2026-06-18T20:26:09.693Z",
     "j14": "2026-06-26T03:43:54.688Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
@@ -1219,21 +1219,21 @@
     "j14": "2026-06-28T19:22:53.590Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "j14": "2026-06-28T19:22:55.176Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "j14": "2026-06-29T04:11:47.484Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1244,11 +1244,11 @@
     "j14": "2026-06-29T04:11:49.316Z"
   },
   "e6a566c20d0d640645292652dcc83adb": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Miami Beach|clean|93|clean|0|",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Key Largo|clean|94|clean|0|",
     "j3": "2026-06-18T15:24:23.913Z",
     "j7": "2026-06-22T17:00:03.463Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "j14": "2026-06-29T15:49:56.645Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1279,11 +1279,11 @@
     "j14": "2026-06-29T20:00:45.121Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "j14": "2026-06-30T03:41:53.530Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1301,9 +1301,9 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
-    "daily_count": 4,
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j14": "2026-07-01T09:49:25.510Z"
@@ -1314,28 +1314,28 @@
     "j14": "2026-07-01T09:49:27.490Z"
   },
   "9d9a6914023cedce8049f0b9439b25da": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Miami Beach|clean|93|clean|0|",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Key Largo|clean|94|clean|0|",
     "j3": "2026-06-20T19:26:32.375Z",
     "j7": "2026-06-24T19:48:40.949Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
-    "daily_count": 4,
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 5,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1384,10 +1384,10 @@
     "j7": "2026-06-29T15:50:08.007Z"
   },
   "df28c95e078a1150efebcf9bb69e0088": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j3": "2026-06-25T20:00:52.774Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "j7": "2026-06-29T20:00:47.416Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1397,10 +1397,10 @@
     "j7": "2026-06-30T09:38:34.294Z"
   },
   "a47d1cd69aa0c7b03b7f9253d74f48b3": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Playa Holbox|clean|91|clean|4|miércoles",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Playa Holbox|clean|86|clean|3|jueves",
     "j3": "2026-06-26T14:27:34.021Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j7": "2026-06-30T14:21:31.447Z"
@@ -1426,10 +1426,10 @@
     "j7": "2026-06-30T14:21:38.387Z"
   },
   "afcbae2953c21270ddfdd78b25c4c247": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
     "j3": "2026-06-26T14:27:43.321Z",
-    "daily_count": 4,
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j7": "2026-06-30T14:21:39.960Z"
@@ -1450,9 +1450,9 @@
     "j3": "2026-06-27T13:43:08.014Z"
   },
   "e383942c9c243956a6078128ed7d57c7": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
-    "daily_count": 4,
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 5,
     "j3": "2026-06-27T19:22:50.065Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1485,9 +1485,9 @@
     "j3": "2026-06-29T11:00:05.597Z"
   },
   "384eedc45e1b0234f2c3a843467ab6c4": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
-    "daily_count": 4,
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 5,
     "j3": "2026-06-29T15:50:09.261Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1499,9 +1499,9 @@
     "j3": "2026-06-30T03:41:56.386Z"
   },
   "957ae125ebdae3434302a66e39a079dc": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Plage de Grande Anse|clean|85|clean|1|mercredi",
-    "daily_count": 4,
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 5,
     "j3": "2026-06-30T03:41:57.982Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1519,9 +1519,11 @@
   "4f7f336ccf2977233549fe9ad72408a2": {},
   "31d217f2fc3d85c717a798b313117621": {},
   "1c56dfd2baf9fbf5d30d6880f9a29759": {
-    "daily_last": "2026-06-30",
-    "daily_sig": "Miami Beach|clean|93|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-07-01",
+    "daily_sig": "Key Largo|clean|94|clean|0|",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-01"
   },
   "4ca1b5327f723211a2c652b43238779e": {},
   "ec8e1f26801274778c94a170235fd6fb": {},
@@ -1546,7 +1548,11 @@
   "ed1545afa97da4b3692aff90cfb6ab1e": {},
   "0f058407d8455a020d7e519da0fdc046": {},
   "8e062157b68e94bdb8bded9ab699ac40": {},
-  "706faf7ea345cac8a5e23ee8f715dd6b": {},
+  "706faf7ea345cac8a5e23ee8f715dd6b": {
+    "daily_last": "2026-07-01",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|1|jeudi",
+    "daily_count": 1
+  },
   "e83becd553978253b258ea96fb61f139": {},
   "199a170bdd3f02f29ea0b5fdffec36e5": {}
 }
