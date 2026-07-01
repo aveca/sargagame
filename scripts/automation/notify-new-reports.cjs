@@ -5,10 +5,10 @@
  * Pendant de notify-new-photos.cjs, mais pour la table `beach_reports` (événements
  * échouement/ramassage, cf. docs/GROUND_TRUTH_TERRAIN.md). Poll Supabase pour les reports
  * `status=pending` & `notified=false` (clé service_role), envoie UN email au fondateur avec
- * chaque signalement + boutons ✅ Approuver / ❌ Rejeter (Edge Function `moderate`), PLUS —
- * sur les `cleanup` — un bouton clé 2 « ⬇️ Rétrograder le verdict » (action confirm_downgrade,
- * Étage 2 : le SEUL qui autorise la lane descente à bouger la couleur d'1 cran). Marque
- * ensuite ces lignes `notified=true`. Non bloquant.
+ * chaque signalement + boutons ✅ Approuver / ❌ Rejeter (Edge Function `moderate`). Modèle
+ * simple : Approuver applique le SENS du signalement au verdict affiché (beaching monte,
+ * cleanup baisse, 1 cran, 48 h) ; Rejeter = ignoré. Marque ensuite ces lignes `notified=true`.
+ * Non bloquant.
  *
  * Sans ce notifieur + modération, les signalements approuvés ne s'affichent jamais et
  * pourrissent en `pending` (RLS ne sert que `approved`) → il complète le fix #367.
@@ -82,12 +82,14 @@ async function main() {
   const cards = rows.map((r) => {
     const back = beachUrl(r)
     const gps = r.within_150m === true ? ' · 📍 GPS sur place' : r.within_150m === false ? ' · 📍 hors zone' : ''
-    // Clé 2 (« Rétrograder ») uniquement sur un ramassage : c'est le seul event qui peut
-    // faire DESCENDRE la couleur, et seulement après ce tap humain explicite (Étage 2).
-    const downgrade = r.event === 'cleanup'
-      ? `<div style="margin-top:4px">${btn(link(r.id, 'confirm_downgrade', back), '#b45309', '⬇️ Rétrograder le verdict (clé 2)')}</div>
-         <p style="font-size:11px;color:#999;margin:2px 0 0">La clé 2 ne s'utilise que si la photo prouve un ramassage RÉEL et LARGE (pas un cadrage), et que la plage n'est pas en alerte satellite fraîche. 1 cran, 48 h, mesure satellite gardée à côté.</p>`
-      : ''
+    // Modèle simple : Approuver applique le SENS du signalement au verdict affiché (beaching
+    // monte, cleanup baisse, 1 cran, 48 h). Approuver un cleanup = tu vouches qu'il est réel
+    // et large (pas un cadrage), idéalement hors alerte satellite fraîche. Rejeter = ignoré.
+    const dirHint = r.event === 'cleanup'
+      ? 'Approuver = baisse le verdict d\'1 cran (48 h) — à ne faire que si le ramassage est réel et large.'
+      : r.event === 'beaching'
+        ? 'Approuver = monte le verdict d\'1 cran (48 h).'
+        : ''
     return `
     <div style="border:1px solid #e3e9ef;border-radius:14px;padding:14px;margin:0 0 16px">
       <div style="font-weight:700;color:#1d2b3a;margin-bottom:6px">${esc(r.beach_name || r.beach_id)} ${r.island ? '· ' + esc(r.island) : ''}</div>
@@ -95,7 +97,7 @@ async function main() {
       ${r.note ? `<p style="color:#555;font-size:13px;margin:0 0 10px">« ${esc(r.note)} »</p>` : ''}
       ${r.photo_url ? `<img src="${esc(r.photo_url)}" alt="" style="width:100%;max-width:420px;border-radius:10px;display:block;margin-bottom:12px">` : ''}
       <div>${btn(link(r.id, 'approve', back), '#16a34a', '✅ Approuver')}${btn(link(r.id, 'reject'), '#dc2626', '❌ Rejeter')}</div>
-      ${downgrade}
+      ${dirHint ? `<p style="font-size:11px;color:#999;margin:6px 0 0">${dirHint}</p>` : ''}
     </div>`
   }).join('')
 
