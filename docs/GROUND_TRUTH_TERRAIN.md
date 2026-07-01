@@ -12,37 +12,51 @@ niveau en escalade (prudence, aucun bénéficiaire), mais *descendre* passe obli
 par une clé humaine. L'AFAI (mesure) et la date restent des **faits satellite intouchables** —
 le terrain ne les édite jamais (sinon un chiffre « satellite » n'en est plus un = fabrication).
 
-## Les deux étages de la descente
+## La descente = TEMPS RÉEL (avant le satellite), validée manuellement par le fondateur (décision 2026-07-01)
 
-- **Étage 1 — AUTO, confiance seule.** Un ramassage prouvé (quorum descente) baisse la
-  **fiabilité affichée** (champ SÉPARÉ `groundReliabilityNote`, −25 pts max, plancher 15,
-  demi-vie 1 j) et pose un flag `sat_recheck` (re-vérif satellite anticipée, **rate-limité
-  serveur, jamais déclenchable par volume** de reports). **La couleur ne bouge pas.**
-  ⚠️ Jamais surfacé à côté d'un `avoid` satellite frais <48 h (sinon notre label « vérifié »
-  sert d'arme contre un vrai rouge). Invariant testable : `status` + seuil d'alerte
-  **bit-identiques avec/sans reports** tant que la clé 2 n'est pas posée. `groundReliabilityNote`
-  n'entre JAMAIS dans le `confidence` numérique qui gouverne `regimeCeiling`/`forecastConfidence`.
-- **Étage 2 — MODÉRATEUR À 2 CLÉS (le seul qui bouge la couleur).** Clé 1 = approuver la
-  photo (galerie). **Clé 2 = bouton distinct « Rétrograder le verdict »** après avoir vu
-  photo + niveau satellite + carte `within_150m` + compte d'empreintes. 1 cran MAX
-  (`avoid→moderate`, `moderate→clean` ; `avoid→clean` interdit). Bloqué si satellite frais
-  <48 h ET conf ≥80 ; bloqué si conf <45 (trou de données) ; bloqué si `stale` >36 h.
-  Cooldown **1 descente/plage/7 j**. TTL du calque **48 h** glissantes, ré-expiration si non
-  re-confirmé. Écrasement satellite = immédiat dès que `erddapTimestamp` bouge.
+> **But n°1 = avoir l'info terrain AVANT le satellite.** Ceux qui sont sur place confirment en
+> temps réel ; on n'attend PAS le prochain passage satellite (ce serait perdre toute la valeur).
+> **Le verrou anti-forge = la validation manuelle du fondateur**, qui reçoit déjà l'email dès
+> qu'une photo est ajoutée. Un clic humain sur une photo = ce qu'un hôtel malveillant ne peut pas
+> fabriquer. C'est le design « moderator-two-key » du panel (0 fatal), retenu tel quel.
+
+- **Trigger = la PHOTO.** Un signalement qui veut bouger la couleur DOIT porter une photo →
+  déclenche l'email de modération 1-tap au fondateur (flux photos existant, réutilisé). Sans
+  photo = simple badge « signalé, à confirmer », ne bouge pas la couleur.
+- **Clé 1 — approuver la photo** (galerie, réflexe habituel).
+- **Clé 2 — « Rétrograder le verdict »** (bouton distinct, uniquement sur `cleanup`) : le seul
+  geste qui fait DESCENDRE la couleur. 1 cran MAX (`avoid→moderate`, `moderate→clean` ;
+  `avoid→clean` interdit). Le fondateur voit photo + niveau satellite + contexte avant de taper.
+  Appliqué **immédiatement** (temps réel), TTL **48 h** glissantes, cooldown 1 descente/plage/7 j.
+- **Le satellite garde le dernier mot ENSUITE.** Dès que `erddapTimestamp` bouge, le composite
+  frais **écrase le calque terrain** (« satellite > terrain quand le satellite reparle »). Le
+  terrain donne l'avance temps-réel ; le satellite ré-ancre à chaque passage. Si le calque
+  descente expire (48 h) sans re-confirmation → retour au satellite.
+- **Fiabilité (auto, en plus).** Un cleanup validé baisse aussi la **fiabilité affichée**
+  (`groundReliabilityNote`, −25 max, plancher 15, demi-vie 1 j) — n'entre JAMAIS dans le
+  `confidence` numérique qui gouverne `regimeCeiling`/`forecastConfidence`.
+- **Montée (beaching)** = reste la loi escalade-seule existante (quorum, auto, sans clé humaine —
+  aucun bénéficiaire à salir une plage) ; libellé hedgé, photo souhaitée non obligatoire.
 
 ## Barre de preuve (chiffrée)
 
-| Facteur | MONTÉE (escalade, sûr) | DESCENTE (chemin adverse) |
-|---|---|---|
-| Empreintes `submitter_hash` distinctes | ≥2 / 48 h | ≥3 / 24 h, dont ≥1 hors réseau (ASN) de l'établissement |
-| Photo modérée `approved` | non requise | OBLIGATOIRE sur ≥2 des 3 (consigne « panoramique ») |
-| GPS `within_150m` (booléen serveur) | souhaitable | requis sur chaque empreinte (facteur de coût, jamais preuve seule) |
-| Contre-signal | — | zéro `beaching` approuvé <24 h + satellite ne monte pas |
-| Étage humain | clé 1 (approuver photo) | clé 1 + clé 2 (« Rétrograder ») |
+**Le verrou principal de la descente = la validation manuelle du fondateur (clé 2), en temps
+réel.** Le quorum serveur automatique n'est donc PLUS un prérequis de la descente (il l'était
+dans le design « auto » abandonné) : une seule photo de ramassage suffit à déclencher l'email,
+et le fondateur juge. Empreinte/GPS/quorum restent utiles en **anti-spam** (dédup, tri de la
+file de modération) et en **calibration**, pas comme gate de la couleur.
 
-`submitter_hash` = **calculé serveur** (Edge Function `submit-report`, hash de uid+salt+tranche
-IP) ; le quorum est **calculé serveur** (RPC/vue), jamais client. GPS = spoofable → jamais
-preuve dure à lui seul ; le vrai verrou est la **clé humaine n°2**.
+| Facteur | MONTÉE (escalade, auto) | DESCENTE (temps réel, validée main) |
+|---|---|---|
+| Photo | souhaitée, non requise | **OBLIGATOIRE** (c'est le trigger de l'email + ce que le fondateur juge) |
+| Gate de la couleur | quorum ≥2 empreintes / 48 h (auto, escalade-seule) | **clé 2 du fondateur** (« Rétrograder »), 1 cran max |
+| GPS `within_150m` (booléen serveur) | souhaitable | affiché au fondateur pour l'aider à juger (facteur de confiance, jamais preuve seule) |
+| Empreinte `submitter_hash` | dédup anti-flood | dédup anti-flood + tri file modération |
+| Amplitude | multi-crans (escalade) | 1 cran, TTL 48 h, cooldown 7 j/plage |
+
+`submitter_hash`/`within_150m` = **calculés serveur** (Edge Function `submit-report`), jamais
+client. GPS = spoofable → jamais preuve dure ; le vrai verrou reste la **clé humaine n°2**.
+La montée reste **auto** (escalade-seule, aucun bénéficiaire à salir une plage).
 
 ## Provenance nommée + libellé honnête
 
