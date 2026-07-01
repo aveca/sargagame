@@ -33,3 +33,11 @@ jobs:
           MODERATE_TOKEN: ${{ secrets.MODERATE_TOKEN }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/notify-new-photos.cjs
+      # Signalements terrain (beach_reports) : même modération 1-tap que les photos.
+      # Sans ce step, les reports approuvés ne s'affichent jamais (RLS ne sert que 'approved').
+      - name: Notify founder of pending field reports
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MODERATE_TOKEN: ${{ secrets.MODERATE_TOKEN }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/notify-new-reports.cjs

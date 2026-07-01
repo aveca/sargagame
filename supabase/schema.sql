@@ -118,8 +118,24 @@ create table if not exists public.beach_reports (
   notified    boolean not null default false
 );
 
+-- Colonnes GTT (Ground-Truth Terrain, cf. docs/GROUND_TRUTH_TERRAIN.md). Additives,
+-- idempotentes → safe à (re)lancer. Remplies par l'Edge Function submit-report (Phase 0.3) ;
+-- restent NULL pour les inserts directs legacy (sans effet sur la modération).
+--   submitter_hash        : empreinte anti-Sybil calculée SERVEUR (uid+salt+tranche IP),
+--                           base du quorum (jamais un comptage de lignes client).
+--   within_150m           : booléen de présence GPS calculé serveur (la coord brute est
+--                           JETÉE, jamais persistée — minimisation RGPD).
+--   downgrade_confirmed_at : clé 2 du modérateur (« Rétrograder le verdict ») — seul champ
+--                           qui autorise la lane descente à bouger la couleur (Phase 2).
+alter table public.beach_reports add column if not exists submitter_hash text;
+alter table public.beach_reports add column if not exists within_150m boolean;
+alter table public.beach_reports add column if not exists downgrade_confirmed_at timestamptz;
+
 create index if not exists beach_reports_approved_idx
   on public.beach_reports (beach_id, status, created_at desc);
+-- Index quorum : distinct submitter_hash par plage/event/fenêtre (calcul serveur du quorum).
+create index if not exists beach_reports_quorum_idx
+  on public.beach_reports (beach_id, event, status, created_at desc);
 
 alter table public.beach_reports enable row level security;
 
