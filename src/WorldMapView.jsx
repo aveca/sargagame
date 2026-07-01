@@ -260,6 +260,12 @@ export default function WorldMapView({
   // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
+  // Dead-click carte (audit UX 2026-07-01 : 56+11 clics morts/rapport sur le fond SVG). Deux causes,
+  // deux remèdes : (1) un pan finit par un clic fantôme → il ne fait plus rien (suppressBgClickRef) ;
+  // (2) un tap FRANC sans sélection tombait dans le vide (océan / île / tache de sargasses, toutes en
+  // pointer-events:none) alors que l'utilisateur visait une plage → on l'accroche à la plage la plus
+  // proche du doigt (≤90px écran) : verdict au lieu du vide, jamais un cul-de-sac. Rollback ?mapsnap=0.
+  const mapSnapOff = (()=>{try{return /[?&]mapsnap=0/.test(window.location.search)}catch(_){return false}})()
   // Labels carte (grief fondateur 2026-07-01) : le NOM reste À CÔTÉ DU PIN sur la côte (pas de
   // liste en haut — on se perd). Le nombre est ZOOM-AWARE (arbitré au repos par declutter) : vue
   // large île → 5 plus impactées ; dès qu'on ZOOME → toutes les alertes DANS LE VIEWPORT + les
@@ -295,6 +301,13 @@ export default function WorldMapView({
   const ptrsRef    = useRef({})
   const pinchRef   = useRef(null)
   const lastTapRef = useRef(0)
+  // Un pan se termine par un `click` fantôme sur le SVG → sans garde il compterait comme
+  // clic mort ET (pire) déclencherait le snap-plage. Posé au pointerup si le doigt a bougé,
+  // purgé au pointerdown suivant et lu (puis reset) par le clic de fond.
+  const suppressBgClickRef = useRef(false)
+  // Snap-plage différé (~260ms) pour distinguer un tap simple (→ snap) d'un double-tap (→ zoom) :
+  // un 2ᵉ clic de fond dans la fenêtre annule le snap et laisse le double-tap-zoom opérer.
+  const bgSnapTimerRef = useRef(null)
   const tagTimerRef= useRef(null)
   const hintTimerRef= useRef(null)  // hint Premium one-shot au déverrouillage du scrub
   const reduceRef  = useRef(false)
@@ -908,6 +921,8 @@ export default function WorldMapView({
       // et vole le clic au bouton → fiche jamais ouverte). Laisse l'événement au bouton.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       moved=false
+      suppressBgClickRef.current=false // nouveau geste : le prochain clic de fond est légitime tant qu'on ne bouge pas
+      if(bgSnapTimerRef.current){ clearTimeout(bgSnapTimerRef.current); bgSnapTimerRef.current=null } // un pan annule un snap en attente
       if(!rectCacheOff)gestRectRef.current=el.getBoundingClientRect() // rect frais pour toute la durée du geste
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       const nptr=Object.keys(ptrsRef.current).length
@@ -958,6 +973,9 @@ export default function WorldMapView({
       // TOUJOURS nettoyer le suivi du pointeur, même relâché sur un contrôle chrome —
       // sinon l'entrée ptrsRef survit et le survol suivant pan la carte (bug survol-pan).
       const wasMoved=moved
+      // Le doigt a bougé → c'était un pan, pas un tap : le clic fantôme qui va suivre ne doit
+      // ni déselectionner à vide ni déclencher le snap-plage.
+      if(wasMoved) suppressBgClickRef.current=true
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
       if(Object.keys(ptrsRef.current).length===0) gestRectRef.current=null // fin de geste → retour lecture live (inertie incluse)
@@ -1030,6 +1048,7 @@ export default function WorldMapView({
     if(rafRef.current)   cancelAnimationFrame(rafRef.current)
     if(tagTimerRef.current) clearTimeout(tagTimerRef.current)
     if(declutterRef.current) clearTimeout(declutterRef.current)
+    if(bgSnapTimerRef.current) clearTimeout(bgSnapTimerRef.current)
   },[])
 
   // ─── SÉLECTION PLAGE ───────────────────────────────────────────────────────
@@ -1061,6 +1080,36 @@ export default function WorldMapView({
     if(c) selectBeach(c)
     try{ track&&track("sg_map_near_me",{island}) }catch(_){}
   },[beachList,day,selectBeach,track,island])
+
+  // Clic sur le FOND de carte (le SVG lui-même : océan, île, taches de sargasses — tout en
+  // pointer-events:none ; les pins/labels stoppent la propagation en amont). Trois cas :
+  //  • fantôme post-pan → on ignore (ni déselection à vide, ni snap) ;
+  //  • une plage est sélectionnée → tap de fond = fermer le tag (geste de dismiss légitime) ;
+  //  • rien de sélectionné → le tap tombait dans le vide (clic mort) : on l'accroche à la plage
+  //    la plus proche du doigt en espace écran (≤90px) → fly + verdict, jamais un cul-de-sac.
+  const onMapBgClick=useCallback(e=>{
+    if(suppressBgClickRef.current){ suppressBgClickRef.current=false; return }
+    // 2ᵉ clic de fond alors qu'un snap est en attente = double-tap → on annule le snap et on
+    // laisse le double-tap-zoom (géré au pointerup) faire son travail, sans fly parasite.
+    if(bgSnapTimerRef.current){ clearTimeout(bgSnapTimerRef.current); bgSnapTimerRef.current=null; return }
+    if(selected){ setSelected(null); setTagPos(null); return }
+    if(mapSnapOff||!dataReady||!beachList.length) return
+    const cx=e.clientX, cy=e.clientY
+    let best=null, bd=Infinity
+    for(const b of beachList){
+      const[sx,sy]=worldToScreen(b.vx,b.vy)
+      const d=Math.hypot(cx-sx,cy-sy)
+      if(d<bd){ bd=d; best=b }
+    }
+    if(best&&bd<=90){
+      // Différé : si un 2ᵉ tap arrive (double-tap-zoom), le clic ci-dessus l'annule.
+      bgSnapTimerRef.current=setTimeout(()=>{
+        bgSnapTimerRef.current=null
+        try{ track&&track("sg_map_bg_snap",{island,dist:Math.round(bd)}) }catch(_){}
+        selectBeach(best)
+      },260)
+    }
+  },[selected,mapSnapOff,dataReady,beachList,worldToScreen,selectBeach,track,island])
 
   // « Où aller plutôt » (plan B) — plage PROPRE la plus proche de la plage tapée, le jour
   // affiché. Calcul pur sur lat/lng réels (haversine), zéro fabrication. Null si la plage
@@ -1335,7 +1384,7 @@ export default function WorldMapView({
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={_t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`)}
-        onClick={()=>{ setSelected(null); setTagPos(null) }}
+        onClick={onMapBgClick}
       >
         {mapDefs}
 
