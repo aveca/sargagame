@@ -12997,7 +12997,7 @@ export default function App(){
           </button>
         )}
         {showArchipel&&(mapWorld==="world"
-          ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"radial-gradient(120% 90% at 76% -10%,rgba(255,199,44,.22),rgba(255,199,44,0) 55%),linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%)"}}/>}>
+          ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
