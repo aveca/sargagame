@@ -1794,7 +1794,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{
           try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
@@ -1827,7 +1827,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
