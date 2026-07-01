@@ -183,10 +183,17 @@ export default defineConfig({
       enforce: 'post',
       transformIndexHtml(html, ctx) {
         if (!ctx || !ctx.bundle) return html
+        let tags = ''
         const chunk = Object.keys(ctx.bundle).find(f => /assets\/WorldMapView-[^/]*\.js$/.test(f))
-        if (!chunk) return html
-        const tag = `  <link rel="modulepreload" crossorigin href="/${chunk}" />\n`
-        return html.replace('</head>', tag + '</head>')
+        if (chunk) tags += `  <link rel="modulepreload" crossorigin href="/${chunk}" />\n`
+        // Contour côtier régional : WorldMapView le fetch au montage → il GATE l'affichage
+        // de la côte ET des pins/labels (beachList vide tant qu'outline n'est pas résolu).
+        // Sans preload, ce fetch part APRÈS le parse+montage du bundle = 1 aller-retour de
+        // retard sur la 1re carte peinte (même classe de latence que sargassum/beaches-list,
+        // déjà préchargés). Région-aware via REGION.id (défaut mq). Resource hint pur.
+        const rid = (REGION && REGION.id) || 'mq'
+        tags += `  <link rel="preload" href="/data/region-outlines/${rid}.json" as="fetch" crossorigin />\n`
+        return html.replace('</head>', tags + '</head>')
       },
     },
     // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
