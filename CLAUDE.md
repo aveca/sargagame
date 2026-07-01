@@ -347,6 +347,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 | `docs/visitor-photos-runbook.md` | Runbook feature photos visiteurs (backend Supabase). |
 | `docs/competitor-sargazowatch.md` | Veille concurrent USD/Caraïbe (Sargazo Watch). |
 | `scripts/automation/ANALYTICS-SETUP.md` | Setup credentials ingestion analytics unifiée. |
+| `docs/UX_REPORT.md` | **Déclencheur fondateur auto-veille UX** : `/ux` (ou juste l'URL du rapport, ou « traite le rapport UX ») → lire `scripts/automation/data/ux-report.json` (ou l'URL), corriger les `*-el` nommés, Gate, PR. Zéro copier-coller du mail. |
 
 ### Scale / nouvelle verticale
 | Doc | Rôle |
