@@ -1,5 +1,22 @@
 # NEXT_SESSION — sargagame
 
+> **🏖️ 2026-07-01 — TRACKING TERRAIN ÉCHOUEMENT/RAMASSAGE (données visiteurs). Branche `claude/beach-forecast-j-plus-x-9qbend`. PR #339 mergée + live prod (curl : `beach_reports` dans le bundle).**
+>
+> **Demande fondateur** : le verdict ne doit pas reposer que sur la dérive satellite → tracker l'état RÉEL des plages, l'**échouement** et le **ramassage**, via données utilisateur + satellite (le satellite ne voit ni l'arrivée sur le sable ni l'enlèvement par la commune = cause des flips rouge→vert du J+0).
+>
+> **Panel adverse (4 lentilles : data-forecast / honnêteté / risque / avocat du diable)** → verdict : au volume actuel (**<2 reports/plage/semaine**, cold-start), on **CAPTURE + AFFICHE**, on **NE FUSIONNE PAS** encore au verdict (1 report isolé polluerait le moat « 100 % data »). L'avocat du diable a révélé que ~80 % de l'infra existait déjà (`aggregate-app-reports.cjs`, `communityBias`, `ground-truth.php`) → seul le **ramassage** est un événement vraiment neuf.
+>
+> **SHIPPÉ (#339, additif, inerte-safe, flag `?ramassage=0`)** :
+> - **Table Supabase `beach_reports`** (`event` beaching|cleanup, modérée pending→approved comme `photos`, RLS insert-pending/read-approved) — dans `supabase/schema.sql`.
+> - **`src/supabasePhotos.js`** : `submitBeachReport()` + `fetchApprovedReports()`.
+> - **`src/Sargasses_PROD.jsx` `BeachReport`** : boutons « 🌊 Algues arrivées » / « 🧹 Ramassé » + badge hedgé « signalé par X visiteurs · 48 h · **le verdict reste mesuré au satellite** ». Confirmation HONNÊTE (await insert → pas de faux « Merci » si backend absent).
+> - **`scripts/automation/planner-alerts.cjs`** : `ensureBeachReportsTable()` (Management API, même pattern que planner_alerts) → **auto-création table, ZÉRO action fondateur**. ⚠️ tourne UNIQUEMENT sur le cron `schedule` de `daily-copernicus.yml` (pas push/dispatch) → table créée au prochain run planifié (0/6/12/18 UTC). Vérifié 404 avant, s'auto-crée après.
+>
+> **Garde-fous moat (verrouillés par le panel)** : signal terrain **ne touche PAS la couleur du verdict** ; modération obligatoire (anti-gaming : un hôtel/rival ne peint pas sa plage) ; copy hedgée, jamais « propre » nu ; confiance baisse sur désaccord (règle pour la fusion future).
+>
+> **SUITE (Slice 2/3, quand le volume suit — PAS avant, verdict panel)** : (1) agréger `beach_reports` approuvés en état terrain par plage (`ground-truth.json`) ; (2) **fusion au verdict derrière flag + backtest** (`history.json`) : cleanup frais → override J+0 vers propre borné (demi-vie 2 j), N≥2 sessions modérées, confiance qui chute sur désaccord ; gate = précision cleanup-override ≥80 % + zéro régression J+1 ~75 %. **Job fondateur récurrent** = approuver les signalements au dashboard Supabase (comme les photos).
+>
+
 > **🗺️ 2026-07-01 — CARTE : FIX RÉGRESSION « GROS ENCARTS MOCHES » (labels de plage). Branche `claude/large-card-design-1kdyyi`. PR #338 mergée + déployée (run 1708 vert, `curl` OK).**
 >
 > **Grief fondateur** : les noms de plage sur la carte s'affichaient dans de gros pavés blancs (bordure 3px + ombre) qui masquent la côte. **Ce n'était PAS un choix design = régression CSS.** #329 a rendu les labels tapables (`role="button"`, fix dead-click) → a fait matcher `.theme-comic/.theme-soft [role="button"]` (`src/Themes.css:47`) qui colle fond blanc + bordure + ombre. Cas d'école du « skin de thème écrase l'inline » (cf. CLAUDE.md Self-review UI).
