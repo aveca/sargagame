@@ -42,18 +42,27 @@ async function enrichNamedDeadClicks(report) {
   for (const site of _statsRegions()) {
     const key = map[site.id] || env; if (!key) continue
     let data; try { data = await _fetchStats(site.domain, key) } catch (e) { console.error(`  [${site.id}] stats.php: ${e.message}`); continue }
-    const els = {}
-    for (const c of Object.values(data.clicks || {})) for (const [el, n] of Object.entries(c.top_dead_els || {})) els[el] = (els[el] || 0) + n
-    const top = Object.entries(els).sort((a, b) => b[1] - a[1]).slice(0, 6).filter(([, n]) => n >= 8)
-    if (!top.length) continue
+    // Granularité PAR ÉCRAN : on garde OÙ le dead-click a lieu (page = écran), pas un bucket
+    // « app » global. Chaque coupable nommé (≥8) devient une issue actionnable.
+    const named = []
+    for (const [screen, c] of Object.entries(data.clicks || {}))
+      for (const [el, n] of Object.entries(c.top_dead_els || {}))
+        if (n >= 8) named.push({ screen: screen || 'app', el, n })
+    if (!named.length) {
+      // stats.php a répondu mais 0 coupable ≥8 : rendre le trou de données VISIBLE
+      // (ne pas laisser croire « aucun dead-click » alors que c'est « aucune donnée nommée »).
+      console.log(`  [${site.id}] stats.php OK, 0 dead-click nommé (≥8) — coupable non remonté (trou de données, pas succès).`)
+      continue
+    }
+    named.sort((a, b) => b.n - a.n)
     if (!report.sites[site.id]) report.sites[site.id] = { domain: site.domain, issues: [], crux: null, stats: { total: 0, critical: 0, warnings: 0 } }
     const S = report.sites[site.id]
-    for (const [el, n] of top) {
+    for (const { screen, el, n } of named.slice(0, 12)) {
       const severity = n >= 20 ? 'critical' : 'warning'
-      S.issues.push({ type: 'dead-click-el', severity, page: 'app', target: el, metric: `${n} dead clicks on ${el}`, recommendation: 'First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised.' })
+      S.issues.push({ type: 'dead-click-el', severity, page: screen, target: el, locatable: true, count: n, metric: `${n} dead clicks on ${el} (${screen})`, recommendation: 'First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised.' })
       S.stats.total++; S.stats[severity === 'critical' ? 'critical' : 'warnings']++
       report.summary.totalIssues++; report.summary[severity === 'critical' ? 'critical' : 'warnings']++
-      console.log(`  [${site.id}] NAMED dead-click: ${el} (${n}) → ${severity}`)
+      console.log(`  [${site.id}] NAMED dead-click: ${el} @${screen} (${n}) → ${severity}`)
     }
   }
 }
@@ -114,30 +123,47 @@ async function main() {
       })
     }
 
-    // Rage clicks (from Clarity → GA4 bridge)
+    // Rage clicks (from Clarity → GA4 bridge).
+    // GA4 ne renvoie PAS le sélecteur cliqué (target vide) → « ? » non-actionnable :
+    // on NE fait JAMAIS pager un « ? » en critical. target vide = hotspot de PAGE
+    // (locatable:false), le VRAI coupable arrive nommé via enrichNamedDeadClicks (first-party).
     for (const rc of (findings.rageClicks || [])) {
       if (rc.count >= 3) {
+        const locatable = !!rc.target
         issues.push({
           type: 'rage-click',
-          severity: rc.count >= 10 ? 'critical' : 'warning',
+          severity: locatable ? (rc.count >= 10 ? 'critical' : 'warning') : 'warning',
           page: rc.page,
           target: rc.target,
-          metric: `${rc.count} rage clicks on ${rc.target || '?'} (${rc.page})`,
-          recommendation: 'Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly.',
+          locatable,
+          count: rc.count,
+          metric: locatable
+            ? `${rc.count} rage clicks on ${rc.target} (${rc.page})`
+            : `${rc.count} rage clicks (page hotspot, element unknown) — ${rc.page}`,
+          recommendation: locatable
+            ? 'Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly.'
+            : 'Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking.',
         })
       }
     }
 
-    // Dead clicks
+    // Dead clicks (même règle : target vide = « ? » → hotspot de page, jamais critical).
     for (const dc of (findings.deadClicks || [])) {
       if (dc.count >= 5) {
+        const locatable = !!dc.target
         issues.push({
           type: 'dead-click',
-          severity: dc.count >= 15 ? 'critical' : 'warning',
+          severity: locatable ? (dc.count >= 15 ? 'critical' : 'warning') : 'warning',
           page: dc.page,
           target: dc.target,
-          metric: `${dc.count} dead clicks on ${dc.target || '?'} (${dc.page})`,
-          recommendation: 'Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive.',
+          locatable,
+          count: dc.count,
+          metric: locatable
+            ? `${dc.count} dead clicks on ${dc.target} (${dc.page})`
+            : `${dc.count} dead clicks (page hotspot, element unknown) — ${dc.page}`,
+          recommendation: locatable
+            ? 'Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive.'
+            : 'Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking.',
         })
       }
     }

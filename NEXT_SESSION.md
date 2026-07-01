@@ -1,5 +1,19 @@
 # NEXT_SESSION — sargagame
 
+> **🔎 2026-07-01 — UX AUTO-VEILLE : FIN DU MUR DE 47 « ? » CRITICALS (signal actionnable). Branche `claude/sargasses-ux-critiques-djsvex`.**
+>
+> **Problème** : l'alerte hebdo `ux-watch` crachait **47 criticals** tous du type `N dead/rage clicks on ? (page)`. Le « ? » n'est PAS un mystère à investiguer = **artefact de reporting** : GA4 Data API ne renvoie pas le sélecteur cliqué (`seo-audit.cjs fetchClarityEvents` hardcode `target:''`) → « fix 7428 dead clicks on ? » non-actionnable. L'app CAPTURE pourtant déjà le coupable nommé (`_sgElDesc` → heatmap `de` → `stats.php top_dead_els`), mais `enrichNamedDeadClicks` ne l'injectait jamais dans les entrées « ? » et les remontait en `page:'app'` global.
+>
+> **Fait (reporting-only, ZÉRO code app, ZÉRO money-path, ZÉRO src/)** :
+> - **`scripts/automation/ux-audit.cjs`** : entrées dead/rage sans sélecteur (`target` vide) → **jamais `critical`**, deviennent `warning` + `locatable:false` + `count`, metric relabelée « page hotspot, element unknown ». Résultat local : **47 criticals → 0** (109 hotspots warning).
+> - **`ux-audit.cjs enrichNamedDeadClicks`** : granularité **par écran** (`page:screen`, plus de bucket `app` global), seuil ≥8 conservé, log explicite quand stats.php répond mais 0 coupable nommé (trou de données visible). Les coupables NOMMÉS (`dead-click-el`) = le tier actionnable (`n≥20`→critical).
+> - **`ux-watch.cjs`** : email mène par la liste **à corriger** (coupables nommés + vrais criticals cwv/bounce), **collapse** les hotspots « ? » en UNE ligne résumée (`MQ / (7428) · GP / (3375) · …`) au lieu de 47 bullets. Dédup par signature conservée (semaine stable ne réalerte pas).
+>
+> **Vérif** : `node --check` OK ×2 ; regen `ux-report.json` depuis `audit-summary.json` committé → `summary.critical 47→0` ; dry-run `ux-watch` → « 0 à corriger | 109 hotspots » (0 nommé en local car pas de clé stats ; en CI `SG_STATS_KEY*` alimente l'enrichissement → coupables nommés). `ux-report.json`/`automation-log.json` régénérés localement **revert** (artefacts owned par le workflow hebdo).
+>
+> **À VÉRIFIER** : déclencher `Weekly UX Report` (`workflow_dispatch`) → le rapport doit nommer les coupables (avec clé stats) et l'email hebdo doit mener par la liste corrigeable.
+> **SUITE (hors scope, prochaine session)** : une fois les coupables NOMMÉS par le rapport → corriger les top éléments « looks-clickable-not » et couper les faux positifs de couches décoratives, **sur `WorldMapView` avec screenshots régression avant/après** (loi CLAUDE.md). Candidats explo : pattern handler conditionnel label/clean-count/pill « EN DIRECT » `WorldMapView.jsx:1466-1535` (actif seulement sous `?maplabeltap=0`/`?mapcleantap=0`/`?maplivetap=0` = PAS le trafic par défaut). NB #329 a déjà rendu les labels tapables pour tuer des dead-clicks, #338 a corrigé le skin.
+
 > **⚡ 2026-07-01 — PERF BUNDLE : 3 OVERLAYS HORS FIRST-PAINT EN CHUNKS LAZY (−20,7 Ko gzip eager). Branche `claude/sargasses-bundle-entry-split-q4i9q1`. PR #359 mergée (squash) sur `main` → run daily-copernicus 1729 (in_progress au moment du handoff), déploiement FTP en cours.**
 >
 > **Problème** : entry JS eager du chemin critique ≈ 203,5 Ko gzip (budget 210) = quasi zéro marge. Le monolithe `src/Sargasses_PROD.jsx` embarquait en eager des overlays purement conditionnels (déclenchés au clic/flag) inutiles au 1er écran.
