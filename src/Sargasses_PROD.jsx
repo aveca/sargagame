@@ -5,7 +5,7 @@
  * Architecture : Map-first, data-driven (Clarity — 25% clics = carte)
  * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
-import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
+import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
@@ -12062,7 +12062,11 @@ export default function App(){
   }, [])
   // Cohort world : ouvre l'Archipel par defaut quand la landing se pose (hero+mapintro
   // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
-  useEffect(()=>{
+  // useLayoutEffect (pas useEffect) : le setShowArchipel(true) est flushé AVANT le paint →
+  // la frame vide sombre (showArchipel=false, carte de base vide depuis le retrait Leaflet)
+  // est committee mais JAMAIS peinte. Meme garde exacte → aucune regression sur les autres
+  // landings (hero/prev/clean/alertes/station : early-return comme avant).
+  useLayoutEffect(()=>{
     if(!navWorld||archAutoRef.current)return
     if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showSolutions||showWorld||showArchipel||showStation)return
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
@@ -13786,7 +13790,7 @@ export default function App(){
           </button>
         )}
         {showArchipel&&(mapWorld==="world"
-          ?<ErrBound><Suspense fallback={<div style={{position:"fixed",inset:0,background:"#072019",zIndex:1020}}/>}>
+          ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"radial-gradient(120% 90% at 76% -10%,rgba(255,199,44,.22),rgba(255,199,44,0) 55%),linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%)"}}/>}>
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}

@@ -8,7 +8,7 @@
  * Props : beaches, island, updatedAt, lang, onOpenBeach, onPremium,
  *         onClose, rootMode, track
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react"
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
@@ -787,8 +787,11 @@ export default function WorldMapView({
     animRef.current=requestAnimationFrame(step)
   },[clampCam,writeCam])
 
-  // Caméra initiale : centre de la bbox de l'outline ou de la zone
-  useEffect(()=>{
+  // Caméra initiale : centre de la bbox de l'outline ou de la zone.
+  // useLayoutEffect (pas useEffect) : pose le transform monde + positionne les labels
+  // AVANT le paint, sur le commit où outline/beachList arrivent → pins/labels apparaissent
+  // déjà centrés (fini le « petit bout de carte + noms en haut-gauche qui sautent »).
+  useLayoutEffect(()=>{
     if(!outline) return
     const{proj,bbox}=outline
     let centered = false
