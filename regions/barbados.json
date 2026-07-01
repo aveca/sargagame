@@ -14,11 +14,6 @@
     "yearly": "$79",
     "tripPass": "$5.99"
   },
-  "stripeProducts": {
-    "monthly": "PLACEHOLDER_price_barbados_monthly",
-    "yearly": "PLACEHOLDER_price_barbados_yearly",
-    "tripPass": "PLACEHOLDER_price_barbados_trippass"
-  },
   "timezone": "America/Barbados",
   "bbox": [
     -59.68,
@@ -221,10 +216,5 @@
       "parking": true
     }
   ],
-  "paymentLinks": {
-    "monthly": "PLACEHOLDER_stripe_payment_link_monthly",
-    "yearly": "PLACEHOLDER_stripe_payment_link_yearly",
-    "tripPass": "PLACEHOLDER_stripe_payment_link_trippass"
-  },
   "noTrial": true
 }
