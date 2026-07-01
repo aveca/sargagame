@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-07-01 — SESSION SARGATRACK CLÔTURÉE : panel adverse → 5 leviers shippés. PRs #379 + #385 mergées+déployées, dernière PR = renouvellement + win-back.**
+>
+> Réponse à « Sargatrack nous dépasse ? » → NON (avantage = distribution/participation FB, pas produit). Panel adverse (5 lentilles) convoqué à la demande du fondateur → file d'actions autonomes vérifiées, exécutées une par une :
+> 1. **#379** — nudge recrutement galeries photos vides (`?vseed=0`) + doc `competitor-sargatrack.md`. Déployé+vérifié.
+> 2. **#385** (mergée+déployée, curl 200) — lien `/fiabilite/` « Avant de payer » (`?pwrel=0`) · gate wallet Apple/Google Pay `PassOffer` (`?wcap=0`) · partage post-contribution photo (`?vshare=0`) · GTT slice 1 `groundReliabilityDelta` (confidence.cjs, isolé). Collision 2-sessions GTT résolue par merge.
+> 3. **Dernière PR (renouvellement + win-back)** :
+>    - `feat(revenue)` **nudge renouvellement pré-expiration** : bannière positive quand pass actif <3j (`sg_pass_renew_seen`, `?passrenew=0`). Miroir de la bannière expired.
+>    - `feat(retention)` **win-back push dormants** : tag `sg_last_seen` (front, live) + `scripts/automation/push-winback.cjs` (HOLD/dry-run défaut, cadence 14j, copy honnête). **GO-LIVE DIFFÉRÉ** : câbler un step CI `--send` APRÈS ~2 sem. d'accumulation `sg_last_seen` + revue dry-run (prématuré maintenant, comme GTT Phase 1).
+>
+> **RESTE — bloqué FONDATEUR (pas l'agent)** : creds SEO US (GSC sitemaps + IDs GA4/Clarity dans `regions/*.json`) · paiement test réel lien Pro 690 € · `clasp push` (funnel). **Owned autre session** : GTT Phase 2 (câblage rabais fiabilité slice1 sur le modèle simplifié #386, GPS consent, montée). **Différé** : go-live du win-back push (voir ci-dessus).
+> **Nouveaux flags rollback de la session** : `?vseed=0 ?pwrel=0 ?wcap=0 ?vshare=0 ?passrenew=0` (+ `push-winback` HOLD par défaut).
+
 > **🧩 2026-07-01 — GTT : slice 1 (helper fiabilité isolé) ajoutée · COLLISION 2-sessions détectée sur Phase 2. PR #385.**
 >
 > Après la réponse Sargatrack, j'ai voulu enchaîner GTT Phase 2 → **une AUTRE session l'a déjà avancée** (commit `92b46199` « feat(gtt): lane descente » @10:19, sur `main`). **Loi collision 2-sessions → je me retire de GTT pour ne pas dupliquer.**

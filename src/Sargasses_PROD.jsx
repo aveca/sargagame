@@ -12,7 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import BeachPhotos from "./BeachPhotos.jsx"
-import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured } from "./supabasePhotos.js"
+import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -1367,10 +1367,18 @@ export function abVariant(testId,variants,weights){
 
 const TRACK_QUEUE_KEY="sg_track_queue"
 const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+// Étapes du funnel → répliquées sur Supabase (source de vérité, remplace le
+// compteur Apps Script/Code.js → plus de clasp push pour le corriger). Agrégées
+// par scripts/automation/funnel-from-supabase.cjs. Allowlist volontaire (pas TOUT
+// track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
+const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
+  // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
+  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
@@ -10662,6 +10670,10 @@ export default function App(){
         if(isPremium)O.User.addTag("sg_premium","1")
         else O.User.removeTag("sg_premium")
         O.User.addTag("sg_island",island)
+        // Dernière visite en JOURS epoch (entier) → cible du win-back push dormants
+        // (push-winback.cjs filtre sg_last_seen < aujourd'hui-N). Coût nul, mis à jour
+        // à chaque ouverture ; la seule donnée de dormance côté push (l'email l'a déjà).
+        try{O.User.addTag("sg_last_seen",String(Math.floor(Date.now()/86400000)))}catch(_){}
         const cur=Array.isArray(favorites)?favorites:[]
         for(const fid of syncedFavsRef.current){ if(!cur.includes(fid))O.User.removeTag("fav_"+fid) }
         for(const fid of cur)O.User.addTag("fav_"+fid,"1")
@@ -10761,6 +10773,23 @@ export default function App(){
     return false
   })
   useEffect(()=>{ if(showPassExpired){try{track("sg_pass_expired_eligible",{island})}catch(_){}} },[])
+  // PRÉ-EXPIRATION (renouvellement) : un pass ACTIF à <3 j de la fin = la meilleure
+  // fenêtre de renouvellement (l'user consomme la valeur, sur le point de la perdre).
+  // Le seul signal jusqu'ici arrivait APRÈS l'expiration (showPassExpired) = trop tard.
+  // Cadrage POSITIF (« garde ton avance »), jamais « tu vas perdre l'accès ». Un seul
+  // affichage (sg_pass_renew_seen). pass_end>now ⇒ acheteur de pass (les abos récurrents
+  // n'ont pas de pass_end). Flag rollback ?passrenew=0.
+  const _passRenewDays=()=>{try{const e=parseInt(localStorage.getItem("sg_premium_pass_end")||"0");const d=e-Date.now();return d>0?Math.ceil(d/86400000):0}catch(_){return 0}}
+  const[showPassRenew,setShowPassRenew]=useState(()=>{
+    try{
+      if(typeof location!=="undefined"&&/[?&]passrenew=0/.test(location.search||""))return false
+      if(localStorage.getItem("sg_pass_renew_seen"))return false
+      const e=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+      if(e>Date.now()&&(e-Date.now())<3*86400000)return true
+    }catch(_){}
+    return false
+  })
+  useEffect(()=>{ if(showPassRenew){try{track("sg_pass_renew_eligible",{island})}catch(_){}} },[])
   // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
   //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
@@ -12065,6 +12094,36 @@ export default function App(){
               aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
           </div>
         )}
+
+        {/* PASS ACTIF ~3J DE LA FIN — nudge renouvellement (positif, un seul affichage) */}
+        {showPassRenew&&!showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(()=>{const _d=_passRenewDays();return _d>0&&(
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+            background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
+            borderBottom:"1px solid rgba(232,168,0,.3)",
+            padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
+            paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+            flexWrap:"wrap",fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>
+              {_t(lang,`Encore ${_d} jour${_d>1?"s":""} d'avance — prolonge et reste devant.`,`${_d} day${_d>1?"s":""} of foresight left — renew and stay ahead.`,`Quedan ${_d} día${_d>1?"s":""} de ventaja — renueva y sigue por delante.`)}</span>
+            <button onClick={()=>{
+              try{track("sg_pass_renew_click",{island,days_left:_d})}catch(_){}
+              try{localStorage.setItem("sg_pass_renew_seen","1")}catch(_){}
+              setShowPassRenew(false)
+              openPremium("pass_renew")
+            }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
+              padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+              whiteSpace:"nowrap",flexShrink:0}}>
+              {_t(lang,"Renouveler","Renew","Renovar")}</button>
+            <button onClick={()=>{
+              try{track("sg_pass_renew_dismiss",{island})}catch(_){}
+              try{localStorage.setItem("sg_pass_renew_seen","1")}catch(_){}
+              setShowPassRenew(false)
+            }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
+          </div>
+        )})()}
 
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,

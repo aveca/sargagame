@@ -37,6 +37,26 @@ function headers(extra) {
 }
 
 /**
+ * logAnalyticsEvent — sink funnel/télémétrie WRITE-ONLY sur Supabase (migration
+ * Apps Script → Supabase, 2026-07). Le front insère (anon, RLS insert-only), et
+ * l'agrégation lit avec la service key (funnel-from-supabase.cjs) → plus AUCUN
+ * `clasp push` pour corriger le compteur funnel (ex. sg_pass_cta). Fire-and-forget,
+ * ne throw JAMAIS, no-op si Supabase non configuré. `keepalive` pour survivre à
+ * l'unload (comme un sendBeacon). Pas de PII (event + params non-nominatifs).
+ */
+export function logAnalyticsEvent(event, params, island) {
+  if (!supabaseConfigured() || !event) return
+  try {
+    fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
+      method: "POST",
+      keepalive: true,
+      headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify({ event: String(event), params: params || {}, island: island || null }),
+    }).catch(() => {})
+  } catch (_) {}
+}
+
+/**
  * Upload d'une photo (data URL JPEG déjà redimensionnée + EXIF strippée).
  * → Storage bucket public `beach-photos`, puis ligne `photos` en status 'pending'.
  * Renvoie true si OK. Modération ensuite côté dashboard (status → 'approved').
