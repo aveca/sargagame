@@ -495,7 +495,13 @@ export default function WorldMapView({
     const svg=bakeRef.current
     if(!svg||!outline){ setBakedUrl(null); return }
     let cancelled=false, idle=null
-    const S=2.5, W=Math.round(800*S), H=Math.round(600*S)
+    // Résolution du bake CALÉE sur le DPR réel de l'appareil (borné [2 ; 2,5]) au lieu
+    // d'un 2,5× fixe : un écran 2× (beaucoup d'Android + iPhone SE/anciens) ne PEUT PAS
+    // afficher plus de 2× → baker à 2,5× y était du sur-échantillonnage invisible qui
+    // coûtait ~36 % de raster en plus (sérialisation + drawImage + encode PNG). On plafonne
+    // à 2,5× (inchangé sur les iPhone 3×, nettes) et on plancher à 2× (jamais plus flou
+    // qu'avant). Gain main-thread net sur les appareils ≤2,5×, ZÉRO régression visuelle.
+    const S=Math.min(2.5,Math.max(2,(typeof devicePixelRatio!=="undefined"&&devicePixelRatio)||2)), W=Math.round(800*S), H=Math.round(600*S)
     // Le bake (sérialisation SVG + Image decode + drawImage 2.5× + toDataURL PNG) est un GROS
     // bloc main-thread — profilé comme le hotspot n°1 du mount (~282 ms non-throttlé, ~1 s sous
     // 4× CPU mobile). On le DIFFÈRE à l'idle : le SVG live (Stage 1) peint et reste interactif
