@@ -10933,6 +10933,14 @@ export default function App(){
   // Carte monde RÉCHAUFFÉE golden-hour pour TOUS (décision produit 19/06 : un seul
   // monde comic cohérent, fin de la base teal froide). Override debug ?mapwarm=0.
   const mapWarm=useMemo(()=>{try{return /[?&]mapwarm=0/.test(window.location.search)?"control":"warm"}catch(_){return"warm"}},[])
+  // Anti-premap (grief fondateur 2026-07-01) : la carte-monde par défaut (showArchipel) ne
+  // s'ouvre que dans un layoutEffect GATÉ sur allBeaches>=3. Tant que la data charge, l'app de
+  // BASE peint dessous (fond + CTA doré halftone en bas) = « fond bleu + bande orange » premap,
+  // puis la carte recouvre. On garde un cache sombre #0d1117 (= #sg-boot/chin/manifest) pendant
+  // cette fenêtre → sombre uniforme → carte, sans rendu intermédiaire. Rollback ?premapcover=0.
+  const premapCoverOff=useMemo(()=>{try{return /[?&]premapcover=0/.test(window.location.search)}catch(_){return false}},[])
+  const[premapDone,setPremapDone]=useState(false)
+  useEffect(()=>{ const t=setTimeout(()=>setPremapDone(true),4000); return()=>clearTimeout(t) },[]) // filet : jamais coincé sombre
   // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // pw_beach_dive PROMU 2026-06-19 (GO fondateur) : variante `dive` gagnante +84% @95% (n=416/469, 28j).
@@ -12620,6 +12628,15 @@ export default function App(){
               <path d="M15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5z" fill="#FFC72C" stroke="#FDFCF7" strokeWidth="1.3" strokeLinejoin="round"/>
             </svg>
           </button>
+        )}
+        {/* Cache anti-premap : sombre plein écran tant que la carte-monde par défaut est EN
+            ATTENTE d'ouverture (data → showArchipel via layoutEffect gaté allBeaches>=3).
+            Masque le rendu de base (fond + bande orange dorée) sous z1020 → sombre uniforme
+            → carte. Prédicat = miroir de l'auto-open (moins allBeaches). ?premapcover=0. */}
+        {!premapCoverOff&&!premapDone&&navWorld&&view==="map"&&!showArchipel
+          &&!showHero&&!showMapIntro&&!showPrevLanding&&!showCleanList&&!showAlertHub
+          &&!selectedBeach&&!showPremium&&!showSolutions&&!showWorld&&!showStation&&(
+          <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
         )}
         {showArchipel&&(mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>
