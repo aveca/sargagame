@@ -165,6 +165,10 @@
   <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin />
   <link rel="preload" href="/data/beaches-images.json" as="fetch" crossorigin />
   <link rel="preload" href="/data/beaches-images-quality.json" as="fetch" crossorigin />
+  <!-- Météo par plage : alimente le score du verdict (vent/houle/SST/UV/nuages/marée) →
+       même vague critique que sargassum. Sans preload, ce fetch (41 Ko statique) ne
+       partait qu'APRÈS le boot JS → rallongeait la cascade du 1er verdict. -->
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin />
   <!-- Polices AUTO-HÉBERGÉES (same-origin) — Google Fonts est bloqué par les navigateurs
        anti-suivi (Edge « Prévention du suivi », Brave Shields) → rendu en police de secours
        (« gris/cheap »). En les servant depuis notre domaine, plus rien à bloquer + chargement

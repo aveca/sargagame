@@ -11604,7 +11604,11 @@ export default function App(){
       // Gating J+2→J+7 : si on a une credential (token widget / email payeur), on
       // récupère la prévision COMPLÈTE EN PARALLÈLE → merge AVANT l'interpolation
       // ci-dessous (sinon les plages interpolées n'auraient pas leurs J+2-6).
-      fetchFullForecast()
+      // BORNÉ 4 s : forecast.php (PHP dynamique, sans timeout natif) ne doit JAMAIS
+      // retarder le verdict J0 — un premium sur réseau lent voyait son 1er verdict
+      // bloqué le temps de cette route. Timeout → fcFull null → J+2-6 gaté (honnête),
+      // puis le retry borné (1×, ci-dessous) le récupère hors chemin critique.
+      Promise.race([fetchFullForecast(),new Promise(res=>setTimeout(()=>res(null),4000))])
     ]).then(([beachData,sargResult,beachWx,appReports,fbReports,fcFull])=>{
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)

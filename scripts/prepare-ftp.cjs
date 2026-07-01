@@ -596,6 +596,7 @@ function writeRegionIndex(region, out) {
     html.sg-standalone #sg-chin{display:none}
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin />
   <link rel="preconnect" href="https://www.clarity.ms" />
   <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
        connexions pendant le chargement de l'app rend le checkout on-site instantané.
