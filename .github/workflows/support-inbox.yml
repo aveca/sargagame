@@ -31,7 +31,12 @@ on:
         default: "dry-run"
 
 permissions:
-  contents: read
+  contents: write  # commit de la liste de suppression (bounces vus dans la boîte)
+
+# Sérialise les runs pour éviter tout conflit sur le commit de bounced-emails.json.
+concurrency:
+  group: support-inbox-main
+  cancel-in-progress: false
 
 jobs:
   support-inbox:
@@ -54,3 +59,16 @@ jobs:
           SEND: ${{ (github.event_name == 'schedule' || inputs.mode == 'send') && '1' || '0' }}
           SEAL: ${{ inputs.mode == 'seal-existing' && '1' || '0' }}
         run: node scripts/automation/support-inbox.cjs
+
+      # Persiste la liste de suppression si un bounce a ajouté une adresse (hash).
+      # Uniquement en envoi réel (schedule/send). Push GITHUB_TOKEN → ne re-déclenche
+      # AUCUN workflow (pas de deploy) ; bounced-emails.json n'est pas un asset servi.
+      - name: Commit suppression list (if changed)
+        if: github.event_name == 'schedule' || inputs.mode == 'send'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/bounced-emails.json 2>/dev/null || true
+          git diff --staged --quiet || { \
+            git commit -m "chore(support): suppress bounced addresses $(date -u +'%Y-%m-%d %H:%M UTC')"; \
+            git push || (git pull --rebase -X theirs && git push); }

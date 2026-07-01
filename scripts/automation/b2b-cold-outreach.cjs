@@ -39,6 +39,17 @@ function loadJSON(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')) }
 function saveJSON(p, d) { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(d, null, 2)) }
 function daysSince(iso) { const t = Date.parse(iso); return isNaN(t) ? 999 : Math.floor((Date.now() - t) / 86400000) }
 
+// Écarte les adresses non délivrables / pièges AVANT l'envoi : réduit bounces &
+// plaintes = protège la réputation du domaine partagé. On GARDE les adresses B2B
+// légitimes (contact@/info@/reservation@/reception@…), on n'écarte QUE l'infra
+// technique (postmaster, abuse, no-reply, mailer-daemon…) et les syntaxes invalides.
+const EMAIL_RE = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i
+const ROLE_LOCAL = /^(postmaster|abuse|mailer-daemon|maildaemon|mailer|no-?reply|noreply|donotreply|do-not-reply|bounce|bounces|root|hostmaster|webmaster|spam|nobody|devnull)@/i
+function isSendableEmail(email) {
+  const e = String(email || '').trim().toLowerCase()
+  return EMAIL_RE.test(e) && !ROLE_LOCAL.test(e)
+}
+
 // MONTÉE EN DÉBIT AUTO (warmup) : le nb de NOUVEAUX contacts/jour augmente avec l'âge
 // de la campagne (jours depuis le 1er envoi), pour protéger la délivrabilité puis
 // scaler. Override manuel CAP_NEW. Sur domaine dédié, on pourra élargir le barème.
@@ -262,8 +273,9 @@ async function main() {
   const CAP_NEW = rampCap(firstSend)
 
   let newCount = 0, followCount = 0
+  let skipped = 0
   for (const c of contacts) {
-    if (!c.email || !c.email.includes('@')) continue
+    if (!isSendableEmail(c.email)) { skipped++; continue } // syntaxe invalide ou adresse infra/piège
     if (widgetEmails.has(c.email.trim().toLowerCase())) continue // → widget-convert.cjs
     const key = emailHash(c.email)
     if (bounced.has(key)) continue
@@ -286,6 +298,9 @@ async function main() {
     if (!sent._meta.firstSendAt) sent._meta.firstSendAt = rec[step] // ancre le ramp
     saveJSON(SENT_PATH, sent)
   }
-  console.log(ready ? `\nEnvoyé : ${newCount} neufs + ${followCount} relances.` : `\nDry-run : ${newCount} neufs (cap ${CAP_NEW}) + ${followCount} relances.`)
+  console.log(ready ? `\nEnvoyé : ${newCount} neufs + ${followCount} relances (${skipped} adresses écartées).` : `\nDry-run : ${newCount} neufs (cap ${CAP_NEW}) + ${followCount} relances (${skipped} adresses écartées).`)
 }
-main().catch(e => { console.error(e); process.exit(1) })
+// Exécution directe seulement → permet de require ce module (ex. tester isSendableEmail).
+if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })
+
+module.exports = { isSendableEmail, rampCap }

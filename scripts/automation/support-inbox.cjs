@@ -29,10 +29,12 @@
  *                          AVANT d'activer le cron en SEND=1, pour éviter un
  *                          accusé redondant). Priorité sur SEND. One-shot manuel.
  */
+const fs = require('fs')
 const path = require('path')
 const { ImapFlow } = require('imapflow')
 const { simpleParser } = require('mailparser')
 const { sendEmail, brandHeader } = require(path.join(__dirname, 'lib', 'email-send.cjs'))
+const { emailHash } = require(path.join(__dirname, 'lib', 'email-hash.cjs'))
 
 const SEND = process.env.SEND === '1'
 const SEAL = process.env.SEAL === '1'
@@ -54,13 +56,33 @@ const FROM = 'Sargasses <alerte@sargasses-martinique.com>'
 const REPLY_TO = 'alerte@sargasses-martinique.com'
 
 // ─── Classification par mots-clés (objet + corps, insensible casse, FR/EN/ES) ───
+//     ORDRE = PRIORITÉ (premier match gagne) : le plus spécifique / le plus
+//     sensible d'abord. Ex. « je veux un remboursement, les algues étaient là »
+//     → refund (plus prioritaire) avant verdict. 'positive' AVANT le fallback mais
+//     APRÈS les catégories de problème (un « merci » poli à la fin d'une plainte
+//     ne doit pas masquer la plainte).
 const RULES = [
-  { cat: 'refund', re: /rembours|refund|reembolso/i },
-  { cat: 'access', re: /acc[eè]s|marche pas|ne fonctionne|pas re[çc]u|connect|login|access|no funciona|sin acceso/i },
+  { cat: 'refund', re: /rembours|refund|reembolso|charge ?back|litige|conteste|contestaci[oó]n/i },
+  { cat: 'verdict', re: /(algues?|sargass|seaweed|algas)[\s\S]{0,40}(pr[ée]sent|là|la plage|sale|partout|plein|beaucoup|everywhere|full of)|plage[\s\S]{0,20}(sale|d[ée]gueu|pourri)|(pas|non|jamais)[\s\S]{0,10}propre|pr[ée]vision[\s\S]{0,15}(faux|erron|fausse)|erron[ée]|inexact|wrong|inaccurate|not accurate|equivocad|incorrect/i },
+  { cat: 'cancel', re: /annul|r[ée]sili|se d[ée]sabonn|d[ée]sinscri|unsubscribe|\bcancel\b|cancelar|desactiv|arr[êe]ter mon abonn/i },
+  { cat: 'access', re: /acc[eè]s|marche pas|ne fonctionne|pas re[çc]u|connect|login|access|no funciona|sin acceso|restaur/i },
+  { cat: 'billing', re: /facture|re[çc]u|invoice|receipt|double[\s\S]{0,10}(pr[ée]l|charg)|factura|comprobante|paiement[\s\S]{0,20}(question|probl)/i },
+  { cat: 'bug', re: /\bbug\b|plante|crash|erreur[\s\S]{0,15}app|ne charge|[ée]cran (blanc|noir)|white screen|se ferme tout seul|no carga|se cierra|no abre/i },
+  { cat: 'partner', re: /partenariat|\bpartner\b|h[ôo]tel|collectivit|mairie|office de tourisme|widget|\bb2b\b|collabor|sponsor|presse|\bpress\b|journalist|m[ée]dia|interview/i },
+  { cat: 'positive', re: /\bmerci\b|super app|g[ée]nial|bravo|f[ée]licitation|excellent|love (it|your|this)|great app|thank you|\bthanks\b|gracias|excelente|me encanta/i },
 ]
 function classify(text) {
   for (const r of RULES) if (r.re.test(text)) return r.cat
   return 'feedback'
+}
+
+// Signaux d'URGENCE (litige/colère/menace) → remontés en TÊTE du digest, marqués.
+const URGENT_RE = /arnaque|scam|escro|\bfraud|avocat|lawyer|plainte|police|proc[èe]s|inadmissible|scandal|honteux|remboursez[- ]moi|charge ?back|voleur|inacceptable/i
+
+// Rang de priorité pour trier le digest (0 = le plus urgent en tête).
+function prio(it) {
+  if (it.urgent) return 0
+  return { refund: 1, verdict: 2, billing: 3, bug: 3, cancel: 4, access: 4, partner: 5, feedback: 6, positive: 7 }[it.cat] ?? 6
 }
 
 // ─── Détection du BRUIT MACHINE : bounces (Mailer-Daemon / DSN) + auto-réponses
@@ -69,26 +91,57 @@ function classify(text) {
 //     "On a bien reçu votre message" (ping-pong de robots, réputation d'envoi
 //     dégradée) et on pollue le digest fondateur avec de faux "feedback".
 //     Priorité aux HEADERS (RFC 3834 = fiable), fallback sur l'expéditeur + objet.
-//     Renvoie true = à ignorer (marqué \Seen, ni accusé ni digest actionnable). ───
-function isMachineNoise(parsed, from, subject) {
+//     Renvoie le TYPE : 'bounce' (échec de remise, DSN) | 'auto' (auto-réponse) |
+//     '' (vrai message client). Priorité aux HEADERS (RFC 3834), fallback from+objet.
+//     Le type 'bounce' déclenche en plus l'extraction de l'adresse en échec pour la
+//     liste de suppression (on arrête de ré-emailer une adresse morte). ───
+function machineNoiseType(parsed, from, subject) {
   const f = String(from || '').toLowerCase()
-  // 1) Expéditeur robot / enveloppe nulle (bounce) — un vrai client a toujours un from.
-  if (!f || !f.includes('@')) return true
-  if (/^(mailer-daemon|postmaster|no-?reply|noreply|donotreply|do-not-reply|bounce|bounces|mdaemon)@/.test(f)) return true
-  if (f.includes('mailer-daemon')) return true
-  // 2) Headers canoniques (auto-submitted ≠ no, suppression, DSN multipart/report).
   let raw = ''
   try {
     if (Array.isArray(parsed.headerLines)) raw = parsed.headerLines.map(h => h.line || '').join('\n')
-  } catch { /* headers absents : on retombe sur l'objet ci-dessous */ }
-  if (/^auto-submitted:\s*(?!no\b)/im.test(raw)) return true
-  if (/^x-auto-response-suppress:/im.test(raw)) return true
-  if (/^precedence:\s*(auto_reply|bulk|junk|list)/im.test(raw)) return true
-  if (/^content-type:\s*multipart\/report/im.test(raw) && /report-type=["']?delivery-status/im.test(raw)) return true
-  // 3) Objet caractéristique (bounce ou absence), FR/EN/ES.
+  } catch { /* headers absents : on retombe sur from/objet ci-dessous */ }
   const s = String(subject || '')
-  if (/undeliverable|mail delivery (failed|subsystem)|delivery status notification|delivery has failed|returned mail|failure notice|non[- ]?remis|automatic reply|auto[- ]?reply|out of office|absence du bureau|r[ée]ponse automatique|respuesta autom[aá]tica|fuera de (la )?oficina/i.test(s)) return true
-  return false
+  // ── BOUNCE (échec de remise) ──
+  if (!f || !f.includes('@')) return 'bounce' // enveloppe nulle = bounce
+  if (/^(mailer-daemon|mdaemon|bounce|bounces)@/.test(f) || f.includes('mailer-daemon')) return 'bounce'
+  if (/^content-type:\s*multipart\/report/im.test(raw) && /report-type=["']?delivery-status/im.test(raw)) return 'bounce'
+  if (/undeliverable|mail delivery (failed|subsystem)|delivery status notification|delivery has failed|returned mail|failure notice|non[- ]?remis|delivery incomplete/i.test(s)) return 'bounce'
+  // ── AUTO-RÉPONSE (vacances, accusé automatique, postmaster, no-reply) ──
+  if (/^(postmaster|no-?reply|noreply|donotreply|do-not-reply)@/.test(f)) return 'auto'
+  if (/^auto-submitted:\s*(?!no\b)/im.test(raw)) return 'auto'
+  if (/^x-auto-response-suppress:/im.test(raw)) return 'auto'
+  if (/^precedence:\s*(auto_reply|bulk|junk|list)/im.test(raw)) return 'auto'
+  if (/automatic reply|auto[- ]?reply|out of office|absence du bureau|r[ée]ponse automatique|respuesta autom[aá]tica|fuera de (la )?oficina/i.test(s)) return 'auto'
+  return ''
+}
+// Back-compat + lisibilité : booléen « faut-il ignorer ce message ? ».
+function isMachineNoise(parsed, from, subject) { return !!machineNoiseType(parsed, from, subject) }
+
+// Extrait les adresses destinataires en ÉCHEC d'un bounce/DSN (Final-Recipient,
+// RCPT TO, « address(es) failed »). Exclut notre propre boîte et les robots.
+// Retourne des adresses en clair (jamais logguées : hachées avant persistance).
+function extractBouncedRecipients(parsed) {
+  const body = `${parsed.subject || ''}\n${parsed.text || ''}`
+  const out = new Set()
+  const patterns = [
+    /final-recipient:\s*rfc822;\s*<?([a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,})>?/ig,
+    /rcpt to:\s*<?([a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,})>?/ig,
+    /(?:address(?:\(es\))?\s+failed|failed:|to)\s*:?\s*<?([a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,})>?/ig,
+    /<([a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,})>/ig,
+  ]
+  for (const re of patterns) {
+    let m
+    while ((m = re.exec(body))) {
+      const a = m[1].toLowerCase().replace(/[.,;>]+$/, '')
+      // Jamais notre propre adresse/domaine (elle apparaît comme expéditeur du DSN),
+      // ni un robot (mailer-daemon/postmaster).
+      if (a.endsWith('@sargasses-martinique.com')) continue
+      if (a.includes('mailer-daemon') || a.startsWith('postmaster@')) continue
+      out.add(a)
+    }
+  }
+  return [...out]
 }
 
 // HTML → texte brut (échappe rien : on n'imprime jamais le corps client en log).
@@ -121,49 +174,100 @@ function ackTemplate() {
   }
 }
 
-// ─── Réponse SUGGÉRÉE pour le fondateur (texte des gabarits support-reply.cjs).
-//     access → jc_access/access_generic ; feedback → julien_ux ; refund → note
-//     "décision remboursement = toi" + politique bornée. ───
-function suggestedReply(cat) {
-  if (cat === 'access') {
-    return {
-      kind: 'jc_access / access_generic (support-reply.cjs)',
-      text:
-        "Toutes mes excuses pour la gêne. Après notre passage à un nouveau système de paiement, " +
-        "l'accès de certains Pass ne se retrouvait pas automatiquement sur un autre téléphone/navigateur " +
-        "que celui du paiement. C'est corrigé — le Pass est valide, rien à repayer. Pour récupérer l'accès : " +
-        "ouvrir l'app → toucher une plage → le cadenas/« Premium » → « Déjà payé ? Restaurer mon accès » → " +
-        "entrer l'e-mail du paiement. Si l'accès ne revient pas, répondre à ce message : je règle ça " +
-        "personnellement, et si besoin je rembourse.\n" +
-        "→ Envoyer via : SEND=1 KIND=access_generic TO=<client> REGION=<martinique|guadeloupe> node scripts/automation/support-reply.cjs",
-    }
-  }
-  if (cat === 'feedback') {
-    return {
-      kind: 'julien_ux (support-reply.cjs) — générique retour produit',
-      text:
-        "Merci beaucoup, c'est un retour très utile. On prend en compte et on améliore l'app. " +
-        "Merci d'avoir pris le temps, ça aide vraiment.\n" +
-        "→ Adapter le contenu au retour, puis : SEND=1 KIND=julien_ux TO=<client> node scripts/automation/support-reply.cjs",
-    }
-  }
-  // refund
-  return {
+// ─── Réponse SUGGÉRÉE pour le fondateur (gabarits déterministes, FR + ligne EN,
+//     honnêtes : aucune promesse de remboursement auto, aucun claim non hedgé). Le
+//     fondateur adapte 2-3 mots puis envoie depuis alerte@ (ou via support-reply.cjs).
+//     Le moat (honnêteté) prime : la réponse "verdict" renvoie à /fiabilite/ et à la
+//     donnée satellite, jamais à un chiffre inventé. ───
+const SEND_HINT = (kind) => `\n→ Adapter, puis répondre depuis alerte@ (ou : SEND=1 KIND=${kind} TO=<client> node scripts/automation/support-reply.cjs)`
+const REPLIES = {
+  access: {
+    kind: 'jc_access / access_generic (support-reply.cjs)',
+    text:
+      "Toutes mes excuses pour la gêne. Après notre passage à un nouveau système de paiement, " +
+      "l'accès de certains Pass ne se retrouvait pas automatiquement sur un autre téléphone/navigateur " +
+      "que celui du paiement. C'est corrigé — le Pass est valide, rien à repayer. Pour récupérer l'accès : " +
+      "ouvrir l'app → toucher une plage → le cadenas/« Premium » → « Déjà payé ? Restaurer mon accès » → " +
+      "entrer l'e-mail du paiement. Si l'accès ne revient pas, répondez à ce message : je règle ça " +
+      "personnellement, et si besoin je rembourse.\n" +
+      "→ Envoyer via : SEND=1 KIND=access_generic TO=<client> REGION=<martinique|guadeloupe> node scripts/automation/support-reply.cjs",
+  },
+  verdict: {
+    kind: 'VERDICT/exactitude — HONNÊTETÉ (le moat)',
+    text:
+      "⚠️ Sujet sensible (c'est notre moat). Merci de nous l'avoir signalé, et désolé pour la déception. " +
+      "Notre verdict vient de la donnée satellite (ERDDAP), pas d'une estimation — mais aucune prévision " +
+      "n'est parfaite : on publie d'ailleurs notre taux d'erreur daté sur /fiabilite/, et la confiance " +
+      "affichée est plus basse sur les rares alertes. Pouvez-vous me préciser la plage et la date exactes ? " +
+      "Je vérifie ce qu'on avait prévu ce jour-là et je reviens vers vous. " +
+      "(NE PAS inventer de chiffre ; renvoyer vers /fiabilite/.)" + SEND_HINT('julien_ux'),
+  },
+  cancel: {
+    kind: 'annulation / désabonnement',
+    text:
+      "Bien sûr, aucun souci. S'il s'agit d'un Pass : il est ponctuel (one-time), il n'y a rien à résilier, " +
+      "il n'y aura pas d'autre prélèvement. Pour ne plus recevoir nos e-mails : le lien « se désabonner » " +
+      "en bas de chaque message est en un clic. Si vous parlez d'un ancien abonnement mensuel, dites-le-moi " +
+      "et je l'arrête tout de suite." + SEND_HINT('julien_ux'),
+  },
+  billing: {
+    kind: 'facturation / reçu',
+    text:
+      "Merci, je regarde ça tout de suite. Pouvez-vous me confirmer l'e-mail utilisé au paiement ? " +
+      "Je retrouve la transaction et je vous renvoie le reçu (ou je clarifie le montant). En cas de double " +
+      "prélèvement, je corrige et je rembourse la différence." + SEND_HINT('julien_ux'),
+  },
+  bug: {
+    kind: 'bug technique',
+    text:
+      "Merci pour le signalement, ça aide vraiment à améliorer l'app. Pour que je reproduise : sur quel " +
+      "téléphone/navigateur, et à quel écran ça bloque ? En attendant, un rechargement de la page " +
+      "(ou réinstaller le raccourci sur l'écran d'accueil) débloque souvent l'affichage." + SEND_HINT('julien_ux'),
+  },
+  partner: {
+    kind: 'partenariat / presse — self-serve',
+    text:
+      "Avec plaisir. Tout est en libre-service, sans rendez-vous : l'espace pro (essai 30 j gratuit, sans " +
+      "carte) est sur /pro/espace/. Pour la presse, je peux fournir un accès démo + nos chiffres de fiabilité " +
+      "(/fiabilite/). Dites-moi ce qui vous serait utile et je vous envoie le lien." + SEND_HINT('julien_ux'),
+  },
+  positive: {
+    kind: 'positif / merci',
+    text:
+      "Merci beaucoup, ça fait très plaisir à lire ! Si l'app vous est utile, le meilleur coup de pouce " +
+      "c'est d'en parler autour de vous — ou de l'installer sur l'écran d'accueil pour recevoir l'alerte " +
+      "de la veille. Bonne mer 🌊" + SEND_HINT('julien_ux'),
+  },
+  feedback: {
+    kind: 'julien_ux (support-reply.cjs) — générique retour produit',
+    text:
+      "Merci beaucoup, c'est un retour très utile. On prend en compte et on améliore l'app. " +
+      "Merci d'avoir pris le temps, ça aide vraiment.\n" +
+      "→ Adapter le contenu au retour, puis : SEND=1 KIND=julien_ux TO=<client> node scripts/automation/support-reply.cjs",
+  },
+  refund: {
     kind: 'REMBOURSEMENT — décision = TOI (pas de gabarit auto)',
     text:
       "⚠️ Décision de remboursement = toi. NE PAS promettre de remboursement automatiquement. " +
       "Politique bornée : remboursement justifié surtout si le client n'a jamais pu accéder au service " +
       "(cf. réponse access : « vous ne paierez jamais pour un service auquel vous n'accédez pas »). " +
       "Sinon, évaluer au cas par cas avant de t'engager. Répondre depuis alerte@ une fois la décision prise.",
-  }
+  },
 }
+function suggestedReply(cat) { return REPLIES[cat] || REPLIES.feedback }
 
 // ─── DIGEST fondateur (un email par run). Contient les adresses réelles. ───
 function digestTemplate(items, noiseCount = 0) {
-  const rows = items.map((it, i) => {
+  // Tri par priorité : urgents + remboursement/verdict en tête, positif/feedback en bas.
+  const sorted = [...items].sort((a, b) => prio(a) - prio(b))
+  const rows = sorted.map((it, i) => {
     const sg = suggestedReply(it.cat)
-    return `<div style="border:1px solid #E4E0D6;border-radius:10px;padding:14px 16px;margin:12px 0;background:#fff">
-      <div style="font-size:12px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.1em">#${i + 1} · ${esc(it.cat)}</div>
+    const badge = it.urgent
+      ? '<span style="background:#C0392B;color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.06em">⚠️ URGENT</span> '
+      : ''
+    const chipColor = it.urgent ? '#C0392B' : '#FFC72C'
+    return `<div style="border:1px solid ${it.urgent ? '#E7B7B0' : '#E4E0D6'};border-radius:10px;padding:14px 16px;margin:12px 0;background:#fff">
+      <div style="font-size:12px;font-weight:800;color:${chipColor};text-transform:uppercase;letter-spacing:.1em">${badge}#${i + 1} · ${esc(it.cat)}</div>
       <div style="font-size:15px;margin-top:6px"><strong>De :</strong> ${esc(it.from)}</div>
       <div style="font-size:15px;margin-top:2px"><strong>Objet :</strong> ${esc(it.subject) || '(sans objet)'}</div>
       <div style="font-size:14px;color:#444;margin-top:8px;line-height:1.5"><strong>Extrait :</strong> ${esc(it.snippet) || '(vide)'}</div>
@@ -236,8 +340,9 @@ async function main() {
     return
   }
 
-  const items = [] // {uid, from, subject, snippet, cat}
+  const items = [] // {uid, from, subject, snippet, cat, urgent}
   const noiseUids = [] // bounces / auto-réponses : marqués \Seen, jamais ackés ni digérés
+  const bouncedFound = new Set() // adresses en échec extraites des DSN → suppression
   let lock
   try {
     lock = await client.getMailboxLock('INBOX')
@@ -257,11 +362,18 @@ async function main() {
       const from = (parsed.from && parsed.from.value && parsed.from.value[0] && parsed.from.value[0].address) || ''
       const subject = parsed.subject || ''
       // Bruit machine (bounce/DSN/auto-réponse) → sceller, jamais acké ni digéré.
-      if (isMachineNoise(parsed, from, subject)) { noiseUids.push(uid); continue }
+      // Un bounce nourrit en plus la liste de suppression (adresse morte).
+      const noiseType = machineNoiseType(parsed, from, subject)
+      if (noiseType) {
+        noiseUids.push(uid)
+        if (noiseType === 'bounce') for (const a of extractBouncedRecipients(parsed)) bouncedFound.add(a)
+        continue
+      }
       const body = (parsed.text || '').replace(/\s+/g, ' ').trim()
       const snippet = body.slice(0, 400)
       const cat = classify(`${subject}\n${body}`)
-      items.push({ uid, from, subject, snippet, cat })
+      const urgent = URGENT_RE.test(`${subject}\n${body}`)
+      items.push({ uid, from, subject, snippet, cat, urgent })
     }
   } finally {
     if (lock) lock.release()
@@ -270,7 +382,7 @@ async function main() {
   // Compteurs SEULEMENT (zéro PII).
   const counts = items.reduce((a, it) => { a[it.cat] = (a[it.cat] || 0) + 1; return a }, {})
   const summary = Object.entries(counts).map(([c, n]) => `${n} ${c}`).join(', ') || '(aucune)'
-  console.log(`[support-inbox] ${items.length} message(s) UNSEEN traité(s) — catégories : ${summary} · ${noiseUids.length} bruit machine (bounce/auto-réponse) ignoré(s)`)
+  console.log(`[support-inbox] ${items.length} message(s) UNSEEN traité(s) — catégories : ${summary} · ${noiseUids.length} bruit machine ignoré(s) · ${bouncedFound.size} adresse(s) en échec vue(s)`)
 
   if (!SEND) {
     console.log('[support-inbox] DRY-RUN — aucun envoi, aucun \\Seen. (Passer SEND=1 pour activer.)')
@@ -291,6 +403,28 @@ async function main() {
       console.error('[support-inbox] échec marquage \\Seen bruit machine :', e && e.message)
     } finally {
       if (lockN) lockN.release()
+    }
+  }
+
+  // ── SEND : nourrir la liste de suppression avec les adresses en échec vues dans
+  //    les bounces (on arrête de ré-emailer une adresse morte = réputation protégée).
+  //    Hashes SEULEMENT (RGPD, même format que check-email-status.cjs). Le commit du
+  //    fichier est fait par l'étape git du workflow support-inbox.yml. Zéro PII loggué.
+  if (bouncedFound.size) {
+    try {
+      const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
+      let list = []
+      try { list = JSON.parse(fs.readFileSync(BOUNCED_PATH, 'utf-8')) } catch { list = [] }
+      const existing = new Set((Array.isArray(list) ? list : []).map(e => String(e).includes('@') ? emailHash(e) : e))
+      let added = 0
+      for (const a of bouncedFound) { const h = emailHash(a); if (!existing.has(h)) { existing.add(h); added++ } }
+      if (added) {
+        fs.mkdirSync(path.dirname(BOUNCED_PATH), { recursive: true })
+        fs.writeFileSync(BOUNCED_PATH, JSON.stringify([...existing], null, 2))
+      }
+      console.log(`[support-inbox] suppression : ${added} adresse(s) en échec ajoutée(s) (hash) / ${bouncedFound.size} vue(s)`)
+    } catch (e) {
+      console.error('[support-inbox] échec mise à jour liste de suppression :', e && e.message)
     }
   }
 
@@ -353,4 +487,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { isMachineNoise, classify }
+module.exports = { isMachineNoise, machineNoiseType, classify, prio, suggestedReply, extractBouncedRecipients, URGENT_RE }
