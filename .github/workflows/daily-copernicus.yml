@@ -446,6 +446,25 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/ux-watch.cjs --send
 
+      # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
+      # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
+      # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
+      # « ship → mesure → améliore ». Écrit ux-daily.json + ux-daily-history.json
+      # (committés plus bas). --send = digest email (dédup 1×/jour, HOLD si SMTP absent).
+      # schedule-only (1 cliché/jour ; les runs push servent au deploy, pas à la mesure).
+      - name: UX daily tracking (diff jour-à-jour first-party)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+          SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
+          SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
+          SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/ux-daily.cjs --send
+
       # ── 1b. Commit IMMÉDIAT des états email (anti-doublon). Leçon 2026-06-11 :
       # le commit de fin de workflow arrive APRÈS build/deploy — un step qui
       # plante entre les envois et ce commit = drip-sent.json jamais persisté
@@ -457,7 +476,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json public/api/b2b-paylinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -683,6 +702,9 @@ jobs:
             git add "public/api/copernicus/*/$pat" 2>/dev/null || true
           done
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
+          # Tracking UX journalier (rapport + série temporelle) — append-only inter-runs.
+          [ -f scripts/automation/data/ux-daily.json ] && git add scripts/automation/data/ux-daily.json
+          [ -f scripts/automation/data/ux-daily-history.json ] && git add scripts/automation/data/ux-daily-history.json
           [ -f scripts/automation/data/referral-report.json ] && git add scripts/automation/data/referral-report.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
