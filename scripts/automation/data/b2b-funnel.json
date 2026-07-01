@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-30T20:03:56.368Z",
+  "updatedAt": "2026-07-01T04:02:50.629Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 51,
-    "contacted": 56,
+    "discovered": 45,
+    "contacted": 62,
     "lead": 5,
     "paid": 2
   },
@@ -544,58 +544,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "f5d0f041e4a78e0d94496f9c7ea2179f": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Club Nautique du Vauclin",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:03.287Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c14ca19947f562213b3c05db3f0ef633": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Martinique Kiteschool",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:03.597Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "651d24db148c0b806dafd76d677c4205": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Dénébola - Les Plaisirs Nautiques",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:04.041Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "7d23eaac3c2bcedb59ccf5b512f331ac": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Voile - Marina du Robert",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:04.450Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "0881323f2fbfb74c2f06b72a3ad6d517": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Mouillage",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:04.783Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "cc56f85b65d0ba6eedfc329ef9ffd7bd": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "L'Escale du Robert",
       "island": "MQ",
-      "contactedAt": null,
+      "contactedAt": "2026-07-01T04:00:05.114Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "1dc334ec31a26290dd3ed4a5889fb11b": {
       "stage": "discovered",
