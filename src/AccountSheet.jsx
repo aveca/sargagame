@@ -34,7 +34,7 @@ function Watcher({ size=40 }){
 
 const lsGet = (k)=>{ try{ return localStorage.getItem(k) }catch(_){ return null } }
 
-export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEnableNotif, onRestore, onManage, onUpgrade, supportEmail="alerte@sargasses-martinique.com", track }){
+export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEnableNotif, onToggleAlerts, alertsOn, onRestore, onManage, onUpgrade, supportEmail="alerte@sargasses-martinique.com", track }){
   const panelRef = useRef(null), closeRef = useRef(null), reduced = useRef(false)
   const swipe = useSwipeClose(()=>{ tk("sg_account_close",{src:"swipe"}); onClose && onClose() })
   const setPanel = useCallback((el)=>{ panelRef.current=el; swipe.ref.current=el },[swipe])
@@ -171,23 +171,32 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
               </div>
             )}
 
-            {/* [B] NOTIFICATIONS — gérées ICI (fin de la cloche Header inerte) */}
+            {/* [B] NOTIFICATIONS — interrupteur ON/OFF ICI (là où vit l'email). */}
+            {(()=>{
+              const on = (alertsOn!=null) ? !!alertsOn : notifOn
+              const doToggle = ()=>{ if(onToggleAlerts){ onToggleAlerts() } else if(onEnableNotif){ enableAlerts() } }
+              return (
             <div style={card}>
               <div style={{display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:8}}>
                 <span style={h2}>{_t(lang,"Alertes sargasses","Sargassum alerts","Alertas de sargazo")}</span>
-                {notifOn && okBadge(_t(lang,"activées","on","activadas"))}
+                {on && okBadge(_t(lang,"activées","on","activadas"))}
               </div>
               <div style={{...subTxt, margin:"6px 0 11px"}}>{_t(lang,"Une alerte le matin où ta plage tourne — jamais pour rien. En saison calme, on ne te ping pas.","One alert the morning your beach turns — never for nothing. In calm season we won't ping you.","Una alerta la mañana en que tu playa cambia — nunca por nada. En temporada calma no te molestamos.")}</div>
-              {notifOn ? (
-                <div style={{...subTxt, color:INK}}>{_t(lang,"Le Veilleur t'écrit chaque matin 🔔 Pour couper, va dans les réglages de ton téléphone/navigateur.","The Watchman writes you each morning 🔔 To stop, use your phone/browser settings.","El Vigía te escribe cada mañana 🔔 Para parar, usa los ajustes de tu teléfono/navegador.")}</div>
+              {on ? (
+                <>
+                  <div style={{...subTxt, color:INK, marginBottom:10}}>{_t(lang,"Le Veilleur t'écrit chaque matin 🔔","Le Veilleur writes you each morning 🔔","El Vigía te escribe cada mañana 🔔")}</div>
+                  <button onClick={doToggle} style={ghostBtn}>{_t(lang,"Désactiver les alertes","Turn off alerts","Desactivar alertas")}</button>
+                </>
               ) : perm==="denied" ? (
                 <div style={{...subTxt, color:INK}}>{_t(lang,"Notifications bloquées. Réactive-les dans les réglages de ton téléphone/navigateur.","Notifications blocked. Re-enable them in your phone/browser settings.","Notificaciones bloqueadas. Reactívalas en los ajustes de tu teléfono/navegador.")}</div>
               ) : iosBrowser ? (
                 <div style={{...subTxt, color:INK}}>{_t(lang,"Sur iPhone : Partager → « Sur l'écran d'accueil », puis reviens activer les alertes.","On iPhone: Share → 'Add to Home Screen', then come back to enable alerts.","En iPhone: Compartir → 'A pantalla de inicio', luego vuelve a activar las alertas.")}</div>
               ) : (
-                <button onClick={enableAlerts} style={goldBtn}>{_t(lang,"Activer les alertes","Enable alerts","Activar alertas")}</button>
+                <button onClick={doToggle} style={goldBtn}>{_t(lang,"Activer les alertes","Enable alerts","Activar alertas")}</button>
               )}
             </div>
+              )
+            })()}
 
             {/* [C] CONTACT — jamais de cul-de-sac */}
             <div style={{...card, background:"#fff8e8", borderStyle:"dashed"}}>
