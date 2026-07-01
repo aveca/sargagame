@@ -1,16 +1,17 @@
 # NEXT_SESSION — sargagame
 
-> **✅ 2026-07-01 — SESSION SARGATRACK CLÔTURÉE : panel adverse → 5 leviers shippés. PRs #379 + #385 mergées+déployées, dernière PR = renouvellement + win-back.**
+> **✅ 2026-07-01 — SESSION SARGATRACK CLÔTURÉE (archivée). Panel adverse → 6 leviers + migration funnel + dé-blocages. PRs #379 #385 #388 #390 mergées+déployées (curl 200).**
 >
-> Réponse à « Sargatrack nous dépasse ? » → NON (avantage = distribution/participation FB, pas produit). Panel adverse (5 lentilles) convoqué à la demande du fondateur → file d'actions autonomes vérifiées, exécutées une par une :
-> 1. **#379** — nudge recrutement galeries photos vides (`?vseed=0`) + doc `competitor-sargatrack.md`. Déployé+vérifié.
-> 2. **#385** (mergée+déployée, curl 200) — lien `/fiabilite/` « Avant de payer » (`?pwrel=0`) · gate wallet Apple/Google Pay `PassOffer` (`?wcap=0`) · partage post-contribution photo (`?vshare=0`) · GTT slice 1 `groundReliabilityDelta` (confidence.cjs, isolé). Collision 2-sessions GTT résolue par merge.
-> 3. **Dernière PR (renouvellement + win-back)** :
->    - `feat(revenue)` **nudge renouvellement pré-expiration** : bannière positive quand pass actif <3j (`sg_pass_renew_seen`, `?passrenew=0`). Miroir de la bannière expired.
->    - `feat(retention)` **win-back push dormants** : tag `sg_last_seen` (front, live) + `scripts/automation/push-winback.cjs` (HOLD/dry-run défaut, cadence 14j, copy honnête). **GO-LIVE DIFFÉRÉ** : câbler un step CI `--send` APRÈS ~2 sem. d'accumulation `sg_last_seen` + revue dry-run (prématuré maintenant, comme GTT Phase 1).
+> Réponse à « Sargatrack nous dépasse ? » → NON (leur avantage = distribution/participation FB, pas produit). Panel adverse convoqué à la demande du fondateur → file d'actions autonomes vérifiées, shippées une par une (toutes flag-gated, gate autoritatif = CI) :
+> - **#379** — nudge recrutement galeries photos vides (`?vseed=0`) + doc `docs/competitor-sargatrack.md`.
+> - **#385** — lien `/fiabilite/` « Avant de payer » (`?pwrel=0`) · gate wallet Apple/Google Pay `PassOffer` (`?wcap=0`) · partage post-contribution photo (`?vshare=0`) · GTT slice 1 `groundReliabilityDelta` (confidence.cjs, isolé).
+> - **#388** — nudge renouvellement pré-expiration (`?passrenew=0`) · win-back push dormants (tag `sg_last_seen` live + `scripts/automation/push-winback.cjs`, HOLD/dry-run) · **migration compteur funnel Apps Script → Supabase** (`analytics_events` + `logAnalyticsEvent` + `funnel-from-supabase.cjs` → PLUS de `clasp push` pour le funnel) · corrections CLAUDE.md.
+> - **#390** — preuve fiabilité cliquable au paywall (`?pwrel=0`) · **invitation referral ouverte aux users GRATUITS** (code généré pour tous, hub hors branche premium ; récompense créditée au paiement filleul = financée par vente ; `?referral=0`).
+> - **GSC US** : `provision-gsc.yml` re-déclenché → vert (SA vérifié + sitemaps soumis). Item « bloqué » du CLAUDE.md était périmé → corrigé.
 >
-> **RESTE — bloqué FONDATEUR (pas l'agent)** : creds SEO US (GSC sitemaps + IDs GA4/Clarity dans `regions/*.json`) · paiement test réel lien Pro 690 € · `clasp push` (funnel). **Owned autre session** : GTT Phase 2 (câblage rabais fiabilité slice1 sur le modèle simplifié #386, GPS consent, montée). **Différé** : go-live du win-back push (voir ci-dessus).
-> **Nouveaux flags rollback de la session** : `?vseed=0 ?pwrel=0 ?wcap=0 ?vshare=0 ?passrenew=0` (+ `push-winback` HOLD par défaut).
+> **Flags rollback ajoutés** : `?vseed=0 ?pwrel=0 ?wcap=0 ?vshare=0 ?passrenew=0` (+ `push-winback` HOLD par défaut).
+> **RESTE (aucun n'est un blocage agent immédiat)** : go-live win-back push (câbler step CI `--send` après ~2 sem. d'accumulation `sg_last_seen` + revue dry-run) · GTT Phase 2 = **owned autre session** (câblage rabais fiabilité slice1 sur modèle simplifié #386, GPS consent, montée). Blocages fondateur d'avant = **RÉSOLUS** (paiements testés, GSC faite, funnel dé-claspé).
+> **⚠️ LEÇON AUTONOMIE (importante)** : les crons de session (`CronCreate`) **ne survivent PAS** au recyclage du conteneur web éphémère — une « boucle autonome » ne tourne que tant que la session est chaude. Pas de vrai background hands-off ici ; seuls les **GitHub Actions** persistent (mais ne peuvent pas faire écrire du code par l'agent). Ne pas promettre au fondateur du travail nocturne autonome.
 
 > **🧩 2026-07-01 — GTT : slice 1 (helper fiabilité isolé) ajoutée · COLLISION 2-sessions détectée sur Phase 2. PR #385.**
 >
