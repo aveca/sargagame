@@ -10795,9 +10795,13 @@ export default function App(){
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
   //   → canal d'acquisition entier mort. Code stable par device (cid). Double-face.
   useEffect(()=>{
+    // Code parrainage généré POUR TOUT LE MONDE (plus premium-only) : les free
+    // engagés sont les meilleurs partageurs, et la récompense n'est créditée qu'au
+    // PAIEMENT du filleul (mol_refcredit) → financée par une vraie vente. Le hub
+    // d'invitation est désormais exposé aussi aux free (ChasseHome SpaceSheet).
+    try{if(!localStorage.getItem("sg_referral_code"))localStorage.setItem("sg_referral_code","REF-"+hashSeed(_sgcCid()+":ref").toString(36).toUpperCase().slice(0,6))}catch(_){}
     if(!isPremium)return
     try{localStorage.removeItem("sg_checkout_abandoned")}catch(_){}
-    try{if(!localStorage.getItem("sg_referral_code"))localStorage.setItem("sg_referral_code","REF-"+hashSeed(_sgcCid()+":ref").toString(36).toUpperCase().slice(0,6))}catch(_){}
   },[isPremium])
 
   // Runtime data sources
