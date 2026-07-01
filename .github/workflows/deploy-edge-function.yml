@@ -25,7 +25,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Version ÉPINGLÉE (pas `latest`) : `latest` force setup-cli à résoudre le
+          # dernier tag via l'API GitHub non authentifiée → sujette au « rate limit
+          # exceeded » qui a fait échouer le run #4 (attempt 1). Un tag figé télécharge
+          # directement la release, zéro appel API à résoudre. Bump manuel si besoin.
+          version: 2.109.0
       - name: Deploy moderate function (JWT off)
         run: supabase functions deploy moderate --project-ref "$PROJECT_REF" --no-verify-jwt
       - name: Deploy submit-report function (JWT off)
