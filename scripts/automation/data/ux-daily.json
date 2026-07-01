@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T04:10:18.600Z",
+  "generated": "2026-07-01T10:02:38.325Z",
   "date": "2026-07-01",
   "days": 1,
   "regions": [
@@ -10,6 +10,50 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "2fa81656",
+      "subject": "feat(reports): submit-report Edge Function (Phase 0.3) + redirect fiche plage post-modération (#378)"
+    },
+    {
+      "h": "27702c3c",
+      "subject": "Démarrage : cache sombre anti-premap (#377)"
+    },
+    {
+      "h": "684cb934",
+      "subject": "fix(boot): affichage unique et définitif au chargement (pins + verdict, zéro glitch) (#374)"
+    },
+    {
+      "h": "e5dfb8a3",
+      "subject": "perf(bundle) : ScrollStory (below-fold) en chunk lazy — entry −4,4 Ko gzip (#371)"
+    },
+    {
+      "h": "9d283b6b",
+      "subject": "perf(carte) : bake WorldMapView calé sur le DPR (−460ms LCP / −223ms TBT sur 2×) (#370)"
+    },
+    {
+      "h": "5f4e8cc9",
+      "subject": "chore(cleanup) : retire getBeachPhoto, code mort (app 100% sans photo) (#368)"
+    },
+    {
+      "h": "7ab0bb5c",
+      "subject": "Démarrage : cadre sombre neutre au démarrage (#363)"
+    },
+    {
+      "h": "f65ceafb",
+      "subject": "perf : photos hero −46 % + preload météo + timeout forecast (vitesse 1er verdict) (#364)"
+    },
+    {
+      "h": "0031c879",
+      "subject": "Carte : supprimer le flash « tous les noms » au démarrage (#361)"
+    },
+    {
+      "h": "ec1c5a97",
+      "subject": "chore: update Copernicus data 2026-07-01 04:10 UTC"
+    },
+    {
+      "h": "972f3273",
+      "subject": "chore: email state 2026-07-01 04:10 UTC"
+    },
     {
       "h": "6639416d",
       "subject": "Perf bundle : sort 3 overlays hors first-paint en chunks lazy (-20,7 Ko gzip eager) (#359)"
@@ -65,87 +109,93 @@
     {
       "h": "3be559c6",
       "subject": "DEFER items: map empty-tap hint + gesture-scoped rect cache (both flagged) (#343)"
-    },
-    {
-      "h": "ffa3f023",
-      "subject": "feat(terrain): capture échouement/ramassage par plage (signal affiché modéré) (#339)"
-    },
-    {
-      "h": "4d2e1daf",
-      "subject": "Carte : retire les gros encarts blancs des labels de plage (régression #329) (#338)"
-    },
-    {
-      "h": "05b3715a",
-      "subject": "Dead-click wave 2: map chrome + archipel reading + paywall preview tappable (#335)"
-    },
-    {
-      "h": "523dd633",
-      "subject": "SEO géo B2B + maillage /pro + sitemap + purge Barbados (#334)"
-    },
-    {
-      "h": "b03bbee7",
-      "subject": "feat(seo): EN B2B geo-landing — sargassum forecast for Miami & South Florida hotels (#332)"
-    },
-    {
-      "h": "ff361efd",
-      "subject": "feat(seo): EN B2B geo-landing — sargassum forecast for Cancún hotels (#331)"
-    },
-    {
-      "h": "04b729e0",
-      "subject": "Home dead-click: tappable hero mascot, streak chip & daily-pack (#330)"
-    },
-    {
-      "h": "054d82b2",
-      "subject": "Carte dead/rage-click: ≥44px pin hit-targets + tappable beach labels (#329)"
-    },
-    {
-      "h": "9e965b8f",
-      "subject": "SEO EN/ES : 6 pages /pro longue-traîne (#327)"
-    },
-    {
-      "h": "363878c3",
-      "subject": "SEO EN/ES : page coût sargasses hôtels + hreflang + sitemap (#325)"
-    },
-    {
-      "h": "8e47f634",
-      "subject": "Carte accueil : contrôles compte + notifications VISIBLES (fin du header masqué) (#324)"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 108,
+      "sessions": 190,
       "friction": 4,
-      "dead_rate": 0.334,
+      "dead_rate": 0.368,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.344,
-        "n": 276
+        "rate": 0.376,
+        "n": 364
       },
       "top_dead_els": [
         {
           "el": "svg[role=img]",
-          "count": 50
+          "count": 77
         },
         {
           "el": "div",
           "count": 20
         },
         {
+          "el": "div.sg-onink-scope",
+          "count": 15
+        },
+        {
           "el": "div.lc-detail-head",
+          "count": 3
+        },
+        {
+          "el": "div#bc0",
           "count": 3
         },
         {
           "el": "body.theme-comic",
           "count": 3
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.21
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "gp",
+      "sessions": 74,
+      "friction": 2,
+      "dead_rate": 0.301,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.324,
+        "n": 148
+      },
+      "top_dead_els": [
+        {
+          "el": "svg[role=img]",
+          "count": 19
         },
         {
-          "el": "span.lc-detail-fact",
+          "el": "div.sg-onink-scope",
+          "count": 8
+        },
+        {
+          "el": "div",
+          "count": 5
+        },
+        {
+          "el": "rect",
+          "count": 3
+        },
+        {
+          "el": "circle",
           "count": 2
         },
         {
-          "el": "div.lc-detail-body",
-          "count": 2
+          "el": "div.lc-detail-sub",
+          "count": 1
         }
       ],
       "bored_worst": {
@@ -163,63 +213,21 @@
       ]
     },
     {
-      "region": "gp",
-      "sessions": 34,
-      "friction": 2,
-      "dead_rate": 0.354,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.371,
-        "n": 89
-      },
+      "region": "florida",
+      "sessions": 16,
+      "friction": 0,
+      "dead_rate": 0.222,
+      "dead_worst": null,
       "top_dead_els": [
         {
           "el": "svg[role=img]",
-          "count": 10
-        },
-        {
-          "el": "div.sg-onink-scope",
-          "count": 8
-        },
-        {
-          "el": "div",
-          "count": 3
-        },
-        {
-          "el": "rect",
-          "count": 1
-        },
-        {
-          "el": "div.lc-detail-sub",
-          "count": 1
-        },
-        {
-          "el": "div.lc-fc-cell",
-          "count": 1
+          "count": 2
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.13
       },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": null,
-      "changes": [
-        "(pas de veille — premier cliché)"
-      ]
-    },
-    {
-      "region": "florida",
-      "sessions": 10,
-      "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
-      "top_dead_els": [],
-      "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -232,7 +240,7 @@
     },
     {
       "region": "puntacana",
-      "sessions": 1,
+      "sessions": 4,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -250,7 +258,7 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 5,
+      "sessions": 6,
       "friction": 0,
       "dead_rate": 0.286,
       "dead_worst": null,
