@@ -588,10 +588,25 @@ function selfTest() {
   console.log('\nAll invariants hold. ✓')
 }
 
-if (process.argv.includes('--selftest')) {
-  selfTest()
-} else if (process.argv.includes('--reforecast')) {
-  reforecastBacktest()
-} else {
-  main()
+// Reusable pieces for the calibration script (beached-calibrate.cjs) — exported
+// so the loaded-beach pair-building logic is shared, not duplicated.
+module.exports = {
+  BEACHES_META,
+  HISTORY_PATH,
+  BANKS_PATH,
+  loadJSON,
+  indexObsByBeach,
+  regimeAsOf,
+  isAlertStatus,
+}
+
+// CLI dispatch — guarded so `require()`ing this module is side-effect-free.
+if (require.main === module) {
+  if (process.argv.includes('--selftest')) {
+    selfTest()
+  } else if (process.argv.includes('--reforecast')) {
+    reforecastBacktest()
+  } else {
+    main()
+  }
 }
