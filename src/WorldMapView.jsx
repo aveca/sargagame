@@ -258,10 +258,12 @@ export default function WorldMapView({
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
   // Labels carte (grief fondateur 2026-07-01) : le NOM reste À CÔTÉ DU PIN sur la côte (pas de
-  // liste en haut — on se perd), uniquement pour les plages PAS PROPRES (orange/rouge). Le nombre
-  // est ZOOM-AWARE (arbitré au repos par declutter) : vue large île → 5 plus impactées ; dès qu'on
-  // ZOOME → toutes les alertes DANS LE VIEWPORT. Rollback ?maplabelcap=0 → lève le cap large.
+  // liste en haut — on se perd). Le nombre est ZOOM-AWARE (arbitré au repos par declutter) : vue
+  // large île → 5 plus impactées ; dès qu'on ZOOME → toutes les alertes DANS LE VIEWPORT + les
+  // plages PROPRES (vertes) que la place libérée permet d'afficher. Rollback ?maplabelcap=0 → lève
+  // le cap large ; ?mapgreen=0 → ne nomme JAMAIS les plages propres (retour aux impactées seules).
   const mapLabelCapOff = (()=>{try{return /[?&]maplabelcap=0/.test(window.location.search)}catch(_){return false}})()
+  const mapGreenOff = (()=>{try{return /[?&]mapgreen=0/.test(window.location.search)}catch(_){return false}})()
   const relHref = (island==="mq"||island==="gp") ? "/fiabilite/" : (lang==="es" ? "/fiabilidad/" : "/reliability/")
   const _relGo = ()=>{ try{track&&track("sg_map_live_tap",{island})}catch(_){}; try{window.location.href=relHref}catch(_){} }
   // INP/perf pan : writeCam lit getBoundingClientRect à CHAQUE frame de pan (reflow). On met
@@ -462,17 +464,18 @@ export default function WorldMapView({
     return beachList.filter(b=>(b.name||"").toLowerCase().includes(lq)).slice(0,6)
   },[query,beachList])
 
-  // IDs des plages affichant un label NOM à côté du pin sur la côte.
+  // IDs des plages CANDIDATES à un label NOM à côté du pin. Le NOMBRE réellement affiché est
+  // arbitré AU REPOS par le déclutter (zoom-aware) : vue large île → 5 plus impactées ; dès qu'on
+  // ZOOME → alertes du viewport PUIS plages propres (rank clean=2, donc jamais avant les alertes,
+  // ni en vue large où le cap 5 est saturé par les impactées). On rend donc ici toutes les
+  // impactées + (sauf ?mapgreen=0) toutes les propres ; le déclutter cache le surplus/le hors-champ.
   const labeledIds = useMemo(()=>{
     const ids=new Set()
     if(!beachList.length) return ids
-    // Fondateur 2026-07-01 : nommer les plages PAS PROPRES (orange=modéré / rouge=à éviter).
-    // Le NOMBRE affiché est arbitré AU REPOS par le déclutter, zoom-aware : vue large (île entière)
-    // → 5 plus impactées ; dès qu'on ZOOME → toutes les alertes DANS LE VIEWPORT (vers où on zoome).
-    // On rend donc ici TOUTES les impactées ; le déclutter cache le surplus / le hors-champ.
-    beachList.forEach(b=>{ const st=b.days[day]; if(st==="moderate"||st==="avoid") ids.add(b.id) })
+    beachList.forEach(b=>{ const st=b.days[day]
+      if(st==="moderate"||st==="avoid"||(!mapGreenOff&&st==="clean")) ids.add(b.id) })
     return ids
-  },[beachList,day])
+  },[beachList,day,mapGreenOff])
 
   // Ellipses de relief en coordonnées viewBox (MQ only)
   const reliefEls = useMemo(()=>{
@@ -559,11 +562,12 @@ export default function WorldMapView({
     const wrap=wrapRef.current
     const W=(wrap&&wrap.clientWidth)||0, H=(wrap&&wrap.clientHeight)||0
     // Zoom-aware (grief fondateur 2026-07-01) : vue LARGE (île entière, k≈1) → cap aux 5 plages
-    // les plus impactées, pour ne pas encombrer la côte ; dès qu'on ZOOME → on montre TOUTES les
-    // alertes DANS LE VIEWPORT (celles vers où on zoome), la place se libère. Rollback
-    // ?maplabelcap=0 → lève le cap large (toutes les impactées en champ, quel que soit le zoom).
+    // les plus impactées, IMPACTÉES SEULES (les vertes n'encombrent pas la côte) ; dès qu'on ZOOME
+    // → alertes DU VIEWPORT + plages PROPRES que la place libérée permet. Rollback ?maplabelcap=0
+    // → lève le cap large ET montre les vertes quel que soit le zoom.
     const camK=camRef.current.k
-    const MAX = mapLabelCapOff ? Infinity : (camK<=1.35 ? 5 : 14)
+    const wide = camK<=1.35
+    const MAX = mapLabelCapOff ? Infinity : (wide ? 5 : 14)
     const els=layer.querySelectorAll('[data-vx]')
     const RANK={avoid:0,moderate:1,clean:2}
     const boxes=[]
@@ -580,6 +584,9 @@ export default function WorldMapView({
     const kept=[]
     boxes.forEach(bx=>{
       if(!bx.inView){ bx.el.style.visibility='hidden'; return }
+      // Vertes/inconnues (rank>=2) : nommées UNIQUEMENT en vue zoomée (sauf ?maplabelcap=0). En vue
+      // large on garde la côte lisible = impactées seules (décision fondateur).
+      if(!mapLabelCapOff && wide && bx.rank>=2){ bx.el.style.visibility='hidden'; return }
       if(kept.length>=MAX){ bx.el.style.visibility='hidden'; return }
       const hit=kept.some(kb=> !(bx.r<kb.l||bx.l>kb.r||bx.b<kb.t||bx.t>kb.b))
       if(hit){ bx.el.style.visibility='hidden' }
