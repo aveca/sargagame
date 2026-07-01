@@ -1,5 +1,14 @@
 # NEXT_SESSION — sargagame
 
+> **🗓️ 2026-07-01 — WEEKHUB : PLANNER SAISONNIER « QUAND RÉSERVER » (dates lointaines). PR #396 MERGÉE + DÉPLOYÉE (run #1770).**
+>
+> **Grief fondateur** (capture) : le bloc « Tu pars dans 2 semaines ? » du `WeekHub` ne donnait qu'un « reviens à J-7 » générique — inutile pour qui **réserve un hôtel des mois à l'avance** et veut savoir **si/quand** partir.
+> **Shippé** : bloc transformé en **outil de planification saisonnière honnête** (au-delà de 7 j = zéro verdict daté, on donne la **tendance saisonnière SOURCÉE**).
+> - `scripts/lib/season-climatology.cjs` : nouveau helper **`monthsForRegion(island)`** → profil 12 mois {hors-saison/approche/pleine} (Wang & Hu 2019 + USF SaWS). Exposé dans `seasonOutlook.months` par `build-sargassum-json.cjs` **et** `fetch-sargassum-live.cjs` (champ **additif**, n'altère aucun verdict).
+> - `src/WeekHub.jsx` : date d'arrivée saisissable **jusqu'à ~11 mois** (au lieu de 30 j). Au choix → phase du mois (Calme/Épaule/Chargé) + **mois les plus calmes à venir** + **calendrier 12 mois** coloré (mois choisi surligné or). Bonus climato OBSERVÉE (`clean_rate`/côte) si historique dispo, sinon rien fabriqué. Cadré partout « tendance saisonnière (littérature publiée), pas une prévision de ta date ». Opt-in au choix de la date (zéro email/ping). Le jour exact reste gaté J-7 (message conservé). Sous flag existant **`?weekhubseason=0`**.
+> - **Vérif** : Gate vert (build, budget 182 Ko ≤ 210), **rendu isolé Playwright** de WeekHub (props mock) → juillet=avertissement pic + reco nov-fév, décembre=« Bon créneau hors saison », 0 erreur JS. `seasonPhaseMsg`/`sendPlan` morts supprimés.
+> - **Note dette** : `climatology.json` n'a que **juin** (historique court, tout 100 %) → planEstimate observé reste souvent vide ; le calendrier saisonnier sourcé prend le relais. Rien à faire, la climato observée se remplira avec le temps.
+
 > **✅ 2026-07-01 — SESSION SARGATRACK CLÔTURÉE : panel adverse → 5 leviers shippés. PRs #379 + #385 mergées+déployées, dernière PR = renouvellement + win-back.**
 >
 > Réponse à « Sargatrack nous dépasse ? » → NON (avantage = distribution/participation FB, pas produit). Panel adverse (5 lentilles) convoqué à la demande du fondateur → file d'actions autonomes vérifiées, exécutées une par une :
