@@ -12,7 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import BeachPhotos from "./BeachPhotos.jsx"
-import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured } from "./supabasePhotos.js"
+import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -1367,10 +1367,18 @@ export function abVariant(testId,variants,weights){
 
 const TRACK_QUEUE_KEY="sg_track_queue"
 const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+// Étapes du funnel → répliquées sur Supabase (source de vérité, remplace le
+// compteur Apps Script/Code.js → plus de clasp push pour le corriger). Agrégées
+// par scripts/automation/funnel-from-supabase.cjs. Allowlist volontaire (pas TOUT
+// track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
+const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
+  // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
+  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block

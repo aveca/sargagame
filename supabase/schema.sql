@@ -154,3 +154,31 @@ create policy "anon read beach_report" on public.beach_reports
 
 -- (Modération = passer status à 'approved' au dashboard / clé service_role.
 --  L'anon NE PEUT PAS update/delete : aucune policy.)
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- analytics_events — sink FUNNEL / télémétrie (migration Apps Script → Supabase,
+-- 2026-07). WRITE-ONLY côté anon : le front insère les étapes du funnel
+-- (sg_session_start … sg_pass_cta … sg_conversion), l'agrégation lit avec la
+-- service key (scripts/automation/funnel-from-supabase.cjs). But : ne plus
+-- dépendre d'un `clasp push` (Code.js) pour compter/corriger le funnel. Pas de PII
+-- (event + params non-nominatifs). Purge périodique conseillée (>90 j).
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists public.analytics_events (
+  id     bigint generated always as identity primary key,
+  event  text not null,
+  params jsonb,
+  island text,
+  ts     timestamptz not null default now()
+);
+
+alter table public.analytics_events enable row level security;
+
+-- anon INSERT uniquement (write-only). AUCUNE policy SELECT anon → non lisible
+-- côté client ; seule la service_role (agrégation) lit.
+drop policy if exists "anon insert analytics" on public.analytics_events;
+create policy "anon insert analytics" on public.analytics_events
+  for insert to anon
+  with check (true);
+
+create index if not exists analytics_events_ts_idx on public.analytics_events (ts desc);
+create index if not exists analytics_events_event_idx on public.analytics_events (event);
