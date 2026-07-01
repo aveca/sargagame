@@ -1,5 +1,28 @@
 # NEXT_SESSION — sargagame
 
+> **🌊 2026-07-01 — GROUND-TRUTH TERRAIN (GTT) : signalements visiteurs corrigent le verdict, PHASE 0 SHIPPÉE. Branche `claude/signalement-unavailable-krji28`. PRs #367 #375 #376 #378 mergées.**
+>
+> **Déclencheur** : le message « Signalement indisponible pour l'instant » venait de la table Supabase `beach_reports` **absente de la prod** (le SQL existait mais n'était appliqué que par `planner-alerts.cjs`, script dé-planifié). Puis le fondateur a voulu que les signalements terrain **pèsent sur le niveau affiché du jour** (pas le forecast), **dans les deux sens**, en **temps réel avant le satellite**, avec **validation manuelle** (il reçoit déjà l'email photo).
+>
+> **DÉCISION VERROUILLÉE (2 panels adverses, `docs/GROUND_TRUTH_TERRAIN.md` = autorité)** : correction **bidirectionnelle, temps réel, validée à la main**.
+> - **Le verrou anti-forge = le clic humain du fondateur sur une photo** (inforgeable ; un hôtel ne peut pas le fabriquer). Photo OBLIGATOIRE pour bouger la couleur.
+> - **Montée** (beaching) = escalade-seule AUTO (quorum ≥2, loi existante `Sargasses_PROD.jsx` ~L11878, aucun bénéficiaire à salir). **Descente** (cleanup) = **clé 2 « Rétrograder »** du modérateur, 1 cran max, TTL 48 h, cooldown 7 j/plage. Le **satellite ré-ancre** au passage suivant.
+> - **AFAI/dates JAMAIS éditables** (sinon « mesuré au satellite » = mensonge). **Calibration `/fiabilite/` sur satellite pur** (le calque terrain n'y entre jamais). Flags `?descente=0` / `?ramassage=0`.
+>
+> **SHIPPÉ + DÉPLOYÉ + VÉRIFIÉ (Phase 0, fondations serveur)** :
+> - **#367** — script+workflow `apply-supabase-schema` (applique tout `supabase/schema.sql` via API Management, idempotent, auto sur push si schema.sql change). Table `beach_reports` créée (curl 201).
+> - **#375** — modération `beach_reports` : Edge Function `moderate` généralisée (param `table`, + action clé 2 `confirm_downgrade`) ; `notify-new-reports.cjs` (email 1-tap, step dans `notify-photos.yml` cron 30 min) ; colonnes `submitter_hash`/`within_150m`/`downgrade_confirmed_at`. **Fondateur a testé « Approuver » → row `approved` OK.**
+> - **#378** — Edge Function `submit-report` (empreinte serveur `submitter_hash=SHA256(uid+IP+salt)` + throttle 12 h + `within_150m` ; RGPD : coord GPS jamais reçue, front envoie booléen `on_site`) ; `supabasePhotos.js` route dessus (fallback REST). **+ fix UX demandé** : après Approuver/Rétrograder → **redirection fiche plage** `/plages/<slug>/` (allowlist anti-open-redirect dans `moderate`, URL calculée dans `notify-new-reports`). Live, `{"ok":true}` vérifié.
+>
+> **RESTE (dans l'ordre)** :
+> - **Phase 1 — calibration offline** (0 risque moat, MAIS prématuré tant qu'il n'y a pas de volume de vrais reports) : `aggregate-beach-events.cjs` (GET approved → `public/api/community/events-log.json` append-only, dédup id) + `build-event-calibration.cjs` (confronte events clos ≥48 h à `forecast-archive.json` régénéré `communityReports={}` = anti-leakage ; FN-satellite normalisé beach-days + latence ramassage EN DIAGNOSTIC, jamais tuning `HALF_LIFE`) → `/fiabilite/` via `scripts/lib/reliability-page.cjs`, N≥30 hedgé. Steps dans `daily-copernicus.yml`.
+> - **Phase 2 — le front (LE gros morceau, moat-critique)** : `BeachReport` (~L2700) consentement GPS + `onSite` ; lane MONTÉE (escalade existante durcie, dédup `submitter_hash`) ; lane DESCENTE **séparée** (lit `downgrade_confirmed_at`, calque « Terrain » 1 cran, pastille contestée hachurée JAMAIS vert franc, mesure satellite affichée à côté, TTL 48 h) ; `groundReliabilityNote` isolé dans `confidence.cjs` (n'entre PAS dans `regimeCeiling`) ; flags `?descente=0`/`?ramassage=0`. Libellés honnêtes exacts dans `docs/GROUND_TRUTH_TERRAIN.md`.
+>
+> **⚠️ POURQUOI PHASE 2 PAS FAITE ICI** : elle touche l'affichage du verdict (moat) et **le smoke UI (`ux-smoke.mjs`) ne tourne pas dans le conteneur web** (ressources externes bloquées → `ERR_CONNECTION_CLOSED` identiques sur `main` propre = environnemental ; le chromium headless_shell 1217 n'est pas non plus provisionné, seul 1194 complet l'est → lancer avec `SMOKE_CHROME=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` + patch `executablePath` temporaire). Loi « le fondateur n'est PAS la QA » → Phase 2 doit se faire là où le gate UI complet tourne (CI ou local non-sandbox), avec la checklist self-review UI (theme-skin, portal, contraste, mobile, i18n).
+>
+> **Ménage** : lignes de test `diag-*` (plages bidon) dans `beach_reports` — apparaîtront dans l'email de modération, à rejeter d'un tap (purge 30 j sinon). Ne PAS re-créer de diag rows.
+> **Deploy Edge Functions** : `deploy-edge-function.yml` (workflow_dispatch) déploie `moderate` + `submit-report`. ⚠️ `supabase/setup-cli@v1` peut échouer sur « resolve latest release: rate limit » (transitoire) → `rerun_failed_jobs`. Envisager de pin la version CLI si récurrent.
+
 > **⚡ 2026-07-01 (suite) — VITESSE, GAINS RÉELS MERGÉS : bake carte + ScrollStory lazy. PRs #370 + #371.**
 >
 > Après la mesure (LCP = image bakée `WorldMapView`), deux gains **mesurés** shippés :
