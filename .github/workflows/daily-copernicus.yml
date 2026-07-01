@@ -513,6 +513,11 @@ jobs:
       # plante entre les envois et ce commit = drip-sent.json jamais persisté
       # → chaque retry renvoyait les mêmes emails (17× le même J+3 à 1 abonnée).
       # Un side-effect doit committer son état AVANT tout step faillible.
+      # 2026-07-01 : push direct d'abord (l'arbre porte les JSONs Copernicus non
+      # commités à ce stade — un rebase à froid REFUSERAIT sur arbre sale), puis
+      # retry ×5 fetch + rebase --autostash -X theirs. L'ancien `push || (pull
+      # && push)` échouait en silence sur race ET sur arbre sale → markers non
+      # persistés → re-envoi garanti.
       - name: Commit email state (immédiat, anti-doublon)
         if: github.event_name != 'push'
         continue-on-error: true
@@ -524,7 +529,24 @@ jobs:
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
           git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push || (git pull --rebase -X theirs && git push)
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            # Push direct d'abord (fast path, aucun prérequis d'arbre propre).
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "git push OK (tentative $i)"
+              break
+            fi
+            echo "::warning::git push échoué (tentative $i/5) — fetch + rebase --autostash puis retry"
+            git fetch origin "$BRANCH" || { sleep 10; continue; }
+            # --autostash : met de côté PUIS RÉAPPLIQUE les fichiers non commités
+            # (les JSONs data sont commités par un step ULTÉRIEUR — un stash simple
+            # les perdrait). -X theirs : sur conflit, garde NOTRE commit (markers).
+            git rebase --autostash -X theirs "origin/$BRANCH" || { git rebase --abort || true; sleep 10; }
+          done
+          # continue-on-error garde le deploy data vivant ; l'annotation rend l'échec visible.
+          [ "$push_ok" = "1" ] || echo "::error title=Email state non persisté::markers anti-doublon non poussés après 5 tentatives — risque de re-envoi d'emails au prochain run (leçon 2026-06-11)"
 
       # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual, or on human push) ──
       - name: Check if full build needed

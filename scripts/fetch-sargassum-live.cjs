@@ -678,7 +678,9 @@ function applyBeachAccumulation(levels, dir) {
       if (daysAgo <= 0 || daysAgo > WINDOW_DAYS) continue
 
       const beachEntry = entry.levels.find(l => l.id === level.id)
-      if (!beachEntry || beachEntry.afai < 0.15) continue // ignore history with no beaching
+      // Number.isFinite : un afai null/NaN passerait (null < 0.15 = false) puis
+      // contaminerait le decay en NaN silencieux — donnée absente = ignorée.
+      if (!beachEntry || !Number.isFinite(beachEntry.afai) || beachEntry.afai < 0.15) continue // ignore history with no beaching
 
       if (beachEntry.afai > rawPeak) rawPeak = beachEntry.afai
 
@@ -1340,16 +1342,20 @@ function computeBeachLevels(beaches, gridOf, grid1DOf, s2Layer) {
     // sur l'AFAI satellite AVANT le 1D pour rester dans l'espace normalisé). No-op
     // si le flag est OFF ou si aucun passage S2 frais/couvrant n'existe pour la plage.
     const correctionS2 = computeSentinel2Correction(beach, s2Layer, result.afai)
-    const afaiRaw = result.afai + correction1D + correctionS2
+    // Garde NaN (moat) : une correction non-finie ne doit ni fabriquer un statut
+    // (NaN → statusFromAfai = 'avoid') ni un boost de confiance (NaN !== 0 = true).
+    const c1 = Number.isFinite(correction1D) ? correction1D : 0
+    const c2 = Number.isFinite(correctionS2) ? correctionS2 : 0
+    const afaiRaw = result.afai + c1 + c2
     const afai = Math.round(Math.max(0, Math.min(1, afaiRaw)) * 100) / 100
     const status = statusFromAfai(afai)
     levels.push({
       id: beach.id, afai, status,
-      confidence: result.confidence + (correction1D !== 0 ? 5 : 0) + (correctionS2 !== 0 ? 5 : 0), // multi-source boost
+      confidence: result.confidence + (c1 !== 0 ? 5 : 0) + (c2 !== 0 ? 5 : 0), // multi-source boost
       source: 'erddap-satellite',
-      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : '') + (correctionS2 !== 0 ? '+S2' : ''),
+      sourceDetail: result.method + (c1 !== 0 ? '+1D' : '') + (c2 !== 0 ? '+S2' : ''),
     })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}${correctionS2 ? ' S2:' + (correctionS2 > 0 ? '+' : '') + correctionS2.toFixed(2) : ''}] conf=${result.confidence}%`)
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${c1 ? ' 1D:' + (c1 > 0 ? '+' : '') + c1.toFixed(2) : ''}${c2 ? ' S2:' + (c2 > 0 ? '+' : '') + c2.toFixed(2) : ''}] conf=${result.confidence}%`)
   }
   return levels
 }
@@ -1457,6 +1463,18 @@ async function runRegionPipeline(region, shared) {
     } catch (_) { banks = [] }
   }
 
+  // EXIT-1 RÉGION (moat/honnêteté, même loi que la racine) : sans grille ERDDAP,
+  // extractBeachAfai renvoie 0.05 = 'clean' (no-data masqué en VERT) → publier ça
+  // = fausse carte verte avec horodatage FRAIS, et updateHistory inscrirait ces
+  // placeholders comme observations datées. On sort AVANT toute écriture : la
+  // dernière donnée RÉELLE reste en ligne (âge affiché, honnête) ; prochain run
+  // (4×/j) re-tente. exitCode (pas exit()) pour laisser les autres régions tourner.
+  if (!grid) {
+    console.error(`ERROR: [${region.id}] grille ERDDAP manquante — région non publiée pour ne PAS écrire de fausse carte "propre" (no-data masqué en clean). La donnée réelle précédente reste en ligne ; prochain run re-tente.`)
+    process.exitCode = 1
+    return
+  }
+
   // 2. Niveaux AFAI par plage (meme echantillonnage grille que la racine)
   const levels = computeBeachLevels(beaches, () => grid, () => grid1D)
   const rawLevels = levels.map(l => ({ id: l.id, afai: l.afai, status: l.status }))
@@ -1533,7 +1551,7 @@ async function runRegionPipeline(region, shared) {
   // dans _private/forecast-full.json (servi par forecast.php après auth).
   const { publicWeekly, privateForecasts, truncated } = gateWeekly(weekly)
   const payload = {
-    source: grid ? 'erddap-live' : 'erddap-fallback',
+    source: 'erddap-live', // grille garantie présente (garde EXIT-1 région ci-dessus)
     updatedAt,
     erddapTimestamp,
     dataAgeMinutes,
@@ -1545,7 +1563,6 @@ async function runRegionPipeline(region, shared) {
     scores,
     seasonOutlook: seasonOutlookFor(region.id, updatedAt),
   }
-  if (!grid) payload.fallbackReason = 'erddap-unreachable' // mode degrade documente
   fs.writeFileSync(path.join(regionDir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
   writePrivateGuarded(region.id, regionDir, privateForecasts, truncated, levels, updatedAt)
 

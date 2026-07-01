@@ -7,6 +7,8 @@ const fs = require('fs')
 const path = require('path')
 
 const root = path.join(__dirname, '..')
+// Allowlist des sources LIVE (partagée racine + régions) — cf. garde MOAT #1.
+const LIVE_SOURCES = ['erddap-live', 'copernicus']
 const BEACH_IDS = [
   'grande-anse', 'anse-mitan', 'anse-noire', 'tartane', 'anse-madame', 'diamant', 'pt-marin', 'sainte-anne', 'les-salines', 'vauclin',
   'gp-grande-anse', 'gp-malendure', 'gp-sainte-anne', 'gp-pt-chateaux', 'gp-gosier', 'gp-caravelle', 'gp-bas-du-fort', 'gp-deshaies', 'gp-moule', 'gp-vieux-fort',
@@ -51,7 +53,6 @@ function main() {
     // réelles sont autorisées ; 'reference' / 'reference-fallback' (données
     // hardcodées) / 'erddap-fallback' (grille ERDDAP manquante) sont bloquées.
     // Allowlist (et non blocklist) = robuste à une source dégradée inconnue.
-    const LIVE_SOURCES = ['erddap-live', 'copernicus']
     if (!LIVE_SOURCES.includes(data.source)) {
       console.error(`❌ source="${data.source}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte sans données réelles. Le prochain run re-tentera la source live.`)
       ok = false
@@ -123,6 +124,37 @@ function main() {
       ok = false
     } else {
       console.log('   weekly: 20 plages avec prévisions 7j ✓')
+    }
+  }
+
+  // ── Garde MOAT #1 bis : mêmes règles pour les sargassum.json RÉGIONAUX
+  // (public/api/copernicus/<region>/). Une source non-live (ex. 'erddap-fallback'
+  // = grille manquante masquée en clean) bloque la publication comme la racine.
+  // Fail-open sur dossier illisible / fichier absent (warn, pas de blocage) —
+  // même philosophie que la lecture historique de la garde #2.
+  const copDir = path.join(root, 'public', 'api', 'copernicus')
+  let regionDirs = []
+  try {
+    regionDirs = fs.readdirSync(copDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+  } catch (e) {
+    console.warn('   ⚠ Répertoire copernicus illisible (garde régionale inactive):', e.message)
+  }
+  for (const dirName of regionDirs) {
+    const regPath = path.join(copDir, dirName, 'sargassum.json')
+    if (!fs.existsSync(regPath)) continue // dossier sans payload (ex. _private) — non-bloquant
+    let reg = null
+    try {
+      reg = JSON.parse(fs.readFileSync(regPath, 'utf-8'))
+    } catch (e) {
+      console.warn(`   ⚠ ${dirName}/sargassum.json illisible (garde régionale inactive pour cette région):`, e.message)
+      continue
+    }
+    const regSource = reg && reg.source // reg peut être null (JSON valide mais vide)
+    if (!LIVE_SOURCES.includes(regSource)) {
+      console.error(`❌ [${dirName}] source="${regSource}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte régionale sans données réelles.`)
+      ok = false
+    } else {
+      console.log(`   région ${dirName}: source=${regSource} ✓`)
     }
   }
 
