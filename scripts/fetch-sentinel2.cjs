@@ -48,15 +48,18 @@ const RES_DEG = 0.00012       // ~13 m/pixel (proche natif 10 m S2)
 const MIN_COVERAGE = 0.10     // sous 10% de pixels valides = trop nuageux, on ignore
 
 // Plages cibles du PROTOTYPE : sous-ensemble MQ sud/est à fort signal (les plus
-// consultées + où l'échouage est franc). Coordonnées = ras de la côte (pas offshore :
-// ici on VEUT la bande côtière que la grille 4 km dilue). Étendre = ajouter des entrées.
+// consultées + où l'échouage est franc). coastNormal = direction (deg depuis N) vers
+// laquelle la côte fait face = direction du LARGE. On décale la boîte d'échantillonnage
+// de SEAWARD_OFFSET_KM dans cette direction pour couvrir l'EAU near-shore (zone
+// d'échouage) au lieu de centrer sur le rivage (qui met moitié de terre dans la boîte).
 const TARGET_BEACHES = [
-  { id: 'les-salines', lat: 14.3959, lng: -60.8690 },
-  { id: 'sainte-anne', lat: 14.4305, lng: -60.8850 },
-  { id: 'pt-marin',    lat: 14.4511, lng: -60.8836 },
-  { id: 'diamant',     lat: 14.4758, lng: -61.0314 },
-  { id: 'tartane',     lat: 14.7507, lng: -60.9257 },
+  { id: 'les-salines', lat: 14.3959, lng: -60.8690, coastNormal: 180 },
+  { id: 'sainte-anne', lat: 14.4305, lng: -60.8850, coastNormal: 170 },
+  { id: 'pt-marin',    lat: 14.4511, lng: -60.8836, coastNormal: 160 },
+  { id: 'diamant',     lat: 14.4758, lng: -61.0314, coastNormal: 210 },
+  { id: 'tartane',     lat: 14.7507, lng: -60.9257, coastNormal: 80 },
 ]
+const SEAWARD_OFFSET_KM = 1.5 // décalage du centre de la boîte vers le large
 
 // ── FAI → afaiLike (0-1), MÊME échelle normalisée que normalizeAfai() côté ERDDAP ──
 // FAI (réflectances) sur l'eau : ~0 = eau claire, >0 = végétation flottante ; les
@@ -72,9 +75,14 @@ function faiToAfaiLike(fai) {
   return Math.min(1, 0.65 + (fai - 0.030) * 10) // nappes denses
 }
 
-// Evalscript Sentinel Hub : sort FAI (1 bande float) + dataMask (eau non-nuageuse).
-// SCL exclus : 0 no-data, 1 saturé, 3 ombre nuage, 8/9 nuage, 10 cirrus, 11 neige.
-// On garde 6 (eau) et 4/5 (végétation/sol nu — une nappe échouée peut y basculer).
+// Evalscript Sentinel Hub : sort FAI (1 bande float) + dataMask (EAU uniquement).
+// CORRECTION MASQUAGE : on ne garde QUE les pixels EAU (SCL == 6). Auparavant on
+// gardait aussi végétation(4)/sol(5) → la boîte, centrée sur le rivage, comptait la
+// verdure du littoral comme une "nappe d'algues" (5 plages sorties maxées le 26/06,
+// contredit par ERDDAP). Les sargasses flottantes se détectent comme une ANOMALIE
+// FAI positive AU-DESSUS de l'eau : water-only supprime le biais terre. Trade-off
+// honnête : une nappe très dense classée par SCL en végétation(4) peut être manquée
+// (biais conservateur = sous-alerte, préférable à une fausse alerte depuis la terre).
 const EVALSCRIPT = `//VERSION=3
 function setup() {
   return {
@@ -90,9 +98,8 @@ function evaluatePixel(s) {
   var k = (842.0 - 665.0) / (1610.0 - 665.0); // 0.1873
   var baseline = s.B04 + (s.B11 - s.B04) * k;
   var fai = s.B08 - baseline;
-  var scl = s.SCL;
-  var bad = (scl == 0 || scl == 1 || scl == 3 || scl == 8 || scl == 9 || scl == 10 || scl == 11);
-  var valid = (s.dataMask == 1 && !bad) ? 1 : 0;
+  // EAU uniquement (SCL 6). Exclut terre/végétation/sol/nuages/ombres/cirrus/nodata.
+  var valid = (s.dataMask == 1 && s.SCL == 6) ? 1 : 0;
   return { fai: [fai], dataMask: [valid] };
 }`
 
@@ -157,9 +164,16 @@ async function getCdseToken() {
 async function fetchBeachStats(token, beach) {
   const from = new Date(Date.now() - LOOKBACK_DAYS * 86400000).toISOString().slice(0, 10)
   const to = new Date().toISOString().slice(0, 10)
+  // Centre décalé vers le large le long de coastNormal (direction face-à-la-mer) pour
+  // maximiser les pixels EAU dans la boîte au lieu de la centrer sur le rivage.
+  const cn = ((beach.coastNormal ?? 90) * Math.PI) / 180
+  const dLat = (SEAWARD_OFFSET_KM * Math.cos(cn)) / 111
+  const dLng = (SEAWARD_OFFSET_KM * Math.sin(cn)) / (111 * Math.cos((beach.lat * Math.PI) / 180))
+  const cLat = beach.lat + dLat
+  const cLng = beach.lng + dLng
   const bbox = [
-    beach.lng - BBOX_HALF_DEG, beach.lat - BBOX_HALF_DEG,
-    beach.lng + BBOX_HALF_DEG, beach.lat + BBOX_HALF_DEG,
+    cLng - BBOX_HALF_DEG, cLat - BBOX_HALF_DEG,
+    cLng + BBOX_HALF_DEG, cLat + BBOX_HALF_DEG,
   ]
   const payload = {
     input: {
@@ -224,6 +238,38 @@ function writeLayer(outDir, beaches, note) {
   return outPath
 }
 
+// Persistance append-only : accumule chaque PASSAGE satellite (clé = obsDate réelle,
+// PAS la date de run — la révisite ~5j fait que plusieurs runs voient le même passage,
+// on dédup donc sur obsDate). C'est ce qui rendra POSSIBLE le backtest FAI vs réalisé
+// sur /fiabilite/ (gate d'activation du flag). Cappé 120 j. Sans ce fichier durable,
+// le signal s'évaporerait à chaque run et aucune calibration ne serait vérifiable.
+function updateS2History(outDir, beaches) {
+  const ids = Object.keys(beaches)
+  if (!ids.length) return
+  const histPath = path.join(outDir, 'sentinel2-history.json')
+  let hist = { observations: [] }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(histPath, 'utf-8'))
+    if (parsed && Array.isArray(parsed.observations)) hist = parsed
+  } catch (_) {}
+  // Une entrée par obsDate ; on écrase si le même passage a déjà été enregistré
+  // (ex. re-run le même jour), on n'empile pas de doublons.
+  for (const id of ids) {
+    const b = beaches[id]
+    if (!b || !b.obsDate || b.afaiLike == null) continue
+    const idx = hist.observations.findIndex(o => o.id === id && o.obsDate === b.obsDate)
+    const rec = { id, obsDate: b.obsDate, fai: b.fai, afaiLike: b.afaiLike, coverage: b.coverage }
+    if (idx >= 0) hist.observations[idx] = rec
+    else hist.observations.push(rec)
+  }
+  // Cap 120 jours (par obsDate).
+  const cutoff = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10)
+  hist.observations = hist.observations.filter(o => o.obsDate >= cutoff)
+  hist.updatedAt = new Date().toISOString()
+  fs.writeFileSync(histPath, JSON.stringify(hist, null, 2), 'utf-8')
+  console.log('OK:', histPath, '|', hist.observations.length, 'observation(s) accumulée(s)')
+}
+
 async function main() {
   const outDir = process.env.SARG_OUT_DIR
     ? path.join(path.resolve(process.env.SARG_OUT_DIR), 'api', 'copernicus')
@@ -262,6 +308,7 @@ async function main() {
     console.log(`  ${b.id}: FAI=${beaches[b.id].fai} → afaiLike=${afaiLike} cov=${s.coverage} obs=${s.obsDate} (${ageDays}j) n=${s.nPixels}`)
   }
   writeLayer(outDir, beaches, Object.keys(beaches).length ? null : 'no-valid-passes')
+  updateS2History(outDir, beaches)
 }
 
 main().catch(err => {

@@ -758,6 +758,11 @@ jobs:
           # chaque run — leur absence du commit gelait les scores (bug 2 mois).
           [ -f public/api/weather/beaches-weather.json ] && git add public/api/weather/beaches-weather.json
           [ -f public/api/copernicus/sargassum-banks.json ] && git add public/api/copernicus/sargassum-banks.json
+          # Sentinel-2 near-shore (prototype flaggé OFF) : layer courant + historique
+          # append-only. L'historique DOIT être commité, sinon l'accumulation s'évapore
+          # à chaque run et le backtest (gate d'activation du flag) reste impossible.
+          [ -f public/api/copernicus/sentinel2-nearshore.json ] && git add public/api/copernicus/sentinel2-nearshore.json
+          [ -f public/api/copernicus/sentinel2-history.json ] && git add public/api/copernicus/sentinel2-history.json
           if git diff --cached --quiet; then
             echo "No data file changes to commit"
           else
