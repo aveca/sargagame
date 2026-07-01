@@ -4181,7 +4181,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 padding:"14px 10px",borderRadius:16,background:"#0D0D0D",color:"#fff",fontSize:14,fontWeight:700}}>
               <span style={{fontSize:16}}>🚗</span> {LL.directions}
             </a>
-            <a href={`/plages/${getCanonicalSlug(beach.name)}/`} target="_blank" rel="noopener"
+            <a href={`/plages/${getCanonicalSlug(beach)}/`} target="_blank" rel="noopener"
               style={{flex:1,textDecoration:"none",textAlign:"center",
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 padding:"14px 10px",borderRadius:16,border:"1.5px solid var(--sg-border)",
@@ -4193,9 +4193,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               track("sg_share",{beach_id:beach.id,method:"card",status:beach.status})
               if(await shareBeachCard(beach,lang,forecast))return
               // FALLBACK (partage de fichier indispo) : texte + lien (référral si premium).
-              const slug=getCanonicalSlug(beach.name)
+              const slug=getCanonicalSlug(beach)
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
-              const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
+              const url=window.location.origin+"/plages/"+slug+"/"+(refCode?"?ref="+refCode:"")
               const isRef=!!refCode
               const _st=ST[beach.status]||ST._loading
               const _stl=lang==="es"?_st.les:lang==="en"?_st.le:_st.l
@@ -8321,7 +8321,10 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const [faved,setFaved]=useState(false)
   const shareBeach=b=>{
     const txt=`${b.name} ${b.score}/100 · ${statusShort(b)} ${T("aujourd'hui","today","hoy")} ☀️`
-    const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    // Deep-link vers la fiche de la plage (/plages/<slug>), jamais l'accueil du site.
+    const origin=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    const slug=getCanonicalSlug(b)
+    const url=slug?`${origin}/plages/${slug}/`:origin
     track("sg_share",{beach_id:b.id,method:"funnel"})
     try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
     try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
