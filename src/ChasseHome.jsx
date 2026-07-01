@@ -562,6 +562,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
               })}
             </div>
+            {/* Légende tiers de confiance — lève l'ambiguïté « ce chiffre, c'est un score ou un % ? »
+                (finding audit Vague 2 : les tiers montrés partout mais jamais expliqués in-context).
+                Même grammaire que la légende du hub La Vigie. Rollback : ?conflegend=0. */}
+            {(()=>{ let off=false; try{off=/[?&]conflegend=0/.test(window.location.search)}catch(_){}
+              if(off) return null
+              return <div className="lc-fc-legend">{_t({fr:"Le chiffre = notre confiance (%) dans l'estimation du jour. Au-delà de J+3, on lit la tendance.",en:"The number = our confidence (%) in that day's estimate. Beyond D+3, we read the trend.",es:"El número = nuestra confianza (%) en la estimación del día. Más allá de D+3, leemos la tendencia."})}</div>
+            })()}
             <div className={"lc-fc-line"+(isPremium||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
               isPremium ? _t({fr:"7 jours débloqués. Si ça bascule avant, on te prévient le matin même.",en:"7 days unlocked. If it turns sooner, we warn you that morning.",es:"7 días desbloqueados. Si cambia antes, te avisamos esa mañana."})
               : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — The Watcher watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
@@ -2070,6 +2077,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-fc-cell.teaser.far{opacity:.62}
 .lc-fc-cell.teaser .lc-fc-dot{font-size:11px;opacity:.78}
 .lc-fc-conf{font:800 8px/1 "Comic Neue",system-ui,sans-serif;opacity:.72}
+.lc-fc-legend{font:700 9.5px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.62;margin-top:7px;text-align:center}
 .lc-fc-line{font:800 11px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
   background:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:8px 9px;box-shadow:2px 2px 0 var(--ink)}
 .lc-fc-line.ok{background:#dff6e8}
