@@ -6881,20 +6881,17 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
         </a>
 
-      {/* Cloche alertes — opt-in push TOUJOURS accessible (avant : seulement le primer
-          d'inactivité, manquable). Tap = geste utilisateur → prompt natif (marche iOS). */}
+      {/* Cloche alertes — RETIRÉE du header par défaut : deux icônes (cloche + personnage)
+          ouvrant le MÊME panneau = redondant/inutile (grief fondateur). Les alertes se gèrent
+          dans « Mon accès » (icône personnage → section « Alertes sargasses »). Conservée
+          UNIQUEMENT sous rollback ?account=0 (opt-in push direct historique). */}
       <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")}>
-        {onEnableNotif&&(()=>{
+        {onEnableNotif&&ACCOUNT_OFF&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=perm==="granted"
-          // Défaut : la cloche OUVRE « Mon accès » (section Alertes : activer / statut / guidage
-          // iOS·bloqué) → un clic fait TOUJOURS quelque chose de visible (fin du « ça ne fait rien »
-          // : le prompt natif direct pouvait échouer en silence). Rollback ?account=0 → prompt direct.
-          const viaAccount=!ACCOUNT_OFF&&showAccess&&!!onAccess
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
-          return(<button aria-label={on?_t(lang,"Alertes sargasses (activées)","Sargassum alerts (on)","Alertas de sargazo (activadas)"):_t(lang,"Alertes sargasses","Sargassum alerts","Alertas de sargazo")}
+          return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
             onClick={()=>{
-              if(viaAccount){try{track("sg_push_bell_open_account",{granted:on?1:0})}catch(_){}; onAccess(); return}
               if(on){try{sgToast({tone:"success",msg:_t(lang,"Le Veilleur t'écrit déjà chaque matin 🔔","The Watchman already writes you each morning 🔔","El Vigía ya te escribe cada mañana 🔔")})}catch(_){}; return}
               if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
               if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
@@ -13803,7 +13800,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
-                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){openAccount("map_bell");return} loadPushNow("map") }}
+                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={ACCOUNT_OFF?(()=>loadPushNow("map")):null}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
