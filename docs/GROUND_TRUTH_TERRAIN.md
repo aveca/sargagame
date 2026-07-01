@@ -7,56 +7,45 @@
 
 ## Principe non négociable
 
-**La couleur du verdict ne descend JAMAIS en automatique.** Le terrain peut *monter* un
-niveau en escalade (prudence, aucun bénéficiaire), mais *descendre* passe obligatoirement
-par une clé humaine. L'AFAI (mesure) et la date restent des **faits satellite intouchables** —
-le terrain ne les édite jamais (sinon un chiffre « satellite » n'en est plus un = fabrication).
+L'AFAI (mesure) et la date restent des **faits satellite intouchables** — le terrain ne les
+édite jamais (sinon un chiffre « satellite » n'en est plus un = fabrication). Dès qu'un niveau
+AFFICHÉ ne vient plus du satellite, la **provenance est nommée** (« relevé/corrigé sur place ·
+satellite : X ») et la mesure satellite reste montrée à côté. Le forecast J+1-7 reste 100 %
+satellite. La calibration `/fiabilite/` se calcule sur le satellite pur.
 
-## La descente = TEMPS RÉEL (avant le satellite), validée manuellement par le fondateur (décision 2026-07-01)
+## Modèle SIMPLE — Approuver applique le SENS du signalement (décision fondateur 2026-07-01, LIVE)
 
-> **But n°1 = avoir l'info terrain AVANT le satellite.** Ceux qui sont sur place confirment en
-> temps réel ; on n'attend PAS le prochain passage satellite (ce serait perdre toute la valeur).
-> **Le verrou anti-forge = la validation manuelle du fondateur**, qui reçoit déjà l'email dès
-> qu'une photo est ajoutée. Un clic humain sur une photo = ce qu'un hôtel malveillant ne peut pas
-> fabriquer. C'est le design « moderator-two-key » du panel (0 fatal), retenu tel quel.
+> Le système à 2 clés (« Approuver » + « Rétrograder ») était confus. **Un seul bouton de
+> validation.** Le fondateur reçoit l'email de modération et tranche :
+> - **✅ Approuver** = le signalement est réel → on **applique son sens** au niveau affiché.
+> - **❌ Rejeter** = la photo ne correspond pas → ignoré.
+>
+> **L'approbation humaine EST le verrou anti-triche** (un hôtel ne peut pas la fabriquer).
+> Approuver un `cleanup` = tu vouches qu'il est réel et large ; à éviter sur une plage en
+> alerte satellite fraîche (jugement humain).
 
-- **Trigger = la PHOTO.** Un signalement qui veut bouger la couleur DOIT porter une photo →
-  déclenche l'email de modération 1-tap au fondateur (flux photos existant, réutilisé). Sans
-  photo = simple badge « signalé, à confirmer », ne bouge pas la couleur.
-- **Clé 1 — approuver la photo** (galerie, réflexe habituel).
-- **Clé 2 — « Rétrograder le verdict »** (bouton distinct, uniquement sur `cleanup`) : le seul
-  geste qui fait DESCENDRE la couleur. 1 cran MAX (`avoid→moderate`, `moderate→clean` ;
-  `avoid→clean` interdit). Le fondateur voit photo + niveau satellite + contexte avant de taper.
-  Appliqué **immédiatement** (temps réel), TTL **48 h** glissantes, cooldown 1 descente/plage/7 j.
-- **Le satellite garde le dernier mot ENSUITE.** Dès que `erddapTimestamp` bouge, le composite
-  frais **écrase le calque terrain** (« satellite > terrain quand le satellite reparle »). Le
-  terrain donne l'avance temps-réel ; le satellite ré-ancre à chaque passage. Si le calque
-  descente expire (48 h) sans re-confirmation → retour au satellite.
-- **Fiabilité (auto, en plus).** Un cleanup validé baisse aussi la **fiabilité affichée**
-  (`groundReliabilityNote`, −25 max, plancher 15, demi-vie 1 j) — n'entre JAMAIS dans le
-  `confidence` numérique qui gouverne `regimeCeiling`/`forecastConfidence`.
-- **Montée (beaching)** = reste la loi escalade-seule existante (quorum, auto, sans clé humaine —
-  aucun bénéficiaire à salir une plage) ; libellé hedgé, photo souhaitée non obligatoire.
+- **`beaching` approuvé (< 48 h) → MONTE d'1 cran** (`clean→moderate→avoid`, cap avoid).
+- **`cleanup` approuvé (< 48 h) → BAISSE d'1 cran** (`avoid→moderate→clean`, floor clean).
+- **Priorité sécurité** : si les deux existent frais sur une plage, `beaching` (mauvaise
+  nouvelle) l'emporte.
+- **1 cran max, fenêtre 48 h glissante.** Le satellite ré-ancre au passage suivant (le composite
+  frais redevient la base ; l'effet terrain expire à 48 h sans nouveau signal approuvé).
+- **Implémentation** : helper `terrainDisplayStatus(satStatus, approvedEvents)` (`Sargasses_PROD.jsx`)
+  → utilisé par le calque `BeachReport` ET le reroute de la const `status` de `BeachSheetComic`
+  (chokepoint unique du header : pastille + bandeau + verbe). Flag rollback `?descente=0`
+  (sous-ensemble de `?ramassage=0`). Ne touche PAS la loi escalade-seule communautaire
+  (`_communityOverride`, data Apps Script/FB — pipeline distinct).
 
-## Barre de preuve (chiffrée)
+**Empreinte serveur / GPS / throttle** (Phase 0.3, `submit-report`) restent en **anti-spam**
+(dédup file de modération, `submitter_hash` = SHA256(uid+IP+salt), 1 report/empreinte/plage/12 h)
+et en **calibration** — jamais un gate de la couleur (le gate = l'approbation humaine).
 
-**Le verrou principal de la descente = la validation manuelle du fondateur (clé 2), en temps
-réel.** Le quorum serveur automatique n'est donc PLUS un prérequis de la descente (il l'était
-dans le design « auto » abandonné) : une seule photo de ramassage suffit à déclencher l'email,
-et le fondateur juge. Empreinte/GPS/quorum restent utiles en **anti-spam** (dédup, tri de la
-file de modération) et en **calibration**, pas comme gate de la couleur.
-
-| Facteur | MONTÉE (escalade, auto) | DESCENTE (temps réel, validée main) |
-|---|---|---|
-| Photo | souhaitée, non requise | **OBLIGATOIRE** (c'est le trigger de l'email + ce que le fondateur juge) |
-| Gate de la couleur | quorum ≥2 empreintes / 48 h (auto, escalade-seule) | **clé 2 du fondateur** (« Rétrograder »), 1 cran max |
-| GPS `within_150m` (booléen serveur) | souhaitable | affiché au fondateur pour l'aider à juger (facteur de confiance, jamais preuve seule) |
-| Empreinte `submitter_hash` | dédup anti-flood | dédup anti-flood + tri file modération |
-| Amplitude | multi-crans (escalade) | 1 cran, TTL 48 h, cooldown 7 j/plage |
+> **Note historique** : la colonne `downgrade_confirmed_at` et l'action `moderate?action=confirm_downgrade`
+> (ancien modèle 2-clés) sont **abandonnées** — la colonne reste (additive, inoffensive), l'action
+> a été retirée de l'Edge Function. Ne pas les réintroduire.
 
 `submitter_hash`/`within_150m` = **calculés serveur** (Edge Function `submit-report`), jamais
-client. GPS = spoofable → jamais preuve dure ; le vrai verrou reste la **clé humaine n°2**.
-La montée reste **auto** (escalade-seule, aucun bénéficiaire à salir une plage).
+client. GPS = spoofable → jamais preuve dure ; le vrai verrou reste **l'approbation humaine**.
 
 ## Provenance nommée + libellé honnête
 
@@ -93,12 +82,13 @@ alimentent une calibration SÉPARÉE, backtest-gated, N≥30 hedgé.
   2. Colonnes schéma additives : `submitter_hash`, `within_150m`, `downgrade_confirmed_at`.
   3. Edge Function `submit-report` (empreinte + throttle serveur + calcul `within_150m`).
   4. RPC/vue `beach_report_quorum` (quorum serveur : distinct hash, photos, within_150m, contre-signal).
-- **Phase 1 — calibration offline** (0 risque moat) : `aggregate-beach-events.cjs` +
-  `build-event-calibration.cjs` → `/fiabilite/` (sur satellite pur).
-- **Phase 2 — correction live** : lane descente (étages 1+2) + montée (escalade existante
-  durcie) dans `BeachReport` (~L2700) + overlay (~L11878, **lane séparée**, ne pas remplacer
-  la loi escalade-seule de la montée) + `confidence.cjs` (`groundReliabilityDelta` isolé) +
-  flags `?descente=0`/`?ramassage=0`. Consentement GPS dans `BeachReport`.
+- **Phase 2 — correction live du verdict (FAIT, #384 + #386)** : `terrainDisplayStatus`
+  (`Sargasses_PROD.jsx`) → calque `BeachReport` + reroute de la const `status` de
+  `BeachSheetComic` (chokepoint unique du header). Modèle simple : Approuver applique le sens.
+  Flag `?descente=0`. Ne touche pas la loi escalade-seule communautaire (`_communityOverride`).
+- **RESTE (faible priorité)** : Phase 1 calibration offline (`aggregate-beach-events.cjs` →
+  `/fiabilite/` sur satellite pur, prématurée sans volume) ; consentement GPS front (`onSite`) ;
+  recolorage pins carte (utilisent `scoreColor` météo, pas le statut sargasses → peu de valeur).
 
-Fichiers clés : `src/Sargasses_PROD.jsx` · `src/supabasePhotos.js` · `scripts/lib/confidence.cjs`
-· `supabase/functions/{submit-report,moderate}` · `supabase/schema.sql` · RPC `beach_report_quorum`.
+Fichiers clés : `src/Sargasses_PROD.jsx` (`terrainDisplayStatus`, `BeachReport`, `BeachSheetComic`)
+· `src/supabasePhotos.js` · `supabase/functions/{submit-report,moderate}` · `supabase/schema.sql`.
