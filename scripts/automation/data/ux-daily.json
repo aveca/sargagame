@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T14:52:08.020Z",
+  "generated": "2026-07-01T20:06:48.184Z",
   "date": "2026-07-01",
   "days": 1,
   "regions": [
@@ -10,6 +10,42 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "aed18251",
+      "subject": "chore: update Copernicus data 2026-07-01 19:27 UTC"
+    },
+    {
+      "h": "d8da034c",
+      "subject": "feat(weekhub): planner saisonnier « quand réserver » pour dates lointaines (#396)"
+    },
+    {
+      "h": "01a541e5",
+      "subject": "chore: update Copernicus data 2026-07-01 18:24 UTC"
+    },
+    {
+      "h": "f6c960f0",
+      "subject": "fix(verdict): plancher sargasses sur la couleur du score — une plage propre n'est jamais orange (#395)"
+    },
+    {
+      "h": "30c6ed6e",
+      "subject": "fix(share): partager le deep-link de la plage, jamais l'accueil (#392)"
+    },
+    {
+      "h": "97ea38fc",
+      "subject": "Preuve fiabilité cliquable au paywall + invitation referral ouverte aux free (#390)"
+    },
+    {
+      "h": "53013e9e",
+      "subject": "Renouvellement + win-back push + migration funnel Supabase + corrections doc (#388)"
+    },
+    {
+      "h": "c09d8605",
+      "subject": "chore: update Copernicus data 2026-07-01 14:52 UTC"
+    },
+    {
+      "h": "bc66b8aa",
+      "subject": "chore: email state 2026-07-01 14:52 UTC"
+    },
     {
       "h": "eb030f32",
       "subject": "Session Sargatrack : /fiabilite/ prélude + wallet-gate + partage viral + GTT slice1 (#385)"
@@ -73,129 +109,43 @@
     {
       "h": "f65ceafb",
       "subject": "perf : photos hero −46 % + preload météo + timeout forecast (vitesse 1er verdict) (#364)"
-    },
-    {
-      "h": "0031c879",
-      "subject": "Carte : supprimer le flash « tous les noms » au démarrage (#361)"
-    },
-    {
-      "h": "ec1c5a97",
-      "subject": "chore: update Copernicus data 2026-07-01 04:10 UTC"
-    },
-    {
-      "h": "972f3273",
-      "subject": "chore: email state 2026-07-01 04:10 UTC"
-    },
-    {
-      "h": "6639416d",
-      "subject": "Perf bundle : sort 3 overlays hors first-paint en chunks lazy (-20,7 Ko gzip eager) (#359)"
-    },
-    {
-      "h": "b830e5ae",
-      "subject": "Cloche = interrupteur alertes ON/OFF : remplit la barre + permet de désactiver (#358)"
-    },
-    {
-      "h": "749b327b",
-      "subject": "Carte : priorité stricte rouge/jaune avant vert dans les labels (#357)"
-    },
-    {
-      "h": "94c957f1",
-      "subject": "Carte : au zoom, nommer aussi les plages propres (vertes) du viewport (#355)"
-    },
-    {
-      "h": "843dd697",
-      "subject": "Header/carte : retire la cloche (redondante avec « Mon accès »), un seul hub (#354)"
-    },
-    {
-      "h": "983069b2",
-      "subject": "Carte : labels de plage zoom-aware — vue large = 5 plus impactées, zoom = alertes du viewport (#351)"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 306,
-      "friction": 4,
-      "dead_rate": 0.347,
+      "sessions": 455,
+      "friction": 21,
+      "dead_rate": 0.413,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.355,
-        "n": 608
+        "rate": 0.426,
+        "n": 993
       },
       "top_dead_els": [
         {
           "el": "svg[role=img]",
-          "count": 122
+          "count": 211
         },
         {
           "el": "div.sg-onink-scope",
-          "count": 34
+          "count": 114
         },
         {
           "el": "div",
-          "count": 28
+          "count": 44
+        },
+        {
+          "el": "p.lc-h2s-txt",
+          "count": 10
         },
         {
           "el": "div.lc-detail-body",
-          "count": 4
+          "count": 6
         },
         {
           "el": "div.lc-detail-head",
-          "count": 4
-        },
-        {
-          "el": "span.lc-detail-fact",
-          "count": 3
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.25
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": null,
-      "changes": [
-        "(pas de veille — premier cliché)"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 203,
-      "friction": 2,
-      "dead_rate": 0.362,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.386,
-        "n": 352
-      },
-      "top_dead_els": [
-        {
-          "el": "svg[role=img]",
-          "count": 68
-        },
-        {
-          "el": "div.sg-onink-scope",
-          "count": 25
-        },
-        {
-          "el": "div",
-          "count": 15
-        },
-        {
-          "el": "circle",
-          "count": 8
-        },
-        {
-          "el": "span.lc-detail-fact",
-          "count": 7
-        },
-        {
-          "el": "rect",
-          "count": 4
+          "count": 5
         }
       ],
       "bored_worst": {
@@ -213,28 +163,94 @@
       ]
     },
     {
-      "region": "florida",
-      "sessions": 36,
-      "friction": 0,
-      "dead_rate": 0.667,
+      "region": "gp",
+      "sessions": 285,
+      "friction": 2,
+      "dead_rate": 0.343,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.667,
-        "n": 42
+        "rate": 0.366,
+        "n": 576
       },
       "top_dead_els": [
         {
-          "el": "div.sg-onink-scope",
-          "count": 17
+          "el": "svg[role=img]",
+          "count": 103
         },
         {
-          "el": "svg[role=img]",
-          "count": 11
+          "el": "div.sg-onink-scope",
+          "count": 48
+        },
+        {
+          "el": "div",
+          "count": 21
+        },
+        {
+          "el": "rect",
+          "count": 8
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 8
+        },
+        {
+          "el": "circle",
+          "count": 8
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.17
+        "rate": 0.26
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": null,
+      "changes": [
+        "(pas de veille — premier cliché)"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 82,
+      "friction": 0,
+      "dead_rate": 0.562,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.597,
+        "n": 119
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 43
+        },
+        {
+          "el": "svg[role=img]",
+          "count": 19
+        },
+        {
+          "el": "div",
+          "count": 4
+        },
+        {
+          "el": "circle",
+          "count": 4
+        },
+        {
+          "el": "path",
+          "count": 1
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 1
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.12
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -248,13 +264,37 @@
     },
     {
       "region": "puntacana",
-      "sessions": 7,
+      "sessions": 11,
       "friction": 0,
-      "dead_rate": 0.5,
-      "dead_worst": null,
+      "dead_rate": 0.645,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.645,
+        "n": 31
+      },
       "top_dead_els": [
         {
+          "el": "div.sg-onink-scope",
+          "count": 9
+        },
+        {
           "el": "svg[role=img]",
+          "count": 4
+        },
+        {
+          "el": "span.lc-detail-fact",
+          "count": 4
+        },
+        {
+          "el": "div",
+          "count": 1
+        },
+        {
+          "el": "div.lc-detail-body",
+          "count": 1
+        },
+        {
+          "el": "div.lc-detail-head",
           "count": 1
         }
       ],
@@ -271,25 +311,40 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 8,
+      "sessions": 16,
       "friction": 0,
-      "dead_rate": 0.364,
-      "dead_worst": null,
+      "dead_rate": 0.471,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.516,
+        "n": 31
+      },
       "top_dead_els": [
         {
-          "el": "div.sg-onink-scope",
-          "count": 2
+          "el": "svg[role=img]",
+          "count": 7
         },
         {
-          "el": "svg[role=img]",
-          "count": 1
+          "el": "div.sg-onink-scope",
+          "count": 3
+        },
+        {
+          "el": "div",
+          "count": 3
+        },
+        {
+          "el": "svg",
+          "count": 2
         },
         {
           "el": "span.lc-detail-fact",
           "count": 1
         }
       ],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.41
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
