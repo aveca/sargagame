@@ -628,6 +628,12 @@ export default function WorldMapView({
   },[declutter,recomputeTiers])
   // Recalc aussi quand données/sélection changent (positions prêtes la frame d'après).
   useEffect(()=>{ const id=requestAnimationFrame(()=>recomputeTiers()); return ()=>cancelAnimationFrame(id) },[recomputeTiers])
+  // Ré-arbitre les LABELS quand l'ensemble affiché change SANS geste (changement de jour
+  // du curseur prévision, sélection, ajout/retrait de plages) : writeCam n'est alors pas
+  // rappelé, donc scheduleDeclutter non plus. Comme les labels naissent visibility:hidden,
+  // sans ce déclutter les NOUVEAUX labels resteraient masqués jusqu'au prochain geste.
+  // Positions inchangées (vx/vy fixes) → un simple declutter() suffit, la frame d'après.
+  useEffect(()=>{ const id=requestAnimationFrame(()=>declutter()); return ()=>cancelAnimationFrame(id) },[day,labeledIds,selected,declutter])
 
   // ── EFFET D'ÉCHOUAGE (live, GATÉ RÉALISME) : seules les plages PRÉVUES touchées (statut `avoid`
   // au jour affiché) voient un banc s'échouer ; plages propres/modérées = rien (jamais de fausse
@@ -852,6 +858,15 @@ export default function WorldMapView({
       camRef.current={tx:400-cx,ty:300-cy,k:1}; clampCam(); writeCam()
       try{ track&&track("sg_archipel_open",{source:"map_world",island}) }catch(_){}
     }
+    // Anti-flash noms (grief fondateur 2026-07-01) : writeCam n'a fait que PLANIFIER le
+    // déclutter (scheduleDeclutter, débounce 90ms). Sans ceci, le commit peint TOUS les
+    // labels (labeledIds = toutes impactées + propres) puis le débounce en masque la
+    // plupart → « tous les noms d'un coup, puis ils disparaissent ». On arbitre donc
+    // AVANT le paint (useLayoutEffect) : les labels naissent visibility:hidden et
+    // declutter() ne révèle ici QUE le sous-ensemble final (les ~5 plus impactées en vue
+    // large). Positions déjà posées par le writeCam ci-dessus. Idempotent avec le
+    // débounce différé qui suivra.
+    declutter()
   },[outline, initialZone, beachList]) // eslint-disable-line
 
 
@@ -1457,6 +1472,10 @@ export default function WorldMapView({
               {...(!mapLabelTapOff?{role:"button",tabIndex:0,"aria-label":b.name,onClick:openB,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openB(e)}}}:{})}
               style={{
                 position:"absolute",left:0,top:0,
+                // Naît MASQUÉ : declutter() révèle (visibility='visible') le seul
+                // sous-ensemble gardé, sinon le 1er paint montre TOUS les noms puis le
+                // débounce 90ms en masque la plupart (« flash de tous les noms »).
+                visibility:"hidden",
                 transform:"translate(-50%,-100%)",
                 paddingBottom:mapLabelTapOff?8:14,
                 textAlign:"center",
