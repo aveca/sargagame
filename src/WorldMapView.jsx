@@ -521,9 +521,20 @@ export default function WorldMapView({
             if(!blob){ setBakedUrl(null); return }
             const url=URL.createObjectURL(blob)
             if(cancelled){ URL.revokeObjectURL(url); return }
-            if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
-            bakedObjUrlRef.current=url
-            setBakedUrl(url)
+            // Décoder le bitmap AVANT de swapper SVG→<image> : sinon le décodage se fait
+            // paresseusement quand le <image> peint la 1re frame → 1 frame de vide (la côte
+            // « clignote »). On pré-décode hors-thread puis on commit. Tout échec commit
+            // quand même (jamais de carte blanche : sémantique fallback inchangée).
+            const commit=()=>{
+              if(cancelled){ URL.revokeObjectURL(url); return }
+              if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
+              bakedObjUrlRef.current=url
+              setBakedUrl(url)
+            }
+            const pre=new Image()
+            pre.onload=()=>{ (pre.decode?pre.decode():Promise.resolve()).then(commit,commit) }
+            pre.onerror=commit
+            pre.src=url
           },'image/png')
         }catch(_){ if(!cancelled) setBakedUrl(null) }
       }
