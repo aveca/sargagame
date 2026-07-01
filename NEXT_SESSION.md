@@ -1,5 +1,27 @@
 # NEXT_SESSION — sargagame
 
+> **🧩 2026-07-01 — GTT : slice 1 (helper fiabilité isolé) ajoutée · COLLISION 2-sessions détectée sur Phase 2. PR #385.**
+>
+> Après la réponse Sargatrack, j'ai voulu enchaîner GTT Phase 2 → **une AUTRE session l'a déjà avancée** (commit `92b46199` « feat(gtt): lane descente » @10:19, sur `main`). **Loi collision 2-sessions → je me retire de GTT pour ne pas dupliquer.**
+> - **DÉJÀ SUR MAIN (pas moi)** : overlay descente dans `BeachReport` (`Sargasses_PROD.jsx` ~L2741-2832) — `terrainStatus` 1 cran max jamais < clean, pastille dashed « contestée », satellite affiché à côté, flag `DESCENTE_ENABLED`/`?descente=0`. `fetchApprovedReports` renvoie déjà `downgradeConfirmedAt`.
+> - **AJOUTÉ PAR MOI (#385, isolé, testé, PAS ENCORE CÂBLÉ)** : `groundReliabilityDelta`/`applyGroundReliability` dans `scripts/lib/confidence.cjs` (rabais fiabilité AFFICHÉE sur ramassage validé, −25 max, plancher 15, demi-vie 1j, TTL 48h). **N'entre jamais dans le confidence numérique / `/fiabilite/` (satellite pur).**
+> - **⚠️ GAP DE CÂBLAGE (décision à prendre, pas encore faite)** : le rabais doit s'appliquer à `cleanReliabilityPct` **au RUNTIME dans le front** (`PremiumModal.jsx:843`, `ChasseHome.jsx:1402`, `WeekHub.jsx:116`), MAIS **le front n'importe PAS `confidence.cjs`**. Options : (a) importer le .cjs dans le front (attention budget, cjs non tree-shakeable), (b) réimplémenter le mini-helper inline côté front. À trancher avec la session qui possède GTT pour éviter double implémentation.
+> - **RESTE GTT** (à la session propriétaire) : le câblage du rabais ci-dessus · consentement GPS dans `BeachReport` · durcissement montée (escalade `~L11443`) · Phase 1 calibration offline (prématurée sans volume).
+
+> **🥊 2026-07-01 — RÉPONSE CONCURRENT SARGATRACK : intel + supply photos. PR #379 MERGÉE + DÉPLOYÉE + VÉRIFIÉE (run #1755 vert, curl prod 200).**
+>
+> **Question fondateur** : « Sargatrack fait du bruit sur Facebook, nous dépassent-ils ? » → **NON.** Sargatrack (Samuel Fourmy, lancé mi-avril 2026, MQ/GP/Saint-Martin, ~850 inscrits) = **signalement citoyen viral, gratuit, cible résident/décideur**. Il ne prend AUCUN levier de moat : forecast+confiance auditée, alertes/PWA, monétisation, SEO profond, multi-marchés. Son avantage = **distribution/participation** (bruit FB), pas le produit. Doc : `docs/competitor-sargatrack.md` (miroir de `competitor-sargazowatch.md`).
+>
+> **SHIPPÉ (#379)** : nos 136 galeries `BeachPhotos` rendaient `null` quand vides (vitrines mortes) → désormais **nudge de rareté** (« Personne n'a encore montré cette plage aujourd'hui — ta photo sera la première ») qui **cadre le bouton d'upload existant** (pas de 2e bouton), rendu **uniquement si Supabase prêt + `canContribute`**. Attaque leur moteur de participation, coût ~0. Flag rollback **`?vseed=0`** (nouveau). Verdict 100 % ERDDAP inchangé.
+>
+> **SEO — investigué, RIEN à conquérir (on domine déjà)** : les pages plages FR ciblent déjà exactement leurs requêtes — title `Sargasses [plage] aujourd'hui — état en temps réel`, H1+verdict live+score, « Conditions du jour (date) » datée, timestamp satellite `LIVE HH:MM UTC`, JSON-LD Beach/FAQ/Breadcrumb, sitemap `lastmod` quotidien (`vite.config.js:1691-2109`). Une app de photos citoyennes ne rankera pas contre ça. **Ne PAS fabriquer de busywork SEO.**
+>
+> **DÉCISION FONDATEUR** : seul écart = **Saint-Martin** (Sargatrack l'a, pas nous) → **ABANDONNÉ** (petit marché, on reste MQ/GP+USD).
+>
+> **NON FAISABLE PAR L'AGENT (pas un bug)** : poster dans leurs groupes FB (action brand) ; créer de fausses photos pour remplir les galeries (loi 0-fabrication). Le supply photo reste organique — le nudge #379 l'amorce.
+>
+> **SUITE DE SESSION (PR #385, panel adverse convoqué par le fondateur → 3 leviers conversion/viral shippés)** : (1) `feat(paywall)` lien /fiabilite/ à l'écran « Avant de payer » (moat au checkout, `?pwrel=0`) ; (2) `fix(paywall)` gate Apple/Google Pay par capacité device dans `PassOffer` (plus de bouton wallet mort, `?wcap=0`) ; (3) `feat(viral)` partage post-contribution photo « Montre ta plage aux copains » (réutilise `buildShareCard` spoiler-free, `?vshare=0`). ⚠️ Note : le helper `groundReliabilityDelta` (confidence.cjs) référence l'ancien modèle 2-clés ; le modèle GTT a été simplifié depuis (#386, cf. entrée 🌊 ci-dessous) — le rabais fiabilité reste à câbler/aligner sur le modèle simple. Runners-up panel non faits : push win-back dormants PWA, nudge renouvellement pré-expiration.
+
 > **🌊 2026-07-01 (suite) — GTT PHASE 2 SHIPPÉE + MODÈLE SIMPLIFIÉ. PRs #384 #386 mergées.**
 >
 > Le terrain bouge maintenant le **verdict affiché** (calque `BeachReport` + gros header

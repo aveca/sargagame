@@ -16,6 +16,10 @@ import {
   track, walletAvail
 } from "./Sargasses_PROD.jsx"
 
+// Route de la page « fiabilité » selon région/langue (miroir de reliabilityHref
+// dans Sargasses_PROD.jsx, non exporté) : MQ/GP → /fiabilite/, régions US → EN/ES.
+const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
+
 // useModalA11y — plancher a11y des modales du chemin de l'argent (paywall B2C + B2BModal).
 // Plancher dur CLAUDE.md : role=dialog (posé inline sur le panel) + Échap + focus-trap +
 // restauration du focus au close. Léger (zéro dep — ce chunk est budget-sensible), même
@@ -835,6 +839,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // A/B fraîcheur (PassOffer) : "Données mises à jour il y a Xh" — récence réelle du pipeline.
   const pwFresh=(()=>{try{const q=window.location.search;if(/[?&]pwfresh=1/.test(q))return true;if(/[?&]pwfresh=0/.test(q))return false;return abVariant("pw_freshness",["control","fresh"],[.5,.5])==="fresh"}catch(_){return false}})()
   const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
+  // Preuve du moat au point de décision : lien /fiabilite/ à l'écran « Avant de
+  // payer » (doctrine storytelling temps #5). Défaut ON, rollback ?pwrel=0.
+  const pwRel=(()=>{try{return !/[?&]pwrel=0/.test(window.location.search)}catch(_){return true}})()
   // Régime au plus gros échantillon « mer propre » = nombre fort ET honnête.
   const _recordProof=(()=>{
     try{
@@ -1787,7 +1794,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{
           try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
@@ -1820,7 +1827,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
@@ -2002,6 +2009,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             ))}
           </div>
 
+          {/* Moat au point de décision : « avant de payer, va voir ce qu'on vaut
+              vraiment » → /fiabilite/ (on publie nos erreurs). Nouvel onglet pour ne
+              PAS casser le checkout en cours. Rollback ?pwrel=0. */}
+          {pwRel&&(
+            <a href={_relHref(lang)} target="_blank" rel="noopener noreferrer"
+              onClick={()=>{try{track("sg_reliability_open",{from:"prelude"})}catch(_){}}}
+              style={{display:"block",textAlign:"center",margin:"0 0 12px",padding:"6px 0",
+                fontSize:12,fontWeight:700,color:"#14C4B0",textDecoration:"underline",fontFamily:"inherit"}}>
+              {_t(lang,"Avant de payer, va voir ce qu'on vaut vraiment →","Before you pay, see what we're really worth →","Antes de pagar, mira lo que valemos de verdad →")}
+            </a>
+          )}
           {/* Continue to Stripe CTA — checkout in-app (fallback Payment Link) */}
           <button onClick={()=>{
             startCheckout(effectivePlan,"prelude")
