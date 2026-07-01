@@ -1,5 +1,18 @@
 # NEXT_SESSION — sargagame
 
+> **⚡ 2026-07-01 — SESSION VITESSE : mesures honnêtes > intuitions. PRs #364 + #368 mergées. Branche `claude/sargasses-bundle-entry-split-q4i9q1`.**
+>
+> **Demande** : « gagner énormément en rapidité, sans action fondateur ». Après mesure Playwright (4× CPU throttle, localhost), le diagnostic a **invalidé plusieurs intuitions** :
+> - **LCP réel = l'`<image>` bakée SVG de `WorldMapView`** (blob 800×600), **pas une photo** — l'app est **100 % image-free** (vignettes fiche = dégradés CSS `beachThumbBg` ; carte/hero SVG). FCP 476 ms · **LCP 1,79 s** · **TBT 652 ms**.
+> - **Le « merge 136 plages = 3-6 s » était un MIRAGE** : mesuré = **une tâche de 527 ms**. Ne PAS restructurer la pipeline du verdict pour ça (risque moat pour ~rien).
+> - **CDN Cloudflare déjà actif sur MQ/GP** (TTFB ~0,5 s) → le réseau n'est PAS le goulot sur les marchés principaux. Client déjà proche des cibles (LCP≤2,5 / TBT≤600).
+> - **Conclusion honnête : pas de gros gain vitesse facile restant** — l'app était déjà bien optimisée. Ne pas re-chasser ce fantôme.
+>
+> **SHIPPÉ (sûr, live)** #364 : preload `weather.json` (index.html + template GP prepare-ftp) ; `fetchFullForecast` borné 4 s (`Promise.race`) hors chemin critique J0. #368 : suppression fonction morte `getBeachPhoto`.
+> **SHIPPÉ mais effet différé** : re-encode JPG `public/beaches/` −46 % (101→55 Mo, `scripts/optimize-beach-images.cjs`). ⚠️ **N'aide QUE les 136 pages SEO plage** (`<img>` 800×450, `vite.config.js:1856`), PAS l'app. ⚠️ **Servi via CDN cache 30 j (max-age=2592000, filenames stables)** → origine à jour (197 Ko vérifié cache-bust) mais users voient l'ancienne jusqu'à expiration/**purge Cloudflare `/beaches/*`** (action fondateur si on veut l'effet immédiat).
+>
+> **NON fait (justifié)** : restructure incrémentale du merge (mirage, moat) ; suppression des JPG (ils portent le SEO) ; découpe bundle ScrollStory/BeachSheet (~18 Ko, secondaire) ; dead-code SceneCanvas/MethodScene/SatelliteFilm (nécessite AST — le shader GLSL casse le brace-matching naïf).
+
 > **🔎 2026-07-01 — UX AUTO-VEILLE : FIN DU MUR DE 47 « ? » CRITICALS (signal actionnable). Branche `claude/sargasses-ux-critiques-djsvex`.**
 >
 > **Problème** : l'alerte hebdo `ux-watch` crachait **47 criticals** tous du type `N dead/rage clicks on ? (page)`. Le « ? » n'est PAS un mystère à investiguer = **artefact de reporting** : GA4 Data API ne renvoie pas le sélecteur cliqué (`seo-audit.cjs fetchClarityEvents` hardcode `target:''`) → « fix 7428 dead clicks on ? » non-actionnable. L'app CAPTURE pourtant déjà le coupable nommé (`_sgElDesc` → heatmap `de` → `stats.php top_dead_els`), mais `enrichNamedDeadClicks` ne l'injectait jamais dans les entrées « ? » et les remontait en `page:'app'` global.
