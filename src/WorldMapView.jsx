@@ -257,13 +257,11 @@ export default function WorldMapView({
   // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
-  // Roster « plages impactées » (grief fondateur 2026-07-01) : ne montrer par leur NOM que les
-  // plages PAS PROPRES (rouge=à éviter / orange=modéré), et sortir ces noms HORS du littoral —
-  // une liste glanceable dans le chrome (sous le titre) plutôt que des labels qui encombrent la
-  // côte. Défaut ON : le littoral n'affiche plus que les PINS colorés (verdict=couleur, le moat),
-  // les NOMS vivent dans le roster tapable (flyTo + fiche). Rollback ?maproster=0 → retour aux
-  // labels sur la côte (désormais impactés-seuls, pas de roster).
-  const mapRosterOff = (()=>{try{return /[?&]maproster=0/.test(window.location.search)}catch(_){return false}})()
+  // Labels carte (grief fondateur 2026-07-01) : le NOM reste À CÔTÉ DU PIN sur la côte (pas de
+  // liste en haut — on se perd), mais UNIQUEMENT pour les QUELQUES plages LES PLUS IMPACTÉES
+  // (rouge=à éviter d'abord, puis orange=modéré, triées par gravité/score) — cap 5 par défaut
+  // pour ne pas encombrer la côte. Rollback ?maplabelcap=0 → lève le cap (tous les impactés nommés).
+  const mapLabelCapOff = (()=>{try{return /[?&]maplabelcap=0/.test(window.location.search)}catch(_){return false}})()
   const relHref = (island==="mq"||island==="gp") ? "/fiabilite/" : (lang==="es" ? "/fiabilidad/" : "/reliability/")
   const _relGo = ()=>{ try{track&&track("sg_map_live_tap",{island})}catch(_){}; try{window.location.href=relHref}catch(_){} }
   // INP/perf pan : writeCam lit getBoundingClientRect à CHAQUE frame de pan (reflow). On met
@@ -464,16 +462,21 @@ export default function WorldMapView({
     return beachList.filter(b=>(b.name||"").toLowerCase().includes(lq)).slice(0,6)
   },[query,beachList])
 
-  // IDs des plages affichant un label sur la côte (rollback ?maproster=0 uniquement)
+  // IDs des plages affichant un label NOM à côté du pin sur la côte.
   const labeledIds = useMemo(()=>{
     const ids=new Set()
     if(!beachList.length) return ids
-    // Fondateur 2026-07-01 : UNIQUEMENT les plages PAS PROPRES (orange=modéré / rouge=à éviter) —
-    // ce sont les seules qui comptent (où il y a/va avoir de la sargasse). On retire les repères
-    // « verts » d'orientation qui encombraient la côte (échantillon réparti / plages nommées).
-    beachList.forEach(b=>{ const st=b.days[day]; if(st==="moderate"||st==="avoid") ids.add(b.id) })
+    // Fondateur 2026-07-01 : nommer UNIQUEMENT les QUELQUES plages LES PLUS IMPACTÉES (pas propres)
+    // — rouge=à éviter d'abord, puis orange=modéré, triées par gravité puis score décroissant.
+    // Cap 5 par défaut pour garder la côte lisible (rollback ?maplabelcap=0 → tous les impactés).
+    const RANK={avoid:0,moderate:1}
+    const impacted=beachList
+      .filter(b=>{ const st=b.days[day]; return st==="moderate"||st==="avoid" })
+      .sort((a,b)=>{ const ra=RANK[a.days[day]]??2, rb=RANK[b.days[day]]??2; return ra!==rb?ra-rb:((b.score||0)-(a.score||0)) })
+    const cap = mapLabelCapOff ? impacted.length : 5
+    impacted.slice(0,cap).forEach(b=>ids.add(b.id))
     return ids
-  },[beachList,day])
+  },[beachList,day,mapLabelCapOff])
 
   // Ellipses de relief en coordonnées viewBox (MQ only)
   const reliefEls = useMemo(()=>{
@@ -1074,11 +1077,6 @@ export default function WorldMapView({
   const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
   const cleanCnt  = beachList.filter(b=>b.days[day]==="clean").length // inconnu ≠ propre (anti-flash)
-  // Roster des plages impactées (rouge=avoid d'abord, puis orange=moderate), noms glanceables
-  // hors du littoral. Tri par gravité puis alpha. Vide si rollback ?maproster=0.
-  const impactedList = mapRosterOff ? [] : beachList
-    .filter(b=>{ const st=b.days[day]; return st==="moderate"||st==="avoid" })
-    .sort((a,b)=>{ const R={avoid:0,moderate:1}; const ra=R[a.days[day]]??2, rb=R[b.days[day]]??2; return ra!==rb?ra-rb:(a.name||"").localeCompare(b.name||"") })
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = vantColor(beachList,day)
 
@@ -1415,9 +1413,8 @@ export default function WorldMapView({
       </svg>
 
       {/* Labels plages — couche HTML screen-space (hors transform SVG → taille pixel constante).
-          Roster ON (défaut) : les NOMS vivent dans le roster HORS littoral → on ne peint QUE les
-          pins colorés sur la côte (verdict=couleur). Rollback ?maproster=0 : labels sur la côte. */}
-      {mapRosterOff && <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
+          Nom À CÔTÉ DU PIN, uniquement pour les ~5 plages les plus impactées (labeledIds). */}
+      <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
         {beachList.filter(b=>labeledIds.has(b.id)).map(b=>{
           const st=b.days[day]
           const col=STATUS_C[st]||"#888"
@@ -1455,7 +1452,7 @@ export default function WorldMapView({
             </div>
           )
         })}
-      </div>}
+      </div>
 
       {/* ══ CHROME HTML ══════════════════════════════════════════════════════════ */}
       {/* data-vmui : le handler de pan (onDown) ignore les pointeurs qui démarrent ici,
@@ -1588,43 +1585,6 @@ export default function WorldMapView({
               <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
             </span>
           </div>
-
-          {/* Roster « plages impactées » — noms des plages rouge/orange, HORS du littoral.
-              Glanceable : d'un coup d'œil on voit lesquelles éviter, sans encombrer la côte.
-              Chaque chip tapable → flyTo + fiche. Nom SEUL + point coloré (rouge/orange). */}
-          {impactedList.length>0&&(
-            <div style={{marginTop:9,pointerEvents:"none"}}>
-              <div style={{
-                font:"800 9.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-                letterSpacing:".07em",textTransform:"uppercase",color:"#fff",
-                textShadow:`1px 1px 0 ${INK},0 0 5px ${INK}`,marginBottom:7,
-              }}>{_t(lang,`Plages impactées ${dayLbl}`,`Affected beaches ${dayLbl}`,`Playas afectadas ${dayLbl}`)} · {impactedList.length}</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,maxWidth:380}}>
-                {impactedList.slice(0,10).map(b=>{
-                  const st=b.days[day]; const col=STATUS_C[st]||"#888"
-                  const openR=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_roster"})}catch(_){}; onOpenBeach(b) } }
-                  return(
-                    <button type="button" key={b.id} className="sg-maproster" onClick={openR}
-                      aria-label={`${b.name} — ${STATUS_LBL[st]?.[lang==="en"?1:lang==="es"?2:0]}`}
-                      style={{pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,cursor:"pointer",
-                        background:"#fdf6e3",border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:999,
-                        padding:"6px 12px 6px 9px",
-                        font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-                      <span style={{width:9,height:9,borderRadius:"50%",background:col,border:`1.5px solid ${INK}`,flexShrink:0}}/>
-                      {b.name}
-                    </button>
-                  )
-                })}
-                {impactedList.length>10&&(
-                  <span style={{display:"inline-flex",alignItems:"center",
-                    background:"#fdf6e3",border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:999,
-                    padding:"6px 12px",font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-                    +{impactedList.length-10}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
               Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}
