@@ -1,5 +1,26 @@
 # NEXT_SESSION — sargagame
 
+> **🖱️ 2026-07-01 — SESSION TRACKING/UX : télémétrie qui NOMME les coupables + tracking journalier + fixes dead-click home & carte. Branche `claude/analyze-user-tracking-data-pqinmp`. 5 PR mergées : #320, #326, #329, #330 (+ handoff).**
+>
+> **Demande fondateur** : analyser TOUTE la data de tracking (clics, rage/dead-clicks, navigation), corriger l'UX, générer un tracking JOURNALIER pour voir l'impact des changements, et purger les vieilles data.
+>
+> **CE QUI A ÉTÉ SHIPPÉ (tout mergé sur main + déployé) :**
+> - **#320** — télémétrie : `sgCollectClick` + rage-detector attachent un descripteur SANS PII de l'élément (`tag#id.classe[role]`) → `stats.php.clicks[screen].top_dead_els` + `sg_friction.el`. **Ferme l'angle mort** (Clarity envoyait `target:""`). + fix INP : `getComputedStyle` sorti du chemin critique du tap (`requestIdleCallback`).
+> - **#326** — **`scripts/ux-daily.cjs`** : tracking UX JOURNALIER + **diff jour-à-jour** (stats.php first-party, inclut `top_dead_els`), corrèle avec les commits `src/` shippés <24h. Écrit `ux-daily.json` + `ux-daily-history.json`. Step schedule-only dans `daily-copernicus.yml`. `--send` digest email (dédup 1×/j, HOLD si SMTP absent). Testé `--mock`.
+> - **#329** — carte (hotspot n°2, 1049 dead/52 rage) : pins hit-zone ≥44px (`?mappinhit=0`) + noms de plage tapables → ouvrent la fiche (`?maplabeltap=0`). WorldMapView, additif, zéro refacto.
+> - **#330** — home (hotspot n°1, 5653 dead) : mascotte + puce série + pack du jour tapables (`?veiltap=0`/`?streaktap=0`/`?packtap=0`). ChasseHome, additif, gardé par `spaceEnabled`.
+>
+> **⚠️ DATA D'AUDIT PÉRIMÉE (vérifié) : `ux-report.json`/`audit-summary.json` = snapshot figé du vendredi 26/06** (weekly-ux-report.yml, cred-gated GA4/Clarity), ~35 commits UI en retard. J'ai déclenché une régé (`workflow_dispatch`). **Ne PAS piloter de fix sur ces magnitudes** — utiliser `stats.php`/`ux-daily.json` (first-party, vivant). **Décision fondateur : NE RIEN SUPPRIMER** (les data/ sont de l'état vivant re-committé chaque jour ; supprimer = re-envoi emails / perte suppression-bounce / perte historique MRR).
+>
+> **RESTE DE LA CHASSE ULTRACODE (17/18 confirmés, plan complet dans `tasks/wfza1o0h1.output` → `result.plan`)** — SHIP-NOW restants, tous additifs/flag-gardés, grep-reproductibles :
+> - **PR-4** WorldMapView : pastille EN-DIRECT tapable (`?maplivetap=0`, href région-correct `/fiabilite/`|`/reliability/`|`/fiabilidad/` depuis `island`, PAS en dur) + sticker compte-propres → `nearMe()` (`?mapcleantap=0`).
+> - **PR-5** Sargasses_PROD ~L11042 ArchipelView : carte « lecture du jour » tapable → `diveBeach` (`?lecturetap=0`, gate `!!my`, `stopPropagation`).
+> - **PR-6** PremiumModal/PassOffer : wallet-gate (masquer Apple/Google Pay si indispo, via prop `wallets`=`walletAvail()`, `?wgate=0`) + `.pww-fcast` role=button→`onStart`. (**PR-6.2 proof-`<a>` ÉCARTÉ** : lien fiabilité déjà présent 2 lignes sous la carte.)
+> - **DEFER (needs regression screenshot Playwright WebKit 390×844)** : ArchipelView empty-sea single-tap plan-B (`?maptap=0`) + WorldMapView rect-caching pan/pinch INP.
+> - **ÉCARTÉ** : PR-1 defer `track()` (perdrait les events critiques checkout/conversion à la navigation — gain INP déjà pris par #320) · ComicPaywall pwx-panel→checkout (dark-pattern/conversion-risk).
+>
+> **SUITE IMMÉDIATE** : (1) après 1 cycle, lire `ux-daily.json` + `stats.php top_dead_els`/`sg_friction.el` → voir les coupables réels post-fix ; (2) shipper PR-4/5/6 ; (3) vérifier la régé du weekly-ux-report (creds GA4). Optionnel : brancher `ux-audit.cjs` sur `top_dead_els` pour que `ux-report.json` + alerte `ux-watch` nomment le coupable.
+
 > **🌍 2026-07-01 — SEO INTERNATIONAL EN/ES : TRACK /pro LONGUE-TRAÎNE COMPLET (8 pages, 2 PR) + gap sitemap comblé. Branche `claude/todays-remaining-tasks-wgtmay` (session // à `b2b-funnels`).**
 >
 > **Contexte** : les 4 pages `/pro/*` longue-traîne (cout, préparer-saison, barrières-vs-prévision, plan-collectivité) n'existaient qu'en FR. Déclinées **EN + ES**, ciblées mots-clés de chaque marché (US/Caraïbe anglo, Mexique/RD) — **PAS des traductions de slug**.
