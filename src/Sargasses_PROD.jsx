@@ -13678,6 +13678,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
+                onAccess={()=>openAccessCheck("map")} onEnableNotif={()=>loadPushNow("map")}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
