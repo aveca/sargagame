@@ -36,7 +36,11 @@ function timeAgo(ts, lang) {
   } catch (_) { return "" }
 }
 
-export function BeachPhotos({ beach, lang = "fr", max = 6 }) {
+// Flag rollback ?vseed=0 : désactive le nudge de recrutement sur galerie vide
+// (retour au comportement historique = rien afficher). Lu en inline par feature.
+const SEED_OFF = typeof window !== "undefined" && /[?&]vseed=0/.test(window.location.search)
+
+export function BeachPhotos({ beach, lang = "fr", max = 6, canContribute = false }) {
   const [photos, setPhotos] = useState(null)
   useEffect(() => {
     if (!beach || !beach.id || !supabaseConfigured()) return
@@ -45,7 +49,27 @@ export function BeachPhotos({ beach, lang = "fr", max = 6 }) {
     return () => { alive = false }
   }, [beach && beach.id])
 
-  if (!photos || !photos.length) return null
+  // photos===null → en cours de chargement (ou Supabase non configuré) : rien.
+  if (!photos) return null
+  // Galerie vide MAIS backend prêt + upload possible → nudge de rareté (« sois le
+  // premier ») pour amorcer le supply, plutôt qu'un vide muet. Attaque l'avantage
+  // « participation » du concurrent : nos 136 vitrines recrutent au lieu de dormir.
+  // Pas de 2e bouton (celui de BeachReport est juste au-dessus) : on le CADRE.
+  if (!photos.length) {
+    if (SEED_OFF || !canContribute) return null
+    return (
+      <div style={{ margin: "12px 0 4px", padding: "10px 14px", borderRadius: 12,
+        background: "var(--sg-bgD,#F7F5EF)", border: "1px dashed var(--sg-border,rgba(0,0,0,.14))",
+        fontSize: 11.5, fontWeight: 600, color: "var(--sg-mid,#7a7768)",
+        display: "flex", alignItems: "center", gap: 8, lineHeight: 1.35 }}>
+        <span aria-hidden="true" style={{ fontSize: 15 }}>📸</span>
+        {_t(lang,
+          "Personne n'a encore montré cette plage aujourd'hui — ta photo sera la première.",
+          "Nobody has shown this beach today yet — your photo would be the first.",
+          "Nadie ha mostrado esta playa hoy — tu foto sería la primera.")}
+      </div>
+    )
+  }
   const list = photos.slice(0, max)
 
   return (
