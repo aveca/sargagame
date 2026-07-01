@@ -10761,6 +10761,23 @@ export default function App(){
     return false
   })
   useEffect(()=>{ if(showPassExpired){try{track("sg_pass_expired_eligible",{island})}catch(_){}} },[])
+  // PRÉ-EXPIRATION (renouvellement) : un pass ACTIF à <3 j de la fin = la meilleure
+  // fenêtre de renouvellement (l'user consomme la valeur, sur le point de la perdre).
+  // Le seul signal jusqu'ici arrivait APRÈS l'expiration (showPassExpired) = trop tard.
+  // Cadrage POSITIF (« garde ton avance »), jamais « tu vas perdre l'accès ». Un seul
+  // affichage (sg_pass_renew_seen). pass_end>now ⇒ acheteur de pass (les abos récurrents
+  // n'ont pas de pass_end). Flag rollback ?passrenew=0.
+  const _passRenewDays=()=>{try{const e=parseInt(localStorage.getItem("sg_premium_pass_end")||"0");const d=e-Date.now();return d>0?Math.ceil(d/86400000):0}catch(_){return 0}}
+  const[showPassRenew,setShowPassRenew]=useState(()=>{
+    try{
+      if(typeof location!=="undefined"&&/[?&]passrenew=0/.test(location.search||""))return false
+      if(localStorage.getItem("sg_pass_renew_seen"))return false
+      const e=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+      if(e>Date.now()&&(e-Date.now())<3*86400000)return true
+    }catch(_){}
+    return false
+  })
+  useEffect(()=>{ if(showPassRenew){try{track("sg_pass_renew_eligible",{island})}catch(_){}} },[])
   // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
   //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
@@ -12065,6 +12082,36 @@ export default function App(){
               aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
           </div>
         )}
+
+        {/* PASS ACTIF ~3J DE LA FIN — nudge renouvellement (positif, un seul affichage) */}
+        {showPassRenew&&!showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(()=>{const _d=_passRenewDays();return _d>0&&(
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+            background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
+            borderBottom:"1px solid rgba(232,168,0,.3)",
+            padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
+            paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+            flexWrap:"wrap",fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>
+              {_t(lang,`Encore ${_d} jour${_d>1?"s":""} d'avance — prolonge et reste devant.`,`${_d} day${_d>1?"s":""} of foresight left — renew and stay ahead.`,`Quedan ${_d} día${_d>1?"s":""} de ventaja — renueva y sigue por delante.`)}</span>
+            <button onClick={()=>{
+              try{track("sg_pass_renew_click",{island,days_left:_d})}catch(_){}
+              try{localStorage.setItem("sg_pass_renew_seen","1")}catch(_){}
+              setShowPassRenew(false)
+              openPremium("pass_renew")
+            }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
+              padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+              whiteSpace:"nowrap",flexShrink:0}}>
+              {_t(lang,"Renouveler","Renew","Renovar")}</button>
+            <button onClick={()=>{
+              try{track("sg_pass_renew_dismiss",{island})}catch(_){}
+              try{localStorage.setItem("sg_pass_renew_seen","1")}catch(_){}
+              setShowPassRenew(false)
+            }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
+          </div>
+        )})()}
 
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
