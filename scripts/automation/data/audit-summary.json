@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T00:43:20.586Z",
+  "generatedAt": "2026-07-01T04:56:59.237Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -14,14 +14,14 @@
             "avgPosition": 8,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 48,
+            "impressions": 50,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse collat",
-                "impressions": 16,
+                "impressions": 17,
                 "clicks": 0,
-                "position": 6.75
+                "position": 7
               },
               {
                 "query": "anse collat martinique",
@@ -31,9 +31,9 @@
               },
               {
                 "query": "anse collat",
-                "impressions": 4,
+                "impressions": 5,
                 "clicks": 0,
-                "position": 7.75
+                "position": 8
               },
               {
                 "query": "anse collat martinique",
@@ -68,7 +68,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 410
+            "count": 424
           },
           {
             "event": "clarity_rage_click",
@@ -132,6 +132,12 @@
           },
           {
             "event": "clarity_rage_click",
+            "page": "/plages-sans-sargasses/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
             "page": "/plages/les-raisiniers/",
             "target": "",
             "count": 2
@@ -168,12 +174,6 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/plages-sans-sargasses/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
             "page": "/plages/plage-du-diamant",
             "target": "",
             "count": 1
@@ -196,19 +196,19 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 7428
+            "count": 7552
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 1464
+            "count": 1478
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 222
+            "count": 223
           },
           {
             "event": "clarity_dead_click",
@@ -226,13 +226,13 @@
             "event": "clarity_dead_click",
             "page": "/plages-sans-sargasses/",
             "target": "",
-            "count": 62
+            "count": 67
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 49
+            "count": 53
           },
           {
             "event": "clarity_dead_click",
@@ -286,7 +286,7 @@
             "event": "clarity_dead_click",
             "page": "/sargasses-sainte-luce/",
             "target": "",
-            "count": 22
+            "count": 24
           },
           {
             "event": "clarity_dead_click",
@@ -332,15 +332,15 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/comprendre-sargasses/",
+            "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
-            "count": 12
+            "count": 13
           },
           {
             "event": "clarity_dead_click",
-            "page": "/meilleures-plages-guadeloupe-sargasses/",
+            "page": "/comprendre-sargasses/",
             "target": "",
-            "count": 11
+            "count": 12
           },
           {
             "event": "clarity_dead_click",
@@ -649,7 +649,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 390
+            "count": 392
           },
           {
             "event": "clarity_rage_click",
@@ -735,7 +735,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 3375
+            "count": 3384
           },
           {
             "event": "clarity_dead_click",
@@ -1133,7 +1133,7 @@
             "event": "clarity_rage_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 13
+            "count": 14
           },
           {
             "event": "clarity_rage_click",
@@ -1159,13 +1159,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 572
+            "count": 579
           },
           {
             "event": "clarity_dead_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 368
+            "count": 372
           },
           {
             "event": "clarity_dead_click",
@@ -1183,7 +1183,7 @@
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 14
+            "count": 16
           },
           {
             "event": "clarity_dead_click",
@@ -1328,17 +1328,17 @@
         "lowCtrPages": [
           {
             "page": "https://sargassumcancun.com/sargazo-salud-riesgos/",
-            "avgPosition": 7,
+            "avgPosition": 6,
             "actualCtr": 0,
-            "expectedCtr": 4,
-            "impressions": 226,
+            "expectedCtr": 5,
+            "impressions": 239,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "sargazo",
-                "impressions": 32,
+                "impressions": 38,
                 "clicks": 0,
-                "position": 2.09375
+                "position": 2.0789473684210527
               },
               {
                 "query": "sargazo es peligroso",
@@ -1348,7 +1348,7 @@
               },
               {
                 "query": "sargazo",
-                "impressions": 21,
+                "impressions": 22,
                 "clicks": 0,
                 "position": 2
               },
@@ -1448,7 +1448,7 @@
             "event": "clarity_dead_click",
             "page": "/en/resorts/fairmont-mayakoba/",
             "target": "",
-            "count": 5
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
@@ -1473,6 +1473,12 @@
             "page": "/hoteles/secrets-the-vine-cancun/",
             "target": "",
             "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/resorts/grand-velas-riviera-maya/",
+            "target": "",
+            "count": 2
           },
           {
             "event": "clarity_dead_click",
