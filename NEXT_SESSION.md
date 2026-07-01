@@ -1,5 +1,18 @@
 # NEXT_SESSION — sargagame
 
+> **⏰ 2026-07-01 — ALERTE J-7 « PLANNER » CÂBLÉE (le dernier chantier resté ouvert des sessions hub). Branche `claude/todays-remaining-tasks-wgtmay`.**
+>
+> **Contexte** : la climatologie « état B » a été livrée (#314/#317). Restait UN chantier vraiment non fait, cité de session en session : l'**alerte J-7 du planner**. Le hub premium « La Vigie » (`WeekHub`) capturait l'intention de séjour `{date}` mais `onPlannerOptin` ne faisait que tracker — **rien ne stockait la date ni ne pinguait**. Pire : le preview du planner **promettait déjà** *« et on te prévient » / « we'll ping you »* → **promesse cassée live = violation du moat honnêteté**.
+>
+> **Livré (additif, Supabase, jamais Apps Script)** :
+> - **Fix honnêteté (live)** : le preview `WeekHub.jsx` ne promet plus l'auto-ping (`« Ton verdict jour par jour s'ouvre le X (J-7) — reviens le consulter »`, FR/EN/ES). On ne re-promet le ping qu'une fois le cron `--send` actif ET vérifié.
+> - **Capture d'intention** : `savePlannerAlert()` (`src/supabasePhotos.js`) POST `{email, domain=hostname, region, trip_date, lang}` → table Supabase `planner_alerts` (RLS insert-only, PII non lisible en anon). Câblé dans `WorldMapView` `onPlannerOptin` (email présent requis, flag rollback `?planalert=0`). `domain` = hostname réel → zéro mapping région côté serveur.
+> - **Table** : `supabase/schema.sql` (bloc `planner_alerts` + RLS). **Auto-créée** au 1er run du cron via l'API Management si `SUPABASE_ACCESS_TOKEN` présent (idempotent, non bloquant) ; fallback = coller le schéma (dashboard mobile).
+> - **Cron J-7** : `scripts/automation/planner-alerts.cjs` (DRY-RUN par défaut, `--send` pour émettre). Lit les intentions J-7→J0 non notifiées (clé service_role), dédup par email, envoie UN rappel transactionnel (brandHeader, claim ~76 % hedgé, lien `/fiabilite/`, unsub), marque `notified` dans Supabase (zéro état committé). Dates passées → nettoyage silencieux. Étape ajoutée à `daily-copernicus.yml` (DRY-RUN, `if: schedule`).
+> - **Honnêteté (moat)** : le rappel n'affirme AUCUN verdict — il invite à venir LIRE la donnée réelle. Zéro prévision fabriquée.
+>
+> **⚠️ RESTE (2 actions pour activer le ping)** : (1) vérifier que la table se peuple (logs cron DRY + Supabase), (2) basculer l'étape en `--send` ; **puis** ré-armer la promesse « on te prévient » dans `WeekHub.jsx` (preview). `SUPABASE_ACCESS_TOKEN` doit être dans les secrets GH (sinon coller `supabase/schema.sql`). Gate ship : esbuild OK · `npm run build` OK · budget 200,6/210 · dry-run cron OK (skip propre sans clé, 401 géré). Smoke `ux-smoke.mjs` non runnable ici (proxy) — changement sans nouvel élément visuel.
+
 > **🏭 2026-06-30 — AUDIT ÉQUIPE (8 départements, 92 trouvailles) + P0 & WAVE 1 EXÉCUTÉS. Branche `claude/b2b-funnels-forecasting-o8qeof`.**
 >
 > **Méthode demandée par le fondateur** : il en a marre d'être ma QA (« je ne peux pas voir l'écran rendu → les bugs visuels lui tombent dessus »). Solution = **système** : (1) audit multi-agents façon équipe (script `scratchpad/audit-team.js`, relançable) ; (2) **self-review avant chaque ship UI** contre les classes de bugs connues ; (3) conventions documentées dans `CLAUDE.md`. Le fondateur devient le **goût/stratégie**, pas le testeur de pixels.

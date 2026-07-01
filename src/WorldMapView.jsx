@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+import { savePlannerAlert } from "./supabasePhotos"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
 const LazyWeekHub = React.lazy(()=>import("./WeekHub"))
@@ -1881,7 +1882,12 @@ export default function WorldMapView({
             onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
             onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
             onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}
-            onPlannerOptin={(meta)=>{ try{ const em=localStorage.getItem("sg_email"); if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){}; try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
+            onPlannerOptin={(meta)=>{ let em=null; try{ em=localStorage.getItem("sg_email") }catch(_){}; try{ if(em&&onCaptureEmail) onCaptureEmail(em) }catch(_){};
+              // Persiste l'intention de séjour (date) → Supabase pour le rappel J-7 (cron
+              // planner-alerts.cjs). Fire-and-forget, opt-out ?planalert=0. Sans email → on
+              // ne stocke rien (pas de ping possible) : l'app ne promet donc aucun ping ici.
+              try{ const off=/[?&]planalert=0/.test(typeof location!=="undefined"?location.search:""); if(em&&meta&&meta.date&&!off) savePlannerAlert({ email:em, region:island, tripDate:meta.date, lang }) }catch(_){}
+              try{ track&&track("sg_weekhub_planner",meta||{}) }catch(_){} }}
           />
         </Suspense>,
         document.body
