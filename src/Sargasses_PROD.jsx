@@ -1874,11 +1874,6 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
   }
 }
 
-function getBeachPhoto(beach){
-  if(!beach)return null
-  return`/beaches/gplace-${beach.id}.jpg?v=3`
-}
-
 /* Vignette golden-hour de marque — remplace les photos externes (Google Places)
    et les tuiles satellite qui juraient avec le design « 100% nos assets ».
    Dégradé ciel→soleil→mer (SCENE_TOKENS) teinté par l'état réel de la plage. */
