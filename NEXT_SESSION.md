@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **✅ 2026-07-01 — FIX HONNÊTETÉ VERDICT : plancher sargasses sur la couleur. PR #395 mergée+déployée+vérifiée (run 28538035122 vert, curl prod 200, hash `a409ed66`).**
+>
+> **Déclencheur fondateur** : captures d'un thread FB « SOS Sargasses Martinique » où les locaux affirment « jamais de sargasses à l'Anse Mitan » → *« ça correspond à nos données ? »*. Vérif : notre satellite disait **propre** (`status:clean`, afai 0.07) MAIS l'UI affichait **orange** (`MOYEN 64/100`) → **on se contredisait nous-mêmes** (bug de moat).
+> **Cause** : le score composite « qualité de plage » (`score.cjs`/`score.js`) ne pèse les sargasses qu'à 30 % ; vent+nuages faisaient virer une plage propre à l'orange, au-dessus du verdict vert. La carte (pins) était déjà honnête (`status`), mais fiche/liste/ScoreBlob étaient dominés par `scoreColor`/`scoreLabel` composite.
+> **Correctif (#395)** : `labelFor(score, afai)` applique un **plancher aligné sur `statusFromAfai`** (0.15/0.40) — `clean`→vert only (BON/SUPER/EXCEPTIONNEL), `moderate`→ambre plafonné (MOYEN/PASSABLE), `avoid`→rouge, afai inconnu→seuils bruts (0 fabrication). Le score composite grade seulement À L'INTÉRIEUR de la bande sargasses. Liste : rail+chiffre suivent `b.status`. Miroir `score.cjs ↔ score.js` synchrone.
+> **Impact live (saison calme)** : 19/21 plages passent d'orange→vert (Anse Mitan, Les Salines, Prêcheur, Deshaies…). **Le moat est intact** : quand l'afai monte, la plage repasse orange/rouge comme avant — on a tué les fausses alertes, pas la détection.
+> **PAS de nouveau flag rollback** (changement de logique de couleur, pas d'ajout conversion). Fichiers : `src/lib/score.js`, `scripts/lib/score.cjs`, `src/Sargasses_PROD.jsx`.
+
 > **✅ 2026-07-01 — SESSION SARGATRACK CLÔTURÉE : panel adverse → 5 leviers shippés. PRs #379 + #385 mergées+déployées, dernière PR = renouvellement + win-back.**
 >
 > Réponse à « Sargatrack nous dépasse ? » → NON (avantage = distribution/participation FB, pas produit). Panel adverse (5 lentilles) convoqué à la demande du fondateur → file d'actions autonomes vérifiées, exécutées une par une :
