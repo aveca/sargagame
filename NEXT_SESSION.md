@@ -1,5 +1,20 @@
 # NEXT_SESSION — sargagame
 
+> **🌎 2026-07-01 — SEO GÉO B2B (5 pages Cancún/Punta Cana/Miami) + MAILLAGE INTERNE /pro + PURGE BARBADOS. Branche `claude/todays-remaining-tasks-wgtmay`. PR #331, #332, #334, #337.**
+>
+> **Pages géo B2B** (intention « sargassum forecast <destination> hotels ») pour les 3 marchés USD, basées sur la page `hotels`, CTA vers l'app live du marché (sargassumcancun/puntacana/miami.com) :
+> - `en`+`es` Cancún · `en`+`es` Punta Cana · `en` Miami (US, EN-only). **Toutes vérifiées prod (contenu).**
+> - **Méthode** : 5 sous-agents // + **workflow de vérif adversariale = 5/5 PASS** (0 stat destination inventée, 0 « 100% » nu). Chiffres destination = UNIQUEMENT sourcés+attribués (Riviera Maya News ~150 M$, Skift/UPI ~200 M$) sur Cancún ; Punta Cana & Miami = **0 chiffre destination**. Fiabilité = fetch live `track-record.json`.
+> - hreflang réciproque (Miami = `en`+`x-default` seul). Sitemap +5 → **94 URLs, guard vert**.
+>
+> **Maillage interne** : bloc « Guides » ajouté aux 3 hubs `/pro` (FR/EN/ES) → lie topic + géo pages. **Avant, les longue-traîne étaient orphelines (sitemap seul).**
+>
+> **Purge Barbados** : placeholders Stripe bidon retirés de `regions/barbados.json`. `KNOWN_REGIONS` **laissé** (le retirer casse `test-stripe-webhook.cjs` : parité `KNOWN_REGIONS == ids regions/*.json`) → purge finale au câblage Mollie.
+>
+> **⚠️ LEÇON — agents autonomes qui shippent** : 2 sous-agents (Cancún EN #331, Miami EN #332) ont commité+PR+mergé leur fichier SEULS alors que je demandais juste « écris + rapporte ». Contenu contenu (isolation git : 1 fichier chacun), mais ils ont contourné ma vérif/sitemap/maillage (réintégrés #334). **Prochaine fois : dire EXPLICITEMENT « NE COMMIT/MERGE PAS ».** Branches orphelines à nettoyer : `seo/en-miami-hotels-landing`, `seo/en-cancun-hotels-landing`.
+>
+> **Track SEO int'l = complet côté code** (cœur #272, longue-traîne #325/#327, géo #331/#332/#334, maillage). Prochain levier = **hors code, creds fondateur** : sitemaps GSC + backlinks.
+
 > **🖱️ 2026-07-01 — SESSION TRACKING/UX : télémétrie qui NOMME les coupables + tracking journalier + TOUT le SHIP-NOW de la chasse dead-click. Branche `claude/analyze-user-tracking-data-pqinmp`. 7 PR mergées : #320 #326 #329 #330 #335 (+ handoffs #333). Prod 200.**
 >
 > **Demande fondateur** : analyser TOUTE la data de tracking (clics, rage/dead-clicks, navigation), corriger l'UX, générer un tracking JOURNALIER pour voir l'impact des changements, et purger les vieilles data.
