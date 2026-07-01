@@ -1,5 +1,15 @@
 # NEXT_SESSION — sargagame
 
+> **🗺️ 2026-07-01 — CARTE : FIX RÉGRESSION « GROS ENCARTS MOCHES » (labels de plage). Branche `claude/large-card-design-1kdyyi`. PR #338 mergée + déployée (run 1708 vert, `curl` OK).**
+>
+> **Grief fondateur** : les noms de plage sur la carte s'affichaient dans de gros pavés blancs (bordure 3px + ombre) qui masquent la côte. **Ce n'était PAS un choix design = régression CSS.** #329 a rendu les labels tapables (`role="button"`, fix dead-click) → a fait matcher `.theme-comic/.theme-soft [role="button"]` (`src/Themes.css:47`) qui colle fond blanc + bordure + ombre. Cas d'école du « skin de thème écrase l'inline » (cf. CLAUDE.md Self-review UI).
+>
+> **Fix (#338)** : classe `sg-maplabel` sur le conteneur + règle doublée `.sg-maplabel.sg-maplabel{background/border/box-shadow:none!important}` (spécificité 0,2,0 bat le skin 0,1,1) dans `src/app-runtime.css`. Retire UNIQUEMENT le box → texte blanc + ink-shadow survivent = look « comme avant ». **Tap conservé** (l'apport anti-dead-click de #329 reste). Additif, réversible.
+>
+> **⚠️ Gate** : build + budget (201.8/210) + CI (test-frontend + perf) verts. `ux-smoke` local NON concluant dans le conteneur (réseau sortant bloqué → skin ne peint pas → ~25 éléments « transparents » à l'identique avant/après ; `ERRORS` = 100% `net::ERR_*`). Delta vérifié contre baseline = zéro régression. **Note : la carte est le composant funnel — screenshots de régression faits (scratchpad).**
+>
+> **Panel design tranché (moi, fondateur « ne sait pas »)** : proto **C** (label nom-seul, sans le mot de verdict MODÉRÉ/À ÉVITER) **ÉCARTÉ** — le verdict coloré par plage EST le moat, le retirer embellit à la marge mais coûte l'info-clé (+ va contre décision fondateur 22/06 « nommer les plages pas-vertes »). **Réserve si carte trop chargée à l'usage réel (46 plages) : C' = verdict compact sur UNE ligne** (`Anse Michel · À éviter`) au lieu de 2 lignes empilées — garde l'info, gagne en densité. Flag `?maplabelmin=0` prêt à re-sortir en 5 min.
+
 > **🌎 2026-07-01 — SEO GÉO B2B (5 pages Cancún/Punta Cana/Miami) + MAILLAGE INTERNE /pro + PURGE BARBADOS. Branche `claude/todays-remaining-tasks-wgtmay`. PR #331, #332, #334, #337.**
 >
 > **Pages géo B2B** (intention « sargassum forecast <destination> hotels ») pour les 3 marchés USD, basées sur la page `hotels`, CTA vers l'app live du marché (sargassumcancun/puntacana/miami.com) :
