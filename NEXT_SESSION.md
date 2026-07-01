@@ -1,5 +1,18 @@
 # NEXT_SESSION — sargagame
 
+> **🛰️ 2026-07-01 — SENTINEL-2 NEAR-SHORE INTÉGRÉ + DÉPLOYÉ (flag OFF, dormant). PRs #394 + #398 mergées. Auth CDSE validée par un vrai run.**
+>
+> **Question fondateur** : « utiliser les données de SargaTrack pour alimenter l'app ? » → **NON** au concurrent (pas d'API, republier son algo violerait le moat), **OUI** à sa source ouverte manquante : **Sentinel-2** (10-20 m), la lecture near-shore fine que la grille ERDDAP ~4 km dilue. On a ingéré *la source*, pas *le concurrent*.
+> **Livré & déployé (flag OFF)** :
+> - `scripts/fetch-sentinel2.cjs` : ingestion **CDSE Sentinel Hub Statistical API** (indice FAI B04/B08/B11, **masque EAU-only SCL==6**, boîte décalée 1.5 km vers le large). No-op propre sans creds, non-bloquant, `--dry`. Écrit `sentinel2-nearshore.json` + **`sentinel2-history.json` append-only** (dédup `obsDate`, cap 120 j).
+> - `fetch-sargassum-live.cjs` : correction **additive** ±0.15 cappée, pondérée couverture×fraîcheur, miroir de la correction 1D, au point unique `computeBeachLevels`. Derrière **`SG_SENTINEL2=1` (défaut OFF)**.
+> - `daily-copernicus.yml` : step non-bloquant qui produit le layer + commit des 2 fichiers S2 (persistance inter-runs).
+> - **5 plages prototype MQ** : les-salines, sainte-anne, pt-marin, diamant, tartane.
+> **Creds** : le compte `COPERNICUS_*` (Marine/CMEMS) **ne marche PAS** sur CDSE (401 prouvé). Fondateur a créé un **client OAuth CDSE** → secrets `SENTINEL_HUB_CLIENT_ID`/`SECRET` posés → **auth validée** (`token CDSE obtenu (client_credentials)`, 5 plages, valeurs saines).
+> **Piège résolu** : 1er run brut → 5 plages **maxées** (FAI 0.038-0.107, végétation côtière lue comme algues). Fix masque EAU-only → FAI **×20-40 plus bas** (0.002-0.005), `afaiLike` 0.15-0.40 plausibles. Le moat a tenu (flag OFF).
+> **⚠️ GATE D'ACTIVATION (PAS encore fait — future session)** : les seuils `faiToAfaiLike()` sont **provisoires** (valeurs saines mais non validées vérité-terrain). Accumuler ~N semaines de `sentinel2-history.json` → **backtester** `afaiLike` vs réalisé sur `/fiabilite/` → si le J+1 near-shore s'améliore, **activer `SG_SENTINEL2=1`** (+ étendre aux autres plages/régions). Sinon garder OFF. **Ne PAS activer sans ce backtest** (loi moat « 0 fabrication »).
+> **Nouveau flag rollback** : `SG_SENTINEL2` (env, défaut OFF). **Vérif** : esbuild + build (182 Ko ≤ 210) + test unitaire dédup historique + run réel CDSE vert.
+
 > **🗓️ 2026-07-01 — WEEKHUB : PLANNER SAISONNIER « QUAND RÉSERVER » (dates lointaines). PR #396 MERGÉE + DÉPLOYÉE (run #1770).**
 >
 > **Grief fondateur** (capture) : le bloc « Tu pars dans 2 semaines ? » du `WeekHub` ne donnait qu'un « reviens à J-7 » générique — inutile pour qui **réserve un hôtel des mois à l'avance** et veut savoir **si/quand** partir.
