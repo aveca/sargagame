@@ -1,0 +1,40 @@
+{
+  "observations": [
+    {
+      "id": "les-salines",
+      "obsDate": "2026-06-26",
+      "fai": 0.00205,
+      "afaiLike": 0.12,
+      "coverage": 0.93
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-06-26",
+      "fai": 0.00118,
+      "afaiLike": 0.12,
+      "coverage": 0.5
+    },
+    {
+      "id": "pt-marin",
+      "obsDate": "2026-06-26",
+      "fai": 0.00508,
+      "afaiLike": 0.28,
+      "coverage": 0.38
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-06-26",
+      "fai": 0.00508,
+      "afaiLike": 0.28,
+      "coverage": 0.55
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-06-26",
+      "fai": 0.00282,
+      "afaiLike": 0.12,
+      "coverage": 0.47
+    }
+  ],
+  "updatedAt": "2026-07-01T19:22:22.778Z"
+}
