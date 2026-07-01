@@ -44,19 +44,31 @@ function freshLabel(updatedAt, lang){
   }catch(_){ return null }
 }
 
-// Mascotte Veilleur minimale (satellite/oeil) — autonome pour éviter l'import circulaire.
+// Mascotte Veilleur — markup CANON copié de ChasseHome.jsx `Veilleur` (satellite-œil) ; autonome
+// pour éviter l'import circulaire. Panneaux bleus #1c7fb0, corps crème, antenne or, iris FIXE or
+// (aucune humeur : la mascotte ne suggère jamais un verdict que la data ne dit pas).
 function Watcher({ size=42 }){
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" style={{flexShrink:0}}>
-      <rect x="6" y="20" width="9" height="8" rx="2" fill="#5b3a8e" stroke={INK} strokeWidth="1.6"/>
-      <rect x="33" y="20" width="9" height="8" rx="2" fill="#5b3a8e" stroke={INK} strokeWidth="1.6"/>
-      <path d="M24 12V6" stroke={GOLD} strokeWidth="2.4" strokeLinecap="round"/>
-      <circle cx="24" cy="5" r="2.4" fill={GOLD}/>
-      <rect x="14" y="14" width="20" height="22" rx="6" fill="#5b3a8e" stroke={INK} strokeWidth="1.8"/>
-      <rect x="14" y="14" width="20" height="7" rx="6" fill={GOLD}/>
-      <circle cx="24" cy="27" r="7.5" fill="#07201e" stroke={INK} strokeWidth="1.4"/>
-      <circle cx="24" cy="27" r="4.6" fill="#3fd07f"/>
-      <circle cx="22" cy="25.2" r="1.8" fill="#eafbf8"/>
+    <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" style={{flexShrink:0}}>
+      {/* panneaux solaires */}
+      <g stroke={INK} strokeWidth="2.5">
+        <rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
+        <rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
+        <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+      </g>
+      {/* corps */}
+      <circle cx="60" cy="62" r="34" fill={PAPER} stroke={INK} strokeWidth="3"/>
+      {/* antenne */}
+      <line x1="60" y1="28" x2="60" y2="14" stroke={INK} strokeWidth="3"/>
+      <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke={INK} strokeWidth="2.5"/>
+      {/* œil / iris (fixe) + reflet */}
+      <circle cx="60" cy="62" r="20" fill={INK}/>
+      <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
+      <circle cx="60" cy="62" r="6" fill={INK}/>
+      <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+      {/* sourcil + sourire */}
+      <path d="M44 40 Q60 34 76 40" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round"/>
+      <path d="M50 86 Q60 92 70 86" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round"/>
     </svg>
   )
 }
@@ -66,7 +78,7 @@ function DayCell({ st, tier, active, label, sub }){
   const bg = st ? STATUS_C[st] : null
   return (
     <span style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-      <span style={{font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#4a4458"}}>{label}</span>
+      <span style={{font:"700 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#4a4458"}}>{label}</span>
       <span style={{width:22,height:22,borderRadius:5,boxSizing:"border-box",
         background:bg||"#efe9da",
         backgroundImage:bg?"none":"repeating-linear-gradient(45deg,#d2ccbd 0 3px,#efe9da 3px 6px)",
@@ -76,7 +88,7 @@ function DayCell({ st, tier, active, label, sub }){
         background:tier==="high"?INK:"transparent",
         backgroundImage:tier==="med"?`linear-gradient(90deg,${INK} 0 50%,transparent 50%)`:"none",
         border:tier==="low"?`1px dotted ${INK}`:tier==="med"?`1px solid ${INK}`:"none"}}/>
-      {sub&&<span style={{font:"600 8px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478"}}>{sub}</span>}
+      {sub&&<span style={{font:"600 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478"}}>{sub}</span>}
     </span>
   )
 }
@@ -258,7 +270,9 @@ export default function WeekHub({
     if(!seasonMonths) return null
     const nowM = new Date().getMonth()
     const chosenMi = seasonForDate ? seasonForDate.mi : -1
-    return Array.from({length:12},(_,k)=>{ const idx=(nowM+k)%12; return { idx, phase:seasonMonths[idx]||"hors-saison", label:monthName(idx,lang,"short"), chosen: idx===chosenMi } })
+    // Label tronqué à 4 lettres SANS point final : 3 lettres rendait juin/juillet
+    // identiques (« jui ») en FR ; 4 = 12 labels uniques en FR/EN/ES (vérifié Intl).
+    return Array.from({length:12},(_,k)=>{ const idx=(nowM+k)%12; return { idx, phase:seasonMonths[idx]||"hors-saison", label:monthName(idx,lang,"short").slice(0,4).replace(/\.$/,""), chosen: idx===chosenMi } })
   },[seasonMonths, seasonForDate, lang])
   // NB : l'opt-in planner se déclenche désormais directement au choix de la date (input onChange
   // ci-dessous) — DIRECT, zéro email, zéro ping. planSent sert juste à ne l'émettre qu'une fois.
@@ -282,11 +296,17 @@ export default function WeekHub({
         fontFamily:"'Bricolage Grotesque',system-ui,sans-serif", color:INK,
       }}>
         <style>{`@keyframes wkhubIn{from{transform:translateY(28px);opacity:.4}to{transform:translateY(0);opacity:1}}
-          @media (prefers-reduced-motion: reduce){[data-wkhub]{animation:none!important}}`}</style>
+          [data-wkhub] .wk-chip{transition:transform .15s ease}
+          [data-wkhub] .wk-chip:active{transform:scale(.96)}
+          [data-wkhub] .wk-chip span{transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease,color .15s ease}
+          @media (prefers-reduced-motion: reduce){[data-wkhub]{animation:none!important}
+            [data-wkhub] .wk-chip,[data-wkhub] .wk-chip span{transition:none!important}
+            [data-wkhub] .wk-chip:active{transform:none!important}}`}</style>
 
         {/* HEADER sticky */}
         <div style={{position:"sticky", top:0, zIndex:2, display:"flex", alignItems:"center", gap:11,
-          background:PAPER, borderBottom:`2.5px solid ${INK}`, padding:"max(12px,env(safe-area-inset-top)) 14px 11px"}}>
+          background:PAPER, backgroundImage:"radial-gradient(rgba(13,11,20,.06) 1.1px,transparent 1.3px)", backgroundSize:"9px 9px",
+          borderBottom:`2.5px solid ${INK}`, padding:"max(12px,env(safe-area-inset-top)) 14px 11px"}}>
           <Watcher size={40}/>
           <div style={{flex:1, minWidth:0}}>
             <div style={{font:"400 22px/1.05 'Anton','Bricolage Grotesque',sans-serif"}}>{_t(lang,"Ta semaine","Your week","Tu semana")}</div>
@@ -371,7 +391,7 @@ export default function WeekHub({
             <div style={{display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:3}}
               onKeyDown={(e)=>{ if(e.key==="ArrowRight"){e.preventDefault();setActiveDay(d=>Math.min(5,d+1))} else if(e.key==="ArrowLeft"){e.preventDefault();setActiveDay(d=>Math.max(0,d-1))} }}>
               {strip.map(w=>(
-                <button key={w.d} onClick={()=>setActiveDay(w.d)} aria-pressed={activeDay===w.d}
+                <button key={w.d} className="wk-chip" onClick={()=>setActiveDay(w.d)} aria-pressed={activeDay===w.d}
                   aria-label={`${ti(lang,DAY_LBL[w.d])} · ${w.known?w.clean+" "+_t(lang,"propres","clean","limpias"):_t(lang,"inconnu","unknown","desconocido")} · ${w.tier==="high"?_t(lang,"confiance forte","strong confidence","confianza alta"):w.tier==="med"?_t(lang,"tendance","trend","tendencia"):_t(lang,"horizon incertain","uncertain horizon","horizonte incierto")}`}
                   style={{flex:1, minHeight:44, display:"flex", flexDirection:"column", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"2px 0"}}>
                   <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif"}}>{w.known?w.clean:"—"}</span>
@@ -380,7 +400,7 @@ export default function WeekHub({
                     backgroundImage:w.known?"none":"repeating-linear-gradient(45deg,#d2ccbd 0 3px,#efe9da 3px 6px)",
                     border:activeDay===w.d?`3px solid ${GOLD}`:`2px solid ${INK}`, borderRadius:5, boxSizing:"border-box",
                     boxShadow:activeDay===w.d?`0 0 0 1.5px ${INK}`:"none"}}/>
-                  <span style={{font:"700 9.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:activeDay===w.d?INK:"#4a4458"}}>{ti(lang,DAY_LBL[w.d])}</span>
+                  <span style={{font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", color:activeDay===w.d?INK:"#4a4458"}}>{ti(lang,DAY_LBL[w.d])}</span>
                   <span aria-hidden="true" style={{width:5, height:5, borderRadius:"50%", boxSizing:"border-box",
                     background:w.tier==="high"?INK:"transparent",
                     backgroundImage:w.tier==="med"?`linear-gradient(90deg,${INK} 0 50%,transparent 50%)`:"none",
@@ -389,7 +409,7 @@ export default function WeekHub({
               ))}
             </div>
             <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginTop:9}}>
-              <span style={{font:"600 9.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>{_t(lang,"plein = mesuré · demi = tendance · pointillé = horizon","filled = measured · half = trend · dotted = horizon","lleno = medido · medio = tendencia · punteado = horizonte")}</span>
+              <span style={{font:"600 10.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>{_t(lang,"plein = mesuré · demi = tendance · pointillé = horizon","filled = measured · half = trend · dotted = horizon","lleno = medido · medio = tendencia · punteado = horizonte")}</span>
               <button onClick={()=>seeOnMap(activeDay)} style={{flexShrink:0, font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"6px 10px", cursor:"pointer", minHeight:36, boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Voir sur la carte","See on map","Ver en el mapa")}</button>
             </div>
           </div>
@@ -404,7 +424,7 @@ export default function WeekHub({
                     <div style={{display:"flex", alignItems:"center", gap:9}}>
                       <span style={{width:11, height:11, borderRadius:"50%", background:STATUS_C.avoid, border:`1.5px solid ${INK}`, flexShrink:0}}/>
                       <span style={{flex:1, minWidth:0, font:"800 13px/1.1 'Bricolage Grotesque',system-ui,sans-serif", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{b.name}</span>
-                      <span style={{font:"800 10px/1 'Bricolage Grotesque',system-ui,sans-serif", color:actionable?"#b5341a":"#6b6478", whiteSpace:"nowrap"}}>
+                      <span style={{font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:actionable?"#b5341a":"#6b6478", whiteSpace:"nowrap"}}>
                         {actionable
                           ? (flip===0?_t(lang,"à éviter","avoid","evitar"):`${_t(lang,"bascule","flips","cambia")} ${ti(lang,DAY_LBL[flip])}${b.drift==="up"?" ↗":b.drift==="down"?" ↘":""}`)
                           : _t(lang,"à surveiller","watch","a vigilar")}
@@ -507,19 +527,19 @@ export default function WeekHub({
                           background:(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
                           border: m.chosen?`2.5px solid ${INK}`:`1px solid rgba(13,11,20,.3)`,
                           boxShadow: m.chosen?`0 0 0 1.5px ${GOLD}`:"none"}}/>
-                        <span style={{font:`${m.chosen?"800":"600"} 8px/1 'Bricolage Grotesque',system-ui,sans-serif`, color:m.chosen?INK:"#6b6478"}}>{m.label}</span>
+                        <span style={{font:`${m.chosen?"800":"600"} 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif`, color:m.chosen?INK:"#6b6478"}}>{m.label}</span>
                       </div>
                     ))}
                   </div>
                   <div style={{display:"flex", gap:10, justifyContent:"center", marginTop:8, flexWrap:"wrap"}}>
                     {["hors-saison","approche-saison","pleine-saison"].map(p=>(
-                      <span key={p} style={{display:"inline-flex", alignItems:"center", gap:4, font:"600 9px/1 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>
+                      <span key={p} style={{display:"inline-flex", alignItems:"center", gap:4, font:"600 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>
                         <span style={{width:9,height:9,borderRadius:3,background:PHASE_META[p].c,border:`1px solid rgba(13,11,20,.4)`}}/>
                         {_t(lang,PHASE_META[p].lbl[0],PHASE_META[p].lbl[1],PHASE_META[p].lbl[2])}
                       </span>
                     ))}
                   </div>
-                  <div style={{font:"600 9px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478", textAlign:"center", marginTop:6}}>{_t(lang,"Tendance saisonnière (littérature publiée) — pas une prévision de ta date.","Seasonal trend (published literature) — not a forecast for your date.","Tendencia estacional (literatura publicada) — no un pronóstico de tu fecha.")}</div>
+                  <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478", textAlign:"center", marginTop:6}}>{_t(lang,"Tendance saisonnière (littérature publiée) — pas une prévision de ta date.","Seasonal trend (published literature) — not a forecast for your date.","Tendencia estacional (literatura publicada) — no un pronóstico de tu fecha.")}</div>
                 </div>
               )}
 
@@ -531,7 +551,7 @@ export default function WeekHub({
           {/* PIED honnêteté */}
           <div style={{textAlign:"center", padding:"2px 4px 0"}}>
             <a href="/fiabilite/" style={{font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, textDecoration:"underline"}}>{_t(lang,"Va voir ce qu'on vaut vraiment →","See what we're really worth →","Mira lo que valemos de verdad →")}</a>
-            <div style={{font:"600 10px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"76 à 79 % de justesse selon la saison · confiance forte J0-J3, indicative au-delà.","76-79% accuracy by season · strong confidence D0-D3, indicative beyond.","76-79 % de acierto según temporada · confianza alta D0-D3, indicativa más allá.")}</div>
+            <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"76 à 79 % de justesse selon la saison · confiance forte J0-J3, indicative au-delà.","76-79% accuracy by season · strong confidence D0-D3, indicative beyond.","76-79 % de acierto según temporada · confianza alta D0-D3, indicativa más allá.")}</div>
           </div>
 
         </div>

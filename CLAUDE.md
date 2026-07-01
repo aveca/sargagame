@@ -96,17 +96,18 @@ node -e "require('playwright').chromium.executablePath()" >/dev/null \
 node scripts/ux-smoke.mjs | tee /tmp/smoke.log
 grep -q 'ERRORS=\[\]' /tmp/smoke.log \
   && grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log \
+  && grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log \
   || { echo "SMOKE BLOQUÉ"; exit 1; }   # captures /tmp/j*.png
 
 kill %1 2>/dev/null      # arrêter le preview
 ```
 
-**Passe =** `npm run build` exit 0 ET `check-bundle-budget` exit 0 ET les deux tokens littéraux `ERRORS=[]` **et** `WHITE_OR_TRANSPARENT_BUTTONS=[]` présents dans la sortie smoke. Tout le reste = blocage. (Le smoke tronque `ERRORS` à 12 entrées — n'affecte pas le test `=[]`.)
+**Passe =** `npm run build` exit 0 ET `check-bundle-budget` exit 0 ET les trois tokens littéraux `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]` **et** `RM_INFINITE=[]` présents dans la sortie smoke. Tout le reste = blocage. (Le smoke tronque les listes à 12 entrées — n'affecte pas le test `=[]`.)
 
 ### Règles dures
 
 - **Couleurs jugées en `getComputedStyle`, jamais sur capture headless** (forced-colors/fonts système fuient → le PNG ment). Lire `getComputedStyle(el).backgroundColor`. Les `/tmp/j*.png` servent au layout/présence, pas au colorimètre.
-- **`reduced-motion`** : toute anim doit dégrader proprement sous `prefers-reduced-motion`. ⚠️ NON couvert par `ux-smoke.mjs` (aucun `emulateMedia({reducedMotion})`) — vérif manuelle, ou câbler `p.emulateMedia({reducedMotion:'reduce'})` dans le smoke pour l'automatiser.
+- **`reduced-motion`** : toute anim doit dégrader proprement sous `prefers-reduced-motion`. ✅ Couvert par `ux-smoke.mjs` depuis 2026-07-01 : passe `emulateMedia({reducedMotion:'reduce'})` + `document.getAnimations()` → token `RM_INFINITE=[]` (animations infinies encore actives = blocage ; spinners/skeletons de chargement whitelistés). La passe ne couvre que la surface d'atterrissage — pour un nouvel écran profond, vérif manuelle en plus.
 - **Budget = JS eager** : `check-bundle-budget.cjs` gzip le `<script type=module>` d'entrée + les `modulepreload` de `dist/index.html`, seuil `BUNDLE_BUDGET_KB` (défaut 210 Ko), exit 1 si dépassé. C'est le JS du chemin critique, **pas le CSS**. CI bloquant.
 - **SW `CACHE_NAME` auto-dérivé — ne jamais le bumper à la main.** `public/sw.js` reste `sargasses-vNNN` (regex `sync-version.cjs`) ; `stamp-sw-hash.cjs` (postbuild, n'édite QUE `dist/sw.js`) y appose un hash de `src/` : code change → bump → reload PWA ; data-only → pas de bump → zéro reload intempestif. L'éditer à la main casse cette logique.
 - **`WorldMapView`** (carte SVG, composant vedette du funnel, préchargée eager) : jamais de refacto sans screenshot de régression avant/après.

@@ -21,19 +21,26 @@ const card = { background:PAPER, border:`2.5px solid ${INK}`, boxShadow:`3px 3px
 
 function haversine(a,b,c,d){ const R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p,h=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2; return 2*R*Math.asin(Math.sqrt(h)) }
 
-// Mascotte Veilleur — recopiée VERBATIM de WeekHub (autonome, anti-import-circulaire / budget lazy).
+// Mascotte Veilleur — markup CANON recopié de WeekHub (lui-même copié de ChasseHome `Veilleur`) ;
+// autonome, anti-import-circulaire / budget lazy. Panneaux bleus #1c7fb0, corps crème, antenne or,
+// iris FIXE or (aucune humeur : la mascotte ne suggère jamais un verdict que la data ne dit pas).
 function Watcher({ size=40 }){
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" style={{flexShrink:0}}>
-      <rect x="6" y="20" width="9" height="8" rx="2" fill="#5b3a8e" stroke={INK} strokeWidth="1.6"/>
-      <rect x="33" y="20" width="9" height="8" rx="2" fill="#5b3a8e" stroke={INK} strokeWidth="1.6"/>
-      <path d="M24 12V6" stroke={GOLD} strokeWidth="2.4" strokeLinecap="round"/>
-      <circle cx="24" cy="5" r="2.4" fill={GOLD}/>
-      <rect x="14" y="14" width="20" height="22" rx="6" fill="#5b3a8e" stroke={INK} strokeWidth="1.8"/>
-      <rect x="14" y="14" width="20" height="7" rx="6" fill={GOLD}/>
-      <circle cx="24" cy="27" r="7.5" fill="#07201e" stroke={INK} strokeWidth="1.4"/>
-      <circle cx="24" cy="27" r="4.6" fill="#3fd07f"/>
-      <circle cx="22" cy="25.2" r="1.8" fill="#eafbf8"/>
+    <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" style={{flexShrink:0}}>
+      <g stroke={INK} strokeWidth="2.5">
+        <rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
+        <rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
+        <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+      </g>
+      <circle cx="60" cy="62" r="34" fill={PAPER} stroke={INK} strokeWidth="3"/>
+      <line x1="60" y1="28" x2="60" y2="14" stroke={INK} strokeWidth="3"/>
+      <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke={INK} strokeWidth="2.5"/>
+      <circle cx="60" cy="62" r="20" fill={INK}/>
+      <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
+      <circle cx="60" cy="62" r="6" fill={INK}/>
+      <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+      <path d="M44 40 Q60 34 76 40" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round"/>
+      <path d="M50 86 Q60 92 70 86" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round"/>
     </svg>
   )
 }
