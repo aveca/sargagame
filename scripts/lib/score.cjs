@@ -143,7 +143,27 @@ function weakness(factor, snapshot, lang = "fr", imperial = false) {
 
 // ---- Label from total score ----
 
-function labelFor(score) {
+// Plancher sargasses (LE moat = l'honnêteté). Dans une app SARGASSES, la couleur
+// du verdict ne doit JAMAIS être plus alarmante que la réalité des algues : une
+// plage propre (afai bas) n'est jamais peinte en orange/rouge parce qu'elle est
+// ventée/couverte ; une plage avec sargasses n'est jamais peinte en vert éclatant.
+// Le score composite (météo 70 %) grade seulement À L'INTÉRIEUR de la bande
+// autorisée par le statut. Seuils afai alignés sur statusFromAfai (0.15 / 0.40).
+// ⚠️ Garder byte-identique en logique avec src/lib/score.js.
+function labelFor(score, afai) {
+  const st = afai == null ? null : (afai < 0.15 ? "clean" : afai < 0.40 ? "moderate" : "avoid")
+  if (st === "clean") {
+    if (score >= 82) return { label: "EXCEPTIONNEL", color: "#00B086" }
+    if (score >= 68) return { label: "SUPER", color: "#1EC8B0" }
+    return { label: "BON", color: "#6AC15A" }
+  }
+  if (st === "moderate") {
+    return score >= 52 ? { label: "MOYEN", color: "#E8A800" } : { label: "PASSABLE", color: "#E87B1E" }
+  }
+  if (st === "avoid") {
+    return score >= 30 ? { label: "ÉVITER", color: "#E8512A" } : { label: "NON", color: "#C93A1E" }
+  }
+  // afai inconnu → zéro fabrication, on retombe sur le score brut historique
   if (score >= 90) return { label: "EXCEPTIONNEL", color: "#00B086" }
   if (score >= 80) return { label: "SUPER", color: "#1EC8B0" }
   if (score >= 70) return { label: "BON", color: "#6AC15A" }
@@ -180,7 +200,7 @@ function computeScore(snapshot = {}, lang = "fr", imperial = false) {
   }
 
   const score = Object.values(breakdown).reduce((a, b) => a + b, 0)
-  const { label, color } = labelFor(score)
+  const { label, color } = labelFor(score, snapshot.afai)
   const SL = STRENGTHS[lang] || STRENGTHS.fr
   const RT = REASON_T[lang] || REASON_T.fr
 

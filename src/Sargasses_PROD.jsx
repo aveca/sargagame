@@ -4819,8 +4819,12 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
         {filtered.map(b=>{
           const st=ST[b.status]||ST._loading
           const hasScore=typeof b.score==="number"
-          // statut du trio aligné sur le SCORE affiché (pas le status brut) → couleur+forme+mot cohérents
-          const band=hasScore?(b.score>=70?"clean":b.score>=40?"moderate":"avoid"):b.status
+          // Plancher sargasses : la couleur du trio (rail + chiffre) suit le VERDICT
+          // sargasses (b.status), jamais le score composite météo → une plage propre
+          // mais ventée reste verte, jamais orange (cohérent avec scoreColor/scoreLabel
+          // désormais gatés par afai dans lib/score.js). Le mot éditorial reste le
+          // label gaté (BON/SUPER pour clean, MOYEN/PASSABLE pour moderate…).
+          const band=b.status||(hasScore?(b.score>=70?"clean":b.score>=40?"moderate":"avoid"):"clean")
           const railC=stColor(band)
           // MOT : label éditorial data-driven si présent, sinon le mot du trio
           const word=(hasScore&&scoreLabelFor(b.scoreLabel,lang))||(lang==="es"?st.les:lang==="en"?st.le:st.l)
