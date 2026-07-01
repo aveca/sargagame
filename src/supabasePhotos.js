@@ -83,3 +83,36 @@ export async function fetchApprovedPhotos(beachId, limit = 12) {
   const rows = await res.json()
   return (Array.isArray(rows) ? rows : []).map((r) => ({ url: r.url, ts: r.created_at, level: r.level || "" }))
 }
+
+/**
+ * Dépose une intention de séjour « planner » (hub premium La Vigie) → table
+ * `planner_alerts` (RLS insert-only, la lecture reste privée côté service). Le cron
+ * scripts/automation/planner-alerts.cjs enverra le rappel J-7. Fire-and-forget,
+ * best-effort : toute erreur (table absente, réseau) est avalée → jamais bloquant,
+ * jamais de promesse UI cassée (l'app ne promet le ping qu'une fois le cron actif).
+ * `domain` = hostname réel → le rappel pointe la bonne région sans mapping serveur.
+ * Renvoie true si l'insert a réussi.
+ */
+export async function savePlannerAlert({ email, region, beachId, beachName, tripDate, lang } = {}) {
+  if (!supabaseConfigured()) return false
+  if (!email || !tripDate) return false
+  let domain = ""
+  try { domain = (location.hostname || "").replace(/^www\./, "") } catch (_) {}
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/planner_alerts`, {
+      method: "POST",
+      headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify({
+        email: String(email).trim().slice(0, 200).toLowerCase(),
+        domain: domain || null,
+        region: region || null,
+        beach_id: beachId || null,
+        beach_name: beachName || null,
+        trip_date: tripDate,       // 'YYYY-MM-DD'
+        lang: lang || null,
+        notified: false,
+      }),
+    })
+    return res.ok
+  } catch (_) { return false }
+}

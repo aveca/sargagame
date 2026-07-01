@@ -55,3 +55,38 @@ create policy "anon upload beach-photos" on storage.objects
 
 -- b) Lecture publique des images (bucket public=true → URLs /object/public/… lisibles).
 --    (Pas de policy SELECT nécessaire pour les URLs publiques.)
+
+-- =====================================================================
+-- planner_alerts — intentions de séjour du hub premium « La Vigie » (WeekHub).
+-- Un premium qui planifie un séjour choisit une date future → l'app insère ici
+-- {email, domain, region, trip_date}. Le cron scripts/automation/planner-alerts.cjs
+-- envoie un rappel J-7 (« ton verdict jour par jour est ouvert ») puis marque
+-- notified=true. Idempotent → safe à (re)coller sur une base déjà créée.
+-- Ce bloc est aussi (best-effort) auto-créé par le cron via l'API Management si
+-- SUPABASE_ACCESS_TOKEN est présent — le coller à la main reste le fallback.
+-- =====================================================================
+
+create table if not exists public.planner_alerts (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  email       text not null,
+  domain      text,            -- hostname d'origine → lien du rappel (zéro mapping serveur)
+  region      text,            -- id région / island (analytics)
+  beach_id    text,
+  beach_name  text,
+  trip_date   date not null,   -- date de séjour visée
+  lang        text,            -- fr | en | es (localise le rappel)
+  notified    boolean not null default false
+);
+
+create index if not exists planner_alerts_due_idx
+  on public.planner_alerts (trip_date, notified);
+
+alter table public.planner_alerts enable row level security;
+
+-- RLS : n'importe qui peut DÉPOSER une intention (jamais déjà notifiée), personne
+-- ne peut la LIRE avec la clé anon (PII). Lecture/update = clé service_role (cron).
+drop policy if exists "anon insert planner" on public.planner_alerts;
+create policy "anon insert planner" on public.planner_alerts
+  for insert to anon
+  with check (notified = false);

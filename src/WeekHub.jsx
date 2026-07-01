@@ -224,10 +224,13 @@ export default function WeekHub({
       const fmt=dt=>dt.toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
       const days=Math.ceil((target.getTime()-Date.now())/864e5)
       if(days<=7) return _t(lang,"Ta date est déjà dans notre fenêtre fiable — le verdict jour par jour est ouvert sur la carte.","Your date is already in our reliable window — the day-by-day verdict is open on the map.","Tu fecha ya está en nuestra ventana fiable — el veredicto diario está abierto en el mapa.")
+      // Honnêteté (moat) : on énonce QUAND la fenêtre fiable s'ouvre, sans promettre un
+      // ping automatique tant que le rappel J-7 (cron planner-alerts.cjs) n'émet pas —
+      // on ne promet jamais ce qu'on ne délivre pas encore.
       return _t(lang,
-        `On t'ouvre le verdict jour par jour le ${fmt(open)} (J-7) et on te prévient.`,
-        `We open the day-by-day verdict on ${fmt(open)} (D-7) and we'll ping you.`,
-        `Te abrimos el veredicto diario el ${fmt(open)} (D-7) y te avisamos.`)
+        `Ton verdict jour par jour s'ouvre le ${fmt(open)} (J-7) — reviens le consulter à ce moment-là.`,
+        `Your day-by-day verdict opens on ${fmt(open)} (D-7) — come back then to read it.`,
+        `Tu veredicto diario se abre el ${fmt(open)} (D-7) — vuelve entonces a consultarlo.`)
     }catch(_){ return null }
   },[planDate, lang])
   // Estimation OBSERVÉE pour la date choisie (le « à peu près » demandé) : taux propre réel

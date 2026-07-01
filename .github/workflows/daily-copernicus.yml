@@ -328,6 +328,26 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/weather-reengage.cjs
 
+      # Rappel J-7 « planner » : un premium qui a planifié un séjour dans le hub « La
+      # Vigie » a déposé {email, domain, trip_date} dans Supabase (planner_alerts). À
+      # J-7, on l'invite à venir LIRE le verdict jour par jour (transactionnel, opt-in
+      # explicite — pas du cold outreach). SUPABASE_ACCESS_TOKEN crée la table au 1er
+      # run (idempotent) ; sinon coller supabase/schema.sql. Idempotence = notified dans
+      # Supabase (zéro état committé). ⚠️ DRY-RUN volontaire : le fondateur vérifie que
+      # la table se peuple + relit la copy (logs), puis ajoute « --send » pour activer.
+      # Une fois --send LIVE et vérifié, ré-armer la promesse de ping dans WeekHub.jsx.
+      - name: Planner J-7 reminder (DRY-RUN — passer en --send après vérif)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/automation/planner-alerts.cjs
+
       # Cold-lead RÉ-ENGAGE (nurture long-traîne) : recontacte à cadence BASSE les leads
       # devenus FROIDS (60-365j, jamais convertis, welcome/drip/relance finis) pour les
       # ramener au Pass. Source = subscribers.json (déjà fetché plus haut). EUR/FR only,
