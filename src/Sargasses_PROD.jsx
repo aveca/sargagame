@@ -10943,10 +10943,19 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null;swipeX.current=null}
   // Double-tap = bascule entre paliers NOMMÉS (vue côte MID ↔ rivage NEAR) au point
   // tapé, au lieu de magic numbers. zoomAt borne via clampZ. (workflow step 3)
-  const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect(),c=camRef.current;zoomAt(c.cz<(MID+NEAR)/2?NEAR/c.cz:MID/c.cz,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
+  const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect(),c=camRef.current;zoomAt(c.cz<(MID+NEAR)/2?NEAR/c.cz:MID/c.cz,e.clientX-r.left,e.clientY-r.top)}
+    else if(!movedRef.current&&!mapTapHintOff&&!diving){ // tap simple sur la mer vide (pas double, pas pan, aucune plongée en cours) → indice éphémère
+      try{if(!sessionStorage.getItem("sg_maptaphint")){sessionStorage.setItem("sg_maptaphint","1");try{track("sg_map_tap_hint")}catch(_){};setTapHint(true);setTimeout(()=>setTapHint(false),2400)}}catch(_){}
+    }
+    lastTap.current=now}
   // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
   //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
   const[tour,setTour]=useState(null) // null=exploration libre ; sinon position dans l'ordre
+  // Dead-click carte : un tap simple sur la mer vide (hors pin) ne répondait pas → indice
+  // ÉPHÉMÈRE « touche une plage 📍 » (1×/session, pointerEvents:none, auto-dismiss). Ne change
+  // NI le pan NI la sélection (zéro sémantique de geste modifiée). Rollback : ?maptap=0.
+  const mapTapHintOff=(()=>{try{return /[?&]maptap=0/.test(window.location.search)}catch(_){return false}})()
+  const[tapHint,setTapHint]=useState(false)
   const tourRef=useRef(null),twRaf=useRef(0),twTarget=useRef(null),swipeY=useRef(null),swipeX=useRef(null)
   const FOCUS=1.6
   const tourOrder=useMemo(()=>{if(!proj.length)return[];const m=proj[myIdx];return proj.map((_,i)=>i).sort((a,b)=>((proj[a].x-m.x)**2+(proj[a].y-m.y)**2)-((proj[b].x-m.x)**2+(proj[b].y-m.y)**2))},[proj,myIdx])
@@ -11131,6 +11140,10 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       {rootMode&&tour==null&&veille.streak>0&&<div aria-label={_t(lang,"Série de veille","Watch streak","Racha")} style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",right:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"7px 11px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,216,132,.34)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>
         <span style={{fontSize:13.5,fontWeight:800,color:"#FFD884",whiteSpace:"nowrap"}}>🔥 {veille.streak}</span>
         {proj.length>0&&<span style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.55)",whiteSpace:"nowrap"}}>{consultedRef.current.size}/{proj.length}</span>}
+      </div>}
+      {/* Indice éphémère « touche une plage » (dead-click mer vide). pointerEvents:none = ne capte rien. */}
+      {tapHint&&tour==null&&<div aria-hidden="true" style={{position:"absolute",bottom:"calc(84px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:31,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+        <div style={{padding:"8px 14px",borderRadius:999,background:"rgba(4,9,11,.72)",border:"1px solid rgba(95,211,201,.34)",color:"#EAF7F4",fontSize:12.5,fontWeight:700,backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>📍 {_t(lang,"Touche une plage pour son verdict","Tap a beach for its verdict","Toca una playa para su veredicto")}</div>
       </div>}
       {tour==null
         ?<div style={{position:"absolute",bottom:"calc(18px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:30,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
