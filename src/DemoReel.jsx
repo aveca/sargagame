@@ -59,9 +59,16 @@ function Veilleur({ size = 60 }) {
   )
 }
 
-export default function DemoReel({ lang = "fr", src = "lobby", partner = null, allBeaches, imageMap, imageQ, mapForecastByBeach, sargData, island, track, onClose }) {
+export default function DemoReel({ lang = "fr", src = "lobby", partner = null, allBeaches, imageMap, imageQ, mapForecastByBeach, sargData, island, track, onClose, onEnterFunnel, onPick }) {
   const t = (fr, en, es) => (lang === "es" ? es : lang === "en" ? en : fr)
   const reduce = useMemo(() => { try { return window.matchMedia("(prefers-reduced-motion:reduce)").matches } catch (_) { return false } }, [])
+  // Mode INTERACTIF (attract in-app, ?idle) : additif, ne touche PAS le kiosk (src="lobby")
+  // ni le partage (src="share"). Le 1er geste NE recharge PAS la page — il dissout le reel
+  // via un capture-wipe doré (suppr. sous reduced-motion) et rend la main au funnel vivant
+  // sur la MÊME plage vedette (onEnterFunnel). onPick fige l'objet plage pour le parent.
+  const interactive = src === "interactive"
+  const [wiping, setWiping] = useState(false)
+  const enteringRef = useRef(false)
 
   // ── Plage vedette du démo : meilleure PROPRE avec vraie photo, rotation
   //    quotidienne pour la variété ; sinon meilleure dispo. Fallback honnête :
@@ -82,6 +89,12 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
       return { ...p, _img: img, _isClean: p.status === "clean" }
     } catch (_) { return null }
   }, [allBeaches, imageMap])
+
+  // ── Expose la plage vedette résolue au parent (mode interactif), UNE seule fois : le
+  //    funnel DOIT atterrir sur EXACTEMENT cette plage (même verdict, même statut → zéro
+  //    bait). Le parent stocke l'objet et l'ouvre au 1er geste. ──
+  const pickedRef = useRef(false)
+  useEffect(() => { if (pick && !pickedRef.current) { pickedRef.current = true; try { onPick && onPick(pick) } catch (_) {} } }, [pick])
 
   // ── GATE-STALE dur : pas d'affirmation de fraîcheur si données >12 h / stale ──
   const freshOK = useMemo(() => {
@@ -156,7 +169,8 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
   const pauseTimer = useRef(null)
 
   useEffect(() => {
-    if (paused || frozen || !ready || nScenes === 0) return
+    // Interactif + reduced-motion : plancher a11y = 1 frame STATIQUE (s1), pas d'auto-avance.
+    if (paused || frozen || !ready || nScenes === 0 || (interactive && reduce)) return
     const cur = scenes[idx % nScenes] || scenes[0]
     advTimer.current = setTimeout(() => setIdx(i => (i + 1) % nScenes), (cur.dur || 6) * 1000)
     return () => clearTimeout(advTimer.current)
@@ -179,14 +193,28 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
     try { window.location.href = deepLink } catch (_) {}
   }, [deepLink, src, partner, track])
 
+  // Mode interactif : capture le 1er geste — dissout le reel via un wipe doré ~430 ms (une
+  // seule fois, suppr. sous reduced-motion) puis rend la main au funnel vivant sur la MÊME
+  // plage. JAMAIS window.location.href : un reload effacerait la fiche et atterrirait sur un
+  // home froid (= cul-de-sac). enteringRef : anti double-tir (tap + wheel).
+  const enterFunnel = useCallback(() => {
+    if (enteringRef.current) return
+    enteringRef.current = true
+    try { track && track("sg_attract_tap", { src, scene: (scenes[idx % nScenes] || {}).id }) } catch (_) {}
+    if (reduce) { try { onEnterFunnel && onEnterFunnel(pick) } catch (_) {}; return }
+    setWiping(true)
+    setTimeout(() => { try { onEnterFunnel && onEnterFunnel(pick) } catch (_) {} }, 430)
+  }, [reduce, onEnterFunnel, pick, src, scenes, idx, nScenes, track])
+
   const onTap = useCallback(() => {
+    if (src === "interactive") { enterFunnel(); return } // in-app : dissout → funnel (pas de reload, track dans enterFunnel)
     try { track && track("sg_attract_tap", { src, partner: partner || "", scene: (scenes[idx % nScenes] || {}).id }) } catch (_) {}
-    if (src === "share" || src === "interactive") { goToApp(); return } // display passif → funnel actif
+    if (src === "share") { goToApp(); return } // display passif → funnel actif
     // Kiosk : pause tactile ~18 s (comptoir), puis reprise
     setPaused(true)
     if (pauseTimer.current) clearTimeout(pauseTimer.current)
     pauseTimer.current = setTimeout(() => setPaused(false), 18000)
-  }, [src, partner, idx, nScenes, scenes, goToApp, track])
+  }, [src, partner, idx, nScenes, scenes, goToApp, enterFunnel, track])
 
   // Sorties : ✕ / Échap / swipe-down (kiosk = URL dédiée ; tap = pause, pas close)
   const close = useCallback(() => { try { onClose && onClose() } catch (_) {} }, [onClose])
@@ -329,7 +357,7 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
       className={"sgd-root sg-onink-scope" + (frozen ? " sgd-frozen" : "")}
       role="dialog" aria-modal="true" aria-label={t("Démonstration Le Veilleur", "Le Veilleur demo", "Demostración Le Veilleur")}
       ref={sw.ref} onTouchStart={sw.onTouchStart} onTouchMove={sw.onTouchMove} onTouchEnd={sw.onTouchEnd}
-      onClick={onTap}
+      onClick={onTap} onWheel={interactive ? enterFunnel : undefined}
     >
       <style>{`
         ${SEQ_STEP_CSS}
@@ -413,6 +441,12 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
           .sgd-offer-l{align-items:flex-start;text-align:left}
         }
         @media (max-width:520px){.sgd-split{gap:14px}.sgd-day{min-width:40px;padding:7px 5px}}
+        /* capture-wipe doré (mode interactif) — finie, one-shot, inerte sous reduced-motion */
+        .sgd-wipe{position:absolute;inset:0;z-index:20;pointer-events:none;
+          background:radial-gradient(circle at 50% 50%,${GOLD} 0%,${GOLD} 55%,#ffb84d 100%);
+          clip-path:circle(0% at 50% 50%)}
+        @media (prefers-reduced-motion:no-preference){.sgd-wipe{animation:sgdWipe .43s cubic-bezier(.4,0,.2,1) forwards}}
+        @keyframes sgdWipe{to{clip-path:circle(150% at 50% 50%)}}
       `}</style>
 
       {ready ? renderScene(cur.id) : (
@@ -433,6 +467,10 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
       {ready && <div className="sgd-dots"><SeqDots n={nScenes} at={(idx % nScenes) + 1} ink={"#fff"} gold={GOLD} /></div>}
 
       {paused && <div className="sgd-paused">{t("EN PAUSE", "PAUSED", "EN PAUSA")}</div>}
+
+      {/* Capture-wipe doré (interactif) : révèle l'app réelle, n'invente rien. One-shot,
+          jamais en boucle, inerte sous reduced-motion (clip-path figé à circle(0)). */}
+      {wiping && <div className="sgd-wipe" aria-hidden="true" />}
 
       <button className="sgd-close" onClick={(e) => { e.stopPropagation(); close() }} aria-label={t("Fermer", "Close", "Cerrar")}>×</button>
     </div>
