@@ -1769,9 +1769,14 @@ export default function WorldMapView({
           </div>
         )}
 
-        {/* Légende */}
+        {/* Légende — bottom 164px (pas 74px) : depuis la restauration des pastilles
+            sg-mapchip (2026-07-01), la chip hôtel est trop large pour cohabiter avec
+            le CTA « près de moi » (rangée 74px, reste 123px pour 152px de chip) et à
+            124px elle passait sous la barre des jours (y687-724 à 390px). À 164px le
+            bas de colonne (680) garde 7px d'air au-dessus de la barre — constant,
+            tout le chrome bas étant ancré bottom. */}
         <div style={{
-          position:"absolute",left:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
+          position:"absolute",left:16,bottom:"calc(164px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
           {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
