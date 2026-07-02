@@ -291,6 +291,108 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
 </div></body></html>`
 }
 
+// ── B2B HOTEL LANDING — page HTML STANDALONE (sans React) INDEXABLE, la 1re
+// surface SEO à INTENTION D'ACHAT PRO (vertical RÉCIF/hôtels, offre LIVE 89 $/mo,
+// essai 30 j). Cible « sargassum monitoring/widget/alerts for hotels <region> » :
+// requêtes que TOUTES nos ~125 pages/région ignoraient (100 % intention voyageur).
+// Contenu anti-thin = tableau de couverture RÉ-LOCALISÉ (vraies plages + hôtels
+// qu'on surveille déjà) + chiffre de fiabilité hedgé → distinct des pages B2C.
+// Lead = usage PRIVÉ (brief + alertes, zéro dev, zéro expo publique) puis badge
+// public OPT-IN — l'argent ne touche jamais le verdict (le badge n'affiche que le
+// MÊME verdict neutre ; « tu choisis de le montrer, jamais ce qu'il dit »). CTA →
+// /?pro=1 avec UTM (utm_campaign=b2b_widget_<id>) pour que sg_b2b_visit attribue.
+function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix = '') {
+  const es = lang === 'es'
+  const _ = (en, esT) => (es ? esT : en)
+  const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
+  const W = { clean: _('Clean', 'Limpia'), moderate: _('Moderate', 'Moderada'), avoid: _('Avoid', 'Evitar') }
+  const rn = esc(region.name)
+  const methodHref = `${prefix}/${es ? 'metodologia' : 'methodology'}/`
+  const pro = (pos) => `https://${domain}/?pro=1&amp;utm_source=organic&amp;utm_medium=landing&amp;utm_campaign=b2b_widget_${region.id}&amp;utm_content=${pos}`
+  // Tableau de couverture : chaque plage qu'on surveille + les VRAIS hôtels dessus
+  // (fait public = quelle plage borde l'hôtel ; jamais « nos clients »/endorsement).
+  const byBeach = {}
+  for (const r of resorts) (byBeach[r.beachId] = byBeach[r.beachId] || []).push(r)
+  const covRows = beaches.filter(b => (byBeach[b.id] || []).length).map(b => {
+    const st = (b.lv && b.lv.status) || 'clean'
+    const rs = byBeach[b.id]
+    const names = rs.slice(0, 3).map(r => esc(r.name)).join(', ')
+    const more = rs.length > 3 ? ` +${rs.length - 3}` : ''
+    return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(b.name)}</b> · ${W[st] || st}<br><small>${names}${more}</small></span></li>`
+  }).join('')
+  const secs = [
+    [_('Start private: a morning brief and staff alerts — no widget, no developer',
+       'Empieza en privado: boletín matinal y alertas para tu equipo — sin widget, sin programador'),
+     _(`Your first day is invisible to guests. Every morning you get your beach's status and 7-day outlook by email, plus an alert as soon as our next satellite read shows it change — so the front desk, concierge and housekeeping know before the first guest question, not after. No code, no embed, nothing on your public site. Point a family to the clear cove today, move the beach wedding, brief the team — off a read you trust because it's the same neutral verdict everyone sees. Most properties never need more than this.`,
+       `Tu primer día es invisible para los huéspedes. Cada mañana recibes por email el estado de tu playa y el pronóstico a 7 días, más una alerta en cuanto nuestra siguiente lectura satelital detecta un cambio — para que recepción, concierge y limpieza lo sepan antes de la primera pregunta, no después. Sin código, sin embed, nada en tu sitio público. Orienta a una familia a la cala limpia de hoy, mueve la boda en la playa, informa al equipo — sobre una lectura fiable porque es el mismo veredicto neutral que ve todo el mundo. La mayoría no necesita nada más.`)],
+    [_('When your beach is clean, say so — with a badge you control',
+       'Cuando tu playa está limpia, dilo — con una insignia que tú controlas'),
+     _(`The conversation about your beach happens on Google and TripAdvisor whether you join it or not. When you're ready, add a live clean-beach status to your own booking page — the same honest verdict, under your roof instead of a stranger's photo. It's opt-in: you choose whether to show it, never what it says. On a low-confidence day it reads "uncertain" rather than a promise, so you're never caught claiming clean when the sea says otherwise. Green means green because the satellite says so, not because it sells rooms.`,
+       `La conversación sobre tu playa ocurre en Google y TripAdvisor, participes o no. Cuando quieras, añade un estado de playa limpia en vivo a tu propia página de reservas — el mismo veredicto honesto, bajo tu techo en lugar de la foto de un desconocido. Es opcional: tú eliges si lo muestras, nunca lo que dice. En un día de baja confianza dice "incierto" en vez de una promesa, así nunca te pillan afirmando "limpia" cuando el mar dice lo contrario. Verde es verde porque lo dice el satélite, no porque venda habitaciones.`)],
+    [_('Measured, not guessed — and we publish when we’re wrong',
+       'Medido, no adivinado — y publicamos cuándo fallamos'),
+     _(`Raw NOAA/Copernicus imagery is a basin-wide ocean-color picture with no verdict for your sand. We turn it into a per-beach, 7-day call with a confidence level — and we publish our full dated track record, hits and misses. Across all regimes over 24 hours the verdict runs about 76% accurate; we’re strongest calling clean water in calm season and least confident on the rare fast-moving alerts, and we say so on low-confidence days. He watches the sea, never your guests — and never his own scoreboard.`,
+       `Las imágenes en bruto de NOAA/Copernicus son una foto de color del océano a escala de cuenca, sin veredicto para tu arena. Las convertimos en un pronóstico por playa a 7 días con nivel de confianza — y publicamos nuestro historial fechado completo, aciertos y fallos. En todos los regímenes a 24 horas el veredicto ronda el 76% de acierto; somos más fuertes anunciando agua limpia en temporada tranquila y menos seguros en las raras alertas rápidas, y lo decimos en los días de baja confianza. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
+  ].map(([h, b], i) => `<h2>${esc(h)}</h2><p>${esc(b)}</p>${i === 2 ? `<p><a class="lnk" href="${methodHref}">${_('See our published accuracy record', 'Ver nuestro historial de precisión publicado')} →</a></p>` : ''}`).join('')
+  const faq = [
+    [_('How much is it, and is there really no sales call?', '¿Cuánto cuesta y de verdad no hay llamada de ventas?'),
+     _('$89/month or $790/year — about two months free on the annual plan. No setup fee, no per-booking cut, no upsell call. You start on a 30-day free trial with no credit card, so you can see it work before you decide.',
+       '89 US$/mes o 790 US$/año — unos dos meses gratis en el plan anual. Sin cuota de alta, sin comisión por reserva, sin llamada de venta. Empiezas con una prueba de 30 días sin tarjeta, para verlo funcionar antes de decidir.')],
+    [_('Do I have to put "seaweed" on my website?', '¿Tengo que poner "sargazo" en mi web?'),
+     _('No. By default nothing is public — you get the morning brief and staff alerts privately. The public clean-beach badge is opt-in and entirely yours to switch on or off. Most properties run it staff-only and only show the badge on good days.',
+       'No. Por defecto nada es público — recibes el boletín matinal y las alertas en privado. La insignia pública de playa limpia es opcional y tú la enciendes o apagas. La mayoría lo usa solo para el equipo y muestra la insignia solo en los días buenos.')],
+    [_('How is this different from free NOAA data — and what if it’s wrong in front of a guest?', '¿En qué se diferencia de los datos gratis de NOAA — y si falla delante de un huésped?'),
+     _('NOAA/Copernicus give you a basin-wide image, not a verdict for your beach. We turn it into a per-beach 7-day call with a confidence level, and publish every dated hit and miss (~76% across all regimes). On low-confidence days it reads "uncertain," never a false "clean" — so you’re protected, not exposed.',
+       'NOAA/Copernicus te dan una imagen a escala de cuenca, no un veredicto para tu playa. La convertimos en un pronóstico por playa a 7 días con nivel de confianza, y publicamos cada acierto y fallo fechado (~76% en todos los regímenes). En días de baja confianza dice "incierto", nunca un falso "limpia" — así estás protegido, no expuesto.')],
+  ].map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')
+  const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [
+    [_('How much is it, and is there really no sales call?', '¿Cuánto cuesta y de verdad no hay llamada de ventas?'), _('$89/month or $790/year, about two months free on the annual plan. No setup fee, no per-booking cut, no upsell call. Start on a 30-day free trial with no credit card.', '89 US$/mes o 790 US$/año, unos dos meses gratis al año. Sin cuota de alta ni comisión por reserva. Prueba de 30 días sin tarjeta.')],
+    [_('Do I have to put seaweed on my website?', '¿Tengo que poner sargazo en mi web?'), _('No. By default the morning brief and staff alerts stay private. The public clean-beach badge is opt-in and yours to switch on or off.', 'No. Por defecto el boletín y las alertas son privados. La insignia pública es opcional, tú la enciendes o apagas.')],
+    [_('How accurate is it?', '¿Qué precisión tiene?'), _('About 76% across all regimes over 24 hours, with the full dated record published; low-confidence days read "uncertain," never a false clean.', 'Cerca del 76% en todos los regímenes a 24 horas, con el historial fechado publicado; los días de baja confianza dicen "incierto".')],
+  ].map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }
+  const slug = es ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
+  const canonical = `https://${domain}${prefix}/${slug}/`
+  const title = _(`Sargassum Monitoring for ${region.name} Hotels & Resorts`, `Monitoreo de Sargazo para Hoteles de ${region.name}`)
+  const desc = _(`Satellite-measured sargassum briefs + staff alerts for your exact ${region.name} beach. Private by default, public badge optional. $89/mo, 30-day free trial, no card.`,
+                 `Boletines de sargazo medidos por satélite + alertas para tu playa de ${region.name}. Privado por defecto, insignia pública opcional. 89 US$/mes, prueba 30 días sin tarjeta.`)
+  const h1 = _(`Guests Google your beach’s seaweed before they book. Right now, a stranger’s photo answers for you.`,
+               `Tus huéspedes buscan el sargazo de tu playa antes de reservar. Ahora, la foto de un desconocido responde por ti.`)
+  const lede = _(`A family booking ${region.name} this weekend is already searching "sargassum" — and the answer they find is a stranger’s worst-day photo of a beach that may not even be yours. You can’t stop guests from checking. You can be the one who actually knows. We measure the exact beach in front of your property from satellite, four times a day, and send you the read every morning — privately, before a guest ever walks down to the water.`,
+                 `Una familia que reserva ${region.name} este fin de semana ya está buscando "sargazo" — y lo que encuentra es la foto del peor día de un desconocido, de una playa que quizá ni es la tuya. No puedes impedir que miren. Sí puedes ser quien de verdad sabe. Medimos por satélite la playa exacta frente a tu propiedad, cuatro veces al día, y te enviamos la lectura cada mañana — en privado, antes de que un huésped baje al agua.`)
+  const covTitle = _(`The ${region.name} beaches we already watch`, `Las playas de ${region.name} que ya vigilamos`)
+  const covSub = _(`Live status right now, sampled offshore of each stretch — including the sand in front of these properties. Refreshed 4× a day.`,
+                   `Estado en vivo ahora mismo, muestreado frente a cada tramo — incluida la arena delante de estas propiedades. Actualizado 4 veces al día.`)
+  const priceTitle = _('Start free in two minutes — no card, no call', 'Empieza gratis en dos minutos — sin tarjeta, sin llamada')
+  const priceBody = _(`Pricing is stated up front: $89/month or $790/year. Start a 30-day free trial — no credit card, no sales call. You set it up yourself, and you decide what stays private and what, if anything, goes public. If it doesn’t earn its place next to your room rates, you walk having spent nothing.`,
+                      `El precio va por delante: 89 US$/mes o 790 US$/año. Empieza una prueba de 30 días — sin tarjeta, sin llamada de venta. Lo configuras tú, y decides qué queda privado y qué, si acaso, se hace público. Si no se gana su sitio junto a tus tarifas, te vas sin haber gastado nada.`)
+  const ld = [
+    { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: _('Live map', 'Mapa en vivo'), item: `https://${domain}${prefix}/` },
+      { '@type': 'ListItem', position: 2, name: title, item: canonical } ] },
+    faqLd,
+  ].map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('')
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${canonical}">
+<link rel="alternate" hreflang="${lang}" href="${canonical}" /><link rel="alternate" hreflang="x-default" href="${canonical}" />
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
+${ld}
+<style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.55;padding:16px 0}.wrap{max-width:680px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#2e1a5e,#6a2f9e 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:30px 24px}.hd .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}.hd h1{font-size:26px;margin:8px 0 10px;line-height:1.18}.hd p{font-size:14px;opacity:.94}.bd{padding:22px 24px}.bd h2{font-size:19px;margin:22px 0 6px;line-height:1.25}.bd p{font-size:15px;margin:0 0 8px}.lnk{color:#6a2f9e;font-weight:700;text-decoration:none}.cov{background:#FAF8F1;border:1px solid #eadfc6;border-radius:14px;padding:14px 16px;margin:18px 0}.cov h2{margin-top:2px}.cov ul{list-style:none;margin-top:8px}.cov li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee}.cov .d{width:14px;height:14px;border-radius:50%;flex:none}.cov .n{flex:1}.cov .n small{color:#7a756c;font-size:12.5px}.price{background:#F3EEFB;border:1px solid #dfd0f2;border-radius:14px;padding:16px 18px;margin:20px 0}.price b{font-size:19px}.cta{display:block;text-align:center;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:14px 0;font-weight:700;font-size:15.5px}h3{font-size:15.5px;margin:16px 0 2px}.faq h3{color:#2e1a5e}.ft{font-size:11.5px;color:#8a857c;padding:8px 24px 22px}.ft a{color:#6a2f9e}</style></head>
+<body><div class="wrap">
+<div class="hd"><div class="k">${rn} · ${_('For hotels & resorts', 'Para hoteles')}</div><h1>${esc(h1)}</h1><p>${_('Satellite-measured, not guessed. Private by default.', 'Medido por satélite, no adivinado. Privado por defecto.')}</p></div>
+<div class="bd">
+<p>${esc(lede)}</p>
+<a class="cta" href="${pro('hero')}">${_('Start free — watch your beach', 'Empieza gratis — vigila tu playa')} →</a>
+${secs}
+<div class="cov"><h2>${esc(covTitle)}</h2><p>${esc(covSub)}</p><ul>${covRows || `<li><span class="n"><small>${_('Coverage updates every 4 hours.', 'La cobertura se actualiza cada 4 horas.')}</small></span></li>`}</ul></div>
+<a class="cta" href="${pro('coverage')}">${_('See your beach live — start free', 'Ve tu playa en vivo — empieza gratis')} →</a>
+<div class="price"><h2>${esc(priceTitle)}</h2><p>${esc(priceBody)}</p><p><b>${_('$89/mo · $790/yr', '89 US$/mes · 790 US$/año')}</b> — ${_('30-day free trial, no card, no call.', 'prueba de 30 días, sin tarjeta, sin llamada.')}</p></div>
+<a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
+<div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
+</div>
+<div class="ft">${_('Independent Copernicus / NOAA satellite data · refreshed 4× a day', 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día')} · <a href="${methodHref}">${_('Accuracy', 'Precisión')}</a> · <a href="${prefix}/">${_('Live map', 'Mapa en vivo')}</a> · ${esc(domain)}</div>
+</div></body></html>`
+}
+
 function generateRegionSeoPages(region, distDir) {
   const RL = require('./region-langs.cjs')
   const domain = region.domain
@@ -389,6 +491,8 @@ function emitLangPages(ctx) {
   const { region, distDir, domain, lang, primary, useLangs, slugIndex, sitemap,
     content, t, prefix, routes, tpl, resorts, data, accuracy, photos, beaches, byScore, resortsByBeach, isoToday } = ctx
   const today = fmtDate(lang)
+  // Slug de la landing B2B hôtels (intention d'achat pro) — lié + sitemapé.
+  const hotelsSlug = lang === 'es' ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
   // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
   const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
   const sw = s => STATUS_WORD[lang][s] || s || '—'
@@ -417,6 +521,8 @@ function emitLangPages(ctx) {
     if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
     if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
     items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    // hotels : landing B2B intention d'achat (RÉCIF/live) — maillée depuis chaque hub.
+    if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
     if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
     // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
@@ -763,6 +869,9 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   // Annuaire B2B + hub SEO : 1 page /resorts/ listant tous les hôtels (statut + brief).
   if (resorts.length) {
     try { writePage(distDir, `${prefix}/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix)); pushUrl(`${prefix}/${t.resortsDir}/`, { priority: '0.5' }) } catch (e) { /* directory best-effort */ }
+    // Landing B2B hôtels (INDEXABLE, intention d'achat pro) : la 1re surface SEO
+    // qui vise « sargassum for hotels <region> » → funnel /?pro=1 (sg_b2b_visit).
+    try { writePage(distDir, `${prefix}/${hotelsSlug}/`, buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix)); pushUrl(`${prefix}/${hotelsSlug}/`, { priority: '0.7' }) } catch (e) { /* landing best-effort */ }
   }
 
   // ── 4. Home : langue PRIMAIRE = patch dist/index.html en place (inchangé) ;
