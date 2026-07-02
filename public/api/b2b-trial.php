@@ -89,6 +89,11 @@ curl_setopt_array($ch, [
 @curl_exec($ch);
 @curl_close($ch);
 
+// Instrumente l'ENTRÉE du funnel B2B (essai démarré) dans Supabase — le seul funnel
+// qui rapporte, désormais VISIBLE (funnel-b2b-from-supabase.cjs). sg_analytics_event
+// vient de mollie-lib.php (déjà requis L22). Best-effort, jamais bloquant, zéro PII.
+@sg_analytics_event('b2b_trial_started', ['org' => $name, 'beach' => $beach], $island);
+
 echo json_encode([
     'ok'    => true,
     'token' => $token,

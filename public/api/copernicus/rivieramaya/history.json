@@ -1427,6 +1427,46 @@
           "id": "rm012",
           "afai": 0.13,
           "status": "clean"
+        },
+        {
+          "id": "rm013",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "rm014",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "rm015",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "rm016",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "rm017",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "rm018",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "rm019",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "rm020",
+          "afai": 0.2,
+          "status": "moderate"
         }
       ]
     }

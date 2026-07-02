@@ -230,88 +230,26 @@
   {
     "date": "2026-07-02",
     "region": "mq",
-    "sessions": 199,
-    "friction": 7,
-    "dead_rate": 0.238,
+    "sessions": 317,
+    "friction": 13,
+    "dead_rate": 0.292,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.249,
-      "n": 401
+      "rate": 0.299,
+      "n": 700
     },
     "top_dead_els": [
       {
         "el": "div.sg-onink-scope",
-        "count": 33
+        "count": 121
       },
       {
         "el": "div",
-        "count": 29
+        "count": 36
       },
       {
         "el": "svg[role=img]",
         "count": 21
-      }
-    ],
-    "bored_worst": {
-      "screen": "world",
-      "rate": 0.29
-    },
-    "modal_to_cta": 0,
-    "cta_to_redirect": 0,
-    "redirect_to_conversion": 0,
-    "session_to_conversion": 0,
-    "session_to_email": 0
-  },
-  {
-    "date": "2026-07-02",
-    "region": "gp",
-    "sessions": 191,
-    "friction": 0,
-    "dead_rate": 0.18,
-    "dead_worst": {
-      "screen": "world",
-      "rate": 0.182,
-      "n": 423
-    },
-    "top_dead_els": [
-      {
-        "el": "div.sg-onink-scope",
-        "count": 27
-      },
-      {
-        "el": "svg[role=img]",
-        "count": 23
-      },
-      {
-        "el": "div",
-        "count": 17
-      }
-    ],
-    "bored_worst": {
-      "screen": "world",
-      "rate": 0.28
-    },
-    "modal_to_cta": 0,
-    "cta_to_redirect": 0,
-    "redirect_to_conversion": 0,
-    "session_to_conversion": 0,
-    "session_to_email": 0
-  },
-  {
-    "date": "2026-07-02",
-    "region": "florida",
-    "sessions": 31,
-    "friction": 0,
-    "dead_rate": 0.25,
-    "dead_worst": {
-      "screen": "world",
-      "rate": 0.258,
-      "n": 62
-    },
-    "top_dead_els": [
-      {
-        "el": "div.sg-onink-scope",
-        "count": 13
       }
     ],
     "bored_worst": {
@@ -326,13 +264,91 @@
   },
   {
     "date": "2026-07-02",
-    "region": "puntacana",
-    "sessions": 7,
+    "region": "gp",
+    "sessions": 289,
+    "friction": 1,
+    "dead_rate": 0.158,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.244,
+      "n": 41
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 32
+      },
+      {
+        "el": "svg[role=img]",
+        "count": 23
+      },
+      {
+        "el": "div",
+        "count": 23
+      },
+      {
+        "el": "rect",
+        "count": 14
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.38
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-02",
+    "region": "florida",
+    "sessions": 79,
     "friction": 0,
-    "dead_rate": 0.625,
-    "dead_worst": null,
-    "top_dead_els": [],
-    "bored_worst": null,
+    "dead_rate": 0.321,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.326,
+      "n": 215
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 52
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.27
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-02",
+    "region": "puntacana",
+    "sessions": 13,
+    "friction": 1,
+    "dead_rate": 0.556,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.609,
+      "n": 23
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 13
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.2
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
@@ -342,12 +358,15 @@
   {
     "date": "2026-07-02",
     "region": "rivieramaya",
-    "sessions": 8,
+    "sessions": 17,
     "friction": 0,
-    "dead_rate": 0.6,
+    "dead_rate": 0.5,
     "dead_worst": null,
     "top_dead_els": [],
-    "bored_worst": null,
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.44
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,

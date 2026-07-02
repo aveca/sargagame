@@ -8483,6 +8483,40 @@ function SatelliteFilm({lang}){
   )
 }
 
+/* ── MapIntroVideo — fond COMIC (BD/GTA) de l'écran de chargement de la carte
+   (le « premap cover »). Poster instantané = coût ~0 au premier paint ; la vidéo
+   ne se charge QUE si le cover persiste (~450 ms) ET si autorisé (pas
+   reduced-motion / saveData / 2G) → jamais de concurrence avec le premier paint
+   sur connexion rapide. Portrait → reel vertical, sinon horizontal. Additif :
+   remplace le seul voile sombre #0d1117 du cover (z1019, pointer-events none).
+   Rollback ?homevid=0. Mêmes gardes que SatelliteFilm. ── */
+function MapIntroVideo(){
+  const vRef=useRef(null)
+  const [src,setSrc]=useState(null)
+  const [on,setOn]=useState(false)
+  const portrait=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(orientation:portrait)").matches
+  const poster=portrait?"/videos/veilleur-map-poster-v.jpg":"/videos/veilleur-map-poster.jpg"
+  useEffect(()=>{
+    let allow=true
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)allow=false
+      const c=navigator.connection
+      if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))allow=false
+    }catch(_){}
+    if(!allow)return
+    const t=setTimeout(()=>{setSrc(portrait?"/videos/veilleur-map-v.mp4":"/videos/veilleur-map.mp4")},450)
+    return()=>clearTimeout(t)
+  },[portrait])
+  return(
+    <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none",overflow:"hidden"}}>
+      <img src={poster} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+      {src&&<video ref={vRef} src={src} autoPlay muted loop playsInline preload="auto" aria-hidden
+        onPlaying={()=>setOn(true)}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:on?1:0,transition:"opacity .6s ease"}}/>}
+    </div>
+  )
+}
+
 /* ── SceneWipe — transition phasée entre l'accueil et l'écran suivant
    (directive user 12/06 nuit : « des phases précises en série entre chaque
    élément, interactif, instructif »). Trois temps en 720 ms : le faisceau
@@ -11664,6 +11698,7 @@ export default function App(){
   // puis la carte recouvre. On garde un cache sombre #0d1117 (= #sg-boot/chin/manifest) pendant
   // cette fenêtre → sombre uniforme → carte, sans rendu intermédiaire. Rollback ?premapcover=0.
   const premapCoverOff=useMemo(()=>{try{return /[?&]premapcover=0/.test(window.location.search)}catch(_){return false}},[])
+  const homeVidOff=useMemo(()=>{try{return /[?&]homevid=0/.test(window.location.search)}catch(_){return false}},[])
   const[premapDone,setPremapDone]=useState(false)
   useEffect(()=>{ const t=setTimeout(()=>setPremapDone(true),4000); return()=>clearTimeout(t) },[]) // filet : jamais coincé sombre
   // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
@@ -13566,7 +13601,9 @@ export default function App(){
         {!premapCoverOff&&!premapDone&&navWorld&&view==="map"&&!showArchipel
           &&!showHero&&!showMapIntro&&!showPrevLanding&&!showCleanList&&!showAlertHub
           &&!selectedBeach&&!showPremium&&!showSolutions&&!showWorld&&!showStation&&(
-          <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
+          homeVidOff
+            ?<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
+            :<MapIntroVideo/>
         )}
         {showArchipel&&(mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>

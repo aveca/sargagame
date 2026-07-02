@@ -170,6 +170,8 @@ if ($status === 'paid') {
     // nouveau pid à chaque facture) → émet+livre le token Pro (idempotent par pid).
     if (($meta['b2b'] ?? '') === '1' || in_array(($meta['plan'] ?? ''), ['pro_monthly', 'brief_monthly'], true)) {
         mol_b2b_grant_once($cfg, $pid, $email, ($meta['plan'] ?? ''), $island);
+        // Instrumente la SORTIE du funnel B2B (essai→payé) — le chiffre qui compte.
+        @sg_analytics_event('b2b_trial_to_paid', ['plan' => ($meta['plan'] ?? ''), 'kind' => 'recurring'], $island);
     }
     // Paylink B2B ANNUEL (detecte plus haut par description+montant, metadata vide) :
     // avant 2026-07-02 ce paiement etait un TROU NOIR (paiement test fondateur 690 €
@@ -182,6 +184,7 @@ if ($status === 'paid') {
         if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $granted = mol_b2b_grant_once($cfg, $pid, $email, $paylinkB2b, $island);
         }
+        @sg_analytics_event('b2b_trial_to_paid', ['plan' => $paylinkB2b, 'kind' => 'annual'], $island);
         mol_founder_alert(
             '🏨 Paiement B2B annuel Mollie : ' . $paylinkB2b . ' (' . ($amount['value'] ?? '?') . ' ' . $currency . ')',
             '<p>Paiement <b>' . htmlspecialchars($pid) . '</b> — ' . htmlspecialchars((string)($pay['description'] ?? '')) . '.</p>'
