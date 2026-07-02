@@ -17,6 +17,7 @@ const OUT = path.join(ROOT, 'public', 'veilleur-mvp');
 
 const template = fs.readFileSync(path.join(HERE, 'template.html'), 'utf8');
 const markets = JSON.parse(fs.readFileSync(path.join(HERE, 'markets.json'), 'utf8'));
+const VeilleurCard = require('./card.cjs'); // moteur d'assets partagé (design API)
 
 /* ---- vibes (grade en soft-light) + hash seedé ---- */
 const VIBES = [
@@ -96,13 +97,15 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 function render(m, i) {
   const c = COPY[m.lang] || COPY.fr;
   const h = hash(m.slug);
-  const vibe = VIBES[h % VIBES.length];
+  const vibeIdx = h % VIBES.length;
+  const vibe = VIBES[vibeIdx];
   const offset = (h % 110) / 10;                 // 0.0 .. 10.9 s de la vidéo ~13s
   const vnote = `${esc(c.vnote[0])}<b>${esc(c.vnote[1])}</b>${esc(c.vnote[2])}`;
   const planb = m.verdict === 'algae'
     ? `<a class="planb" href="${esc(m.href)}">${esc(c.planb)}</a>`
     : '';
   const repl = {
+    SLUG: m.slug,
     LANG: m.lang,
     TITLE: esc(c.title(m)),
     META_DESC: esc(c.desc(m)),
@@ -131,16 +134,26 @@ function render(m, i) {
 }
 
 /* ---- écrire les 10 pages ---- */
-fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
+fs.mkdirSync(path.join(OUT, 'assets', 'cards'), { recursive: true });
 const cards = [];
 markets.forEach((m, i) => {
   const html = render(m, i);
   const dir = path.join(OUT, m.slug);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf8');
+  // asset image de marque (partage/OG) via le moteur — data -> asset
+  const vibeKey = VeilleurCard.vibeKeys[hash(m.slug) % VIBES.length];
+  const cardSvg = VeilleurCard.build({ n: i + 1, market: m.market, region: m.region, state: m.verdict, lang: m.lang, vibe: vibeKey, animate: false });
+  fs.writeFileSync(path.join(OUT, 'assets', 'cards', m.slug + '.svg'), cardSvg, 'utf8');
   cards.push({ slug: m.slug, market: m.market, region: m.region, verdict: m.verdict });
-  console.log(`  ✓ ${m.slug}/index.html  (${m.lang}, ${m.verdict})`);
+  console.log(`  ✓ ${m.slug}/index.html + card  (${m.lang}, ${m.verdict})`);
 });
+
+// sync du moteur vers le Studio (aperçu live côté navigateur)
+const STUDIO = path.join(ROOT, 'public', 'veilleur-studio');
+fs.mkdirSync(STUDIO, { recursive: true });
+fs.copyFileSync(path.join(HERE, 'card.cjs'), path.join(STUDIO, 'card.js'));
+console.log('  ✓ veilleur-studio/card.js synced');
 
 /* ---- galerie index ---- */
 const chip = { clean: '#127c3b', moderate: '#B87A00', algae: '#E8522A' };
