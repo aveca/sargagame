@@ -21,10 +21,16 @@ Live sargassum (seaweed) monitoring for Caribbean and Florida beaches. One codeb
 
 ## Stack
 
-- **Frontend** — React 18 + Vite, a custom SVG map (WorldMapView/ArchipelView), PWA with service worker. No backend server: fully static hosting per domain. (A legacy `?nav=map` fallback remains for the old map mode.)
-- **Data pipeline** — Node.js scripts run 4×/day by GitHub Actions; outputs are plain JSON committed to this repo and deployed over FTPS.
+- **Frontend** — React 18 API surface (aliased to Preact/compat in production for a smaller runtime bundle) + Vite, a custom SVG map (`WorldMapView`/`ArchipelView`), installable PWA with a service worker. Each region builds to a self-contained static bundle. (A legacy `?nav=map` fallback remains for the old Leaflet map mode.)
+- **Payments** — plain PHP under `public/api/`, deployed over FTPS to shared hosting (no PHP framework, no app server): Mollie (primary, on-site Card/Apple Pay/Google Pay) and PayPal (secondary) are live; a Stripe integration is kept legacy/read-only. Real secrets live in gitignored `*-config.php` files on the host, never in the repo.
+- **Data pipeline** — Node.js scripts run 4×/day via GitHub Actions: pull NOAA ERDDAP satellite composites, run the forecast/confidence model, and output plain JSON consumed by the frontend and deployed over FTPS.
+- **Backend-as-a-service** — Supabase (Postgres + Storage + Edge Functions in TypeScript) powers the visitor-photo feature (upload, moderation, notifications).
+- **Automation** — 100+ Node.js scripts (`scripts/automation/`) covering SEO content generation, B2B outreach, email drip campaigns (SMTP/IMAP), and analytics ingestion.
+- **Video** — Remotion (programmatic React video) renders daily per-beach video briefs for social distribution.
+- **QA** — Playwright drives smoke tests and visual-regression checks against the production build before every deploy.
 - **Multi-region engine** — one config file per region under `regions/`; new regions build as dedicated single-page apps via `VITE_REGION=<id> npm run build`.
-- **SEO** — 136+ static pages generated at build time for the French sites (per-beach pages, editorial content, sitemaps).
+- **SEO** — 136+ static pages generated at build time for the French sites (per-beach pages, editorial content, sitemaps, JSON-LD).
+- **CI/CD** — GitHub Actions (27 workflows): build, FTPS deploy, health-checks, and all recurring growth/ops automation. No servers to manage beyond the PHP-capable static host.
 
 ## Documentation
 

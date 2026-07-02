@@ -1393,7 +1393,10 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
-  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated"])
+  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated",
+  // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
+  // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
+  "sg_pass_proof_open","sg_pass_seq_back"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -1726,11 +1729,6 @@ const RAMASSAGE_ENABLED=supabaseConfigured()&&!(typeof location!=="undefined"&&/
 // ?descente=0 → OFF (retombe satellite pur). Sous-ensemble de RAMASSAGE_ENABLED (?ramassage=0
 // coupe tout le terrain). Le forecast J+1-7 reste 100 % satellite (tableau distinct).
 const DESCENTE_ENABLED=RAMASSAGE_ENABLED&&!(typeof location!=="undefined"&&/[?&]descente=0/.test(location.search||""))
-// Partage au moment de fierté POST-contribution photo : le contributeur vient
-// d'aider, c'est le pic d'engagement (le mécanisme viral que le concurrent
-// exploite sur Facebook). On réutilise la carte golden-hour spoiler-free
-// (buildShareCard variant 'beach', SANS lien = portée max). Flag rollback ?vshare=0.
-const VSHARE_ENABLED=!(typeof location!=="undefined"&&/[?&]vshare=0/.test(location.search||""))
 // Statut AFFICHÉ corrigé par le terrain : à partir des signalements APPROUVÉS < 48 h de la
 // plage, on applique le sens du plus fort signal — un `beaching` frais MONTE d'1 cran (priorité
 // sécurité : la mauvaise nouvelle l'emporte), sinon un `cleanup` frais BAISSE d'1 cran. Borné
@@ -2915,6 +2913,102 @@ function ObsScene({level,frame}){
     </svg>
   )
 }
+// ═══ VerdictRadarScan — remplace le CTA photo « Éclaireur » (KPI nul, panel adverse 2026-07-02)
+// ═══ Rejoue en <1.2s la vraie chaîne source→verdict de CETTE plage (beach.status/beach._src,
+// zéro fetch — BeachReport ne reçoit pas sargData, donc zéro fraîcheur satellite affichée ici :
+// renoncement de scope volontaire, pas un fallback fabriqué). L'échange n'est plus une photo
+// mais un tap d'accord/désaccord sur le verdict — sink analytics_events via logAnalyticsEvent
+// (submitBeachReport rejette tout event hors beaching/cleanup). Flag rollback ?verdictscan=0.
+const VERDICT_SCAN_ON=typeof window!=="undefined"&&!/[?&]verdictscan=0/.test(window.location.search||"")
+function VerdictRadarScan({beach,lang,onDisagree}){
+  const[reduced]=useState(()=>{try{return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
+  const[step1,setStep1]=useState(reduced)
+  const[step2,setStep2]=useState(reduced)
+  const[pulsed,setPulsed]=useState(reduced)
+  useEffect(()=>{
+    if(reduced)return
+    const t1=setTimeout(()=>setStep1(true),300)
+    const t2=setTimeout(()=>setStep2(true),600)
+    const t3=setTimeout(()=>setPulsed(true),900)
+    return()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3)}
+  },[reduced])
+  const ckey="sg_vconfirm_"+beach.id,ctkey="sg_vconfirm_t_"+beach.id
+  const[confirmed,setConfirmed]=useState(()=>{
+    const last=g(ctkey,0)
+    return(last&&Date.now()-last<12*3600*1000)?g(ckey,null):null
+  })
+  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps
+  const live=beach._src==="live"
+  const stepLbl=live
+    ?[_t(lang,"Satellite","Satellite","Satélite"),_t(lang,"Normalisation","Normalization","Normalización")]
+    :[_t(lang,"Historique","History","Histórico"),_t(lang,"Modèle","Model","Modelo")]
+  const onTap=(agree)=>{
+    if(confirmed)return
+    setConfirmed(agree?"yes":"no");s(ckey,agree?"yes":"no");s(ctkey,Date.now())
+    try{track("sg_verdict_confirm",{beach_id:beach.id,agree,satellite_status:beach.status,island:beach.island})}catch(_){}
+    try{logAnalyticsEvent("sg_verdict_confirm",{beach_id:beach.id,agree,satellite_status:beach.status},beach.island)}catch(_){}
+    if(!agree&&onDisagree)onDisagree()
+  }
+  return(
+    <div style={{marginBottom:12,padding:"12px 13px",borderRadius:14,background:"var(--sg-card,#fff)",
+      border:"2px solid var(--sg-ink,#1d2b3a)",boxShadow:"3px 3px 0 rgba(13,13,13,.85)"}}>
+      <style>{`
+        @keyframes sgvrsDot{0%{transform:translateX(0);opacity:1}85%{opacity:1}100%{transform:translateX(180px);opacity:0}}
+        .sgvrs-dot{animation:sgvrsDot .9s cubic-bezier(.4,0,.2,1) 1 both}
+        @keyframes sgvrsPulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+        .sgvrs-pulsed{animation:sgvrsPulse .3s ease 1 both;transform-origin:center;transform-box:fill-box}
+        @media(prefers-reduced-motion:reduce){.sgvrs-dot{animation:none!important;opacity:0!important}.sgvrs-pulsed{animation:none!important}}
+      `}</style>
+      <div style={{fontSize:13,fontWeight:800,color:"var(--sg-ink,#1d2b3a)"}}>
+        {_t(lang,`Le Veilleur vient de mesurer ${beach.name}`,`The Watcher just measured ${beach.name}`,`El Vigía acaba de medir ${beach.name}`)}
+      </div>
+      <svg viewBox="0 0 300 96" aria-hidden="true" style={{display:"block",width:"100%",height:"auto",marginTop:8}}>
+        <circle cx="38" cy="48" r="15" fill="#FDFCF7" stroke="#0D0D0D" strokeWidth="2"/>
+        <line x1="38" y1="27" x2="38" y2="19" stroke="#0D0D0D" strokeWidth="2"/>
+        <line x1="22" y1="35" x2="16" y2="29" stroke="#0D0D0D" strokeWidth="2"/>
+        <line x1="54" y1="35" x2="60" y2="29" stroke="#0D0D0D" strokeWidth="2"/>
+        <line x1="53" y1="48" x2="233" y2="48" stroke="#0D0D0D" strokeWidth="1.5" strokeDasharray="3,3"/>
+        <rect x="110.5" y="45.5" width="5" height="5" fill={step1?"#0D0D0D":"none"} stroke="#0D0D0D" strokeWidth="1.5" style={{transition:"fill .15s ease"}}/>
+        <rect x="170.5" y="45.5" width="5" height="5" fill={step2?"#0D0D0D":"none"} stroke="#0D0D0D" strokeWidth="1.5" style={{transition:"fill .15s ease"}}/>
+        <text x="113" y="63" fontSize="8" fontWeight="600" fontFamily="'Bricolage Grotesque'" textAnchor="middle" fill="var(--sg-mid,#7a7768)">{stepLbl[0]}</text>
+        <text x="173" y="63" fontSize="8" fontWeight="600" fontFamily="'Bricolage Grotesque'" textAnchor="middle" fill="var(--sg-mid,#7a7768)">{stepLbl[1]}</text>
+        {!reduced&&<circle className="sgvrs-dot" cx="53" cy="48" r="4" fill="#FFC72C"/>}
+        <g className={pulsed?"sgvrs-pulsed":""}>
+          <rect x="234" y="12" width="60" height="72" rx="8" fill="none" stroke="#FFC72C" strokeWidth="2"/>
+          <svg x="238" y="25" width="52" height="34.7" viewBox="0 0 96 64"><ObsScene level={beach.status} frame="#0D0D0D"/></svg>
+        </g>
+      </svg>
+      <div style={{marginTop:8,fontSize:11.5,color:"var(--sg-mid,#5d5a4e)",fontWeight:600,lineHeight:1.4}}>
+        {_t(lang,"Depuis l'orbite jusqu'à ton écran : voilà comment on obtient ce verdict. Il te semble juste ?","From orbit to your screen: here's how we get this verdict. Does it look right to you?","Desde la órbita hasta tu pantalla: así obtenemos este veredicto. ¿Te parece correcto?")}
+      </div>
+      {!confirmed?(
+        <div style={{display:"flex",gap:8,marginTop:9}}>
+          <button type="button" onClick={()=>onTap(true)} style={{flex:1,minHeight:44,padding:"10px 8px",borderRadius:12,
+            border:"2px solid var(--sg-ink,#1d2b3a)",background:"#FDFCF7",color:"var(--sg-ink,#1d2b3a)",fontSize:12,fontWeight:700,
+            fontFamily:"inherit",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            {_t(lang,"Oui, ça correspond","Yes, that matches","Sí, coincide")}
+          </button>
+          <button type="button" onClick={()=>onTap(false)} style={{flex:1,minHeight:44,padding:"10px 8px",borderRadius:12,
+            border:"2px solid var(--sg-ink,#1d2b3a)",background:"#FDFCF7",color:"var(--sg-ink,#1d2b3a)",fontSize:12,fontWeight:700,
+            fontFamily:"inherit",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            {_t(lang,"Non, différent","No, different","No, es diferente")}
+          </button>
+        </div>
+      ):(
+        <div style={{marginTop:9,fontSize:11.5,fontWeight:700,color:confirmed==="yes"?C.green:"var(--sg-ink,#1d2b3a)",textAlign:"center"}}>
+          {confirmed==="yes"
+            ?_t(lang,"Merci — ça confirme ce que voit le satellite.","Thanks — that confirms what the satellite sees.","Gracias — eso confirma lo que ve el satélite.")
+            :_t(lang,"Merci — dis-nous ce que tu vois juste en dessous ↓","Thanks — tell us what you see just below ↓","Gracias — cuéntanos qué ves justo abajo ↓")}
+        </div>
+      )}
+      <div style={{marginTop:7,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
+        {_t(lang,"Ton avis n'influence jamais le verdict — il reste mesuré au satellite.","Your input never influences the verdict — it stays satellite-measured.","Tu opinión nunca influye en el veredicto — sigue medido por satélite.")}
+      </div>
+    </div>
+  )
+}
 function BeachReport({beach,lang,communityReports}){
   const key="sg_breport_"+beach.id
   const cooldownKey="sg_breport_t_"+beach.id
@@ -2924,9 +3018,12 @@ function BeachReport({beach,lang,communityReports}){
     return null
   })
   const[queued,setQueued]=useState(false)  // #27 : signalement mis en file hors-ligne
-  // Photo « Éclaireur » RETIRÉE (panel adverse 2026-07-02) : upload + récompense 24 h
-  // désarmés. La « preuve du présent » passe désormais par le vote SVG ObsScene + odeur
-  // + événements terrain (ci-dessous), et la valeur du verdict par la data-viz (Cadran).
+  // Photo « Éclaireur » RETIRÉE (panel 2026-07-02) : upload + récompense 24 h désarmés ; la
+  // valeur du verdict passe désormais par la data-viz (Cadran du Veilleur, ?cadran=0). Le vote
+  // SVG ObsScene + odeur + événements terrain restent (signal présent honnête).
+  // "Non" au VerdictRadarScan → rampe suivie vers le vote LEVELS (sg_verdict_confirm_to_vote,
+  // consommé une fois par submit()).
+  const disagreedRef=useRef(false)
   // ── Événements terrain (échouement / ramassage) — signal AFFICHÉ modéré, ne
   //    touche PAS la couleur du verdict (100 % data ERDDAP ; panel 2026-07-01).
   const evtKey="sg_bevent_"+beach.id
@@ -2990,6 +3087,7 @@ function BeachReport({beach,lang,communityReports}){
     if(voted)return
     setVoted(level);s(key,level);s(cooldownKey,Date.now())
     track("sg_beach_report",{beach_id:beach.id,level,satellite_status:beach.status,island:beach.island})
+    if(disagreedRef.current){disagreedRef.current=false;try{track("sg_verdict_confirm_to_vote",{beach_id:beach.id,island:beach.island})}catch(_){}}
     const body=JSON.stringify({type:"beach_report",beach_id:BEACH_TO_SARG[beach.id]||beach.id,beach_name:beach.name,level,island:beach.island,date:new Date().toISOString()})
     // #27 : hors-ligne → file localStorage rejouée au retour du réseau (zéro perte)
     if(typeof navigator!=="undefined"&&navigator.onLine===false){_sgReportStash(body);setQueued(true);return}
@@ -3002,6 +3100,7 @@ function BeachReport({beach,lang,communityReports}){
   return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      {VERDICT_SCAN_ON&&<VerdictRadarScan beach={beach} lang={lang} onDisagree={()=>{disagreedRef.current=true}}/>}
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
         {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}

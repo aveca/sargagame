@@ -19,7 +19,13 @@ permissions:
 jobs:
   outreach:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Bug 2026-06-30 (run 28443080616) : timeout-minutes:10 était trop juste pour les
+    # 3 scripts d'outreach séquentiels (auto ~3m20 + curated ~3m40 + b2b >3m, encore
+    # en cours) → le job s'est fait couper PENDANT le B2B outreach, et « Commit
+    # outreach logs » a été SKIPPED — perdant le dédup des 2 étapes précédentes,
+    # pourtant réussies (risque de renvoyer les mêmes emails la semaine suivante).
+    # Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 25
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -37,7 +43,11 @@ jobs:
         run: npm ci
 
       # ── 1. Scrape targets + send outreach emails (backlinks) ─
+      # continue-on-error : un hang/échec ici ne doit JAMAIS empêcher "Commit
+      # outreach logs" de tourner (sinon le dédup des étapes suivantes est perdu).
       - name: Auto-outreach (scrape + email backlink requests)
+        continue-on-error: true
+        timeout-minutes: 10
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           # International outreach (US/MX/DR) pitches the /press/ kit and sends
@@ -53,6 +63,8 @@ jobs:
       #   email only (no guessed fallback), dedup-for-life, value-first + opt-out.
       #   Intl (US/MX/DR) gated on OUTREACH_INTL=1 (already set above).
       - name: Curated backlink outreach (low-volume, high-authority)
+        continue-on-error: true
+        timeout-minutes: 10
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           OUTREACH_INTL: '1'
@@ -63,6 +75,8 @@ jobs:
       #   CTA = brief quotidien auto + widget gratuit (AUCUN appel demandé).
       #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur SMTP_PASS.
       - name: B2B outreach (self-serve, faible volume)
+        continue-on-error: true
+        timeout-minutes: 10
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/b2b-outreach.cjs
