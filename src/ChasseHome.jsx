@@ -20,6 +20,7 @@
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
+import { beachPageUrl } from "./lib/slug-resolver.js"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -483,7 +484,11 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   const lcSwipe=useSwipeClose(()=>onClose&&onClose(),{guardInput:true,threshold:70})
   const [shared,setShared]=useState(false)
   const share=useCallback(()=>{
-    const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    const origin=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    // Deep-link vers la fiche de LA plage partagée (région-aware : /plages|beaches|playas/,
+    // domaine partenaire si plage de l'autre île), jamais l'accueil. Rollback : ?sharelink=0.
+    let url=origin
+    try{if(!/[?&]sharelink=0/.test(window.location.search)){const link=beachPageUrl(beach);if(link)url=link}}catch(_){}
     const txt=_t({fr:`${beach.name} — ${_t(head)} ce matin. Vérifié au satellite par Le Veilleur 🛰️`,
                   en:`${beach.name} — ${_t(head)} this morning. Satellite-checked by Le Veilleur 🛰️`,
                   es:`${beach.name} — ${_t(head)} esta mañana. Verificado por satélite 🛰️`})

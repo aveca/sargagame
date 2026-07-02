@@ -8,7 +8,7 @@
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
-import { getCanonicalSlug } from "./lib/slug-resolver.js"
+import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
 import BeachPhotos from "./BeachPhotos.jsx"
@@ -336,7 +336,18 @@ async function shareBeachCard(beach,lang,forecast){
     const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false
     const file=new File([blob],"ma-plage.png",{type:"image/png"})
     const text=_t(lang,beach.name+" aujourd'hui — vu par le Veilleur 🛰️",beach.name+" today — seen by the Watchman 🛰️",beach.name+" hoy — visto por el Vigía 🛰️")
-    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}
+    // Deep-link de LA plage joint au message (l'image reste spoiler-free ; le destinataire
+    // a un lien cliquable vers sa fiche, grief fondateur 2026-07-01). Rollback : ?sharelink=0.
+    // Si la plateforme refuse files+url (TypeError), on retente sans url ; annulation
+    // utilisateur (AbortError) = terminé, jamais le fallback téléchargement.
+    let url;try{if(!/[?&]sharelink=0/.test(window.location.search)){const link=beachPageUrl(beach);if(link)url=link}}catch(_){}
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share(url?{files:[file],text,url}:{files:[file],text});return true}
+      catch(e){
+        if(e&&e.name==="AbortError")return true
+        if(url)try{await navigator.share({files:[file],text});return true}catch(e2){if(e2&&e2.name==="AbortError")return true}
+      }
+    }}catch(_){}
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ma-plage.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true
   }catch(e){return false}
 }
@@ -3477,6 +3488,11 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   const ctaLabel=isPremium?_t(lang,"Voir mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
   const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach.id,status,premium:!!isPremium});isPremium?onClose&&onClose():onPremiumClick&&onPremiumClick("beach_sheet")}
 
+  // Desktop : la feuille était full-width (1440px+) → verdict/barres/CTA étirés,
+  // illisible (grief fondateur 2026-07-01). Colonne centrée ≤560px au-delà de 720px,
+  // mobile strictement inchangé. Rollback : ?deskfit=0.
+  const deskFitOn=(()=>{try{return !/[?&]deskfit=0/.test(window.location.search)}catch(_){return true}})()
+
   return(
     <>
       <style>{`
@@ -3498,12 +3514,17 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         /* iOS WebKit peint un fond BLANC natif sur tout <button> sans reset → fini le « blanc chelou » */
         .bsc-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){.bsc-chip,.bsc-bar,.bsc-row{animation:none!important}}
+        ${deskFitOn?`@media (min-width:720px){
+        .bsc-fiche{max-width:560px;margin:0 auto;border-left:4px solid ${COMIC.ink};border-right:4px solid ${COMIC.ink}}
+        }`:""}
       `}</style>
       {/* Backdrop — assombrit la carte (élévation z, recherche Mobbin/LogRocket) */}
       <div ref={backdropRef} onClick={requestClose}
         style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
       {/* Sheet */}
-      <div ref={sheetRef} className="bsc-sheet" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+      {/* bsc-fiche = cible EXCLUSIVE de la media query desktop ci-dessus (bsc-sheet est
+          aussi la classe de l'overlay B2BModal — ne pas le clamp par ricochet) */}
+      <div ref={sheetRef} className="bsc-sheet bsc-fiche" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
