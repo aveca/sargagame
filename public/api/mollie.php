@@ -371,6 +371,14 @@ if ($action === 'verify_subscription') {
         if ($pc >= 400 || !is_array($pl)) break; // erreur API → on s'arrête (pas d'exception)
         foreach (($pl['_embedded']['payments'] ?? []) as $p) {
             if (($p['status'] ?? '') !== 'paid') continue;
+            // Un paiement REMBOURSE integralement (ou charge-back) garde status='paid'
+            // chez Mollie (seul amountRefunded/amountChargedBack change) → sans ce
+            // garde, le self-heal RESTAURAIT l'acces d'un rembourse apres revoke-pass
+            // (2026-07-02). Remboursement PARTIEL (geste commercial) → acces conserve.
+            $pRef = (float)(($p['amountRefunded']['value'] ?? 0));
+            $pCb  = (float)(($p['amountChargedBack']['value'] ?? 0));
+            $pTot = (float)(($p['amount']['value'] ?? 0));
+            if ($pCb > 0 || ($pRef > 0 && $pTot > 0 && $pRef >= $pTot)) continue;
             $pm = $p['metadata'] ?? [];
             $pPass = $pm['pass'] ?? '';
             $pEmail = strtolower(trim((string)($pm['email'] ?? '')));

@@ -26,10 +26,17 @@ function load(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } cat
 function save(p, d) { fs.writeFileSync(p, JSON.stringify(d, null, 2)) }
 function daysSince(iso) { const t = Date.parse(iso); return isNaN(t) ? null : Math.floor((Date.now() - t) / 86400000) }
 
+// Signal Mollie DÉPOLLUÉ (2026-07-02) : avant, TOUS les payeurs Mollie (dont les
+// pass B2C touristes) étaient injectés dans l'univers B2B → `paid=2` affiché alors
+// que c'était 2 clients B2C (JC + Boris, vérifié rattrapage 02/07), 0 vente B2B.
+// Désormais : `all` = tout payeur (sert à marquer 'paid' UNIQUEMENT les prospects
+// déjà connus du funnel B2B) ; `b2b` = paiements PORTEURS d'un marqueur B2B
+// (metadata b2b/plan pro_/brief_/territory_, ou description de paylink annuel —
+// les payment-links n'ont pas de metadata), les seuls ajoutés à l'univers.
 async function molliePaidEmails() {
   const key = process.env.MOLLIE_API_KEY
   if (!key) return null // signal non dispo
-  const paid = new Set()
+  const all = new Set(), b2b = new Set()
   try {
     let url = 'https://api.mollie.com/v2/payments?limit=250'
     for (let pg = 0; pg < 8 && url; pg++) {
@@ -38,14 +45,21 @@ async function molliePaidEmails() {
       if (!r.ok || !j._embedded) break
       for (const p of j._embedded.payments || []) {
         if (p.status === 'paid') {
-          const em = (p.metadata && (p.metadata.email || p.metadata.customerEmail)) || (p.details && p.details.consumerAccount) || ''
-          if (String(em).includes('@')) paid.add(emailHash(em))
+          const m = p.metadata || {}
+          const isB2b = m.b2b === '1' || /^(pro|brief|territory)_/.test(m.plan || '') ||
+            (!m.email && /^(Sargasses|Sargassum) Pro /.test(p.description || ''))
+          const em = (m.email || m.customerEmail) || (p.details && p.details.consumerAccount) || ''
+          if (String(em).includes('@')) {
+            const hh = emailHash(em)
+            all.add(hh)
+            if (isB2b) b2b.add(hh)
+          }
         }
       }
       url = (j._links && j._links.next && j._links.next.href) || null
     }
   } catch { return null }
-  return paid
+  return { all, b2b }
 }
 
 async function main() {
@@ -68,8 +82,10 @@ async function main() {
     if (s && s.email && /^b2b_/.test(s.source || '')) leadHashes.add(emailHash(s.email))
   }
 
-  // Univers = tous les hash connus
-  const universe = new Set([...Object.keys(meta), ...Object.keys(cold).filter(k => k !== '_meta'), ...Object.keys(widgetSent), ...leadHashes, ...(paid || [])])
+  // Univers = les hash B2B connus. ⚠️ On n'injecte QUE les payeurs B2B (metadata/
+  // description), JAMAIS `paid.all` (payeurs pass B2C) — c'était la pollution qui
+  // affichait paid=2 pour 2 clients B2C (corrigé 2026-07-02).
+  const universe = new Set([...Object.keys(meta), ...Object.keys(cold).filter(k => k !== '_meta'), ...Object.keys(widgetSent), ...leadHashes, ...((paid && paid.b2b) || [])])
 
   const funnel = {}
   const counts = { discovered: 0, contacted: 0, lead: 0, paid: 0 }
@@ -78,7 +94,9 @@ async function main() {
     const c = cold[h] || null
     const w = widgetSent[h] || null
     const isLead = leadHashes.has(h)
-    const isPaid = paid ? paid.has(h) : false
+    // 'paid' = paiement PORTEUR d'un marqueur B2B, OU n'importe quel paiement d'un
+    // prospect déjà dans le funnel B2B (un hôtelier contacté qui paie = signal).
+    const isPaid = paid ? (paid.b2b.has(h) || paid.all.has(h)) : false
     const contactedAt = (c && c.c0) || (w && w.date) || null
     let stage, nextAction
     if (isPaid) { stage = 'paid'; nextAction = 'onboarding + relance renouvellement' }

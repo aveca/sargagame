@@ -21,6 +21,15 @@ const path = require('path')
 const OUT_PATH = path.join(__dirname, '..', '..', 'public', 'api', 'b2b-paylinks.json')
 const DRY = process.argv.includes('--dry')
 const REDIRECT = 'https://sargasses-martinique.com/?pro_paid=1'
+// Webhook = LE câblage qui rend un paiement paylink VISIBLE (2026-07-02). Sans lui,
+// le 1er vrai client annuel 690 € payait dans le vide : aucun email d'accès, aucune
+// alerte fondateur, aucune trace repo (constaté sur le paiement test fondateur du
+// 01/07, intraçable). ⚠️ L'API payment-links n'accepte PAS de `metadata` (vérifié
+// docs.mollie.com 2026-07-02) et `webhookUrl` n'est PAS patchable a posteriori →
+// (1) l'identification B2B se fait côté mollie-webhook.php par description+montant
+// de la grille TIERS (garder les labels et montants synchrones avec le webhook) ;
+// (2) un lien existant sans webhook doit être RE-FRAPPÉ (marqueur `webhooked`).
+const WEBHOOK = 'https://sargasses-martinique.com/api/mollie-webhook.php'
 
 // Grille B2B annuelle (prépaiement). Décision pricing 2026-06-29 (panel) : Pro annuel
 // 790→690 € (sous la barre des 700, « 2 mois offerts » vs 79 €/mois). Brief inchangé.
@@ -58,13 +67,14 @@ async function createLink(key, tier) {
       description: tier.label,
       amount: { currency: tier.currency || 'EUR', value: tier.value },
       redirectUrl: REDIRECT,
+      webhookUrl: WEBHOOK,
     }),
   })
   const j = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((j && j.detail) || `HTTP ${res.status}`)
   const url = j && j._links && j._links.paymentLink && j._links.paymentLink.href
   if (!url) throw new Error('no paymentLink in response')
-  return { id: j.id, url, value: tier.value }
+  return { id: j.id, url, value: tier.value, webhooked: true }
 }
 
 async function main() {
@@ -76,12 +86,16 @@ async function main() {
   if (key.startsWith('test_')) console.log('⚠️  clé TEST (test_) — liens en mode test (pas de vrai argent).')
   for (const tier of TIERS) {
     const existing = out.links[tier.id]
-    // Idempotent : un lien déjà présent au BON montant n'est pas recréé.
-    if (existing && existing.url && existing.value === tier.value) { console.log(`  = ${tier.id} déjà présent (${tier.value} €)`); continue }
+    // Idempotent : un lien déjà présent au BON montant ET câblé webhook n'est pas recréé.
+    if (existing && existing.url && existing.value === tier.value && existing.webhooked) { console.log(`  = ${tier.id} déjà présent (${tier.value} ${tier.currency || 'EUR'}, webhook OK)`); continue }
     // Auto-réparation : si le montant du tier a changé (ex. pricing panel 790→690 €),
     // le lien stocké est périmé → on en frappe un neuf qui écrase l'ancien (sinon le
     // garde idempotent figerait l'ancien prix indéfiniment).
-    if (existing && existing.url && existing.value !== tier.value) { console.log(`  ~ ${tier.id} prix changé ${existing.value}→${tier.value} € — recrée le lien`) }
+    if (existing && existing.url && existing.value !== tier.value) { console.log(`  ~ ${tier.id} prix changé ${existing.value}→${tier.value} — recrée le lien`) }
+    // Migration webhook (one-shot, 2026-07-02) : webhookUrl n'est pas patchable sur un
+    // lien existant → re-frappe. L'ancien lien reste valide côté Mollie mais plus rien
+    // ne le référence (ce JSON est l'unique consommateur : app + emails au runtime).
+    if (existing && existing.url && existing.value === tier.value && !existing.webhooked) { console.log(`  ~ ${tier.id} sans webhook — recrée le lien (paiement sinon invisible)`) }
     if (DRY) { console.log(`  ~ ${tier.id} (${tier.value} €) serait ${existing ? 'recréé' : 'créé'}`); continue }
     try {
       const link = await createLink(key, tier)

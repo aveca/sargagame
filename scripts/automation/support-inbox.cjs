@@ -246,8 +246,9 @@ const REPLIES = {
     text:
       "Bien sûr, aucun souci. S'il s'agit d'un Pass : il est ponctuel (one-time), il n'y a rien à résilier, " +
       "il n'y aura pas d'autre prélèvement. Pour ne plus recevoir nos e-mails : le lien « se désabonner » " +
-      "en bas de chaque message est en un clic. Si vous parlez d'un ancien abonnement mensuel, dites-le-moi " +
-      "et je l'arrête tout de suite." + SEND_HINT('julien_ux'),
+      "en bas de chaque message est en un clic. Si vous avez un abonnement mensuel, vous pouvez l'arrêter " +
+      "vous-même en un clic ici : https://sargasses-martinique.com/?manage=1 (gestion de l'abonnement, " +
+      "self-serve) — ou dites-le-moi et je l'arrête tout de suite." + SEND_HINT('julien_ux'),
   },
   billing: {
     kind: 'facturation / reçu',
