@@ -215,6 +215,12 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    gardant le tap : doublé-classe (0,2,0) bat le skin, on ne retire QUE fond/bordure/ombre —
    le texte blanc + son ink-shadow (inline sur les enfants) survivent = look « comme avant ». */
 .sg-maplabel.sg-maplabel{background:none !important;border:none !important;box-shadow:none !important;border-radius:0 !important}
+/* Scrim lisibilité DERRIÈRE le nom+statut du label carte (grief fondateur 2026-07-02) : le texte
+   blanc lavait sur les zones claires du fond (glow d'ombre insuffisant). Wrapper INTERNE (l'outer
+   .sg-maplabel est force-strippé ci-dessus) → doublé-classe (0,2,0) + !important pour survivre au
+   skin comic. Modificateur .on = flag ON (défaut) ; ?maplabelscrim=0 retire .on → glow-only. */
+.sg-maplabel-scrim{display:inline-block}
+.sg-maplabel-scrim.on{background:rgba(13,11,20,.5) !important;border:none !important;box-shadow:none !important;border-radius:9px !important;padding:2px 8px 3px !important}
 /* ⚠️ TRIPLE-classe (0,3,0) obligatoire : la racine de WorldMapView porte .sg-onink-scope
    → `.theme-comic .sg-onink-scope button{background:unset!important}` (0,2,1) battait le
    doublé-classe (0,2,0) et strippait les pastilles en texte nu (régression vue au smoke
