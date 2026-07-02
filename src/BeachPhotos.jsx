@@ -64,9 +64,9 @@ export function BeachPhotos({ beach, lang = "fr", max = 6, canContribute = false
         display: "flex", alignItems: "center", gap: 8, lineHeight: 1.35 }}>
         <span aria-hidden="true" style={{ fontSize: 15 }}>📸</span>
         {_t(lang,
-          "Personne n'a encore montré cette plage aujourd'hui — ta photo sera la première.",
-          "Nobody has shown this beach today yet — your photo would be the first.",
-          "Nadie ha mostrado esta playa hoy — tu foto sería la primera.")}
+          "Personne n'a encore montré cette plage — sois son premier Éclaireur (le bouton photo est en haut de ce bloc).",
+          "Nobody has shown this beach yet — be its first Scout (the photo button is at the top of this block).",
+          "Nadie ha mostrado esta playa todavía — sé su primer Explorador (el botón de foto está arriba en este bloque).")}
       </div>
     )
   }
