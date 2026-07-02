@@ -95,7 +95,12 @@ function snapshot(id, data) {
     if ((c.n || 0) >= 20 && (c.dead_rate || 0) > worstDead.rate) worstDead = { screen: scr, rate: c.dead_rate, n: c.n }
     for (const [el, cnt] of Object.entries(c.top_dead_els || {})) els[el] = (els[el] || 0) + cnt
   }
-  const top_dead_els = Object.entries(els).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([el, count]) => ({ el, count }))
+  // Plancher de bruit (panel 2026-07-02) : le classifieur client compte TOUT tap sur un nœud
+  // non-interactif (zéro exigence de répétition) → un « coupable » sous 10 taps/jour OU sous
+  // ~1 % des sessions région = bruit de scroll/lecture, pas une demande (puntacana nommait un
+  // élément avec 4 taps sur 11 sessions). L'alerte « 🆕 dead-click » en aval hérite du plancher.
+  const elFloor = Math.max(10, Math.ceil((data.sessions || 0) * 0.01))
+  const top_dead_els = Object.entries(els).filter(([, c]) => c >= elFloor).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([el, count]) => ({ el, count }))
   // Ennui : pire écran (bored_rate) avec assez de trafic.
   let worstBored = { screen: null, rate: 0 }
   for (const [scr, o] of Object.entries(data.screens || {})) if ((o.visits || 0) >= 15 && (o.bored_rate || 0) > worstBored.rate) worstBored = { screen: scr, rate: o.bored_rate }

@@ -463,6 +463,31 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   const fcTrendKey=useMemo(()=>fc7?fcTrend(fc7):"alert",[fc7])
   const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  /* « POURQUOI CE VERDICT ? » — dépliant honnêteté (beat 5 storytelling : la preuve AVANT le
+     paywall, panel 2026-07-02). 100 % champs réels, chaque ligne omise si sa donnée manque —
+     jamais un chiffre inventé. Chiffre fiabilité cité SEULEMENT si __RELIABILITY__.global
+     existe (le per-régime exigerait les 5 qualificatifs → la page auditée s'en charge).
+     Rollback ?verdictwhy=0 (rend aussi au sous-titre son libellé historique). */
+  const whyOn=useMemo(()=>{try{return !/[?&]verdictwhy=0/.test(window.location.search)}catch(_){return true}},[])
+  const [whyOpen,setWhyOpen]=useState(false)
+  const why=useMemo(()=>{
+    if(!whyOn)return null
+    const o={stale:!!(sargData&&sargData.stale)}
+    try{const sat=sargData&&sargData.erddapTimestamp,ts=sat||(sargData&&sargData.updatedAt)
+      /* erddapTimestamp = heure du composite SATELLITE ; updatedAt = heure du RUN pipeline.
+         Le libellé suit la source réelle — dire « mesure satellite » sur un updatedAt mentirait. */
+      if(ts){const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(h>=0&&h<24*14){o.ageH=Math.round(h);o.ageSat=!!sat}}}catch(_){}
+    if(beach&&(beach._src==="interpolated"||beach._satBlind))o.interp=true
+    if(fcConfJ1!=null)o.conf=fcConfJ1
+    try{const R=(typeof __RELIABILITY__!=="undefined"&&__RELIABILITY__)||null
+      if(R&&typeof R.global==="number"&&R.pairs>0)o.global={pct:R.global,n:R.pairs}}catch(_){}
+    try{const RG=(typeof __REGION__!=="undefined"&&__REGION__)||null
+      const isNew=!!(RG&&RG.id!=="mq"&&RG.id!=="gp")
+      o.relHref=isNew?(lang==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"}catch(_){o.relHref="/fiabilite/"}
+    return o
+  },[whyOn,sargData,beach,fcConfJ1,lang])
+  const toggleWhy=()=>{const n=!whyOpen;setWhyOpen(n)
+    if(n&&track)try{track("sg_detail_verdict_why",{beach_id:beach.id,stale:why&&why.stale?1:0,interp:why&&why.interp?1:0})}catch(_){}}
   const v=vof(beach.status), r=rarity(beach.score)
   const sc=beach.score!=null?Math.round(beach.score):null
   const openFc=()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
@@ -513,7 +538,30 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
       <div className="lc-detail-body">
         <h2 className="lc-detail-name">{beach.name}</h2>
         <div className={`lc-detail-head s-${v.st}`}>{_t(head)}</div>
-        <div className="lc-detail-sub">{_t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite — no adivinado."})}</div>
+        <div className="lc-detail-sub">{_t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite — no adivinado."})}
+          {why&&<button type="button" className="lc-why-btn" aria-expanded={whyOpen} onClick={toggleWhy}>
+            {_t({fr:"Pourquoi ce verdict ?",en:"Why this verdict?",es:"¿Por qué este veredicto?"})} <span aria-hidden="true">{whyOpen?"−":"+"}</span>
+          </button>}
+        </div>
+        {why&&whyOpen&&(
+          <section className="lc-why" aria-label={_t({fr:"Pourquoi ce verdict",en:"Why this verdict",es:"Por qué este veredicto"})}>
+            <div className="lc-season-body">
+              {why.ageH!=null&&<p>🛰️ {(()=>{
+                const lbl=why.ageSat
+                  ? {fr:"Dernière mesure satellite",en:"Last satellite reading",es:"Última medición satelital"}
+                  : {fr:"Dernière mise à jour des données",en:"Last data update",es:"Última actualización de datos"}
+                return why.ageH<48
+                  ? _t({fr:`${lbl.fr} : il y a ${why.ageH} h.`,en:`${lbl.en}: ${why.ageH}h ago.`,es:`${lbl.es}: hace ${why.ageH} h.`})
+                  : _t({fr:`${lbl.fr} : il y a ${Math.round(why.ageH/24)} j.`,en:`${lbl.en}: ${Math.round(why.ageH/24)}d ago.`,es:`${lbl.es}: hace ${Math.round(why.ageH/24)} días.`})
+              })()}</p>}
+              {why.stale&&<p>⏳ {_t({fr:"Le satellite a du retard — on préfère te le dire : verdict à lire avec réserve.",en:"The satellite feed is running late — we'd rather tell you: read this verdict with caution.",es:"El satélite va con retraso — preferimos decírtelo: lee este veredicto con reserva."})}</p>}
+              {why.interp&&<p>🧭 {_t({fr:"Trop près du rivage pour une lecture directe : estimée depuis les pixels marins voisins.",en:"Too close to shore for a direct reading: estimated from neighboring sea pixels.",es:"Demasiado cerca de la costa para una lectura directa: estimada desde los píxeles marinos vecinos."})}</p>}
+              {why.conf!=null&&<p>🎯 {_t({fr:`Confiance dans la prévision de demain : ${why.conf} %.`,en:`Confidence in tomorrow's forecast: ${why.conf}%.`,es:`Confianza en el pronóstico de mañana: ${why.conf} %.`})}</p>}
+              {why.global&&<p>📊 {_t({fr:`${why.global.pct} % de nos verdicts vérifiés a posteriori (${why.global.n} comparaisons, tous régimes confondus).`,en:`${why.global.pct}% of our verdicts verified after the fact (${why.global.n} comparisons, all regimes).`,es:`${why.global.pct} % de nuestros veredictos verificados a posteriori (${why.global.n} comparaciones, todos los regímenes).`})}</p>}
+              <p><a href={why.relHref} target="_blank" rel="noopener">{_t({fr:"On publie nos erreurs — va voir ce qu'on vaut vraiment →",en:"We publish our misses — see for yourself what we're worth →",es:"Publicamos nuestros errores — comprueba lo que valemos →"})}</a></p>
+            </div>
+          </section>
+        )}
         <div className="lc-detail-score">
           <span className="lc-detail-scnum">{sc!=null?sc:"—"}<small>/100</small></span>
           <span className="lc-hp"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
@@ -2034,7 +2082,16 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-detail-scnum small{font-size:14px;opacity:.6}
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
+/* Chips info NON tappables : pas d'ombre portée (la grammaire bordure+ombre = « pressable »
+   dans tout le système comic, cf. .lc-chip — collision d'affordance mesurée en dead-clicks). */
+.lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px}
+.lc-why{margin:0 0 16px}
+.lc-why .lc-season-body a{color:inherit;font-weight:800}
+.lc-why-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;width:fit-content;align-items:center;
+  gap:6px;margin-top:9px;min-height:44px;padding:8px 13px;background:#fff;border:2px solid var(--ink);
+  border-radius:10px;box-shadow:2px 2px 0 var(--ink);font-family:inherit;font-size:12.5px;font-weight:800;
+  color:var(--ink);cursor:pointer}
+.lc-why-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 /* Boutons d'action (Partager / Fiche complète / Suivre) — vrais boutons BD
    (bord + ombre décalée + press), plus de lien souligné « pas fini ». Équilibrés
    en largeur (flex:1). « Fiche complète » = primaire (rempli encre) pour la
