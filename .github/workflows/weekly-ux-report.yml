@@ -17,9 +17,14 @@ permissions:
 jobs:
   ux-report:
     runs-on: ubuntu-latest
-    # 25 min : l'install Chromium du capture audit peut dépasser 10 min à froid
-    # (run 27381454264 annulé par timeout en plein download, 2026-06-11)
-    timeout-minutes: 25
+    # Budget job : 5 sites (MQ/GP + 3 USD depuis fin juin) → le SEO audit fait ~24 min
+    # de GSC URL Inspection (222 URLs séquentielles à ~6 s/call) PUIS la capture ~10 min.
+    # Chaque step lourd a son PROPRE timeout-minutes < ce plafond, pour qu'un hang d'un
+    # step ne coupe JAMAIS le suivant. Bug 2026-06-19→07-02 (runs 28240239424 /
+    # 28576401190…) : le SEO audit, SANS borne propre, mangeait les 25 min et c'est le
+    # timeout DU JOB qui annulait la capture innocente (son timeout-minutes:9 ne se
+    # déclenchait jamais). Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 50
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -40,6 +45,13 @@ jobs:
       - name: SEO Audit (data collection)
         id: seo-audit
         continue-on-error: true
+        # ~24 min normal (222 GSC URL Inspections séquentielles à ~6 s, 5 sites).
+        # Guardrail AU-DESSUS du normal : il ne borne qu'un VRAI hang (call googleapis
+        # qui ne revient jamais), pas les runs lents légitimes. Avec continue-on-error,
+        # un timeout masque l'échec (le report de la run précédente reste committé) et
+        # laisse tourner la capture au lieu de tout annuler. C'est ce guardrail
+        # manquant qui causait le bug (cf. commentaire timeout-minutes du job).
+        timeout-minutes: 30
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
@@ -85,7 +97,11 @@ jobs:
           key: playwright-chromium-${{ runner.os }}
       - name: Capture audit (5 domaines live)
         continue-on-error: true
-        timeout-minutes: 9
+        # ~10 min normal (install chromium à froid ~3 min + 5 domaines ; le run 06-12
+        # réussi prenait 553 s = 9,2 min, le cap de 9 min était donc lui-même trop
+        # serré). 15 = marge cache-miss + borne un domaine qui pend en fenêtre de
+        # deploy FTP. Reste < plafond job → n'affame pas les steps suivants.
+        timeout-minutes: 15
         run: |
           npx playwright install chromium --with-deps
           node scripts/audit-capture.cjs
