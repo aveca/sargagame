@@ -1,5 +1,12 @@
 # NEXT_SESSION — sargagame
 
+> **🔗 2026-07-02 — RESTE #408 SOLDÉ : les 3 derniers liens fiche `/plages/` hardcodés passés sur `beachPageUrl` (404 réels corrigés sur USD + cross-île).**
+>
+> Le « reste partage non traité » de la PR #408 est exécuté : nouveau wrapper module-scope **`_fichePageUrl`** (`Sargasses_PROD.jsx` ~L361 : `beachPageUrl` région-aware, fallback = ancien lien same-origin `/plages/`, même kill-switch **`?sharelink=0`**) branché sur les 3 sites : bouton **« Fiche complète »** BeachSheet (~L4218), **fallback texte du partage** (+`?ref=` referral, ~L4231), **partage funnel** `shareBeach` (~L8395).
+> - **Bugs prouvés en prod AVANT fix (curl)** : `sargassummiami.com/plages/miami-beach/` = **404** (vs `/beaches/miami-beach/` 200) — les 3 surfaces émettaient des liens morts sur les 3 domaines USD payants ; idem cross-île MQ↔GP (`/plages/plage-de-la-caravelle/` 404 sur MQ, 200 sur GP, pages purgées par FTP).
+> - **Panel adverse (Workflow, 3 lentilles : correctness / régions-i18n / avocat du diable) : 0 bloquant, réfutation échouée.** Mineurs assumés : sous `?sharelink=0` le fallback `/plages/` reste 404 sur USD (= sémantique rollback, comportement pré-diff) ; le `?ref=` peut atterrir sur le domaine partenaire (strictement mieux que le 404 d'avant ; attribution referral cross-domaine à garder en tête) ; langue secondaire USD (`/en` sur cancun) atterrit sur la page primaryLang (jamais 404). Restants `/plages/` dans src/ = fallback du helper + handler ENTRANT deep-link (~L11374, voulu).
+> - **Vérif** : esbuild OK · build vert (SW v217, budget **182,8 Ko ≤ 210**) · smoke **4 tokens verts** (`FUNNEL_REACHED=map+fiche+paywall` · `WHITE=[]` · `ERRORS=[]` · `RM_INFINITE=[]`) · curl prod 200/404 ci-dessus.
+
 > **💶 2026-07-02 (suite) — CHANTIER « VÉRITÉ DU REVENU » EXÉCUTÉ (les 6 items + revoke CI). Panel adverse money-path passé avant merge.**
 >
 > Le backlog de l'entrée 💶 précédente est shippé intégralement :
