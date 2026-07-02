@@ -28,7 +28,9 @@ function svcHeaders(extra) {
 }
 
 // Étapes comptées (clé = nom event sans le préfixe sg_, comme Code.js).
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'checkout_redirect']
+const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'checkout_redirect',
+  // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
+  'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated']
 
 async function fetchAll(cutoffIso) {
   const rows = []

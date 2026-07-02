@@ -1392,7 +1392,9 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // compteur Apps Script/Code.js → plus de clasp push pour le corriger). Agrégées
 // par scripts/automation/funnel-from-supabase.cjs. Allowlist volontaire (pas TOUT
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
-const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect"])
+const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+  // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
+  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -12275,6 +12277,7 @@ export default function App(){
   // Capture B2B PRO (self-serve, sans appel) — joignable en deep-link ?pro=1
   // depuis l'email d'outreach B2B. Brief quotidien gratuit, drip automatique.
   const [showProB2B,setShowProB2B]=useState(false)
+  const proB2BSrc=useRef("app")   // point d'entrée du B2BModal (events sg_b2b_step)
   useEffect(()=>{try{
     const p=new URLSearchParams(window.location.search)
     if(p.get("paywall")==="1"){
@@ -12283,7 +12286,10 @@ export default function App(){
       // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
       const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
       const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
-    else if(p.get("pro")==="1"){setShowProB2B(true);
+    else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
+      // Le replaceState ci-dessous efface la querystring AVANT le mount lazy du B2BModal
+      // → stash de search (pattern sg_deep_plan) : ?b2bseq/?b2btrial/?beach= y survivent.
+      try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
       // Tracking funnel PAR PROSPECT : le token b= (hash8 du destinataire, posé dans
       // les emails B2B) + la campagne → on sait QUI a cliqué (b2b-funnel lit ce signal).
       try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
@@ -12527,7 +12533,7 @@ export default function App(){
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
-          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} captureMode={PAY_CAPTURE_ONLY} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
+          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} captureMode={PAY_CAPTURE_ONLY} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; proB2BSrc.current="space"; setShowProB2B(true) }}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}
             track={track}
@@ -13010,7 +13016,7 @@ export default function App(){
           beach={selectedBeach||null}/></Suspense></ErrBound>}
 
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
-        {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
+        {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
 
         {/* MON ACCÈS — feuille compte (email lié + alertes) ouverte par l'icône personnage.
             Restaurer/gérer réutilisent openAccessCheck (recurring → ?manage=1). */}
@@ -13172,7 +13178,7 @@ export default function App(){
                 onShare={shareBeachCard}
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
-                onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
+                onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
                 previewBeach={previewBeachObj}
                 onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
