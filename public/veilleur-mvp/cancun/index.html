@@ -173,7 +173,7 @@ main{position:relative;z-index:10;min-height:100svh;display:grid;
 
 <!-- fond vidéo ambiant -->
 <div id="bg" aria-hidden="true">
-  <video id="reel" muted loop playsinline preload="metadata" poster="../assets/bg-reel-poster.jpg" data-offset="7.9">
+  <video id="reel" muted loop playsinline preload="metadata" poster="../assets/bg-reel-poster.jpg" data-offset="7.9" data-vsrc="../assets/bg-reel-vertical.mp4" data-vposter="../assets/bg-reel-vertical-poster.jpg">
     <source src="../assets/bg-reel.mp4" type="video/mp4">
   </video>
   <div class="grade"></div>
@@ -246,6 +246,8 @@ main{position:relative;z-index:10;min-height:100svh;display:grid;
 /* vibe : décalage de départ vidéo (seedé) + reduced-motion (pause) */
 (function(){
   var v=document.getElementById('reel');
+  var portrait=false; try{ portrait=matchMedia('(orientation:portrait)').matches; }catch(e){}
+  if(portrait){ try{ var vp=v.getAttribute('data-vposter'); if(vp) v.setAttribute('poster',vp); v.src=v.getAttribute('data-vsrc'); v.load(); }catch(e){} }
   var RM=false; try{ RM=matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
   if(RM){ try{ v.pause(); }catch(e){} return; }
   var off=parseFloat(v.getAttribute('data-offset')||'0');
