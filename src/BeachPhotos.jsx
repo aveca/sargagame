@@ -36,11 +36,7 @@ function timeAgo(ts, lang) {
   } catch (_) { return "" }
 }
 
-// Flag rollback ?vseed=0 : désactive le nudge de recrutement sur galerie vide
-// (retour au comportement historique = rien afficher). Lu en inline par feature.
-const SEED_OFF = typeof window !== "undefined" && /[?&]vseed=0/.test(window.location.search)
-
-export function BeachPhotos({ beach, lang = "fr", max = 6, canContribute = false }) {
+export function BeachPhotos({ beach, lang = "fr", max = 6 }) {
   const [photos, setPhotos] = useState(null)
   useEffect(() => {
     if (!beach || !beach.id || !supabaseConfigured()) return
@@ -50,26 +46,9 @@ export function BeachPhotos({ beach, lang = "fr", max = 6, canContribute = false
   }, [beach && beach.id])
 
   // photos===null → en cours de chargement (ou Supabase non configuré) : rien.
-  if (!photos) return null
-  // Galerie vide MAIS backend prêt + upload possible → nudge de rareté (« sois le
-  // premier ») pour amorcer le supply, plutôt qu'un vide muet. Attaque l'avantage
-  // « participation » du concurrent : nos 136 vitrines recrutent au lieu de dormir.
-  // Pas de 2e bouton (celui de BeachReport est juste au-dessus) : on le CADRE.
-  if (!photos.length) {
-    if (SEED_OFF || !canContribute) return null
-    return (
-      <div style={{ margin: "12px 0 4px", padding: "10px 14px", borderRadius: 12,
-        background: "var(--sg-bgD,#F7F5EF)", border: "1px dashed var(--sg-border,rgba(0,0,0,.14))",
-        fontSize: 11.5, fontWeight: 600, color: "var(--sg-mid,#7a7768)",
-        display: "flex", alignItems: "center", gap: 8, lineHeight: 1.35 }}>
-        <span aria-hidden="true" style={{ fontSize: 15 }}>📸</span>
-        {_t(lang,
-          "Personne n'a encore montré cette plage — sois son premier Éclaireur (le bouton photo est en haut de ce bloc).",
-          "Nobody has shown this beach yet — be its first Scout (the photo button is at the top of this block).",
-          "Nadie ha mostrado esta playa todavía — sé su primer Explorador (el botón de foto está arriba en este bloque).")}
-      </div>
-    )
-  }
+  // Galerie vide : rien à montrer (le CTA d'upload dédié a été retiré, cf.
+  // VerdictRadarScan — pas de nudge pointant vers un bouton qui n'existe plus).
+  if (!photos || !photos.length) return null
   const list = photos.slice(0, max)
 
   return (
