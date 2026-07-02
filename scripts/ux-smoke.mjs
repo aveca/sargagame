@@ -1,9 +1,18 @@
 /**
- * ux-smoke.mjs — smoke visuel du parcours comic « Le Veilleur » (mobile WebKit).
- * Parcours : splash → onboarding → arène → reveal booster → détail carte → paywall.
+ * ux-smoke.mjs — smoke visuel du FUNNEL RÉEL (mobile, émulation iPhone).
+ * Parcours : carte-monde (atterrissage CARTE-FIRST) → détail plage comic → paywall.
+ * (L'ancien « parcours comic » splash→onboarding→arène testait le jeu, RETIRÉ du
+ *  produit — décision fondateur, cf. Sargasses_PROD.jsx « JEU RETIRÉ DU PRODUIT » ;
+ *  l'arène est du code dormant ?hero=1, plus une surface utilisateur.)
  * Sort des captures /tmp/j*.png + scan des BOUTONS BLANCS (doit = []) + erreurs JS.
  * Tokens greppables (le Gate greppe la sortie, jamais l'exit code — toujours exit 0) :
- *   WHITE_OR_TRANSPARENT_BUTTONS=[]  (boutons blancs/transparents, doit = [])
+ *   FUNNEL_REACHED=map+fiche+paywall (les 3 surfaces du funnel atteintes ; il en
+ *                                     manque une = le scan a tourné sur la mauvaise
+ *                                     surface → gate : grep du littéral complet)
+ *   WHITE_OR_TRANSPARENT_BUTTONS=[]  (nom historique — test de VISIBILITÉ : boutons
+ *                                     FANTÔMES [aucune peinture propre ni d'ancêtre]
+ *                                     ou TEXTE INVISIBLE [couleur == fond résolu],
+ *                                     doit = [] ; labels carte .sg-maplabel whitelistés)
  *   ERRORS=[]                        (erreurs console/page, doit = [], tronqué à 12)
  *   RM_INFINITE=[]                   (animations infinies encore actives sous
  *                                     prefers-reduced-motion:reduce, doit = [],
@@ -24,73 +33,120 @@ const errs = [];
 p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
 
-// fresh first-launch: chasse on, splash+onboarding allowed to show
-await p.goto(BASE + '/?chasse=1&arena=1', { waitUntil: 'networkidle', timeout: 30000 });
-await p.waitForTimeout(1200);
-await p.screenshot({ path: '/tmp/j1-splash.png' });
-
-// try to advance splash/onboarding by clicking primary buttons a few times
-for (let i = 0; i < 5; i++) {
-  // any visible primary button / next / skip
-  const clicked = await p.evaluate(() => {
-    const btns = [...document.querySelectorAll('button')].filter(b => {
-      const r = b.getBoundingClientRect(); const s = getComputedStyle(b);
-      return r.width > 40 && r.height > 24 && s.visibility !== 'hidden' && s.display !== 'none';
-    });
-    // prefer buttons whose text looks like advance
-    const adv = btns.find(b => /commenc|continu|suivant|c'est parti|jouer|entrer|skip|passer|next|terrain|go/i.test(b.textContent || ''));
-    const target = adv || btns[btns.length - 1];
-    if (target) { target.click(); return target.textContent.trim().slice(0, 30); }
-    return null;
-  });
-  await p.waitForTimeout(900);
-  await p.screenshot({ path: `/tmp/j2-step${i}.png` });
-  if (await p.$('.lc-root')) break;
-}
-
-await p.waitForSelector('.lc-root', { timeout: 8000 }).catch(() => {});
-await p.waitForTimeout(800);
-await p.screenshot({ path: '/tmp/j3-arena.png' });
-
-// reveal
-const g = await p.$('.lc-gbtn'); if (g) { await g.click(); await p.waitForTimeout(1200); }
-await p.screenshot({ path: '/tmp/j4-reveal.png' });
-
-// tap the featured card -> fiche plage (app beach detail)
-const card = await p.$('.lc-fancard .lc-card') || await p.$('.lc-cta');
-if (card) { await card.click(); await p.waitForTimeout(1800); }
-await p.screenshot({ path: '/tmp/j5-fiche.png', fullPage: false });
-
-// open the paywall from the detail's premium CTA
-const pcta = await p.$('.lc-detail .lc-cta');
-if (pcta) { await pcta.click(); await p.waitForTimeout(1600); }
-await p.screenshot({ path: '/tmp/j6-paywall.png', fullPage: false });
-
-// scan for white/transparent buttons sitewide
-const whiteButtons = await p.evaluate(() => {
+// Scan boutons INVISIBLES — partagé entre les surfaces du funnel. Le token garde son
+// nom historique WHITE_OR_TRANSPARENT_BUTTONS (compat Gate) mais le test est devenu un
+// test de VISIBILITÉ : sur les surfaces réelles, « blanc » et « transparent » sont des
+// choix de design légitimes (chips fiche blanches à bordure encre, boutons transparents
+// dans une pilule peinte, labels texte sur la carte). Ce qui reste un BUG :
+//  - FANTÔME : aucune peinture propre (fond/image/bordure/ombre) ET aucun ancêtre peint
+//    → le bouton flotte invisible (classe de bug « skin de thème écrase l'inline »).
+//  - TEXTE INVISIBLE : couleur du texte == fond résolu (blanc-sur-blanc, noir-sur-noir)
+//    sans text-shadow pour le rattraper.
+// Whitelist design (même esprit que LOADING_OK de la passe reduced-motion) :
+//  - .sg-maplabel : labels de plage de la carte — texte nu VOULU par-dessus la carte
+//    (background:none !important, app-runtime.css), l'ink-shadow vit sur les ENFANTS
+//    → le wrapper semble fantôme au test alors qu'il est lisible par construction.
+const scanGhost = () => {
   const out = [];
+  const DESIGN_OK = /(^|\s)sg-maplabel(\s|$)/;
+  const painted = c => c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent';
   for (const el of document.querySelectorAll('button, a[role=button], [role=button]')) {
     const r = el.getBoundingClientRect(); if (r.width < 30 || r.height < 18) continue;
+    const cls = el.className.toString();
+    if (DESIGN_OK.test(cls)) continue;
     const s = getComputedStyle(el);
-    const bg = s.backgroundColor, bgi = s.backgroundImage;
-    const isWhiteish = (bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)') && bgi === 'none';
-    if (isWhiteish) out.push({ t: (el.textContent || '').trim().slice(0, 24), bg, color: s.color, cls: el.className.toString().slice(0, 40) });
+    const ownPaint = painted(s.backgroundColor) || s.backgroundImage !== 'none'
+      || (s.borderTopStyle !== 'none' && parseFloat(s.borderTopWidth) > 0)
+      || s.boxShadow !== 'none';
+    // fond effectif : premier ancêtre peint (fond couleur ou image)
+    let effBg = null, e = el.parentElement;
+    while (e && e !== document.documentElement) {
+      const ps = getComputedStyle(e);
+      if (painted(ps.backgroundColor)) { effBg = ps.backgroundColor; break; }
+      if (ps.backgroundImage !== 'none') { effBg = 'image'; break; }
+      e = e.parentElement;
+    }
+    const ghost = !ownPaint && !effBg;
+    const resolvedBg = painted(s.backgroundColor) ? s.backgroundColor : effBg;
+    const hasText = !!(el.textContent || '').trim();
+    const invisibleText = hasText && s.backgroundImage === 'none' && resolvedBg
+      && resolvedBg !== 'image' && resolvedBg === s.color && s.textShadow === 'none';
+    if (ghost || invisibleText) out.push({
+      why: ghost ? 'ghost' : 'text',
+      t: (el.textContent || '').trim().slice(0, 24),
+      bg: s.backgroundColor, color: s.color, cls: cls.slice(0, 40),
+    });
   }
-  return out.slice(0, 25);
+  return out;
+};
+const whiteButtons = [];
+
+// ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
+//       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
+//       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
+await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 30000 });
+await p.waitForSelector('.sg-maplabel', { timeout: 15000 }).catch(() => {});
+await p.waitForTimeout(1500);
+await p.screenshot({ path: '/tmp/j1-map.png' });
+const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
+whiteButtons.push(...await p.evaluate(scanGhost));
+
+// ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
+//       car le pan de la carte peut voler le clic physique en émulation). Route
+//       par défaut = ComicDetail (.lc-detail, flag mapdetail) ; fallback fiche
+//       data (.sheet) si le flag change — les deux comptent comme « fiche ».
+await p.evaluate(() => {
+  const l = [...document.querySelectorAll('.sg-maplabel')]
+    .find(el => getComputedStyle(el).visibility !== 'hidden');
+  if (l) l.click();
 });
-console.log('WHITE_OR_TRANSPARENT_BUTTONS=' + JSON.stringify(whiteButtons, null, 1));
+await p.waitForSelector('.lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
+await p.waitForTimeout(1500);
+await p.screenshot({ path: '/tmp/j2-fiche.png' });
+const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
+whiteButtons.push(...await p.evaluate(scanGhost));
+
+// ── 3. Paywall : d'abord le CTA du détail comic (chemin de conversion réel),
+//       sinon le deep-link produit ?paywall=1 (chemin /a-propos/ et /alertes/) en
+//       filet déterministe. Détection multi-skins : .pwx-wrap (ComicPaywall) /
+//       .sg-modal-panel (PremiumModal classique/World).
+const PAYWALL_SEL = '.pwx-wrap, .sg-modal-panel';
+await p.evaluate(() => {
+  const cta = document.querySelector('.lc-detail .lc-cta');
+  if (cta) cta.click();
+});
+await p.waitForSelector(PAYWALL_SEL, { timeout: 8000 }).catch(() => {});
+if (!(await p.$(PAYWALL_SEL))) {
+  await p.goto(BASE + '/?paywall=1', { waitUntil: 'networkidle', timeout: 30000 });
+  await p.waitForSelector(PAYWALL_SEL, { timeout: 12000 }).catch(() => {});
+}
+await p.waitForTimeout(1500);
+await p.screenshot({ path: '/tmp/j3-paywall.png' });
+const paywallOk = !!(await p.$(PAYWALL_SEL));
+whiteButtons.push(...await p.evaluate(scanGhost));
+
+// Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
+const seen = new Set();
+const whiteOut = whiteButtons.filter(w => {
+  const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
+}).slice(0, 25);
+
+const reached = [mapOk && 'map', ficheOk && 'fiche', paywallOk && 'paywall'].filter(Boolean).join('+');
+console.log('FUNNEL_REACHED=' + reached);
+console.log('WHITE_OR_TRANSPARENT_BUTTONS=' + JSON.stringify(whiteOut, null, 1));
 console.log('ERRORS=' + JSON.stringify(errs.slice(0, 12)));
 
 // ── passe reduced-motion : plancher a11y (CLAUDE.md « prefers-reduced-motion ») ──
-// Recharge la surface principale avec prefers-reduced-motion:reduce, puis liste les
-// animations à itérations INFINIES encore en cours : elles n'ont pas de fallback
-// statique → violation du plancher. Token = RM_INFINITE=[] (liste vide = conforme).
+// Recharge la SURFACE D'ATTERRISSAGE RÉELLE (URL nue = carte-monde) avec
+// prefers-reduced-motion:reduce, puis liste les animations à itérations INFINIES
+// encore en cours : elles n'ont pas de fallback statique → violation du plancher.
+// Token = RM_INFINITE=[] (liste vide = conforme).
 // try/catch : un crash de CETTE passe ne doit jamais empêcher les tokens ci-dessus
 // (déjà imprimés) ni faire sortir avec un code ≠ 0 — convention : le Gate greppe.
 let rmInfinite = [];
 try {
   await p.emulateMedia({ reducedMotion: 'reduce' });
-  await p.goto(BASE + '/?chasse=1&arena=1', { waitUntil: 'networkidle', timeout: 30000 });
+  await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 30000 });
   await p.waitForTimeout(1500); // settle (même ordre de grandeur que les étapes du parcours)
   await p.screenshot({ path: '/tmp/j7-reduced-motion.png' });
   rmInfinite = await p.evaluate(() => {
