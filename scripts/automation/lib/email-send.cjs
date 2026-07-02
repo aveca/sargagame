@@ -124,11 +124,14 @@ function applyBrand(html) {
  * Signatures supportées (back-compat) :
  *   sendEmail(opts)                 ← nouveau
  *   sendEmail(legacyResend, opts)   ← ancien (1er arg ignoré)
- * opts = { from, to, subject, html, preheader, unsubUrl, text?, replyTo? }
+ * opts = { from, to, subject, html, preheader, unsubUrl, text?, replyTo?, headers? }
+ * headers = en-têtes SMTP additionnels (ex. Auto-Submitted pour un accusé auto,
+ * RFC 3834 : un auto-répondeur conforme ne répond pas à un mail ainsi marqué).
+ * Mergés avec List-Unsubscribe (unsubUrl garde le dernier mot sur ses 2 clés).
  */
 async function sendEmail(a, b) {
   const opts = (b === undefined) ? a : b
-  const { from, to, subject, html, preheader, unsubUrl, text, replyTo } = opts || {}
+  const { from, to, subject, html, preheader, unsubUrl, text, replyTo, headers } = opts || {}
   if (!mailReady()) {
     return { data: null, error: new Error('SMTP non configuré (SMTP_PASS manquant)') }
   }
@@ -139,10 +142,12 @@ async function sendEmail(a, b) {
     text: text || htmlToText(html),
   }
   if (replyTo) message.replyTo = replyTo
-  if (unsubUrl) message.headers = {
-    'List-Unsubscribe': `<${unsubUrl}>`,
-    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  const extraHeaders = { ...(headers || {}) }
+  if (unsubUrl) {
+    extraHeaders['List-Unsubscribe'] = `<${unsubUrl}>`
+    extraHeaders['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click'
   }
+  if (Object.keys(extraHeaders).length) message.headers = extraHeaders
   try {
     const info = await getTransport().sendMail(message)
     return { data: { id: info.messageId }, error: null }

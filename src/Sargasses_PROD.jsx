@@ -3360,7 +3360,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -3486,7 +3486,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // CTA — region-aware social proof (chiffres modestes & réels)
   const socialN=200
   const ctaLabel=isPremium?_t(lang,"Voir mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
-  const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach.id,status,premium:!!isPremium});isPremium?onClose&&onClose():onPremiumClick&&onPremiumClick("beach_sheet")}
+  // Premium : « Voir mes alertes » ne fait plus SEULEMENT fermer (promesse morte —
+  // grief fondateur 2026-07-02) : il garantit d'abord permission push + nudge install
+  // (onEnsureAlerts → ensurePushAlerts, no-op si ?alertpush=0), puis ferme.
+  const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach.id,status,premium:!!isPremium});if(isPremium){try{onEnsureAlerts&&onEnsureAlerts()}catch(_){};onClose&&onClose()}else{onPremiumClick&&onPremiumClick("beach_sheet")}}
 
   // Desktop : la feuille était full-width (1440px+) → verdict/barres/CTA étirés,
   // illisible (grief fondateur 2026-07-01). Colonne centrée ≤560px au-delà de 720px,
@@ -7334,7 +7337,7 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
    PWA INSTALL PROMPT — Android (beforeinstallprompt) + iOS (Safari tutorial)
    Best practice: show after 2nd beach view (value demonstrated), not on timer
    ═══════════════════════════════════════════════════════════════════════════ */
-function InstallPrompt(){
+function InstallPrompt({canAutoShow=true}={}){
   // lang était référencé plus bas sans être défini (ReferenceError au premier
   // render du prompt — crash furtif : le flag localStorage est posé avant).
   const lang=getLang()
@@ -7342,6 +7345,10 @@ function InstallPrompt(){
   const[visible,setVisible]=useState(false)
   const[showIosTutorial,setShowIosTutorial]=useState(false)
   const[dismissed,setDismissed]=useState(()=>!!g("sg_pwa_prompt",0))
+  // Bannière déclenchée par une intention d'alerte : élévation z au-dessus des surfaces
+  // ouvertes (hub /alertes/ z1006, feuille plage z1050, paywall z1300) — sinon elle
+  // naît DERRIÈRE un overlay opaque et le nudge 1×/session est brûlé à blanc (panel).
+  const[alertIntent,setAlertIntent]=useState(false)
 
   const isIos=useMemo(()=>/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream,[])
   const isStandalone=useMemo(()=>
@@ -7350,11 +7357,18 @@ function InstallPrompt(){
     ||window.matchMedia("(display-mode: minimal-ui)").matches
     ||window.navigator.standalone===true,[])
 
+  // beforeinstallprompt TOUJOURS écouté (hors standalone) : le composant est monté en
+  // permanence et la bannière peut apparaître via sg:alert_intent même quand l'auto-show
+  // est éteint — sans deferredPrompt, « Installer » serait un clic mort sur Android.
   useEffect(()=>{
-    if(dismissed||isStandalone)return
-    // Android/Chrome: listen for beforeinstallprompt
+    if(isStandalone)return
     const handler=e=>{e.preventDefault();setDeferredPrompt(e)}
     window.addEventListener("beforeinstallprompt",handler)
+    return()=>window.removeEventListener("beforeinstallprompt",handler)
+  },[isStandalone])
+
+  useEffect(()=>{
+    if(!canAutoShow||dismissed||isStandalone)return
     // iOS never fires beforeinstallprompt — on iOS web push requires PWA install,
     // so be aggressive: show the prompt after 8s regardless of beach views.
     // Android also gets this fallback if the native prompt doesn't fire.
@@ -7375,8 +7389,26 @@ function InstallPrompt(){
       const seen=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
       if(seen>=1)showPrompt(isIos?"ios-engaged":"android-fallback")
     },45000)
-    return()=>{window.removeEventListener("beforeinstallprompt",handler);clearInterval(interval);clearTimeout(fallback)}
-  },[dismissed,isStandalone])
+    return()=>{clearInterval(interval);clearTimeout(fallback)}
+  },[canAutoShow,dismissed,isStandalone])
+
+  // Intention d'alerte explicite (sg:alert_intent, cf. ensurePushAlerts) : l'utilisateur
+  // vient d'activer ses alertes → l'app installée est LE support de la promesse (push iOS
+  // = standalone obligatoire). On re-montre la bannière MÊME si déjà dismissée (intention
+  // explicite ≠ nudge à froid), 1×/session, jamais en standalone. L'auto-hide 15s reste.
+  useEffect(()=>{
+    if(isStandalone)return
+    const h=()=>{
+      let seen=false
+      try{seen=!!sessionStorage.getItem("sg_pwa_alert_nudge")}catch(_){}
+      if(seen)return
+      try{sessionStorage.setItem("sg_pwa_alert_nudge","1")}catch(_){}
+      setAlertIntent(true);setDismissed(false);setVisible(true)
+      track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android",reason:"alert-intent"})
+    }
+    window.addEventListener("sg:alert_intent",h)
+    return()=>window.removeEventListener("sg:alert_intent",h)
+  },[isStandalone,isIos])
 
   // Auto-hide 15s : la bannière flotte SUR la carte et rendait les pastilles
   // dessous incliquables tant qu'on ne la fermait pas (prouvé par test clic
@@ -7408,7 +7440,7 @@ function InstallPrompt(){
 
   return(
     <>
-      <div style={{position:"fixed",bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 160px)",left:12,right:12,zIndex:760,
+      <div style={{position:"fixed",bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 160px)",left:12,right:12,maxWidth:430,margin:"0 auto",zIndex:alertIntent?1450:760,
         background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
         backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
         boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
@@ -7432,13 +7464,14 @@ function InstallPrompt(){
             width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
       </div>
 
-      {/* iOS Safari tutorial overlay */}
+      {/* iOS Safari tutorial overlay — suit l'élévation alertIntent (sinon il naîtrait
+          SOUS le paywall z1300 quand la bannière a été ouverte par-dessus lui) */}
       {showIosTutorial&&(
         <>
           <div className="backdrop" onClick={()=>{setShowIosTutorial(false);dismiss()}}
-            style={{zIndex:1200}}/>
+            style={{zIndex:alertIntent?1460:1200}}/>
           <div style={{
-            position:"fixed",bottom:0,left:0,right:0,zIndex:1201,
+            position:"fixed",bottom:0,left:0,right:0,zIndex:alertIntent?1461:1201,
             background:"var(--sg-card,#fff)",borderRadius:"24px 24px 0 0",
             padding:"28px 24px 40px",maxHeight:"70vh",overflowX:"hidden",overflowY:"auto",
             boxShadow:"0 -8px 40px rgba(0,0,0,.2)",
@@ -7654,6 +7687,9 @@ function AlertCapture({beach,lang}){
       body:JSON.stringify({email,island,source:"beach_alert",beach_id:beach.id,date:new Date().toISOString()})
     }).catch(()=>{})}catch(_){}
     setDone(true)
+    // Alerte activée = intention explicite → chaîner permission push + nudge install
+    // (listener root sg:alert_email_ok → ensurePushAlerts). Rollback ?alertpush=0.
+    try{window.dispatchEvent(new Event("sg:alert_email_ok"))}catch(_){}
   }
   if(done)return(
     <div style={{display:"flex",alignItems:"center",gap:9,background:"rgba(46,204,113,.10)",
@@ -9195,7 +9231,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 }
 
 // AlertHub — /alertes/ page view (hub Premium = le veilleur personnel)
-function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
+function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}){
   const [email,setEmail]=useState("")
   const [submitted,setSubmitted]=useState(false)
   const [busy,setBusy]=useState(false)
@@ -9234,7 +9270,23 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
       setSubmitted(true)
       setBusy(false)
     })
+    // Alerte activée = intention explicite → chaîner la demande de permission push
+    // + le nudge install (grief fondateur 2026-07-02). Rollback ?alertpush=0.
+    try{onEnableAlerts&&onEnableAlerts()}catch(_){}
   }
+
+  // Bouton push visible quand la permission n'est pas accordée (inscrit ou pas) :
+  // l'email est le filet, le PUSH est la promesse « prévenu le matin même ».
+  // Gaté sur ?alertpush=0 comme la chaîne (sinon = clic mort, ensurePushAlerts no-op).
+  const pushMissing=(()=>{try{if(/[?&]alertpush=0/.test(window.location.search))return false;return typeof Notification==="undefined"||Notification.permission!=="granted"||sgAlertsOff()}catch(_){return true}})()
+  const PushCta=onEnableAlerts&&pushMissing?(
+    <button onClick={()=>{try{track("sg_alerts_hub_push_cta",{})}catch(_){};onEnableAlerts()}}
+      style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"12px auto 0",
+        background:"#FFC72C",color:"#120821",border:"none",borderRadius:12,padding:"11px 16px",
+        fontSize:13.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>
+      🔔 {_t(lang,"Activer les notifications sur ce téléphone","Turn on notifications on this phone","Activar notificaciones en este teléfono")}
+    </button>
+  ):null
 
   useEffect(() => {
     track("sg_alerts_view", { variant: "hub", lang })
@@ -9278,11 +9330,13 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
               <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#1c7fb0"}}>
                 <span style={{fontSize:22,display:"block",marginBottom:6}}>✅</span>
                 {_t(lang,"C'est fait ! Le verdict du matin arrive dans ta boîte.","You're in! The morning verdict will arrive in your inbox.","¡Listo! El veredicto matutino llegará a tu bandeja.")}
+                {PushCta}
               </div>
             ) : isSubscribed ? (
               <div style={{textAlign:"center",fontSize:13.5,fontWeight:600,color:"rgba(255,255,255,.85)"}}>
                 <span style={{fontSize:18,marginRight:6}}>✓</span>
                 {_t(lang,"Tu es déjà inscrit aux alertes quotidiennes.","You are already subscribed to daily alerts.","Ya estás suscrito a las alertas diarias.")}
+                {PushCta}
                 <button onClick={() => onPremium("alertes_subscribed")}
                   style={{display:"block",margin:"10px auto 0",background:"none",border:"none",color:"#FFC72C",fontWeight:800,fontSize:13,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
                   {_t(lang,"Gérer mes alertes Premium →","Manage my Premium alerts →","Gestionar mis alertas Premium →")}
@@ -10616,6 +10670,32 @@ export default function App(){
     forceEnablePush(src||"toggle")
     setTimeout(()=>setAlertsTick(t=>t+1),1800)
   },[lang,forceEnablePush])
+
+  // INTENTION D'ALERTE (grief fondateur 2026-07-02 : « j'active les alertes, ça ne me
+  // demande ni notifications ni installer l'app ») : toute surface « activer mes alertes »
+  // (hub /alertes/, CTA premium fiche, capture email par-plage) passe ICI → garantit la
+  // demande de permission push (via toggleAlerts, qui gère denied/iOS-navigateur) PUIS
+  // re-nudge la bannière d'install PWA (event sg:alert_intent, écouté par InstallPrompt,
+  // 1×/session, jamais en standalone). ≠ toggleAlerts : ne coupe JAMAIS des alertes déjà
+  // actives (ensure, pas toggle). Rollback : ?alertpush=0.
+  const ensurePushAlerts=useCallback((src)=>{
+    try{if(/[?&]alertpush=0/.test(window.location.search))return}catch(_){}
+    const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
+    if(perm==="granted"&&!sgAlertsOff()){
+      try{sgToast({tone:"success",msg:_t(lang,"Tes alertes sont actives 🔔","Your alerts are on 🔔","Tus alertas están activas 🔔")})}catch(_){}
+    }else{
+      toggleAlerts(src||"alert_intent")
+    }
+    // Nudge install différé (laisse la demande de permission passer en premier).
+    setTimeout(()=>{try{window.dispatchEvent(new Event("sg:alert_intent"))}catch(_){}},1400)
+  },[lang,toggleAlerts])
+  // La capture email par-plage (AlertCapture, composant module-level sans accès aux
+  // callbacks du root) signale son succès par event → même chaînage push+install.
+  useEffect(()=>{
+    const h=()=>ensurePushAlerts("alert_capture")
+    window.addEventListener("sg:alert_email_ok",h)
+    return()=>window.removeEventListener("sg:alert_email_ok",h)
+  },[ensurePushAlerts])
 
   // Sync backend : si l'utilisateur a désactivé alors que le SDK n'était pas chargé,
   // ré-applique l'opt-out dès que possible (idempotent).
@@ -12350,6 +12430,7 @@ export default function App(){
               onPremium={src=>openPremium(src||"alertes")}
               onShowMap={()=>{setShowAlertHub(false);track("sg_alerts_to_map",{})}}
               onClose={()=>{setShowAlertHub(false);track("sg_alerts_close",{})}}
+              onEnableAlerts={()=>ensurePushAlerts("alertes_hub")}
             />
           </div>
         )}
@@ -12622,7 +12703,8 @@ export default function App(){
                 allBeaches={allBeaches} onBeachClick={onBeachClick}
                 onPremiumClick={openPremium} isPremium={isPremium}
                 sargData={sargData} userPos={userPos} forecast={_fc} track={track}
-                communityReports={communityReports} onRequestGeo={requestGeo}/>
+                communityReports={communityReports} onRequestGeo={requestGeo}
+                onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}/>
             </ErrBound>
           )
         })()}
@@ -12697,14 +12779,21 @@ export default function App(){
             it visually, and the toast was overlapping the peek at every
             breakpoint after the map-first layout shift. */}
 
-        {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet) */}
+        {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet).
+            InstallPrompt est monté EN PERMANENCE (il rend null tant que rien à montrer) :
+            son listener sg:alert_intent doit vivre même quand la bannière a déjà été
+            montrée/refusée (sg_pwa_prompt=1) — c'est exactement la population du re-nudge
+            (fix panel adverse 2026-07-02). L'auto-show organique reste gaté par canAutoShow
+            (jamais en même temps que FeedbackWidget, jamais si déjà montré). */}
         {!showOnboarding&&(()=>{
           const feedbackDone=g("sg_feedback_done",false)
           const visits=g("sg_visits",0)
           const pwaShown=g("sg_pwa_prompt",0)
-          if(!feedbackDone&&visits>=3)return<FeedbackWidget/>
-          if(!pwaShown)return<InstallPrompt/>
-          return null
+          const feedback=!feedbackDone&&visits>=3
+          return<>
+            {feedback&&<FeedbackWidget/>}
+            <InstallPrompt canAutoShow={!feedback&&!pwaShown}/>
+          </>
         })()}
 
         {/* FAV TOAST — inline, first favorite only */}

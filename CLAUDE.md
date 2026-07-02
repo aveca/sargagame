@@ -88,13 +88,16 @@ npx vite preview --port 4173 &   # garder le PID ; preview sert dist/
 node -e "require('playwright').chromium.executablePath()" >/dev/null \
   || npx playwright install chromium
 
-# 3. SMOKE parcours comic sur le BUILD. ATTENTION : ux-smoke.mjs lance
-#    chromium.launch() en ÉMULATION iPhone (390×844, UA Safari, deviceScaleFactor 2,
+# 3. SMOKE du FUNNEL RÉEL (carte → détail plage → paywall) sur le BUILD.
+#    (L'ancien « parcours comic » testait l'arène-jeu, RETIRÉE du produit — le smoke
+#    suit désormais la surface que voient les utilisateurs.) ATTENTION : ux-smoke.mjs
+#    lance chromium.launch() en ÉMULATION iPhone (390×844, UA Safari, deviceScaleFactor 2,
 #    isMobile, hasTouch) — ce n'est PAS du WebKit réel : une régression Safari/iOS-only
 #    peut passer. Le smoke n'appelle JAMAIS process.exit() (toujours exit 0) :
 #    le gating se fait par grep sur sa sortie, sinon un `&&` valide à tort.
 node scripts/ux-smoke.mjs | tee /tmp/smoke.log
-grep -q 'ERRORS=\[\]' /tmp/smoke.log \
+grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log \
+  && grep -q 'ERRORS=\[\]' /tmp/smoke.log \
   && grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log \
   && grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log \
   || { echo "SMOKE BLOQUÉ"; exit 1; }   # captures /tmp/j*.png
@@ -102,7 +105,7 @@ grep -q 'ERRORS=\[\]' /tmp/smoke.log \
 kill %1 2>/dev/null      # arrêter le preview
 ```
 
-**Passe =** `npm run build` exit 0 ET `check-bundle-budget` exit 0 ET les trois tokens littéraux `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]` **et** `RM_INFINITE=[]` présents dans la sortie smoke. Tout le reste = blocage. (Le smoke tronque les listes à 12 entrées — n'affecte pas le test `=[]`.)
+**Passe =** `npm run build` exit 0 ET `check-bundle-budget` exit 0 ET les quatre tokens littéraux `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]` **et** `RM_INFINITE=[]` présents dans la sortie smoke. Tout le reste = blocage. (Le smoke tronque les listes à 12 entrées — n'affecte pas le test `=[]`.) `FUNNEL_REACHED` incomplet = une surface du funnel n'a pas été atteinte → le scan a tourné sur la mauvaise surface : corriger le smoke, pas whitelister les findings. `WHITE_OR_TRANSPARENT_BUTTONS` (nom historique) est depuis 2026-07-01 un test de VISIBILITÉ : boutons **fantômes** (aucune peinture propre ni d'ancêtre) + **texte invisible** (couleur == fond résolu) — blanc/transparent seuls ne flaggent plus (design légitime sur carte/fiche) ; il ne couvre donc PAS « bouton blanc là où un doré était voulu » → ça reste la checklist self-review UI (lecture de code).
 
 ### Règles dures
 

@@ -92,7 +92,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
 >
-> Try it free for 21 days, no card (Pro from $89/mo, or $790/yr, two months free). It's all online, at your own pace: here's your space, with your beaches live, your widget and your in-app placement → [/pro/espace/ link]. Annual is payable online today; just reply if you have a question.
+> Try it free for 30 days, no card (Pro from $89/mo, or $790/yr, two months free). It's all online, at your own pace: here's your space, with your beaches live, your widget and your in-app placement → [/pro/espace/ link]. Annual is payable online today; just reply if you have a question.
 >
 > Best,
 > Le Veilleur · coastal watch, operated from Martinique
