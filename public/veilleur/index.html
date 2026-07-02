@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — on regarde la mer pour vous</title>
+<meta name="description" content="Le verdict sargasses de votre plage, chaque jour. Mesuré au satellite, pas deviné. Regardez la mer descendre — puis voyez votre plage, gratuitement.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Le Veilleur — on regarde la mer pour vous">
+<meta property="og:description" content="Le verdict sargasses de votre plage, chaque jour. Mesuré au satellite, pas deviné.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   LE VEILLEUR — landing « on regarde la mer pour vous ».
+   Fusion : l'esthetique de descente golden-hour de
+   design/proto-descente-marches.html + une VIDEO heros
+   (reel Remotion re-skinne marque) masquee dans le HUBLOT
+   (la lentille de la sonde). Backdrop SVG fixe qui s'assombrit
+   au scroll (1 seul rAF lisse), i18n FR/EN/ES, reduced-motion
+   = plancher dur, verdict 100 % honnete (l'exemple video est
+   marque comme exemple, jamais une fausse fraicheur).
+   Self-contained : CSS + JS inline. La video/poster vivent a
+   cote (reel.mp4, poster.png). Sert a /veilleur/.
+   ============================================================ */
+:root{
+  --sky3:#F2B05E; --glint:#FFD884; --sky2:#C97E3A; --seaT:#1A5852; --sky1:#155A5A; --sky0:#0B2230;
+  --abyss:#020A12;
+  --ink:#0D0D0D; --paper:#FDFCF7; --paperInk:#EAF7F4;
+  --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --d:0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:auto}
+body{background:#02060A;color:var(--paperInk);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden;line-height:1.5}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;letter-spacing:-.02em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ===================== BACKDROP FIXE (l'ocean qui s'assombrit) ===================== */
+#backdrop{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--sky3)}
+#backdrop>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#deepen{opacity:calc(var(--d) * .94)}
+#vignette{opacity:calc(var(--d) * .55)}
+#rays{opacity:calc(1 - var(--d) * 1.7);transform:translateY(calc(var(--d) * -70px))}
+#plankton{opacity:calc((var(--d) - .45) * 2);transform:translateY(calc(var(--d) * -180px))}
+@media (prefers-reduced-motion:no-preference){
+  #sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes sunBreath{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+  .ray{animation:rayshimmer 14s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top}
+  @keyframes rayshimmer{0%{opacity:.5}100%{opacity:.9}}
+  .pk{animation:pkfloat 9s ease-in-out infinite alternate;transform-box:fill-box}
+  @keyframes pkfloat{0%{transform:translateY(0)}100%{transform:translateY(-6px)}}
+}
+
+/* ===================== CHROME ===================== */
+.chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:flex-start;padding:14px 16px;pointer-events:none;gap:10px}
+.brand{pointer-events:auto}
+.brand .wm{font-family:'Anton',sans-serif;font-size:19px;color:#fff;text-transform:uppercase;letter-spacing:-.01em;line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.brand .lib{display:block;margin-top:3px;font:700 9.5px/1 "Bricolage Grotesque";letter-spacing:.14em;text-transform:uppercase;color:rgba(255,216,132,.85)}
+.langs{display:flex;gap:4px;pointer-events:auto}
+.langs button{border:1px solid rgba(255,255,255,.18);background:rgba(8,18,16,.4);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:8px 9px;border-radius:9px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ===================== FLUX ===================== */
+main{position:relative;z-index:10}
+.wrap{max-width:600px;margin:0 auto;padding:0 20px}
+
+/* ---- HEROS ---- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:92px 0 40px}
+.eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:12px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.hero h1{font-size:clamp(34px,10.5vw,72px);line-height:.92;color:#fff;margin:0 0 14px;
+  text-shadow:0 3px 26px rgba(0,0,0,.55);max-width:13ch}
+.hero .lede{font:600 15px/1.55 "Bricolage Grotesque";color:rgba(255,255,255,.85);
+  max-width:40ch;text-shadow:0 1px 10px rgba(0,0,0,.5);margin-bottom:26px}
+
+/* ---- HUBLOT / LENTILLE (la video) ---- */
+.porthole{position:relative;width:min(78vw,392px);aspect-ratio:1/1;border-radius:50%;overflow:hidden;
+  border:7px solid var(--gold);
+  box-shadow:0 0 0 3px rgba(13,17,23,.85), 0 0 60px rgba(30,200,176,.42), inset 0 0 40px rgba(2,10,18,.55);
+  background:#03101c;margin:2px auto 22px}
+.porthole video{width:100%;height:100%;object-fit:cover;display:block}
+.porthole .glint{position:absolute;top:8%;left:14%;width:34%;height:26%;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,rgba(255,247,226,.55),rgba(255,247,226,0) 60%);
+  pointer-events:none;mix-blend-mode:screen}
+.porthole .ring2{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:inset 0 0 0 2px rgba(255,228,122,.45)}
+.porthole .playpoke{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(3,16,28,.35);cursor:pointer}
+.porthole.paused .playpoke{display:flex}
+.porthole .playpoke .tri{width:0;height:0;border-left:30px solid var(--goldL);
+  border-top:20px solid transparent;border-bottom:20px solid transparent;margin-left:6px;filter:drop-shadow(0 2px 8px #000)}
+.vidcap{font:700 12px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.72);max-width:34ch;margin:0 auto 26px}
+.vidcap b{color:var(--tealL)}
+
+.cta{display:inline-flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer;
+  border:2.5px solid var(--ink);border-radius:14px;padding:15px 22px;color:var(--ink);
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:6px 6px 0 var(--ink);font:800 16px/1 "Bricolage Grotesque";letter-spacing:.005em;
+  transition:transform .12s ease,box-shadow .12s ease}
+.cta:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)}
+.scrollhint{display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.75);margin-top:30px}
+.scrollhint .lab{font:800 10px/1 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase}
+.scrollhint .chev{width:16px;height:16px;border-right:2px solid rgba(255,255,255,.8);border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg)}
+@media (prefers-reduced-motion:no-preference){.scrollhint .chev{animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}}
+
+/* ---- CARTES VALEUR (descente) ---- */
+.tier{min-height:78svh;display:flex;align-items:center;padding:34px 0}
+.card{position:relative;width:100%;border-radius:16px;padding:22px;background:var(--paper);color:var(--ink);
+  border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);
+  will-change:transform,opacity;opacity:.28;transform:translateY(26px) scale(.985);
+  transition:opacity .5s ease,transform .5s cubic-bezier(.22,1,.36,1)}
+.tier.on .card{opacity:1;transform:none}
+.tiermeta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.tierno{font:700 12px/1 'JetBrains Mono';opacity:.5}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  font:800 10.5px/1 "Bricolage Grotesque";letter-spacing:.05em;text-transform:uppercase;
+  background:rgba(34,197,94,.14);color:#127c3b;border:1px solid rgba(34,197,94,.5)}
+.market{font:700 12px/1.2 "Bricolage Grotesque";letter-spacing:.02em;opacity:.7}
+.tierhead{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.tiername{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(28px,7.5vw,42px);line-height:.92;color:var(--ink)}
+.tiervalue{font:700 16.5px/1.35 "Bricolage Grotesque";margin-bottom:8px}
+.tierline{font:600 13.5px/1.5 "Bricolage Grotesque";color:#3a3a3a}
+.tierline .price{color:var(--ink);font-weight:800}
+.card .cta{margin-top:16px}
+
+/* ---- OUTRO ---- */
+.outro{min-height:88svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:50px 0 84px}
+.sig{max-width:22ch;font-family:'Anton',sans-serif;font-size:clamp(24px,6.4vw,38px);line-height:1.02;
+  color:#fff;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.6)}
+.sig2{max-width:34ch;font:600 14px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.72);margin-bottom:30px}
+.exitsub{margin-top:16px}
+.exitsub a{font:800 13px/1 "Bricolage Grotesque";color:var(--tealL);text-decoration:none;
+  border-bottom:1px solid rgba(30,200,176,.4);padding-bottom:2px}
+.footnote{margin-top:38px;font:600 11px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.42);max-width:40ch}
+
+@media (prefers-reduced-motion:reduce){
+  .card{opacity:1!important;transform:none!important;transition:none!important}
+  .scrollhint .chev{animation:none!important}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Le Veilleur — on regarde la mer pour vous. Le verdict sargasses de votre plage, chaque jour, mesure au satellite. Faites defiler pour descendre.</h1>
+
+<!-- ============================ BACKDROP OCEAN (fixe) ============================ -->
+<div id="backdrop" aria-hidden="true">
+  <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F2B05E"/><stop offset=".05" stop-color="#FFD884"/>
+        <stop offset=".14" stop-color="#C97E3A"/><stop offset=".30" stop-color="#1A5852"/>
+        <stop offset=".55" stop-color="#155A5A"/><stop offset=".78" stop-color="#0B2230"/>
+        <stop offset="1" stop-color="#08251F"/>
+      </linearGradient>
+      <linearGradient id="deepG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#03101C"/><stop offset=".6" stop-color="#020A12"/><stop offset="1" stop-color="#01060C"/>
+      </linearGradient>
+      <radialGradient id="vig" cx="50%" cy="42%" r="72%">
+        <stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/>
+      </radialGradient>
+      <radialGradient id="sunR" gradientUnits="userSpaceOnUse" cx="560" cy="70" r="220">
+        <stop offset="0" stop-color="#fdf6e3"/><stop offset=".45" stop-color="#ffc187" stop-opacity=".6"/><stop offset="1" stop-color="#ff944a" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="rayG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9B8" stop-opacity=".5"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="800" height="600" fill="url(#ocean)"/>
+    <circle id="sunGlow" cx="560" cy="70" r="220" fill="url(#sunR)"/>
+    <g id="rays">
+      <polygon class="ray" points="180,-40 260,-40 200,640 60,640" fill="url(#rayG)"/>
+      <polygon class="ray" points="420,-40 470,-40 470,640 350,640" fill="url(#rayG)" opacity=".7"/>
+      <polygon class="ray" points="600,-40 660,-40 720,640 560,640" fill="url(#rayG)" opacity=".8"/>
+    </g>
+    <g id="plankton" fill="#1EC8B0">
+      <circle class="pk" cx="140" cy="420" r="2.2" opacity=".8"/><circle class="pk" cx="250" cy="520" r="1.6" opacity=".6"/>
+      <circle class="pk" cx="520" cy="380" r="2.6" opacity=".7"/><circle class="pk" cx="640" cy="470" r="1.8" opacity=".6"/>
+      <circle class="pk" cx="700" cy="300" r="2" opacity=".5"/><circle class="pk" cx="90" cy="300" r="1.6" opacity=".5"/>
+      <circle class="pk" cx="330" cy="560" r="2.2" opacity=".7"/><circle class="pk" cx="470" cy="540" r="1.5" opacity=".55"/>
+    </g>
+    <rect id="deepen" x="0" y="0" width="800" height="600" fill="url(#deepG)"/>
+    <rect id="vignette" x="0" y="0" width="800" height="600" fill="url(#vig)"/>
+  </svg>
+</div>
+
+<!-- ============================ CHROME ============================ -->
+<div class="chrome">
+  <div class="brand">
+    <span class="wm">LE VEILLEUR</span>
+    <span class="lib" id="libNote">On regarde la mer pour vous</span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ FLUX ============================ -->
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow" id="eyebrow"></div>
+      <h1 class="anton" id="headline"></h1>
+      <p class="lede" id="lede"></p>
+
+      <div class="porthole" id="porthole">
+        <video id="reel" muted loop playsinline preload="metadata" poster="poster.png" aria-label="Le Veilleur — la sonde regarde la mer">
+          <source src="reel.mp4" type="video/mp4">
+        </video>
+        <div class="ring2"></div>
+        <div class="glint"></div>
+        <div class="playpoke" id="playpoke" role="button" tabindex="0" aria-label="Lire"><span class="tri"></span></div>
+      </div>
+      <p class="vidcap" id="vidcap"></p>
+
+      <a class="cta" id="heroCta" href="https://sargasses-martinique.com/"><span id="heroCtaTxt"></span><span class="ar">&rarr;</span></a>
+      <div class="scrollhint"><span class="lab" id="scrollLab"></span><span class="chev"></span></div>
+    </div>
+  </section>
+
+  <div id="tiers"></div>
+
+  <section class="outro">
+    <div class="wrap">
+      <div class="sig anton" id="sig"></div>
+      <div class="sig2" id="sig2"></div>
+      <a class="cta" id="exitCta" href="https://sargasses-martinique.com/"><span id="exitTxt"></span><span class="ar">&rarr;</span></a>
+      <div class="exitsub"><a id="exitSub" href="https://sargasses-martinique.com/pro/espace/"></a></div>
+      <p class="footnote" id="footnote"></p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   COPY i18n. Verdict 100 % honnete : la video est un EXEMPLE
+   (dit explicitement, segment gras = 2e element du tableau
+   vidcap), jamais presentee comme la fraicheur du jour. Prix
+   repris de la source unique CLAUDE.md.
+   ============================================================ */
+var COPY = {
+  fr:{
+    lib:"On regarde la mer pour vous",
+    eyebrow:"Prevision sargasses, plage par plage",
+    headline:"ON REGARDE LA MER POUR VOUS",
+    lede:"Chaque jour, la sonde descend et lit votre plage : mer propre ou pas. Mesure au satellite, pas devine.",
+    vidcap:["Exemple. Le ", "vrai verdict du jour", " — date, pour votre plage — est sur l'app."],
+    heroCta:"Voir ma plage — gratuit", scroll:"Descendez",
+    tiers:[
+      { no:"01", market:"B2C · voyageurs", name:"SABLE", value:"Votre plage aujourd'hui : mer propre ou pas.", line:"Le verdict du jour, gratuit. Pass sejour des 7,99 €.", prices:["7,99 €"], cta:"Voir ma plage — gratuit", href:"https://sargasses-martinique.com/" },
+      { no:"02", market:"Hotels & clubs de plage", name:"RECIF", value:"L'etat de vos plages sur votre site, date.", line:"79 €/mois ou 690 €/an · essai 30 j sans carte.", prices:["79 €/mois","690 €/an"], cta:"Essayer 30 jours", href:"https://sargasses-martinique.com/pro/espace/" },
+      { no:"03", market:"Mairies & offices de tourisme", name:"DIGUE", value:"Toute la commune, baie par baie.", line:"Le rivage entier, self-serve.", prices:[], cta:"Decouvrir Pro", href:"https://sargasses-martinique.com/pro/" }
+    ],
+    sig:"Il regarde la mer, jamais vos clients.",
+    sig2:"On s'arrete ou finit la mesure. C'est ca, le moat.",
+    exit:"Voir ma plage — gratuit", exitSub:"Vous gerez un rivage ? → Espace pro",
+    foot:"Le verdict reste 100 % donnee mesuree (satellite ERDDAP). L'argent ne touche jamais la mesure. La video ci-dessus est une demonstration, pas la donnee du jour."
+  },
+  en:{
+    lib:"We watch the sea for you",
+    eyebrow:"Sargassum forecast, beach by beach",
+    headline:"WE WATCH THE SEA FOR YOU",
+    lede:"Every day, the probe descends and reads your beach: clean water or not. Measured by satellite, not guessed.",
+    vidcap:["Example. The ", "real verdict of the day", " — dated, for your beach — is in the app."],
+    heroCta:"See my beach — free", scroll:"Descend",
+    tiers:[
+      { no:"01", market:"B2C · travellers", name:"SAND", value:"Your beach today: clean water or not.", line:"Today's verdict, free. Trip pass from $5.99.", prices:["$5.99"], cta:"See my beach — free", href:"https://sargasses-martinique.com/" },
+      { no:"02", market:"Hotels & beach clubs", name:"REEF", value:"Your beaches' status on your own site, dated.", line:"$89/mo or $790/yr · 30-day trial, no card.", prices:["$89/mo","$790/yr"], cta:"Start 30 days", href:"https://sargasses-martinique.com/pro/espace/" },
+      { no:"03", market:"Town halls & tourism offices", name:"SEAWALL", value:"The whole town, bay by bay.", line:"The entire shore, self-serve.", prices:[], cta:"Discover Pro", href:"https://sargasses-martinique.com/pro/" }
+    ],
+    sig:"He watches the sea, never your guests.",
+    sig2:"We stop where measurement ends. That's the moat.",
+    exit:"See my beach — free", exitSub:"You manage a shore? → Pro space",
+    foot:"The verdict stays 100% measured data (ERDDAP satellite). Money never touches the measurement. The video above is a demo, not today's data."
+  },
+  es:{
+    lib:"Miramos el mar por ti",
+    eyebrow:"Pronostico de sargazo, playa por playa",
+    headline:"MIRAMOS EL MAR POR TI",
+    lede:"Cada dia, la sonda desciende y lee tu playa: agua limpia o no. Medido por satelite, no adivinado.",
+    vidcap:["Ejemplo. El ", "veredicto real del dia", " — fechado, para tu playa — esta en la app."],
+    heroCta:"Ver mi playa — gratis", scroll:"Desciende",
+    tiers:[
+      { no:"01", market:"B2C · viajeros", name:"ARENA", value:"Tu playa hoy: agua limpia o no.", line:"El veredicto del dia, gratis. Pase desde 5,99 $.", prices:["5,99 $"], cta:"Ver mi playa — gratis", href:"https://sargasses-martinique.com/" },
+      { no:"02", market:"Hoteles y clubes de playa", name:"ARRECIFE", value:"El estado de tus playas en tu web, fechado.", line:"89 $/mes o 790 $/ano · prueba 30 dias sin tarjeta.", prices:["89 $/mes","790 $/ano"], cta:"Probar 30 dias", href:"https://sargasses-martinique.com/pro/espace/" },
+      { no:"03", market:"Ayuntamientos y turismo", name:"DIQUE", value:"Todo el municipio, bahia por bahia.", line:"Toda la costa, autoservicio.", prices:[], cta:"Descubrir Pro", href:"https://sargasses-martinique.com/pro/" }
+    ],
+    sig:"Mira el mar, nunca a tus clientes.",
+    sig2:"Nos detenemos donde acaba la medicion. Ese es el moat.",
+    exit:"Ver mi playa — gratis", exitSub:"¿Gestionas una costa? → Espacio pro",
+    foot:"El veredicto sigue siendo 100 % dato medido (satelite ERDDAP). El dinero nunca toca la medicion. El video de arriba es una demo, no el dato del dia."
+  }
+};
+
+function el(tag, cls){ var e=document.createElement(tag); if(cls) e.className=cls; return e; }
+function appendLine(parent, text, prices){
+  if(!prices || !prices.length){ parent.appendChild(document.createTextNode(text)); return; }
+  var rest=text;
+  while(rest.length){
+    var best=-1, tok=null;
+    for(var p=0;p<prices.length;p++){ var k=rest.indexOf(prices[p]); if(k!==-1 && (best===-1||k<best)){ best=k; tok=prices[p]; } }
+    if(best===-1){ parent.appendChild(document.createTextNode(rest)); break; }
+    if(best>0) parent.appendChild(document.createTextNode(rest.slice(0,best)));
+    var s=el('span','price'); s.textContent=tok; parent.appendChild(s);
+    rest=rest.slice(best+tok.length);
+  }
+}
+
+var tiersEl = document.getElementById('tiers');
+function buildTiers(lang){
+  var t = COPY[lang];
+  tiersEl.replaceChildren();
+  for(var i=0;i<t.tiers.length;i++){
+    var c=t.tiers[i];
+    var section=el('section','tier'); section.setAttribute('data-i',i);
+    var wrap=el('div','wrap'); var card=el('div','card');
+    var meta=el('div','tiermeta');
+    var no=el('span','tierno mono'); no.textContent=c.no; meta.appendChild(no);
+    var badge=el('span','badge'); badge.textContent='✓ Live'; meta.appendChild(badge);
+    var mk=el('span','market'); mk.textContent=c.market; meta.appendChild(mk);
+    card.appendChild(meta);
+    var head=el('div','tierhead'); var nm=el('div','tiername'); nm.textContent=c.name; head.appendChild(nm); card.appendChild(head);
+    var val=el('p','tiervalue'); val.textContent=c.value; card.appendChild(val);
+    var line=el('p','tierline'); appendLine(line,c.line,c.prices); card.appendChild(line);
+    var cta=el('a','cta'); cta.setAttribute('href',c.href);
+    var ct=document.createElement('span'); ct.textContent=c.cta; cta.appendChild(ct);
+    var ar=el('span','ar'); ar.textContent='→'; cta.appendChild(ar);
+    card.appendChild(cta);
+    wrap.appendChild(card); section.appendChild(wrap); tiersEl.appendChild(section);
+  }
+  observeTiers();
+}
+
+/* vidcap : construit avec des noeuds DOM surs (segment 1 = gras) */
+function buildVidcap(parts){
+  var host=document.getElementById('vidcap'); host.replaceChildren();
+  host.appendChild(document.createTextNode(parts[0]));
+  var b=document.createElement('b'); b.textContent=parts[1]; host.appendChild(b);
+  host.appendChild(document.createTextNode(parts[2]));
+}
+
+function setText(id, txt){ document.getElementById(id).textContent = txt; }
+function setLang(lang){
+  var t=COPY[lang]; document.documentElement.lang=lang;
+  setText('libNote',t.lib); setText('eyebrow',t.eyebrow); setText('headline',t.headline);
+  setText('lede',t.lede); buildVidcap(t.vidcap);
+  setText('heroCtaTxt',t.heroCta); setText('scrollLab',t.scroll);
+  setText('sig',t.sig); setText('sig2',t.sig2);
+  setText('exitTxt',t.exit); setText('exitSub',t.exitSub); setText('footnote',t.foot);
+  var btns=document.querySelectorAll('.langs button');
+  for(var i=0;i<btns.length;i++) btns[i].setAttribute('aria-pressed', String(btns[i].dataset.lang===lang));
+  buildTiers(lang);
+}
+document.querySelector('.langs').addEventListener('click', function(e){
+  var b=e.target.closest('button'); if(!b) return; setLang(b.dataset.lang);
+});
+
+/* ---- allumage des cartes ---- */
+var io=null;
+function observeTiers(){
+  if(io) io.disconnect();
+  io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('on'); });
+  }, { rootMargin:'-22% 0px -22% 0px', threshold:0.01 });
+  document.querySelectorAll('.tier').forEach(function(s){ io.observe(s); });
+}
+
+/* ---- backdrop : profondeur au scroll (1 rAF lisse, reduced-motion = plancher) ---- */
+var root=document.documentElement;
+var target=0, cur=0, needFrame=true, running=false, paused=false, RM=false;
+try{ RM=matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+function readTarget(){ var max=root.scrollHeight-window.innerHeight; target=max>0?Math.min(1,Math.max(0,window.scrollY/max)):0; }
+function render(d){ root.style.setProperty('--d', d.toFixed(4)); }
+function wake(){ if(!RM && !running && !paused){ running=true; requestAnimationFrame(loop); } }
+function loop(){
+  if(paused){ running=false; return; }
+  var work=false;
+  if(needFrame){ readTarget(); needFrame=false; work=true; }
+  var diff=target-cur;
+  if(Math.abs(diff)>0.0004){ cur+=diff*0.16; render(cur); work=true; }
+  else if(work){ cur=target; render(cur); }
+  running=work; if(work) requestAnimationFrame(loop);
+}
+window.addEventListener('scroll', function(){ needFrame=true; wake(); }, {passive:true});
+window.addEventListener('resize', function(){ needFrame=true; wake(); }, {passive:true});
+document.addEventListener('visibilitychange', function(){ paused=document.hidden; if(!paused){ needFrame=true; wake(); } });
+
+/* ---- video : autoplay sauf reduced-motion (alors poster + bouton play) ---- */
+var reel=document.getElementById('reel'), porthole=document.getElementById('porthole'), poke=document.getElementById('playpoke');
+function tryPlay(){ var p=reel.play(); if(p&&p.catch) p.catch(function(){ porthole.classList.add('paused'); }); }
+function togglePlay(){ if(reel.paused){ tryPlay(); porthole.classList.remove('paused'); } else { reel.pause(); porthole.classList.add('paused'); } }
+poke.addEventListener('click', togglePlay);
+poke.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); togglePlay(); } });
+
+/* ---- init ---- */
+setLang('fr');
+if(RM){ render(0.12); document.querySelectorAll('.tier').forEach(function(s){ s.classList.add('on'); }); porthole.classList.add('paused'); }
+else { readTarget(); cur=target; render(cur); wake(); tryPlay(); }
+</script>
+</body>
+</html>
