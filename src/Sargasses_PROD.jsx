@@ -2776,6 +2776,29 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    AXE 2: COMMUNITY REPORTS — "Tu es sur place ? Confirme le statut"
    ═══════════════════════════════════════════════════════════════════════════ */
+// Mini-scènes « ligne claire » du vote d'observation (jury design 2026-07-02 ; source
+// standalone : design/obs-scenes-ligne-claire.html — règle bibliothèque). Statique
+// (doctrine calme). La quantité d'algues se lit par la FORME (rien / frange au rivage /
+// bancs + tapis) — jamais par la couleur seule (daltonisme) ; algues = brun-vert
+// #5a5233/#6b5d2e (jamais de vert vif, réservé au statut propre). Le cadre est passé en
+// ATTRIBUT (pas currentColor) : le skin .theme-comic button force color:!important, un
+// currentColor y serait écrasé — l'attribut SVG, lui, ne peut pas l'être.
+// Flag rollback ?svgobs=0 → boutons texte historiques.
+const SVG_OBS_ON=typeof window!=="undefined"&&!/[?&]svgobs=0/.test(window.location.search||"")
+function ObsScene({level,frame}){
+  return(
+    <svg viewBox="0 0 96 64" aria-hidden="true" style={{display:"block",width:"100%",height:"auto"}}>
+      <rect width="96" height="64" fill="#FDFCF7"/>
+      <circle cx="14" cy="12" r="4.5" fill="none" stroke="#0D0D0D" strokeWidth="2"/>
+      <rect x="2" y="46" width="92" height="16" fill="#F3E5B8"/>
+      <path d="M2 28q11.5-7 23 0t23 0t23 0t23 0v18h-92z" fill="#009E8E" stroke="#0D0D0D" strokeWidth="2" strokeLinejoin="round"/>
+      {level==="clean"&&<><path d="M32 37q7-3 14 0" fill="none" stroke="#FDFCF7" strokeWidth="2" strokeLinecap="round"/><path d="M20 55h7M62 57h7" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round"/></>}
+      {level==="moderate"&&<><circle cx="34" cy="41" r="2" fill="#6b5d2e" stroke="#0D0D0D" strokeWidth="1"/><circle cx="56" cy="39" r="2" fill="#6b5d2e" stroke="#0D0D0D" strokeWidth="1"/><path d="M2 48q5.75-6 11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0v3h-92z" fill="#5a5233" stroke="#0D0D0D" strokeWidth="2" strokeLinejoin="round"/></>}
+      {level==="avoid"&&<><ellipse cx="24" cy="36" rx="9" ry="3.5" fill="#6b5d2e" stroke="#0D0D0D" strokeWidth="2"/><ellipse cx="50" cy="32" rx="7" ry="3" fill="#6b5d2e" stroke="#0D0D0D" strokeWidth="2"/><ellipse cx="74" cy="37" rx="8" ry="3.2" fill="#6b5d2e" stroke="#0D0D0D" strokeWidth="2"/><path d="M2 49q11.5-8 23 0t23 0t23 0t23 0v7h-92z" fill="#5a5233" stroke="#0D0D0D" strokeWidth="2" strokeLinejoin="round"/></>}
+      <rect x="1.25" y="1.25" width="93.5" height="61.5" fill="none" stroke={frame||"#0D0D0D"} strokeWidth="2.5"/>
+    </svg>
+  )
+}
 function BeachReport({beach,lang,communityReports}){
   const key="sg_breport_"+beach.id
   const cooldownKey="sg_breport_t_"+beach.id
@@ -2830,6 +2853,22 @@ function BeachReport({beach,lang,communityReports}){
     const last=g("sg_bevent_t_"+beach.id,0)
     return(last&&Date.now()-last<12*3600*1000)?g(evtKey,null):null
   })
+  // Question structurée post-vote « l'odeur ? » — LA donnée que le satellite ne voit pas
+  // (nuisance H2S, angle santé ARS). STOCKÉE côté Supabase (analytics_events, insert-only
+  // anon — zéro schéma à créer) pour valoriser l'offre plus tard ; n'influence JAMAIS le
+  // verdict (loi moat). Un tap, cooldown 12 h par plage (pattern du vote).
+  const smellKey="sg_bsmell_"+beach.id
+  const[smell,setSmell]=useState(()=>{
+    const last=g("sg_bsmell_t_"+beach.id,0)
+    if(last&&Date.now()-last<12*3600*1000)return g(smellKey,null)
+    return null
+  })
+  const sendSmell=(val)=>{
+    if(smell)return
+    setSmell(val);s(smellKey,val);s("sg_bsmell_t_"+beach.id,Date.now())
+    try{track("sg_obs_smell",{beach_id:beach.id,smell:val,level:voted||null,island:beach.island})}catch(_){}
+    try{logAnalyticsEvent("sg_observation",{beach_id:beach.id,smell:val,level:voted||null},beach.island)}catch(_){}
+  }
   const[approvedEvents,setApprovedEvents]=useState(null)
   const[evtBusy,setEvtBusy]=useState(false)
   const[evtErr,setEvtErr]=useState(false)
@@ -2984,7 +3023,22 @@ function BeachReport({beach,lang,communityReports}){
         {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}
       </div>
       <div style={{display:"flex",gap:8}}>
-        {LEVELS.map(lv=>(
+        {LEVELS.map(lv=>SVG_OBS_ON?(
+          /* Vote par MINI-SCÈNE (le SVG est le produit) : même submit(level), même pipeline
+             communauté — seule la présentation change. Sélection lisible par le cadre
+             recoloré (attribut SVG, insensible au skin thème) + glyphe + siblings estompés. */
+          <button key={lv.id} onClick={()=>submit(lv.id)} disabled={!!voted} aria-pressed={voted===lv.id} style={{
+            flex:1,padding:0,borderRadius:12,border:"none",cursor:voted?"default":"pointer",overflow:"hidden",
+            background:"var(--sg-card,#fff)",fontFamily:"inherit",transition:"all .2s",
+            boxShadow:voted===lv.id?"inset 0 0 0 2px "+lv.c:"0 1px 4px rgba(0,0,0,.04)",
+            animation:voted===lv.id?"confirmPop .3s ease":"none",
+            opacity:voted&&voted!==lv.id?.4:1}}>
+            <ObsScene level={lv.id} frame={voted===lv.id?lv.c:"#0D0D0D"}/>
+            <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"6px 4px 8px",fontSize:12,fontWeight:700,color:voted===lv.id?lv.c:"var(--sg-ink)"}}>
+              <ComicStatusGlyph status={lv.id} size={12} color={voted===lv.id?lv.c:"var(--sg-ink)"}/>{lang==="es"?lv.les:lang==="en"?lv.le:lv.l}
+            </span>
+          </button>
+        ):(
           <button key={lv.id} onClick={()=>submit(lv.id)} disabled={!!voted} style={{
             flex:1,padding:"10px 8px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
             background:voted===lv.id?lv.bg:"var(--sg-card,#fff)",
@@ -2997,6 +3051,30 @@ function BeachReport({beach,lang,communityReports}){
           }}><ComicStatusGlyph status={lv.id} size={13} color={voted===lv.id?lv.c:"var(--sg-ink)"}/>{lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
         ))}
       </div>
+      {/* Suivi structuré « odeur » — un tap, stocké, jamais affiché comme verdict. */}
+      {SVG_OBS_ON&&voted&&(
+        <div style={{marginTop:10}}>
+          {!smell?(
+            <>
+              <div style={{fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",marginBottom:6}}>
+                {_t(lang,"Et l'odeur sur place ?","And the smell on-site?","¿Y el olor en el lugar?")}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                {[{id:"none",l:"Aucune",le:"None",les:"Ninguno"},{id:"slight",l:"Légère",le:"Slight",les:"Leve"},{id:"strong",l:"Forte",le:"Strong",les:"Fuerte"}].map(o=>(
+                  <button key={o.id} type="button" onClick={()=>sendSmell(o.id)} style={{
+                    flex:1,minHeight:44,padding:"9px 8px",borderRadius:12,border:"none",cursor:"pointer",
+                    background:"var(--sg-card,#fff)",color:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",
+                    boxShadow:"0 1px 4px rgba(0,0,0,.04)"}}>{lang==="es"?o.les:lang==="en"?o.le:o.l}</button>
+                ))}
+              </div>
+            </>
+          ):(
+            <div style={{fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
+              {_t(lang,"Noté — merci pour l'info terrain.","Logged — thanks for the ground intel.","Anotado — gracias por la info del terreno.")}
+            </div>
+          )}
+        </div>
+      )}
       {queued&&(
         <div style={{marginTop:8,fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",display:"flex",alignItems:"center",gap:6}}>
           <span aria-hidden="true">📡</span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
