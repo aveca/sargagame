@@ -1,5 +1,17 @@
 # Photos visiteurs — runbook (backend Supabase, 100 % mobile)
 
+> **⛔ FRONT RETIRÉ le 2026-07-02 (décision fondateur + panel adverse) — backend DORMANT.**
+> L'upload photo, la galerie `BeachPhotos` et la récompense « Éclaireur » 24 h ont été
+> retirés du front (`PHOTO_UPLOAD_ENABLED=false`, `BeachPhotos.jsx` supprimé). Direction :
+> « on ne fait pas d'image, le SVG de NOTRE donnée satellite est le produit » → la surface
+> est réinvestie dans la data-viz du verdict (**Cadran du Veilleur**, `?cadran=0`). Le
+> backend Supabase (bucket `beach-photos`, table `photos`, Edge Function `moderate`,
+> workflow `notify-photos.yml`) est **conservé intact et DORMANT** (mobile ne peut pas
+> toucher le serveur ; rebranchable en re-montant `BeachPhotos` + `PHOTO_UPLOAD_ENABLED`).
+> `supabasePhotos.js` reste VIVANT (`submitBeachReport`/`fetchApprovedReports`/
+> `logAnalyticsEvent` alimentent encore le vote SVG + l'odeur + les événements terrain).
+> Le reste de ce runbook décrit la fonctionnalité telle qu'elle était (archive).
+
 Fonctionnalité : un visiteur ajoute une photo de la plage depuis `BeachReport` →
 stockée + modérée → affichée dans `BeachPhotos` (galerie « preuve du présent »).
 Marche sur **toutes les plages** (contrairement aux webcams, limitées à 9).
