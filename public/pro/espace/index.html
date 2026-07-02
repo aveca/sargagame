@@ -2,99 +2,343 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex,follow">
   <title>Votre Espace Pro — Sargasses</title>
   <meta name="description" content="Votre espace pro Sargasses : vos plages en direct, votre widget à votre marque, votre mise en avant dans l'app, et l'abonnement Pro — tout en self-service, sans rendez-vous.">
   <link rel="canonical" href="https://sargasses-martinique.com/pro/espace/">
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Anton&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Anton&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    :root{--clean:#22C55E;--moderate:#E0A106;--avoid:#E8522A;--gold:#FFC72C;--ink:#0a1620;}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;forced-color-adjust:none}
-    body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:#0a1620;color:#fff;font-size:16px;line-height:1.6;
-      background-image:radial-gradient(120% 80% at 82% -8%,rgba(255,199,44,.13),transparent 52%)}
-    a{color:var(--gold)}
-    header{background:linear-gradient(135deg,#0B2230 0%,#124C4F 100%);padding:13px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08)}
-    header a.brand{color:#fff;text-decoration:none;font-family:Anton,sans-serif;font-size:20px;letter-spacing:-.02em}
-    header .brand span{color:var(--gold)}
-    .pill-pro{font-family:Anton,sans-serif;font-size:12px;letter-spacing:.06em;background:var(--gold);color:var(--ink);padding:3px 10px;border-radius:100px}
-    .back{color:rgba(255,255,255,.6);font-size:13px;text-decoration:none;margin-left:auto}
-    .back:hover{color:#fff}
-    main{max-width:860px;margin:0 auto;padding:40px 20px 90px}
-    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#3fd07f;margin-bottom:12px}
-    h1{font-family:Anton,sans-serif;font-size:clamp(30px,6vw,48px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.04;margin-bottom:14px}
-    h1 .hotel{color:var(--gold)}
-    .lead{color:rgba(255,255,255,.78);font-size:17px;max-width:64ch;margin-bottom:8px}
-    .pro-banner{display:none;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(70,211,154,.14),rgba(255,199,44,.10));border:1px solid rgba(70,211,154,.4);border-radius:14px;padding:13px 16px;margin:22px 0 0;font-weight:600;color:#9af2c9}
-    section{margin-top:46px}
-    h2{font-family:Anton,sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-    h2 .n{width:27px;height:27px;border-radius:50%;background:var(--gold);color:var(--ink);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .h2sub{color:rgba(255,255,255,.6);font-size:14.5px;margin:0 0 16px 37px}
-    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:22px}
+    /* ═══ TOKENS — golden-hour « Le Veilleur » (source : sg-design-system) ═══ */
+    :root{
+      --paper:#FDFCF7; --ink:#0D0D0D; --mid:#5A5A5A;
+      --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+      --teal:#009E8E; --tealL:#1EC8B0;
+      --clean:#22C55E; --moderate:#B87A00; --avoid:#E8522A;
+      --card:#FFFFFF; --line:rgba(13,13,13,.12); --shadow:#0D0D0D; --onGold:#1a1300;
+      --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+      --seaT:#1A5852; --seaB:#08251F; --glit:#FFD884; --rim:#FFD884;
+      --mood:#16b9c9; --moodHalo:#1FB6A6; --moodDot:#22C55E;
+      --display:'Anton','Haettenschweiler','Arial Narrow Bold','Impact',system-ui,sans-serif;
+      --ui:'Bricolage Grotesque',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+      --mono:ui-monospace,'JetBrains Mono',SFMono-Regular,monospace;
+    }
+    /* Rollback / kill-switch (?classic=1) → skin sombre sûr, MÊME markup + JS */
+    body.classic{--paper:#0a1620;--ink:#EAF2F0;--mid:rgba(234,242,240,.62);--card:rgba(255,255,255,.045);--line:rgba(255,255,255,.12);--shadow:transparent;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--ui);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{color:var(--teal);text-underline-offset:2px}
+    .mono{font-family:var(--mono)}
+
+    /* ─── barre de marque ─── */
+    .nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;padding:11px 18px;
+      background:color-mix(in srgb,var(--paper) 86%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .classic .nav{background:rgba(11,34,48,.82)}
+    .brand{color:var(--ink);text-decoration:none;font-family:var(--display);font-size:20px;letter-spacing:.01em;text-transform:uppercase}
+    .brand span{color:var(--gold)}
+    .pill-pro{font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.1em;background:var(--goldL);color:var(--onGold);padding:4px 10px;border-radius:100px;border:1.5px solid var(--shadow)}
+    .classic .pill-pro{border-color:transparent}
+    .back{color:var(--mid);font-size:13px;text-decoration:none;margin-left:auto;font-weight:600}
+    .back:hover{color:var(--ink)}
+
+    /* ─── HÉROS : scène SVG golden-hour + overlay ─── */
+    .hero{position:relative;min-height:88svh;min-height:88vh;display:flex;align-items:flex-end;overflow:hidden;background:linear-gradient(160deg,#0B2230,#155A5A 60%,#C97E3A)}
+    .hero-scene{position:absolute;inset:0;z-index:0}
+    .hero-scene svg{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+    .no-scene .hero-scene,.classic .hero-scene{display:none}
+    .hero-scrim{position:absolute;left:0;right:0;bottom:0;height:70%;z-index:1;pointer-events:none;
+      background:linear-gradient(to top,rgba(4,16,11,.72) 0%,rgba(4,16,11,.34) 46%,rgba(4,16,11,0) 100%)}
+    .hero-in{position:relative;z-index:2;width:100%;max-width:920px;margin:0 auto;padding:0 22px 46px;display:flex;flex-direction:column;gap:12px;color:#fff}
+    .hero-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    .chip{display:inline-flex;align-items:center;gap:7px;background:rgba(8,20,15,.44);border:1px solid rgba(255,216,132,.32);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+      padding:6px 12px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.04em;color:#fff}
+    .chip i{width:8px;height:8px;border-radius:50%;background:var(--moodDot);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:dot 2.6s ease-out infinite}
+    @keyframes dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+    .hero-eyebrow{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--goldLL);text-shadow:0 1px 8px rgba(0,0,0,.5)}
+    .hero h1{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;line-height:.94;
+      font-size:clamp(38px,10vw,74px);text-shadow:0 2px 24px rgba(0,0,0,.5);margin:2px 0}
+    .hero h1 .hotel{color:var(--goldL);display:block;font-size:.52em;letter-spacing:.005em}
+    .hero .lead{max-width:52ch;font-size:clamp(15px,4.2vw,18px);line-height:1.5;color:rgba(255,255,255,.92);text-shadow:0 1px 10px rgba(0,0,0,.55)}
+    .hero-verdict{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:#fff}
+    .hero-verdict .vd{width:12px;height:12px;border-radius:50%;background:var(--st,#888);box-shadow:0 0 0 4px color-mix(in srgb,var(--st,#888) 24%,transparent)}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px}
+    .btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-family:var(--ui);font-weight:800;font-size:16px;text-decoration:none;border:none;
+      color:var(--onGold);padding:15px 26px;border-radius:100px;background:linear-gradient(158deg,#FFE47A,#FFC72C 42%,#E89400);
+      box-shadow:0 10px 26px rgba(232,148,0,.34),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .16s cubic-bezier(.175,.885,.32,1.275),box-shadow .25s}
+    .btn:hover{box-shadow:0 14px 32px rgba(232,148,0,.5),inset 0 1px 0 rgba(255,255,255,.6)}
+    .btn:active{transform:scale(.97)}
+    .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.4);box-shadow:none;font-weight:700;font-size:14px;padding:13px 20px}
+    .btn-ghost:hover{background:rgba(255,255,255,.16);box-shadow:none}
+    .scroll-hint{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+    .scroll-hint svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:bob 2.4s ease-in-out infinite}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+    /* ─── corps papier ─── */
+    main{max-width:920px;margin:0 auto;padding:8px 22px 40px}
+    section{margin-top:60px}
+    .kick{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--gold)}
+    h2{font-family:var(--display);font-weight:400;font-size:clamp(24px,6vw,34px);text-transform:uppercase;letter-spacing:-.01em;line-height:1.02;margin:4px 0 8px}
+    .h2sub{color:var(--mid);font-size:15px;max-width:60ch;margin-bottom:20px}
+    .card{background:var(--card);border:2.5px solid var(--shadow);border-radius:18px;padding:22px;box-shadow:6px 6px 0 var(--shadow)}
+    .classic .card{border:1px solid var(--line);box-shadow:none}
+
     /* plages live */
     .beach{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
-    .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 5px color-mix(in srgb,var(--st) 16%,transparent)}
-    .bname{font-weight:700;font-size:19px;flex:1;min-width:140px}
-    .bpill{font-size:13px;font-weight:700;padding:4px 12px;border-radius:100px;color:#0a1620;background:var(--st)}
-    .bmeta{color:rgba(255,255,255,.55);font-size:13px;margin-top:8px}
-    .live{color:#3fd07f;font-weight:700}
-    .fc{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
-    .fcd{text-align:center;border-radius:10px;padding:9px 2px;background:color-mix(in srgb,var(--st) 11%,transparent)}
-    .fcd .l{font-size:10.5px;color:rgba(255,255,255,.55);font-weight:600;text-transform:capitalize;margin-bottom:6px}
-    .fcd .d{width:11px;height:11px;border-radius:50%;margin:0 auto;background:var(--st)}
-    /* benefits */
-    .benefits{display:grid;gap:11px}
-    .benefit{display:flex;gap:13px;align-items:flex-start;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px}
-    .benefit .ic{font-size:20px;flex-shrink:0;line-height:1.3}
-    .benefit b{display:block;font-size:15.5px;margin-bottom:2px}
-    .benefit span{color:rgba(255,255,255,.68);font-size:14px}
+    .dot{width:15px;height:15px;border-radius:50%;flex-shrink:0;background:var(--st,#888);box-shadow:0 0 0 5px color-mix(in srgb,var(--st,#888) 18%,transparent)}
+    .bname{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;font-size:24px;flex:1;min-width:150px}
+    .bpill{font-size:13px;font-weight:800;padding:5px 13px;border-radius:100px;color:#12100a;background:var(--st,#888)}
+    .bmeta{color:var(--mid);font-size:13px;margin-top:10px;font-weight:600}
+    .live{color:var(--teal);font-weight:800}
+    .fc{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:16px}
+    .fcd{text-align:center;border-radius:12px;padding:10px 2px;background:color-mix(in srgb,var(--st,#888) 12%,var(--paper));border:1px solid var(--line)}
+    .fcd .l{font-family:var(--mono);font-size:10.5px;color:var(--mid);font-weight:700;text-transform:uppercase;margin-bottom:7px}
+    .fcd .d{width:12px;height:12px;border-radius:50%;margin:0 auto;background:var(--st,#888)}
+
+    /* bénéfices — pictos SVG (jamais d'emoji) */
+    .benefits{display:grid;gap:12px}
+    @media(min-width:640px){.benefits{grid-template-columns:1fr 1fr}}
+    .benefit{display:flex;gap:14px;align-items:flex-start;padding:16px;background:var(--card);border:2px solid var(--shadow);border-radius:15px;box-shadow:3px 3px 0 var(--shadow)}
+    .classic .benefit{border:1px solid var(--line);box-shadow:none;background:rgba(255,255,255,.03)}
+    .pic{flex:0 0 auto;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:var(--goldLL);border:2px solid var(--shadow);box-shadow:2px 2px 0 var(--shadow)}
+    .classic .pic{background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);box-shadow:none}
+    .pic svg{width:24px;height:24px;stroke:var(--onGold);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .classic .pic svg{stroke:var(--goldL)}
+    .benefit b{display:block;font-size:15.5px;margin-bottom:3px}
+    .benefit span{color:var(--mid);font-size:14px;line-height:1.5}
+
     /* widget builder */
     .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px;margin-bottom:18px}
-    label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.55);margin-bottom:6px}
-    select,input[type=color],input[type=text]{width:100%;font:inherit;font-size:15px;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0d1c27;color:#fff}
-    input[type=color]{height:42px;padding:4px;cursor:pointer}
-    .prev{background:repeating-conic-gradient(#e9eef2 0 25%,#f6f9fb 0 50%) 0 0/22px 22px;border-radius:14px;padding:20px;display:flex;justify-content:center}
-    .prev iframe{width:100%;max-width:520px;border:0}
-    pre{background:#070f16;color:#e6edf2;padding:16px;border-radius:12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.06)}
-    code{font-family:ui-monospace,'JetBrains Mono',monospace}
-    .copy{background:linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400);color:var(--ink);border:none;padding:11px 24px;border-radius:100px;font-weight:800;cursor:pointer;font-size:14px;margin-top:14px;font-family:inherit}
-    .copy:hover{opacity:.94}
-    /* mise en avant card */
-    .partner{margin:0;padding:13px 15px;border-radius:14px;border:2px solid rgba(0,0,0,.14);background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.18);display:flex;align-items:center;gap:13px;max-width:430px}
-    .partner .logo{flex:0 0 auto;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;background:#f1ede2;border:1.5px solid rgba(13,11,20,.12)}
-    .partner .ptag{font:800 9px/1 'Bricolage Grotesque';letter-spacing:.09em;text-transform:uppercase;color:#7a7320;background:#fbf2c4;border:1px solid rgba(13,11,20,.18);border-radius:4px;padding:2px 6px}
-    .partner .pn{font:800 14.5px/1.2 'Bricolage Grotesque';color:#1a1726;margin-top:4px}
-    .partner .pt{font:600 12px/1.35 'Bricolage Grotesque';color:#6b6b75;margin-top:2px}
-    .partner .pbtn{flex:0 0 auto;font:800 12px/1 'Bricolage Grotesque';color:#1a1726;border:2px solid #1a1726;border-radius:10px;padding:9px 12px;box-shadow:2px 2px 0 #1a1726}
-    /* pricing / subscribe */
+    label{display:block;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mid);margin-bottom:6px}
+    select,input[type=color],input[type=text],input[type=email]{width:100%;font:inherit;font-size:15px;padding:11px 12px;border-radius:12px;border:2px solid var(--shadow);background:var(--paper);color:var(--ink)}
+    .classic select,.classic input[type=color],.classic input[type=text],.classic input[type=email]{border:1px solid var(--line);background:#0d1c27;color:#fff}
+    input[type=color]{height:46px;padding:4px;cursor:pointer}
+    .prev{background:repeating-conic-gradient(#eef2f0 0 25%,#f8faf9 0 50%) 0 0/22px 22px;border-radius:14px;padding:20px;display:flex;justify-content:center;border:2px dashed var(--line)}
+    .prev iframe{width:100%;max-width:520px;border:0;border-radius:8px;background:#fff}
+    pre{background:#0b1620;color:#e6edf2;padding:16px;border-radius:12px;overflow-x:auto;font-size:12.5px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.08)}
+    code{font-family:var(--mono)}
+    .copy{background:linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400);color:var(--onGold);border:2px solid var(--shadow);padding:11px 22px;border-radius:100px;font-weight:800;cursor:pointer;font-size:14px;margin-top:14px;font-family:inherit;box-shadow:2px 2px 0 var(--shadow)}
+    .classic .copy{border-color:transparent;box-shadow:none}
+    .copy:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--shadow)}
+    .reassure{color:var(--mid);font-size:13px;margin-top:14px;line-height:1.5}
+
+    /* mise en avant — carte partenaire (déjà « papier ») */
+    .partner{margin:0;padding:14px 16px;border-radius:15px;border:2.5px solid var(--shadow);background:#fff;box-shadow:4px 4px 0 var(--shadow);display:flex;align-items:center;gap:14px;max-width:460px}
+    .partner .logo{flex:0 0 auto;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#f4efe2;border:2px solid rgba(13,11,20,.16)}
+    .partner .logo svg{width:26px;height:26px;stroke:#1a1726;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .partner .ptag{font:700 9px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:#7a6a12;background:#fbf2c4;border:1.5px solid rgba(13,11,20,.2);border-radius:5px;padding:3px 6px;display:inline-block}
+    .partner .pn{font:800 15px/1.2 var(--ui);color:#1a1726;margin-top:5px}
+    .partner .pt{font:600 12.5px/1.4 var(--ui);color:#6b6b75;margin-top:2px}
+    .partner .pbtn{flex:0 0 auto;font:800 12px/1 var(--ui);color:#1a1726;border:2px solid #1a1726;border-radius:10px;padding:10px 12px;box-shadow:2px 2px 0 #1a1726}
+
+    /* abonnement */
+    .trial-h{font-family:var(--display);font-weight:400;font-size:clamp(20px,5vw,26px);text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;margin-bottom:8px}
+    .trial-d{color:var(--mid);margin-bottom:18px;max-width:62ch;font-size:15px}
+    .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
     .price-wrap{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:6px}
-    .price{font-family:Anton,sans-serif;font-size:40px;color:#fff;line-height:1}
-    .price-mo{color:rgba(255,255,255,.6);font-size:15px}
-    .price-note{color:#3fd07f;font-size:13.5px;font-weight:700;margin-bottom:18px}
-    .cta{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(158deg,#FFE47A,#FFC72C 42%,#E89400);color:var(--ink);text-decoration:none;font-weight:800;font-size:17px;padding:15px 30px;border-radius:100px;border:none;cursor:pointer;font-family:inherit}
-    .cta:hover{opacity:.95}
-    .cta.sec{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.28);font-size:14px;padding:12px 22px;font-weight:700}
-    .cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:4px}
-    .reassure{color:rgba(255,255,255,.55);font-size:13px;margin-top:14px}
-    footer{text-align:center;padding:26px;color:rgba(255,255,255,.5);font-size:13px;border-top:1px solid rgba(255,255,255,.08);margin-top:40px}
-    footer a{color:var(--gold);text-decoration:none}
+    .price{font-family:var(--mono);font-weight:700;font-size:38px;color:var(--ink);line-height:1}
+    .price-mo{color:var(--mid);font-size:15px;font-weight:600}
+    .price-note{color:var(--teal);font-size:13.5px;font-weight:800;margin-bottom:18px}
+    .cta{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(158deg,#FFE47A,#FFC72C 42%,#E89400);color:var(--onGold);text-decoration:none;font-weight:800;font-size:16px;padding:15px 28px;border-radius:100px;border:2px solid var(--shadow);cursor:pointer;font-family:inherit;box-shadow:3px 3px 0 var(--shadow)}
+    .classic .cta{border-color:transparent;box-shadow:none}
+    .cta:active{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--shadow)}
+    .cta.sec{background:transparent;color:var(--ink);border:2px solid var(--shadow);box-shadow:none;font-size:14px;padding:13px 22px;font-weight:700}
+    .classic .cta.sec{border-color:var(--line)}
+    .pro-banner{display:none;align-items:center;gap:10px;background:color-mix(in srgb,var(--clean) 14%,var(--paper));border:2px solid var(--clean);border-radius:14px;padding:13px 16px;margin:0 0 18px;font-weight:700;color:var(--ink)}
+
+    footer{text-align:center;padding:34px 22px;color:var(--mid);font-size:13px;border-top:1px solid var(--line);margin-top:50px}
+    footer a{color:var(--teal);text-decoration:none;font-weight:700}
+
+    /* scroll-reveal */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+    .reveal.in{opacity:1;transform:none}
+
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .hero-scene svg *{animation:none!important}
+      .chip i,.scroll-hint svg{animation:none!important}
+      .reveal{opacity:1!important;transform:none!important;transition:none!important}
+    }
   </style>
 </head>
 <body>
-  <header>
+  <script>
+    // Flags AVANT paint (anti-flash) — kill-switch conversion (?classic=1) + coupe-scène (?scene=0)
+    (function(){var q=location.search;
+      if(/[?&]classic=1/.test(q))document.body.classList.add('classic');
+      var rm=false;try{rm=matchMedia('(prefers-reduced-motion:reduce)').matches}catch(e){}
+      if(/[?&]scene=0/.test(q)||rm)document.documentElement.classList.add('no-scene');
+    })();
+  </script>
+
+  <!-- barre de marque -->
+  <nav class="nav">
     <a class="brand" href="/">Sargasses <span>Pro</span></a>
     <span class="pill-pro" data-i18n="pillPro">ESPACE PRO</span>
     <a class="back" href="/pro/hotels/" data-i18n="back">← L'offre</a>
+  </nav>
+
+  <!-- ═══ HÉROS : Le Veilleur veille la mer (humeur = score RÉEL de la plage) ═══ -->
+  <header class="hero">
+    <div class="hero-scene" aria-hidden="true">
+      <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--sky0)"/><stop offset=".42" stop-color="var(--sky1)"/>
+            <stop offset=".74" stop-color="var(--sky2)"/><stop offset="1" stop-color="var(--sky3)"/>
+          </linearGradient>
+          <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/><stop offset=".6" stop-color="#C97E3A" stop-opacity=".22"/><stop offset="1" stop-color="#F2B05E" stop-opacity=".46"/>
+          </linearGradient>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--seaT)"/><stop offset=".55" stop-color="#0f3b34"/><stop offset="1" stop-color="var(--seaB)"/>
+          </linearGradient>
+          <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFF6E0"/><stop offset=".48" stop-color="var(--glit)"/><stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+            <stop offset="0" stop-color="var(--glit)" stop-opacity=".5"/><stop offset=".7" stop-color="var(--glit)" stop-opacity=".12"/><stop offset="1" stop-color="var(--glit)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="lens" cx="38%" cy="32%" r="72%">
+            <stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/>
+          </radialGradient>
+          <radialGradient id="irisG" cx="42%" cy="38%" r="62%">
+            <stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/>
+          </radialGradient>
+          <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/>
+          </linearGradient>
+          <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/><stop offset="1" stop-color="#0A1714"/>
+          </linearGradient>
+          <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".55"/><stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".18"/><stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+          <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+
+        <!-- PLAN ARRIÈRE -->
+        <g id="pBack">
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <circle id="sunGlow" cx="612" cy="206" r="124" fill="url(#sunG)"/>
+          <circle cx="612" cy="206" r="44" fill="#FFF7E2"/>
+          <g id="cloudA" opacity=".42"><ellipse cx="180" cy="116" rx="128" ry="11" fill="#10333E"/><ellipse cx="250" cy="128" rx="70" ry="7" fill="#10333E" opacity=".7"/></g>
+          <g id="cloudB" opacity=".32"><ellipse cx="500" cy="150" rx="100" ry="8" fill="#0d2c36"/></g>
+          <path d="M698 132 q7 -6 14 0 q7 -6 14 0" fill="none" stroke="#0B2230" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+        </g>
+
+        <!-- PLAN MÉDIAN -->
+        <g id="pMid">
+          <path d="M40 332 q70 -34 150 -30 q60 3 96 30 Z" fill="#0a2a2c" opacity=".5"/>
+          <path d="M560 333 q56 -22 120 -20 q48 2 84 20 Z" fill="#0a2a2c" opacity=".38"/>
+          <rect x="-40" y="330" width="880" height="312" fill="url(#sea)"/>
+          <g opacity=".9">
+            <ellipse cx="612" cy="352" rx="78" ry="6" fill="var(--glit)" opacity=".46"/>
+            <ellipse cx="600" cy="368" rx="58" ry="5" fill="var(--glit)" opacity=".4"/>
+            <ellipse cx="585" cy="386" rx="44" ry="4.5" fill="var(--glit)" opacity=".33"/>
+            <ellipse cx="565" cy="406" rx="32" ry="4" fill="var(--glit)" opacity=".26"/>
+            <ellipse cx="540" cy="428" rx="22" ry="3.5" fill="var(--glit)" opacity=".2"/>
+          </g>
+          <!-- yole ronde (âme Martinique) -->
+          <g id="yole" transform="translate(214 452)" opacity=".92">
+            <path d="M-30 0 Q0 16 30 0 Q22 9 0 9 Q-22 9 -30 0 Z" fill="#123f3a"/>
+            <rect x="-25" y="-3" width="9" height="4" fill="#E8522A"/><rect x="-6" y="-3" width="9" height="4" fill="#FFC72C"/><rect x="13" y="-3" width="9" height="4" fill="#1EC8B0"/>
+            <line x1="4" y1="-2" x2="4" y2="-34" stroke="#0a2622" stroke-width="2.4"/>
+            <path d="M4 -32 L26 -8 L4 -8 Z" fill="#f2ede0" opacity=".9"/>
+          </g>
+          <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" opacity=".5">
+            <line x1="80" y1="392" x2="170" y2="392"/><line x1="430" y1="470" x2="540" y2="470"/><line x1="120" y1="500" x2="230" y2="500"/>
+          </g>
+        </g>
+
+        <!-- PLAN AVANT + acteurs -->
+        <g id="pFront">
+          <g id="beamG"><polygon id="beam" points="0,0 -70,196 70,196" fill="url(#beamGrad)" opacity="0"/></g>
+          <ellipse id="scanRing" cx="300" cy="362" rx="40" ry="8" fill="none" stroke="var(--glit)" stroke-width="2" opacity="0"/>
+          <g id="raft" transform="translate(560 414)" opacity=".95">
+            <ellipse cx="0" cy="0" rx="42" ry="9" fill="#3a4a1e"/><ellipse cx="-20" cy="-4" rx="17" ry="6" fill="#4d6326"/>
+            <ellipse cx="16" cy="3" rx="15" ry="5" fill="#2f3d18"/><ellipse cx="-2" cy="5" rx="22" ry="5" fill="#56702c"/><ellipse cx="24" cy="-2" rx="11" ry="4" fill="#445a24"/>
+          </g>
+          <g id="turtle" transform="translate(150 500)" opacity=".9">
+            <ellipse cx="0" cy="0" rx="28" ry="17" fill="#0c4b44"/><ellipse cx="0" cy="-2" rx="20" ry="12" fill="#11635a"/>
+            <path d="M-9 8 l5 8 M9 8 l5 8 M-20 -4 l-9 3 M20 -4 l9 3" stroke="#0c4b44" stroke-width="6" stroke-linecap="round"/>
+            <ellipse cx="24" cy="-3" rx="8" ry="6" fill="#0c4b44"/><circle cx="27" cy="-4" r="1.6" fill="#06140f"/>
+          </g>
+          <g id="fish" transform="translate(430 452)" style="cursor:pointer">
+            <path d="M0 0 q14 -9 30 0 q-14 9 -30 0 z" fill="#1EC8B0"/><path d="M0 0 l-12 -7 l3 7 l-3 7 z" fill="#0f8f7e"/><circle cx="22" cy="-1" r="2" fill="#06140f"/>
+          </g>
+
+          <!-- LE VEILLEUR -->
+          <circle id="halo" cx="400" cy="196" r="118" fill="url(#haloG)" filter="url(#soft)" opacity=".5"/>
+          <g id="gPose" transform="translate(400 196)">
+           <g id="gLife">
+            <g id="gBody" transform="scale(1.42)">
+              <g>
+                <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+                <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+                <g stroke="#2f7390" stroke-width="1" opacity=".65">
+                  <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+                  <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+                </g>
+              </g>
+              <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+              <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z" fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+              <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
+              <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
+              <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".42"/>
+              <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+              <circle cx="0" cy="4" r="22" fill="none" stroke="#06201f" stroke-width="1" stroke-opacity=".8"/>
+              <circle cx="0" cy="4" r="16.5" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-opacity=".5"/>
+              <g id="gIris">
+                <circle id="iris" cx="0" cy="0" r="8" fill="url(#irisG)"/>
+                <circle id="irisTint" cx="0" cy="0" r="8" fill="var(--mood)" opacity=".55"/>
+                <circle id="pupil" cx="0" cy="0" r="3.4" fill="#02100f"/>
+                <circle id="catchA" cx="-3" cy="-3.4" r="2.8" fill="#fff7e2"/>
+                <circle id="catchB" cx="3.4" cy="2.6" r="1.3" fill="#dff6ff" opacity=".85"/>
+              </g>
+              <path id="lidTop" d="M-22 4 Q0 -20 22 4 L22 -20 L-22 -20 Z" fill="url(#bodyG)"/>
+              <path id="lidBot" d="M-22 4 Q0 28 22 4 L22 28 L-22 28 Z" fill="url(#bodyG)"/>
+              <circle cx="0" cy="4" r="22.2" fill="none" stroke="url(#bodyG)" stroke-width="6"/>
+              <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+              <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
+              <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+              <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+              <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
+            </g>
+           </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+
+    <div class="hero-in">
+      <div class="hero-top">
+        <span class="chip" id="heroLive" style="display:none"><i></i></span>
+        <span class="hero-eyebrow" data-i18n="eyebrow">Votre veille côtière</span>
+      </div>
+      <h1><span data-i18n="h1">Espace Pro</span><span class="hotel" id="hotelLine"></span></h1>
+      <p class="lead" data-i18n="lead">Tout ce que Le Veilleur fait pour votre établissement, au même endroit — vos plages en direct, votre widget, votre mise en avant, votre abonnement. Sans rendez-vous : tout se règle ici.</p>
+      <div class="hero-verdict" id="heroVerdictWrap" style="display:none"><span class="vd" id="heroVd"></span><span id="heroVerdict"></span></div>
+      <div class="hero-cta">
+        <button class="btn" id="heroCta" data-i18n="heroCta">Activer mon essai 30 jours →</button>
+        <a class="btn btn-ghost" id="heroSee" href="#" data-i18n="heroSee">Voir notre fiabilité</a>
+      </div>
+      <div class="scroll-hint"><span data-i18n="scrollHint">Faites défiler</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
   </header>
+
   <main>
-    <div class="eyebrow" data-i18n="eyebrow">Votre veille côtière</div>
-    <h1><span data-i18n="h1">Espace Pro</span><span id="hotelLine"></span></h1>
-    <p class="lead" data-i18n="lead">Tout ce que Le Veilleur fait pour votre établissement, au même endroit — vos plages en direct, votre widget, votre mise en avant, votre abonnement. Sans rendez-vous : tout se règle ici.</p>
     <div class="pro-banner" id="proBanner" data-i18n="proBanner">✓ Vous êtes abonné Pro — marque blanche active, mise en avant prête à activer.</div>
 
     <!-- 1. PLAGES EN DIRECT -->
-    <section>
-      <h2><span class="n">1</span> <span data-i18n="s1h2">Vos plages, en direct</span></h2>
+    <section class="reveal">
+      <div class="kick">01</div>
+      <h2 data-i18n="s1h2">Vos plages, en direct</h2>
       <p class="h2sub" data-i18n="s1sub">Mesuré au satellite ce matin — pas deviné. La donnée exacte que vos clients vérifient avant de réserver.</p>
       <div class="card" id="beachCard">
         <div class="beach"><span class="dot" style="--st:#888"></span><span class="bname" id="bname" data-i18n="loading">Chargement…</span></div>
@@ -104,21 +348,23 @@
     </section>
 
     <!-- 2. CE QUE VOUS OBTENEZ -->
-    <section>
-      <h2><span class="n">2</span> <span data-i18n="s2h2">Ce que l'offre Pro vous apporte</span></h2>
+    <section class="reveal">
+      <div class="kick">02</div>
+      <h2 data-i18n="s2h2">Ce que l'offre Pro vous apporte</h2>
       <p class="h2sub" data-i18n="s2sub">Pas un coût : un canal pour protéger vos réservations et vous montrer au bon moment.</p>
       <div class="benefits">
-        <div class="benefit"><span class="ic">🔔</span><div><b data-i18n="b1t">L'alerte « le matin où ça bascule »</b><span data-i18n="b1s">Prévenu avant l'échouage sur VOS plages — vous prévenez le client avant la déception, pas après l'avis négatif.</span></div></div>
-        <div class="benefit"><span class="ic">🗓️</span><div><b data-i18n="b2t">Prévision 7 jours, plage par plage</b><span data-i18n="b2s">Pas un risque régional flou : l'état réel et la tendance de chacune de vos plages.</span></div></div>
-        <div class="benefit"><span class="ic">🎨</span><div><b data-i18n="b3t">Votre widget, à vos couleurs</b><span data-i18n="b3s">La preuve datée sur votre site / page de réservation, sans crédit Sargasses. Rassure avant de réserver.</span></div></div>
-        <div class="benefit"><span class="ic">📍</span><div><b data-i18n="b4t">Mis en avant DANS l'application</b><span data-i18n="b4s">Votre établissement présenté au voyageur sur la fiche de votre plage — pile quand il vérifie avant de réserver.</span></div></div>
-        <div class="benefit"><span class="ic">🛰️</span><div><b data-i18n="b5t">Fiabilité publiée et auditée</b><span data-i18n="b5s">On affiche notre taux d'erreur chaque jour. Nos réussites comme nos limites — </span><a id="relLink" data-i18n="b5link" href="https://sargasses-martinique.com/fiabilite/">voir la fiabilité</a>.</div></div>
+        <div class="benefit"><span class="pic"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span><div><b data-i18n="b1t">L'alerte « le matin où ça bascule »</b><span data-i18n="b1s">Prévenu avant l'échouage sur VOS plages — vous prévenez le client avant la déception, pas après l'avis négatif.</span></div></div>
+        <div class="benefit"><span class="pic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div><b data-i18n="b2t">Prévision 7 jours, plage par plage</b><span data-i18n="b2s">Pas un risque régional flou : l'état réel et la tendance de chacune de vos plages.</span></div></div>
+        <div class="benefit"><span class="pic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><rect x="6.5" y="12" width="5" height="5" rx="1" fill="var(--teal)" stroke="none"/></svg></span><div><b data-i18n="b3t">Votre widget, à vos couleurs</b><span data-i18n="b3s">La preuve datée sur votre site / page de réservation, sans crédit Sargasses. Rassure avant de réserver.</span></div></div>
+        <div class="benefit"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg></span><div><b data-i18n="b4t">Mis en avant DANS l'application</b><span data-i18n="b4s">Votre établissement présenté au voyageur sur la fiche de votre plage — pile quand il vérifie avant de réserver.</span></div></div>
+        <div class="benefit"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span><div><b data-i18n="b5t">Fiabilité publiée et auditée</b><span data-i18n="b5s">On affiche notre taux d'erreur chaque jour. Nos réussites comme nos limites — </span><a id="relLink" data-i18n="b5link" href="https://sargasses-martinique.com/fiabilite/">voir la fiabilité</a>.</div></div>
       </div>
     </section>
 
     <!-- 3. WIDGET -->
-    <section>
-      <h2><span class="n">3</span> <span data-i18n="s3h2">Votre widget, prêt à coller</span></h2>
+    <section class="reveal">
+      <div class="kick">03</div>
+      <h2 data-i18n="s3h2">Votre widget, prêt à coller</h2>
       <p class="h2sub" data-i18n="s3sub">Choisissez la plage et vos couleurs, copiez le code, collez-le sur votre site. Zéro maintenance.</p>
       <div class="card">
         <div class="controls">
@@ -129,17 +375,18 @@
         <div class="prev"><iframe id="prev" data-i18n-title="widgetTitle" title="Aperçu du widget" height="168"></iframe></div>
         <pre><code id="code"></code></pre>
         <button class="copy" id="copy" data-i18n="copyBtn">Copier le code</button>
-        <p class="reassure" id="wlNote" data-i18n-html="wlNote">Astuce : avec votre abonnement Pro, le widget passe à vos couleurs <strong>sans le crédit Sargasses</strong> (marque blanche).</p>
+        <p class="reassure" id="wlNote">Astuce : avec votre abonnement Pro, le widget passe à vos couleurs <strong>sans le crédit Sargasses</strong> (marque blanche).</p>
       </div>
     </section>
 
     <!-- 4. MISE EN AVANT -->
-    <section>
-      <h2><span class="n">4</span> <span data-i18n="s4h2">Votre mise en avant dans l'app</span></h2>
+    <section class="reveal">
+      <div class="kick">04</div>
+      <h2 data-i18n="s4h2">Votre mise en avant dans l'app</h2>
       <p class="h2sub" data-i18n="s4sub">Voici l'encart « Partenaire » tel qu'il apparaîtra au voyageur, sur la fiche de votre plage, au moment exact où il vérifie les sargasses.</p>
       <div class="card">
         <div class="partner">
-          <span class="logo">🏨</span>
+          <span class="logo"><svg viewBox="0 0 24 24"><path d="M4 21V6l8-3 8 3v15"/><path d="M4 21h16M9 21v-4h6v4"/><path d="M8 9h.01M12 9h.01M16 9h.01M8 13h.01M12 13h.01M16 13h.01"/></svg></span>
           <div style="flex:1 1 auto;min-width:0">
             <span class="ptag" data-i18n="ptag">Partenaire</span>
             <div class="pn" id="pName" data-i18n="pNameDefault">Votre établissement</div>
@@ -147,56 +394,193 @@
           </div>
           <span class="pbtn" data-i18n="pbtn">Voir →</span>
         </div>
-        <p class="reassure"><span data-i18n="s4re">Affiché « Partenaire » et — c'est notre règle — le verdict de la plage reste 100 % satellite, jamais influencé : c'est ce qui le rend crédible. </span><a id="previewLink" data-i18n="s4link" href="https://sargasses-martinique.com/" target="_blank">Voir l'aperçu dans l'app →</a></p>
+        <p class="reassure"><span id="s4reSpan" data-i18n="s4re">Affiché « Partenaire » et — c'est notre règle — le verdict de la plage reste 100 % satellite, jamais influencé : c'est ce qui le rend crédible. </span><a id="previewLink" data-i18n="s4link" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Voir l'aperçu dans l'app →</a></p>
       </div>
     </section>
 
     <!-- 5. ABONNEMENT -->
-    <section>
-      <h2><span class="n">5</span> <span data-i18n="s5h2">Activer votre abonnement</span></h2>
+    <section class="reveal" id="activate">
+      <div class="kick">05</div>
+      <h2 data-i18n="s5h2">Activer votre abonnement</h2>
       <p class="h2sub" data-i18n="s5sub">Tout en ligne, tout de suite. Pas de rendez-vous, pas d'engagement de durée.</p>
       <div class="card" id="subCard">
-        <div data-i18n="trialTitle" style="font-family:Anton,sans-serif;font-size:25px;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;margin-bottom:8px">Essai 30 jours, gratuit — sans carte</div>
-        <p data-i18n="trialDesc" style="color:rgba(255,255,255,.78);margin-bottom:18px;max-width:60ch">Le temps de traverser un vrai épisode de sargasses et de voir Le Veilleur vous prévenir « le matin où ça bascule ». Vous recevez votre accès Pro par email — widget à vos couleurs + mise en avant. Aucune carte, aucun engagement, vous arrêtez quand vous voulez.</p>
+        <div class="trial-h" data-i18n="trialTitle">Essai 30 jours, gratuit — sans carte</div>
+        <p class="trial-d" data-i18n="trialDesc">Le temps de traverser un vrai épisode de sargasses et de voir Le Veilleur vous prévenir « le matin où ça bascule ». Vous recevez votre accès Pro par email — widget à vos couleurs + mise en avant. Aucune carte, aucun engagement, vous arrêtez quand vous voulez.</p>
         <div id="trialForm" class="cta-row" style="align-items:stretch">
-          <input id="trialEmail" type="email" inputmode="email" autocomplete="email" data-i18n-ph="phEmail" placeholder="Votre email pro" style="flex:1 1 230px;min-width:0;font:inherit;font-size:15px;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:#0d1c27;color:#fff">
+          <input id="trialEmail" type="email" inputmode="email" autocomplete="email" data-i18n-ph="phEmail" placeholder="Votre email pro" style="flex:1 1 230px;min-width:0">
           <button class="cta" id="trialBtn" data-i18n="trialBtn">Activer mon essai 30 jours →</button>
         </div>
-        <div id="trialResult" style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(70,211,154,.12);border:1px solid rgba(70,211,154,.4);color:#cdeede;font-size:14px;line-height:1.55"></div>
-        <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)">
+        <div id="trialResult" style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--clean) 12%,var(--paper));border:2px solid var(--clean);color:var(--ink);font-size:14px;line-height:1.55"></div>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
           <div class="price-wrap"><span class="price">79&nbsp;€</span><span class="price-mo">/&nbsp;mois &nbsp;·&nbsp; ou 690&nbsp;€/an</span></div>
           <div class="price-note" data-i18n="priceNote">2 mois offerts en annuel · résiliable à tout moment</div>
           <div class="cta-row">
             <button class="cta" id="subMonthly">S'abonner — 79 €/mois →</button>
             <a class="cta sec" id="subscribe" href="https://sargasses-martinique.com/pro/pricing/">Verrouiller l'année — 690 € →</a>
           </div>
-          <div id="subResult" style="display:none;margin-top:12px;font-size:13px;color:#cdeede"></div>
-          <p data-i18n="subSmall" style="font-size:12px;color:rgba(255,255,255,.5);margin:10px 0 0">Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.</p>
+          <div id="subResult" style="display:none;margin-top:12px;font-size:13px;color:var(--teal);font-weight:600"></div>
+          <p data-i18n="subSmall" style="font-size:12px;color:var(--mid);margin:10px 0 0">Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.</p>
         </div>
-        <p class="reassure"><span data-i18n-html="s5re">Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? </span><a id="mailLink" href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
+        <p class="reassure"><span id="s5reSpan">Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? </span><a id="mailLink" href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
       </div>
     </section>
   </main>
+
   <footer>
     <p><span data-i18n="footerSrc">Source : données satellite Copernicus Marine — </span><a href="/">Le Veilleur · Sargasses Pro</a></p>
   </footer>
 
+  <!-- ═══ SCÈNE : Le Veilleur (rAF unique, humeur data-driven, plancher reduced-motion) ═══ -->
+  <script>
+  (function(){
+    "use strict";
+    if(document.documentElement.classList.contains("no-scene")||document.body.classList.contains("classic")) return;
+    var svg=document.getElementById("scene"); if(!svg) return;
+    function G(id){return document.getElementById(id);}
+    var pMid=G("pMid"),pFront=G("pFront"),gPose=G("gPose"),gLife=G("gLife"),gIris=G("gIris"),
+        iris=G("iris"),irisTint=G("irisTint"),pupil=G("pupil"),catchB=G("catchB"),
+        lidTop=G("lidTop"),lidBot=G("lidBot"),brow=G("brow"),halo=G("halo"),
+        beamG=G("beamG"),beam=G("beam"),scanRing=G("scanRing"),raft=G("raft"),fish=G("fish"),ant=G("ant"),
+        rootStyle=document.documentElement.style;
+    var RM=false;try{RM=matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(e){}
+    var EYE={x:400,y:201.7};
+    function lerp(a,b,t){return a+(b-a)*t;}
+    function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+    function easeInOut(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+    function hx(c){c=c.replace('#','');return[parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
+    function mix(a,b,t){var A=hx(a),B=hx(b);return'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')';}
+    function toVB(cx,cy){var r=svg.getBoundingClientRect(),sc=Math.max(r.width/800,r.height/600);
+      var dw=800*sc,dh=600*sc,ox=(r.width-dw)/2,oy=(r.height-dh)/2;return{x:(cx-r.left-ox)/sc,y:(cy-r.top-oy)/sc};}
+
+    var MOODS={
+      calm: {mood:'#1FB6A6',halo:'#1FB6A6',dot:'#22C55E',irisR:7.2, pose:0,   lift:0, browLift:-1, lidTop:.08,lidBot:.24,beam:0},
+      scan: {mood:'#FFC72C',halo:'#E8A800',dot:'#FFC72C',irisR:9.3, pose:4.5, lift:0, browLift:1.5,lidTop:.28,lidBot:0,  beam:1},
+      alert:{mood:'#E8522A',halo:'#E8522A',dot:'#E8522A',irisR:10.2,pose:-3.5,lift:-6,browLift:3.2,lidTop:-.18,lidBot:-.18,beam:.2}
+    };
+    function clone(o){var n={};for(var k in o)n[k]=o[k];return n;}
+    var M=clone(MOODS.scan),MT=clone(MOODS.scan),curMoodName='scan';
+    function setMoodTarget(n){if(MOODS[n]){MT=clone(MOODS[n]);curMoodName=n;}}
+    function snapMood(n){if(!MOODS[n])return;M=clone(MOODS[n]);MT=clone(MOODS[n]);curMoodName=n;
+      rootStyle.setProperty('--mood',MOODS[n].mood);rootStyle.setProperty('--moodHalo',MOODS[n].halo);rootStyle.setProperty('--moodDot',MOODS[n].dot);
+      iris.setAttribute('r',MOODS[n].irisR);irisTint.setAttribute('r',MOODS[n].irisR);pupil.setAttribute('r',(MOODS[n].irisR*.42).toFixed(2));}
+    // hook data-driven : le VRAI score de la plage pilote l'humeur (honnêteté = moat)
+    window.setVeilleurScore=function(s){var n=s>=70?'calm':s>=40?'scan':'alert'; if(RM)snapMood(n); else{setMoodTarget(n);wake();}};
+
+    function setLids(blink){var cy=4;var kT=clamp(M.lidTop+blink,-.4,1),kB=clamp(M.lidBot+blink,-.4,1);
+      var cpTop=lerp(-20,cy+1,kT),cpBot=lerp(28,cy-1,kB);
+      lidTop.setAttribute('d','M-22 '+cy+' Q0 '+cpTop+' 22 '+cy+' L22 -22 L-22 -22 Z');
+      lidBot.setAttribute('d','M-22 '+cy+' Q0 '+cpBot+' 22 '+cy+' L22 30 L-22 30 Z');}
+
+    var tx=EYE.x,ty=420,cx=EYE.x,cy=420,pointerActive=false;
+    function onMove(e){var p=toVB(e.clientX,e.clientY);tx=p.x;ty=p.y;pointerActive=true;lastInput=now();saccadeUntil=0;wake();}
+    svg.addEventListener("pointerdown",function(e){var p=toVB(e.clientX,e.clientY);
+      if(e.target===fish||fish.contains(e.target)){flee();return;}
+      if(p.y<334){tapVeilleurMaybe(p);return;}
+      dropRipple(p.x,p.y);blinkNow(170);tx=clamp(p.x,40,760);ty=clamp(p.y,340,560);saccadeUntil=now()+1400;wake();});
+    function tapVeilleurMaybe(p){var dx=p.x-EYE.x,dy=p.y-EYE.y;
+      if(dx*dx+dy*dy<64*64){var o=['calm','scan','alert'];setMoodTarget(o[(o.indexOf(curMoodName)+1)%3]);blinkNow(150);wake();}}
+    var fishX=430,fishY=452,fishFlip=1,fishTween=-1,fishFromX=430,fishFromY=452;
+    function flee(){var dx=Math.random()*130-30,dy=Math.random()*40-26;fishX=clamp(430+dx,60,720);fishY=clamp(452+dy,360,540);
+      fishFlip=dx<0?-1:1;fishTween=now();tx=fishX;ty=fishY;saccadeUntil=now()+1300;wake();}
+    function dropRipple(x,y){y=clamp(y,338,560);var ns="http://www.w3.org/2000/svg";var r=document.createElementNS(ns,"circle");
+      r.setAttribute("cx",x);r.setAttribute("cy",y);r.setAttribute("fill","none");r.setAttribute("stroke","var(--glit)");r.setAttribute("stroke-width","2");
+      r.setAttribute("r","3");r.setAttribute("opacity",".65");pFront.appendChild(r);var t0=now();
+      (function grow(){var k=(now()-t0)/1150;if(k>=1){r.remove();return;}r.setAttribute("r",(3+k*50).toFixed(1));r.setAttribute("opacity",(.65*(1-k)).toFixed(3));requestAnimationFrame(grow);})();}
+
+    var t0=performance.now();function now(){return performance.now();}
+    var introDone=RM,lastInput=-1,saccadeUntil=0;
+    function introProgress(){return clamp((now()-t0)/3600,0,1);}
+    var blinkStart=-1,blinkDur=180,nextBlink=now()+rand(2600,4200);
+    function rand(a,b){return a+Math.random()*(b-a);}
+    function blinkNow(d){blinkStart=now();blinkDur=d||180;wake();}
+    var paMidX=0,paMidY=0,paFrX=0,paFrY=0,raftK=0;
+
+    // rAF gaté : tourne seulement si visible ET héros dans le viewport (perf = revenu)
+    var paused=document.hidden,inView=true,raf=0;
+    function wake(){if(!RM&&!paused&&inView&&!raf)raf=requestAnimationFrame(tick);}
+    function getCss(n){var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();return v||'#1FB6A6';}
+    function toHex(c){c=c.trim();if(c[0]==='#')return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;
+      var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);return m?'#'+[1,2,3].map(function(i){return('0'+parseInt(m[i]).toString(16)).slice(-2);}).join(''):'#1FB6A6';}
+    function mixCss(cur,tg,t){return mix(toHex(cur),toHex(tg),t);}
+
+    function tick(){raf=0;if(paused||RM||!inView)return;var t=now(),ms=.02;
+      M.irisR=lerp(M.irisR,MT.irisR,ms);M.pose=lerp(M.pose,MT.pose,ms);M.lift=lerp(M.lift,MT.lift,ms);
+      M.browLift=lerp(M.browLift,MT.browLift,ms);M.lidTop=lerp(M.lidTop,MT.lidTop,ms);M.lidBot=lerp(M.lidBot,MT.lidBot,ms);M.beam=lerp(M.beam,MT.beam,ms);
+      rootStyle.setProperty('--mood',mixCss(getCss('--mood'),MT.mood,ms));
+      rootStyle.setProperty('--moodHalo',mixCss(getCss('--moodHalo'),MT.halo,ms));
+      rootStyle.setProperty('--moodDot',mixCss(getCss('--moodDot'),MT.dot,ms));
+      if(Math.abs(M.irisR-MT.irisR)<.06){rootStyle.setProperty('--mood',MT.mood);rootStyle.setProperty('--moodHalo',MT.halo);rootStyle.setProperty('--moodDot',MT.dot);}
+      iris.setAttribute('r',M.irisR.toFixed(2));irisTint.setAttribute('r',M.irisR.toFixed(2));pupil.setAttribute('r',(M.irisR*.42).toFixed(2));
+      if(pointerActive&&t-lastInput<1100){}else if(t>saccadeUntil){tx=lerp(tx,EYE.x,.02);ty=lerp(ty,430,.02);}
+      cx=lerp(cx,tx,.08);cy=lerp(cy,ty,.08);
+      var ex=clamp((cx-EYE.x)/44,-4,4),ey=clamp((cy-EYE.y)/58,-3,4);
+      gIris.setAttribute('transform','translate('+ex.toFixed(2)+' '+ey.toFixed(2)+')');
+      catchB.setAttribute('cx',(3.4+ex*.7).toFixed(2));catchB.setAttribute('cy',(2.6+ey*.7).toFixed(2));
+      var breathe=Math.sin(t/3300)*2,floatR=Math.sin(t/5500)*.6;
+      gLife.setAttribute('transform','translate(0 '+breathe.toFixed(2)+') rotate('+floatR.toFixed(3)+')');
+      gPose.setAttribute('transform','translate('+EYE.x.toFixed(1)+' '+(196+M.lift).toFixed(1)+') rotate('+(M.pose+floatR*.3).toFixed(2)+')');
+      var bK=0;if(blinkStart>0){var bt=(t-blinkStart)/blinkDur;if(bt>=1)blinkStart=-1;else bK=bt<.5?easeInOut(bt*2):easeInOut((1-bt)*2);}
+      if(t>nextBlink&&blinkStart<0){blinkNow(180);nextBlink=t+rand(3200,6500);}
+      setLids(bK);
+      brow.setAttribute('d','M-15 '+(-19+M.browLift*.2).toFixed(2)+' Q0 '+(-25+M.browLift).toFixed(2)+' 15 '+(-19+M.browLift*.2).toFixed(2));
+      halo.setAttribute('opacity',(.42+.12*Math.sin(t/3300)+.05).toFixed(3));
+      var introT=introProgress(),beamOn=M.beam,sweep=0,sweepOp=0;
+      if(introT<1&&!introDone){if(introT>.32){var s=clamp((introT-.32)/.68,0,1);sweep=-14+26*easeInOut(s);sweepOp=Math.sin(s*Math.PI)*.9;}}else introDone=true;
+      var ang=Math.atan2(cy-EYE.y,cx-EYE.x)*180/Math.PI-90;ang=clamp(ang,-26,26);if(!introDone)ang=sweep;
+      beamG.setAttribute('transform','translate('+EYE.x+' '+EYE.y+') rotate('+ang.toFixed(2)+')');
+      var bOp=introDone?beamOn*.85:Math.max(sweepOp,beamOn*.85);beam.setAttribute('opacity',bOp.toFixed(3));
+      var hitX=EYE.x+Math.tan(clamp(ang,-26,26)*Math.PI/180)*(362-EYE.y);
+      scanRing.setAttribute('cx',clamp(hitX,40,760));scanRing.setAttribute('opacity',(bOp*.6).toFixed(3));
+      scanRing.setAttribute('ry',(8+2*Math.abs(Math.sin(t/1700))*beamOn).toFixed(2));
+      ant.setAttribute('opacity',beamOn>.4?(.8+.2*Math.abs(Math.sin(t/1700))).toFixed(2):'1');
+      raftK=lerp(raftK,curMoodName==='alert'?1:0,.015);
+      raft.setAttribute('transform','translate('+(560-raftK*70).toFixed(1)+' '+(414+raftK*22).toFixed(1)+') scale('+(1+raftK*.35).toFixed(3)+')');
+      if(fishTween>0){var ft=clamp((t-fishTween)/900,0,1),e=easeInOut(ft);
+        fish.setAttribute('transform','translate('+lerp(fishFromX,fishX,e).toFixed(1)+' '+lerp(fishFromY,fishY,e).toFixed(1)+') scale('+fishFlip+' 1)');
+        if(ft>=1){fishTween=-1;fishFromX=fishX;fishFromY=fishY;}}
+      if(pointerActive){var ndx=cx-400,ndy=cy-300;
+        paMidX=lerp(paMidX,clamp(-ndx*.012,-6,6),.06);paMidY=lerp(paMidY,clamp(-ndy*.01,-4,4),.06);
+        paFrX=lerp(paFrX,clamp(-ndx*.03,-10,10),.06);paFrY=lerp(paFrY,clamp(-ndy*.02,-6,6),.06);
+      }else{paMidX=lerp(paMidX,0,.04);paMidY=lerp(paMidY,0,.04);paFrX=lerp(paFrX,0,.04);paFrY=lerp(paFrY,0,.04);}
+      pMid.setAttribute('transform','translate('+paMidX.toFixed(2)+' '+paMidY.toFixed(2)+')');
+      pFront.setAttribute('transform','translate('+paFrX.toFixed(2)+' '+paFrY.toFixed(2)+')');
+      raf=requestAnimationFrame(tick);
+    }
+
+    if(RM){snapMood('scan');setLids(0);
+      brow.setAttribute('d','M-15 -19 Q0 '+(-25+MOODS.scan.browLift)+' 15 -19');halo.setAttribute('opacity','.5');
+      beam.setAttribute('opacity','0');scanRing.setAttribute('opacity','0');gIris.setAttribute('transform','translate(0 1.5)');
+    }else{
+      window.addEventListener("pointermove",onMove,{passive:true});
+      try{new IntersectionObserver(function(es){inView=es[0].isIntersecting;if(inView)wake();},{threshold:.02}).observe(svg);}catch(e){}
+      snapMood('scan');requestAnimationFrame(tick);
+    }
+    document.addEventListener("visibilitychange",function(){paused=document.hidden;if(!paused)wake();});
+  })();
+  </script>
+
+  <!-- ═══ FUNNEL : région / i18n / live / widget builder / essai / abonnement (logique préservée) ═══ -->
   <script>
   (function(){
     "use strict";
     var Q=new URLSearchParams(location.search);
     var $=function(id){return document.getElementById(id)};
+    // Construction DOM sûre (jamais innerHTML) : mk = élément, frag = fragment de parts
+    function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+    function frag(parts){var f=document.createDocumentFragment();(parts||[]).forEach(function(p){
+      if(p==null)return;
+      if(typeof p==="string"){f.appendChild(document.createTextNode(p));return;}
+      if(p.br){f.appendChild(document.createElement("br"));return;}
+      var e=document.createElement(p.tag||"span");if(p.cls)e.className=p.cls;if(p.style)e.style.cssText=p.style;if(p.text!=null)e.textContent=p.text;f.appendChild(e);
+    });return f;}
+    function setParts(node,parts){if(!node)return;while(node.firstChild)node.removeChild(node.firstChild);node.appendChild(frag(parts));}
 
-    // ── Région réelle = le domaine servi : un espace USD parle à SON API, facture en USD
-    //    ET dans SA langue (florida/puntacana = EN, rivieramaya = ES). MQ/GP = FR. ──
     var HOST=(location.hostname||"").toLowerCase();
     var USD_REGION=HOST.indexOf("miami")>-1?"florida":HOST.indexOf("cancun")>-1?"rivieramaya":HOST.indexOf("puntacana")>-1?"puntacana":null;
     var CUR=USD_REGION?"USD":"EUR";
     var REGION_LANG={florida:"en",puntacana:"en",rivieramaya:"es"};
     var LANG=USD_REGION?(REGION_LANG[USD_REGION]||"en"):"fr";
 
-    // ── plages par région : slug SEO → id data (MQ/GP) ; pour l'USD, l'id EST le slug
-    //    (widget/embed accepte l'id). [slugOuId, idData, nom, île]. ──
     var BEACHES_FR=[
       ["plage-des-salines","les-salines","Plage des Salines","MQ"],
       ["plage-du-diamant","diamant","Plage du Diamant","MQ"],
@@ -249,13 +633,15 @@
     var SLUG2ID={},SLUG2NAME={},SLUG2ISL={};
     BEACHES.forEach(function(r){SLUG2ID[r[0]]=r[1];SLUG2NAME[r[0]]=r[2];SLUG2ISL[r[0]]=r[3];});
 
-    // ── i18n FR / EN / ES ──
     var T={
       pillPro:{fr:"ESPACE PRO",en:"PRO SPACE",es:"ESPACIO PRO"},
       back:{fr:"← L'offre",en:"← The offer",es:"← La oferta"},
       eyebrow:{fr:"Votre veille côtière",en:"Your coastal watch",es:"Tu vigilancia costera"},
       h1:{fr:"Espace Pro",en:"Pro Space",es:"Espacio Pro"},
       lead:{fr:"Tout ce que Le Veilleur fait pour votre établissement, au même endroit — vos plages en direct, votre widget, votre mise en avant, votre abonnement. Sans rendez-vous : tout se règle ici.",en:"Everything Le Veilleur does for your property, in one place — your beaches live, your widget, your in-app feature, your subscription. No appointment: it's all handled right here.",es:"Todo lo que Le Veilleur hace por tu establecimiento, en un solo lugar — tus playas en vivo, tu widget, tu promoción, tu suscripción. Sin cita: todo se gestiona aquí."},
+      heroCta:{fr:"Activer mon essai 30 jours →",en:"Start my 30-day trial →",es:"Activar mi prueba de 30 días →"},
+      heroSee:{fr:"Voir notre fiabilité",en:"See our reliability",es:"Ver nuestra fiabilidad"},
+      scrollHint:{fr:"Faites défiler",en:"Scroll",es:"Desliza"},
       proBanner:{fr:"✓ Vous êtes abonné Pro — marque blanche active, mise en avant prête à activer.",en:"✓ You're a Pro subscriber — white-label active, in-app feature ready to enable.",es:"✓ Eres suscriptor Pro — marca blanca activa, promoción lista para activar."},
       s1h2:{fr:"Vos plages, en direct",en:"Your beaches, live",es:"Tus playas, en vivo"},
       s1sub:{fr:"Mesuré au satellite ce matin — pas deviné. La donnée exacte que vos clients vérifient avant de réserver.",en:"Measured by satellite this morning — not guessed. The exact data your guests check before booking.",es:"Medido por satélite esta mañana — no adivinado. El dato exacto que tus clientes revisan antes de reservar."},
@@ -282,14 +668,12 @@
       widgetTitle:{fr:"Aperçu du widget",en:"Widget preview",es:"Vista previa del widget"},
       copyBtn:{fr:"Copier le code",en:"Copy the code",es:"Copiar el código"},
       copied:{fr:"Copié ✓",en:"Copied ✓",es:"Copiado ✓"},
-      wlNote:{fr:"Astuce : avec votre abonnement Pro, le widget passe à vos couleurs <strong>sans le crédit Sargasses</strong> (marque blanche).",en:"Tip: with your Pro subscription, the widget switches to your colors <strong>without the Sargasses credit</strong> (white-label).",es:"Consejo: con tu suscripción Pro, el widget pasa a tus colores <strong>sin el crédito Sargasses</strong> (marca blanca)."},
       s4h2:{fr:"Votre mise en avant dans l'app",en:"Your in-app feature",es:"Tu promoción en la app"},
       s4sub:{fr:"Voici l'encart « Partenaire » tel qu'il apparaîtra au voyageur, sur la fiche de votre plage, au moment exact où il vérifie les sargasses.",en:"Here's the “Partner” card as the traveler will see it, on your beach's page, exactly when they check sargassum.",es:"Aquí está el recuadro «Socio» tal como lo verá el viajero, en la ficha de tu playa, justo cuando revisa el sargazo."},
       ptag:{fr:"Partenaire",en:"Partner",es:"Socio"},
       pNameDefault:{fr:"Votre établissement",en:"Your property",es:"Tu establecimiento"},
       pTagDefault:{fr:"Votre accroche en une ligne, votre lien de réservation.",en:"Your one-line pitch, your booking link.",es:"Tu gancho en una línea, tu enlace de reserva."},
       pbtn:{fr:"Voir →",en:"View →",es:"Ver →"},
-      s4re:{fr:"Affiché « Partenaire » et — c'est notre règle — le verdict de la plage reste 100 % satellite, jamais influencé : c'est ce qui le rend crédible. ",en:"Shown as “Partner” and — it's our rule — the beach verdict stays 100% satellite, never influenced: that's what makes it credible. ",es:"Mostrado como «Socio» y — es nuestra regla — el veredicto de la playa sigue siendo 100% satélite, nunca influido: eso es lo que lo hace creíble. "},
       s4link:{fr:"Voir l'aperçu dans l'app →",en:"See the preview in the app →",es:"Ver la vista previa en la app →"},
       s5h2:{fr:"Activer votre abonnement",en:"Activate your subscription",es:"Activa tu suscripción"},
       s5sub:{fr:"Tout en ligne, tout de suite. Pas de rendez-vous, pas d'engagement de durée.",en:"All online, right away. No appointment, no time commitment.",es:"Todo en línea, de inmediato. Sin cita, sin compromiso de permanencia."},
@@ -301,11 +685,9 @@
       trialRetry:{fr:"Réessayer →",en:"Try again →",es:"Reintentar →"},
       priceNote:{fr:"2 mois offerts en annuel · résiliable à tout moment",en:"2 months free on annual · cancel anytime",es:"2 meses gratis en anual · cancelable cuando quieras"},
       subSmall:{fr:"Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.",en:"Ready to subscribe without waiting for the trial to end? Enter your work email above, then “Subscribe” — secure Mollie payment, cancel anytime.",es:"¿Listo para suscribirte sin esperar al final de la prueba? Introduce tu email profesional arriba, luego «Suscribirse» — pago seguro Mollie, cancelable cuando quieras."},
-      s5re:{fr:"Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? ",en:"Secure Mollie payment (card / transfer). On activation, your <strong>Pro token</strong> arrives by email — it enables the widget's white-label and your in-app feature. A question? ",es:"Pago seguro Mollie (tarjeta / transferencia). Al activar, tu <strong>token Pro</strong> llega por email — activa la marca blanca del widget y tu promoción. ¿Una pregunta? "},
       footerSrc:{fr:"Source : données satellite Copernicus Marine — ",en:"Source: Copernicus Marine satellite data — ",es:"Fuente: datos satelitales Copernicus Marine — "},
-      // JS-générés
       docTitle:{fr:"Votre Espace Pro — Sargasses",en:"Your Pro Space — Sargassum",es:"Tu Espacio Pro — Sargazo"},
-      live:{fr:"● En direct",en:"● Live",es:"● En vivo"},
+      live:{fr:"En direct",en:"Live",es:"En vivo"},
       updPre:{fr:"mis à jour il y a ",en:"updated ",es:"actualizado hace "},
       updPost:{fr:"",en:" ago",es:""},
       checking:{fr:"Vérification en cours…",en:"Checking…",es:"Verificando…"},
@@ -321,25 +703,37 @@
       widgetCredit:{fr:"Conditions en direct par",en:"Live conditions by",es:"Condiciones en vivo por"},
       widgetIframeTitle:{fr:"Conditions de plage",en:"Beach conditions",es:"Condiciones de playa"}
     };
+    // Copies riches (gras) rendues en DOM sûr — pas d'innerHTML
+    var RICH={
+      wlNote:{fr:["Astuce : avec votre abonnement Pro, le widget passe à vos couleurs ",{tag:"strong",text:"sans le crédit Sargasses"}," (marque blanche)."],
+              en:["Tip: with your Pro subscription, the widget switches to your colors ",{tag:"strong",text:"without the Sargasses credit"}," (white-label)."],
+              es:["Consejo: con tu suscripción Pro, el widget pasa a tus colores ",{tag:"strong",text:"sin el crédito Sargasses"}," (marca blanca)."]},
+      s5re:{fr:["Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre ",{tag:"strong",text:"token Pro"}," arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? "],
+            en:["Secure Mollie payment (card / transfer). On activation, your ",{tag:"strong",text:"Pro token"}," arrives by email — it enables the widget's white-label and your in-app feature. A question? "],
+            es:["Pago seguro Mollie (tarjeta / transferencia). Al activar, tu ",{tag:"strong",text:"token Pro"}," llega por email — activa la marca blanca del widget y tu promoción. ¿Una pregunta? "]},
+      s4re:{fr:["Affiché « Partenaire » et — c'est notre règle — le verdict de la plage reste 100 % satellite, jamais influencé : c'est ce qui le rend crédible. "],
+            en:["Shown as “Partner” and — it's our rule — the beach verdict stays 100% satellite, never influenced: that's what makes it credible. "],
+            es:["Mostrado como «Socio» y — es nuestra regla — el veredicto de la playa sigue siendo 100% satélite, nunca influido: eso es lo que lo hace creíble. "]}
+    };
     function tr(k){var o=T[k];return o?(o[LANG]||o.fr):"";}
+    function richParts(k){var o=RICH[k];return o?(o[LANG]||o.fr):null;}
     var LBL={clean:{fr:"Mer propre",en:"Clean water",es:"Mar limpio"},moderate:{fr:"Présence modérée",en:"Moderate",es:"Presencia moderada"},avoid:{fr:"À éviter",en:"Avoid",es:"A evitar"}};
     var WD_BY={fr:["dim","lun","mar","mer","jeu","ven","sam"],en:["sun","mon","tue","wed","thu","fri","sat"],es:["dom","lun","mar","mié","jue","vie","sáb"]};
     var WD=WD_BY[LANG]||WD_BY.fr;
 
-    // ── personnalisation depuis l'email : ?beach= &name= &accent= &k= ──
     var beachSlug=(Q.get("beach")||"").toLowerCase();
     if(!SLUG2ID[beachSlug])beachSlug=BEACHES[0][0];
     var hotel=(Q.get("name")||"").replace(/[<>]/g,"").slice(0,48);
     var accent=(Q.get("accent")||"").replace(/[^0-9a-fA-F]/g,"").slice(0,6);
     var token=(Q.get("k")||"").trim();
-    // Conversion essai→payant : rollback ?trialconv=0. Décode le payload {h,exp} du
-    // token (base64url, NON vérifié — l'auth réelle reste serveur via widget-token.php).
     var TRIALCONV_OFF=/[?&]trialconv=0/.test(location.search);
     function decodeTokenPayload(t){try{var p=(t||"").split(".")[0];if(!p)return null;p=p.replace(/-/g,"+").replace(/_/g,"/");while(p.length%4)p+="=";return JSON.parse(atob(p));}catch(_){return null;}}
-    function trialUrgencyMsg(n){var soft=n>7;
-      if(LANG==="en")return soft?"<b>Pro trial active — "+n+" days left.</b> Subscribe now to keep your watch running without a gap.":"<b>"+(n<=1?"Last day of your trial.":n+" days left in your trial.")+"</b> Switch to Pro to keep your alerts without interruption.";
-      if(LANG==="es")return soft?"<b>Prueba Pro activa — "+n+" días restantes.</b> Suscríbete ahora para no perder tu vigilancia.":"<b>"+(n<=1?"Último día de tu prueba.":"Quedan "+n+" días de prueba.")+"</b> Pasa a Pro para conservar tus alertas sin interrupción.";
-      return soft?"<b>Essai Pro actif — "+n+" jours restants.</b> Abonnez-vous dès maintenant pour ne pas perdre votre veille.":"<b>"+(n<=1?"Dernier jour de votre essai.":"Plus que "+n+" jours d'essai.")+"</b> Passez en Pro pour garder vos alertes sans coupure.";}
+    // Message d'urgence essai → parts DOM ({tag:'b'} + reste). Rollback ?trialconv=0.
+    function trialUrgencyParts(n){var soft=n>7,lead,rest;
+      if(LANG==="en"){lead=soft?"Pro trial active — "+n+" days left.":(n<=1?"Last day of your trial.":n+" days left in your trial.");rest=soft?" Subscribe now to keep your watch running without a gap.":" Switch to Pro to keep your alerts without interruption.";}
+      else if(LANG==="es"){lead=soft?"Prueba Pro activa — "+n+" días restantes.":(n<=1?"Último día de tu prueba.":"Quedan "+n+" días de prueba.");rest=soft?" Suscríbete ahora para no perder tu vigilancia.":" Pasa a Pro para conservar tus alertas sin interrupción.";}
+      else{lead=soft?"Essai Pro actif — "+n+" jours restants.":(n<=1?"Dernier jour de votre essai.":"Plus que "+n+" jours d'essai.");rest=soft?" Abonnez-vous dès maintenant pour ne pas perdre votre veille.":" Passez en Pro pour garder vos alertes sans coupure.";}
+      return [{tag:"b",text:lead},rest];}
     var island=SLUG2ISL[beachSlug];
     var DOMAIN=island==="GP"?"sargasses-guadeloupe.com":"sargasses-martinique.com";
     if(USD_REGION){island=USD_REGION;DOMAIN=HOST.replace(/^www\./,"");}
@@ -350,48 +744,44 @@
     var PLAN_MO=CUR==="USD"?"pro_monthly_usd":"pro_monthly";
     var PLAN_YR_KEY=CUR==="USD"?"pro_annual_usd":"pro_annual";
 
-    // ── applique la langue (swap des textes + attributs + liens dynamiques) ──
     document.documentElement.lang=LANG;
     document.title=tr("docTitle");
     document.querySelectorAll("[data-i18n]").forEach(function(el){var k=el.getAttribute("data-i18n");if(T[k])el.textContent=tr(k);});
-    document.querySelectorAll("[data-i18n-html]").forEach(function(el){var k=el.getAttribute("data-i18n-html");if(T[k])el.innerHTML=tr(k);});
     document.querySelectorAll("[data-i18n-ph]").forEach(function(el){var k=el.getAttribute("data-i18n-ph");if(T[k])el.setAttribute("placeholder",tr(k));});
     document.querySelectorAll("[data-i18n-title]").forEach(function(el){var k=el.getAttribute("data-i18n-title");if(T[k])el.setAttribute("title",tr(k));});
-    // liens dynamiques (href dépend du domaine/langue)
+    // copies riches (gras) via DOM sûr
+    setParts($("wlNote"),richParts("wlNote"));
+    setParts($("s5reSpan"),richParts("s5re"));
+    setParts($("s4reSpan"),richParts("s4re"));
     $("relLink").href="https://"+DOMAIN+"/"+RELPATH;
+    var _hs=$("heroSee"); if(_hs)_hs.href="https://"+DOMAIN+"/"+RELPATH;
     $("mailLink").href="mailto:"+MAIL; $("mailLink").textContent=MAIL;
-    // prix localisés (devise + langue)
     try{
-      var _pe=document.querySelector(".price"); if(_pe)_pe.innerHTML=money(MO);
+      var _pe=document.querySelector(".price"); if(_pe)_pe.textContent=money(MO);
       var _pm=document.querySelector(".price-mo");
-      if(_pm)_pm.innerHTML=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
+      if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
     }catch(_){}
     function subMoLabel(){return (LANG==="es"?"Suscribirse — ":LANG==="en"?"Subscribe — ":"S'abonner — ")+money(MO)+(LANG==="es"?"/mes →":LANG==="en"?"/mo →":"/mois →");}
     function subYrLabel(){return (LANG==="es"?"Asegurar el año — ":LANG==="en"?"Lock in the year — ":"Verrouiller l'année — ")+money(YR)+" →";}
     try{ var _sm=$("subMonthly"); if(_sm)_sm.textContent=subMoLabel(); var _sa=$("subscribe"); if(_sa)_sa.textContent=subYrLabel(); }catch(_){}
 
-    if(hotel){$("hotelLine").innerHTML=" · <span class='hotel'>"+hotel+"</span>";document.title=tr("docTitle")+" — "+hotel;}
+    if(hotel){$("hotelLine").textContent=hotel;document.title=tr("docTitle")+" — "+hotel;}
     $("pName").textContent=hotel||tr("pNameDefault");
     if(Q.get("tagline"))$("pTag").textContent=Q.get("tagline").slice(0,90);
-    // lien aperçu in-app ANCRÉ (grief 2026-07-02 : la démo ne s'affichait ni au bon
-    // endroit sur la carte ni sur la fiche) : en plus du nom, on passe
-    // preview_beach=<id data> → l'app zoome sur la côte de LA plage de l'établissement
-    // et ouvre sa fiche avec l'encart « Partenaire (aperçu) » dessus. Le lien SUIT la
-    // plage choisie dans le widget builder (setPreviewLink rappelé par upd()).
     var partner=(Q.get("partner")||"").replace(/[^a-z0-9-]/g,"");
     var pvTagline=Q.get("tagline")?("&preview_tagline="+encodeURIComponent(Q.get("tagline").replace(/[<>]/g,"").slice(0,90))):"";
     function setPreviewLink(slug,domain){
       var bid=SLUG2ID[slug]||"";
-      // Nom recalculé à CHAQUE appel — priorité au ?name= d'outreach (nom d'établissement
-      // authentique) ; le titre tapé dans le builder (nm, « ex. La plage de l'hôtel ») ne
-      // sert que de fallback. nm est déclaré plus bas — var hoisté, undefined au 1er appel.
       var n=hotel||((typeof nm!=="undefined"&&nm&&nm.value)||"").replace(/[<>]/g,"").trim().slice(0,48)||tr("pNameDefault");
       $("previewLink").href="https://"+(domain||DOMAIN)+"/?preview_partner="+(partner||"preview")+"&preview_name="+encodeURIComponent(n)
         +(bid?("&preview_beach="+encodeURIComponent(bid)):"")+pvTagline;
     }
     setPreviewLink(beachSlug);
 
-    // ── 1. plages en direct ──
+    // hero CTA → défile vers l'activation ; jamais de cul-de-sac
+    var _hc=$("heroCta"); if(_hc)_hc.addEventListener("click",function(){var a=$("activate");if(a)a.scrollIntoView({behavior:"smooth",block:"start"});var te=$("trialEmail");if(te)setTimeout(function(){try{te.focus({preventScroll:true});}catch(_){te.focus();}},600);});
+
+    // ── 1. plages en direct (+ hero live + humeur Veilleur = score RÉEL) ──
     function relAge(u){var h=(Date.now()-new Date(u).getTime())/3.6e6;if(!(h>=0))return null;var unit=LANG==="es"?{m:" min",h:" h",d:" d"}:LANG==="en"?{m:" min",h:" h",d:" d"}:{m:" min",h:" h",d:" j"};return h<1?Math.max(1,Math.round(h*60))+unit.m:(h<36?Math.round(h)+unit.h:Math.round(h/24)+unit.d);}
     fetch("https://"+DOMAIN+"/api/copernicus/sargassum.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var id=SLUG2ID[beachSlug];
@@ -401,16 +791,25 @@
       if(!lv){$("bmeta").textContent=tr("unavail");return;}
       var c=ST(lv.status);
       $("beachCard").querySelector(".dot").style.setProperty("--st",c);
-      var pill=document.createElement("span");pill.className="bpill";pill.style.setProperty("--st",c);pill.textContent=(LBL[lv.status]&&LBL[lv.status][LANG])||lv.status;
+      var pill=mk("span","bpill",(LBL[lv.status]&&LBL[lv.status][LANG])||lv.status);pill.style.setProperty("--st",c);
       $("beachCard").querySelector(".beach").appendChild(pill);
       var age=relAge(d.updatedAt),fresh=age&&(Date.now()-new Date(d.updatedAt).getTime())<12*3.6e6;
-      $("bmeta").innerHTML=fresh?("<span class='live'>"+tr("live")+"</span> · "+tr("updPre")+age+tr("updPost")):tr("checking");
+      if(fresh)setParts($("bmeta"),[{tag:"span",cls:"live",text:"● "+tr("live")}," · "+tr("updPre")+age+tr("updPost")]);
+      else $("bmeta").textContent=tr("checking");
+      // humeur Veilleur = score réel (honnêteté : jamais un calme fabriqué)
+      try{var msc=lv.status==="clean"?85:lv.status==="moderate"?55:25;if(window.setVeilleurScore)window.setVeilleurScore(msc);}catch(_){}
+      // hero : chip live + verdict de LA plage de l'établissement
+      try{
+        var hl=$("heroLive");if(hl&&fresh){hl.appendChild(document.createTextNode(" "+tr("live")+" · "+tr("updPre")+age+tr("updPost")));hl.style.display="inline-flex";}
+        var hv=$("heroVerdict"),hvw=$("heroVerdictWrap"),hvd=$("heroVd");
+        if(hv&&hvw){hv.textContent=name+" — "+((LBL[lv.status]&&LBL[lv.status][LANG])||lv.status);if(hvd)hvd.style.setProperty("--st",c);hvw.style.display="inline-flex";}
+      }catch(_){}
       var wk=(d.weekly&&d.weekly[id]&&d.weekly[id].forecast)||[];
       if(wk.length){var fc=$("fc");wk.slice(0,7).forEach(function(f,i){
         var st=i===0?lv.status:f.status;var dt=new Date((f.date||"")+"T12:00:00");
         var lbl=i===0?tr("today"):(isNaN(dt)?"":WD[dt.getDay()]);
-        var cell=document.createElement("div");cell.className="fcd";cell.style.setProperty("--st",ST(st));
-        cell.innerHTML="<div class='l'>"+lbl+"</div><div class='d'></div>";fc.appendChild(cell);
+        var cell=mk("div","fcd");cell.style.setProperty("--st",ST(st));
+        cell.appendChild(mk("div","l",lbl));cell.appendChild(mk("div","d"));fc.appendChild(cell);
       });}
     }).catch(function(){$("bmeta").textContent=tr("unavail");});
     function ST(s){return s==="clean"?"var(--clean)":s==="moderate"?"var(--moderate)":s==="avoid"?"var(--avoid)":"#888";}
@@ -429,46 +828,34 @@
     upd();
 
     // ── 5. abonnement self-serve ──
-    // Essai 30 j INSTANTANÉ et self-serve : POST email → /api/b2b-trial.php émet un
-    // token Pro temporaire (30 j) renvoyé direct → on l'applique au widget (marque
-    // blanche active tout de suite), zéro call, zéro attente, zéro humain.
     function activateTrial(){
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); return; }
       var btn=$("trialBtn"); btn.textContent=tr("trialActivating"); btn.disabled=true;
-      // Contexte LIVE du builder (panel adverse 2026-07-02) : la plage/le nom choisis
-      // dans le widget, pas les valeurs figées au chargement — sinon le lien espace
-      // emailé (?k=&beach=&name=) ré-ancre la MAUVAISE plage au retour. L'île suit la
-      // plage sélectionnée (email FR bon domaine si plage GP choisie depuis MQ).
       var selBeach=(b&&SLUG2ID[b.value])?b.value:beachSlug;
-      // Nom : l'URL d'outreach (?name=) reste prioritaire — nm est un TITRE de widget
-      // (« ex. La plage de l'hôtel »), il ne sert que de fallback si aucun nom connu.
       var selName=hotel||(((nm&&nm.value)||"").replace(/[<>"]/g,"").trim().slice(0,48));
       var selIsland=USD_REGION?island:(SLUG2ISL[selBeach]||island);
       fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,name:selName,beach:selBeach,island:selIsland})})
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.ok&&d.token){
-            token=d.token; upd();            // applique le token → widget marque blanche
-            $("wlNote").innerHTML=tr("trialActiveNote");
+            token=d.token; upd();
+            $("wlNote").textContent=tr("trialActiveNote");
             var pb=$("proBanner"); if(pb)pb.style.display="flex";
             var tf=$("trialForm"); if(tf)tf.style.display="none";
             var tr2=$("trialResult"); tr2.style.display="block";
-            tr2.innerHTML=trialSuccess(d.token);
+            setParts(tr2,trialSuccessParts(d.token));
           } else { btn.textContent=tr("trialRetry"); btn.disabled=false; }
         }).catch(function(){ btn.textContent=tr("trialRetry"); btn.disabled=false; });
     }
-    function trialSuccess(tok){
-      var codeHtml="<br><code style=\"display:inline-block;margin-top:7px;font-size:11px;word-break:break-all;color:#9af2c9\">"+tok+"</code>";
-      if(LANG==="en") return "✓ <b>Trial activated for 30 days.</b> Your widget above has already switched to your colors (no Sargasses credit), and your alerts are starting. <b>We just emailed you your space link</b> — it keeps your access even if you close this page. You can also keep it here:"+codeHtml;
-      if(LANG==="es") return "✓ <b>Prueba activada por 30 días.</b> Tu widget de arriba ya cambió a tus colores (sin crédito Sargasses) y tus alertas comienzan. <b>Acabamos de enviarte el enlace de tu espacio por email</b> — conserva tu acceso aunque cierres esta página. También puedes guardarlo aquí:"+codeHtml;
-      return "✓ <b>Essai activé pour 30 jours.</b> Votre widget ci-dessus est déjà passé à vos couleurs (sans crédit Sargasses), et vos alertes démarrent. <b>On vient de vous envoyer le lien de votre espace par email</b> — il garde votre accès même si vous fermez cette page. Vous pouvez aussi le conserver ici :"+codeHtml;
+    function trialSuccessParts(tok){
+      var codeNode={tag:"code",text:tok,style:"display:inline-block;margin-top:7px;font-size:11px;word-break:break-all;color:var(--teal)"};
+      if(LANG==="en") return ["✓ ",{tag:"b",text:"Trial activated for 30 days."}," Your widget above has already switched to your colors (no Sargasses credit), and your alerts are starting. ",{tag:"b",text:"We just emailed you your space link"}," — it keeps your access even if you close this page. You can also keep it here:",{br:1},codeNode];
+      if(LANG==="es") return ["✓ ",{tag:"b",text:"Prueba activada por 30 días."}," Tu widget de arriba ya cambió a tus colores (sin crédito Sargasses) y tus alertas comienzan. ",{tag:"b",text:"Acabamos de enviarte el enlace de tu espacio por email"}," — conserva tu acceso aunque cierres esta página. También puedes guardarlo aquí:",{br:1},codeNode];
+      return ["✓ ",{tag:"b",text:"Essai activé pour 30 jours."}," Votre widget ci-dessus est déjà passé à vos couleurs (sans crédit Sargasses), et vos alertes démarrent. ",{tag:"b",text:"On vient de vous envoyer le lien de votre espace par email"}," — il garde votre accès même si vous fermez cette page. Vous pouvez aussi le conserver ici :",{br:1},codeNode];
     }
     $("trialBtn").addEventListener("click",activateTrial);
     $("trialEmail").addEventListener("keydown",function(e){if(e.key==="Enter")activateTrial();});
 
-    // Abonnement MENSUEL self-serve : POST create_subscription (plan pro_monthly[_usd],
-    // hosted:1) → Mollie héberge la page carte+mandat → redirection. À 'paid', le webhook
-    // (#210) crée l'abo récurrent + émet le token Pro par email. Zéro Components ici.
     function subscribeMonthly(){
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); var sr=$("subResult"); sr.style.display="block"; sr.textContent=tr("emailFirst"); return; }
@@ -480,39 +867,41 @@
         }).catch(function(){ btn.textContent=subMoLabel(); btn.disabled=false; var sr=$("subResult"); sr.style.display="block"; sr.textContent=tr("netUnavail"); });
     }
     $("subMonthly").addEventListener("click",subscribeMonthly);
-    // Option « verrouiller l'année » : lien Mollie pro_annual[_usd]
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var u=d&&d.links&&d.links[PLAN_YR_KEY]&&d.links[PLAN_YR_KEY].url;
       if(u)$("subscribe").href=u;
     }).catch(function(){});
 
-    // ── token valide → distinguer ESSAI (≈30 j) d'un ABONNÉ payant (≈400 j) ──
-    // Essai : on GARDE la carte d'abo visible + bandeau d'urgence + email pré-rempli
-    // (le token essai répond pro:true → sans ça, la carte d'abo était masquée et le
-    // prospect ne voyait JAMAIS le CTA payant = la « falaise J+30 »). Rollback ?trialconv=0.
     if(token){
       fetch("https://"+DOMAIN+"/api/widget-token.php?k="+encodeURIComponent(token),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
         if(!(j&&j.pro))return;
-        $("wlNote").innerHTML=tr("wlActiveNote");
+        $("wlNote").textContent=tr("wlActiveNote");
         var pl=decodeTokenPayload(token);
         var dleft=pl&&pl.exp?Math.max(0,Math.ceil((pl.exp*1000-Date.now())/86400000)):999;
         if(dleft<=60&&!TRIALCONV_OFF){
-          // En essai : masque le bloc « démarrer l'essai », surface le bloc payant.
           var em=(j.host||(pl&&pl.h)||"").trim();
-          if(em){var te=$("trialEmail");if(te)te.value=em;}            // pré-rempli → 1 clic
+          if(em){var te=$("trialEmail");if(te)te.value=em;}
           var tf=$("trialForm");if(tf)tf.style.display="none";
           ["trialTitle","trialDesc"].forEach(function(k){var e=document.querySelector('[data-i18n="'+k+'"]');if(e)e.style.display="none";});
           var bn=document.createElement("div");
-          bn.style.cssText="background:"+(dleft>7?"rgba(255,199,44,.16)":"rgba(255,107,107,.18)")+";border:1px solid "+(dleft>7?"rgba(255,199,44,.5)":"rgba(255,107,107,.55)")+";color:#fff;padding:13px 16px;border-radius:14px;margin-bottom:18px;font-size:14px;line-height:1.5";
-          bn.innerHTML=trialUrgencyMsg(dleft);
+          bn.style.cssText="background:"+(dleft>7?"color-mix(in srgb,var(--goldL) 18%,var(--paper))":"color-mix(in srgb,var(--avoid) 15%,var(--paper))")+";border:2px solid "+(dleft>7?"var(--goldL)":"var(--avoid)")+";color:var(--ink);padding:13px 16px;border-radius:14px;margin-bottom:18px;font-size:14px;line-height:1.5";
+          setParts(bn,trialUrgencyParts(dleft));
           var sc=$("subCard");if(sc)sc.insertBefore(bn,sc.firstChild);
         } else {
-          // Abonné payant (token ≈400 j) ou rollback : bandeau Pro + masque la carte d'abo.
           $("proBanner").style.display="flex";
           var sc2=$("subCard");if(sc2)sc2.style.display="none";
         }
       }).catch(function(){});
     }
+
+    // ── scroll-reveal (plancher reduced-motion : tout visible) ──
+    try{
+      var rm=false;try{rm=matchMedia("(prefers-reduced-motion:reduce)").matches;}catch(_){}
+      var revs=document.querySelectorAll(".reveal");
+      if(rm||!("IntersectionObserver"in window)){revs.forEach(function(el){el.classList.add("in");});}
+      else{var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}});},{threshold:.12,rootMargin:"0px 0px -8% 0px"});
+        revs.forEach(function(el){io.observe(el);});}
+    }catch(_){document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});}
   })();
   </script>
 </body>
