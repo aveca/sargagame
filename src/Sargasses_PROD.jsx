@@ -354,6 +354,16 @@ async function shareBeachCard(beach,lang,forecast){
 // Domaine de marque par région (share-card config-driven → scalable multi-marché).
 function _scDomain(){try{if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined"&&REGION&&REGION.domain)return REGION.domain}catch(_){}
   try{return (location.hostname||"").includes("guadeloupe")?"sargasses-guadeloupe.com":"sargasses-martinique.com"}catch(_){return "sargasses-martinique.com"}}
+// Lien fiche SEO de la plage, région-aware via beachPageUrl (/plages MQ-GP ·
+// /beaches EN · /playas ES ; domaine partenaire pour l'autre île du build MQ/GP,
+// un same-origin y serait 404). Fallback = ancien lien same-origin /plages/.
+// Rollback : ?sharelink=0 (même kill-switch que le deep-link de partage #408).
+function _fichePageUrl(beach){
+  const origin=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+  try{if(!/[?&]sharelink=0/.test(window.location.search)){const u=beachPageUrl(beach);if(u)return u}}catch(_){}
+  const slug=getCanonicalSlug(beach)
+  return slug?origin+"/plages/"+slug+"/":origin
+}
 // buildShareCard(opts) — générateur de cartes virales multi-variant. 'beach'
 // délègue à shareBeachCard (historique, intact). 'streak' = VEILLE-CARD DE SÉRIE :
 // le "Wordle de la mer" — la série du Veilleur en grille de pastilles, SANS lien
@@ -4205,7 +4215,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 padding:"14px 10px",borderRadius:16,background:"#0D0D0D",color:"#fff",fontSize:14,fontWeight:700}}>
               <span style={{fontSize:16}}>🚗</span> {LL.directions}
             </a>
-            <a href={`/plages/${getCanonicalSlug(beach)}/`} target="_blank" rel="noopener"
+            <a href={_fichePageUrl(beach)} target="_blank" rel="noopener"
               style={{flex:1,textDecoration:"none",textAlign:"center",
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 padding:"14px 10px",borderRadius:16,border:"1.5px solid var(--sg-border)",
@@ -4217,9 +4227,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               track("sg_share",{beach_id:beach.id,method:"card",status:beach.status})
               if(await shareBeachCard(beach,lang,forecast))return
               // FALLBACK (partage de fichier indispo) : texte + lien (référral si premium).
-              const slug=getCanonicalSlug(beach)
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
-              const url=window.location.origin+"/plages/"+slug+"/"+(refCode?"?ref="+refCode:"")
+              const url=_fichePageUrl(beach)+(refCode?"?ref="+refCode:"")
               const isRef=!!refCode
               const _st=ST[beach.status]||ST._loading
               const _stl=lang==="es"?_st.les:lang==="en"?_st.le:_st.l
@@ -8382,10 +8391,8 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const [faved,setFaved]=useState(false)
   const shareBeach=b=>{
     const txt=`${b.name} ${b.score}/100 · ${statusShort(b)} ${T("aujourd'hui","today","hoy")} ☀️`
-    // Deep-link vers la fiche de la plage (/plages/<slug>), jamais l'accueil du site.
-    const origin=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
-    const slug=getCanonicalSlug(b)
-    const url=slug?`${origin}/plages/${slug}/`:origin
+    // Deep-link vers la fiche de la plage (région-aware via _fichePageUrl), jamais l'accueil.
+    const url=_fichePageUrl(b)
     track("sg_share",{beach_id:b.id,method:"funnel"})
     try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
     try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
