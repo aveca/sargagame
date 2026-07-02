@@ -43,15 +43,21 @@ async function enrichNamedDeadClicks(report) {
     const key = map[site.id] || env; if (!key) continue
     let data; try { data = await _fetchStats(site.domain, key) } catch (e) { console.error(`  [${site.id}] stats.php: ${e.message}`); continue }
     // Granularité PAR ÉCRAN : on garde OÙ le dead-click a lieu (page = écran), pas un bucket
-    // « app » global. Chaque coupable nommé (≥8) devient une issue actionnable.
+    // « app » global. Chaque coupable nommé (≥ plancher) devient une issue actionnable.
+    // Plancher de bruit (même formule que ux-daily.cjs, panel 2026-07-02) : le classifieur
+    // client compte TOUT tap sur un nœud non-interactif (zéro exigence de répétition) → un
+    // élément sous max(10 taps, ~1 % des sessions région sur la fenêtre) = bruit de
+    // scroll/lecture, pas un coupable (puntacana nommait un élément à 4 taps / 11 sessions
+    // dans l'email ux-watch). Compteurs et sessions viennent de la même réponse days=7.
+    const elFloor = Math.max(10, Math.ceil((data.sessions || 0) * 0.01))
     const named = []
     for (const [screen, c] of Object.entries(data.clicks || {}))
       for (const [el, n] of Object.entries(c.top_dead_els || {}))
-        if (n >= 8) named.push({ screen: screen || 'app', el, n })
+        if (n >= elFloor) named.push({ screen: screen || 'app', el, n })
     if (!named.length) {
-      // stats.php a répondu mais 0 coupable ≥8 : rendre le trou de données VISIBLE
+      // stats.php a répondu mais 0 coupable ≥ plancher : rendre le trou de données VISIBLE
       // (ne pas laisser croire « aucun dead-click » alors que c'est « aucune donnée nommée »).
-      console.log(`  [${site.id}] stats.php OK, 0 dead-click nommé (≥8) — coupable non remonté (trou de données, pas succès).`)
+      console.log(`  [${site.id}] stats.php OK, 0 dead-click nommé (≥${elFloor}) — coupable non remonté (trou de données, pas succès).`)
       continue
     }
     named.sort((a, b) => b.n - a.n)
