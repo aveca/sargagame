@@ -36,48 +36,10 @@
           "a": "Direction la côte sous-le-vent de Basse-Terre (Deshaies, Bouillante), le refuge le plus fiable, ou consultez les meilleures plages propres du jour sur la carte."
         }
       ],
-      "status": "queued",
-      "generatedAt": "2026-06-22T12:59:54.237Z"
-    },
-    {
-      "slug": "sargasses-les-saintes",
-      "island": "gp",
-      "type": "commune",
-      "title": "Sargasses aux Saintes (Terre-de-Haut) — Pompierre, Pain de Sucre et plages du jour",
-      "desc": "Y a-t-il des sargasses aux Saintes ? Sur l'archipel de Terre-de-Haut, baies abritées et anses sauvages cohabitent. État du jour de Pompierre, Pain de Sucre et Anse Crawen, carte en temps réel, prévision 7 jours.",
-      "targetQuery": "les saintes sargasses",
-      "gscImpressions": 35,
-      "internalLinks": [
-        "plage-de-pompierre",
-        "plage-pain-de-sucre",
-        "anse-rodrigue",
-        "anse-crawen",
-        "anse-du-figuier-saintes",
-        "sargasses-deshaies",
-        "sargasses-sainte-anne-guadeloupe",
-        "meilleures-plages-guadeloupe-sargasses",
-        "saison-sargasses-guadeloupe",
-        "carte-sargasses",
-        "alertes",
-        "previsions"
-      ],
-      "editorialHtml": "<article><h1>Sargasses aux Saintes (Terre-de-Haut) — Pompierre, Pain de Sucre et plages du jour</h1><p>Y a-t-il des <strong>sargasses aux Saintes</strong> aujourd'hui ? Petit archipel au sud de Basse-Terre, l'Îlet de <strong>Terre-de-Haut</strong> aligne baies abritées et anses sauvages : son relief crée un patchwork où une plage protégée peut être impeccable quand une anse ouverte, à dix minutes de marche, reçoit un banc. C'est ce contraste qui rend la vérification utile avant la traversée en navette. Consultez l'<a href=\"/carte-sargasses/\">état du jour sur la carte</a> avant de réserver votre bateau.</p><h2>Les plages de Terre-de-Haut</h2><ul><li><a href=\"/plages/plage-de-pompierre/\">Plage de Pompierre</a> — la plus célèbre, longue baie en croissant protégée par deux îlots, eau calme et turquoise. Souvent abritée.</li><li><a href=\"/plages/plage-pain-de-sucre/\">Plage du Pain de Sucre</a> — crique de carte postale au pied du piton, snorkeling, accès par un sentier.</li><li><a href=\"/plages/anse-crawen/\">Anse Crawen</a> — plage naturiste isolée à l'ouest, plus sauvage.</li><li><a href=\"/plages/anse-rodrigue/\">Anse Rodrigue</a> et <a href=\"/plages/anse-du-figuier-saintes/\">Anse du Figuier</a> — petites plages tranquilles du secteur sud.</li></ul><h2>Quand les sargasses touchent-elles Les Saintes ?</h2><p>La <a href=\"/saison-sargasses-guadeloupe/\">saison court d'avril à octobre</a>, pic de mai à août. L'archipel est globalement mieux protégé que la côte atlantique de Grande-Terre, mais les anses orientées au vent peuvent recevoir des bancs par épisodes. Comparez les plages avant de monter dans la navette : un aller-retour à l'aveugle coûte une demi-journée et le prix d'un billet de bateau. En pratique, l'archipel garde presque toujours une baie abritée fréquentable le jour même, ce qui en fait une valeur sûre quand Grande-Terre est saturée.</p><h2>Où aller si une anse est touchée ?</h2><p>Sur l'îlet même, basculez vers une baie abritée (Pompierre, Pain de Sucre). Si l'épisode est large, la côte sous-le-vent de Basse-Terre — <a href=\"/sargasses-deshaies/\">Deshaies</a>, Bouillante — reste le refuge le plus fiable. Repérez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a>.</p><h2>Être prévenu pour Les Saintes</h2><p><a href=\"/alertes/\">Activez une alerte gratuite</a> sur Pompierre et recevez l'état du jour avant d'embarquer.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/sargasses-sainte-anne-guadeloupe/\">Sargasses à Sainte-Anne</a></p></article>",
-      "faq": [
-        {
-          "q": "Y a-t-il des sargasses à Pompierre aux Saintes ?",
-          "a": "Rarement : la plage de Pompierre est une baie en croissant protégée par deux îlots, ce qui l'abrite bien des arrivages. Les anses ouvertes au vent de Terre-de-Haut peuvent être plus exposées le même jour. Vérifiez l'état du jour sur la carte avant la traversée."
-        },
-        {
-          "q": "Faut-il vérifier les sargasses avant d'aller aux Saintes en navette ?",
-          "a": "Oui, ça vaut le coup : un aller-retour en bateau coûte une demi-journée et un billet. Comparer les plages de Terre-de-Haut sur la carte avant d'embarquer évite de découvrir un banc sur place — d'autant que l'archipel reste globalement protégé, donc une bonne plage est presque toujours disponible."
-        },
-        {
-          "q": "Les Saintes sont-elles épargnées par les sargasses ?",
-          "a": "Globalement mieux protégées que la côte atlantique de Grande-Terre grâce à leur position et à leurs baies abritées, mais pas garanties : les anses orientées au vent reçoivent des bancs par épisodes en pleine saison. La carte du jour fait la différence plage par plage."
-        }
-      ],
-      "status": "queued",
-      "generatedAt": "2026-06-22T12:59:54.237Z"
+      "status": "superseded",
+      "generatedAt": "2026-06-22T12:59:54.237Z",
+      "skipReason": "Déjà auto-généré par commune-seo-pages.cjs (COMMUNE_SLUGS.gp) → publier ce draft dupliquerait la page. Retiré du drip.",
+      "flaggedAt": "2026-07-01"
     },
     {
       "slug": "sargasses-marie-galante",
@@ -118,6 +80,45 @@
       ],
       "status": "queued",
       "generatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "slug": "algues-guadeloupe",
+      "island": "gp",
+      "type": "topic",
+      "title": "Algues sur les plages de Guadeloupe : ce sont les sargasses — carte du jour",
+      "desc": "Ces algues brunes qui s'échouent sur les plages de Guadeloupe sont les sargasses. D'où viennent-elles, sont-elles dangereuses, quelles plages sont épargnées aujourd'hui ? Carte en temps réel et prévision 7 jours.",
+      "targetQuery": "algues guadeloupe (+ algues sargasses guadeloupe)",
+      "gscImpressions": 250,
+      "internalLinks": [
+        "carte-sargasses",
+        "meilleures-plages-guadeloupe-sargasses",
+        "saison-sargasses-guadeloupe",
+        "previsions",
+        "alertes",
+        "sargasses-sante-symptomes",
+        "sargasses-deshaies",
+        "sargasses-gosier",
+        "la-grande-anse-deshaies",
+        "plage-de-la-perle",
+        "plage-de-malendure"
+      ],
+      "editorialHtml": "<article><h1>Algues sur les plages de Guadeloupe : ce sont les sargasses — carte du jour</h1><p>Vous cherchez où en sont les <strong>algues en Guadeloupe</strong> ? Ces grandes nappes brunes qui s'échouent sur le sable et dégagent une odeur d'œuf pourri en séchant sont les <strong>sargasses</strong> — une algue brune pélagique qui dérive depuis l'Atlantique. « Algues » et « sargasses » désignent ici la même chose. Avant de choisir votre plage, consultez l'<a href=\"/carte-sargasses/\">état du jour sur la carte en temps réel</a>.</p><h2>Algues ou sargasses : la même chose</h2><p>En Guadeloupe, on parle couramment d'« algues » pour les <strong>sargasses</strong>. Fraîches et en mer, elles sont brun-doré et inoffensives ; c'est en s'accumulant sur la plage puis en se décomposant qu'elles posent problème. À ne pas confondre avec les rares « algues rouges » ou les herbiers marins : les nappes qui recouvrent le littoral antillais par bancs, d'avril à octobre, sont bien les sargasses.</p><h2>D'où viennent ces algues ?</h2><p>Elles proviennent de la grande ceinture de sargasses de l'Atlantique, entre l'Afrique et le Brésil, et remontent vers les Antilles portées par les courants et les alizés. La <a href=\"/saison-sargasses-guadeloupe/\">saison court d'avril à octobre</a>, avec un pic de mai à septembre. La côte atlantique (est de Grande-Terre, Capesterre) est la plus exposée ; la côte sous-le-vent de Basse-Terre est la mieux protégée.</p><h2>Ces algues sont-elles dangereuses ?</h2><p>En mer, non. Sur la plage, leur décomposition dégage du sulfure d'hydrogène (H₂S) et de l'ammoniac, qui peuvent irriter yeux et voies respiratoires près des gros dépôts. Détails et précautions sur notre page <a href=\"/sargasses-sante-symptomes/\">sargasses et santé</a>. La règle simple : éviter de stationner au contact d'algues en train de sécher.</p><h2>Quelles plages de Guadeloupe sont sans algues aujourd'hui ?</h2><p>Les bancs bougent vite : une plage couverte un jour peut être dégagée deux jours plus tard. Repérez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a>, recalculées à partir des données satellite. Les valeurs sûres restent la côte sous-le-vent : <a href=\"/plages/la-grande-anse-deshaies/\">Grande Anse de Deshaies</a>, la <a href=\"/plages/plage-de-la-perle/\">Plage de la Perle</a> et <a href=\"/plages/plage-de-malendure/\">Malendure</a> à Bouillante.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/alertes/\">Activer une alerte gratuite</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/sargasses-gosier/\">Sargasses au Gosier</a></p></article>",
+      "faq": [
+        {
+          "q": "Les algues sur les plages de Guadeloupe, ce sont les sargasses ?",
+          "a": "Oui. Les grandes nappes brunes qui s'échouent sur le littoral guadeloupéen d'avril à octobre sont les sargasses, une algue pélagique venue de l'Atlantique. « Algues » et « sargasses » désignent ici la même chose. À ne pas confondre avec les herbiers ou les rares algues rouges."
+        },
+        {
+          "q": "Les algues (sargasses) de Guadeloupe sont-elles dangereuses ?",
+          "a": "En mer, non. Le risque vient de leur décomposition sur la plage, qui dégage du sulfure d'hydrogène (odeur d'œuf pourri) et de l'ammoniac, pouvant irriter yeux et voies respiratoires près des gros dépôts. Il suffit d'éviter de stationner au contact d'algues en train de sécher."
+        },
+        {
+          "q": "Quelles plages de Guadeloupe sont sans algues aujourd'hui ?",
+          "a": "La côte sous-le-vent de Basse-Terre (Grande Anse de Deshaies, la Perle, Malendure) est la plus souvent épargnée. Comme les bancs bougent vite, consultez la carte du jour et la liste des plages les plus propres, recalculées à partir des données satellite."
+        }
+      ],
+      "status": "queued",
+      "generatedAt": "2026-07-01T00:00:00.000Z"
     }
   ],
   "published": [
@@ -161,6 +162,47 @@
       "status": "published",
       "generatedAt": "2026-06-22T12:59:54.237Z",
       "publishedAt": "2026-06-23"
+    },
+    {
+      "slug": "sargasses-les-saintes",
+      "island": "gp",
+      "type": "commune",
+      "title": "Sargasses aux Saintes (Terre-de-Haut) — Pompierre, Pain de Sucre et plages du jour",
+      "desc": "Y a-t-il des sargasses aux Saintes ? Sur l'archipel de Terre-de-Haut, baies abritées et anses sauvages cohabitent. État du jour de Pompierre, Pain de Sucre et Anse Crawen, carte en temps réel, prévision 7 jours.",
+      "targetQuery": "les saintes sargasses",
+      "gscImpressions": 35,
+      "internalLinks": [
+        "plage-de-pompierre",
+        "plage-pain-de-sucre",
+        "anse-rodrigue",
+        "anse-crawen",
+        "anse-du-figuier-saintes",
+        "sargasses-deshaies",
+        "sargasses-sainte-anne-guadeloupe",
+        "meilleures-plages-guadeloupe-sargasses",
+        "saison-sargasses-guadeloupe",
+        "carte-sargasses",
+        "alertes",
+        "previsions"
+      ],
+      "editorialHtml": "<article><h1>Sargasses aux Saintes (Terre-de-Haut) — Pompierre, Pain de Sucre et plages du jour</h1><p>Y a-t-il des <strong>sargasses aux Saintes</strong> aujourd'hui ? Petit archipel au sud de Basse-Terre, l'Îlet de <strong>Terre-de-Haut</strong> aligne baies abritées et anses sauvages : son relief crée un patchwork où une plage protégée peut être impeccable quand une anse ouverte, à dix minutes de marche, reçoit un banc. C'est ce contraste qui rend la vérification utile avant la traversée en navette. Consultez l'<a href=\"/carte-sargasses/\">état du jour sur la carte</a> avant de réserver votre bateau.</p><h2>Les plages de Terre-de-Haut</h2><ul><li><a href=\"/plages/plage-de-pompierre/\">Plage de Pompierre</a> — la plus célèbre, longue baie en croissant protégée par deux îlots, eau calme et turquoise. Souvent abritée.</li><li><a href=\"/plages/plage-pain-de-sucre/\">Plage du Pain de Sucre</a> — crique de carte postale au pied du piton, snorkeling, accès par un sentier.</li><li><a href=\"/plages/anse-crawen/\">Anse Crawen</a> — plage naturiste isolée à l'ouest, plus sauvage.</li><li><a href=\"/plages/anse-rodrigue/\">Anse Rodrigue</a> et <a href=\"/plages/anse-du-figuier-saintes/\">Anse du Figuier</a> — petites plages tranquilles du secteur sud.</li></ul><h2>Quand les sargasses touchent-elles Les Saintes ?</h2><p>La <a href=\"/saison-sargasses-guadeloupe/\">saison court d'avril à octobre</a>, pic de mai à août. L'archipel est globalement mieux protégé que la côte atlantique de Grande-Terre, mais les anses orientées au vent peuvent recevoir des bancs par épisodes. Comparez les plages avant de monter dans la navette : un aller-retour à l'aveugle coûte une demi-journée et le prix d'un billet de bateau. En pratique, l'archipel garde presque toujours une baie abritée fréquentable le jour même, ce qui en fait une valeur sûre quand Grande-Terre est saturée.</p><h2>Où aller si une anse est touchée ?</h2><p>Sur l'îlet même, basculez vers une baie abritée (Pompierre, Pain de Sucre). Si l'épisode est large, la côte sous-le-vent de Basse-Terre — <a href=\"/sargasses-deshaies/\">Deshaies</a>, Bouillante — reste le refuge le plus fiable. Repérez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a>.</p><h2>Être prévenu pour Les Saintes</h2><p><a href=\"/alertes/\">Activez une alerte gratuite</a> sur Pompierre et recevez l'état du jour avant d'embarquer.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/sargasses-sainte-anne-guadeloupe/\">Sargasses à Sainte-Anne</a></p></article>",
+      "faq": [
+        {
+          "q": "Y a-t-il des sargasses à Pompierre aux Saintes ?",
+          "a": "Rarement : la plage de Pompierre est une baie en croissant protégée par deux îlots, ce qui l'abrite bien des arrivages. Les anses ouvertes au vent de Terre-de-Haut peuvent être plus exposées le même jour. Vérifiez l'état du jour sur la carte avant la traversée."
+        },
+        {
+          "q": "Faut-il vérifier les sargasses avant d'aller aux Saintes en navette ?",
+          "a": "Oui, ça vaut le coup : un aller-retour en bateau coûte une demi-journée et un billet. Comparer les plages de Terre-de-Haut sur la carte avant d'embarquer évite de découvrir un banc sur place — d'autant que l'archipel reste globalement protégé, donc une bonne plage est presque toujours disponible."
+        },
+        {
+          "q": "Les Saintes sont-elles épargnées par les sargasses ?",
+          "a": "Globalement mieux protégées que la côte atlantique de Grande-Terre grâce à leur position et à leurs baies abritées, mais pas garanties : les anses orientées au vent reçoivent des bancs par épisodes en pleine saison. La carte du jour fait la différence plage par plage."
+        }
+      ],
+      "status": "published",
+      "generatedAt": "2026-06-22T12:59:54.237Z",
+      "publishedAt": "2026-07-01"
     }
   ]
 }
