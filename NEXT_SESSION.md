@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **💰 2026-07-02 — CRO : PORTE PREMIUM DANS WEEKHUB (« Le Veilleur personnel », levier CRO n°1 du panel). PR #406 MERGÉE + DÉPLOYÉE.**
+>
+> Levier `ADD-whcta` owned par la session précédente = exécuté. **WeekHub (« La Vigie ») DÉMONTRAIT la prévision que le paywall vend et PROMETTAIT l'alerte** (« tu seras prévenu le matin où ça bascule ») **sans jamais offrir de bouton pour l'obtenir** — zéro chemin `openPremium` (vérifié grep). 
+> **Shippé** : carte CTA sobre + positive (mascotte Watcher + « Sois prévenu la veille du jour où ta plage bascule — deviens celui qui ne se trompe jamais de crique ») placée après le bloc « où ne pas aller » → `openPremium("weekhub_alert")`. **Ferme le hub d'abord** (pas d'empilement de modales), track `sg_weekhub_premium_cta`. **Cachée aux abonnés** (`isPremium`), kill-switch **`?whcta=0`** (défaut ON — **PAS un flag A/B**, discipline anti-dilution respectée). Wiring 100 % **additif** : `onPremium`/`isPremium` déjà props de `WorldMapView`, passés au `LazyWeekHub` ; `whctaOff` lu comme `weekhub`/`weekhubseason`. FR/EN/ES, grammaire comic paper/ink/gold.
+> **Vérif** : esbuild OK · build vert (SW **v217**, budget **182 Ko ≤ 210**) · **rendu isolé Playwright 390×844** des 3 variantes (default = CTA présent + flux `close`→`premium("weekhub_alert")` ; `isPremium` = absent ; `?whcta=0` = absent ; **0 erreur JS**). PR #406 mergée sur main, CI Tests verts, déploiement `daily-copernicus` en cours à la clôture.
+> **Nouveau flag rollback** : `?whcta=0` (kill-switch, défaut ON). **Suivi** : l'event `sg_weekhub_premium_cta` mesure les clics ; l'ouverture du hub = `sg_weekhub_open`/`sg_weekhub_open_cta` → taux hub→premium à lire dans le funnel Supabase.
+> **Owned prochaine session (non fait)** : réintroduction de l'onboarding (`?onb=1` → défaut ON ?) porteur du scan animé + lien preuve `/fiabilite/` — à trancher avec l'entonnoir `sg_arena_onb_*` ; PHASE 4 « Capture email ATONE — revoir l'opt-in form » (owned `sargasses-refonte-builder`).
+
 > **🎨 2026-07-01 — DESIGN COMIC/MOTION (ultracode, panel adverse 5 lentilles) : 6 items shippés, 8 candidats rejetés à prémisse vérifiée.**
 >
 > Mandat fondateur « avancer le design ui/ux style comic/bd et animation/effects ». Cartographie Explore → **spot-check anti-faux-positif** (le rapport initial se trompait : `.lc-reduce` couvre déjà l'arène, `lc-fanin`/`lc-zip` déjà utilisés, wildcard reduced-motion global présent) → panel adverse (design-veilleur, motion, CRO, perf-a11y, avocat du diable — lecture code obligatoire) → implémentation 3 agents + revue adverse (2 bloquants attrapés : `slice(0,3)` rendait juin/juillet identiques « jui » en FR ; grep documenté non échappé + token sans consommateur).
