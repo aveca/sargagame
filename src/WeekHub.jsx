@@ -229,6 +229,19 @@ export default function WeekHub({
   // pas de rappel J-7 par mail — la valeur vient à l'utilisateur, on ne quémande pas d'adresse.
   const [planDate, setPlanDate] = useState("")
   const [planSent, setPlanSent] = useState(false)
+  // Sélection MOIS-FIRST (panel 2026-07-02) : le voyageur choisit une PÉRIODE, pas un jour —
+  // la réponse (phase saisonnière + observé) ne dépend QUE du mois. planMonth = index de mois
+  // absolu (0-11) tapé sur la grille ; le jour exact reste en divulgation progressive car le
+  // message J-7 / l'optin n'ont de sens QUE sur une vraie date saisie (jamais fabriquée).
+  // Rollback ?plmois=0 → layout historique input-date-primaire.
+  const plmoisOff = useMemo(()=>{ try{ return /[?&]plmois=0/.test(window.location.search) }catch(_){ return false } },[])
+  const [planMonth, setPlanMonth] = useState(null)
+  const [showExactDate, setShowExactDate] = useState(false)
+  // Mois effectif de la réponse : la date exacte saisie prime, sinon le mois tapé.
+  const effMi = useMemo(()=>{
+    if(planDate){ try{ const d=new Date(planDate+"T12:00:00"); if(!isNaN(d)) return d.getMonth() }catch(_){} }
+    return planMonth
+  },[planDate, planMonth])
   const planMsg = useMemo(()=>{
     if(!planDate) return null
     try{
@@ -245,34 +258,33 @@ export default function WeekHub({
         `Tu veredicto diario se abre el ${fmt(open)} (D-7) — vuelve entonces a consultarlo.`)
     }catch(_){ return null }
   },[planDate, lang])
-  // Estimation OBSERVÉE pour la date choisie (le « à peu près » demandé) : taux propre réel
-  // du mois de la date, par côte, depuis la climatologie. « Observé », jamais « prédit ».
+  // Estimation OBSERVÉE pour le mois choisi (le « à peu près » demandé) : taux propre réel
+  // du mois, par côte, depuis la climatologie. « Observé », jamais « prédit ». Dérive du mois
+  // effectif (date exacte OU mois tapé) — la donnée est mensuelle, aucun jour requis.
   const planEstimate = useMemo(()=>{
-    if(!planDate || !climatology) return null
-    let m; try{ m = new Date(planDate+"T12:00:00").getMonth()+1 }catch(_){ return null }
-    const monthName = (()=>{ try{ return new Date(2000,m-1,1).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{month:"long"}) }catch(_){ return "" } })()
+    if(effMi==null || !climatology) return null
+    const m = effMi+1
+    const mName = (()=>{ try{ return new Date(2000,effMi,1).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{month:"long"}) }catch(_){ return "" } })()
     const cells = climatology.cells.filter(c=>c.island===island && c.month===m)
-    if(!cells.length) return { none:true, monthName }
+    if(!cells.length) return { none:true, monthName:mName }
     const atl = cells.find(c=>c.coast==="atlantic"), shel = cells.find(c=>c.coast==="sheltered")
-    return { none:false, monthName, atl, shel }
-  },[planDate, climatology, island, lang])
+    return { none:false, monthName:mName, atl, shel }
+  },[effMi, climatology, island, lang])
   // Tendance SAISONNIÈRE pour la date choisie (le « quand réserver » demandé) : phase
   // climatologique SOURCÉE du mois de la date + les mois les plus calmes à venir. Couvre TOUS
   // les mois (même à plusieurs mois de la date), là où planEstimate (observé) manque encore
   // d'historique. Honnête : « tendance saisonnière (littérature publiée), pas une prévision datée ».
   const seasonMonths = seasonOutlook && Array.isArray(seasonOutlook.months) ? seasonOutlook.months : null
   const seasonForDate = useMemo(()=>{
-    if(!planDate || !seasonMonths) return null
-    let d; try{ d = new Date(planDate+"T12:00:00") }catch(_){ return null }
-    if(isNaN(d)) return null
-    const mi = d.getMonth()
+    if(effMi==null || !seasonMonths) return null
+    const mi = effMi
     const phase = seasonMonths[mi] || "hors-saison"
     const nowM = new Date().getMonth()
     const calm = []
     for(let k=0;k<12;k++){ const idx=(nowM+k)%12; if(seasonMonths[idx]==="hors-saison") calm.push(idx) }
     const calmNames = calm.slice(0,4).map(idx=>monthName(idx, lang)).filter(Boolean)
     return { phase, mName: monthName(mi, lang), mi, calmNames, isCalm: phase==="hors-saison" }
-  },[planDate, seasonMonths, lang])
+  },[effMi, seasonMonths, lang])
   // Calendrier 12 mois à venir (depuis le mois courant) : phase par mois, mois choisi surligné.
   const seasonStrip = useMemo(()=>{
     if(!seasonMonths) return null
@@ -284,10 +296,65 @@ export default function WeekHub({
   },[seasonMonths, seasonForDate, lang])
   // NB : l'opt-in planner se déclenche désormais directement au choix de la date (input onChange
   // ci-dessous) — DIRECT, zéro email, zéro ping. planSent sert juste à ne l'émettre qu'une fois.
+  // Tap d'un mois sur la grille : réponse immédiate (seasonForDate/planEstimate dérivent du mois).
+  // Ne pose JAMAIS de planDate fabriquée (« le 15 ») : le J-7/optin exigent un vrai jour saisi.
+  const pickMonth = useCallback((idx)=>{
+    setPlanMonth(idx)
+    if(planDate){ try{ const d=new Date(planDate+"T12:00:00"); if(isNaN(d)||d.getMonth()!==idx) setPlanDate("") }catch(_){ setPlanDate("") } }
+    try{ track && track("sg_weekhub_planner_month",{}) }catch(_){}
+  },[planDate, track])
+  // Bornes de l'input jour scopées au mois tapé (∩ [aujourd'hui, +330 j]) — dates en fuseau
+  // LOCAL (toISOString glisserait d'un jour en UTC-4/-5). Mois entièrement hors fenêtre → null
+  // (l'input retombe sur les bornes globales).
+  const monthInputBounds = useMemo(()=>{
+    if(planMonth==null) return null
+    try{
+      const now=new Date(), nowM=now.getMonth()
+      const k=(planMonth-nowM+12)%12
+      const y=now.getFullYear()+(nowM+k>=12?1:0)
+      const first=new Date(y,planMonth,1), last=new Date(y,planMonth+1,0)
+      const today=new Date(); today.setHours(0,0,0,0)
+      const capEnd=new Date(Date.now()+330*864e5)
+      const lo=first<today?today:first
+      const hi=last<capEnd?last:capEnd
+      if(lo>hi) return null
+      const fmt=d=>{const p=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())}
+      return { min:fmt(lo), max:fmt(hi) }
+    }catch(_){ return null }
+  },[planMonth])
 
   const card = { background:PAPER, border:`2.5px solid ${INK}`, boxShadow:`3px 3px 0 ${INK}`, borderRadius:14, padding:"13px 14px" }
   const h2 = { font:"400 15px/1 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:".01em" }
   const fresh = freshLabel(updatedAt, lang)
+  // Sélecteur mois-first actif (grille tappable) vs layout historique (input date primaire).
+  const monthFirst = !plmoisOff && !!seasonStrip
+  // Champ jour exact — UNE seule instance (positionnée différemment selon la branche) : le
+  // J-7/optin ne partent QUE d'ici (vraie saisie), jamais du tap mois. Bornes scopées au mois
+  // tapé quand dispo, sinon bornes globales historiques.
+  const planDateField = (
+    <div>
+      <label style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ta date d'arrivée (même dans plusieurs mois) :","Your arrival date (even months away):","Tu fecha de llegada (aunque falten meses):")}</label>
+      <input type="date" value={planDate}
+        onChange={e=>{ const v=e.target.value; setPlanDate(v); if(v && !planSent){ try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}; try{ onPlannerOptin && onPlannerOptin({source:"weekhub_planner",date:v}) }catch(_){}; setPlanSent(true) } }}
+        min={monthInputBounds?monthInputBounds.min:(()=>{try{return new Date().toISOString().slice(0,10)}catch(_){return undefined}})()}
+        max={monthInputBounds?monthInputBounds.max:(()=>{try{return new Date(Date.now()+330*864e5).toISOString().slice(0,10)}catch(_){return undefined}})()}
+        style={{width:"100%", boxSizing:"border-box", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
+    </div>
+  )
+  // Légende des 3 phases — partagée grille (mois-first) / strip décoratif (historique).
+  const phaseLegend = (
+    <div style={{display:"flex", gap:10, justifyContent:"center", marginTop:8, flexWrap:"wrap"}}>
+      {["hors-saison","approche-saison","pleine-saison"].map(p=>(
+        <span key={p} style={{display:"inline-flex", alignItems:"center", gap:4, font:"600 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>
+          <span style={{width:9,height:9,borderRadius:3,background:PHASE_META[p].c,border:`1px solid rgba(13,11,20,.4)`}}/>
+          {_t(lang,PHASE_META[p].lbl[0],PHASE_META[p].lbl[1],PHASE_META[p].lbl[2])}
+        </span>
+      ))}
+    </div>
+  )
+  const seasonDisclaimer = (
+    <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478", textAlign:"center", marginTop:6}}>{_t(lang,"Tendance saisonnière (littérature publiée) — pas une prévision de ta date.","Seasonal trend (published literature) — not a forecast for your date.","Tendencia estacional (literatura publicada) — no un pronóstico de tu fecha.")}</div>
+  )
 
   return (
     <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Hub prévision de ta semaine","Your week forecast hub","Tu centro de pronóstico semanal")}
@@ -307,6 +374,24 @@ export default function WeekHub({
           [data-wkhub] .wk-chip{transition:transform .15s ease}
           [data-wkhub] .wk-chip:active{transform:scale(.96)}
           [data-wkhub] .wk-chip span{transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease,color .15s ease}
+          /* ⚠️ RE-SPÉCIFICATION chrome (piège onink-scope) : le hub est portalisé sous
+             body.theme-comic avec .sg-onink-scope → la règle .theme-comic .sg-onink-scope
+             button{background:unset!important…} (0,2,1, app-runtime.css) EFFACE les fonds/
+             bordures INLINE de tous les <button> (le ✕ doré, « Voir sur la carte », les
+             lignes plage… rendaient nus). Fix = pattern .sg-mapchip : classes dédiées à
+             spécificité (0,3,0) + !important qui re-forcent le look voulu. Les chips jour
+             (.wk-chip, fond none) sont voulues transparentes → pas de règle. */
+          [data-wkhub] .wk-close.wk-close{background:#FFC72C!important;color:#0d0b14!important;border:2.5px solid #0d0b14!important;border-radius:999px!important;box-shadow:2px 2px 0 #0d0b14!important}
+          [data-wkhub] .wk-gold.wk-gold{background:#FFC72C!important;color:#0d0b14!important;border:2px solid #0d0b14!important;border-radius:999px!important;box-shadow:2px 2px 0 #0d0b14!important}
+          [data-wkhub] .wk-card.wk-card{background:linear-gradient(135deg,#fff6d8,#fdf6e3 60%)!important;color:#0d0b14!important;border:2.5px solid #0d0b14!important;border-radius:14px!important;box-shadow:3px 3px 0 #0d0b14!important}
+          [data-wkhub] .wk-item.wk-item{background:#fffbf0!important;color:#0d0b14!important;border:2px solid #0d0b14!important;border-radius:10px!important;box-shadow:none!important}
+          [data-wkhub] .wk-item.wk-item[disabled]{background:#f4efe2!important}
+          [data-wkhub] .wk-planb.wk-planb{background:#0f5132!important;color:#eafaf0!important;border:2px solid #0d0b14!important;border-radius:999px!important;box-shadow:2px 2px 0 #0d0b14!important}
+          [data-wkhub] .wk-link.wk-link{background:none!important;border:none!important;box-shadow:none!important;color:#0d0b14!important;border-radius:0!important}
+          /* Chips mois : la couleur de PHASE arrive par custom prop inline (--wkm) — les
+             custom props ne sont PAS strippées par le unset, seul le background l'est. */
+          [data-wkhub] .wk-mois.wk-mois{background:var(--wkm,#efe9da)!important;color:#0d0b14!important;border:1.5px solid rgba(13,11,20,.35)!important;border-radius:8px!important;box-shadow:none!important}
+          [data-wkhub] .wk-mois.wk-mois[aria-pressed="true"]{border:2.5px solid #0d0b14!important;box-shadow:0 0 0 2px #FFC72C!important}
           @media (prefers-reduced-motion: reduce){[data-wkhub]{animation:none!important}
             [data-wkhub] .wk-chip,[data-wkhub] .wk-chip span{transition:none!important}
             [data-wkhub] .wk-chip:active{transform:none!important}}`}</style>
@@ -322,7 +407,7 @@ export default function WeekHub({
               {_t(lang,"Mesuré au satellite à J0, tendance jusqu'à J+3, incertain au-delà.","Satellite-measured at D0, trend to D+3, uncertain beyond.","Medido por satélite en D0, tendencia hasta D+3, incierto más allá.")}{fresh?` · ${fresh}`:""}
             </div>
           </div>
-          <button ref={closeRef} onClick={()=>onClose&&onClose()} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+          <button ref={closeRef} className="wk-close" onClick={()=>onClose&&onClose()} aria-label={_t(lang,"Fermer","Close","Cerrar")}
             style={{flexShrink:0, width:44, height:44, borderRadius:999, border:`2.5px solid ${INK}`, background:GOLD, color:INK, font:"800 17px/1 system-ui", cursor:"pointer", boxShadow:`2px 2px 0 ${INK}`}}>✕</button>
         </div>
 
@@ -330,7 +415,7 @@ export default function WeekHub({
 
           {/* BLOC 1 — LE COUP SÛR (hero) */}
           {hero && (
-            <button onClick={()=>hero.safe&&pickBeach(hero.safe)} disabled={!hero.safe}
+            <button className="wk-card" onClick={()=>hero.safe&&pickBeach(hero.safe)} disabled={!hero.safe}
               style={{...card, textAlign:"left", width:"100%", cursor:hero.safe?"pointer":"default", background:"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)", outline:`2px solid ${GOLD}`, outlineOffset:-6}}>
               {hero.calm ? (
                 <>
@@ -371,7 +456,7 @@ export default function WeekHub({
               <div style={{display:"flex", flexDirection:"column", gap:7}}>
                 {activeIsHorizon && <div style={{font:"600 10.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#9a5a00", marginBottom:2}}>{_t(lang,"Au-delà de J+3 : des pistes à reconfirmer, pas une destination sûre.","Beyond D+3: leads to reconfirm, not a sure bet.","Más allá de D+3: pistas por reconfirmar, no un destino seguro.")}</div>}
                 {goTo.map(b=>(
-                  <button key={b.id} onClick={()=>!activeIsHorizon&&pickBeach(b)} disabled={activeIsHorizon}
+                  <button key={b.id} className="wk-item" onClick={()=>!activeIsHorizon&&pickBeach(b)} disabled={activeIsHorizon}
                     style={{display:"flex", alignItems:"center", gap:9, textAlign:"left", width:"100%", minHeight:44,
                       background: activeIsHorizon?"#f4efe2":"#fffbf0", border:`2px solid ${INK}`, borderRadius:10, padding:"7px 10px",
                       cursor:activeIsHorizon?"default":"pointer", opacity:activeIsHorizon?.8:1}}>
@@ -418,7 +503,7 @@ export default function WeekHub({
             </div>
             <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:8, marginTop:9}}>
               <span style={{font:"600 10.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>{_t(lang,"plein = mesuré · demi = tendance · pointillé = horizon","filled = measured · half = trend · dotted = horizon","lleno = medido · medio = tendencia · punteado = horizonte")}</span>
-              <button onClick={()=>seeOnMap(activeDay)} style={{flexShrink:0, font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"6px 10px", cursor:"pointer", minHeight:36, boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Voir sur la carte","See on map","Ver en el mapa")}</button>
+              <button className="wk-gold" onClick={()=>seeOnMap(activeDay)} style={{flexShrink:0, font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"6px 10px", cursor:"pointer", minHeight:36, boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Voir sur la carte","See on map","Ver en el mapa")}</button>
             </div>
           </div>
 
@@ -439,7 +524,7 @@ export default function WeekHub({
                       </span>
                     </div>
                     {actionable && alt ? (
-                      <button onClick={()=>pickBeach(alt.beach)} style={{marginTop:7, display:"flex", alignItems:"center", gap:6, textAlign:"left", width:"100%", minHeight:40,
+                      <button className="wk-planb" onClick={()=>pickBeach(alt.beach)} style={{marginTop:7, display:"flex", alignItems:"center", gap:6, textAlign:"left", width:"100%", minHeight:40,
                         background:"#0f5132", color:"#eafaf0", border:`2px solid ${INK}`, borderRadius:999, padding:"6px 10px", cursor:"pointer",
                         font:"800 11px/1.15 'Bricolage Grotesque',system-ui,sans-serif", boxShadow:`2px 2px 0 ${INK}`}}>
                         <span aria-hidden="true" style={{fontSize:13}}>→</span>
@@ -465,7 +550,7 @@ export default function WeekHub({
               déjà présente dans le hub en une action. Positif (statut, pas déblocage négatif),
               une seule porte (openPremium), caché aux abonnés, rollback ?whcta=0. */}
           {showWhCta && (
-            <button onClick={goPremium}
+            <button className="wk-card" onClick={goPremium}
               style={{...card, textAlign:"left", width:"100%", cursor:"pointer", display:"flex", alignItems:"center", gap:11,
                 background:"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)", outline:`2px solid ${GOLD}`, outlineOffset:-6}}>
               <Watcher size={40}/>
@@ -494,7 +579,9 @@ export default function WeekHub({
           {!seasonOff && (
             <div style={{...card, background:"#fff8e8"}}>
               <div style={{...h2, marginBottom:6}}>{_t(lang,"Tu réserves pour plus tard ?","Booking for later?","¿Reservas para más adelante?")}</div>
-              <div style={{font:"600 11px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>{_t(lang,"Choisis ta date, même dans plusieurs mois : on te dit si la période est historiquement calme ou chargée — pour réserver au bon moment.","Pick your date, even months out: we tell you whether that time of year is historically calm or busy — so you book at the right moment.","Elige tu fecha, aunque sea dentro de meses: te decimos si esa época es históricamente tranquila o cargada — para reservar en el momento justo.")}</div>
+              <div style={{font:"600 11px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>{monthFirst
+                ? _t(lang,"Tape ton mois de voyage, même dans plusieurs mois : on te dit si la période est historiquement calme ou chargée — pour réserver au bon moment.","Tap your travel month, even months out: we tell you whether that time of year is historically calm or busy — so you book at the right moment.","Toca tu mes de viaje, aunque sea dentro de meses: te decimos si esa época es históricamente tranquila o cargada — para reservar en el momento justo.")
+                : _t(lang,"Choisis ta date, même dans plusieurs mois : on te dit si la période est historiquement calme ou chargée — pour réserver au bon moment.","Pick your date, even months out: we tell you whether that time of year is historically calm or busy — so you book at the right moment.","Elige tu fecha, aunque sea dentro de meses: te decimos si esa época es históricamente tranquila o cargada — para reservar en el momento justo.")}</div>
               {coastStab && (coastStab.eastFlips!==coastStab.westFlips) && (
                 <div style={{font:"600 12px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:9}}>
                   {(()=>{ const stableEast=coastStab.eastFlips<coastStab.westFlips
@@ -505,12 +592,31 @@ export default function WeekHub({
                   })()}
                 </div>
               )}
-              <label style={{display:"block", font:"700 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginBottom:5}}>{_t(lang,"Ta date d'arrivée (même dans plusieurs mois) :","Your arrival date (even months away):","Tu fecha de llegada (aunque falten meses):")}</label>
-              <input type="date" value={planDate}
-                onChange={e=>{ const v=e.target.value; setPlanDate(v); if(v && !planSent){ try{ track && track("sg_weekhub_planner_optin",{}) }catch(_){}; try{ onPlannerOptin && onPlannerOptin({source:"weekhub_planner",date:v}) }catch(_){}; setPlanSent(true) } }}
-                min={(()=>{try{return new Date().toISOString().slice(0,10)}catch(_){return undefined}})()}
-                max={(()=>{try{return new Date(Date.now()+330*864e5).toISOString().slice(0,10)}catch(_){return undefined}})()}
-                style={{width:"100%", boxSizing:"border-box", minHeight:44, fontSize:16, padding:"8px 10px", border:`2px solid ${INK}`, borderRadius:10, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
+              {/* Branche historique (?plmois=0 ou pas de data saison) : input date primaire. */}
+              {!monthFirst && planDateField}
+
+              {/* Sélecteur MOIS-FIRST (panel 2026-07-02) : 12 mois à venir tappables (≥44px),
+                  phase par mois, réponse immédiate au tap. Rollback ?plmois=0. */}
+              {monthFirst && (
+                <>
+                  <div role="group" aria-label={_t(lang,"Choisir ton mois de voyage","Choose your travel month","Elegir tu mes de viaje")}
+                    style={{display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:4}}>
+                    {seasonStrip.map(m=>(
+                      <button key={m.idx} type="button" className="wk-chip wk-mois" aria-pressed={m.chosen} onClick={()=>pickMonth(m.idx)}
+                        style={{minHeight:48, borderRadius:8, boxSizing:"border-box", cursor:"pointer", padding:0,
+                          "--wkm":(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
+                          background:(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
+                          border:m.chosen?`2.5px solid ${INK}`:"1.5px solid rgba(13,11,20,.35)",
+                          boxShadow:m.chosen?`0 0 0 2px ${GOLD}`:"none",
+                          font:`${m.chosen?"800":"700"} 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif`, color:INK}}>
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                  {phaseLegend}
+                  {seasonDisclaimer}
+                </>
+              )}
 
               {/* Réponse SAISONNIÈRE pour la date choisie (le « quand ») */}
               {seasonForDate && (
@@ -544,8 +650,21 @@ export default function WeekHub({
                 </div>
               )}
 
-              {/* Calendrier 12 mois à venir — phase par mois, ta date surlignée */}
-              {seasonStrip && (
+              {/* MOIS-FIRST : le jour exact reste disponible en divulgation progressive — le
+                  message J-7 + l'optin planner n'ont de sens que sur un VRAI jour saisi. */}
+              {monthFirst && planMonth!=null && !(showExactDate||planDate) && (
+                <button type="button" className="wk-link" onClick={()=>setShowExactDate(true)}
+                  style={{marginTop:9, width:"100%", minHeight:44, textAlign:"left", background:"none", border:"none", padding:"6px 2px", cursor:"pointer",
+                    font:"700 11.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:INK, textDecoration:"underline"}}>
+                  {_t(lang,"Tu connais ton jour d'arrivée ? Précise-le — ton verdict fiable s'ouvre 7 jours avant.","Know your arrival day? Set it — your reliable verdict opens 7 days before.","¿Sabes tu día de llegada? Indícalo — tu veredicto fiable se abre 7 días antes.")}
+                </button>
+              )}
+              {monthFirst && planMonth!=null && (showExactDate||planDate) && (
+                <div style={{marginTop:9}}>{planDateField}</div>
+              )}
+
+              {/* Calendrier 12 mois décoratif — branche historique uniquement (?plmois=0). */}
+              {!monthFirst && seasonStrip && (
                 <div style={{marginTop:10}}>
                   <div style={{display:"flex", gap:3, alignItems:"flex-end"}}>
                     {seasonStrip.map(m=>(
@@ -558,15 +677,8 @@ export default function WeekHub({
                       </div>
                     ))}
                   </div>
-                  <div style={{display:"flex", gap:10, justifyContent:"center", marginTop:8, flexWrap:"wrap"}}>
-                    {["hors-saison","approche-saison","pleine-saison"].map(p=>(
-                      <span key={p} style={{display:"inline-flex", alignItems:"center", gap:4, font:"600 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458"}}>
-                        <span style={{width:9,height:9,borderRadius:3,background:PHASE_META[p].c,border:`1px solid rgba(13,11,20,.4)`}}/>
-                        {_t(lang,PHASE_META[p].lbl[0],PHASE_META[p].lbl[1],PHASE_META[p].lbl[2])}
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#6b6478", textAlign:"center", marginTop:6}}>{_t(lang,"Tendance saisonnière (littérature publiée) — pas une prévision de ta date.","Seasonal trend (published literature) — not a forecast for your date.","Tendencia estacional (literatura publicada) — no un pronóstico de tu fecha.")}</div>
+                  {phaseLegend}
+                  {seasonDisclaimer}
                 </div>
               )}
 
