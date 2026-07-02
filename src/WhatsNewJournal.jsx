@@ -3,13 +3,19 @@
 // Helpers partagés importés via exports nommés du monolithe.
 import React,{useEffect}from"react"
 import{_t,track,s,Veilleur}from"./Sargasses_PROD.jsx"
+import{useSwipeClose}from"./useSwipeClose"
 export default function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,isPremium,mood="scan",onClose,onExplore,onPremium}){
+  // Fermeture par swipe-down (loi mobile « 4 voies de sortie » : l'overlay n'avait que le ✕).
+  // Rend le geste du fond PRODUCTIF → le root sg-onink-scope peut porter data-sg-live (la heatmap
+  // first-party cesse de compter ces taps comme morts — même convention que WeekHub, 2026-07-01).
+  const swipe=useSwipeClose(onClose)
   useEffect(()=>{try{track("sg_whatsnew_view",{v:releaseV,items:items.length})}catch(_){}},[])// eslint-disable-line
   const L=(it)=>it[lang]||it.fr
   const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
   const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
   return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" data-sg-live="1" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
+      ref={swipe.ref} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
       style={{position:"fixed",inset:0,zIndex:1072,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
         background:"linear-gradient(180deg,#0B2230 0%,#155A5A 38%,#C97E3A 76%,#F2B05E 100%)",
         animation:"viewFadeIn .4s cubic-bezier(.22,1,.36,1) both"}}>

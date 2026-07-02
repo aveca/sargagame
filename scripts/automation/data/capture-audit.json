@@ -1,44 +1,46 @@
 {
- "date": "2026-06-12T00:09:04.586Z",
+ "date": "2026-07-02T13:03:44.459Z",
  "domains": {
   "https://sargasses-martinique.com": {
    "checks": {
-    "lcp_under_2_5s": false,
+    "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
-    "data_freshness_shown": false,
+    "data_freshness_shown": true,
     "source_attribution": false,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
-    "no_capture_on_load": true,
+    "no_capture_on_load": false,
     "form_fields_max2": true,
-    "price_transparent": true,
-    "cancel_path_stated": true,
-    "no_blank_checkout": true
+    "price_transparent": false,
+    "cancel_path_stated": false,
+    "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "4000ms",
-    "cta_count_above_fold": "22 visibles"
+    "lcp_under_2_5s": "1228ms",
+    "cta_count_above_fold": "9 visibles",
+    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
   },
   "https://sargasses-guadeloupe.com": {
    "checks": {
     "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
-    "data_freshness_shown": false,
+    "data_freshness_shown": true,
     "source_attribution": false,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
-    "no_capture_on_load": true,
+    "no_capture_on_load": false,
     "form_fields_max2": true,
-    "price_transparent": true,
-    "cancel_path_stated": true,
-    "no_blank_checkout": true
+    "price_transparent": false,
+    "cancel_path_stated": false,
+    "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "1568ms",
-    "cta_count_above_fold": "22 visibles"
+    "lcp_under_2_5s": "1876ms",
+    "cta_count_above_fold": "5 visibles",
+    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
   },
   "https://sargassumpuntacana.com": {
@@ -46,19 +48,20 @@
     "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
     "data_freshness_shown": true,
-    "source_attribution": true,
+    "source_attribution": false,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
-    "no_capture_on_load": true,
+    "no_capture_on_load": false,
     "form_fields_max2": true,
-    "price_transparent": true,
-    "cancel_path_stated": true,
-    "no_blank_checkout": true
+    "price_transparent": false,
+    "cancel_path_stated": false,
+    "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "1524ms",
-    "cta_count_above_fold": "19 visibles"
+    "lcp_under_2_5s": "952ms",
+    "cta_count_above_fold": "7 visibles",
+    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
   },
   "https://sargassummiami.com": {
@@ -66,19 +69,20 @@
     "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
     "data_freshness_shown": true,
-    "source_attribution": true,
+    "source_attribution": false,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
-    "no_capture_on_load": true,
+    "no_capture_on_load": false,
     "form_fields_max2": true,
-    "price_transparent": true,
-    "cancel_path_stated": true,
-    "no_blank_checkout": true
+    "price_transparent": false,
+    "cancel_path_stated": false,
+    "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "1620ms",
-    "cta_count_above_fold": "19 visibles"
+    "lcp_under_2_5s": "944ms",
+    "cta_count_above_fold": "7 visibles",
+    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
   },
   "https://sargassumcancun.com": {
@@ -86,19 +90,20 @@
     "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
     "data_freshness_shown": true,
-    "source_attribution": true,
+    "source_attribution": false,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
-    "no_capture_on_load": true,
+    "no_capture_on_load": false,
     "form_fields_max2": true,
-    "price_transparent": true,
-    "cancel_path_stated": true,
-    "no_blank_checkout": true
+    "price_transparent": false,
+    "cancel_path_stated": false,
+    "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "1388ms",
-    "cta_count_above_fold": "19 visibles"
+    "lcp_under_2_5s": "968ms",
+    "cta_count_above_fold": "7 visibles",
+    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
   }
  }

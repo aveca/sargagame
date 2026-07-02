@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-02T08:29:45.261Z",
+  "generatedAt": "2026-07-02T12:38:59.543Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
-      "indexedCount": 37,
+      "indexedCount": 38,
       "totalUrls": 74,
       "findings": {
         "notIndexed": [],
@@ -68,7 +68,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 448
+            "count": 450
           },
           {
             "event": "clarity_rage_click",
@@ -196,25 +196,25 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 7923
+            "count": 8030
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 1552
+            "count": 1562
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 227
+            "count": 228
           },
           {
             "event": "clarity_dead_click",
             "page": "/sargasses-record-2026/",
             "target": "",
-            "count": 97
+            "count": 99
           },
           {
             "event": "clarity_dead_click",
@@ -232,7 +232,7 @@
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 53
+            "count": 52
           },
           {
             "event": "clarity_dead_click",
@@ -655,7 +655,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 381
+            "count": 382
           },
           {
             "event": "clarity_rage_click",
@@ -747,43 +747,43 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 3365
+            "count": 3383
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 194
+            "count": 201
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 131
+            "count": 132
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/ile-de-la-petite-terre/",
             "target": "",
-            "count": 82
+            "count": 83
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-sainte-anne/",
+            "target": "",
+            "count": 74
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 73
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-la-caravelle/",
             "target": "",
             "count": 72
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-sainte-anne/",
-            "target": "",
-            "count": 72
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 71
           },
           {
             "event": "clarity_dead_click",
@@ -799,21 +799,21 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/plage-des-raisins-clairs/",
+            "target": "",
+            "count": 25
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
             "count": 21
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-des-raisins-clairs/",
-            "target": "",
-            "count": 20
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/petit-havre-gosier/",
             "target": "",
-            "count": 16
+            "count": 17
           },
           {
             "event": "clarity_dead_click",
@@ -943,6 +943,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/anse-rodrigue/",
+            "target": "",
+            "count": 5
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/les-salines-saint-francois/",
             "target": "",
             "count": 5
@@ -961,6 +967,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/conditions/baignade-ideale/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/conditions/uv-fort/",
             "target": "",
             "count": 4
@@ -968,12 +980,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/plages/anse-a-l-eau/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-rodrigue/",
             "target": "",
             "count": 4
           },
@@ -1177,7 +1183,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 595
+            "count": 598
           },
           {
             "event": "clarity_dead_click",
@@ -1305,6 +1311,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/fiabilidad/",
             "target": "",
             "count": 3
@@ -1314,12 +1326,6 @@
             "page": "/press/",
             "target": "",
             "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/",
-            "target": "",
-            "count": 2
           },
           {
             "event": "clarity_dead_click",

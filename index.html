@@ -252,9 +252,18 @@
       },true);
       document.addEventListener('click',function(e){
         var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
-        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,.leaflet-container'))return;
+        // SPA-aware : un tap qui ouvre une feuille/modale/tooltip via l'état React ne change PAS
+        // l'URL → sans le garde de mutation DOM ci-dessous ces taps utiles étaient comptés « morts »
+        // (bruit : ~7923 dead-clicks sur / en juillet). On aligne sur le détecteur durci du template
+        // GP (prepare-ftp.cjs) : allowlist élargie + delta de nœuds DOM. [data-sg-live] = surface
+        // non-bouton dont le tap EST géré (carte, backdrops) — même convention que la heatmap first-party.
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click,.leaflet-container,[data-sg-live]'))return;
         var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||''),url=location.href;
-        setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname});},2000);
+        var preCount=document.getElementsByTagName('*').length;
+        setTimeout(function(){
+          var postCount=document.getElementsByTagName('*').length;
+          if(location.href===url&&Math.abs(postCount-preCount)<5)send('clarity_dead_click',{target:tag,page:location.pathname});
+        },2000);
       },true);
       var loaded=Date.now();
       window.addEventListener('beforeunload',function(){

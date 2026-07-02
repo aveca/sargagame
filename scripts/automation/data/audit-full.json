@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T08:29:45.261Z",
+  "generatedAt": "2026-07-02T12:38:59.543Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -6259,7 +6259,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-07-01T21:08:31Z",
+          "lastCrawlTime": "2026-07-02T10:30:55Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -6404,7 +6404,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-des-salines/",
@@ -6516,7 +6516,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
@@ -6524,7 +6524,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-du-diamant/",
@@ -6540,7 +6540,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-gros-raisins/",
@@ -6580,7 +6580,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-madame/",
@@ -6592,11 +6592,11 @@
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-de-sch-lcher/",
-          "verdict": "NEUTRAL",
-          "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
-          "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
-          "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "verdict": "PASS",
+          "pageFetchState": "SUCCESSFUL",
+          "robotsTxtState": "ALLOWED",
+          "lastCrawlTime": "2026-07-02T10:00:54Z",
+          "coverageState": "Submitted and indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-collat/",
@@ -6620,7 +6620,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
@@ -6636,7 +6636,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-couleuvre/",
@@ -6716,7 +6716,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/pointe-faula/",
@@ -6756,7 +6756,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-charpentier/",
@@ -6861,127 +6861,136 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 4616,
-          "bounceRate": 0.2517331022530329,
-          "avgDuration": 412.13297825281626,
-          "pageViews": 7869,
-          "engagedSessions": 3454
+          "sessions": 4689,
+          "bounceRate": 0.23331200682448283,
+          "avgDuration": 346.48888160034124,
+          "pageViews": 7985,
+          "engagedSessions": 3595
         },
         {
           "pagePath": "/carte-sargasses/",
           "device": "mobile",
-          "sessions": 1098,
-          "bounceRate": 0.2040072859744991,
-          "avgDuration": 199.5618394954463,
-          "pageViews": 1583,
-          "engagedSessions": 874
+          "sessions": 1104,
+          "bounceRate": 0.1802536231884058,
+          "avgDuration": 192.14227026268117,
+          "pageViews": 1594,
+          "engagedSessions": 905
         },
         {
           "pagePath": "/",
           "device": "desktop",
-          "sessions": 997,
-          "bounceRate": 0.23069207622868607,
-          "avgDuration": 697.8144728645938,
-          "pageViews": 5791,
-          "engagedSessions": 767
+          "sessions": 1008,
+          "bounceRate": 0.21031746031746032,
+          "avgDuration": 678.0448597053571,
+          "pageViews": 5809,
+          "engagedSessions": 796
         },
         {
           "pagePath": "/carte-sargasses/",
           "device": "desktop",
-          "sessions": 179,
-          "bounceRate": 0.2011173184357542,
-          "avgDuration": 269.138336698324,
-          "pageViews": 240,
-          "engagedSessions": 143
+          "sessions": 181,
+          "bounceRate": 0.1712707182320442,
+          "avgDuration": 201.82761465745858,
+          "pageViews": 244,
+          "engagedSessions": 150
         },
         {
           "pagePath": "/en/",
           "device": "mobile",
           "sessions": 151,
-          "bounceRate": 0.17880794701986755,
-          "avgDuration": 326.48960250331123,
-          "pageViews": 276,
-          "engagedSessions": 124
+          "bounceRate": 0.1456953642384106,
+          "avgDuration": 307.1090089735099,
+          "pageViews": 277,
+          "engagedSessions": 129
         },
         {
           "pagePath": "/sargasses-record-2026/",
           "device": "mobile",
-          "sessions": 108,
-          "bounceRate": 0.2777777777777778,
-          "avgDuration": 335.47653369444447,
-          "pageViews": 143,
-          "engagedSessions": 78
+          "sessions": 110,
+          "bounceRate": 0.24545454545454545,
+          "avgDuration": 337.2615028272727,
+          "pageViews": 147,
+          "engagedSessions": 83
         },
         {
           "pagePath": "/",
           "device": "tablet",
           "sessions": 90,
-          "bounceRate": 0.15555555555555556,
-          "avgDuration": 332.43161476666666,
+          "bounceRate": 0.12222222222222222,
+          "avgDuration": 292.5591645777778,
           "pageViews": 145,
-          "engagedSessions": 76
+          "engagedSessions": 79
         },
         {
           "pagePath": "/plages/plage-du-diamant/",
           "device": "mobile",
-          "sessions": 52,
-          "bounceRate": 0.23076923076923078,
-          "avgDuration": 1581.8094774807691,
-          "pageViews": 76,
-          "engagedSessions": 40
+          "sessions": 53,
+          "bounceRate": 0.20754716981132076,
+          "avgDuration": 1514.606432283019,
+          "pageViews": 77,
+          "engagedSessions": 42
         },
         {
           "pagePath": "/en/sargassum-map/",
           "device": "mobile",
           "sessions": 50,
-          "bounceRate": 0.3,
-          "avgDuration": 301.77782415999997,
+          "bounceRate": 0.28,
+          "avgDuration": 296.88097598,
           "pageViews": 74,
-          "engagedSessions": 35
+          "engagedSessions": 36
         },
         {
           "pagePath": "/detection-satellite-sargasses/",
           "device": "mobile",
           "sessions": 44,
-          "bounceRate": 0.20454545454545456,
-          "avgDuration": 122.15464370454546,
+          "bounceRate": 0.18181818181818182,
+          "avgDuration": 121.37783804545455,
           "pageViews": 57,
-          "engagedSessions": 35
+          "engagedSessions": 36
         },
         {
           "pagePath": "/en/",
           "device": "desktop",
-          "sessions": 37,
-          "bounceRate": 0.10810810810810811,
-          "avgDuration": 238.62675135135134,
-          "pageViews": 55,
-          "engagedSessions": 33
+          "sessions": 38,
+          "bounceRate": 0.10526315789473684,
+          "avgDuration": 233.69639852631576,
+          "pageViews": 56,
+          "engagedSessions": 34
         },
         {
           "pagePath": "/plages/anse-dufour/",
           "device": "mobile",
           "sessions": 36,
-          "bounceRate": 0.5,
-          "avgDuration": 143.72172680555556,
+          "bounceRate": 0.4722222222222222,
+          "avgDuration": 142.44180633333335,
           "pageViews": 62,
-          "engagedSessions": 18
+          "engagedSessions": 19
         },
         {
           "pagePath": "/plages-sans-sargasses/",
           "device": "mobile",
-          "sessions": 30,
-          "bounceRate": 0.2,
-          "avgDuration": 163.52182133333332,
-          "pageViews": 43,
-          "engagedSessions": 24
+          "sessions": 31,
+          "bounceRate": 0.16129032258064516,
+          "avgDuration": 151.75044641935486,
+          "pageViews": 45,
+          "engagedSessions": 26
         },
         {
           "pagePath": "/saison-sargasses-guadeloupe/",
           "device": "mobile",
           "sessions": 25,
-          "bounceRate": 0.44,
-          "avgDuration": 222.89162692,
+          "bounceRate": 0.32,
+          "avgDuration": 135.10026092,
           "pageViews": 34,
+          "engagedSessions": 17
+        },
+        {
+          "pagePath": "/saison-sargasses-guadeloupe/",
+          "device": "desktop",
+          "sessions": 24,
+          "bounceRate": 0.4166666666666667,
+          "avgDuration": 110.08346908333334,
+          "pageViews": 20,
           "engagedSessions": 14
         },
         {
@@ -6994,67 +7003,58 @@
           "engagedSessions": 21
         },
         {
-          "pagePath": "/saison-sargasses-guadeloupe/",
-          "device": "desktop",
-          "sessions": 23,
-          "bounceRate": 0.391304347826087,
-          "avgDuration": 114.86970686956522,
-          "pageViews": 20,
-          "engagedSessions": 14
-        },
-        {
           "pagePath": "/sargasses-les-trois-ilets/",
           "device": "mobile",
           "sessions": 23,
-          "bounceRate": 0.2608695652173913,
-          "avgDuration": 383.51544630434785,
+          "bounceRate": 0.21739130434782608,
+          "avgDuration": 213.579102,
           "pageViews": 28,
-          "engagedSessions": 17
+          "engagedSessions": 18
         },
         {
           "pagePath": "/meilleures-plages-martinique-sargasses/",
           "device": "mobile",
           "sessions": 22,
-          "bounceRate": 0.13636363636363635,
-          "avgDuration": 281.590468,
-          "pageViews": 34,
-          "engagedSessions": 19
+          "bounceRate": 0.09090909090909091,
+          "avgDuration": 270.1158435909091,
+          "pageViews": 35,
+          "engagedSessions": 20
         },
         {
           "pagePath": "/plages/les-raisiniers/",
           "device": "mobile",
           "sessions": 22,
-          "bounceRate": 0.45454545454545453,
-          "avgDuration": 615.7897169545455,
-          "pageViews": 25,
-          "engagedSessions": 12
+          "bounceRate": 0.36363636363636365,
+          "avgDuration": 573.3351270454546,
+          "pageViews": 26,
+          "engagedSessions": 14
+        },
+        {
+          "pagePath": "/carte-sargasses/",
+          "device": "tablet",
+          "sessions": 21,
+          "bounceRate": 0.19047619047619047,
+          "avgDuration": 79.60357247619048,
+          "pageViews": 30,
+          "engagedSessions": 17
         },
         {
           "pagePath": "/plages/plage-du-diamant/",
           "device": "desktop",
           "sessions": 21,
-          "bounceRate": 0.38095238095238093,
-          "avgDuration": 68.99364423809523,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 66.9221980952381,
           "pageViews": 23,
-          "engagedSessions": 13
-        },
-        {
-          "pagePath": "/carte-sargasses/",
-          "device": "tablet",
-          "sessions": 20,
-          "bounceRate": 0.2,
-          "avgDuration": 77.3927151,
-          "pageViews": 29,
-          "engagedSessions": 16
+          "engagedSessions": 14
         },
         {
           "pagePath": "/sargasses-sainte-anne-martinique/",
           "device": "mobile",
           "sessions": 19,
-          "bounceRate": 0.21052631578947367,
-          "avgDuration": 161.2363325263158,
+          "bounceRate": 0.15789473684210525,
+          "avgDuration": 154.45535963157894,
           "pageViews": 26,
-          "engagedSessions": 15
+          "engagedSessions": 16
         },
         {
           "pagePath": "/es/",
@@ -7069,10 +7069,10 @@
           "pagePath": "/meilleures-plages-guadeloupe-sargasses/",
           "device": "mobile",
           "sessions": 17,
-          "bounceRate": 0.35294117647058826,
-          "avgDuration": 116.6037001764706,
+          "bounceRate": 0.11764705882352941,
+          "avgDuration": 91.35276623529411,
           "pageViews": 25,
-          "engagedSessions": 11
+          "engagedSessions": 15
         },
         {
           "pagePath": "/saison-sargasses-martinique/",
@@ -7087,19 +7087,19 @@
           "pagePath": "/detection-satellite-sargasses/",
           "device": "desktop",
           "sessions": 16,
-          "bounceRate": 0.0625,
-          "avgDuration": 365.712885,
+          "bounceRate": 0,
+          "avgDuration": 359.689808625,
           "pageViews": 23,
-          "engagedSessions": 15
+          "engagedSessions": 16
         },
         {
           "pagePath": "/sargasses-sainte-luce/",
           "device": "mobile",
           "sessions": 12,
-          "bounceRate": 0.16666666666666666,
-          "avgDuration": 287.41466941666664,
+          "bounceRate": 0.08333333333333333,
+          "avgDuration": 216.20443525,
           "pageViews": 17,
-          "engagedSessions": 10
+          "engagedSessions": 11
         },
         {
           "pagePath": "/plages-sans-sargasses/",
@@ -7123,10 +7123,10 @@
           "pagePath": "/plages/anse-michel/",
           "device": "mobile",
           "sessions": 11,
-          "bounceRate": 0.18181818181818182,
-          "avgDuration": 167.68029872727274,
+          "bounceRate": 0.09090909090909091,
+          "avgDuration": 167.50722018181818,
           "pageViews": 12,
-          "engagedSessions": 9
+          "engagedSessions": 10
         },
         {
           "pagePath": "/sargasses-le-diamant/",
@@ -7210,6 +7210,15 @@
           "engagedSessions": 0
         },
         {
+          "pagePath": "/comprendre-sargasses/",
+          "device": "desktop",
+          "sessions": 6,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 58.778891666666674,
+          "pageViews": 7,
+          "engagedSessions": 4
+        },
+        {
           "pagePath": "/en/best-beaches-martinique/",
           "device": "desktop",
           "sessions": 6,
@@ -7249,10 +7258,10 @@
           "pagePath": "/plages/plage-de-sainte-luce/",
           "device": "mobile",
           "sessions": 6,
-          "bounceRate": 0.5,
-          "avgDuration": 45.6790985,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 40.21288083333334,
           "pageViews": 6,
-          "engagedSessions": 3
+          "engagedSessions": 4
         },
         {
           "pagePath": "/previsions/",
@@ -7271,15 +7280,6 @@
           "avgDuration": 59.7945818,
           "pageViews": 6,
           "engagedSessions": 5
-        },
-        {
-          "pagePath": "/comprendre-sargasses/",
-          "device": "desktop",
-          "sessions": 5,
-          "bounceRate": 0.2,
-          "avgDuration": 59.06109740000001,
-          "pageViews": 6,
-          "engagedSessions": 4
         },
         {
           "pagePath": "/meilleures-plages-martinique-sargasses/",
@@ -7438,10 +7438,10 @@
           "pagePath": "/plages/anse-a-l-ane/",
           "device": "mobile",
           "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 79.51260766666667,
+          "bounceRate": 0,
+          "avgDuration": 79.46158866666667,
           "pageViews": 5,
-          "engagedSessions": 2
+          "engagedSessions": 3
         },
         {
           "pagePath": "/plages/anse-trabaud",
@@ -7690,19 +7690,19 @@
           "pagePath": "/en/what-to-do-sargassum-martinique/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 604.636969,
+          "bounceRate": 0,
+          "avgDuration": 140.325489,
           "pageViews": 3,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/en/what-to-do-sargassum-martinique/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 1936.891881,
+          "bounceRate": 0,
+          "avgDuration": 1389.690505,
           "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/es/mapa-sargazo/",
@@ -7748,6 +7748,15 @@
           "avgDuration": 12.137452,
           "pageViews": 1,
           "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/anse-a-l-ane/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 22.108284,
+          "pageViews": 1,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/plages/anse-caritan/",
@@ -7843,10 +7852,10 @@
           "pagePath": "/plages/l-autre-bord-trinite/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 3.377438,
+          "bounceRate": 0,
+          "avgDuration": 37.052412,
           "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/la-datcha",
@@ -8027,7 +8036,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 448
+            "count": 450
           },
           {
             "event": "clarity_rage_click",
@@ -8155,25 +8164,25 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 7923
+            "count": 8030
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 1552
+            "count": 1562
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 227
+            "count": 228
           },
           {
             "event": "clarity_dead_click",
             "page": "/sargasses-record-2026/",
             "target": "",
-            "count": 97
+            "count": 99
           },
           {
             "event": "clarity_dead_click",
@@ -8191,7 +8200,7 @@
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 53
+            "count": 52
           },
           {
             "event": "clarity_dead_click",
@@ -14779,7 +14788,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-07-02T04:59:37Z",
+          "lastCrawlTime": "2026-07-02T10:10:03Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -15019,7 +15028,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-26T23:27:16Z",
+          "lastCrawlTime": "2026-07-02T10:49:53Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -15589,144 +15598,144 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 4437,
-          "bounceRate": 0.22785665990534146,
-          "avgDuration": 288.0573459366689,
-          "pageViews": 7282,
-          "engagedSessions": 3426
+          "sessions": 4471,
+          "bounceRate": 0.20957280250503244,
+          "avgDuration": 268.96447593536124,
+          "pageViews": 7346,
+          "engagedSessions": 3534
         },
         {
           "pagePath": "/",
           "device": "desktop",
-          "sessions": 708,
-          "bounceRate": 0.21045197740112995,
-          "avgDuration": 310.0344522019774,
-          "pageViews": 956,
-          "engagedSessions": 559
+          "sessions": 714,
+          "bounceRate": 0.19467787114845939,
+          "avgDuration": 303.1790193459384,
+          "pageViews": 965,
+          "engagedSessions": 575
         },
         {
           "pagePath": "/plages/plage-bois-jolan/",
           "device": "mobile",
-          "sessions": 176,
-          "bounceRate": 0.26136363636363635,
-          "avgDuration": 269.31393796590913,
-          "pageViews": 276,
-          "engagedSessions": 130
+          "sessions": 178,
+          "bounceRate": 0.24157303370786518,
+          "avgDuration": 248.21530019101124,
+          "pageViews": 280,
+          "engagedSessions": 135
         },
         {
           "pagePath": "/plages/plage-de-la-caravelle/",
           "device": "mobile",
           "sessions": 108,
-          "bounceRate": 0.24074074074074073,
-          "avgDuration": 223.17526723148148,
+          "bounceRate": 0.2037037037037037,
+          "avgDuration": 215.4532639074074,
           "pageViews": 163,
-          "engagedSessions": 82
+          "engagedSessions": 86
         },
         {
           "pagePath": "/en/",
           "device": "mobile",
-          "sessions": 103,
-          "bounceRate": 0.32038834951456313,
-          "avgDuration": 309.39043212621357,
-          "pageViews": 164,
-          "engagedSessions": 70
+          "sessions": 104,
+          "bounceRate": 0.27884615384615385,
+          "avgDuration": 303.0146628846154,
+          "pageViews": 167,
+          "engagedSessions": 75
         },
         {
           "pagePath": "/",
           "device": "tablet",
           "sessions": 86,
-          "bounceRate": 0.11627906976744186,
-          "avgDuration": 388.54680263953486,
+          "bounceRate": 0.08139534883720931,
+          "avgDuration": 382.71850536046514,
           "pageViews": 137,
-          "engagedSessions": 76
+          "engagedSessions": 79
         },
         {
           "pagePath": "/en/sargassum-map/",
           "device": "mobile",
           "sessions": 85,
-          "bounceRate": 0.15294117647058825,
-          "avgDuration": 301.9419956117647,
+          "bounceRate": 0.1411764705882353,
+          "avgDuration": 300.57589269411767,
           "pageViews": 122,
-          "engagedSessions": 72
+          "engagedSessions": 73
+        },
+        {
+          "pagePath": "/plages/plage-de-sainte-anne/",
+          "device": "mobile",
+          "sessions": 77,
+          "bounceRate": 0.12987012987012986,
+          "avgDuration": 115.05122484415584,
+          "pageViews": 109,
+          "engagedSessions": 67
         },
         {
           "pagePath": "/plages/plage-du-gosier/",
           "device": "mobile",
           "sessions": 77,
-          "bounceRate": 0.2077922077922078,
-          "avgDuration": 261.91415574025973,
+          "bounceRate": 0.12987012987012986,
+          "avgDuration": 214.13183172727275,
           "pageViews": 94,
-          "engagedSessions": 61
-        },
-        {
-          "pagePath": "/plages/plage-de-sainte-anne/",
-          "device": "mobile",
-          "sessions": 76,
-          "bounceRate": 0.15789473684210525,
-          "avgDuration": 145.89565436842105,
-          "pageViews": 108,
-          "engagedSessions": 64
+          "engagedSessions": 67
         },
         {
           "pagePath": "/plages/ile-de-la-petite-terre/",
           "device": "mobile",
-          "sessions": 58,
-          "bounceRate": 0.22413793103448276,
-          "avgDuration": 340.17391386206896,
-          "pageViews": 101,
-          "engagedSessions": 45
+          "sessions": 59,
+          "bounceRate": 0.11864406779661017,
+          "avgDuration": 326.7443382711864,
+          "pageViews": 103,
+          "engagedSessions": 52
         },
         {
           "pagePath": "/plages/la-datcha/",
           "device": "mobile",
-          "sessions": 36,
-          "bounceRate": 0.1111111111111111,
-          "avgDuration": 147.70143388888886,
+          "sessions": 37,
+          "bounceRate": 0.10810810810810811,
+          "avgDuration": 144.21824083783784,
           "pageViews": 58,
-          "engagedSessions": 32
+          "engagedSessions": 33
         },
         {
           "pagePath": "/plages/plage-de-malendure/",
           "device": "mobile",
           "sessions": 30,
-          "bounceRate": 0.3,
-          "avgDuration": 177.76501663333335,
+          "bounceRate": 0.23333333333333334,
+          "avgDuration": 143.86812700000002,
           "pageViews": 44,
-          "engagedSessions": 21
+          "engagedSessions": 23
         },
         {
           "pagePath": "/en/",
           "device": "desktop",
           "sessions": 28,
-          "bounceRate": 0.17857142857142858,
-          "avgDuration": 191.39613503571428,
+          "bounceRate": 0.14285714285714285,
+          "avgDuration": 191.4064308214286,
           "pageViews": 40,
-          "engagedSessions": 23
+          "engagedSessions": 24
         },
         {
           "pagePath": "/en/sargassum-map/",
           "device": "desktop",
-          "sessions": 22,
-          "bounceRate": 0.2727272727272727,
-          "avgDuration": 43.37188922727273,
-          "pageViews": 23,
+          "sessions": 23,
+          "bounceRate": 0.30434782608695654,
+          "avgDuration": 57.78983800000001,
+          "pageViews": 25,
           "engagedSessions": 16
         },
         {
           "pagePath": "/plages/plage-du-souffleur/",
           "device": "mobile",
-          "sessions": 22,
-          "bounceRate": 0.2727272727272727,
-          "avgDuration": 87.17183436363636,
-          "pageViews": 33,
-          "engagedSessions": 16
+          "sessions": 23,
+          "bounceRate": 0.2608695652173913,
+          "avgDuration": 83.55786678260868,
+          "pageViews": 35,
+          "engagedSessions": 17
         },
         {
           "pagePath": "/plages/plage-de-grande-anse/",
           "device": "mobile",
           "sessions": 16,
           "bounceRate": 0.25,
-          "avgDuration": 220.377064125,
+          "avgDuration": 220.480423,
           "pageViews": 20,
           "engagedSessions": 12
         },
@@ -15735,7 +15744,7 @@
           "device": "mobile",
           "sessions": 16,
           "bounceRate": 0.0625,
-          "avgDuration": 91.472804,
+          "avgDuration": 91.47420249999999,
           "pageViews": 25,
           "engagedSessions": 15
         },
@@ -15743,19 +15752,19 @@
           "pagePath": "/plages/petit-havre-gosier/",
           "device": "mobile",
           "sessions": 15,
-          "bounceRate": 0.4,
-          "avgDuration": 175.84526986666665,
+          "bounceRate": 0.26666666666666666,
+          "avgDuration": 170.45361573333332,
           "pageViews": 19,
-          "engagedSessions": 9
+          "engagedSessions": 11
         },
         {
           "pagePath": "/plages/plage-du-gosier/",
           "device": "desktop",
           "sessions": 15,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 365.7859172,
+          "bounceRate": 0.2,
+          "avgDuration": 368.2841211333333,
           "pageViews": 19,
-          "engagedSessions": 10
+          "engagedSessions": 12
         },
         {
           "pagePath": "/plages/la-grande-anse-deshaies/",
@@ -15778,11 +15787,11 @@
         {
           "pagePath": "/plages/plage-de-sainte-anne/",
           "device": "desktop",
-          "sessions": 11,
-          "bounceRate": 0.2727272727272727,
-          "avgDuration": 102.50674154545455,
-          "pageViews": 11,
-          "engagedSessions": 8
+          "sessions": 12,
+          "bounceRate": 0.25,
+          "avgDuration": 76.06217633333334,
+          "pageViews": 12,
+          "engagedSessions": 9
         },
         {
           "pagePath": "/plages/plage-de-la-perle/",
@@ -15797,10 +15806,10 @@
           "pagePath": "/plages/plage-bois-jolan/",
           "device": "desktop",
           "sessions": 9,
-          "bounceRate": 0.2222222222222222,
-          "avgDuration": 58.121109888888896,
+          "bounceRate": 0.1111111111111111,
+          "avgDuration": 56.921850666666664,
           "pageViews": 9,
-          "engagedSessions": 7
+          "engagedSessions": 8
         },
         {
           "pagePath": "/plages/pointe-des-chateaux/",
@@ -15815,19 +15824,19 @@
           "pagePath": "/plages/anse-a-la-gourde/",
           "device": "mobile",
           "sessions": 8,
-          "bounceRate": 0.25,
-          "avgDuration": 377.24094037500004,
-          "pageViews": 10,
-          "engagedSessions": 6
+          "bounceRate": 0.125,
+          "avgDuration": 304.447582375,
+          "pageViews": 11,
+          "engagedSessions": 7
         },
         {
           "pagePath": "/plages/l-autre-bord/",
           "device": "mobile",
           "sessions": 7,
-          "bounceRate": 0.42857142857142855,
-          "avgDuration": 343.69508014285714,
+          "bounceRate": 0.2857142857142857,
+          "avgDuration": 260.55150857142854,
           "pageViews": 12,
-          "engagedSessions": 4
+          "engagedSessions": 5
         },
         {
           "pagePath": "/plages/petit-havre-sud/",
@@ -15851,10 +15860,10 @@
           "pagePath": "/plages/plage-des-raisins-clairs/",
           "device": "desktop",
           "sessions": 7,
-          "bounceRate": 0.42857142857142855,
-          "avgDuration": 1019.9958404285715,
+          "bounceRate": 0,
+          "avgDuration": 608.8048134285715,
           "pageViews": 12,
-          "engagedSessions": 4
+          "engagedSessions": 7
         },
         {
           "pagePath": "/plages/grande-anse-desirade/",
@@ -15878,10 +15887,10 @@
           "pagePath": "/plages/anse-a-la-barque-ste-anne/",
           "device": "mobile",
           "sessions": 5,
-          "bounceRate": 0.6,
-          "avgDuration": 67.0521182,
+          "bounceRate": 0.2,
+          "avgDuration": 48.9694614,
           "pageViews": 7,
-          "engagedSessions": 2
+          "engagedSessions": 4
         },
         {
           "pagePath": "/plages/plage-de-deshaies/",
@@ -15914,10 +15923,10 @@
           "pagePath": "/saison-sargasses-martinique/",
           "device": "mobile",
           "sessions": 5,
-          "bounceRate": 0.4,
-          "avgDuration": 77.834074,
+          "bounceRate": 0.2,
+          "avgDuration": 45.077407,
           "pageViews": 9,
-          "engagedSessions": 3
+          "engagedSessions": 4
         },
         {
           "pagePath": "/en/sargassum-alerts/",
@@ -16022,10 +16031,10 @@
           "pagePath": "/en/",
           "device": "tablet",
           "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 944.6579256666668,
+          "bounceRate": 0,
+          "avgDuration": 554.7511426666666,
           "pageViews": 4,
-          "engagedSessions": 2
+          "engagedSessions": 3
         },
         {
           "pagePath": "/en/best-beaches-guadeloupe/",
@@ -16175,10 +16184,10 @@
           "pagePath": "/plages/saint-felix-sud/",
           "device": "mobile",
           "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 323.30418133333336,
+          "bounceRate": 0,
+          "avgDuration": 162.43957666666668,
           "pageViews": 4,
-          "engagedSessions": 2
+          "engagedSessions": 3
         },
         {
           "pagePath": "/plages/saint-felix/",
@@ -16220,10 +16229,10 @@
           "pagePath": "/en/sargassum-map/",
           "device": "tablet",
           "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 93.84485600000001,
+          "bounceRate": 0,
+          "avgDuration": 119.4509055,
           "pageViews": 2,
-          "engagedSessions": 1
+          "engagedSessions": 2
         },
         {
           "pagePath": "/en/satellite-sargassum-detection/",
@@ -16265,10 +16274,10 @@
           "pagePath": "/plages/anse-kahouanne/",
           "device": "mobile",
           "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 7.550807,
+          "bounceRate": 0,
+          "avgDuration": 33.256605,
           "pageViews": 2,
-          "engagedSessions": 1
+          "engagedSessions": 2
         },
         {
           "pagePath": "/plages/ile-de-la-petite-terre/",
@@ -16301,10 +16310,10 @@
           "pagePath": "/plages/plage-de-pompierre/",
           "device": "desktop",
           "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 70.1708745,
+          "bounceRate": 0,
+          "avgDuration": 46.5578845,
           "pageViews": 2,
-          "engagedSessions": 1
+          "engagedSessions": 2
         },
         {
           "pagePath": "/plages/plage-de-saint-francois/",
@@ -16332,6 +16341,15 @@
           "avgDuration": 163.2243085,
           "pageViews": 3,
           "engagedSessions": 1
+        },
+        {
+          "pagePath": "/conditions/baignade-ideale/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 2126.072439,
+          "pageViews": 2,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/en/sargassum-alerts/",
@@ -16377,6 +16395,15 @@
           "avgDuration": 250.10868,
           "pageViews": 1,
           "engagedSessions": 1
+        },
+        {
+          "pagePath": "/meilleures-plages-martinique-sargasses/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 426.825294,
+          "pageViews": 2,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/plages//",
@@ -16490,9 +16517,18 @@
           "pagePath": "/plages/anse-rodrigue/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 291.435786,
+          "bounceRate": 0,
+          "avgDuration": 120.622222,
           "pageViews": 1,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/anse-rodrigue/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 25.881585,
+          "pageViews": 0,
           "engagedSessions": 0
         },
         {
@@ -16806,7 +16842,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 381
+            "count": 382
           },
           {
             "event": "clarity_rage_click",
@@ -16898,43 +16934,43 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 3365
+            "count": 3383
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 194
+            "count": 201
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 131
+            "count": 132
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/ile-de-la-petite-terre/",
             "target": "",
-            "count": 82
+            "count": 83
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-sainte-anne/",
+            "target": "",
+            "count": 74
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 73
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-la-caravelle/",
             "target": "",
             "count": 72
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-sainte-anne/",
-            "target": "",
-            "count": 72
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 71
           },
           {
             "event": "clarity_dead_click",
@@ -16950,21 +16986,21 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/plage-des-raisins-clairs/",
+            "target": "",
+            "count": 25
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
             "count": 21
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-des-raisins-clairs/",
-            "target": "",
-            "count": 20
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/petit-havre-gosier/",
             "target": "",
-            "count": 16
+            "count": 17
           },
           {
             "event": "clarity_dead_click",
@@ -17094,6 +17130,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/anse-rodrigue/",
+            "target": "",
+            "count": 5
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/les-salines-saint-francois/",
             "target": "",
             "count": 5
@@ -17112,6 +17154,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/conditions/baignade-ideale/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/conditions/uv-fort/",
             "target": "",
             "count": 4
@@ -17119,12 +17167,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/plages/anse-a-l-eau/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-rodrigue/",
             "target": "",
             "count": 4
           },
@@ -18595,7 +18637,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargassummiami.com/beaches/south-beach/",
@@ -18603,7 +18645,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargassummiami.com/beaches/fort-lauderdale-beach/",
@@ -18700,10 +18742,10 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 387,
-          "bounceRate": 0.26356589147286824,
-          "avgDuration": 158.56893048320416,
-          "pageViews": 504,
+          "sessions": 388,
+          "bounceRate": 0.2654639175257732,
+          "avgDuration": 161.39438878092784,
+          "pageViews": 506,
           "engagedSessions": 285
         },
         {
@@ -18718,10 +18760,10 @@
         {
           "pagePath": "/seaweed-map/",
           "device": "desktop",
-          "sessions": 200,
-          "bounceRate": 0.32,
-          "avgDuration": 619.3548294249999,
-          "pageViews": 282,
+          "sessions": 201,
+          "bounceRate": 0.32338308457711445,
+          "avgDuration": 616.6719924427861,
+          "pageViews": 284,
           "engagedSessions": 136
         },
         {
@@ -19027,7 +19069,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 595
+            "count": 598
           },
           {
             "event": "clarity_dead_click",
@@ -19960,7 +20002,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargassumpuntacana.com/beaches/bavaro-beach/",
@@ -19968,7 +20010,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargassumpuntacana.com/beaches/playa-los-corales/",
@@ -19984,7 +20026,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargassumpuntacana.com/beaches/arena-gorda/",
@@ -20000,7 +20042,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargassumpuntacana.com/beaches/macao-beach/",
@@ -20098,6 +20140,15 @@
           "engagedSessions": 5
         },
         {
+          "pagePath": "/es/",
+          "device": "desktop",
+          "sessions": 4,
+          "bounceRate": 1,
+          "avgDuration": 51.9612275,
+          "pageViews": 4,
+          "engagedSessions": 0
+        },
+        {
           "pagePath": "/es/pronostico-sargazo/",
           "device": "mobile",
           "sessions": 4,
@@ -20105,15 +20156,6 @@
           "avgDuration": 78.87226625,
           "pageViews": 4,
           "engagedSessions": 4
-        },
-        {
-          "pagePath": "/es/",
-          "device": "desktop",
-          "sessions": 3,
-          "bounceRate": 1,
-          "avgDuration": 34.879457333333335,
-          "pageViews": 3,
-          "engagedSessions": 0
         },
         {
           "pagePath": "/seaweed-map/",
@@ -20284,6 +20326,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/fiabilidad/",
             "target": "",
             "count": 3
@@ -20293,12 +20341,6 @@
             "page": "/press/",
             "target": "",
             "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/",
-            "target": "",
-            "count": 2
           },
           {
             "event": "clarity_dead_click",

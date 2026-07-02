@@ -662,7 +662,7 @@ function writeRegionIndex(region, out) {
       },true);
       document.addEventListener('click',function(e){
         var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
-        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click'))return;
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click,[data-sg-live]'))return;
         var cn=typeof t.className==='string'?t.className:'',tag=t.tagName+'.'+cn.split(' ')[0]+'#'+(t.id||''),url=location.href;
         var preCount=document.getElementsByTagName('*').length;
         setTimeout(function(){

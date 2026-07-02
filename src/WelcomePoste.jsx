@@ -113,7 +113,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
   const okBadge = (label)=>(<span style={{display:"inline-flex",alignItems:"center",gap:5,font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#0a7d33"}}><span aria-hidden="true">✓</span>{label}</span>)
 
   return (
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Bienvenue · le poste du Veilleur","Welcome · the Watcher's post","Bienvenida · el puesto del Vigía")}
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" data-sg-live="1" aria-label={_t(lang,"Bienvenue · le poste du Veilleur","Welcome · the Watcher's post","Bienvenida · el puesto del Vigía")}
       ref={setPanel} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} style={{
         position:"fixed", inset:0, zIndex:1450, overflowY:"auto", WebkitOverflowScrolling:"touch",
         background:`linear-gradient(180deg,#2bb6ef 0%,#62c8ee 28%,#ffc187 78%,#ff944a 100%)`,
