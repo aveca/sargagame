@@ -21,6 +21,14 @@
  *
  * N'édite QUE dist/sw.js (jamais public/sw.js, qui reste `sargasses-vNNN` propre pour
  * que sync-version.cjs garde son regex). Lancé après `vite build` (cf. package.json).
+ *
+ * DEUXIÈME rôle (offline complet) : injecte dans le placeholder PRECACHE_ASSETS de
+ * dist/sw.js la liste de TOUT le graphe JS/CSS buildé (dist/assets/*) + les data verdict.
+ * Sans ça, les ~25 chunks LAZY (paywall, hub, scènes, onboarding…) — hashés, donc non
+ * listables à la main — n'étaient cachés QUE si le visiteur ouvrait l'écran EN LIGNE, et
+ * cassaient hors ligne. Le SW les précache à l'install (best-effort) → toute l'UI marche
+ * offline dès le 1er chargement. Le placeholder reste vide dans public/sw.js (dev/preview
+ * inchangés). Idempotent : re-remplit le tableau à chaque build (chemins triés).
  */
 const fs = require('fs')
 const path = require('path')
@@ -84,18 +92,51 @@ try {
 } catch (e) { console.error('[stamp-sw] version.json (non bloquant):', e.message) }
 
 let sw = fs.readFileSync(swPath, 'utf-8')
-// Tolère un éventuel suffixe -hash déjà présent (re-stamp).
+const original = sw
+
+// 1) CACHE_NAME ← hash de build. Tolère un suffixe -hash déjà présent (re-stamp).
 const m = sw.match(/const CACHE_NAME = '(sargasses-v\d+)(?:-[a-z0-9]+)?'/)
 if (!m) {
   console.error("[stamp-sw] CACHE_NAME introuvable dans dist/sw.js (format inattendu).")
   process.exit(1)
 }
 const stamped = `${m[1]}-${hash}`
-const want = `const CACHE_NAME = '${stamped}'`
-if (sw.includes(want)) {
-  console.log(`[stamp-sw] dist/sw.js déjà à jour (${stamped}).`)
-  process.exit(0)
+sw = sw.replace(m[0], `const CACHE_NAME = '${stamped}'`)
+
+// 2) PRECACHE_ASSETS ← tout le graphe JS/CSS buildé + data verdict. Précaché par le SW à
+//    l'install (best-effort) → toute l'UI (chunks lazy inclus) marche OFFLINE dès le 1er
+//    chargement complet. Sans ça, un visiteur passé hors ligne cassait sur paywall/hub/détail.
+const distDir = path.join(root, 'dist')
+const assetsDir = path.join(distDir, 'assets')
+const precache = []
+if (fs.existsSync(assetsDir)) {
+  const stack = [assetsDir]
+  while (stack.length) {
+    const d = stack.pop()
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const p = path.join(d, e.name)
+      if (e.isDirectory()) stack.push(p)
+      else if (/\.(js|css)$/i.test(e.name)) {
+        precache.push('/' + path.relative(distDir, p).replace(/\\/g, '/'))
+      }
+    }
+  }
 }
-sw = sw.replace(m[0], want)
-fs.writeFileSync(swPath, sw, 'utf-8')
-console.log(`[stamp-sw] dist/sw.js CACHE_NAME → ${stamped} (hash de ${files.length} fichiers src/).`)
+// Data verdict hors STATIC_ASSETS (celles-ci y sont déjà) — présentes → précachées.
+for (const rel of ['api/copernicus/sargassum.json', 'api/copernicus/track-record.json']) {
+  if (fs.existsSync(path.join(distDir, rel))) precache.push('/' + rel)
+}
+precache.sort()
+const list = precache.map(u => JSON.stringify(u)).join(',')
+if (/const PRECACHE_ASSETS = \[[^\]]*\]/.test(sw)) {
+  sw = sw.replace(/const PRECACHE_ASSETS = \[[^\]]*\]/, `const PRECACHE_ASSETS = [${list}]`)
+} else {
+  console.warn('[stamp-sw] placeholder PRECACHE_ASSETS introuvable dans dist/sw.js — précache offline NON injecté.')
+}
+
+if (sw !== original) {
+  fs.writeFileSync(swPath, sw, 'utf-8')
+  console.log(`[stamp-sw] dist/sw.js CACHE_NAME → ${stamped} · PRECACHE_ASSETS → ${precache.length} assets (hash de ${files.length} fichiers src/).`)
+} else {
+  console.log(`[stamp-sw] dist/sw.js déjà à jour (${stamped}, ${precache.length} assets précachés).`)
+}
