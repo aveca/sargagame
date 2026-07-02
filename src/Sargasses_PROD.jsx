@@ -13066,6 +13066,7 @@ export default function App(){
             <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#2e1a5e",zIndex:1200}}/>}>
               <LazyComicDetail
                 beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
+                sargData={sargData}
                 onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
                 onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
                 onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
