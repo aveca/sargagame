@@ -11,8 +11,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import PassOffer from "./PassOffer.jsx"
-import BeachPhotos from "./BeachPhotos.jsx"
-import { uploadBeachPhoto, submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
 
@@ -1658,10 +1657,13 @@ function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect
 //    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
 //    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
 const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
-// Capture photo visiteur (BeachReport) — backend SUPABASE (mobile-friendly, voir
-// src/supabasePhotos.js). S'active AUTOMATIQUEMENT dès que SUPABASE_URL + ANON_KEY
-// sont renseignés (sinon no-op). Détails : docs/visitor-photos-runbook.md.
-const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
+// Upload photo visiteur RETIRÉ (décision fondateur + panel adverse 2026-07-02 : « on ne
+// fait pas d'image, le SVG de NOTRE donnée satellite est le produit »). L'upload, la
+// galerie et la récompense « Éclaireur » 24 h sont désarmés ; le backend Supabase reste
+// DORMANT (mobile ne peut pas toucher le serveur, cf. docs/visitor-photos-runbook.md).
+// La valeur du « présent » passe désormais par le vote SVG ObsScene + odeur + événements
+// terrain (signal honnête) et par la data-viz du verdict (Cadran du Veilleur).
+const PHOTO_UPLOAD_ENABLED=false
 // ── Récompense « Éclaireur » (panel adverse 2026-07-02) : photo ENVOYÉE (upload Supabase
 //    réellement 2xx) = 24 h de Veilleur personnel via sg_premium_pass_end (mécanique Trip
 //    Pass existante). LOIS DURES :
@@ -2142,6 +2144,118 @@ function ForecastCredibility({weeklyData,lang,sargData}){
       </div>
     </div>
   )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CADRAN DU VEILLEUR — instrument SVG de crédibilité (data-viz de NOTRE donnée
+   satellite). Panel adverse 2026-07-02 : « le SVG de notre donnée est le produit ».
+   100 % data réelle : confiance (forecast[].confidence), fraîcheur satellite
+   (erddapTimestamp/stale — kill-switch anti-fausse-fraîcheur), méthode, trajectoire
+   7 j avec horizon J+4-7 DÉGRADÉ visuellement (jamais lissé), fiabilité par régime
+   hedgée → /fiabilite/. reduced-motion = plancher (rendu statique, zéro anim infinie).
+   A/B « dataviz » ; rollback ?cadran=0 → barre plate ForecastCredibility.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function CadranVeilleur({weeklyData,lang,sargData}){
+  const LL=T[lang]||T.fr
+  const reduce=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const[armed,setArmed]=useState(!!reduce)
+  useEffect(()=>{if(reduce)return;const id=requestAnimationFrame(()=>setArmed(true));return()=>cancelAnimationFrame(id)},[reduce])
+  const fc=Array.isArray(weeklyData&&weeklyData.forecast)?weeklyData.forecast:[]
+  const avgConf=Math.max(0,Math.min(100,Math.round((fc[0]&&fc[0].confidence)||40)))
+  const level=avgConf>=50?"high":avgConf>=30?"medium":"low"
+  const levelColor=level==="high"?C.green:level==="medium"?C.amber:C.red
+  const levelLabel=level==="high"?LL.reliabilityHigh:level==="medium"?LL.reliabilityMedium:LL.reliabilityLow
+  const method=(weeklyData&&weeklyData.forecastMethod)||"persistence"
+  const methodLabel=method==="arrival-banks"?"AFAI + Banks":method==="banks-persistence"?"AFAI + Persistence":method==="memory-decay"?"Memory decay":method==="interpolated"?"IDW":_t(lang,"Persistance + vent","Persistence + wind","Persistencia + viento")
+  // Fraîcheur satellite honnête (formatFreshness → null si >=12 h ; stale → gris).
+  const updatedAt=(sargData&&(sargData.erddapTimestamp||sargData.updatedAt))||null
+  const ageH=(()=>{try{if(!updatedAt)return null;const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6;return(isFinite(h)&&h>=0)?h:null}catch(_){return null}})()
+  const stale=!!(sargData&&sargData.stale)
+  const freshOk=!stale&&ageH!=null&&ageH<12
+  const freshLbl=formatFreshness(updatedAt,lang)
+  // Géométrie : demi-cercle supérieur (180°→0° au-dessus de la baseline CY).
+  const CX=120,CY=104,R_CONF=60,R_FRESH=78
+  const rad=d=>d*Math.PI/180
+  const arcTop=r=>`M ${CX-r} ${CY} A ${r} ${r} 0 0 1 ${CX+r} ${CY}`
+  const aEnd=180-180*(avgConf/100)
+  const dotX=CX+R_CONF*Math.cos(rad(aEnd)), dotY=CY-R_CONF*Math.sin(rad(aEnd))
+  const off=armed?(100-avgConf):100
+  // Fiabilité par régime hedgée (__REL, même source que /fiabilite/) — jamais un « 100% » nu.
+  const relLine=(__REL&&typeof __REL.cleanPct==="number")
+    ?(()=>{const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila");const n=(__REL.cleanN||0).toLocaleString(lang==="fr"?"fr-FR":lang==="es"?"es-ES":"en-US");return _t(lang,`${__REL.cleanPct}% de « mer propre » vérifiées · ${reg} (${n})`,`${__REL.cleanPct}% of "clean sea" calls verified · ${reg} (${n})`,`${__REL.cleanPct}% de "mar limpio" verificadas · ${reg} (${n})`)})()
+    :_t(lang,"76 % à 79 % vérifié selon la saison","76% to 79% verified by season","76% a 79% verificado según la temporada")
+  const days=fc.slice(0,7)
+  return(
+    <div style={{marginTop:10,padding:"12px 12px 10px",borderRadius:12,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+      <div style={{display:"flex",justifyContent:"center"}}>
+        <svg viewBox="0 0 240 120" width="100%" style={{maxWidth:240,height:"auto",display:"block"}} role="img"
+          aria-label={_t(lang,
+            `Confiance ${avgConf} %, ${freshOk?`satellite il y a ${Math.round(ageH)} h`:"satellite en cours de vérification"}`,
+            `Confidence ${avgConf}%, ${freshOk?`satellite ${Math.round(ageH)}h ago`:"satellite being verified"}`,
+            `Confianza ${avgConf}%, ${freshOk?`satélite hace ${Math.round(ageH)} h`:"satélite en verificación"}`)}>
+          {/* Anneau de fraîcheur (rim) : or si frais, gris si stale/>12 h */}
+          <path d={arcTop(R_FRESH)} fill="none" stroke={freshOk?"#FFC72C":"#C9BFA4"} strokeWidth="5" strokeLinecap="round" opacity={freshOk?1:.5}/>
+          {/* Jauge de confiance : piste + valeur remplie de gauche→droite */}
+          <path d={arcTop(R_CONF)} fill="none" stroke="var(--sg-border,rgba(0,0,0,.1))" strokeWidth="9" strokeLinecap="round"/>
+          <path d={arcTop(R_CONF)} fill="none" stroke={levelColor} strokeWidth="9" strokeLinecap="round"
+            pathLength="100" strokeDasharray="100" strokeDashoffset={off}
+            style={{transition:reduce?"none":"stroke-dashoffset 1s cubic-bezier(.22,1,.36,1)"}}/>
+          {armed&&<circle cx={dotX} cy={dotY} r="5" fill={levelColor} stroke="#fff" strokeWidth="1.5"/>}
+          <text x={CX} y="78" textAnchor="middle" style={{fontFamily:"'Anton',sans-serif",fontSize:30,fill:levelColor}}>{avgConf}%</text>
+          <text x={CX} y="96" textAnchor="middle" style={{fontSize:10.5,fontWeight:800,fill:"var(--sg-mid,#5A5A5A)",letterSpacing:".04em",textTransform:"uppercase"}}>{levelLabel}</text>
+          <text x={CX-R_FRESH+2} y={CY+13} textAnchor="middle" style={{fontSize:9,fill:"var(--sg-mid,#999)"}} aria-hidden="true">🛰️</text>
+        </svg>
+      </div>
+      {/* Trajectoire 7 j — horizon J+4-7 dégradé (pointillé + estompé) ; donnée absente = « ? » */}
+      {days.length>0&&(
+      <div style={{display:"flex",gap:5,alignItems:"flex-end",marginTop:2}}>
+        {days.map((d,i)=>{
+          const noData=!d||d.status==null||d.type==="_loading"
+          const st=ST[d&&d.status]||ST._loading
+          const type=(d&&d.type)||(i===0?"observation":i<=3?"tendance":"horizon")
+          const degraded=type==="horizon"||i>=4
+          return(
+            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+              <div style={{width:"100%",height:16,borderRadius:5,
+                background:noData?"transparent":degraded?st.c+"44":st.c,
+                border:noData?"1px dashed var(--sg-border,rgba(0,0,0,.2))":degraded?`1.5px dashed ${st.c}`:"none",
+                display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {noData&&<span style={{fontSize:9,color:"var(--sg-mid,#999)",fontWeight:700}}>?</span>}
+              </div>
+              <span className="anton" style={{fontSize:9,color:"var(--sg-mid,#999)",textTransform:"uppercase"}}>{d?fcDay(d,lang):"—"}</span>
+            </div>
+          )
+        })}
+      </div>)}
+      <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",marginTop:5,lineHeight:1.35}}>
+        {_t(lang,"Au-delà de 3 jours : tendance, pas prévision.","Beyond 3 days: trend, not forecast.","Más allá de 3 días: tendencia, no previsión.")}
+      </div>
+      <div style={{fontSize:9.5,color:"var(--sg-mid,#999)",display:"flex",alignItems:"center",gap:5,flexWrap:"wrap",marginTop:6,justifyContent:"center"}}>
+        <span style={{fontWeight:700,color:"var(--sg-ink,#13241F)"}}>🛰️ Copernicus OLCI</span>
+        <span style={{opacity:.4}}>·</span>
+        <span>{freshLbl?(_t(lang,"mesuré ","measured ","medido ")+freshLbl):_t(lang,"vérification en cours","checking freshness","verificando")}</span>
+        <span style={{opacity:.4}}>·</span>
+        <span>{methodLabel}</span>
+      </div>
+      <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"cadran"})}catch(_){}}}
+        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:7,padding:"7px 10px",borderRadius:10,
+        textDecoration:"none",background:"var(--sg-card,#fff)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        fontSize:10.5,fontWeight:600,color:"var(--sg-ink,#13241F)"}}>
+        <span>{relLine}</span><span aria-hidden="true" style={{color:levelColor,fontWeight:800}}>→</span>
+      </a>
+    </div>
+  )
+}
+// A/B « dataviz » (panel 2026-07-02) : le Cadran (SVG de NOTRE donnée) vs la barre plate.
+// ?cadran=1/0 force ; sinon 50/50 sticky (sg_ab). abVariant enregistre l'assignation →
+// track() attache ab_dataviz aux events suivants (KPI = sg_premium_modal_open depuis fiche).
+// Le Cadran reste honnête ET statique sous reduced-motion → pas de garde reduced-motion.
+function ForecastCred({weeklyData,lang,sargData}){
+  const[viz]=useState(()=>{try{const q=window.location.search;if(/[?&]cadran=1/.test(q))return true;if(/[?&]cadran=0/.test(q))return false;return abVariant("dataviz",["control","viz"],[.5,.5])==="viz"}catch(_){return false}})
+  return viz
+    ?<CadranVeilleur weeklyData={weeklyData} lang={lang} sargData={sargData}/>
+    :<ForecastCredibility weeklyData={weeklyData} lang={lang} sargData={sargData}/>
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2810,44 +2924,9 @@ function BeachReport({beach,lang,communityReports}){
     return null
   })
   const[queued,setQueued]=useState(false)  // #27 : signalement mis en file hors-ligne
-  // Photo visiteur (preuve du présent). Optionnelle, indépendante du vote de niveau.
-  const fileRef=useRef(null)
-  const[photo,setPhoto]=useState(null)   // data URL JPEG redimensionnée
-  const[photoState,setPhotoState]=useState("idle") // idle|busy|sent|error
-  // Récompense Éclaireur : éligibilité figée à l'ouverture de la fiche (l'offre affichée
-  // ne change pas sous les doigts) ; rewardEnd>0 = pass crédité à CET envoi.
-  const[rewardEligible]=useState(()=>PHOTO_UPLOAD_ENABLED&&sgPhotoRewardEligible())
-  const[rewardEnd,setRewardEnd]=useState(0)
-  useEffect(()=>{
-    if(rewardEligible){try{track("sg_photo_offer_view",{beach_id:beach.id,island:beach.island})}catch(_){}}
-  },[])  // eslint-disable-line react-hooks/exhaustive-deps
-  const onPickPhoto=async(e)=>{
-    const f=e.target.files&&e.target.files[0]; if(f)try{e.target.value=""}catch(_){}
-    if(!f)return
-    setPhotoState("busy")
-    try{
-      const {fileToResizedJpeg}=await import("./imageResize.js")
-      const dataUrl=await fileToResizedJpeg(f,{maxDim:1280,quality:0.8})
-      setPhoto(dataUrl);setPhotoState("idle")
-    }catch(_){setPhoto(null);setPhotoState("error")}
-  }
-  const sendPhoto=()=>{
-    if(!photo||photoState==="sent"||photoState==="busy")return
-    try{track("sg_beach_photo",{beach_id:beach.id,level:voted||null,island:beach.island})}catch(_){}
-    setPhotoState("busy")
-    // Upload Supabase (Storage + ligne `photos` status 'pending', cf. supabasePhotos.js).
-    // Crédit Éclaireur UNIQUEMENT sur ok===true (Storage 200 + insert 200) — jamais sur
-    // tentative/tap. Récompense PLATE : indépendante du niveau voté et de la modération.
-    uploadBeachPhoto(beach,voted||null,photo)
-      .then(ok=>{
-        if(ok){
-          const end=sgGrantPhotoReward()
-          if(end){setRewardEnd(end);try{track("sg_photo_reward_granted",{beach_id:beach.id,island:beach.island,pass_source:"photo"})}catch(_){}}
-        }
-        setPhotoState(ok?"sent":"error")
-      })
-      .catch(()=>setPhotoState("error"))
-  }
+  // Photo « Éclaireur » RETIRÉE (panel adverse 2026-07-02) : upload + récompense 24 h
+  // désarmés. La « preuve du présent » passe désormais par le vote SVG ObsScene + odeur
+  // + événements terrain (ci-dessous), et la valeur du verdict par la data-viz (Cadran).
   // ── Événements terrain (échouement / ramassage) — signal AFFICHÉ modéré, ne
   //    touche PAS la couleur du verdict (100 % data ERDDAP ; panel 2026-07-01).
   const evtKey="sg_bevent_"+beach.id
@@ -2923,103 +3002,6 @@ function BeachReport({beach,lang,communityReports}){
   return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
-      {/* ── PHOTO « Éclaireur » — REMONTÉE en tête (panel 2026-07-02 : le placement est le
-          levier, l'ancien bouton dashed était enterré sous 4 blocs). INDÉPENDANTE du vote
-          de niveau (jamais « signale d'abord ») ; la récompense (?photoreward=0) est une
-          couche SÉPARÉE par-dessus le CTA remonté. Récompense PLATE : propre ou couverte,
-          identique — ne jamais la conditionner au contenu (loi moat). */}
-      {PHOTO_UPLOAD_ENABLED&&(
-        <div style={{marginBottom:12,padding:"12px 13px",borderRadius:14,
-          background:rewardEligible?"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)":"var(--sg-card,#fff)",
-          border:rewardEligible?"2px solid var(--sg-ink,#1d2b3a)":"1px dashed var(--sg-border,rgba(0,0,0,.18))"}}>
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={onPickPhoto} style={{display:"none"}}/>
-          {photoState!=="sent"&&(
-            <div style={{fontSize:13,fontWeight:800,color:"var(--sg-ink,#1d2b3a)",display:"flex",alignItems:"center",gap:6}}>
-              <span aria-hidden="true">📷</span>
-              {rewardEligible
-                ? _t(lang,"Deviens l'Éclaireur de cette plage","Become this beach's Scout","Conviértete en el Explorador de esta playa")
-                : _t(lang,"Montre cette plage telle qu'elle est","Show this beach as it really is","Muestra esta playa tal como está")}
-            </div>
-          )}
-          {photoState!=="sent"&&rewardEligible&&(
-            <div style={{marginTop:5,fontSize:11.5,lineHeight:1.45,fontWeight:600,color:"var(--sg-mid,#5d5a4e)"}}>
-              {_t(lang,
-                "Propre ou couverte, ta photo compte pareil : elle montre la plage telle qu'elle est aux prochains voyageurs. En retour, ton Veilleur personnel s'active 24 h — prévisions 7 jours et alertes.",
-                "Clean or covered, your photo counts the same: it shows the beach as it really is to the next travelers. In return, your personal Watcher activates for 24 hours — 7-day outlook and alerts.",
-                "Limpia o cubierta, tu foto cuenta igual: muestra la playa tal como está a los próximos viajeros. A cambio, tu Vigía personal se activa 24 h — previsión de 7 días y alertas.")}
-            </div>
-          )}
-          {!photo&&photoState!=="sent"&&(
-            <button type="button" onClick={()=>{_sgCapturingPhoto=true;fileRef.current&&fileRef.current.click()}} disabled={photoState==="busy"} style={{
-              marginTop:9,width:"100%",minHeight:44,padding:"11px 8px",borderRadius:12,border:"none",
-              background:"var(--sg-ink,#1d2b3a)",color:"#fff",fontSize:12.5,fontWeight:800,fontFamily:"inherit",
-              cursor:photoState==="busy"?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              {photoState==="busy"?_t(lang,"Préparation…","Preparing…","Preparando…"):_t(lang,"Ajouter ma photo du jour","Add my photo of the day","Añadir mi foto del día")}
-            </button>
-          )}
-          {photo&&photoState!=="sent"&&(
-            <div style={{marginTop:9}}>
-              <div style={{position:"relative",width:"100%",borderRadius:12,overflow:"hidden",background:"#000",marginBottom:8}}>
-                <img src={photo} alt="" style={{width:"100%",maxHeight:200,objectFit:"cover",display:"block"}}/>
-                <button type="button" onClick={()=>setPhoto(null)} aria-label="x" style={{position:"absolute",top:6,right:6,width:26,height:26,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.55)",color:"#fff",fontSize:14,cursor:"pointer"}}>✕</button>
-              </div>
-              <button type="button" onClick={sendPhoto} style={{
-                width:"100%",minHeight:44,padding:"10px 8px",borderRadius:12,border:"none",background:C.green,color:"#fff",
-                fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}}>
-                {_t(lang,"Envoyer la photo","Send photo","Enviar foto")}
-              </button>
-              <div style={{marginTop:5,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
-                {_t(lang,"Localisation retirée","Location stripped","Ubicación eliminada")}
-              </div>
-            </div>
-          )}
-          {photoState==="sent"&&(
-            <div style={{textAlign:"center"}}>
-              {rewardEnd>0?(
-                <>
-                  <div style={{fontSize:12.5,fontWeight:800,color:"var(--sg-ink,#1d2b3a)"}}>
-                    🏅 {_t(lang,`Éclaireur de ${beach.name} — merci.`,`Scout of ${beach.name} — thank you.`,`Explorador de ${beach.name} — gracias.`)}
-                  </div>
-                  <div style={{marginTop:4,fontSize:11.5,fontWeight:700,color:C.green}}>
-                    {_t(lang,`Ton Veilleur personnel veille jusqu'à ${_sgRewardEndLbl(rewardEnd,lang)}.`,`Your personal Watcher is on duty until ${_sgRewardEndLbl(rewardEnd,lang)}.`,`Tu Vigía personal vigila hasta el ${_sgRewardEndLbl(rewardEnd,lang)}.`)}
-                  </div>
-                  <div style={{marginTop:4,fontSize:10,color:"var(--sg-mid)"}}>
-                    {_t(lang,"Ta photo apparaîtra après modération.","Your photo will appear after review.","Tu foto aparecerá tras revisión.")}
-                  </div>
-                </>
-              ):rewardEligible?(
-                <div style={{fontSize:11,color:C.green,fontWeight:600}}>
-                  {_t(lang,"Photo bien reçue — merci. Ta vision Veilleur d'aujourd'hui est déjà active.","Photo received — thank you. Today's Watcher access is already active.","Foto recibida — gracias. Tu acceso Vigía de hoy ya está activo.")}
-                </div>
-              ):(
-                <div style={{fontSize:11,color:C.green,fontWeight:600}}>
-                  {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
-                </div>
-              )}
-              {VSHARE_ENABLED&&(
-                <button type="button" onClick={async()=>{
-                  try{track("sg_share",{variant:"contribution",beach_id:beach.id,island:beach.island})}catch(_){}
-                  try{await buildShareCard({variant:"beach",beach,lang})}catch(_){}
-                }} style={{marginTop:9,width:"100%",padding:"10px 8px",borderRadius:12,border:"none",
-                  background:C.green,color:"#fff",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
-                  display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  <span aria-hidden="true">📣</span>{_t(lang,"Montre ta plage aux copains","Show your beach to friends","Muestra tu playa a tus amigos")}
-                </button>
-              )}
-            </div>
-          )}
-          {photoState==="error"&&(
-            <div style={{marginTop:6,fontSize:11,color:C.red,textAlign:"center",fontWeight:600}}>
-              {_t(lang,"Image illisible — réessaie.","Unreadable image — try again.","Imagen ilegible — reintenta.")}
-            </div>
-          )}
-          {photoState!=="sent"&&(
-            <div style={{marginTop:7,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
-              {_t(lang,"Publiée après modération · elle n'influence jamais le verdict — il reste mesuré au satellite.","Published after review · it never influences the verdict — it stays satellite-measured.","Publicada tras moderación · nunca influye en el veredicto — sigue medido por satélite.")}
-            </div>
-          )}
-        </div>
-      )}
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
         {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}
@@ -3158,7 +3140,6 @@ function BeachReport({beach,lang,communityReports}){
       {voted&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
         {_t(lang,"Merci pour ton signalement !","Thanks for your report!","¡Gracias por tu reporte!")}
       </div>}
-      <BeachPhotos beach={beach} lang={lang} canContribute={PHOTO_UPLOAD_ENABLED}/>
     </div>
   )
 }
@@ -4531,7 +4512,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           })()}
 
           {/* Forecast confidence + source (credibility) */}
-          {weeklyData&&<ForecastCredibility weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
+          {weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
 
           {/* Weather */}
           {weather&&(
