@@ -11794,8 +11794,31 @@ export default function App(){
   // email/snooze/session/trigger). Ne nécessite que les données (exitcapPick). Permet de
   // montrer le pop-up à la demande même pour un user déjà capté (sg_email présent).
   useEffect(()=>{try{if(/[?&]exit_veilleur=preview/.test(window.location.search)&&exitcapPick)setShowExitVeilleur(true)}catch(_){}},[exitcapPick])
+
+  // ── VITRINE INTERACTIVE « La Vitrine qui s'ouvre » (attract idle) — panel adverse
+  //    2026-07-02, GO-RECADRÉ. Visiteur FROID immobile 40 s sur la carte → le reel DemoReel
+  //    s'ouvre par-dessus l'app (montée dessous), 1er geste = capture-wipe → fiche VIVANTE de
+  //    la plage vedette (même verdict). Idle-only : un intent-visitor ne le voit JAMAIS (gardes
+  //    URL/scroll + 40 s > lecture-avant-1er-tap). MUTEX DUR avec le toast jeu (jamais les
+  //    deux). ZÉRO paywall auto (respecte le corpse engagement_50s). Réutilise DemoReel à ~95 %
+  //    (src="interactive", additif). Rollback ?idle=0 ; ?idle=1 force l'éligibilité (QA). ──
+  const [showAttract,setShowAttract]=useState(false)
+  const attractPickRef=useRef(null)
+  const attractEligible=useMemo(()=>{
+    try{
+      const q=window.location.search||""
+      if(/[?&]idle=0/.test(q))return false
+      if(/[?&]idle=1/.test(q))return true            // QA : force même sur un land chaud
+      if(/[?&]demo=1/.test(q))return false           // kiosk = early-return dédié
+      if(/[?&](beach|paywall|pro|premium|premium_email|nav|alertes|manage|restore|preview_beach|preview_partner)=/.test(q))return false
+      if(/[?&]utm_/.test(q))return false             // trafic campagne = intention → pas froid
+      const p=(window.location.pathname||"/").replace(/\/+$/,"")||"/"
+      return p==="/"||p==="/index.html"              // home uniquement (jamais plage/commune/SEO)
+    }catch(_){return false}
+  },[])
+
   useEffect(()=>{
-    let idleT=null
+    let idleT=null,attractT=null
     const fire=trigger=>{
       // Capture photo en cours → le `hidden` vient de la caméra, pas d'un départ. Ne pas
       // monter d'overlay (sinon il recouvre la fiche au retour = freeze signalé).
@@ -11834,7 +11857,24 @@ export default function App(){
       setShowGameToast(true)
       track("sg_game_toast_shown",{trigger})
     }
-    const reset=()=>{_sgCapturingPhoto=false;clearTimeout(idleT);idleT=setTimeout(()=>fire("idle"),45000)}
+    // Attract idle : tire à 40 s, AVANT le toast jeu (45 s). MUTEX DUR — en tirant il pose
+    // sg_game_toast=1 → le fire("idle") du jeu à 45 s retombe (return) : jamais reel+toast.
+    const fireAttract=()=>{
+      if(!attractEligible)return
+      const gate=gameGateRef.current
+      if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
+      if((window.scrollY||document.documentElement.scrollTop||0)!==0)return   // a scrollé vers le verdict → pas froid
+      try{
+        if(sessionStorage.getItem("sg_attract_idle_seen"))return              // 1×/session
+        if(sessionStorage.getItem("sg_seen_beach"))return                     // a déjà ouvert une plage → pas froid
+        sessionStorage.setItem("sg_attract_idle_seen","1")
+        sessionStorage.setItem("sg_game_toast","1")                            // MUTEX : neutralise le toast jeu
+      }catch(_){return}
+      setShowGameToast(false)
+      setShowAttract(true)
+      try{track("sg_attract_view",{src:"idle"})}catch(_){}
+    }
+    const reset=()=>{_sgCapturingPhoto=false;clearTimeout(idleT);clearTimeout(attractT);idleT=setTimeout(()=>fire("idle"),45000);if(attractEligible)attractT=setTimeout(fireAttract,40000)}
     const acts=["pointerdown","keydown","touchstart","wheel"]
     acts.forEach(a=>window.addEventListener(a,reset,{passive:true}))
     reset()
@@ -11867,7 +11907,7 @@ export default function App(){
       lastY=y;lastT=now
     }
     window.addEventListener("scroll",onScroll,{passive:true})
-    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH);document.removeEventListener("mousemove",exitFlick);document.removeEventListener("visibilitychange",onVis);window.removeEventListener("scroll",onScroll)}
+    return()=>{clearTimeout(idleT);clearTimeout(attractT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH);document.removeEventListener("mousemove",exitFlick);document.removeEventListener("visibilitychange",onVis);window.removeEventListener("scroll",onScroll)}
   },[])
 
   // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
@@ -12463,6 +12503,7 @@ export default function App(){
     // Track beach views for PWA install prompt timing
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
+    try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
   },[showOnboarding])
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
   // « scroll satellite » (PRODUCT.md §8). Default ON ; rollback instantané ?mapdetail=0.
@@ -12476,7 +12517,7 @@ export default function App(){
     setComicBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_map"})
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
-    try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v))}catch(_){}
+    try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
   },[showOnboarding])
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
   const onMapBeach=useCallback(b=>{ if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick])
@@ -12716,6 +12757,19 @@ export default function App(){
         {showSplash&&<ArenaSplash lang={lang} track={track} wordmark={_onbWordmark} onDone={()=>setShowSplash(false)}/>}
         {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} region={_onbRegion} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       </Suspense></ErrBound>}
+      {/* VITRINE INTERACTIVE (attract idle) — DemoReel réutilisé (src="interactive"), lazy,
+          monté SEULEMENT après 40 s d'idle froid (jamais dans le bundle eager). 1er geste →
+          capture-wipe → onEnterFunnel ouvre la fiche VIVANTE de la MÊME plage (onPick fige
+          l'objet, zéro bait). ✕/Échap/swipe → retour carte (écran réel, jamais un blanc).
+          ZÉRO paywall auto. Rollback ?idle=0. */}
+      {showAttract&&<ErrBound fallback={null}><Suspense fallback={null}>
+        <DemoReel lang={lang} src="interactive" partner={null}
+          allBeaches={allBeaches} imageMap={imageMap} imageQ={imageQ}
+          mapForecastByBeach={mapForecastByBeach} sargData={sargData} island={island} track={track}
+          onPick={p=>{attractPickRef.current=p}}
+          onEnterFunnel={p=>{const pk=p||attractPickRef.current;setShowAttract(false);if(pk&&pk.id){const real=(allBeaches||[]).find(x=>x&&x.id===pk.id)||pk;onMapBeach(real)}}}
+          onClose={()=>{setShowAttract(false);try{track("sg_attract_close",{src:"idle"})}catch(_){}}}/>
+      </Suspense></ErrBound>}
       {/* JEU RETIRÉ DU PRODUIT (décision fondateur : « c'est pas un plus, c'est nul »).
           L'arène/collection n'est plus accessible depuis l'UX — produit utilitaire pur
           (carte → fiche → alerte). Code dormant conservé, joignable seulement via ?hero=1
@@ -12724,7 +12778,10 @@ export default function App(){
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
       <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</p>
-      <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
+      {/* contentVisibility:hidden pendant l'attract → la carte (WorldMapView, statique au
+          repos) n'est plus peinte/composée sous le reel opaque (perf bas de gamme). No-op si
+          non supporté ; "visible" par défaut → zéro impact hors attract (smoke inchangé). */}
+      <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden",contentVisibility:showAttract?"hidden":"visible"}}>
 
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
