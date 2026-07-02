@@ -1,0 +1,116 @@
+{
+  "date": "2026-07-02",
+  "count": 10,
+  "veilleurs": [
+    {
+      "id": "sable",
+      "name": "Sable",
+      "role": "L'éclaireur du rivage",
+      "market": "B2C voyageurs",
+      "depth": 0,
+      "status": "live",
+      "date": "2026-07-02",
+      "mode": "script",
+      "headline": "Sable en veille sur B2C voyageurs"
+    },
+    {
+      "id": "recif",
+      "name": "Récif",
+      "role": "Le concierge des côtes",
+      "market": "Hôtels & resorts (B2B)",
+      "depth": 5,
+      "status": "emerging",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Récif en veille sur Hôtels & resorts (B2B)"
+    },
+    {
+      "id": "digue",
+      "name": "Digue",
+      "role": "Le gardien municipal",
+      "market": "Collectivités & offices de tourisme",
+      "depth": 15,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Digue en veille sur Collectivités & offices de tourisme"
+    },
+    {
+      "id": "amarre",
+      "name": "Amarre",
+      "role": "Le notaire du littoral",
+      "market": "Immobilier côtier",
+      "depth": 30,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Amarre en veille sur Immobilier côtier"
+    },
+    {
+      "id": "barometre",
+      "name": "Baromètre",
+      "role": "L'actuaire des marées",
+      "market": "Assurance & réassurance climat",
+      "depth": 80,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Baromètre en veille sur Assurance & réassurance climat"
+    },
+    {
+      "id": "sillage",
+      "name": "Sillage",
+      "role": "Le pilote de flotte",
+      "market": "Croisière, ports & maritime",
+      "depth": 200,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Sillage en veille sur Croisière, ports & maritime"
+    },
+    {
+      "id": "filet",
+      "name": "Filet",
+      "role": "La vigie des pêcheries",
+      "market": "Pêche & aquaculture",
+      "depth": 500,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Filet en veille sur Pêche & aquaculture"
+    },
+    {
+      "id": "courant",
+      "name": "Courant",
+      "role": "L'ingénieur des prises d'eau",
+      "market": "Énergie & dessalement côtiers",
+      "depth": 1000,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Courant en veille sur Énergie & dessalement côtiers"
+    },
+    {
+      "id": "prisme",
+      "name": "Prisme",
+      "role": "Le cartographe des données",
+      "market": "Licence data / API",
+      "depth": 2000,
+      "status": "emerging",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Prisme en veille sur Licence data / API"
+    },
+    {
+      "id": "abysse",
+      "name": "Abysse",
+      "role": "L'oracle planétaire",
+      "market": "Souverain, spatial & climat",
+      "depth": 6000,
+      "status": "greenfield",
+      "date": "2026-07-02",
+      "mode": "recon",
+      "headline": "Abysse en veille sur Souverain, spatial & climat"
+    }
+  ]
+}

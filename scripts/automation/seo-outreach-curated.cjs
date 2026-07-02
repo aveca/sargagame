@@ -60,10 +60,15 @@ function marketProfile(marketStr) {
   if (/punta cana|dominican/.test(s)) return { key: 'dr', lang: 'en', region: 'Punta Cana', intl: true,
     from: 'Sargassum Punta Cana <alerte@sargassumpuntacana.com>', site: 'https://sargassumpuntacana.com/',
     press: 'https://sargassumpuntacana.com/press/', widget: 'https://sargassumpuntacana.com/widget/' }
-  if (/cancún|cancun|riviera maya|quintana/.test(s)) return { key: 'mx', lang: 'es', region: 'Cancún y la Riviera Maya', intl: true,
+  if (/cancún|cancun|riviera maya|quintana/.test(s)) return { key: 'mx', lang: 'es', region: 'Cancún y la Riviera Maya', intl: true, recognized: true,
     from: 'Sargazo Cancún <alerte@sargassumcancun.com>', site: 'https://sargassumcancun.com/',
     press: 'https://sargassumcancun.com/prensa/', widget: 'https://sargassumcancun.com/widget/' }
-  return { key: 'fr', lang: 'fr', region: 'Martinique et Guadeloupe', intl: false,
+  if (/martinique|guadeloupe|antilles/.test(s)) return { key: 'fr', lang: 'fr', region: 'Martinique et Guadeloupe', intl: false, recognized: true,
+    from: 'Sargasses Martinique <alerte@sargasses-martinique.com>', site: 'https://sargasses-martinique.com/',
+    press: 'https://sargasses-martinique.com/recherche/', widget: 'https://sargasses-martinique.com/widget/' }
+  // Unrouted market (e.g. a staged-prelaunch market with no live sending identity):
+  // recognized:false so the caller SKIPS it — never email a market with the wrong identity.
+  return { key: 'unknown', lang: 'fr', region: '', intl: false, recognized: false,
     from: 'Sargasses Martinique <alerte@sargasses-martinique.com>', site: 'https://sargasses-martinique.com/',
     press: 'https://sargasses-martinique.com/recherche/', widget: 'https://sargasses-martinique.com/widget/' }
 }
@@ -154,7 +159,9 @@ async function main() {
   // drop already-contacted, gate intl, rank high-authority first.
   const candidates = []
   for (const mk of markets) {
+    if (mk.status === 'staged-prelaunch') continue // market prepared but its domain isn't live yet — never email (would promise a resource that doesn't exist for that market)
     const m = marketProfile(mk.market)
+    if (!m.recognized) continue // no live sending identity for this market → skip (prevents mis-routing to the FR default)
     if (m.intl && !OUTREACH_INTL) continue
     for (const p of (mk.prospects || [])) {
       const domain = extractDomain(p.url)

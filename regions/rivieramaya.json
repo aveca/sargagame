@@ -210,6 +210,102 @@
       "kids": true,
       "snorkel": true,
       "parking": true
+    },
+    {
+      "id": "rm013",
+      "island": "rivieramaya",
+      "name": "Playa Caracol",
+      "commune": "Cancún",
+      "lat": 21.1379,
+      "lng": -86.7478,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm014",
+      "island": "rivieramaya",
+      "name": "Playa Chac Mool",
+      "commune": "Cancún",
+      "lat": 21.1286,
+      "lng": -86.7494,
+      "status": "moderate",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm015",
+      "island": "rivieramaya",
+      "name": "Playa Gaviota Azul",
+      "commune": "Cancún",
+      "lat": 21.1323,
+      "lng": -86.7464,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm016",
+      "island": "rivieramaya",
+      "name": "Playa Langosta",
+      "commune": "Cancún",
+      "lat": 21.1451,
+      "lng": -86.7817,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm017",
+      "island": "rivieramaya",
+      "name": "Playa Marlín",
+      "commune": "Cancún",
+      "lat": 21.1039,
+      "lng": -86.7628,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm018",
+      "island": "rivieramaya",
+      "name": "Playa Ballenas",
+      "commune": "Cancún",
+      "lat": 21.0899,
+      "lng": -86.7686,
+      "status": "moderate",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm019",
+      "island": "rivieramaya",
+      "name": "Punta Esmeralda",
+      "commune": "Playa del Carmen",
+      "lat": 20.6483,
+      "lng": -87.0507,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm020",
+      "island": "rivieramaya",
+      "name": "Playa Pescadores",
+      "commune": "Tulum",
+      "lat": 20.2059,
+      "lng": -87.4319,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": false
     }
   ],
   "paymentLinks": {
