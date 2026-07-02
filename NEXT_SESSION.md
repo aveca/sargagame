@@ -1,5 +1,9 @@
 # NEXT_SESSION — sargagame
 
+> **📝 2026-07-02 — DRIFT « essai 21 j » purgé du template EN B2B_OFFER.md. PR #411 MERGÉE (doc-only).**
+>
+> `scripts/automation/B2B_OFFER.md:95` (template EN) disait « Try it free for 21 days » vs canon 30 j (panel 2026-06-29) → corrigé. Audit grep « 21 » repo entier : **c'était la seule surface vivante** — code (b2b-cold-outreach, b2b-outreach, drip-b2b-email, PremiumModal, `/pro/*`, b2b-trial.php, mollie-lib.php) déjà à 30 j. Non touchés (voulu) : `docs/_archive/B2B_OUTREACH_KIT.md` (archivé), outbox anoli-lodges dans `data/b2b-followups.json` (email DÉJÀ envoyé 29/06, log historique — le client aura 30 j, plus que promis), notes historiques de ce fichier.
+
 > **🔔 2026-07-02 — GRIEF FONDATEUR ALERTES : « activer mes alertes » déclenche maintenant permission push + nudge install. PR #409 MERGÉE.**
 >
 > Grief : « j'active les alertes, ça ne me demande ni notifications ni installer l'app » — la promesse vendue (« prévenu la veille ») était intenable sans permission push.
