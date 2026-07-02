@@ -1,0 +1,12 @@
+[
+  { "slug": "les-salines",       "market": "Les Salines",       "region": "Martinique",       "lang": "fr", "verdict": "clean",    "href": "https://sargasses-martinique.com/plages/plage-des-salines/" },
+  { "slug": "anse-mitan",        "market": "Anse Mitan",        "region": "Martinique",       "lang": "fr", "verdict": "clean",    "href": "https://sargasses-martinique.com/plages/anse-mitan/" },
+  { "slug": "grande-anse-arlet", "market": "Grande Anse",       "region": "Martinique",       "lang": "fr", "verdict": "moderate", "href": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/" },
+  { "slug": "pointe-faula",      "market": "Pointe Faula",      "region": "Martinique",       "lang": "fr", "verdict": "algae",    "href": "https://sargasses-martinique.com/plages/pointe-faula/" },
+  { "slug": "sainte-anne-gp",    "market": "Sainte-Anne",       "region": "Guadeloupe",       "lang": "fr", "verdict": "moderate", "href": "https://sargasses-guadeloupe.com/" },
+  { "slug": "miami-beach",       "market": "Miami Beach",       "region": "Florida",          "lang": "en", "verdict": "clean",    "href": "https://sargassummiami.com/" },
+  { "slug": "fort-lauderdale",   "market": "Fort Lauderdale",   "region": "Florida",          "lang": "en", "verdict": "moderate", "href": "https://sargassummiami.com/" },
+  { "slug": "punta-cana",        "market": "Punta Cana",        "region": "Dominican Rep.",   "lang": "en", "verdict": "algae",    "href": "https://sargassumpuntacana.com/" },
+  { "slug": "cancun",            "market": "Cancún",            "region": "Quintana Roo",     "lang": "es", "verdict": "clean",    "href": "https://sargassumcancun.com/" },
+  { "slug": "tulum",             "market": "Tulum",             "region": "Quintana Roo",     "lang": "es", "verdict": "moderate", "href": "https://sargassumcancun.com/" }
+]
