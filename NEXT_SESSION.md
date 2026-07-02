@@ -1,5 +1,14 @@
 # NEXT_SESSION — sargagame
 
+> **📏 2026-07-02 — VÉRITÉ DE LA MESURE DEAD-CLICK : convention `data-sg-live` (le tracker comptait les taps PRODUCTIFS comme morts — la baisse post-fix #383 était immesurable).**
+>
+> Mandat « ux/ui » → lecture data (`ux-daily-history.json` 01/07) : top coupables nommés = `svg[role=img]` (211 MQ) et `div.sg-onink-scope` (114 MQ/48 GP/43 FL, écran `world`). **Reproduction par sweep `elementFromPoint`** (grille 16×24 du tracker, build prod local, mobile 390×844, `_probe-deadclick.mjs` jetable) :
+> - La carte nue ne produit AUCUNE cible `div.sg-onink-scope` (le SVG couvre tout le wrapper) → le bucket = **racines des overlays portalisés** (WeekHub & co portent `sg-onink-scope` en 1ʳᵉ classe ; `_eng.screen` reste `world` pendant qu'ils sont ouverts ; AlertHub a SON screen `alertes`).
+> - **Faux positifs structurels** : `sgCollectClick` classe « dead » sur `closest(interactifs)`+`cursor` — donc le **backdrop-dismiss** du WeekHub (L295, légitime) et de l'AccountSheet, ET le **snap-plage #383** du fond de carte restaient comptés morts. La « SUITE : mesurer la baisse post-fix » était mathématiquement impossible.
+> - **Fix (additif, zéro UI)** : attribut **`data-sg-live="1"`** = « surface non-bouton dont le tap EST géré » + whitelist `[data-sg-live]` dans `sgCollectClick` (`Sargasses_PROD.jsx` ~L1623). Posé sur : `<svg>` carte (`WorldMapView.jsx`), racine WeekHub, backdrop AccountSheet. **Convention à poser sur toute nouvelle surface tap-gérée.** Pas de flag (télémétrie pure, pas une UI de conversion).
+> - **Vérif** : esbuild ×4 · build vert (182,8 Ko ≤ 210) · smoke 4 tokens verts · probe de re-classification sur build servi : carte `ok`, backdrop AccountSheet `ok` (E2E), attr dans le chunk WeekHub. ⚠️ Piège local : orphelins `vite preview` sur 4173/4174 servant des dist périmés d'anciens worktrees (2 tués) — **toujours `--strictPort`** et vérifier le nom du bundle servi avant de conclure.
+> - **Attendu dans la data** : chute franche du `dead_rate` écran `world` + disparition de `svg[role=img]`/`div.sg-onink-scope` du top — le reste = VRAIS morts. **Reste identifié (data 5 régions + probe) : l'INTÉRIEUR de la fiche comic** (`lc-detail-body` 87 cellules, facts/illu/score/h2s) = panel adverse en cours, incrément séparé.
+
 > **🔗 2026-07-02 — RESTE #408 SOLDÉ : les 3 derniers liens fiche `/plages/` hardcodés passés sur `beachPageUrl` (404 réels corrigés sur USD + cross-île).**
 >
 > Le « reste partage non traité » de la PR #408 est exécuté : nouveau wrapper module-scope **`_fichePageUrl`** (`Sargasses_PROD.jsx` ~L361 : `beachPageUrl` région-aware, fallback = ancien lien same-origin `/plages/`, même kill-switch **`?sharelink=0`**) branché sur les 3 sites : bouton **« Fiche complète »** BeachSheet (~L4218), **fallback texte du partage** (+`?ref=` referral, ~L4231), **partage funnel** `shareBeach` (~L8395).
