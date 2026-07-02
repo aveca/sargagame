@@ -1,5 +1,7 @@
 # PLAN 7 JOURS — sargagame (2026-06-27 → 2026-07-03)
 
+> ⚠️ **PLAN GLISSANT EXPIRÉ** (fenêtre close le 2026-07-03). **NON canonique pour démarrer une session** — le driver de démarrage = **CLAUDE.md §Session Startup + AUTONOMOUS_LOOP.md + tête de `NEXT_SESSION.md`**. Ce fichier = backlog hebdo historique (à re-rouler ou archiver), **PAS l'état courant**.
+>
 > Préparé le 2026-06-26 après le go-live Mollie USD + l'audit repo complet.
 > **Chaque jour** : ouvre Claude Code à la racine du repo → lis le bloc du jour →
 > colle le **PROMPT** → exécute. Source de vérité du contexte = `NEXT_SESSION.md`
@@ -8,7 +10,7 @@
 ## ⚙️ Discipline (vaut pour CHAQUE session)
 1. **Re-vérifier chaque finding contre le code RÉEL avant de le corriger** — l'audit a produit ~5 faux positifs (saison « absente » alors qu'elle y est, `?premium=1` QA, fichiers « orphelins » référencés, fix USD qui aurait cassé `PAYWALL_READY`). Skepticisme par défaut.
 2. **1 fix vérifié à la fois** → `npm run build` (front) / `node -c` (cjs) / `php -l` (php) → PR **draft** → merge squash → deploy auto (push main → daily-copernicus). Garder les PR petites et thématiques.
-3. **Revenu = Stripe/Mollie, JAMAIS le funnel** (fenêtre 28 j → mélange l'ancien design abo jusqu'à ~**23/07**). Le funnel compte `sg_pass_cta` seulement APRÈS le `clasp push` (action fondateur).
+3. **Revenu = Stripe/Mollie, JAMAIS le funnel** (fenêtre 28 j → mélange l'ancien design abo jusqu'à ~**23/07**). Le compteur `sg_pass_cta` a **migré vers Supabase** le 2026-07-01 (`analytics_events` + `funnel-from-supabase.cjs`) → **plus de `clasp push`** requis.
 4. **Ne pas dupliquer les crons GitHub Actions** (ils tournent seuls, cf. plus bas). Un cron Claude mourrait avec le container web éphémère.
 5. Finir chaque session par une mise à jour de `NEXT_SESSION.md` (ce qui est fait, ce qui reste).
 
@@ -22,15 +24,15 @@ node -e "const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/
 node -e "const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/daily-metrics.json','utf-8'));const s=[...d].reverse().find(x=>x.stripe&&x.stripe.active!=null).stripe;console.log('MRR €'+s.mrr.eur,'|',s.active,'actifs | pastDue',s.pastDue,'| cancel',s.cancelScheduled)"
 ```
 - **Conversions USD** (Mollie pass) : **dashboard Mollie** (les 16 abos Stripe legacy n'y sont pas). C'est LA métrique à surveiller cette semaine (go-live USD 26/06).
-- **Funnel** (engagement only, pas le revenu) : `curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"`
+- **Funnel** (engagement only, pas le revenu ; le compteur `sg_pass_cta` est désormais dans **Supabase** via `funnel-from-supabase.cjs`, plus dans l'Apps Script) : `curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"`
 - **UX criticals** : `scripts/automation/data/ux-report.json` (regénéré hebdo) — et **ux-watch** t'emaile les nouveaux criticals automatiquement.
 - **Auto-alertes mail (déjà actives)** : `revenue-watch` (mouvement Stripe) + `ux-watch` (criticals) → boîte fondateur, dans daily-copernicus.
 
 ## 🤖 Cadence autonome (tourne SANS session — ne pas refaire à la main)
 `daily-copernicus` (data 4×/j + deploy + dunning `--send` + revenue-watch + ux-watch) · `daily-brief`/`morning-brief`/`weekend-email` (emails) · `weekly-ux-report` · `weekly-optimize` · `ab-evaluator` · `weekly-seo-automation` · `seo-guard` · `weekly-outreach`.
 
-## ⚠️ Action fondateur en attente (quand sur un ordi, 30 s)
-`cd scripts/appscript && clasp push` → active le funnel corrigé (compte le vrai `sg_pass_cta`). Non-urgent (reporting only).
+## ✅ Ex-« action fondateur en attente » — RÉSOLUE (2026-07-01)
+Le compteur `sg_pass_cta` a **migré vers Supabase** (`analytics_events` + `funnel-from-supabase.cjs`) → **plus aucun `clasp push` requis** pour le funnel. (La dette `clasp push` **referral**, distincte, peut subsister — ne pas confondre.)
 
 ---
 

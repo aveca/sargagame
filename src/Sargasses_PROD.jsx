@@ -43,6 +43,10 @@ const lazyWithRetry=imp=>lazy(()=>imp()
 const ArenaSplash=lazyWithRetry(()=>import("./ArenaSplash.jsx"))
 const ArenaOnboarding=lazyWithRetry(()=>import("./ArenaOnboarding.jsx"))
 const VeilleurHero=lazyWithRetry(()=>import("./VeilleurHero.jsx"))
+// Mode VITRINE « Le Registre du Veilleur » (?demo=1, attract mode, panel 2026-07-02) —
+// boucle auto-play value-prop qu'un hôtel laisse tourner en hall. OFF par défaut,
+// JAMAIS monté sans ?demo=1 → zéro octet eager, zéro impact funnel. Rollback ?demo=0.
+const DemoReel=lazyWithRetry(()=>import("./DemoReel.jsx"))
 const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
@@ -1396,7 +1400,10 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
   // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
-  "sg_pass_proof_open","sg_pass_seq_back"])
+  "sg_pass_proof_open","sg_pass_seq_back",
+  // Mode vitrine "Le Registre du Veilleur" (?demo=1, attract mode, 2026-07-02) : impression
+  // display + tap + scan QR de hall. Volume FAIBLE assumé (rétention/fierté B2B, cf. critère de mort).
+  "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -2505,6 +2512,108 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
+// ── La Marée du Veilleur (arc narratif, SUITE du Cadran — direction « le SVG est
+//    le produit ») : la prévision jour-par-jour dessinée en HOULE golden-hour au lieu
+//    de barres plates. L'AFAI RÉEL de chaque jour soulève la vague (jour propre = mer
+//    plate, échouage = houle qui monte) ; le meilleur jour de la semaine (§4A#3 « ton
+//    meilleur jour ») gagne le soleil ; Le Veilleur veille la mer (humeur = statut du
+//    jour). 100 % data (afai/status) — un jour sans donnée reste à plat (jamais une
+//    houle fabriquée). Statique (doctrine calme : au repos = tableau) ; reveal one-shot
+//    du liseré + hover d'un jour (aucun rAF, budget-friendly comme le Cadran).
+//    Rendu À LA PLACE des barres derrière ?arc=1 (défaut OFF = barres inchangées) —
+//    OBSERVATIONNEL, PAS un 3e A/B parallèle : le Cadran (dataviz) tourne déjà sur la
+//    MÊME fiche → un 2e viz default-on cannibaliserait sa lecture (verdict juge).
+function _mareeSmooth(pts){
+  let s=""
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||pts[i+1]
+    const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6
+    const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6
+    s+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`
+  }
+  return s
+}
+function MareeVeilleur({visible,lang,freeThreshold=1}){
+  const reduce=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const[hover,setHover]=useState(-1)
+  const n=(visible&&visible.length)||0
+  if(!n)return null
+  const X0=44,X1=356,BASE=104,AMP=46
+  const dayX=i=>X0+(X1-X0)*(n<=1?0.5:i/(n-1))
+  const dayY=d=>{const a=Number.isFinite(d&&d.afai)?Math.max(0,Math.min(1,d.afai/0.45)):0;return BASE-a*AMP}
+  const pts=visible.map((d,i)=>({x:dayX(i),y:dayY(d)}))
+  const seg=_mareeSmooth(pts),p0=pts[0],pn=pts[n-1]
+  const rimD=`M ${p0.x} ${p0.y.toFixed(1)}${seg}`
+  const fillD=`M -20 ${p0.y.toFixed(1)} L ${p0.x} ${p0.y.toFixed(1)}${seg} L 420 ${pn.y.toFixed(1)} L 420 150 L -20 150 Z`
+  // meilleur jour = jour « propre » le moins chargé, uniquement parmi les jours à donnée réelle
+  let bi=-1,ba=Infinity
+  visible.forEach((d,i)=>{if(d&&d.status==="clean"&&Number.isFinite(d.afai)&&d.afai<ba){ba=d.afai;bi=i}})
+  const today=visible[0]||{status:"clean"}
+  const mood=VEILLEUR_MOOD[moodFromStatus(today.status)]||VEILLEUR_MOOD.scan
+  const bx=bi>=0?pts[bi].x:0,by=bi>=0?pts[bi].y:0
+  const tw=64,tx=Math.max(4,Math.min(400-tw-4,bx-tw/2)),ty=14
+  const bestLbl=_t(lang,"☀ MEILLEUR JOUR","☀ BEST DAY","☀ MEJOR DÍA")
+  return(
+    <div className="mv-arc" style={{position:"relative"}}>
+      <style>{`.mv-arc .mv-rim{stroke-dasharray:100;stroke-dashoffset:${reduce?0:100};animation:${reduce?"none":"mvDraw 1.1s cubic-bezier(.22,1,.36,1) .05s forwards"}}@keyframes mvDraw{to{stroke-dashoffset:0}}@media(prefers-reduced-motion:reduce){.mv-arc .mv-rim{stroke-dashoffset:0;animation:none}}`}</style>
+      <svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" role="img"
+        style={{width:"100%",height:"auto",display:"block"}}
+        aria-label={_t(lang,
+          `Prévision en houle sur ${n} jours. ${bi>=0?"Meilleur jour "+fcDay(visible[bi],lang)+".":""}`,
+          `${n}-day forecast drawn as swell. ${bi>=0?"Best day "+fcDay(visible[bi],lang)+".":""}`,
+          `Pronóstico en oleaje de ${n} días. ${bi>=0?"Mejor día "+fcDay(visible[bi],lang)+".":""}`)}>
+        <defs>
+          <linearGradient id="mvArcSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/>
+            <stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="mvArcSea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/>
+          </linearGradient>
+          <radialGradient id="mvArcSun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stopColor="#FFE9A8"/><stop offset=".55" stopColor="#FFD884"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="400" height="150" fill="url(#mvArcSky)"/>
+        <circle cx="330" cy="70" r="30" fill="#FFD884" opacity=".18"/>
+        <circle cx="330" cy="70" r="15" fill="#FFD884" opacity=".32"/>
+        {bi>=0&&<circle cx={bx.toFixed(1)} cy={by.toFixed(1)} r="26" fill="url(#mvArcSun)"/>}
+        <path d={fillD} fill="url(#mvArcSea)"/>
+        <path className="mv-rim" d={rimD} pathLength="100" fill="none" stroke="#FFD884" strokeWidth="1.6" opacity=".9"/>
+        {/* jours : point coloré par statut + libellé ; loin (horizon/J≥4) estompé */}
+        {visible.map((d,i)=>{
+          const st=ST[d&&d.status]||ST._loading
+          const far=(d&&d.type==="horizon")||i>=4
+          const op=far?.55:1
+          const x=pts[i].x,y=pts[i].y,r=i===0?4.6:hover===i?5.2:3.4
+          const lbl=i===0?_t(lang,"AUJ","NOW","HOY"):fcDay(d,lang)
+          return(
+            <g key={i} opacity={op}
+              onPointerEnter={()=>setHover(i)} onPointerLeave={()=>setHover(-1)} style={{cursor:"default"}}>
+              {hover===i&&Number.isFinite(d&&d.afai)&&(
+                <text x={x.toFixed(1)} y={(y-9).toFixed(1)} textAnchor="middle"
+                  style={{fontFamily:"ui-monospace,monospace",fontSize:9,fontWeight:700,fill:st.c}}>{Math.round(d.afai*100)}%</text>
+              )}
+              <circle cx={x.toFixed(1)} cy={y.toFixed(1)} r="10" fill="transparent"/>
+              <circle cx={x.toFixed(1)} cy={y.toFixed(1)} r={r} fill={st.c} stroke="#fff" strokeWidth={i===0?1.6:1.1}/>
+              <text x={x.toFixed(1)} y="126" textAnchor="middle"
+                style={{fontFamily:"ui-monospace,monospace",fontSize:8.5,fill:"rgba(255,255,255,.62)"}}>{lbl}</text>
+            </g>
+          )
+        })}
+        <g>{miVeil(86,44,mood.wing,mood.lens)}</g>
+        {bi>=0&&(
+          <g aria-hidden="true">
+            <line x1={(tx+tw/2).toFixed(1)} y1={ty+16} x2={bx.toFixed(1)} y2={(by-6).toFixed(1)} stroke="#FFD884" strokeWidth="1" opacity=".5"/>
+            <rect x={tx} y={ty} width={tw} height="16" rx="8" fill="#0B2230" opacity=".72"/>
+            <text x={(tx+tw/2).toFixed(1)} y={ty+11} textAnchor="middle"
+              style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:8.5,fontWeight:800,fill:"#FFD884"}}>{bestLbl}</text>
+          </g>
+        )}
+      </svg>
+    </div>
+  )
+}
 function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,weeklyData}){
   // pw_beat (backlog #4) : l'intention CHAUDE forecast-lock = un BEAT du scroll IN-SCÈNE
   // (golden-hour + Veilleur + 1 promesse positive + 1 preuve chiffrée + 1 CTA), PAS un
@@ -2514,6 +2623,9 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // PROMU EN DÉFAUT (verdict design fondateur : « paywall = un BEAT du scroll, PAS un
   // modal posé ») → 85% révèlent le beat golden-hour inline, 15% holdout (modal direct).
   const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return abVariant("pw_beat",["control","beat"],[.15,.85])==="beat"}catch(_){return false}})()
+  // ?arc=1 = Marée du Veilleur (houle) À LA PLACE des barres ; défaut OFF (observationnel,
+  // pas un A/B parallèle — cf. note du composant). Rollback inhérent : défaut = barres.
+  const arcOn=(()=>{try{return /[?&]arc=1/.test(window.location.search)}catch(_){return false}})()
   const[beatOpen,setBeatOpen]=useState(false)
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   if(!forecast||!forecast.length)return null
@@ -2556,6 +2668,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   return(
     <>
     <div style={{position:"relative"}}>
+      {arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
         {visible.map((d,i)=>{
           const afai=Number.isFinite(d.afai)?d.afai:0
@@ -2594,7 +2707,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
             </div>
           )
         })}
-      </div>
+      </div>}
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"4px 0 0",lineHeight:1.3}}>
         {_t(lang,
           `Fiable jusqu'à 4 jours. Fiabilité ${Math.round(firstConf)} % demain.`,
@@ -12470,6 +12583,29 @@ export default function App(){
     try{ return /[?&]vh=1/.test(window.location.search||""); }catch(_){ return false; }
   });
   const dismissVeilleurHero=useCallback(()=>{ try{sessionStorage.setItem("sg_vh_seen","1");track("sg_vh_enter",{})}catch(_){}; setShowVeilleurHero(false); },[track]);
+
+  // MODE VITRINE « Le Registre du Veilleur » (?demo=1) — attract mode auto-play qu'un
+  // hôtel laisse tourner en hall. OFF par défaut (jamais monté sans ?demo=1), rollback
+  // ?demo=0. Sous-modes : ?src=lobby (défaut) | ?src=share ; co-brand ?partner=<slug>.
+  const [showDemo,setShowDemo]=useState(()=>{try{const q=window.location.search||"";return /[?&]demo=1/.test(q)&&!/[?&]demo=0/.test(q)}catch(_){return false}})
+  const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
+  const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
+  // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
+  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line
+
+  // Kiosk isolé : quand ?demo=1, on ne rend QUE la vitrine (aucun rendu de l'app
+  // derrière → perf + zéro interférence funnel). Tous les hooks ci-dessus ont déjà
+  // tourné (pas de hook conditionnel) → early-return sûr.
+  if(showDemo){
+    return(
+      <LangCtx.Provider value={lang}>
+        <ErrBound fallback={null}><Suspense fallback={null}>
+          <DemoReel lang={lang} src={demoSrc} partner={demoPartner} allBeaches={allBeaches} imageMap={imageMap} imageQ={imageQ}
+            mapForecastByBeach={mapForecastByBeach} sargData={sargData} island={island} track={track} onClose={()=>setShowDemo(false)}/>
+        </Suspense></ErrBound>
+      </LangCtx.Provider>
+    )
+  }
 
   return(
     <LangCtx.Provider value={lang}>

@@ -38,7 +38,7 @@ le joueur vers une « autre app ». Tout s'enchaîne comme des **cases de BD**.
 ## 3. LE BUSINESS (déjà en prod)
 
 - **Modèle = PASS-ONLY** (paiement UNIQUE, plus d'abonnement) via **Mollie on-site** (carte Components + Apple Pay natif). EUR : 7,99 / 14,99 / 24,99 € · USD : $5.99 / $11.99 / $19.99.
-- **Stripe = legacy uniquement** : 16 abonnés EUR historiques y facturent encore (source de vérité MRR), mais Stripe **n'est plus une caisse** — aucun CTA ne doit y renvoyer. MRR actuel €79,84/mois / 16 actifs.
+- **Stripe = legacy uniquement** : les abonnés EUR historiques y facturent encore (source de vérité MRR), mais Stripe **n'est plus une caisse** — aucun CTA ne doit y renvoyer. **MRR vivant = bloc `stripe` de `daily-metrics.json`** (`npm run session`, check 3) — ne pas figer un chiffre ici, il dérive (~€70/mo, ~14 abos au 2026-07-02).
 - Le **jeu** = rétention (série quotidienne, collection) + acquisition (SEO plages).
 - La **conversion** se fait au point de valeur que le gratuit n'a pas : **la prévision
   + l'alerte**. Pas de peur en saison calme → vendre « sache où sera la mer demain ».
@@ -111,7 +111,7 @@ fond: halftone (radial dots) + dégradé golden-hour (bleu→ambre→orange)
   (`/tmp/journey.mjs` copié en `_journey.mjs` dans le repo pour résoudre playwright).
 - ⚠️ Captures headless peuvent fuiter `forced-colors` → juger couleurs via computed styles.
 - **Jamais de WIP montré au fondateur** ; ship derrière flag si ça touche le revenu.
-- Le paiement **Mollie on-site (Components + Apple Pay)** est **sacré** : reskin visuel OK, logique de checkout NON touchée. (Stripe ne sert plus de caisse — il ne facture que les 16 abos EUR historiques ; aucun CTA n'y renvoie.)
+- Le paiement **Mollie on-site (Components + Apple Pay)** est **sacré** : reskin visuel OK, logique de checkout NON touchée. (Stripe ne sert plus de caisse — il ne facture que les abos EUR historiques ; aucun CTA n'y renvoie.)
 
 ## 8. INVENTAIRE DES ÉCRANS & CONNEXIONS (checklist du build « tout cohérent »)
 
