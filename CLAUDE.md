@@ -217,7 +217,7 @@ Grep ne reproduit pas → faux positif, classé sans suite. Finding « vrai en t
 - `src/Sargasses_PROD.jsx` (~13,4k l., app + carte `WorldMapView`/`ArchipelView` + `SCENE_TOKENS` SEO + Header/cloche notif + flags `mapdetail`/`onboard`).
 - `src/ChasseHome.jsx` (home comic, lane `.lc-`, **8 flags rollback** : `fc7 ladder badges alerts space h2snote streak7 partners`).
 - `src/PremiumModal.jsx` (paywall lazy, flag `pwcomic`), `src/ComicDetail.jsx`.
-- Protos : `design/arena-v2.html` (`/arena-v2.html` en prod) + `design/proto-paywall-comic.html` ; `design/STORY/` (01→10) = narration/motifs.
+- Protos : `design/proto-paywall-comic.html` (paywall comic, porté dans `PremiumModal`) ; `design/STORY/` (01→10) = narration/motifs. *(L'ancien proto `design/arena-v2.html` + fragments `design/v2-parts/*` — jeu-arène RETIRÉ du produit, route `/arena-v2.html` 301→`/` depuis #459 — ont été **supprimés du repo** : orphelins, script d'assemblage `build-v2-proto.cjs` disparu, contenu 100 % repris dans les composants live + `design/STORY/`, et copie d'abo morte 4,99 €/Stripe contredisant le pass-only Mollie. Récup via git history.)*
 
 **Cohérence inter-surfaces (loi).** Même univers app ↔ widget B2B ↔ `/pro/*` ↔ emails. Tout email part de `brandHeader(...)` (`scripts/automation/lib/email-send.cjs:100`, en-tête golden-hour) — jamais un header maison. Toute nouvelle surface réutilise tokens `--sg-*` + fonts + mascotte.
 
@@ -338,7 +338,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 | Doc | Rôle |
 |---|---|
 | `PRODUCT.md` | North-star produit & design system « Le Veilleur ». |
-| `SCREENS_V2.md` | Backlog reconstruction « ARENA v2 » ; prototype = `design/arena-v2.html`. |
+| `SCREENS_V2.md` | Record « ARENA v2 » (jeu-arène RETIRÉ) : items `[x]` = features LIVE dans le produit (`ChasseHome`/`ComicDetail`/`PremiumModal`), `[ ]` = backlog restant. Proto `design/arena-v2.html` supprimé (cf. bloc « Carte des surfaces »). **Ne pas reconstruire le jeu-arène ni la route.** |
 | `UX_BUILD_BRIEF.md` | Source de vérité de la méga-loop UX/UI. |
 
 ### Archi / Ops
