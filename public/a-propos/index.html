@@ -176,6 +176,12 @@
   .team-tag{font-size:10px;padding:3px 8px;background:var(--sg-gold-bg);color:#8a6a00;border-radius:var(--sg-r-pill);font-weight:600}
   .team-note{font-size:11px;color:var(--sg-mid);margin-top:16px;padding:12px 14px;background:var(--sg-bg-d);border-radius:var(--sg-r-sm);border-left:2px solid var(--sg-teal);line-height:1.5}
 
+  /* ---------- vidéo de vision (section "L'approche") ---------- */
+  .founder-video{margin-top:20px;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px;overflow:hidden}
+  .founder-video-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
+  .founder-video video{display:block;width:100%;max-height:70vh;border-radius:var(--sg-r-lg);background:#06140f;aspect-ratio:9/16;object-fit:cover}
+  .founder-video-cap{font-size:11.5px;color:var(--sg-mid);margin-top:10px;line-height:1.5}
+
   /* ---------- testimonials ---------- */
   .t-list{display:grid;gap:12px}
   .t{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:18px}
@@ -372,6 +378,14 @@
       </div>
     </div>
     <p class="team-note">L'app est opérée depuis la Martinique, serveurs en France (OVH Paris). RGPD-ready · aucune revente de données · aucun tracker publicitaire (mesure d'audience anonyme uniquement).</p>
+
+    <div class="founder-video">
+      <div class="founder-video-eyebrow">◆ 51 secondes</div>
+      <video controls playsinline preload="none" poster="vision-fondateur-poster.jpg" id="ap-vision-video">
+        <source src="vision-fondateur.mp4" type="video/mp4">
+      </video>
+      <p class="founder-video-cap">Pourquoi Le Veilleur existe, en une minute — mesuré au satellite, jamais deviné.</p>
+    </div>
   </section>
 
   <!-- TESTIMONIALS -->
@@ -544,6 +558,16 @@
       track("sg_apropos_cta", { src: src, variant: VARIANT });
     });
   });
+
+  var visionVideo = document.getElementById("ap-vision-video");
+  if (visionVideo) {
+    var visionPlayed = false;
+    visionVideo.addEventListener("play", function() {
+      if (visionPlayed) return;
+      visionPlayed = true;
+      track("sg_apropos_video_play", { variant: VARIANT });
+    });
+  }
 })();
 </script>
 </body>
