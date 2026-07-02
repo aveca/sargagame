@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-02T09:02:04.727Z",
+  "updatedAt": "2026-07-02T14:06:55.560Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 16,
-    "contacted": 91,
+    "discovered": 11,
+    "contacted": 96,
     "lead": 6,
     "paid": 0
   },
@@ -868,49 +868,49 @@
       "nextAction": "attendre / relance programmée"
     },
     "c72b496aac834ea07927e98abe45affe": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Poisson d'Or",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T14:04:08.127Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "51d8c090f740f25ca9949641acc40eed": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Hôtel Kanaoa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T14:04:08.382Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "51e2ce6a1ac12be39eafab45a1e9dd8a": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Petits Saints",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T14:04:08.623Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "95a693365eee699fa2e19dc1d5a2a3cc": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "LoBleu Hôtel",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T14:04:08.900Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "3182037431b0989e37489f9da99a9120": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "La Dive Bouteille",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T14:04:09.493Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "2720dd2d6b07a5e54b43e8590df4445f": {
       "stage": "discovered",

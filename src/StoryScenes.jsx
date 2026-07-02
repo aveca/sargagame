@@ -3,7 +3,9 @@
 // Lazy-chargés par le monolithe via lazyWithRetry (Discovery/Station/Solutions/MapIntro).
 // Helpers partagés importés du monolithe (exports nommés) — zéro duplication.
 import React,{useState,useEffect,useRef}from"react"
-import{_t,track,__REL,miVeil,sgUnlock,g,s,Veilleur}from"./Sargasses_PROD.jsx"
+import{_t,track,__REL,miVeil,sgUnlock,g,s,Veilleur,IS_NEW_REGION}from"./Sargasses_PROD.jsx"
+// Route « fiabilité » selon région/langue (miroir de _relHref dans PremiumModal.jsx).
+const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
 // ── StoryEngine — LE MOTEUR (directive 14/06 : « un moteur landing/page/scroll/
 //    explication/jeu/découverte à travers l'UI pour scaler la home partout »).
 //    Mécanique scrollytelling éprouvée (issue de ScrollStory : sticky golden-hour,
@@ -91,7 +93,7 @@ function discoveryBeats(lang){
 }
 export function DiscoveryStory({lang,onClose,onShowMap}){
   return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"fixed",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
     </div>
@@ -384,7 +386,7 @@ export function StationStory({slug,lang,onExit,onCTA}){
   const beatsFn = STATION_BEATS[slug] || discoveryBeats
   const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
   return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={slug} style={{position:"fixed",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
         ev="sg_station_beat" onCTA={onCTA}
@@ -454,14 +456,17 @@ function SolSortScene({lang}){
       : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
   </g>)
 }
-// LE DÉBAT (main d'œuvre / aides / argent) — 5 voix sur LA MÊME anse + vote diégétique
-// « où va l'argent ». Non-clivant : pas "qui a raison" mais "que finance-t-on". Click-driven,
-// mobile-safe (bande centrale). La donnée satellite = le point commun qui réconcilie tous.
+// LE DÉBAT (main d'œuvre / aides / argent) — 5 voix sur LA MÊME anse. Non-clivant :
+// pas "qui a raison" mais "que finance-t-on". Click-driven, mobile-safe (bande centrale).
+// La donnée satellite = le point commun qui réconcilie tous.
+// ⚠️ 2026-07-02 : le "vote" (tally localStorage seedé [3,5,2,4], "le quartier a voté")
+// retiré — verdict fondateur "useless" + zéro quartier ne votait réellement (1 device,
+// zéro agrégation, aucune consommation aval) ; ça flirtait avec la loi 0-fabrication du
+// moat malgré le cadre narratif. Remplacé par un lien RÉEL vers /fiabilite/ (le point
+// commun affiché devient vrai : la même donnée publique, pas un chiffre inventé).
 function SolDebateScene({lang}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const[vi,setVi]=useState(0)
-  const[votes,setVotes]=useState(()=>{try{return JSON.parse(localStorage.getItem("sg_debate_votes")||"[3,5,2,4]")}catch(_){return[3,5,2,4]}})
-  const[voted,setVoted]=useState(false)
   const V=[
     {e:"🏠",n:T("Habitant","Resident","Vecino"),s:T("Ramassée vite, l'algue ne sent pas le H₂S près de l'école.","Collected fast, no H₂S smell near the school.","Recogida rápido, sin H₂S junto a la escuela.")},
     {e:"🏖️",n:T("Tourisme","Tourism","Turismo"),s:T("Mes clients réservent si je promets une plage propre.","Guests book if I can promise a clean beach.","Reservan si prometo playa limpia.")},
@@ -469,9 +474,7 @@ function SolDebateScene({lang}){
     {e:"♻️",n:T("Recycleur","Recycler","Reciclador"),s:T("Captée fraîche et triée, l'algue vaut de l'or (engrais, biogaz).","Fresh & sorted, the algae is gold (fertilizer, biogas).","Fresca y clasificada, vale oro.")},
     {e:"💶",n:T("Financier","Funder","Financiero"),s:T("Je finance ce qui se MESURE : la précision satellite horodatée.","I fund what's MEASURED: timestamped accuracy.","Financio lo que se MIDE.")},
   ]
-  const O=[T("Collecte quartier","Local collect","Recogida"),T("Alerte H₂S","H₂S alert","Alerta H₂S"),T("Dashboard hôtels","Hotel dashboard","Panel hoteles"),T("Recyclage","Recycling","Reciclaje")]
-  const vote=i=>{if(voted)return;setVotes(v=>{const n=v.slice();n[i]=(n[i]||0)+1;try{localStorage.setItem("sg_debate_votes",JSON.stringify(n))}catch(_){}return n});setVoted(true);try{track("sg_debate_vote",{choice:i})}catch(_){}}
-  const tot=Math.max(1,votes.reduce((a,b)=>a+b,0)),v=V[vi]
+  const v=V[vi]
   return(<g><defs><linearGradient id="solDeb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
     <rect width="800" height="600" fill="url(#solDeb)"/>
     <circle cx="400" cy="250" r="58" fill="#FFD884" opacity=".5"/>
@@ -488,14 +491,16 @@ function SolDebateScene({lang}){
     <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
     <g><rect x="298" y="206" width="204" height="56" rx="14" fill="rgba(7,32,30,.92)" stroke="#FFD884" strokeWidth="1.3"/><text x="400" y="228" fontSize="13.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{v.e+" "+v.n}</text><text x="400" y="248" fontSize="10.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{v.s.length>52?v.s.slice(0,50)+"…":v.s}</text></g>
     <text x="400" y="288" fontSize="10" fill="rgba(255,255,255,.5)" textAnchor="middle">{(vi+1)+"/5 · "+T("‹ › les 5 regards","‹ › the 5 views","‹ › las 5 miradas")}</text>
-    {/* vote 2×2 (safe band) ou résultat */}
-    {!voted
-      ? <g><text x="400" y="312" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
-          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#1EC8B0" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
-        </g>
-      : <g><text x="400" y="306" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
-          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#1EC8B0"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#1EC8B0">{pct+"%"}</text></g>)})}
-        </g>}
+    {/* Point commun RÉEL (zéro fabrication) : lien vers la page fiabilité auditée, pas
+        un chiffre inventé dans la scène — le vrai nombre vit sur /fiabilite/. */}
+    <text x="400" y="318" fontSize="12.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Ce qui les réconcilie tous :","What brings them together:","Lo que los une a todos:")}</text>
+    <text x="400" y="336" fontSize="11" fill="rgba(255,255,255,.75)" textAnchor="middle">{T("la même donnée satellite, publique.","the same satellite data, public.","el mismo dato satelital, público.")}</text>
+    <g role="button" tabIndex={0} aria-label={T("On publie nos erreurs","We publish our errors","Publicamos nuestros errores")}
+      onClick={()=>{try{track("sg_reliability_open",{from:"solutions_debate"})}catch(_){}try{window.open(_relHref(lang),"_blank","noopener")}catch(_){}}}
+      style={{cursor:"pointer"}}>
+      <rect x="286" y="352" width="228" height="32" rx="10" fill="rgba(255,255,255,.1)" stroke="#1EC8B0" strokeWidth="1.2"/>
+      <text x="400" y="373" fontSize="12" fontWeight="700" fill="#1EC8B0" textAnchor="middle">{T("On publie nos erreurs →","We publish our errors →","Publicamos nuestros errores →")}</text>
+    </g>
   </g>)
 }
 function solutionsBeats(lang){
@@ -556,9 +561,9 @@ function solutionsBeats(lang){
     {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
       sub:T("Engrais, briques, biochar, bioplastique, papier — et de l'énergie (biogaz). Captée fraîche, elle évite aussi le méthane qu'elle dégage en pourrissant (28× plus réchauffant que le CO₂).","Fertilizer, bricks, biochar, bioplastic, paper — and energy (biogas). Caught fresh, it also avoids the methane it releases when rotting (28× worse than CO₂).","Abono, ladrillos, biochar, bioplástico, papel — y energía (biogás). Recogida fresca evita el metano (28× peor que el CO₂)."),
       scene:<SolTransformScene lang={lang}/>},
-    // 6 — LE DÉBAT : main d'œuvre / aides / argent (5 voix + vote)
-    {eyebrow:T("LE DÉBAT","THE DEBATE","EL DEBATE"),heading:T("Qui ramasse ? Où va l'argent ?","Who collects? Where's the money?","¿Quién recoge? ¿A dónde va el dinero?"),
-      sub:T("Habitant, tourisme, collectivité, recycleur, financier : 5 regards sur la même plage. Pas « qui a raison » mais « que finance-t-on ? ». La donnée satellite dit où ramasser — touche les 5 voix, puis vote.","Resident, tourism, public, recycler, funder: 5 views on the same beach. Not who's right but what we fund. Tap the 5 voices, then vote.","Vecino, turismo, municipio, reciclador, financiero: 5 miradas. Toca las 5 voces y vota."),
+    // 6 — LE DÉBAT : main d'œuvre / aides / argent (5 voix)
+    {eyebrow:T("LE DÉBAT","THE DEBATE","EL DEBATE"),heading:T("5 regards, une donnée","5 views, one data source","5 miradas, un dato"),
+      sub:T("Habitant, tourisme, collectivité, recycleur, financier : 5 regards sur la même plage. Pas « qui a raison » mais « que finance-t-on ? ». Ce qui les réconcilie tous : la même donnée satellite, publique. Touche les 5 voix.","Resident, tourism, public, recycler, funder: 5 views on the same beach. Not who's right but what we fund. What brings them together: the same satellite data, public. Tap the 5 voices.","Vecino, turismo, municipio, reciclador, financiero: 5 miradas. Lo que los une: el mismo dato satelital, público. Toca las 5 voces."),
       scene:<SolDebateScene lang={lang}/>},
     // 7 — ESPOIR + SORTIE (escapable, jamais infernal)
     {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
@@ -583,7 +588,7 @@ export function SolutionsStory({lang,onClose,onExit}){
   const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
   const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"fixed",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
       <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
@@ -652,7 +657,7 @@ function mapIntroBeats(lang,counts){
 }
 export function MapIntroStory({lang,counts,onEnterMap}){
   return(
-    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"fixed",inset:0,zIndex:1050,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={()=>{track("sg_map_intro_skip",{});onEnterMap()}} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,padding:"8px 14px",borderRadius:20,background:"rgba(10,23,20,.6)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{_t(lang,"Passer","Skip","Saltar")} →</button>
       <StoryEngine beats={mapIntroBeats(lang,counts)} lang={lang} ev="sg_map_beat" onCTA={()=>{track("sg_map_intro_enter",{});onEnterMap()}}/>
     </div>

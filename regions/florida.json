@@ -217,6 +217,102 @@
       "kids": true,
       "snorkel": false,
       "parking": true
+    },
+    {
+      "id": "fl013",
+      "island": "florida",
+      "name": "Hollywood Beach",
+      "commune": "Hollywood",
+      "lat": 26.0281,
+      "lng": -80.1142,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl014",
+      "island": "florida",
+      "name": "Haulover Beach",
+      "commune": "Miami Beach",
+      "lat": 25.9109,
+      "lng": -80.1232,
+      "status": "avoid",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl015",
+      "island": "florida",
+      "name": "Sunny Isles Beach",
+      "commune": "Sunny Isles Beach",
+      "lat": 25.9427,
+      "lng": -80.1218,
+      "status": "avoid",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl016",
+      "island": "florida",
+      "name": "Deerfield Beach",
+      "commune": "Deerfield Beach",
+      "lat": 26.3165,
+      "lng": -80.0740,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl017",
+      "island": "florida",
+      "name": "Pompano Beach",
+      "commune": "Pompano Beach",
+      "lat": 26.2352,
+      "lng": -80.0873,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl018",
+      "island": "florida",
+      "name": "Delray Beach",
+      "commune": "Delray Beach",
+      "lat": 26.4542,
+      "lng": -80.0593,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "fl019",
+      "island": "florida",
+      "name": "Crandon Park",
+      "commune": "Key Biscayne",
+      "lat": 25.6916,
+      "lng": -80.1566,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "fl020",
+      "island": "florida",
+      "name": "Bahia Honda",
+      "commune": "Big Pine Key",
+      "lat": 24.6608,
+      "lng": -81.2742,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
     }
   ],
   "paymentLinks": {

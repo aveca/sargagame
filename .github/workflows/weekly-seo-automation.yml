@@ -19,7 +19,14 @@ concurrency:
 jobs:
   seo-automation:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 5 sites (MQ/GP + 3 USD depuis fin juin) → le SEO audit fait ~24 min de GSC URL
+    # Inspection (222 URLs séquentielles). Bug 2026-06-22 + 2026-06-29 (runs 27965371161 /
+    # 28380458527) : avec timeout-minutes:30 ici et 20 sur le step SEO Audit, le step
+    # dépassait SA propre borne (masquée par continue-on-error → skip silencieux des
+    # 6 analyzers avals) PUIS le job entier se faisait couper par SON plafond pendant
+    # le déploiement FTP. Même bug déjà résolu sur weekly-ux-report.yml (PR #429) —
+    # portée ici. Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 50
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -50,7 +57,10 @@ jobs:
       # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
       - name: SEO Audit (data collection)
         id: seo-audit
-        timeout-minutes: 20
+        # ~24 min normal (222 GSC URL Inspections séquentielles à ~6 s, 5 sites).
+        # Guardrail AU-DESSUS du normal : ne borne qu'un vrai hang, pas les runs
+        # lents légitimes (cf. commentaire timeout-minutes du job).
+        timeout-minutes: 30
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}

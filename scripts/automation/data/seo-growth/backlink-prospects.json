@@ -1783,5 +1783,263 @@
       "Beach-level shareable cards (image/OG) of today's top clean beaches for Reddit/TripAdvisor/Facebook groups",
       "Spanish + English methodology page explaining the Copernicus/NOAA AFAI pipeline, for high-authority .edu / ocean-data cross-links"
     ]
+  },
+  {
+    "market": "Jamaica — sargassum live map",
+    "lang": "en",
+    "status": "staged-prelaunch",
+    "prospects": [
+      {
+        "name": "Jamaica Tourist Board (visitjamaica.com)",
+        "type": "tourism board / DMO",
+        "url": "https://www.visitjamaica.com/",
+        "whyRelevant": "The official DMO of Jamaica (est. 1955), fully government-funded, with global offices and very high domain authority. Their plan-your-trip and beaches pages field constant seaweed questions from prospective visitors, so an always-current per-beach conditions layer fills a real gap.",
+        "contactHint": "PR/marketing via jtbonline.org/contact-us or HQ +1 (876) 920-4926; pitch the digital/content or communications team at 64 Knutsford Blvd, Kingston.",
+        "authority": "high",
+        "angle": "Offer the embeddable live-map widget for a 'beach conditions / sargassum' resource page plus a free press/data kit, so their content team can cite current per-beach scores instead of fielding the question manually."
+      },
+      {
+        "name": "National Environment & Planning Agency (NEPA)",
+        "type": "official municipal / government beach page",
+        "url": "https://www.nepa.gov.jm/influx-sargassum-jamaican-coastline",
+        "whyRelevant": "NEPA is the government agency spearheading Jamaica's multi-agency sargassum response and publishes public advisories on coastline influx (Portland, St. Thomas, St. Catherine, Westmoreland). A government page linking a live per-beach tool is high-authority and mission-aligned.",
+        "contactHint": "Contact form on nepa.gov.jm; email pattern via 10 & 11 Caledonia Avenue, Kingston 5. Written institutional, value-first approach to the coastal/marine unit.",
+        "authority": "high",
+        "angle": "Position the live map as a free public resource complementing their advisories and the JSEAS early-warning work (they cover management/advisory, we translate satellite AFAI into per-beach status) — offer the data kit with published backtest for methodological transparency."
+      },
+      {
+        "name": "Jamaica Gleaner (jamaica-gleaner.com)",
+        "type": "local news / weather",
+        "url": "https://jamaica-gleaner.com/",
+        "whyRelevant": "Jamaica's leading daily newspaper, with recurring 2026 sargassum coverage and commentary (St. Catherine beaches, Caribbean influx). High-authority outlet whose reporters need a live, sourced map to cite when covering record beachings.",
+        "contactHint": "Newsroom via jamaica-gleaner.com contact page; pitch the environment/tourism desk. Loop Jamaica (jamaica.loopnews.com) accepts article submissions as an alternate route.",
+        "authority": "high",
+        "angle": "Free press kit with a citable live map + per-beach scores reporters can screenshot and link in every sargassum story, sourced to Copernicus/NOAA AFAI; offer a weekly data-story angle ('which coasts escape the seaweed this week')."
+      },
+      {
+        "name": "Meteorological Service of Jamaica (metservice.gov.jm)",
+        "type": "weather/ocean data aggregator",
+        "url": "https://metservice.gov.jm/",
+        "whyRelevant": "The government weather authority, publishing daily and marine wind forecasts consulted by residents and tourism operators. A per-beach satellite sargassum layer complements their marine/coastal products and adds granularity they don't currently offer.",
+        "contactHint": "datarequest@metservice.gov.jm or +1 876-929-3694; 65¾ Half Way Tree Road, Kingston 10. Data-partnership / complementarity approach, not a raw link request.",
+        "authority": "high",
+        "angle": "Propose cross-referencing: our per-beach AFAI map cited alongside their marine forecast as a consumer-facing complement; share methodology + backtest for credibility and a possible 'see also' link."
+      },
+      {
+        "name": "Sargassum Information Hub — Jamaica page (sargassumhub.org)",
+        "type": "weather/ocean data aggregator",
+        "url": "https://sargassumhub.org/jamaica/",
+        "whyRelevant": "An institutional hub that already maintains a dedicated Jamaica sargassum page and a monitoring directory of regional tools. High thematic relevance; they willingly list credible regional trackers.",
+        "contactHint": "Contact form on sargassumhub.org; submit the tool for their Jamaica page and monitoring directory with a methodology note (AFAI, published backtest).",
+        "authority": "high",
+        "angle": "Request listing as a public per-beach monitoring resource for Jamaica in their directory; offer to surface their educational content in our resource page in return (mutual-resource, no bare link ask)."
+      },
+      {
+        "name": "TripAdvisor — Jamaica Travel Forum",
+        "type": "traveler forum",
+        "url": "https://www.tripadvisor.com/ShowForum-g147309-i69-Jamaica.html",
+        "whyRelevant": "Recurring 'How is the sargassum seaweed situation?' threads across the Jamaica, Ocho Rios, Montego Bay and Negril forums. Near-daily intent-matched questions where a helpful map link earns visibility and referral traffic.",
+        "contactHint": "No PR contact — participate organically: helpful answers on sargassum threads from an identified member whose profile references the site (no spam), respecting community rules.",
+        "authority": "high",
+        "angle": "Provide genuine value on seaweed threads by sharing the free live map + 7-day per-beach forecast as a planning tool; natural contextual link, not a solicitation."
+      },
+      {
+        "name": "Jamaica Hotel & Tourist Association (jhta.org)",
+        "type": "hotel / resort group",
+        "url": "https://jhta.org/",
+        "whyRelevant": "The national body (since 1961) representing hotels, resorts and allied tourism suppliers island-wide. Their members' guests ask about seaweed before arrival; a shared per-beach conditions tool reduces cancellations and complaints across the membership.",
+        "contactHint": "Contact via jhta.org or +1 (876) 929-1054; pitch the secretariat/membership team plus their eNewsletter editor for a member-benefit feature.",
+        "authority": "high",
+        "angle": "Offer the embeddable 'beach conditions today' widget as a free member benefit for hotel websites and concierge pages, plus a weekly per-beach report members can cite — retention/reassurance framing, never a link request."
+      },
+      {
+        "name": "My Island Jamaica (my-island-jamaica.com)",
+        "type": "travel blog / guide",
+        "url": "https://www.my-island-jamaica.com/best_beaches_in_portland.html",
+        "whyRelevant": "A long-running local-authored Jamaica travel blog with high organic traffic and dedicated beach guides (from Holland Bay in St. Thomas to Negril). Its audience wants exactly our data — the right beach on the right day.",
+        "contactHint": "Contact page on my-island-jamaica.com (author responds to useful resources); email pattern info@my-island-jamaica.com.",
+        "authority": "medium",
+        "angle": "Embed the live widget on their beach guides so each beach gains a daily Beach Score, plus a co-citable weekly 'Jamaica beach conditions' report they can republish."
+      },
+      {
+        "name": "Adventures from Elle (adventuresfromelle.com)",
+        "type": "travel blog / guide",
+        "url": "https://adventuresfromelle.com/tag/beaches-in-portland-jamaica/",
+        "whyRelevant": "A Jamaican-native travel & lifestyle blog (since 2016) with detailed Portland/east-coast beach content and an audience that already searches how to avoid seaweed. East-coast focus aligns precisely with the sargassum pain zone.",
+        "contactHint": "Contact / collaborations page on adventuresfromelle.com; the solo author responds to email and is active on Instagram for DMs.",
+        "authority": "medium",
+        "angle": "Add a 'check today's beach conditions' widget or cited link under her Portland beach guides; offer the 7-day forecast as a genuinely useful bonus for her readers."
+      },
+      {
+        "name": "Matador Network — Portland, Jamaica beaches guide",
+        "type": "travel blog / guide",
+        "url": "https://matadornetwork.com/read/things-to-do-portland-jamaica/",
+        "whyRelevant": "A high-authority travel publisher with an indexed Portland/Port Antonio beaches guide covering the exposed northeast coast. Strong DA and evergreen traffic make a 'check live conditions' link valuable to readers planning east-coast beach days.",
+        "contactHint": "Editorial pitches via matadornetwork.com contact/pitch page; reach the Caribbean/beaches editor.",
+        "authority": "medium",
+        "angle": "Pitch a data-story or a 'check current conditions' resource link inside their Portland beaches guide, backed by our press kit (methodology + backtest) so it's a credible, citable addition rather than a bare link."
+      },
+      {
+        "name": "Loop Jamaica (jamaica.loopnews.com)",
+        "type": "local news / weather",
+        "url": "https://jamaica.loopnews.com/",
+        "whyRelevant": "A leading digital-first Jamaican news platform with strong social distribution and an open article-submission channel. Recurrent Caribbean sargassum coverage makes it a natural home for a citable live map and data-story.",
+        "contactHint": "Submit an Article page (jamaica.loopnews.com) and newsroom contact; pitch the environment/lifestyle desk.",
+        "authority": "medium",
+        "angle": "Provide a citable live map + weekly per-beach report as source material for their sargassum stories, and pitch a guest data-story on which coasts stay clear — attribution link included."
+      }
+    ],
+    "outreach": {
+      "subject": "A live sargassum map for Jamaica's beaches — free and citable for your audience",
+      "body": "Hello,\n\nA quick note first: we're preparing a per-beach sargassum service for Jamaica — it's launching soon for the island.\n\nDuring the season, your visitors ask the same question every day: 'which beach is clean today?'\n\nWe run a satellite sargassum map that refreshes four times a day (Copernicus/NOAA AFAI imagery). For each beach you get a 0-100 score, a clear status (clean / moderate / avoid) and a 7-day forecast. Our method and our published error rate are open — we never state a figure we can't verify.\n\nTwo things that may be useful to you, at no cost:\n\n1. An always-current, citable resource: point your readers to the map instead of maintaining perishable info yourself.\n2. An embeddable 'beach conditions today' widget: a few lines of code that updates itself on your conditions page.\n\nAccess to the map is free. If it fits your audience, I'll send the widget and a press/data kit (free visuals, methodology, current figures).\n\nHappy to give a 5-minute demo.\n\nBest regards,\nThe Le Veilleur team"
+    },
+    "linkableAssets": [
+      "Embeddable live-map widget 'Jamaica beach conditions today' (auto-refreshing iframe/script) for DMO, hotel, JHTA-member and travel-blog conditions pages",
+      "Weekly Jamaica sargassum report by beach (citable data summary: most-affected coasts, 7-day trend, east vs west comparison) ready for the Gleaner and Loop Jamaica to reprint",
+      "Royalty-free press/data kit: live-map visuals, AFAI methodology, published backtest reliability by regime — credibility for reporters, NEPA and the JTB",
+      "2026 season tracker for Jamaica: comparison of intensity vs previous years, feeding 'record season' angles for local news",
+      "Live 'Top 10 clean Jamaica beaches today' ranking — shareable asset for TripAdvisor threads and social",
+      "Open data feed / API (per-beach score) for aggregators (Sargassum Information Hub Jamaica page, Meteorological Service marine products) to cite as a source",
+      "Methodology / honesty page ('Le Veilleur') explaining why reliability is reported by regime rather than a flat global % — an E-E-A-T citable asset",
+      "'Verified clean beach today' badge/embed that Jamaican hotels and resorts can display with a link to the map"
+    ]
+  },
+  {
+    "market": "Puerto Rico — sargassum live map",
+    "lang": "es",
+    "status": "staged-prelaunch",
+    "prospects": [
+      {
+        "name": "Discover Puerto Rico (discoverpuertorico.com)",
+        "type": "tourism board / DMO",
+        "url": "https://www.discoverpuertorico.com/",
+        "whyRelevant": "The island's official DMO (created by law in 2017), responsible for all global marketing of Puerto Rico. Their beach and east-region itinerary pages (Fajardo, Luquillo, Río Grande) field constant sargassum questions, so a per-beach conditions layer is a strong, always-current editorial asset.",
+        "contactHint": "Industry/press portal at discoverpuertorico.com/industry and about-us page; pitch the content/PR team via their industry-resources contact.",
+        "authority": "high",
+        "angle": "Offer the embeddable live-map widget for a 'condiciones de playa / sargazo' resource page plus a free press/data kit, so their content team can cite current per-beach scores rather than field the question manually."
+      },
+      {
+        "name": "DRNA — Protocolo para el manejo del sargazo",
+        "type": "official municipal / government beach page",
+        "url": "https://www.drna.pr.gov/sargazo/",
+        "whyRelevant": "Puerto Rico's Department of Natural and Environmental Resources runs the official sargassum protocol and a Specialized Sargassum Division focusing on Fajardo (Sardinera) and San Juan. Their .gov page is the authoritative home for a 'check live conditions' link and per-beach forecast.",
+        "contactHint": "Report form and email sargazo@drna.pr.gov on drna.pr.gov/sargazo; written institutional, value-first approach to the Specialized Sargassum Division.",
+        "authority": "high",
+        "angle": "Provide a free, always-current per-beach status resource they can link so residents check before driving to the shore; share the data kit (Copernicus/NOAA AFAI + backtest) transparently as a complement to their cleanup operations."
+      },
+      {
+        "name": "Municipio de Luquillo — Turismo (luquillo.pr)",
+        "type": "official municipal / government beach page",
+        "url": "https://luquillo.pr/turismo/",
+        "whyRelevant": "Official tourism page of Luquillo, a northeast beach town (Balneario La Monserrate, Costa Azul) directly in the sargassum-exposed east coast. Its audience picks a beach day-by-day — the exact use case for a live map + Beach Score.",
+        "contactHint": "Contact via luquillo.pr municipal site; email the tourism/communications office. Small structure — a personalized email to the tourism director usually suffices.",
+        "authority": "medium",
+        "angle": "Embed the widget on their beach/tourism page ('condiciones de playa hoy') and cite the daily score for La Monserrate/Costa Azul; concierge angle for a municipality whose economy leans on beach visits."
+      },
+      {
+        "name": "Municipio de Fajardo (fajardopr.org)",
+        "type": "official municipal / government beach page",
+        "url": "https://fajardopr.org/atractivos-turisticos-y-entretenimiento",
+        "whyRelevant": "Official site of Fajardo, the DRNA's priority sargassum zone (Sardinera, Las Croabas, Seven Seas) and a major tourism hub (Laguna Grande bio-bay, Marina Puerto del Rey). Visitors constantly ask which east-coast beach is usable today.",
+        "contactHint": "Contact via fajardopr.org tourism section; email the oficina de turismo / comunicaciones. Written value-first approach.",
+        "authority": "medium",
+        "angle": "Embed the widget on their tourist-attractions page and a 'playas despejadas hoy' link; the weekly per-beach report doubles as a front-desk advisory tool for a heavily affected municipality."
+      },
+      {
+        "name": "El Nuevo Día (elnuevodia.com)",
+        "type": "local news / weather",
+        "url": "https://www.elnuevodia.com/",
+        "whyRelevant": "Puerto Rico's leading newspaper, with active 2026 sargazo coverage (record season, east-coast beaches under watch). High-authority outlet whose reporters need a live, sourced Spanish-language map to cite when covering beachings.",
+        "contactHint": "Newsroom via elnuevodia.com (Locales / Últimas Noticias desks); pitch the environment/tourism reporter covering sargazo.",
+        "authority": "high",
+        "angle": "Free press kit in Spanish with a citable live map + per-beach scores reporters can screenshot and link in every sargazo story (sourced to Copernicus/NOAA AFAI); offer a recurring 'qué playas se salvan esta semana' data-story."
+      },
+      {
+        "name": "Primera Hora (primerahora.com)",
+        "type": "local news / weather",
+        "url": "https://www.primerahora.com/",
+        "whyRelevant": "A leading Puerto Rico daily with ongoing sargazo reporting (Humacao, Fajardo, east-coast beaches placed under surveillance). Broad readership needing a reliable Spanish reference for beach conditions during the season.",
+        "contactHint": "Newsroom via primerahora.com contact; pitch the gobierno-política / local desk covering sargazo. Same publisher network as El Nuevo Día.",
+        "authority": "high",
+        "angle": "Provide citable live-map visuals and current per-beach figures for their sargazo articles, plus a weekly data report; attribution link included, no bare ask."
+      },
+      {
+        "name": "CARICOOS — Sargassum Tracker (Puerto Rico & USVI)",
+        "type": "weather/ocean data aggregator",
+        "url": "https://www.caricoos.org/sargassum",
+        "whyRelevant": "The Caribbean Coastal Ocean Observing System runs a public PR/USVI sargassum tracker with 7-day near-coastal forecasts using AFAI/MCI satellite indices and ocean models. Authoritative upstream source; strong cross-link and mutual-resource potential with a consumer-facing per-beach map.",
+        "contactHint": "Contact page on caricoos.org; reach the outreach/comms coordinator (project led by Julio Morell's group).",
+        "authority": "high",
+        "angle": "Cross-link as complementary tools — they provide offshore/observing forecasts, we translate them into per-beach consumer scores; credit CARICOOS as a data source and ask to be listed among downstream public tools."
+      },
+      {
+        "name": "WAPA TV (wapa.tv)",
+        "type": "local news / weather",
+        "url": "https://wapa.tv/tiempo/",
+        "whyRelevant": "Puerto Rico's #1 TV station and largest local news/weather video portal, running local sargazo coverage (e.g., Fajardo inundations). Recurring beach-conditions and weather segments make an embeddable Spanish live map a natural digital asset.",
+        "contactHint": "Newsroom / weather (Tu Tiempo) via wapa.tv contact; pitch the meteorology team and web producers.",
+        "authority": "high",
+        "angle": "Offer the embeddable widget for their weather/beach web pages plus a weekly data report for recurring sargazo updates; per-beach granularity complements their forecasts."
+      },
+      {
+        "name": "TripAdvisor — Puerto Rico Travel Forum",
+        "type": "traveler forum",
+        "url": "https://www.tripadvisor.com/ShowForum-g147319-i71-Puerto_Rico.html",
+        "whyRelevant": "Recurring 'Is there an issue with Sargassum?' threads across the Puerto Rico, Luquillo, Culebra and San Juan forums, noting east-facing beaches (Fajardo, Luquillo) get hit hardest. Near-daily intent-matched questions where a helpful map link earns visibility.",
+        "contactHint": "No PR contact — participate organically: helpful answers on sargassum threads from an identified member whose profile references the site (English + Spanish audience), respecting community rules.",
+        "authority": "high",
+        "angle": "Provide genuine value on seaweed threads by sharing the free live map + 7-day per-beach forecast as a planning tool; natural contextual link, not a solicitation."
+      },
+      {
+        "name": "El Conquistador Resort (Fajardo)",
+        "type": "hotel / resort group",
+        "url": "https://www.discoverpuertorico.com/profile/el-conquistador-resort-puerto-rico/48",
+        "whyRelevant": "A flagship resort on Fajardo's northeast peninsula, in the DRNA's priority sargassum zone. Guests come for the beach, marina and water activities, so day-of conditions are central to their product and a strong concierge argument.",
+        "contactHint": "Marketing/communications via the resort at 1000 El Conquistador Ave, Fajardo; reach the team through their official site and active Instagram (@elconquistadoresort) for a DM.",
+        "authority": "medium",
+        "angle": "Embed the 'condiciones de playa hoy' widget on their beach/activities page and cite the daily Fajardo score; reassurance/retention framing that reduces guest disappointment, never a link request."
+      },
+      {
+        "name": "Wyndham Grand Rio Mar (Río Grande)",
+        "type": "hotel / resort group",
+        "url": "https://www.wyndhamriomar.com/",
+        "whyRelevant": "A large east-coast beach & golf resort in Río Grande, between El Yunque and a mile of exposed beach adjacent to the affected northeast shore. Their guests plan beach days that sargassum can disrupt; a conditions tool cuts complaints.",
+        "contactHint": "Press page at wyndhamriomar.com/press and general contact; pitch the marketing/PR team.",
+        "authority": "medium",
+        "angle": "Embed the live widget on their beach/experiences page or cite the weekly per-beach report to reassure guests on the northeast coast; concierge value, value-first."
+      },
+      {
+        "name": "Puerto Rico Beach Finder (puertoricobeachfinder.com)",
+        "type": "weather/ocean data aggregator",
+        "url": "https://www.puertoricobeachfinder.com/",
+        "whyRelevant": "A continuously-updated island-wide database of ~448 beaches filterable by conditions and amenities, with strong beach-intent SEO (best beaches, hidden beaches, San Juan). A per-beach live sargassum layer is a natural, embeddable enrichment to their beach pages.",
+        "contactHint": "Contact form on puertoricobeachfinder.com; email pattern contact@puertoricobeachfinder.com. Product team receptive to embeddable tools.",
+        "authority": "medium",
+        "angle": "Integrate the iframe widget on their beach pages (one line of code) so each listing shows a fresh daily Beach Score — enriches their per-beach data with no editorial maintenance."
+      },
+      {
+        "name": "Your Friend the Nomad — Luquillo/Fajardo Puerto Rico guide",
+        "type": "travel blog / guide",
+        "url": "https://yourfriendthenomad.com/4-day-puerto-rico-itinerary/",
+        "whyRelevant": "A travel blog with detailed east-coast itineraries and a Luquillo Beach guide — audience actively planning beach days in the exact Fajardo/Luquillo sargassum zone. Evergreen traffic that benefits from a day-of conditions link.",
+        "contactHint": "Contact / work-with-me page on yourfriendthenomad.com; solo author reachable by email and social DM.",
+        "authority": "medium",
+        "angle": "Add a 'check today's beach conditions' widget or cited link under their Luquillo/Fajardo sections, plus the 7-day forecast as a useful bonus for readers choosing east-coast beaches."
+      }
+    ],
+    "outreach": {
+      "subject": "Un mapa de sargazo en vivo para las playas de Puerto Rico — gratis y citable",
+      "body": "Hola,\n\nUna nota primero: estamos preparando un servicio de sargazo playa por playa para Puerto Rico — estará disponible pronto para la isla.\n\nDurante la temporada, sus visitantes hacen la misma pregunta cada día: '¿qué playa está limpia hoy?'\n\nMantenemos un mapa satelital del sargazo que se actualiza cuatro veces al día (imágenes Copernicus/NOAA AFAI). Para cada playa: una puntuación de 0 a 100, un estado claro (limpia / moderada / evitar) y un pronóstico a 7 días. Nuestra metodología y nuestro margen de error publicado son abiertos — nunca declaramos una cifra que no podamos verificar.\n\nDos cosas útiles para ustedes, sin costo:\n\n1. Un recurso siempre actualizado y citable: pueden dirigir a sus lectores al mapa en lugar de mantener información que caduca.\n2. Un widget integrable de 'condiciones de playa hoy': unas líneas de código que se actualiza solo en su página de condiciones.\n\nEl acceso al mapa es gratuito. Si tiene sentido para su audiencia, les envío el widget y un kit de prensa/datos (imágenes libres, metodología, cifras del día).\n\nQuedo a disposición para una demostración de 5 minutos.\n\nUn cordial saludo,\nEl equipo de Le Veilleur"
+    },
+    "linkableAssets": [
+      "Widget de mapa en vivo integrable 'condiciones de playa hoy en Puerto Rico' (iframe/script autoactualizado) para páginas de condiciones del DMO, municipios, hoteles y blogs",
+      "Reporte semanal de sargazo por playa de Puerto Rico (resumen de datos citable: costas más afectadas del este/sureste, tendencia a 7 días, comparación de temporada) listo para El Nuevo Día y Primera Hora",
+      "Kit de prensa/datos libre de derechos: visuales del mapa, metodología AFAI, backtest de fiabilidad por régimen — credibilidad para periodistas, el DRNA y Discover Puerto Rico",
+      "Rastreador de temporada 2026 para Puerto Rico: comparación de intensidad frente a años anteriores (alimenta los ángulos de 'temporada récord')",
+      "Clasificación en vivo 'Top 10 playas limpias hoy' por región — recurso compartible para foros (TripAdvisor) y redes sociales",
+      "Flujo de datos abierto / API (puntuación por playa) para agregadores (CARICOOS, Sargassum Information Hub, Puerto Rico Beach Finder) que lo citen como fuente",
+      "Página de metodología / honestidad ('Le Veilleur') que explica por qué la fiabilidad se da por régimen y no como un % global — recurso citable E-E-A-T",
+      "Insignia/recuadro 'playa verificada limpia hoy' que los hoteles del este pueden mostrar con enlace al mapa"
+    ]
   }
 ]
