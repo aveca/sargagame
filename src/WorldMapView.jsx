@@ -1385,6 +1385,7 @@ export default function WorldMapView({
         preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={_t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`)}
+        data-sg-live="1"
         onClick={onMapBgClick}
       >
         {mapDefs}
@@ -1774,9 +1775,18 @@ export default function WorldMapView({
             le CTA « près de moi » (rangée 74px, reste 123px pour 152px de chip) et à
             124px elle passait sous la barre des jours (y687-724 à 390px). À 164px le
             bas de colonne (680) garde 7px d'air au-dessus de la barre — constant,
-            tout le chrome bas étant ancré bottom. */}
+            tout le chrome bas étant ancré bottom. PREMIUM : la colonne jours grandit
+            (pastille digest « Cette semaine » 32px + gap 7 au-dessus, points de
+            confiance +7px sous les jours) → haut de colonne à ~203px du bas ; la
+            pastille recouvrait la chip hôtel (grief 2026-07-01, mesuré y642-674 vs
+            chip y655-680 à 390×844). → 210px en premium (7px d'air). Clé = mapPremium
+            &&!mapDecideOff (synchrones, stables dès le 1er rendu), PAS la truthiness
+            de weekDigest : elle est async (null tant que l'outline n'est pas fetchée)
+            et ferait sauter la légende de 46px à chaque load/changement d'île (panel
+            adverse 2026-07-02). Constant aussi plage sélectionnée (le digest s'y
+            cache) : pas de chrome qui saute au tap. */}
         <div style={{
-          position:"absolute",left:16,bottom:"calc(164px + env(safe-area-inset-bottom))",
+          position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
           {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
