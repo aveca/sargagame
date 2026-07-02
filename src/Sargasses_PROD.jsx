@@ -1517,7 +1517,12 @@ function engInit(){
     //   l'alerte analyze-ux.cjs pour qu'on construise le fix (svg/marketing/code).
     let _rc=[]
     const _ric=window.requestIdleCallback||(f=>setTimeout(f,0))
+    // Survol-hésitation (desktop, souris) : élément interactif regardé puis quitté SANS clic.
+    // État partagé avec le listener click (pose _hovClicked) → un CTA survolé-PUIS-cliqué
+    // n'est PAS une hésitation. _hovEl = l'élément actuellement survolé, _hovT = début du survol.
+    let _hovEl=null,_hovT=0,_hovClicked=false
     window.addEventListener("click",e=>{
+      _hovClicked=true // le survol en cours a débouché sur un clic → pas une hésitation
       // Heatmap/dead-click hors chemin critique du tap (getComputedStyle = reflow synchrone) :
       // on capture un snapshot léger puis on agrège en idle → protège l'INP (mesuré 464-496ms).
       const snap={target:e.target,clientX:e.clientX,clientY:e.clientY}
@@ -1525,6 +1530,37 @@ function engInit(){
       const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
       if(_rc.length>=3){const a=_rc[0],b=_rc[_rc.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<44){_rc=[];try{track("sg_friction",{type:"rage",screen:_eng.screen||"?",el:_sgElDesc(snap.target)})}catch(_){}}}
     },{passive:true})
+    // ── CAPTURE ÉTENDUE (desktop) — le clic gauche seul jetait 2 signaux : ────────────
+    //    • CLIC DROIT sur une zone non-interactive = confusion/« où est le menu » (jumeau
+    //      du dead-click gauche). Capturé SANS jamais le détourner (aucun preventDefault →
+    //      le menu navigateur reste). Un clic droit sur un lien/bouton = ouvrir-dans-onglet
+    //      = normal, ignoré (classification dans sgCollectContext).
+    //    • SURVOL-HÉSITATION : un CTA qui attire l'œil (survol ≥600ms) mais pas le doigt
+    //      (pas de clic) = signal CRO n°1.
+    //    Souris SEULE (pointerType==="mouse") → coût ZÉRO sur mobile/tactile (majorité +
+    //    fondateur). Nommé à l'élément (comme les dead-clicks) → actionnable. Rollback `?capx=0`.
+    if(!/[?&]capx=0/.test(location.search)){
+      window.addEventListener("contextmenu",e=>{
+        const snap={target:e.target}
+        _ric(()=>{try{sgCollectContext(snap)}catch(_){}})
+      },{passive:true})
+      const HOVER_MIN=600 // ms de survol avant de compter une hésitation (sous le seuil = simple passage)
+      window.addEventListener("pointerover",e=>{
+        if(e.pointerType!=="mouse")return
+        const t=e.target&&e.target.closest&&e.target.closest('button,a,[role="button"],input,select,label,[data-beach],[data-vmui]')
+        if(!t||t===_hovEl)return // même élément (ex. survol d'un enfant) → ne pas réarmer le chrono
+        _hovEl=t;_hovT=Date.now();_hovClicked=false
+      },{passive:true})
+      window.addEventListener("pointerout",e=>{
+        if(e.pointerType!=="mouse"||!_hovEl)return
+        // Ne compter QUE si on quitte VRAIMENT _hovEl (relatedTarget hors de l'élément) : pointerout
+        // bubble depuis les descendants → un déplacement interne ne doit pas clore le survol.
+        try{if(e.relatedTarget&&_hovEl.contains&&_hovEl.contains(e.relatedTarget))return}catch(_){}
+        const el=_hovEl,dwell=Date.now()-_hovT,clicked=_hovClicked
+        _hovEl=null;_hovClicked=false
+        if(dwell>=HOVER_MIN&&!clicked)_ric(()=>{try{sgCollectHover(el,dwell)}catch(_){}})
+      },{passive:true})
+    }
   }catch(e){}
 }
 
@@ -1611,7 +1647,7 @@ function _sgcEnsureBuf(){
   if(_sgc.buf)return
   const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
   let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
-  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{},de:{}}
+  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{},de:{},rc:{},hv:{}}
 }
 // Mini-heatmap FIRST-PARTY (remplace Clarity, 100% organique) : chaque clic est bucket-quantifié
 // par écran (grille 16×24, coords NORMALISÉES → résolution-agnostique, AUCUNE coord brute, zéro PII)
@@ -1654,6 +1690,41 @@ function sgCollectClick(e){
     // NOMME le coupable du dead-click (élément, pas juste bucket) → fix ciblé, plus de devinette.
     if(dead&&tgt){const de=_sgc.buf.de||(_sgc.buf.de={});const m=de[scr]||(de[scr]={});const dk=_sgElDesc(tgt)
       if(m[dk]!=null||Object.keys(m).length<24)m[dk]=(m[dk]||0)+1}
+  }catch(_){}
+}
+// Clic DROIT sur une zone NON-interactive (desktop) = confusion/« où est le menu »,
+// jumeau du dead-click gauche. On ne détourne JAMAIS le menu navigateur (aucun
+// preventDefault en amont) : on OBSERVE seulement. Un clic droit sur un lien/bouton
+// (ouvrir-dans-onglet, copier) = normal → ignoré. Appelé en requestIdleCallback →
+// getComputedStyle hors chemin critique. Nommé à l'élément (comme les dead-clicks).
+function sgCollectContext(e){
+  try{
+    _sgcEnsureBuf();if(!_sgc.buf)return
+    const t=e.target;if(!t||t.nodeType!==1)return
+    let dead=true // même classification que sgCollectClick
+    try{
+      if(t.closest&&t.closest('button,a,input,select,textarea,label,[role="button"],.leaflet-marker-icon,[data-beach],[data-sg-live]'))dead=false
+      else{const cs=getComputedStyle(t);if(cs&&cs.cursor==="pointer")dead=false}
+    }catch(_){dead=false}
+    if(!dead)return // clic droit « normal » (élément interactif) → pas un signal
+    const scr=(typeof _eng!=="undefined"&&_eng&&_eng.screen)||"?"
+    const rc=_sgc.buf.rc||(_sgc.buf.rc={});const m=rc[scr]||(rc[scr]={})
+    const dk=_sgElDesc(t)
+    if(m[dk]!=null||Object.keys(m).length<24)m[dk]=(m[dk]||0)+1
+    _sgc.dirty=true
+  }catch(_){}
+}
+// Survol-hésitation (desktop, souris) : élément interactif (déjà filtré à la capture)
+// regardé ≥600ms PUIS quitté SANS clic. Le signal CRO n°1 : « le CTA attire l'œil, pas
+// le doigt ». Agrégé {n, ms} par écran+élément → dwell moyen calculé côté stats.php.
+function sgCollectHover(el,dwell){
+  try{
+    _sgcEnsureBuf();if(!_sgc.buf)return
+    const scr=(typeof _eng!=="undefined"&&_eng&&_eng.screen)||"?"
+    const hv=_sgc.buf.hv||(_sgc.buf.hv={});const m=hv[scr]||(hv[scr]={})
+    const dk=_sgElDesc(el)
+    if(m[dk]!=null||Object.keys(m).length<24){const o=m[dk]||(m[dk]={n:0,ms:0});o.n++;o.ms+=Math.round(dwell||0)}
+    _sgc.dirty=true
   }catch(_){}
 }
 function sgCollectEvent(event,params){
