@@ -1370,7 +1370,7 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.15,
+          "afai": 0.16,
           "status": "moderate"
         },
         {
@@ -1390,12 +1390,12 @@
         },
         {
           "id": "rm005",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "rm006",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -1410,8 +1410,8 @@
         },
         {
           "id": "rm009",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "rm010",
@@ -1425,8 +1425,8 @@
         },
         {
           "id": "rm012",
-          "afai": 0.2,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         }
       ]
     }
@@ -1634,6 +1634,20 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-07-02",
+      "beach": "rm009",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-07-02",
+      "beach": "rm012",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
     }
   ]
 }

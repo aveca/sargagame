@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T03:57:13.945Z",
+  "generated": "2026-07-02T09:09:31.140Z",
   "date": "2026-07-02",
   "days": 1,
   "regions": [
@@ -10,6 +10,42 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "a5f50c64",
+      "subject": "feat(b2b): funnel séquentiel 4 étapes — valeur perçue progressive avant l'ask (verdict panel 8 agents)"
+    },
+    {
+      "h": "5c6e77a6",
+      "subject": "Merge pull request #426 from aveca/feat/b2b-preview-anchored"
+    },
+    {
+      "h": "e7f168f3",
+      "subject": "fix(b2b): démo établissement ancrée — fiche de SA plage + carte + lien espace persistant"
+    },
+    {
+      "h": "6edb931b",
+      "subject": "feat(svg): vote d'observation en mini-scènes SVG + « odeur » stockée + cellules mois dessinées"
+    },
+    {
+      "h": "a0509b3a",
+      "subject": "Merge pull request #422 from aveca/feat/fiche-verdict-why"
+    },
+    {
+      "h": "ad37b04f",
+      "subject": "feat(fiche): « Pourquoi ce verdict ? » (beat 5 honnêteté) + sargData branché sur le chemin carte + plancher bruit dead-click"
+    },
+    {
+      "h": "bf9deab1",
+      "subject": "feat(fiche): dépliant « Pourquoi ce verdict ? » + plancher anti-bruit dead-clicks"
+    },
+    {
+      "h": "39265a91",
+      "subject": "chore: update Copernicus data 2026-07-02 04:00 UTC"
+    },
+    {
+      "h": "91ecc82d",
+      "subject": "chore: email state 2026-07-02 04:00 UTC"
+    },
     {
       "h": "a42ee957",
       "subject": "Merge remote-tracking branch 'origin/main' into fix/deadclick-measure-truth"
@@ -73,84 +109,36 @@
     {
       "h": "79d354ec",
       "subject": "Merge pull request #406 from aveca/feat/weekhub-premium-cta"
-    },
-    {
-      "h": "b6211883",
-      "subject": "feat(cro): WeekHub porte premium « Le Veilleur personnel » (levier CRO n°1, ?whcta=0)"
-    },
-    {
-      "h": "bad2765c",
-      "subject": "chore: update Copernicus data 2026-07-02 00:46 UTC"
-    },
-    {
-      "h": "ab6f31c9",
-      "subject": "Merge pull request #405 from aveca/claude/code-quality-improvement-guvsab"
-    },
-    {
-      "h": "d331b250",
-      "subject": "feat(design): comic/motion — scan satellite animé, mascotte canonique, lien preuve, WeekHub polish, gate reduced-motion"
-    },
-    {
-      "h": "22c50b0a",
-      "subject": "chore: update Copernicus data 2026-07-01 20:06 UTC"
-    },
-    {
-      "h": "c5b0032f",
-      "subject": "chore: email state 2026-07-01 20:06 UTC"
-    },
-    {
-      "h": "aed18251",
-      "subject": "chore: update Copernicus data 2026-07-01 19:27 UTC"
-    },
-    {
-      "h": "d8da034c",
-      "subject": "feat(weekhub): planner saisonnier « quand réserver » pour dates lointaines (#396)"
-    },
-    {
-      "h": "01a541e5",
-      "subject": "chore: update Copernicus data 2026-07-01 18:24 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 46,
+      "sessions": 93,
       "friction": 5,
-      "dead_rate": 0.341,
+      "dead_rate": 0.335,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.353,
-        "n": 201
+        "rate": 0.344,
+        "n": 241
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
+          "count": 26
+        },
+        {
+          "el": "div",
           "count": 22
         },
         {
           "el": "svg[role=img]",
           "count": 19
-        },
-        {
-          "el": "div",
-          "count": 16
-        },
-        {
-          "el": "span",
-          "count": 5
-        },
-        {
-          "el": "rect",
-          "count": 2
-        },
-        {
-          "el": "span.lc-detail-fact",
-          "count": 1
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.3
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -159,12 +147,9 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 455→46 (-90%)",
-        "dead-rate 0.413→0.341 (-0.1) ✅",
+        "sessions 455→93 (-80%)",
+        "dead-rate 0.413→0.335 (-0.1) ✅",
         "rage-clicks 21→5 ✅",
-        "🆕 dead-click : span (5)",
-        "🆕 dead-click : rect (2)",
-        "🆕 dead-click : span.lc-detail-fact (1)",
         "✔︎ dead-click résolu : p.lc-h2s-txt",
         "✔︎ dead-click résolu : div.lc-detail-body",
         "✔︎ dead-click résolu : div.lc-detail-head"
@@ -172,35 +157,23 @@
     },
     {
       "region": "gp",
-      "sessions": 37,
+      "sessions": 89,
       "friction": 0,
-      "dead_rate": 0.25,
+      "dead_rate": 0.196,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.265,
-        "n": 113
+        "rate": 0.194,
+        "n": 196
       },
       "top_dead_els": [
         {
           "el": "svg[role=img]",
           "count": 23
-        },
-        {
-          "el": "div",
-          "count": 4
-        },
-        {
-          "el": "rect",
-          "count": 2
-        },
-        {
-          "el": "h2.lc-detail-name",
-          "count": 1
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.29
+        "rate": 0.3
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -209,32 +182,29 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 285→37 (-87%)",
-        "dead-rate 0.343→0.25 (-0.1) ✅",
-        "🆕 dead-click : h2.lc-detail-name (1)",
+        "sessions 285→89 (-69%)",
+        "dead-rate 0.343→0.196 (-0.1) ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope",
+        "✔︎ dead-click résolu : div",
+        "✔︎ dead-click résolu : rect",
         "✔︎ dead-click résolu : span.lc-detail-fact",
         "✔︎ dead-click résolu : circle"
       ]
     },
     {
       "region": "florida",
-      "sessions": 7,
+      "sessions": 13,
       "friction": 0,
-      "dead_rate": 0.542,
+      "dead_rate": 0.419,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.542,
-        "n": 24
+        "rate": 0.448,
+        "n": 29
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
           "count": 12
-        },
-        {
-          "el": "div.sg-onink-scope[role=dialog]",
-          "count": 1
         }
       ],
       "bored_worst": null,
@@ -245,8 +215,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 82→7 (-91%)",
-        "🆕 dead-click : div.sg-onink-scope[role=dialog] (1)",
+        "sessions 82→13 (-84%)",
+        "dead-rate 0.562→0.419 (-0.1) ✅",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : div",
         "✔︎ dead-click résolu : circle",
@@ -256,7 +226,7 @@
     },
     {
       "region": "puntacana",
-      "sessions": 1,
+      "sessions": 3,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -269,7 +239,7 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 11→1 (-91%)",
+        "sessions 11→3 (-73%)",
         "dead-rate 0.645→0 (-0.6) ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope",
         "✔︎ dead-click résolu : svg[role=img]",
@@ -281,20 +251,11 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 1,
+      "sessions": 4,
       "friction": 0,
       "dead_rate": 0.857,
       "dead_worst": null,
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 5
-        },
-        {
-          "el": "div",
-          "count": 1
-        }
-      ],
+      "top_dead_els": [],
       "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -303,9 +264,11 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 16→1 (-94%)",
+        "sessions 16→4 (-75%)",
         "dead-rate 0.471→0.857 (+0.4) ⚠️",
         "✔︎ dead-click résolu : svg[role=img]",
+        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "✔︎ dead-click résolu : div",
         "✔︎ dead-click résolu : svg",
         "✔︎ dead-click résolu : span.lc-detail-fact"
       ]
