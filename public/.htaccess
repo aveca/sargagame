@@ -241,6 +241,11 @@ RewriteRule ^onboarding\.html$ / [R=301,L]
 RewriteRule ^neptunes_fury\.html$ / [R=301,L]
 # sarg_carte_satellite_app.html : ancienne carte satellite standalone (canonical → /carte-sargasses/).
 RewriteRule ^sarg_carte_satellite_app\.html$ /carte-sargasses/ [R=301,L]
+# arena-v2.html : prototype navigable « ARENA v2 » (jeu-arène RETIRÉE du produit),
+# orphelin (aucun lien app, hors sitemap) mais INDEXABLE (pas de noindex) et porteur
+# d'une copie d'abonnement B2C MORTE (4,99€/mois + annuel 39,99€ + checkout Stripe)
+# qui contredit le modèle pass one-time Mollie. Consolidé vers l'accueil. 2026-07-02.
+RewriteRule ^arena-v2\.html$ / [R=301,L]
 </IfModule>
 
 # =====================================================================
