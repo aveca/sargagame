@@ -1,5 +1,22 @@
 # NEXT_SESSION — sargagame
 
+> **🏭 2026-07-02 (soir) — USINE LOCALE + FABRIQUE DE CALCUL + FUITE REVENU #1 COMBLÉE (session « PC allumé, Claude fermé 1 semaine »).**
+>
+> **SHIPPÉ (mergé `main`) :**
+> - **Couche C — usine locale pur-code ZÉRO-LLM** (PR #492/#493) : tâche Windows `SargaFactory` (quotidien 05:30 + rattrapage boot, admin-free) → `scripts/local-factory/factory.cjs` rend les 5 briefs vidéo + publie FB + git-pull autoupdate, freshness-gate. **PROUVÉ : 5/5 briefs rendus en vrai, zéro Claude.** Bug moat corrigé (brief sur data 31 h stampé « ce matin » → kill-switch **36 h rendu / 24 h publi** + claims temporels retirés dans `storyboard.cjs`/`fb-post-video.cjs`). Mémoire [[project_local_factory_layer_c]].
+> - **Fabrique de calcul À LA DEMANDE** (PR #494/#495) : file git `queue/*.json` (commit depuis le phone → la machine **SONDE** via git pull → exécute un **CATALOGUE FERMÉ** `handlers.cjs`, jamais de code arbitraire, RCE non exprimable — prouvé en test). Tâche `SargaFactory-Serve` draine **toutes les 30 min**. v1 zéro-creds. v2 (Supabase+beacon site+bookmark phone instantané) = derrière `OPERATOR_TOKEN` à générer.
+> - **FUITE REVENU #1 COMBLÉE** (PR #496) : `recover-abandoned-cart.cjs` lisait UNIQUEMENT Stripe (legacy) → les abandons **Mollie** (caisse live) **jamais relancés**. Source Mollie ADDITIVE + fail-open, **gatée OFF** (`MOLLIE_CART_RECOVERY`). Le prochain run `daily-copernicus` **LOGGE** les candidats Mollie (vraie clé, zéro envoi). **NON testable en local (pas de clé Mollie) → dry-log exprès.**
+>
+> **⚡ 3 INTERRUPTEURS activables (mobile/GitHub) — le déterminant pour la semaine :**
+> 1. **`MOLLIE_CART_RECOVERY=1`** (env du step `daily-copernicus.yml:294`) → APRÈS avoir jeté un œil aux candidats Mollie loggés (vrais abandons ≠ payeurs) → **relance Mollie = revenu autonome toute la semaine**. ⚠️ copy CTA « $5.99 » hardcodée (OK USD ; ajuster EUR MQ/GP avant d'envoyer là-bas).
+> 2. **`fbAutoPublish: true`** (`scripts/local-factory/config.json`) → publication FB auto des briefs (MQ/GP, gardée fraîcheur≤24h+dédup+cap).
+> 3. **`OPERATOR_TOKEN`** (secret GH + bookmark phone) → v2 fabrique Supabase (tap phone → calcul instantané).
+>
+> **PARKÉ (panels déjà tournés, threads non lâchés) :**
+> - **Quant/DS/ML** (`wep2jz75q`) : le backtest n'a **AUCUN vrai événement d'échouage** (alertes 0/718, tout clean-reste-clean) → keystone = **harnais de validation event-labeled** (`backtest-forecast.cjs`) + **vision-ML photos** (RTX, advisory) pour fabriquer les labels ; publier le chiffre event-conditionné, pas que le 100 % calme.
+> - **Sales gaps** (`wovp8kc1s`) : `relance-payers.cjs` (upsell/renouvellement B2B) **jamais déclenché** ; outreach B2B **starve** (108 contacts finis, pas d'enrichissement auto).
+> - **Contenu** : reel « Le Veilleur répond au 13h de TF1 » (`scripts/video/out/reel-tf1-guadeloupe.mp4`, 50 s) produit, **non publié** (décision fondateur).
+>
 > **💼 2026-07-02 — SEO À INTENTION D'ACHAT PRO : 1re landing B2B « sargassum for hotels » (PR #488 MERGÉE sur main `27240d2` · run `Daily Copernicus + Deploy` **VERT** · `curl` prod **OK : 5 pages 200** EN+ES sur miami/puntacana/cancun, title + 3 CTA UTM chacune). Directive fondateur : « vu qu'on utilise le SEO, combine le tracking analytics UX/UI pour trouver des use cases et des VENTES sur les budgets PROS — ranker sur des mots-clés à forte intention d'achat, en combinant les mots sur les verticales ».**
 >
 > **Le constat** : 100 % de nos ~125 pages/région visaient l'intention **voyageur** (B2C : « sargassum miami today »). **Zéro** page ne captait l'acheteur PRO. Or 1 hôtel = 89 $/mo récurrent ≈ ce que ~120 pass B2C rapportent une fois → l'intent-match prime le volume. Les requêtes pro sont **non-revendiquées** (personne ne les cible).
