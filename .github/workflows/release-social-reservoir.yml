@@ -1,0 +1,54 @@
+name: Release Social Reservoir (valve)
+
+# VALVE manuel unique du réservoir. Par défaut HOLD (dry-run) : liste seulement
+# les assets stagés. Passe unlock=1 pour basculer staged→queued (au funnel-proof,
+# cf. REFONTE-MASTER §5 PHASE 4). Ne POSTE JAMAIS — avance juste l'état outbox.
+# SARGA_DEPLOY_UNLOCK n'est PAS un secret stocké : il est passé à la main ici.
+
+on:
+  workflow_dispatch:
+    inputs:
+      unlock:
+        description: 'Mettre "1" pour basculer staged→queued (défaut HOLD/dry-run)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: social-reservoir
+  cancel-in-progress: false
+
+jobs:
+  valve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Release from outbox (HOLD by default)
+        env:
+          SARGA_DEPLOY_UNLOCK: ${{ github.event.inputs.unlock }}
+        run: node scripts/automation/release-from-outbox.cjs
+
+      - name: Commit outbox if changed ([skip ci] — no deploy)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/social-outbox.json
+          if git diff --cached --quiet; then
+            echo "Rien à committer."
+          else
+            git commit -m "reservoir: valve flip $(date -u +'%Y-%m-%d') [skip ci]"
+            git pull --rebase --autostash -X theirs origin main || true
+            git push || (git pull --rebase --autostash -X theirs origin main && git push)
+          fi
