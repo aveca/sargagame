@@ -51,8 +51,8 @@ The current-day per-beach verdict is **always free** — the 7-day forecast and 
 - **Video** — Remotion (programmatic React video) renders daily per-beach video briefs for social distribution.
 - **QA** — Playwright drives smoke tests and visual-regression checks against the production build before every deploy.
 - **Multi-region engine** — one config file per region under `regions/`; new regions build as dedicated single-page apps via `VITE_REGION=<id> npm run build`.
-- **SEO** — 136+ static pages generated at build time for the French sites (per-beach pages, editorial content, sitemaps, JSON-LD).
-- **CI/CD** — GitHub Actions (27 workflows): build, FTPS deploy, health-checks, and all recurring growth/ops automation. No servers to manage beyond the PHP-capable static host.
+- **SEO** — 600+ static pages generated at build time across 5 domains in FR/EN/ES (per-beach and per-resort pages, season/best-beaches/this-week hubs, health & safety pages, editorial content, sitemaps, JSON-LD), auto-submitted via the Google Indexing API and audited weekly for orphans/cannibalization.
+- **CI/CD** — GitHub Actions (28 workflows): build, FTPS deploy, health-checks, and all recurring growth/ops automation. No servers to manage beyond the PHP-capable static host.
 
 ## Documentation
 
