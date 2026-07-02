@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fort Lauderdale — sargassum today | Le Veilleur</title>
+<meta name="description" content="The sargassum verdict for Fort Lauderdale (Florida), every day. Measured by satellite, not guessed.">
+<meta name="theme-color" content="#0d0d0f">
+<meta property="og:title" content="Fort Lauderdale — sargassum today | Le Veilleur">
+<meta property="og:description" content="The sargassum verdict for Fort Lauderdale (Florida), every day. Measured by satellite, not guessed.">
+<meta property="og:image" content="../assets/bg-reel-poster.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   LE VEILLEUR · COMICS GROUP — landing MVP (généré).
+   Direction album-mood horizontale + énergie COMIC/FUN/GROOVE :
+   starburst halftone tournant, sticker onomatopée par verdict,
+   lignes d'action, groove (bob/float/eq/pulse). reduced-motion
+   = plancher (toutes anims OFF, video en pause + poster).
+   Verdict = EXEMPLE marqué. NE PAS éditer à la main —
+   source: scripts/veilleur-mvp/ (gen.cjs).
+   ============================================================ */
+:root{
+  --gold:#FFC72C; --goldL:#FFE47A; --goldD:#E8A800; --ink:#0d0d0f; --paper:#FDFCF7;
+  --teal:#16b9c9; --tealD:#0b3a36; --green:#22C55E; --greenD:#127c3b;
+  --amber:#B87A00; --coral:#E8522A; --paperInk:#EAF7F4;
+  --vibe:rgba(255,178,46,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%}
+body{background:#0b0b0f;color:var(--paperInk);overflow-x:hidden;
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;text-transform:uppercase;letter-spacing:-.01em}
+.bangers{font-family:'Bangers',"Anton",system-ui,sans-serif;letter-spacing:.02em}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ---- fond vidéo ambiant + grades ---- */
+#bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#123B37}
+#bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#bg .grade{position:absolute;inset:0;background:var(--vibe);mix-blend-mode:soft-light;opacity:.85}
+#bg .scrim{position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(9,9,12,.78) 0%,rgba(9,9,12,.42) 44%,rgba(9,9,12,.08) 72%,transparent 100%),
+             linear-gradient(0deg,rgba(9,9,12,.62) 0%,transparent 32%)}
+#bg .half{position:absolute;inset:0;opacity:.16;
+  background-image:radial-gradient(#0d0d0d 1.4px,transparent 1.5px);background-size:9px 9px}
+
+/* ---- strap (echo SHADY COMICS GROUP) ---- */
+.strap{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--ink);
+  display:flex;align-items:center;gap:16px;padding:10px 18px;flex-wrap:wrap}
+.strap .wm{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:3px;color:var(--gold)}
+.strap .grp{font-weight:800;font-size:12px;letter-spacing:6px;color:var(--paperInk)}
+.strap .iss{margin-left:auto;font:700 12px/1 'JetBrains Mono';letter-spacing:2px;color:#5FBFA0}
+
+/* ---- layout ---- */
+main{position:relative;z-index:10;min-height:100svh;display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;
+  gap:20px;padding:84px 6vw 40px;max-width:1500px;margin:0 auto}
+@media (max-width:860px){ main{grid-template-columns:1fr;align-content:center;gap:26px;padding:78px 22px 40px} }
+
+/* ---- badge row + groove eq bars ---- */
+.badgerow{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.esttab{display:inline-block;background:var(--ink);color:var(--gold);
+  font:700 13px/1 'JetBrains Mono';letter-spacing:2px;padding:7px 11px}
+.groovebars{display:inline-flex;align-items:flex-end;gap:3px;height:20px}
+.groovebars i{width:5px;height:8px;background:var(--gold);border-radius:1px;display:block}
+
+/* ---- logo comic 3D + starburst ---- */
+.logowrap{position:relative;display:inline-block;margin-bottom:14px}
+.burst{position:absolute;left:50%;top:52%;width:150%;height:230%;transform:translate(-50%,-50%);z-index:0;opacity:.9;pointer-events:none}
+.logo{position:relative;z-index:1;transform:skewX(-6deg)}
+.logo .le{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(22px,3.4vw,38px);
+  color:var(--paper);-webkit-text-stroke:2px var(--ink);letter-spacing:1px;line-height:1;margin-bottom:-6px}
+.logo .main{font-family:'Anton',sans-serif;text-transform:uppercase;
+  font-size:clamp(58px,10.5vw,150px);line-height:.82;color:var(--gold);
+  -webkit-text-stroke:clamp(3px,.5vw,7px) var(--ink);paint-order:stroke fill;
+  text-shadow:3px 3px 0 var(--tealD),6px 6px 0 var(--tealD),9px 9px 0 rgba(11,58,54,.55)}
+
+.market{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(26px,4.6vw,58px);
+  line-height:.9;color:#fff;text-shadow:0 3px 20px rgba(0,0,0,.6);margin:2px 0 12px}
+.tagplate{display:inline-block;background:var(--ink);color:var(--paperInk);
+  font:800 clamp(13px,1.5vw,19px)/1.3 "Bricolage Grotesque";letter-spacing:.5px;padding:9px 14px;margin-bottom:16px;
+  transform:rotate(-1deg)}
+
+.ctarow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.cta{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;
+  border:2.5px solid var(--ink);border-radius:14px;padding:15px 24px;color:var(--ink);
+  background:linear-gradient(135deg,var(--goldL),var(--gold) 45%,var(--goldD));
+  box-shadow:6px 6px 0 var(--ink);font:800 clamp(15px,1.7vw,19px)/1 "Bricolage Grotesque";
+  transition:transform .12s ease,box-shadow .12s ease}
+.cta:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)}
+.cta .sh{position:absolute;top:0;left:-40%;width:34%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-18deg)}
+
+/* ---- badge honnêteté (echo Parental Advisory) ---- */
+.honesty{display:inline-block;background:var(--ink);border:2px solid var(--paperInk);
+  padding:8px 12px;margin-top:18px;transform:rotate(1deg)}
+.honesty .h1{font-family:'Anton',sans-serif;font-size:20px;color:#fff;letter-spacing:1px;line-height:1}
+.honesty .h2{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.4px;color:var(--gold);margin-top:4px}
+
+/* ---- colonne droite : mascotte + verdict + sticker ---- */
+.right{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.mascotwrap{position:relative}
+.mascot{width:min(38vw,270px);height:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.45))}
+@media (max-width:860px){ .mascot{width:190px} }
+.mline{stroke:var(--goldL);stroke-width:7;stroke-linecap:round;opacity:.85}
+
+.verdict{position:relative;width:100%;max-width:460px;background:var(--paper);color:var(--ink);
+  border:5px solid var(--ink);border-radius:12px;padding:18px 20px 16px;box-shadow:9px 9px 0 rgba(0,0,0,.4);
+  transform:rotate(-1.5deg)}
+.verdict::before{content:"";position:absolute;left:44px;top:-24px;width:0;height:0;
+  border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:24px solid var(--ink)}
+.verdict::after{content:"";position:absolute;left:49px;top:-15px;width:0;height:0;
+  border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:17px solid var(--paper)}
+.vlive{font:700 13px/1 'JetBrains Mono';letter-spacing:2px;color:var(--greenD);display:flex;align-items:center;gap:8px}
+.vlive .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+.vmarket{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(28px,3.4vw,44px);line-height:.92;margin:8px 0 12px}
+.vchip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  font:800 16px/1 "Bricolage Grotesque";letter-spacing:.3px}
+.vchip.clean{background:rgba(34,197,94,.16);color:var(--greenD)}
+.vchip.moderate{background:rgba(184,122,0,.16);color:var(--amber)}
+.vchip.algae{background:rgba(232,82,42,.16);color:var(--coral)}
+.planb{display:inline-block;margin-top:12px;font:800 13px/1 "Bricolage Grotesque";color:var(--teal);
+  text-decoration:none;border-bottom:2px solid rgba(22,185,201,.4);padding-bottom:2px}
+.vnote{margin-top:14px;font:700 11.5px/1.4 "Bricolage Grotesque";color:#5a5a5a}
+.vnote b{color:var(--greenD)}
+
+/* onomatopée sticker */
+.sticker{position:absolute;right:-6px;top:-40px;width:170px;height:120px;z-index:3;
+  filter:drop-shadow(3px 4px 0 rgba(0,0,0,.35));transform:rotate(-12deg)}
+.sticker text{font-family:'Bangers','Anton',sans-serif}
+.sticker.clean polygon{fill:var(--green)}
+.sticker.moderate polygon{fill:var(--gold)}
+.sticker.algae polygon{fill:var(--coral)}
+@media (max-width:860px){ .sticker{right:-2px;top:-34px;width:132px;height:96px} }
+
+/* ============================ GROOVE (reduced-motion = OFF) ============================ */
+@media (prefers-reduced-motion:no-preference){
+  .burst{animation:spin 26s linear infinite}
+  .logowrap{animation:pop .6s cubic-bezier(.2,1.5,.4,1) both}
+  .logo{animation:bob 5.2s ease-in-out .7s infinite}
+  .mascot{animation:groove 4.4s ease-in-out infinite;transform-origin:50% 60%}
+  .verdict{animation:floaty 6s ease-in-out infinite}
+  .sticker{animation:wiggle 3s ease-in-out infinite}
+  .honesty{animation:bob 6.5s ease-in-out infinite}
+  .groovebars i{animation:eq 900ms ease-in-out infinite}
+  .groovebars i:nth-child(2){animation-delay:.15s} .groovebars i:nth-child(3){animation-delay:.3s} .groovebars i:nth-child(4){animation-delay:.45s}
+  .cta .sh{animation:sweep 3.4s ease-in-out 1s infinite}
+  .vlive .dot{animation:pulse 1.8s ease-in-out infinite}
+  .antdot{animation:pulse 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  .mline{animation:mlines 2.2s ease-in-out infinite}
+  .mline.b{animation-delay:.4s} .mline.c{animation-delay:.8s}
+}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes bob{0%,100%{transform:skewX(-6deg) translateY(0)}50%{transform:skewX(-6deg) translateY(-7px)}}
+@keyframes pop{from{transform:scale(.72) rotate(-3deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes groove{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+@keyframes floaty{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(-1.5deg) translateY(-8px)}}
+@keyframes wiggle{0%,100%{transform:rotate(-14deg) scale(1)}50%{transform:rotate(-7deg) scale(1.05)}}
+@keyframes eq{0%,100%{height:8px}50%{height:20px}}
+@keyframes sweep{0%{left:-40%}55%,100%{left:120%}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.35)}}
+@keyframes mlines{0%,100%{opacity:.2;transform:scale(.9)}50%{opacity:.9;transform:scale(1)}}
+
+@media (prefers-reduced-motion:reduce){ .vlive .dot{box-shadow:none} }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+<h1 class="sr-only">Fort Lauderdale — sargassum today | Le Veilleur</h1>
+
+<!-- fond vidéo ambiant -->
+<div id="bg" aria-hidden="true">
+  <video id="reel" muted loop playsinline preload="metadata" poster="../assets/bg-reel-poster.jpg" data-offset="10.0">
+    <source src="../assets/bg-reel.mp4" type="video/mp4">
+  </video>
+  <div class="grade"></div>
+  <div class="scrim"></div>
+  <div class="half"></div>
+</div>
+
+<!-- strap -->
+<div class="strap">
+  <span class="wm">LE VEILLEUR</span>
+  <span class="grp">COMICS GROUP</span>
+  <span class="iss mono">N°07 · FORT LAUDERDALE</span>
+</div>
+
+<main>
+  <section class="left">
+    <div class="badgerow">
+      <span class="esttab mono">EST. 2026</span>
+      <span class="groovebars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    </div>
+    <div class="logowrap">
+      <svg class="burst" viewBox="0 0 220 220" aria-hidden="true"><polygon points="110.0,2.0 129.2,38.5 164.0,16.5 162.3,57.7 203.5,56.0 181.5,90.8 218.0,110.0 181.5,129.2 203.5,164.0 162.3,162.3 164.0,203.5 129.2,181.5 110.0,218.0 90.8,181.5 56.0,203.5 57.7,162.3 16.5,164.0 38.5,129.2 2.0,110.0 38.5,90.8 16.5,56.0 57.7,57.7 56.0,16.5 90.8,38.5" fill="var(--teal)" opacity=".38"/></svg>
+      <div class="logo"><div class="le">LE</div><div class="main">VEILLEUR</div></div>
+    </div>
+    <div class="market anton">Fort Lauderdale</div>
+    <div class="tagplate">WE WATCH THE SEA FOR YOU.</div>
+    <div class="ctarow">
+      <a class="cta" href="https://sargassummiami.com/"><span class="sh"></span><span>See my beach — free</span><span>&rarr;</span></a>
+    </div>
+    <div><span class="honesty"><span class="h1 anton">MEASURED</span><span class="h2">100% SATELLITE · 0% GUESSED</span></span></div>
+  </section>
+
+  <section class="right">
+    <div class="mascotwrap">
+      <svg class="mascot" viewBox="-300 -230 600 500" role="img" aria-label="The Veilleur probe watches the sea." xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="lensG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#CFF4FF"/><stop offset=".4" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/>
+        </linearGradient></defs>
+        <!-- action lines -->
+        <g fill="none"><line class="mline a" x1="-210" y1="-120" x2="-250" y2="-150"/><line class="mline b" x1="230" y1="-110" x2="272" y2="-140"/><line class="mline c" x1="250" y1="70" x2="296" y2="86"/></g>
+        <circle cx="0" cy="20" r="200" fill="#5FBFA0" opacity=".16"/>
+        <path d="M0 90 L-120 360 L120 360 Z" fill="#FFD36A" opacity=".2"/>
+        <rect x="-232" y="-10" width="150" height="80" rx="8" fill="#123B57" stroke="#0d0d0f" stroke-width="8" transform="rotate(-8 -157 30)"/>
+        <rect x="82" y="-10" width="150" height="80" rx="8" fill="#123B57" stroke="#0d0d0f" stroke-width="8" transform="rotate(8 157 30)"/>
+        <path d="M0 -90 C74 -90 118 -50 118 20 C118 112 78 176 0 176 C-78 176 -118 112 -118 20 C-118 -50 -74 -90 0 -90 Z" fill="#16332e" stroke="#0d0d0f" stroke-width="10"/>
+        <circle cx="0" cy="46" r="80" fill="url(#lensG)" stroke="#0d0d0f" stroke-width="10"/>
+        <circle cx="0" cy="46" r="80" fill="none" stroke="#E8A800" stroke-width="10"/>
+        <circle cx="0" cy="60" r="30" fill="#03100f"/>
+        <circle cx="-12" cy="34" r="12" fill="#fff7e2"/>
+        <line x1="0" y1="-90" x2="0" y2="-148" stroke="#0d0d0f" stroke-width="11"/>
+        <circle class="antdot" cx="0" cy="-156" r="17" fill="#22C55E" stroke="#0d0d0f" stroke-width="8"/>
+      </svg>
+    </div>
+
+    <div class="verdict">
+      <svg class="sticker moderate" viewBox="0 0 220 160" aria-hidden="true">
+        <polygon points="110.0,4.0 124.1,32.0 151.1,16.1 147.8,47.3 179.1,48.4 159.5,72.9 185.2,90.8 155.5,100.8 167.4,129.8 137.0,122.1 131.4,152.9 110.0,130.0 88.6,152.9 83.0,122.1 52.6,129.8 64.5,100.8 34.8,90.8 60.5,72.9 40.9,48.4 72.2,47.3 68.9,16.1 95.9,32.0" stroke="#0d0d0f" stroke-width="7" stroke-linejoin="round"/>
+        <text x="110" y="94" text-anchor="middle" font-size="36" fill="#0d0d0f" textLength="150" lengthAdjust="spacingAndGlyphs">SO-SO</text>
+      </svg>
+      <div class="vlive"><span class="dot"></span>LIVE · TODAY</div>
+      <div class="vmarket">Fort Lauderdale</div>
+      <span class="vchip moderate">MODERATE PRESENCE</span>
+      
+      <div class="vnote">Example. The <b>verdict of the day</b> — dated, satellite-measured — is live in the app.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* vibe : décalage de départ vidéo (seedé) + reduced-motion (pause) */
+(function(){
+  var v=document.getElementById('reel');
+  var RM=false; try{ RM=matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+  if(RM){ try{ v.pause(); }catch(e){} return; }
+  var off=parseFloat(v.getAttribute('data-offset')||'0');
+  function start(){ try{ if(off>0 && v.duration && off<v.duration) v.currentTime=off; }catch(e){} var p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+  if(v.readyState>=1) start(); else v.addEventListener('loadedmetadata', start, {once:true});
+})();
+</script>
+</body>
+</html>
