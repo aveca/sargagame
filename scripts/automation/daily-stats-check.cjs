@@ -35,14 +35,19 @@ function fetchJSON(url) {
 }
 
 // Vérité Stripe (lecture seule) — payments_real du funnel est connu MENTEUR
-// (réconciliations 2026-06-10/11 : 15 réels vs 1 affiché). La clé NE VA PAS
-// en CI (secret à pouvoirs d'écriture) : ce bloc ne s'exécute que là où .env
-// existe (sessions locales + crons command center) → points de vérité
-// périodiques dans la série, null sur les runs CI.
+// (réconciliations 2026-06-10/11 : 15 réels vs 1 affiché). Dé-gelé 2026-07-02 :
+// STRIPE_SECRET_KEY passe désormais AUSSI en env au step CI (daily-copernicus)
+// — le secret est déjà exposé à 4 autres steps du même workflow (cart-recovery,
+// welcome-paid, dunning), l'ancien argument « la clé ne va pas en CI » était
+// caduc, et son absence FIGEAIT le bloc stripe en carry-forward permanent
+// → revenue-watch aveugle depuis le 23/06. Fallback .env pour les runs locaux.
 async function stripeTruth() {
   try {
-    const env = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
-    const key = (env.match(/STRIPE_SECRET_KEY=([^\r\n]+)/) || [])[1]
+    let key = (process.env.STRIPE_SECRET_KEY || '').trim()
+    if (!key) {
+      const env = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
+      key = ((env.match(/STRIPE_SECRET_KEY=([^\r\n]+)/) || [])[1] || '').trim()
+    }
     if (!key) return null
     const get = p => new Promise((res, rej) => {
       https.get({ host: 'api.stripe.com', path: p, headers: { Authorization: 'Bearer ' + key } }, r => {
@@ -116,6 +121,72 @@ async function stripeTruth() {
       bySource,
       emailAttributed: { active: emailActive, mrrEur: emailMrrEur },
     }
+  } catch { return null }
+}
+
+// Vérité Mollie (CAISSE ACTIVE — pass B2C + abos B2B) : jusqu'ici AUCUNE métrique
+// repo (les 2 vraies ventes B2C de juin n'étaient visibles que via les markers
+// welcome-paid-mollie). Paiements 'paid' des 30 derniers jours PAR DEVISE
+// (count + somme), remboursements (amountRefunded) et chargebacks
+// (amountChargedBack) sur cette même fenêtre, paiements B2B (metadata plan/b2b
+// OU description de paylink annuel — les payment-links n'acceptent PAS de
+// metadata), et payeurs distincts en hash8 (logId, RGPD : jamais d'email en
+// clair, corrélable aux markers *-sent.json). Clé : env MOLLIE_API_KEY (CI) OU
+// .env local. Échec/absence → null → carry-forward dans main() (même mécanique
+// que le bloc stripe). ⚠️ Fenêtre GLISSANTE : un refund sur un paiement plus
+// vieux que 30 j n'apparaît pas ici — la détection temps réel vit dans
+// mollie-webhook.php (alerte fondateur).
+async function mollieTruth() {
+  let key = (process.env.MOLLIE_API_KEY || '').trim()
+  if (!key) {
+    try {
+      const env = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
+      key = ((env.match(/MOLLIE_API_KEY=([^\r\n]+)/) || [])[1] || '').trim()
+    } catch {}
+  }
+  if (!key) return null
+  const { logId } = require('./lib/email-hash.cjs')
+  const since = Date.now() - 30 * 864e5
+  const round2 = n => Math.round(n * 100) / 100
+  const addCur = (obj, cur, val) => { obj[cur] = round2((obj[cur] || 0) + val) }
+  try {
+    const paid = {}                                    // devise → { count, total }
+    const refunds = { count: 0, total: {} }            // paiements 30j avec amountRefunded > 0
+    const chargebacks = { count: 0, total: {} }
+    const payers = new Set()
+    let b2b = 0
+    let url = 'https://api.mollie.com/v2/payments?limit=250'
+    for (let pg = 0; pg < 12 && url; pg++) {
+      const r = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || !j || !j._embedded) { if (pg === 0) return null; break } // page 1 KO = pas de bloc (carry-forward)
+      let pastWindow = false
+      for (const p of j._embedded.payments || []) {
+        const created = Date.parse(p.createdAt || '')
+        if (!isNaN(created) && created < since) { pastWindow = true; continue } // tri antéchronologique Mollie
+        if (p.status !== 'paid') continue
+        const cur = (p.amount && p.amount.currency) || 'EUR'
+        const val = parseFloat((p.amount && p.amount.value) || '0') || 0
+        if (!paid[cur]) paid[cur] = { count: 0, total: 0 }
+        paid[cur].count++
+        paid[cur].total = round2(paid[cur].total + val)
+        const ref = parseFloat((p.amountRefunded && p.amountRefunded.value) || '0') || 0
+        if (ref > 0) { refunds.count++; addCur(refunds.total, cur, ref) }
+        const cb = parseFloat((p.amountChargedBack && p.amountChargedBack.value) || '0') || 0
+        if (cb > 0) { chargebacks.count++; addCur(chargebacks.total, cur, cb) }
+        const m = p.metadata || {}
+        // Préfixe SANS le tiret cadratin — même forme EXACTE que mollie-webhook.php
+        // (annualGrid) et b2b-funnel.cjs : les 3 détections paylink doivent matcher
+        // le même ensemble, sinon le compteur b2b diverge du grant (panel 2026-07-02).
+        if (m.b2b === '1' || /^(pro|brief|territory)_/.test(m.plan || '') ||
+            (!m.email && /^(Sargasses|Sargassum) Pro /.test(p.description || ''))) b2b++
+        const em = m.email || m.customerEmail || ''
+        if (String(em).includes('@')) payers.add(logId(em))
+      }
+      if (pastWindow) break
+      url = (j._links && j._links.next && j._links.next.href) || null
+    }
+    return { windowDays: 30, paid, refunds, chargebacks, b2b, payers: [...payers].sort() }
   } catch { return null }
 }
 
@@ -278,8 +349,10 @@ async function main() {
       clickRate: null,
       tracking: 'smtp_no_events',
     } : lastKnown('email'),
-    // Vérité Stripe (runs locaux seulement) — carry-forward dernière valeur connue
+    // Vérité Stripe (CI + local depuis 2026-07-02) — carry-forward dernière valeur connue
     stripe: (await stripeTruth()) || lastKnown('stripe'),
+    // Vérité Mollie (caisse active) — carry-forward dernière valeur connue
+    mollie: (await mollieTruth()) || lastKnown('mollie'),
     // GA4 veille (runs CI seulement) — carry-forward dernière valeur connue
     ga4: (await ga4Yesterday()) || lastKnown('ga4'),
   })
@@ -305,6 +378,16 @@ async function main() {
     if (prevCo?.completionRate != null && co.completionRate != null && co.completionRate < prevCo.completionRate - 5) {
       console.log(`⚠️  COMPLÉTION PAYMENT-LINK EN BAISSE: ${prevCo.completionRate}% -> ${co.completionRate}% (friction page hébergée ? voir scripts/analyze-failed-payments.cjs)`)
     }
+  }
+  // KPI MOLLIE (caisse active) — visible chaque run. Les deltas/alertes vivent
+  // dans revenue-watch.cjs ; ici on rend juste la vérité lisible dans les logs.
+  const mo = curr.mollie
+  if (mo) {
+    const paidLine = Object.entries(mo.paid || {}).map(([c, v]) => `${v.count}× ${v.total} ${c}`).join(' · ') || '0 paiement'
+    const refLine = mo.refunds && mo.refunds.count
+      ? ` | ⚠️ refunds ${mo.refunds.count} (${Object.entries(mo.refunds.total).map(([c, v]) => `${v} ${c}`).join(' · ')})` : ''
+    const cbLine = mo.chargebacks && mo.chargebacks.count ? ` | 🔴 chargebacks ${mo.chargebacks.count}` : ''
+    console.log(`Mollie 30j: ${paidLine} | ${(mo.payers || []).length} payeur(s) distinct(s) | B2B ${mo.b2b || 0}${refLine}${cbLine}`)
   }
   // KPI ATTRIBUTION EMAIL (« qu'est-ce que l'email rapporte » — B). Démarre à 0,
   // se remplit dès qu'une vente porte une source *email*. Détail : scripts/automation/email-roi.cjs

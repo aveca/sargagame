@@ -255,6 +255,13 @@ function mol_access_for_email($email) {
         if ($pc >= 400 || !is_array($pl)) break;
         foreach (($pl['_embedded']['payments'] ?? []) as $p) {
             if (($p['status'] ?? '') !== 'paid') continue;
+            // Miroir du garde de mollie.php (self-heal b) : un paiement rembourse
+            // integralement / charge-back garde status='paid' → ne restaure JAMAIS
+            // l'acces d'un rembourse (revoke-pass, 2026-07-02). Partiel → conserve.
+            $pRef = (float)(($p['amountRefunded']['value'] ?? 0));
+            $pCb  = (float)(($p['amountChargedBack']['value'] ?? 0));
+            $pTot = (float)(($p['amount']['value'] ?? 0));
+            if ($pCb > 0 || ($pRef > 0 && $pTot > 0 && $pRef >= $pTot)) continue;
             $pm = $p['metadata'] ?? [];
             $pPass = $pm['pass'] ?? '';
             $pEmail = strtolower(trim((string)($pm['email'] ?? '')));
@@ -407,7 +414,9 @@ function mol_b2b_grant_once($cfg, $pid, $email, $plan, $island = '') {
     // (MTA cPanel ; Resend RETIRÉ → sans ça le client payait et ne recevait RIEN). Best-effort :
     // le marker d'idempotence est déjà posé, un échec d'envoi n'annule pas le grant et le
     // token reste valable (l'espace s'ouvre avec ?k=).
-    $isPro  = (strpos((string)$plan, 'pro_') === 0);
+    // 'territory_annual' (1 990 €, le plus gros ticket) compte comme Pro : sans ça le
+    // client Territoire recevait un email intitule « Brief » (panel 2026-07-02).
+    $isPro  = (strpos((string)$plan, 'pro_') === 0) || (strpos((string)$plan, 'territory_') === 0);
     $btn    = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px';
     if ($lang === 'en') {
         $titre = $isPro ? 'Your Sargassum Pro subscription is active' : 'Your Sargassum Brief subscription is active';
@@ -463,6 +472,16 @@ function mol_send_mail($to, $subject, $html, $replyTo = '') {
     if ($replyTo !== '' && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $h .= 'Reply-To: ' . $replyTo . "\r\n";
     $subj = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     return @mail($to, $subj, $html, $h, '-falerte@sargasses-martinique.com');
+}
+
+// Alerte FONDATEUR (boîte Gmail, fondateur 100 % mobile) — wrapper mol_send_mail.
+// Utilisée par mollie-webhook.php : remboursement/chargeback détecté, paiement
+// paylink B2B annuel reçu. Best-effort (ne doit JAMAIS faire échouer le webhook).
+function mol_founder_alert($subject, $html) {
+    return mol_send_mail('yacovassaraf@gmail.com', $subject,
+        '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1a1a">'
+        . $html
+        . '<p style="font-size:12px;color:#999;margin-top:16px">Auto-alerte mollie-webhook — Le Veilleur</p></div>');
 }
 
 function mol_b2b_trial_email($cfg, $email, $token, $name = '', $island = '') {

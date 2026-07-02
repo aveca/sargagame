@@ -455,11 +455,18 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
           GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+          # Vérité revenu EN CI (2026-07-02) : sans ces clés le bloc stripe restait
+          # un carry-forward FIGÉ (revenue-watch aveugle depuis le 23/06) et Mollie
+          # (caisse active) n'avait AUCUNE métrique repo. Lecture seule ; les deux
+          # secrets sont déjà exposés à d'autres steps de ce même workflow.
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
         run: node scripts/automation/daily-stats-check.cjs
 
-      # Veille revenu proactive : diff le bloc stripe de daily-metrics (que daily-stats-check
-      # vient d'écrire) → alerte le fondateur sur churn/annulation/nouveau payeur/past_due.
-      # Lecture seule (zéro appel Stripe), dédup revenue-watch-seen.json, schedule-only.
+      # Veille revenu proactive : diff les blocs stripe ET mollie de daily-metrics (que
+      # daily-stats-check vient d'écrire) → alerte le fondateur sur churn/annulation/
+      # nouveau payeur/past_due (Stripe) + nouvelle vente/refund/chargeback/1er abo B2B
+      # (Mollie). Lecture seule (zéro appel API), dédup revenue-watch-seen.json, schedule-only.
       - name: Revenue watch (alerte mouvements Stripe)
         if: github.event_name == 'schedule'
         continue-on-error: true
