@@ -277,6 +277,13 @@ export default function WorldMapView({
   // pointer-events:none) alors que l'utilisateur visait une plage → on l'accroche à la plage la plus
   // proche du doigt (≤90px écran) : verdict au lieu du vide, jamais un cul-de-sac. Rollback ?mapsnap=0.
   const mapSnapOff = (()=>{try{return /[?&]mapsnap=0/.test(window.location.search)}catch(_){return false}})()
+  // Ping de tap fond de carte (audit UX 2026-07-02 : rapport 7j surcompte du legacy pré-fix
+  // mapSnap 07-01 — bruit connu, cf. piège lag 7j). MAIS un résidu réel survit : un tap à
+  // >90px de tout pin (mapSnapOff mis à part) restait 100% silencieux, zéro feedback. Un ping
+  // or (satellite qui « accuse réception ») apparaît sur CHAQUE tap de fond, qu'il accroche une
+  // plage ou non → plus jamais un tap dans le vide. Additif, zéro dépendance au snap 90px.
+  // Rollback ?maptapfx=0.
+  const mapTapFxOff = (()=>{try{return /[?&]maptapfx=0/.test(window.location.search)}catch(_){return false}})()
   // Labels carte (grief fondateur 2026-07-01) : le NOM reste À CÔTÉ DU PIN sur la côte (pas de
   // liste en haut — on se perd). Le nombre est ZOOM-AWARE (arbitré au repos par declutter) : vue
   // large île → 5 plus impactées ; dès qu'on ZOOME → toutes les alertes DANS LE VIEWPORT + les
@@ -374,6 +381,8 @@ export default function WorldMapView({
   const [selected, setSelected] = useState(null)  // beach object enrichi
   const [tagPos,  setTagPos]    = useState(null)  // {x,y} screen pixels
   const [query,   setQuery]     = useState("")    // P7 — recherche plage par nom
+  const [tapFx,   setTapFx]     = useState([])    // pings tap fond de carte {id,x,y,hit}
+  const tapFxIdRef = useRef(0)
 
   // Capture email SUR LA CARTE — la carte SVG est la vue d'accueil validée en prod, donc
   // la surface PAR DÉFAUT (décision fondateur 21/06 : capture = surface par défaut). Mêmes
@@ -1105,7 +1114,7 @@ export default function WorldMapView({
     // laisse le double-tap-zoom (géré au pointerup) faire son travail, sans fly parasite.
     if(bgSnapTimerRef.current){ clearTimeout(bgSnapTimerRef.current); bgSnapTimerRef.current=null; return }
     if(selected){ setSelected(null); setTagPos(null); return }
-    if(mapSnapOff||!dataReady||!beachList.length) return
+    if(!dataReady||!beachList.length) return
     const cx=e.clientX, cy=e.clientY
     let best=null, bd=Infinity
     for(const b of beachList){
@@ -1113,7 +1122,15 @@ export default function WorldMapView({
       const d=Math.hypot(cx-sx,cy-sy)
       if(d<bd){ bd=d; best=b }
     }
-    if(best&&bd<=90){
+    const hit=!!(best&&bd<=90)
+    if(!mapTapFxOff){
+      const id=++tapFxIdRef.current
+      setTapFx(cur=>[...cur.slice(-3),{id,x:cx,y:cy,hit}])
+      setTimeout(()=>{ setTapFx(cur=>cur.filter(t=>t.id!==id)) },reduceRef.current?460:640)
+      if(!hit){ try{ track&&track("sg_map_tap_void",{island,dist:best?Math.round(bd):null}) }catch(_){} }
+    }
+    if(mapSnapOff) return
+    if(hit){
       // Différé : si un 2ᵉ tap arrive (double-tap-zoom), le clic ci-dessus l'annule.
       bgSnapTimerRef.current=setTimeout(()=>{
         bgSnapTimerRef.current=null
@@ -1121,7 +1138,7 @@ export default function WorldMapView({
         selectBeach(best)
       },260)
     }
-  },[selected,mapSnapOff,dataReady,beachList,worldToScreen,selectBeach,track,island])
+  },[selected,mapSnapOff,mapTapFxOff,dataReady,beachList,worldToScreen,selectBeach,track,island])
 
   // « Où aller plutôt » (plan B) — plage PROPRE la plus proche de la plage tapée, le jour
   // affiché. Calcul pur sur lat/lng réels (haversine), zéro fabrication. Null si la plage
@@ -1339,6 +1356,9 @@ export default function WorldMapView({
         @keyframes wmAvoidPulse{0%{opacity:.55;transform:scale(.7)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
         @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
+        @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
+        @keyframes wmTapPingStatic{0%{opacity:.75}100%{opacity:0}}
       `}</style>
 
       {/* Bande horizon doré (heure dorée sur la mer) */}
@@ -2013,6 +2033,21 @@ export default function WorldMapView({
             }}>✕ {_t(lang,"Fermer","Close","Cerrar")}</button>
           </div>
         </div>}
+
+        {/* Ping de tap fond de carte — jamais un tap dans le vide (cf. mapTapFxOff plus haut).
+            Or = accroche une plage à proximité (about to fly) ; ink/teal = accusé réception,
+            rien à ≤90px. Purement décoratif (pointer-events:none), n'intercepte jamais le geste
+            suivant. Reduced-motion : fondu statique, pas d'échelle. */}
+        {tapFx.map(t=>(
+          <div key={t.id} aria-hidden="true" style={{position:"absolute",left:t.x,top:t.y,width:1,height:1,pointerEvents:"none",zIndex:5}}>
+            <div style={{position:"absolute",left:0,top:0,width:54,height:54,borderRadius:"50%",
+              border:`2px solid ${t.hit?"#FFC72C":"#1EC8B0"}`,
+              animation:noAnim?"wmTapPingStatic .46s ease-out forwards":"wmTapPing .64s cubic-bezier(.2,.7,.3,1) forwards"}}/>
+            <div style={{position:"absolute",left:0,top:0,width:14,height:14,borderRadius:"50%",
+              background:t.hit?"#FFC72C":"#1EC8B0",boxShadow:`0 0 0 2px ${INK}`,
+              animation:noAnim?"wmTapPingStatic .46s ease-out forwards":"wmTapCore .64s cubic-bezier(.2,.7,.3,1) forwards"}}/>
+          </div>
+        ))}
 
         {/* Tooltip plage sélectionnée */}
         {selected&&tagPos&&(
