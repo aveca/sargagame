@@ -29,6 +29,7 @@ const { spawnSync } = require('child_process')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const { HANDLERS } = require('./handlers.cjs')
 
 const DIR = __dirname
 const ROOT = path.resolve(DIR, '../..')
@@ -38,6 +39,7 @@ const OUT = path.join(ROOT, 'scripts', 'video', 'out')
 for (const d of [STATE, LOGS, OUT]) fs.mkdirSync(d, { recursive: true })
 
 const PLAN = process.argv.includes('--plan') || process.env.SARGA_FACTORY_DRY === '1'
+const SERVE = process.argv.includes('--serve')
 const NO_PULL = process.env.SARGA_FACTORY_NO_PULL === '1' || PLAN
 
 // ── Config committée (le fondateur la bascule depuis mobile via GitHub) ─────────
@@ -162,15 +164,52 @@ function writeLastRun(renderResults) {
   try { fs.writeFileSync(path.join(DIR, 'LAST_RUN.md'), md) } catch (_) {}
 }
 
+// ── File de jobs À LA DEMANDE (git-file queue — TRIZ inversion : la machine SONDE) ─
+// Le fondateur commit un queue/<x>.json depuis son phone → git pull le ramène → on
+// l'exécute via le CATALOGUE FERMÉ (handlers.cjs), JAMAIS de code arbitraire.
+// Idempotent par job.id (state/processed.json, gitignored) ; on ne touche PAS aux
+// fichiers commités (zéro bagarre git, zéro push non-attendu).
+const QUEUE = path.join(ROOT, 'queue')
+const QSTATE = path.join(QUEUE, 'state')
+function loadProcessed() { try { return new Set(JSON.parse(fs.readFileSync(path.join(QSTATE, 'processed.json'), 'utf8'))) } catch (_) { return new Set() } }
+function saveProcessed(set) { fs.mkdirSync(QSTATE, { recursive: true }); fs.writeFileSync(path.join(QSTATE, 'processed.json'), JSON.stringify([...set])) }
+function drainQueue() {
+  if (!fs.existsSync(QUEUE)) { log('serve.no-queue'); return }
+  const processed = loadProcessed()
+  const files = fs.readdirSync(QUEUE).filter(f => f.endsWith('.json'))
+  let ran = 0
+  for (const file of files) {
+    let job
+    try { job = JSON.parse(fs.readFileSync(path.join(QUEUE, file), 'utf8')) } catch (_) { log('serve.badjob', { file }); continue }
+    const id = job.id || (file + ':' + (job.type || ''))
+    if (processed.has(id)) continue
+    const type = job.type
+    if (!HANDLERS[type]) { log('serve.unknown', { file, type }); processed.add(id); saveProcessed(processed); continue } // poka-yoke : type hors catalogue = refusé
+    if (PLAN) { log('serve.plan', { id, type }); continue }
+    log('serve.run', { id, type })
+    try { const result = HANDLERS[type](job.payload || {}); log('serve.done', { id, type, result }) }
+    catch (e) { log('serve.fail', { id, type, err: String((e && e.message) || e).slice(0, 200) }) }
+    processed.add(id); saveProcessed(processed); ran++
+  }
+  log('serve.drained', { seen: files.length, ran })
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────────
 acquireLock()
 try {
-  log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
-  selfUpdate()
-  const results = renderBriefs()
-  publishFB(results)
-  writeLastRun(results)
-  log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
+  if (SERVE) {
+    log('serve.start', { root: ROOT, plan: PLAN })
+    selfUpdate()   // ramène les queue/*.json commités depuis le phone/GitHub
+    drainQueue()
+  } else {
+    log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
+    selfUpdate()
+    const results = renderBriefs()
+    publishFB(results)
+    drainQueue()   // le run quotidien draine aussi les jobs à la demande en attente
+    writeLastRun(results)
+    log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
+  }
 } catch (e) {
   log('factory.error', { err: String((e && e.stack) || e).slice(0, 500) })
 } finally {
