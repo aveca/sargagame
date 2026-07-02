@@ -13391,7 +13391,7 @@ export default function App(){
             d'honnêteté). Entrée sur la carte ; ouvre l'overlay lazy VerticalesMap.
             Rollback ?verticals=0 → VERTICALES_OFF cache l'entrée + l'overlay. */}
         {!VERTICALES_OFF&&!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showVerticals&&!selectedBeach&&view==="map"&&(
-          <button onClick={()=>{setShowVerticals(true);track("sg_verticales_view",{from:"fab"})}} aria-label={_t(lang,"Jusqu'où on descend — nos 10 postes","How deep we go — our 10 posts","Hasta dónde bajamos — nuestros 10 puestos")}
+          <button onClick={()=>setShowVerticals(true)} aria-label={_t(lang,"Jusqu'où on descend — nos 10 postes","How deep we go — our 10 posts","Hasta dónde bajamos — nuestros 10 puestos")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(436px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
@@ -13411,7 +13411,7 @@ export default function App(){
           onClose={()=>setShowVerticals(false)}
           onSeeMyBeach={()=>{setShowVerticals(false);setView("map");if(myBeach)onBeachClick(myBeach)}}
           onOpenPro={(src)=>{setShowVerticals(false);try{track("sg_b2b_open",{source:src||"verticales"})}catch(_){}; proB2BSrc.current=src||"verticales"; setShowProB2B(true)}}
-          onWaitlist={(em)=>{try{submitLead(em,"verticales_prisme")}catch(_){}}}/></Suspense></ErrBound>}
+          onWaitlist={(em,tid)=>{try{submitLead(em,"verticales_"+(tid||"prisme"))}catch(_){}}}/></Suspense></ErrBound>}
 
         {/* Cache anti-premap : sombre plein écran tant que la carte-monde par défaut est EN
             ATTENTE d'ouverture (data → showArchipel via layoutEffect gaté allBeaches>=3).
