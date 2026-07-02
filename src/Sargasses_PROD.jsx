@@ -1394,7 +1394,10 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
-  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated"])
+  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated",
+  // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
+  // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
+  "sg_pass_proof_open","sg_pass_seq_back"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
