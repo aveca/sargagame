@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> 🧭 **ÉTAT COURANT (dérivé — ne transcris AUCUN chiffre ici)** : lance **`npm run session`** → il imprime pipeline + **MRR** (bloc `stripe` de `daily-metrics.json`, **JAMAIS le funnel** qui sous-compte ~7×) + métriques du jour, et retombe sur ce handoff si le dossier mémoire est absent. Le dossier `~/.claude/…/memory/` est **desktop-only** (absent sur mobile/web) — **ce fichier + les JSON trackés sont la seule vérité portable**. **Faits stables** (régions LIVE MQ/GP EUR + florida/puntacana/rivieramaya USD ; Mollie = caisse active / Stripe = run-off ; `sg_pass_cta` → Supabase donc **plus de `clasp push` funnel** ; pricing pass 7,99/14,99/24,99 € · B2B 79/690 € ; photo retirée le 02/07) → **autorité = `CLAUDE.md`**. Tout ci-dessous = **récit de handoff daté** (append-on-top), **pas des métriques**.
+>
 > **📷→📊 2026-07-02 — DIRECTION FONDATEUR « on retire l'ajout de photo, on remplace par de la data-viz visuelle A/B testée » : upload photo + galerie + récompense « Éclaireur » 24 h RETIRÉS ; surface réinvestie dans le CADRAN DU VEILLEUR (instrument SVG de NOTRE donnée satellite). Panel adverse (8 agents : 4 lentilles + 3 directions design + juge) → verdict `remove-and-reinvest`. PR à merger.**
 >
 > Le fondateur a tranché la direction (suite du fil #424 « le SVG est le produit ») ; panel adverse pour caler l'exécution honnête. Verdict = retirer la photo PROTÈGE le moat (galerie « vérifié au sol » sur photos géo-strippées/non-fraîches = promesse invérifiable, supply≈0), et réinvestir en data-viz de NOTRE verdict RENFORCE le moat — sous 5 lignes rouges honnêteté.
@@ -264,7 +266,7 @@
 >    - `feat(revenue)` **nudge renouvellement pré-expiration** : bannière positive quand pass actif <3j (`sg_pass_renew_seen`, `?passrenew=0`). Miroir de la bannière expired.
 >    - `feat(retention)` **win-back push dormants** : tag `sg_last_seen` (front, live) + `scripts/automation/push-winback.cjs` (HOLD/dry-run défaut, cadence 14j, copy honnête). **GO-LIVE DIFFÉRÉ** : câbler un step CI `--send` APRÈS ~2 sem. d'accumulation `sg_last_seen` + revue dry-run (prématuré maintenant, comme GTT Phase 1).
 >
-> **RESTE — bloqué FONDATEUR (pas l'agent)** : creds SEO US (GSC sitemaps + IDs GA4/Clarity dans `regions/*.json`) · paiement test réel lien Pro 690 € · `clasp push` (funnel). **Owned autre session** : GTT Phase 2 (câblage rabais fiabilité slice1 sur le modèle simplifié #386, GPS consent, montée). **Différé** : go-live du win-back push (voir ci-dessus).
+> **RESTE — bloqué FONDATEUR (pas l'agent)** : creds SEO US (GSC sitemaps + IDs GA4/Clarity dans `regions/*.json`) · paiement test réel lien Pro 690 € · `clasp push` (funnel). ⚠️ **PÉRIMÉ (voir routeur en tête + `CLAUDE.md`)** : ces 3 items sont RÉSOLUS depuis 2026-07-01 — GSC US provisionnée, lien Pro 690 € validé par un vrai paiement test, `sg_pass_cta` migré vers Supabase (**plus de `clasp push` funnel**). Seule la dette `clasp push` *referral* (distincte) peut subsister. **Owned autre session** : GTT Phase 2 (câblage rabais fiabilité slice1 sur le modèle simplifié #386, GPS consent, montée). **Différé** : go-live du win-back push (voir ci-dessus).
 > **Nouveaux flags rollback de la session** : `?vseed=0 ?pwrel=0 ?wcap=0 ?vshare=0 ?passrenew=0` (+ `push-winback` HOLD par défaut).
 
 > **🧩 2026-07-01 — GTT : slice 1 (helper fiabilité isolé) ajoutée · COLLISION 2-sessions détectée sur Phase 2. PR #385.**
@@ -974,7 +976,7 @@
 > **📊 SNAPSHOT 2026-06-28 (fin de session)** — *data/KPI/analytics/SEO* :
 > - **Pipeline** : `erddap-live` · run **3,0 h OK** · satellite **28,8 h OK** (<36 h). Sain.
 > - **KPI business** (`daily-metrics.json`, 2026-06-28) : Payments 12 · Emails **257 leads** · Feedbacks 1.
-> - **MRR (vérité Stripe)** : **€79,84/mois · 16 actifs** · pastDue 1 · cancelScheduled 0 (16 abos legacy ; modèle = pass-only Mollie, conversions pass à suivre dashboard Mollie).
+> - **MRR (vérité Stripe)** : ⚠️ *périmé — archive datée ; MRR vivant = `npm run session` (bloc `stripe` de `daily-metrics.json`)* · **€79,84/mois · 16 actifs** · pastDue 1 · cancelScheduled 0 (16 abos legacy ; modèle = pass-only Mollie, conversions pass à suivre dashboard Mollie).
 > - **Funnel** (Apps Script — ⚠️ NON fiable avant ~23/07, mélange ancien design) : modal→CTA **4 %** · opens **3481 → cta 123** · CTA→redirect 111 % (quirk tracking connu). Revenu = Stripe/Mollie, jamais le funnel.
 > - **SEO** : build complet OK · sitemaps MQ + GP (garde 75 URLs, 0 manquante) · 136 pages plages · `/fiabilite/` = 76 % global, 3180 paires, fenêtre 2026-05-30→06-28.
 
@@ -1115,7 +1117,7 @@
 > - **`ux-watch.cjs`** (NOUVEAU, jumeau revenue-watch) : email fondateur sur les CRITIQUES UX (rage/dead-clicks) de `ux-report.json`. Dans daily-copernicus, idempotent `ux-watch-seen.json`.
 > - **Home hero dead-clicks** (`HeroVerdict`) : éléments décoratifs au-dessus du voile cliquable → rendus cliquables (additif, CTA intacts). Vérifié contre le code ACTUEL.
 > - **`recover-abandoned-cart` + `email-weekend` + `welcome-email`** : CTA premium USD pointait sur lien Stripe DÉSACTIVÉ → corrigé en `?paywall=1` (on-site). `drip-email` déjà OK.
-> - **Funnel `scripts/appscript/Code.js`** : compte `sg_pass_cta` (vrai CTA pass-only) + `premium_modal_cta`. **⚠️ NÉCESSITE `cd scripts/appscript && clasp push`** (aucun workflow ne déploie le GAS) — action fondateur, NON-urgente (reporting only).
+> - **Funnel `scripts/appscript/Code.js`** : compte `sg_pass_cta` (vrai CTA pass-only) + `premium_modal_cta`. **⚠️ NÉCESSITE `cd scripts/appscript && clasp push`** (aucun workflow ne déploie le GAS) — action fondateur, NON-urgente (reporting only). *[PÉRIMÉ 2026-07-01 : `sg_pass_cta` a migré vers Supabase (`funnel-from-supabase.cjs`) → plus de `clasp push` funnel. Voir routeur en tête.]*
 >
 > **DONNÉES — fraîcheur :** funnel = **fenêtre 28j** → mélange l'ancien design abo (avant 25/06) → « modal→CTA 3,5% » NON représentatif du pass-only avant ~**23/07**. Rapport UX/SEO = **19/06** (pré-refonte pour le paywall ; OK pour le SEO, design-indépendant). **Revenu = Stripe/Mollie**, jamais le funnel. Stripe 26/06 : **MRR €79,84 · 16 actifs · pastDue 1 · cancel 0**.
 >

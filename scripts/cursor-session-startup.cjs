@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 /**
- * Reprend les checks « session startup » de CLAUDE.md pour Cursor / terminal local.
- * Usage : node scripts/cursor-session-startup.cjs
- *         npm run session
+ * Moteur de bootstrap de session PORTABLE (desktop + mobile/web) — reprend les checks
+ * « session startup » de CLAUDE.md. Tout l'état chiffré est DÉRIVÉ au read-time depuis des
+ * fichiers git-trackés (donc présents même quand le dossier mémoire ~/.claude est absent) :
+ *   - fraîcheur pipeline  → public/api/copernicus/sargassum.json
+ *   - métriques + MRR     → scripts/automation/data/daily-metrics.json (bloc `stripe` = MRR,
+ *                           source de vérité ; JAMAIS le funnel Apps Script, sous-compte ~7×)
+ * Le dossier mémoire ~/.claude/.../memory/ est DESKTOP-ONLY (optionnel) : absent sur mobile/web,
+ * le script le signale comme NOMINAL et retombe sur la tête de NEXT_SESSION.md. Sortie stdout
+ * uniquement (rien n'est écrit/committé → zéro collision de merge).
+ * Usage : node scripts/cursor-session-startup.cjs   (alias : npm run session)
  *
  * Variables optionnelles :
- *   SKIP_GH=1       — ne pas appeler gh (runs + workflow STALE)
+ *   SKIP_GH=1        — ne pas appeler gh (runs + workflow STALE)
  *   SKIP_STALE_RUN=1 — ne pas lancer gh workflow run si données STALE
  */
 const fs = require("fs")
@@ -23,6 +30,8 @@ const MEM_DIR = path.join(
   "C--Users-user-Desktop-Backup-sargagame",
   "memory"
 )
+// Liste indicative DESKTOP (dossier mémoire du fondateur). Source portable = NEXT_SESSION.md
+// (tête) + les 2 JSON trackés. Absente sur mobile/web → fallback géré au check [5].
 const MEM_FILES = [
   "MEMORY.md",
   "project_roadmap.md",
@@ -74,7 +83,7 @@ function main() {
     lines.push("Pipeline ERREUR")
   }
 
-  // 2) Métriques business
+  // 2) Métriques business + 3) MRR (dérivés du MÊME JSON tracké → portables sur mobile/web)
   try {
     const p = path.join(root, "scripts", "automation", "data", "daily-metrics.json")
     const arr = JSON.parse(fs.readFileSync(p, "utf8"))
@@ -83,59 +92,93 @@ function main() {
       `[2] Métriques : last=${l.date} | pay=${l.payments} | emails=${l.emails} | fb=${l.feedbacks}`
     )
     lines.push(`Métriques ${l.date} pay=${l.payments} em=${l.emails}`)
+
+    // 3) MRR — Stripe legacy = source de vérité ; JAMAIS le funnel (sous-compte ~7×).
+    const s = [...arr].reverse().find((x) => x.stripe && x.stripe.active != null)
+    if (s && s.stripe.mrr && s.stripe.mrr.eur != null) {
+      const st = s.stripe
+      console.log(
+        `[3] MRR (Stripe legacy = vérité, JAMAIS le funnel) : €${st.mrr.eur} | ${st.active} actifs | pastDue ${st.pastDue} | cancel ${st.cancelScheduled}`
+      )
+      lines.push(`MRR €${st.mrr.eur} | ${st.active} actifs | pastDue ${st.pastDue}`)
+    } else {
+      console.log("[3] MRR : bloc `stripe` absent de daily-metrics.json (rien à dériver)")
+      lines.push("MRR N/A")
+    }
   } catch (e) {
-    console.log("[2] Métriques : indisponible —", e.message)
-    lines.push("Métriques N/A")
+    console.log("[2/3] Métriques/MRR : indisponible —", e.message)
+    lines.push("Métriques/MRR N/A")
   }
 
-  // 3) gh run list
+  // 4) gh run list
   console.log("")
   const runs = gh(`run list --repo ${REPO} --limit 5`)
   if (runs) {
-    console.log("[3] Derniers workflows GitHub :")
+    console.log("[4] Derniers workflows GitHub :")
     console.log(runs.trimEnd())
     lines.push("gh: OK")
   } else {
-    console.log("[3] gh : ignoré (SKIP_GH=1 ou non authentifié)")
+    console.log("[4] gh : ignoré (SKIP_GH=1 ou non authentifié ; fallback mcp__github__actions_list)")
     lines.push("gh: skip")
   }
 
-  // 4) Mémoire projet (existence + aperçu titre)
+  // 5) Mémoire projet — DESKTOP-ONLY ; fallback repo (NEXT_SESSION.md) sur mobile/web.
   console.log("")
-  console.log("[4] Fichiers mémoire Claude (~/.claude/projects/.../memory/) :")
-  for (const f of MEM_FILES) {
-    const fp = path.join(MEM_DIR, f)
-    if (fs.existsSync(fp)) {
-      const st = fs.statSync(fp)
-      const head = fs.readFileSync(fp, "utf8").split("\n").slice(0, 3).join(" ").slice(0, 120)
-      console.log(`    ✓ ${f} (${st.size}b) — ${head}…`)
-    } else {
-      console.log(`    — ${f} (absent)`)
+  const memPresent = fs.existsSync(MEM_DIR)
+    ? MEM_FILES.filter((f) => fs.existsSync(path.join(MEM_DIR, f)))
+    : []
+  if (memPresent.length > 0) {
+    console.log("[5] Mémoire Claude (~/.claude/.../memory/ — desktop, optionnel) :")
+    for (const f of MEM_FILES) {
+      const fp = path.join(MEM_DIR, f)
+      if (fs.existsSync(fp)) {
+        const st = fs.statSync(fp)
+        const head = fs.readFileSync(fp, "utf8").split("\n").slice(0, 3).join(" ").slice(0, 120)
+        console.log(`    ✓ ${f} (${st.size}b) — ${head}…`)
+      } else {
+        console.log(`    — ${f} (absent)`)
+      }
     }
+    lines.push(`Mémoire: ${memPresent.length}/${MEM_FILES.length} fichiers (desktop)`)
+  } else {
+    // Conteneur mobile/web : le dossier mémoire ne suit pas — NOMINAL, pas une erreur.
+    console.log("[5] Mémoire ~/.claude ABSENTE (normal sur mobile/web) → fallback repo : NEXT_SESSION.md (tête)")
+    try {
+      const nsPath = path.join(root, "NEXT_SESSION.md")
+      const nsHead = fs
+        .readFileSync(nsPath, "utf8")
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 8)
+      for (const s of nsHead) console.log("    " + s.slice(0, 140))
+    } catch (e) {
+      console.log("    (NEXT_SESSION.md illisible —", e.message, ")")
+    }
+    lines.push("Mémoire: repo-only (NEXT_SESSION.md tête)")
   }
-  lines.push(`Mémoire: ${MEM_FILES.filter((f) => fs.existsSync(path.join(MEM_DIR, f))).length}/${MEM_FILES.length} fichiers`)
 
-  // 5) STALE → workflow
+  // 6) STALE → workflow
   console.log("")
   if (stale && process.env.SKIP_STALE_RUN !== "1" && process.env.SKIP_GH !== "1") {
     const w = gh(`workflow run daily-copernicus.yml --repo ${REPO} --ref main`)
     if (w !== null) {
-      console.log(`[5] Données > ${STALE_H}h → gh workflow run daily-copernicus.yml lancé.`)
+      console.log(`[6] Données > ${STALE_H}h → gh workflow run daily-copernicus.yml lancé.`)
       lines.push("STALE→workflow lancé")
     } else {
-      console.log(`[5] STALE mais gh indisponible — lance manuellement : gh workflow run daily-copernicus.yml --repo ${REPO} --ref main`)
+      console.log(`[6] STALE mais gh indisponible — lance manuellement : gh workflow run daily-copernicus.yml --repo ${REPO} --ref main`)
       lines.push("STALE, gh KO")
     }
   } else if (stale) {
-    console.log(`[5] STALE (SKIP_STALE_RUN ou SKIP_GH — pas de lancement auto)`)
+    console.log(`[6] STALE (SKIP_STALE_RUN ou SKIP_GH — pas de lancement auto)`)
     lines.push("STALE skip auto")
   } else {
-    console.log("[5] Pipeline OK — pas de relance workflow.")
+    console.log("[6] Pipeline OK — pas de relance workflow.")
     lines.push("Pas de relance")
   }
 
   console.log("\n--- Résumé ---")
-  lines.slice(0, 6).forEach((s) => console.log(" •", s))
+  lines.slice(0, 8).forEach((s) => console.log(" •", s))
   console.log("")
 }
 
