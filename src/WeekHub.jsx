@@ -357,7 +357,7 @@ export default function WeekHub({
   )
 
   return (
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Hub prévision de ta semaine","Your week forecast hub","Tu centro de pronóstico semanal")}
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" data-sg-live="1" aria-label={_t(lang,"Hub prévision de ta semaine","Your week forecast hub","Tu centro de pronóstico semanal")}
       style={{position:"fixed", inset:0, zIndex:1300, background:"rgba(13,11,20,.55)", display:"flex", justifyContent:"center", alignItems:"flex-end"}}
       onClick={(e)=>{ if(e.target===e.currentTarget){ onClose && onClose() } }}>
       <div ref={setPanel} data-wkhub="1"

@@ -105,7 +105,7 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
   return (
     <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Mon accès","My access","Mi acceso")}>
       {/* Backdrop — 4e voie de sortie (tap hors feuille). */}
-      <div onClick={()=>exit("backdrop")} style={{position:"fixed", inset:0, zIndex:1440, background:"rgba(10,11,20,.55)",
+      <div onClick={()=>exit("backdrop")} data-sg-live="1" style={{position:"fixed", inset:0, zIndex:1440, background:"rgba(10,11,20,.55)",
         animation: reduced.current ? "none" : "asFade .2s ease both"}}/>
       <div ref={setPanel} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
         style={{position:"fixed", left:0, right:0, bottom:0, zIndex:1445, maxHeight:"92vh", overflowY:"auto", WebkitOverflowScrolling:"touch",

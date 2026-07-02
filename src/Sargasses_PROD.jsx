@@ -1619,8 +1619,12 @@ function sgCollectClick(e){
     const gx=Math.max(0,Math.min(15,Math.floor((e.clientX/W)*16))),gy=Math.max(0,Math.min(23,Math.floor((e.clientY/H)*24)))
     const k=gx+"_"+gy
     let dead=true;const tgt=e.target
+    // [data-sg-live] = surface NON-bouton dont le tap EST géré productivement (snap-plage du
+    // fond de carte #383, backdrop-dismiss WeekHub/AccountSheet…). Sans ce marqueur la
+    // classification (cursor/closest) compte ces taps utiles comme dead-clicks → la métrique
+    // ne peut JAMAIS refléter un fix. Poser l'attribut sur toute nouvelle surface tap-gérée.
     try{const t=tgt
-      if(t&&t.closest&&t.closest('button,a,input,select,textarea,label,[role="button"],.leaflet-marker-icon,[data-beach]'))dead=false
+      if(t&&t.closest&&t.closest('button,a,input,select,textarea,label,[role="button"],.leaflet-marker-icon,[data-beach],[data-sg-live]'))dead=false
       else if(t&&t.nodeType===1){const cs=getComputedStyle(t);if(cs&&cs.cursor==="pointer")dead=false}
     }catch(_){dead=false}
     const o=_sgc.buf.clk[scr]||(_sgc.buf.clk[scr]={b:{},d:{},n:0})
