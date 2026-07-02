@@ -1,5 +1,12 @@
 # NEXT_SESSION — sargagame
 
+> **🗺️ 2026-07-02 — GRIEF FONDATEUR mobile : pastille « Cette semaine » (premium) recouvrait la chip « 🏨 Vous gérez un hôtel ? » (B2B) sur la carte. PR #417 MERGÉE.**
+>
+> Reproduit sur prod 390×844 premium (Playwright) : la colonne jours (bottom:120) grandit en premium — digest « Cette semaine : N à surveiller » 32px + gap 7 AU-DESSUS de la barre + points de confiance +7px SOUS les jours → haut de colonne à ~203px du bas, la pastille s'étalait sur la chip hôtel (colonne légende bottom:164, calée 7px d'air pour le mode GRATUIT seulement).
+> - **Fix (`WorldMapView.jsx` ~L1786)** : légende à **`bottom:210px` quand `mapPremium&&!mapDecideOff`**, 164 sinon. ⚠️ Clé = flags **synchrones** dès le 1er rendu — PAS la truthiness de `weekDigest` (async : null tant que l'outline n'est pas fetchée → la légende aurait sauté de 46px à chaque load/changement d'île ; finding CONFIRMÉ du panel adverse, corrigé avant merge). Offset constant même plage sélectionnée (le digest s'y cache) : pas de chrome qui saute au tap.
+> - **Panel adverse (Workflow 3 lentilles + contre-vérif)** : refusés comme préexistants/non-causés par la diff (classés sans suite) : chevauchements landscape faible hauteur (structurels, PWA verrouillée portrait), frôlement chip↔CTA « Voir la plage » plage sélectionnée (le fix le RÉDUIT de 13→10px), collision bandeau confiance en rollback `?mapfrise=0`. Si un jour on refait le chrome bas : le vrai fix est un garde short-viewport dédié.
+> - **Vérif** : esbuild OK · build vert (182,8 Ko ≤ 210) · smoke 4 tokens verts · Playwright 390×844 + 360×640 premium = zéro chevauchement, gratuit = légende inchangée (y603) · run deploy + curl prod (voir run post-merge).
+
 > **🚦 2026-07-02 — DETTES THÈME COMIC TRANCHÉES PAR PANEL ADVERSE (7 agents, verdict exécuté) : tokens inertes CLÔTURÉS-DOCUMENTÉS, arène ?hero=1 RÉPARÉE, onHome désarmé. (Solde la « Dette documentée, PAS fixée » de l'entrée 🚦 GATE DÉBLOQUÉ ci-dessous.)**
 >
 > Les 2 dettes structurelles découvertes au débogage du Gate (tokens `:root.theme-comic` jamais appliqués car classe sur body ; `#root` effondré ~0px sous comic par `.theme-comic #root{position:relative}`) ont été passées au panel adverse (5 lentilles + avocat du diable + juge). **Verdict exécuté** :
