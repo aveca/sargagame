@@ -260,6 +260,17 @@ export default function WorldMapView({
   // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
+  // Lisibilité labels carte (grief fondateur 2026-07-02) : le nom blanc + le statut sont posés
+  // sur le fond carte (vert/violet/orange) avec un simple glow d'ombre → lavés sur les zones
+  // claires. Scrim sombre translucide DERRIÈRE le texte = contraste garanti quelle que soit la
+  // zone (loi plancher contraste). Posé sur un WRAPPER interne (l'outer .sg-maplabel est
+  // force-strippé sans fond par le skin comic, cf. app-runtime.css:217). Rollback ?maplabelscrim=0.
+  const mapLabelScrimOff = (()=>{try{return /[?&]maplabelscrim=0/.test(window.location.search)}catch(_){return false}})()
+  // Anti dual-H1 (grief fondateur 2026-07-02) : quand une fiche plage est ouverte (selected), le
+  // titre île « RÉGION NJ » + la jauge « N plages propres » se masquent → un seul titre dominant
+  // à l'écran (la fiche). Réapparaissent dès qu'aucune plage n'est sélectionnée. La géoloc reste
+  // joignable par le chip bas « près de moi ». Rollback ?maptitle=0 → toujours visible (état actuel).
+  const mapTitleOff = (()=>{try{return /[?&]maptitle=0/.test(window.location.search)}catch(_){return false}})()
   // Dead-click carte (audit UX 2026-07-01 : 56+11 clics morts/rapport sur le fond SVG). Deux causes,
   // deux remèdes : (1) un pan finit par un clic fantôme → il ne fait plus rien (suppressBgClickRef) ;
   // (2) un tap FRANC sans sélection tombait dans le vide (océan / île / tache de sargasses, toutes en
@@ -1558,6 +1569,7 @@ export default function WorldMapView({
                 whiteSpace:"nowrap",
                 ...(mapLabelTapOff?{}:{pointerEvents:"auto",cursor:"pointer"}),
               }}>
+              <div className={"sg-maplabel-scrim"+(mapLabelScrimOff?"":" on")}>
               <div style={{
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 color:"#fff",
@@ -1571,6 +1583,7 @@ export default function WorldMapView({
                 marginTop:2,
                 textShadow:`1px 1px 0 ${INK},0 0 4px ${INK}`,
               }}>{STATUS_LBL[st]?.[li]}</div>
+              </div>
             </div>
           )
         })}
@@ -1684,6 +1697,7 @@ export default function WorldMapView({
           position:"absolute",top:topInset?(topInset+58+(showMapNav?54:0))+"px":`calc(${58+(showMapNav?54:0)}px + env(safe-area-inset-top))`,
           left:0,right:0,maxWidth:560,margin:"0 auto",padding:"0 18px",pointerEvents:"none",
         }}>
+          {(mapTitleOff||!selected)&&(<>
           <h2 style={{
             fontFamily:"'AntonLC','Anton',sans-serif",
             fontWeight:400,letterSpacing:"-.01em",textTransform:"uppercase",
@@ -1708,6 +1722,7 @@ export default function WorldMapView({
               <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
             </span>
           </div>
+          </>)}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
               Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}
