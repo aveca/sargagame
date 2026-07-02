@@ -47,6 +47,13 @@ const VeilleurHero=lazyWithRetry(()=>import("./VeilleurHero.jsx"))
 // boucle auto-play value-prop qu'un hôtel laisse tourner en hall. OFF par défaut,
 // JAMAIS monté sans ?demo=1 → zéro octet eager, zéro impact funnel. Rollback ?demo=0.
 const DemoReel=lazyWithRetry(()=>import("./DemoReel.jsx"))
+// LES 10 POSTES DU VEILLEUR « Jusqu'où on descend » (port LIVE de
+// design/proto-descente-marches.html) — overlay lazy des 10 verticales/marchés
+// (3 registres d'honnêteté figés par docs/BIG_MARKETS.md : LIVE=Sable/Récif/Digue,
+// PILOT=Prisme, HORIZON=6 marchés tués sans CTA/prix). Entrée FAB sur la carte,
+// actions branchées in-app. Rollback ?verticals=0 → cache l'entrée + l'overlay.
+const LazyVerticalesMap=lazyWithRetry(()=>import("./VerticalesMap.jsx"))
+const VERTICALES_OFF=(()=>{try{return /[?&]verticals=0/.test(window.location.search)}catch(_){return false}})()
 const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
@@ -1403,7 +1410,10 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_pass_proof_open","sg_pass_seq_back",
   // Mode vitrine "Le Registre du Veilleur" (?demo=1, attract mode, 2026-07-02) : impression
   // display + tap + scan QR de hall. Volume FAIBLE assumé (rétention/fierté B2B, cf. critère de mort).
-  "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan"])
+  "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan",
+  // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
+  // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
+  "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -12588,6 +12598,9 @@ export default function App(){
   // hôtel laisse tourner en hall. OFF par défaut (jamais monté sans ?demo=1), rollback
   // ?demo=0. Sous-modes : ?src=lobby (défaut) | ?src=share ; co-brand ?partner=<slug>.
   const [showDemo,setShowDemo]=useState(()=>{try{const q=window.location.search||"";return /[?&]demo=1/.test(q)&&!/[?&]demo=0/.test(q)}catch(_){return false}})
+  // Les 10 postes du Veilleur « Jusqu'où on descend » — overlay des 10 verticales (FAB carte).
+  // Deep-link ?verticals=1 l'ouvre d'emblée ; ?verticals=0 (VERTICALES_OFF) coupe tout.
+  const [showVerticals,setShowVerticals]=useState(()=>{try{const q=window.location.search||"";return /[?&]verticals=1/.test(q)&&!/[?&]verticals=0/.test(q)}catch(_){return false}})
   const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
   const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
   // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
@@ -13373,6 +13386,33 @@ export default function App(){
             </svg>
           </button>
         )}
+
+        {/* LES 10 POSTES — « Jusqu'où on descend » (10 verticales/marchés, 3 registres
+            d'honnêteté). Entrée sur la carte ; ouvre l'overlay lazy VerticalesMap.
+            Rollback ?verticals=0 → VERTICALES_OFF cache l'entrée + l'overlay. */}
+        {!VERTICALES_OFF&&!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showVerticals&&!selectedBeach&&view==="map"&&(
+          <button onClick={()=>{setShowVerticals(true);track("sg_verticales_view",{from:"fab"})}} aria-label={_t(lang,"Jusqu'où on descend — nos 10 postes","How deep we go — our 10 posts","Hasta dónde bajamos — nuestros 10 puestos")}
+            className="sg-fab"
+            style={{position:"fixed",right:14,bottom:"calc(436px + env(safe-area-inset-bottom))",zIndex:960,
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
+              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+            {/* 10 postes = descente : sonde + paliers (or=surface/live → teal=profond) */}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <line x1="12" y1="3" x2="12" y2="19" stroke="#FDFCF7" strokeWidth="1.3" strokeOpacity=".7"/>
+              <path d="M6 6.5h12" stroke="#FFC72C" strokeWidth="2.1" strokeLinecap="round"/>
+              <path d="M7 11h10" stroke="#1EC8B0" strokeWidth="1.9" strokeLinecap="round"/>
+              <path d="M8.5 15.5h7" stroke="#1EC8B0" strokeWidth="1.6" strokeLinecap="round" strokeOpacity=".65"/>
+              <circle cx="12" cy="19.6" r="2.1" fill="#FFC72C" stroke="#FDFCF7" strokeWidth="1.1"/>
+            </svg>
+          </button>
+        )}
+        {showVerticals&&<ErrBound><Suspense fallback={null}><LazyVerticalesMap lang={lang} track={track}
+          onClose={()=>setShowVerticals(false)}
+          onSeeMyBeach={()=>{setShowVerticals(false);setView("map");if(myBeach)onBeachClick(myBeach)}}
+          onOpenPro={(src)=>{setShowVerticals(false);try{track("sg_b2b_open",{source:src||"verticales"})}catch(_){}; proB2BSrc.current=src||"verticales"; setShowProB2B(true)}}
+          onWaitlist={(em)=>{try{submitLead(em,"verticales_prisme")}catch(_){}}}/></Suspense></ErrBound>}
+
         {/* Cache anti-premap : sombre plein écran tant que la carte-monde par défaut est EN
             ATTENTE d'ouverture (data → showArchipel via layoutEffect gaté allBeaches>=3).
             Masque le rendu de base (fond + bande orange dorée) sous z1020 → sombre uniforme
