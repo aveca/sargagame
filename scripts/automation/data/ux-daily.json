@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-01T20:06:48.184Z",
-  "date": "2026-07-01",
+  "generated": "2026-07-02T03:57:13.945Z",
+  "date": "2026-07-02",
   "days": 1,
   "regions": [
     "mq",
@@ -10,6 +10,94 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "a42ee957",
+      "subject": "Merge remote-tracking branch 'origin/main' into fix/deadclick-measure-truth"
+    },
+    {
+      "h": "9e9b9e3e",
+      "subject": "feat(photos): boucle « Éclaireur » — photo envoyée = 24 h de Veilleur personnel + CTA remonté"
+    },
+    {
+      "h": "dda64eaa",
+      "subject": "Merge pull request #419 from aveca/feat/weekhub-month-first"
+    },
+    {
+      "h": "80565d1e",
+      "subject": "feat(weekhub): sélecteur mois-first tappable + chrome hub restauré (piège onink-scope)"
+    },
+    {
+      "h": "a9b7e234",
+      "subject": "Merge pull request #416 from aveca/claude/elastic-mccarthy-b92057"
+    },
+    {
+      "h": "5fb7a1f4",
+      "subject": "fix(tracking): data-sg-live — les taps productifs ne comptent plus comme dead-clicks"
+    },
+    {
+      "h": "d8bc67c4",
+      "subject": "fix(carte): la légende/chip hôtel monte à 210px en premium — la pastille « Cette semaine » recouvrait le bouton B2B sur mobile"
+    },
+    {
+      "h": "57be71f8",
+      "subject": "fix(theme-comic): verdict panel adverse — arène ?hero=1 réparée, onHome désarmé, 2 dettes structurelles documentées"
+    },
+    {
+      "h": "8042e370",
+      "subject": "fix(partage): liens fiche plage region-aware via beachPageUrl (solde reste #408)"
+    },
+    {
+      "h": "3165ba79",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/brave-faraday-3ad78d"
+    },
+    {
+      "h": "5a230669",
+      "subject": "feat(revenue-truth): métriques Mollie en repo + revenue-watch dé-gelé + refunds détectés + paylinks B2B câblés webhook"
+    },
+    {
+      "h": "263f8d52",
+      "subject": "fix(gate): smoke ré-aligné sur le funnel réel (carte→fiche→paywall) + pastilles carte restaurées"
+    },
+    {
+      "h": "bfd401dc",
+      "subject": "fix(alertes): activer ses alertes déclenche permission push + nudge install PWA"
+    },
+    {
+      "h": "6f1d5e51",
+      "subject": "fix(partage+fiche): deep-link plage région-aware au partage + fiche complète en colonne sur desktop"
+    },
+    {
+      "h": "e05304a3",
+      "subject": "seo(content): publish sargasses-les-saintes (banque: 2 queued)"
+    },
+    {
+      "h": "79d354ec",
+      "subject": "Merge pull request #406 from aveca/feat/weekhub-premium-cta"
+    },
+    {
+      "h": "b6211883",
+      "subject": "feat(cro): WeekHub porte premium « Le Veilleur personnel » (levier CRO n°1, ?whcta=0)"
+    },
+    {
+      "h": "bad2765c",
+      "subject": "chore: update Copernicus data 2026-07-02 00:46 UTC"
+    },
+    {
+      "h": "ab6f31c9",
+      "subject": "Merge pull request #405 from aveca/claude/code-quality-improvement-guvsab"
+    },
+    {
+      "h": "d331b250",
+      "subject": "feat(design): comic/motion — scan satellite animé, mascotte canonique, lien preuve, WeekHub polish, gate reduced-motion"
+    },
+    {
+      "h": "22c50b0a",
+      "subject": "chore: update Copernicus data 2026-07-01 20:06 UTC"
+    },
+    {
+      "h": "c5b0032f",
+      "subject": "chore: email state 2026-07-01 20:06 UTC"
+    },
     {
       "h": "aed18251",
       "subject": "chore: update Copernicus data 2026-07-01 19:27 UTC"
@@ -21,181 +109,43 @@
     {
       "h": "01a541e5",
       "subject": "chore: update Copernicus data 2026-07-01 18:24 UTC"
-    },
-    {
-      "h": "f6c960f0",
-      "subject": "fix(verdict): plancher sargasses sur la couleur du score — une plage propre n'est jamais orange (#395)"
-    },
-    {
-      "h": "30c6ed6e",
-      "subject": "fix(share): partager le deep-link de la plage, jamais l'accueil (#392)"
-    },
-    {
-      "h": "97ea38fc",
-      "subject": "Preuve fiabilité cliquable au paywall + invitation referral ouverte aux free (#390)"
-    },
-    {
-      "h": "53013e9e",
-      "subject": "Renouvellement + win-back push + migration funnel Supabase + corrections doc (#388)"
-    },
-    {
-      "h": "c09d8605",
-      "subject": "chore: update Copernicus data 2026-07-01 14:52 UTC"
-    },
-    {
-      "h": "bc66b8aa",
-      "subject": "chore: email state 2026-07-01 14:52 UTC"
-    },
-    {
-      "h": "eb030f32",
-      "subject": "Session Sargatrack : /fiabilite/ prélude + wallet-gate + partage viral + GTT slice1 (#385)"
-    },
-    {
-      "h": "d2ec02c4",
-      "subject": "feat(gtt): modèle simple — Approuver applique le SENS du signalement au verdict (bidirectionnel) (#386)"
-    },
-    {
-      "h": "7675b199",
-      "subject": "fix(carte): rattrape les clics morts du fond de carte + déclencheur /ux self-serve (#383)"
-    },
-    {
-      "h": "da50ba46",
-      "subject": "Réponse Sargatrack : analyse concurrentielle + recrutement galerie photos vide (#379)"
-    },
-    {
-      "h": "92b46199",
-      "subject": "feat(gtt): lane descente — calque « Terrain » dans la fiche plage (Phase 2a) (#384)"
-    },
-    {
-      "h": "ca0ecb9e",
-      "subject": "chore: update Copernicus data 2026-07-01 10:02 UTC"
-    },
-    {
-      "h": "f36b4cba",
-      "subject": "chore: email state 2026-07-01 10:02 UTC"
-    },
-    {
-      "h": "addb1870",
-      "subject": "Démarrage : supprimer la fuite body.theme-comic (#382)"
-    },
-    {
-      "h": "2fa81656",
-      "subject": "feat(reports): submit-report Edge Function (Phase 0.3) + redirect fiche plage post-modération (#378)"
-    },
-    {
-      "h": "27702c3c",
-      "subject": "Démarrage : cache sombre anti-premap (#377)"
-    },
-    {
-      "h": "684cb934",
-      "subject": "fix(boot): affichage unique et définitif au chargement (pins + verdict, zéro glitch) (#374)"
-    },
-    {
-      "h": "e5dfb8a3",
-      "subject": "perf(bundle) : ScrollStory (below-fold) en chunk lazy — entry −4,4 Ko gzip (#371)"
-    },
-    {
-      "h": "9d283b6b",
-      "subject": "perf(carte) : bake WorldMapView calé sur le DPR (−460ms LCP / −223ms TBT sur 2×) (#370)"
-    },
-    {
-      "h": "5f4e8cc9",
-      "subject": "chore(cleanup) : retire getBeachPhoto, code mort (app 100% sans photo) (#368)"
-    },
-    {
-      "h": "7ab0bb5c",
-      "subject": "Démarrage : cadre sombre neutre au démarrage (#363)"
-    },
-    {
-      "h": "f65ceafb",
-      "subject": "perf : photos hero −46 % + preload météo + timeout forecast (vitesse 1er verdict) (#364)"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 455,
-      "friction": 21,
-      "dead_rate": 0.413,
+      "sessions": 46,
+      "friction": 5,
+      "dead_rate": 0.341,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.426,
-        "n": 993
+        "rate": 0.353,
+        "n": 201
       },
       "top_dead_els": [
         {
-          "el": "svg[role=img]",
-          "count": 211
+          "el": "div.sg-onink-scope",
+          "count": 22
         },
         {
-          "el": "div.sg-onink-scope",
-          "count": 114
+          "el": "svg[role=img]",
+          "count": 19
         },
         {
           "el": "div",
-          "count": 44
+          "count": 16
         },
         {
-          "el": "p.lc-h2s-txt",
-          "count": 10
-        },
-        {
-          "el": "div.lc-detail-body",
-          "count": 6
-        },
-        {
-          "el": "div.lc-detail-head",
+          "el": "span",
           "count": 5
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.24
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": null,
-      "changes": [
-        "(pas de veille — premier cliché)"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 285,
-      "friction": 2,
-      "dead_rate": 0.343,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.366,
-        "n": 576
-      },
-      "top_dead_els": [
-        {
-          "el": "svg[role=img]",
-          "count": 103
-        },
-        {
-          "el": "div.sg-onink-scope",
-          "count": 48
-        },
-        {
-          "el": "div",
-          "count": 21
         },
         {
           "el": "rect",
-          "count": 8
+          "count": 2
         },
         {
           "el": "span.lc-detail-fact",
-          "count": 8
-        },
-        {
-          "el": "circle",
-          "count": 8
+          "count": 1
         }
       ],
       "bored_worst": {
@@ -207,94 +157,83 @@
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": null,
+      "prev_date": "2026-07-01",
       "changes": [
-        "(pas de veille — premier cliché)"
+        "sessions 455→46 (-90%)",
+        "dead-rate 0.413→0.341 (-0.1) ✅",
+        "rage-clicks 21→5 ✅",
+        "🆕 dead-click : span (5)",
+        "🆕 dead-click : rect (2)",
+        "🆕 dead-click : span.lc-detail-fact (1)",
+        "✔︎ dead-click résolu : p.lc-h2s-txt",
+        "✔︎ dead-click résolu : div.lc-detail-body",
+        "✔︎ dead-click résolu : div.lc-detail-head"
       ]
     },
     {
-      "region": "florida",
-      "sessions": 82,
+      "region": "gp",
+      "sessions": 37,
       "friction": 0,
-      "dead_rate": 0.562,
+      "dead_rate": 0.25,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.597,
-        "n": 119
+        "rate": 0.265,
+        "n": 113
       },
       "top_dead_els": [
         {
-          "el": "div.sg-onink-scope",
-          "count": 43
-        },
-        {
           "el": "svg[role=img]",
-          "count": 19
+          "count": 23
         },
         {
           "el": "div",
           "count": 4
         },
         {
-          "el": "circle",
-          "count": 4
+          "el": "rect",
+          "count": 2
         },
         {
-          "el": "path",
-          "count": 1
-        },
-        {
-          "el": "span.lc-detail-fact",
+          "el": "h2.lc-detail-name",
           "count": 1
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.12
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": null,
+      "prev_date": "2026-07-01",
       "changes": [
-        "(pas de veille — premier cliché)"
+        "sessions 285→37 (-87%)",
+        "dead-rate 0.343→0.25 (-0.1) ✅",
+        "🆕 dead-click : h2.lc-detail-name (1)",
+        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "✔︎ dead-click résolu : span.lc-detail-fact",
+        "✔︎ dead-click résolu : circle"
       ]
     },
     {
-      "region": "puntacana",
-      "sessions": 11,
+      "region": "florida",
+      "sessions": 7,
       "friction": 0,
-      "dead_rate": 0.645,
+      "dead_rate": 0.542,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.645,
-        "n": 31
+        "rate": 0.542,
+        "n": 24
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 9
+          "count": 12
         },
         {
-          "el": "svg[role=img]",
-          "count": 4
-        },
-        {
-          "el": "span.lc-detail-fact",
-          "count": 4
-        },
-        {
-          "el": "div",
-          "count": 1
-        },
-        {
-          "el": "div.lc-detail-body",
-          "count": 1
-        },
-        {
-          "el": "div.lc-detail-head",
+          "el": "div.sg-onink-scope[role=dialog]",
           "count": 1
         }
       ],
@@ -304,55 +243,71 @@
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": null,
+      "prev_date": "2026-07-01",
       "changes": [
-        "(pas de veille — premier cliché)"
+        "sessions 82→7 (-91%)",
+        "🆕 dead-click : div.sg-onink-scope[role=dialog] (1)",
+        "✔︎ dead-click résolu : svg[role=img]",
+        "✔︎ dead-click résolu : div",
+        "✔︎ dead-click résolu : circle",
+        "✔︎ dead-click résolu : path",
+        "✔︎ dead-click résolu : span.lc-detail-fact"
       ]
     },
     {
-      "region": "rivieramaya",
-      "sessions": 16,
+      "region": "puntacana",
+      "sessions": 1,
       "friction": 0,
-      "dead_rate": 0.471,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.516,
-        "n": 31
-      },
-      "top_dead_els": [
-        {
-          "el": "svg[role=img]",
-          "count": 7
-        },
-        {
-          "el": "div.sg-onink-scope",
-          "count": 3
-        },
-        {
-          "el": "div",
-          "count": 3
-        },
-        {
-          "el": "svg",
-          "count": 2
-        },
-        {
-          "el": "span.lc-detail-fact",
-          "count": 1
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.41
-      },
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": null,
+      "prev_date": "2026-07-01",
       "changes": [
-        "(pas de veille — premier cliché)"
+        "sessions 11→1 (-91%)",
+        "dead-rate 0.645→0 (-0.6) ✅",
+        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "✔︎ dead-click résolu : svg[role=img]",
+        "✔︎ dead-click résolu : span.lc-detail-fact",
+        "✔︎ dead-click résolu : div",
+        "✔︎ dead-click résolu : div.lc-detail-body",
+        "✔︎ dead-click résolu : div.lc-detail-head"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 1,
+      "friction": 0,
+      "dead_rate": 0.857,
+      "dead_worst": null,
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 5
+        },
+        {
+          "el": "div",
+          "count": 1
+        }
+      ],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-01",
+      "changes": [
+        "sessions 16→1 (-94%)",
+        "dead-rate 0.471→0.857 (+0.4) ⚠️",
+        "✔︎ dead-click résolu : svg[role=img]",
+        "✔︎ dead-click résolu : svg",
+        "✔︎ dead-click résolu : span.lc-detail-fact"
       ]
     }
   ]
