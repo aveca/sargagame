@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-02T03:47:00.379Z",
+  "updatedAt": "2026-07-02T09:02:04.727Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 21,
-    "contacted": 86,
+    "discovered": 16,
+    "contacted": 91,
     "lead": 6,
     "paid": 0
   },
@@ -823,49 +823,49 @@
       "nextAction": "à contacter (prospection auto)"
     },
     "2e99c6daa2ecbdf586da0d0985a56eaf": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Karukera Surf Club",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T08:59:17.583Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "102e4c17d947010ffd80e5dcb5fe6ce4": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Résidence Tropicale",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T08:59:18.078Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "92c49fe52ce8b951f25d7dff14da8870": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Kayali Studios & Spa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T08:59:18.408Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "354005124759b38845963df39d08e538": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "SeacretDive",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T08:59:18.883Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a6ed3c0dfd7c16ef602a70d0768473ec": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Eden Plongée",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T08:59:19.199Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c72b496aac834ea07927e98abe45affe": {
       "stage": "discovered",

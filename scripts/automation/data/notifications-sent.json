@@ -63,6 +63,8 @@
   "2026-07-02": [
     "puntacana:pc008:clean>moderate",
     "puntacana:pc009:clean>moderate",
-    "puntacana:pc010:clean>moderate"
+    "puntacana:pc010:clean>moderate",
+    "rivieramaya:rm009:moderate>clean",
+    "rivieramaya:rm012:moderate>clean"
   ]
 }
