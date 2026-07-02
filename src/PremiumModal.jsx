@@ -6,6 +6,7 @@
  * sont importés depuis Sargasses_PROD.jsx via exports nommés (mêmes singletons). */
 import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
+import {SeqDots} from "./SeqPrimitives.jsx"
 import {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
   LINK_PRO, MOLLIE_PROFILE, MOLLIE_TESTMODE, MOL_FIELD, MOL_LABEL, NO_TRIAL, PAYPAL_CLIENT_ID, PAYPAL_PLANS,
@@ -101,15 +102,9 @@ function TerritoireMeeting({lang,email,org}){
   )
 }
 
-// ── Primitives de SÉQUENCE (génériques, zéro dépendance B2B — demande fondateur
-//    2026-07-02 « à réutiliser pour scaler le B2C ») : points de progression comic.
-//    Le paywall B2C pourra reprendre SeqDots + les classes .sgseq-* telles quelles.
-function SeqDots({n,at,ink,gold}){
-  return(<div aria-hidden="true" style={{display:"flex",gap:6,margin:"10px 0 2px"}}>
-    {Array.from({length:n},(_,i)=>(<span key={i} style={{width:8,height:8,borderRadius:"50%",
-      border:`2px solid ${ink}`,boxSizing:"border-box",background:i<at?gold:"#fff"}}/>))}
-  </div>)
-}
+// ── Primitives de SÉQUENCE (SeqDots + .sgseq-*) : SOURCE UNIQUE dans SeqPrimitives.jsx
+//    (extraites ici #425, demande fondateur 2026-07-02 « réutiliser pour scaler le B2C » ;
+//    B2BModal comic ET PassOffer premium sombre l'importent désormais telles quelles).
 
 function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""}){
   const dlgRef=useRef(null)
@@ -1932,6 +1927,48 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde
   // l'ancien flux email-offert (passOnly=false → l'UI abo/capture s'affiche normalement).
   const passOnly=pwPass&&!PAY_CAPTURE_ONLY
+  // ── passseq (A/B pw_pass_seq) — verdict panel adverse 2026-07-02 « offre-first » ──
+  //    Le B2C = ask 1-tap WALLET (impulsif), PAS un formulaire B2B → séquencer EN AMONT
+  //    de la grille est friction-négatif : l'offre RESTE l'écran d'atterrissage (0 tap
+  //    ajouté). Seule différence du bras « seq » : le lien « voir nos erreurs » ouvre un
+  //    écran preuve IN-MODAL opt-in (grille 7 j réelle + registre) au lieu d'un onglet
+  //    /fiabilite/ externe (= leak). Détour EN AVAL, jamais avant l'offre → l'impulsif
+  //    n'est jamais pénalisé. (Le « wallet remonté » du 1er jet a été RETIRÉ à la vérif :
+  //    la pile de valeur est déjà AU-DESSUS de la grille → déplacer le wallet ne réduit pas
+  //    le temps-jusqu'au-wallet et fend la grille 3-SKU pour les locaux — no-op risqué.)
+  //    Surface de REVENU PRIMAIRE → JAMAIS default-on : A/B 50/50, mesure = Mollie par bras.
+  //    ?passseq=0 = PassOffer strictement inchangé (rollback) · ?passseq=1 force.
+  const passSeq=passOnly&&(()=>{try{const q=window.location.search;
+    if(/[?&]passseq=0/.test(q))return false;if(/[?&]passseq=1/.test(q))return true;
+    return abVariant("pw_pass_seq",["control","seq"],[.5,.5])==="seq"}catch(_){return false}})()
+  // Données PRÉCALCULÉES de l'écran preuve É2 (helpers région dispo ICI → PassOffer reste
+  // lean). MOAT : Auj/Dem = SEULS jours colorés (forecast RÉEL du JSON) ; J+2..6 = null
+  // (cadenas côté PassOffer, JAMAIS une couleur fabriquée). proofLine = régime au plus gros
+  // échantillon « mer propre », suffixe « (saison calme) » SEULEMENT si le régime dominant
+  // EST calm (jamais un 100 % nu). Fraîcheur HONNÊTE : « Vu du satellite » seulement si
+  // erddapTimestamp, sinon « Données mises à jour ». Dégradation gracieuse (null-safe).
+  const _seqProof=useMemo(()=>{
+    if(!passSeq)return null
+    const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)
+    const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()
+    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
+    const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
+    const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
+    const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
+      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
+      if(!ent||!ent[1].cleanReliabilityPct)return null
+      const[reg,best]=ent;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
+      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
+      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
+        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
+        `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)}catch(_){return null}})()
+    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
+      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
+      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
+        :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()
+    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[passSeq,sargData,beach,island,_trackRec,lang])
   // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
@@ -2126,7 +2163,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()}
+          seq={passSeq} proof={_seqProof}
+          onProofOpen={()=>{try{track("sg_pass_proof_open",{source:source||"unknown"})}catch(_){}}}
+          onProofBack={()=>{try{track("sg_pass_seq_back",{source:source||"unknown"})}catch(_){}}}
+          onBuy={(item)=>{
           try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}

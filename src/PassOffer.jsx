@@ -1,8 +1,23 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { getSegment } from "./lib/segment.js"
+import { SeqDots, SEQ_STEP_CSS } from "./SeqPrimitives.jsx"
 
 // i18n local (le _t de l'app n'est pas exporté).
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
+
+// Grille 7 jours de l'écran preuve É2 (A/B pw_pass_seq) — variante THÈME SOMBRE #190c2c
+// (NE PAS réutiliser .b2f-fc du B2B : comic clair, illisible/hors-univers ici). Auj/Dem =
+// pastilles couleur RÉELLES, J+2..6 = cadenas hachurés SOMBRES (jamais une couleur fabriquée).
+const FC_DARK_CSS = `
+.sgseq-fc{border:1px solid rgba(255,199,44,.30);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.04);margin:12px 0 0}
+.sgseq-fc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 12px;background:rgba(255,255,255,.05);color:#EAF7F4;font:800 10px/1.25 'Bricolage Grotesque',sans-serif;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)}
+.sgseq-fc-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.sgseq-fc-day{padding:8px 2px 9px;text-align:center;border-right:1px solid rgba(255,255,255,.07)}
+.sgseq-fc-day:last-child{border-right:none}
+.sgseq-fc-lab{font:800 9.5px/1 'Bricolage Grotesque',sans-serif;color:rgba(234,247,244,.72);text-transform:uppercase;margin-bottom:6px}
+.sgseq-fc-dot{width:14px;height:14px;border-radius:50%;margin:0 auto;border:1.5px solid rgba(6,18,26,.55)}
+.sgseq-fc-conf{font:800 9px/1 'Bricolage Grotesque',sans-serif;color:rgba(234,247,244,.66);margin-top:5px}
+.sgseq-fc-day.lock{background:repeating-linear-gradient(45deg,rgba(255,255,255,.03),rgba(255,255,255,.03) 4px,rgba(255,255,255,.07) 4px,rgba(255,255,255,.07) 8px)}`
 
 // Beacon segment first-party (même endpoint analytics). sg_pass_seg {stage, segment, pass, cents, method}.
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
@@ -27,7 +42,7 @@ const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" st
  * basse), 30j HÉROS, Saison (local). Aucune mention d'abonnement. onBuy({c,pass,days,
  * method}) → le parent route vers Mollie on-site (carte ou wallet). Pas de Stripe.
  */
-export default function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, wallet = null }) {
+export default function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, wallet = null, seq = false, proof = null, onProofOpen, onProofBack }) {
   const cur = currency === "usd" ? "usd" : "eur"
   const { P7, P30, SAISON } = CAT[cur]
   const seg = getSegment()
@@ -51,6 +66,39 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
   const _wcapOff = typeof window !== "undefined" && /[?&]wcap=0/.test(window.location.search)
   const w = _wcapOff ? { apple: true, google: true } : (wallet || { apple: false, google: false })
   const G = { color: "#FFC72C" }
+
+  // ── Écran preuve É2 opt-in (A/B pw_pass_seq, verdict panel 2026-07-02) ─────────
+  // Atteint UNIQUEMENT par le tap volontaire « voir nos erreurs » sur É1 (offre-first).
+  // N'ajoute AUCUN écran avant l'offre → l'impulsif 1-tap n'est jamais pénalisé.
+  const [showProof, setShowProof] = useState(false)
+  const proofTitleRef = useRef(null)
+  const canProof = !!(seq && proof && (proof.hasGrid || proof.proofLine))
+  // Focus le titre au swap (le focus-trap de la modale parente ne re-focus pas au sous-écran).
+  useEffect(() => { if (showProof) { try { proofTitleRef.current && proofTitleRef.current.focus() } catch (_) {} } }, [showProof])
+  const openProof = () => { if (!canProof) return; setShowProof(true); try { onProofOpen && onProofOpen() } catch (_) {}; sbeacon({ stage: "proof_open", segment: seg, island: isGP ? "gp" : "mq" }) }
+  const backProof = () => { setShowProof(false); try { onProofBack && onProofBack() } catch (_) {}; sbeacon({ stage: "seq_back", segment: seg }) }
+  // Bloc paiement natif Apple/Google Pay — extrait en helper (rendu IDENTIQUE dans les 2
+  // bras A/B, position historique inchangée ; passseq ne touche QUE le lien preuve). mt = margin-top.
+  const walletSection = (mt) => (w.apple || w.google) ? (
+    <div style={{ margin: `${mt}px 0 0` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 11px" }}>
+        <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
+        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".04em", color: "rgba(234,247,244,.42)", textTransform: "uppercase", whiteSpace: "nowrap" }}>{_t(lang, "1 geste, sans créer de compte", "one tap, no account", "1 toque, sin cuenta")}</span>
+        <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
+      </div>
+      <div style={{ display: "flex", gap: 9 }}>
+        {w.apple && <button type="button" onClick={() => buy(P30, "applepay")} aria-label="Apple Pay" className="sg-wbtn sg-wbtn-dark" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#000", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+          <svg width="16" height="19" viewBox="0 0 17 20" fill="#fff" aria-hidden="true"><path d="M14.1 6.6c-.1.1-1.9 1-1.9 3.2 0 2.6 2.3 3.5 2.4 3.5 0 .1-.4 1.3-1.2 2.5-.7 1.1-1.5 2.2-2.7 2.2-1.1 0-1.5-.7-2.8-.7-1.3 0-1.7.7-2.7.7-1.2 0-2-1.2-2.8-2.3C1.3 14 .5 11.6.5 9.4c0-3.6 2.3-5.5 4.6-5.5 1.2 0 2.2.8 2.9.8.7 0 1.8-.8 3.2-.8.5 0 2.3 0 3.5 1.7-.1.1-1.5.9-1.5 1ZM10.4 2.4c.6-.7 1-1.6.9-2.5-.9 0-1.9.6-2.5 1.3-.5.6-1 1.5-.9 2.4 1 .1 1.9-.5 2.5-1.2Z" /></svg>
+          Apple&nbsp;Pay
+        </button>}
+        {w.google && <button type="button" onClick={() => buy(P30, "googlepay")} aria-label="Google Pay" className="sg-wbtn sg-wbtn-light" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#fff", color: "#3c4043", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" /><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" /></svg>
+          Google&nbsp;Pay
+        </button>}
+      </div>
+      <p style={{ margin: "11px 0 0", textAlign: "center", fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.6)" }}>{_t(lang, <>Paiement <span style={G}>unique</span> · accès immédiat · aucun compte à créer</>, <>One-time <span style={G}>payment</span> · instant access · no account</>, <>Pago <span style={G}>único</span> · acceso inmediato · sin cuenta</>)}</p>
+    </div>
+  ) : null
   // carte secondaire (7j / saison)
   const SecCard = ({ p, label, desc, perdayTxt }) => (
     <button onClick={() => buy(p)} className="sg-passcard-sec" style={{
@@ -71,6 +119,76 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
       </span>
     </button>
   )
+
+  // ── É2 : PRÉLUDE DE PREUVE opt-in (renversement de statut + honnêteté auditée) ──
+  //    Rendu À LA PLACE de l'offre uniquement après le tap volontaire. Retour = É1 (wallet
+  //    à 1 geste, aucune re-saisie). Promesse POSITIVE-statut, ZÉRO couleur fabriquée.
+  if (seq && showProof && proof) {
+    const days = proof.days || []
+    const STC = { clean: "#22C55E", moderate: "#E8A800", avoid: "#E8522A" }
+    const dayLab = (i) => i === 0 ? _t(lang, "Auj", "Today", "Hoy") : i === 1 ? _t(lang, "Dem", "Tom", "Mañ") : "J+" + i
+    return (
+      <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+        <style>{SEQ_STEP_CSS + FC_DARK_CSS}</style>
+        <div className="sgseq-step">
+          <button type="button" onClick={backProof} className="sg-payplain" aria-label={_t(lang, "Retour", "Back", "Atrás")}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 44, padding: "4px 12px 4px 4px", cursor: "pointer", font: "800 13px/1 'Bricolage Grotesque',sans-serif" }}>
+            <span style={{ fontSize: 22, lineHeight: 1 }}>‹</span> {_t(lang, "Retour", "Back", "Atrás")}
+          </button>
+          <SeqDots n={2} at={2} ink="#EAF7F4" gold="#FFC72C" />
+          <h2 ref={proofTitleRef} tabIndex={-1} className="anton" style={{ fontSize: 24, lineHeight: 1.06, color: "#fff", margin: "8px 0 0", letterSpacing: "-.005em", outline: "none" }}>
+            {_t(lang, "Deviens celui qui connaît la fin de l'histoire.", "Become the one who knows how the story ends.", "Conviértete en quien conoce el final de la historia.")}
+          </h2>
+          <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.76)", margin: "10px 0 0" }}>
+            {_t(lang,
+              "Le satellite voit les bancs au large des jours avant la côte. Auj et Dem sont mesurés ; les jours suivants restent verrouillés tant qu'on ne les a pas mesurés — on ne fabrique jamais une couleur.",
+              "The satellite sees the rafts offshore days before the coast. Today and Tomorrow are measured; the following days stay locked until we've measured them — we never fabricate a color.",
+              "El satélite ve los bancos mar adentro días antes que la costa. Hoy y Mañana están medidos; los días siguientes quedan bloqueados hasta medirlos — nunca fabricamos un color.")}
+          </p>
+          {proof.hasGrid && (
+            <div className="sgseq-fc">
+              <div className="sgseq-fc-top">
+                <span>{_t(lang, "Prévision 7 jours", "7-day forecast", "Pronóstico 7 días")}</span>
+                {proof.beachName && <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "56%", opacity: .85 }}>{proof.beachName}</span>}
+              </div>
+              <div className="sgseq-fc-grid">
+                {days.map((d, i) => (
+                  <div key={i} className={"sgseq-fc-day" + (d ? "" : " lock")}>
+                    <div className="sgseq-fc-lab">{dayLab(i)}</div>
+                    {d
+                      ? <><div className="sgseq-fc-dot" style={{ background: STC[d.status] || "#888" }} /><div className="sgseq-fc-conf">{d.confidence ? d.confidence + " %" : ""}</div></>
+                      : <div aria-hidden="true" style={{ fontSize: 13, lineHeight: "14px", color: "rgba(234,247,244,.45)" }}>🔒</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {proof.proofLine && (
+            <div style={{ margin: "12px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(34,197,94,.07)", border: "1px solid rgba(34,197,94,.18)" }}>
+              <div style={{ fontSize: 12.5, lineHeight: 1.4, fontWeight: 700, color: "#EAF7F4" }}>{proof.proofLine}</div>
+              <div style={{ fontSize: 11, lineHeight: 1.4, fontWeight: 600, color: "rgba(234,247,244,.62)", marginTop: 5 }}>
+                {_t(lang, "76 à 79 % tous régimes selon la saison · confiance affichée sur chaque alerte", "76 to 79% across all regimes depending on season · confidence shown on every alert", "76 a 79 % en todos los regímenes según la temporada · confianza en cada alerta")}
+              </div>
+              <a href={proof.relHref} target="_blank" rel="noopener" style={{ display: "inline-block", marginTop: 7, fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
+                {_t(lang, "Vérifier le registre public →", "Check the public record →", "Ver el registro público →")}
+              </a>
+            </div>
+          )}
+          {proof.freshLine && (
+            <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: "rgba(234,247,244,.55)", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />{proof.freshLine}
+            </div>
+          )}
+          <button type="button" onClick={backProof} className="sg-paygold" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 16, borderRadius: 14, padding: "15px", border: "none", fontFamily: "inherit", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>
+            {_t(lang, "Revenir à mon pass →", "Back to my pass →", "Volver a mi pase →")}
+          </button>
+          <div style={{ textAlign: "center", marginTop: 10, fontSize: 11.5, fontStyle: "italic", fontWeight: 600, color: "rgba(234,247,244,.6)" }}>
+            {_t(lang, "On regarde la mer pour toi.", "We watch the sea for you.", "Miramos el mar por ti.")}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
@@ -108,10 +226,12 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
           <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>100%</span>
           {_t(lang, "de nos prévisions « mer propre » se sont vérifiées (saison calme, sur 2274) · ~76% tous régimes confondus · mesuré au satellite, jamais deviné.", "of our \"clean water\" calls proved correct (calm season, over 2274) · ~76% across all regimes · measured by satellite, never guessed.", "de nuestros pronósticos de \"agua limpia\" se cumplieron (temporada tranquila, sobre 2274) · ~76% en todos los regímenes · medido por satélite, nunca adivinado.")}
         </div>
-        {/* Honnêteté auditée AVANT le prix (storytelling temps 5) : lien cliquable vers
-            la page « on publie nos erreurs ». Localisé FR/EN/ES. Rollback : ?rellink=0. */}
+        {/* Preuve auditée AVANT le prix (storytelling temps 5). Bras seq (canProof) : le tap OUVRE l'écran
+            preuve IN-MODAL (supprime le leak d'onglet externe /fiabilite/) ; sinon lien externe.
+            Reste un <a> (immune au skin .theme-X button + degrade si JS échoue). Rollback ?rellink=0. */}
         {(() => { try { return !/[?&]rellink=0/.test(window.location.search) } catch (e) { return true } })() && (
-          <a href={lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/"} target="_blank" rel="noopener"
+          <a href={(proof && proof.relHref) || (lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/")} target="_blank" rel="noopener"
+            onClick={(e) => { if (canProof) { e.preventDefault(); openProof() } }}
             style={{ display: "block", textAlign: "center", margin: "9px 0 0", fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
             {_t(lang, "Avant de payer, allez voir nos erreurs →", "Before you pay, go see our errors →", "Antes de pagar, vea nuestros errores →")}
           </a>
@@ -196,28 +316,10 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
             perdayTxt={_t(lang, "le meilleur prix", "best value", "mejor precio")} />}
         </div>
 
-        {/* PAIEMENT NATIF — Apple / Google Pay. Gaté par capacité device (walletAvail) :
-            on ne montre QUE le wallet réellement dispo (jamais un bouton mort). ?wcap=0 force les deux. */}
-        {(w.apple || w.google) && (
-        <div style={{ margin: "16px 0 0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 11px" }}>
-            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
-            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".04em", color: "rgba(234,247,244,.42)", textTransform: "uppercase", whiteSpace: "nowrap" }}>{_t(lang, "1 geste, sans créer de compte", "one tap, no account", "1 toque, sin cuenta")}</span>
-            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
-          </div>
-          <div style={{ display: "flex", gap: 9 }}>
-            {w.apple && <button onClick={() => buy(P30, "applepay")} aria-label="Apple Pay" className="sg-wbtn sg-wbtn-dark" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#000", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
-              <svg width="16" height="19" viewBox="0 0 17 20" fill="#fff" aria-hidden="true"><path d="M14.1 6.6c-.1.1-1.9 1-1.9 3.2 0 2.6 2.3 3.5 2.4 3.5 0 .1-.4 1.3-1.2 2.5-.7 1.1-1.5 2.2-2.7 2.2-1.1 0-1.5-.7-2.8-.7-1.3 0-1.7.7-2.7.7-1.2 0-2-1.2-2.8-2.3C1.3 14 .5 11.6.5 9.4c0-3.6 2.3-5.5 4.6-5.5 1.2 0 2.2.8 2.9.8.7 0 1.8-.8 3.2-.8.5 0 2.3 0 3.5 1.7-.1.1-1.5.9-1.5 1ZM10.4 2.4c.6-.7 1-1.6.9-2.5-.9 0-1.9.6-2.5 1.3-.5.6-1 1.5-.9 2.4 1 .1 1.9-.5 2.5-1.2Z" /></svg>
-              Apple&nbsp;Pay
-            </button>}
-            {w.google && <button onClick={() => buy(P30, "googlepay")} aria-label="Google Pay" className="sg-wbtn sg-wbtn-light" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#fff", color: "#3c4043", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
-              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" /><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" /></svg>
-              Google&nbsp;Pay
-            </button>}
-          </div>
-          <p style={{ margin: "11px 0 0", textAlign: "center", fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.6)" }}>{_t(lang, <>Paiement <span style={G}>unique</span> · accès immédiat · aucun compte à créer</>, <>One-time <span style={G}>payment</span> · instant access · no account</>, <>Pago <span style={G}>único</span> · acceso inmediato · sin cuenta</>)}</p>
-        </div>
-        )}
+        {/* PAIEMENT NATIF — Apple / Google Pay (gaté walletAvail, jamais un bouton mort ; ?wcap=0
+            force les deux). Position IDENTIQUE dans les 2 bras A/B (la seule différence passseq
+            = le lien preuve ci-dessus qui ouvre l'écran É2 in-modal au lieu d'un onglet externe). */}
+        {walletSection(16)}
 
         {/* money-back « remboursé » RETIRÉ (2026-06-29 : pass one-time, accès numérique
             immédiat → pas de garantie de remboursement volontaire). Réassurance « paiement
