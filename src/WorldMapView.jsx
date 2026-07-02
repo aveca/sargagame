@@ -205,7 +205,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 
 export default function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
-  onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true,
+  onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
 }){
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
@@ -1750,10 +1750,19 @@ export default function WorldMapView({
         </div>
 
         {/* Aperçu vendeur B2B : carte « Partenaire (aperçu) » flottante (depuis /pro/espace/,
-            ?preview_name=). Montre à l'hôtelier son futur encart. Verdict = 100% data, intact. */}
-        {previewHotel&&(
-          <div style={{position:"absolute",left:"50%",top:"min(33%, 300px)",transform:"translateX(-50%)",
-            width:"calc(100% - 40px)",maxWidth:380,pointerEvents:"auto",
+            ?preview_name=). Montre à l'hôtelier son futur encart. Quand ?preview_beach=
+            résout SA plage (prop previewBeach, résolue dans Sargasses_PROD), la carte
+            devient tappable → ouvre la fiche de LA plage où l'encart vivra (div
+            role=button, pas <button> : racine .sg-onink-scope strippe la chrome des
+            boutons). Verdict = 100% data, intact. */}
+        {previewHotel&&(()=>{
+          const openPreviewFiche=previewBeach?(via)=>{try{track&&track("sg_b2b_preview_map_tap",{beach_id:previewBeach.id,via})}catch(_){}; onOpenBeach&&onOpenBeach(previewBeach)}:null
+          return (
+          <div role={previewBeach?"button":undefined} tabIndex={previewBeach?0:undefined}
+            onClick={openPreviewFiche?()=>openPreviewFiche("tap"):undefined}
+            onKeyDown={openPreviewFiche?(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openPreviewFiche("kbd")}}:undefined}
+            style={{position:"absolute",left:"50%",top:"min(33%, 300px)",transform:"translateX(-50%)",
+            width:"calc(100% - 40px)",maxWidth:380,pointerEvents:"auto",cursor:previewBeach?"pointer":"default",
             background:"#fff",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:14,padding:"12px 14px",
             fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}>
@@ -1764,11 +1773,17 @@ export default function WorldMapView({
               <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,background:"#f1ede2",border:`1.5px solid ${INK}`}}>🏨</span>
               <div style={{flex:"1 1 auto",minWidth:0}}>
                 <div style={{font:"800 14px/1.2 'Bricolage Grotesque'",color:"#1a1726",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewHotel}</div>
-                <div style={{font:"600 11px/1.35 'Bricolage Grotesque'",color:"#6b6b75",marginTop:2}}>{_t(lang,"Votre encart, sur la fiche de votre plage. Le verdict reste 100 % data.","Your spot, on your beach's page. The verdict stays 100% data.","Tu marca, en la ficha de tu playa. El veredicto sigue 100 % datos.")}</div>
+                <div style={{font:"600 11px/1.35 'Bricolage Grotesque'",color:"#6b6b75",marginTop:2}}>{previewBeach
+                  ?_t(lang,`Votre encart, sur la fiche de ${previewBeach.name}. Le verdict reste 100 % data.`,`Your spot, on the ${previewBeach.name} page. The verdict stays 100% data.`,`Tu marca, en la ficha de ${previewBeach.name}. El veredicto sigue 100 % datos.`)
+                  :_t(lang,"Votre encart, sur la fiche de votre plage. Le verdict reste 100 % data.","Your spot, on your beach's page. The verdict stays 100% data.","Tu marca, en la ficha de tu playa. El veredicto sigue 100 % datos.")}</div>
+                {previewBeach&&<div style={{font:"800 12px/1.2 'Bricolage Grotesque'",color:"#0d2330",marginTop:7,textDecoration:"underline",textUnderlineOffset:2}}>
+                  {_t(lang,"Voir votre encart sur la fiche →","See your spot on the page →","Ver tu recuadro en la ficha →")}
+                </div>}
               </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {/* Légende — bottom 164px (pas 74px) : depuis la restauration des pastilles
             sg-mapchip (2026-07-01), la chip hôtel est trop large pour cohabiter avec

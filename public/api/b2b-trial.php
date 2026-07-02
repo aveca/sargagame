@@ -48,6 +48,11 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 $name   = substr(preg_replace('/[<>"]/', '', (string)($in['name'] ?? '')), 0, 60);
+// Slug de LA plage de l'établissement (ex. plage-des-salines) : re-propagé dans le
+// lien espace emailé (?k=&beach=&name=) pour que l'espace ré-ouvre PERSONNALISÉ —
+// widget pré-réglé + démo « mise en avant » ancrée au bon endroit dans l'app
+// (le lien historique ?k= nu perdait ce contexte à chaque retour, grief 2026-07-02).
+$beach  = strtolower(substr(preg_replace('/[^A-Za-z0-9-]/', '', (string)($in['beach'] ?? '')), 0, 60));
 // Island : EUR (MQ/GP) + USD (florida/puntacana/rivieramaya), même périmètre que la
 // caisse Mollie. Sans les USD, un hôtelier florida/puntacana/rivieramaya retombait sur
 // MQ → email FR vers le mauvais domaine. Normalisation insensible à la casse, inconnu → MQ.
@@ -66,7 +71,7 @@ $token = sg_widget_sign($email, 30);
 // si l'onglet est fermé. Charge la config (resend_key) sans bloquer si absente en local.
 $cfg = @include __DIR__ . '/mollie-config.php';
 if (!is_array($cfg)) $cfg = [];
-if (function_exists('mol_b2b_trial_email')) { @mol_b2b_trial_email($cfg, $email, $token, $name, $island); }
+if (function_exists('mol_b2b_trial_email')) { @mol_b2b_trial_email($cfg, $email, $token, $name, $island, $beach); }
 
 // Best-effort : enregistre le lead via l'action Apps Script EXISTANTE (zéro clasp).
 // Échec silencieux : ne JAMAIS bloquer l'activation de l'essai sur ce log.

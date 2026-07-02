@@ -484,7 +484,7 @@ function mol_founder_alert($subject, $html) {
         . '<p style="font-size:12px;color:#999;margin-top:16px">Auto-alerte mollie-webhook — Le Veilleur</p></div>');
 }
 
-function mol_b2b_trial_email($cfg, $email, $token, $name = '', $island = '') {
+function mol_b2b_trial_email($cfg, $email, $token, $name = '', $island = '', $beach = '') {
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$token) return false;
     // Plafond PAR DESTINATAIRE (indépendant de l'IP) : le cap par IP de _ratelimit.php
     // est contournable (CF-Connecting-IP forgé en direct-origin) → on borne aussi le
@@ -501,6 +501,11 @@ function mol_b2b_trial_email($cfg, $email, $token, $name = '', $island = '') {
     $lang   = $brand['lang'];
     $hi     = $name !== '' ? (' ' . htmlspecialchars($name)) : '';
     $espace = 'https://' . $domain . '/pro/espace/?k=' . rawurlencode($token);
+    // Contexte plage+nom RE-PROPAGÉ dans le lien (additif) : l'espace ré-ouvre
+    // personnalisé (widget pré-réglé, démo in-app ancrée à SA plage) au lieu du
+    // ?k= nu qui retombait sur la plage par défaut à chaque retour.
+    if ($beach !== '') $espace .= '&beach=' . rawurlencode($beach);
+    if ($name !== '')  $espace .= '&name=' . rawurlencode($name);
     $btn    = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px';
     if ($lang === 'en') {
         $titre = 'Your Sargassum Pro trial — 30 days, no card';

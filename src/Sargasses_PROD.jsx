@@ -1187,7 +1187,7 @@ export const T={
    ═══════════════════════════════════════════════════════════════════════════ */
 export const BEACHES_FALLBACK=[
   {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,kids:true,snorkel:false,parking:true,drive:52},
-  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îles",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
+  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
   {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,kids:true,snorkel:true,parking:true,drive:25},
   {id:"mq016",island:"mq",name:"Plage du Diamant",commune:"Le Diamant",lat:14.4758027,lng:-61.0314046,kids:false,snorkel:false,parking:true,drive:32},
   {id:"mq005",island:"mq",name:"Anse Trabaud",commune:"Sainte-Anne",lat:14.4101296,lng:-60.8482068,kids:false,snorkel:false,parking:true,drive:52},
@@ -12186,6 +12186,51 @@ export default function App(){
   },[showOnboarding])
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
   const onMapBeach=useCallback(b=>{ if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick])
+  // ⭐ Aperçu vendeur B2B ANCRÉ (grief fondateur 2026-07-02 : la démo ne s'affichait ni
+  // au bon endroit sur la carte, ni sur la fiche). Depuis /pro/espace/, le lien « Voir
+  // l'aperçu dans l'app » porte ?preview_beach=<id data|app> → on résout LA plage de
+  // l'établissement (SARG_TO_BEACH pour MQ/GP, id direct pour USD), on zoome la carte
+  // sur sa côte (initialZone) et on ouvre sa fiche comic — qui porte l'encart
+  // « Partenaire (aperçu) » synthétisé (usePartner, ChasseHome). Rollback ?b2bpreview=0.
+  // Le verdict affiché reste 100 % data ERDDAP, jamais influencé par l'aperçu.
+  const previewBeachObj=useMemo(()=>{
+    try{
+      const q=window.location.search
+      if(/[?&]b2bpreview=0/.test(q))return null
+      if(!/[?&]preview_(?:name|partner)=/.test(q))return null
+      const m=q.match(/[?&]preview_beach=([^&]+)/)
+      if(!m)return null
+      const pv=decodeURIComponent(m[1]).replace(/[^a-z0-9-]/g,"")
+      const bid=SARG_TO_BEACH[pv]||pv
+      return allBeaches.find(b=>b.id===bid)||null
+    }catch(_){return null}
+  },[allBeaches])
+  const previewOpenedRef=useRef(false)
+  useEffect(()=>{
+    if(!previewBeachObj)return
+    if(previewOpenedRef.current){
+      // allBeaches se ré-hydrate (merge sargData post-load) → l'objet plage capturé à
+      // l'ouverture est périmé (« —/100 »). Même logique que le deep-link /plages/:slug
+      // (qui re-set à chaque [allBeaches]) : on rafraîchit la fiche SI elle montre
+      // encore la plage preview — sans ré-ouvrir si l'hôtelier l'a fermée.
+      setComicBeach(cb=>cb&&cb.id===previewBeachObj.id?previewBeachObj:cb)
+      return
+    }
+    // 0 fabrication (panel adverse 2026-07-02) : ne JAMAIS ouvrir la démo sur l'objet
+    // BEACHES_FALLBACK (sans status/score → « BAIGNADE OK » inventé devant un prospect).
+    // dataReady = même gate que la carte ; bootSafety 5 s en ceinture si le fetch meurt.
+    if(!dataReady)return
+    previewOpenedRef.current=true
+    setShowHero(false);setShowPrevLanding(false);setShowCleanList(false);setShowAlertHub(false)
+    setSelectedBeach(null)
+    try{
+      const z=(COAST_ZONES[previewBeachObj.island]||[]).find(z=>(z.communes||[]).includes(previewBeachObj.commune))
+      if(z)setInitialZone(z.slug)
+    }catch(_){}
+    setShowArchipel(true)
+    setComicBeach(previewBeachObj)
+    try{track("sg_b2b_preview_open",{beach_id:previewBeachObj.id})}catch(_){}
+  },[previewBeachObj,dataReady])
   const closeSheet=useCallback(()=>{
     const closing=selectedBeach
     setSelectedBeach(null)
@@ -13128,6 +13173,7 @@ export default function App(){
                 seasonOutlook={sargData?.seasonOutlook||null}
                 topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                 onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; setShowProB2B(true)}}
+                previewBeach={previewBeachObj}
                 onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>

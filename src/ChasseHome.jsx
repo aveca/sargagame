@@ -281,7 +281,7 @@ function cleanNearby(beach,pool){
 function fc7On(){ try{ return !/[?&]fc7=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
 /* Inverse de SARG_TO_BEACH (SOURCE DE VÉRITÉ = src/Sargasses_PROD.jsx) : beach.id →
    id de zone sentinelle dans weekly{}. Carte stable (20 zones MQ/GP) — garder synchro. */
-const SARG_BY_BEACH={mq014:"grande-anse",mq011:"anse-mitan",mq012:"anse-noire",mq034:"tartane",mq024:"anse-madame",mq016:"diamant",mq008:"pt-marin",mq004:"sainte-anne",mq001:"les-salines",mq044:"vauclin",gp021:"gp-grande-anse",gp031:"gp-malendure",gp010:"gp-sainte-anne",gp005:"gp-pt-chateaux",gp012:"gp-gosier",gp009:"gp-caravelle",gp014:"gp-bas-du-fort",gp024:"gp-deshaies",gp080:"gp-moule",gp042:"gp-vieux-fort"}
+const SARG_BY_BEACH={mq014:"grande-anse",mq011:"anse-mitan",mq012:"anse-noire",mq034:"tartane",mq024:"anse-madame",mq016:"diamant",mq008:"pt-marin",mq004:"sainte-anne",mq001:"les-salines",mq044:"vauclin",mq033:"precheur",gp021:"gp-grande-anse",gp031:"gp-malendure",gp010:"gp-sainte-anne",gp005:"gp-pt-chateaux",gp012:"gp-gosier",gp009:"gp-caravelle",gp014:"gp-bas-du-fort",gp024:"gp-deshaies",gp080:"gp-moule",gp042:"gp-vieux-fort"}
 function resolveForecast(beach,sargData){
   if(!beach||!sargData) return null
   if(Array.isArray(beach.forecast)&&beach.forecast.length) return beach.forecast
@@ -350,7 +350,34 @@ function usePartner(beachId){
     try{ const m=window.location.search.match(/[?&]preview_partner=([^&]+)/); if(m) preview=decodeURIComponent(m[1]) }catch(_){}
     loadPartners().then(d=>{
       if(!live) return
-      if(preview){ const hit=(d.preview||[]).concat(d.partners||[]).find(x=>x.slug===preview); setP(hit?{...hit,_preview:true}:null); return }
+      if(preview){
+        const hit=(d.preview||[]).concat(d.partners||[]).find(x=>x.slug===preview)
+        if(hit){ setP({...hit,_preview:true}); return }
+        /* Slug hors catalogue = prospect self-serve venu de /pro/espace/ : encart
+           synthétisé depuis l'URL (preview_name / preview_tagline), UNIQUEMENT sur la
+           fiche de SA plage (preview_beach requis, id data « les-salines » ou id app
+           « mq001 ») — jamais « toute fiche », sinon une URL forgée par un tiers
+           placarderait son nom partout (panel adverse 2026-07-02) ; sans preview_beach,
+           la carte flottante générique de WorldMapView reste la démo. Pas d'url → pas
+           de bouton « Voir » (rien d'inventé). Rollback ?b2bpreview=0. Le verdict
+           au-dessus reste 100 % data ERDDAP, jamais influencé. */
+        try{
+          const q=window.location.search
+          if(!/[?&]b2bpreview=0/.test(q)){
+            const nm=q.match(/[?&]preview_name=([^&]+)/)
+            const tg=q.match(/[?&]preview_tagline=([^&]+)/)
+            const pb=q.match(/[?&]preview_beach=([^&]+)/)
+            const name=nm?decodeURIComponent(nm[1]).replace(/[<>]/g,"").slice(0,48):""
+            const bid=pb?decodeURIComponent(pb[1]).replace(/[^a-z0-9-]/g,""):""
+            const onBeach=!!bid&&(bid===beachId||SARG_BY_BEACH[beachId]===bid)
+            if(name&&onBeach){
+              setP({slug:preview,name,tagline:tg?decodeURIComponent(tg[1]).replace(/[<>]/g,"").slice(0,90):null,url:null,logo:null,_preview:true})
+              return
+            }
+          }
+        }catch(_){}
+        setP(null); return
+      }
       setP((d.partners||[]).find(x=>x.beachId===beachId)||null)
     })
     return ()=>{live=false}

@@ -373,12 +373,23 @@
     if(hotel){$("hotelLine").innerHTML=" · <span class='hotel'>"+hotel+"</span>";document.title=tr("docTitle")+" — "+hotel;}
     $("pName").textContent=hotel||tr("pNameDefault");
     if(Q.get("tagline"))$("pTag").textContent=Q.get("tagline").slice(0,90);
-    // lien aperçu in-app : on passe le nom de l'hôtel → l'app affiche une carte
-    // « Partenaire (aperçu) » flottante sur la carte (là où l'hôtelier atterrit),
-    // même sans slug au catalogue. (L'aperçu inline ci-dessus reste la preuve immédiate.)
+    // lien aperçu in-app ANCRÉ (grief 2026-07-02 : la démo ne s'affichait ni au bon
+    // endroit sur la carte ni sur la fiche) : en plus du nom, on passe
+    // preview_beach=<id data> → l'app zoome sur la côte de LA plage de l'établissement
+    // et ouvre sa fiche avec l'encart « Partenaire (aperçu) » dessus. Le lien SUIT la
+    // plage choisie dans le widget builder (setPreviewLink rappelé par upd()).
     var partner=(Q.get("partner")||"").replace(/[^a-z0-9-]/g,"");
-    var pvName=encodeURIComponent((hotel||tr("pNameDefault")).slice(0,48));
-    $("previewLink").href="https://"+DOMAIN+"/?preview_partner="+(partner||"preview")+"&preview_name="+pvName;
+    var pvTagline=Q.get("tagline")?("&preview_tagline="+encodeURIComponent(Q.get("tagline").replace(/[<>]/g,"").slice(0,90))):"";
+    function setPreviewLink(slug,domain){
+      var bid=SLUG2ID[slug]||"";
+      // Nom recalculé à CHAQUE appel — priorité au ?name= d'outreach (nom d'établissement
+      // authentique) ; le titre tapé dans le builder (nm, « ex. La plage de l'hôtel ») ne
+      // sert que de fallback. nm est déclaré plus bas — var hoisté, undefined au 1er appel.
+      var n=hotel||((typeof nm!=="undefined"&&nm&&nm.value)||"").replace(/[<>]/g,"").trim().slice(0,48)||tr("pNameDefault");
+      $("previewLink").href="https://"+(domain||DOMAIN)+"/?preview_partner="+(partner||"preview")+"&preview_name="+encodeURIComponent(n)
+        +(bid?("&preview_beach="+encodeURIComponent(bid)):"")+pvTagline;
+    }
+    setPreviewLink(beachSlug);
 
     // ── 1. plages en direct ──
     function relAge(u){var h=(Date.now()-new Date(u).getTime())/3.6e6;if(!(h>=0))return null;var unit=LANG==="es"?{m:" min",h:" h",d:" d"}:LANG==="en"?{m:" min",h:" h",d:" d"}:{m:" min",h:" h",d:" j"};return h<1?Math.max(1,Math.round(h*60))+unit.m:(h<36?Math.round(h)+unit.h:Math.round(h/24)+unit.d);}
@@ -412,7 +423,7 @@
     function dom(){return USD_REGION?DOMAIN:(SLUG2ISL[b.value]==="GP"?"sargasses-guadeloupe.com":"sargasses-martinique.com");}
     function qs(){var p=new URLSearchParams();p.set("beach",b.value);var hex=a.value.replace("#","").toUpperCase();if(hex&&hex!=="009E8E")p.set("accent",hex);var n=(nm.value||"").trim();if(n)p.set("name",n);if(token)p.set("k",token);return p.toString();}
     function snippet(){var d=dom();var s='<div style="max-width:520px">\n  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="168" frameborder="0"\n    title="'+tr("widgetIframeTitle")+(nm.value?(" — "+nm.value.replace(/"/g,"")):"")+'"\n    style="border:0;width:100%"\n  ></iframe>\n';if(!token){s+='  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">'+tr("widgetCredit")+' <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses</a></p>\n';}s+='</div>';return s;}
-    function upd(){prev.src="/widget/embed/?"+qs();code.textContent=snippet();}
+    function upd(){prev.src="/widget/embed/?"+qs();code.textContent=snippet();setPreviewLink(b.value,dom());}
     [b,nm,a].forEach(function(e){e.addEventListener("input",upd);e.addEventListener("change",upd);});
     $("copy").addEventListener("click",function(){navigator.clipboard.writeText(code.textContent).then(function(){$("copy").textContent=tr("copied");setTimeout(function(){$("copy").textContent=tr("copyBtn")},1700);});});
     upd();
@@ -425,7 +436,16 @@
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); return; }
       var btn=$("trialBtn"); btn.textContent=tr("trialActivating"); btn.disabled=true;
-      fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,name:hotel,beach:beachSlug,island:island})})
+      // Contexte LIVE du builder (panel adverse 2026-07-02) : la plage/le nom choisis
+      // dans le widget, pas les valeurs figées au chargement — sinon le lien espace
+      // emailé (?k=&beach=&name=) ré-ancre la MAUVAISE plage au retour. L'île suit la
+      // plage sélectionnée (email FR bon domaine si plage GP choisie depuis MQ).
+      var selBeach=(b&&SLUG2ID[b.value])?b.value:beachSlug;
+      // Nom : l'URL d'outreach (?name=) reste prioritaire — nm est un TITRE de widget
+      // (« ex. La plage de l'hôtel »), il ne sert que de fallback si aucun nom connu.
+      var selName=hotel||(((nm&&nm.value)||"").replace(/[<>"]/g,"").trim().slice(0,48));
+      var selIsland=USD_REGION?island:(SLUG2ISL[selBeach]||island);
+      fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:em,name:selName,beach:selBeach,island:selIsland})})
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.ok&&d.token){
             token=d.token; upd();            // applique le token → widget marque blanche
