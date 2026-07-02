@@ -1528,8 +1528,10 @@ export default function ChasseHome(props){
   useEffect(()=>{ if(streak7Enabled&&track) try{ track("sg_chasse_streak7_shown",{streak:st.streak,best:st.best,live:sweek.live?1:0,cycles:sweek.cycles}) }catch(_){} },[streak7Enabled]) // eslint-disable-line
 
   return (
+    // fixed (pas absolute) : échappe au #root effondré ~74px sous body.theme-comic
+    // (Themes.css, MINE-ROOT-RELATIVE) ; seule voie d'accès = ?hero=1 (Sargasses_PROD.jsx ~L10955).
     <div className={"lc-root"+(reduce?" lc-reduce":"")} role="dialog" aria-label="La Chasse"
-      style={{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
+      style={{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
         WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
         opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
         transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>

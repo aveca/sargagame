@@ -9,6 +9,18 @@
    ==================================================================== */
 
 /* ============================ COMIC / TCG ============================ */
+/* ⚠️ DETTE-TOKENS-INERTES — ce bloc ne s'applique JAMAIS. La classe theme-comic vit
+   sur BODY (Sargasses_PROD.jsx ~L11035), ce sélecteur :root.* ne matche donc jamais.
+   Les règles .theme-comic X{...var(--sg-*)...} ci-dessous résolvent les tokens LIGHT
+   d'index.html:96 (#FFFFFF/#000000/...), ou les tokens .theme-dark si html.theme-dark
+   (chemin RÉSIDUEL : population legacy sg_theme=dark, le toggle Header est enterré
+   sous la carte racine — vérifier ce chemin avant de hardcoder une var()).
+   NE PAS écrire var(--sg-*) dans une règle .theme-comic en croyant obtenir cette
+   palette. Ce bloc contient du rouge #e8322a rejeté par le fondateur (cf. plus bas
+   « cartes rouges moches » / « plus de rouge ») et du bleu #1f93d4 jamais validé.
+   Toute activation future = REDESIGN (panel adverse + screenshots multi-écrans +
+   flag ?comictokens=0 + audit des paires de contraste), JAMAIS un bugfix
+   opportuniste. Réf. croisée : app-runtime.css ~L230 (workarounds consommateurs). */
 :root.theme-comic{
   --sg-bg:#1f93d4; --sg-bgD:#0f6f9e;
   --sg-card:#fdf6e3; --sg-cardS:#f3e7c9;
@@ -26,7 +38,9 @@ body.theme-comic{
      mesuré → le body débordait sous #root et montrait sa bande orange pointillée en bas (+ le
      bleu en haut). Le body est de toute façon masqué par #root une fois --sg-vh posé, donc ce
      dégradé n'était jamais un fond voulu — seulement une fuite. Sombre = zéro fuite colorée.
-     (Le « papier comic » voulu vit sur les cartes via --sg-card:#fdf6e3, inchangé.) */
+     (Le papier crème ne vit QUE sur .sg-l-card via son gradient HARDCODÉ ci-dessous ;
+     les autres surfaces (.sheet/.gf-card/...) reçoivent var(--sg-card)=#FFFFFF light —
+     le token #fdf6e3 est inerte, cf. DETTE-TOKENS-INERTES en tête de fichier.) */
   background:#0d1117 !important;
   color:var(--sg-ink);
   font-family:"Bricolage Grotesque","Comic Neue",system-ui,sans-serif;
@@ -48,6 +62,15 @@ body.theme-comic{
 /* (paywall .sg-modal-panel non stylé — exclu volontairement, cf. note plus haut) */
 /* boutons génériques / lignes cliquables = carte PAPIER encrée (PAS rouge — feedback
    fondateur "cartes rouges moches"). Le rouge est réservé aux VRAIS CTA primaires. */
+/* ⚠️ MINE-SKIN-THEME — mine PROUVÉE 3× (chips carte, pastille digest, hub portalisés,
+   cf. checklist self-review CLAUDE.md) : ce skin !important ÉCRASE les
+   background/border/box-shadow INLINE de tout <button>/[role="button"] sous
+   body.theme-comic, y compris les portails montés sur document.body ; le catch-all
+   [class*="cta"] plus bas taxe le NOMMAGE (cf. Sargasses_PROD.jsx ~L3512 « Classe
+   SANS cta dans le nom »). Recettes de sortie prouvées : .sg-onink-scope ·
+   doublé-classe .x.x (app-runtime.css ~L217-240, triple-classe .sg-mapnav) ·
+   classe SANS "cta" dans le nom · html body .sg-paygold/.sg-wbtn/.sg-passcard
+   (fin de ce fichier). */
 .theme-comic button,.theme-comic [role="button"]{
   font-family:"Bricolage Grotesque",sans-serif !important;
   border:3px solid var(--sg-ink) !important;border-radius:11px !important;
@@ -66,11 +89,26 @@ body.theme-comic{
 .theme-comic .sheet-handle{background:var(--sg-ink) !important;opacity:.85}
 
 /* ============================ commun : contenu au-dessus du fond ============================ */
+/* ⚠️ MINE-ROOT-RELATIVE — position:relative effondre #root à ~0-74px en mode
+   NAVIGATEUR (height:auto, l'inset:0 de la règle de base devient inopérant ; en
+   standalone iOS la height explicite d'app-runtime.css:9 s'applique quand même).
+   Les surfaces vivantes (carte/feuilles/modales) survivent car position:fixed —
+   les fixed échappent au containing block effondré ET au clipping overflow:hidden.
+   TOUT nouvel écran plein-viewport DOIT être position:fixed OU
+   createPortal(document.body) — sinon il est invisible (clippé). Victime connue :
+   l'arène .lc-root (fixée côté ChasseHome.jsx). NE PAS retirer relative en
+   one-liner : ça ressusciterait le game-toast idle (Sargasses_PROD.jsx ~L12480,
+   trigger 45s toujours actif ~L11312) + toute surface conditionnelle
+   in-flow/absolute anciennement clippée, avec une inconnue de sampling Liquid
+   Glass iOS 26 (index.html:143-152) invérifiable en headless → exige inventaire
+   complet + screenshots app-wide + flag rollback + arbitrage produit du toast. */
 .theme-comic #root,.theme-soft #root{position:relative;z-index:1}
 
 /* ============================ SOFT MODERN (clair, version A de l'A/B) ============================ */
 /* Direction "Soft Modern Comic" : clair, turquoise/crème, arrondi, contours fins, CTA teal.
    Aucun rouge. Paywall (.sg-modal-panel) VOLONTAIREMENT exclu (revenu protégé, comme comic). */
+/* ⚠️ INERTE — même dette que DETTE-TOKENS-INERTES en tête de fichier (la classe
+   theme-soft vit sur body, ce sélecteur :root.* ne matche jamais). */
 :root.theme-soft{
   --sg-bg:#eafaf6; --sg-bgD:#d6f2ea;
   --sg-card:#ffffff; --sg-cardS:#f2fbf8;
