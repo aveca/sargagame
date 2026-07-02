@@ -26,6 +26,33 @@ const PHASE_META = {
   "approche-saison": { c:"#D9920A", lbl:["Épaule","Shoulder","Transición"] },
   "pleine-saison":   { c:"#E8522A", lbl:["Chargé","Busy","Cargado"] },
 }
+// Fonds pastel des cellules mois (jury design 2026-07-02) : tint ~12 % du trio statut sur
+// paper — 12 cellules côte à côte en saturé étaient criardes ; la phase est REDONDÉE par la
+// forme dessinée (ligne plate / vaguelette + points / houle + bande dense), jamais le fond seul.
+const PHASE_PASTEL = { "hors-saison":"#E1F3E6", "approche-saison":"#F6EBD2", "pleine-saison":"#FBE5DC" }
+// Mini-état de mer du mois (« ligne claire », source standalone design/obs-scenes-ligne-claire.html).
+// Statique (doctrine calme) ; ancré en bas — le tiers haut de la cellule reste au label mois.
+function MonthCell({ phase }){
+  return (
+    <svg viewBox="0 0 56 40" aria-hidden="true" style={{display:"block",width:"100%",height:"auto"}}>
+      {phase==="pleine-saison" ? <>
+        <path d="M0 24q14-9 28 0t28 0v16h-56z" fill="#009E8E"/>
+        <path d="M0 24q14-9 28 0t28 0" fill="none" stroke={INK} strokeWidth="2"/>
+        <path d="M3 31q6.25-6 12.5 0t12.5 0t12.5 0t12.5 0v5h-50z" fill="#5a5233" stroke={INK} strokeWidth="2" strokeLinejoin="round"/>
+      </> : phase==="approche-saison" ? <>
+        <path d="M0 28q7-5 14 0t14 0t14 0t14 0v12h-56z" fill="#009E8E"/>
+        <path d="M0 28q7-5 14 0t14 0t14 0t14 0" fill="none" stroke={INK} strokeWidth="2"/>
+        <circle cx="13" cy="25" r="2" fill="#5a5233" stroke={INK} strokeWidth="1"/>
+        <circle cx="28" cy="27" r="2" fill="#5a5233" stroke={INK} strokeWidth="1"/>
+        <circle cx="43" cy="25" r="2" fill="#5a5233" stroke={INK} strokeWidth="1"/>
+      </> : <>
+        <rect y="27" width="56" height="13" fill="#009E8E"/>
+        <line x1="0" y1="27" x2="56" y2="27" stroke={INK} strokeWidth="2"/>
+        <path d="M20 33h9" fill="none" stroke="#FDFCF7" strokeWidth="2" strokeLinecap="round"/>
+      </>}
+    </svg>
+  )
+}
 const monthName = (mi, lang, style="long") => { try{ return new Date(2000,mi,1).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{month:style}).replace(/\.$/,"") }catch(_){ return "" } }
 const INK = "#0d0b14", PAPER = "#fdf6e3", GOLD = "#FFC72C"
 
@@ -235,6 +262,8 @@ export default function WeekHub({
   // message J-7 / l'optin n'ont de sens QUE sur une vraie date saisie (jamais fabriquée).
   // Rollback ?plmois=0 → layout historique input-date-primaire.
   const plmoisOff = useMemo(()=>{ try{ return /[?&]plmois=0/.test(window.location.search) }catch(_){ return false } },[])
+  // Cellules mois « ligne claire » (dessin état de mer + fond pastel) vs chips plates.
+  const svgMois = useMemo(()=>{ try{ return !/[?&]svgmois=0/.test(window.location.search) }catch(_){ return true } },[])
   const [planMonth, setPlanMonth] = useState(null)
   const [showExactDate, setShowExactDate] = useState(false)
   // Mois effectif de la réponse : la date exacte saisie prime, sinon le mois tapé.
@@ -596,22 +625,31 @@ export default function WeekHub({
               {!monthFirst && planDateField}
 
               {/* Sélecteur MOIS-FIRST (panel 2026-07-02) : 12 mois à venir tappables (≥44px),
-                  phase par mois, réponse immédiate au tap. Rollback ?plmois=0. */}
+                  phase par mois, réponse immédiate au tap. Rollback ?plmois=0. Rendu
+                  « ligne claire » (jury 2026-07-02) : chaque cellule dessine l'état de mer
+                  du mois (forme = phase, fond pastel) — rollback ?svgmois=0 → chips plates. */}
               {monthFirst && (
                 <>
                   <div role="group" aria-label={_t(lang,"Choisir ton mois de voyage","Choose your travel month","Elegir tu mes de viaje")}
                     style={{display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:4}}>
-                    {seasonStrip.map(m=>(
+                    {seasonStrip.map(m=>{
+                      const phLbl=(PHASE_META[m.phase]||PHASE_META["hors-saison"]).lbl
+                      return (
                       <button key={m.idx} type="button" className="wk-chip wk-mois" aria-pressed={m.chosen} onClick={()=>pickMonth(m.idx)}
-                        style={{minHeight:48, borderRadius:8, boxSizing:"border-box", cursor:"pointer", padding:0,
-                          "--wkm":(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
-                          background:(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
+                        aria-label={`${monthName(m.idx,lang)} · ${_t(lang,phLbl[0],phLbl[1],phLbl[2])}`}
+                        style={{minHeight:svgMois?56:48, borderRadius:8, boxSizing:"border-box", cursor:"pointer", padding:0, overflow:"hidden",
+                          "--wkm":svgMois?(PHASE_PASTEL[m.phase]||PHASE_PASTEL["hors-saison"]):(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
+                          background:svgMois?(PHASE_PASTEL[m.phase]||PHASE_PASTEL["hors-saison"]):(PHASE_META[m.phase]||PHASE_META["hors-saison"]).c,
                           border:m.chosen?`2.5px solid ${INK}`:"1.5px solid rgba(13,11,20,.35)",
                           boxShadow:m.chosen?`0 0 0 2px ${GOLD}`:"none",
+                          display:svgMois?"flex":undefined, flexDirection:svgMois?"column":undefined, justifyContent:svgMois?"space-between":undefined,
                           font:`${m.chosen?"800":"700"} 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif`, color:INK}}>
-                        {m.label}
+                        {svgMois?<>
+                          <span style={{display:"block", padding:"5px 0 2px"}}>{m.label}</span>
+                          <MonthCell phase={m.phase}/>
+                        </>:m.label}
                       </button>
-                    ))}
+                    )})}
                   </div>
                   {phaseLegend}
                   {seasonDisclaimer}

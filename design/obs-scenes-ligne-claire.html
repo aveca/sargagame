@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Bibliothèque design (règle sg-svg-scene : tout widget SVG montré → sauvé en standalone).
+     Jury workflow 2026-07-02 (wf_60691a7c) : direction « ligne claire stricte » retenue.
+     Module A = mini-scènes observation fiche plage (96×64, cadre currentColor recoloré par
+     le bouton au statut sélectionné). Module B = cellules mois WeekHub (56×40, fond pastel
+     dérivé du trio statut, tiers haut libre pour le label mois). Algues = brun-vert
+     #5a5233/#6b5d2e (jamais de vert vif) ; zéro or sur statut ; statique (doctrine calme). -->
+<html lang="fr"><head><meta charset="utf-8"><title>Sargasses — scènes ligne claire (observation + mois)</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;padding:24px;max-width:760px;margin:auto}
+  h1{font-size:18px}h2{font-size:14px;margin-top:28px}
+  .row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  figure{margin:0;text-align:center;font-size:12px;font-weight:700}
+  .a svg{width:96px;height:64px;display:block}
+  .b svg{width:56px;height:40px;display:block}
+  .sel-propre{color:#22C55E}.sel-modere{color:#B87A00}.sel-beaucoup{color:#E8522A}figure{color:#0D0D0D}
+  .frame{color:#0D0D0D}.frame.on-propre{color:#22C55E}.frame.on-modere{color:#B87A00}.frame.on-beaucoup{color:#E8522A}
+</style></head><body>
+<h1>Scènes « ligne claire » — observation plage &amp; cellules mois</h1>
+
+<h2>Module A — « Ce que tu vois » (fiche, 96×64 · cadre = currentColor → statut sélectionné)</h2>
+<div class="row a">
+  <figure class="frame"><svg viewBox="0 0 96 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="64" fill="#FDFCF7"/><circle cx="14" cy="12" r="4.5" fill="none" stroke="#0D0D0D" stroke-width="2"/><rect x="2" y="46" width="92" height="16" fill="#F3E5B8"/><path d="M2 28q11.5-7 23 0t23 0t23 0t23 0v18h-92z" fill="#009E8E" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><path d="M32 37q7-3 14 0" fill="none" stroke="#FDFCF7" stroke-width="2" stroke-linecap="round"/><path d="M20 55h7M62 57h7" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round"/><rect x="1.25" y="1.25" width="93.5" height="61.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><figcaption>Propre</figcaption></figure>
+  <figure class="frame"><svg viewBox="0 0 96 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="64" fill="#FDFCF7"/><circle cx="14" cy="12" r="4.5" fill="none" stroke="#0D0D0D" stroke-width="2"/><rect x="2" y="46" width="92" height="16" fill="#F3E5B8"/><path d="M2 28q11.5-7 23 0t23 0t23 0t23 0v18h-92z" fill="#009E8E" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><circle cx="34" cy="41" r="2" fill="#6b5d2e" stroke="#0D0D0D" stroke-width="1"/><circle cx="56" cy="39" r="2" fill="#6b5d2e" stroke="#0D0D0D" stroke-width="1"/><path d="M2 48q5.75-6 11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0t11.5 0v3h-92z" fill="#5a5233" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><rect x="1.25" y="1.25" width="93.5" height="61.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><figcaption>Modéré</figcaption></figure>
+  <figure class="frame"><svg viewBox="0 0 96 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="64" fill="#FDFCF7"/><circle cx="14" cy="12" r="4.5" fill="none" stroke="#0D0D0D" stroke-width="2"/><rect x="2" y="46" width="92" height="16" fill="#F3E5B8"/><path d="M2 28q11.5-7 23 0t23 0t23 0t23 0v18h-92z" fill="#009E8E" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><ellipse cx="24" cy="36" rx="9" ry="3.5" fill="#6b5d2e" stroke="#0D0D0D" stroke-width="2"/><ellipse cx="50" cy="32" rx="7" ry="3" fill="#6b5d2e" stroke="#0D0D0D" stroke-width="2"/><ellipse cx="74" cy="37" rx="8" ry="3.2" fill="#6b5d2e" stroke="#0D0D0D" stroke-width="2"/><path d="M2 49q11.5-8 23 0t23 0t23 0t23 0v7h-92z" fill="#5a5233" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><rect x="1.25" y="1.25" width="93.5" height="61.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><figcaption>Beaucoup</figcaption></figure>
+</div>
+<p style="font-size:12px">États sélectionnés (cadre recoloré) :</p>
+<div class="row a">
+  <figure class="frame on-propre"><svg viewBox="0 0 96 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="96" height="64" fill="#FDFCF7"/><circle cx="14" cy="12" r="4.5" fill="none" stroke="#0D0D0D" stroke-width="2"/><rect x="2" y="46" width="92" height="16" fill="#F3E5B8"/><path d="M2 28q11.5-7 23 0t23 0t23 0t23 0v18h-92z" fill="#009E8E" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/><path d="M32 37q7-3 14 0" fill="none" stroke="#FDFCF7" stroke-width="2" stroke-linecap="round"/><path d="M20 55h7M62 57h7" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round"/><rect x="1.25" y="1.25" width="93.5" height="61.5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><figcaption>Propre ✓</figcaption></figure>
+</div>
+
+<h2>Module B — cellule mois WeekHub (56×40 · fond pastel + forme, tiers haut = label)</h2>
+<div class="row b">
+  <figure><svg viewBox="0 0 56 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="56" height="40" fill="#E1F3E6"/><rect y="27" width="56" height="13" fill="#009E8E"/><line x1="0" y1="27" x2="56" y2="27" stroke="#0D0D0D" stroke-width="2"/><path d="M20 33h9" fill="none" stroke="#FDFCF7" stroke-width="2" stroke-linecap="round"/></svg><figcaption>Calme #E1F3E6</figcaption></figure>
+  <figure><svg viewBox="0 0 56 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="56" height="40" fill="#F6EBD2"/><path d="M0 28q7-5 14 0t14 0t14 0t14 0v12h-56z" fill="#009E8E"/><path d="M0 28q7-5 14 0t14 0t14 0t14 0" fill="none" stroke="#0D0D0D" stroke-width="2"/><circle cx="13" cy="25" r="2" fill="#5a5233" stroke="#0D0D0D" stroke-width="1"/><circle cx="28" cy="27" r="2" fill="#5a5233" stroke="#0D0D0D" stroke-width="1"/><circle cx="43" cy="25" r="2" fill="#5a5233" stroke="#0D0D0D" stroke-width="1"/></svg><figcaption>Épaule #F6EBD2</figcaption></figure>
+  <figure><svg viewBox="0 0 56 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="56" height="40" fill="#FBE5DC"/><path d="M0 24q14-9 28 0t28 0v16h-56z" fill="#009E8E"/><path d="M0 24q14-9 28 0t28 0" fill="none" stroke="#0D0D0D" stroke-width="2"/><path d="M3 31q6.25-6 12.5 0t12.5 0t12.5 0t12.5 0v5h-50z" fill="#5a5233" stroke="#0D0D0D" stroke-width="2" stroke-linejoin="round"/></svg><figcaption>Chargé #FBE5DC</figcaption></figure>
+</div>
+</body></html>
