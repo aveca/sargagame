@@ -11,7 +11,7 @@
 - **Monolithe** : `src/Sargasses_PROD.jsx`, ~13,4k lignes (jamais à la racine). Carte = **SVG primaire** (`WorldMapView`/`ArchipelView`) ; **Leaflet RETIRÉ comme carte primaire MAIS fallback `?nav=map` encore vivant** (Sargasses_PROD.jsx ~10875/11710 + détection `.leaflet-marker-icon` ~2150/4092/4103). Ne purge PAS les traces Leaflet sans casser ce fallback. `WorldMapView` = composant funnel vedette → **jamais de refacto sans screenshot de régression**.
 - **Supabase = brique prod** (4e backend : static-bake / Apps Script legacy / SMTP / Mollie). Photos visiteurs (`src/supabasePhotos.js`, Edge Function `moderate`, `notify-photos.yml`). **Tout NOUVEL état serveur → Supabase, JAMAIS Apps Script.**
 - **Régions LIVE payantes** : MQ + GP (EUR) · `florida` + `puntacana` + `rivieramaya` (USD). `rivieramaya` = id interne, domaine public = **sargassumcancun.com**. `barbados` = **PRÉPARÉ mais NON live** : `regions/barbados.json` a déjà des `stripeProducts` (placeholders) et `barbados` est dans `$KNOWN_REGIONS` de `stripe-webhook.php:111` → **résidus Stripe présents**. À câbler en **Mollie** ; au passage **purger les résidus Stripe** (placeholders + entrée KNOWN_REGIONS) pour rester cohérent avec « Stripe = run-off ».
-- **MRR** : €79,84/mo (16 abos Stripe legacy = source de vérité) · pastDue 1 (dunning auto). Conversions pass/USD/Mollie → dashboard Mollie. ~246 leads emails (capturés au checkout, B2C non anonyme, relançable).
+- **MRR** : Stripe legacy (abos EUR historiques) = source de vérité, mais **la valeur vivante se LIT** dans le bloc `stripe` de `daily-metrics.json` (§Session Startup check 3 / `npm run session`) — **ne PAS re-coder le chiffre en dur, il dérive** (ordre de grandeur au 2026-07-02 : ~€70/mo, ~14 abos, pastDue 0 ; le funnel Apps Script sous-compte ~7×, JAMAIS lui). Conversions pass/USD/Mollie → dashboard Mollie. ~246 leads emails (capturés au checkout, B2C non anonyme, relançable).
 
 ### Modèle de prix (source unique)
 
@@ -318,7 +318,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 |---|---|
 | `NEXT_SESSION.md` | Handoff. Tête = session courante. Tenir à jour à chaque chunk ; archiver les entrées > ~7 j. **Seul état qui survit côté agent web.** |
 | `PLAN_7J.md` | Plan glissant 7 jours (priorités semaine). |
-| _mémoire projet_ | MRR + snapshot funnel/décisions. ⚠️ Le dossier `~/.claude/.../memory/` n'existe que sur la machine du fondateur, **absent du container web** → lire MRR/funnel depuis `NEXT_SESSION.md`. |
+| _mémoire projet_ | Contexte/décisions **desktop-only**. ⚠️ Le dossier `~/.claude/.../memory/` n'existe que sur la machine du fondateur, **absent du container web/mobile**. → **`npm run session` DÉRIVE** MRR (bloc `stripe` de `daily-metrics.json`) + pipeline + métriques des JSON trackés, et **retombe sur la tête de `NEXT_SESSION.md`** si le dossier mémoire est absent (aucune dépendance dure). `NEXT_SESSION.md` = handoff/WIP/décisions, **PAS la source des chiffres**. |
 
 ### B2B (hôtels, self-serve, zéro call)
 | Doc | Rôle |
@@ -376,7 +376,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 
 ## Session Startup
 
-**Raccourci** : `npm run session` → `scripts/cursor-session-startup.cjs` (checks 1-3 + tente la mémoire `~/.claude`). Au lancement de chaque session, exécuter automatiquement (zéro confirmation). cwd reset entre appels bash → préfixer chaque commande par `cd /home/user/sargagame &&` (ou chemins absolus).
+**Raccourci** : `npm run session` → `scripts/cursor-session-startup.cjs` = moteur de bootstrap **portable desktop+mobile** (pipeline + métriques du jour + **MRR Stripe dérivé** du bloc `stripe` de `daily-metrics.json` + `gh` runs + mémoire desktop **ou fallback tête de `NEXT_SESSION.md` si `~/.claude` absent** + auto-trigger si STALE). Au lancement de chaque session, exécuter automatiquement (zéro confirmation). cwd reset entre appels bash → préfixer chaque commande par `cd /home/user/sargagame &&` (ou chemins absolus).
 
 1. **Pipeline freshness** :
    ```bash
@@ -397,7 +397,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 
 4. **Workflows récents** : `gh run list --repo aveca/sargagame --limit 5`. ⚠️ **`gh` absent du container** → fallback : `mcp__github__actions_list` sur `aveca/sargagame`.
 
-5. **Mémoire projet** — **`NEXT_SESSION.md` (repo) est le seul état qui survit côté agent web** ; append-on-top, lire l'entrée en tête. (L'état courant de CE fichier fait autorité si un doc le contredit.) Les fichiers `~/.claude/projects/.../memory/*.md` lus par `cursor-session-startup.cjs` n'existent QUE sur la machine du fondateur (le script reporte `0/4` sans crasher) → MRR/funnel snapshot depuis `NEXT_SESSION.md`.
+5. **Mémoire projet** — **`NEXT_SESSION.md` (repo) est le seul état narratif qui survit côté agent web/mobile** ; append-on-top, lire l'entrée en tête (handoff/WIP/décisions figées — **pas la source des chiffres**). (L'état courant de CE fichier fait autorité si un doc le contredit.) Les fichiers `~/.claude/projects/.../memory/*.md` n'existent QUE sur la machine du fondateur (absents du conteneur web/mobile ; `cursor-session-startup.cjs` le signale comme **nominal** et retombe sur la tête de `NEXT_SESSION.md`, sans erreur). **MRR + fraîcheur = DÉRIVÉS par `npm run session`** (bloc `stripe` de `daily-metrics.json` + `sargassum.json`), JAMAIS le funnel Apps Script (sous-compte ~7×).
 
 6. **Auto-trigger si pipeline STALE** (`run` > 12 h ; inutile si c'est `satellite` qui est STALE) :
    ```bash
@@ -448,7 +448,7 @@ Tout **NOUVEL état serveur → Supabase** (REST HTTP, pilotable au mobile ; pro
 
 - **Modèle** : B2C **pass one-time** (live EUR MQ/GP + USD florida/puntacana/rivieramaya). **B2B mensuel récurrent câblé en repo** (#210, `mol_b2b_plans` 79/29 €) ; **abos récurrents B2C = legacy/Stripe-only, plus vendus** (modèle B2C = pass-only). Caisse = **Mollie on-site** (Components + Apple/Google Pay) ; **Stripe = legacy lecture seule** ; **PayPal** = secondaire vivant.
 - **GO-LIVE** : EUR 25/06 · USD 26/06 (validé par un vrai paiement $5.99). Barbados = préparé, non câblé (résidus Stripe à purger).
-- **MRR** : €79,84/mo (16 abos Stripe legacy = source de vérité) · pastDue 1 (dunning auto `--send`). Conversions pass/Mollie → dashboard Mollie. **~246 leads emails** ; nudge install PWA + alertes greffé sous le verdict (`drip-email.cjs`, gating ≥3 verdicts, cap 3, ≥10 j).
+- **MRR** : Stripe legacy = source de vérité, **lire la valeur vivante** dans le bloc `stripe` de `daily-metrics.json` (§Session Startup check 3 / `npm run session`) — **ne pas figer un chiffre ici, il dérive** (ordre de grandeur au 2026-07-02 : ~€70/mo, ~14 abos, pastDue 0). Conversions pass/Mollie → dashboard Mollie. **~246 leads emails** ; nudge install PWA + alertes greffé sous le verdict (`drip-email.cjs`, gating ≥3 verdicts, cap 3, ≥10 j).
 - **B2B** : Pro 79 €/mo ou 690 €/an (panel 2026-06-29), essai 30 j sans carte. Mensuel récurrent câblé en repo (#210, `mol_b2b_plans`). **Paylink annuel : entrée 790 € retirée (#211+#212), lien 690 € minté au prochain run pipeline — **validé par un vrai paiement test fondateur (2026-07-01).**
 - **⚠️ Funnel NON fiable jusqu'à ~23/07** (fenêtre 28 j mélange l'ancien design abo). Le compteur `sg_pass_cta` est désormais **MIGRÉ vers Supabase** (`analytics_events` + `funnel-from-supabase.cjs`, 2026-07-01) → **plus de `clasp push`** pour le corriger/lire. Revenu = Stripe/Mollie, jamais le funnel.
 - **A/B tests live** : `pw_cta_order`, `pw_prelude`, `ab_fiche_dive`, `home_az`, `map_world`. **`molo_ladder` TRANCHÉ → molo figé 100 %** (zéro géoloc à froid ; MQ +201 % checkout-redirect, sig. 99 %). `dock_glass` RETIRÉ (avec la BottomNav). Réévaluer le reste sur données POST-refonte.
