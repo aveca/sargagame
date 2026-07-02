@@ -10954,6 +10954,9 @@ export default function App(){
 
   // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
   // 1×/session (sessionStorage), jamais pendant une activation premium.
+  // ?homefix=0 : restaure l'ancien onHome (remonter le hero/arène depuis la pill home
+  // du Header). Défaut = onHome ne monte PLUS le hero (jeu retiré, cf. note ~L12138).
+  const HOMEFIX_OFF=(()=>{try{return /[?&]homefix=0/.test(window.location.search)}catch(_){return false}})()
   const[showHero,setShowHero]=useState(()=>{
     try{
       // COHÉRENCE : on atterrit sur la CARTE (l'utilitaire qui répond « où me baigner
@@ -12536,8 +12539,15 @@ export default function App(){
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}
               onHome={()=>{
-                try{sessionStorage.removeItem("sg_hero_seen")}catch(_){}
-                setSelectedBeach(null);setShowHero(true)
+                // Le hero/arène n'est PLUS monté depuis onHome (jeu retiré, note ~L12138 :
+                // réintroduction = ?hero=1 uniquement). Avant, onHome montait du DOM mort
+                // par-dessus la carte — atteignable pendant la fenêtre boot où le cover
+                // premap est pointerEvents:none. ?homefix=0 restaure l'ancien comportement.
+                setSelectedBeach(null)
+                if(HOMEFIX_OFF){
+                  try{sessionStorage.removeItem("sg_hero_seen")}catch(_){}
+                  setShowHero(true)
+                }
                 track("sg_landing_replay",{})
               }}
               isPremium={isPremium}
