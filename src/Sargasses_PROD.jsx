@@ -1656,6 +1656,55 @@ const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // src/supabasePhotos.js). S'active AUTOMATIQUEMENT dès que SUPABASE_URL + ANON_KEY
 // sont renseignés (sinon no-op). Détails : docs/visitor-photos-runbook.md.
 const PHOTO_UPLOAD_ENABLED=supabaseConfigured()
+// ── Récompense « Éclaireur » (panel adverse 2026-07-02) : photo ENVOYÉE (upload Supabase
+//    réellement 2xx) = 24 h de Veilleur personnel via sg_premium_pass_end (mécanique Trip
+//    Pass existante). LOIS DURES :
+//    • Récompense JAMAIS conditionnée au contenu, au niveau voté ni au verdict de
+//      modération — tout futur « bonus photo propre » = veto immédiat (l'incitation ne
+//      touche pas le verdict, la modération ne gate que l'affichage public).
+//    • Time-box CLIENT uniquement (enjeu ~1-2 €, gaming localStorage assumé) : ne JAMAIS
+//      adosser un droit serveur/email à ce flag.
+//    • Masquée si sg_premium==='1' : poser un pass_end sur le device d'un abonné Stripe
+//      le déclassifierait d'isRecurringSub (UI compte des 16 abos = 100 % du MRR).
+//    • Caps anti-farm : 1 crédit/jour civil local (sg_photo_reward_day) · 3/30 j glissants
+//      (sg_photo_reward_log) · banque plafonnée à now+72 h via CE canal · ne réduit JAMAIS
+//      un pass existant (payé). Rollback ?photoreward=0 : coupe récompense + copy SEULES —
+//      le CTA photo remonté reste (attribution placement/récompense séparée, verdict panel).
+const PHOTO_REWARD_H=24, PHOTO_REWARD_BANK_H=72
+function _sgLocalDay(){const d=new Date(),p=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())}
+// « jusqu'à jeudi 14:32 » — jour + heure locale de fin du pass récompense.
+function _sgRewardEndLbl(end,lang){try{return new Date(end).toLocaleString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})}catch(_){return ""}}
+function sgPhotoRewardEligible(){
+  try{
+    if(/[?&]photoreward=0/.test(window.location.search))return false
+    if(localStorage.getItem("sg_premium")==="1")return false
+    const now=Date.now()
+    if(localStorage.getItem("sg_photo_reward_day")===_sgLocalDay())return false
+    const log=JSON.parse(localStorage.getItem("sg_photo_reward_log")||"[]").filter(t=>now-t<30*864e5)
+    if(log.length>=3)return false
+    if(parseInt(localStorage.getItem("sg_premium_pass_end")||"0")>now+PHOTO_REWARD_BANK_H*3600e3)return false
+    return true
+  }catch(_){return false}
+}
+function sgGrantPhotoReward(){
+  try{
+    if(!sgPhotoRewardEligible())return 0
+    const now=Date.now()
+    const cur=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+    // Clamp load-bearing : étend d'un cran (24 h) SANS jamais dépasser now+72 h ni
+    // raboter un pass plus long déjà payé (l'éligibilité bloque déjà cur>now+72 h).
+    const end=Math.min(Math.max(cur,now)+PHOTO_REWARD_H*3600e3, now+PHOTO_REWARD_BANK_H*3600e3)
+    if(end<=cur)return 0
+    localStorage.setItem("sg_premium_pass_end",String(end))
+    localStorage.setItem("sg_photo_reward_day",_sgLocalDay())
+    const log=JSON.parse(localStorage.getItem("sg_photo_reward_log")||"[]").filter(t=>now-t<30*864e5)
+    log.push(now);localStorage.setItem("sg_photo_reward_log",JSON.stringify(log))
+    // isPremium est dérivé au mount (useState initializer) → l'app root écoute cet event
+    // pour re-dériver sans reload (même effet que le claim referral).
+    try{window.dispatchEvent(new Event("sg:premium_refresh"))}catch(_){}
+    return end
+  }catch(_){return 0}
+}
 // Événements terrain (échouement / ramassage) — capture Supabase `beach_reports`,
 // SIGNAL AFFICHÉ modéré à côté du verdict (ne touche PAS la couleur = 100 % data
 // ERDDAP ; panel adverse 2026-07-01). Flag rollback : ?ramassage=0 → OFF. Inerte
@@ -2736,6 +2785,13 @@ function BeachReport({beach,lang,communityReports}){
   const fileRef=useRef(null)
   const[photo,setPhoto]=useState(null)   // data URL JPEG redimensionnée
   const[photoState,setPhotoState]=useState("idle") // idle|busy|sent|error
+  // Récompense Éclaireur : éligibilité figée à l'ouverture de la fiche (l'offre affichée
+  // ne change pas sous les doigts) ; rewardEnd>0 = pass crédité à CET envoi.
+  const[rewardEligible]=useState(()=>PHOTO_UPLOAD_ENABLED&&sgPhotoRewardEligible())
+  const[rewardEnd,setRewardEnd]=useState(0)
+  useEffect(()=>{
+    if(rewardEligible){try{track("sg_photo_offer_view",{beach_id:beach.id,island:beach.island})}catch(_){}}
+  },[])  // eslint-disable-line react-hooks/exhaustive-deps
   const onPickPhoto=async(e)=>{
     const f=e.target.files&&e.target.files[0]; if(f)try{e.target.value=""}catch(_){}
     if(!f)return
@@ -2751,8 +2807,16 @@ function BeachReport({beach,lang,communityReports}){
     try{track("sg_beach_photo",{beach_id:beach.id,level:voted||null,island:beach.island})}catch(_){}
     setPhotoState("busy")
     // Upload Supabase (Storage + ligne `photos` status 'pending', cf. supabasePhotos.js).
+    // Crédit Éclaireur UNIQUEMENT sur ok===true (Storage 200 + insert 200) — jamais sur
+    // tentative/tap. Récompense PLATE : indépendante du niveau voté et de la modération.
     uploadBeachPhoto(beach,voted||null,photo)
-      .then(ok=>setPhotoState(ok?"sent":"error"))
+      .then(ok=>{
+        if(ok){
+          const end=sgGrantPhotoReward()
+          if(end){setRewardEnd(end);try{track("sg_photo_reward_granted",{beach_id:beach.id,island:beach.island,pass_source:"photo"})}catch(_){}}
+        }
+        setPhotoState(ok?"sent":"error")
+      })
       .catch(()=>setPhotoState("error"))
   }
   // ── Événements terrain (échouement / ramassage) — signal AFFICHÉ modéré, ne
@@ -2814,6 +2878,103 @@ function BeachReport({beach,lang,communityReports}){
   return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      {/* ── PHOTO « Éclaireur » — REMONTÉE en tête (panel 2026-07-02 : le placement est le
+          levier, l'ancien bouton dashed était enterré sous 4 blocs). INDÉPENDANTE du vote
+          de niveau (jamais « signale d'abord ») ; la récompense (?photoreward=0) est une
+          couche SÉPARÉE par-dessus le CTA remonté. Récompense PLATE : propre ou couverte,
+          identique — ne jamais la conditionner au contenu (loi moat). */}
+      {PHOTO_UPLOAD_ENABLED&&(
+        <div style={{marginBottom:12,padding:"12px 13px",borderRadius:14,
+          background:rewardEligible?"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)":"var(--sg-card,#fff)",
+          border:rewardEligible?"2px solid var(--sg-ink,#1d2b3a)":"1px dashed var(--sg-border,rgba(0,0,0,.18))"}}>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={onPickPhoto} style={{display:"none"}}/>
+          {photoState!=="sent"&&(
+            <div style={{fontSize:13,fontWeight:800,color:"var(--sg-ink,#1d2b3a)",display:"flex",alignItems:"center",gap:6}}>
+              <span aria-hidden="true">📷</span>
+              {rewardEligible
+                ? _t(lang,"Deviens l'Éclaireur de cette plage","Become this beach's Scout","Conviértete en el Explorador de esta playa")
+                : _t(lang,"Montre cette plage telle qu'elle est","Show this beach as it really is","Muestra esta playa tal como está")}
+            </div>
+          )}
+          {photoState!=="sent"&&rewardEligible&&(
+            <div style={{marginTop:5,fontSize:11.5,lineHeight:1.45,fontWeight:600,color:"var(--sg-mid,#5d5a4e)"}}>
+              {_t(lang,
+                "Propre ou couverte, ta photo compte pareil : elle montre la plage telle qu'elle est aux prochains voyageurs. En retour, ton Veilleur personnel s'active 24 h — prévisions 7 jours et alertes.",
+                "Clean or covered, your photo counts the same: it shows the beach as it really is to the next travelers. In return, your personal Watcher activates for 24 hours — 7-day outlook and alerts.",
+                "Limpia o cubierta, tu foto cuenta igual: muestra la playa tal como está a los próximos viajeros. A cambio, tu Vigía personal se activa 24 h — previsión de 7 días y alertas.")}
+            </div>
+          )}
+          {!photo&&photoState!=="sent"&&(
+            <button type="button" onClick={()=>{_sgCapturingPhoto=true;fileRef.current&&fileRef.current.click()}} disabled={photoState==="busy"} style={{
+              marginTop:9,width:"100%",minHeight:44,padding:"11px 8px",borderRadius:12,border:"none",
+              background:"var(--sg-ink,#1d2b3a)",color:"#fff",fontSize:12.5,fontWeight:800,fontFamily:"inherit",
+              cursor:photoState==="busy"?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              {photoState==="busy"?_t(lang,"Préparation…","Preparing…","Preparando…"):_t(lang,"Ajouter ma photo du jour","Add my photo of the day","Añadir mi foto del día")}
+            </button>
+          )}
+          {photo&&photoState!=="sent"&&(
+            <div style={{marginTop:9}}>
+              <div style={{position:"relative",width:"100%",borderRadius:12,overflow:"hidden",background:"#000",marginBottom:8}}>
+                <img src={photo} alt="" style={{width:"100%",maxHeight:200,objectFit:"cover",display:"block"}}/>
+                <button type="button" onClick={()=>setPhoto(null)} aria-label="x" style={{position:"absolute",top:6,right:6,width:26,height:26,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.55)",color:"#fff",fontSize:14,cursor:"pointer"}}>✕</button>
+              </div>
+              <button type="button" onClick={sendPhoto} style={{
+                width:"100%",minHeight:44,padding:"10px 8px",borderRadius:12,border:"none",background:C.green,color:"#fff",
+                fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}}>
+                {_t(lang,"Envoyer la photo","Send photo","Enviar foto")}
+              </button>
+              <div style={{marginTop:5,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
+                {_t(lang,"Localisation retirée","Location stripped","Ubicación eliminada")}
+              </div>
+            </div>
+          )}
+          {photoState==="sent"&&(
+            <div style={{textAlign:"center"}}>
+              {rewardEnd>0?(
+                <>
+                  <div style={{fontSize:12.5,fontWeight:800,color:"var(--sg-ink,#1d2b3a)"}}>
+                    🏅 {_t(lang,`Éclaireur de ${beach.name} — merci.`,`Scout of ${beach.name} — thank you.`,`Explorador de ${beach.name} — gracias.`)}
+                  </div>
+                  <div style={{marginTop:4,fontSize:11.5,fontWeight:700,color:C.green}}>
+                    {_t(lang,`Ton Veilleur personnel veille jusqu'à ${_sgRewardEndLbl(rewardEnd,lang)}.`,`Your personal Watcher is on duty until ${_sgRewardEndLbl(rewardEnd,lang)}.`,`Tu Vigía personal vigila hasta el ${_sgRewardEndLbl(rewardEnd,lang)}.`)}
+                  </div>
+                  <div style={{marginTop:4,fontSize:10,color:"var(--sg-mid)"}}>
+                    {_t(lang,"Ta photo apparaîtra après modération.","Your photo will appear after review.","Tu foto aparecerá tras revisión.")}
+                  </div>
+                </>
+              ):rewardEligible?(
+                <div style={{fontSize:11,color:C.green,fontWeight:600}}>
+                  {_t(lang,"Photo bien reçue — merci. Ta vision Veilleur d'aujourd'hui est déjà active.","Photo received — thank you. Today's Watcher access is already active.","Foto recibida — gracias. Tu acceso Vigía de hoy ya está activo.")}
+                </div>
+              ):(
+                <div style={{fontSize:11,color:C.green,fontWeight:600}}>
+                  {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
+                </div>
+              )}
+              {VSHARE_ENABLED&&(
+                <button type="button" onClick={async()=>{
+                  try{track("sg_share",{variant:"contribution",beach_id:beach.id,island:beach.island})}catch(_){}
+                  try{await buildShareCard({variant:"beach",beach,lang})}catch(_){}
+                }} style={{marginTop:9,width:"100%",padding:"10px 8px",borderRadius:12,border:"none",
+                  background:C.green,color:"#fff",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  <span aria-hidden="true">📣</span>{_t(lang,"Montre ta plage aux copains","Show your beach to friends","Muestra tu playa a tus amigos")}
+                </button>
+              )}
+            </div>
+          )}
+          {photoState==="error"&&(
+            <div style={{marginTop:6,fontSize:11,color:C.red,textAlign:"center",fontWeight:600}}>
+              {_t(lang,"Image illisible — réessaie.","Unreadable image — try again.","Imagen ilegible — reintenta.")}
+            </div>
+          )}
+          {photoState!=="sent"&&(
+            <div style={{marginTop:7,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
+              {_t(lang,"Publiée après modération · elle n'influence jamais le verdict — il reste mesuré au satellite.","Published after review · it never influences the verdict — it stays satellite-measured.","Publicada tras moderación · nunca influye en el veredicto — sigue medido por satélite.")}
+            </div>
+          )}
+        </div>
+      )}
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
         {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}
@@ -2893,57 +3054,6 @@ function BeachReport({beach,lang,communityReports}){
           <div style={{marginTop:3,fontSize:10,color:"var(--sg-mid)"}}>
             {_t(lang,"Signalé au sol · 48 h · le verdict reste mesuré au satellite","Reported on-site · 48h · the verdict stays satellite-measured","Reportado in situ · 48h · el veredicto sigue medido por satélite")}
           </div>
-        </div>
-      )}
-      {PHOTO_UPLOAD_ENABLED&&(
-        <div style={{marginTop:10}}>
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={onPickPhoto} style={{display:"none"}}/>
-          {!photo&&photoState!=="sent"&&(
-            <button type="button" onClick={()=>{_sgCapturingPhoto=true;fileRef.current&&fileRef.current.click()}} disabled={photoState==="busy"} style={{
-              width:"100%",padding:"10px 8px",borderRadius:12,border:"1px dashed var(--sg-border,rgba(0,0,0,.18))",
-              background:"var(--sg-card,#fff)",color:"var(--sg-ink)",fontSize:12,fontWeight:600,fontFamily:"inherit",
-              cursor:photoState==="busy"?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              📷 {photoState==="busy"?_t(lang,"Préparation…","Preparing…","Preparando…"):_t(lang,"Ajoute une photo","Add a photo","Añade una foto")}
-            </button>
-          )}
-          {photo&&photoState!=="sent"&&(
-            <div>
-              <div style={{position:"relative",width:"100%",borderRadius:12,overflow:"hidden",background:"#000",marginBottom:8}}>
-                <img src={photo} alt="" style={{width:"100%",maxHeight:200,objectFit:"cover",display:"block"}}/>
-                <button type="button" onClick={()=>setPhoto(null)} aria-label="x" style={{position:"absolute",top:6,right:6,width:26,height:26,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.55)",color:"#fff",fontSize:14,cursor:"pointer"}}>✕</button>
-              </div>
-              <button type="button" onClick={sendPhoto} style={{
-                width:"100%",padding:"10px 8px",borderRadius:12,border:"none",background:C.green,color:"#fff",
-                fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer"}}>
-                {_t(lang,"Envoyer la photo","Send photo","Enviar foto")}
-              </button>
-              <div style={{marginTop:5,fontSize:10,color:"var(--sg-mid)",textAlign:"center"}}>
-                {_t(lang,"Localisation retirée · publiée après modération","Location stripped · published after review","Ubicación eliminada · publicada tras revisión")}
-              </div>
-            </div>
-          )}
-          {photoState==="sent"&&(
-            <div style={{textAlign:"center"}}>
-              <div style={{fontSize:11,color:C.green,fontWeight:600}}>
-                {_t(lang,"Merci ! Ta photo sera publiée après modération.","Thanks! Your photo will appear after review.","¡Gracias! Tu foto aparecerá tras revisión.")}
-              </div>
-              {VSHARE_ENABLED&&(
-                <button type="button" onClick={async()=>{
-                  try{track("sg_share",{variant:"contribution",beach_id:beach.id,island:beach.island})}catch(_){}
-                  try{await buildShareCard({variant:"beach",beach,lang})}catch(_){}
-                }} style={{marginTop:9,width:"100%",padding:"10px 8px",borderRadius:12,border:"none",
-                  background:C.green,color:"#fff",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
-                  display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  <span aria-hidden="true">📣</span>{_t(lang,"Montre ta plage aux copains","Show your beach to friends","Muestra tu playa a tus amigos")}
-                </button>
-              )}
-            </div>
-          )}
-          {photoState==="error"&&(
-            <div style={{fontSize:11,color:C.red,textAlign:"center",fontWeight:600}}>
-              {_t(lang,"Image illisible — réessaie.","Unreadable image — try again.","Imagen ilegible — reintenta.")}
-            </div>
-          )}
         </div>
       )}
       {total>0&&(
@@ -10843,6 +10953,16 @@ export default function App(){
       },2500)
       return()=>clearTimeout(t)
     }catch(_){}
+  },[])
+
+  // Récompense photo « Éclaireur » (BeachReport) : le grant étend sg_premium_pass_end en
+  // profondeur du composant puis émet sg:premium_refresh → on re-dérive isPremium ICI sans
+  // reload (isPremium est un useState initializer, il ne relit pas le localStorage seul).
+  // Même mécanique que le claim referral ci-dessus, déclenchée par event (composant profond).
+  useEffect(()=>{
+    const h=()=>{try{if(parseInt(localStorage.getItem("sg_premium_pass_end")||"0")>Date.now())setIsPremium(true)}catch(_){}}
+    window.addEventListener("sg:premium_refresh",h)
+    return()=>window.removeEventListener("sg:premium_refresh",h)
   },[])
 
   // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h.
