@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-07-01T20:02:06.583Z",
+  "updatedAt": "2026-07-02T03:47:00.379Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 27,
-    "contacted": 80,
-    "lead": 5,
-    "paid": 2
+    "discovered": 21,
+    "contacted": 86,
+    "lead": 6,
+    "paid": 0
   },
   "funnel": {
     "9a9cdbd282d741fb6e56c1e35bfc0552": {
@@ -760,58 +760,58 @@
       "nextAction": "attendre / relance programmée"
     },
     "2751322338abcfaf38e559cb9ec4ab26": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "CIP Guadeloupe (Centre International de Plongée)",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:10.927Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "ef556a3b23faa88334496f23d1eb833b": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Heures Saines",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:11.574Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "611af0b761cddea656210b7921add07a": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Rocher de Malendure",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:11.950Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "86df388ea2ab4bba586722f1d1642d42": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Gîtes Couleur Caraïbes",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:12.256Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "80cb1526d83a5622af73a9cd0abab244": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Lodges de Malendure",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:14.281Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "36089b2535413818fa6db4256139cd86": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Gîte Mayo & Hylode's Song",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T03:44:14.641Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "a7768e43c04cd8124105fbe7cb21f82d": {
       "stage": "discovered",
@@ -1020,23 +1020,14 @@
       "isPaid": false,
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
-    "1799efe3caf4b263aed3e15fce240e1a": {
-      "stage": "paid",
+    "97c7c018dd71f2b08d294859533f5aa2": {
+      "stage": "lead",
       "name": null,
       "island": null,
       "contactedAt": null,
-      "isLead": false,
-      "isPaid": true,
-      "nextAction": "onboarding + relance renouvellement"
-    },
-    "bf819a41db0f3e6744fa07d5e6b56e5f": {
-      "stage": "paid",
-      "name": null,
-      "island": null,
-      "contactedAt": null,
-      "isLead": false,
-      "isPaid": true,
-      "nextAction": "onboarding + relance renouvellement"
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     }
   }
 }

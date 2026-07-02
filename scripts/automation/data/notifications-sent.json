@@ -1,12 +1,4 @@
 {
-  "2026-06-24": [
-    "puntacana:pc006:moderate>clean",
-    "puntacana:pc007:moderate>clean",
-    "puntacana:pc001:moderate>clean",
-    "puntacana:pc003:moderate>clean",
-    "puntacana:pc004:moderate>clean",
-    "puntacana:pc011:moderate>clean"
-  ],
   "2026-06-25": [
     "puntacana:pc002:moderate>clean",
     "puntacana:pc005:moderate>clean",
@@ -67,5 +59,10 @@
     "puntacana:pc008:moderate>clean",
     "puntacana:pc009:moderate>clean",
     "puntacana:pc010:moderate>clean"
+  ],
+  "2026-07-02": [
+    "puntacana:pc008:clean>moderate",
+    "puntacana:pc009:clean>moderate",
+    "puntacana:pc010:clean>moderate"
   ]
 }
