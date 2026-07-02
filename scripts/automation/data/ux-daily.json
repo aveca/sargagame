@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T09:09:31.140Z",
+  "generated": "2026-07-02T14:17:11.007Z",
   "date": "2026-07-02",
   "days": 1,
   "regions": [
@@ -10,6 +10,66 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "54163efa",
+      "subject": "Merge pull request #440 from aveca/claude/gallant-moore-27545a"
+    },
+    {
+      "h": "3fd68139",
+      "subject": "feat: remplace le CTA photo Éclaireur (KPI nul) par VerdictRadarScan"
+    },
+    {
+      "h": "d37e6e53",
+      "subject": "Merge pull request #438 from aveca/claude/eloquent-payne-37d1e0"
+    },
+    {
+      "h": "e276d322",
+      "subject": "fix: overlays SVG narratifs invisibles sous theme-comic (#root effondré)"
+    },
+    {
+      "h": "1b86ddac",
+      "subject": "Merge pull request #437 from aveca/claude/eloquent-payne-37d1e0"
+    },
+    {
+      "h": "06d0aaac",
+      "subject": "fix: retire le vote fabriqué de la scène LE DÉBAT (SolutionsStory)"
+    },
+    {
+      "h": "c20a68b7",
+      "subject": "Merge pull request #434 from aveca/claude/affectionate-visvesvaraya-7508eb"
+    },
+    {
+      "h": "37d75ba9",
+      "subject": "ux(map): scrim lisibilité labels + masque le titre île quand une fiche est ouverte"
+    },
+    {
+      "h": "c8b1eb68",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/festive-satoshi-774364"
+    },
+    {
+      "h": "a94c9357",
+      "subject": "feat(b2c): paywall offre-first + écran preuve opt-in in-modal (A/B ?passseq)"
+    },
+    {
+      "h": "38e8d50e",
+      "subject": "Merge pull request #430 from aveca/claude/ecstatic-bartik-4c5c5c"
+    },
+    {
+      "h": "80667e47",
+      "subject": "seo(content): publish sargasses-marie-galante (banque: 1 queued)"
+    },
+    {
+      "h": "64ca9175",
+      "subject": "fix(ux/tracking): finit la convention data-sg-live + durcit le détecteur dead-click d'index.html"
+    },
+    {
+      "h": "97f77258",
+      "subject": "chore: update Copernicus data 2026-07-02 09:09 UTC"
+    },
+    {
+      "h": "ccbd965f",
+      "subject": "chore: email state 2026-07-02 09:09 UTC"
+    },
     {
       "h": "a5f50c64",
       "subject": "feat(b2b): funnel séquentiel 4 étapes — valeur perçue progressive avant l'ask (verdict panel 8 agents)"
@@ -49,96 +109,36 @@
     {
       "h": "a42ee957",
       "subject": "Merge remote-tracking branch 'origin/main' into fix/deadclick-measure-truth"
-    },
-    {
-      "h": "9e9b9e3e",
-      "subject": "feat(photos): boucle « Éclaireur » — photo envoyée = 24 h de Veilleur personnel + CTA remonté"
-    },
-    {
-      "h": "dda64eaa",
-      "subject": "Merge pull request #419 from aveca/feat/weekhub-month-first"
-    },
-    {
-      "h": "80565d1e",
-      "subject": "feat(weekhub): sélecteur mois-first tappable + chrome hub restauré (piège onink-scope)"
-    },
-    {
-      "h": "a9b7e234",
-      "subject": "Merge pull request #416 from aveca/claude/elastic-mccarthy-b92057"
-    },
-    {
-      "h": "5fb7a1f4",
-      "subject": "fix(tracking): data-sg-live — les taps productifs ne comptent plus comme dead-clicks"
-    },
-    {
-      "h": "d8bc67c4",
-      "subject": "fix(carte): la légende/chip hôtel monte à 210px en premium — la pastille « Cette semaine » recouvrait le bouton B2B sur mobile"
-    },
-    {
-      "h": "57be71f8",
-      "subject": "fix(theme-comic): verdict panel adverse — arène ?hero=1 réparée, onHome désarmé, 2 dettes structurelles documentées"
-    },
-    {
-      "h": "8042e370",
-      "subject": "fix(partage): liens fiche plage region-aware via beachPageUrl (solde reste #408)"
-    },
-    {
-      "h": "3165ba79",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/brave-faraday-3ad78d"
-    },
-    {
-      "h": "5a230669",
-      "subject": "feat(revenue-truth): métriques Mollie en repo + revenue-watch dé-gelé + refunds détectés + paylinks B2B câblés webhook"
-    },
-    {
-      "h": "263f8d52",
-      "subject": "fix(gate): smoke ré-aligné sur le funnel réel (carte→fiche→paywall) + pastilles carte restaurées"
-    },
-    {
-      "h": "bfd401dc",
-      "subject": "fix(alertes): activer ses alertes déclenche permission push + nudge install PWA"
-    },
-    {
-      "h": "6f1d5e51",
-      "subject": "fix(partage+fiche): deep-link plage région-aware au partage + fiche complète en colonne sur desktop"
-    },
-    {
-      "h": "e05304a3",
-      "subject": "seo(content): publish sargasses-les-saintes (banque: 2 queued)"
-    },
-    {
-      "h": "79d354ec",
-      "subject": "Merge pull request #406 from aveca/feat/weekhub-premium-cta"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 93,
-      "friction": 5,
-      "dead_rate": 0.335,
+      "sessions": 199,
+      "friction": 7,
+      "dead_rate": 0.238,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.344,
-        "n": 241
+        "rate": 0.249,
+        "n": 401
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 26
+          "count": 33
         },
         {
           "el": "div",
-          "count": 22
+          "count": 29
         },
         {
           "el": "svg[role=img]",
-          "count": 19
+          "count": 21
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.3
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -147,9 +147,9 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 455→93 (-80%)",
-        "dead-rate 0.413→0.335 (-0.1) ✅",
-        "rage-clicks 21→5 ✅",
+        "sessions 455→199 (-56%)",
+        "dead-rate 0.413→0.238 (-0.2) ✅",
+        "rage-clicks 21→7 ✅",
         "✔︎ dead-click résolu : p.lc-h2s-txt",
         "✔︎ dead-click résolu : div.lc-detail-body",
         "✔︎ dead-click résolu : div.lc-detail-head"
@@ -157,23 +157,31 @@
     },
     {
       "region": "gp",
-      "sessions": 89,
+      "sessions": 191,
       "friction": 0,
-      "dead_rate": 0.196,
+      "dead_rate": 0.18,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.194,
-        "n": 196
+        "rate": 0.182,
+        "n": 423
       },
       "top_dead_els": [
         {
+          "el": "div.sg-onink-scope",
+          "count": 27
+        },
+        {
           "el": "svg[role=img]",
           "count": 23
+        },
+        {
+          "el": "div",
+          "count": 17
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.3
+        "rate": 0.28
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -182,10 +190,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 285→89 (-69%)",
-        "dead-rate 0.343→0.196 (-0.1) ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope",
-        "✔︎ dead-click résolu : div",
+        "sessions 285→191 (-33%)",
+        "dead-rate 0.343→0.18 (-0.2) ✅",
         "✔︎ dead-click résolu : rect",
         "✔︎ dead-click résolu : span.lc-detail-fact",
         "✔︎ dead-click résolu : circle"
@@ -193,21 +199,24 @@
     },
     {
       "region": "florida",
-      "sessions": 13,
+      "sessions": 31,
       "friction": 0,
-      "dead_rate": 0.419,
+      "dead_rate": 0.25,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.448,
-        "n": 29
+        "rate": 0.258,
+        "n": 62
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 12
+          "count": 13
         }
       ],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.26
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -215,8 +224,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 82→13 (-84%)",
-        "dead-rate 0.562→0.419 (-0.1) ✅",
+        "sessions 82→31 (-62%)",
+        "dead-rate 0.562→0.25 (-0.3) ✅",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : div",
         "✔︎ dead-click résolu : circle",
@@ -226,9 +235,9 @@
     },
     {
       "region": "puntacana",
-      "sessions": 3,
+      "sessions": 7,
       "friction": 0,
-      "dead_rate": 0,
+      "dead_rate": 0.625,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": null,
@@ -239,8 +248,7 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 11→3 (-73%)",
-        "dead-rate 0.645→0 (-0.6) ✅",
+        "sessions 11→7 (-36%)",
         "✔︎ dead-click résolu : div.sg-onink-scope",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : span.lc-detail-fact",
@@ -251,9 +259,9 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 4,
+      "sessions": 8,
       "friction": 0,
-      "dead_rate": 0.857,
+      "dead_rate": 0.6,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": null,
@@ -264,8 +272,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 16→4 (-75%)",
-        "dead-rate 0.471→0.857 (+0.4) ⚠️",
+        "sessions 16→8 (-50%)",
+        "dead-rate 0.471→0.6 (+0.1) ⚠️",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : div.sg-onink-scope",
         "✔︎ dead-click résolu : div",
