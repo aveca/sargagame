@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T14:17:11.007Z",
+  "generated": "2026-07-02T19:38:02.350Z",
   "date": "2026-07-02",
   "days": 1,
   "regions": [
@@ -10,6 +10,90 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "a1faff8c",
+      "subject": "Merge pull request #480 from aveca/claude/loving-lamarr-75f282"
+    },
+    {
+      "h": "fe542209",
+      "subject": "feat(analytics): capture clic droit (confusion) + survol-hésitation, nommés à l'élément"
+    },
+    {
+      "h": "8c847c19",
+      "subject": "feat(verticales): fusion scène écosystème descente (orbite→fond marin) + fixes revue adverse"
+    },
+    {
+      "h": "2fecbc35",
+      "subject": "Merge pull request #473 from aveca/claude/happy-ellis-c63dd6"
+    },
+    {
+      "h": "f62101e1",
+      "subject": "feat(carte): 10 postes du Veilleur « Jusqu'où on descend » — verticales LIVE dans l'app"
+    },
+    {
+      "h": "6dcf55fa",
+      "subject": "refonte(/pro/espace): vision golden-hour « Le Veilleur » (SVG, scroll, clic, grand public)"
+    },
+    {
+      "h": "b601f947",
+      "subject": "Merge pull request #467 from aveca/claude/elated-lederberg-16a286"
+    },
+    {
+      "h": "8d0bbcae",
+      "subject": "sw: précache tout le graphe de chunks → UI complète offline (avion/bateau/panneau/sat)"
+    },
+    {
+      "h": "49a91da5",
+      "subject": "fix(carte): ping de tap sur le fond — jamais un tap dans le vide (#466)"
+    },
+    {
+      "h": "11844e11",
+      "subject": "Merge pull request #459 from aveca/claude/clever-wiles-518a3e"
+    },
+    {
+      "h": "1d56b124",
+      "subject": "fix(deploy): retire /arena-v2.html de prod (copie abo B2C morte)"
+    },
+    {
+      "h": "35de1cf6",
+      "subject": "Merge pull request #456 from aveca/feat/maree-veilleur-arc"
+    },
+    {
+      "h": "4cf32ddc",
+      "subject": "feat(a-propos): vidéo de vision de marque « Le Veilleur » (#455)"
+    },
+    {
+      "h": "f80ba204",
+      "subject": "feat(fiche): La Marée du Veilleur — prévision dessinée en houle golden-hour (arc, ?arc=1)"
+    },
+    {
+      "h": "5d0c110f",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/quizzical-goldwasser-d6a97f"
+    },
+    {
+      "h": "5d3a9d2b",
+      "subject": "feat(demo): mode vitrine « Le Registre du Veilleur » (attract mode ?demo=1)"
+    },
+    {
+      "h": "e68d5b20",
+      "subject": "chore: update Copernicus data 2026-07-02 14:17 UTC"
+    },
+    {
+      "h": "4da3b9ce",
+      "subject": "chore: email state 2026-07-02 14:17 UTC"
+    },
+    {
+      "h": "a946c17a",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/dazzling-ptolemy-8a8d02"
+    },
+    {
+      "h": "ce3de5f1",
+      "subject": "feat(fiche): retire l'ajout de photo, reinvestit en data-viz du verdict (Cadran du Veilleur, A/B)"
+    },
+    {
+      "h": "1e0c02c0",
+      "subject": "feat: expansion-survey — collecte réelle de signal marché (hôtels/collectivités)"
+    },
     {
       "h": "54163efa",
       "subject": "Merge pull request #440 from aveca/claude/gallant-moore-27545a"
@@ -25,192 +109,31 @@
     {
       "h": "e276d322",
       "subject": "fix: overlays SVG narratifs invisibles sous theme-comic (#root effondré)"
-    },
-    {
-      "h": "1b86ddac",
-      "subject": "Merge pull request #437 from aveca/claude/eloquent-payne-37d1e0"
-    },
-    {
-      "h": "06d0aaac",
-      "subject": "fix: retire le vote fabriqué de la scène LE DÉBAT (SolutionsStory)"
-    },
-    {
-      "h": "c20a68b7",
-      "subject": "Merge pull request #434 from aveca/claude/affectionate-visvesvaraya-7508eb"
-    },
-    {
-      "h": "37d75ba9",
-      "subject": "ux(map): scrim lisibilité labels + masque le titre île quand une fiche est ouverte"
-    },
-    {
-      "h": "c8b1eb68",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/festive-satoshi-774364"
-    },
-    {
-      "h": "a94c9357",
-      "subject": "feat(b2c): paywall offre-first + écran preuve opt-in in-modal (A/B ?passseq)"
-    },
-    {
-      "h": "38e8d50e",
-      "subject": "Merge pull request #430 from aveca/claude/ecstatic-bartik-4c5c5c"
-    },
-    {
-      "h": "80667e47",
-      "subject": "seo(content): publish sargasses-marie-galante (banque: 1 queued)"
-    },
-    {
-      "h": "64ca9175",
-      "subject": "fix(ux/tracking): finit la convention data-sg-live + durcit le détecteur dead-click d'index.html"
-    },
-    {
-      "h": "97f77258",
-      "subject": "chore: update Copernicus data 2026-07-02 09:09 UTC"
-    },
-    {
-      "h": "ccbd965f",
-      "subject": "chore: email state 2026-07-02 09:09 UTC"
-    },
-    {
-      "h": "a5f50c64",
-      "subject": "feat(b2b): funnel séquentiel 4 étapes — valeur perçue progressive avant l'ask (verdict panel 8 agents)"
-    },
-    {
-      "h": "5c6e77a6",
-      "subject": "Merge pull request #426 from aveca/feat/b2b-preview-anchored"
-    },
-    {
-      "h": "e7f168f3",
-      "subject": "fix(b2b): démo établissement ancrée — fiche de SA plage + carte + lien espace persistant"
-    },
-    {
-      "h": "6edb931b",
-      "subject": "feat(svg): vote d'observation en mini-scènes SVG + « odeur » stockée + cellules mois dessinées"
-    },
-    {
-      "h": "a0509b3a",
-      "subject": "Merge pull request #422 from aveca/feat/fiche-verdict-why"
-    },
-    {
-      "h": "ad37b04f",
-      "subject": "feat(fiche): « Pourquoi ce verdict ? » (beat 5 honnêteté) + sargData branché sur le chemin carte + plancher bruit dead-click"
-    },
-    {
-      "h": "bf9deab1",
-      "subject": "feat(fiche): dépliant « Pourquoi ce verdict ? » + plancher anti-bruit dead-clicks"
-    },
-    {
-      "h": "39265a91",
-      "subject": "chore: update Copernicus data 2026-07-02 04:00 UTC"
-    },
-    {
-      "h": "91ecc82d",
-      "subject": "chore: email state 2026-07-02 04:00 UTC"
-    },
-    {
-      "h": "a42ee957",
-      "subject": "Merge remote-tracking branch 'origin/main' into fix/deadclick-measure-truth"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 199,
-      "friction": 7,
-      "dead_rate": 0.238,
+      "sessions": 317,
+      "friction": 13,
+      "dead_rate": 0.292,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.249,
-        "n": 401
+        "rate": 0.299,
+        "n": 700
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 33
+          "count": 121
         },
         {
           "el": "div",
-          "count": 29
+          "count": 36
         },
         {
           "el": "svg[role=img]",
           "count": 21
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.29
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-01",
-      "changes": [
-        "sessions 455→199 (-56%)",
-        "dead-rate 0.413→0.238 (-0.2) ✅",
-        "rage-clicks 21→7 ✅",
-        "✔︎ dead-click résolu : p.lc-h2s-txt",
-        "✔︎ dead-click résolu : div.lc-detail-body",
-        "✔︎ dead-click résolu : div.lc-detail-head"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 191,
-      "friction": 0,
-      "dead_rate": 0.18,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.182,
-        "n": 423
-      },
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 27
-        },
-        {
-          "el": "svg[role=img]",
-          "count": 23
-        },
-        {
-          "el": "div",
-          "count": 17
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.28
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-01",
-      "changes": [
-        "sessions 285→191 (-33%)",
-        "dead-rate 0.343→0.18 (-0.2) ✅",
-        "✔︎ dead-click résolu : rect",
-        "✔︎ dead-click résolu : span.lc-detail-fact",
-        "✔︎ dead-click résolu : circle"
-      ]
-    },
-    {
-      "region": "florida",
-      "sessions": 31,
-      "friction": 0,
-      "dead_rate": 0.25,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.258,
-        "n": 62
-      },
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 13
         }
       ],
       "bored_worst": {
@@ -224,8 +147,86 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 82→31 (-62%)",
-        "dead-rate 0.562→0.25 (-0.3) ✅",
+        "sessions 455→317 (-30%)",
+        "dead-rate 0.413→0.292 (-0.1) ✅",
+        "rage-clicks 21→13 ✅",
+        "✔︎ dead-click résolu : p.lc-h2s-txt",
+        "✔︎ dead-click résolu : div.lc-detail-body",
+        "✔︎ dead-click résolu : div.lc-detail-head"
+      ]
+    },
+    {
+      "region": "gp",
+      "sessions": 289,
+      "friction": 1,
+      "dead_rate": 0.158,
+      "dead_worst": {
+        "screen": "beach",
+        "rate": 0.244,
+        "n": 41
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 32
+        },
+        {
+          "el": "svg[role=img]",
+          "count": 23
+        },
+        {
+          "el": "div",
+          "count": 23
+        },
+        {
+          "el": "rect",
+          "count": 14
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.38
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-01",
+      "changes": [
+        "dead-rate 0.343→0.158 (-0.2) ✅",
+        "✔︎ dead-click résolu : span.lc-detail-fact",
+        "✔︎ dead-click résolu : circle"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 79,
+      "friction": 0,
+      "dead_rate": 0.321,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.326,
+        "n": 215
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 52
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.27
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-01",
+      "changes": [
+        "dead-rate 0.562→0.321 (-0.2) ✅",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : div",
         "✔︎ dead-click résolu : circle",
@@ -235,12 +236,24 @@
     },
     {
       "region": "puntacana",
-      "sessions": 7,
-      "friction": 0,
-      "dead_rate": 0.625,
-      "dead_worst": null,
-      "top_dead_els": [],
-      "bored_worst": null,
+      "sessions": 13,
+      "friction": 1,
+      "dead_rate": 0.556,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.609,
+        "n": 23
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 13
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.2
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -248,8 +261,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 11→7 (-36%)",
-        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "sessions 11→13 (+18%)",
+        "dead-rate 0.645→0.556 (-0.1) ✅",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : span.lc-detail-fact",
         "✔︎ dead-click résolu : div",
@@ -259,12 +272,15 @@
     },
     {
       "region": "rivieramaya",
-      "sessions": 8,
+      "sessions": 17,
       "friction": 0,
-      "dead_rate": 0.6,
+      "dead_rate": 0.5,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.44
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -272,8 +288,6 @@
       "session_to_email": 0,
       "prev_date": "2026-07-01",
       "changes": [
-        "sessions 16→8 (-50%)",
-        "dead-rate 0.471→0.6 (+0.1) ⚠️",
         "✔︎ dead-click résolu : svg[role=img]",
         "✔︎ dead-click résolu : div.sg-onink-scope",
         "✔︎ dead-click résolu : div",
