@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — Jusqu'où on descend (la profondeur = la discipline) · pièce de vision, hors funnel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   « JUSQU'OÙ ON DESCEND » — scène SVG de descente abyssale.
+   La profondeur = la profondeur du marché, MAIS le sujet réel
+   est la DISCIPLINE : on n'éclaire (or) que ce qu'on VEND
+   honnêtement aujourd'hui (Sable/Récif/Digue). Sous la ligne de
+   flottaison = le cap, pas le catalogue. Les marchés que le panel
+   BIG_MARKETS a tués (assurance/immo/maritime/défense) sont dessinés
+   en SILHOUETTE ÉTEINTE ("horizon"), sans or, sans prix, sans CTA —
+   le "mur" dit POURQUOI on n'y va pas, jamais une offre.
+
+   Artefact de bibliothèque design (règle : tout SVG montré → design/).
+   PAS une page produit publique, PAS dans le funnel, PAS importée par l'app.
+
+   Moteur : backdrop SVG position:fixed + scroll document normal (le plus
+   robuste — zéro sticky/void-noir). 1 seul rAF demand-driven, lissage,
+   pause visibilitychange, reduced-motion = plancher dur.
+   Palette + satellite repris de design/proto-plage-plongee.html.
+   ============================================================ */
+:root{
+  --sky3:#F2B05E; --glint:#FFD884; --sky2:#C97E3A; --seaT:#1A5852; --sky1:#155A5A; --sky0:#0B2230;
+  --abyss:#020A12; --fosse:#03101C;
+  --ink:#0D0D0D; --paper:#FDFCF7; --paperInk:#EAF7F4;
+  --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --mid:#9DB4B0;
+  --d:0;         /* profondeur lissée 0..1 (écrite par le rAF) */
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:auto}
+body{background:#02060A;color:var(--paperInk);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden;line-height:1.5}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;letter-spacing:-.02em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ===================== BACKDROP FIXE (l'océan qui s'assombrit) ===================== */
+#backdrop{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--sky3)}
+#backdrop>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#deepen{opacity:calc(var(--d) * .94)}
+#vignette{opacity:calc(var(--d) * .55)}
+#rays{opacity:calc(1 - var(--d) * 1.7);transform:translateY(calc(var(--d) * -70px))}
+#plankton{opacity:calc((var(--d) - .5) * 2);transform:translateY(calc(var(--d) * -190px))}
+#cable{transform:translateY(calc(var(--d) * -140px))}
+#sondePos{transform:translate(400px, calc(150px + var(--d) * 70px)) scale(calc(1 - var(--d) * .3))}
+
+@media (prefers-reduced-motion:no-preference){
+  #sondeAnim{animation:breathe 7s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes breathe{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-4px) rotate(-1.2deg)}}
+  #sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes sunBreath{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+  .ray{animation:rayshimmer 14s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top}
+  @keyframes rayshimmer{0%{opacity:.5}100%{opacity:.9}}
+  .pk{animation:pkfloat 9s ease-in-out infinite alternate;transform-box:fill-box}
+  @keyframes pkfloat{0%{transform:translateY(0)}100%{transform:translateY(-6px)}}
+}
+
+/* ===================== CHROME (wordmark + langue + note artefact) ===================== */
+.chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:flex-start;padding:14px 16px;pointer-events:none;gap:10px}
+.brand{pointer-events:auto}
+.brand .wm{font-family:'Anton',sans-serif;font-size:19px;color:#fff;text-transform:uppercase;letter-spacing:-.01em;line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.brand .lib{display:block;margin-top:3px;font:700 9.5px/1 "Bricolage Grotesque";letter-spacing:.14em;text-transform:uppercase;color:rgba(255,216,132,.85)}
+.langs{display:flex;gap:4px;pointer-events:auto}
+.langs button{border:1px solid rgba(255,255,255,.18);background:rgba(8,18,16,.4);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:8px 9px;border-radius:9px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ===================== HUD PROFONDEUR (la jauge de plongée = la métaphore) ===================== */
+.hud{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:30;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hud .track{position:relative;width:6px;height:min(46vh,340px);border-radius:6px;
+  background:linear-gradient(180deg,rgba(255,216,132,.4),rgba(30,200,176,.28) 40%,rgba(3,16,28,.6));overflow:hidden}
+.hud .fill{position:absolute;left:0;right:0;top:0;border-radius:6px;height:calc(var(--d) * 100%);
+  background:linear-gradient(180deg,var(--goldS),var(--tealL));box-shadow:0 0 10px rgba(30,200,176,.6)}
+.hud .knob{position:absolute;left:50%;transform:translate(-50%,-50%);top:calc(var(--d) * 100%);
+  width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(3,16,28,.7),0 0 10px var(--tealL)}
+.hud .depthlab{font:700 12px/1 'JetBrains Mono';color:var(--tealL);text-shadow:0 1px 5px #000;text-align:right}
+.hud .tierlab{font:800 10px/1.1 "Bricolage Grotesque";letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);text-shadow:0 1px 5px #000;max-width:92px;text-align:right}
+@media (max-width:520px){ .hud .tierlab{display:none} }
+
+/* ===================== FLUX (scroll document normal) ===================== */
+main{position:relative;z-index:10}
+.wrap{max-width:600px;margin:0 auto;padding:0 20px}
+
+.intro{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:96px 0 48px}
+.intro .eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:12px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.intro h1{font-size:clamp(40px,12vw,84px);line-height:.9;color:#fff;margin:0 0 18px;
+  text-shadow:0 3px 26px rgba(0,0,0,.55);max-width:11ch}
+.intro .lede{font:600 15.5px/1.55 "Bricolage Grotesque";color:rgba(255,255,255,.85);
+  max-width:44ch;text-shadow:0 1px 10px rgba(0,0,0,.5);margin-bottom:26px}
+.scrollhint{display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.75)}
+.scrollhint .lab{font:800 10px/1 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase}
+.scrollhint .chev{width:16px;height:16px;border-right:2px solid rgba(255,255,255,.8);border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg)}
+@media (prefers-reduced-motion:no-preference){.scrollhint .chev{animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}}
+
+/* ===================== CARTE PALIER ===================== */
+.tier{min-height:92svh;display:flex;align-items:center;padding:40px 0;position:relative}
+.card{position:relative;width:100%;border-radius:16px;padding:22px 22px 24px;
+  will-change:transform,opacity;opacity:.28;transform:translateY(26px) scale(.985);
+  transition:opacity .5s ease,transform .5s cubic-bezier(.22,1,.36,1)}
+.tier.on .card{opacity:1;transform:none}
+
+.tier.live .card{background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.tier.pilot .card{background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);box-shadow:4px 4px 0 rgba(13,13,13,.55)}
+.tier.horizon .card{background:rgba(11,34,48,.34);color:rgba(234,247,244,.9);
+  border:2px dashed rgba(158,180,176,.5);box-shadow:none;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:.62}
+.tier.horizon.on .card{opacity:.82}
+
+.tiermeta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.tierno{font:700 12px/1 'JetBrains Mono';opacity:.55}
+.tier.horizon .tierno{color:var(--paperInk)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  font:800 10.5px/1 "Bricolage Grotesque";letter-spacing:.05em;text-transform:uppercase}
+.badge .ck{font-weight:800}
+.badge.live{background:rgba(34,197,94,.14);color:#127c3b;border:1px solid rgba(34,197,94,.5)}
+.badge.pilot{background:rgba(184,122,0,.14);color:var(--amber);border:1px solid rgba(184,122,0,.5)}
+.badge.horizon{background:rgba(158,180,176,.14);color:var(--paperInk);border:1px solid rgba(158,180,176,.4)}
+.market{font:700 12px/1.2 "Bricolage Grotesque";letter-spacing:.02em;opacity:.7}
+.tier.horizon .market{color:var(--paperInk);opacity:.65}
+
+.tierhead{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.emblem{flex:0 0 46px;width:46px;height:58px}
+.tiername{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.01em;text-transform:uppercase;
+  font-size:clamp(30px,8vw,46px);line-height:.92}
+.tier.live .tiername{color:var(--ink)}
+.tier.pilot .tiername{color:var(--ink)}
+.tier.horizon .tiername{color:transparent;-webkit-text-stroke:1.4px rgba(234,247,244,.6);text-stroke:1.4px rgba(234,247,244,.6)}
+
+.tiervalue{font:700 17px/1.35 "Bricolage Grotesque";margin-bottom:8px}
+.tier.horizon .tiervalue{color:rgba(234,247,244,.92);font-weight:600}
+.tierline{font:600 13.5px/1.5 "Bricolage Grotesque";opacity:.82}
+.tier.live .tierline,.tier.pilot .tierline{color:#3a3a3a;opacity:1}
+.tier.live .tierline .price{color:var(--ink);font-weight:800}
+
+.wall{margin-top:14px;border-left:3px solid rgba(232,82,42,.55);padding:4px 0 4px 12px;pointer-events:none}
+.wall .wl{display:block;font:800 9.5px/1 "Bricolage Grotesque";letter-spacing:.16em;text-transform:uppercase;
+  color:var(--coral);margin-bottom:6px;opacity:.85}
+.wall .wt{font:600 13.5px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.9)}
+
+.cta{display:inline-flex;align-items:center;gap:9px;margin-top:16px;text-decoration:none;cursor:pointer;
+  border:2px solid var(--ink);border-radius:13px;padding:13px 18px;color:var(--ink);
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:6px 6px 0 var(--ink);font:800 15px/1 "Bricolage Grotesque";letter-spacing:.005em;
+  transition:transform .12s ease,box-shadow .12s ease}
+.cta:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)}
+.cta .ar{font-weight:800}
+.pilotnote{margin-top:14px;display:inline-flex;align-items:center;gap:8px;font:700 12px/1.3 "Bricolage Grotesque";color:var(--amber)}
+.pilotnote .d{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+
+.depthtag{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+  writing-mode:vertical-rl;font:700 11px/1 'JetBrains Mono';color:rgba(255,255,255,.42);letter-spacing:.1em}
+@media (max-width:520px){ .depthtag{display:none} }
+
+/* ===================== SIGNATURE + SORTIE ===================== */
+.outro{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 0 90px}
+.sig{max-width:22ch;font-family:'Anton',sans-serif;font-size:clamp(24px,6.4vw,38px);line-height:1.02;
+  color:#fff;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.6)}
+.sig2{max-width:34ch;font:600 14px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.72);margin-bottom:32px}
+.exit{display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;
+  border:2.5px solid #1A2B26;border-radius:15px;padding:16px 26px;color:#1A2B26;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:6px 6px 0 rgba(0,0,0,.45);font:800 17px/1 "Bricolage Grotesque";letter-spacing:.01em;
+  transition:transform .12s ease,box-shadow .12s ease}
+.exit:active{transform:translate(2px,2px);box-shadow:3px 3px 0 rgba(0,0,0,.45)}
+.exitsub{margin-top:16px}
+.exitsub a{font:800 13px/1 "Bricolage Grotesque";color:var(--tealL);text-decoration:none;
+  border-bottom:1px solid rgba(30,200,176,.4);padding-bottom:2px}
+.footnote{margin-top:40px;font:600 11px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.42);max-width:40ch}
+
+/* ===================== EMBLÈME VEILLEUR par palier (couleur = registre) ===================== */
+.em-ant{stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.em-body{fill:rgba(16,38,34,.9)}
+.em-lens{fill:#0a2b2b}
+.em-iris{fill:#02100f}
+.tier.live .emblem{color:var(--goldL)}
+.tier.live .em-ring{stroke:var(--goldL);stroke-width:3;fill:none}
+.tier.live .em-antdot{fill:var(--green)}
+.tier.live .em-lens{fill:#0a3a39}
+.tier.live .em-iris{fill:var(--tealL)}
+.tier.pilot .emblem{color:var(--tealL)}
+.tier.pilot .em-ring{stroke:var(--teal);stroke-width:2.4;fill:none;opacity:.7}
+.tier.pilot .em-antdot{fill:var(--amber)}
+.tier.pilot .em-iris{fill:#0a3a39}
+.tier.horizon .emblem{color:rgba(158,180,176,.5);opacity:.6}
+.tier.horizon .em-body{fill:none;stroke:rgba(158,180,176,.45);stroke-width:1.4;stroke-dasharray:4 4}
+.tier.horizon .em-ring{stroke:rgba(158,180,176,.45);stroke-width:1.4;fill:none;stroke-dasharray:4 4}
+.tier.horizon .em-lens{fill:rgba(11,34,48,.3)}
+.tier.horizon .em-iris{fill:none}
+.tier.horizon .em-antdot{fill:none;stroke:rgba(158,180,176,.4);stroke-width:1.2}
+
+/* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
+@media (prefers-reduced-motion:reduce){
+  .card{opacity:1!important;transform:none!important;transition:none!important}
+  .scrollhint .chev{animation:none!important}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Le Veilleur — jusqu'où on descend : la profondeur de la mer = la profondeur du marché, mais on n'éclaire (et on ne vend) que ce qu'on sait mesurer. Faites défiler pour descendre du rivage à l'abysse.</h1>
+
+<!-- ============================ BACKDROP OCÉAN (fixe) ============================ -->
+<div id="backdrop" aria-hidden="true">
+  <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F2B05E"/><stop offset=".05" stop-color="#FFD884"/>
+        <stop offset=".14" stop-color="#C97E3A"/><stop offset=".30" stop-color="#1A5852"/>
+        <stop offset=".55" stop-color="#155A5A"/><stop offset=".78" stop-color="#0B2230"/>
+        <stop offset="1" stop-color="#08251F"/>
+      </linearGradient>
+      <linearGradient id="deepG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#03101C"/><stop offset=".6" stop-color="#020A12"/><stop offset="1" stop-color="#01060C"/>
+      </linearGradient>
+      <radialGradient id="vig" cx="50%" cy="42%" r="72%">
+        <stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/>
+      </radialGradient>
+      <radialGradient id="sunR" gradientUnits="userSpaceOnUse" cx="560" cy="70" r="220">
+        <stop offset="0" stop-color="#fdf6e3"/><stop offset=".45" stop-color="#ffc187" stop-opacity=".6"/><stop offset="1" stop-color="#ff944a" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="rayG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9B8" stop-opacity=".5"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="lens" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/></radialGradient>
+      <radialGradient id="irisG" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/></radialGradient>
+      <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/></linearGradient>
+      <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/><stop offset="1" stop-color="#0A1714"/></linearGradient>
+      <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#1EC8B0" stop-opacity=".5"/><stop offset=".5" stop-color="#1EC8B0" stop-opacity=".16"/><stop offset="1" stop-color="#1EC8B0" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFD884" stop-opacity=".42"/><stop offset=".7" stop-color="#1EC8B0" stop-opacity=".12"/><stop offset="1" stop-color="#1EC8B0" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+    </defs>
+
+    <rect x="0" y="0" width="800" height="600" fill="url(#ocean)"/>
+    <circle id="sunGlow" cx="560" cy="70" r="220" fill="url(#sunR)"/>
+
+    <g id="rays">
+      <polygon class="ray" points="180,-40 260,-40 200,640 60,640" fill="url(#rayG)"/>
+      <polygon class="ray" points="420,-40 470,-40 470,640 350,640" fill="url(#rayG)" opacity=".7"/>
+      <polygon class="ray" points="600,-40 660,-40 720,640 560,640" fill="url(#rayG)" opacity=".8"/>
+    </g>
+
+    <g id="cable" opacity=".5">
+      <line x1="400" y1="-200" x2="400" y2="1400" stroke="#0d1b18" stroke-width="2.5"/>
+      <g stroke="#5FD3C9" stroke-width="1" opacity=".4">
+        <line x1="388" y1="80" x2="412" y2="80"/><line x1="388" y1="260" x2="412" y2="260"/>
+        <line x1="388" y1="440" x2="412" y2="440"/><line x1="388" y1="620" x2="412" y2="620"/>
+        <line x1="388" y1="800" x2="412" y2="800"/><line x1="388" y1="980" x2="412" y2="980"/>
+      </g>
+    </g>
+
+    <g id="plankton" fill="#1EC8B0">
+      <circle class="pk" cx="140" cy="420" r="2.2" opacity=".8"/><circle class="pk" cx="250" cy="520" r="1.6" opacity=".6"/>
+      <circle class="pk" cx="520" cy="380" r="2.6" opacity=".7"/><circle class="pk" cx="640" cy="470" r="1.8" opacity=".6"/>
+      <circle class="pk" cx="700" cy="300" r="2" opacity=".5"/><circle class="pk" cx="90" cy="300" r="1.6" opacity=".5"/>
+      <circle class="pk" cx="330" cy="560" r="2.2" opacity=".7"/><circle class="pk" cx="470" cy="540" r="1.5" opacity=".55"/>
+      <circle class="pk" cx="580" cy="560" r="2" opacity=".6"/><circle class="pk" cx="210" cy="360" r="1.5" opacity=".5"/>
+    </g>
+
+    <rect id="deepen" x="0" y="0" width="800" height="600" fill="url(#deepG)"/>
+    <rect id="vignette" x="0" y="0" width="800" height="600" fill="url(#vig)"/>
+
+    <!-- LA SONDE — satellite Veilleur, capteur vers la MER (bas). Position externe / anim interne -->
+    <g id="sondePos">
+      <g id="sondeAnim">
+        <circle id="halo" cx="0" cy="0" r="120" fill="url(#haloG)" filter="url(#soft)"/>
+        <polygon id="beam" points="0,26 -66,240 66,240" fill="url(#beamGrad)" opacity=".55"/>
+        <g transform="scale(1.15)">
+          <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+          <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+          <g stroke="#2f7390" stroke-width="1" opacity=".6">
+            <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+            <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+          </g>
+          <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+          <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z" fill="url(#bodyG)" stroke="#FFD884" stroke-width="1.3" stroke-opacity=".5"/>
+          <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z" fill="none" stroke="#0d0b14" stroke-width="2.6" stroke-opacity=".5"/>
+          <circle cx="0" cy="8" r="22" fill="url(#lens)"/>
+          <circle cx="0" cy="8" r="22" fill="none" stroke="#E8A800" stroke-width="3"/>
+          <circle id="iris" cx="0" cy="12" r="8" fill="url(#irisG)"/>
+          <circle cx="0" cy="12" r="3.4" fill="#02100f"/>
+          <circle cx="-3" cy="9" r="2.8" fill="#fff7e2"/>
+          <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+          <circle id="antGlow" cx="0" cy="-49" r="10" fill="#22C55E" opacity=".22" filter="url(#softS)"/>
+          <circle cx="0" cy="-49" r="4.6" fill="#22C55E"/>
+        </g>
+      </g>
+    </g>
+  </svg>
+
+  <!-- emblème veilleur réutilisable par carte -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="emblem" viewBox="0 0 46 58">
+      <line class="em-ant" x1="23" y1="6" x2="23" y2="16"/>
+      <circle class="em-antdot" cx="23" cy="6" r="3.4"/>
+      <path class="em-body" d="M23 16 C33 16 39 23 39 31 C39 42 32 50 23 50 C14 50 7 42 7 31 C7 23 13 16 23 16 Z"/>
+      <circle class="em-lens" cx="23" cy="33" r="12"/>
+      <circle class="em-ring" cx="23" cy="33" r="12"/>
+      <circle class="em-iris" cx="23" cy="36" r="4.6"/>
+    </symbol>
+  </defs></svg>
+</div>
+
+<!-- ============================ CHROME ============================ -->
+<div class="chrome">
+  <div class="brand">
+    <span class="wm">LE VEILLEUR</span>
+    <span class="lib" id="libNote">Bibliothèque design · pièce de vision</span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ HUD PROFONDEUR ============================ -->
+<div class="hud" aria-hidden="true">
+  <div class="depthlab" id="hudDepth">−0 m</div>
+  <div class="track"><div class="fill"></div><div class="knob"></div></div>
+  <div class="tierlab" id="hudTier">Surface</div>
+</div>
+
+<!-- ============================ FLUX ============================ -->
+<main>
+  <section class="intro">
+    <div class="wrap">
+      <div class="eyebrow" id="introEyebrow">La profondeur de la mer = la profondeur du marché</div>
+      <h1 class="anton" id="headline">JUSQU'OÙ ON DESCEND</h1>
+      <p class="lede" id="lede"></p>
+      <div class="scrollhint"><span class="lab" id="scrollLab">Descendez</span><span class="chev"></span></div>
+    </div>
+  </section>
+
+  <div id="tiers"></div>
+
+  <section class="outro">
+    <div class="wrap">
+      <div class="sig anton" id="sig"></div>
+      <div class="sig2" id="sig2"></div>
+      <a class="exit" id="exitCta" href="https://sargasses-martinique.com/"><span id="exitTxt"></span><span class="ar">→</span></a>
+      <div class="exitsub"><a id="exitSub" href="https://sargasses-martinique.com/pro/espace/"></a></div>
+      <p class="footnote" id="footnote"></p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   COPY i18n — la classification (live/pilot/horizon) est FIGÉE
+   par docs/BIG_MARKETS.md. Aucun prix / CTA / "souscrire" sur un
+   palier non-LIVE. Le "mur" horizon dit POURQUOI on n'y va pas.
+   ============================================================ */
+var TIERS = [
+  { name:"SABLE",     kind:"live",    depth:"−0 m",     href:"https://sargasses-martinique.com/" },
+  { name:"RÉCIF",     kind:"live",    depth:"−40 m",    href:"https://sargasses-martinique.com/pro/espace/" },
+  { name:"DIGUE",     kind:"live",    depth:"−120 m",   href:"https://sargasses-martinique.com/pro/" },
+  { name:"AMARRE",    kind:"horizon", depth:"−400 m" },
+  { name:"BAROMÈTRE", kind:"horizon", depth:"−900 m" },
+  { name:"SILLAGE",   kind:"horizon", depth:"−1500 m" },
+  { name:"FILET",     kind:"horizon", depth:"−2400 m" },
+  { name:"COURANT",   kind:"horizon", depth:"−3500 m" },
+  { name:"PRISME",    kind:"pilot",   depth:"−4800 m" },
+  { name:"ABYSSE",    kind:"horizon", depth:"−6000 m" },
+];
+
+var COPY = {
+  fr: {
+    eyebrow:"La profondeur de la mer = la profondeur du marché",
+    headline:"JUSQU'OÙ ON DESCEND",
+    lede:"On regarde la même mer — mais on n'éclaire que ce qu'on sait mesurer. Plus bas, plus net : votre plage, votre rivage, votre commune. Sous la ligne de flottaison, c'est le cap, pas le catalogue.",
+    scroll:"Descendez", lib:"Bibliothèque design · pièce de vision",
+    badgeLive:"Live", badgePilot:"En chantier", badgeHorizon:"Horizon", wallLabel:"Pourquoi on n'y va pas",
+    pilotNote:"aucun accès à vendre aujourd’hui",
+    surface:"Surface",
+    sig:"Il regarde la mer, jamais vos clients.",
+    sig2:"On s'arrête où finit la mesure. C'est ça, le moat.",
+    exit:"Voir ma plage — gratuit", exitSub:"Vous gérez un rivage ? → Espace pro",
+    foot:"Pièce de vision interne. Les paliers sous la ligne de flottaison ne sont ni vendus ni poursuivis — le verdict reste 100 % donnée mesurée, l'argent ne touche jamais la mesure.",
+    tiers:[
+      { market:"B2C · voyageurs",              value:"Votre plage aujourd'hui : mer propre ou pas.",   line:"Le verdict du jour, gratuit. Pass séjour dès 7,99 €.", prices:["7,99 €"], cta:"Voir ma plage — gratuit" },
+      { market:"Hôtels & clubs de plage",       value:"L'état de vos plages sur votre site, daté.",     line:"79 €/mois ou 690 €/an · essai 30 j sans carte.", prices:["79 €/mois","690 €/an"], cta:"Essayer 30 jours" },
+      { market:"Mairies & offices de tourisme", value:"Toute la commune, baie par baie.",               line:"199 €/mois ou 1 990 €/an · self-serve.", prices:["199 €/mois","1 990 €/an"], cta:"Ouvrir Territoire" },
+      { market:"Immobilier côtier",             value:"Lire l'exposition d'un rivage dans le temps.",   line:"Pas encore mesuré → pas encore promis." },
+      { market:"Assurance / réassurance",       value:"Le risque côtier daté existe dans nos données.", line:"On ne le vendra jamais à qui parie contre la plage — l'argent ne touche pas le verdict." },
+      { market:"Croisière, ports, maritime",    value:"Des fenêtres d'escale « mer propre ».",          line:"Le jour où la donnée les tiendra sans détour." },
+      { market:"Pêche & aquaculture",           value:"L'algue avant qu'elle n'étouffe l'eau.",         line:"Une piste qu'on garde à l'œil, pas une facture." },
+      { market:"Énergie & dessalement",         value:"Anticiper le biofouling aux prises d'eau.",      line:"Le jour où on le mesurera vraiment." },
+      { market:"Licence data / API",            value:"Notre satellite brut + prévision, en API.",      line:"En chantier — pour qui veut la source, pas l'app." },
+      { market:"Climat · spatial · souverain · défense", value:"Un jumeau vivant des côtes du monde.",  line:"La direction où la sonde regarde — pas une porte ouverte aujourd'hui." },
+    ],
+  },
+  en: {
+    eyebrow:"How deep the sea goes = how deep the market goes",
+    headline:"HOW DEEP WE GO",
+    lede:"We look at the same sea — but we only light up what we can measure. Deeper, sharper: your beach, your shore, your town. Below the waterline, it's the heading, not the catalogue.",
+    scroll:"Descend", lib:"Design library · vision piece",
+    badgeLive:"Live", badgePilot:"In progress", badgeHorizon:"On the horizon", wallLabel:"Why we don't go there",
+    pilotNote:"no access on sale today",
+    surface:"Surface",
+    sig:"He watches the sea, never your guests.",
+    sig2:"We stop where measurement ends. That's the moat.",
+    exit:"See my beach — free", exitSub:"You manage a shore? → Pro space",
+    foot:"Internal vision piece. The tiers below the waterline are neither sold nor pursued — the verdict stays 100% measured data, money never touches the measurement.",
+    tiers:[
+      { market:"B2C · travellers",             value:"Your beach today: clean water or not.",           line:"Today's verdict, free. Trip pass from $5.99.", prices:["$5.99"], cta:"See my beach — free" },
+      { market:"Hotels & beach clubs",         value:"Your beaches' status on your own site, dated.",   line:"$89/mo or $790/yr · 30-day trial, no card.", prices:["$89/mo","$790/yr"], cta:"Start 30 days" },
+      { market:"Town halls & tourism offices", value:"The whole town, bay by bay.",                     line:"$249/mo · self-serve.", prices:["$249/mo"], cta:"Open Territory" },
+      { market:"Coastal real estate",          value:"Read a shore's exposure over time.",              line:"Not measured yet → not promised yet." },
+      { market:"Insurance / reinsurance",      value:"Dated coastal risk exists in our data.",          line:"We'll never sell it to anyone betting against the beach — money never touches the verdict." },
+      { market:"Cruise, ports, maritime",      value:"'Clean water' port-call windows.",                line:"The day the data holds them without a caveat." },
+      { market:"Fisheries & aquaculture",      value:"The algae before it smothers the water.",         line:"A lead we keep an eye on, not an invoice." },
+      { market:"Energy & desalination",        value:"Anticipate biofouling at water intakes.",         line:"The day we truly measure it." },
+      { market:"Data licence / API",           value:"Our raw satellite + forecast, as an API.",        line:"In progress — for whoever wants the source, not the app." },
+      { market:"Climate · space · sovereign · defense", value:"A living twin of the world's coasts.",   line:"The direction the probe looks — not an open door today." },
+    ],
+  },
+  es: {
+    eyebrow:"Lo hondo del mar = lo hondo del mercado",
+    headline:"HASTA DÓNDE BAJAMOS",
+    lede:"Miramos el mismo mar — pero solo iluminamos lo que sabemos medir. Más abajo, más nítido: tu playa, tu costa, tu municipio. Bajo la línea de flotación, es el rumbo, no el catálogo.",
+    scroll:"Desciende", lib:"Biblioteca de diseño · pieza de visión",
+    badgeLive:"Live", badgePilot:"En curso", badgeHorizon:"En el horizonte", wallLabel:"Por qué no vamos ahí",
+    pilotNote:"ningún acceso a la venta hoy",
+    surface:"Superficie",
+    sig:"Mira el mar, nunca a tus clientes.",
+    sig2:"Nos detenemos donde acaba la medición. Ese es el moat.",
+    exit:"Ver mi playa — gratis", exitSub:"¿Gestionas una costa? → Espacio pro",
+    foot:"Pieza de visión interna. Los niveles bajo la línea de flotación no se venden ni se persiguen — el veredicto sigue siendo 100 % dato medido, el dinero nunca toca la medición.",
+    tiers:[
+      { market:"B2C · viajeros",               value:"Tu playa hoy: agua limpia o no.",                 line:"El veredicto del día, gratis. Pase desde 5,99 $.", prices:["5,99 $"], cta:"Ver mi playa — gratis" },
+      { market:"Hoteles y clubes de playa",    value:"El estado de tus playas en tu propia web, fechado.", line:"89 $/mes o 790 $/año · prueba 30 días sin tarjeta.", prices:["89 $/mes","790 $/año"], cta:"Probar 30 días" },
+      { market:"Ayuntamientos y turismo",      value:"Todo el municipio, bahía por bahía.",             line:"249 $/mes · autoservicio.", prices:["249 $/mes"], cta:"Abrir Territorio" },
+      { market:"Inmobiliario costero",         value:"Leer la exposición de una costa en el tiempo.",   line:"Aún no medido → aún no prometido." },
+      { market:"Seguros / reaseguros",         value:"El riesgo costero fechado existe en nuestros datos.", line:"Nunca se lo venderemos a quien apuesta contra la playa — el dinero no toca el veredicto." },
+      { market:"Cruceros, puertos, marítimo",  value:"Ventanas de escala con « mar limpio ».",          line:"El día que el dato las sostenga sin rodeos." },
+      { market:"Pesca y acuicultura",          value:"El alga antes de que ahogue el agua.",            line:"Una pista que vigilamos, no una factura." },
+      { market:"Energía y desalinización",     value:"Anticipar el biofouling en las tomas de agua.",   line:"El día que lo midamos de verdad." },
+      { market:"Licencia de datos / API",      value:"Nuestro satélite en bruto + pronóstico, como API.", line:"En construcción — para quien quiere la fuente, no la app." },
+      { market:"Clima · espacio · soberano · defensa", value:"Un gemelo vivo de las costas del mundo.", line:"La dirección que mira la sonda — no una puerta abierta hoy." },
+    ],
+  },
+};
+
+var SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+function emblemSvg(){
+  var s=document.createElementNS(SVGNS,'svg'); s.setAttribute('class','emblem'); s.setAttribute('viewBox','0 0 46 58'); s.setAttribute('aria-hidden','true');
+  var u=document.createElementNS(SVGNS,'use'); u.setAttribute('href','#emblem'); s.appendChild(u); return s;
+}
+/* écrit une ligne en enrobant les tokens de prix dans <span class=price> (DOM sûr, zéro innerHTML) */
+function appendLine(parent, text, prices){
+  if(!prices || !prices.length){ parent.appendChild(document.createTextNode(text)); return; }
+  var rest = text;
+  while(rest.length){
+    var best=-1, tok=null;
+    for(var p=0;p<prices.length;p++){ var k=rest.indexOf(prices[p]); if(k!==-1 && (best===-1 || k<best)){ best=k; tok=prices[p]; } }
+    if(best===-1){ parent.appendChild(document.createTextNode(rest)); break; }
+    if(best>0) parent.appendChild(document.createTextNode(rest.slice(0,best)));
+    parent.appendChild(el('span','price',tok));
+    rest = rest.slice(best+tok.length);
+  }
+}
+
+var tiersEl = document.getElementById('tiers');
+function buildTiers(lang){
+  var t = COPY[lang];
+  tiersEl.replaceChildren();
+  for(var i=0;i<TIERS.length;i++){
+    var meta = TIERS[i], c = t.tiers[i];
+    var section = el('section','tier '+meta.kind); section.setAttribute('data-i', i);
+    var wrap = el('div','wrap'); var card = el('div','card');
+
+    var metaRow = el('div','tiermeta');
+    metaRow.appendChild(el('span','tierno mono',(i+1<10?'0':'')+(i+1)));
+    var badge = el('span','badge '+meta.kind);
+    if(meta.kind==='live'){ badge.appendChild(el('span','ck','✓')); badge.appendChild(document.createTextNode(' '+t.badgeLive)); }
+    else if(meta.kind==='pilot'){ badge.textContent = '◐ '+t.badgePilot; }
+    else { badge.textContent = '○ '+t.badgeHorizon; }
+    metaRow.appendChild(badge);
+    metaRow.appendChild(el('span','market',c.market));
+    card.appendChild(metaRow);
+
+    var head = el('div','tierhead'); head.appendChild(emblemSvg()); head.appendChild(el('div','tiername',meta.name));
+    card.appendChild(head);
+    card.appendChild(el('p','tiervalue',c.value));
+
+    if(meta.kind==='live'){
+      var line = el('p','tierline'); appendLine(line, c.line, c.prices); card.appendChild(line);
+      var cta = el('a','cta'); cta.setAttribute('href', meta.href);
+      cta.appendChild(document.createTextNode(c.cta)); cta.appendChild(el('span','ar','→'));
+      card.appendChild(cta);
+    } else if(meta.kind==='pilot'){
+      card.appendChild(el('p','tierline',c.line));
+      var pn = el('div','pilotnote'); pn.appendChild(el('span','d'));
+      pn.appendChild(document.createTextNode(t.badgePilot+' — '+t.pilotNote));
+      card.appendChild(pn);
+    } else {
+      var wall = el('div','wall'); wall.appendChild(el('span','wl',t.wallLabel)); wall.appendChild(el('span','wt',c.line));
+      card.appendChild(wall);
+    }
+
+    wrap.appendChild(card); section.appendChild(wrap);
+    section.appendChild(el('div','depthtag mono',meta.depth));
+    tiersEl.appendChild(section);
+  }
+  observeTiers();
+}
+
+/* ---------- i18n global ---------- */
+function setLang(lang){
+  var t = COPY[lang];
+  document.documentElement.lang = lang;
+  document.getElementById('introEyebrow').textContent = t.eyebrow;
+  document.getElementById('headline').textContent = t.headline;
+  document.getElementById('lede').textContent = t.lede;
+  document.getElementById('scrollLab').textContent = t.scroll;
+  document.getElementById('libNote').textContent = t.lib;
+  document.getElementById('sig').textContent = t.sig;
+  document.getElementById('sig2').textContent = t.sig2;
+  document.getElementById('exitTxt').textContent = t.exit;
+  document.getElementById('exitSub').textContent = t.exitSub;
+  document.getElementById('footnote').textContent = t.foot;
+  var btns = document.querySelectorAll('.langs button');
+  for(var i=0;i<btns.length;i++) btns[i].setAttribute('aria-pressed', String(btns[i].dataset.lang===lang));
+  buildTiers(lang);
+  hud(cur);
+}
+document.querySelector('.langs').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return; setLang(b.dataset.lang);
+});
+
+/* ---------- allumage des paliers (IntersectionObserver, pas de JS/frame) ---------- */
+var io = null;
+function observeTiers(){
+  if(io) io.disconnect();
+  io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('on'); });
+  }, { rootMargin:'-28% 0px -28% 0px', threshold:0.01 });
+  document.querySelectorAll('.tier').forEach(function(s){ io.observe(s); });
+}
+
+/* ---------- HUD : profondeur + palier courant ---------- */
+var hudDepth = document.getElementById('hudDepth'), hudTier = document.getElementById('hudTier');
+var MAXDEPTH = 6000;
+function hud(d){
+  var m = Math.round(d*MAXDEPTH/10)*10;
+  hudDepth.textContent = '−'+m.toLocaleString('fr-FR')+' m';
+  var lang = document.documentElement.lang;
+  var idx = Math.min(TIERS.length-1, Math.floor(d*TIERS.length + 0.001));
+  hudTier.textContent = d < 0.02 ? (COPY[lang]?COPY[lang].surface:'Surface') : TIERS[idx].name;
+}
+
+/* ============================================================
+   MOTEUR : 1 seul rAF demand-driven. Le scroll écrit `target`,
+   `cur` le rejoint en douceur, render() n'écrit --d (+ HUD) que
+   tant que ce n'est pas convergé. Pause sur visibilitychange.
+   reduced-motion = plancher dur (aucun rAF armé).
+   ============================================================ */
+var root = document.documentElement;
+var target=0, cur=0, needFrame=true, running=false, paused=false, RM=false;
+try{ RM = matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+
+function readTarget(){
+  var max = document.documentElement.scrollHeight - window.innerHeight;
+  target = max>0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+}
+function render(d){ root.style.setProperty('--d', d.toFixed(4)); hud(d); }
+function wake(){ if(!RM && !running && !paused){ running=true; requestAnimationFrame(loop); } }
+function loop(){
+  if(paused){ running=false; return; }
+  var work=false;
+  if(needFrame){ readTarget(); needFrame=false; work=true; }
+  var diff = target - cur;
+  if(Math.abs(diff) > 0.0004){ cur += diff*0.16; render(cur); work=true; }
+  else if(work){ cur = target; render(cur); }
+  running = work; if(work) requestAnimationFrame(loop);
+}
+window.addEventListener('scroll', function(){ needFrame=true; wake(); }, {passive:true});
+window.addEventListener('resize', function(){ needFrame=true; wake(); }, {passive:true});
+document.addEventListener('visibilitychange', function(){
+  paused = document.hidden; if(!paused){ needFrame=true; wake(); }
+});
+
+/* hook debug (barre de sortie : piloter la logique sans dépendre du scroll headless) */
+window.__setDepth = function(d){ cur = target = Math.min(1,Math.max(0,d)); render(cur); };
+
+/* ---------- init ---------- */
+setLang('fr');
+if(RM){
+  render(0.12);
+  document.querySelectorAll('.tier').forEach(function(s){ s.classList.add('on'); });
+} else {
+  readTarget(); cur = target; render(cur); wake();
+}
+</script>
+</body>
+</html>
