@@ -43,6 +43,7 @@ function envVal(name) {
   } catch { return null }
 }
 const STRIPE_KEY = envVal('STRIPE_SECRET_KEY')
+const MOLLIE_KEY = envVal('MOLLIE_API_KEY') // caisse LIVE — source ADDITIVE de la relance panier (Stripe = legacy run-off)
 // Envoi via SMTP (boîte alerte@). Bridge .env → process.env pour que la couche
 // d'envoi (qui lit process.env) voie les creds en exécution locale.
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => { if (!process.env[k]) { const v = envVal(k); if (v) process.env[k] = v } })
@@ -72,6 +73,24 @@ async function listAll(base, cap = 400) {
     out.push(...pg.data)
     if (!pg.has_more) break
     url = (base.includes('?') ? `${base}&limit=100` : `${base}?limit=100`) + `&starting_after=${pg.data[pg.data.length - 1].id}`
+  }
+  return out
+}
+// ── Mollie (caisse LIVE) — la vraie source de paniers abandonnés aujourd'hui ──
+async function mollie(pathname) {
+  const res = await fetch(`https://api.mollie.com/v2/${pathname}`, { headers: { Authorization: `Bearer ${MOLLIE_KEY}` } })
+  const json = await res.json()
+  if (json && json.status >= 400 && json.detail) throw new Error(`Mollie ${pathname}: ${json.detail}`)
+  return json
+}
+async function listAllMollie(cap = 600) {
+  const out = []
+  let url = 'payments?limit=250'
+  while (out.length < cap && url) {
+    const pg = await mollie(url)
+    out.push(...(((pg._embedded || {}).payments) || []))
+    const next = pg._links && pg._links.next && pg._links.next.href
+    url = next ? next.replace('https://api.mollie.com/v2/', '') : null
   }
   return out
 }
@@ -242,6 +261,39 @@ async function main() {
     if (kind === 'skip-fraud') { console.log(`  ⏭️  ${logId(email)} : carte fraud-flagged — pas de relance`); continue }
     seen.add(h)
     candidates.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
+  }
+
+  // ── Source MOLLIE (caisse live on-site) — ADDITIVE, FAIL-OPEN, gatée ──────────
+  // Par défaut on LOGGE seulement (vérif cloud avec la vraie clé, ZÉRO envoi) ; mettre
+  // MOLLIE_CART_RECOVERY=1 (env du step) → les paniers Mollie entrent dans la relance.
+  // Un bug ici ne casse JAMAIS la relance Stripe (try/catch). email = metadata.email ;
+  // paid vs abandonné = statut Mollie (autoritatif). On exclut tout email ayant un
+  // paiement 'paid' (jamais relancer un acheteur), + actifs/bounces/dédup existants.
+  const MOLLIE_SEND = process.env.MOLLIE_CART_RECOVERY === '1'
+  if (MOLLIE_KEY) {
+    try {
+      const pays = await listAllMollie(600)
+      const paidH = new Set(pays.filter(p => p.status === 'paid').map(p => ((p.metadata || {}).email || '').trim().toLowerCase()).filter(e => e.includes('@')).map(emailHash))
+      const ABANDON = { expired: 'abandoned', canceled: 'abandoned', failed: 'declined' } // 'open'/'pending' encore payables → on ne relance PAS
+      const mollieCands = []
+      for (const p of pays) {
+        const kind = ABANDON[p.status]
+        if (!kind) continue
+        if (new Date(p.createdAt).getTime() < cutoff) continue
+        const email = ((p.metadata || {}).email || '').trim()
+        if (!email.includes('@')) continue
+        const h = emailHash(email)
+        if (ONLY_HASH && !h.startsWith(ONLY_HASH)) continue
+        if (seen.has(h) || activeHashes.has(h) || bouncedSet.has(h) || paidH.has(h) || !cadenceDue(cadence[h], NOW)) continue
+        const region = REGIONS[(p.metadata || {}).island || 'mq']
+        if (!region) continue
+        seen.add(h)
+        mollieCands.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
+      }
+      console.log(`Mollie paniers abandonnés : ${mollieCands.length} [${MOLLIE_SEND ? 'ENVOI' : 'DRY — log only, MOLLIE_CART_RECOVERY=1 pour activer'}]`)
+      for (const c of mollieCands) console.log(`  • ${logId(c.email)} | ${c.region.name} | ${c.kind} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'}`)
+      if (MOLLIE_SEND) candidates.push(...mollieCands)
+    } catch (e) { console.log(`  ⚠️ Mollie recovery skip (fail-open): ${e.message}`) }
   }
 
   const byKind = candidates.reduce((m, c) => ((m[c.kind] = (m[c.kind] || 0) + 1), m), {})
