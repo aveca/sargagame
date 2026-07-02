@@ -102,14 +102,37 @@ function machineNoiseType(parsed, from, subject) {
     if (Array.isArray(parsed.headerLines)) raw = parsed.headerLines.map(h => h.line || '').join('\n')
   } catch { /* headers absents : on retombe sur from/objet ci-dessous */ }
   const s = String(subject || '')
+  // Preuve DSN indépendante du sujet : enveloppe nulle, expéditeur robot de remise,
+  // rapport delivery-status, X-Failed-Recipients. Les sujets AMBIGUS (locutions
+  // qu'un HUMAIN peut écrire : « impossible de remettre la main sur mon reçu »,
+  // « Alert delivery delayed since Monday ») ne classent en bruit machine QU'avec
+  // cette preuve — panel adverse 02/07 : sans ce garde, un vrai client au sujet
+  // malchanceux était perdu (ni accusé, ni digest, \Seen, + risque suppression).
+  const dsnEvidence = !f || !f.includes('@')
+    || /^(mailer-daemon|mdaemon|bounce|bounces|microsoftexchange[0-9a-f]*|postmaster)@/.test(f) || f.includes('mailer-daemon')
+    || (/^content-type:\s*multipart\/report/im.test(raw) && /report-type=["']?delivery-status/im.test(raw))
+    || /^x-failed-recipients:/im.test(raw)
+  // ── RETARD transitoire (AVANT bounce : l'adresse est VIVANTE, le message sera
+  //    en général remis au retry). Bruit machine scellé \Seen, mais le type
+  //    'delayed' ne déclenche JAMAIS l'extraction vers la liste de suppression
+  //    (panel 02/07 : un client réel au MX lent était supprimé à vie des drips). ──
+  if (dsnEvidence && /delivery (has been )?delayed|delayed mail|entrega retrasada|remise (a été )?retard[ée]e/i.test(s)) return 'delayed'
   // ── BOUNCE (échec de remise) ──
   if (!f || !f.includes('@')) return 'bounce' // enveloppe nulle = bounce
-  if (/^(mailer-daemon|mdaemon|bounce|bounces)@/.test(f) || f.includes('mailer-daemon')) return 'bounce'
+  if (/^(mailer-daemon|mdaemon|bounce|bounces|microsoftexchange[0-9a-f]*)@/.test(f) || f.includes('mailer-daemon')) return 'bounce'
   if (/^content-type:\s*multipart\/report/im.test(raw) && /report-type=["']?delivery-status/im.test(raw)) return 'bounce'
+  // Sujets DSN sans ambiguïté (boilerplate serveur, improbables chez un humain) :
+  // autonomes, pas de corroboration exigée.
   if (/undeliverable|mail delivery (failed|subsystem)|delivery status notification|delivery has failed|returned mail|failure notice|non[- ]?remis|delivery incomplete/i.test(s)) return 'bounce'
+  // Sujets AMBIGUS : corroboration DSN obligatoire (cf. dsnEvidence ci-dessus).
+  if (dsnEvidence && /[ée]chec de (la )?remise|impossible de remettre|couldn'?t be delivered|no se pudo entregar|entrega (fallida|incompleta)/i.test(s)) return 'bounce'
   // ── AUTO-RÉPONSE (vacances, accusé automatique, postmaster, no-reply) ──
-  if (/^(postmaster|no-?reply|noreply|donotreply|do-not-reply)@/.test(f)) return 'auto'
-  if (/^auto-submitted:\s*(?!no\b)/im.test(raw)) return 'auto'
+  if (/^(postmaster|no[-_.]?reply[^@]*|do[-_.]?not[-_.]?reply[^@]*)@/.test(f)) return 'auto'
+  // RFC 3834 : toute valeur ≠ "no" indique un envoi automatique ; en pratique les
+  // valeurs commencent par "auto-" (auto-generated, auto-replied, auto-notified).
+  // NB : l'ancien lookahead `\s*(?!no\b)` matchait AUSSI "Auto-Submitted: no"
+  // (backtracking de \s*) → un humain explicitement marqué non-auto était filtré.
+  if (/^auto-submitted:\s*auto/im.test(raw)) return 'auto'
   if (/^x-auto-response-suppress:/im.test(raw)) return 'auto'
   if (/^precedence:\s*(auto_reply|bulk|junk|list)/im.test(raw)) return 'auto'
   if (/automatic reply|auto[- ]?reply|out of office|absence du bureau|r[ée]ponse automatique|respuesta autom[aá]tica|fuera de (la )?oficina/i.test(s)) return 'auto'
@@ -117,6 +140,22 @@ function machineNoiseType(parsed, from, subject) {
 }
 // Back-compat + lisibilité : booléen « faut-il ignorer ce message ? ».
 function isMachineNoise(parsed, from, subject) { return !!machineNoiseType(parsed, from, subject) }
+
+// ─── Garde ENVOI (défense en profondeur) : JAMAIS d'accusé vers une adresse
+//     robot, quel que soit le contenu du message. La détection par headers/objet
+//     ci-dessus peut rater un format exotique — mais un accusé parti vers
+//     postmaster@/no-reply@ déclenche un ping-pong d'automates (vécu : accusé →
+//     postmaster@outlook.com → « this address is not monitored », 30/06). On
+//     vérifie donc AUSSI l'adresse destinataire juste avant sendEmail. ───
+const ROBOT_ADDR_RE = /^(postmaster|hostmaster|abuse|mailer-daemon|mdaemon|bounces?([-+.][^@]*)?|no[-_.]?reply[^@]*|do[-_.]?not[-_.]?reply[^@]*|auto-?reply[^@]*|notifications?|alerts?|daemon|root|microsoftexchange[0-9a-f]*)@/
+function isRobotAddress(addr) {
+  const a = String(addr || '').toLowerCase().trim()
+  if (!a.includes('@')) return true
+  if (ROBOT_ADDR_RE.test(a)) return true
+  // Jamais s'auto-acker (nos propres domaines apparaissent en expéditeur des DSN).
+  if (/@sargasses-(martinique|guadeloupe)\.com$|@sargassum(miami|puntacana|cancun)\.com$/.test(a)) return true
+  return false
+}
 
 // Extrait les adresses destinataires en ÉCHEC d'un bounce/DSN (Final-Recipient,
 // RCPT TO, « address(es) failed »). Exclut notre propre boîte et les robots.
@@ -439,18 +478,31 @@ async function main() {
   }
 
   // 1) Accusé de réception à chaque client (qui a une adresse valide).
+  //    Garde robot au point d'envoi : un message peut passer machineNoiseType
+  //    (headers exotiques) — l'accusé ne part quand même JAMAIS vers postmaster@,
+  //    no-reply@, etc. Le message reste dans le digest fondateur (informatif).
   const ack = ackTemplate()
-  let ackOk = 0, ackFail = 0
+  let ackOk = 0, ackFail = 0, ackRobot = 0
   for (const it of items) {
     if (!it.from || !it.from.includes('@')) { ackFail++; continue }
+    if (isRobotAddress(it.from)) { ackRobot++; continue }
     const { error } = await sendEmail({
       from: FROM, to: it.from,
       subject: ack.subject, html: ack.html, preheader: ack.preheader,
       replyTo: REPLY_TO,
+      // RFC 3834 : l'accusé est un envoi AUTOMATIQUE et doit se déclarer comme tel —
+      // un auto-répondeur conforme (out-of-office Exchange/Gmail, postmaster,
+      // ticketing) supprime alors sa réponse : le ping-pong meurt au hop 0.
+      // (Uniquement l'accusé — le digest fondateur et support-reply restent "humains".)
+      headers: {
+        'Auto-Submitted': 'auto-replied',
+        'X-Auto-Response-Suppress': 'All',
+        'Precedence': 'auto_reply',
+      },
     })
     if (error) ackFail++; else ackOk++
   }
-  console.log(`[support-inbox] accusés : ${ackOk} envoyé(s), ${ackFail} échec/sans-adresse`)
+  console.log(`[support-inbox] accusés : ${ackOk} envoyé(s), ${ackFail} échec/sans-adresse, ${ackRobot} adresse(s) robot ignorée(s)`)
 
   // 2) Digest fondateur (un seul email).
   const dig = digestTemplate(items, noiseUids.length)
@@ -487,4 +539,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { isMachineNoise, machineNoiseType, classify, prio, suggestedReply, extractBouncedRecipients, URGENT_RE }
+module.exports = { isMachineNoise, machineNoiseType, isRobotAddress, classify, prio, suggestedReply, extractBouncedRecipients, URGENT_RE }
