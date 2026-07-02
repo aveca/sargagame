@@ -46,7 +46,14 @@ try {
   Write-Host "  (declencheur logon non ajoute : droits admin requis. Le quotidien+rattrapage suffit ; pour l'ajouter, relance ce script en admin.)" -ForegroundColor Yellow
 }
 
-Get-ScheduledTask -TaskName 'SargaFactory' | Format-Table TaskName, State -AutoSize
+# 3) Timer de drain de la file a la demande (toutes les 30 min) — admin-free, interval-only.
+$serveAction = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`" --serve" -WorkingDirectory $repoRoot
+$serveTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date '2020-01-01T06:00:00') -RepetitionInterval (New-TimeSpan -Minutes 30)
+Register-ScheduledTask -TaskName 'SargaFactory-Serve' -Action $serveAction -Trigger $serveTrigger -Settings $settings `
+  -Description 'Usine locale: draine la file de jobs a la demande toutes les 30 min (git pull + --serve). Zero LLM.' -RunLevel Limited -Force | Out-Null
+Write-Host "OK - tache 'SargaFactory-Serve' (draine la file a la demande toutes les 30 min)" -ForegroundColor Green
+
+Get-ScheduledTask -TaskName 'SargaFactory*' | Format-Table TaskName, State -AutoSize
 Write-Host "Test immediat : node scripts\local-factory\factory.cjs   (ou Start-ScheduledTask -TaskName SargaFactory)"
 Write-Host "Voir le plan  : node scripts\local-factory\factory.cjs --plan"
 Write-Host "Desinstaller  : powershell -ExecutionPolicy Bypass -File scripts\local-factory\uninstall-tasks.ps1"
