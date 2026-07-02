@@ -19,6 +19,28 @@ Live sargassum (seaweed) monitoring for Caribbean and Florida beaches. One codeb
 - **Forecast** — per-beach 7-day outlook from exponential persistence, drifting offshore bank detection (wind + current), and onshore wind components. Days beyond +4 are explicitly flagged as low-confidence horizon.
 - **Beach Score 0-100** — sargassum is one of seven factors (swell, wind, water temperature, cloud cover, UV, tide) so the score stays useful year-round.
 
+## Products & pricing
+
+The current-day per-beach verdict is **always free** — the 7-day forecast and alerts are the paid upgrade. Everything below is 100% self-serve, on-site checkout (Mollie), no sales call. EUR on the French sites (MQ/GP), USD on the tourist sites (Florida / Riviera Maya / Punta Cana). The satellite verdict is always data-driven: a paid "Partner" placement never influences a beach's status.
+
+**B2C — travel passes** (one-time, no subscription; source: `src/PassOffer.jsx`)
+
+| Pass | Duration | EUR (MQ/GP) | USD (US/MX/DR) |
+|---|---|---|---|
+| Short trip | 7 days | €7.99 | $5.99 |
+| Long stay | 30 days | €14.99 | $11.99 |
+| Season | ~7 months | €24.99 | $19.99 |
+
+**B2B — coastal watch** for hotels, beach clubs, tourism offices and coastal town halls. Recurring, with a **30-day free trial (no card)** and "2 months free" on annual. Monthly plans: `public/api/mollie-lib.php` (`mol_b2b_plans`); annual payment links: `scripts/automation/mollie-paylinks.cjs`.
+
+| Tier | For | EUR (MQ/GP) | USD (US/MX/DR) |
+|---|---|---|---|
+| Brief | small hotels, gîtes, beach clubs, seaside restaurants | €29/mo · €290/yr | $39/mo · $390/yr |
+| Pro | hotels with a site, résidences, tourism offices | €79/mo · €690/yr | $89/mo · $790/yr |
+| Territory | town halls, tourism boards, hotel groups | €199/mo · €1,990/yr | $249/mo · on request |
+
+**Brief** delivers the daily morning dispatch (AFAI index + J+1→J+7 forecast + tipping-point alert) for a property's nearest 3–5 beaches. **Pro** adds a branded widget for the client's own site plus an in-app "Partner" placement on their beach's page. **Territory** adds bay-by-bay coverage of an entire coastline, a daily PDF/email report, and JSON API access.
+
 ## Stack
 
 - **Frontend** — React 18 API surface (aliased to Preact/compat in production for a smaller runtime bundle) + Vite, a custom SVG map (`WorldMapView`/`ArchipelView`), installable PWA with a service worker. Each region builds to a self-contained static bundle. (A legacy `?nav=map` fallback remains for the old Leaflet map mode.)
