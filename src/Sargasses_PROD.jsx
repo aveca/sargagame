@@ -1647,7 +1647,14 @@ function _sgcEnsureBuf(){
   if(_sgc.buf)return
   const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
   let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
-  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{},de:{},rc:{},hv:{}}
+  // Sessions à EXCLURE de l'attribution ARGENT (honnêteté) : robots (crawlers / headless /
+  // automation → navigator.webdriver ou UA non-humain) et mode VITRINE ?demo=1 (taps de hall
+  // d'hôtel, zéro intention réelle). Tag posé UNE fois par session ; le filtrage se fait côté
+  // stats.php — on ne jette pas la donnée, on la classe (transparence : compteurs bot/demo exposés).
+  let bot=0,demo=0
+  try{if(navigator.webdriver===true||/bot|crawl|spider|slurp|headless|phantom|puppeteer|playwright|lighthouse|facebookexternalhit|bingpreview|whatsapp|telegrambot|twitterbot|slackbot|discordbot|applebot|semrush|ahrefs|petalbot|yandexbot/i.test(navigator.userAgent||""))bot=1}catch(_){}
+  try{if(/[?&]demo=1/.test(location.search||""))demo=1}catch(_){}
+  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{},de:{},rc:{},hv:{},mon:{},bot,demo}
 }
 // Mini-heatmap FIRST-PARTY (remplace Clarity, 100% organique) : chaque clic est bucket-quantifié
 // par écran (grille 16×24, coords NORMALISÉES → résolution-agnostique, AUCUNE coord brute, zéro PII)
@@ -1737,6 +1744,17 @@ function sgCollectEvent(event,params){
       o.maxScroll=Math.max(o.maxScroll,(params&&params.max_scroll)||0);o.n++
     }else if(_sgc.buf.ev.length<120){
       _sgc.buf.ev.push({e:event,t:Date.now()-_sgc.buf.ts})
+    }
+    // ── CAPTURE ARGENT (money-intent) — relie la VALEUR € à l'écran où le clic d'achat a lieu.
+    //    ⚠️ INTENTION mesurée, PAS revenu banké : la vérité du revenu reste Stripe (legacy) +
+    //    Mollie (dashboard) ; le funnel sous-compte ~7×. Ceci sert UNIQUEMENT à comparer, en
+    //    relatif, quel ÉCRAN / quelle variante A/B produit de l'achat — jamais à chiffrer le CA.
+    //    L'argent ne touche JAMAIS le verdict. Bots + démo sont taggés (exclus côté stats.php).
+    if(event==="sg_pass_cta"||event==="sg_conversion"){
+      const scr=(typeof _eng!=="undefined"&&_eng&&_eng.screen)||"?"
+      const mon=_sgc.buf.mon||(_sgc.buf.mon={});const o=mon[scr]||(mon[scr]={ic:0,iv:0,cc:0})
+      if(event==="sg_pass_cta"){o.ic++;const c=parseInt(params&&params.cents)||0;if(c>0&&c<1000000)o.iv+=c} // intent (clic acheter) + valeur €
+      else o.cc++ // conversion payée côté client = COUNT honnête (pas de cents fiable ici → jamais inventé)
     }
     _sgc.dirty=true
   }catch(_){}

@@ -71,7 +71,13 @@ for ($i = 0; $i < $days; $i++) {
 
 $out = array(
   'days' => $days, 'region_filter' => ($regionFilter ?: null), 'sessions' => 0,
+  // Segmentation honnêteté : bots (crawlers/headless) + mode vitrine ?demo=1 sont comptés
+  // à part et EXCLUS de l'attribution argent (revenue_intent). human = sessions - bot - demo.
+  'sessions_bot' => 0, 'sessions_demo' => 0, 'sessions_human' => 0,
   'events' => array(), 'screens' => array(), 'clicks' => array(), 'ab' => array(), 'regions' => array(),
+  // ARGENT (money-intent) par écran : intention d'achat (clic pass_cta + valeur €) + conversions
+  // client. INTENTION relative, PAS revenu banké (vérité = Stripe + Mollie). Bots/démo exclus.
+  'revenue_intent' => array(),
   'byRegion' => array(), 'generated' => gmdate('c')
 );
 
@@ -89,6 +95,14 @@ foreach ($sessions as $d) {
   // Filtre région optionnel (?region=florida) : on ignore tout le reste.
   if ($regionFilter !== '' && $rg !== $regionFilter) continue;
   $out['sessions']++;
+  // Segmentation honnêteté : classe la session. Une session bot OU démo N'ENTRE PAS dans
+  // l'attribution argent ($isReal). Le reste des métriques (funnel/heatmap) reste inchangé
+  // (comparatif relatif, baseline historique préservée) — seul l'argent exige la propreté.
+  $isBot = !empty($d['bot']); $isDemo = !empty($d['demo']);
+  if ($isBot) $out['sessions_bot']++;
+  if ($isDemo) $out['sessions_demo']++;
+  if (!$isBot && !$isDemo) $out['sessions_human']++;
+  $isReal = (!$isBot && !$isDemo);
   $out['regions'][$rg] = ($out['regions'][$rg] ?? 0) + 1;
   if (!isset($byR[$rg])) $byR[$rg] = _regAcc();
   $byR[$rg]['sessions']++;
@@ -171,6 +185,20 @@ foreach ($sessions as $d) {
     }
   }
 
+  // ── ARGENT (mon) : attribution de l'intention d'achat PAR ÉCRAN. ic = clics pass_cta,
+  //    iv = valeur € cumulée (cents), cc = conversions client. HONNÊTETÉ : bots + démo exclus
+  //    ($isReal) ; revenu réel = Stripe+Mollie (ceci est de l'INTENTION relative, pas le CA).
+  //    Les totaux session ($sIc/$sIv/$sCc) alimentent aussi l'attribution A/B ci-dessous.
+  $sIc = 0; $sIv = 0; $sCc = 0;
+  if ($isReal && !empty($d['mon']) && is_array($d['mon'])) foreach ($d['mon'] as $s => $o) {
+    if (!is_array($o)) continue;
+    if (!isset($out['revenue_intent'][$s])) $out['revenue_intent'][$s] = array('intent_n'=>0,'intent_cents'=>0,'conv_n'=>0);
+    $out['revenue_intent'][$s]['intent_n']     += $o['ic'] ?? 0;
+    $out['revenue_intent'][$s]['intent_cents'] += $o['iv'] ?? 0;
+    $out['revenue_intent'][$s]['conv_n']       += $o['cc'] ?? 0;
+    $sIc += $o['ic'] ?? 0; $sIv += $o['iv'] ?? 0; $sCc += $o['cc'] ?? 0;
+  }
+
   // A/B CROSS-TAB : par test -> par variante -> sessions + présence d'events funnel + engagement.
   // Permet l'éval A/B automatisée (quelle variante convertit/engage le mieux) sans Google.
   if (!empty($d['ab']) && is_array($d['ab'])) {
@@ -180,11 +208,17 @@ foreach ($sessions as $d) {
     }
     foreach ($d['ab'] as $test => $variant) {
       if (!is_scalar($variant)) continue;
-      if (!isset($abx[$test][$variant])) $abx[$test][$variant] = array('sessions'=>0,'ev'=>array(),'dwell'=>0,'bored'=>0,'visits'=>0);
+      if (!isset($abx[$test][$variant])) $abx[$test][$variant] = array('sessions'=>0,'real'=>0,'ev'=>array(),'dwell'=>0,'bored'=>0,'visits'=>0,'intent_n'=>0,'intent_cents'=>0,'conv_n'=>0);
       $abx[$test][$variant]['sessions']++;
       $abx[$test][$variant]['dwell']  += $sd;
       $abx[$test][$variant]['bored']  += $sb;
       $abx[$test][$variant]['visits'] += $sv2;
+      // Attribution ARGENT par variante (honnête : $sIc/$sIv/$sCc valent 0 pour bot/démo,
+      // exclus en amont ; 'real' = dénominateur propre pour un € par session humaine).
+      if ($isReal) $abx[$test][$variant]['real']++;
+      $abx[$test][$variant]['intent_n']     += $sIc;
+      $abx[$test][$variant]['intent_cents'] += $sIv;
+      $abx[$test][$variant]['conv_n']       += $sCc;
       foreach ($seen as $en => $_) $abx[$test][$variant]['ev'][$en] = ($abx[$test][$variant]['ev'][$en] ?? 0) + 1;
     }
   }
@@ -292,17 +326,33 @@ foreach ($abx as $test => $vars) {
       if (isset($a['ev'][$step])) $rates[$step] = round(100 * $a['ev'][$step] / $s, 2);
     }
     $vis = max(1, $a['visits']);
+    $real = max(1, $a['real'] ?? 0); // sessions humaines (dénominateur argent propre)
     $row[$variant] = array(
       'sessions'     => $a['sessions'],
       'rates_pct'    => $rates,
       'avg_dwell_ms' => round($a['dwell'] / $vis),
       'bored_rate'   => round($a['bored'] / $vis, 3),
+      // ARGENT par variante (INTENTION relative, humains seulement — jamais le CA réel).
+      'money' => array(
+        'human_sessions'      => $a['real'] ?? 0,
+        'intent_clicks'       => $a['intent_n'] ?? 0,
+        'intent_eur'          => round(($a['intent_cents'] ?? 0) / 100, 2),
+        'conversions'         => $a['conv_n'] ?? 0,
+        'intent_eur_per_sess' => round(($a['intent_cents'] ?? 0) / 100 / $real, 3),
+      ),
     );
   }
   // variantes triées par nb de sessions (la + exposée en tête)
   uasort($row, function($x, $y){ return $y['sessions'] - $x['sessions']; });
   $out['ab_breakdown'][$test] = $row;
 }
+
+// ARGENT par écran : format € lisible + tri par intention d'achat décroissante (l'écran qui
+// pousse le plus à l'achat en tête). Rappel honnêteté : INTENTION relative, PAS le CA banké
+// (vérité = Stripe + Mollie) ; bots + démo déjà exclus à l'agrégation.
+foreach ($out['revenue_intent'] as $s => &$m) { $m['intent_eur'] = round(($m['intent_cents'] ?? 0) / 100, 2); }
+unset($m);
+uasort($out['revenue_intent'], function($x, $y){ return ($y['intent_cents'] ?? 0) - ($x['intent_cents'] ?? 0); });
 
 // INSTALLS WIDGET B2B : combien de chargements, depuis quels DOMAINES hôtes (= qui nous
 // embarque), pour quelles plages. distinctHosts = nombre de sites tiers qui affichent le widget.
