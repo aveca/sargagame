@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — Ce qu'il veille (descente interactive, orbite → fond marin) · pièce de vision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   « CE QU'IL VEILLE » — descente INTERACTIVE, orbite → fond marin.
+   On tombe à travers un monde continu : espace, ciel, surface,
+   lagon, pleine eau, RADEAUX DE SARGASSE (le sujet), fond marin.
+   La VIE vient du geste (on descend) + parallaxe pointeur — au repos
+   c'est un TABLEAU, pas un aquarium (zéro élément qui boucle en travers).
+   Le satellite (le Veilleur) veille depuis la surface, capteur vers la MER,
+   et recule au-dessus à mesure qu'on plonge. Fin = votre plage aujourd'hui.
+
+   Artefact de bibliothèque design (design/) — HORS FUNNEL, pas déployé,
+   pas importé par l'app. Successeur interactif de proto-ecoscene-vertical.html.
+   Moteur : backdrop fixe + 3 plans parallaxe pilotés par --d, 1 seul rAF
+   demand-driven (lissage + pause visibilitychange). reduced-motion = plancher dur.
+   ============================================================ */
+:root{
+  --ink:#0D0D0D; --paper:#FDFCF7; --paperInk:#EAF7F4;
+  --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A; --glint:#FFD884;
+  --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --sarg:#9c7b34; --sargD:#5c5222; --mid:#9DB4B0;
+  --d:0;        /* progression 0..1 lissée (écrite par le rAF) */
+  --top:#050912; --bot:#12203a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:auto}
+body{background:#02060A;color:var(--paperInk);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden;line-height:1.5}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;letter-spacing:-.01em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+/* ===================== BACKDROP FIXE (le monde) ===================== */
+#backdrop{position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:linear-gradient(180deg,var(--top),var(--bot) 62%,#01060c)}
+#backdrop>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* nappes d'ambiance pilotées par --d (opacité) — pas de gap possible */
+#sunwash{opacity:0}
+#godrays{opacity:0}
+#vig{opacity:calc(var(--d)*.5 + .12)}
+
+/* ambient DOUX seulement (doctrine calme) : shimmer lumière + respiration */
+@media (prefers-reduced-motion:no-preference){
+  #satAnim{animation:breathe 7.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes breathe{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-4px) rotate(-1.1deg)}}
+  .ray{animation:rayshimmer 15s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top}
+  @keyframes rayshimmer{0%{opacity:.45}100%{opacity:.9}}
+  .twk{animation:twk 4.2s ease-in-out infinite;transform-box:fill-box}
+  @keyframes twk{0%,100%{opacity:.3}50%{opacity:1}}
+  .sway{animation:sway 8s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}
+  .sway2{animation:sway 10s ease-in-out infinite .7s;transform-box:fill-box;transform-origin:bottom center}
+  @keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+  .drift{animation:drift 13s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes drift{0%,100%{transform:translate(0,0) rotate(-.6deg)}50%{transform:translate(6px,-3px) rotate(.6deg)}}
+  .glide{animation:glide 16s ease-in-out infinite;transform-box:fill-box}
+  @keyframes glide{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,-6px)}}
+}
+
+/* ===================== CHROME ===================== */
+.chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:flex-start;padding:14px 16px;pointer-events:none;gap:10px}
+.brand{pointer-events:auto}
+.brand .wm{font-family:'Anton',sans-serif;font-size:19px;color:#fff;text-transform:uppercase;letter-spacing:-.01em;line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.55)}
+.brand .lib{display:block;margin-top:3px;font:700 9.5px/1 "Bricolage Grotesque";letter-spacing:.14em;text-transform:uppercase;color:rgba(255,216,132,.85)}
+.langs{display:flex;gap:4px;pointer-events:auto}
+.langs button{border:1px solid rgba(255,255,255,.18);background:rgba(8,18,16,.4);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:8px 9px;border-radius:9px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ===================== HUD PROFONDEUR ===================== */
+.hud{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:30;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hud .depthlab{font:700 12px/1 'JetBrains Mono';color:var(--tealL);text-shadow:0 1px 5px #000;text-align:right}
+.hud .track{position:relative;width:6px;height:min(48vh,360px);border-radius:6px;
+  background:linear-gradient(180deg,rgba(255,216,132,.45),rgba(30,200,176,.28) 42%,rgba(3,16,28,.65));overflow:hidden}
+.hud .fill{position:absolute;left:0;right:0;top:0;border-radius:6px;height:calc(var(--d)*100%);
+  background:linear-gradient(180deg,var(--goldS),var(--tealL));box-shadow:0 0 10px rgba(30,200,176,.6)}
+.hud .knob{position:absolute;left:50%;transform:translate(-50%,-50%);top:calc(var(--d)*100%);
+  width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(3,16,28,.7),0 0 10px var(--tealL)}
+.hud .tierlab{font:800 10px/1.1 "Bricolage Grotesque";letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);text-shadow:0 1px 5px #000;max-width:94px;text-align:right}
+@media (max-width:520px){ .hud .tierlab{display:none} }
+
+/* ===================== COPY OVERLAY (fixe, cross-fade par profondeur) ===================== */
+.copy{position:fixed;left:0;right:0;bottom:0;z-index:20;pointer-events:none;
+  padding:0 20px calc(env(safe-area-inset-bottom,0px) + 30px);
+  display:flex;justify-content:center}
+.copywrap{position:relative;width:100%;max-width:560px;min-height:180px}
+.cap{position:absolute;left:20px;right:20px;bottom:0;opacity:0;transform:translateY(14px);
+  will-change:opacity,transform}
+.cap .eyebrow{font:800 10.5px/1.3 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase;
+  color:var(--tealL);text-shadow:0 1px 6px rgba(0,0,0,.6);margin-bottom:8px}
+.cap .depth{font:700 12px/1 'JetBrains Mono';color:var(--goldS);opacity:.9;margin-bottom:6px}
+.cap h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.01em;
+  font-size:clamp(34px,10vw,60px);line-height:.9;color:#fff;text-shadow:0 3px 22px rgba(0,0,0,.55);margin-bottom:8px}
+.cap p{font:600 15px/1.5 "Bricolage Grotesque";color:rgba(255,255,255,.9);max-width:38ch;
+  text-shadow:0 1px 10px rgba(0,0,0,.55)}
+
+/* INTRO */
+.intro{position:fixed;inset:0;z-index:22;display:flex;flex-direction:column;justify-content:center;
+  padding:0 22px;pointer-events:none;will-change:opacity}
+.intro .in-wrap{max-width:560px;margin:0 auto;width:100%}
+.intro .eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:12px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.intro h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.01em;
+  font-size:clamp(42px,13vw,88px);line-height:.88;color:#fff;margin-bottom:16px;
+  text-shadow:0 3px 28px rgba(0,0,0,.6);max-width:12ch}
+.intro .lede{font:600 15.5px/1.55 "Bricolage Grotesque";color:rgba(255,255,255,.85);
+  max-width:42ch;text-shadow:0 1px 10px rgba(0,0,0,.55);margin-bottom:26px}
+.scrollhint{display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.8)}
+.scrollhint .lab{font:800 10px/1 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase}
+.scrollhint .chev{width:15px;height:15px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);transform:rotate(45deg)}
+@media (prefers-reduced-motion:no-preference){.scrollhint .chev{animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}}
+
+/* OUTRO / CTA */
+.outro{position:fixed;inset:0;z-index:23;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:0 22px;opacity:0;pointer-events:none;will-change:opacity}
+.outro .kick{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.2em;text-transform:uppercase;color:var(--tealL);margin-bottom:12px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.outro .big{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.01em;
+  font-size:clamp(30px,8vw,52px);line-height:.98;color:#fff;max-width:15ch;margin-bottom:22px;text-shadow:0 2px 22px rgba(0,0,0,.6)}
+.cta{display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;pointer-events:auto;
+  border:2.5px solid var(--ink);border-radius:15px;padding:16px 26px;color:var(--ink);
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:6px 6px 0 rgba(0,0,0,.5);font:800 17px/1 "Bricolage Grotesque";letter-spacing:.01em;
+  transition:transform .12s ease,box-shadow .12s ease}
+.cta:active{transform:translate(2px,2px);box-shadow:3px 3px 0 rgba(0,0,0,.5)}
+.outro .sub{margin-top:18px}
+.outro .sub a{font:800 13px/1 "Bricolage Grotesque";color:var(--tealL);text-decoration:none;pointer-events:auto;
+  border-bottom:1px solid rgba(30,200,176,.4);padding-bottom:2px}
+.outro .foot{margin-top:34px;font:600 11px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.42);max-width:40ch}
+
+/* ===================== SPACER (génère la course de scroll) ===================== */
+#spacer{position:relative;z-index:1;height:760vh;pointer-events:none}
+
+/* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
+@media (prefers-reduced-motion:reduce){
+  .scrollhint .chev{animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Le Veilleur — ce qu'il veille : une descente de l'orbite au fond marin, à travers le ciel, la surface, le lagon, la pleine eau, les radeaux de sargasses et les roches. Faites défiler pour descendre.</h1>
+
+<!-- ============================ BACKDROP (monde + parallaxe) ============================ -->
+<div id="backdrop" aria-hidden="true">
+  <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="sunR" gradientUnits="userSpaceOnUse" cx="560" cy="300" r="360">
+        <stop offset="0" stop-color="#fff3d6"/><stop offset=".4" stop-color="#ffc187" stop-opacity=".55"/><stop offset="1" stop-color="#ff944a" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="rayG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9B8" stop-opacity=".5"/><stop offset="1" stop-color="#CFF4FF" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="lens" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/></radialGradient>
+      <radialGradient id="irisG" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/></radialGradient>
+      <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/></linearGradient>
+      <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/><stop offset="1" stop-color="#0A1714"/></linearGradient>
+      <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#1EC8B0" stop-opacity=".45"/><stop offset=".5" stop-color="#1EC8B0" stop-opacity=".14"/><stop offset="1" stop-color="#1EC8B0" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFD884" stop-opacity=".4"/><stop offset=".7" stop-color="#1EC8B0" stop-opacity=".1"/><stop offset="1" stop-color="#1EC8B0" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4C542"/><stop offset="1" stop-color="#C9772B"/></linearGradient>
+      <linearGradient id="sail" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3D6"/><stop offset="1" stop-color="#FFD884"/></linearGradient>
+      <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE47A" stop-opacity=".8"/><stop offset="1" stop-color="#FFE47A" stop-opacity="0"/></radialGradient>
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
+      <radialGradient id="vigG" cx="50%" cy="46%" r="72%">
+        <stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".9"/>
+      </radialGradient>
+      <radialGradient id="sargBubble" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#c9a94e"/><stop offset="1" stop-color="#6b5a26"/></radialGradient>
+    </defs>
+
+    <!-- lavage solaire (surface) : opacité pilotée par JS -->
+    <rect id="sunwash" x="0" y="0" width="800" height="600" fill="url(#sunR)"/>
+
+    <!-- PLAN LOINTAIN (parallaxe lente) : étoiles + nuages hauts + particules -->
+    <g id="pFar"></g>
+
+    <!-- PLAN PRINCIPAL (les acteurs, translation caméra) -->
+    <g id="pMain"></g>
+
+    <!-- godrays (pleine eau) : opacité pilotée -->
+    <g id="godrays">
+      <polygon class="ray" points="180,-60 250,-60 210,660 70,660" fill="url(#rayG)"/>
+      <polygon class="ray" points="430,-60 476,-60 476,660 356,660" fill="url(#rayG)" opacity=".7"/>
+      <polygon class="ray" points="600,-60 662,-60 730,660 566,660" fill="url(#rayG)" opacity=".8"/>
+    </g>
+
+    <!-- PLAN PROCHE (parallaxe rapide + nudge pointeur) : bulles/particules -->
+    <g id="pNear"></g>
+
+    <!-- vignette -->
+    <rect id="vig" x="0" y="0" width="800" height="600" fill="url(#vigG)"/>
+
+    <!-- LE VEILLEUR — satellite persistant, capteur vers la MER (bas). Recule en profondeur. -->
+    <g id="sat">
+      <g id="satAnim">
+        <circle cx="0" cy="0" r="120" fill="url(#haloG)" filter="url(#soft)"/>
+        <polygon points="0,26 -62,230 62,230" fill="url(#beamGrad)" opacity=".5"/>
+        <g transform="scale(1.05)">
+          <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+          <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+          <g stroke="#2f7390" stroke-width="1" opacity=".6">
+            <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+            <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+          </g>
+          <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+          <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z" fill="url(#bodyG)" stroke="#FFD884" stroke-width="1.3" stroke-opacity=".5"/>
+          <circle cx="0" cy="8" r="22" fill="url(#lens)"/>
+          <circle cx="0" cy="8" r="22" fill="none" stroke="#E8A800" stroke-width="3"/>
+          <circle cx="0" cy="12" r="8" fill="url(#irisG)"/>
+          <circle cx="-3" cy="9" r="2.8" fill="#fff7e2"/>
+          <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+          <circle cx="0" cy="-49" r="9" fill="#22C55E" opacity=".22" filter="url(#soft)"/>
+          <circle cx="0" cy="-49" r="4.4" fill="#22C55E"/>
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<!-- ============================ CHROME ============================ -->
+<div class="chrome">
+  <div class="brand">
+    <span class="wm">LE VEILLEUR</span>
+    <span class="lib" id="libNote">Bibliothèque design · descente</span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ HUD ============================ -->
+<div class="hud" aria-hidden="true">
+  <div class="depthlab" id="hudDepth">−0 m</div>
+  <div class="track"><div class="fill"></div><div class="knob"></div></div>
+  <div class="tierlab" id="hudTier">Orbite</div>
+</div>
+
+<!-- ============================ INTRO ============================ -->
+<div class="intro" id="intro">
+  <div class="in-wrap">
+    <div class="eyebrow" id="introEyebrow"></div>
+    <h1 class="anton" id="headline"></h1>
+    <p class="lede" id="lede"></p>
+    <div class="scrollhint"><span class="lab" id="scrollLab"></span><span class="chev"></span></div>
+  </div>
+</div>
+
+<!-- ============================ CAPTIONS (générées) ============================ -->
+<div class="copy"><div class="copywrap" id="caps"></div></div>
+
+<!-- ============================ OUTRO ============================ -->
+<div class="outro" id="outro">
+  <div class="kick" id="outroKick"></div>
+  <div class="big anton" id="outroBig"></div>
+  <a class="cta" id="outroCta" href="https://sargasses-martinique.com/"><span id="outroCtaTxt"></span><span class="ar">→</span></a>
+  <div class="sub"><a id="outroSub" href="https://sargasses-martinique.com/pro/espace/"></a></div>
+  <p class="foot" id="outroFoot"></p>
+</div>
+
+<div id="spacer"></div>
+
+<script>
+(function(){
+"use strict";
+var SVGNS='http://www.w3.org/2000/svg';
+
+/* ---- palette orbite → abysse (interpolée sur la progression caméra cp) ---- */
+var STOPS=[[0,'#050912'],[.10,'#12203a'],[.17,'#3a3a63'],[.24,'#a86a3e'],[.30,'#F2B05E'],
+  [.35,'#C97E3A'],[.44,'#1A5852'],[.60,'#155A5A'],[.80,'#0B2230'],[1,'#030a12']];
+function hx(c){c=c.replace('#','');return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)];}
+function toHx(a){return '#'+a.map(function(v){return Math.round(v).toString(16).padStart(2,'0');}).join('');}
+function colorAt(r){r=Math.min(1,Math.max(0,r));var i=0;while(i<STOPS.length-2&&r>STOPS[i+1][0])i++;
+  var a=STOPS[i],b=STOPS[i+1];var t=b[0]===a[0]?0:(r-a[0])/(b[0]-a[0]);var A=hx(a[1]),B=hx(b[1]);
+  return toHx(A.map(function(v,k){return v+(B[k]-v)*t;}));}
+
+/* ---- géométrie descente : 7 strates, acteur i centré à cp=i/6 ---- */
+var N=7, T=3120, GAP=520, Y0=300;         // worldY(i)=Y0+i*GAP ; course caméra=T
+function worldY(i){return Y0+i*GAP;}
+/* cp : progression caméra 0..1 sur la fenêtre d∈[0.09,0.9] (intro avant, outro après) */
+var CP_A=0.09, CP_B=0.90;
+function cpOf(d){return Math.min(1,Math.max(0,(d-CP_A)/(CP_B-CP_A)));}
+
+/* ---- copy i18n ---- */
+var STR={
+ fr:{lib:"Bibliothèque design · descente",
+   introEyebrow:"Ce que le satellite veille, de l'orbite au fond",
+   headline:"CE QU'IL VEILLE",
+   lede:"On tombe à travers tout ce qu'il regarde — le ciel, votre plage, la pleine eau, les radeaux de sargasses, jusqu'aux roches. Descendez.",
+   scroll:"Descendez", surface:"Orbite",
+   caps:[
+     {name:"ORBITE",  depth:"−0 m",     eyebrow:"D'ici-haut", line:"Un œil calme au-dessus de l'Atlantique. Il mesure, il n'invente pas."},
+     {name:"CIEL",    depth:"−0 m",     eyebrow:"L'air, la lumière", line:"Le vent, les nuages, l'heure dorée. Le décor de ce qui va suivre."},
+     {name:"SURFACE", depth:"−1 m",     eyebrow:"Là où vous posez la serviette", line:"La mer d'aujourd'hui : propre, ou pas. C'est la seule question qui compte."},
+     {name:"LAGON",   depth:"−8 m",     eyebrow:"La vie du bord", line:"Herbiers, tortues, eau claire. Ce qu'une algue de trop peut étouffer."},
+     {name:"PLEINE EAU", depth:"−60 m", eyebrow:"Entre deux eaux", line:"Les rayons plongent, la lumière s'efface. On garde le fil."},
+     {name:"SARGASSE", depth:"−200 m",  eyebrow:"Ce qu'on traque", line:"Les radeaux dérivent avec le courant. Les repérer avant qu'ils n'échouent — c'est tout le métier."},
+     {name:"FOND MARIN", depth:"−6 000 m", eyebrow:"Jusqu'aux roches", line:"Là où la mesure s'arrête. On ne promet rien qu'on ne voie pas."},
+   ],
+   outroKick:"Tout ça, pour une chose", outroBig:"Votre plage, aujourd'hui.",
+   outroCta:"Voir ma plage — gratuit", outroSub:"Vous gérez un rivage ? → Espace pro",
+   outroFoot:"Pièce de vision, hors funnel. Le verdict reste 100 % donnée mesurée — l'argent ne touche jamais la mesure."},
+ en:{lib:"Design library · descent",
+   introEyebrow:"What the satellite watches, orbit to seabed",
+   headline:"WHAT IT WATCHES",
+   lede:"Fall through everything it looks at — the sky, your beach, the open water, the sargassum rafts, down to the rocks. Descend.",
+   scroll:"Descend", surface:"Orbit",
+   caps:[
+     {name:"ORBIT",   depth:"−0 m",     eyebrow:"From up here", line:"A calm eye above the Atlantic. It measures — it doesn't guess."},
+     {name:"SKY",     depth:"−0 m",     eyebrow:"Air and light", line:"Wind, clouds, golden hour. The stage for what comes next."},
+     {name:"SURFACE", depth:"−1 m",     eyebrow:"Where you lay the towel", line:"Today's sea: clean, or not. The only question that matters."},
+     {name:"LAGOON",  depth:"−8 m",     eyebrow:"Life at the edge", line:"Seagrass, turtles, clear water. What one algae too many can smother."},
+     {name:"OPEN WATER", depth:"−60 m", eyebrow:"Mid-water", line:"The rays dive, the light fades. We keep the thread."},
+     {name:"SARGASSUM", depth:"−200 m", eyebrow:"What we track", line:"The rafts drift with the current. Spotting them before they beach — that's the whole job."},
+     {name:"SEABED",  depth:"−6,000 m", eyebrow:"Down to the rocks", line:"Where measurement ends. We promise nothing we can't see."},
+   ],
+   outroKick:"All of it, for one thing", outroBig:"Your beach, today.",
+   outroCta:"See my beach — free", outroSub:"You manage a shore? → Pro space",
+   outroFoot:"Vision piece, off-funnel. The verdict stays 100% measured data — money never touches the measurement."},
+ es:{lib:"Biblioteca de diseño · descenso",
+   introEyebrow:"Lo que el satélite vigila, de la órbita al fondo",
+   headline:"LO QUE VIGILA",
+   lede:"Cae a través de todo lo que mira — el cielo, tu playa, el agua abierta, los sargazos, hasta las rocas. Desciende.",
+   scroll:"Desciende", surface:"Órbita",
+   caps:[
+     {name:"ÓRBITA",  depth:"−0 m",     eyebrow:"Desde aquí arriba", line:"Un ojo tranquilo sobre el Atlántico. Mide — no inventa."},
+     {name:"CIELO",   depth:"−0 m",     eyebrow:"El aire, la luz", line:"El viento, las nubes, la hora dorada. El escenario de lo que viene."},
+     {name:"SUPERFICIE", depth:"−1 m",  eyebrow:"Donde pones la toalla", line:"El mar de hoy: limpio, o no. La única pregunta que importa."},
+     {name:"LAGUNA",  depth:"−8 m",     eyebrow:"La vida del borde", line:"Praderas, tortugas, agua clara. Lo que un alga de más puede ahogar."},
+     {name:"AGUA ABIERTA", depth:"−60 m", eyebrow:"Entre dos aguas", line:"Los rayos bajan, la luz se apaga. Seguimos el hilo."},
+     {name:"SARGAZO", depth:"−200 m",   eyebrow:"Lo que rastreamos", line:"Las balsas van con la corriente. Verlas antes de que lleguen — ese es el oficio."},
+     {name:"FONDO",   depth:"−6 000 m", eyebrow:"Hasta las rocas", line:"Donde acaba la medición. No prometemos lo que no vemos."},
+   ],
+   outroKick:"Todo eso, por una cosa", outroBig:"Tu playa, hoy.",
+   outroCta:"Ver mi playa — gratis", outroSub:"¿Gestionas una costa? → Espacio pro",
+   outroFoot:"Pieza de visión, fuera del funnel. El veredicto sigue siendo 100 % dato medido — el dinero nunca toca la medición."}
+};
+
+/* ---- helpers SVG ---- */
+function E(tag,attrs){var e=document.createElementNS(SVGNS,tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+function g(attrs){return E('g',attrs);}
+var pFar=document.getElementById('pFar'), pMain=document.getElementById('pMain'), pNear=document.getElementById('pNear');
+
+/* --- PLAN LOINTAIN : étoiles (haut) + nuages hauts + micro-particules --- */
+function buildFar(){
+  pFar.replaceChildren();
+  // SEULEMENT des motes faibles sur toute la hauteur (parallaxe lente, lisibles à
+  // toute profondeur). Les objets reconnaissables (étoiles, nuages, avion) vivent sur
+  // le PLAN PRINCIPAL dans leur strate → ils défilent proprement, sans traîne fantôme.
+  var pg=g({fill:'#bfeee6'});
+  for(var i=0;i<34;i++){var y=120+i*130+(i%3)*40;var c=E('circle',{cx:(i*149%780)+12,cy:y,r:1+(i%3)*.5,opacity:.26});c.setAttribute('class','twk');c.style.animationDelay=(i%6)*.7+'s';pg.appendChild(c);}
+  pFar.appendChild(pg);
+}
+
+/* --- PLAN PROCHE : bulles ascendantes + poussière proche (parallaxe rapide) --- */
+function buildNear(){
+  pNear.replaceChildren();
+  var bg=g({fill:'rgba(255,255,255,.16)'});
+  for(var i=0;i<26;i++){var c=E('circle',{cx:(i*211%800),cy:220+i*150,r:2+(i%4)});c.setAttribute('class','twk');c.style.animationDelay=(i%5)*.6+'s';c.setAttribute('opacity',.28);bg.appendChild(c);}
+  pNear.appendChild(bg);
+}
+
+/* --- PLAN PRINCIPAL : les 7 acteurs, chacun centré à worldY(i) --- */
+function actorOrbit(y){ // orbite : champ d'étoiles + terre courbe + lueur d'atmosphère (le satellite est séparé)
+  var G=g({transform:'translate(0,'+y+')'});
+  var st=[[120,40,1.3],[300,10,1],[520,60,1.4],[640,120,1],[210,180,1.1],[430,150,1.2],[700,30,1],[70,120,1.1],[560,220,.9],[360,90,1],[160,240,1],[740,200,1.1]];
+  var starG=g({fill:'#fff'});
+  st.forEach(function(s){var c=E('circle',{cx:s[0],cy:s[1],r:s[2]});c.setAttribute('class','twk');c.style.animationDelay=(s[0]%5)*0.4+'s';starG.appendChild(c);});
+  G.appendChild(starG);
+  G.appendChild(E('path',{d:'M-40 250 Q400 120 840 250 L840 420 L-40 420 Z',fill:'#0b2f4a',opacity:.6}));
+  G.appendChild(E('path',{d:'M-40 250 Q400 120 840 250',fill:'none',stroke:'#7fd0ff','stroke-width':2,'stroke-opacity':.55}));
+  G.appendChild(E('path',{d:'M-40 246 Q400 116 840 246',fill:'none',stroke:'#FFE47A','stroke-width':5,'stroke-opacity':.28,filter:'url(#soft)'}));
+  return G;
+}
+function actorSky(y){ // ciel : nuages golden-hour + avion lointain + oiseaux + soleil bas
+  var G=g({transform:'translate(0,'+y+')'});
+  G.appendChild(E('circle',{cx:610,cy:120,r:180,fill:'url(#glow)',opacity:.8}));
+  [[210,120,84,20,.72],[540,180,104,26,.6],[380,66,60,15,.5],[110,206,66,17,.5]].forEach(function(c){
+    var cl=g({opacity:c[4]});
+    cl.appendChild(E('ellipse',{cx:c[0],cy:c[1],rx:c[2],ry:c[3],fill:'#FFE7C6'}));
+    cl.appendChild(E('ellipse',{cx:c[0]-c[2]*.45,cy:c[1]+c[3]*.35,rx:c[2]*.6,ry:c[3]*.85,fill:'#FFDCA8'}));
+    cl.appendChild(E('ellipse',{cx:c[0]+c[2]*.4,cy:c[1]+c[3]*.3,rx:c[2]*.5,ry:c[3]*.8,fill:'#FFF0D8'}));
+    G.appendChild(cl);
+  });
+  var pl=g({opacity:.85,transform:'translate(160,86)'});   // avion lointain + contrail (statique = tableau)
+  pl.appendChild(E('line',{x1:-74,y1:2,x2:0,y2:0,stroke:'#EAF7F4','stroke-width':1.5,'stroke-opacity':.32}));
+  pl.appendChild(E('path',{d:'M0 0 l12 2 l-2 -6 l5 1 l4 5 l8 1 l-8 2 l-4 5 l-5 1 l2 -6 z',fill:'#0f2126'}));
+  G.appendChild(pl);
+  [[300,150],[336,160],[372,152]].forEach(function(b){
+    G.appendChild(E('path',{d:'M'+b[0]+' '+b[1]+' q6 -6 12 0 q6 -6 12 0',fill:'none',stroke:'#0f2126','stroke-width':2,'stroke-linecap':'round','stroke-opacity':.55}));
+  });
+  return G;
+}
+function actorSurface(y){ // surface : ligne de mer + reflets + YOLE RONDE (Martinique)
+  var G=g({transform:'translate(0,'+y+')'});
+  // ligne d'eau + reflets soleil (au niveau de la coque, ~y 176)
+  G.appendChild(E('rect',{x:-40,y:176,width:880,height:8,fill:'#FFE47A',opacity:.3}));
+  [ -20,60,700,760].forEach(function(rx,i){G.appendChild(E('ellipse',{cx:rx+80,cy:206+i*12,rx:74,ry:3,fill:'#FFE47A',opacity:.16}));});
+  var rf=g({});[300,340,470,520,560,600,640].forEach(function(x,i){var l=E('line',{x1:x,y1:178,x2:x,y2:178+16+(i%2)*8,stroke:'#FFF3D6','stroke-width':2,'stroke-linecap':'round'});l.setAttribute('opacity',.5);l.setAttribute('class','twk');l.style.animationDelay=i*.45+'s';rf.appendChild(l);});
+  G.appendChild(rf);
+  // YOLE RONDE — POSITION (g externe) / tangage (g interne) : sinon l'anim écrase la position
+  var boatPos=g({transform:'translate(408,150) scale(1.3)'});
+  var boat=g({class:'drift'});
+  boat.appendChild(E('path',{d:'M-56 0 Q0 6 56 0 L44 20 Q0 30 -44 20 Z',fill:'url(#hull)',stroke:'#7a3f12','stroke-width':2}));
+  boat.appendChild(E('rect',{x:-52,y:-4,width:104,height:5,rx:2,fill:'#E8522A'}));            // liston rouge
+  boat.appendChild(E('rect',{x:-52,y:2,width:104,height:4,rx:2,fill:'#1E7f52',opacity:.9}));  // vert
+  boat.appendChild(E('line',{x1:6,y1:2,x2:6,y2:-64,stroke:'#6b4a2a','stroke-width':3}));       // mât
+  boat.appendChild(E('path',{d:'M6 -62 L58 -6 L6 -6 Z',fill:'url(#sail)',stroke:'#e9c46a','stroke-width':1.5})); // voile
+  boat.appendChild(E('path',{d:'M4 -60 L-30 -8 L4 -8 Z',fill:'#FFF3D6',opacity:.85}));         // foc
+  boat.appendChild(E('path',{d:'M-40 24 Q0 30 40 24 L30 40 Q0 46 -30 40 Z',fill:'#C9772B',opacity:.22})); // reflet
+  boatPos.appendChild(boat); G.appendChild(boatPos);
+  return G;
+}
+function actorLagoon(y){ // lagon : tortue + herbiers + poissons
+  var G=g({transform:'translate(0,'+y+')'});
+  // fond sableux clair
+  G.appendChild(E('path',{d:'M-40 320 Q400 300 840 330 L840 420 L-40 420 Z',fill:'#1f6b62',opacity:.4}));
+  // herbiers
+  var sg=g({});[120,150,175,205,235,640,670,700,730].forEach(function(x,i){
+    var p=E('path',{d:'M'+x+' 340 C '+(x-6)+' 310 '+(x+6)+' 300 '+(x-3)+' 268,',fill:'none',stroke:i%2?'#3e6a2a':'#4a7d30','stroke-width':5,'stroke-linecap':'round'});
+    p.setAttribute('class',i%2?'sway':'sway2');sg.appendChild(p);});
+  G.appendChild(sg);
+  // tortue — POSITION (externe) / glisse (interne)
+  var tuPos=g({transform:'translate(400,210) scale(1.3)'});
+  var tu=g({class:'glide'});
+  tu.appendChild(E('ellipse',{cx:0,cy:0,rx:34,ry:24,fill:'#2f6b4e',stroke:'#173a2c','stroke-width':2}));
+  tu.appendChild(E('path',{d:'M-16 -8 L0 -14 L16 -8 L10 6 L-10 6 Z',fill:'#3f8a63',opacity:.8}));
+  tu.appendChild(E('circle',{cx:-30,cy:-6,r:8,fill:'#2f6b4e',stroke:'#173a2c','stroke-width':1.6})); // tête
+  tu.appendChild(E('circle',{cx:-33,cy:-8,r:1.6,fill:'#04120c'}));
+  tu.appendChild(E('path',{d:'M22 -18 q16 -6 22 4',fill:'none',stroke:'#2f6b4e','stroke-width':7,'stroke-linecap':'round'})); // nageoire
+  tu.appendChild(E('path',{d:'M18 18 q14 8 24 2',fill:'none',stroke:'#2f6b4e','stroke-width':6,'stroke-linecap':'round'}));
+  tuPos.appendChild(tu); G.appendChild(tuPos);
+  // petits poissons
+  [[180,120],[220,132],[600,180]].forEach(function(f){
+    var fi=g({transform:'translate('+f[0]+','+f[1]+')'});
+    fi.appendChild(E('path',{d:'M0 0 q10 -6 22 0 q-10 6 -22 0 z',fill:'#1EC8B0'}));
+    fi.appendChild(E('path',{d:'M0 0 l-8 -5 l2 5 l-2 5 z',fill:'#0f8f7e'}));
+    G.appendChild(fi);
+  });
+  return G;
+}
+function actorOpen(y){ // pleine eau : raie manta + plancton
+  var G=g({transform:'translate(0,'+y+')'});
+  // raie manta — POSITION (externe) / glisse (interne)
+  var rayPos=g({transform:'translate(392,160) scale(1.22)'});
+  var ray=g({class:'glide'});
+  ray.appendChild(E('path',{d:'M0 0 C -60 -26 -96 -8 -120 6 C -80 10 -40 14 0 10 C 40 14 80 10 120 6 C 96 -8 60 -26 0 0 Z',fill:'#0e2c34',stroke:'#0a1f26','stroke-width':2,opacity:.92}));
+  ray.appendChild(E('path',{d:'M-20 -8 q-14 -10 -26 -6',fill:'none',stroke:'#0e2c34','stroke-width':4,'stroke-linecap':'round'})); // corne céphalique
+  ray.appendChild(E('path',{d:'M20 -8 q14 -10 26 -6',fill:'none',stroke:'#0e2c34','stroke-width':4,'stroke-linecap':'round'}));
+  ray.appendChild(E('line',{x1:0,y1:8,x2:0,y2:70,stroke:'#0e2c34','stroke-width':2})); // queue
+  ray.appendChild(E('ellipse',{cx:0,cy:0,rx:60,ry:6,fill:'#1EC8B0',opacity:.1}));
+  rayPos.appendChild(ray); G.appendChild(rayPos);
+  var pk=g({fill:'#1EC8B0'});
+  for(var i=0;i<16;i++){var c=E('circle',{cx:(i*151%780)+10,cy:40+i*20,r:1.4+(i%3)*.5,opacity:.5});c.setAttribute('class','twk');c.style.animationDelay=(i%5)*.6+'s';pk.appendChild(c);}
+  G.appendChild(pk);
+  return G;
+}
+function actorSarg(y){ // LE SUJET : radeaux de sargasses qui dérivent
+  var G=g({transform:'translate(0,'+y+')'});
+  function raft(cx,cy,s,op){
+    var outer=g({transform:'translate('+cx+','+cy+') scale('+s+')',opacity:op}); // POSITION externe
+    var r=g({class:'drift'});                                                     // dérive interne
+    r.appendChild(E('path',{d:'M-70 0 C -70 -14 -50 -20 -30 -16 C -14 -24 14 -24 30 -16 C 52 -22 74 -12 70 4 C 74 16 52 22 30 18 C 12 26 -14 26 -30 18 C -52 22 -72 14 -70 0 Z',fill:'var(--sarg)',stroke:'#5c4a1e','stroke-width':2}));
+    // lobes plus foncés
+    [[-40,-2,10],[0,-6,12],[34,0,11],[-14,8,8],[20,10,9]].forEach(function(l){r.appendChild(E('ellipse',{cx:l[0],cy:l[1],rx:l[2],ry:l[2]*.7,fill:'#6f5a24',opacity:.85}));});
+    // baies (pneumatocystes)
+    [[-30,-4],[-6,-10],[16,-6],[38,-2],[-16,6],[6,8],[28,6]].forEach(function(b){r.appendChild(E('circle',{cx:b[0],cy:b[1],r:2.4,fill:'#c9a94e'}));});
+    // brins qui pendent
+    r.appendChild(E('path',{d:'M-30 16 q-4 18 4 30',fill:'none',stroke:'#6f5a24','stroke-width':3,'stroke-linecap':'round'}));
+    r.appendChild(E('path',{d:'M20 18 q6 16 -2 28',fill:'none',stroke:'#6f5a24','stroke-width':3,'stroke-linecap':'round'}));
+    outer.appendChild(r); return outer;
+  }
+  G.appendChild(raft(400,150,1.9,.97));    // radeau héros — centré, c'est le sujet
+  G.appendChild(raft(150,86,.72,.72));
+  G.appendChild(raft(662,118,.86,.8));
+  G.appendChild(raft(560,300,.6,.56));
+  // bulles montant des radeaux
+  var bb=g({fill:'rgba(255,255,255,.2)'});[386,430,150,662].forEach(function(x,i){var c=E('circle',{cx:x,cy:150+i*8,r:2+(i%2)});c.setAttribute('class','twk');c.style.animationDelay=i*.5+'s';bb.appendChild(c);});
+  G.appendChild(bb);
+  return G;
+}
+function actorSeabed(y){ // fond marin : roches + minéraux
+  var G=g({transform:'translate(0,'+y+')'});
+  G.appendChild(E('path',{d:'M-40 250 Q400 220 840 260 L840 420 L-40 420 Z',fill:'#0b201d'}));
+  var rk=g({fill:'#152f2b',stroke:'rgba(255,216,132,.22)','stroke-width':1.5,'stroke-linejoin':'round'});
+  rk.appendChild(E('path',{d:'M40 300 L90 250 L150 292 L150 330 L40 330 Z'}));
+  rk.appendChild(E('path',{d:'M250 320 L280 262 L360 258 L400 320 Z'}));
+  rk.appendChild(E('path',{d:'M520 316 L560 268 L640 256 L700 316 Z'}));
+  G.appendChild(rk);
+  // herbiers de fond
+  [110,340,610,660].forEach(function(x,i){var p=E('path',{d:'M'+x+' 300 C '+(x-5)+' 276 '+(x+5)+' 270 '+(x-2)+' 244',fill:'none',stroke:'#2c4a24','stroke-width':4,'stroke-linecap':'round'});p.setAttribute('class',i%2?'sway':'sway2');G.appendChild(p);});
+  // minéraux qui scintillent
+  [[95,288,'#FFE47A'],[300,300,'#1EC8B0'],[560,296,'#FFE47A'],[200,318,'#1EC8B0']].forEach(function(m,i){var c=E('circle',{cx:m[0],cy:m[1],r:2.4,fill:m[2]});c.setAttribute('class','twk');c.style.animationDelay=i*.9+'s';G.appendChild(c);});
+  return G;
+}
+var ACTORS=[actorOrbit,actorSky,actorSurface,actorLagoon,actorOpen,actorSarg,actorSeabed];
+var FOCAL=[315,130,150,210,160,150,300];  // y local du centre visuel de chaque acteur → recentré au viewBox 300 quand la strate est au centre
+function buildMain(){
+  pMain.replaceChildren();
+  for(var i=0;i<N;i++){ pMain.appendChild(ACTORS[i](worldY(i)-FOCAL[i])); }
+}
+
+/* ---- captions overlay (générées) ---- */
+var capsEl=document.getElementById('caps'), capNodes=[];
+function buildCaps(lang){
+  capsEl.replaceChildren(); capNodes=[];
+  STR[lang].caps.forEach(function(c){
+    var d=document.createElement('div'); d.className='cap';
+    var eb=document.createElement('div'); eb.className='eyebrow'; eb.textContent=c.eyebrow;
+    var dp=document.createElement('div'); dp.className='depth mono'; dp.textContent=c.depth;
+    var h=document.createElement('h2'); h.className='anton'; h.textContent=c.name;
+    var p=document.createElement('p'); p.textContent=c.line;
+    d.appendChild(eb); d.appendChild(dp); d.appendChild(h); d.appendChild(p);
+    capsEl.appendChild(d); capNodes.push(d);
+  });
+}
+
+/* ---- i18n ---- */
+var introEl=document.getElementById('intro'), outroEl=document.getElementById('outro');
+function setLang(lang){
+  var t=STR[lang]; document.documentElement.lang=lang;
+  document.getElementById('libNote').textContent=t.lib;
+  document.getElementById('introEyebrow').textContent=t.introEyebrow;
+  document.getElementById('headline').textContent=t.headline;
+  document.getElementById('lede').textContent=t.lede;
+  document.getElementById('scrollLab').textContent=t.scroll;
+  document.getElementById('outroKick').textContent=t.outroKick;
+  document.getElementById('outroBig').textContent=t.outroBig;
+  document.getElementById('outroCtaTxt').textContent=t.outroCta;
+  document.getElementById('outroSub').textContent=t.outroSub;
+  document.getElementById('outroFoot').textContent=t.outroFoot;
+  var btns=document.querySelectorAll('.langs button');
+  for(var i=0;i<btns.length;i++)btns[i].setAttribute('aria-pressed',String(btns[i].dataset.lang===lang));
+  buildCaps(lang); render(cur);
+}
+document.querySelector('.langs').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setLang(b.dataset.lang);});
+
+/* ---- HUD ---- */
+var hudDepth=document.getElementById('hudDepth'), hudTier=document.getElementById('hudTier');
+var HUD_M=[0,0,1,8,60,200,6000];
+function hud(cp,lang){
+  var idx=Math.min(N-1,Math.round(cp*(N-1)));
+  var m=HUD_M[idx];
+  hudDepth.textContent='−'+m.toLocaleString(lang==='en'?'en-US':'fr-FR')+' m';
+  hudTier.textContent=cp<0.02?STR[lang].surface:STR[lang].caps[idx].name;
+}
+
+/* ---- RENDER ---- */
+var root=document.documentElement, bd=document.getElementById('backdrop');
+var sunwash=document.getElementById('sunwash'), godrays=document.getElementById('godrays');
+var sat=document.getElementById('sat');
+var px=0,py=0, pxT=0,pyT=0; // pointer parallax (lissé)
+function clamp01(v){return v<0?0:v>1?1:v;}
+function bell(x,c,w){var t=(x-c)/w;return Math.max(0,1-t*t);}
+function render(d){
+  var lang=document.documentElement.lang||'fr';
+  var cp=cpOf(d);
+  root.style.setProperty('--d', d.toFixed(4));
+  // palette fenêtre de profondeur
+  var top=colorAt(cp), bot=colorAt(Math.min(1,cp+0.14));
+  root.style.setProperty('--top',top); root.style.setProperty('--bot',bot);
+  // plans parallaxe
+  var camY=cp*T;
+  var pMy=-camY, pFy=-camY*0.55, pNy=-camY*1.35;
+  pMain.setAttribute('transform','translate(0,'+pMy.toFixed(1)+')');
+  pFar.setAttribute('transform','translate('+(px*-6).toFixed(1)+','+(pFy+py*-4).toFixed(1)+')');
+  pNear.setAttribute('transform','translate('+(px*16).toFixed(1)+','+(pNy+py*12).toFixed(1)+')');
+  // satellite : reste en haut, recule/rapetisse en profondeur
+  var ss=(1-cp*0.46).toFixed(3), sy=(118+cp*70).toFixed(1);
+  sat.setAttribute('transform','translate('+(400+px*10).toFixed(1)+','+sy+') scale('+ss+')');
+  sat.setAttribute('opacity',(1-cp*0.62).toFixed(3));
+  // nappes d'ambiance
+  sunwash.setAttribute('opacity',(bell(cp,0.33,0.28)*0.9).toFixed(3));
+  godrays.setAttribute('opacity',(bell(cp,0.62,0.34)*0.85).toFixed(3));
+  // intro / outro
+  introEl.style.opacity=clamp01(1-d/0.055);
+  introEl.style.pointerEvents=d<0.03?'auto':'none';
+  var oOp=clamp01((d-0.905)/0.05);
+  outroEl.style.opacity=oOp; outroEl.style.pointerEvents=oOp>0.5?'auto':'none';
+  // captions cross-fade
+  var half=(1/(N-1))*0.62;
+  for(var i=0;i<capNodes.length;i++){
+    var c=i/(N-1);
+    var o=clamp01(1-Math.abs(cp-c)/half);
+    // masquer les captions quand intro/outro dominent
+    o*=clamp01((d-0.05)/0.03)*clamp01((0.9-d)/0.03);
+    capNodes[i].style.opacity=o.toFixed(3);
+    capNodes[i].style.transform='translateY('+((1-o)*14).toFixed(1)+'px)';
+  }
+  hud(cp,lang);
+}
+
+/* ---- MOTEUR : 1 rAF demand-driven ---- */
+var target=0,cur=0,needFrame=true,running=false,paused=false,RM=false;
+try{RM=matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(e){}
+function readTarget(){var max=document.documentElement.scrollHeight-window.innerHeight;target=max>0?clamp01(window.scrollY/max):0;}
+function wake(){if(!RM&&!running&&!paused){running=true;requestAnimationFrame(loop);}}
+function loop(){
+  if(paused){running=false;return;}
+  var work=false;
+  if(needFrame){readTarget();needFrame=false;work=true;}
+  // lissage pointeur
+  if(Math.abs(pxT-px)>0.002||Math.abs(pyT-py)>0.002){px+=(pxT-px)*0.08;py+=(pyT-py)*0.08;work=true;}
+  var diff=target-cur;
+  if(Math.abs(diff)>0.0004){cur+=diff*0.15;work=true;}
+  else if(work){cur=target;}
+  if(work)render(cur);
+  running=work; if(work)requestAnimationFrame(loop);
+}
+window.addEventListener('scroll',function(){needFrame=true;wake();},{passive:true});
+window.addEventListener('resize',function(){needFrame=true;wake();},{passive:true});
+document.addEventListener('visibilitychange',function(){paused=document.hidden;if(!paused){needFrame=true;wake();}});
+if(!RM){
+  window.addEventListener('pointermove',function(e){
+    pxT=(e.clientX/window.innerWidth-0.5)*2; pyT=(e.clientY/window.innerHeight-0.5)*2; wake();
+  },{passive:true});
+}
+window.__setDepth=function(d){cur=target=clamp01(d);render(cur);};
+
+/* ---- init ---- */
+try{ history.scrollRestoration='manual'; }catch(e){}   // pas de restauration au reload (sinon on rouvre au milieu)
+window.scrollTo(0,0);
+buildFar(); buildMain(); buildNear(); setLang('fr');
+if(RM){ render(0.36); }           // plancher : strate SURFACE centrée + légende pleine, tout lisible, zéro anim
+else { readTarget(); cur=target; render(cur); wake(); }
+})();
+</script>
+</body>
+</html>
