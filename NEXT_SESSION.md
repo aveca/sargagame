@@ -1,5 +1,13 @@
 # NEXT_SESSION — sargagame
 
+> **🔔 2026-07-02 — GRIEF FONDATEUR ALERTES : « activer mes alertes » déclenche maintenant permission push + nudge install. PR #409 MERGÉE.**
+>
+> Grief : « j'active les alertes, ça ne me demande ni notifications ni installer l'app » — la promesse vendue (« prévenu la veille ») était intenable sans permission push.
+> - **`ensurePushAlerts(src)`** (root, ~L10660) : toute intention explicite d'alerte → demande de permission (via `toggleAlerts` : natif / toast réglages si denied / toast écran-d'accueil iOS navigateur) puis event `sg:alert_intent` → re-nudge bannière install (1×/session, jamais standalone). ENSURE, pas toggle (ne coupe jamais des alertes actives). Surfaces : hub `/alertes/` (chaînage post-capture + bouton or « Activer les notifications sur ce téléphone » si permission manquante), CTA premium « Voir mes alertes » fiche (avant : fermait juste), capture email par-plage (`sg:alert_email_ok`). **Rollback `?alertpush=0`.**
+> - **⚠️ InstallPrompt réparé (2 bloquants panel, leçons)** : (1) il n'était **monté que si `sg_pwa_prompt=0`** → tout listener dedans = code mort pour qui a déjà vu la bannière → désormais **monté en permanence**, auto-show gaté `canAutoShow` (jamais avec FeedbackWidget) ; (2) bannière z760 naissait **derrière** hub z1006/feuille z1050/paywall z1300 → élévation `alertIntent` z1450/1460 ; (3) `beforeinstallprompt` désormais toujours écouté (sinon « Installer » = clic mort Android hors auto-show) ; (4) max-width 430 desktop.
+> - E2E vérifié : hub → OneSignal ask + toast + bannière **réellement visible** (`elementFromPoint`, y compris `sg_pwa_prompt=1`, par-dessus le paywall) ; fiche premium idem ; flag off = ancien comportement. Le paywall qui s'ouvre après capture hub est PRÉEXISTANT.
+> - **Owned/observations** : le hub `/alertes/` est un A/B `pw_alertes` 50/50 (bras control = pas de hub) ; sur Android permission DENIED le nudge install part quand même (install ≠ restaure la permission — nuance acceptée) ; empilement paywall+toast+bannière sur le hub = chargé mais dismissable/auto-hide 15s, à revoir si les metrics `sg_pwa_prompt_shown{reason:alert-intent}` montrent du rejet.
+
 > **🔗 2026-07-02 — GRIEFS FONDATEUR PARTAGE + FICHE DESKTOP : PR #408 MERGÉE + DÉPLOYÉE + VÉRIFIÉE PROD (bundles MQ/USD porteurs des markers).**
 >
 > Griefs : « le partage n'affiche pas un lien profond de la plage » + « la fiche plage complète est pas bonne sur desktop ».
