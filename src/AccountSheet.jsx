@@ -103,7 +103,7 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
         : _t(lang,"Premium actif","Premium active","Premium activo")
 
   return (
-    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Mon accès","My access","Mi acceso")}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" data-sg-live="1" aria-label={_t(lang,"Mon accès","My access","Mi acceso")}>
       {/* Backdrop — 4e voie de sortie (tap hors feuille). */}
       <div onClick={()=>exit("backdrop")} data-sg-live="1" style={{position:"fixed", inset:0, zIndex:1440, background:"rgba(10,11,20,.55)",
         animation: reduced.current ? "none" : "asFade .2s ease both"}}/>
