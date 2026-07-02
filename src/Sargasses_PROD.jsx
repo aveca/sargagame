@@ -44,6 +44,10 @@ const lazyWithRetry=imp=>lazy(()=>imp()
 const ArenaSplash=lazyWithRetry(()=>import("./ArenaSplash.jsx"))
 const ArenaOnboarding=lazyWithRetry(()=>import("./ArenaOnboarding.jsx"))
 const VeilleurHero=lazyWithRetry(()=>import("./VeilleurHero.jsx"))
+// Mode VITRINE « Le Registre du Veilleur » (?demo=1, attract mode, panel 2026-07-02) —
+// boucle auto-play value-prop qu'un hôtel laisse tourner en hall. OFF par défaut,
+// JAMAIS monté sans ?demo=1 → zéro octet eager, zéro impact funnel. Rollback ?demo=0.
+const DemoReel=lazyWithRetry(()=>import("./DemoReel.jsx"))
 const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
@@ -1397,7 +1401,10 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
   // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
-  "sg_pass_proof_open","sg_pass_seq_back"])
+  "sg_pass_proof_open","sg_pass_seq_back",
+  // Mode vitrine "Le Registre du Veilleur" (?demo=1, attract mode, 2026-07-02) : impression
+  // display + tap + scan QR de hall. Volume FAIBLE assumé (rétention/fierté B2B, cf. critère de mort).
+  "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan"])
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -12393,6 +12400,29 @@ export default function App(){
     try{ return /[?&]vh=1/.test(window.location.search||""); }catch(_){ return false; }
   });
   const dismissVeilleurHero=useCallback(()=>{ try{sessionStorage.setItem("sg_vh_seen","1");track("sg_vh_enter",{})}catch(_){}; setShowVeilleurHero(false); },[track]);
+
+  // MODE VITRINE « Le Registre du Veilleur » (?demo=1) — attract mode auto-play qu'un
+  // hôtel laisse tourner en hall. OFF par défaut (jamais monté sans ?demo=1), rollback
+  // ?demo=0. Sous-modes : ?src=lobby (défaut) | ?src=share ; co-brand ?partner=<slug>.
+  const [showDemo,setShowDemo]=useState(()=>{try{const q=window.location.search||"";return /[?&]demo=1/.test(q)&&!/[?&]demo=0/.test(q)}catch(_){return false}})
+  const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
+  const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
+  // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
+  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line
+
+  // Kiosk isolé : quand ?demo=1, on ne rend QUE la vitrine (aucun rendu de l'app
+  // derrière → perf + zéro interférence funnel). Tous les hooks ci-dessus ont déjà
+  // tourné (pas de hook conditionnel) → early-return sûr.
+  if(showDemo){
+    return(
+      <LangCtx.Provider value={lang}>
+        <ErrBound fallback={null}><Suspense fallback={null}>
+          <DemoReel lang={lang} src={demoSrc} partner={demoPartner} allBeaches={allBeaches} imageMap={imageMap} imageQ={imageQ}
+            mapForecastByBeach={mapForecastByBeach} sargData={sargData} island={island} track={track} onClose={()=>setShowDemo(false)}/>
+        </Suspense></ErrBound>
+      </LangCtx.Provider>
+    )
+  }
 
   return(
     <LangCtx.Provider value={lang}>
