@@ -1,4 +1,4 @@
-> **🎬 PROTOTYPE NAVIGABLE COMPLET = `design/arena-v2.html` (28 écrans, transitions, annotations UX/UI).** Ouvrir en local OU en prod `/arena-v2.html`. Assemblé par `node scripts/build-v2-proto.cjs` depuis `design/v2-parts/`. Construit en multi-agents (contexte frais).
+> **⚠️ ARENA v2 (jeu-arène) RETIRÉ du produit — ce doc reste comme RECORD, pas comme cible de reconstruction.** Items `[x]` = features **LIVE** dans le produit (`src/ChasseHome.jsx` / `src/ComicDetail.jsx` / `src/PremiumModal.jsx`, cf. `src/Sargasses_PROD.jsx`) ; `[ ]` = backlog restant. Le proto navigable `design/arena-v2.html` (+ fragments `design/v2-parts/`, script `build-v2-proto.cjs`) a été **SUPPRIMÉ du repo** (orphelin, script d'assemblage disparu, copie d'abo morte 4,99 €/Stripe contredisant le pass-only Mollie) ; la route `/arena-v2.html` est **301→`/`** (PR #459). Récup du proto via git history si besoin. **Ne pas reconstruire le jeu-arène ni la route.**
 
 # SCREENS_V2 — backlog de reconstruction « ARENA v2 » (spec = maquette fondateur)
 
