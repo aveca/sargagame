@@ -52,8 +52,9 @@ SECRETS-GITHUB.txt
 
 # SEO Automation (log + overrides + reports are committed)
 
-# Claude Code
-.claude
+# Claude Code (ignore local settings/state, but VERSION shared skills)
+.claude/*
+!.claude/skills/
 memory
 
 # Claude Code (local lock file if created)
