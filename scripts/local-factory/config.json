@@ -1,0 +1,8 @@
+{
+  "renderRegions": ["mq", "gp", "puntacana", "florida", "rivieramaya"],
+  "fbRegions": ["mq", "gp"],
+  "fbAutoPublish": false,
+  "maxFbPostsPerDay": 2,
+  "fbPublishMaxAgeH": 24,
+  "_README": "Config committee de l'usine locale. Pour ACTIVER la publication FB automatique (MQ/GP) : passer fbAutoPublish a true et committer sur main (le git pull de l'usine le prend au prochain run) = bascule depuis mobile. Garde-fous EN DUR (non desactivables) : fraicheur satellite <= fbPublishMaxAgeH heures re-verifiee a la publication, dedup 1 post/region/jour, cap maxFbPostsPerDay. Rendu video : plafond fraicheur 36h dans storyboard.cjs. Data/scraping/API = couche CLOUD (GitHub Actions), JAMAIS ici (eviter double-ecriture)."
+}

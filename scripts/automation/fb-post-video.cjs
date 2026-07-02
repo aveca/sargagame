@@ -22,8 +22,8 @@ const GROUPS = {
   gp: { url: 'https://www.facebook.com/groups/1264655221572269/', name: 'Destination Guadeloupe' },
 }
 const HOOKS = {
-  mq: d => `🌊 Le bulletin sargasses du ${d} en 20 secondes : ce qui tourne demain, et LA plage propre du jour — d'après le satellite Copernicus de ce matin.\n\nLa carte complète (53 plages, gratuit) 👉 https://sargasses-martinique.com/?utm_source=fb&utm_medium=video_brief`,
-  gp: d => `🌊 Le bulletin sargasses du ${d} en 20 secondes : ce qui tourne demain, et LA plage propre du jour — d'après le satellite Copernicus de ce matin.\n\nLa carte complète (83 plages, gratuit) 👉 https://sargasses-guadeloupe.com/?utm_source=fb&utm_medium=video_brief`,
+  mq: d => `🌊 Le bulletin sargasses du ${d} en 20 secondes : ce qui tourne demain, et LA plage propre du jour — d'après le satellite Copernicus le plus récent.\n\nLa carte complète (53 plages, gratuit) 👉 https://sargasses-martinique.com/?utm_source=fb&utm_medium=video_brief`,
+  gp: d => `🌊 Le bulletin sargasses du ${d} en 20 secondes : ce qui tourne demain, et LA plage propre du jour — d'après le satellite Copernicus le plus récent.\n\nLa carte complète (83 plages, gratuit) 👉 https://sargasses-guadeloupe.com/?utm_source=fb&utm_medium=video_brief`,
 }
 
 const args = process.argv.slice(2)

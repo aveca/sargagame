@@ -1,0 +1,178 @@
+#!/usr/bin/env node
+/**
+ * factory.cjs — L'USINE LOCALE Sargasses · COUCHE C (pur-code, ZÉRO LLM, ZÉRO Claude).
+ * ---------------------------------------------------------------------------------
+ * Un seul programme déterministe, lancé par le Planificateur de tâches Windows
+ * (au démarrage + chaque jour). Il fait UNIQUEMENT ce que le cloud ne PEUT pas
+ * faire depuis une machine éteinte :
+ *   1. se met à jour tout seul   (git pull --ff-only → code + data du jour)
+ *   2. rend le « Brief plage » vidéo du jour, 5 régions   (GPU/ffmpeg/edge-tts local)
+ *   3. publie sur Facebook        (session Edge locale — impossible en cloud)   [OPT-IN]
+ * Rattrapage idempotent au boot : ne rend QUE le jour même, jamais de backfill.
+ *
+ * Ce qu'il ne fait PAS (par design — cf. README) : aucun email/pipeline/deploy
+ * (= couche CLOUD GitHub Actions, tourne machine éteinte), aucune décision LLM,
+ * aucune écriture money/checkout. C'est une usine à CONTENU + PUBLICATION, point.
+ *
+ * Garde-fous : lockfile (1 instance), marker daté (1 rendu/région/jour),
+ * fraîcheur satellite (skip si donnée périmée), FB re-vérifiée ≤24 h + cap + dédup,
+ * publication FB derrière un flag committé (config.fbAutoPublish) que tu bascules
+ * depuis mobile via GitHub — jamais de publication à l'aveugle.
+ *
+ * Usage :
+ *   node scripts/local-factory/factory.cjs           # run réel (rend + publie selon config)
+ *   node scripts/local-factory/factory.cjs --plan     # n'exécute rien : dit ce qu'il FERAIT
+ *   SARGA_FACTORY_NO_PULL=1 node ... factory.cjs       # sans git pull (mode hors-ligne)
+ */
+'use strict'
+const { spawnSync } = require('child_process')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
+
+const DIR = __dirname
+const ROOT = path.resolve(DIR, '../..')
+const STATE = path.join(DIR, 'state')
+const LOGS = path.join(DIR, 'logs')
+const OUT = path.join(ROOT, 'scripts', 'video', 'out')
+for (const d of [STATE, LOGS, OUT]) fs.mkdirSync(d, { recursive: true })
+
+const PLAN = process.argv.includes('--plan') || process.env.SARGA_FACTORY_DRY === '1'
+const NO_PULL = process.env.SARGA_FACTORY_NO_PULL === '1' || PLAN
+
+// ── Config committée (le fondateur la bascule depuis mobile via GitHub) ─────────
+const CFG = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(DIR, 'config.json'), 'utf8')) } catch (_) { return {} }
+})()
+const RENDER_REGIONS = CFG.renderRegions || ['mq', 'gp', 'puntacana', 'florida', 'rivieramaya']
+const FB_REGIONS = CFG.fbRegions || ['mq', 'gp']
+const FB_AUTO = CFG.fbAutoPublish === true
+const MAX_FB = Number.isFinite(CFG.maxFbPostsPerDay) ? CFG.maxFbPostsPerDay : 2
+const FB_MAX_AGE_H = Number.isFinite(CFG.fbPublishMaxAgeH) ? CFG.fbPublishMaxAgeH : 24 // plus strict que le rendu (36 h)
+
+const TODAY = new Date().toISOString().slice(0, 10)
+
+// ── Journal (JSONL + console) ───────────────────────────────────────────────────
+const logFile = path.join(LOGS, `factory-${TODAY}.jsonl`)
+const events = []
+function log(event, data) {
+  const rec = Object.assign({ t: new Date().toISOString(), event }, data || {})
+  events.push(rec)
+  try { fs.appendFileSync(logFile, JSON.stringify(rec) + '\n') } catch (_) {}
+  const extra = data && Object.keys(data).length ? ' ' + JSON.stringify(data) : ''
+  console.log(`[factory]${PLAN ? '(plan)' : ''} ${event}${extra}`)
+}
+
+// ── Lockfile : une seule instance à la fois ─────────────────────────────────────
+const LOCK = path.join(STATE, '.lock')
+function pidAlive(pid) { try { process.kill(pid, 0); return true } catch (_) { return false } }
+function acquireLock() {
+  try {
+    const { pid, at } = JSON.parse(fs.readFileSync(LOCK, 'utf8'))
+    const ageMin = (Date.now() - Date.parse(at)) / 60000
+    if (ageMin < 120 && pidAlive(pid)) { console.log(`[factory] déjà en cours (pid ${pid}, ${ageMin.toFixed(0)} min) — sortie.`); process.exit(0) }
+    log('lock.reclaim', { stalePid: pid, ageMin: Math.round(ageMin) })
+  } catch (_) { /* pas de lock */ }
+  fs.writeFileSync(LOCK, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }))
+}
+function releaseLock() { try { fs.unlinkSync(LOCK) } catch (_) {} }
+
+// ── Fraîcheur satellite (âge en heures ; jamais updatedAt) ───────────────────────
+function satelliteAgeH(region) {
+  const isNew = !['mq', 'gp'].includes(region)
+  const p = path.join(ROOT, 'public/api/copernicus', isNew ? region : '', 'sargassum.json')
+  try {
+    const s = JSON.parse(fs.readFileSync(p, 'utf8'))
+    if (s.source !== 'erddap-live' || s.stale === true) return { ageH: null, bad: true }
+    const ageH = typeof s.dataAgeMinutes === 'number' ? s.dataAgeMinutes / 60
+      : (s.erddapTimestamp ? (Date.now() - Date.parse(s.erddapTimestamp)) / 3.6e6 : null)
+    return { ageH, bad: ageH == null }
+  } catch (_) { return { ageH: null, bad: true } }
+}
+
+// ── 0. Auto-update (git pull) ────────────────────────────────────────────────────
+function selfUpdate() {
+  if (NO_PULL) { log('git.skip', { reason: PLAN ? 'plan' : 'SARGA_FACTORY_NO_PULL' }); return }
+  const r = spawnSync('git', ['pull', '--ff-only'], { cwd: ROOT, encoding: 'utf8', timeout: 120000 })
+  if (r.status === 0) log('git.pull.ok', { out: String(r.stdout || '').trim().split('\n').pop().slice(0, 160) })
+  else log('git.pull.fail', { err: String((r.stderr || '') + (r.stdout || '')).trim().slice(0, 240) }) // non-fatal : on tourne sur le local
+}
+
+// ── 1. Rendu des briefs (marker daté, per-région isolé, skip fraîcheur) ─────────
+function renderBriefs() {
+  const results = []
+  for (const region of RENDER_REGIONS) {
+    const marker = path.join(OUT, `brief-${region}-${TODAY}.mp4`)
+    const have = fs.existsSync(marker) && fs.statSync(marker).size > 100000
+    if (have) { log('render.skip.exists', { region }); results.push({ region, status: 'exists' }); continue }
+    if (PLAN) {
+      const f = satelliteAgeH(region)
+      results.push({ region, status: f.bad ? 'would-skip-stale' : 'would-render', ageH: f.ageH })
+      log('render.plan', { region, ageH: f.ageH, decision: f.bad ? 'skip-stale' : 'render' }); continue
+    }
+    log('render.start', { region })
+    const r = spawnSync('node', [path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), region],
+      { cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000 })
+    const out = String(r.stdout || '') + String(r.stderr || '')
+    if (/BRIEF_SKIPPED_STALE/.test(out)) {
+      const m = out.match(/BRIEF_SKIPPED_STALE[^\n]*/)
+      log('render.skip.stale', { region, why: m ? m[0].slice(0, 160) : '' }); results.push({ region, status: 'stale' }); continue
+    }
+    const done = fs.existsSync(marker) && fs.statSync(marker).size > 100000
+    if (r.status === 0 && done) { log('render.ok', { region, mb: +(fs.statSync(marker).size / 1e6).toFixed(2) }); results.push({ region, status: 'rendered' }) }
+    else { log('render.fail', { region, code: r.status, err: out.trim().slice(-360) }); results.push({ region, status: 'failed' }) }
+  }
+  return results
+}
+
+// ── 2. Publication FB (OPT-IN, gardée : fraîcheur ≤24 h + dédup + cap) ───────────
+function publishFB(renderResults) {
+  const eligible = renderResults.filter(r => (r.status === 'rendered' || r.status === 'exists') && FB_REGIONS.includes(r.region))
+  if (!eligible.length) { log('fb.none'); return }
+  let posted = 0
+  for (const { region } of eligible) {
+    if (posted >= MAX_FB) { log('fb.cap', { max: MAX_FB }); break }
+    const dedup = path.join(STATE, `fb-${region}-${TODAY}.done`)
+    if (fs.existsSync(dedup)) { log('fb.skip.dup', { region }); continue }
+    const f = satelliteAgeH(region)
+    if (f.bad || f.ageH > FB_MAX_AGE_H) { log('fb.skip.stale', { region, ageH: f.ageH, ceil: FB_MAX_AGE_H }); continue }
+    if (!FB_AUTO || PLAN) { log('fb.staged', { region, ageH: +(f.ageH || 0).toFixed(1), note: PLAN ? 'plan' : 'config.fbAutoPublish=false → aucune publication réelle' }); continue }
+    log('fb.post.start', { region })
+    const r = spawnSync('node', [path.join(ROOT, 'scripts', 'automation', 'fb-post-video.cjs'), `--region=${region}`, '--go', '--headless'],
+      { cwd: ROOT, encoding: 'utf8', timeout: 5 * 60000 })
+    const out = String(r.stdout || '') + String(r.stderr || '')
+    if (r.status === 0) { fs.writeFileSync(dedup, new Date().toISOString()); posted++; log('fb.post.ok', { region }) }
+    else { log('fb.post.fail', { region, code: r.status, err: out.trim().slice(-300) }) }
+  }
+}
+
+// ── 3. LAST_RUN.md (le fondateur voit « ce qui s'est passé » sans ouvrir Claude) ─
+function writeLastRun(renderResults) {
+  const md = [
+    `# SargaFactory — dernier run${PLAN ? ' (PLAN, rien exécuté)' : ''}`,
+    '',
+    `- **Quand** : ${new Date().toISOString()}`,
+    `- **Machine** : ${os.hostname()}`,
+    `- **Rendus** : ${renderResults.map(r => `${r.region}=${r.status}`).join(' · ') || '—'}`,
+    `- **FB auto** : ${FB_AUTO ? `ON (≤${FB_MAX_AGE_H} h, cap ${MAX_FB}/j)` : 'OFF (dry-run — bascule config.fbAutoPublish=true pour activer)'}`,
+    '',
+    `Journal détaillé : \`logs/factory-${TODAY}.jsonl\``,
+    '',
+  ].join('\n')
+  try { fs.writeFileSync(path.join(DIR, 'LAST_RUN.md'), md) } catch (_) {}
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────────
+acquireLock()
+try {
+  log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
+  selfUpdate()
+  const results = renderBriefs()
+  publishFB(results)
+  writeLastRun(results)
+  log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
+} catch (e) {
+  log('factory.error', { err: String((e && e.stack) || e).slice(0, 500) })
+} finally {
+  releaseLock()
+}

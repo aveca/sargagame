@@ -27,12 +27,40 @@ const DAYS_FULL = {
 const RANK = { clean: 0, moderate: 1, avoid: 2 }
 const loadJSON = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch (_) { return fb } }
 
+// ── Garde-fou fraîcheur (moat : « mesuré au satellite, pas deviné ») ──────────
+// Une vidéo qui parle « au satellite » ne doit JAMAIS reposer sur une donnée que
+// le système considère périmée. On jauge l'âge SATELLITE (dataAgeMinutes /
+// erddapTimestamp), JAMAIS updatedAt (= heure du dernier run pipeline, pas de la
+// donnée). RENDER_MAX_AGE_H = 36 h = la ligne « stale » du pipeline (SAT_STALE_HOURS) :
+// on ne rend pas sur une donnée que l'app elle-même n'affiche plus comme live.
+// La publication FB applique un plafond PLUS STRICT (24 h) côté factory.cjs.
+const RENDER_MAX_AGE_H = 36
+function satelliteAgeHours(sarg) {
+  if (sarg && typeof sarg.dataAgeMinutes === 'number') return sarg.dataAgeMinutes / 60
+  if (sarg && sarg.erddapTimestamp) { const t = Date.parse(sarg.erddapTimestamp); if (!isNaN(t)) return (Date.now() - t) / 3.6e6 }
+  return null // âge satellite indéterminable → non publiable
+}
+function publishFreshness(sarg, maxAgeH = RENDER_MAX_AGE_H) {
+  const ageH = satelliteAgeHours(sarg)
+  if (!sarg || sarg.source !== 'erddap-live') return { ok: false, ageH, reason: `source=${sarg && sarg.source} (≠ erddap-live)` }
+  if (sarg.stale === true) return { ok: false, ageH, reason: 'flag stale=true' }
+  if (ageH == null) return { ok: false, ageH, reason: 'âge satellite indéterminable' }
+  if (ageH > maxAgeH) return { ok: false, ageH, reason: `satellite ${ageH.toFixed(1)}h > plafond ${maxAgeH}h` }
+  return { ok: true, ageH, reason: `satellite ${ageH.toFixed(1)}h ≤ ${maxAgeH}h` }
+}
+function assertRenderable(sarg, regionId) {
+  const f = publishFreshness(sarg)
+  if (!f.ok) { const e = new Error(`STALE_DATA_SKIP_RENDER region=${regionId} ${f.reason}`); e.code = 'STALE_DATA_SKIP_RENDER'; e.freshness = f; throw e }
+  return f
+}
+
 function buildStoryboard(regionId) {
   const R = REGIONS[regionId]
   if (!R) throw new Error('région inconnue: ' + regionId)
   const isNew = !['mq', 'gp'].includes(regionId)
   const sarg = loadJSON(path.join(ROOT, 'public/api/copernicus', isNew ? regionId : '', 'sargassum.json'), null)
   if (!sarg || !Array.isArray(sarg.levels)) throw new Error('pas de sargassum.json pour ' + regionId)
+  assertRenderable(sarg, regionId) // moat : jamais de brief sur donnée périmée
   const imgs = loadJSON(path.join(ROOT, 'public/data/beaches-images.json'), {})
   const q = loadJSON(path.join(ROOT, 'public/data/beaches-images-quality.json'), {})
   const list = loadJSON(path.join(ROOT, 'public/data/beaches-list.json'), [])
@@ -107,9 +135,9 @@ function buildStoryboard(regionId) {
   scenes.push({
     id: 'best', type: 'photo', minDur: 6, img: photoOf(best.id), chapter: t('01 · LA PLAGE DU JOUR', '01 · BEACH OF THE DAY', '01 · LA PLAYA DEL DÍA'),
     overlay: { overline: t('TA MEILLEURE PLAGE AUJOURD’HUI', 'YOUR BEST BEACH TODAY', 'TU MEJOR PLAYA HOY'), title: bestName.toUpperCase(), pill: `${sw(best.status).toUpperCase()} · ${best.score != null ? best.score + '/100' : ''}`, pillColor: '#FFC72C', sub: communeOf(best.id) },
-    vo: t(`Ta meilleure plage aujourd'hui : ${bestName}${communeOf(best.id) ? ', à ' + communeOf(best.id) : ''}. ${sw(best.status)}, ${best.score != null ? best.score + ' sur 100' : ''}. Vérifié par satellite ce matin.`,
-      `Your best beach today: ${bestName}. ${sw(best.status)}, ${best.score != null ? best.score + ' out of 100' : ''}. Satellite-checked this morning.`,
-      `Tu mejor playa hoy: ${bestName}. ${sw(best.status)}, ${best.score != null ? best.score + ' sobre 100' : ''}. Verificada por satélite esta mañana.`),
+    vo: t(`Ta meilleure plage aujourd'hui : ${bestName}${communeOf(best.id) ? ', à ' + communeOf(best.id) : ''}. ${sw(best.status)}, ${best.score != null ? best.score + ' sur 100' : ''}. Vérifié au satellite.`,
+      `Your best beach today: ${bestName}. ${sw(best.status)}, ${best.score != null ? best.score + ' out of 100' : ''}. Checked by satellite.`,
+      `Tu mejor playa hoy: ${bestName}. ${sw(best.status)}, ${best.score != null ? best.score + ' sobre 100' : ''}. Verificada por satélite.`),
   })
   if (degradeDay && degradedSample) {
     const dn = nameOf(degradedSample.id)
@@ -140,7 +168,7 @@ function buildStoryboard(regionId) {
 
   return { region: regionId, lang: R.lang, voice: R.voice, wordmark: R.wordmark, domain: R.domain, date: now.toISOString().slice(0, 10), dateLong, scenes }
 }
-module.exports = { buildStoryboard, REGIONS }
+module.exports = { buildStoryboard, REGIONS, publishFreshness, RENDER_MAX_AGE_H }
 if (require.main === module) {
   const sb = buildStoryboard(process.argv[2] || 'mq')
   console.log(JSON.stringify(sb, null, 1).slice(0, 3000))

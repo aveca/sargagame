@@ -16,8 +16,14 @@ fs.mkdirSync(OUT, { recursive: true })
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, ...opts })
 const ffprobeDur = f => parseFloat(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
 
-// ── 1. Storyboard ──────────────────────────────────────────────
-const sb = buildStoryboard(REGION)
+// ── 1. Storyboard (garde-fou fraîcheur : skip PROPRE, exit 0, si donnée périmée) ──
+let sb
+try {
+  sb = buildStoryboard(REGION)
+} catch (e) {
+  if (e && e.code === 'STALE_DATA_SKIP_RENDER') { console.log(`BRIEF_SKIPPED_STALE ${e.message}`); process.exit(0) }
+  throw e
+}
 console.log(`[1/5] storyboard ${REGION} : ${sb.scenes.map(s => s.id).join(' → ')}`)
 
 // ── 2. TTS par scène (edge-tts : mp3 + srt minuté) ─────────────
