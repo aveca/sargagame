@@ -72,6 +72,38 @@ async function enrichNamedDeadClicks(report) {
     }
   }
 }
+// Capture étendue desktop (client → stats.php) : NOMME deux signaux jusqu'ici jetés.
+//   • hover-hesitation : CTA survolé ≥600ms puis quitté SANS clic (l'œil sans le doigt).
+//   • right-click-confusion : clic droit sur une zone non-interactive (« où est le menu »).
+// Même plancher de bruit que les dead-clicks et sévérité 'warning' UNIQUEMENT (jamais
+// 'critical' : ce sont des signaux CRO, pas des pannes → ils ne doivent pas noyer l'alerte).
+async function enrichHoverAndConfusion(report) {
+  const { env, map } = _statsKeys()
+  if (!env && !Object.keys(map).length) { console.log('[hover/right-click] pas de clé stats — enrichissement sauté.'); return }
+  for (const site of _statsRegions()) {
+    const key = map[site.id] || env; if (!key) continue
+    let data; try { data = await _fetchStats(site.domain, key) } catch (e) { console.error(`  [${site.id}] stats.php: ${e.message}`); continue }
+    const floor = Math.max(10, Math.ceil((data.sessions || 0) * 0.01))
+    const hovers = [], rclicks = []
+    for (const [screen, c] of Object.entries(data.clicks || {})) {
+      for (const [el, o] of Object.entries(c.top_hover_els || {})) { const n = (o && o.n) || 0; if (n >= floor) hovers.push({ screen: screen || 'app', el, n, avg: (o && o.avg_ms) || 0 }) }
+      for (const [el, n] of Object.entries(c.top_rclick_els || {})) if (n >= floor) rclicks.push({ screen: screen || 'app', el, n })
+    }
+    if (!hovers.length && !rclicks.length) { console.log(`  [${site.id}] stats.php OK, 0 hover/right-click nommé (≥${floor}).`); continue }
+    hovers.sort((a, b) => b.n - a.n); rclicks.sort((a, b) => b.n - a.n)
+    if (!report.sites[site.id]) report.sites[site.id] = { domain: site.domain, issues: [], crux: null, stats: { total: 0, critical: 0, warnings: 0 } }
+    const S = report.sites[site.id]
+    const push = (issue) => { S.issues.push(issue); S.stats.total++; S.stats.warnings++; report.summary.totalIssues++; report.summary.warnings++ }
+    for (const { screen, el, n, avg } of hovers.slice(0, 8)) {
+      push({ type: 'hover-hesitation', severity: 'warning', page: screen, target: el, locatable: true, count: n, metric: `${n} hovers ≥600ms without click on ${el} (${screen}, avg ${avg}ms)`, recommendation: 'The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it.' })
+      console.log(`  [${site.id}] HOVER-HESITATION: ${el} @${screen} (${n}, avg ${avg}ms) → warning`)
+    }
+    for (const { screen, el, n } of rclicks.slice(0, 8)) {
+      push({ type: 'right-click-confusion', severity: 'warning', page: screen, target: el, locatable: true, count: n, metric: `${n} right-clicks on non-interactive ${el} (${screen})`, recommendation: 'Users right-click a dead zone (looking for a context action / menu). Consider making the element actionable or clarifying it is not.' })
+      console.log(`  [${site.id}] RIGHT-CLICK-CONFUSION: ${el} @${screen} (${n}) → warning`)
+    }
+  }
+}
 
 async function main() {
   console.log('=== UX Audit ===\n')
@@ -225,6 +257,8 @@ async function main() {
 
   // Enrichissement first-party : NOMME les coupables dead-click (top_dead_els).
   try { await enrichNamedDeadClicks(report) } catch (e) { console.error('[named dead-clicks]', e.message) }
+  // Capture étendue desktop : NOMME hover-hésitation + clic-droit-confusion (warning only).
+  try { await enrichHoverAndConfusion(report) } catch (e) { console.error('[hover/right-click]', e.message) }
 
   writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2))
   console.log(`\n✓ UX report saved to ${REPORT_PATH}`)

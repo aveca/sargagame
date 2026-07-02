@@ -151,6 +151,25 @@ foreach ($sessions as $d) {
     if (!isset($out['clicks'][$s]['de'])) $out['clicks'][$s]['de'] = array();
     if (is_array($m)) foreach ($m as $desc => $c) { $out['clicks'][$s]['de'][$desc] = ($out['clicks'][$s]['de'][$desc] ?? 0) + $c; }
   }
+  // CLIC DROIT NOMMÉ (rc) — clic droit sur zone non-interactive = confusion desktop
+  // (jumeau du dead-click). Le menu navigateur n'est jamais détourné côté client.
+  if (!empty($d['rc']) && is_array($d['rc'])) foreach ($d['rc'] as $s => $m) {
+    if (!isset($out['clicks'][$s])) $out['clicks'][$s] = array('n'=>0,'dead'=>0,'b'=>array(),'d'=>array());
+    if (!isset($out['clicks'][$s]['rc'])) $out['clicks'][$s]['rc'] = array();
+    if (is_array($m)) foreach ($m as $desc => $c) { $out['clicks'][$s]['rc'][$desc] = ($out['clicks'][$s]['rc'][$desc] ?? 0) + $c; }
+  }
+  // SURVOL-HÉSITATION NOMMÉ (hv) — CTA survolé ≥600ms puis quitté sans clic. Chaque
+  // desc = {n, ms} → on cumule pour calculer le dwell moyen (avg_ms) à la finalisation.
+  if (!empty($d['hv']) && is_array($d['hv'])) foreach ($d['hv'] as $s => $m) {
+    if (!isset($out['clicks'][$s])) $out['clicks'][$s] = array('n'=>0,'dead'=>0,'b'=>array(),'d'=>array());
+    if (!isset($out['clicks'][$s]['hv'])) $out['clicks'][$s]['hv'] = array();
+    if (is_array($m)) foreach ($m as $desc => $o) {
+      if (!is_array($o)) continue;
+      if (!isset($out['clicks'][$s]['hv'][$desc])) $out['clicks'][$s]['hv'][$desc] = array('n'=>0,'ms'=>0);
+      $out['clicks'][$s]['hv'][$desc]['n']  += $o['n']  ?? 0;
+      $out['clicks'][$s]['hv'][$desc]['ms'] += $o['ms'] ?? 0;
+    }
+  }
 
   // A/B CROSS-TAB : par test -> par variante -> sessions + présence d'events funnel + engagement.
   // Permet l'éval A/B automatisée (quelle variante convertit/engage le mieux) sans Google.
@@ -186,6 +205,16 @@ foreach ($out['clicks'] as $s => &$c) {
   arsort($c['b']); arsort($c['d']);
   $c['top_dead_buckets'] = array_slice($c['d'], 0, 6, true);
   if (!empty($c['de'])) { arsort($c['de']); $c['top_dead_els'] = array_slice($c['de'], 0, 8, true); }
+  // Clic droit confus : élément le plus visé (comme top_dead_els).
+  if (!empty($c['rc'])) { arsort($c['rc']); $c['top_rclick_els'] = array_slice($c['rc'], 0, 8, true); }
+  // Survol-hésitation : élément le plus regardé-sans-clic + dwell moyen (ms).
+  if (!empty($c['hv'])) {
+    uasort($c['hv'], function($x, $y){ return ($y['n'] ?? 0) - ($x['n'] ?? 0); });
+    $topH = array_slice($c['hv'], 0, 8, true);
+    foreach ($topH as $desc => &$o) { $o['avg_ms'] = (!empty($o['n']) ? (int)round($o['ms'] / $o['n']) : 0); }
+    unset($o);
+    $c['top_hover_els'] = $topH;
+  }
 }
 unset($c);
 // Écrans triés par volume de clics décroissant (le + cliqué en tête).
