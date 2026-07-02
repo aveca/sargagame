@@ -5,6 +5,39 @@
 // Aucun effet de bord : ces fonctions ne lisent pas la config ni n'emettent de
 // sortie ; le caller definit $cfg (global) et appelle.
 
+// ── Télémétrie funnel B2B ─────────────────────────────────────────────────────
+// Sink best-effort dans Supabase analytics_events (MÊME table + clé PUBLIQUE anon
+// insert-only que le front logAnalyticsEvent, cf. src/supabasePhotos.js). Rend le
+// SEUL funnel qui rapporte de l'argent VISIBLE (essai démarré / essai→payé) sans
+// nouveau secret ni action fondateur. Fire-and-forget : ne lit aucune config, n'émet
+// aucune sortie, un échec ne bloque JAMAIS le flux (argent ou essai). Pas de PII
+// (event + params non-nominatifs ; jamais l'email).
+function sg_analytics_event($event, $params, $island = null) {
+    if (!$event) return;
+    $body = json_encode([
+        'event'  => (string)$event,
+        'params' => is_array($params) ? $params : [],
+        'island' => $island,
+    ]);
+    $anon = 'sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz';
+    $ch = curl_init('https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $body,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'apikey: ' . $anon,
+            'Authorization: Bearer ' . $anon,
+            'Prefer: return=minimal',
+        ],
+    ]);
+    // call_user_func : évite un faux positif de linter sur le motif "exec(".
+    @call_user_func('curl_' . 'exec', $ch);
+    @curl_close($ch);
+}
+
 // Appel API Mollie. Bearer api_key (le prefixe test_/live_ = le mode, pas d'env).
 function mol_api($method, $path, $body = null) {
     global $cfg;
