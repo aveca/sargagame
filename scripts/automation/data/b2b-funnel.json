@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-02T14:06:55.560Z",
+  "updatedAt": "2026-07-02T19:30:35.025Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 11,
-    "contacted": 96,
+    "discovered": 6,
+    "contacted": 101,
     "lead": 6,
     "paid": 0
   },
@@ -913,49 +913,49 @@
       "nextAction": "attendre / relance programmée"
     },
     "2720dd2d6b07a5e54b43e8590df4445f": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Pisquettes Club de Plongée des Saintes",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T19:27:48.009Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "fed6ffa0ed8036ce09b47b690230caa6": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Café de la Marine",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T19:27:48.312Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "4aae3c9bea2f084ea90ef035be62caae": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Le Relais du Moulin - Hôtel de Charme & Spa",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T19:27:48.909Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "c58a1c3635d80c60b0fd0b83f45672e9": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Résidence Les Eaux Bleues (Gîtes Sainte-Anne)",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T19:27:49.206Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "efc01d3ff7d31ede252d1e154671d1fe": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Les Zitadines",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-02T19:27:49.515Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "78c049e8f1967ea8fd7ce9bcc6168207": {
       "stage": "discovered",
