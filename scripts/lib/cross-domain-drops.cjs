@@ -57,6 +57,7 @@ const GP_ONLY = [
   'sargasses-saint-francois',
   'sargasses-bouillante',
   'sargasses-les-saintes',
+  'sargasses-marie-galante',
   // Communes GP générées (commune-seo-pages.cjs) — interdites sur le domaine MQ.
   ...require('./commune-seo-pages.cjs').communeSlugsByIsland().gp,
 ]
