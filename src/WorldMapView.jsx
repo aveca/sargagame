@@ -287,6 +287,7 @@ export default function WorldMapView({
   // résumé non cliquable, état actuel exact) ; ?weekhubseason=0 masque le seul BLOC 5 planner.
   const weekhubOff = (()=>{try{return /[?&]weekhub=0/.test(window.location.search)}catch(_){return false}})()
   const weekhubSeasonOff = (()=>{try{return /[?&]weekhubseason=0/.test(window.location.search)}catch(_){return false}})()
+  const whctaOff = (()=>{try{return /[?&]whcta=0/.test(window.location.search)}catch(_){return false}})()
   const [showHub, setShowHub] = useState(false)
   const digestBtnRef = useRef(null) // restauration du focus à la fermeture du hub
   // Aperçu vendeur B2B : ?preview_name=<hôtel> → carte « Partenaire (aperçu) » flottante,
@@ -2082,6 +2083,7 @@ export default function WorldMapView({
           <LazyWeekHub
             lang={lang} beachList={beachList} weekDigest={weekDigest} updatedAt={updatedAt}
             reliableHorizon={3} pos={null} seasonOff={weekhubSeasonOff} seasonOutlook={seasonOutlook} island={island} track={track}
+            onPremium={onPremium} isPremium={isPremium} whctaOff={whctaOff}
             onClose={()=>{ setShowHub(false); try{ digestBtnRef.current && digestBtnRef.current.focus() }catch(_){} }}
             onSelectBeach={(b)=>{ setShowHub(false); try{ selectBeach(b) }catch(_){} }}
             onPickDay={(d)=>{ setShowHub(false); try{ setDay(d) }catch(_){} }}

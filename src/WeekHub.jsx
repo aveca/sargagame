@@ -97,6 +97,7 @@ export default function WeekHub({
   lang="fr", onClose, beachList=[], weekDigest=null, updatedAt=null,
   reliableHorizon=3, pos=null, seasonOff=false, seasonOutlook=null, island="mq",
   onSelectBeach, onPickDay, onPlannerOptin, track,
+  onPremium=null, isPremium=false, whctaOff=false,
 }){
   const panelRef = useRef(null)
   const closeRef = useRef(null)
@@ -159,6 +160,13 @@ export default function WeekHub({
 
   const pickBeach = useCallback((b)=>{ if(!b) return; try{ track && track("sg_weekhub_select_beach",{}) }catch(_){}; onSelectBeach && onSelectBeach(b) },[onSelectBeach, track])
   const seeOnMap = useCallback((d)=>{ try{ track && track("sg_weekhub_seemap",{day:d}) }catch(_){}; onPickDay && onPickDay(d) },[onPickDay, track])
+  // Porte conversion UNIQUE du hub (levier CRO n°1, panel 2026-07-01) : WeekHub DÉMONTRE la
+  // prévision que le paywall vend et PROMET l'alerte (« tu seras prévenu le matin où ça
+  // bascule ») sans jamais offrir de bouton pour l'obtenir. Ce hook sobre relie la promesse à
+  // la porte openPremium (feature #6 « Le Veilleur personnel »). Ferme le hub d'abord pour ne
+  // pas empiler deux modales. Sobre, positif (jamais « débloque J+2-7 »), rollback ?whcta=0.
+  const goPremium = useCallback(()=>{ try{ track && track("sg_weekhub_premium_cta",{}) }catch(_){}; onClose && onClose(); if(onPremium) setTimeout(()=>{ try{ onPremium("weekhub_alert") }catch(_){} }, 60) },[onPremium, onClose, track])
+  const showWhCta = !!onPremium && !isPremium && !whctaOff
 
   // ── HERO « le coup sûr » : valeur sûre + meilleur jour, chiffre or BORNÉ aux jours ≤horizon ──
   const hero = useMemo(()=>{
@@ -451,6 +459,25 @@ export default function WeekHub({
               <div style={{font:"800 12.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#0a7d33"}}>✓ {_t(lang,"Aucune plage à éviter cette semaine","No beach to avoid this week","Ninguna playa a evitar esta semana")}</div>
               <div style={{font:"500 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:4}}>{_t(lang,"On garde l'œil ouvert — tu seras prévenu le matin où ça bascule.","We keep watch — you'll be warned the morning it shifts.","Seguimos vigilando — te avisaremos la mañana en que cambie.")}</div>
             </div>
+          )}
+
+          {/* PORTE PREMIUM (sobre) — « Le Veilleur personnel » : convertit la promesse d'alerte
+              déjà présente dans le hub en une action. Positif (statut, pas déblocage négatif),
+              une seule porte (openPremium), caché aux abonnés, rollback ?whcta=0. */}
+          {showWhCta && (
+            <button onClick={goPremium}
+              style={{...card, textAlign:"left", width:"100%", cursor:"pointer", display:"flex", alignItems:"center", gap:11,
+                background:"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)", outline:`2px solid ${GOLD}`, outlineOffset:-6}}>
+              <Watcher size={40}/>
+              <span style={{flex:1, minWidth:0}}>
+                <span style={{display:"block", font:"400 16px/1.05 'Anton','Bricolage Grotesque',sans-serif"}}>{_t(lang,"Ton Veilleur personnel","Your personal Watcher","Tu Vigía personal")}</span>
+                <span style={{display:"block", font:"600 11.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:4}}>{_t(lang,
+                  "Sois prévenu la veille du jour où ta plage bascule — deviens celui qui ne se trompe jamais de crique.",
+                  "Get warned the day before your beach turns — be the one who never picks the wrong cove.",
+                  "Recibe el aviso la víspera del día en que tu playa cambia — sé quien nunca se equivoca de cala.")}</span>
+                <span style={{display:"inline-block", marginTop:8, font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"7px 12px", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Activer mon alerte","Turn on my alert","Activar mi aviso")} →</span>
+              </span>
+            </button>
           )}
 
           {/* SÉPARATEUR HONNÊTETÉ (sobre) */}
