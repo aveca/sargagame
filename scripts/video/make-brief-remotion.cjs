@@ -21,8 +21,14 @@ const ffprobeDur = f => parseFloat(execFileSync('ffprobe',
   ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
 const toMs = ts => { const m = ts.match(/(\d+):(\d+):(\d+)[,.](\d+)/); return ((+m[1] * 3600 + +m[2] * 60 + +m[3]) * 1000 + +m[4]) }
 
-// ── 1. Storyboard (inchangé) ───────────────────────────────────
-const sb = buildStoryboard(REGION)
+// ── 1. Storyboard (garde-fou fraîcheur : skip PROPRE, exit 0, si donnée périmée) ──
+let sb
+try {
+  sb = buildStoryboard(REGION)
+} catch (e) {
+  if (e && e.code === 'STALE_DATA_SKIP_RENDER') { console.log(`BRIEF_SKIPPED_STALE ${e.message}`); process.exit(0) }
+  throw e
+}
 console.log(`[1/4] storyboard ${REGION} : ${sb.scenes.map(s => s.id).join(' → ')}`)
 
 // ── 2. TTS par scène + copie des assets dans public/cache ─────
