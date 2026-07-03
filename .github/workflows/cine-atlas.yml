@@ -1,0 +1,63 @@
+name: Ciné-Atlas — usine à clips (zéro-IA)
+
+# Scale les clips Ciné-Atlas DANS LE CLOUD (minutes GH Actions illimitées, repo public) —
+# déclenchable au doigt depuis GitHub mobile, ZÉRO PC allumé requis. ZÉRO IA, ffmpeg only.
+# Sortie = artefact téléchargeable (mp4 + gif + poster + galerie) — la publication FTP reste
+# une étape séparée délibérée (hors-funnel → pas d'auto-deploy prod ici).
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "Régions (csv) — mq,gp,florida,puntacana,rivieramaya"
+        default: "mq,gp,florida,puntacana,rivieramaya"
+      ratios:
+        description: "Ratios (csv) — 9x16,16x9"
+        default: "9x16,16x9"
+      limit:
+        description: "Cap de clips ce run (0 = tout)"
+        default: "0"
+      no_gif:
+        description: "Sauter les GIF (plus rapide) — true/false"
+        default: "false"
+
+concurrency:
+  group: cine-atlas
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: deps
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Rendre les clips (usine idempotente)
+        run: >-
+          node scripts/design/cine-atlas-batch.mjs
+          --regions "${{ github.event.inputs.regions }}"
+          --ratios "${{ github.event.inputs.ratios }}"
+          --limit "${{ github.event.inputs.limit }}"
+          ${{ github.event.inputs.no_gif == 'true' && '--no-gif' || '' }}
+      - name: Régénérer la galerie
+        run: node scripts/design/gen-cine-atlas.cjs
+      - name: Résumé
+        run: |
+          echo "clips=$(ls public/cine-atlas/*.mp4 2>/dev/null | wc -l)"
+          echo "manifest=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/cine-atlas/manifest.json')).length)")"
+      - name: Artefact (clips + galerie)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cine-atlas
+          path: |
+            public/cine-atlas/**
+            design/cine-atlas/index.html
+          retention-days: 14
+          if-no-files-found: error
