@@ -223,10 +223,37 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
 /* ===================== SPACER (génère la course de scroll) ===================== */
 #spacer{position:relative;z-index:1;height:760vh;pointer-events:none}
 
+/* ===================== CINE-SKILLS (nos « skills » caméra maison — réponse à Higgsfield) ===================== */
+.chrome-r{display:flex;align-items:center;gap:8px}
+.skbtn{-webkit-appearance:none;appearance:none;background:linear-gradient(135deg,var(--goldS),var(--goldL));
+  border:2px solid var(--ink);color:var(--ink);font:800 12px/1 "Bricolage Grotesque";letter-spacing:.02em;
+  border-radius:10px;min-height:44px;padding:0 12px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.5);white-space:nowrap}
+.skbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.5)}
+.sk{position:fixed;left:0;right:0;bottom:0;z-index:36;display:none;
+  padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 14px);
+  background:linear-gradient(180deg,rgba(6,16,22,.72),rgba(6,16,22,.95));
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid rgba(30,200,176,.35)}
+.sk.open{display:block}
+.sk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.sk-title{font:800 13px/1.1 "Bricolage Grotesque";color:#fff;letter-spacing:.01em}
+.sk-note{font:700 10.5px/1.2 'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;color:var(--tealL);margin-top:3px;letter-spacing:.02em}
+.sk-x{-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:15px;border-radius:9px;min-width:44px;min-height:44px;cursor:pointer}
+.sk-row{display:flex;gap:9px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:3px;scrollbar-width:none}
+.sk-row::-webkit-scrollbar{display:none}
+.sk-chip{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  background:var(--paper);border:2px solid var(--ink);border-radius:12px;padding:9px 12px;cursor:pointer;
+  box-shadow:3px 3px 0 rgba(0,0,0,.5);min-height:44px;transition:transform .1s ease,box-shadow .1s ease}
+.sk-chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.5)}
+.sk-chip .sk-name{font:800 13px/1 "Bricolage Grotesque";color:var(--ink);white-space:nowrap}
+.sk-chip .sk-hf{font:700 9.5px/1 'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;color:var(--teal);
+  opacity:.82;white-space:nowrap;letter-spacing:.01em}
+
 /* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
 @media (prefers-reduced-motion:reduce){
   .scrollhint .chev{animation:none!important}
   .lb{transition:none!important}          /* letterbox instantané, pas de balayage */
+  .sk-chip{transition:none!important}
 }
 </style>
 </head>
@@ -321,10 +348,13 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
     <span class="wm">LE VEILLEUR</span>
     <span class="lib" id="libNote">Bibliothèque design · descente</span>
   </div>
-  <div class="langs" role="group" aria-label="Langue">
-    <button data-lang="fr" aria-pressed="true">FR</button>
-    <button data-lang="en" aria-pressed="false">EN</button>
-    <button data-lang="es" aria-pressed="false">ES</button>
+  <div class="chrome-r">
+    <div class="langs" role="group" aria-label="Langue">
+      <button data-lang="fr" aria-pressed="true">FR</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+      <button data-lang="es" aria-pressed="false">ES</button>
+    </div>
+    <button class="skbtn" id="skToggle" type="button" aria-expanded="false" aria-controls="skills">🎬 Skills</button>
   </div>
 </div>
 
@@ -333,6 +363,15 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
 <div class="pctl">
   <button id="pctlBtn" type="button" aria-label="Lecture / pause"></button>
   <span class="hint" id="pctlHint"></span>
+</div>
+
+<!-- ============================ CINE-SKILLS (feuille opt-in) ============================ -->
+<div id="skills" class="sk" role="group" aria-hidden="true" aria-label="Cine-skills">
+  <div class="sk-head">
+    <div class="sk-meta"><div class="sk-title" id="skTitle"></div><div class="sk-note" id="skNote"></div></div>
+    <button class="sk-x" id="skClose" type="button" aria-label="Fermer">✕</button>
+  </div>
+  <div class="sk-row" id="skRow" role="list"></div>
 </div>
 
 <!-- ============================ HUD ============================ -->
@@ -774,6 +813,99 @@ if(!RM){
   },{passive:true});
 }
 window.__setDepth=function(d){cur=target=clamp01(d);render(cur);};
+
+/* ============================================================
+   CINE-SKILLS — nos « skills » caméra maison = LA réponse à Higgsfield.
+   Un skill = un mouvement de caméra PUR (transform sur le monde SVG), piloté par
+   t∈[0,1]. 100 % local, ZÉRO IA, illimité, 0 crédit — là où Higgsfield vend le même
+   vocabulaire (Dolly, Orbit, Crane, Rack Focus, FPV…) en crédits IA payants.
+   window.__applyCam(key,t) = hook DÉTERMINISTE (réutilisé tel quel par le renderer mp4).
+   window.CINE_MOVES = catalogue (lu par le renderer + le générateur de doc).
+   Doctrine calme : un skill se joue UNE fois à la demande puis la caméra se REPOSE
+   (jamais de boucle autonome au repos) ; reduced-motion = pose héro figée, pas d'anim.
+   Le monde SVG = #backdrop>svg (slice couvre → scale≥1 & translations modestes, zéro gap).
+   ============================================================ */
+var CINE_MOVES=[
+ {key:'push_in',   fr:'Fondu avant',      en:'Push-In',      es:'Acercamiento',   hf:'Dolly / Super Dolly In',        dur:2600, depth:null,      kf:[{t:0,sc:1},{t:1,sc:1.16}]},
+ {key:'pull_out',  fr:'Recul',            en:'Pull-Out',     es:'Alejamiento',    hf:'Crash Zoom Out / Dolly Out',    dur:2600, depth:null,      kf:[{t:0,sc:1.16},{t:1,sc:1}]},
+ {key:'crane_up',  fr:'Grue haute',       en:'Crane Up',     es:'Grúa arriba',    hf:'Crane Up / Jib Up',             dur:3000, depth:null,      kf:[{t:0,sc:1.08,ty:4},{t:1,sc:1.02,ty:-4}]},
+ {key:'crane_down',fr:'Grue basse',       en:'Crane Down',   es:'Grúa abajo',     hf:'Crane Down / Jib Down',         dur:3000, depth:null,      kf:[{t:0,sc:1.02,ty:-4},{t:1,sc:1.08,ty:4}]},
+ {key:'arc_left',  fr:'Arc gauche',       en:'Arc Left',     es:'Arco izq.',      hf:'Arc Left / Dolly Left',         dur:3000, depth:null,      kf:[{t:0,sc:1.06,tx:5,rot:-1.2,ox:38},{t:1,sc:1.06,tx:-5,rot:1.2,ox:62}]},
+ {key:'arc_right', fr:'Arc droit',        en:'Arc Right',    es:'Arco der.',      hf:'Arc Right / Dolly Right',       dur:3000, depth:null,      kf:[{t:0,sc:1.06,tx:-5,rot:1.2,ox:62},{t:1,sc:1.06,tx:5,rot:-1.2,ox:38}]},
+ {key:'orbit',     fr:'Orbite douce',     en:'Gentle Orbit', es:'Órbita suave',   hf:'360 Orbit / Lazy Susan',        dur:4200, depth:null,      kf:[{t:0,sc:1.07,tx:5,rot:-1.6},{t:0.5,sc:1.09,tx:0,rot:0},{t:1,sc:1.07,tx:-5,rot:1.6}]},
+ {key:'tilt_up',   fr:'Panoramique haut', en:'Tilt Up',      es:'Inclinación',    hf:'Tilt Up',                       dur:2800, depth:null,      kf:[{t:0,sc:1.06,ty:6,oy:82},{t:1,sc:1.06,ty:-6,oy:18}]},
+ {key:'rack_focus',fr:'Bascule de netteté',en:'Rack Focus',  es:'Cambio de foco', hf:'Focus Change / Rack Focus',     dur:2600, depth:null,      kf:[{t:0,sc:1.04,blur:0},{t:0.5,sc:1.05,blur:2.4},{t:1,sc:1.04,blur:0}]},
+ {key:'fpv_glide', fr:'Vol FPV',          en:'FPV Glide',    es:'Vuelo FPV',      hf:'FPV Drone / Flying',            dur:3400, depth:null,      kf:[{t:0,sc:1.1,tx:7,rot:1.4,ty:-3},{t:0.5,sc:1.06,tx:0,rot:0,ty:2},{t:1,sc:1.1,tx:-7,rot:-1.4,ty:-3}]},
+ {key:'golden_lapse',fr:'Heure dorée',    en:'Golden Lapse', es:'Hora dorada',    hf:'Timelapse Landscape / Hyperlapse',dur:4200,depth:[0.24,0.40],kf:[{t:0,sc:1.03},{t:1,sc:1.11}]},
+ {key:'descent',   fr:'La Descente',      en:'The Descent',  es:'El Descenso',    hf:'Earth Zoom Out / Space Hyperlapse',dur:6000,depth:[0.0,1.0], kf:[{t:0,sc:1.0},{t:0.5,sc:1.05},{t:1,sc:1.0}]}
+];
+function _csEase(t){t=t<0?0:t>1?1:t;return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function _sampleCam(kf,t){
+  t=t<0?0:t>1?1:t; var a=kf[0], b=kf[kf.length-1];
+  for(var i=0;i<kf.length-1;i++){ if(t>=kf[i].t && t<=kf[i+1].t){a=kf[i];b=kf[i+1];break;} }
+  var span=(b.t-a.t)||1, lt=_csEase((t-a.t)/span);
+  function L(k,dv){var av=(a[k]==null?dv:a[k]), bv=(b[k]==null?dv:b[k]);return av+(bv-av)*lt;}
+  return {sc:L('sc',1),tx:L('tx',0),ty:L('ty',0),rot:L('rot',0),ox:L('ox',50),oy:L('oy',50),blur:L('blur',0)};
+}
+var _csSvg=document.querySelector('#backdrop>svg'), _csBy={};
+CINE_MOVES.forEach(function(m){_csBy[m.key]=m;});
+window.CINE_MOVES=CINE_MOVES.map(function(m){return {key:m.key,fr:m.fr,en:m.en,es:m.es,hf:m.hf,dur:m.dur};});
+window.__applyCam=function(key,t){
+  var m=_csBy[key]; if(!m||!_csSvg) return;
+  if(m.depth){ window.__setDepth(m.depth[0]+(m.depth[1]-m.depth[0])*_csEase(t)); }
+  var c=_sampleCam(m.kf,t);
+  _csSvg.style.transformOrigin=c.ox.toFixed(2)+'% '+c.oy.toFixed(2)+'%';
+  _csSvg.style.transform='translate('+c.tx.toFixed(3)+'%,'+c.ty.toFixed(3)+'%) scale('+c.sc.toFixed(4)+') rotate('+c.rot.toFixed(3)+'deg)';
+  _csSvg.style.filter=c.blur>0.02?'blur('+c.blur.toFixed(2)+'px)':'';
+};
+function _csReset(){_csSvg.style.transform='';_csSvg.style.filter='';_csSvg.style.transformOrigin='';}
+var _csPlaying=false;
+window.__playSkill=function(key){
+  var m=_csBy[key]; if(!m||_csPlaying) return;
+  if(RM){ window.__applyCam(key,0.6); return; }   // plancher : pose héro figée, aucune anim
+  _csPlaying=true; var t0=performance.now();
+  (function fwd(now){
+    var t=Math.min(1,(now-t0)/m.dur); window.__applyCam(key,t);
+    if(t<1){ requestAnimationFrame(fwd); }
+    else{ var e0=performance.now(), end=_sampleCam(m.kf,1);   // la caméra se repose (retour à l'identité)
+      (function back(n2){ var bt=Math.min(1,(n2-e0)/500), k=1-bt;
+        _csSvg.style.transform='translate('+(end.tx*k).toFixed(3)+'%,'+(end.ty*k).toFixed(3)+'%) scale('+(1+(end.sc-1)*k).toFixed(4)+') rotate('+(end.rot*k).toFixed(3)+'deg)';
+        _csSvg.style.filter='';
+        if(bt<1){ requestAnimationFrame(back); } else { _csReset(); _csPlaying=false; }
+      })(e0);
+    }
+  })(t0);
+};
+
+/* ---- feuille skills (UI opt-in, i18n, a11y) ---- */
+var SKILLS_I18N={
+ fr:{title:'Skills ciné — Le Veilleur',note:'100 % gratuit · zéro IA · rendu SVG',toggle:'🎬 Skills',close:'Fermer'},
+ en:{title:'Cine-skills — Le Veilleur',note:'100% free · zero-AI · SVG render',toggle:'🎬 Skills',close:'Close'},
+ es:{title:'Skills de cine — Le Veilleur',note:'100% gratis · sin IA · render SVG',toggle:'🎬 Skills',close:'Cerrar'}
+};
+var _skSheet=document.getElementById('skills'), _skRow=document.getElementById('skRow'),
+    _skTitle=document.getElementById('skTitle'), _skNote=document.getElementById('skNote'),
+    _skToggle=document.getElementById('skToggle'), _skClose=document.getElementById('skClose');
+function renderSkills(lang){
+  var d=SKILLS_I18N[lang]||SKILLS_I18N.fr;
+  _skTitle.textContent=d.title; _skNote.textContent=d.note; _skToggle.textContent=d.toggle; _skClose.setAttribute('aria-label',d.close);
+  _skRow.replaceChildren();
+  CINE_MOVES.forEach(function(m){
+    var b=document.createElement('button'); b.className='sk-chip'; b.type='button'; b.setAttribute('role','listitem');
+    var n=document.createElement('span'); n.className='sk-name'; n.textContent=m[lang]||m.fr;
+    var h=document.createElement('span'); h.className='sk-hf'; h.textContent=m.hf;
+    b.appendChild(n); b.appendChild(h);
+    b.addEventListener('click',function(){window.__playSkill(m.key);});
+    _skRow.appendChild(b);
+  });
+}
+function _skOpen(o){ _skSheet.classList.toggle('open',o); _skSheet.setAttribute('aria-hidden',String(!o)); _skToggle.setAttribute('aria-expanded',String(o)); }
+_skToggle.addEventListener('click',function(){_skOpen(!_skSheet.classList.contains('open'));});
+_skClose.addEventListener('click',function(){_skOpen(false);});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_skSheet.classList.contains('open'))_skOpen(false);});
+var _origSetLang=setLang; setLang=function(l){_origSetLang(l);renderSkills(l);};   // i18n : rebuild les chips à chaque langue
+renderSkills(document.documentElement.lang||'fr');
+if(/[?&]skills=1/.test(location.search)) _skOpen(true);
 
 /* ============================================================
    PRÉSENTATION — lecture auto « vidéo » (opt-in, 100 % additive).
