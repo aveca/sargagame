@@ -482,7 +482,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
   )
 }
 
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,communityReports={}}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -556,6 +556,11 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
+        {/* Étage 2 — clip d'ambiance hero-loop SUPERPOSÉ à l'illustration comic (le poster
+            instantané, qui reste si 404). Composant passé depuis Sargasses_PROD (garde son
+            scope module : A/B aw_hero_video + gating persona×récurrence). Poster-first,
+            pointerEvents:none (ne vole pas le tap), verdict = DOM plus bas. Rollback ?heropv=0. */}
+        {HeroVideoComp&&<HeroVideoComp beachId={beach.id}/>}
         <svg className="lc-zip" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           {Array.from({length:20}).map((_,i)=>{const a=(i/20)*Math.PI*2,x1=100+Math.cos(a)*28,y1=100+Math.sin(a)*28,x2=100+Math.cos(a)*180,y2=100+Math.sin(a)*180;return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}/>})}
         </svg>
