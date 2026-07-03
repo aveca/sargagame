@@ -93,7 +93,8 @@ scripts/video/out/
 scripts/video/cache/
 video-remotion/public/cache/
 .realesrgan/
-public/videos/hero/
+public/videos/hero/*
+!public/videos/hero/manifest.json
 .venv-depthflow/
 assets/hero-depthflow/
 
