@@ -426,6 +426,35 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
 .sg-empty__title{font-size:17px;font-weight:800;color:var(--sg-ink,#fff);margin-bottom:6px;line-height:1.2}
 .sg-empty__sub{font-size:15px;line-height:1.45;color:var(--sg-mute,rgba(255,255,255,.62));max-width:34ch;margin:0 auto}
 
+/* ══════════ MENU CLIC-DROIT « LE VEILLEUR » (.sg-ctxv) — desktop souris ══════════
+   Bulle comic ancrée au curseur qui remplace le menu navigateur SUR LA SCÈNE/CARTE.
+   Recette crème/ink canonique (même que .sg-toast, éprouvée). Items = <div role=menuitem>
+   (PAS <button>) → immunisés à l'override .theme-comic .sg-onink-scope button. */
+.sg-ctxv-root{position:fixed;z-index:1600;pointer-events:none}
+.sg-ctxv-panel{pointer-events:auto;min-width:212px;max-width:264px;box-sizing:border-box;
+  background:var(--sg-card,#fdf6e3) !important;color:var(--sg-ink,#0d0d0d) !important;
+  border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:14px !important;
+  box-shadow:4px 4px 0 var(--sg-ink,#0d0d0d) !important;padding:8px;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  transform-origin:top left;animation:sgCtxvIn .15s cubic-bezier(.22,1,.36,1) both}
+.sg-ctxv-head{display:flex;align-items:center;gap:9px;padding:4px 6px 8px}
+.sg-ctxv-veil{flex-shrink:0;line-height:0}
+.sg-ctxv-head-tx{font-size:12.5px;font-weight:800;line-height:1.25;letter-spacing:-.01em;
+  color:var(--sg-ink,#0d0d0d)}
+.sg-ctxv-sep{height:2px;background:var(--sg-ink,#0d0d0d);opacity:.14;border-radius:2px;margin:0 2px 6px}
+.sg-ctxv-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;font-size:14.5px;font-weight:700;color:var(--sg-ink,#0d0d0d);line-height:1.2;
+  outline:none;transition:background .12s ease,transform .06s ease;user-select:none}
+.sg-ctxv-item:hover,.sg-ctxv-item:focus-visible,.sg-ctxv-item:focus{
+  background:linear-gradient(158deg,#FFE47A,#FFC72C);color:#0d0d0d}
+.sg-ctxv-item:focus-visible{box-shadow:inset 0 0 0 2px var(--sg-ink,#0d0d0d)}
+.sg-ctxv-item:active{transform:translate(1px,1px)}
+.sg-ctxv-item--primary{font-weight:800}
+.sg-ctxv-dot{flex-shrink:0;width:8px;height:8px;border-radius:50%;
+  background:#FFC72C;box-shadow:inset 0 0 0 1.5px var(--sg-ink,#0d0d0d)}
+.sg-ctxv-lbl{flex:1;min-width:0}
+@keyframes sgCtxvIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+
 /* Reduced motion — kill infinite animations, keep one-shot transitions */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
