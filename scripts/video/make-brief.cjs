@@ -13,6 +13,27 @@ const OUT = path.join(__dirname, 'out')
 const W = 1080, H = 1920, FPS = 30
 fs.mkdirSync(OUT, { recursive: true })
 
+// ── Police Anton self-hosted, inlinée base64 → ZÉRO dépendance réseau au rendu ──
+// L'usine locale (Couche C) doit rendre même réseau coupé. Charger Anton depuis
+// fonts.googleapis.com faisait tomber les titres en police système (moche, hors
+// marque) EN SILENCE dès que le réseau flanchait au rendu. Les .woff2 sont déjà
+// dans le repo (public/fonts/, mêmes fichiers que l'app). Subsets latin +
+// latin-ext = couvre FR/EN/ES (é ñ ú à ü…). Cf. README local-factory backlog #1.
+const ROOT = path.resolve(__dirname, '../..')
+const FONT_DIR = path.join(ROOT, 'public', 'fonts')
+const ANTON_CSS = (() => {
+  const faces = [
+    { file: 'anton-1Ptgg87LROyAm3Kz-C8.woff2', range: 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD' },
+    { file: 'anton-1Ptgg87LROyAm3K9-C8QSw.woff2', range: 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF' },
+  ]
+  try {
+    return faces.map(f => {
+      const b64 = fs.readFileSync(path.join(FONT_DIR, f.file)).toString('base64')
+      return `@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(data:font/woff2;base64,${b64}) format('woff2');unicode-range:${f.range}}`
+    }).join('')
+  } catch (e) { console.error('WARN police Anton locale introuvable, fallback système:', e.message); return '' }
+})()
+
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, ...opts })
 const ffprobeDur = f => parseFloat(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
 
@@ -46,8 +67,8 @@ const sceneHTML = s => {
   const o = s.overlay || {}, c = s.card || {}
   const lines = (txt) => String(txt || '').split('\n').map(l => `<div>${l}</div>`).join('')
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 <style>
+${ANTON_CSS}
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:${W}px;height:${H}px;overflow:hidden;font-family:'Segoe UI',sans-serif;
   background:${card ? '#0A1714' : 'transparent'}}
