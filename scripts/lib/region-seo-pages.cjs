@@ -29,6 +29,12 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const { getCanonicalSlug } = require('./slug-resolver.cjs')
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+// Video-as-SEO (rail hero-loops prouvé) : ids des plages disposant d'un clip d'ambiance
+// /videos/hero/{id}.mp4 (manifest committé, déployé par région via filterHeroLoops).
+// Best-effort : manifest absent → Set vide → skip propre (aucune balise vidéo émise).
+let _heroIds = new Set()
+try { _heroIds = new Set(JSON.parse(fs.readFileSync(path.resolve(ROOT, 'public/videos/hero/manifest.json'), 'utf-8')).ids || []) } catch (e) { /* pas de clips → pas de balisage vidéo */ }
+
 const STATUS_WORD = {
   en: { clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid' },
   // Accord féminin avec "playa" (Limpia/Moderada) — aligné avec T.es.moderate de l'app.
@@ -104,7 +110,7 @@ function networkFooter(region, t, lang) {
 /** Page shell : repart de l'index buildé, remplace head + noscript + JSON-LD.
  *  alternates (optionnel) : cluster hreflang complet [{lang,href,xDefault}] pour
  *  les régions bilingues (es↔en). Absent → self + x-default (mono-langue, inchangé). */
-function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd, alternates, robots }) {
+function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd, alternates, robots, videoMeta }) {
   const canonical = `https://${domain}${pathname}`
   let html = tpl
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
@@ -138,7 +144,7 @@ function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd,
   // (resorts d'une même plage). On retire d'abord un éventuel robots hérité du
   // template pour ne pas émettre deux balises contradictoires.
   if (robots) html = html.replace(/<meta name="robots"[^>]*>\s*/gi, '')
-  html = html.replace('</head>', `${robots ? `<meta name="robots" content="${robots}" />\n` : ''}${altBlock}\n${ld}\n</head>`)
+  html = html.replace('</head>', `${robots ? `<meta name="robots" content="${robots}" />\n` : ''}${altBlock}\n${ld}\n${videoMeta ? videoMeta + '\n' : ''}</head>`)
   html = html.replace('<div id="root">', `<noscript>${noscript}</noscript>\n<div id="root">`)
   return html
 }
@@ -789,6 +795,25 @@ ${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li
 <h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
 ${beachFaqHtml}
 ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+    // Video-as-SEO : clip d'ambiance /videos/hero/{id}.mp4 (rail hero-loops déjà sur prod),
+    // poster/thumb = photo RÉELLE de la plage (sinon OG région). Balisage VideoObject +
+    // og:video + <video> lazy dans le hero noscript, poster-first. HONNÊTE : uploadDate FIGÉ
+    // (jamais data.updatedAt = fausse fraîcheur), description « ambiance, pas une mesure ».
+    // Le verdict reste 100% ERDDAP, au-dessus, dans le DOM. Skip PROPRE si pas de clip
+    // (loi valider-les-hrefs). Rollback build : VITE_NO_SEOVIDEO=1.
+    const heroClip = (process.env.VITE_NO_SEOVIDEO !== '1' && _heroIds.has(b.id))
+      ? { mp4: `https://${domain}/videos/hero/${b.id}.mp4`, poster: `https://${domain}${photos[b.id] ? `/beaches/${photos[b.id]}` : '/og-image.png'}` }
+      : null
+    const heroClipEl = heroClip ? `<video class="sg-heroclip" preload="none" muted loop playsinline poster="${heroClip.poster}" style="width:100%;display:block"><source src="${heroClip.mp4}" type="video/mp4"></video>` : ''
+    const videoMeta = heroClip ? `<meta property="og:video" content="${heroClip.mp4}" />\n<meta property="og:video:secure_url" content="${heroClip.mp4}" />\n<meta property="og:video:type" content="video/mp4" />\n<meta property="og:video:width" content="1080" />\n<meta property="og:video:height" content="1080" />` : ''
+    const videoObjectLd = heroClip ? {
+      '@context': 'https://schema.org', '@type': 'VideoObject',
+      name: lang === 'es' ? `${b.name} — ambiente al atardecer` : `${b.name} — golden-hour ambiance`,
+      description: lang === 'es'
+        ? 'Una escena de ambiente al atardecer, una ilustración — no es una imagen satelital ni una medición en tiempo real. El estado real, medido por satélite (ERDDAP), se muestra en la página.'
+        : 'A golden-hour ambiance scene, an illustration — not a satellite image or a real-time measurement. The real, satellite-measured status (ERDDAP) is shown on the page.',
+      thumbnailUrl: heroClip.poster, contentUrl: heroClip.mp4, uploadDate: '2026-07-03', duration: 'PT8S',
+    } : null
     // HERO golden-hour (additif) : préfixe l'article par scène SVG inline + bande
     // verdict. b a coords/island/status/afai (REGION.beaches) + b.lv live. Robuste.
     let noscript = articleHtml
@@ -805,11 +830,11 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
           + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
           + liveTxt
           + `</div>`
-        noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${verdict}</div>${articleHtml}</div>`
+        noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${heroClipEl}${verdict}</div>${articleHtml}</div>`
       } catch (e) { noscript = articleHtml }
     }
     writePage(distDir, pathname, pageShell(tpl, {
-      title, desc, pathname, domain, lang, noscript,
+      title, desc, pathname, domain, lang, noscript, videoMeta,
       alternates: altsForBeach(b),
       jsonLd: [
         breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: pathname }]),
@@ -819,6 +844,7 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
         ...(region.seo && region.seo.dateModifiedFromPipeline && data.updatedAt
           ? [{ '@context': 'https://schema.org', '@type': 'WebPage', url: `https://${domain}${pathname}`, dateModified: data.updatedAt }] : []),
         ...(beachFaqLd ? [beachFaqLd] : []),
+        ...(videoObjectLd ? [videoObjectLd] : []),
       ],
     }))
     pushUrl(pathname, { daily: true, priority: '0.7' })
