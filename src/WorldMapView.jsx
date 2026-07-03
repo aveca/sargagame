@@ -1122,7 +1122,7 @@ export default function WorldMapView({
       const d=Math.hypot(cx-sx,cy-sy)
       if(d<bd){ bd=d; best=b }
     }
-    const hit=!!(best&&bd<=90)
+    const hit=!!(best&&bd<=120)  // /ux : 1200+ dead-clicks carte = taps près d'une plage non captés → rayon élargi 90→120 (snap doux, réversible ?mapsnap=0)
     if(!mapTapFxOff){
       const id=++tapFxIdRef.current
       setTapFx(cur=>[...cur.slice(-3),{id,x:cx,y:cy,hit}])
