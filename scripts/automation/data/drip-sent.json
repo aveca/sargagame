@@ -1507,7 +1507,8 @@
     "daily_count": 7,
     "j3": "2026-06-29T15:50:09.261Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-06-30"
+    "install_nudge_last": "2026-06-30",
+    "j7": "2026-07-03T19:25:18.546Z"
   },
   "8d2063e87c2ac7f9edca6b24deca5de8": {
     "j3": "2026-06-29T20:00:48.834Z"
@@ -1605,7 +1606,9 @@
   "1799efe3caf4b263aed3e15fce240e1a": {
     "j3": "2026-07-03T14:04:14.402Z"
   },
-  "ed1545afa97da4b3692aff90cfb6ab1e": {},
+  "ed1545afa97da4b3692aff90cfb6ab1e": {
+    "j3": "2026-07-03T19:25:21.807Z"
+  },
   "0f058407d8455a020d7e519da0fdc046": {},
   "8e062157b68e94bdb8bded9ab699ac40": {},
   "706faf7ea345cac8a5e23ee8f715dd6b": {
@@ -1641,5 +1644,12 @@
   "a32dcb089a24d6551bf57e7d5b7eaa80": {},
   "e8d79bb034ecf727d53b43f12ec90b57": {},
   "bb504d7d4a22982eb3732cf9805235ee": {},
-  "d5753869528bfc8a9c65062136f07a76": {}
+  "d5753869528bfc8a9c65062136f07a76": {},
+  "72cd93530bdc905c33003ace3b0b5517": {},
+  "f0f46c3b30b23ee473a3160b46d6faa5": {
+    "daily_last": "2026-07-03",
+    "daily_sig": "Key West (Smathers)|clean|83|clean|0|",
+    "daily_count": 1
+  },
+  "e6d295305837e877b083d96219e19239": {}
 }
