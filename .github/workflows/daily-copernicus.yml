@@ -291,6 +291,8 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_CART_RECOVERY: '1'  # relance des paniers Mollie abandonnés (caisse live) — USD-only pour l'instant (copy FR MQ/GP = TODO)
         run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=4
 
       # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
