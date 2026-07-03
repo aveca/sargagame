@@ -13818,7 +13818,7 @@ export default function App(){
                 onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
                 onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
                 onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
-                communityReports={communityReports} ReportComp={BeachReport}/>
+                communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
             </Suspense>
           </ErrBound>
         )}
