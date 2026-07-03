@@ -1075,6 +1075,7 @@ export default defineConfig({
   <url><loc>${d}/fiabilite/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/pro/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/pro/hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/sargasses-pour-hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>${d}/pro/widget-sargasses-hotel/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/pro/collectivites/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/pro/cout-sargasses-hotel/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
@@ -1171,6 +1172,39 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // plages…) gardent today car leur contenu est réellement régénéré.
             return xml.replace(/<lastmod>[\d-]+<\/lastmod>(<changefreq>(?:monthly|yearly)<\/changefreq>)/g, `<lastmod>${STABLE_EDITORIAL}</lastmod>$1`)
           }
+          // ── Landing B2B « intention d'achat » FR : /sargasses-pour-hotels/ ──
+          // Page STANDALONE (pas un noscript app-shell) qui convertit ET reste
+          // crawlable — pendant FR du buildHotelLanding USD (#488). Une page par
+          // domaine : MQ écrit dans dist/, GP dans dist/_gp/ (overlay prepare-ftp).
+          // Couverture LIVE par plage (sargassum.json), fiabilité RÉELLE (backtest,
+          // hedgée), CTA → /?pro=1&b=…&utm_* (event sg_b2b_visit). Best-effort :
+          // reads défensifs → n'échoue jamais (le fichier DOIT exister, garde sitemap).
+          try {
+            const { buildHotelLandingFr } = _require('./scripts/lib/hotel-landing-fr.cjs')
+            let _lvById = {}, _updatedRel = ''
+            try {
+              const _sj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+              _lvById = Object.fromEntries((_sj.levels || []).map(l => [l.id, l]))
+              if (_sj.updatedAt) { const h = (Date.now() - new Date(_sj.updatedAt).getTime()) / 3.6e6; _updatedRel = h < 1 ? 'il y a moins d’une heure' : `il y a ${Math.max(1, Math.round(h))} h` }
+            } catch (_e) {}
+            let _rel = null
+            try {
+              const _bt = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8'))
+              const _calm = _bt.regimeReliability && _bt.regimeReliability.regimes && _bt.regimeReliability.regimes.calm
+              const _win = (_bt.regimeReliability && _bt.regimeReliability.window || '').split('→').map(s => s.trim())
+              _rel = { overallPct: (_bt.overall && _bt.overall.statusHitRate) || 77, calmSamples: _calm ? _calm.cleanSamples : null, from: _win[0] || null, to: _win[1] || null }
+            } catch (_e) {}
+            const _coverageFor = (isl) => ALL_BEACHES
+              .filter(b => (b.island === 'gp' ? 'gp' : 'mq') === isl)
+              .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || b.status || 'clean', score: typeof lv.score === 'number' ? lv.score : null } })
+              .sort((a, b) => (b.score || 0) - (a.score || 0))
+            const _mqLanding = buildHotelLandingFr({ islandId: 'mq', islandName: 'Martinique', domain: 'sargasses-martinique.com', coverage: _coverageFor('mq'), reliability: _rel, updatedRel: _updatedRel })
+            const _gpLanding = buildHotelLandingFr({ islandId: 'gp', islandName: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', coverage: _coverageFor('gp'), reliability: _rel, updatedRel: _updatedRel })
+            const _mqDir = resolve(outDir, 'sargasses-pour-hotels'); mkdirSync(_mqDir, { recursive: true }); writeFileSync(resolve(_mqDir, 'index.html'), _mqLanding)
+            const _gpDir = resolve(outDir, '_gp', 'sargasses-pour-hotels'); mkdirSync(_gpDir, { recursive: true }); writeFileSync(resolve(_gpDir, 'index.html'), _gpLanding)
+            console.log('   → Landing B2B FR /sargasses-pour-hotels/ (MQ + GP mirror) générée')
+          } catch (e) { console.warn('   ⚠ landing B2B FR:', e.message) }
+
           const sitemapMQ = buildSitemap('sargasses-martinique.com', false)
           const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
