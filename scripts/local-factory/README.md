@@ -90,8 +90,11 @@ Recommandé : prouver 2-3 posts en manuel (`node scripts/automation/fb-post-vide
   local à sauvegarder** (avec `beaches-images*`). Reste = `git clone` + ffmpeg/node.
 - **Planificateur Windows** = surface la moins observable (une MAJ Windows peut
   dé-enregistrer les tâches en silence). Parades : `install-tasks.ps1` committé
-  (schedule reproductible depuis git) + **prochaine étape** : heartbeat cloud
-  (un step dans daily-copernicus qui email si `LAST_RUN.md` > 48 h).
+  (schedule reproductible depuis git) + **heartbeat cloud SHIPPÉ** (2026-07-02) :
+  `factory.cjs` poste un `factory_heartbeat` dans `analytics_events` (Supabase, clé
+  anon publique) à chaque run réussi ; `scripts/automation/factory-heartbeat-watch.cjs`
+  (step `daily-copernicus.yml`, schedule-only) alerte le fondateur si aucun signal
+  depuis > 48 h (`HEARTBEAT_MAX_H`).
 - **Immortalité réelle** = Couche A (cloud) pour le revenu + minimalisme ici :
   `factory.cjs` ne dépend que de `fs` + `child_process` + `git` + `ffmpeg`.
 
