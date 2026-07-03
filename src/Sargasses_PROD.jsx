@@ -4337,6 +4337,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               l'heure ET l'ÉTAT (nickel / en collecte / pleine, animé). La vraie
               photo est reléguée « en cool » plus bas. */}
           <BeachScene beach={beach} reveal/>
+          {/* Étage 2 : clip hero-loop d'ambiance superposé (A/B aw_hero_video, poster-first = la scène ci-dessus, ?heropv=0) */}
+          <BeachHeroVideo beachId={beach.id}/>
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
@@ -8487,6 +8489,44 @@ function SatelliteFilm({lang}){
         <span style={{fontSize:9.5,color:"rgba(255,255,255,.42)",whiteSpace:"nowrap"}}>NASA/JPL-Caltech</span>
       </div>
     </figure>
+  )
+}
+
+/* ── BeachHeroVideo — étage 2 (fiche plage) : clip d'ambiance hero-loop par plage,
+   SUPERPOSÉ à la scène SVG (le poster instantané). Clone du primitive SatelliteFilm :
+   poster-first (la BeachScene sous-jacente peint tout de suite), <video> chargée
+   SEULEMENT à l'intersection + gardes reduced-motion/saveData/2G ; 404 → onError →
+   la scène SVG reste (fallback automatique, zéro trou). A/B `aw_hero_video` (control =
+   scène seule) ; rollback ?heropv=0, force ?heropv=1. pointerEvents:none = ne vole pas
+   le tap "scanner". Média = /videos/hero/{id}.mp4 (rail hero prouvé). Verdict = DOM, jamais la vidéo. */
+function BeachHeroVideo({ beachId }) {
+  const boxRef = useRef(null), vRef = useRef(null), seenRef = useRef(false)
+  const [src, setSrc] = useState(null), [on, setOn] = useState(false)
+  const allowed = (() => { try { const q = window.location.search; if (/[?&]heropv=0/.test(q)) return false; if (/[?&]heropv=1/.test(q)) return true; return abVariant("aw_hero_video", ["control", "video"], [.5, .5]) === "video" } catch (_) { return false } })()
+  useEffect(() => {
+    if (!allowed) return
+    const el = boxRef.current; if (!el) return
+    let allow = true
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) allow = false
+      const c = navigator.connection
+      if (c && (c.saveData || /(^|-)2g/.test(c.effectiveType || ""))) allow = false
+    } catch (_) { }
+    if (!allow) return
+    const io = new IntersectionObserver(es => { for (const e of es) { const v = vRef.current
+      if (e.isIntersecting) { setSrc(s => s || `/videos/hero/${beachId}.mp4`); if (v && v.paused) v.play().catch(() => { }) }
+      else if (v && !v.paused) v.pause() } }, { rootMargin: "200px 0px" })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [allowed, beachId])
+  if (!allowed) return null
+  return (
+    <div ref={boxRef} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+      {src && <video ref={vRef} src={src} autoPlay muted loop playsInline preload="none"
+        onPlaying={() => { setOn(true); if (!seenRef.current) { seenRef.current = true; try { track("sg_hero_video_view", { beach_id: beachId }) } catch (_) { } } }}
+        onError={() => { setSrc(null); setOn(false) }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: on ? 1 : 0, transition: "opacity .8s ease" }} />}
+    </div>
   )
 }
 
