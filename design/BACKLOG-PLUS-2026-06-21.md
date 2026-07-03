@@ -20,8 +20,8 @@ capture exit-intent (exitcap) · pivot calme modal (pw_calm) · Pass Saison (pw_
 |---|---|---|---|---|
 | P2 | **Rate-limiting endpoints Stripe** (anti card-testing → gel compte = 100% MRR) | moi | S | ✅ **FAIT** (fca1018e) + durci : XFF bypass retiré (8dee99bf), fenêtre fixe→glissante anti-burst (cc4600a6). Vérif PHP empirique (20/21, 30 concur→20/10). NON retenu (tradeoff) : whitelist IP CF en PHP (liste périmée=faux 429 de masse → infra/AOP). |
 | P3 | **Intégrité pipeline** : échec ERDDAP mono-région → status 'unknown' (pas 'clean') + gate publish | moi/bug-hunter | S/M | ✅ **FAIT** : verify-ftp-ready gate (allowlist source + pic tout-vert, 24e20a85) CÂBLÉ en CI + exit-1 PAR région (42f7751e, &&→||, plus de demi-carte verte). CI durci : push déploie le code même si donnée dégradée (55e842e1). 'unknown' au front NON publié (verdictMeta sans cas unknown → rendu cassé ; exit-1 atteint le but sans risque front). |
-| P4 | Cohorte cid (visite-rang→conversion) dans stats.php | script-autonome | S | ⏳ |
-| P5 | Attribution canal (ref) dans stats.php | script-autonome | S | ⏳ |
+| P4 | Cohorte cid (visite-rang→conversion) dans stats.php | script-autonome | S | ✅ **FAIT** : `cohort_visit_rank` (buckets 1/2/3+ par cid trié ts, taux conv+cta, note fenêtre) dans `public/stats.php`. Additif, zéro PII. |
+| P5 | Attribution canal (ref) dans stats.php | script-autonome | S | ✅ **FAIT** : `_sgChannel(ref)` → `channels` (search/social/internal/referral/direct, conv/cta/email rate) dans `public/stats.php`. Additif, host-only. |
 | P6 | Vraie géoloc « Près de moi » (placebo aujourd'hui) | moi | M | ⏳ |
 | P7 | Recherche plage par nom dans la carte-monde | refonte-builder | M | ⏳ |
 | P8 | Cluster communes GP (SEO, pendant des communes MQ) | content-engine | M | ⏳ |
