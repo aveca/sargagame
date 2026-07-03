@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-02T19:30:35.025Z",
+  "updatedAt": "2026-07-03T03:07:16.725Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
     "clickSignal": "à brancher (token &b + stats)"
   },
   "counts": {
-    "discovered": 6,
-    "contacted": 101,
+    "discovered": 3,
+    "contacted": 104,
     "lead": 6,
     "paid": 0
   },
@@ -958,31 +958,31 @@
       "nextAction": "attendre / relance programmée"
     },
     "78c049e8f1967ea8fd7ce9bcc6168207": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Gîtes Mosaïques",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-03T03:04:30.213Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "3de1f1d453a40c5f984d30b4f1cf0c43": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Pipirite Chantant",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-03T03:04:30.467Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "22677d4e42a07b6c48a2f6aba53e12a9": {
-      "stage": "discovered",
+      "stage": "contacted",
       "name": "Habitation Saint Charles - Hôtel & Spa 4*",
       "island": "GP",
-      "contactedAt": null,
+      "contactedAt": "2026-07-03T03:04:31.093Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "à contacter (prospection auto)"
+      "nextAction": "attendre / relance programmée"
     },
     "08b09ba455391935952e04495d2b9916": {
       "stage": "lead",
