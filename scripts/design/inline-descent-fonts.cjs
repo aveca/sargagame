@@ -25,6 +25,7 @@ const MAP = {
   'anton|ext'      : 'anton-1Ptgg87LROyAm3K9-C8QSw.woff2',
   'bricolage|latin': 'bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2',
   'bricolage|ext'  : 'bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGGInHEVA.woff2',
+  'jetbrains|latin': 'jetbrainsmono-latin-500.woff2',
 };
 
 function dataUri(file) {
@@ -33,30 +34,35 @@ function dataUri(file) {
 }
 
 let html = fs.readFileSync(HTML, 'utf8');
-const block = html.match(/<style id="offline-fonts">([\s\S]*?)<\/style>/);
-if (!block) { console.error('ERREUR : bloc <style id="offline-fonts"> introuvable.'); process.exit(1); }
-
 let faces = 0, bytes = 0;
-const rewritten = block[1].replace(/@font-face\{[\s\S]*?\}/g, (rule) => {
-  const fam = /Bricolage/.test(rule) ? 'bricolage' : /Anton/.test(rule) ? 'anton' : null;
-  const sub = /U\+0100-02BA/.test(rule) ? 'ext' : /U\+0000-00FF/.test(rule) ? 'latin' : null;
-  if (!fam || !sub) return rule;
-  const file = MAP[fam + '|' + sub];
-  if (!file) return rule;
-  const uri = dataUri(file);
-  bytes += fs.statSync(path.join(FONTS, file)).size;
-  faces++;
-  // ne remplace QUE l'url() (base64 sans parenthèses), garde ` format('woff2')`
-  return rule.replace(/src:url\([^)]*\)/, 'src:url(' + uri + ')');
-});
+
+function rewriteBlock(id) {
+  const re = new RegExp('<style id="' + id + '">([\\s\\S]*?)<\\/style>');
+  const block = html.match(re);
+  if (!block) { console.error(`ERREUR : bloc <style id="${id}"> introuvable.`); process.exit(1); }
+  const rewritten = block[1].replace(/@font-face\{[\s\S]*?\}/g, (rule) => {
+    const fam = /JetBrains/.test(rule) ? 'jetbrains' : /Bricolage/.test(rule) ? 'bricolage' : /Anton/.test(rule) ? 'anton' : null;
+    const sub = /U\+0100-02BA/.test(rule) ? 'ext' : /U\+0000-00FF/.test(rule) ? 'latin' : null;
+    if (!fam || !sub) return rule;
+    const file = MAP[fam + '|' + sub];
+    if (!file) return rule;
+    const uri = dataUri(file);
+    bytes += fs.statSync(path.join(FONTS, file)).size;
+    faces++;
+    // ne remplace QUE l'url() (base64 sans parenthèses), garde ` format('woff2')`
+    return rule.replace(/src:url\([^)]*\)/, 'src:url(' + uri + ')');
+  });
+  html = html.replace(re, '<style id="' + id + '">' + rewritten + '</style>');
+}
+
+rewriteBlock('offline-fonts');
+rewriteBlock('offline-fonts-mono');
 
 if (faces !== Object.keys(MAP).length) {
   console.error(`ERREUR : ${faces}/${Object.keys(MAP).length} @font-face reconnues — abandon.`);
   process.exit(1);
 }
 
-html = html.replace(/<style id="offline-fonts">[\s\S]*?<\/style>/,
-  '<style id="offline-fonts">' + rewritten + '</style>');
 fs.writeFileSync(HTML, html);
 
 const kb = (n) => (n / 1024).toFixed(1) + ' Ko';

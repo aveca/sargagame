@@ -51,19 +51,18 @@ const browser = await chromium.launch({
   // whose keyframes move transform translate/rotate/scale (the "aquarium" test).
   const aquarium = await page.evaluate(() => {
     window.__setDepth && window.__setDepth(0.5); // rest mid-descent
+    // Scene ACTORS only (#pMain). The satellite's in-place micro-breath (#satAnim) and the
+    // intro scroll-chevron are the doctrine-allowed "ambient doux" — not aquarium actors.
+    const pm = document.getElementById('pMain');
     const bad = [];
     for (const a of document.getAnimations()) {
       try {
         const eff = a.effect; if (!eff) continue;
-        const t = eff.getTiming();
-        const infinite = t.iterations === Infinity || t.iterations === null && false;
-        if (t.iterations !== Infinity) continue;
+        const el = eff.target; if (!el || !pm || !pm.contains(el)) continue;
+        if (eff.getTiming().iterations !== Infinity) continue;
         const kfs = eff.getKeyframes ? eff.getKeyframes() : [];
         const movesTransform = kfs.some(k => typeof k.transform === 'string' && /translate|rotate|scale/.test(k.transform) && k.transform !== 'none');
-        if (movesTransform) {
-          const el = eff.target;
-          bad.push((el && (el.getAttribute('class') || el.tagName)) + ' :: ' + (a.animationName || (kfs[0] && '')) );
-        }
+        if (movesTransform) bad.push((el.getAttribute('class') || el.tagName) + ' :: ' + (a.animationName || ''));
       } catch (e) {}
     }
     return bad;
