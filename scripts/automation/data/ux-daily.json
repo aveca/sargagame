@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-03T14:16:57.400Z",
+  "generated": "2026-07-03T19:39:55.231Z",
   "date": "2026-07-03",
   "days": 1,
   "regions": [
@@ -10,6 +10,46 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "965d3c96",
+      "subject": "feat(video): clip d'ambiance hero-loop sur ChasseDetail (vue plage PAR DÉFAUT carte) (#527)"
+    },
+    {
+      "h": "6a394e1c",
+      "subject": "feat(ux/étage2): gating persona×récurrence sur BeachHeroVideo (intensité montante) (#524)"
+    },
+    {
+      "h": "0827c7b8",
+      "subject": "feat(ux/étage2): BeachHeroVideo — clip hero-loop poster-first sur la fiche plage (A/B) (#523)"
+    },
+    {
+      "h": "cf6c6d91",
+      "subject": "fix(seo): committer public/videos/hero/manifest.json (débloque video-as-SEO au build push) (#522)"
+    },
+    {
+      "h": "a71be2b2",
+      "subject": "feat(seo): video-as-SEO par plage — VideoObject + og:video + <video> (hero-loop existant) (#521)"
+    },
+    {
+      "h": "a0059c4e",
+      "subject": "fix(ux/map): élargir le rayon de snap tap-carte 90→120 (réduit les dead-clicks /ux) (#520)"
+    },
+    {
+      "h": "6a671e21",
+      "subject": "chore: weekly friday optimization 2026-07-03"
+    },
+    {
+      "h": "4831ac0b",
+      "subject": "feat(brief): port « Le Brief du matin » premium payload behind ?brief=1 (#519)"
+    },
+    {
+      "h": "9bc8c0b1",
+      "subject": "chore: update Copernicus data 2026-07-03 14:17 UTC"
+    },
+    {
+      "h": "c5bd6789",
+      "subject": "chore: email state 2026-07-03 14:16 UTC"
+    },
     {
       "h": "a8d08407",
       "subject": "seo(content): publish algues-guadeloupe (banque: 0 queued)"
@@ -69,102 +109,73 @@
     {
       "h": "b3c92469",
       "subject": "Merge pull request #482 from aveca/feat/map-intro-video"
-    },
-    {
-      "h": "d48ea72e",
-      "subject": "Merge pull request #468 from aveca/feat/veilleur-comics-group-mvps"
-    },
-    {
-      "h": "a8a06472",
-      "subject": "Merge pull request #464 from aveca/feat/veilleur-video-landing"
-    },
-    {
-      "h": "764a9424",
-      "subject": "feat(b2b): make the money funnel VISIBLE — trial_started + trial_to_paid in Supabase"
-    },
-    {
-      "h": "760e7eaa",
-      "subject": "chore: email state 2026-07-02 19:38 UTC"
-    },
-    {
-      "h": "ec04a9e5",
-      "subject": "Merge pull request #484 from aveca/claude/gallant-maxwell-4b42b6"
-    },
-    {
-      "h": "f5d8822b",
-      "subject": "feat(attract): vitrine idle « La Vitrine qui s'ouvre » — reel réutilisé, 1er geste → funnel"
-    },
-    {
-      "h": "d26d1a40",
-      "subject": "feat(analytics): capture ARGENT — intention d'achat par écran + variante A/B (bots/démo exclus)"
-    },
-    {
-      "h": "a50003ee",
-      "subject": "feat(map): comic/GTA intro video on the map loading cover (flagged, guarded)"
-    },
-    {
-      "h": "a1faff8c",
-      "subject": "Merge pull request #480 from aveca/claude/loving-lamarr-75f282"
-    },
-    {
-      "h": "fe542209",
-      "subject": "feat(analytics): capture clic droit (confusion) + survol-hésitation, nommés à l'élément"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 192,
-      "friction": 2,
-      "dead_rate": 0.202,
+      "sessions": 288,
+      "friction": 6,
+      "dead_rate": 0.223,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.208,
-        "n": 394
+        "rate": 0.231,
+        "n": 644
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 48
+          "count": 78
+        },
+        {
+          "el": "div",
+          "count": 26
+        },
+        {
+          "el": "rect",
+          "count": 12
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.28
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
+      "session_to_conversion": 0.35,
       "session_to_email": 0,
       "prev_date": "2026-07-02",
       "changes": [
-        "sessions 317→192 (-39%)",
-        "dead-rate 0.292→0.202 (-0.1) ✅",
-        "rage-clicks 13→2 ✅",
-        "✔︎ dead-click résolu : div",
+        "dead-rate 0.292→0.223 (-0.1) ✅",
+        "rage-clicks 13→6 ✅",
+        "🆕 dead-click : rect (12)",
         "✔︎ dead-click résolu : svg[role=img]"
       ]
     },
     {
       "region": "gp",
-      "sessions": 168,
+      "sessions": 285,
       "friction": 0,
-      "dead_rate": 0.105,
+      "dead_rate": 0.142,
       "dead_worst": {
         "screen": "beach",
-        "rate": 0.273,
-        "n": 22
+        "rate": 0.195,
+        "n": 41
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 18
+          "count": 44
+        },
+        {
+          "el": "div",
+          "count": 12
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.25
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -173,32 +184,33 @@
       "session_to_email": 0,
       "prev_date": "2026-07-02",
       "changes": [
-        "sessions 289→168 (-42%)",
-        "dead-rate 0.158→0.105 (-0.1) ✅",
         "✔︎ dead-click résolu : svg[role=img]",
-        "✔︎ dead-click résolu : div",
         "✔︎ dead-click résolu : rect"
       ]
     },
     {
       "region": "florida",
-      "sessions": 85,
+      "sessions": 163,
       "friction": 0,
-      "dead_rate": 0.247,
+      "dead_rate": 0.25,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.242,
-        "n": 157
+        "rate": 0.248,
+        "n": 303
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 25
+          "count": 40
+        },
+        {
+          "el": "div",
+          "count": 11
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.27
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -207,23 +219,25 @@
       "session_to_email": 0,
       "prev_date": "2026-07-02",
       "changes": [
-        "dead-rate 0.321→0.247 (-0.1) ✅"
+        "sessions 79→163 (+106%)",
+        "dead-rate 0.321→0.25 (-0.1) ✅",
+        "🆕 dead-click : div (11)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 13,
+      "sessions": 28,
       "friction": 0,
-      "dead_rate": 0.167,
+      "dead_rate": 0.128,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.143,
-        "n": 21
+        "rate": 0.114,
+        "n": 35
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.27
+        "rate": 0.24
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -232,18 +246,31 @@
       "session_to_email": 0,
       "prev_date": "2026-07-02",
       "changes": [
-        "dead-rate 0.556→0.167 (-0.4) ✅",
+        "sessions 13→28 (+115%)",
+        "dead-rate 0.556→0.128 (-0.4) ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 9,
-      "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
-      "top_dead_els": [],
-      "bored_worst": null,
+      "sessions": 23,
+      "friction": 2,
+      "dead_rate": 0.556,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.69,
+        "n": 29
+      },
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 11
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.3
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -251,8 +278,9 @@
       "session_to_email": 0,
       "prev_date": "2026-07-02",
       "changes": [
-        "sessions 17→9 (-47%)",
-        "dead-rate 0.5→0 (-0.5) ✅"
+        "sessions 17→23 (+35%)",
+        "dead-rate 0.5→0.556 (+0.1) ⚠️",
+        "🆕 dead-click : div.sg-onink-scope (11)"
       ]
     }
   ]
