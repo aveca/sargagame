@@ -248,6 +248,16 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
 .sk-chip .sk-name{font:800 13px/1 "Bricolage Grotesque";color:var(--ink);white-space:nowrap}
 .sk-chip .sk-hf{font:700 9.5px/1 'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;color:var(--teal);
   opacity:.82;white-space:nowrap;letter-spacing:.01em}
+.sk-chip.sel{outline:3px solid var(--goldL);outline-offset:1px}
+.sk-foot{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
+.sk-gen{-webkit-appearance:none;appearance:none;flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));border:2.5px solid var(--ink);
+  color:var(--ink);font:800 14px/1 "Bricolage Grotesque";border-radius:13px;padding:12px 18px;min-height:44px;
+  cursor:pointer;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+.sk-gen:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.sk-gen[disabled]{opacity:.6;cursor:progress}
+.sk-genhint{font:700 10.5px/1.3 'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;color:var(--tealL);
+  opacity:.9;letter-spacing:.01em}
 
 /* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
 @media (prefers-reduced-motion:reduce){
@@ -372,6 +382,10 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
     <button class="sk-x" id="skClose" type="button" aria-label="Fermer">✕</button>
   </div>
   <div class="sk-row" id="skRow" role="list"></div>
+  <div class="sk-foot">
+    <button class="sk-gen" id="skGen" type="button"></button>
+    <span class="sk-genhint" id="skGenHint"></span>
+  </div>
 </div>
 
 <!-- ============================ HUD ============================ -->
@@ -859,6 +873,73 @@ window.__applyCam=function(key,t){
   _csSvg.style.filter=c.blur>0.02?'blur('+c.blur.toFixed(2)+'px)':'';
 };
 function _csReset(){_csSvg.style.transform='';_csSvg.style.filter='';_csSvg.style.transformOrigin='';}
+
+/* ============================================================
+   STUDIO « Skill → Clip » — génération vidéo GRATUITE 100 % navigateur (0 serveur, 0 IA, 0 crédit).
+   canvas.captureStream(0) + MediaRecorder + track.requestFrame() : on pilote la scène frame-par-frame
+   (déterministe, async-safe), on BAKE le mouvement de caméra du skill dans le contexte 2D, et on grave
+   un filigrane HONNÊTE — JAMAIS de chiffre/score/date/mot temporel : la scène est de l'AMBIANCE, pas
+   une mesure (garde-fou moat verrouillé par le jury). Hook déterministe réutilisable window.generateClip.
+   ============================================================ */
+var _csSelected='descent';
+window.__camAt=function(key,t){var m=_csBy[key];if(!m)return null;return _sampleCam(m.kf,t);};
+window.__STUDIO_WM={   // filigrane : aucun chiffre, aucun horodatage, aucun « live/aujourd'hui » — pur cadrage honnête
+  fr:'ILLUSTRATION — le verdict réel vit sur la page',
+  en:'ILLUSTRATION — the real verdict is on the page',
+  es:'ILUSTRACIÓN — el veredicto real vive en la página'
+};
+window.__genBusy=false;
+window.generateClip=async function(key,opts){
+  opts=opts||{}; key=key||_csSelected||'descent'; var m=_csBy[key]; if(!m||window.__genBusy) return null;
+  window.__genBusy=true;
+  var lang=document.documentElement.lang||'fr';
+  var ratio=opts.ratio||'9x16', W=ratio==='16x9'?960:540, H=ratio==='16x9'?540:960;
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var c=cv.getContext('2d');
+  var mime='video/webm;codecs=vp9'; if(!(window.MediaRecorder&&MediaRecorder.isTypeSupported(mime)))mime='video/webm';
+  if(!window.MediaRecorder||!cv.captureStream){window.__genBusy=false;return null;}
+  var stream=cv.captureStream(0), track=stream.getVideoTracks()[0];
+  if(!track||!track.requestFrame){window.__genBusy=false;return null;}
+  var chunks=[], rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:9000000});
+  rec.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data);};
+  var WM=window.__STUDIO_WM[lang]||window.__STUDIO_WM.fr;
+  function frame(t){return new Promise(function(res){
+    window.__applyCam(key,t); var cam=window.__camAt(key,t);
+    var src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(_csSvg))));
+    var img=new Image();
+    img.onload=function(){
+      c.setTransform(1,0,0,1,0,0); c.filter='none';
+      c.fillStyle='#01060c'; c.fillRect(0,0,W,H);
+      c.save();
+      var oxp=(cam.ox/100)*W, oyp=(cam.oy/100)*H;                 // BAKE caméra = même math que __applyCam
+      c.translate(oxp+(cam.tx/100)*W, oyp+(cam.ty/100)*H);
+      c.rotate(cam.rot*Math.PI/180); c.scale(cam.sc,cam.sc); c.translate(-oxp,-oyp);
+      if(cam.blur>0.02)c.filter='blur('+cam.blur.toFixed(2)+'px)';
+      var s=Math.max(W/800,H/600), dw=800*s, dh=600*s, ox=(W-dw)/2, oy=(H-dh)/2; // slice cover
+      c.drawImage(img,ox,oy,dw,dh);
+      c.restore(); c.filter='none';
+      var pad=Math.round(W*0.045), fs=Math.round(W*0.032);        // filigrane honnête burn-in
+      c.fillStyle='rgba(4,12,18,.55)'; c.fillRect(0,H-Math.round(fs*2.7),W,Math.round(fs*2.7));
+      c.textBaseline='alphabetic';
+      c.font='800 '+fs+'px "Bricolage Grotesque",system-ui,sans-serif'; c.fillStyle='#FFE47A';
+      c.fillText('LE VEILLEUR',pad,H-pad-fs*0.95);
+      c.font='700 '+Math.round(fs*0.8)+'px "Bricolage Grotesque",system-ui,sans-serif'; c.fillStyle='rgba(255,255,255,.9)';
+      c.fillText(WM,pad,H-pad);
+      track.requestFrame(); res();
+    };
+    img.onerror=function(){res();};
+    img.src=src;
+  });}
+  rec.start();
+  var FPS=opts.fps||30, dur=Math.min(m.dur, opts.maxMs||4200), PRE=400, POST=700, total=Math.max(2,Math.round((PRE+dur+POST)/1000*FPS));
+  for(var f=0; f<total; f++){ var ms=f/FPS*1000, t=ms<PRE?0:ms>PRE+dur?1:(ms-PRE)/dur; await frame(t); await new Promise(function(r){setTimeout(r,0);}); }
+  var blob=await new Promise(function(res){rec.onstop=function(){res(new Blob(chunks,{type:mime}));};rec.stop();});
+  _csReset(); window.__genBusy=false;
+  if(!opts.noDownload){
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='le-veilleur-'+key+'-'+ratio+'.webm';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},4000);
+  }
+  return {bytes:blob.size, mime:mime, key:key, ratio:ratio, frames:total};
+};
 var _csPlaying=false;
 window.__playSkill=function(key){
   var m=_csBy[key]; if(!m||_csPlaying) return;
@@ -879,23 +960,32 @@ window.__playSkill=function(key){
 
 /* ---- feuille skills (UI opt-in, i18n, a11y) ---- */
 var SKILLS_I18N={
- fr:{title:'Skills ciné — Le Veilleur',note:'100 % gratuit · zéro IA · rendu SVG',toggle:'🎬 Skills',close:'Fermer'},
- en:{title:'Cine-skills — Le Veilleur',note:'100% free · zero-AI · SVG render',toggle:'🎬 Skills',close:'Close'},
- es:{title:'Skills de cine — Le Veilleur',note:'100% gratis · sin IA · render SVG',toggle:'🎬 Skills',close:'Cerrar'}
+ fr:{title:'Skills ciné — Le Veilleur',note:'100 % gratuit · zéro IA · rendu SVG',toggle:'🎬 Skills',close:'Fermer',gen:'⬇ Générer le clip',genHint:'.webm · gratuit · 100 % navigateur'},
+ en:{title:'Cine-skills — Le Veilleur',note:'100% free · zero-AI · SVG render',toggle:'🎬 Skills',close:'Close',gen:'⬇ Generate clip',genHint:'.webm · free · 100% in-browser'},
+ es:{title:'Skills de cine — Le Veilleur',note:'100% gratis · sin IA · render SVG',toggle:'🎬 Skills',close:'Cerrar',gen:'⬇ Generar clip',genHint:'.webm · gratis · 100% navegador'}
 };
 var _skSheet=document.getElementById('skills'), _skRow=document.getElementById('skRow'),
     _skTitle=document.getElementById('skTitle'), _skNote=document.getElementById('skNote'),
-    _skToggle=document.getElementById('skToggle'), _skClose=document.getElementById('skClose');
+    _skToggle=document.getElementById('skToggle'), _skClose=document.getElementById('skClose'),
+    _skGen=document.getElementById('skGen'), _skGenHint=document.getElementById('skGenHint');
 function renderSkills(lang){
   var d=SKILLS_I18N[lang]||SKILLS_I18N.fr;
   _skTitle.textContent=d.title; _skNote.textContent=d.note; _skToggle.textContent=d.toggle; _skClose.setAttribute('aria-label',d.close);
+  if(_skGen)_skGen.textContent=d.gen; if(_skGenHint)_skGenHint.textContent=d.genHint;
   _skRow.replaceChildren();
   CINE_MOVES.forEach(function(m){
-    var b=document.createElement('button'); b.className='sk-chip'; b.type='button'; b.setAttribute('role','listitem');
+    var sel=(m.key===_csSelected);
+    var b=document.createElement('button'); b.className='sk-chip'+(sel?' sel':''); b.type='button'; b.setAttribute('role','listitem'); b.setAttribute('aria-pressed',String(sel));
     var n=document.createElement('span'); n.className='sk-name'; n.textContent=m[lang]||m.fr;
     var h=document.createElement('span'); h.className='sk-hf'; h.textContent=m.hf;
     b.appendChild(n); b.appendChild(h);
-    b.addEventListener('click',function(){window.__playSkill(m.key);});
+    b.addEventListener('click',function(){
+      _csSelected=m.key;                                   // le clip généré = le skill sélectionné
+      var chips=_skRow.querySelectorAll('.sk-chip');
+      for(var i=0;i<chips.length;i++){chips[i].classList.remove('sel');chips[i].setAttribute('aria-pressed','false');}
+      b.classList.add('sel'); b.setAttribute('aria-pressed','true');
+      window.__playSkill(m.key);                            // aperçu live (une fois, puis repos)
+    });
     _skRow.appendChild(b);
   });
 }
@@ -906,6 +996,21 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&_skSheet.cl
 var _origSetLang=setLang; setLang=function(l){_origSetLang(l);renderSkills(l);};   // i18n : rebuild les chips à chaque langue
 renderSkills(document.documentElement.lang||'fr');
 if(/[?&]skills=1/.test(location.search)) _skOpen(true);
+
+/* Studio : « Générer le clip » = .webm gratuit du skill sélectionné (flag rollback ?studio=0) */
+if(_skGen){
+  if(/[?&]studio=0/.test(location.search)){ if(_skGen.parentNode)_skGen.parentNode.style.display='none'; }
+  _skGen.addEventListener('click',async function(){
+    if(window.__genBusy)return;
+    var lang=document.documentElement.lang||'fr';
+    var doing={fr:'Génération…',en:'Generating…',es:'Generando…'}[lang]||'…';
+    var done={fr:'Clip téléchargé ✓',en:'Clip downloaded ✓',es:'Clip descargado ✓'}[lang]||'✓';
+    var prev=_skGen.textContent; _skGen.disabled=true; _skGen.textContent=doing; _skGenHint.textContent='';
+    try{ var r=await window.generateClip(_csSelected,{ratio:'9x16'}); _skGenHint.textContent = r ? (done+' · '+Math.round(r.bytes/1024)+' Ko') : '—'; }
+    catch(e){ _skGenHint.textContent='—'; }
+    _skGen.disabled=false; _skGen.textContent=prev;
+  });
+}
 
 /* ============================================================
    PRÉSENTATION — lecture auto « vidéo » (opt-in, 100 % additive).

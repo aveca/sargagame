@@ -54,6 +54,13 @@ boucle autonome au repos = tableau, pas aquarium) ; `reduced-motion` = pose hér
   # → scripts/video/out/cineskill-<skill>-<ratio>.mp4  (ffmpeg h264, faststart)
   ```
   Le renderer pilote `window.__applyCam(skill,t)` image par image → **même hook déterministe** que la feuille.
+- **Studio « Skill → Clip » — générer un vrai clip GRATUIT, 100 % NAVIGATEUR (0 serveur, 0 crédit, 0 IA)** :
+  dans la feuille `🎬 Skills`, on tape un skill (aperçu live) puis **« ⬇ Générer le clip »** → `canvas.captureStream(0)`
+  + `MediaRecorder` + `track.requestFrame()` pilotent la scène frame-par-frame, le **mouvement de caméra est baké**
+  dans le contexte 2D (même math que `__applyCam`), et un **filigrane HONNÊTE** est gravé (`window.__STUDIO_WM` :
+  jamais de chiffre/score/date/mot temporel — c'est de l'ambiance, pas une mesure) → `.webm` téléchargé. Panel jury :
+  concept gagnant « Ciné-Atlas » (video-as-SEO) — **le Studio en est le générateur**. Flag rollback `?studio=0`.
+  Hook réutilisable `window.generateClip(key,{ratio,noDownload,maxMs,fps})`.
 - **Vérifier (100 % headless, Playwright en fond)** :
   ```bash
   node scripts/design/verify-cineskills.mjs   # attendu : CINESKILLS_ALL_GREEN
