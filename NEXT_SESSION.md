@@ -1,5 +1,17 @@
 # NEXT_SESSION — sargagame
 
+> **🏁 2026-07-02 — ÉTAT FINAL (archive cette session ; le fondateur relance UNE ultime session EN LOCAL).**
+>
+> **⚠️ SESSION FINALE = bosser dans le checkout LOCAL `C:\Users\user\Desktop\Backup\sargagame` (PAS un worktree).** Le « 2 sessions » = mon worktree `dazzling-lamport` + une session concurrente (qui a livré **#498** heartbeat). ~10 worktrees traînent (`git worktree list`) → nettoyage OPTIONNEL (`git worktree prune` + `/clean_gone`) ; **ne PAS supprimer** ceux d'autres sessions actives. Rien de MON travail n'est perdu : tout est en PR (les fichiers modifiés/non-suivis restants — `b2b-partners.json`, `.gsc-live/`, `design/wow-candidates/` — sont d'AUTRES sessions).
+>
+> **💰 LE GESTE « THUNE » — 1 tap fondateur : MERGER [PR #499](https://github.com/aveca/sargagame/pull/499)** (MERGEABLE). Active la relance panier **Mollie USD** (cloud/cron 6h, autonome, zéro vidéo/image/Claude). **Je ne peux PAS la merger** (token GitHub sans scope `workflow`). Après le 1er run : jeter un œil aux logs du step (candidats = vrais abandons) ; revert = commit d'avant déployable.
+>
+> **🥇 TODO n°1 REVENU (session finale) : copy FR + prix €7,99 dans `recover-abandoned-cart.cjs` `copy()`** → débloque la relance **MQ/GP** (plus gros marché). Aujourd'hui `copy()` = EN/ES + « $5.99 » → **USD-only** par sécurité (sinon email anglais/mauvais prix aux FR = anti-moat). Puis retirer le `if (['mq','gp'].includes(region.id)) continue` du bloc Mollie.
+>
+> **SHIPPÉ & MERGÉ (PR #492-#497 ; #498 = autre session)** : usine locale Couche C (`SargaFactory` briefs 05:30+boot ; `SargaFactory-Serve` file à la demande 30 min ; heartbeat cloud #498) · fabrique calcul git-queue (`queue/*.json` + `handlers.cjs` catalogue FERMÉ, RCE non exprimable) · source Mollie recovery (#496) · bug moat fraîcheur corrigé. **3 flags mobiles** : merge #499 (Mollie USD) · `fbAutoPublish:true` (`scripts/local-factory/config.json`, FB auto) · `OPERATOR_TOKEN` GH (v2 fabrique Supabase instantanée). Mémoire [[project_local_factory_layer_c]].
+>
+> **PARKÉ (panels tournés, non lâché)** : quant/DS = harnais **event-labeled** (`backtest-forecast.cjs`) + **vision-ML photos** (le backtest n'a AUCUN échouage réel, alertes 0/718 ; publier le chiffre event-conditionné) · sales = `relance-payers` (renouvellement B2B) jamais déclenché, outreach à court de contacts · **créatif ciné** : Higgsfield connecté mais **0 crédit** ; Seedance free = 1-2 clips/j filigranés ; Nano Banana Pro = 2 img/j image-only → le **reel « cartes » était sous la barre**, V2 = vraie **scène animée SVG** (moat, gratuit) OU Higgsfield rechargé (film de marque, JAMAIS de fausse data). Storyboard prêt : personas TF1 (touriste qui checke les plages / Noah / le ramasseur « on détruit les plages ») + tracteur + Veilleur + verdict. Reel actuel : `scripts/video/out/reel-tf1-guadeloupe.mp4`.
+>
 > **🏭 2026-07-02 (soir) — USINE LOCALE + FABRIQUE DE CALCUL + FUITE REVENU #1 COMBLÉE (session « PC allumé, Claude fermé 1 semaine »).**
 >
 > **SHIPPÉ (mergé `main`) :**
