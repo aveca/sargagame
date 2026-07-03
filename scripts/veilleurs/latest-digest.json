@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-02",
+  "date": "2026-07-03",
   "count": 10,
   "veilleurs": [
     {
@@ -9,7 +9,7 @@
       "market": "B2C voyageurs",
       "depth": 0,
       "status": "live",
-      "date": "2026-07-02",
+      "date": "2026-07-03",
       "mode": "script",
       "headline": "Sable en veille sur B2C voyageurs"
     },
@@ -20,7 +20,7 @@
       "market": "Hôtels & resorts (B2B)",
       "depth": 5,
       "status": "emerging",
-      "date": "2026-07-02",
+      "date": "2026-07-03",
       "mode": "recon",
       "headline": "Récif en veille sur Hôtels & resorts (B2B)"
     },
@@ -75,7 +75,7 @@
       "market": "Pêche & aquaculture",
       "depth": 500,
       "status": "greenfield",
-      "date": "2026-07-02",
+      "date": "2026-07-03",
       "mode": "recon",
       "headline": "Filet en veille sur Pêche & aquaculture"
     },
