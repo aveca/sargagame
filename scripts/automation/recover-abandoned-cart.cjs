@@ -126,55 +126,86 @@ function cadenceDue(entry, nowMs) {
 }
 
 // ---- Copy par langue × motif --------------------------------------------
+// 3 langues (fr = MQ/GP EUR, es = rivieramaya USD, en = florida/puntacana/barbados USD).
+// Prix : EUR = pass d'entrée réel 7,99 € (public/api/mollie-config.example.php `p7`,
+// aligné PremiumModal.jsx "Pass dès 7,99 €") — PAS le tripPass legacy 4,99 € de
+// regions/*.json (stale, pré-refonte 3-tiers). USD = $5.99 (tier d'entrée USD).
 function copy(region, kind) {
-  const es = region.primaryLang === 'es'
+  const lang = region.primaryLang === 'fr' ? 'fr' : region.primaryLang === 'es' ? 'es' : 'en'
   const name = region.name
-  const shared = es
-    ? { f1t: 'Mapa de playas en vivo', f1d: `Revisa cualquier playa de ${name} en 5 segundos.`,
-        f2t: 'Datos satelitales reales', f2d: 'Imágenes de satélite actualizadas 4 veces al día.',
-        f3t: 'Pronóstico de 7 días', f3d: 'Planifica tus días alrededor de las playas limpias.',
-        unsub: 'Darse de baja' }
-    : { f1t: 'Live beach map', f1d: `Check any ${name} beach in 5 seconds.`,
-        f2t: 'Real satellite data', f2d: 'Satellite imagery refreshed 4 times a day.',
-        f3t: '7-day forecast', f3d: 'Plan your days around the clear beaches.',
-        unsub: 'Unsubscribe' }
-  const V = {
-    declined: es
-      ? { subject: `Tu pago no se completó — ¿probar con otra tarjeta?`, kicker: 'Casi listo',
-          pre: `Suele ser un bloqueo temporal del banco — con otra tarjeta entras en 30 segundos.`,
-          tagline: 'Tu tarjeta fue rechazada — pasa a veces. Prueba con otra y listo.',
-          body: `Tu banco rechazó el pago de tu pase de ${name}. Suele ser un bloqueo temporal — prueba con otra tarjeta y tendrás acceso al instante:`,
-          cta: 'Probar con otra tarjeta — $5.99' }
-      : { subject: `Your payment didn't go through — try another card?`, kicker: 'Almost there',
-          pre: `Usually just a temporary bank hold — another card gets you in within 30 seconds.`,
-          tagline: 'Your card was declined — it happens. Try another and you’re in.',
-          body: `Your bank declined the payment for your ${name} trip pass. It’s usually a temporary block — try another card and you’ll get instant access:`,
-          cta: 'Try another card — $5.99' },
-    action: es
-      ? { subject: `Un último paso para confirmar tu pago`, kicker: 'Un último paso',
-          pre: `Tu banco solo necesita una confirmación rápida — y tu pase de ${name} queda activo.`,
-          tagline: 'Tu banco solo necesita que confirmes el pago.',
-          body: `Estás a un paso de tu pase de ${name}. Tu banco solo necesita que confirmes el pago — toca abajo para terminar:`,
-          cta: 'Completar mi pago — $5.99' }
-      : { subject: `One last step to confirm your payment`, kicker: 'One last step',
-          pre: `Your bank just needs a quick confirmation — then your ${name} pass is live.`,
-          tagline: 'Your bank just needs you to confirm the payment.',
-          body: `You’re one step away from your ${name} trip pass. Your bank just needs you to confirm the payment — tap below to finish:`,
-          cta: 'Finish my payment — $5.99' },
-    abandoned: es
-      ? { subject: `¿Aún lo estás pensando? Tu pronóstico de playas de ${name} está listo`, kicker: 'Casi lo tienes',
-          pre: `Mira cualquier playa de ${name} antes de ir — limpia o no, en 5 segundos.`,
-          tagline: 'Sabe qué playas están limpias — antes de ir.',
-          body: `Estabas a un paso de tu pase de viaje de ${name}. Sin prisa — esto es lo que te espera:`,
-          cta: 'Obtén tu pase — $5.99' }
-      : { subject: `Still thinking about it? Your ${name} beach forecast is ready`, kicker: "You’re almost there",
-          pre: `Check any ${name} beach before you go — clean or not, in 5 seconds.`,
-          tagline: 'Know which beaches are clear — before you go.',
-          body: `You were one step away from your ${name} trip pass. No rush — here’s what’s waiting for you:`,
-          cta: 'Get your pass — $5.99' },
+  const price = lang === 'fr' ? '7,99 €' : '$5.99'
+  const SHARED = {
+    fr: { f1t: 'Carte des plages en direct', f1d: `Vérifie n’importe quelle plage de ${name} en 5 secondes.`,
+          f2t: 'Vraies données satellite', f2d: 'Imagerie satellite actualisée 4 fois par jour.',
+          f3t: 'Prévision à 7 jours', f3d: 'Planifie tes journées autour des plages propres.',
+          unsub: 'Se désabonner' },
+    es: { f1t: 'Mapa de playas en vivo', f1d: `Revisa cualquier playa de ${name} en 5 segundos.`,
+          f2t: 'Datos satelitales reales', f2d: 'Imágenes de satélite actualizadas 4 veces al día.',
+          f3t: 'Pronóstico de 7 días', f3d: 'Planifica tus días alrededor de las playas limpias.',
+          unsub: 'Darse de baja' },
+    en: { f1t: 'Live beach map', f1d: `Check any ${name} beach in 5 seconds.`,
+          f2t: 'Real satellite data', f2d: 'Satellite imagery refreshed 4 times a day.',
+          f3t: '7-day forecast', f3d: 'Plan your days around the clear beaches.',
+          unsub: 'Unsubscribe' },
   }
-  const foot = es ? 'Pago único · sin suscripción · acceso inmediato' : 'One-time pass · no subscription · instant access'
-  return { ...shared, ...V[kind], foot, brand: `${es ? 'Sargazo' : 'Sargassum'} ${name}` }
+  const V = {
+    declined: {
+      fr: { subject: `Ton paiement n’est pas passé — réessayer avec une autre carte ?`, kicker: 'Presque prêt',
+            pre: `C’est souvent un blocage temporaire de la banque — avec une autre carte tu es dedans en 30 secondes.`,
+            tagline: 'Ta carte a été refusée — ça arrive. Réessaie avec une autre et c’est bon.',
+            body: `Ta banque a refusé le paiement de ton pass ${name}. C’est souvent un blocage temporaire — réessaie avec une autre carte et tu as un accès immédiat :`,
+            cta: `Réessayer avec une autre carte — ${price}` },
+      es: { subject: `Tu pago no se completó — ¿probar con otra tarjeta?`, kicker: 'Casi listo',
+            pre: `Suele ser un bloqueo temporal del banco — con otra tarjeta entras en 30 segundos.`,
+            tagline: 'Tu tarjeta fue rechazada — pasa a veces. Prueba con otra y listo.',
+            body: `Tu banco rechazó el pago de tu pase de ${name}. Suele ser un bloqueo temporal — prueba con otra tarjeta y tendrás acceso al instante:`,
+            cta: `Probar con otra tarjeta — ${price}` },
+      en: { subject: `Your payment didn't go through — try another card?`, kicker: 'Almost there',
+            pre: `Usually just a temporary bank hold — another card gets you in within 30 seconds.`,
+            tagline: 'Your card was declined — it happens. Try another and you’re in.',
+            body: `Your bank declined the payment for your ${name} trip pass. It’s usually a temporary block — try another card and you’ll get instant access:`,
+            cta: `Try another card — ${price}` },
+    },
+    action: {
+      fr: { subject: `Encore une étape pour confirmer ton paiement`, kicker: 'Dernière étape',
+            pre: `Ta banque a juste besoin d’une confirmation rapide — et ton pass ${name} est actif.`,
+            tagline: 'Ta banque a juste besoin que tu confirmes le paiement.',
+            body: `Tu es à un pas de ton pass ${name}. Ta banque a juste besoin que tu confirmes le paiement — appuie ci-dessous pour terminer :`,
+            cta: `Terminer mon paiement — ${price}` },
+      es: { subject: `Un último paso para confirmar tu pago`, kicker: 'Un último paso',
+            pre: `Tu banco solo necesita una confirmación rápida — y tu pase de ${name} queda activo.`,
+            tagline: 'Tu banco solo necesita que confirmes el pago.',
+            body: `Estás a un paso de tu pase de ${name}. Tu banco solo necesita que confirmes el pago — toca abajo para terminar:`,
+            cta: `Completar mi pago — ${price}` },
+      en: { subject: `One last step to confirm your payment`, kicker: 'One last step',
+            pre: `Your bank just needs a quick confirmation — then your ${name} pass is live.`,
+            tagline: 'Your bank just needs you to confirm the payment.',
+            body: `You’re one step away from your ${name} trip pass. Your bank just needs you to confirm the payment — tap below to finish:`,
+            cta: `Finish my payment — ${price}` },
+    },
+    abandoned: {
+      fr: { subject: `Tu hésites encore ? Ta prévision des plages de ${name} est prête`, kicker: 'Tu y es presque',
+            pre: `Vérifie n’importe quelle plage de ${name} avant d’y aller — propre ou non, en 5 secondes.`,
+            tagline: 'Sache quelles plages sont propres — avant d’y aller.',
+            body: `Tu étais à un pas de ton pass ${name}. Pas de pression — voici ce qui t’attend :`,
+            cta: `Obtenir mon pass — ${price}` },
+      es: { subject: `¿Aún lo estás pensando? Tu pronóstico de playas de ${name} está listo`, kicker: 'Casi lo tienes',
+            pre: `Mira cualquier playa de ${name} antes de ir — limpia o no, en 5 segundos.`,
+            tagline: 'Sabe qué playas están limpias — antes de ir.',
+            body: `Estabas a un paso de tu pase de viaje de ${name}. Sin prisa — esto es lo que te espera:`,
+            cta: `Obtén tu pase — ${price}` },
+      en: { subject: `Still thinking about it? Your ${name} beach forecast is ready`, kicker: "You’re almost there",
+            pre: `Check any ${name} beach before you go — clean or not, in 5 seconds.`,
+            tagline: 'Know which beaches are clear — before you go.',
+            body: `You were one step away from your ${name} trip pass. No rush — here’s what’s waiting for you:`,
+            cta: `Get your pass — ${price}` },
+    },
+  }
+  const foot = { fr: 'Paiement unique · sans abonnement · accès immédiat',
+                 es: 'Pago único · sin suscripción · acceso inmediato',
+                 en: 'One-time pass · no subscription · instant access' }[lang]
+  const brand = { fr: 'Sargasses', es: 'Sargazo', en: 'Sargassum' }[lang]
+  return { ...SHARED[lang], ...V[kind][lang], foot, brand: `${brand} ${name}` }
 }
 
 function buildHTML(region, email, kind) {
@@ -310,9 +341,9 @@ async function main() {
     const t = copy(region, kind)
     const from = `${t.brand} <${FROM_DOMAIN}>`
     const unsub = unsubUrl(email, region.id)
-    // A/B — EN uniquement (les 3 variants cart sont EN, pas de variant ES pour l'instant)
-    const _isEsR = region.primaryLang === 'es'
-    const _cabKey = !_isEsR ? `em_cart_${kind}_v1` : null
+    // A/B — EN uniquement (les 3 variants cart sont EN ; pas de variant ES/FR pour l'instant —
+    // un gate en "pas ES" appliquerait à tort la variante EN aux emails FR : bug corrigé ici)
+    const _cabKey = region.primaryLang === 'en' ? `em_cart_${kind}_v1` : null
     const _cabArm = _cabKey ? pickArm(_cabKey, email) : 'A'
     const _cabOut = applyArm(_cabArm, { subject: t.subject, preheader: t.pre },
       _cabKey ? AB_VARS[`cart_${kind}.en`]?.ship : null)
