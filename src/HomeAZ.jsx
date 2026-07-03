@@ -774,7 +774,7 @@ export default function HomeAZ(props){
 
   return React.createElement("div",{
     ref:hostRef, role:"dialog", "aria-label": beach&&beach.name ? beach.name : "Sargasses",
-    style:{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
+    style:{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
       forcedColorAdjust:"none",
       background:"#0d0716", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain",
       opacity:exiting?0:1, transform:exiting?"scale(1.04)":"none",

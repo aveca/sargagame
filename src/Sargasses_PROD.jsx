@@ -8992,7 +8992,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const dayName=j2info?(()=>{try{return new Date(j2info.date+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return""}})():""
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
-    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
+    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"fixed",inset:0,zIndex:1050,
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
@@ -9462,7 +9462,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
   const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
   return(
-    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
+    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"fixed",inset:0,zIndex:1050,
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
       /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
          opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
@@ -11733,8 +11733,12 @@ export default function App(){
   // fin de la mosaïque d'A/B sur l'accueil — un seul parcours fluide, monde comic
   // de bout en bout). home_az désactivé pour ne pas se superposer à l'arène.
   // Override debug : ?home_az=1 pour ré-essayer l'ancien accueil A→Z.
+  // ⚠️ SUPERSEDÉ (pivot CARTE-FIRST, cf. showHero ~L11543) : cette section entière
+  // (chasse/homeAZ/landingFunnel→GameFunnel/HeroVerdict) n'est plus atteinte pour
+  // le trafic organique — showHero=false par défaut, l'accueil réel est la carte.
+  // Reste vivante QUE derrière ?hero=1 (QA/rollback des anciens designs d'accueil).
   const[homeAZ]=useState(()=>{try{return /[?&]home_az=1/.test(window.location.search)}catch(_){return false}})
-  // Accueil « LA CHASSE » par défaut pour TOUS (override debug ?chasse=0 pour
+  // Accueil « LA CHASSE » par défaut SI showHero (override debug ?chasse=0 pour
   // retomber sur HeroVerdict). Conversion (onOpen/onOpenBeach/onPremium) inchangée.
   const[chasse]=useState(()=>{try{return !/[?&]chasse=0/.test(window.location.search)}catch(_){return true}})
   // A/B `dock_glass` retiré avec la BottomNav (la barre Carte/Liste/Premium n'existe plus).
