@@ -54,6 +54,10 @@ const DemoReel=lazyWithRetry(()=>import("./DemoReel.jsx"))
 // actions branchées in-app. Rollback ?verticals=0 → cache l'entrée + l'overlay.
 const LazyVerticalesMap=lazyWithRetry(()=>import("./VerticalesMap.jsx"))
 const VERTICALES_OFF=(()=>{try{return /[?&]verticals=0/.test(window.location.search)}catch(_){return false}})()
+// LE BRIEF DU MATIN — payload premium tangible (proto-veilleur-brief-matin porté). Lazy (chunk propre,
+// hors budget eager). Surface d'atterrissage (push/PWA/email) via deep-link ?brief=1 ; rollback ?brief=0.
+const LazyBriefMatin=lazyWithRetry(()=>import("./BriefMatin.jsx"))
+const BRIEF_OFF=(()=>{try{return /[?&]brief=0/.test(window.location.search)}catch(_){return false}})()
 const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
@@ -12456,6 +12460,47 @@ export default function App(){
     return allBeaches.find(b=>b.id===myBeachId)||null
   },[myBeachId,allBeaches])
 
+  // ── Brief du matin : data dérivée d'une plage VEDETTE (myBeach → 1er favori → 1re plage scorée),
+  //    100 % data-driven (0 fabrication) : verdict/score/H2S/meilleur-jour/Plan-B/fraîcheur RÉELS.
+  //    H2S = même repli honnête que H2SBadge ; meilleur jour = min afai du forecast (null si absent) ;
+  //    Plan-B = plage propre la + proche même île (haversine, distance réelle) SEULEMENT si non-propre ;
+  //    fraîcheur = âge réel du composite ERDDAP (>12 h → « vérification en cours » côté composant).
+  const briefData=useMemo(()=>{
+    try{
+      const list=Array.isArray(allBeaches)?allBeaches:[]
+      if(!list.length)return null
+      const featured=myBeach
+        ||(favorites&&favorites.length&&list.find(b=>b.id===favorites[0]))
+        ||list.find(b=>b.status&&b.name)||list[0]
+      if(!featured)return null
+      const st=featured.status||"clean"
+      const RN={mq:"Martinique",gp:"Guadeloupe",florida:"Florida",puntacana:"Punta Cana",rivieramaya:"Cancún"}
+      const region=RN[featured.island]||(REGION&&(REGION.displayName||REGION.name))||(featured.island?String(featured.island).toUpperCase():"")
+      const rl=featured.h2s&&typeof featured.h2s==="object"?featured.h2s.level:null
+      const lvl=rl==="high"?"high":(rl==="moderate"||rl==="mod")?"mod":rl==="low"?"low"
+        :(st==="avoid"?"high":st==="moderate"?"mod":"low")
+      const h2s={fr:lvl==="high"?"élevé":lvl==="mod"?"modéré":"faible",en:lvl==="high"?"high":lvl==="mod"?"moderate":"low",es:lvl==="high"?"alto":lvl==="mod"?"moderado":"bajo"}
+      let bestDay=null
+      const fc=(sargData&&sargData.weekly&&sargData.weekly[featured.id]&&sargData.weekly[featured.id].forecast)||null
+      if(Array.isArray(fc)&&fc.length){
+        let bi=0,ba=Infinity
+        for(let i=0;i<fc.length;i++){const a=(typeof fc[i].afai==="number")?fc[i].afai:Infinity;if(a<ba){ba=a;bi=i}}
+        if(bi===0)bestDay={fr:"aujourd'hui",en:"today",es:"hoy"}
+        else{const dt=fc[bi].date;const mk=loc=>{try{return new Date(dt).toLocaleDateString(loc,{weekday:"long"})}catch(_){return fc[bi].day||""}};bestDay={fr:mk("fr-FR"),en:mk("en-US"),es:mk("es-ES")}}
+      }
+      let planB=null
+      if((st==="avoid"||st==="moderate")&&typeof featured.lat==="number"&&typeof featured.lng==="number"){
+        const hav=(a,b,c,d)=>{const R=6371,dLat=(c-a)*Math.PI/180,dLng=(d-b)*Math.PI/180,x=Math.sin(dLat/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)))}
+        let best=null,bd=Infinity
+        for(const b of list){if(!b||b.id===featured.id||b.status!=="clean"||typeof b.lat!=="number"||typeof b.lng!=="number"||b.island!==featured.island)continue;const d=hav(featured.lat,featured.lng,b.lat,b.lng);if(d<bd){bd=d;best=b}}
+        if(best){const km=bd<1?"< 1 km":("~"+Math.round(bd)+" km");const lbl=best.name+" ("+km+")";planB={fr:lbl,en:lbl,es:lbl}}
+      }
+      const ts=(sargData&&(sargData.erddapTimestamp||sargData.updatedAt))||null
+      const ageHours=(()=>{try{if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return(isFinite(h)&&h>=0)?h:null}catch(_){return null}})()
+      return{beach:featured.name,region,score:(typeof featured.score==="number"?featured.score:null),status:st,bestDay,h2s,planB,ageHours}
+    }catch(_){return null}
+  },[allBeaches,myBeach,favorites,sargData])
+
   // Beach picker selection handler
   const onPickBeach=useCallback(id=>{
     setMyBeachId(id)
@@ -12847,6 +12892,8 @@ export default function App(){
   // Les 10 postes du Veilleur « Jusqu'où on descend » — overlay des 10 verticales (FAB carte).
   // Deep-link ?verticals=1 l'ouvre d'emblée ; ?verticals=0 (VERTICALES_OFF) coupe tout.
   const [showVerticals,setShowVerticals]=useState(()=>{try{const q=window.location.search||"";return /[?&]verticals=1/.test(q)&&!/[?&]verticals=0/.test(q)}catch(_){return false}})
+  // Le brief du matin — overlay payload premium. Deep-link ?brief=1 (surface push/PWA/email) l'ouvre ; ?brief=0 (BRIEF_OFF) coupe.
+  const [showBrief,setShowBrief]=useState(()=>{try{const q=window.location.search||"";return /[?&]brief=1/.test(q)&&!/[?&]brief=0/.test(q)}catch(_){return false}})
   const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
   const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
   // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
@@ -13674,6 +13721,10 @@ export default function App(){
           onSeeMyBeach={()=>{setShowVerticals(false);setView("map");if(myBeach)onBeachClick(myBeach)}}
           onOpenPro={(src)=>{setShowVerticals(false);try{track("sg_b2b_open",{source:src||"verticales"})}catch(_){}; proB2BSrc.current=src||"verticales"; setShowProB2B(true)}}
           onWaitlist={(em,tid)=>{try{submitLead(em,"verticales_"+(tid||"prisme"))}catch(_){}}}/></Suspense></ErrBound>}
+        {showBrief&&!BRIEF_OFF&&<ErrBound fallback={null}><Suspense fallback={null}><LazyBriefMatin lang={lang} data={briefData} track={track}
+          onClose={()=>setShowBrief(false)}
+          onPremium={(src)=>{setShowBrief(false);openPremium(src||"brief_morning")}}
+          onReliability={()=>{try{const rp=lang==="en"?"/reliability/":lang==="es"?"/fiabilidad/":"/fiabilite/";window.location.href=rp}catch(_){}}}/></Suspense></ErrBound>}
 
         {/* Cache anti-premap : sombre plein écran tant que la carte-monde par défaut est EN
             ATTENTE d'ouverture (data → showArchipel via layoutEffect gaté allBeaches>=3).
