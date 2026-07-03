@@ -275,9 +275,9 @@ body.presenting .lb{height:clamp(38px,10vh,112px)}
 
     <!-- godrays (pleine eau) : opacité pilotée -->
     <g id="godrays">
-      <polygon class="ray" points="180,-60 250,-60 210,660 70,660" fill="url(#rayG)"/>
-      <polygon class="ray" points="430,-60 476,-60 476,660 356,660" fill="url(#rayG)" opacity=".7"/>
-      <polygon class="ray" points="600,-60 662,-60 730,660 566,660" fill="url(#rayG)" opacity=".8"/>
+      <polygon class="ray" points="518,-90 532,-90 240,660 40,660" fill="url(#rayG)"/>
+      <polygon class="ray" points="520,-90 534,-90 480,660 300,660" fill="url(#rayG)" opacity=".7"/>
+      <polygon class="ray" points="522,-90 538,-90 790,660 590,660" fill="url(#rayG)" opacity=".8"/>
     </g>
 
     <!-- PLAN PROCHE (parallaxe rapide + nudge pointeur) : bulles/particules -->
@@ -533,7 +533,7 @@ function actorSurface(y){ // surface : ligne de mer + reflets + YOLE RONDE (Mart
   G.appendChild(E('rect',{x:-40,y:176,width:880,height:8,fill:'#FFE47A',opacity:.3}));
   [ -20,60,700,760].forEach(function(rx,i){G.appendChild(E('ellipse',{cx:rx+80,cy:206+i*12,rx:74,ry:3,fill:'#FFE47A',opacity:.16}));});
   var rf=g({});[300,340,470,520,560,600,640].forEach(function(x,i){var l=E('line',{x1:x,y1:178,x2:x,y2:178+16+(i%2)*8,stroke:'#FFF3D6','stroke-width':2,'stroke-linecap':'round'});l.setAttribute('opacity',.5);l.setAttribute('class','twk');l.style.animationDelay=i*.45+'s';rf.appendChild(l);});
-  G.appendChild(rf);
+  G.appendChild(rf); var ca=g({fill:'none',stroke:'#FFE47A','stroke-opacity':.13,'stroke-width':2,'stroke-linecap':'round'}); ['M-40 210 q40 -8 80 0 t80 0 t80 0 t80 0 t80 0','M-40 250 q50 8 100 0 t100 0 t100 0 t100 0','M-40 294 q60 -8 120 0 t120 0 t120 0'].forEach(function(dd,i){var p=E('path',{d:dd});p.setAttribute('class','twk');p.style.animationDelay=i*.7+'s';ca.appendChild(p);}); G.appendChild(ca);
   // YOLE RONDE — POSITION (g externe) / tangage (g interne) : sinon l'anim écrase la position
   var boatPos=g({transform:'translate(408,150) scale(1.3)'});
   var boat=g({class:'drift'});
@@ -544,13 +544,14 @@ function actorSurface(y){ // surface : ligne de mer + reflets + YOLE RONDE (Mart
   boat.appendChild(E('path',{d:'M6 -62 L58 -6 L6 -6 Z',fill:'url(#sail)',stroke:'#e9c46a','stroke-width':1.5})); // voile
   boat.appendChild(E('path',{d:'M4 -60 L-30 -8 L4 -8 Z',fill:'#FFF3D6',opacity:.85}));         // foc
   boat.appendChild(E('path',{d:'M-40 24 Q0 30 40 24 L30 40 Q0 46 -30 40 Z',fill:'#C9772B',opacity:.22})); // reflet
+  boat.appendChild(E('path',{d:'M-56 0 Q0 6 56 0',fill:'none',stroke:'#FFD884','stroke-width':1.6,'stroke-opacity':.55,'stroke-linecap':'round'})); // rim dore (bord mer)
   boatPos.appendChild(boat); G.appendChild(boatPos);
   return G;
 }
 function actorLagoon(y){ // lagon : tortue + herbiers + poissons
   var G=g({transform:'translate(0,'+y+')'});
   // fond sableux clair
-  G.appendChild(E('path',{d:'M-40 320 Q400 300 840 330 L840 420 L-40 420 Z',fill:'#1f6b62',opacity:.4}));
+  G.appendChild(E('path',{d:'M-40 320 Q400 300 840 330 L840 420 L-40 420 Z',fill:'#1f6b62',opacity:.4})); var lc=g({fill:'none',stroke:'#FFE47A','stroke-opacity':.10,'stroke-width':2,'stroke-linecap':'round'}); [[120,330],[300,344],[470,330],[620,346]].forEach(function(c,i){var p=E('path',{d:'M'+(c[0]-60)+' '+c[1]+' q30 -10 60 0 t60 0 t60 0'});p.setAttribute('class','twk');p.style.animationDelay=i*.8+'s';lc.appendChild(p);}); G.appendChild(lc);
   // herbiers
   var sg=g({});[120,150,175,205,235,640,670,700,730].forEach(function(x,i){
     var p=E('path',{d:'M'+x+' 340 C '+(x-6)+' 310 '+(x+6)+' 300 '+(x-3)+' 268,',fill:'none',stroke:i%2?'#3e6a2a':'#4a7d30','stroke-width':5,'stroke-linecap':'round'});
@@ -561,6 +562,7 @@ function actorLagoon(y){ // lagon : tortue + herbiers + poissons
   var tu=g({class:'glide'});
   tu.appendChild(E('ellipse',{cx:0,cy:0,rx:34,ry:24,fill:'#2f6b4e',stroke:'#173a2c','stroke-width':2}));
   tu.appendChild(E('path',{d:'M-16 -8 L0 -14 L16 -8 L10 6 L-10 6 Z',fill:'#3f8a63',opacity:.8}));
+  tu.appendChild(E('path',{d:'M-30 -3 Q0 -19 30 -3',fill:'none',stroke:'#FFD884','stroke-width':1.4,'stroke-opacity':.4,'stroke-linecap':'round'}));
   tu.appendChild(E('circle',{cx:-30,cy:-6,r:8,fill:'#2f6b4e',stroke:'#173a2c','stroke-width':1.6})); // tête
   tu.appendChild(E('circle',{cx:-33,cy:-8,r:1.6,fill:'#04120c'}));
   tu.appendChild(E('path',{d:'M22 -18 q16 -6 22 4',fill:'none',stroke:'#2f6b4e','stroke-width':7,'stroke-linecap':'round'})); // nageoire
@@ -578,9 +580,10 @@ function actorLagoon(y){ // lagon : tortue + herbiers + poissons
 function actorOpen(y){ // pleine eau : raie manta + plancton
   var G=g({transform:'translate(0,'+y+')'});
   // raie manta — POSITION (externe) / glisse (interne)
-  var rayPos=g({transform:'translate(392,160) scale(1.22)'});
+  var ghost=g({transform:'translate(300,300) scale(0.9)',opacity:.15}); ghost.appendChild(E('path',{d:'M0 0 C -60 -26 -96 -8 -120 6 C -80 10 -40 14 0 10 C 40 14 80 10 120 6 C 96 -8 60 -26 0 0 Z',fill:'#0e2c34'})); G.appendChild(ghost); var rayPos=g({transform:'translate(392,160) scale(1.22)'});
   var ray=g({class:'glide'});
   ray.appendChild(E('path',{d:'M0 0 C -60 -26 -96 -8 -120 6 C -80 10 -40 14 0 10 C 40 14 80 10 120 6 C 96 -8 60 -26 0 0 Z',fill:'#0e2c34',stroke:'#0a1f26','stroke-width':2,opacity:.92}));
+  ray.appendChild(E('path',{d:'M0 0 C -60 -26 -96 -8 -120 6',fill:'none',stroke:'#1EC8B0','stroke-width':1.6,'stroke-opacity':.4,'stroke-linecap':'round'}));
   ray.appendChild(E('path',{d:'M-20 -8 q-14 -10 -26 -6',fill:'none',stroke:'#0e2c34','stroke-width':4,'stroke-linecap':'round'})); // corne céphalique
   ray.appendChild(E('path',{d:'M20 -8 q14 -10 26 -6',fill:'none',stroke:'#0e2c34','stroke-width':4,'stroke-linecap':'round'}));
   ray.appendChild(E('line',{x1:0,y1:8,x2:0,y2:70,stroke:'#0e2c34','stroke-width':2})); // queue
@@ -607,6 +610,7 @@ function actorSarg(y){ // LE SUJET : radeaux de sargasses qui dérivent
     outer.appendChild(r); return outer;
   }
   G.appendChild(raft(400,150,1.9,.97));    // radeau héros — centré, c'est le sujet
+  G.appendChild(E('path',{d:'M280 118 Q400 96 520 118',fill:'none',stroke:'#FFD884','stroke-width':2.5,'stroke-opacity':.28,'stroke-linecap':'round',filter:'url(#soft)'})); // dernier rayon chaud sur le radeau
   G.appendChild(raft(150,86,.72,.72));
   G.appendChild(raft(662,118,.86,.8));
   G.appendChild(raft(560,300,.6,.56));
