@@ -85,6 +85,9 @@ const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 const LazyConditions=lazyWithRetry(()=>import("./Conditions"))
 // ScrollStory (below-fold, écran 3) sorti du bundle eager.
 const ScrollStory=lazyWithRetry(()=>import("./ScrollStory.jsx"))
+// Menu clic-droit « Le Veilleur » (desktop souris) — lazy, monté au 1er contextmenu
+// éligible (jamais dans le bundle eager → budget JS critique intact). Rollback ?rmenu=0.
+const LazyContextVeilleur=lazyWithRetry(()=>import("./ContextVeilleur.jsx"))
 // Overlays narratifs SVG hors first-paint — extraits vers StoryScenes.jsx (bundle eager allégé).
 const DiscoveryStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.DiscoveryStory})))
 const StationStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.StationStory})))
@@ -12631,6 +12634,84 @@ export default function App(){
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
   },[captureGate])
+
+  // ════════ MENU CLIC-DROIT « LE VEILLEUR » (desktop souris) ════════════════════
+  // Le clic droit sur la SCÈNE/CARTE montrait le menu navigateur = cul-de-sac hors-
+  // univers. On le remplace par une bulle comic qui route l'INTENTION vers notre contenu
+  // (verdict, crique propre, partage, alertes, fiabilité/premium). DEFAULT-DENY : on
+  // n'intercepte QUE la carte SVG (svg[data-sg-live]) et les pins (data-beach) — jamais
+  // liens/boutons/inputs/texte-sélectionné (menu natif SACRÉ : ouvrir-onglet, copier,
+  // enregistrer-image, inspecter). Shift+clic droit = natif garanti. Zéro coût tactile
+  // (pointer:coarse → return). Rollback ?rmenu=0. Panel adverse 2026-07-03 (4 lentilles GO).
+  const RMENU_OFF=useMemo(()=>{try{return /[?&]rmenu=0/.test(window.location.search)}catch(_){return false}},[])
+  const [ctxMenu,setCtxMenu]=useState(null)
+  useEffect(()=>{
+    if(RMENU_OFF)return
+    try{if(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches)return}catch(_){}   // tactile → menu natif
+    const DENY='a,button,input,textarea,select,label,[contenteditable],[role="button"],[role="link"],[role="menuitem"],[data-vmui],.leaflet-marker-icon'
+    const onCtx=e=>{
+      try{
+        if(e.shiftKey)return                                    // échappatoire power-user → natif
+        const t=e.target;if(!t||t.nodeType!==1||!t.closest)return
+        if(t.closest(DENY))return                               // élément interactif → natif
+        const beachEl=t.closest('[data-beach]')
+        if(!beachEl&&!t.closest('svg[data-sg-live]'))return     // allow-list : notre monde SVG uniquement
+        try{const sel=window.getSelection&&window.getSelection();if(sel&&String(sel).trim())return}catch(_){}  // sélection → « copier » natif
+        let beach=null
+        if(beachEl){try{const id=beachEl.getAttribute('data-beach');beach=allBeaches.find(b=>b.id===id)||null}catch(_){}}
+        e.preventDefault()
+        // Souris → coords curseur ; clavier (Shift+F10 / touche Menu → clientX/Y absents ou 0)
+        // → ancrer à l'élément focalisé (a11y).
+        let x=e.clientX,y=e.clientY,kb=false
+        if(!(x>0)||!(y>0)){kb=true;try{const r=(document.activeElement||t).getBoundingClientRect();x=r.left+Math.min(28,r.width/2);y=r.top+Math.min(28,r.height/2)}catch(_){x=(window.innerWidth||360)/2;y=(window.innerHeight||640)/2}}
+        setCtxMenu({x,y,beach,kb})
+        try{const seen=parseInt(sessionStorage.getItem("sg_beach_views")||"0",10)||0;track("sg_ctx_open",{context:beach?"beach":"scene",beach_id:beach?beach.id:null,above_gift:seen>=3?1:0,kb:kb?1:0})}catch(_){}
+      }catch(_){}
+    }
+    window.addEventListener("contextmenu",onCtx)
+    return()=>window.removeEventListener("contextmenu",onCtx)
+  },[RMENU_OFF,allBeaches])
+  const closeCtx=useCallback(()=>{setCtxMenu(cur=>{if(cur){try{track("sg_ctx_dismiss",{context:cur.beach?"beach":"scene"})}catch(_){}}return null})},[])
+  const ctxShare=useCallback(b=>{
+    try{
+      const url=_fichePageUrl(b)
+      if(navigator.share){try{navigator.share({title:b.name,url}).catch(()=>{})}catch(_){}}
+      else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>{try{sgToast({title:_t(lang,"Lien copié","Link copied","Enlace copiado"),msg:b.name,tone:"success"})}catch(_){}}).catch(()=>{try{sgToast({title:b.name,msg:url,tone:"info"})}catch(_){}})}
+      else{try{sgToast({title:b.name,msg:url,tone:"info"})}catch(_){}}
+    }catch(_){}
+  },[lang])
+  // Items du menu (App construit les closures ; ContextVeilleur ne fait que rendre/a11y).
+  const ctxMenuView=useMemo(()=>{
+    if(!ctxMenu)return null
+    const L=(fr,en,es)=>_t(lang,fr,en,es)
+    const done=(id,fn)=>{const ctx=ctxMenu.beach?"beach":"scene",bid=ctxMenu.beach?ctxMenu.beach.id:null;try{track("sg_ctx_action",{action:id,context:ctx,beach_id:bid})}catch(_){};setCtxMenu(null);try{fn&&fn()}catch(_){}}
+    const focusSearch=()=>{try{const el=document.querySelector('input[type="search"]');if(el){el.focus();el.scrollIntoView&&el.scrollIntoView({block:"center"})}else{setShowPremium(false);setView("map")}}catch(_){}}
+    const b=ctxMenu.beach
+    if(b){
+      const items=[{id:"verdict",primary:true,label:L("Voir le verdict du jour","See today's verdict","Ver el veredicto de hoy"),onSelect:()=>done("verdict",()=>onMapBeach(b))}]
+      const alt=nearestCleanAlt(b,allBeaches)
+      if(alt&&alt.id!==b.id)items.push({id:"nearest",label:L("Une crique propre à côté","A clean cove nearby","Una cala limpia cerca"),onSelect:()=>done("nearest",()=>onMapBeach(alt))})
+      items.push({id:"share",label:L("Partager cette plage","Share this beach","Compartir esta playa"),onSelect:()=>done("share",()=>ctxShare(b))})
+      items.push({id:"alerts",label:L("Être prévenu quand ça tourne","Get told when it turns","Avísame cuando cambie"),onSelect:()=>done("alerts",()=>{try{forceEnablePush("ctx_menu")}catch(_){}})})
+      if(!isPremium){
+        let seen=0;try{seen=parseInt(sessionStorage.getItem("sg_beach_views")||"0",10)||0}catch(_){}
+        // Réciprocité : le nudge premium n'apparaît qu'après ≥3 verdicts consommés ;
+        // sinon on offre la PREUVE (fiabilité) avant l'ask — promesse toujours positive.
+        if(seen>=3)items.push({id:"premium",label:L("Connaître la fin de l'histoire","Know how the story ends","Conocer el final de la historia"),onSelect:()=>done("premium",()=>openPremium("ctx_menu"))})
+        else items.push({id:"reliability",label:L("Voir ce qu'on vaut vraiment","See what we're really worth","Ver cuánto valemos"),onSelect:()=>done("reliability",()=>{try{window.location.href=reliabilityHref(lang)}catch(_){}})})
+      }
+      return{header:L("Vous regardez cette plage. Moi aussi.","You're watching this beach. So am I.","Miras esta playa. Yo también."),items}
+    }
+    // Scène / carte SVG (WorldMapView : pins hit-testés, pas de data-beach → contexte global).
+    const pool=allBeaches.filter(x=>x&&x.status&&x.status!=="_loading"&&x.lat!=null)
+    const cleanPool=pool.filter(x=>x.status==="clean")
+    const best=(cleanPool.length?cleanPool:pool).slice().sort((a,b)=>((b.score||0)-(a.score||0)))[0]
+    const items=[]
+    if(best)items.push({id:"best",primary:true,label:L("La plage propre du jour","Today's clean beach","La playa limpia de hoy"),onSelect:()=>done("best",()=>onMapBeach(best))})
+    items.push({id:"search",label:L("Chercher ma plage","Find my beach","Buscar mi playa"),onSelect:()=>done("search",focusSearch)})
+    items.push({id:"reliability",label:L("Comment on mesure","How we measure","Cómo medimos"),onSelect:()=>done("reliability",()=>{try{window.location.href=reliabilityHref(lang)}catch(_){}})})
+    return{header:L("Vous regardez la mer. Moi aussi.","You're watching the sea. So am I.","Miras el mar. Yo también."),items}
+  },[ctxMenu,lang,isPremium,allBeaches,ctxShare])
   // onChangeView déclaré APRÈS openPremium pour pouvoir l'appeler directement (évite la stale closure).
   // Les bug fixes (source correcte + capture gate) s'appliquent aux deux bras A/B.
   const onChangeView=useCallback(v=>{
@@ -13728,6 +13809,15 @@ export default function App(){
             </div>
             <SgClose lang={lang} onClick={()=>setShowWelcome(false)}/>
           </div>
+        )}
+        {/* Menu clic-droit « Le Veilleur » (desktop) — bulle comic on-brand qui remplace
+            le menu navigateur sur la carte/scène. a11y + reduced-motion dans le composant. */}
+        {ctxMenu&&ctxMenuView&&(
+          <ErrBound fallback={null}>
+            <Suspense fallback={null}>
+              <LazyContextVeilleur x={ctxMenu.x} y={ctxMenu.y} header={ctxMenuView.header} items={ctxMenuView.items} onClose={closeCtx}/>
+            </Suspense>
+          </ErrBound>
         )}
         {/* Toasts de marque — remplace les alert() OS (singleton sgToast(...)) */}
         <SgToastHost lang={lang}/>
