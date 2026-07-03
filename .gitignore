@@ -97,6 +97,13 @@ public/videos/hero/
 .venv-depthflow/
 assets/hero-depthflow/
 
+# Ciné-Atlas : médias lourds produits par l'usine (mp4/gif/poster) — reproductibles via
+# cine-atlas-batch.mjs (data-change, pas code). On COMMIT le manifest + la galerie, PAS les médias.
+public/cine-atlas/*.mp4
+public/cine-atlas/*.gif
+public/cine-atlas/*.png
+public/cine-atlas/*.webp
+
 # junk de session (harnais tmp, captures d'audit) — jamais dans le repo public
 scripts/tmp-*
 audit-mq-screens/
