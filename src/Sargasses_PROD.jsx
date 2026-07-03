@@ -8502,7 +8502,13 @@ function SatelliteFilm({lang}){
 function BeachHeroVideo({ beachId }) {
   const boxRef = useRef(null), vRef = useRef(null), seenRef = useRef(false)
   const [src, setSrc] = useState(null), [on, setOn] = useState(false)
-  const allowed = (() => { try { const q = window.location.search; if (/[?&]heropv=0/.test(q)) return false; if (/[?&]heropv=1/.test(q)) return true; return abVariant("aw_hero_video", ["control", "video"], [.5, .5]) === "video" } catch (_) { return false } })()
+  const allowed = (() => { try { const q = window.location.search; if (/[?&]heropv=0/.test(q)) return false; if (/[?&]heropv=1/.test(q)) return true;
+    // gating persona×récurrence : l'intensité média MONTE avec la familiarité — un NOUVEAU
+    // visiteur (non-USD) voit la scène SVG calme (pas de clip, on ne noie pas le sceptique) ;
+    // un RÉCURRENT (≥2 visites) OU un marché USD (visite souvent unique → traité récurrent dès
+    // V1) voit le clip. sg_visit_count est déjà incrémenté au boot (~L12440).
+    if (!(IS_NEW_REGION || g("sg_visit_count", 0) >= 2)) return false;
+    return abVariant("aw_hero_video", ["control", "video"], [.5, .5]) === "video" } catch (_) { return false } })()
   useEffect(() => {
     if (!allowed) return
     const el = boxRef.current; if (!el) return
