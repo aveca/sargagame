@@ -164,6 +164,24 @@ function writeLastRun(renderResults) {
   try { fs.writeFileSync(path.join(DIR, 'LAST_RUN.md'), md) } catch (_) {}
 }
 
+// ── 4. Heartbeat cloud (clé anon PUBLIQUE — même sécurité que le front, RLS insert-only)
+// Le Planificateur Windows est la surface la moins observable du stack (une MAJ Windows
+// peut le désenregistrer en silence). Ce signal permet à daily-copernicus.yml de détecter
+// une usine morte sans lire un fichier local (cf. factory-heartbeat-watch.cjs). Best-effort,
+// ne bloque jamais le run et ne throw jamais.
+const SUPABASE_URL = 'https://rswdmjtdzrucqzzukfmd.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz'
+function sendHeartbeat(renderResults) {
+  try {
+    fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ event: 'factory_heartbeat', island: null, params: { host: os.hostname(), rendered: renderResults.map(r => `${r.region}:${r.status}`) } }),
+    }).then(r => log(r.ok ? 'heartbeat.ok' : 'heartbeat.http_fail', { status: r.status }))
+      .catch(e => log('heartbeat.fail', { err: String((e && e.message) || e).slice(0, 160) }))
+  } catch (e) { log('heartbeat.fail', { err: String((e && e.message) || e).slice(0, 160) }) }
+}
+
 // ── File de jobs À LA DEMANDE (git-file queue — TRIZ inversion : la machine SONDE) ─
 // Le fondateur commit un queue/<x>.json depuis son phone → git pull le ramène → on
 // l'exécute via le CATALOGUE FERMÉ (handlers.cjs), JAMAIS de code arbitraire.
@@ -208,6 +226,7 @@ try {
     publishFB(results)
     drainQueue()   // le run quotidien draine aussi les jobs à la demande en attente
     writeLastRun(results)
+    if (!PLAN) sendHeartbeat(results)
     log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
   }
 } catch (e) {
