@@ -1832,6 +1832,16 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             }
             // Always use contextually-generated FAQ (enrichments FAQ was identical across all beaches)
             const faqSchema = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":faqQuestions})
+            // ── Video-as-SEO : clip d'ambiance par plage DÉJÀ sur prod (/videos/hero/{id}.mp4,
+            // rail hero-loops prouvé : Release → make-hero-loops → filterHeroLoops → FTP région).
+            // Balisage VideoObject + og:video + <video> lazy au noscript, poster-first. Skip PROPRE
+            // si le clip n'existe pas (loi valider-les-hrefs). HONNÊTE : uploadDate FIGÉ (jamais
+            // data.updatedAt = fausse fraîcheur), description « ambiance, pas une mesure ». Le verdict
+            // reste 100% ERDDAP, au-dessus, dans le DOM. Rollback build : VITE_NO_SEOVIDEO=1.
+            const _heroIds = (globalThis.__heroIds ||= (() => { try { return new Set(JSON.parse(readFileSync(resolve(__dirname, 'public/videos/hero/manifest.json'), 'utf-8')).ids || []) } catch { return new Set() } })())
+            const heroClip = (process.env.VITE_NO_SEOVIDEO !== '1' && _heroIds.has(b.id)) ? { mp4: `https://${domain}/videos/hero/${b.id}.mp4`, poster: `https://${domain}/images/og/${b.slug}.png` } : null
+            const videoObjectLd = heroClip ? JSON.stringify({ "@context": "https://schema.org", "@type": "VideoObject", name: `${b.name} — ambiance golden-hour`, description: "Scène d'ambiance golden-hour, une illustration — pas une image satellite ni une mesure temps réel. Le statut réel, mesuré au satellite (ERDDAP), est affiché sur la page.", thumbnailUrl: heroClip.poster, contentUrl: heroClip.mp4, uploadDate: "2026-07-03", duration: "PT8S" }) : ''
+            const videoHead = heroClip ? `\n    <meta property="og:video" content="${heroClip.mp4}" />\n    <meta property="og:video:secure_url" content="${heroClip.mp4}" />\n    <meta property="og:video:type" content="video/mp4" />\n    <meta property="og:video:width" content="1080" />\n    <meta property="og:video:height" content="1080" />\n    <script type="application/ld+json">\n    ${videoObjectLd}\n    </script>` : ''
             const beachHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
@@ -1852,7 +1862,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               .replace(/<meta name="twitter:image" [^>]*>/, `<meta name="twitter:image" content="https://${domain}/images/og/${b.slug}.png" />`)
               // Strip homepage schemas (WebApplication, FAQPage, Organization, SiteNavigationElement) — beach pages get their own
               .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
-              .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
+              .replace('</head>', `${videoHead}\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
             // Build noscript with nearby beaches (same commune first, then same island), nav links
             // Extra SEO sections appended to ALL beaches (enriched or not)
             const condBaignade = b.status === 'clean' ? `<h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite (Copernicus AFAI) au large de ${b.name} — mesuré, pas deviné. La côte est complexe baie par baie et l'état peut basculer en quelques heures avec le vent : vérifiez toujours sur place avant de vous baigner.</p>` : b.status === 'moderate' ? `<h2>Conditions</h2><p>Présence modérée de sargasses détectée par satellite au large de ${b.name}. Vérifiez l'état de la plage sur place.</p>` : `<h2>Conditions</h2><p>Forte concentration de sargasses détectée par satellite au large de ${b.name}. Échouages probables. Si des sargasses sont en décomposition sur place, éloignez-vous (risque H₂S — source HCSP). Consultez les <a href="/">plages propres à proximité</a>.</p>`
@@ -1973,7 +1983,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // hero BORNÉ + verdict, .sg-hero refermé tout de suite ; l'<article>
                 // (contenu d'origine du noscript) devient un FRÈRE dans .sg-page,
                 // refermé juste avant </noscript> → la scène ne s'étire plus.
-                const _heroOpen = `${heroCssOnce}<div class="sg-page"><div class="sg-hero">${_heroSvg}${_verdict}</div>`
+                const _heroClipEl = heroClip ? `<video class="sg-heroclip" preload="none" muted loop playsinline poster="${heroClip.poster}" style="width:100%;display:block"><source src="${heroClip.mp4}" type="video/mp4"></video>` : ''
+                const _heroOpen = `${heroCssOnce}<div class="sg-page"><div class="sg-hero">${_heroSvg}${_heroClipEl}${_verdict}</div>`
                 noscriptHero = noscriptBlock
                   .replace(/<noscript>/, `<noscript>${_heroOpen}`)
                   .replace(/<\/noscript>/, `</div></noscript>`)
