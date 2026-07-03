@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-02T19:38:02.350Z",
-  "date": "2026-07-02",
+  "generated": "2026-07-03T03:15:55.270Z",
+  "date": "2026-07-03",
   "days": 1,
   "regions": [
     "mq",
@@ -10,6 +10,66 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "0787db1a",
+      "subject": "Merge PR #509: descente Le Veilleur — hors-ligne + présentation + LE FILM DU MATIN [skip ci]"
+    },
+    {
+      "h": "d7fe3396",
+      "subject": "feat(design): élévation « LE FILM DU MATIN » + review adverse corrigée (9/9)"
+    },
+    {
+      "h": "208af7bb",
+      "subject": "feat(desktop): menu clic-droit « Le Veilleur » on-brand (remplace le menu navigateur sur la carte)"
+    },
+    {
+      "h": "058bf6f6",
+      "subject": "feat(seo-b2b): landing FR intention-d'achat /sargasses-pour-hotels/ (MQ+GP)"
+    },
+    {
+      "h": "318b4f45",
+      "subject": "chore: update Copernicus data 2026-07-02 19:55 UTC"
+    },
+    {
+      "h": "04290df7",
+      "subject": "Merge pull request #485 from aveca/feat/b2b-funnel-visibility"
+    },
+    {
+      "h": "b3c92469",
+      "subject": "Merge pull request #482 from aveca/feat/map-intro-video"
+    },
+    {
+      "h": "d48ea72e",
+      "subject": "Merge pull request #468 from aveca/feat/veilleur-comics-group-mvps"
+    },
+    {
+      "h": "a8a06472",
+      "subject": "Merge pull request #464 from aveca/feat/veilleur-video-landing"
+    },
+    {
+      "h": "764a9424",
+      "subject": "feat(b2b): make the money funnel VISIBLE — trial_started + trial_to_paid in Supabase"
+    },
+    {
+      "h": "760e7eaa",
+      "subject": "chore: email state 2026-07-02 19:38 UTC"
+    },
+    {
+      "h": "ec04a9e5",
+      "subject": "Merge pull request #484 from aveca/claude/gallant-maxwell-4b42b6"
+    },
+    {
+      "h": "f5d8822b",
+      "subject": "feat(attract): vitrine idle « La Vitrine qui s'ouvre » — reel réutilisé, 1er geste → funnel"
+    },
+    {
+      "h": "d26d1a40",
+      "subject": "feat(analytics): capture ARGENT — intention d'achat par écran + variante A/B (bots/démo exclus)"
+    },
+    {
+      "h": "a50003ee",
+      "subject": "feat(map): comic/GTA intro video on the map loading cover (flagged, guarded)"
+    },
     {
       "h": "a1faff8c",
       "subject": "Merge pull request #480 from aveca/claude/loving-lamarr-75f282"
@@ -21,6 +81,10 @@
     {
       "h": "8c847c19",
       "subject": "feat(verticales): fusion scène écosystème descente (orbite→fond marin) + fixes revue adverse"
+    },
+    {
+      "h": "16b282a6",
+      "subject": "feat(assets): vertical 1080x1920 ambient reel — portrait picks vertical, landscape horizontal"
     },
     {
       "h": "2fecbc35",
@@ -35,264 +99,145 @@
       "subject": "refonte(/pro/espace): vision golden-hour « Le Veilleur » (SVG, scroll, clic, grand public)"
     },
     {
+      "h": "cb57a2ec",
+      "subject": "feat(studio): Veilleur asset engine (design API) + control-room UI + baked card assets"
+    },
+    {
+      "h": "f25ea2dd",
+      "subject": "feat(landing): LE VEILLEUR · COMICS GROUP — 10 landing MVPs (comic/groove + video bg)"
+    },
+    {
       "h": "b601f947",
       "subject": "Merge pull request #467 from aveca/claude/elated-lederberg-16a286"
-    },
-    {
-      "h": "8d0bbcae",
-      "subject": "sw: précache tout le graphe de chunks → UI complète offline (avion/bateau/panneau/sat)"
-    },
-    {
-      "h": "49a91da5",
-      "subject": "fix(carte): ping de tap sur le fond — jamais un tap dans le vide (#466)"
-    },
-    {
-      "h": "11844e11",
-      "subject": "Merge pull request #459 from aveca/claude/clever-wiles-518a3e"
-    },
-    {
-      "h": "1d56b124",
-      "subject": "fix(deploy): retire /arena-v2.html de prod (copie abo B2C morte)"
-    },
-    {
-      "h": "35de1cf6",
-      "subject": "Merge pull request #456 from aveca/feat/maree-veilleur-arc"
-    },
-    {
-      "h": "4cf32ddc",
-      "subject": "feat(a-propos): vidéo de vision de marque « Le Veilleur » (#455)"
-    },
-    {
-      "h": "f80ba204",
-      "subject": "feat(fiche): La Marée du Veilleur — prévision dessinée en houle golden-hour (arc, ?arc=1)"
-    },
-    {
-      "h": "5d0c110f",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/quizzical-goldwasser-d6a97f"
-    },
-    {
-      "h": "5d3a9d2b",
-      "subject": "feat(demo): mode vitrine « Le Registre du Veilleur » (attract mode ?demo=1)"
-    },
-    {
-      "h": "e68d5b20",
-      "subject": "chore: update Copernicus data 2026-07-02 14:17 UTC"
-    },
-    {
-      "h": "4da3b9ce",
-      "subject": "chore: email state 2026-07-02 14:17 UTC"
-    },
-    {
-      "h": "a946c17a",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/dazzling-ptolemy-8a8d02"
-    },
-    {
-      "h": "ce3de5f1",
-      "subject": "feat(fiche): retire l'ajout de photo, reinvestit en data-viz du verdict (Cadran du Veilleur, A/B)"
-    },
-    {
-      "h": "1e0c02c0",
-      "subject": "feat: expansion-survey — collecte réelle de signal marché (hôtels/collectivités)"
-    },
-    {
-      "h": "54163efa",
-      "subject": "Merge pull request #440 from aveca/claude/gallant-moore-27545a"
-    },
-    {
-      "h": "3fd68139",
-      "subject": "feat: remplace le CTA photo Éclaireur (KPI nul) par VerdictRadarScan"
-    },
-    {
-      "h": "d37e6e53",
-      "subject": "Merge pull request #438 from aveca/claude/eloquent-payne-37d1e0"
-    },
-    {
-      "h": "e276d322",
-      "subject": "fix: overlays SVG narratifs invisibles sous theme-comic (#root effondré)"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 317,
-      "friction": 13,
-      "dead_rate": 0.292,
+      "sessions": 53,
+      "friction": 2,
+      "dead_rate": 0.33,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.299,
-        "n": 700
+        "rate": 0.34,
+        "n": 94
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 121
-        },
-        {
-          "el": "div",
-          "count": 36
-        },
-        {
-          "el": "svg[role=img]",
-          "count": 21
+          "count": 28
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.16
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-01",
+      "prev_date": "2026-07-02",
       "changes": [
-        "sessions 455→317 (-30%)",
-        "dead-rate 0.413→0.292 (-0.1) ✅",
-        "rage-clicks 21→13 ✅",
-        "✔︎ dead-click résolu : p.lc-h2s-txt",
-        "✔︎ dead-click résolu : div.lc-detail-body",
-        "✔︎ dead-click résolu : div.lc-detail-head"
+        "sessions 317→53 (-83%)",
+        "rage-clicks 13→2 ✅",
+        "✔︎ dead-click résolu : div",
+        "✔︎ dead-click résolu : svg[role=img]"
       ]
     },
     {
       "region": "gp",
-      "sessions": 289,
-      "friction": 1,
-      "dead_rate": 0.158,
+      "sessions": 38,
+      "friction": 0,
+      "dead_rate": 0.155,
       "dead_worst": {
-        "screen": "beach",
-        "rate": 0.244,
-        "n": 41
+        "screen": "world",
+        "rate": 0.162,
+        "n": 74
       },
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 32
-        },
-        {
-          "el": "svg[role=img]",
-          "count": 23
-        },
-        {
-          "el": "div",
-          "count": 23
-        },
-        {
-          "el": "rect",
-          "count": 14
-        }
-      ],
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.38
+        "rate": 0.21
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-01",
+      "prev_date": "2026-07-02",
       "changes": [
-        "dead-rate 0.343→0.158 (-0.2) ✅",
-        "✔︎ dead-click résolu : span.lc-detail-fact",
-        "✔︎ dead-click résolu : circle"
+        "sessions 289→38 (-87%)",
+        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "✔︎ dead-click résolu : svg[role=img]",
+        "✔︎ dead-click résolu : div",
+        "✔︎ dead-click résolu : rect"
       ]
     },
     {
       "region": "florida",
-      "sessions": 79,
+      "sessions": 37,
       "friction": 0,
-      "dead_rate": 0.321,
+      "dead_rate": 0.216,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.326,
-        "n": 215
+        "rate": 0.234,
+        "n": 47
       },
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 52
-        }
-      ],
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.27
+        "rate": 0.28
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-01",
+      "prev_date": "2026-07-02",
       "changes": [
-        "dead-rate 0.562→0.321 (-0.2) ✅",
-        "✔︎ dead-click résolu : svg[role=img]",
-        "✔︎ dead-click résolu : div",
-        "✔︎ dead-click résolu : circle",
-        "✔︎ dead-click résolu : path",
-        "✔︎ dead-click résolu : span.lc-detail-fact"
+        "sessions 79→37 (-53%)",
+        "dead-rate 0.321→0.216 (-0.1) ✅",
+        "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 13,
-      "friction": 1,
-      "dead_rate": 0.556,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.609,
-        "n": 23
-      },
-      "top_dead_els": [
-        {
-          "el": "div.sg-onink-scope",
-          "count": 13
-        }
-      ],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.2
-      },
+      "sessions": 7,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-01",
+      "prev_date": "2026-07-02",
       "changes": [
-        "sessions 11→13 (+18%)",
-        "dead-rate 0.645→0.556 (-0.1) ✅",
-        "✔︎ dead-click résolu : svg[role=img]",
-        "✔︎ dead-click résolu : span.lc-detail-fact",
-        "✔︎ dead-click résolu : div",
-        "✔︎ dead-click résolu : div.lc-detail-body",
-        "✔︎ dead-click résolu : div.lc-detail-head"
+        "sessions 13→7 (-46%)",
+        "dead-rate 0.556→0 (-0.6) ✅",
+        "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 17,
+      "sessions": 3,
       "friction": 0,
-      "dead_rate": 0.5,
+      "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.44
-      },
+      "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-01",
+      "prev_date": "2026-07-02",
       "changes": [
-        "✔︎ dead-click résolu : svg[role=img]",
-        "✔︎ dead-click résolu : div.sg-onink-scope",
-        "✔︎ dead-click résolu : div",
-        "✔︎ dead-click résolu : svg",
-        "✔︎ dead-click résolu : span.lc-detail-fact"
+        "sessions 17→3 (-82%)",
+        "dead-rate 0.5→0 (-0.5) ✅"
       ]
     }
   ]
