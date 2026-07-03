@@ -109,6 +109,12 @@ public/scene-atlas/*.gif
 public/scene-atlas/*.png
 public/scene-atlas/*.webp
 
+# Films longs "Le Veilleur" (rendus lourds ~10-90 Mo, reproductibles via render-film-3min.mjs)
+# — JAMAIS committés (data-change, pas code). On commit le SCRIPT + le verify, pas le mp4.
+public/films/*.mp4
+public/films/*.webm
+public/films/*.poster.png
+
 # junk de session (harnais tmp, captures d'audit) — jamais dans le repo public
 scripts/tmp-*
 audit-mq-screens/
