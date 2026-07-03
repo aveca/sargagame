@@ -61,6 +61,16 @@ const BRIEF_OFF=(()=>{try{return /[?&]brief=0/.test(window.location.search)}catc
 const DiveTransition=lazyWithRetry(()=>import("./DiveTransition.jsx"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
+// HOME JUICY « Le tampon qui claque » (jury home-page-juicy-hero 2026-07-03, proto
+// design/proto-home-veilleur.html porté). Additif, opt-in debug ?home=1 (prioritaire
+// sur chasse/homeAZ le temps de l'A/B), control = HeroVerdict/GameFunnel/HomeAZ/Chasse intacts.
+const LazyHomeJuicy=lazyWithRetry(()=>import("./HomeJuicy.jsx"))
+// LE VEILLEUR TE RÉPOND — assistant visuel zéro-LLM (proto design/proto-veilleur-repond.html
+// porté). Intent-parsing déterministe (regex+lexique) → sélection d'une vraie plage → bulles
+// visuelles (scène SVG + verdict réel + plan B). Surface deep-link ?veille=1 (comme BriefMatin),
+// rollback ?veille=0. Lazy, hors budget eager.
+const LazyVeilleurRepond=lazyWithRetry(()=>import("./VeilleurRepond.jsx"))
+const VEILLE_OFF=(()=>{try{return /[?&]veille=0/.test(window.location.search)}catch(_){return false}})()
 // Accueil « LA CHASSE » (bras A/B `arena_loop`) — boucle de jeu TCG comic.
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
@@ -11738,6 +11748,10 @@ export default function App(){
   // le trafic organique — showHero=false par défaut, l'accueil réel est la carte.
   // Reste vivante QUE derrière ?hero=1 (QA/rollback des anciens designs d'accueil).
   const[homeAZ]=useState(()=>{try{return /[?&]home_az=1/.test(window.location.search)}catch(_){return false}})
+  // Bras A/B `home_juicy` (« Le tampon qui claque », proto porté 2026-07-03) : verdict-tampon
+  // BD + grille "chaque crique" + storytelling. Override debug ?home=1, PRIORITAIRE sur
+  // chasse/homeAZ (sinon injoignable derrière le défaut chasse=true). Additif, control intact.
+  const[homeJuicy]=useState(()=>{try{return /[?&]home=1/.test(window.location.search)}catch(_){return false}})
   // Accueil « LA CHASSE » par défaut SI showHero (override debug ?chasse=0 pour
   // retomber sur HeroVerdict). Conversion (onOpen/onOpenBeach/onPremium) inchangée.
   const[chasse]=useState(()=>{try{return !/[?&]chasse=0/.test(window.location.search)}catch(_){return true}})
@@ -12944,6 +12958,9 @@ export default function App(){
   const [showVerticals,setShowVerticals]=useState(()=>{try{const q=window.location.search||"";return /[?&]verticals=1/.test(q)&&!/[?&]verticals=0/.test(q)}catch(_){return false}})
   // Le brief du matin — overlay payload premium. Deep-link ?brief=1 (surface push/PWA/email) l'ouvre ; ?brief=0 (BRIEF_OFF) coupe.
   const [showBrief,setShowBrief]=useState(()=>{try{const q=window.location.search||"";return /[?&]brief=1/.test(q)&&!/[?&]brief=0/.test(q)}catch(_){return false}})
+  // Le Veilleur te répond — assistant visuel zéro-LLM. Deep-link ?veille=1 (surface
+  // push/PWA/email/context-menu future), comme BriefMatin ; ?veille=0 coupe (VEILLE_OFF).
+  const [showVeille,setShowVeille]=useState(()=>{try{const q=window.location.search||"";return /[?&]veille=1/.test(q)&&!/[?&]veille=0/.test(q)}catch(_){return false}})
   const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
   const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
   // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
@@ -13117,7 +13134,36 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
-        {showHero&&dataReady&&heroPick&&(chasse?(
+        {showHero&&dataReady&&heroPick&&(homeJuicy?(
+          /* BRAS A/B `home_juicy` — « Le tampon qui claque » (proto porté 2026-07-03).
+             Additif, PRIORITAIRE quand ?home=1 (sinon injoignable derrière chasse=true
+             par défaut) : control = Chasse/HomeAZ/GameFunnel/HeroVerdict, tous intacts. */
+          <ErrBound><Suspense fallback={null}>
+          <LazyHomeJuicy beach={heroPick} lang={lang} island={island} sargData={sargData}
+            pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
+              .sort((a,b)=>(b.score||0)-(a.score||0))}
+            track={track}
+            onOpen={()=>{
+              dismissHero("home_juicy_cta")
+              setSelectedBeach(heroPick)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"home_juicy"})
+            }}
+            onOpenBeach={b=>{
+              dismissHero("home_juicy_card")
+              setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"home_juicy_grid"})
+            }}
+            onPremium={src=>{dismissHero("home_juicy_premium");openPremium(src||"home_juicy")}}
+            onShowMap={()=>{
+              dismissHero("home_juicy_map")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
+            onReliability={()=>{try{const rp=lang==="en"?"/reliability/":lang==="es"?"/fiabilidad/":"/fiabilite/";window.location.href=rp}catch(_){}}}
+            exiting={heroExiting}/>
+          </Suspense></ErrBound>
+        ):chasse?(
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
@@ -13775,6 +13821,22 @@ export default function App(){
           onClose={()=>setShowBrief(false)}
           onPremium={(src)=>{setShowBrief(false);openPremium(src||"brief_morning")}}
           onReliability={()=>{try{const rp=lang==="en"?"/reliability/":lang==="es"?"/fiabilidad/":"/fiabilite/";window.location.href=rp}catch(_){}}}/></Suspense></ErrBound>}
+
+        {/* LE VEILLEUR TE RÉPOND — assistant visuel zéro-LLM, deep-link ?veille=1 (comme le
+            brief du matin). Additif, aucune nouvelle entrée carte (anti-clutter, même doctrine
+            que BriefMatin) ; ?veille=0 coupe. */}
+        {showVeille&&!VEILLE_OFF&&<ErrBound fallback={null}><Suspense fallback={null}><LazyVeilleurRepond
+          lang={lang} allBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)}
+          track={track}
+          onClose={()=>setShowVeille(false)}
+          onOpenBeach={b=>{
+            setShowVeille(false)
+            setSelectedBeach(b)
+            fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+            track("sg_beach_open",{beach_id:b.id,status:b.status,source:"veille"})
+          }}
+          onPremium={(src,ctx)=>{setShowVeille(false);if(ctx&&ctx.beach){setSelectedBeach(ctx.beach)};openPremium(src||"veille")}}
+          onShowMap={()=>{setShowVeille(false)}}/></Suspense></ErrBound>}
 
         {/* Cache anti-premap : sombre plein écran tant que la carte-monde par défaut est EN
             ATTENTE d'ouverture (data → showArchipel via layoutEffect gaté allBeaches>=3).
