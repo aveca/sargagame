@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — vantage 69/100 · PIÉTON (clip design)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* clip généré — voir scripts/design/gen-scale-clips.cjs. Bibliothèque design, hors funnel. */
+:root{
+  --top:#114248; --bot:#0a1f2c;
+  --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --tealL:#1EC8B0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden}
+body{background:linear-gradient(180deg,var(--top),var(--bot) 70%,#02060a);color:#EAF7F4;
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;letter-spacing:-.01em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+#stage{position:fixed;inset:0;display:flex;flex-direction:column}
+.chrome{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px}
+.wm{font-family:'Anton',sans-serif;font-size:15px;color:#fff;letter-spacing:-.01em;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.wm b{display:block;margin-top:2px;font:700 8.5px/1 "Bricolage Grotesque";letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,216,132,.8)}
+.tag{font:700 9px/1 'JetBrains Mono';letter-spacing:.06em;color:rgba(234,247,244,.55);text-align:right}
+
+.emblem-wrap{display:flex;justify-content:center;padding-top:6px}
+.emblem{width:44px;height:56px;color:var(--goldL)}
+.em-ant{stroke:currentColor;stroke-width:2.4;stroke-linecap:round;fill:none}
+.em-body{fill:rgba(16,38,34,.9)}
+.em-ring{stroke:currentColor;stroke-width:2.6;fill:none}
+.em-lens{fill:#0a2b2b}
+.em-iris{fill:var(--goldL)}
+@media (prefers-reduced-motion:no-preference){
+  .emblem{animation:breathe 6.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:6px 22px;gap:8px}
+.eyebrow{font:800 10.5px/1.3 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,216,132,.85);text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.altitude{font:700 15px/1 'JetBrains Mono';color:var(--tealL);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.tiername{font-size:clamp(30px,10vw,54px);line-height:.98;color:#fff;text-shadow:0 3px 22px rgba(0,0,0,.55);margin:2px 0}
+.value{font:700 16px/1.4 "Bricolage Grotesque";color:#fff;max-width:32ch;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.cta{display:inline-flex;align-items:center;gap:9px;margin-top:10px;text-decoration:none;cursor:pointer;
+  border:2px solid #0D0D0D;border-radius:13px;padding:13px 20px;color:#0D0D0D;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:5px 5px 0 rgba(0,0,0,.45);font:800 15px/1 "Bricolage Grotesque"}
+
+/* bulles ascendantes (surface et dessous) — boucle CSS pure */
+.bub{position:absolute;bottom:-6%;border-radius:50%;background:rgba(255,255,255,.16);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){
+  .bub{animation:rise linear infinite}
+  @keyframes rise{0%{transform:translate(0,0);opacity:0}8%{opacity:.5}92%{opacity:.35}100%{transform:translate(var(--dx,6px),-112vh);opacity:0}}
+}
+/* étoiles (satellite/avion) — scintillement doux, jamais de mouvement de position */
+.star{position:absolute;border-radius:50%;background:#fff;pointer-events:none;opacity:.5}
+@media (prefers-reduced-motion:no-preference){
+  .star{animation:twinkle 3.2s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:.9}}
+}
+
+.foot{text-align:center;padding:10px 16px 14px;font:600 9.5px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.42)}
+
+@media (prefers-reduced-motion:reduce){ .bub,.star{display:none} }
+</style>
+</head>
+<body>
+
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+Le Veilleur — vantage 69 sur 100, PIÉTON, surface.
+</h1>
+
+<div id="stage">
+  <div class="chrome">
+    <div class="wm">LE VEILLEUR<b>Bibliothèque design · descente d’échelle</b></div>
+    <div class="tag">069/100</div>
+  </div>
+
+  <div class="bub" style="left:12%;width:7px;height:7px;--dx:10px;animation-duration:9s;animation-delay:-1s"></div>
+      <div class="bub" style="left:26%;width:4px;height:4px;--dx:-8px;animation-duration:7s;animation-delay:-3.4s"></div>
+      <div class="bub" style="left:70%;width:6px;height:6px;--dx:6px;animation-duration:10.5s;animation-delay:-.6s"></div>
+      <div class="bub" style="left:84%;width:5px;height:5px;--dx:-6px;animation-duration:8.2s;animation-delay:-5s"></div>
+      <div class="bub" style="left:50%;width:3px;height:3px;--dx:4px;animation-duration:6.5s;animation-delay:-2.1s"></div>
+
+  <main>
+    <div class="emblem-wrap">
+      <svg class="emblem" viewBox="0 0 46 58" aria-hidden="true">
+        <line class="em-ant" x1="23" y1="6" x2="23" y2="16"/>
+        <circle class="em-iris" cx="23" cy="6" r="3.4"/>
+        <path class="em-body" d="M23 16 C33 16 39 23 39 31 C39 42 32 50 23 50 C14 50 7 42 7 31 C7 23 13 16 23 16 Z"/>
+        <circle class="em-lens" cx="23" cy="33" r="12"/>
+        <circle class="em-ring" cx="23" cy="33" r="12"/>
+        <circle class="em-iris" cx="23" cy="36" r="4.6"/>
+      </svg>
+    </div>
+    <div class="eyebrow">Vantage 9/10 · Là où vous posez la serviette</div>
+    <div class="altitude">surface</div>
+    <h2 class="tiername anton">PIÉTON</h2>
+    <p class="value">La mer d’aujourd’hui : propre, ou pas. La seule question qui compte.</p>
+    <a class="cta" href="https://sargasses-martinique.com/">Voir ma plage — gratuit<span class="ar">→</span></a>
+  </main>
+
+  <div class="foot">Clip 69/100 · pièce de bibliothèque design, hors funnel, pas déployée · verdict 100&nbsp;% donnée mesurée, l’argent ne touche jamais la mesure</div>
+</div>
+</body>
+</html>
