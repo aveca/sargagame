@@ -1348,7 +1348,8 @@
     "daily_count": 8,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-06-30"
+    "install_nudge_last": "2026-06-30",
+    "j14": "2026-07-04T13:29:22.269Z"
   },
   "324c0139f551d07758f699db12ec97f3": {},
   "97532088d9fed647d3d6725194ad09b7": {
@@ -1628,7 +1629,9 @@
     "j3": "2026-07-04T08:39:54.816Z"
   },
   "cd5589cf06f6b50e3faed13c0bfd770e": {},
-  "276835a41303cfaf20e9873ecb5d64c7": {},
+  "276835a41303cfaf20e9873ecb5d64c7": {
+    "j3": "2026-07-04T13:29:41.009Z"
+  },
   "8de13eef2a361b8601c60522b69b7bf1": {},
   "303c9ad04b326b4ccad1013891ead88b": {},
   "a34e084f2c00d3899e650a9426562e4b": {},
@@ -1665,5 +1668,6 @@
     "daily_last": "2026-07-04",
     "daily_sig": "Anse Madame|clean|69|clean|0|",
     "daily_count": 1
-  }
+  },
+  "55e7f5baa510ed57abcf1c3039e8af39": {}
 }
