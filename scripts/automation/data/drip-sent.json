@@ -1062,12 +1062,12 @@
     "j21": "2026-07-02T19:27:23.222Z"
   },
   "579476888eb0d4415798b2a4770151ed": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Miami Beach|clean|93|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
     "j3": "2026-06-14T20:59:33.636Z",
     "j7": "2026-06-18T20:26:09.693Z",
     "j14": "2026-06-26T03:43:54.688Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
@@ -1084,23 +1084,23 @@
     "j21": "2026-07-03T03:00:56.402Z"
   },
   "56c8db20918240754ce1bfae61e9326b": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
     "j7": "2026-06-19T10:26:18.113Z",
     "j14": "2026-06-26T09:27:07.949Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j21": "2026-07-03T09:21:58.213Z"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
     "j7": "2026-06-19T10:26:19.849Z",
     "j14": "2026-06-26T09:27:09.664Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j21": "2026-07-03T09:22:02.114Z"
@@ -1207,11 +1207,11 @@
     "j14": "2026-06-28T03:53:50.492Z"
   },
   "3ecb65d5060987817fbfba6fe115916c": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-17T04:08:06.170Z",
     "j7": "2026-06-21T04:13:35.292Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-28T03:53:52.422Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1227,21 +1227,21 @@
     "j14": "2026-06-28T19:22:53.590Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-28T19:22:55.176Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-29T04:11:47.484Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1262,21 +1262,21 @@
     "install_nudge_last": "2026-06-30"
   },
   "73847215716df27d0e0585585d502598": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-29T15:49:58.831Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-18T20:26:12.876Z",
     "j7": "2026-06-22T20:48:43.358Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-29T20:00:42.532Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1287,11 +1287,11 @@
     "j14": "2026-06-29T20:00:45.121Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j14": "2026-06-30T03:41:53.530Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1309,9 +1309,9 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j14": "2026-07-01T09:49:25.510Z"
@@ -1333,19 +1333,19 @@
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j14": "2026-07-04T08:39:51.952Z"
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 8,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1368,10 +1368,10 @@
     "j7": "2026-06-29T11:00:04.264Z"
   },
   "d1d35f18f6c8be599cec77d79fd44473": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j7": "2026-06-29T15:50:01.935Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1381,10 +1381,10 @@
     "j7": "2026-06-29T15:50:04.304Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j7": "2026-06-29T15:50:06.123Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1394,10 +1394,10 @@
     "j7": "2026-06-29T15:50:08.007Z"
   },
   "df28c95e078a1150efebcf9bb69e0088": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j3": "2026-06-25T20:00:52.774Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "j7": "2026-06-29T20:00:47.416Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30"
@@ -1436,10 +1436,10 @@
     "j7": "2026-06-30T14:21:38.387Z"
   },
   "afcbae2953c21270ddfdd78b25c4c247": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
     "j3": "2026-06-26T14:27:43.321Z",
-    "daily_count": 7,
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
     "j7": "2026-06-30T14:21:39.960Z"
@@ -1449,9 +1449,9 @@
     "j7": "2026-06-30T20:00:57.186Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
+    "daily_count": 8,
     "j3": "2026-06-27T13:43:09.354Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
@@ -1462,9 +1462,9 @@
     "j7": "2026-07-01T14:38:15.458Z"
   },
   "e383942c9c243956a6078128ed7d57c7": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 8,
     "j3": "2026-06-27T19:22:50.065Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
@@ -1488,9 +1488,9 @@
     "j7": "2026-07-03T03:00:58.462Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Anse Madame|clean|81|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
+    "daily_count": 8,
     "j3": "2026-06-29T04:11:53.346Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
@@ -1504,9 +1504,9 @@
     "j7": "2026-07-03T14:04:07.537Z"
   },
   "384eedc45e1b0234f2c3a843467ab6c4": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 8,
     "j3": "2026-06-29T15:50:09.261Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
@@ -1521,9 +1521,9 @@
     "j7": "2026-07-04T02:57:07.610Z"
   },
   "957ae125ebdae3434302a66e39a079dc": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 8,
     "j3": "2026-06-30T03:41:57.982Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-06-30",
@@ -1634,9 +1634,9 @@
   "a34e084f2c00d3899e650a9426562e4b": {},
   "5b03b88cb27c0327941fffb919d88190": {},
   "9ceac655d48e9ab38f93b6b364fa413f": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
-    "daily_count": 2
+    "daily_last": "2026-07-04",
+    "daily_sig": "Plage de Malendure|clean|83|clean|2|dimanche",
+    "daily_count": 3
   },
   "d002ddba833c4024ae30ca64d1f940cf": {},
   "2b30d1ca69580b74183c191b7925e660": {},
@@ -1656,10 +1656,14 @@
   "d5753869528bfc8a9c65062136f07a76": {},
   "72cd93530bdc905c33003ace3b0b5517": {},
   "f0f46c3b30b23ee473a3160b46d6faa5": {
-    "daily_last": "2026-07-03",
-    "daily_sig": "Key West (Smathers)|clean|83|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
+    "daily_count": 2
   },
   "e6d295305837e877b083d96219e19239": {},
-  "0719411b6ef13537b924e81b94f763b3": {}
+  "0719411b6ef13537b924e81b94f763b3": {
+    "daily_last": "2026-07-04",
+    "daily_sig": "Anse Madame|clean|69|clean|0|",
+    "daily_count": 1
+  }
 }
