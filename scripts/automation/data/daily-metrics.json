@@ -2344,10 +2344,10 @@
   },
   {
     "date": "2026-07-04",
-    "time": "2026-07-04T08:49:57.286Z",
+    "time": "2026-07-04T13:34:18.326Z",
     "payments": 15,
     "revenue": 90.85,
-    "emails": 311,
+    "emails": 312,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -2446,8 +2446,8 @@
     "ga4": {
       "date": "2026-07-03",
       "mq": {
-        "sessions": 309,
-        "users": 949
+        "sessions": 310,
+        "users": 1012
       },
       "gp": {
         "sessions": 203,
