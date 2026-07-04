@@ -2344,17 +2344,17 @@
   },
   {
     "date": "2026-07-04",
-    "time": "2026-07-04T19:23:26.880Z",
+    "time": "2026-07-04T23:20:12.768Z",
     "payments": 15,
     "revenue": 90.85,
     "emails": 315,
     "feedbacks": 1,
     "avgRating": 4,
-    "pipelineOk": true,
+    "pipelineOk": false,
     "funnel": {
-      "sessions": 37625,
-      "lockClicks": 111,
-      "modalOpens": 3595,
+      "sessions": 36339,
+      "lockClicks": 120,
+      "modalOpens": 3614,
       "modalCta": 121,
       "sampleStarts": 0,
       "emailSubmits": 55,
@@ -2364,7 +2364,7 @@
       "revenueReal": 45.94,
       "rates": {
         "session_to_lock": 0.3,
-        "lock_to_modal": 3239,
+        "lock_to_modal": 3012,
         "modal_to_cta": 3,
         "modal_to_sample": 0,
         "modal_to_any_action": 3,
@@ -2444,14 +2444,14 @@
       ]
     },
     "ga4": {
-      "date": "2026-07-03",
+      "date": "2026-07-02",
       "mq": {
-        "sessions": 310,
-        "users": 1012
+        "sessions": 350,
+        "users": 2140
       },
       "gp": {
-        "sessions": 203,
-        "users": 752
+        "sessions": 237,
+        "users": 1263
       }
     }
   }
