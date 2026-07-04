@@ -34,10 +34,12 @@ const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 //   - pay1   → link beat inline checkout — line 3270
 // Removed (dead component / never rendered): vp1 (WeekendBanner deleted)
 // Removed (never wired / no call site): onb1, hero2
+// Removed 2026-07-04 (killed, no call site left — sample_start=0 on 10k+ sessions,
+// confirmed falsified tracking, hardcoded to control): pw_cta_order
+// Removed 2026-07-04 (inlined to `direct`, flat null on every re-measure 04-18→06-29,
+// no call site left): pw_prelude
 const TESTS = [
   { id: 'em1', dimension: 'customEvent:ab_em1', variants: ['control', 'curiosity'], metric: 'sg_email_submit' },
-  { id: 'pw_cta_order', dimension: 'customEvent:ab_pw_cta_order', variants: ['control', 'sample_first'], metric: 'sg_sample_start' },
-  { id: 'pw_prelude', dimension: 'customEvent:ab_pw_prelude', variants: ['direct', 'prelude'], metric: 'sg_checkout_redirect' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {

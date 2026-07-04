@@ -1,5 +1,5 @@
 {
-  "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
+  "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source. Pruned 2026-07-04: pw_cta_order/pw_prelude removed from TESTS in ab-fetch-ga4.cjs (both killed, no call site left in Sargasses_PROD.jsx) — their entries here were ghosts (returning visitors' stale sg_ab localStorage re-injected by track()), not live tests. See scripts/automation/ab-fetch-ga4.cjs comment for kill dates.",
   "_fetchedAt": "2026-06-29T15:05:40.690Z",
   "_source": "apps-script-funnel",
   "tests": [
@@ -18,40 +18,6 @@
         26
       ],
       "metric": "sg_email_submit",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "pw_cta_order",
-      "variants": [
-        "control",
-        "sample_first"
-      ],
-      "sessions": [
-        2626,
-        2950
-      ],
-      "conversions": [
-        0,
-        0
-      ],
-      "metric": "sg_sample_start",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "pw_prelude",
-      "variants": [
-        "direct",
-        "prelude"
-      ],
-      "sessions": [
-        6072,
-        5002
-      ],
-      "conversions": [
-        75,
-        62
-      ],
-      "metric": "sg_checkout_redirect",
       "_source": "apps-script-funnel"
     }
   ]
