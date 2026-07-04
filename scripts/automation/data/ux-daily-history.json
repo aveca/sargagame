@@ -518,5 +518,94 @@
     "redirect_to_conversion": 0,
     "session_to_conversion": 0,
     "session_to_email": 0
+  },
+  {
+    "date": "2026-07-04",
+    "region": "mq",
+    "sessions": 35,
+    "friction": 1,
+    "dead_rate": 0.053,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.056,
+      "n": 54
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.34
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-04",
+    "region": "gp",
+    "sessions": 29,
+    "friction": 0,
+    "dead_rate": 0.111,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.3
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-04",
+    "region": "florida",
+    "sessions": 14,
+    "friction": 0,
+    "dead_rate": 0.067,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.067,
+      "n": 30
+    },
+    "top_dead_els": [],
+    "bored_worst": null,
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-04",
+    "region": "puntacana",
+    "sessions": 1,
+    "friction": 0,
+    "dead_rate": 0,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": null,
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-04",
+    "region": "rivieramaya",
+    "sessions": 2,
+    "friction": 0,
+    "dead_rate": 0,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": null,
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
   }
 ]
