@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-05T08:57:58.528Z",
+  "generated": "2026-07-05T13:49:35.806Z",
   "date": "2026-07-05",
   "days": 1,
   "regions": [
@@ -10,6 +10,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "b772fcef",
+      "subject": "chore: update Copernicus data 2026-07-05 08:58 UTC"
+    },
+    {
+      "h": "ad2a8c3d",
+      "subject": "chore: email state 2026-07-05 08:57 UTC"
+    },
     {
       "h": "b863e6f2",
       "subject": "chore(assets): auto-generate OG images"
@@ -29,36 +37,28 @@
     {
       "h": "a713db98",
       "subject": "chore: email state 2026-07-04 19:23 UTC"
-    },
-    {
-      "h": "3230f395",
-      "subject": "chore: update Copernicus data 2026-07-04 13:35 UTC"
-    },
-    {
-      "h": "f1e78706",
-      "subject": "chore: email state 2026-07-04 13:34 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 78,
+      "sessions": 174,
       "friction": 1,
-      "dead_rate": 0.24,
+      "dead_rate": 0.184,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.241,
-        "n": 141
+        "rate": 0.193,
+        "n": 295
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 29
+          "count": 49
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.12
+        "rate": 0.22
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -67,30 +67,37 @@
       "session_to_email": 0,
       "prev_date": "2026-07-04",
       "changes": [
-        "sessions 252→78 (-69%)",
-        "dead-rate 0.161→0.24 (+0.1) ⚠️",
+        "sessions 252→174 (-31%)",
         "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "gp",
-      "sessions": 67,
-      "friction": 0,
-      "dead_rate": 0.185,
+      "sessions": 187,
+      "friction": 2,
+      "dead_rate": 0.189,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.193,
-        "n": 83
+        "rate": 0.181,
+        "n": 343
       },
       "top_dead_els": [
         {
           "el": "div.sg-onink-scope",
-          "count": 15
+          "count": 22
+        },
+        {
+          "el": "div",
+          "count": 21
+        },
+        {
+          "el": "svg",
+          "count": 10
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.24
+        "rate": 0.27
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -99,24 +106,25 @@
       "session_to_email": 0,
       "prev_date": "2026-07-04",
       "changes": [
-        "sessions 231→67 (-71%)",
-        "✔︎ dead-click résolu : div"
+        "sessions 231→187 (-19%)",
+        "dead-rate 0.137→0.189 (+0.1) ⚠️",
+        "🆕 dead-click : svg (10)"
       ]
     },
     {
       "region": "florida",
-      "sessions": 25,
+      "sessions": 63,
       "friction": 0,
-      "dead_rate": 0.167,
+      "dead_rate": 0.208,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.167,
-        "n": 24
+        "rate": 0.2,
+        "n": 95
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.5
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -125,12 +133,13 @@
       "session_to_email": 0,
       "prev_date": "2026-07-04",
       "changes": [
-        "sessions 101→25 (-75%)"
+        "sessions 101→63 (-38%)",
+        "dead-rate 0.139→0.208 (+0.1) ⚠️"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 7,
+      "sessions": 13,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -143,12 +152,12 @@
       "session_to_email": 0,
       "prev_date": "2026-07-04",
       "changes": [
-        "stable (aucun mouvement notable)"
+        "sessions 8→13 (+63%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 9,
+      "sessions": 13,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -161,7 +170,7 @@
       "session_to_email": 0,
       "prev_date": "2026-07-04",
       "changes": [
-        "sessions 18→9 (-50%)",
+        "sessions 18→13 (-28%)",
         "dead-rate 0.211→0 (-0.2) ✅"
       ]
     }
