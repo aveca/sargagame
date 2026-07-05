@@ -647,6 +647,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-perk em{display:block;font-style:normal;font-size:11px;font-weight:600;color:var(--mid);margin-top:1px;line-height:1.25}
       .pww-proof{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 15px;font-size:11px;font-weight:700;color:#1c2c2c;text-align:center}
       .pww-proof .pls{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto;box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pwwPulse 2.4s infinite}
+      /* .pww-record : palmarès audité (moat « publie aussi ses erreurs », temps #5)
+         — miroir ADDITIF de .pwx-record (ComicPaywall) aux tokens golden/ink de World. */
+      .pww-record{display:flex;align-items:center;gap:9px;margin:0 0 15px;padding:9px 12px;border-radius:12px;background:#fdf6e3;border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+      .pww-record .pww-rdot{color:var(--green);font-size:11px;flex:0 0 auto;filter:drop-shadow(0 0 3px rgba(34,197,94,.7))}
+      .pww-record b{display:block;font-size:11.5px;font-weight:800;color:var(--ink);line-height:1.25}
+      .pww-record em{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#1f3a28;margin-top:2px}
+      .pww-record a{display:inline-block;margin-top:4px;font-size:10.5px;font-weight:800;color:var(--green);text-decoration:underline}
       @keyframes pwwPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
       /* PLANS */
       .pww-plans{display:flex;gap:9px;margin-bottom:12px}
@@ -833,8 +840,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </div>
         </div>
 
-        {/* PREUVE */}
-        {totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
+        {/* PREUVE — palmarès AUDITÉ prioritaire (le moat : « publie aussi ses erreurs »,
+            doctrine storytelling temps #5), sinon repli sur le clean-count live. Miroir
+            ADDITIF du bloc .pwx-record de ComicPaywall pour restaurer la preuve-moat sur
+            l'écran de décision de l'arm World (capture/rollback). Gate lien = ?pwrel=0. */}
+        {recordProof
+          ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
+          :totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
           ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
           :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
 
