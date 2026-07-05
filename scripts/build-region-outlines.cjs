@@ -63,14 +63,20 @@ async function nominatim(q) {
   const url = "https://nominatim.openstreetmap.org/search.php?q=" + encodeURIComponent(q) + "&polygon_geojson=1&format=jsonv2&limit=3";
   const r = await fetch(url, { headers: { "User-Agent": "sargasses-region-outlines/1.0 (alerte@sargasses-martinique.com)" } });
   const a = await r.json();
-  // plus grand polygone (Polygon ou MultiPolygon)
-  let best = null, bestLen = 0;
+  // Choisir le MEILLEUR résultat (candidat dont le plus gros ring est le plus grand),
+  // puis garder TOUS ses rings — pas que le plus gros. Un archipel (Guadeloupe :
+  // Les Saintes/Marie-Galante/Désirade/Petite-Terre) est un MultiPolygon dont ces îles
+  // sont des rings séparés du ring principal ; ne garder que le plus gros les faisait
+  // disparaître du tracé de côte alors que leurs plages restent affichées (pins flottant
+  // sans île dessinée en dessous).
+  let bestRings = null, bestLen = 0;
   for (const it of a) {
     const g = it.geojson; if (!g) continue;
     const rings = g.type === "MultiPolygon" ? g.coordinates.map(p => p[0]) : g.type === "Polygon" ? [g.coordinates[0]] : [];
-    for (const ring of rings) if (ring.length > bestLen) { best = ring; bestLen = ring.length; }
+    const localBest = rings.reduce((m, r) => Math.max(m, r.length), 0);
+    if (localBest > bestLen) { bestLen = localBest; bestRings = rings; }
   }
-  return best;
+  return bestRings;
 }
 
 async function main() {
@@ -82,26 +88,35 @@ async function main() {
     const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, "regions", id + ".json"), "utf8"));
     const [w, s, e, n] = cfg.bbox;
     process.stdout.write(`• ${id} (${QUERY[id]}) … `);
-    let ring;
-    try { ring = await nominatim(QUERY[id]); } catch (err) { console.log("FETCH ERR", err.message); continue; }
-    if (!ring) { console.log("no polygon"); continue; }
-    // drop doublon de fermeture
-    if (ring.length > 1) { const f = ring[0], l = ring[ring.length - 1]; if (f[0] === l[0] && f[1] === l[1]) ring = ring.slice(0, -1); }
-    let clipped = clampPolyToBBox(ring, w, s, e, n);
-    if (clipped.length < 3) { console.log("clip vide (polygone ne couvre pas la bbox)"); continue; }
+    let rings;
+    try { rings = await nominatim(QUERY[id]); } catch (err) { console.log("FETCH ERR", err.message); continue; }
+    if (!rings || !rings.length) { console.log("no polygon"); continue; }
     // simplifier (tolérance ~ 0.4% de la largeur bbox)
     const eps = (e - w) * 0.004;
-    let simp = dp(clipped, eps);
+    const subpaths = [];
+    let rawPts = 0, simpPts = 0;
+    for (let ring of rings) {
+      rawPts += ring.length;
+      // drop doublon de fermeture
+      if (ring.length > 1) { const f = ring[0], l = ring[ring.length - 1]; if (f[0] === l[0] && f[1] === l[1]) ring = ring.slice(0, -1); }
+      const clipped = clampPolyToBBox(ring, w, s, e, n);
+      if (clipped.length < 3) continue; // ring hors bbox (ou dégénéré) : ignoré, pas fatal
+      const simp = dp(clipped, eps);
+      if (simp.length < 3) continue;
+      subpaths.push(simp);
+      simpPts += simp.length;
+    }
+    if (!subpaths.length) { console.log("clip vide (polygone ne couvre pas la bbox)"); continue; }
     // projection bbox région → viewBox
     const meanLat = (s + n) / 2, kx = Math.cos(meanLat * Math.PI / 180);
     const wkm = (e - w) * kx, hkm = (n - s);
     const sc = Math.min((VBW - 2 * PAD) / wkm, (VBH - 2 * PAD) / hkm);
     const offX = (VBW - wkm * sc) / 2, offY = (VBH - hkm * sc) / 2;
     const toVB = (la, lo) => [offX + (lo - w) * kx * sc, offY + (n - la) * sc];
-    const d = "M" + simp.map(p => { const v = toVB(p[1], p[0]); return v[0].toFixed(1) + " " + v[1].toFixed(1); }).join(" L") + " Z";
-    const out = { id, name: cfg.name, viewBox: [VBW, VBH], bbox: { minLng: w, maxLng: e, minLat: s, maxLat: n }, proj: { kx, sc, offX, offY }, path: d, points: simp.length };
+    const d = subpaths.map(simp => "M" + simp.map(p => { const v = toVB(p[1], p[0]); return v[0].toFixed(1) + " " + v[1].toFixed(1); }).join(" L") + " Z").join(" ");
+    const out = { id, name: cfg.name, viewBox: [VBW, VBH], bbox: { minLng: w, maxLng: e, minLat: s, maxLat: n }, proj: { kx, sc, offX, offY }, path: d, points: simpPts };
     fs.writeFileSync(path.join(OUTDIR, id + ".json"), JSON.stringify(out));
-    console.log(`${ring.length}→${simp.length} pts, ${d.length} chars ✓`);
+    console.log(`${rawPts}→${simpPts} pts (${subpaths.length} île${subpaths.length > 1 ? "s" : ""}), ${d.length} chars ✓`);
     await new Promise(r => setTimeout(r, 1200)); // poli avec Nominatim
   }
   console.log("\n✓ public/data/region-outlines/ écrit");
