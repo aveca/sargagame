@@ -8,7 +8,9 @@
  *   1. se met à jour tout seul   (git pull --ff-only → code + data du jour)
  *   2. rend le « Brief plage » vidéo du jour, 5 régions   (GPU/ffmpeg/edge-tts local)
  *   3. publie sur Facebook        (session Edge locale — impossible en cloud)   [OPT-IN]
- * Rattrapage idempotent au boot : ne rend QUE le jour même, jamais de backfill.
+ * Rattrapage idempotent : ne rend QUE le jour même, jamais de backfill. Le poll
+ * --serve (30 min, admin-free) retente aussi le rendu — c'est lui le vrai filet
+ * de rattrapage, le trigger quotidien 05:30 dépendant du StartWhenAvailable Windows.
  *
  * Ce qu'il ne fait PAS (par design — cf. README) : aucun email/pipeline/deploy
  * (= couche CLOUD GitHub Actions, tourne machine éteinte), aucune décision LLM,
@@ -219,6 +221,16 @@ try {
     log('serve.start', { root: ROOT, plan: PLAN })
     selfUpdate()   // ramène les queue/*.json commités depuis le phone/GitHub
     drainQueue()
+    // Retente aussi le rendu du jour ici : le trigger quotidien 05:30 dépend du
+    // rattrapage StartWhenAvailable de Windows (pas fiable si le PC était éteint/
+    // verrouillé à cette heure-là, cf. AtLogOn qui échoue sans droits admin).
+    // Ce poll tourne déjà toutes les 30 min indépendamment du logon ; le marker
+    // daté rend l'appel gratuit une fois le jour rendu, et retente automatiquement
+    // tant que le satellite reste périmé (>36h).
+    const results = renderBriefs()
+    publishFB(results)
+    writeLastRun(results)
+    if (!PLAN) sendHeartbeat(results)
   } else {
     log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
     selfUpdate()
