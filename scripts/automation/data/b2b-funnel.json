@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-05T13:42:05.512Z",
+  "updatedAt": "2026-07-05T19:21:07.344Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -676,7 +676,7 @@
       "contactedAt": "2026-07-01T14:41:51.692Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "32b950cae1f71f7ca11b0581a7d11790": {
       "stage": "contacted",
