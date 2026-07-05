@@ -238,5 +238,85 @@
     "releaseTag": "social-reservoir",
     "state": "staged",
     "createdAt": "2026-07-04"
+  },
+  {
+    "id": "2026-07-05/saga-gp-2026-07-05.png",
+    "date": "2026-07-05",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/saga-mq-2026-07-05.png",
+    "date": "2026-07-05",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/verdict-gp-2026-07-05.png",
+    "date": "2026-07-05",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/verdict-mq-2026-07-05.png",
+    "date": "2026-07-05",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/wordle-gp-2026-07-05-a.png",
+    "date": "2026-07-05",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-05-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/wordle-gp-2026-07-05-q.png",
+    "date": "2026-07-05",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-05-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/wordle-mq-2026-07-05-a.png",
+    "date": "2026-07-05",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-05-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
+  },
+  {
+    "id": "2026-07-05/wordle-mq-2026-07-05-q.png",
+    "date": "2026-07-05",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-05-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-05"
   }
 ]
