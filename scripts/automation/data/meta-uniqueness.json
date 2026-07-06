@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-29T15:04:31.802Z",
+  "generatedAt": "2026-07-06T14:48:18.110Z",
   "sites": {
     "mq": {
-      "pageCount": 328,
-      "uniqueTitles": 171,
-      "uniqueDescs": 154,
+      "pageCount": 363,
+      "uniqueTitles": 205,
+      "uniqueDescs": 188,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 487,
+      "issueCount": 543,
       "issues": [
         {
           "file": "404.html",
@@ -60,10 +60,6 @@
           "value": "Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel"
         },
         {
-          "file": "arena-v2.html",
-          "kind": "missing-desc"
-        },
-        {
           "file": "articles/alerte-saison-2026-gp-2026-04-09/index.html",
           "kind": "title-too-long",
           "length": 73,
@@ -82,6 +78,12 @@
           "value": "Bulletin sargasses Martinique du jour — état des plages aujourd'hui"
         },
         {
+          "file": "carte-sargasses/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Carte des sargasses Martinique aujourd'hui — temps réel (2026)"
+        },
+        {
           "file": "cgv.html",
           "kind": "title-length-warn",
           "length": 65,
@@ -90,7 +92,7 @@
         {
           "file": "cgv.html",
           "kind": "desc-too-long",
-          "length": 211
+          "length": 229
         },
         {
           "file": "comic-cartes.html",
@@ -121,7 +123,7 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 102
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -197,9 +199,9 @@
       ]
     },
     "gp": {
-      "pageCount": 364,
-      "uniqueTitles": 207,
-      "uniqueDescs": 191,
+      "pageCount": 402,
+      "uniqueTitles": 244,
+      "uniqueDescs": 228,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -225,7 +227,7 @@
           ]
         }
       ],
-      "issueCount": 535,
+      "issueCount": 597,
       "issues": [
         {
           "file": "404.html",
@@ -254,8 +256,15 @@
           "value": "Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel"
         },
         {
-          "file": "arena-v2.html",
-          "kind": "missing-desc"
+          "file": "algues-guadeloupe/index.html",
+          "kind": "title-too-long",
+          "length": 75,
+          "value": "Algues sur les plages de Guadeloupe : ce sont les sargasses — carte du jour"
+        },
+        {
+          "file": "algues-guadeloupe/index.html",
+          "kind": "desc-length-warn",
+          "length": 81
         },
         {
           "file": "articles/alerte-saison-2026-gp-2026-04-09/index.html",
@@ -276,6 +285,12 @@
           "value": "Bulletin sargasses Guadeloupe du jour — état des plages aujourd'hui"
         },
         {
+          "file": "carte-sargasses/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Carte des sargasses Guadeloupe aujourd'hui — temps réel (2026)"
+        },
+        {
           "file": "cgv.html",
           "kind": "title-length-warn",
           "length": 65,
@@ -284,7 +299,7 @@
         {
           "file": "cgv.html",
           "kind": "desc-too-long",
-          "length": 211
+          "length": 229
         },
         {
           "file": "comic-cartes.html",
@@ -315,7 +330,7 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 106
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -375,18 +390,6 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
-        },
-        {
-          "file": "en/sargassum-health/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
-        },
-        {
-          "file": "en/satellite-sargassum-detection/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
         }
       ]
     }

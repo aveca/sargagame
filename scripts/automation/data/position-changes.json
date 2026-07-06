@@ -1,40 +1,157 @@
 {
-  "generatedAt": "2026-06-15T16:27:41.404Z",
-  "comparedTo": "2026-06-08",
+  "generatedAt": "2026-07-06T14:48:11.608Z",
+  "comparedTo": "2026-06-15",
   "alerts": {
-    "drops": [],
-    "gains": [],
-    "appeared": [
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/carte-sargasses/",
-        "avgPos": 11.2,
-        "clicks": 16,
-        "impressions": 196
-      },
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/detection-satellite-sargasses/",
-        "avgPos": 11.2,
-        "clicks": 4,
-        "impressions": 76
-      },
-      {
-        "site": "florida",
-        "page": "https://sargassummiami.com/",
-        "avgPos": 21.7,
-        "clicks": 3,
-        "impressions": 47
-      },
+    "drops": [
       {
         "site": "puntacana",
         "page": "https://sargassumpuntacana.com/",
-        "avgPos": 13.4,
-        "clicks": 3,
-        "impressions": 133
+        "prevPos": 13.4,
+        "currPos": 18.8,
+        "delta": 5.4,
+        "impressions": 296
       }
     ],
-    "vanished": [],
+    "gains": [
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/",
+        "prevPos": 51.3,
+        "currPos": 18.6,
+        "delta": -32.7,
+        "impressions": 395
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/sargassum-map/",
+        "prevPos": 18.2,
+        "currPos": 9.3,
+        "delta": -8.9,
+        "impressions": 25
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+        "prevPos": 38.1,
+        "currPos": 32.9,
+        "delta": -5.2,
+        "impressions": 71
+      }
+    ],
+    "appeared": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/sargasses-le-diamant/",
+        "avgPos": 5,
+        "clicks": 8,
+        "impressions": 57
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages/anse-collat/",
+        "avgPos": 8.3,
+        "clicks": 0,
+        "impressions": 51
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/",
+        "avgPos": 4.2,
+        "clicks": 2224,
+        "impressions": 15775
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
+        "avgPos": 5,
+        "clicks": 541,
+        "impressions": 4528
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/",
+        "avgPos": 1.2,
+        "clicks": 73,
+        "impressions": 105
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+        "avgPos": 1.2,
+        "clicks": 31,
+        "impressions": 51
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+        "avgPos": 4.2,
+        "clicks": 33,
+        "impressions": 96
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+        "avgPos": 7.7,
+        "clicks": 25,
+        "impressions": 67
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/en/",
+        "avgPos": 2.5,
+        "clicks": 29,
+        "impressions": 55
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/alertes/",
+        "avgPos": 9.3,
+        "clicks": 4,
+        "impressions": 54
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+        "avgPos": 6.7,
+        "clicks": 19,
+        "impressions": 60
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+        "avgPos": 4.3,
+        "clicks": 5,
+        "impressions": 41
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/es/",
+        "avgPos": 13.2,
+        "clicks": 2,
+        "impressions": 85
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/",
+        "avgPos": 34.5,
+        "clicks": 5,
+        "impressions": 279
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/mapa-sargazo/",
+        "avgPos": 47.7,
+        "clicks": 0,
+        "impressions": 53
+      }
+    ],
+    "vanished": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages/anse-des-galets/",
+        "prevImpressions": 56
+      }
+    ],
     "queryDrops": [],
     "queryGains": []
   }

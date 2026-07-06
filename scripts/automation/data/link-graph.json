@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-29T15:04:30.982Z",
+  "generatedAt": "2026-07-06T14:48:17.296Z",
   "sites": {
     "mq": {
-      "pageCount": 328,
-      "noIncomingCount": 189,
-      "fewIncomingCount": 27,
-      "phantomCount": 10,
+      "pageCount": 363,
+      "noIncomingCount": 192,
+      "fewIncomingCount": 44,
+      "phantomCount": 11,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -14,11 +14,6 @@
         },
         {
           "url": "/agir/",
-          "in": 0,
-          "out": 0
-        },
-        {
-          "url": "/arena-v2.html",
           "in": 0,
           "out": 0
         },
@@ -63,6 +58,11 @@
           "out": 3
         },
         {
+          "url": "/expansion-survey/",
+          "in": 0,
+          "out": 2
+        },
+        {
           "url": "/for-hotels/",
           "in": 0,
           "out": 2
@@ -93,11 +93,6 @@
           "out": 0
         },
         {
-          "url": "/pro/plan-sargasses-collectivite/",
-          "in": 0,
-          "out": 7
-        },
-        {
           "url": "/pro/widget-config/",
           "in": 0,
           "out": 2
@@ -113,7 +108,7 @@
           "out": 10
         },
         {
-          "url": "/sargasses-juin-2026/",
+          "url": "/sargasses-pour-hotels/",
           "in": 0,
           "out": 2
         },
@@ -176,6 +171,21 @@
           "url": "/veille/",
           "in": 0,
           "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/",
+          "in": 0,
+          "out": 10
+        },
+        {
+          "url": "/veilleur-studio/",
+          "in": 0,
+          "out": 0
+        },
+        {
+          "url": "/veilleur/",
+          "in": 0,
+          "out": 2
         },
         {
           "url": "/weekend.html",
@@ -246,28 +256,18 @@
           "url": "/widget/embed/anse-caritan/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-ceron/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-champagne/",
-          "in": 0,
-          "out": 0
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 18
+          "out": 8
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 13
+          "out": 10
         },
         {
           "url": "/en/sargassum-health/",
@@ -295,7 +295,7 @@
           "out": 4
         },
         {
-          "url": "/pro/en/",
+          "url": "/pro/en/sargassum-forecast-miami-hotels/",
           "in": 1,
           "out": 4
         },
@@ -305,9 +305,69 @@
           "out": 12
         },
         {
+          "url": "/sargasses-juillet-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-juin-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
           "url": "/sargasses-martinique-cette-semaine/",
           "in": 1,
           "out": 11
+        },
+        {
+          "url": "/veilleur-mvp/anse-mitan/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/cancun/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/fort-lauderdale/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/les-salines/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/miami-beach/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/pointe-faula/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/punta-cana/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/sainte-anne-gp/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/tulum/",
+          "in": 1,
+          "out": 0
         },
         {
           "url": "/bilan-sargasses-2025/",
@@ -348,57 +408,12 @@
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 2,
           "out": 2
-        },
-        {
-          "url": "/es/temporada-sargazo/",
-          "in": 2,
-          "out": 2
-        },
-        {
-          "url": "/faq/",
-          "in": 2,
-          "out": 6
-        },
-        {
-          "url": "/investigacion/",
-          "in": 2,
-          "out": 5
-        },
-        {
-          "url": "/meteo-sargasses-martinique/",
-          "in": 2,
-          "out": 7
-        },
-        {
-          "url": "/methode-carte/",
-          "in": 2,
-          "out": 7
-        },
-        {
-          "url": "/pro/espace/",
-          "in": 2,
-          "out": 4
-        },
-        {
-          "url": "/research/",
-          "in": 2,
-          "out": 5
-        },
-        {
-          "url": "/sargasses-record-2026/",
-          "in": 2,
-          "out": 9
-        },
-        {
-          "url": "/sargasses-sante-symptomes/",
-          "in": 2,
-          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 169,
+          "in": 187,
           "out": 17
         },
         {
@@ -437,13 +452,13 @@
           "out": 8
         },
         {
-          "url": "/plages/plages-cote-caraibe-martinique/",
+          "url": "/a-propos/",
           "in": 22,
-          "out": 24
+          "out": 9
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "in": 21,
+          "in": 22,
           "out": 10
         }
       ],
@@ -454,9 +469,14 @@
           "out": 55
         },
         {
+          "url": "/conditions/mer-agitee/",
+          "in": 6,
+          "out": 36
+        },
+        {
           "url": "/conditions/uv-fort/",
           "in": 6,
-          "out": 34
+          "out": 36
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -474,28 +494,23 @@
           "out": 20
         },
         {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 18
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 18
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 18
-        },
-        {
           "url": "/",
-          "in": 169,
+          "in": 187,
           "out": 17
         },
         {
           "url": "/sargasses-la-trinite/",
           "in": 3,
+          "out": 16
+        },
+        {
+          "url": "/sargasses-sainte-anne-martinique/",
+          "in": 9,
+          "out": 16
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "in": 13,
           "out": 16
         }
       ],
@@ -518,7 +533,9 @@
         {
           "url": "/reliability/",
           "incomingFrom": [
-            "/for-hotels/"
+            "/expansion-survey/",
+            "/for-hotels/",
+            "/pro/en/collectivites/"
           ]
         },
         {
@@ -532,6 +549,14 @@
           "url": "/meteo-sargasses-guadeloupe/",
           "incomingFrom": [
             "/meteo-sargasses-martinique/"
+          ]
+        },
+        {
+          "url": "/fiabilidad/",
+          "incomingFrom": [
+            "/pro/es/barrera-vs-pronostico-sargazo/",
+            "/pro/es/collectivites/",
+            "/pro/es/costo-sargazo-hoteles/"
           ]
         },
         {
@@ -567,10 +592,10 @@
       ]
     },
     "gp": {
-      "pageCount": 364,
-      "noIncomingCount": 192,
-      "fewIncomingCount": 29,
-      "phantomCount": 10,
+      "pageCount": 402,
+      "noIncomingCount": 198,
+      "fewIncomingCount": 44,
+      "phantomCount": 15,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -583,9 +608,9 @@
           "out": 0
         },
         {
-          "url": "/arena-v2.html",
+          "url": "/algues-guadeloupe/",
           "in": 0,
-          "out": 0
+          "out": 11
         },
         {
           "url": "/articles/alerte-saison-2026-gp-2026-04-09/",
@@ -638,6 +663,11 @@
           "out": 3
         },
         {
+          "url": "/expansion-survey/",
+          "in": 0,
+          "out": 2
+        },
+        {
           "url": "/for-hotels/",
           "in": 0,
           "out": 2
@@ -668,11 +698,6 @@
           "out": 0
         },
         {
-          "url": "/pro/plan-sargasses-collectivite/",
-          "in": 0,
-          "out": 7
-        },
-        {
           "url": "/pro/widget-config/",
           "in": 0,
           "out": 2
@@ -693,7 +718,17 @@
           "out": 13
         },
         {
-          "url": "/sargasses-juin-2026/",
+          "url": "/sargasses-les-saintes/",
+          "in": 0,
+          "out": 12
+        },
+        {
+          "url": "/sargasses-marie-galante/",
+          "in": 0,
+          "out": 12
+        },
+        {
+          "url": "/sargasses-pour-hotels/",
           "in": 0,
           "out": 2
         },
@@ -758,6 +793,21 @@
           "out": 1
         },
         {
+          "url": "/veilleur-mvp/",
+          "in": 0,
+          "out": 10
+        },
+        {
+          "url": "/veilleur-studio/",
+          "in": 0,
+          "out": 0
+        },
+        {
+          "url": "/veilleur/",
+          "in": 0,
+          "out": 2
+        },
+        {
           "url": "/weekend.html",
           "in": 0,
           "out": 1
@@ -796,43 +846,18 @@
           "url": "/widget/embed/anse-a-sable/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-belleville/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-bertrand-nord/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-bonneville/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-cafard/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-canot-marie-galante/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 16
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 11
+          "out": 10
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -885,7 +910,7 @@
           "out": 4
         },
         {
-          "url": "/pro/en/",
+          "url": "/pro/en/sargassum-forecast-miami-hotels/",
           "in": 1,
           "out": 4
         },
@@ -900,14 +925,69 @@
           "out": 11
         },
         {
+          "url": "/sargasses-juillet-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-juin-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
           "url": "/sargasses-saint-francois/",
           "in": 1,
           "out": 12
         },
         {
-          "url": "/sargasses-sante-symptomes/",
+          "url": "/veilleur-mvp/anse-mitan/",
           "in": 1,
-          "out": 6
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/cancun/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/fort-lauderdale/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/les-salines/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/miami-beach/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/pointe-faula/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/punta-cana/",
+          "in": 1,
+          "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/sainte-anne-gp/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/tulum/",
+          "in": 1,
+          "out": 0
         },
         {
           "url": "/bilan-sargasses-2025/",
@@ -918,77 +998,27 @@
           "url": "/comprendre-sargasses/",
           "in": 2,
           "out": 8
-        },
-        {
-          "url": "/en/best-beaches-guadeloupe/",
-          "in": 2,
-          "out": 1
-        },
-        {
-          "url": "/en/understanding-sargassum/",
-          "in": 2,
-          "out": 0
-        },
-        {
-          "url": "/faq/",
-          "in": 2,
-          "out": 6
-        },
-        {
-          "url": "/investigacion/",
-          "in": 2,
-          "out": 5
-        },
-        {
-          "url": "/methode-carte/",
-          "in": 2,
-          "out": 7
-        },
-        {
-          "url": "/pro/espace/",
-          "in": 2,
-          "out": 4
-        },
-        {
-          "url": "/research/",
-          "in": 2,
-          "out": 5
-        },
-        {
-          "url": "/sargasses-deshaies/",
-          "in": 2,
-          "out": 10
-        },
-        {
-          "url": "/sargasses-record-2026/",
-          "in": 2,
-          "out": 9
-        },
-        {
-          "url": "/sargasses-sainte-anne-guadeloupe/",
-          "in": 2,
-          "out": 13
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 293,
+          "in": 312,
           "out": 15
         },
         {
           "url": "/previsions/",
-          "in": 132,
+          "in": 135,
           "out": 7
         },
         {
           "url": "/carte-sargasses/",
-          "in": 128,
+          "in": 131,
           "out": 13
         },
         {
           "url": "/alertes/",
-          "in": 124,
+          "in": 127,
           "out": 6
         },
         {
@@ -1003,12 +1033,12 @@
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
-          "in": 31,
+          "in": 34,
           "out": 16
         },
         {
           "url": "/saison-sargasses-guadeloupe/",
-          "in": 30,
+          "in": 33,
           "out": 12
         },
         {
@@ -1034,24 +1064,14 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-calme/",
+          "url": "/conditions/mer-agitee/",
           "in": 6,
-          "out": 30
-        },
-        {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 29
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 28
+          "out": 36
         },
         {
           "url": "/conditions/uv-fort/",
           "in": 6,
-          "out": 28
+          "out": 36
         },
         {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
@@ -1064,12 +1084,22 @@
           "out": 25
         },
         {
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 16
+        },
+        {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
-          "in": 31,
+          "in": 34,
           "out": 16
         },
         {
           "url": "/sargasses-sainte-rose/",
+          "in": 3,
+          "out": 15
+        },
+        {
+          "url": "/sargasses-terre-de-haut-les-saintes/",
           "in": 3,
           "out": 15
         }
@@ -1094,7 +1124,9 @@
         {
           "url": "/reliability/",
           "incomingFrom": [
-            "/for-hotels/"
+            "/expansion-survey/",
+            "/for-hotels/",
+            "/pro/en/collectivites/"
           ]
         },
         {
@@ -1108,6 +1140,14 @@
           "url": "/meteo-sargasses-martinique/",
           "incomingFrom": [
             "/meteo-sargasses-guadeloupe/"
+          ]
+        },
+        {
+          "url": "/fiabilidad/",
+          "incomingFrom": [
+            "/pro/es/barrera-vs-pronostico-sargazo/",
+            "/pro/es/collectivites/",
+            "/pro/es/costo-sargazo-hoteles/"
           ]
         },
         {
@@ -1138,6 +1178,30 @@
           "url": "/es/sargazo-cerca-de-mi/",
           "incomingFrom": [
             "/sargasses-pres-de-moi/"
+          ]
+        },
+        {
+          "url": "/plages/anse-mitan/",
+          "incomingFrom": [
+            "/veilleur-mvp/anse-mitan/"
+          ]
+        },
+        {
+          "url": "/plages/grande-anse-d-arlet/",
+          "incomingFrom": [
+            "/veilleur-mvp/grande-anse-arlet/"
+          ]
+        },
+        {
+          "url": "/plages/plage-des-salines/",
+          "incomingFrom": [
+            "/veilleur-mvp/les-salines/"
+          ]
+        },
+        {
+          "url": "/plages/pointe-faula/",
+          "incomingFrom": [
+            "/veilleur-mvp/pointe-faula/"
           ]
         }
       ]

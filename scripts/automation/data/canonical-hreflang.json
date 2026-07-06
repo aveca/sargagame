@@ -1,24 +1,20 @@
 {
-  "generatedAt": "2026-06-29T15:04:32.015Z",
+  "generatedAt": "2026-07-06T14:48:18.351Z",
   "sites": {
     "mq": {
-      "pageCount": 328,
-      "pagesSkippedNoindex": 19,
-      "pagesWithCanonical": 151,
-      "pagesWithHreflang": 132,
-      "issueCount": 163,
+      "pageCount": 363,
+      "pagesSkippedNoindex": 20,
+      "pagesWithCanonical": 172,
+      "pagesWithHreflang": 157,
+      "issueCount": 176,
       "byKind": {
-        "missing-canonical": 158,
+        "missing-canonical": 171,
         "canonical-mismatch": 1,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "arena-v2.html",
           "kind": "missing-canonical"
         },
         {
@@ -64,6 +60,58 @@
           "href": "https://sargasses-martinique.com/es/sargazo-cerca-de-mi/"
         },
         {
+          "file": "veilleur/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/anse-mitan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/cancun/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/fort-lauderdale/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/grande-anse-arlet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/les-salines/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/miami-beach/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/pointe-faula/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/punta-cana/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/sainte-anne-gp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/tulum/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-studio/index.html",
+          "kind": "missing-canonical"
+        },
+        {
           "file": "widget/embed/anse-a-l-ane/index.html",
           "kind": "missing-canonical"
         },
@@ -174,75 +222,23 @@
         {
           "file": "widget/embed/anse-du-mancenillier/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-dufour/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-figuier/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-gros-raisins/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-gros-sable/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-grosse-roche/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-kahouanne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-l-etang/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-laborde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-mabouya/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-macabou/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-madame/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-meunier/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 364,
-      "pagesSkippedNoindex": 19,
-      "pagesWithCanonical": 187,
-      "pagesWithHreflang": 168,
-      "issueCount": 163,
+      "pageCount": 402,
+      "pagesSkippedNoindex": 20,
+      "pagesWithCanonical": 211,
+      "pagesWithHreflang": 196,
+      "issueCount": 176,
       "byKind": {
-        "missing-canonical": 158,
+        "missing-canonical": 171,
         "canonical-mismatch": 1,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "arena-v2.html",
           "kind": "missing-canonical"
         },
         {
@@ -288,6 +284,58 @@
           "href": "https://sargasses-guadeloupe.com/es/sargazo-cerca-de-mi/"
         },
         {
+          "file": "veilleur/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/anse-mitan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/cancun/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/fort-lauderdale/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/grande-anse-arlet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/les-salines/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/miami-beach/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/pointe-faula/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/punta-cana/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/sainte-anne-gp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/tulum/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-studio/index.html",
+          "kind": "missing-canonical"
+        },
+        {
           "file": "widget/embed/anse-a-l-ane/index.html",
           "kind": "missing-canonical"
         },
@@ -397,54 +445,6 @@
         },
         {
           "file": "widget/embed/anse-du-mancenillier/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-dufour/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-figuier/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-gros-raisins/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-gros-sable/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-grosse-roche/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-kahouanne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-l-etang/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-laborde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-mabouya/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-macabou/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-madame/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-meunier/index.html",
           "kind": "missing-canonical"
         }
       ]

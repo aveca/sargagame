@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-29T15:04:32.252Z",
+  "generatedAt": "2026-07-06T14:48:18.601Z",
   "sites": {
     "mq": {
-      "pageCount": 328,
-      "medianWords": 12,
-      "thinCount": 194,
-      "richCount": 68,
+      "pageCount": 363,
+      "medianWords": 41,
+      "thinCount": 214,
+      "richCount": 80,
       "thinPages": [
         {
           "url": "/en/best-beaches-martinique/",
@@ -64,6 +64,10 @@
           "words": 0
         },
         {
+          "url": "/veilleur/",
+          "words": 0
+        },
+        {
           "url": "/widget/embed/",
           "words": 1
         },
@@ -116,10 +120,6 @@
           "words": 9
         },
         {
-          "url": "/widget/embed/anse-ceron/",
-          "words": 9
-        },
-        {
           "url": "/widget/embed/anse-champagne/",
           "words": 9
         },
@@ -151,31 +151,31 @@
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1838
+          "words": 1840
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1833
-        },
-        {
-          "url": "/arena-v2.html",
-          "words": 1832
+          "words": 1835
         },
         {
           "url": "/plages/anse-corps-de-garde/",
-          "words": 1822
+          "words": 1824
         },
         {
           "url": "/plages/anse-mitan/",
           "words": 1821
+        },
+        {
+          "url": "/plages/grande-anse-du-carbet/",
+          "words": 1818
         }
       ]
     },
     "gp": {
-      "pageCount": 364,
-      "medianWords": 160,
-      "thinCount": 194,
-      "richCount": 99,
+      "pageCount": 402,
+      "medianWords": 199,
+      "thinCount": 210,
+      "richCount": 111,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -234,6 +234,10 @@
           "words": 0
         },
         {
+          "url": "/veilleur/",
+          "words": 0
+        },
+        {
           "url": "/widget/embed/",
           "words": 1
         },
@@ -286,10 +290,6 @@
           "words": 9
         },
         {
-          "url": "/widget/embed/anse-ceron/",
-          "words": 9
-        },
-        {
           "url": "/widget/embed/anse-champagne/",
           "words": 9
         },
@@ -316,12 +316,12 @@
           "words": 1894
         },
         {
-          "url": "/plages/plage-de-grande-anse/",
+          "url": "/plages/plage-de-la-caravelle/",
           "words": 1885
         },
         {
-          "url": "/plages/plage-de-la-caravelle/",
-          "words": 1881
+          "url": "/plages/plage-de-grande-anse/",
+          "words": 1885
         },
         {
           "url": "/plages/plage-de-deshaies/",
@@ -333,11 +333,11 @@
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1839
+          "words": 1841
         },
         {
           "url": "/plages/plage-du-gosier/",
-          "words": 1838
+          "words": 1840
         }
       ]
     }

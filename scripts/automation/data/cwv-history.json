@@ -129,6 +129,77 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-07-06",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 3102,
+              "good": null
+            },
+            "INP": {
+              "p75": 462,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.03,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 766,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 2912,
+              "good": null
+            },
+            "INP": {
+              "p75": 484,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.04,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 746,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 2149,
+              "good": null
+            },
+            "INP": {
+              "p75": 265,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 531,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": null
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
     }
   ]
 }

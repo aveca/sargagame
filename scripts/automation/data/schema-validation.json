@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-29T15:04:31.557Z",
+  "generatedAt": "2026-07-06T14:48:17.875Z",
   "sites": {
     "mq": {
-      "pageCount": 328,
-      "pagesWithSchema": 141,
-      "totalBlocks": 554,
+      "pageCount": 363,
+      "pagesWithSchema": 162,
+      "totalBlocks": 630,
       "parseFailures": 0,
-      "errorCount": 5,
-      "warningCount": 7,
+      "errorCount": 18,
+      "warningCount": 20,
       "errors": [
         {
           "file": "martinique-ftp/pro/barrieres-vs-prevision/index.html",
@@ -16,6 +16,71 @@
         },
         {
           "file": "martinique-ftp/pro/cout-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/cost-of-sargassum-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/prepare-hotel-sargassum-season/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-barrier-vs-forecast/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-cancun-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-miami-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-punta-cana-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-plan-coastal-towns/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/barrera-vs-pronostico-sargazo/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/costo-sargazo-hoteles/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/plan-sargazo-municipios/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/preparar-hotel-temporada-sargazo/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/pronostico-sargazo-cancun-hoteles/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/pronostico-sargazo-punta-cana-hoteles/index.html",
           "type": "Article",
           "message": "missing required field \"datePublished\""
         },
@@ -57,6 +122,71 @@
           "message": "missing recommended field \"dateModified\""
         },
         {
+          "file": "martinique-ftp/pro/en/cost-of-sargassum-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/prepare-hotel-sargassum-season/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-barrier-vs-forecast/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-cancun-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-miami-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-forecast-punta-cana-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/en/sargassum-plan-coastal-towns/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/barrera-vs-pronostico-sargazo/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/costo-sargazo-hoteles/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/plan-sargazo-municipios/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/preparar-hotel-temporada-sargazo/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/pronostico-sargazo-cancun-hoteles/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "martinique-ftp/pro/es/pronostico-sargazo-punta-cana-hoteles/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
           "file": "martinique-ftp/pro/plan-sargasses-collectivite/index.html",
           "type": "Article",
           "message": "missing recommended field \"dateModified\""
@@ -74,12 +204,12 @@
       ]
     },
     "gp": {
-      "pageCount": 364,
-      "pagesWithSchema": 177,
-      "totalBlocks": 659,
+      "pageCount": 402,
+      "pagesWithSchema": 201,
+      "totalBlocks": 766,
       "parseFailures": 0,
-      "errorCount": 5,
-      "warningCount": 7,
+      "errorCount": 18,
+      "warningCount": 20,
       "errors": [
         {
           "file": "guadeloupe-ftp/pro/barrieres-vs-prevision/index.html",
@@ -88,6 +218,71 @@
         },
         {
           "file": "guadeloupe-ftp/pro/cout-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/cost-of-sargassum-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/prepare-hotel-sargassum-season/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-barrier-vs-forecast/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-cancun-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-miami-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-punta-cana-hotels/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-plan-coastal-towns/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/barrera-vs-pronostico-sargazo/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/costo-sargazo-hoteles/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/plan-sargazo-municipios/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/preparar-hotel-temporada-sargazo/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/pronostico-sargazo-cancun-hoteles/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/pronostico-sargazo-punta-cana-hoteles/index.html",
           "type": "Article",
           "message": "missing required field \"datePublished\""
         },
@@ -125,6 +320,71 @@
         },
         {
           "file": "guadeloupe-ftp/pro/cout-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/cost-of-sargassum-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/prepare-hotel-sargassum-season/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-barrier-vs-forecast/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-cancun-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-miami-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-forecast-punta-cana-hotels/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/en/sargassum-plan-coastal-towns/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/barrera-vs-pronostico-sargazo/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/costo-sargazo-hoteles/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/plan-sargazo-municipios/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/preparar-hotel-temporada-sargazo/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/pronostico-sargazo-cancun-hoteles/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"dateModified\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/es/pronostico-sargazo-punta-cana-hoteles/index.html",
           "type": "Article",
           "message": "missing recommended field \"dateModified\""
         },
