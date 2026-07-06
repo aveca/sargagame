@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-05",
+  "date": "2026-07-06",
   "count": 10,
   "veilleurs": [
     {
@@ -9,7 +9,7 @@
       "market": "B2C voyageurs",
       "depth": 0,
       "status": "live",
-      "date": "2026-07-05",
+      "date": "2026-07-06",
       "mode": "script",
       "headline": "Sable en veille sur B2C voyageurs"
     },
@@ -31,7 +31,7 @@
       "market": "Collectivités & offices de tourisme",
       "depth": 15,
       "status": "greenfield",
-      "date": "2026-07-02",
+      "date": "2026-07-06",
       "mode": "recon",
       "headline": "Digue en veille sur Collectivités & offices de tourisme"
     },
