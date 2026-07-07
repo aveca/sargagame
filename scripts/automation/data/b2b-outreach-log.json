@@ -43,8 +43,48 @@
       "island": "mq",
       "status": "sent",
       "error": null
+    },
+    "rivieradulevant.fr": {
+      "date": "2026-07-07T12:33:08.862Z",
+      "status": "no-email"
+    },
+    "capesterrebelleeau.fr": {
+      "date": "2026-07-07T12:33:16.441Z",
+      "status": "no-email"
+    },
+    "creolebeach.com": {
+      "date": "2026-07-07T12:33:20.559Z",
+      "emailHash": "197b77981fac3a014cfe1ad824390714",
+      "emailDomain": "creolebeach.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "majesty-palm.com": {
+      "date": "2026-07-07T12:33:26.300Z",
+      "emailHash": "1ceed3e228efbf9500c9320992fbbb6c",
+      "emailDomain": "majesty-palm.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "hotel-bambou.com": {
+      "date": "2026-07-07T12:33:26.565Z",
+      "status": "no-email"
+    },
+    "frenchcoco.com": {
+      "date": "2026-07-07T12:33:27.201Z",
+      "status": "no-email"
+    },
+    "cap-est.com": {
+      "date": "2026-07-07T12:33:30.524Z",
+      "status": "no-email"
+    },
+    "hotel-plein-soleil.fr": {
+      "date": "2026-07-07T12:33:31.077Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-06-23T12:35:08.126Z",
-  "totalSent": 4
+  "lastRun": "2026-07-07T12:33:31.077Z",
+  "totalSent": 6
 }

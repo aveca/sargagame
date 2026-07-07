@@ -196,8 +196,53 @@
       "error": null,
       "url": "https://www.theyucatantimes.com/",
       "market": "mx"
+    },
+    "sipse.com": {
+      "date": "2026-07-07T12:26:04.324Z",
+      "emailHash": "b3e35f3102bd2f69be90218fc60e4706",
+      "emailDomain": "sipse.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://sipse.com/",
+      "market": "mx"
+    },
+    "dominicantoday.com": {
+      "date": "2026-07-07T12:26:05.307Z",
+      "emailHash": "69a19d6c1dc6e697ffc233a05befae9c",
+      "emailDomain": "dominicantoday.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://dominicantoday.com/",
+      "market": "dr"
+    },
+    "wlaps.com": {
+      "date": "2026-07-07T12:26:14.291Z",
+      "emailHash": "e8cf9767deddf3981782e8481b50ad5f",
+      "emailDomain": "wlaps.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://wlaps.com/plages-sargasses-en-martinique/",
+      "market": "fr"
+    },
+    "ile-tropicale.fr": {
+      "date": "2026-07-07T12:26:21.177Z",
+      "emailHash": "db9731315ff6e9a69eaf9810f5f759a0",
+      "emailDomain": "ile-tropicale.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.ile-tropicale.fr/martinique-quelles-plages-sont-epargnees-par-les-sargasses/",
+      "market": "fr"
+    },
+    "beyondthebeach.fr": {
+      "date": "2026-07-07T12:26:40.990Z",
+      "emailHash": "10b68409f52f877cc0e25e54026c6ccd",
+      "emailDomain": "beyondthebeach.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.beyondthebeach.fr/366-sargasses-martinique-un-moyen-sur-pour-les-eviter/",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-06-23T12:31:57.109Z",
-  "totalSent": 24
+  "lastRun": "2026-07-07T12:26:40.990Z",
+  "totalSent": 29
 }

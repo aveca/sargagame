@@ -1,0 +1,20 @@
+{
+  "contacted": {
+    "meteofrance.mq": {
+      "date": "2026-07-07T12:30:03.303Z",
+      "status": "sent",
+      "emailHash": "c338b5c3f1c6093129c02cf3dc70883a",
+      "authority": "high",
+      "market": "fr"
+    },
+    "sargassummonitoring.com": {
+      "date": "2026-07-07T12:30:21.863Z",
+      "status": "sent",
+      "emailHash": "38cfda7f9b55b7f74b6d3d143cbb7661",
+      "authority": "high",
+      "market": "fr"
+    }
+  },
+  "lastRun": "2026-07-07T12:30:21.864Z",
+  "totalSent": 2
+}
