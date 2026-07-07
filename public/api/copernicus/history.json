@@ -3195,7 +3195,7 @@
         },
         {
           "id": "anse-mitan",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3205,12 +3205,12 @@
         },
         {
           "id": "tartane",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3225,12 +3225,12 @@
         },
         {
           "id": "sainte-anne",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
