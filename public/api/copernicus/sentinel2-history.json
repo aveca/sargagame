@@ -48,7 +48,14 @@
       "fai": 0.01595,
       "afaiLike": 0.55,
       "coverage": 0.38
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-07-06",
+      "fai": 0.00037,
+      "afaiLike": 0.12,
+      "coverage": 0.58
     }
   ],
-  "updatedAt": "2026-07-06T19:56:55.342Z"
+  "updatedAt": "2026-07-07T03:22:11.137Z"
 }
