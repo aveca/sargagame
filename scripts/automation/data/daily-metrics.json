@@ -2683,9 +2683,9 @@
   },
   {
     "date": "2026-07-07",
-    "time": "2026-07-07T14:47:34.838Z",
-    "payments": 16,
-    "revenue": 98.84,
+    "time": "2026-07-07T20:00:05.270Z",
+    "payments": 18,
+    "revenue": 114.82,
     "emails": 332,
     "feedbacks": 1,
     "avgRating": 4,
@@ -2712,7 +2712,7 @@
       }
     },
     "email": {
-      "sent": 2352,
+      "sent": 2355,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -2762,8 +2762,8 @@
       "windowDays": 30,
       "paid": {
         "EUR": {
-          "count": 3,
-          "total": 30.97
+          "count": 4,
+          "total": 38.96
         }
       },
       "refunds": {
