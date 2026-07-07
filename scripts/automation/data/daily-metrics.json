@@ -2683,10 +2683,10 @@
   },
   {
     "date": "2026-07-07",
-    "time": "2026-07-07T09:54:40.827Z",
-    "payments": 15,
-    "revenue": 90.85,
-    "emails": 328,
+    "time": "2026-07-07T14:47:34.838Z",
+    "payments": 16,
+    "revenue": 98.84,
+    "emails": 332,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -2712,7 +2712,7 @@
       }
     },
     "email": {
-      "sent": 2303,
+      "sent": 2352,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -2762,8 +2762,8 @@
       "windowDays": 30,
       "paid": {
         "EUR": {
-          "count": 2,
-          "total": 22.98
+          "count": 3,
+          "total": 30.97
         }
       },
       "refunds": {
@@ -2779,14 +2779,15 @@
       "b2b": 0,
       "payers": [
         "1799efe3",
+        "71733259",
         "bf819a41"
       ]
     },
     "ga4": {
       "date": "2026-07-06",
       "mq": {
-        "sessions": 300,
-        "users": 947
+        "sessions": 302,
+        "users": 1023
       },
       "gp": {
         "sessions": 227,
