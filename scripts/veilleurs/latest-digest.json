@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-07",
+  "date": "2026-07-08",
   "count": 10,
   "veilleurs": [
     {
@@ -9,7 +9,7 @@
       "market": "B2C voyageurs",
       "depth": 0,
       "status": "live",
-      "date": "2026-07-07",
+      "date": "2026-07-08",
       "mode": "script",
       "headline": "Sable en veille sur B2C voyageurs"
     },
@@ -53,7 +53,7 @@
       "market": "Assurance & réassurance climat",
       "depth": 80,
       "status": "greenfield",
-      "date": "2026-07-02",
+      "date": "2026-07-08",
       "mode": "recon",
       "headline": "Baromètre en veille sur Assurance & réassurance climat"
     },
@@ -97,7 +97,7 @@
       "market": "Licence data / API",
       "depth": 2000,
       "status": "emerging",
-      "date": "2026-07-04",
+      "date": "2026-07-08",
       "mode": "recon",
       "headline": "Prisme en veille sur Licence data / API"
     },
