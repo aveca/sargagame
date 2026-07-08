@@ -1044,5 +1044,110 @@
     "redirect_to_conversion": 0,
     "session_to_conversion": 0,
     "session_to_email": 0
+  },
+  {
+    "date": "2026-07-08",
+    "region": "mq",
+    "sessions": 39,
+    "friction": 0,
+    "dead_rate": 0.085,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.071,
+      "n": 70
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.25
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-08",
+    "region": "gp",
+    "sessions": 33,
+    "friction": 0,
+    "dead_rate": 0.216,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.229,
+      "n": 35
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.17
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-08",
+    "region": "florida",
+    "sessions": 14,
+    "friction": 0,
+    "dead_rate": 0.542,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.542,
+      "n": 24
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.13
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-08",
+    "region": "puntacana",
+    "sessions": 4,
+    "friction": 0,
+    "dead_rate": 0,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": null,
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-08",
+    "region": "rivieramaya",
+    "sessions": 7,
+    "friction": 0,
+    "dead_rate": 0.2,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.2,
+      "n": 25
+    },
+    "top_dead_els": [],
+    "bored_worst": null,
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
   }
 ]
