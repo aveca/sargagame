@@ -2060,8 +2060,8 @@
         },
         {
           "id": "fl013",
-          "afai": 0.09,
-          "status": "clean"
+          "afai": 0.16,
+          "status": "moderate"
         },
         {
           "id": "fl014",
@@ -2090,7 +2090,7 @@
         },
         {
           "id": "fl019",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -2164,6 +2164,13 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.08
+    },
+    {
+      "date": "2026-07-08",
+      "beach": "fl013",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
     }
   ]
 }
