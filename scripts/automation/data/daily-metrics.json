@@ -2911,10 +2911,10 @@
   },
   {
     "date": "2026-07-09",
-    "time": "2026-07-09T15:07:12.021Z",
+    "time": "2026-07-09T19:57:02.646Z",
     "payments": 18,
     "revenue": 114.82,
-    "emails": 341,
+    "emails": 344,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -2940,7 +2940,7 @@
       }
     },
     "email": {
-      "sent": 2461,
+      "sent": 2467,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -2958,7 +2958,7 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 194,
+        "reached": 193,
         "paid": 0,
         "completionRate": 0,
         "recoverable": 30,
