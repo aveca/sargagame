@@ -70,7 +70,7 @@
     },
     "tartane": {
       "statusHitRate": 91,
-      "afaiMAE": 0.021,
+      "afaiMAE": 0.02,
       "pairs": 159
     },
     "anse-madame": {
@@ -245,7 +245,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-10 → 2026-07-09) resultaron correctos (sobre 2593); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-07-09T03:08:12.437Z",
+  "computed": "2026-07-09T09:48:09.902Z",
   "pairs": [
     {
       "snapshotDate": "2026-07-06",
@@ -1051,11 +1051,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-07-07",
@@ -1735,11 +1735,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-07-08",
