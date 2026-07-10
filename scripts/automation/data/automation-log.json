@@ -1,37 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-06-10T11:38:00.647Z",
-      "dryRun": false,
-      "script": "auto-web-content",
-      "action": "generation-failed",
-      "island": "mq"
-    },
-    {
-      "timestamp": "2026-06-12T00:01:07.345Z",
-      "dryRun": false,
-      "script": "seo-audit",
-      "action": "data-collection",
-      "results": {
-        "mq": {
-          "indexed": 18,
-          "total": 74,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 0
-        },
-        "gp": {
-          "indexed": 0,
-          "total": 100,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 0,
-          "cwvIssues": 0
-        }
-      }
-    },
-    {
       "timestamp": "2026-06-12T00:01:07.403Z",
       "dryRun": false,
       "script": "ux-audit",
@@ -1724,6 +1693,65 @@
         "https://sargasses-guadeloupe.com/previsions/",
         "https://sargasses-guadeloupe.com/alertes/"
       ]
+    },
+    {
+      "timestamp": "2026-07-10T13:38:16.807Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 45,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "gp": {
+          "indexed": 87,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "florida": {
+          "indexed": 13,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "puntacana": {
+          "indexed": 6,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 22,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-07-10T13:38:19.979Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 155,
+        "critical": 14,
+        "warnings": 141
+      }
     }
   ]
 }
