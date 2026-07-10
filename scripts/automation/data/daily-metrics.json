@@ -3025,36 +3025,36 @@
   },
   {
     "date": "2026-07-10",
-    "time": "2026-07-10T09:39:50.034Z",
+    "time": "2026-07-10T14:36:49.379Z",
     "payments": 18,
     "revenue": 114.82,
-    "emails": 346,
+    "emails": 348,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 40063,
-      "lockClicks": 85,
-      "modalOpens": 3438,
-      "modalCta": 82,
+      "sessions": 40061,
+      "lockClicks": 69,
+      "modalOpens": 3342,
+      "modalCta": 76,
       "sampleStarts": 0,
-      "emailSubmits": 49,
-      "checkoutRedirects": 93,
+      "emailSubmits": 38,
+      "checkoutRedirects": 91,
       "conversions": 17,
       "paymentsReal": 8,
       "revenueReal": 64.92,
       "rates": {
         "session_to_lock": 0.2,
-        "lock_to_modal": 4045,
+        "lock_to_modal": 4843,
         "modal_to_cta": 2,
         "modal_to_sample": 0,
         "modal_to_any_action": 2,
-        "cta_to_redirect": 113,
+        "cta_to_redirect": 120,
         "redirect_to_payment": 9
       }
     },
     "email": {
-      "sent": 2474,
+      "sent": 2519,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -3072,7 +3072,7 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 183,
+        "reached": 175,
         "paid": 0,
         "completionRate": 0,
         "recoverable": 30,
@@ -3128,12 +3128,12 @@
     "ga4": {
       "date": "2026-07-09",
       "mq": {
-        "sessions": 219,
-        "users": 608
+        "sessions": 217,
+        "users": 653
       },
       "gp": {
         "sessions": 210,
-        "users": 1047
+        "users": 1139
       }
     }
   }
