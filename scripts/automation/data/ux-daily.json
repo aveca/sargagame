@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-10T03:32:14.440Z",
+  "generated": "2026-07-10T09:40:18.916Z",
   "date": "2026-07-10",
   "days": 1,
   "regions": [
@@ -10,6 +10,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "95d7e441",
+      "subject": "chore: update Copernicus data 2026-07-10 03:35 UTC"
+    },
+    {
+      "h": "43cf6da8",
+      "subject": "chore: email state 2026-07-10 03:35 UTC"
+    },
     {
       "h": "bafadc38",
       "subject": "chore: update Copernicus data 2026-07-09 20:20 UTC"
@@ -38,18 +46,18 @@
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 51,
+      "sessions": 69,
       "friction": 0,
-      "dead_rate": 0.147,
+      "dead_rate": 0.209,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.138,
-        "n": 94
+        "rate": 0.202,
+        "n": 114
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.15
+        "rate": 0.23
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -58,24 +66,30 @@
       "session_to_email": 0,
       "prev_date": "2026-07-09",
       "changes": [
-        "sessions 209→51 (-76%)",
+        "sessions 209→69 (-67%)",
+        "dead-rate 0.125→0.209 (+0.1) ⚠️",
         "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     },
     {
       "region": "gp",
-      "sessions": 34,
+      "sessions": 61,
       "friction": 0,
-      "dead_rate": 0.071,
+      "dead_rate": 0.187,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.054,
-        "n": 37
+        "rate": 0.186,
+        "n": 70
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div.sg-onink-scope",
+          "count": 11
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.21
+        "rate": 0.27
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -84,15 +98,14 @@
       "session_to_email": 0,
       "prev_date": "2026-07-09",
       "changes": [
-        "sessions 273→34 (-88%)",
-        "dead-rate 0.134→0.071 (-0.1) ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope",
+        "sessions 273→61 (-78%)",
+        "dead-rate 0.134→0.187 (+0.1) ⚠️",
         "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "florida",
-      "sessions": 22,
+      "sessions": 28,
       "friction": 0,
       "dead_rate": 0.051,
       "dead_worst": {
@@ -103,7 +116,7 @@
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.18
+        "rate": 0.24
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -112,7 +125,7 @@
       "session_to_email": 0,
       "prev_date": "2026-07-09",
       "changes": [
-        "sessions 190→22 (-88%)",
+        "sessions 190→28 (-85%)",
         "dead-rate 0.337→0.051 (-0.3) ✅",
         "rage-clicks 5→0 ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope",
@@ -122,7 +135,7 @@
     },
     {
       "region": "puntacana",
-      "sessions": 1,
+      "sessions": 5,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -135,17 +148,21 @@
       "session_to_email": 0,
       "prev_date": "2026-07-09",
       "changes": [
-        "sessions 24→1 (-96%)",
+        "sessions 24→5 (-79%)",
         "dead-rate 0.281→0 (-0.3) ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 1,
+      "sessions": 9,
       "friction": 0,
-      "dead_rate": 0.636,
-      "dead_worst": null,
+      "dead_rate": 0.333,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.333,
+        "n": 24
+      },
       "top_dead_els": [],
       "bored_worst": null,
       "modal_to_cta": 0,
@@ -155,8 +172,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-09",
       "changes": [
-        "sessions 36→1 (-97%)",
-        "dead-rate 0.483→0.636 (+0.2) ⚠️",
+        "sessions 36→9 (-75%)",
+        "dead-rate 0.483→0.333 (-0.1) ✅",
         "✔︎ dead-click résolu : div.sg-onink-scope"
       ]
     }

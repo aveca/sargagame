@@ -1334,18 +1334,18 @@
   {
     "date": "2026-07-10",
     "region": "mq",
-    "sessions": 51,
+    "sessions": 69,
     "friction": 0,
-    "dead_rate": 0.147,
+    "dead_rate": 0.209,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.138,
-      "n": 94
+      "rate": 0.202,
+      "n": 114
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.15
+      "rate": 0.23
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1356,18 +1356,23 @@
   {
     "date": "2026-07-10",
     "region": "gp",
-    "sessions": 34,
+    "sessions": 61,
     "friction": 0,
-    "dead_rate": 0.071,
+    "dead_rate": 0.187,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.054,
-      "n": 37
+      "rate": 0.186,
+      "n": 70
     },
-    "top_dead_els": [],
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 11
+      }
+    ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.21
+      "rate": 0.27
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1378,7 +1383,7 @@
   {
     "date": "2026-07-10",
     "region": "florida",
-    "sessions": 22,
+    "sessions": 28,
     "friction": 0,
     "dead_rate": 0.051,
     "dead_worst": {
@@ -1389,7 +1394,7 @@
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.18
+      "rate": 0.24
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1400,7 +1405,7 @@
   {
     "date": "2026-07-10",
     "region": "puntacana",
-    "sessions": 1,
+    "sessions": 5,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
@@ -1415,10 +1420,14 @@
   {
     "date": "2026-07-10",
     "region": "rivieramaya",
-    "sessions": 1,
+    "sessions": 9,
     "friction": 0,
-    "dead_rate": 0.636,
-    "dead_worst": null,
+    "dead_rate": 0.333,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.333,
+      "n": 24
+    },
     "top_dead_els": [],
     "bored_worst": null,
     "modal_to_cta": 0,

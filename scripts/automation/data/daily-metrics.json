@@ -3025,7 +3025,7 @@
   },
   {
     "date": "2026-07-10",
-    "time": "2026-07-10T03:31:48.049Z",
+    "time": "2026-07-10T09:39:50.034Z",
     "payments": 18,
     "revenue": 114.82,
     "emails": 346,
@@ -3072,7 +3072,7 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 189,
+        "reached": 183,
         "paid": 0,
         "completionRate": 0,
         "recoverable": 30,

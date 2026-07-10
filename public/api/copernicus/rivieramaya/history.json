@@ -2210,43 +2210,43 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.19,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm002",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm003",
-          "afai": 0.25,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "rm004",
-          "afai": 0.24,
-          "status": "moderate"
+          "afai": 0.14,
+          "status": "clean"
         },
         {
           "id": "rm005",
-          "afai": 0.25,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "rm006",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm007",
-          "afai": 0.16,
-          "status": "moderate"
+          "afai": 0.09,
+          "status": "clean"
         },
         {
           "id": "rm008",
-          "afai": 0.23,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "rm009",
@@ -2260,53 +2260,53 @@
         },
         {
           "id": "rm011",
-          "afai": 0.25,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "rm012",
-          "afai": 0.2,
-          "status": "moderate"
+          "afai": 0.07,
+          "status": "clean"
         },
         {
           "id": "rm013",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm014",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm015",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm016",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm017",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm018",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         },
         {
           "id": "rm019",
-          "afai": 0.25,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "rm020",
-          "afai": 0.24,
-          "status": "moderate"
+          "afai": 0.14,
+          "status": "clean"
         }
       ]
     }
@@ -2997,6 +2997,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.24
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
     }
   ]
 }
