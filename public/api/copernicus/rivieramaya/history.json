@@ -2204,6 +2204,111 @@
           "status": "clean"
         }
       ]
+    },
+    {
+      "date": "2026-07-10",
+      "levels": [
+        {
+          "id": "rm001",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "rm002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm003",
+          "afai": 0.25,
+          "status": "moderate"
+        },
+        {
+          "id": "rm004",
+          "afai": 0.24,
+          "status": "moderate"
+        },
+        {
+          "id": "rm005",
+          "afai": 0.25,
+          "status": "moderate"
+        },
+        {
+          "id": "rm006",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm007",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "rm008",
+          "afai": 0.23,
+          "status": "moderate"
+        },
+        {
+          "id": "rm009",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm010",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "rm011",
+          "afai": 0.25,
+          "status": "moderate"
+        },
+        {
+          "id": "rm012",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "rm013",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm014",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm015",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm016",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "rm017",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "rm018",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "rm019",
+          "afai": 0.25,
+          "status": "moderate"
+        },
+        {
+          "id": "rm020",
+          "afai": 0.24,
+          "status": "moderate"
+        }
+      ]
     }
   ],
   "changes": [
@@ -2773,6 +2878,125 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.12
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.25
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.24
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.25
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.23
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm011",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.25
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm012",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm013",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm014",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm015",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm016",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm017",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.18
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm018",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.18
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm019",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.25
+    },
+    {
+      "date": "2026-07-10",
+      "beach": "rm020",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.24
     }
   ]
 }
