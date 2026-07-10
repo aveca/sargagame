@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-10T09:35:33.958Z",
+  "updatedAt": "2026-07-10T14:29:39.099Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -8,7 +8,7 @@
   "counts": {
     "discovered": 3,
     "contacted": 104,
-    "lead": 5,
+    "lead": 4,
     "paid": 0
   },
   "funnel": {
@@ -983,15 +983,6 @@
       "isLead": false,
       "isPaid": false,
       "nextAction": "attendre / relance programmée"
-    },
-    "08b09ba455391935952e04495d2b9916": {
-      "stage": "lead",
-      "name": null,
-      "island": null,
-      "contactedAt": null,
-      "isLead": true,
-      "isPaid": false,
-      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
     "8eed02370a530f21c11bd53b5cd9b14b": {
       "stage": "lead",

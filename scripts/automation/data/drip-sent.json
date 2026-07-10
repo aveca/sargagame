@@ -1834,17 +1834,23 @@
     "daily_sig": "Plage de Grande Anse|clean|83|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-10"
+    "install_nudge_last": "2026-07-10",
+    "j3": "2026-07-10T14:29:22.501Z"
   },
   "09bb176312018b6f3506119efc770f44": {
     "daily_last": "2026-07-10",
     "daily_sig": "Anse Madame|clean|71|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-10"
+    "install_nudge_last": "2026-07-10",
+    "j3": "2026-07-10T14:29:27.005Z"
   },
-  "5733c3e478a2eead0750f1d9e7390a01": {},
-  "717332591fea452be6f78278a6c55a45": {},
+  "5733c3e478a2eead0750f1d9e7390a01": {
+    "j3": "2026-07-10T14:29:19.814Z"
+  },
+  "717332591fea452be6f78278a6c55a45": {
+    "j3": "2026-07-10T14:29:24.972Z"
+  },
   "ba40446967c6e7dbe4e4d1b5585e0a29": {},
   "177bd47aaf13f94ffa68d1b450502c26": {},
   "1cfb8bfbbed83d05858088c473a75369": {},
@@ -1878,5 +1884,6 @@
     "daily_last": "2026-07-10",
     "daily_sig": "Anse Madame|clean|71|clean|0|",
     "daily_count": 1
-  }
+  },
+  "9301af94fb1c52459e7b50410c8e202d": {}
 }
