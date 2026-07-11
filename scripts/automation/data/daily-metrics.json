@@ -3129,7 +3129,7 @@
   },
   {
     "date": "2026-07-11",
-    "time": "2026-07-11T08:03:26.819Z",
+    "time": "2026-07-11T13:26:22.989Z",
     "payments": 18,
     "revenue": 114.82,
     "emails": 350,
@@ -3158,7 +3158,7 @@
       }
     },
     "email": {
-      "sent": 2529,
+      "sent": 2559,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -3237,7 +3237,7 @@
       },
       "gp": {
         "sessions": 230,
-        "users": 810
+        "users": 897
       }
     }
   }
