@@ -1,15 +1,5 @@
 [
   {
-    "date": "2026-04-12",
-    "time": "2026-04-12T23:55:38.011Z",
-    "payments": 3,
-    "revenue": 14.97,
-    "emails": 43,
-    "feedbacks": 1,
-    "avgRating": 4,
-    "pipelineOk": true
-  },
-  {
     "date": "2026-04-13",
     "time": "2026-04-13T23:52:26.541Z",
     "payments": 5,
@@ -3134,6 +3124,120 @@
       "gp": {
         "sessions": 210,
         "users": 1139
+      }
+    }
+  },
+  {
+    "date": "2026-07-11",
+    "time": "2026-07-11T02:47:31.100Z",
+    "payments": 18,
+    "revenue": 114.82,
+    "emails": 349,
+    "feedbacks": 1,
+    "avgRating": 4,
+    "pipelineOk": true,
+    "funnel": {
+      "sessions": 40135,
+      "lockClicks": 67,
+      "modalOpens": 3339,
+      "modalCta": 74,
+      "sampleStarts": 0,
+      "emailSubmits": 34,
+      "checkoutRedirects": 90,
+      "conversions": 17,
+      "paymentsReal": 8,
+      "revenueReal": 64.92,
+      "rates": {
+        "session_to_lock": 0.2,
+        "lock_to_modal": 4984,
+        "modal_to_cta": 2,
+        "modal_to_sample": 0,
+        "modal_to_any_action": 2,
+        "cta_to_redirect": 122,
+        "redirect_to_payment": 9
+      }
+    },
+    "email": {
+      "sent": 2527,
+      "delivered": null,
+      "opened": null,
+      "clicked": null,
+      "bounced": null,
+      "openRate": null,
+      "clickRate": null,
+      "tracking": "smtp_no_events"
+    },
+    "stripe": {
+      "active": 14,
+      "mrr": {
+        "eur": 69.86
+      },
+      "pastDue": 0,
+      "cancelScheduled": 0,
+      "checkout": {
+        "windowDays": 30,
+        "reached": 147,
+        "paid": 0,
+        "completionRate": 0,
+        "recoverable": 30,
+        "lostCents": {
+          "eur": 149763,
+          "usd": 122448
+        }
+      },
+      "bySource": {
+        "map_scrub_forecast": {
+          "active": 1,
+          "mrrEur": 4.99
+        },
+        "forecast_teaser": {
+          "active": 1,
+          "mrrEur": 4.99
+        },
+        "(none)": {
+          "active": 12,
+          "mrrEur": 59.88
+        }
+      },
+      "emailAttributed": {
+        "active": 0,
+        "mrrEur": 0
+      }
+    },
+    "mollie": {
+      "windowDays": 30,
+      "paid": {
+        "EUR": {
+          "count": 4,
+          "total": 38.96
+        }
+      },
+      "refunds": {
+        "count": 1,
+        "total": {
+          "EUR": 7.99
+        }
+      },
+      "chargebacks": {
+        "count": 0,
+        "total": {}
+      },
+      "b2b": 0,
+      "payers": [
+        "1799efe3",
+        "71733259",
+        "bf819a41"
+      ]
+    },
+    "ga4": {
+      "date": "2026-07-10",
+      "mq": {
+        "sessions": 284,
+        "users": 1041
+      },
+      "gp": {
+        "sessions": 230,
+        "users": 810
       }
     }
   }
