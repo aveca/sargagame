@@ -1,71 +1,6 @@
 {
   "history": [
     {
-      "date": "2026-06-11",
-      "levels": [
-        {
-          "id": "rm001",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "rm002",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "rm003",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "rm004",
-          "afai": 0.13,
-          "status": "clean"
-        },
-        {
-          "id": "rm005",
-          "afai": 0.13,
-          "status": "clean"
-        },
-        {
-          "id": "rm006",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "rm007",
-          "afai": 0.13,
-          "status": "clean"
-        },
-        {
-          "id": "rm008",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "rm009",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "rm010",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "rm011",
-          "afai": 0.17,
-          "status": "moderate"
-        },
-        {
-          "id": "rm012",
-          "afai": 0.1,
-          "status": "clean"
-        }
-      ]
-    },
-    {
       "date": "2026-06-12",
       "levels": [
         {
@@ -2349,6 +2284,111 @@
           "status": "moderate"
         }
       ]
+    },
+    {
+      "date": "2026-07-12",
+      "levels": [
+        {
+          "id": "rm001",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "rm002",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "rm003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "rm004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "rm005",
+          "afai": 0.23,
+          "status": "moderate"
+        },
+        {
+          "id": "rm006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "rm007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "rm008",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "rm009",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "rm010",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "rm011",
+          "afai": 0.24,
+          "status": "moderate"
+        },
+        {
+          "id": "rm012",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "rm013",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "rm014",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "rm015",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "rm016",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "rm017",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "rm018",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "rm019",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "rm020",
+          "afai": 0.22,
+          "status": "moderate"
+        }
+      ]
     }
   ],
   "changes": [
@@ -3093,6 +3133,20 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.21
+    },
+    {
+      "date": "2026-07-12",
+      "beach": "rm009",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-07-12",
+      "beach": "rm012",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
     }
   ]
 }
