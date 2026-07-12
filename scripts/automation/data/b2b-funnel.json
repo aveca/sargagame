@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-12T13:22:25.162Z",
+  "updatedAt": "2026-07-12T19:12:22.856Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -118,7 +118,7 @@
       "contactedAt": "2026-06-28T13:48:52.105Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "8ab2fad77d1f998bd0249e7034e1cb8a": {
       "stage": "contacted",
@@ -127,7 +127,7 @@
       "contactedAt": "2026-06-28T13:48:52.402Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "790f73c8cf68f823ed818e5b645909ea": {
       "stage": "contacted",
@@ -136,7 +136,7 @@
       "contactedAt": "2026-06-28T13:48:52.864Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "42a4f510f3f4ed69bd09d4c97f21165d": {
       "stage": "contacted",
@@ -145,7 +145,7 @@
       "contactedAt": "2026-06-28T13:48:53.246Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "3799c25eb1613468dda4a1a7e39f16d4": {
       "stage": "contacted",
@@ -154,7 +154,7 @@
       "contactedAt": "2026-06-28T13:48:53.528Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "8cb9d4a3ea8cc38696066ba3c22aaffd": {
       "stage": "contacted",
