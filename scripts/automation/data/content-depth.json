@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-06T14:48:18.601Z",
+  "generatedAt": "2026-07-13T13:47:31.648Z",
   "sites": {
     "mq": {
       "pageCount": 363,
       "medianWords": 41,
-      "thinCount": 214,
-      "richCount": 80,
+      "thinCount": 211,
+      "richCount": 79,
       "thinPages": [
         {
           "url": "/en/best-beaches-martinique/",
@@ -151,31 +151,31 @@
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1840
+          "words": 1838
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1835
+          "words": 1833
         },
         {
           "url": "/plages/anse-corps-de-garde/",
-          "words": 1824
+          "words": 1822
         },
         {
           "url": "/plages/anse-mitan/",
           "words": 1821
         },
         {
-          "url": "/plages/grande-anse-du-carbet/",
+          "url": "/plages/bourg-de-tartane/",
           "words": 1818
         }
       ]
     },
     "gp": {
       "pageCount": 402,
-      "medianWords": 199,
+      "medianWords": 200,
       "thinCount": 210,
-      "richCount": 111,
+      "richCount": 110,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -316,12 +316,12 @@
           "words": 1894
         },
         {
-          "url": "/plages/plage-de-la-caravelle/",
+          "url": "/plages/plage-de-grande-anse/",
           "words": 1885
         },
         {
-          "url": "/plages/plage-de-grande-anse/",
-          "words": 1885
+          "url": "/plages/plage-de-la-caravelle/",
+          "words": 1883
         },
         {
           "url": "/plages/plage-de-deshaies/",
@@ -337,7 +337,7 @@
         },
         {
           "url": "/plages/plage-du-gosier/",
-          "words": 1840
+          "words": 1838
         }
       ]
     }

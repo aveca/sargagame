@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T14:48:17.296Z",
+  "generatedAt": "2026-07-13T13:47:30.411Z",
   "sites": {
     "mq": {
       "pageCount": 363,
@@ -262,7 +262,7 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 8
+          "out": 17
         },
         {
           "url": "/conditions/snorkeling/",
@@ -469,11 +469,6 @@
           "out": 55
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 36
-        },
-        {
           "url": "/conditions/uv-fort/",
           "in": 6,
           "out": 36
@@ -482,6 +477,11 @@
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
           "out": 24
+        },
+        {
+          "url": "/conditions/mer-agitee/",
+          "in": 6,
+          "out": 23
         },
         {
           "url": "/plages/plages-sud-martinique/",
@@ -494,6 +494,11 @@
           "out": 20
         },
         {
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 17
+        },
+        {
           "url": "/",
           "in": 187,
           "out": 17
@@ -504,13 +509,8 @@
           "out": 16
         },
         {
-          "url": "/sargasses-sainte-anne-martinique/",
-          "in": 9,
-          "out": 16
-        },
-        {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
           "out": 16
         }
       ],
@@ -852,7 +852,7 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 16
+          "out": 17
         },
         {
           "url": "/conditions/snorkeling/",
@@ -1064,14 +1064,14 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/uv-fort/",
           "in": 6,
           "out": 36
         },
         {
-          "url": "/conditions/uv-fort/",
+          "url": "/conditions/mer-agitee/",
           "in": 6,
-          "out": 36
+          "out": 27
         },
         {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
@@ -1086,22 +1086,22 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
+          "out": 17
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
+          "out": 17
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
           "out": 16
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
           "in": 34,
           "out": 16
-        },
-        {
-          "url": "/sargasses-sainte-rose/",
-          "in": 3,
-          "out": 15
-        },
-        {
-          "url": "/sargasses-terre-de-haut-les-saintes/",
-          "in": 3,
-          "out": 15
         }
       ],
       "phantom": [

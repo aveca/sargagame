@@ -1,43 +1,7 @@
 {
-  "generatedAt": "2026-07-06T14:48:19.552Z",
+  "generatedAt": "2026-07-13T13:47:32.565Z",
   "sites": {
     "mq": {
-      "donorCount": 5,
-      "targetCount": 53,
-      "injections": [
-        {
-          "donor": "/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/plages/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/carte-sargasses/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/previsions/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/conditions/",
-          "targetCount": 8
-        }
-      ],
-      "targets": [
-        "/alertes/",
-        "/danger-sargasses-h2s/",
-        "/plages-sans-sargasses/",
-        "/previsions/",
-        "/saison-sargasses-guadeloupe/",
-        "/saison-sargasses-martinique/",
-        "/agir/",
-        "/bulletin-sargasses-martinique/"
-      ]
-    },
-    "gp": {
       "donorCount": 5,
       "targetCount": 51,
       "injections": [
@@ -63,14 +27,50 @@
         }
       ],
       "targets": [
+        "/alertes/",
         "/danger-sargasses-h2s/",
-        "/plages-sans-sargasses/",
+        "/saison-sargasses-guadeloupe/",
+        "/saison-sargasses-martinique/",
+        "/agir/",
+        "/bulletin-sargasses-martinique/",
+        "/comic-cartes.html",
+        "/conditions/"
+      ]
+    },
+    "gp": {
+      "donorCount": 5,
+      "targetCount": 50,
+      "injections": [
+        {
+          "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/carte-sargasses/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/previsions/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/conditions/",
+          "targetCount": 8
+        }
+      ],
+      "targets": [
+        "/danger-sargasses-h2s/",
         "/previsions/",
         "/saison-sargasses-martinique/",
         "/agir/",
         "/algues-guadeloupe/",
         "/bulletin-sargasses-guadeloupe/",
-        "/comic-cartes.html"
+        "/comic-cartes.html",
+        "/conditions/"
       ]
     }
   }

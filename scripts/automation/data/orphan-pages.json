@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-07-06T14:48:11.666Z",
+  "generatedAt": "2026-07-13T13:47:25.226Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 11,
+      "orphanCount": 9,
       "orphansByKind": {
-        "editorial": 6,
+        "editorial": 4,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 8071,
-          "clicks": 2221
+          "impressions": 7460,
+          "clicks": 2123
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1813,
-          "clicks": 224
+          "impressions": 2228,
+          "clicks": 274
         }
       ],
       "orphans": [
@@ -36,26 +36,6 @@
           "url": "https://sargasses-martinique.com/danger-sargasses-h2s/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
-          "impressions": 5,
-          "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "https://sargasses-martinique.com/previsions/",
-          "impressions": 2,
-          "clicks": 1,
           "kind": "editorial",
           "recommendedLinkSources": [
             "https://sargasses-martinique.com/",
@@ -104,7 +84,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
-          "impressions": 0,
+          "impressions": 2,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -136,22 +116,22 @@
     },
     "gp": {
       "sitemapSize": 15,
-      "orphanCount": 9,
+      "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 4,
+        "editorial": 3,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 15775,
-          "clicks": 2224
+          "impressions": 16046,
+          "clicks": 2184
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 4528,
-          "clicks": 541
+          "impressions": 4694,
+          "clicks": 548
         }
       ],
       "orphans": [
@@ -159,16 +139,6 @@
           "url": "https://sargasses-guadeloupe.com/danger-sargasses-h2s/",
           "impressions": 1,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/",
-            "https://sargasses-guadeloupe.com/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
-          "impressions": 3,
-          "clicks": 2,
           "kind": "editorial",
           "recommendedLinkSources": [
             "https://sargasses-guadeloupe.com/",
@@ -187,7 +157,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
-          "impressions": 3,
+          "impressions": 2,
           "clicks": 2,
           "kind": "editorial",
           "recommendedLinkSources": [
