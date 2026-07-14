@@ -13,8 +13,22 @@
       "emailHash": "38cfda7f9b55b7f74b6d3d143cbb7661",
       "authority": "high",
       "market": "fr"
+    },
+    "sargassumhub.org": {
+      "date": "2026-07-14T11:29:05.431Z",
+      "status": "sent",
+      "emailHash": "238c6cefec95aa9999e0277c722a7db1",
+      "authority": "high",
+      "market": "fr"
+    },
+    "clubmed.fr": {
+      "date": "2026-07-14T11:29:43.695Z",
+      "status": "sent",
+      "emailHash": "f96b6bc3ac4300132ee7474aab018d99",
+      "authority": "high",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-07-07T12:30:21.864Z",
-  "totalSent": 2
+  "lastRun": "2026-07-14T11:29:43.695Z",
+  "totalSent": 4
 }

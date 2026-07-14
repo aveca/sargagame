@@ -83,8 +83,48 @@
     "hotel-plein-soleil.fr": {
       "date": "2026-07-07T12:33:31.077Z",
       "status": "no-email"
+    },
+    "la-suite-villa.com": {
+      "date": "2026-07-14T11:32:35.263Z",
+      "emailHash": "bca368d0780b1f676de05ed420fb1d57",
+      "emailDomain": "la-suite-villa.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotelbakoua.fr": {
+      "date": "2026-07-14T11:32:35.883Z",
+      "status": "no-email"
+    },
+    "karibea.com": {
+      "date": "2026-07-14T11:32:38.204Z",
+      "emailHash": "d62ef580cbeca29aed60b6faf23bc69f",
+      "emailDomain": "karibeahotel.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotel-corail-residence.com": {
+      "date": "2026-07-14T11:32:38.507Z",
+      "status": "no-email"
+    },
+    "residence-village-creole.com": {
+      "date": "2026-07-14T11:32:38.699Z",
+      "status": "no-email"
+    },
+    "simon-hotel.com": {
+      "date": "2026-07-14T11:32:41.240Z",
+      "status": "no-email"
+    },
+    "hotel-la-pagerie.com": {
+      "date": "2026-07-14T11:32:42.390Z",
+      "status": "no-email"
+    },
+    "hotellafregate.fr": {
+      "date": "2026-07-14T11:32:43.006Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-07-07T12:33:31.077Z",
-  "totalSent": 6
+  "lastRun": "2026-07-14T11:32:43.006Z",
+  "totalSent": 8
 }

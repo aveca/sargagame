@@ -241,8 +241,53 @@
       "error": null,
       "url": "https://www.beyondthebeach.fr/366-sargasses-martinique-un-moyen-sur-pour-les-eviter/",
       "market": "fr"
+    },
+    "lechotouristique.com": {
+      "date": "2026-07-14T11:24:42.938Z",
+      "emailHash": "5164d728dba1b99263d6ecbfc76f2a7b",
+      "emailDomain": "lechotouristique.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lechotouristique.com/article/martinique-les-plages-sans-sargasses-a-conseiller-a-vos-clients",
+      "market": "fr"
+    },
+    "fairmoove.fr": {
+      "date": "2026-07-14T11:24:45.114Z",
+      "emailHash": "cfee70ac2c0ea1fa934fc81398d35f1c",
+      "emailDomain": "fairmoove.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.fairmoove.fr/blog/iles-paradisiaques/plages-belles-martinique",
+      "market": "fr"
+    },
+    "carnetdetipiment.com": {
+      "date": "2026-07-14T11:24:55.041Z",
+      "emailHash": "4319d9282f9d61de8b74011640a0a6ae",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://carnetdetipiment.com/2018/11/17/guide-complet-des-plus-belles-plages-de-martinique/",
+      "market": "fr"
+    },
+    "bestjobersblog.com": {
+      "date": "2026-07-14T11:24:58.410Z",
+      "emailHash": "0e9838fcff1b18fe0cde9746fee395e7",
+      "emailDomain": "bestjobers.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.bestjobersblog.com/que-faire-en-martinique-itineraire-conseils/",
+      "market": "fr"
+    },
+    "leslovetrotteurs.com": {
+      "date": "2026-07-14T11:25:07.485Z",
+      "emailHash": "16463026797c439c6cac25358a716562",
+      "emailDomain": "leslovetrotteurs.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://leslovetrotteurs.com/martinique/",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-07-07T12:26:40.990Z",
-  "totalSent": 29
+  "lastRun": "2026-07-14T11:25:07.486Z",
+  "totalSent": 34
 }
