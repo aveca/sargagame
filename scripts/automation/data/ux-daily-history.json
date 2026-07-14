@@ -1900,13 +1900,13 @@
   {
     "date": "2026-07-14",
     "region": "mq",
-    "sessions": 36,
+    "sessions": 51,
     "friction": 1,
-    "dead_rate": 0.375,
+    "dead_rate": 0.359,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.404,
-      "n": 52
+      "rate": 0.39,
+      "n": 59
     },
     "top_dead_els": [
       {
@@ -1916,7 +1916,7 @@
     ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.33
+      "rate": 0.27
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1927,18 +1927,18 @@
   {
     "date": "2026-07-14",
     "region": "gp",
-    "sessions": 36,
+    "sessions": 60,
     "friction": 0,
-    "dead_rate": 0.225,
+    "dead_rate": 0.246,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.107,
-      "n": 28
+      "rate": 0.163,
+      "n": 43
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.15
+      "rate": 0.17
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1949,23 +1949,23 @@
   {
     "date": "2026-07-14",
     "region": "florida",
-    "sessions": 29,
-    "friction": 0,
-    "dead_rate": 0.306,
+    "sessions": 47,
+    "friction": 1,
+    "dead_rate": 0.298,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.295,
-      "n": 61
+      "rate": 0.293,
+      "n": 123
     },
     "top_dead_els": [
       {
         "el": "div.sg-onink-scope",
-        "count": 16
+        "count": 32
       }
     ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.29
+      "rate": 0.39
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -1976,7 +1976,7 @@
   {
     "date": "2026-07-14",
     "region": "puntacana",
-    "sessions": 6,
+    "sessions": 12,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
@@ -1991,9 +1991,9 @@
   {
     "date": "2026-07-14",
     "region": "rivieramaya",
-    "sessions": 7,
+    "sessions": 12,
     "friction": 0,
-    "dead_rate": 0,
+    "dead_rate": 0.429,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": null,
