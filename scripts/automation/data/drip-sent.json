@@ -1084,23 +1084,23 @@
     "j21": "2026-07-03T03:00:56.402Z"
   },
   "56c8db20918240754ce1bfae61e9326b": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
     "j7": "2026-06-19T10:26:18.113Z",
     "j14": "2026-06-26T09:27:07.949Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
     "j21": "2026-07-03T09:21:58.213Z"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
     "j7": "2026-06-19T10:26:19.849Z",
     "j14": "2026-06-26T09:27:09.664Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
     "j21": "2026-07-03T09:22:02.114Z"
@@ -1209,11 +1209,11 @@
     "j21": "2026-07-05T03:27:10.397Z"
   },
   "3ecb65d5060987817fbfba6fe115916c": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-17T04:08:06.170Z",
     "j7": "2026-06-21T04:13:35.292Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "j14": "2026-06-28T03:53:52.422Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1270,22 +1270,22 @@
     "install_nudge_last": "2026-06-30"
   },
   "73847215716df27d0e0585585d502598": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "j14": "2026-06-29T15:49:58.831Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
     "j21": "2026-07-06T15:36:45.485Z"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-18T20:26:12.876Z",
     "j7": "2026-06-22T20:48:43.358Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "j14": "2026-06-29T20:00:42.532Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1395,10 +1395,10 @@
     "j21": "2026-07-13T14:37:37.063Z"
   },
   "d1d35f18f6c8be599cec77d79fd44473": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "j7": "2026-06-29T15:50:01.935Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1412,10 +1412,10 @@
     "j21": "2026-07-13T14:37:41.208Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 17,
+    "daily_count": 18,
     "j7": "2026-06-29T15:50:06.123Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1455,27 +1455,32 @@
   "cbc614f9eb4e33eac732958043a88141": {
     "j3": "2026-06-26T14:27:30.063Z",
     "j7": "2026-06-30T14:21:28.473Z",
-    "j14": "2026-07-07T14:37:04.150Z"
+    "j14": "2026-07-07T14:37:04.150Z",
+    "j21": "2026-07-14T13:46:20.921Z"
   },
   "127ad26fb3f283ab6ed193a3e3c6384a": {
     "j3": "2026-06-26T14:27:32.046Z",
     "j7": "2026-06-30T14:21:29.947Z",
-    "j14": "2026-07-07T14:37:05.860Z"
+    "j14": "2026-07-07T14:37:05.860Z",
+    "j21": "2026-07-14T13:46:23.246Z"
   },
   "610919c06483507d27d99a8cb9a0963d": {
     "j3": "2026-06-26T14:27:36.307Z",
     "j7": "2026-06-30T14:21:33.412Z",
-    "j14": "2026-07-07T14:37:07.943Z"
+    "j14": "2026-07-07T14:37:07.943Z",
+    "j21": "2026-07-14T13:46:25.467Z"
   },
   "c4867b2314eefbe2f81c67b4b7519aed": {
     "j3": "2026-06-26T14:27:40.065Z",
     "j7": "2026-06-30T14:21:35.234Z",
-    "j14": "2026-07-07T14:37:10.512Z"
+    "j14": "2026-07-07T14:37:10.512Z",
+    "j21": "2026-07-14T13:46:27.558Z"
   },
   "65e52efaaf6fb228293e3b773681ad7f": {
     "j3": "2026-06-26T14:27:41.629Z",
     "j7": "2026-06-30T14:21:38.387Z",
-    "j14": "2026-07-07T14:37:11.871Z"
+    "j14": "2026-07-07T14:37:11.871Z",
+    "j21": "2026-07-14T13:46:29.779Z"
   },
   "afcbae2953c21270ddfdd78b25c4c247": {
     "daily_last": "2026-07-14",
@@ -1493,9 +1498,9 @@
     "j14": "2026-07-07T19:55:15.893Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 17,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 18,
     "j3": "2026-06-27T13:43:09.354Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1537,9 +1542,9 @@
     "j7": "2026-07-03T03:00:58.462Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 17,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 18,
     "j3": "2026-06-29T04:11:53.346Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-10",
@@ -1700,7 +1705,8 @@
   },
   "1799efe3caf4b263aed3e15fce240e1a": {
     "j3": "2026-07-03T14:04:14.402Z",
-    "j7": "2026-07-07T14:37:21.944Z"
+    "j7": "2026-07-07T14:37:21.944Z",
+    "j14": "2026-07-14T13:46:33.507Z"
   },
   "ed1545afa97da4b3692aff90cfb6ab1e": {
     "j3": "2026-07-03T19:25:21.807Z",
@@ -1793,9 +1799,9 @@
     "j7": "2026-07-10T19:30:38.653Z"
   },
   "0719411b6ef13537b924e81b94f763b3": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 10,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 11,
     "j3": "2026-07-07T09:41:51.748Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-07",
@@ -1813,9 +1819,9 @@
     "j3": "2026-07-07T19:55:19.813Z"
   },
   "514b3e54c667029f802166864ae8d425": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 10,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 11,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-07",
     "j3": "2026-07-07T19:55:21.832Z",
@@ -1881,21 +1887,25 @@
     "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-10",
-    "j3": "2026-07-10T14:29:22.501Z"
+    "j3": "2026-07-10T14:29:22.501Z",
+    "j7": "2026-07-14T13:46:39.329Z"
   },
   "09bb176312018b6f3506119efc770f44": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-10",
-    "j3": "2026-07-10T14:29:27.005Z"
+    "j3": "2026-07-10T14:29:27.005Z",
+    "j7": "2026-07-14T13:46:44.435Z"
   },
   "5733c3e478a2eead0750f1d9e7390a01": {
-    "j3": "2026-07-10T14:29:19.814Z"
+    "j3": "2026-07-10T14:29:19.814Z",
+    "j7": "2026-07-14T13:46:37.211Z"
   },
   "717332591fea452be6f78278a6c55a45": {
-    "j3": "2026-07-10T14:29:24.972Z"
+    "j3": "2026-07-10T14:29:24.972Z",
+    "j7": "2026-07-14T13:46:42.710Z"
   },
   "ba40446967c6e7dbe4e4d1b5585e0a29": {
     "j3": "2026-07-11T02:37:32.280Z"
@@ -1943,9 +1953,9 @@
     "j3": "2026-07-13T02:49:36.495Z"
   },
   "85cac83a1ef7f4ea7efcc28a91e2c6fa": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 4,
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 5,
     "j3": "2026-07-13T02:49:38.050Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-13"
@@ -1987,9 +1997,9 @@
     "daily_count": 2
   },
   "b5a538525d310703b6f9d73d3fdab97e": {
-    "daily_last": "2026-07-13",
-    "daily_sig": "Anse Madame|clean|83|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-14",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 2
   },
   "3e0aaa8457fcd2a59252994d04f1c8f1": {
     "daily_last": "2026-07-14",
@@ -2011,5 +2021,8 @@
     "daily_count": 1
   },
   "c74ca3ca24996d8760c415efb92a2393": {},
-  "73ef2ca0e5ce6b0e2d728bf80868fe2e": {}
+  "73ef2ca0e5ce6b0e2d728bf80868fe2e": {},
+  "229e93a7b58f74252c050b309bd69be5": {},
+  "3310e4cd1d8b9737a96339b6d510f7c1": {},
+  "7aba71670fafa766927264b8a494b12d": {}
 }
