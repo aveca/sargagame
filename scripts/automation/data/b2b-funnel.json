@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-13T19:30:00.534Z",
+  "updatedAt": "2026-07-14T02:34:56.025Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -307,7 +307,7 @@
       "contactedAt": "2026-06-29T20:00:59.016Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "24d78de1816ba79c5688b53fdaee6b54": {
       "stage": "contacted",
@@ -316,7 +316,7 @@
       "contactedAt": "2026-06-29T20:00:59.632Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "da0d6771ae926af7b1a3ec1e53bf0d97": {
       "stage": "contacted",
@@ -325,7 +325,7 @@
       "contactedAt": "2026-06-29T20:00:59.969Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "31de89ca85a74c2a9ef7e2ab0c01b812": {
       "stage": "contacted",
