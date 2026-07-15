@@ -12185,12 +12185,12 @@
       "levels": [
         {
           "id": "gp001",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp002",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12215,7 +12215,7 @@
         },
         {
           "id": "gp008",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12230,7 +12230,7 @@
         },
         {
           "id": "gp011",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12265,7 +12265,7 @@
         },
         {
           "id": "gp018",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -12285,7 +12285,7 @@
         },
         {
           "id": "gp023",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12330,7 +12330,7 @@
         },
         {
           "id": "gp033",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -12345,12 +12345,12 @@
         },
         {
           "id": "gp040",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp041",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -12405,12 +12405,12 @@
         },
         {
           "id": "gp052",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp054",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12420,7 +12420,7 @@
         },
         {
           "id": "gp059",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12470,7 +12470,7 @@
         },
         {
           "id": "gp073",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12495,7 +12495,7 @@
         },
         {
           "id": "gp083",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -12505,7 +12505,7 @@
         },
         {
           "id": "gp087",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -12560,12 +12560,12 @@
         },
         {
           "id": "gp108",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp110",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -12585,17 +12585,17 @@
         },
         {
           "id": "gp118",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp119",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp120",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         }
       ]
