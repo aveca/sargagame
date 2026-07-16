@@ -3649,7 +3649,7 @@
   },
   {
     "date": "2026-07-16",
-    "time": "2026-07-16T02:42:32.245Z",
+    "time": "2026-07-16T08:20:21.330Z",
     "payments": 18,
     "revenue": 114.82,
     "emails": 388,
@@ -3657,28 +3657,28 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 38243,
-      "lockClicks": 33,
-      "modalOpens": 3113,
-      "modalCta": 68,
+      "sessions": 39559,
+      "lockClicks": 5,
+      "modalOpens": 2974,
+      "modalCta": 61,
       "sampleStarts": 0,
-      "emailSubmits": 14,
-      "checkoutRedirects": 84,
-      "conversions": 17,
-      "paymentsReal": 8,
-      "revenueReal": 64.92,
+      "emailSubmits": 7,
+      "checkoutRedirects": 65,
+      "conversions": 15,
+      "paymentsReal": 7,
+      "revenueReal": 59.93,
       "rates": {
-        "session_to_lock": 0.1,
-        "lock_to_modal": 9433,
+        "session_to_lock": 0,
+        "lock_to_modal": 59480,
         "modal_to_cta": 2,
         "modal_to_sample": 0,
         "modal_to_any_action": 2,
-        "cta_to_redirect": 124,
-        "redirect_to_payment": 10
+        "cta_to_redirect": 107,
+        "redirect_to_payment": 11
       }
     },
     "email": {
-      "sent": 2819,
+      "sent": 2820,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -3696,13 +3696,13 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 110,
+        "reached": 103,
         "paid": 0,
         "completionRate": 0,
-        "recoverable": 30,
+        "recoverable": 23,
         "lostCents": {
           "eur": 149763,
-          "usd": 93954
+          "usd": 89761
         }
       },
       "bySource": {

@@ -2193,14 +2193,14 @@
   {
     "date": "2026-07-16",
     "region": "mq",
-    "sessions": 35,
+    "sessions": 46,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.33
+      "rate": 0.27
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -2211,23 +2211,18 @@
   {
     "date": "2026-07-16",
     "region": "gp",
-    "sessions": 48,
+    "sessions": 65,
     "friction": 0,
-    "dead_rate": 0.309,
+    "dead_rate": 0.152,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.323,
-      "n": 99
+      "rate": 0.153,
+      "n": 150
     },
-    "top_dead_els": [
-      {
-        "el": "div.sg-onink-scope",
-        "count": 23
-      }
-    ],
+    "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.25
+      "rate": 0.21
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -2238,23 +2233,23 @@
   {
     "date": "2026-07-16",
     "region": "florida",
-    "sessions": 33,
-    "friction": 0,
-    "dead_rate": 0.239,
+    "sessions": 56,
+    "friction": 4,
+    "dead_rate": 0.226,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.254,
-      "n": 63
+      "rate": 0.234,
+      "n": 128
     },
     "top_dead_els": [
       {
         "el": "div.sg-onink-scope",
-        "count": 12
+        "count": 15
       }
     ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.4
+      "rate": 0.35
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -2265,7 +2260,7 @@
   {
     "date": "2026-07-16",
     "region": "puntacana",
-    "sessions": 7,
+    "sessions": 13,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
@@ -2280,13 +2275,13 @@
   {
     "date": "2026-07-16",
     "region": "rivieramaya",
-    "sessions": 6,
+    "sessions": 13,
     "friction": 0,
-    "dead_rate": 0.464,
+    "dead_rate": 0.35,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.464,
-      "n": 28
+      "rate": 0.35,
+      "n": 40
     },
     "top_dead_els": [
       {
@@ -2294,7 +2289,10 @@
         "count": 11
       }
     ],
-    "bored_worst": null,
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.56
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
