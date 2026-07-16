@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-15T19:17:10.369Z",
+  "updatedAt": "2026-07-16T02:38:14.969Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -712,7 +712,7 @@
       "contactedAt": "2026-07-01T19:59:19.241Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "2b4950b5124eca7740f34caa220c14b2": {
       "stage": "contacted",
@@ -721,7 +721,7 @@
       "contactedAt": "2026-07-01T19:59:19.562Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "805dda28390871badeb4177570b176ba": {
       "stage": "contacted",
@@ -730,7 +730,7 @@
       "contactedAt": "2026-07-01T19:59:20.019Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "6d2af35e323e35abdc71e4b0da5bdea4": {
       "stage": "contacted",
@@ -739,7 +739,7 @@
       "contactedAt": "2026-07-01T19:59:20.375Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "bd2b1991669ae18fdf3a48ff7b91e574": {
       "stage": "contacted",
@@ -748,7 +748,7 @@
       "contactedAt": "2026-07-01T19:59:20.734Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "35d828094d5a78673922beff6fddca51": {
       "stage": "contacted",
@@ -757,7 +757,7 @@
       "contactedAt": "2026-07-01T19:59:21.057Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "2751322338abcfaf38e559cb9ec4ab26": {
       "stage": "contacted",
