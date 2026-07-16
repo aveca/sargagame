@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-16T02:38:14.969Z",
+  "updatedAt": "2026-07-16T08:16:04.353Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -766,7 +766,7 @@
       "contactedAt": "2026-07-02T03:44:10.927Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "ef556a3b23faa88334496f23d1eb833b": {
       "stage": "contacted",
@@ -775,7 +775,7 @@
       "contactedAt": "2026-07-02T03:44:11.574Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "611af0b761cddea656210b7921add07a": {
       "stage": "contacted",
@@ -784,7 +784,7 @@
       "contactedAt": "2026-07-02T03:44:11.950Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "86df388ea2ab4bba586722f1d1642d42": {
       "stage": "contacted",
@@ -793,7 +793,7 @@
       "contactedAt": "2026-07-02T03:44:12.256Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "80cb1526d83a5622af73a9cd0abab244": {
       "stage": "contacted",
@@ -802,7 +802,7 @@
       "contactedAt": "2026-07-02T03:44:14.281Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "36089b2535413818fa6db4256139cd86": {
       "stage": "contacted",
@@ -811,7 +811,7 @@
       "contactedAt": "2026-07-02T03:44:14.641Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "a7768e43c04cd8124105fbe7cb21f82d": {
       "stage": "discovered",
