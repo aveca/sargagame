@@ -7860,7 +7860,7 @@
         },
         {
           "id": "mq006",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -7875,72 +7875,72 @@
         },
         {
           "id": "mq009",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq010",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq011",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq012",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq013",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq014",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq015",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq016",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq017",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq019",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq020",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq021",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq022",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq023",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -7960,7 +7960,7 @@
         },
         {
           "id": "mq027",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -7990,22 +7990,22 @@
         },
         {
           "id": "mq034",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq035",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq036",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq037",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -8015,32 +8015,32 @@
         },
         {
           "id": "mq039",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq041",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq042",
-          "afai": 0.03,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "mq044",
-          "afai": 0.03,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq046",
-          "afai": 0.03,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq047",
-          "afai": 0.03,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -8065,7 +8065,7 @@
         },
         {
           "id": "mq055",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -8075,17 +8075,17 @@
         },
         {
           "id": "mq060",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "mq062",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "mq063",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -8095,7 +8095,7 @@
         },
         {
           "id": "mq067",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         }
       ]
