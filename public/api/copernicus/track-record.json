@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-07-17T02:43:25.774Z",
+  "generatedAt": "2026-07-17T08:15:42.922Z",
   "window": {
     "from": "2026-06-18",
     "to": "2026-07-17",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 92
   },
   "freshness": {
-    "computedAt": "2026-07-17T02:43:25.674Z",
+    "computedAt": "2026-07-17T08:15:42.815Z",
     "backtestAgeHours": 0,
     "observationLagDays": -1,
     "stale": false
@@ -109,7 +109,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 88,
-      "afaiMAE": 0.03
+      "afaiMAE": 0.028
     },
     {
       "id": "gp-deshaies",
@@ -125,7 +125,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.014
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-gosier",
@@ -133,7 +133,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 79,
-      "afaiMAE": 0.041
+      "afaiMAE": 0.039
     },
     {
       "id": "gp-moule",
@@ -149,7 +149,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.014
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-caravelle",
@@ -197,7 +197,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.008
+      "afaiMAE": 0.009
     },
     {
       "id": "anse-noire",
@@ -221,7 +221,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 55,
-      "afaiMAE": 0.07
+      "afaiMAE": 0.071
     },
     {
       "id": "vauclin",
@@ -245,7 +245,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 96,
-      "afaiMAE": 0.011
+      "afaiMAE": 0.012
     },
     {
       "id": "sainte-anne",
