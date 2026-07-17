@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-06-15T16:27:45.640Z",
-      "dryRun": false,
-      "script": "seo-canonical-hreflang",
-      "action": "validate",
-      "sites": 2,
-      "totalIssues": 8
-    },
-    {
-      "timestamp": "2026-06-15T16:27:45.793Z",
-      "dryRun": false,
-      "script": "seo-content-depth",
-      "action": "score",
-      "sites": 2,
-      "totalThin": 75
-    },
-    {
       "timestamp": "2026-06-15T16:27:45.890Z",
       "dryRun": false,
       "script": "seo-sitemap-check",
@@ -1748,6 +1732,65 @@
         "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
         "https://sargasses-guadeloupe.com/plages-sans-sargasses/"
       ]
+    },
+    {
+      "timestamp": "2026-07-17T12:35:29.098Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 51,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 1,
+          "cwvIssues": 2
+        },
+        "gp": {
+          "indexed": 87,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "florida": {
+          "indexed": 13,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "puntacana": {
+          "indexed": 6,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 22,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-07-17T12:35:33.579Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 152,
+        "critical": 17,
+        "warnings": 135
+      }
     }
   ]
 }
