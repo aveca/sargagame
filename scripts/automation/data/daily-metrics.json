@@ -3753,10 +3753,10 @@
   },
   {
     "date": "2026-07-17",
-    "time": "2026-07-17T13:32:36.966Z",
-    "payments": 18,
-    "revenue": 114.82,
-    "emails": 394,
+    "time": "2026-07-17T19:18:48.628Z",
+    "payments": 19,
+    "revenue": 126.81,
+    "emails": 399,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -3782,7 +3782,7 @@
       }
     },
     "email": {
-      "sent": 2923,
+      "sent": 2932,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -3800,13 +3800,13 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 100,
+        "reached": 96,
         "paid": 0,
         "completionRate": 0,
-        "recoverable": 23,
+        "recoverable": 19,
         "lostCents": {
           "eur": 149763,
-          "usd": 89761
+          "usd": 87365
         }
       },
       "bySource": {
@@ -3831,6 +3831,10 @@
     "mollie": {
       "windowDays": 30,
       "paid": {
+        "USD": {
+          "count": 1,
+          "total": 11.99
+        },
         "EUR": {
           "count": 4,
           "total": 38.96
@@ -3849,6 +3853,7 @@
       "b2b": 0,
       "payers": [
         "1799efe3",
+        "5510715a",
         "71733259",
         "bf819a41"
       ]
