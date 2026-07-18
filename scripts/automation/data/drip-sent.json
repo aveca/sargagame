@@ -1842,7 +1842,8 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-17",
     "j3": "2026-07-07T19:55:21.832Z",
-    "j7": "2026-07-11T19:06:09.365Z"
+    "j7": "2026-07-11T19:06:09.365Z",
+    "j14": "2026-07-18T19:07:12.521Z"
   },
   "4eeaae2b9bb829d73f8d5f538060553c": {
     "j3": "2026-07-08T02:44:22.848Z",
@@ -1996,7 +1997,8 @@
     "j3": "2026-07-14T08:06:29.274Z"
   },
   "6398840297648509eba72aeb10b167c7": {
-    "j3": "2026-07-14T19:22:58.634Z"
+    "j3": "2026-07-14T19:22:58.634Z",
+    "j7": "2026-07-18T19:07:14.348Z"
   },
   "e06b70c031f7261225181ec95bf7b692": {
     "daily_last": "2026-07-17",
@@ -2154,7 +2156,8 @@
     "daily_sig": "Plage de Grande Anse|clean|83|clean|1|dimanche",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-18"
+    "install_nudge_last": "2026-07-18",
+    "j3": "2026-07-18T19:07:16.798Z"
   },
   "a22692714ca678eb79eb70e70f29359c": {},
   "2fdb336732c904d6a807964d4961d661": {},
@@ -2175,5 +2178,18 @@
   "b6b60e22b2bb69c08dfa2cacba2c6429": {},
   "e9a08abeb20458f3f30e52a9b8b5b554": {},
   "19ade54483990286ca12163438ee6188": {},
-  "164794a091d0a512212ed443d1f4f14d": {}
+  "164794a091d0a512212ed443d1f4f14d": {},
+  "49a48225c02ab7eddc56cbf34d5235e2": {},
+  "9f66bc6c796267ba5082c4f18c3fae73": {},
+  "e3d5c00a939ea7c417be7d3447b96dc5": {
+    "daily_last": "2026-07-18",
+    "daily_sig": "Hollywood Beach|clean|84|clean|0|",
+    "daily_count": 1
+  },
+  "88d2bffdce676bfdacf7716f58ceeebd": {},
+  "79fd17fed9f1a4748acffc4ac5b16154": {
+    "daily_last": "2026-07-18",
+    "daily_sig": "Hollywood Beach|clean|84|clean|0|",
+    "daily_count": 1
+  }
 }
