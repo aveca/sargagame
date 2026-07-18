@@ -3862,10 +3862,10 @@
   },
   {
     "date": "2026-07-18",
-    "time": "2026-07-18T02:38:38.489Z",
+    "time": "2026-07-18T07:57:15.706Z",
     "payments": 19,
     "revenue": 126.81,
-    "emails": 403,
+    "emails": 404,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -3891,7 +3891,7 @@
       }
     },
     "email": {
-      "sent": 2932,
+      "sent": 2943,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -3909,13 +3909,13 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 76,
+        "reached": 73,
         "paid": 0,
         "completionRate": 0,
-        "recoverable": 19,
+        "recoverable": 17,
         "lostCents": {
-          "eur": 148264,
-          "usd": 30377
+          "eur": 145765,
+          "usd": 29179
         }
       },
       "bySource": {

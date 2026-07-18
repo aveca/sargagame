@@ -2481,13 +2481,13 @@
   {
     "date": "2026-07-18",
     "region": "mq",
-    "sessions": 23,
+    "sessions": 48,
     "friction": 0,
-    "dead_rate": 0.129,
+    "dead_rate": 0.238,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.133,
-      "n": 30
+      "rate": 0.22,
+      "n": 50
     },
     "top_dead_els": [],
     "bored_worst": {
@@ -2503,23 +2503,23 @@
   {
     "date": "2026-07-18",
     "region": "gp",
-    "sessions": 43,
+    "sessions": 65,
     "friction": 0,
-    "dead_rate": 0.303,
+    "dead_rate": 0.283,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.291,
-      "n": 110
+      "rate": 0.265,
+      "n": 151
     },
     "top_dead_els": [
       {
         "el": "div.sg-onink-scope",
-        "count": 27
+        "count": 31
       }
     ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.27
+      "rate": 0.33
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -2530,18 +2530,18 @@
   {
     "date": "2026-07-18",
     "region": "florida",
-    "sessions": 26,
+    "sessions": 54,
     "friction": 1,
-    "dead_rate": 0.048,
+    "dead_rate": 0.096,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.049,
-      "n": 41
+      "rate": 0.099,
+      "n": 71
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.38
+      "rate": 0.25
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -2552,7 +2552,7 @@
   {
     "date": "2026-07-18",
     "region": "puntacana",
-    "sessions": 9,
+    "sessions": 13,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
@@ -2567,12 +2567,24 @@
   {
     "date": "2026-07-18",
     "region": "rivieramaya",
-    "sessions": 3,
+    "sessions": 9,
     "friction": 0,
-    "dead_rate": 0,
-    "dead_worst": null,
-    "top_dead_els": [],
-    "bored_worst": null,
+    "dead_rate": 0.571,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.571,
+      "n": 63
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 36
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.53
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
