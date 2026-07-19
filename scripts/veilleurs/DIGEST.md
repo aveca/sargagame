@@ -1,10 +1,10 @@
-# Digest des Veilleurs — 2026-07-18
+# Digest des Veilleurs — 2026-07-19
 
 10 veilleur(s) ont rapporté aujourd'hui (du rivage à l'abysse).
 
 | Veilleur | Marché | Statut | Mode | Date | Headline |
 |---|---|---|---|---|---|
-| Sable | B2C voyageurs | live | script | 2026-07-18 | Sable en veille sur B2C voyageurs |
+| Sable | B2C voyageurs | live | script | 2026-07-19 | Sable en veille sur B2C voyageurs |
 | Récif | Hôtels & resorts (B2B) | emerging | recon | 2026-07-17 | Récif en veille sur Hôtels & resorts (B2B) |
 | Digue | Collectivités & offices de tourisme | greenfield | recon | 2026-07-13 | Digue en veille sur Collectivités & offices de tourisme |
 | Amarre | Immobilier côtier | greenfield | recon | 2026-07-14 | Amarre en veille sur Immobilier côtier |
@@ -13,6 +13,6 @@
 | Filet | Pêche & aquaculture | greenfield | recon | 2026-07-17 | Filet en veille sur Pêche & aquaculture |
 | Courant | Énergie & dessalement côtiers | greenfield | recon | 2026-07-18 | Courant en veille sur Énergie & dessalement côtiers |
 | Prisme | Licence data / API | emerging | recon | 2026-07-18 | Prisme en veille sur Licence data / API |
-| Abysse | Souverain, spatial & climat | greenfield | recon | 2026-07-12 | Abysse en veille sur Souverain, spatial & climat |
+| Abysse | Souverain, spatial & climat | greenfield | recon | 2026-07-19 | Abysse en veille sur Souverain, spatial & climat |
 
 > Généré par `scripts/veilleurs/synthesize.cjs` — orchestrateur cloud GitHub Actions (`.github/workflows/veilleurs.yml`).

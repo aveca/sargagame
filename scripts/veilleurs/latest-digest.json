@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-18",
+  "date": "2026-07-19",
   "count": 10,
   "veilleurs": [
     {
@@ -9,7 +9,7 @@
       "market": "B2C voyageurs",
       "depth": 0,
       "status": "live",
-      "date": "2026-07-18",
+      "date": "2026-07-19",
       "mode": "script",
       "headline": "Sable en veille sur B2C voyageurs"
     },
@@ -108,7 +108,7 @@
       "market": "Souverain, spatial & climat",
       "depth": 6000,
       "status": "greenfield",
-      "date": "2026-07-12",
+      "date": "2026-07-19",
       "mode": "recon",
       "headline": "Abysse en veille sur Souverain, spatial & climat"
     }
