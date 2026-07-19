@@ -3971,10 +3971,10 @@
   },
   {
     "date": "2026-07-19",
-    "time": "2026-07-19T13:21:58.091Z",
+    "time": "2026-07-19T19:16:20.309Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 416,
+    "emails": 420,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -4000,7 +4000,7 @@
       }
     },
     "email": {
-      "sent": 3022,
+      "sent": 3030,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -4081,7 +4081,7 @@
       "date": "2026-07-18",
       "mq": {
         "sessions": 267,
-        "users": 842
+        "users": 879
       },
       "gp": {
         "sessions": 219,
