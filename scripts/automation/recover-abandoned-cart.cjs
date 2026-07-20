@@ -318,6 +318,10 @@ async function main() {
         if (seen.has(h) || activeHashes.has(h) || bouncedSet.has(h) || paidH.has(h) || !cadenceDue(cadence[h], NOW)) continue
         const region = REGIONS[(p.metadata || {}).island || 'mq']
         if (!region) continue
+        // ⚠️ copy() ne fait que EN/ES + prix « $5.99 » → MQ/GP (FR, 7,99 €) recevraient
+        // un email ANGLAIS au mauvais prix (anti-moat). USD-only tant que la copy FR
+        // (branche `fr` + prix EUR) n'est pas ajoutée. MQ/GP = plus gros marché = TODO n°1.
+        if (['mq', 'gp'].includes(region.id)) continue
         seen.add(h)
         mollieCands.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
       }
