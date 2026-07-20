@@ -1,28 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-04-18",
-      "sites": {
-        "mq": {
-          "combined": null
-        },
-        "gp": {
-          "combined": null
-        }
-      }
-    },
-    {
-      "date": "2026-04-20",
-      "sites": {
-        "mq": {
-          "combined": null
-        },
-        "gp": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-04-27",
       "sites": {
         "mq": {
@@ -249,6 +227,77 @@
             },
             "TTFB": {
               "p75": 523,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": null
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
+    },
+    {
+      "date": "2026-07-20",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 3258,
+              "good": null
+            },
+            "INP": {
+              "p75": 436,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.02,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 867,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 3246,
+              "good": null
+            },
+            "INP": {
+              "p75": 554,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.03,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 792,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 3107,
+              "good": null
+            },
+            "INP": {
+              "p75": 327,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 530,
               "good": null
             }
           }

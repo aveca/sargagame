@@ -1,83 +1,74 @@
 {
-  "generatedAt": "2026-07-13T13:47:25.289Z",
+  "generatedAt": "2026-07-20T13:28:21.536Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
-      "winCount": 8,
+      "winCount": 7,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 115,
-          "clicks": 45,
-          "position": 2.9,
-          "actualCtr": 39.13,
-          "expectedCtr": 11.22,
-          "ctrLift": 27.91
+          "impressions": 97,
+          "clicks": 36,
+          "position": 4.1,
+          "actualCtr": 37.11,
+          "expectedCtr": 7.74,
+          "ctrLift": 29.38
         },
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7460,
-          "clicks": 2123,
-          "position": 5.1,
-          "actualCtr": 28.46,
-          "expectedCtr": 5.85,
-          "ctrLift": 22.6
+          "impressions": 7927,
+          "clicks": 2060,
+          "position": 4.9,
+          "actualCtr": 25.99,
+          "expectedCtr": 6.23,
+          "ctrLift": 19.76
         },
         {
           "url": "https://sargasses-martinique.com/sargasses-le-diamant/",
-          "impressions": 84,
-          "clicks": 12,
-          "position": 5.8,
-          "actualCtr": 14.29,
-          "expectedCtr": 4.31,
-          "ctrLift": 9.98
+          "impressions": 145,
+          "clicks": 24,
+          "position": 6.1,
+          "actualCtr": 16.55,
+          "expectedCtr": 3.93,
+          "ctrLift": 12.62
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 2228,
-          "clicks": 274,
-          "position": 6.9,
-          "actualCtr": 12.3,
-          "expectedCtr": 3.08,
-          "ctrLift": 9.22
-        },
-        {
-          "url": "https://sargasses-martinique.com/en/best-beaches-martinique/",
-          "impressions": 56,
-          "clicks": 4,
-          "position": 34.2,
-          "actualCtr": 7.14,
-          "expectedCtr": 0.5,
-          "ctrLift": 6.64
+          "impressions": 2042,
+          "clicks": 244,
+          "position": 7.1,
+          "actualCtr": 11.95,
+          "expectedCtr": 2.93,
+          "ctrLift": 9.02
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-du-diamant/",
-          "impressions": 121,
-          "clicks": 11,
-          "position": 7.8,
-          "actualCtr": 9.09,
-          "expectedCtr": 2.6,
-          "ctrLift": 6.49
+          "impressions": 93,
+          "clicks": 8,
+          "position": 7.6,
+          "actualCtr": 8.6,
+          "expectedCtr": 2.69,
+          "ctrLift": 5.91
         },
         {
           "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-          "impressions": 579,
-          "clicks": 50,
-          "position": 7,
-          "actualCtr": 8.64,
-          "expectedCtr": 3.04,
-          "ctrLift": 5.59
+          "impressions": 533,
+          "clicks": 45,
+          "position": 7.3,
+          "actualCtr": 8.44,
+          "expectedCtr": 2.87,
+          "ctrLift": 5.57
         },
         {
           "url": "https://sargasses-martinique.com/detection-satellite-sargasses/",
-          "impressions": 67,
-          "clicks": 5,
-          "position": 7.9,
-          "actualCtr": 7.46,
-          "expectedCtr": 2.53,
-          "ctrLift": 4.93
+          "impressions": 55,
+          "clicks": 3,
+          "position": 8.3,
+          "actualCtr": 5.45,
+          "expectedCtr": 2.33,
+          "ctrLift": 3.13
         }
       ]
     },
@@ -89,75 +80,75 @@
       "wins": [
         {
           "url": "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/",
-          "impressions": 109,
-          "clicks": 75,
+          "impressions": 124,
+          "clicks": 81,
           "position": 18,
-          "actualCtr": 68.81,
+          "actualCtr": 65.32,
           "expectedCtr": 0.5,
-          "ctrLift": 68.31
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/en/",
-          "impressions": 50,
-          "clicks": 24,
-          "position": 52.6,
-          "actualCtr": 48,
-          "expectedCtr": 0.5,
-          "ctrLift": 47.5
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
-          "impressions": 150,
-          "clicks": 49,
-          "position": 92.4,
-          "actualCtr": 32.67,
-          "expectedCtr": 0.5,
-          "ctrLift": 32.17
+          "ctrLift": 64.82
         },
         {
           "url": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
-          "impressions": 101,
-          "clicks": 33,
-          "position": 6.2,
-          "actualCtr": 32.67,
-          "expectedCtr": 3.78,
-          "ctrLift": 28.9
+          "impressions": 116,
+          "clicks": 46,
+          "position": 5,
+          "actualCtr": 39.66,
+          "expectedCtr": 6.03,
+          "ctrLift": 33.63
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "impressions": 149,
+          "clicks": 49,
+          "position": 70.5,
+          "actualCtr": 32.89,
+          "expectedCtr": 0.5,
+          "ctrLift": 32.39
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+          "impressions": 53,
+          "clicks": 17,
+          "position": 11.3,
+          "actualCtr": 32.08,
+          "expectedCtr": 0.5,
+          "ctrLift": 31.58
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
+          "impressions": 63,
+          "clicks": 7,
+          "position": 46,
+          "actualCtr": 11.11,
+          "expectedCtr": 0.5,
+          "ctrLift": 10.61
         },
         {
           "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
-          "impressions": 69,
-          "clicks": 8,
-          "position": 54.1,
-          "actualCtr": 11.59,
+          "impressions": 87,
+          "clicks": 9,
+          "position": 66.6,
+          "actualCtr": 10.34,
           "expectedCtr": 0.5,
-          "ctrLift": 11.09
+          "ctrLift": 9.84
         },
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 16046,
-          "clicks": 2184,
-          "position": 4.3,
-          "actualCtr": 13.61,
-          "expectedCtr": 7.39,
-          "ctrLift": 6.23
+          "impressions": 14705,
+          "clicks": 2182,
+          "position": 4.4,
+          "actualCtr": 14.84,
+          "expectedCtr": 7.22,
+          "ctrLift": 7.62
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 4694,
-          "clicks": 548,
-          "position": 5,
-          "actualCtr": 11.67,
-          "expectedCtr": 5.98,
-          "ctrLift": 5.69
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/plages/grande-anse-desirade/",
-          "impressions": 72,
-          "clicks": 4,
-          "position": 31.3,
-          "actualCtr": 5.56,
-          "expectedCtr": 0.5,
-          "ctrLift": 5.06
+          "impressions": 4368,
+          "clicks": 448,
+          "position": 5.5,
+          "actualCtr": 10.26,
+          "expectedCtr": 5.09,
+          "ctrLift": 5.16
         }
       ]
     },
@@ -169,45 +160,55 @@
       "wins": [
         {
           "url": "https://sargassummiami.com/",
-          "impressions": 708,
-          "clicks": 46,
-          "position": 14.1,
-          "actualCtr": 6.5,
+          "impressions": 980,
+          "clicks": 81,
+          "position": 14.3,
+          "actualCtr": 8.27,
           "expectedCtr": 0.5,
-          "ctrLift": 6
+          "ctrLift": 7.77
         },
         {
           "url": "https://sargassummiami.com/es/",
-          "impressions": 120,
+          "impressions": 138,
           "clicks": 5,
-          "position": 16.9,
-          "actualCtr": 4.17,
+          "position": 16.5,
+          "actualCtr": 3.62,
           "expectedCtr": 0.5,
-          "ctrLift": 3.67
+          "ctrLift": 3.12
         }
       ]
     },
     "puntacana": {
       "opportunityCount": 0,
-      "winCount": 0,
+      "winCount": 1,
       "totalLostClicks": 0,
       "opportunities": [],
-      "wins": []
+      "wins": [
+        {
+          "url": "https://sargassumpuntacana.com/",
+          "impressions": 366,
+          "clicks": 29,
+          "position": 14.1,
+          "actualCtr": 7.92,
+          "expectedCtr": 0.5,
+          "ctrLift": 7.42
+        }
+      ]
     },
     "rivieramaya": {
       "opportunityCount": 1,
       "winCount": 0,
-      "totalLostClicks": 39,
+      "totalLostClicks": 72,
       "opportunities": [
         {
           "url": "https://sargassumcancun.com/sargazo-salud-riesgos/",
-          "impressions": 515,
-          "clicks": 0,
-          "position": 4.2,
-          "actualCtr": 0,
-          "expectedCtr": 7.61,
-          "ctrGap": 7.61,
-          "lostClicks": 39
+          "impressions": 529,
+          "clicks": 1,
+          "position": 2.3,
+          "actualCtr": 0.19,
+          "expectedCtr": 13.85,
+          "ctrGap": 13.66,
+          "lostClicks": 72
         }
       ],
       "wins": []

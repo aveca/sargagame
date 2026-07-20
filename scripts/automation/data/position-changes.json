@@ -1,60 +1,80 @@
 {
-  "generatedAt": "2026-07-13T13:47:25.174Z",
-  "comparedTo": "2026-07-06",
+  "generatedAt": "2026-07-20T13:28:21.451Z",
+  "comparedTo": "2026-07-13",
   "alerts": {
     "drops": [
       {
         "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/mapa-sargazo/",
-        "prevPos": 47.7,
-        "currPos": 56.4,
-        "delta": 8.7,
-        "impressions": 62
+        "page": "https://sargassumcancun.com/",
+        "prevPos": 18.5,
+        "currPos": 26.2,
+        "delta": 7.7,
+        "impressions": 452
       },
       {
-        "site": "florida",
-        "page": "https://sargassummiami.com/es/",
-        "prevPos": 13.2,
-        "currPos": 16.9,
-        "delta": 3.7,
-        "impressions": 120
-      },
-      {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/mejores-playas-sin-sargazo-rivieramaya/",
-        "prevPos": 18.9,
-        "currPos": 27,
-        "delta": 8.1,
-        "impressions": 41
-      },
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+        "prevPos": 7.2,
+        "currPos": 11.3,
+        "delta": 4.1,
+        "impressions": 53
+      }
+    ],
+    "gains": [
       {
         "site": "rivieramaya",
         "page": "https://sargassumcancun.com/semaforo-del-sargazo/",
-        "prevPos": 69.4,
-        "currPos": 74.3,
-        "delta": 4.9,
+        "prevPos": 74.3,
+        "currPos": 57.5,
+        "delta": -16.8,
+        "impressions": 67
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/",
+        "prevPos": 20.4,
+        "currPos": 14.1,
+        "delta": -6.3,
+        "impressions": 366
+      }
+    ],
+    "appeared": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages-sans-sargasses/",
+        "avgPos": 9.4,
+        "clicks": 1,
+        "impressions": 44
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/temporada-sargazo-rivieramaya/",
+        "avgPos": 14.9,
+        "clicks": 1,
         "impressions": 45
       }
     ],
-    "gains": [],
-    "appeared": [
+    "vanished": [
       {
         "site": "gp",
         "page": "https://sargasses-guadeloupe.com/plages/grande-anse-desirade/",
-        "avgPos": 7.8,
-        "clicks": 4,
-        "impressions": 72
-      },
-      {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
-        "avgPos": 6.9,
-        "clicks": 6,
-        "impressions": 43
+        "prevImpressions": 72
       }
     ],
-    "vanished": [],
-    "queryDrops": [],
+    "queryDrops": [
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
+        "query": "sargasse en temps réel 2026",
+        "prevPos": 4.2,
+        "currPos": 5.8,
+        "delta": 1.6,
+        "prevImpressions": 163,
+        "impressions": 120,
+        "clicks": 8,
+        "prevClicks": 23
+      }
+    ],
     "queryGains": []
   }
 }

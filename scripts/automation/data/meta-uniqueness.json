@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-13T13:47:31.181Z",
+  "generatedAt": "2026-07-20T13:28:28.293Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
-      "uniqueTitles": 205,
-      "uniqueDescs": 188,
+      "pageCount": 362,
+      "uniqueTitles": 204,
+      "uniqueDescs": 187,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 544,
+      "issueCount": 543,
       "issues": [
         {
           "file": "404.html",
@@ -123,7 +123,7 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 106
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -199,9 +199,9 @@
       ]
     },
     "gp": {
-      "pageCount": 402,
-      "uniqueTitles": 244,
-      "uniqueDescs": 228,
+      "pageCount": 401,
+      "uniqueTitles": 243,
+      "uniqueDescs": 227,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -227,7 +227,7 @@
           ]
         }
       ],
-      "issueCount": 597,
+      "issueCount": 596,
       "issues": [
         {
           "file": "404.html",

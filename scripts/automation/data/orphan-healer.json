@@ -1,7 +1,43 @@
 {
-  "generatedAt": "2026-07-13T13:47:32.565Z",
+  "generatedAt": "2026-07-20T13:28:29.180Z",
   "sites": {
     "mq": {
+      "donorCount": 5,
+      "targetCount": 50,
+      "injections": [
+        {
+          "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/carte-sargasses/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/previsions/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/conditions/",
+          "targetCount": 8
+        }
+      ],
+      "targets": [
+        "/alertes/",
+        "/danger-sargasses-h2s/",
+        "/saison-sargasses-guadeloupe/",
+        "/agir/",
+        "/bulletin-sargasses-martinique/",
+        "/comic-cartes.html",
+        "/conditions/",
+        "/confirme/"
+      ]
+    },
+    "gp": {
       "donorCount": 5,
       "targetCount": 51,
       "injections": [
@@ -29,48 +65,12 @@
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
-        "/saison-sargasses-guadeloupe/",
-        "/saison-sargasses-martinique/",
-        "/agir/",
-        "/bulletin-sargasses-martinique/",
-        "/comic-cartes.html",
-        "/conditions/"
-      ]
-    },
-    "gp": {
-      "donorCount": 5,
-      "targetCount": 50,
-      "injections": [
-        {
-          "donor": "/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/plages/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/carte-sargasses/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/previsions/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/conditions/",
-          "targetCount": 8
-        }
-      ],
-      "targets": [
-        "/danger-sargasses-h2s/",
         "/previsions/",
         "/saison-sargasses-martinique/",
         "/agir/",
         "/algues-guadeloupe/",
         "/bulletin-sargasses-guadeloupe/",
-        "/comic-cartes.html",
-        "/conditions/"
+        "/comic-cartes.html"
       ]
     }
   }

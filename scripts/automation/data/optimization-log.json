@@ -28,7 +28,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "7018 dead clicks (page hotspot, element unknown) — /",
+        "metric": "4438 dead clicks (page hotspot, element unknown) — /",
         "severity": "warning"
       },
       "result": {
@@ -38,8 +38,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 7018 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 4438 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -48,7 +48,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "2656 dead clicks (page hotspot, element unknown) — /",
+        "metric": "1254 dead clicks (page hotspot, element unknown) — /",
         "severity": "warning"
       },
       "result": {
@@ -58,8 +58,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 2656 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 1254 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -130,7 +130,7 @@
       "data": {
         "page": "/en/",
         "target": "",
-        "metric": "114 dead clicks (page hotspot, element unknown) — /en/",
+        "metric": "65 dead clicks (page hotspot, element unknown) — /en/",
         "severity": "warning"
       },
       "result": {
@@ -140,8 +140,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 114 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 65 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -170,7 +170,7 @@
       "data": {
         "page": "/en/sargassum-map/",
         "target": "",
-        "metric": "54 dead clicks (page hotspot, element unknown) — /en/sargassum-map/",
+        "metric": "29 dead clicks (page hotspot, element unknown) — /en/sargassum-map/",
         "severity": "warning"
       },
       "result": {
@@ -180,8 +180,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 54 dead clicks (page hotspot, element unknown) — /en/sargassum-map/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 29 dead clicks (page hotspot, element unknown) — /en/sargassum-map/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -190,7 +190,7 @@
       "data": {
         "page": "/plages/plage-bois-jolan/",
         "target": "",
-        "metric": "188 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/",
+        "metric": "147 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/",
         "severity": "warning"
       },
       "result": {
@@ -200,8 +200,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 188 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 147 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -210,7 +210,7 @@
       "data": {
         "page": "/en/sargassum-map/",
         "target": "",
-        "metric": "44 dead clicks (page hotspot, element unknown) — /en/sargassum-map/",
+        "metric": "22 dead clicks (page hotspot, element unknown) — /en/sargassum-map/",
         "severity": "warning"
       },
       "result": {
@@ -220,8 +220,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 44 dead clicks (page hotspot, element unknown) — /en/sargassum-map/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 22 dead clicks (page hotspot, element unknown) — /en/sargassum-map/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -230,7 +230,7 @@
       "data": {
         "page": "/saison-sargasses-guadeloupe/",
         "target": "",
-        "metric": "17 dead clicks (page hotspot, element unknown) — /saison-sargasses-guadeloupe/",
+        "metric": "16 dead clicks (page hotspot, element unknown) — /saison-sargasses-guadeloupe/",
         "severity": "warning"
       },
       "result": {
@@ -240,8 +240,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 17 dead clicks (page hotspot, element unknown) — /saison-sargasses-guadeloupe/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 16 dead clicks (page hotspot, element unknown) — /saison-sargasses-guadeloupe/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -250,7 +250,7 @@
       "data": {
         "page": "/en/",
         "target": "",
-        "metric": "200 dead clicks (page hotspot, element unknown) — /en/",
+        "metric": "125 dead clicks (page hotspot, element unknown) — /en/",
         "severity": "warning"
       },
       "result": {
@@ -260,8 +260,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 200 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 125 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -270,7 +270,7 @@
       "data": {
         "page": "/plages/plage-de-malendure/",
         "target": "",
-        "metric": "10 dead clicks (page hotspot, element unknown) — /plages/plage-de-malendure/",
+        "metric": "11 dead clicks (page hotspot, element unknown) — /plages/plage-de-malendure/",
         "severity": "warning"
       },
       "result": {
@@ -280,8 +280,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /plages/plage-de-malendure/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 11 dead clicks (page hotspot, element unknown) — /plages/plage-de-malendure/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -290,7 +290,7 @@
       "data": {
         "page": "/carte-sargasses/",
         "target": "",
-        "metric": "1541 dead clicks (page hotspot, element unknown) — /carte-sargasses/",
+        "metric": "977 dead clicks (page hotspot, element unknown) — /carte-sargasses/",
         "severity": "warning"
       },
       "result": {
@@ -300,8 +300,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 1541 dead clicks (page hotspot, element unknown) — /carte-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 977 dead clicks (page hotspot, element unknown) — /carte-sargasses/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -310,7 +310,7 @@
       "data": {
         "page": "/plages/anse-dufour/",
         "target": "",
-        "metric": "29 dead clicks (page hotspot, element unknown) — /plages/anse-dufour/",
+        "metric": "25 dead clicks (page hotspot, element unknown) — /plages/anse-dufour/",
         "severity": "warning"
       },
       "result": {
@@ -320,8 +320,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 29 dead clicks (page hotspot, element unknown) — /plages/anse-dufour/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 25 dead clicks (page hotspot, element unknown) — /plages/anse-dufour/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -330,7 +330,7 @@
       "data": {
         "page": "/sargasses-record-2026/",
         "target": "",
-        "metric": "99 dead clicks (page hotspot, element unknown) — /sargasses-record-2026/",
+        "metric": "65 dead clicks (page hotspot, element unknown) — /sargasses-record-2026/",
         "severity": "warning"
       },
       "result": {
@@ -340,8 +340,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 99 dead clicks (page hotspot, element unknown) — /sargasses-record-2026/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 65 dead clicks (page hotspot, element unknown) — /sargasses-record-2026/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -350,7 +350,7 @@
       "data": {
         "page": "/plages/plage-de-la-caravelle/",
         "target": "",
-        "metric": "66 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/",
+        "metric": "53 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/",
         "severity": "warning"
       },
       "result": {
@@ -360,8 +360,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 66 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 53 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -370,7 +370,7 @@
       "data": {
         "page": "/plages/pointe-des-chateaux/",
         "target": "",
-        "metric": "17 dead clicks (page hotspot, element unknown) — /plages/pointe-des-chateaux/",
+        "metric": "9 dead clicks (page hotspot, element unknown) — /plages/pointe-des-chateaux/",
         "severity": "warning"
       },
       "result": {
@@ -380,8 +380,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 17 dead clicks (page hotspot, element unknown) — /plages/pointe-des-chateaux/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 9 dead clicks (page hotspot, element unknown) — /plages/pointe-des-chateaux/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -430,7 +430,7 @@
       "data": {
         "page": "/plages/plage-du-gosier/",
         "target": "",
-        "metric": "77 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/",
+        "metric": "80 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/",
         "severity": "warning"
       },
       "result": {
@@ -440,8 +440,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 77 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 80 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -470,7 +470,7 @@
       "data": {
         "page": "/plages-sans-sargasses/",
         "target": "",
-        "metric": "73 dead clicks (page hotspot, element unknown) — /plages-sans-sargasses/",
+        "metric": "70 dead clicks (page hotspot, element unknown) — /plages-sans-sargasses/",
         "severity": "warning"
       },
       "result": {
@@ -480,8 +480,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 73 dead clicks (page hotspot, element unknown) — /plages-sans-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 70 dead clicks (page hotspot, element unknown) — /plages-sans-sargasses/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -490,7 +490,7 @@
       "data": {
         "page": "/plages/plage-du-diamant/",
         "target": "",
-        "metric": "57 dead clicks (page hotspot, element unknown) — /plages/plage-du-diamant/",
+        "metric": "21 dead clicks (page hotspot, element unknown) — /plages/plage-du-diamant/",
         "severity": "warning"
       },
       "result": {
@@ -500,8 +500,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 57 dead clicks (page hotspot, element unknown) — /plages/plage-du-diamant/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 21 dead clicks (page hotspot, element unknown) — /plages/plage-du-diamant/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -510,7 +510,7 @@
       "data": {
         "page": "/en/best-beaches-martinique/",
         "target": "",
-        "metric": "20 dead clicks (page hotspot, element unknown) — /en/best-beaches-martinique/",
+        "metric": "11 dead clicks (page hotspot, element unknown) — /en/best-beaches-martinique/",
         "severity": "warning"
       },
       "result": {
@@ -520,8 +520,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 20 dead clicks (page hotspot, element unknown) — /en/best-beaches-martinique/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 11 dead clicks (page hotspot, element unknown) — /en/best-beaches-martinique/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -530,7 +530,7 @@
       "data": {
         "page": "/plages/plage-de-sainte-anne/",
         "target": "",
-        "metric": "75 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/",
+        "metric": "77 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/",
         "severity": "warning"
       },
       "result": {
@@ -540,8 +540,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 75 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 77 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -550,7 +550,7 @@
       "data": {
         "page": "/plages/plage-de-grande-anse/",
         "target": "",
-        "metric": "14 dead clicks (page hotspot, element unknown) — /plages/plage-de-grande-anse/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /plages/plage-de-grande-anse/",
         "severity": "warning"
       },
       "result": {
@@ -560,8 +560,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 14 dead clicks (page hotspot, element unknown) — /plages/plage-de-grande-anse/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/plage-de-grande-anse/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -570,7 +570,7 @@
       "data": {
         "page": "/plages/plage-de-bas-du-fort/",
         "target": "",
-        "metric": "7 dead clicks (page hotspot, element unknown) — /plages/plage-de-bas-du-fort/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /plages/plage-de-bas-du-fort/",
         "severity": "warning"
       },
       "result": {
@@ -580,8 +580,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /plages/plage-de-bas-du-fort/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/plage-de-bas-du-fort/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "low-ctr",
@@ -643,7 +643,7 @@
         ]
       },
       "reason": "Dead click detected: 21 dead clicks (page hotspot, element unknown) — /meilleures-plages-guadeloupe-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -652,7 +652,7 @@
       "data": {
         "page": "/meilleures-plages-martinique-sargasses/",
         "target": "",
-        "metric": "7 dead clicks (page hotspot, element unknown) — /meilleures-plages-martinique-sargasses/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /meilleures-plages-martinique-sargasses/",
         "severity": "warning"
       },
       "result": {
@@ -662,8 +662,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /meilleures-plages-martinique-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /meilleures-plages-martinique-sargasses/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -732,7 +732,7 @@
       "data": {
         "page": "/plages/plage-de-pompierre/",
         "target": "",
-        "metric": "9 dead clicks (page hotspot, element unknown) — /plages/plage-de-pompierre/",
+        "metric": "7 dead clicks (page hotspot, element unknown) — /plages/plage-de-pompierre/",
         "severity": "warning"
       },
       "result": {
@@ -742,8 +742,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 9 dead clicks (page hotspot, element unknown) — /plages/plage-de-pompierre/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /plages/plage-de-pompierre/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -792,7 +792,7 @@
       "data": {
         "page": "/plages/la-datcha/",
         "target": "",
-        "metric": "37 dead clicks (page hotspot, element unknown) — /plages/la-datcha/",
+        "metric": "23 dead clicks (page hotspot, element unknown) — /plages/la-datcha/",
         "severity": "warning"
       },
       "result": {
@@ -802,8 +802,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 37 dead clicks (page hotspot, element unknown) — /plages/la-datcha/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 23 dead clicks (page hotspot, element unknown) — /plages/la-datcha/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "high-bounce",
@@ -935,7 +935,7 @@
       "data": {
         "page": "/es/",
         "target": "",
-        "metric": "46 dead clicks (page hotspot, element unknown) — /es/",
+        "metric": "24 dead clicks (page hotspot, element unknown) — /es/",
         "severity": "warning"
       },
       "result": {
@@ -945,8 +945,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 46 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 24 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -975,7 +975,7 @@
       "data": {
         "page": "/detection-satellite-sargasses/",
         "target": "",
-        "metric": "27 dead clicks (page hotspot, element unknown) — /detection-satellite-sargasses/",
+        "metric": "18 dead clicks (page hotspot, element unknown) — /detection-satellite-sargasses/",
         "severity": "warning"
       },
       "result": {
@@ -985,8 +985,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 27 dead clicks (page hotspot, element unknown) — /detection-satellite-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 18 dead clicks (page hotspot, element unknown) — /detection-satellite-sargasses/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1035,7 +1035,7 @@
       "data": {
         "page": "/plages/plage-du-souffleur/",
         "target": "",
-        "metric": "12 dead clicks (page hotspot, element unknown) — /plages/plage-du-souffleur/",
+        "metric": "11 dead clicks (page hotspot, element unknown) — /plages/plage-du-souffleur/",
         "severity": "warning"
       },
       "result": {
@@ -1045,8 +1045,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 12 dead clicks (page hotspot, element unknown) — /plages/plage-du-souffleur/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 11 dead clicks (page hotspot, element unknown) — /plages/plage-du-souffleur/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1075,7 +1075,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "631 dead clicks (page hotspot, element unknown) — /",
+        "metric": "432 dead clicks (page hotspot, element unknown) — /",
         "severity": "warning"
       },
       "result": {
@@ -1085,8 +1085,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 631 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 432 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1115,7 +1115,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "75 dead clicks (page hotspot, element unknown) — /",
+        "metric": "98 dead clicks (page hotspot, element unknown) — /",
         "severity": "warning"
       },
       "result": {
@@ -1125,8 +1125,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 75 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 98 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1135,7 +1135,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "233 dead clicks (page hotspot, element unknown) — /",
+        "metric": "161 dead clicks (page hotspot, element unknown) — /",
         "severity": "warning"
       },
       "result": {
@@ -1145,8 +1145,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 233 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 161 dead clicks (page hotspot, element unknown) — /. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1155,7 +1155,7 @@
       "data": {
         "page": "/semaforo-del-sargazo/",
         "target": "",
-        "metric": "37 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/",
+        "metric": "15 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/",
         "severity": "warning"
       },
       "result": {
@@ -1165,8 +1165,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 37 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 15 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "high-bounce",
@@ -1196,7 +1196,7 @@
       "data": {
         "page": "/comprendre-sargasses/",
         "target": "",
-        "metric": "14 dead clicks (page hotspot, element unknown) — /comprendre-sargasses/",
+        "metric": "5 dead clicks (page hotspot, element unknown) — /comprendre-sargasses/",
         "severity": "warning"
       },
       "result": {
@@ -1206,8 +1206,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 14 dead clicks (page hotspot, element unknown) — /comprendre-sargasses/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /comprendre-sargasses/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1216,7 +1216,7 @@
       "data": {
         "page": "/plages/les-raisiniers/",
         "target": "",
-        "metric": "18 dead clicks (page hotspot, element unknown) — /plages/les-raisiniers/",
+        "metric": "10 dead clicks (page hotspot, element unknown) — /plages/les-raisiniers/",
         "severity": "warning"
       },
       "result": {
@@ -1226,8 +1226,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 18 dead clicks (page hotspot, element unknown) — /plages/les-raisiniers/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /plages/les-raisiniers/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1236,7 +1236,7 @@
       "data": {
         "page": "/plages/plage-des-salines/",
         "target": "",
-        "metric": "16 dead clicks (page hotspot, element unknown) — /plages/plage-des-salines/",
+        "metric": "13 dead clicks (page hotspot, element unknown) — /plages/plage-des-salines/",
         "severity": "warning"
       },
       "result": {
@@ -1246,8 +1246,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 16 dead clicks (page hotspot, element unknown) — /plages/plage-des-salines/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 13 dead clicks (page hotspot, element unknown) — /plages/plage-des-salines/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1256,7 +1256,7 @@
       "data": {
         "page": "/previsions/",
         "target": "",
-        "metric": "15 dead clicks (page hotspot, element unknown) — /previsions/",
+        "metric": "8 dead clicks (page hotspot, element unknown) — /previsions/",
         "severity": "warning"
       },
       "result": {
@@ -1266,8 +1266,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 15 dead clicks (page hotspot, element unknown) — /previsions/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /previsions/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1316,7 +1316,7 @@
       "data": {
         "page": "/plages/plage-du-moule/",
         "target": "",
-        "metric": "13 dead clicks (page hotspot, element unknown) — /plages/plage-du-moule/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /plages/plage-du-moule/",
         "severity": "warning"
       },
       "result": {
@@ -1326,8 +1326,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 13 dead clicks (page hotspot, element unknown) — /plages/plage-du-moule/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/plage-du-moule/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1376,7 +1376,7 @@
       "data": {
         "page": "/plages/ile-de-la-petite-terre/",
         "target": "",
-        "metric": "86 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/",
+        "metric": "87 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/",
         "severity": "warning"
       },
       "result": {
@@ -1386,8 +1386,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 86 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 87 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1396,7 +1396,7 @@
       "data": {
         "page": "/plages/plage-de-la-perle/",
         "target": "",
-        "metric": "10 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-perle/",
+        "metric": "8 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-perle/",
         "severity": "warning"
       },
       "result": {
@@ -1406,8 +1406,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-perle/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-perle/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1416,7 +1416,7 @@
       "data": {
         "page": "/seaweed-map/",
         "target": "",
-        "metric": "704 dead clicks (page hotspot, element unknown) — /seaweed-map/",
+        "metric": "845 dead clicks (page hotspot, element unknown) — /seaweed-map/",
         "severity": "warning"
       },
       "result": {
@@ -1426,8 +1426,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 704 dead clicks (page hotspot, element unknown) — /seaweed-map/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 845 dead clicks (page hotspot, element unknown) — /seaweed-map/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1436,7 +1436,7 @@
       "data": {
         "page": "/beaches-without-sargassum-today/",
         "target": "",
-        "metric": "49 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
+        "metric": "32 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
         "severity": "warning"
       },
       "result": {
@@ -1446,8 +1446,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 49 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 32 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1467,7 +1467,7 @@
         ]
       },
       "reason": "Dead click detected: 34 dead clicks (page hotspot, element unknown) — /sargasses-sainte-anne-martinique/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1476,7 +1476,7 @@
       "data": {
         "page": "/sargasses-les-trois-ilets/",
         "target": "",
-        "metric": "41 dead clicks (page hotspot, element unknown) — /sargasses-les-trois-ilets/",
+        "metric": "45 dead clicks (page hotspot, element unknown) — /sargasses-les-trois-ilets/",
         "severity": "warning"
       },
       "result": {
@@ -1486,8 +1486,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 41 dead clicks (page hotspot, element unknown) — /sargasses-les-trois-ilets/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.451Z"
+      "reason": "Dead click detected: 45 dead clicks (page hotspot, element unknown) — /sargasses-les-trois-ilets/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1496,7 +1496,7 @@
       "data": {
         "page": "/sargasses-sainte-luce/",
         "target": "",
-        "metric": "26 dead clicks (page hotspot, element unknown) — /sargasses-sainte-luce/",
+        "metric": "28 dead clicks (page hotspot, element unknown) — /sargasses-sainte-luce/",
         "severity": "warning"
       },
       "result": {
@@ -1506,8 +1506,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 26 dead clicks (page hotspot, element unknown) — /sargasses-sainte-luce/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 28 dead clicks (page hotspot, element unknown) — /sargasses-sainte-luce/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1516,7 +1516,7 @@
       "data": {
         "page": "/plages/anse-michel/",
         "target": "",
-        "metric": "22 dead clicks (page hotspot, element unknown) — /plages/anse-michel/",
+        "metric": "32 dead clicks (page hotspot, element unknown) — /plages/anse-michel/",
         "severity": "warning"
       },
       "result": {
@@ -1526,8 +1526,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 22 dead clicks (page hotspot, element unknown) — /plages/anse-michel/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 32 dead clicks (page hotspot, element unknown) — /plages/anse-michel/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1536,7 +1536,7 @@
       "data": {
         "page": "/sargasses-le-diamant/",
         "target": "",
-        "metric": "31 dead clicks (page hotspot, element unknown) — /sargasses-le-diamant/",
+        "metric": "39 dead clicks (page hotspot, element unknown) — /sargasses-le-diamant/",
         "severity": "warning"
       },
       "result": {
@@ -1546,8 +1546,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 31 dead clicks (page hotspot, element unknown) — /sargasses-le-diamant/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 39 dead clicks (page hotspot, element unknown) — /sargasses-le-diamant/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1556,7 +1556,7 @@
       "data": {
         "page": "/meteo-sargasses-martinique/",
         "target": "",
-        "metric": "10 dead clicks (page hotspot, element unknown) — /meteo-sargasses-martinique/",
+        "metric": "12 dead clicks (page hotspot, element unknown) — /meteo-sargasses-martinique/",
         "severity": "warning"
       },
       "result": {
@@ -1566,8 +1566,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /meteo-sargasses-martinique/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 12 dead clicks (page hotspot, element unknown) — /meteo-sargasses-martinique/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1607,7 +1607,7 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/anse-macabou/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1627,7 +1627,7 @@
         ]
       },
       "reason": "Dead click detected: 28 dead clicks (page hotspot, element unknown) — /plages/plage-des-raisins-clairs/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1636,7 +1636,7 @@
       "data": {
         "page": "/es/",
         "target": "",
-        "metric": "22 dead clicks (page hotspot, element unknown) — /es/",
+        "metric": "20 dead clicks (page hotspot, element unknown) — /es/",
         "severity": "warning"
       },
       "result": {
@@ -1646,8 +1646,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 22 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 20 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1667,7 +1667,7 @@
         ]
       },
       "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/vieux-fort-sainte-rose/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1716,26 +1716,6 @@
       "data": {
         "page": "/sargassum-forecast/",
         "target": "",
-        "metric": "28 dead clicks (page hotspot, element unknown) — /sargassum-forecast/",
-        "severity": "warning"
-      },
-      "result": {
-        "recommendations": [
-          "Element \"\" receives clicks but is not interactive",
-          "Add cursor:pointer and hover state if it should be clickable",
-          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
-        ]
-      },
-      "reason": "Dead click detected: 28 dead clicks (page hotspot, element unknown) — /sargassum-forecast/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
-    },
-    {
-      "rule": "dead-clicks",
-      "key": "puntacana:/sargassum-forecast/:",
-      "action": "fix-affordance",
-      "data": {
-        "page": "/sargassum-forecast/",
-        "target": "",
         "metric": "21 dead clicks (page hotspot, element unknown) — /sargassum-forecast/",
         "severity": "warning"
       },
@@ -1747,7 +1727,27 @@
         ]
       },
       "reason": "Dead click detected: 21 dead clicks (page hotspot, element unknown) — /sargassum-forecast/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "puntacana:/sargassum-forecast/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/sargassum-forecast/",
+        "target": "",
+        "metric": "18 dead clicks (page hotspot, element unknown) — /sargassum-forecast/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 18 dead clicks (page hotspot, element unknown) — /sargassum-forecast/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1756,7 +1756,7 @@
       "data": {
         "page": "/temporada-sargazo-rivieramaya/",
         "target": "",
-        "metric": "32 dead clicks (page hotspot, element unknown) — /temporada-sargazo-rivieramaya/",
+        "metric": "21 dead clicks (page hotspot, element unknown) — /temporada-sargazo-rivieramaya/",
         "severity": "warning"
       },
       "result": {
@@ -1766,8 +1766,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 32 dead clicks (page hotspot, element unknown) — /temporada-sargazo-rivieramaya/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 21 dead clicks (page hotspot, element unknown) — /temporada-sargazo-rivieramaya/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1776,7 +1776,7 @@
       "data": {
         "page": "/en/",
         "target": "",
-        "metric": "19 dead clicks (page hotspot, element unknown) — /en/",
+        "metric": "26 dead clicks (page hotspot, element unknown) — /en/",
         "severity": "warning"
       },
       "result": {
@@ -1786,8 +1786,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 19 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 26 dead clicks (page hotspot, element unknown) — /en/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1796,7 +1796,7 @@
       "data": {
         "page": "/en/sargassum-forecast/",
         "target": "",
-        "metric": "11 dead clicks (page hotspot, element unknown) — /en/sargassum-forecast/",
+        "metric": "10 dead clicks (page hotspot, element unknown) — /en/sargassum-forecast/",
         "severity": "warning"
       },
       "result": {
@@ -1806,8 +1806,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 11 dead clicks (page hotspot, element unknown) — /en/sargassum-forecast/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /en/sargassum-forecast/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1816,7 +1816,7 @@
       "data": {
         "page": "/playas/playa-maroma/",
         "target": "",
-        "metric": "8 dead clicks (page hotspot, element unknown) — /playas/playa-maroma/",
+        "metric": "5 dead clicks (page hotspot, element unknown) — /playas/playa-maroma/",
         "severity": "warning"
       },
       "result": {
@@ -1826,8 +1826,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /playas/playa-maroma/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /playas/playa-maroma/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1847,7 +1847,7 @@
         ]
       },
       "reason": "Dead click detected: 10 dead clicks (page hotspot, element unknown) — /conditions/baignade-ideale/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1856,7 +1856,7 @@
       "data": {
         "page": "/en/what-to-do-sargassum-martinique/",
         "target": "",
-        "metric": "8 dead clicks (page hotspot, element unknown) — /en/what-to-do-sargassum-martinique/",
+        "metric": "9 dead clicks (page hotspot, element unknown) — /en/what-to-do-sargassum-martinique/",
         "severity": "warning"
       },
       "result": {
@@ -1866,8 +1866,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /en/what-to-do-sargassum-martinique/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 9 dead clicks (page hotspot, element unknown) — /en/what-to-do-sargassum-martinique/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1876,7 +1876,7 @@
       "data": {
         "page": "/plages/plage-de-sainte-luce/",
         "target": "",
-        "metric": "12 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-luce/",
+        "metric": "13 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-luce/",
         "severity": "warning"
       },
       "result": {
@@ -1886,8 +1886,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 12 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-luce/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 13 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-luce/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1907,7 +1907,7 @@
         ]
       },
       "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /meteo-sargasses-guadeloupe/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1927,7 +1927,7 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/anse-noire/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1947,7 +1947,7 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/pointe-du-bout/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -1956,7 +1956,7 @@
       "data": {
         "page": "/plages/petit-havre-gosier/",
         "target": "",
-        "metric": "24 dead clicks (page hotspot, element unknown) — /plages/petit-havre-gosier/",
+        "metric": "26 dead clicks (page hotspot, element unknown) — /plages/petit-havre-gosier/",
         "severity": "warning"
       },
       "result": {
@@ -1966,8 +1966,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 24 dead clicks (page hotspot, element unknown) — /plages/petit-havre-gosier/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 26 dead clicks (page hotspot, element unknown) — /plages/petit-havre-gosier/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1987,7 +1987,7 @@
         ]
       },
       "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /plages/anse-rodrigue/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -1996,7 +1996,7 @@
       "data": {
         "page": "/conditions/baignade-ideale/",
         "target": "",
-        "metric": "6 dead clicks (page hotspot, element unknown) — /conditions/baignade-ideale/",
+        "metric": "8 dead clicks (page hotspot, element unknown) — /conditions/baignade-ideale/",
         "severity": "warning"
       },
       "result": {
@@ -2006,8 +2006,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /conditions/baignade-ideale/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /conditions/baignade-ideale/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2027,7 +2027,7 @@
         ]
       },
       "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/anse-piton/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2036,7 +2036,7 @@
       "data": {
         "page": "/plages/plage-de-capesterre-mg/",
         "target": "",
-        "metric": "6 dead clicks (page hotspot, element unknown) — /plages/plage-de-capesterre-mg/",
+        "metric": "5 dead clicks (page hotspot, element unknown) — /plages/plage-de-capesterre-mg/",
         "severity": "warning"
       },
       "result": {
@@ -2046,8 +2046,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/plage-de-capesterre-mg/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/plage-de-capesterre-mg/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2116,7 +2116,7 @@
       "data": {
         "page": "/plages/les-salines-saint-francois/",
         "target": "",
-        "metric": "5 dead clicks (page hotspot, element unknown) — /plages/les-salines-saint-francois/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /plages/les-salines-saint-francois/",
         "severity": "warning"
       },
       "result": {
@@ -2126,8 +2126,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/les-salines-saint-francois/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /plages/les-salines-saint-francois/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2136,7 +2136,7 @@
       "data": {
         "page": "/es/",
         "target": "",
-        "metric": "33 dead clicks (page hotspot, element unknown) — /es/",
+        "metric": "44 dead clicks (page hotspot, element unknown) — /es/",
         "severity": "warning"
       },
       "result": {
@@ -2146,8 +2146,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 33 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 44 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2156,7 +2156,7 @@
       "data": {
         "page": "/beaches/miami-beach/",
         "target": "",
-        "metric": "25 dead clicks (page hotspot, element unknown) — /beaches/miami-beach/",
+        "metric": "26 dead clicks (page hotspot, element unknown) — /beaches/miami-beach/",
         "severity": "warning"
       },
       "result": {
@@ -2166,8 +2166,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 25 dead clicks (page hotspot, element unknown) — /beaches/miami-beach/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 26 dead clicks (page hotspot, element unknown) — /beaches/miami-beach/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2187,7 +2187,7 @@
         ]
       },
       "reason": "Dead click detected: 11 dead clicks (page hotspot, element unknown) — /es/pronostico-sargazo/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2196,7 +2196,7 @@
       "data": {
         "page": "/es/",
         "target": "",
-        "metric": "15 dead clicks (page hotspot, element unknown) — /es/",
+        "metric": "28 dead clicks (page hotspot, element unknown) — /es/",
         "severity": "warning"
       },
       "result": {
@@ -2206,8 +2206,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 15 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 28 dead clicks (page hotspot, element unknown) — /es/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2267,7 +2267,7 @@
         ]
       },
       "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /plages/anse-corps-de-garde/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.452Z"
+      "timestamp": "2026-07-20T13:28:21.639Z"
     },
     {
       "rule": "dead-clicks",
@@ -2296,7 +2296,7 @@
       "data": {
         "page": "/es/mapa-sargazo/",
         "target": "",
-        "metric": "8 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
+        "metric": "18 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
         "severity": "warning"
       },
       "result": {
@@ -2306,8 +2306,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 18 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2316,7 +2316,7 @@
       "data": {
         "page": "/sargassum-season-florida/",
         "target": "",
-        "metric": "5 dead clicks (page hotspot, element unknown) — /sargassum-season-florida/",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /sargassum-season-florida/",
         "severity": "warning"
       },
       "result": {
@@ -2326,8 +2326,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /sargassum-season-florida/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /sargassum-season-florida/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2336,7 +2336,7 @@
       "data": {
         "page": "/seaweed-map/",
         "target": "",
-        "metric": "8 dead clicks (page hotspot, element unknown) — /seaweed-map/",
+        "metric": "17 dead clicks (page hotspot, element unknown) — /seaweed-map/",
         "severity": "warning"
       },
       "result": {
@@ -2346,8 +2346,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /seaweed-map/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "reason": "Dead click detected: 17 dead clicks (page hotspot, element unknown) — /seaweed-map/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     },
     {
       "rule": "dead-clicks",
@@ -2387,8 +2387,129 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /en/cancun-seaweed-map-2026/. Users expect \"\" to be interactive.",
-      "timestamp": "2026-07-13T13:47:25.453Z"
+      "timestamp": "2026-07-20T13:28:21.640Z"
+    },
+    {
+      "rule": "high-bounce",
+      "key": "florida:/fort-lauderdale-sargassum-today/:mobile",
+      "action": "content-review-needed",
+      "data": {
+        "pagePath": "/fort-lauderdale-sargassum-today/",
+        "device": "mobile",
+        "bounceRate": 73,
+        "sessions": 11,
+        "avgDuration": 171
+      },
+      "result": {
+        "recommendations": [
+          "Add more internal links to related beach pages",
+          "Improve above-the-fold content to retain visitors",
+          "Check mobile layout: font sizes, touch targets, and loading speed"
+        ]
+      },
+      "reason": "Bounce rate 73% > 60% threshold (11 sessions, mobile).",
+      "timestamp": "2026-07-20T13:28:21.639Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "mq:/plages/pointe-faula/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/pointe-faula/",
+        "target": "",
+        "metric": "7 dead clicks (page hotspot, element unknown) — /plages/pointe-faula/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /plages/pointe-faula/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "mq:/plages/pointe-fort-caravelle/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/pointe-fort-caravelle/",
+        "target": "",
+        "metric": "5 dead clicks (page hotspot, element unknown) — /plages/pointe-fort-caravelle/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 5 dead clicks (page hotspot, element unknown) — /plages/pointe-fort-caravelle/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.639Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "gp:/plages/plage-de-saint-francois/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/plage-de-saint-francois/",
+        "target": "",
+        "metric": "8 dead clicks (page hotspot, element unknown) — /plages/plage-de-saint-francois/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 8 dead clicks (page hotspot, element unknown) — /plages/plage-de-saint-francois/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "florida:/es/playas-sin-sargazo-hoy/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/es/playas-sin-sargazo-hoy/",
+        "target": "",
+        "metric": "6 dead clicks (page hotspot, element unknown) — /es/playas-sin-sargazo-hoy/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 6 dead clicks (page hotspot, element unknown) — /es/playas-sin-sargazo-hoy/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "puntacana:/es/playas/uvero-alto/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/es/playas/uvero-alto/",
+        "target": "",
+        "metric": "7 dead clicks (page hotspot, element unknown) — /es/playas/uvero-alto/",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 7 dead clicks (page hotspot, element unknown) — /es/playas/uvero-alto/. Users expect \"\" to be interactive.",
+      "timestamp": "2026-07-20T13:28:21.640Z"
     }
   ],
-  "lastRun": "2026-07-13T13:47:25.450Z"
+  "lastRun": "2026-07-20T13:28:21.638Z"
 }

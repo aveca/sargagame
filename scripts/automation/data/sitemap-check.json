@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-13T13:47:32.024Z",
+  "generatedAt": "2026-07-20T13:28:28.851Z",
   "sites": {
     "mq": {
-      "sitemapSize": 162,
-      "ownDomainCount": 162,
+      "sitemapSize": 161,
+      "ownDomainCount": 161,
       "crossDomainCount": 0,
-      "diskCount": 342,
+      "diskCount": 341,
       "sitemapUrls404Count": 0,
       "diskMissingCount": 180,
       "sitemapUrls404": [],
@@ -44,10 +44,10 @@
       "crossDomainSample": []
     },
     "gp": {
-      "sitemapSize": 201,
-      "ownDomainCount": 201,
+      "sitemapSize": 200,
+      "ownDomainCount": 200,
       "crossDomainCount": 0,
-      "diskCount": 371,
+      "diskCount": 370,
       "sitemapUrls404Count": 0,
       "diskMissingCount": 181,
       "sitemapUrls404": [],

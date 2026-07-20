@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-13T13:47:31.400Z",
+  "generatedAt": "2026-07-20T13:28:28.435Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
+      "pageCount": 362,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 172,
+      "pagesWithCanonical": 171,
       "pagesWithHreflang": 157,
       "issueCount": 176,
       "byKind": {
@@ -226,9 +226,9 @@
       ]
     },
     "gp": {
-      "pageCount": 402,
+      "pageCount": 401,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 211,
+      "pagesWithCanonical": 210,
       "pagesWithHreflang": 196,
       "issueCount": 176,
       "byKind": {
