@@ -2,15 +2,15 @@
   "MQ": {
     "cleanCount": 53,
     "total": 53,
-    "updatedAt": "2026-07-19T19:05:50.081Z",
-    "seenAt": "2026-07-19T19:09:29.389Z",
+    "updatedAt": "2026-07-20T02:55:22.834Z",
+    "seenAt": "2026-07-20T03:01:43.124Z",
     "lastSwingAt": null
   },
   "GP": {
-    "cleanCount": 83,
+    "cleanCount": 81,
     "total": 83,
-    "updatedAt": "2026-07-19T19:05:49.863Z",
-    "seenAt": "2026-07-19T19:09:29.389Z",
+    "updatedAt": "2026-07-20T02:55:22.640Z",
+    "seenAt": "2026-07-20T03:01:43.124Z",
     "lastSwingAt": null
   }
 }
