@@ -23,7 +23,7 @@
     },
     "day2": {
       "statusHitRate": 95,
-      "afaiMAE": 0.017,
+      "afaiMAE": 0.016,
       "avgConfidence": 58,
       "pairs": 580
     },
@@ -41,7 +41,7 @@
     },
     "day5": {
       "statusHitRate": 97,
-      "afaiMAE": 0.016,
+      "afaiMAE": 0.015,
       "avgConfidence": 43,
       "pairs": 517
     },
@@ -104,13 +104,13 @@
       "pairs": 159
     },
     "gp-grande-anse": {
-      "statusHitRate": 96,
-      "afaiMAE": 0.017,
+      "statusHitRate": 100,
+      "afaiMAE": 0.015,
       "pairs": 159
     },
     "gp-malendure": {
       "statusHitRate": 100,
-      "afaiMAE": 0.016,
+      "afaiMAE": 0.014,
       "pairs": 159
     },
     "gp-sainte-anne": {
@@ -172,9 +172,9 @@
     },
     "calm": {
       "n": 3159,
-      "hit": 3026,
+      "hit": 3032,
       "falseAlarm": 127,
-      "actClean": 3153
+      "actClean": 3159
     }
   },
   "byRegimeDirection": {
@@ -188,7 +188,7 @@
     },
     "calm|clean": {
       "n": 3032,
-      "hit": 3026
+      "hit": 3032
     },
     "calm|ALERT": {
       "n": 127,
@@ -223,7 +223,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-22 → 2026-07-21) resultaron correctos (sobre 3032); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-07-21T08:50:52.981Z",
+  "computed": "2026-07-21T13:53:10.890Z",
   "pairs": [
     {
       "snapshotDate": "2026-07-18",
@@ -399,11 +399,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
-      "afaiError": 0.09
+      "statusHit": 1,
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-07-18",
@@ -453,11 +453,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.08
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-07-18",
@@ -723,11 +723,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.14,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.05
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-07-18",
@@ -1317,11 +1317,11 @@
         "confidence": 62
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
-      "afaiError": 0.1
+      "statusHit": 1,
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-07-19",
@@ -1353,11 +1353,11 @@
         "confidence": 62
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.08
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-07-19",
@@ -1533,11 +1533,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.14,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.06
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-07-19",
@@ -1857,11 +1857,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
-      "afaiError": 0.02
+      "statusHit": 1,
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-07-20",
@@ -1875,11 +1875,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-07-20",
@@ -1965,11 +1965,11 @@
         "confidence": 30
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.14,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.2
+      "afaiError": 0.13
     },
     {
       "snapshotDate": "2026-07-20",
