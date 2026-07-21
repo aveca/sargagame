@@ -2,8 +2,8 @@
   "note": "OBSERVÉ au satellite (pas prédit). Taux par côte/mois, gate N>=60 jours-plage. Auditable comme /fiabilite/.",
   "min_samples": 60,
   "history_span": {
-    "first": "2026-06-20",
-    "last": "2026-07-20",
+    "first": "2026-06-21",
+    "last": "2026-07-21",
     "days": 31
   },
   "cells": [
@@ -14,9 +14,9 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 77,
+      "n_samples": 70,
       "n_beaches": 7,
-      "first_date": "2026-06-20",
+      "first_date": "2026-06-21",
       "last_date": "2026-06-30"
     },
     {
@@ -26,22 +26,22 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 140,
+      "n_samples": 147,
       "n_beaches": 7,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-20"
+      "last_date": "2026-07-21"
     },
     {
       "island": "gp",
       "coast": "sheltered",
       "month": 7,
-      "clean_rate": 100,
-      "moderate_rate": 0,
+      "clean_rate": 98,
+      "moderate_rate": 2,
       "avoid_rate": 0,
-      "n_samples": 60,
+      "n_samples": 63,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-20"
+      "last_date": "2026-07-21"
     },
     {
       "island": "mq",
@@ -50,9 +50,9 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 78,
+      "n_samples": 71,
       "n_beaches": 8,
-      "first_date": "2026-06-20",
+      "first_date": "2026-06-21",
       "last_date": "2026-06-30"
     },
     {
@@ -62,10 +62,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 160,
+      "n_samples": 168,
       "n_beaches": 8,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-20"
+      "last_date": "2026-07-21"
     },
     {
       "island": "mq",
@@ -74,10 +74,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 60,
+      "n_samples": 63,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-20"
+      "last_date": "2026-07-21"
     }
   ]
 }
