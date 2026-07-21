@@ -1733,7 +1733,8 @@
   "ed1545afa97da4b3692aff90cfb6ab1e": {
     "j3": "2026-07-03T19:25:21.807Z",
     "j7": "2026-07-07T14:37:23.976Z",
-    "j14": "2026-07-14T19:22:54.294Z"
+    "j14": "2026-07-14T19:22:54.294Z",
+    "j21": "2026-07-21T19:25:00.135Z"
   },
   "0f058407d8455a020d7e519da0fdc046": {},
   "8e062157b68e94bdb8bded9ab699ac40": {},
@@ -2141,13 +2142,16 @@
     "j7": "2026-07-21T13:52:33.276Z"
   },
   "89aa3babd117549d4259fe4f245c7c8d": {
-    "j3": "2026-07-17T19:11:27.317Z"
+    "j3": "2026-07-17T19:11:27.317Z",
+    "j7": "2026-07-21T19:25:03.973Z"
   },
   "a51ec3bceefb14745d95dc85588b146d": {
-    "j3": "2026-07-17T19:11:29.683Z"
+    "j3": "2026-07-17T19:11:29.683Z",
+    "j7": "2026-07-21T19:25:08.004Z"
   },
   "035eba302c4dba0d7a64ed5bf9535825": {
-    "j3": "2026-07-17T19:11:31.313Z"
+    "j3": "2026-07-17T19:11:31.313Z",
+    "j7": "2026-07-21T19:25:09.878Z"
   },
   "313fb5c251346b407924b7fa7bcf562a": {
     "daily_last": "2026-07-21",
@@ -2246,21 +2250,27 @@
   "49a48225c02ab7eddc56cbf34d5235e2": {
     "j3": "2026-07-21T13:52:43.134Z"
   },
-  "9f66bc6c796267ba5082c4f18c3fae73": {},
+  "9f66bc6c796267ba5082c4f18c3fae73": {
+    "j3": "2026-07-21T19:25:13.234Z"
+  },
   "e3d5c00a939ea7c417be7d3447b96dc5": {
     "daily_last": "2026-07-21",
     "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-21"
+    "install_nudge_last": "2026-07-21",
+    "j3": "2026-07-21T19:25:14.959Z"
   },
-  "88d2bffdce676bfdacf7716f58ceeebd": {},
+  "88d2bffdce676bfdacf7716f58ceeebd": {
+    "j3": "2026-07-21T19:25:17.491Z"
+  },
   "79fd17fed9f1a4748acffc4ac5b16154": {
     "daily_last": "2026-07-21",
     "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-21"
+    "install_nudge_last": "2026-07-21",
+    "j3": "2026-07-21T19:25:19.217Z"
   },
   "6033173492761ac0ebf926a1338b6c42": {},
   "4e7f45069e4a3b6baeb53e6b2e481793": {
@@ -2308,5 +2318,8 @@
     "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
     "daily_count": 1
   },
-  "09a504e7c56eb0c2e9984cde61ece052": {}
+  "09a504e7c56eb0c2e9984cde61ece052": {},
+  "f1281e9dc17cd42bd86ea5a3b445dc1d": {},
+  "d72a7742d859a76b02d51b38a0ef44c8": {},
+  "bdc4b47a5ba80465a63e57e3f588188b": {}
 }
