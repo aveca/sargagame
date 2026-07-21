@@ -4190,7 +4190,7 @@
   },
   {
     "date": "2026-07-21",
-    "time": "2026-07-21T03:13:46.763Z",
+    "time": "2026-07-21T08:35:57.966Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 430,
@@ -4219,7 +4219,7 @@
       }
     },
     "email": {
-      "sent": 3100,
+      "sent": 3102,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -4237,12 +4237,12 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 12,
+        "reached": 9,
         "paid": 0,
         "completionRate": 0,
         "recoverable": 0,
         "lostCents": {
-          "eur": 97197
+          "eur": 91200
         }
       },
       "bySource": {
