@@ -1,16 +1,16 @@
 {
  "_comment": "Accuracy VALIDÉE CITOYEN : nos prévisions (jour-0 publié, forecast-archive append-only) vs les SIGNALEMENTS communautaires datés (reports-log, recent24h). Vérité-terrain qui voit aussi le sargasse échoué. Lié à fenêtre + N, jamais un global nu. Publié seulement si N>=30.",
  "method": "Chaque signalement frais (dernières 24h) est comparé au statut que nous AFFICHIONS ce jour-là (mer propre / modéré / éviter). Le taux = % de concordance prévision↔signalement réel.",
- "updatedAt": "2026-07-21T08:55:23.946Z",
- "n": 29,
+ "updatedAt": "2026-07-21T19:30:24.136Z",
+ "n": 27,
  "hitRate": 48,
  "byStatus": {
   "clean": {
-   "n": 14,
+   "n": 13,
    "rate": 100
   },
   "moderate": {
-   "n": 10,
+   "n": 9,
    "rate": 0
   },
   "avoid": {
@@ -20,8 +20,8 @@
  },
  "window": {
   "from": "2026-06-24",
-  "to": "2026-07-21",
-  "days": 18
+  "to": "2026-07-20",
+  "days": 17
  },
  "minSample": 30,
  "publishable": false,
