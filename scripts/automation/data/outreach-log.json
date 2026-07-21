@@ -286,8 +286,53 @@
       "error": null,
       "url": "https://leslovetrotteurs.com/martinique/",
       "market": "fr"
+    },
+    "la-poze-travel.com": {
+      "date": "2026-07-21T11:45:45.970Z",
+      "emailHash": "20d71c50cbd9314477f640fd5a3be592",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.la-poze-travel.com/martinique-nos-incontournables/",
+      "market": "fr"
+    },
+    "rci.fm": {
+      "date": "2026-07-21T11:45:53.674Z",
+      "emailHash": "79c4d68f85800f9b93d21f462a7a1024",
+      "emailDomain": "rci.fm",
+      "status": "sent",
+      "error": null,
+      "url": "https://rci.fm/martinique/infos",
+      "market": "fr"
+    },
+    "outremers360.com": {
+      "date": "2026-07-21T11:45:56.577Z",
+      "emailHash": "b941ae5c373d43574ac478d96e39837c",
+      "emailDomain": "outremers360.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.outremers360.com/",
+      "market": "fr"
+    },
+    "madinin-art.net": {
+      "date": "2026-07-21T11:46:01.850Z",
+      "emailHash": "d85f9afd9e0319c23bee5f5be4d20307",
+      "emailDomain": "madinin-art.net",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.madinin-art.net/sargasses-des-echouements-records-en-2025-dans-les-antilles/",
+      "market": "fr"
+    },
+    "piedsdanslesable.fr": {
+      "date": "2026-07-21T11:46:16.388Z",
+      "emailHash": "932958a9ea154daa48734bba0ffb5f18",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.piedsdanslesable.fr/plage-guadeloupe/sans-sargasses/",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-07-14T11:25:07.486Z",
-  "totalSent": 34
+  "lastRun": "2026-07-21T11:46:16.388Z",
+  "totalSent": 39
 }

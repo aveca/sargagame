@@ -27,8 +27,22 @@
       "emailHash": "f96b6bc3ac4300132ee7474aab018d99",
       "authority": "high",
       "market": "fr"
+    },
+    "rci.fm": {
+      "date": "2026-07-21T11:50:56.653Z",
+      "status": "sent",
+      "emailHash": "b69b61686b01008e76ce03779c8a367d",
+      "authority": "high",
+      "market": "fr"
+    },
+    "franceantilles.fr": {
+      "date": "2026-07-21T11:50:59.184Z",
+      "status": "sent",
+      "emailHash": "ace76024809d49a707e9f4812748d208",
+      "authority": "high",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-07-14T11:29:43.695Z",
-  "totalSent": 4
+  "lastRun": "2026-07-21T11:50:59.184Z",
+  "totalSent": 6
 }

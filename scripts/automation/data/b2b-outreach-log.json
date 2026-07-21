@@ -123,8 +123,48 @@
     "hotellafregate.fr": {
       "date": "2026-07-14T11:32:43.006Z",
       "status": "no-email"
+    },
+    "domaine-saint-aubin.com": {
+      "date": "2026-07-21T11:53:47.610Z",
+      "emailHash": "8ab2fad77d1f998bd0249e7034e1cb8a",
+      "emailDomain": "gmail.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "le-domaine-des-bulles.com": {
+      "date": "2026-07-21T11:53:47.845Z",
+      "status": "no-email"
+    },
+    "clubmed.fr": {
+      "date": "2026-07-21T11:53:58.397Z",
+      "emailHash": "97817c0c49994eb500ad0a5e7e2d8aed",
+      "emailDomain": "domain.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotelpierrelegrand.com": {
+      "date": "2026-07-21T11:53:58.607Z",
+      "status": "no-email"
+    },
+    "residence-mercure-diamant.com": {
+      "date": "2026-07-21T11:53:58.839Z",
+      "status": "no-email"
+    },
+    "hotelarawak.com": {
+      "date": "2026-07-21T11:53:59.061Z",
+      "status": "no-email"
+    },
+    "mairie-sainteanne-martinique.fr": {
+      "date": "2026-07-21T11:53:59.373Z",
+      "status": "no-email"
+    },
+    "sainteluce.fr": {
+      "date": "2026-07-21T11:54:01.423Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-07-14T11:32:43.006Z",
-  "totalSent": 8
+  "lastRun": "2026-07-21T11:54:01.423Z",
+  "totalSent": 10
 }
