@@ -4299,10 +4299,10 @@
   },
   {
     "date": "2026-07-22",
-    "time": "2026-07-22T11:51:06.306Z",
+    "time": "2026-07-22T14:06:12.280Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 437,
+    "emails": 438,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -4328,7 +4328,7 @@
       }
     },
     "email": {
-      "sent": 3171,
+      "sent": 3208,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -4409,8 +4409,8 @@
         "users": 759
       },
       "gp": {
-        "sessions": 283,
-        "users": 1050
+        "sessions": 284,
+        "users": 1130
       }
     }
   }
