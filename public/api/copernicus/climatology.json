@@ -2,8 +2,8 @@
   "note": "OBSERVÉ au satellite (pas prédit). Taux par côte/mois, gate N>=60 jours-plage. Auditable comme /fiabilite/.",
   "min_samples": 60,
   "history_span": {
-    "first": "2026-06-21",
-    "last": "2026-07-21",
+    "first": "2026-06-22",
+    "last": "2026-07-22",
     "days": 31
   },
   "cells": [
@@ -14,9 +14,9 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 70,
+      "n_samples": 63,
       "n_beaches": 7,
-      "first_date": "2026-06-21",
+      "first_date": "2026-06-22",
       "last_date": "2026-06-30"
     },
     {
@@ -26,10 +26,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 147,
+      "n_samples": 154,
       "n_beaches": 7,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-21"
+      "last_date": "2026-07-22"
     },
     {
       "island": "gp",
@@ -38,10 +38,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 63,
+      "n_samples": 66,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-21"
+      "last_date": "2026-07-22"
     },
     {
       "island": "mq",
@@ -50,9 +50,9 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 71,
+      "n_samples": 64,
       "n_beaches": 8,
-      "first_date": "2026-06-21",
+      "first_date": "2026-06-22",
       "last_date": "2026-06-30"
     },
     {
@@ -62,10 +62,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 168,
+      "n_samples": 176,
       "n_beaches": 8,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-21"
+      "last_date": "2026-07-22"
     },
     {
       "island": "mq",
@@ -74,10 +74,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 63,
+      "n_samples": 66,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-21"
+      "last_date": "2026-07-22"
     }
   ]
 }
