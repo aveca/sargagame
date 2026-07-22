@@ -4299,7 +4299,7 @@
   },
   {
     "date": "2026-07-22",
-    "time": "2026-07-22T02:50:33.627Z",
+    "time": "2026-07-22T08:36:39.770Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 437,
@@ -4328,7 +4328,7 @@
       }
     },
     "email": {
-      "sent": 3169,
+      "sent": 3171,
       "delivered": null,
       "opened": null,
       "clicked": null,

@@ -2755,18 +2755,18 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "rm002",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm003",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "rm004",
@@ -2795,7 +2795,7 @@
         },
         {
           "id": "rm009",
-          "afai": 0.13,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -2810,43 +2810,43 @@
         },
         {
           "id": "rm012",
-          "afai": 0.16,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
           "id": "rm013",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm014",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm015",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm016",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm017",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm018",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "rm019",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "rm020",
@@ -3646,7 +3646,7 @@
       "beach": "rm009",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.13
+      "afai": 0.12
     },
     {
       "date": "2026-07-22",
@@ -3654,6 +3654,20 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.13
+    },
+    {
+      "date": "2026-07-22",
+      "beach": "rm003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-07-22",
+      "beach": "rm019",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
     }
   ]
 }
