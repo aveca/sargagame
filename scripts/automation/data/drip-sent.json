@@ -1232,22 +1232,22 @@
     "j21": "2026-07-05T19:20:40.090Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j14": "2026-06-28T19:22:55.176Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-05T19:20:41.871Z"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j14": "2026-06-29T04:11:47.484Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1298,11 +1298,11 @@
     "j21": "2026-07-06T20:00:14.741Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j14": "2026-06-30T03:41:53.530Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1323,9 +1323,9 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 25,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 26,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-01T09:49:25.510Z",
@@ -1349,10 +1349,10 @@
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-04T08:39:51.952Z",
@@ -1360,9 +1360,9 @@
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 25,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 26,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -2090,9 +2090,9 @@
     "j7": "2026-07-20T19:47:16.271Z"
   },
   "3e0aaa8457fcd2a59252994d04f1c8f1": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 9,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 10,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-16",
     "j3": "2026-07-16T13:53:12.223Z",
@@ -2175,9 +2175,9 @@
     "j7": "2026-07-22T02:40:30.137Z"
   },
   "1193254875b084b639ff350303db985e": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 7,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 8,
     "j3": "2026-07-18T02:31:23.367Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
@@ -2196,9 +2196,9 @@
     "j3": "2026-07-18T13:17:57.515Z"
   },
   "4953668d8c12edb46c48e5b85c0c4c50": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 7,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
     "j3": "2026-07-18T19:07:16.798Z"
@@ -2262,9 +2262,9 @@
     "j3": "2026-07-21T19:25:13.234Z"
   },
   "e3d5c00a939ea7c417be7d3447b96dc5": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
-    "daily_count": 4,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:14.959Z"
@@ -2273,9 +2273,9 @@
     "j3": "2026-07-21T19:25:17.491Z"
   },
   "79fd17fed9f1a4748acffc4ac5b16154": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
-    "daily_count": 4,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
+    "daily_count": 5,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:19.217Z"
@@ -2297,9 +2297,9 @@
   "7f30960ec4391f5fa24d362e56007c19": {},
   "bf850169724d5c0bc790e29922b05586": {},
   "f7eaa1aa31cdd5c6b8040934abf15a29": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
-    "daily_count": 2
+    "daily_last": "2026-07-22",
+    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
+    "daily_count": 3
   },
   "69df196f9b2d37b14e6199e023b70cc7": {
     "daily_last": "2026-07-21",
@@ -2308,9 +2308,9 @@
   },
   "ad116c679b07e17528fbbd26168705c9": {},
   "067a46b95c4f3936824bc2f673c41453": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Uvero Alto|clean|78|clean|9|Wednesday",
-    "daily_count": 2
+    "daily_last": "2026-07-22",
+    "daily_sig": "Cabeza de Toro|clean|83|moderate|7|Thursday",
+    "daily_count": 3
   },
   "e521ffeb4c65198e02cc9f6c81fa853f": {},
   "6f429a3179ff0a28823dfbc555d18624": {
@@ -2322,14 +2322,14 @@
   "7e52d307a3c2b65434f570c0677000d8": {},
   "2b990f6d3555f2e8035b5000919910c5": {},
   "ab5e0b44fcb4aa9bd51e8154e23eed5e": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Fort Lauderdale Beach|clean|84|clean|0|",
-    "daily_count": 2
+    "daily_last": "2026-07-22",
+    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
+    "daily_count": 3
   },
   "63ef1e90183ceb2552fb2426ee7e5af1": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Plage de Malendure|clean|80|clean|1|mercredi",
-    "daily_count": 1
+    "daily_last": "2026-07-22",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_count": 2
   },
   "09a504e7c56eb0c2e9984cde61ece052": {},
   "f1281e9dc17cd42bd86ea5a3b445dc1d": {},
