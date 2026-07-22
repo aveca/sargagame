@@ -1084,23 +1084,23 @@
     "j21": "2026-07-03T03:00:56.402Z"
   },
   "56c8db20918240754ce1bfae61e9326b": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
     "j7": "2026-06-19T10:26:18.113Z",
     "j14": "2026-06-26T09:27:07.949Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-03T09:21:58.213Z"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
     "j7": "2026-06-19T10:26:19.849Z",
     "j14": "2026-06-26T09:27:09.664Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-03T09:22:02.114Z"
@@ -1270,22 +1270,22 @@
     "install_nudge_last": "2026-06-30"
   },
   "73847215716df27d0e0585585d502598": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j14": "2026-06-29T15:49:58.831Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-06T15:36:45.485Z"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-18T20:26:12.876Z",
     "j7": "2026-06-22T20:48:43.358Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j14": "2026-06-29T20:00:42.532Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1395,10 +1395,10 @@
     "j21": "2026-07-13T14:37:37.063Z"
   },
   "d1d35f18f6c8be599cec77d79fd44473": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j7": "2026-06-29T15:50:01.935Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1412,10 +1412,10 @@
     "j21": "2026-07-13T14:37:41.208Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 25,
+    "daily_count": 26,
     "j7": "2026-06-29T15:50:06.123Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1499,9 +1499,9 @@
     "j14": "2026-07-07T19:55:15.893Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 25,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 26,
     "j3": "2026-06-27T13:43:09.354Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1545,9 +1545,9 @@
     "j7": "2026-07-03T03:00:58.462Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 25,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 26,
     "j3": "2026-06-29T04:11:53.346Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1759,7 +1759,8 @@
   "276835a41303cfaf20e9873ecb5d64c7": {
     "j3": "2026-07-04T13:29:41.009Z",
     "j7": "2026-07-08T14:09:25.371Z",
-    "j14": "2026-07-15T13:47:05.181Z"
+    "j14": "2026-07-15T13:47:05.181Z",
+    "j21": "2026-07-22T13:53:09.844Z"
   },
   "8de13eef2a361b8601c60522b69b7bf1": {
     "j3": "2026-07-04T19:16:05.944Z",
@@ -1833,9 +1834,9 @@
     "j7": "2026-07-10T19:30:38.653Z"
   },
   "0719411b6ef13537b924e81b94f763b3": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 18,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 19,
     "j3": "2026-07-07T09:41:51.748Z",
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-17",
@@ -1855,9 +1856,9 @@
     "j3": "2026-07-07T19:55:19.813Z"
   },
   "514b3e54c667029f802166864ae8d425": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 18,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 19,
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-17",
     "j3": "2026-07-07T19:55:21.832Z",
@@ -1931,9 +1932,9 @@
     "j7": "2026-07-14T13:46:39.329Z"
   },
   "09bb176312018b6f3506119efc770f44": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 15,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 16,
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-20",
     "j3": "2026-07-10T14:29:27.005Z",
@@ -2004,9 +2005,9 @@
     "j7": "2026-07-17T02:40:08.632Z"
   },
   "85cac83a1ef7f4ea7efcc28a91e2c6fa": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 12,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 13,
     "j3": "2026-07-13T02:49:38.050Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-13",
@@ -2081,9 +2082,9 @@
     "install_nudge_last": "2026-07-16"
   },
   "b5a538525d310703b6f9d73d3fdab97e": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 9,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 10,
     "j3": "2026-07-16T13:53:00.625Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-16",
@@ -2158,9 +2159,9 @@
     "j7": "2026-07-21T19:25:09.878Z"
   },
   "313fb5c251346b407924b7fa7bcf562a": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 8,
     "j3": "2026-07-18T02:31:16.762Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
@@ -2185,15 +2186,17 @@
   },
   "f168862bc95f05b6d63e0325ef3006c5": {},
   "84c69d4dae5d80b011420853f9877f61": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
-    "j3": "2026-07-18T13:17:55.619Z"
+    "j3": "2026-07-18T13:17:55.619Z",
+    "j7": "2026-07-22T13:53:13.146Z"
   },
   "f736e587fc88ebad9926ed312ad0c4cb": {
-    "j3": "2026-07-18T13:17:57.515Z"
+    "j3": "2026-07-18T13:17:57.515Z",
+    "j7": "2026-07-22T13:53:15.450Z"
   },
   "4953668d8c12edb46c48e5b85c0c4c50": {
     "daily_last": "2026-07-22",
@@ -2284,16 +2287,22 @@
     "j3": "2026-07-22T02:40:34.573Z"
   },
   "4e7f45069e4a3b6baeb53e6b2e481793": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 3,
-    "j3": "2026-07-22T02:40:36.399Z"
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 4,
+    "j3": "2026-07-22T02:40:36.399Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-22"
   },
   "847abc3b4d6aeb4910f2454e41691423": {
     "j3": "2026-07-22T08:29:24.713Z"
   },
-  "405a7d36a5007d5e545f7105499fde46": {},
-  "f91ee63732f5bbff7012097e3acc2afa": {},
+  "405a7d36a5007d5e545f7105499fde46": {
+    "j3": "2026-07-22T13:53:18.275Z"
+  },
+  "f91ee63732f5bbff7012097e3acc2afa": {
+    "j3": "2026-07-22T13:53:19.779Z"
+  },
   "7f30960ec4391f5fa24d362e56007c19": {},
   "bf850169724d5c0bc790e29922b05586": {},
   "f7eaa1aa31cdd5c6b8040934abf15a29": {
@@ -2302,9 +2311,9 @@
     "daily_count": 3
   },
   "69df196f9b2d37b14e6199e023b70cc7": {
-    "daily_last": "2026-07-21",
-    "daily_sig": "Anse Madame|clean|85|clean|0|",
-    "daily_count": 2
+    "daily_last": "2026-07-22",
+    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_count": 3
   },
   "ad116c679b07e17528fbbd26168705c9": {},
   "067a46b95c4f3936824bc2f673c41453": {
