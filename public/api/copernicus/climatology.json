@@ -2,34 +2,22 @@
   "note": "OBSERVÉ au satellite (pas prédit). Taux par côte/mois, gate N>=60 jours-plage. Auditable comme /fiabilite/.",
   "min_samples": 60,
   "history_span": {
-    "first": "2026-06-22",
-    "last": "2026-07-22",
+    "first": "2026-06-23",
+    "last": "2026-07-23",
     "days": 31
   },
   "cells": [
     {
       "island": "gp",
       "coast": "atlantic",
-      "month": 6,
-      "clean_rate": 100,
-      "moderate_rate": 0,
-      "avoid_rate": 0,
-      "n_samples": 63,
-      "n_beaches": 7,
-      "first_date": "2026-06-22",
-      "last_date": "2026-06-30"
-    },
-    {
-      "island": "gp",
-      "coast": "atlantic",
       "month": 7,
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 154,
+      "n_samples": 161,
       "n_beaches": 7,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-22"
+      "last_date": "2026-07-23"
     },
     {
       "island": "gp",
@@ -38,22 +26,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 66,
+      "n_samples": 69,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-22"
-    },
-    {
-      "island": "mq",
-      "coast": "atlantic",
-      "month": 6,
-      "clean_rate": 100,
-      "moderate_rate": 0,
-      "avoid_rate": 0,
-      "n_samples": 64,
-      "n_beaches": 8,
-      "first_date": "2026-06-22",
-      "last_date": "2026-06-30"
+      "last_date": "2026-07-23"
     },
     {
       "island": "mq",
@@ -62,10 +38,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 176,
+      "n_samples": 184,
       "n_beaches": 8,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-22"
+      "last_date": "2026-07-23"
     },
     {
       "island": "mq",
@@ -74,10 +50,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 66,
+      "n_samples": 69,
       "n_beaches": 3,
       "first_date": "2026-07-01",
-      "last_date": "2026-07-22"
+      "last_date": "2026-07-23"
     }
   ]
 }
