@@ -2795,7 +2795,7 @@
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -2805,12 +2805,12 @@
         },
         {
           "id": "fl003",
-          "afai": 0.09,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "fl004",
-          "afai": 0.11,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -2820,7 +2820,7 @@
         },
         {
           "id": "fl006",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -2830,7 +2830,7 @@
         },
         {
           "id": "fl008",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -2840,7 +2840,7 @@
         },
         {
           "id": "fl010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -2850,17 +2850,17 @@
         },
         {
           "id": "fl012",
-          "afai": 0.05,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "fl013",
-          "afai": 0.08,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "fl014",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2870,17 +2870,17 @@
         },
         {
           "id": "fl016",
-          "afai": 0.08,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "fl017",
-          "afai": 0.09,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "fl018",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
