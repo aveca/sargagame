@@ -2214,11 +2214,13 @@
   "a22692714ca678eb79eb70e70f29359c": {},
   "2fdb336732c904d6a807964d4961d661": {},
   "d48ec9a24b54586d8bbb28e549769675": {
-    "j3": "2026-07-19T19:09:01.118Z"
+    "j3": "2026-07-19T19:09:01.118Z",
+    "j7": "2026-07-23T19:20:09.607Z"
   },
   "1d56aebeeade201da4bbf6af263593c1": {},
   "76bde437edbd577c77caa05d88a1b53d": {
-    "j3": "2026-07-19T19:09:04.234Z"
+    "j3": "2026-07-19T19:09:04.234Z",
+    "j7": "2026-07-23T19:20:12.132Z"
   },
   "6c879c46e58d0ea08b3b1fc7efdaf9a4": {
     "j3": "2026-07-20T02:58:33.113Z"
@@ -2347,15 +2349,22 @@
     "daily_sig": "Uvero Alto|clean|78|clean|9|Wednesday",
     "daily_count": 2
   },
-  "c69ee9b8f94d47423c83ff90b7ab1a01": {},
-  "7e52d307a3c2b65434f570c0677000d8": {},
-  "2b990f6d3555f2e8035b5000919910c5": {},
+  "c69ee9b8f94d47423c83ff90b7ab1a01": {
+    "j3": "2026-07-23T19:20:14.963Z"
+  },
+  "7e52d307a3c2b65434f570c0677000d8": {
+    "j3": "2026-07-23T19:20:17.418Z"
+  },
+  "2b990f6d3555f2e8035b5000919910c5": {
+    "j3": "2026-07-23T19:20:19.290Z"
+  },
   "ab5e0b44fcb4aa9bd51e8154e23eed5e": {
     "daily_last": "2026-07-23",
     "daily_sig": "Cocoa Beach|clean|86|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-23"
+    "install_nudge_last": "2026-07-23",
+    "j3": "2026-07-23T19:20:21.868Z"
   },
   "63ef1e90183ceb2552fb2426ee7e5af1": {
     "daily_last": "2026-07-23",
@@ -2387,5 +2396,12 @@
     "daily_count": 1
   },
   "1f750215796fcec228641b059c6146ae": {},
-  "bb2c9b1d4d0590e6345bb68f84fa25d4": {}
+  "bb2c9b1d4d0590e6345bb68f84fa25d4": {},
+  "c412afedbebbe25c7992b2e6fb002910": {},
+  "638d642596299f1cde8f08c74211d2ce": {
+    "daily_last": "2026-07-23",
+    "daily_sig": "Cocoa Beach|clean|87|moderate|1|Friday",
+    "daily_count": 1
+  },
+  "868961bb89cf078226b1bbd9b3dd52b7": {}
 }
