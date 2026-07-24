@@ -1,26 +1,26 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-07-23T19:23:35.356Z",
+  "generatedAt": "2026-07-24T02:42:28.991Z",
   "window": {
-    "from": "2026-06-24",
-    "to": "2026-07-23",
+    "from": "2026-06-25",
+    "to": "2026-07-24",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-05-17",
-    "to": "2026-07-23",
-    "days": 68,
-    "sampleSize": 3843,
+    "to": "2026-07-24",
+    "days": 69,
+    "sampleSize": 3849,
     "statusHitRatePct": 96
   },
   "freshness": {
-    "computedAt": "2026-07-23T19:23:35.234Z",
+    "computedAt": "2026-07-24T02:42:28.880Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
-  "sampleSize": 3303,
+  "sampleSize": 3309,
   "regions": [
     "mq",
     "gp"
@@ -35,32 +35,32 @@
     {
       "day": 1,
       "hitRatePct": 94,
-      "pairs": 603
+      "pairs": 604
     },
     {
       "day": 2,
       "hitRatePct": 95,
-      "pairs": 582
+      "pairs": 583
     },
     {
       "day": 3,
       "hitRatePct": 96,
-      "pairs": 561
+      "pairs": 562
     },
     {
       "day": 4,
-      "hitRatePct": 97,
-      "pairs": 540
+      "hitRatePct": 96,
+      "pairs": 541
     },
     {
       "day": 5,
       "hitRatePct": 97,
-      "pairs": 519
+      "pairs": 520
     },
     {
       "day": 6,
       "hitRatePct": 98,
-      "pairs": 498
+      "pairs": 499
     }
   ],
   "byRegime": {
@@ -73,33 +73,33 @@
       "falseAlarmRatePct": 4
     },
     "calm": {
-      "samples": 3169,
+      "samples": 3172,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 3038,
+      "cleanSamples": 3041,
       "alertReliabilityPct": 0,
       "alertSamples": 131,
       "falseAlarmRatePct": 4
     },
     "transition": {
-      "samples": 2,
-      "cleanReliabilityPct": null,
-      "cleanSamples": 0,
+      "samples": 5,
+      "cleanReliabilityPct": 100,
+      "cleanSamples": 1,
       "alertReliabilityPct": 0,
-      "alertSamples": 2,
-      "falseAlarmRatePct": 100
+      "alertSamples": 4,
+      "falseAlarmRatePct": 80
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-06-24 → 2026-07-23) se sont vérifiées (sur 3038) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-06-24 → 2026-07-23) proved correct (over 3038); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-24 → 2026-07-23) resultaron correctos (sobre 3038); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-06-25 → 2026-07-24) se sont vérifiées (sur 3041) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-06-25 → 2026-07-24) proved correct (over 3041); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-25 → 2026-07-24) resultaron correctos (sobre 3041); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
       "id": "precheur",
       "name": "precheur",
       "island": null,
-      "samples": 123,
+      "samples": 129,
       "hitRatePct": 98,
       "afaiMAE": 0.013
     },
@@ -108,8 +108,8 @@
       "name": "Bas du Fort",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 92,
-      "afaiMAE": 0.032
+      "hitRatePct": 90,
+      "afaiMAE": 0.033
     },
     {
       "id": "gp-deshaies",
@@ -125,15 +125,15 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.018
+      "afaiMAE": 0.019
     },
     {
       "id": "gp-gosier",
       "name": "Le Gosier",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 81,
-      "afaiMAE": 0.042
+      "hitRatePct": 79,
+      "afaiMAE": 0.043
     },
     {
       "id": "gp-moule",
@@ -156,15 +156,15 @@
       "name": "Plage de la Caravelle",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 92,
-      "afaiMAE": 0.03
+      "hitRatePct": 93,
+      "afaiMAE": 0.029
     },
     {
       "id": "gp-pt-chateaux",
       "name": "Pointe des Châteaux",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 97,
+      "hitRatePct": 96,
       "afaiMAE": 0.015
     },
     {
@@ -181,7 +181,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.003
+      "afaiMAE": 0.004
     },
     {
       "id": "anse-madame",
@@ -197,7 +197,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.009
     },
     {
       "id": "anse-noire",
@@ -205,7 +205,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.007
+      "afaiMAE": 0.008
     },
     {
       "id": "grande-anse",
@@ -220,8 +220,8 @@
       "name": "Le Diamant",
       "island": "mq",
       "samples": 159,
-      "hitRatePct": 64,
-      "afaiMAE": 0.056
+      "hitRatePct": 65,
+      "afaiMAE": 0.054
     },
     {
       "id": "vauclin",
@@ -229,7 +229,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.011
     },
     {
       "id": "les-salines",
@@ -253,7 +253,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 96,
-      "afaiMAE": 0.013
+      "afaiMAE": 0.014
     },
     {
       "id": "tartane",
@@ -261,7 +261,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.011
+      "afaiMAE": 0.012
     }
   ],
   "disclaimer": "Au-delà de J+3 la fiabilité décroît (prévision indicative). Les alertes (sargasses attendues) sont émises à confiance prudente tant que la donnée satellite ne les confirme pas. La période couverte est dans « window » ; les chiffres sont recalculés à chaque mise à jour de l'archive.",

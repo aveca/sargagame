@@ -174,7 +174,42 @@
       "fai": -0.00304,
       "afaiLike": 0.05,
       "coverage": 0.43
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-07-23",
+      "fai": -0.00173,
+      "afaiLike": 0.05,
+      "coverage": 0.94
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-07-23",
+      "fai": -0.00229,
+      "afaiLike": 0.05,
+      "coverage": 0.45
+    },
+    {
+      "id": "pt-marin",
+      "obsDate": "2026-07-23",
+      "fai": 0.00074,
+      "afaiLike": 0.12,
+      "coverage": 0.34
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-07-23",
+      "fai": -0.00001,
+      "afaiLike": 0.05,
+      "coverage": 0.57
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-07-23",
+      "fai": -0.0005,
+      "afaiLike": 0.05,
+      "coverage": 0.47
     }
   ],
-  "updatedAt": "2026-07-23T19:16:56.051Z"
+  "updatedAt": "2026-07-24T02:38:31.429Z"
 }
