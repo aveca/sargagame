@@ -1,6 +1,6 @@
 {
   "_note": "GÉNÉRÉ par scripts/automation/gen-b2b-partners.cjs depuis b2b-partner-meta.json — NE PAS éditer à la main (éditer le catalogue puis régénérer). `partners` = LIVE (active:true uniquement). `preview` = démo (?preview_partner=<slug>). Verdict sargasses = 100% data ERDDAP, jamais influencé.",
-  "updatedAt": "2026-07-17",
+  "updatedAt": "2026-07-24",
   "partners": [],
   "preview": [
     {
