@@ -1,12 +1,12 @@
 {
   "active": true,
   "reason": "validated",
-  "n": 25,
-  "agreement": 0.96,
+  "n": 30,
+  "agreement": 0.967,
   "thresholds": {
     "clean": 0.009,
     "mod": 0.01
   },
-  "verifiedAt": "2026-07-24T02:38:25.291Z",
+  "verifiedAt": "2026-07-24T08:26:52.326Z",
   "metric": "accord statut S2 near-shore vs ERDDAP settled (history), fenêtre ±5j"
 }

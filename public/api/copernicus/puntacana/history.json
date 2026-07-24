@@ -1965,12 +1965,12 @@
         },
         {
           "id": "pc003",
-          "afai": 0.16,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
           "id": "pc004",
-          "afai": 0.16,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
@@ -1980,22 +1980,22 @@
         },
         {
           "id": "pc006",
-          "afai": 0.08,
-          "status": "clean"
+          "afai": 0.17,
+          "status": "moderate"
         },
         {
           "id": "pc007",
-          "afai": 0.12,
-          "status": "clean"
+          "afai": 0.21,
+          "status": "moderate"
         },
         {
           "id": "pc008",
-          "afai": 0.2,
+          "afai": 0.21,
           "status": "moderate"
         },
         {
           "id": "pc009",
-          "afai": 0.19,
+          "afai": 0.21,
           "status": "moderate"
         },
         {
@@ -2010,7 +2010,7 @@
         },
         {
           "id": "pc012",
-          "afai": 0.17,
+          "afai": 0.18,
           "status": "moderate"
         }
       ]
