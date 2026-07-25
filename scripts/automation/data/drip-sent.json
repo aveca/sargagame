@@ -1846,7 +1846,8 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-17",
     "j7": "2026-07-11T13:19:06.474Z",
-    "j14": "2026-07-18T13:17:51.149Z"
+    "j14": "2026-07-18T13:17:51.149Z",
+    "j21": "2026-07-25T08:08:50.527Z"
   },
   "55e7f5baa510ed57abcf1c3039e8af39": {
     "j3": "2026-07-07T14:37:27.639Z",
@@ -2436,5 +2437,6 @@
     "daily_sig": "Playa Tortugas|clean|84|moderate|7|sábado",
     "daily_count": 1
   },
-  "5bcbe7eedd18f3a4cbca7c492fd15045": {}
+  "5bcbe7eedd18f3a4cbca7c492fd15045": {},
+  "c1b5d6d3a99dcc47215b4feb40d516d2": {}
 }
