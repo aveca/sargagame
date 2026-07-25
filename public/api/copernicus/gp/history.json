@@ -12605,7 +12605,7 @@
       "levels": [
         {
           "id": "gp001",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -12625,7 +12625,7 @@
         },
         {
           "id": "gp005",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -12650,7 +12650,7 @@
         },
         {
           "id": "gp011",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -12745,7 +12745,7 @@
         },
         {
           "id": "gp032",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -12830,7 +12830,7 @@
         },
         {
           "id": "gp054",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -12880,17 +12880,17 @@
         },
         {
           "id": "gp071",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "gp072",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "gp073",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {

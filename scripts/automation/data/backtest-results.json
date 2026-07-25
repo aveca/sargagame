@@ -120,7 +120,7 @@
     },
     "gp-pt-chateaux": {
       "statusHitRate": 96,
-      "afaiMAE": 0.015,
+      "afaiMAE": 0.016,
       "pairs": 159
     },
     "gp-gosier": {
@@ -245,7 +245,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-26 → 2026-07-25) resultaron correctos (sobre 3046); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-07-25T03:43:23.215Z",
+  "computed": "2026-07-25T08:09:19.558Z",
   "pairs": [
     {
       "snapshotDate": "2026-07-22",
@@ -583,11 +583,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-07-22",
@@ -1447,11 +1447,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-07-23",
@@ -1933,11 +1933,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-07-24",

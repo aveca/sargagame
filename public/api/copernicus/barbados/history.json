@@ -1955,7 +1955,7 @@
       "levels": [
         {
           "id": "bb001",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -2005,7 +2005,7 @@
         },
         {
           "id": "bb011",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
