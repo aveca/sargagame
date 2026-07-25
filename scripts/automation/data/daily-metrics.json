@@ -4620,10 +4620,10 @@
   },
   {
     "date": "2026-07-25",
-    "time": "2026-07-25T08:13:22.000Z",
+    "time": "2026-07-25T13:33:20.123Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 455,
+    "emails": 459,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -4649,7 +4649,7 @@
       }
     },
     "email": {
-      "sent": 3342,
+      "sent": 3373,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -4726,12 +4726,12 @@
     "ga4": {
       "date": "2026-07-24",
       "mq": {
-        "sessions": 206,
-        "users": 579
+        "sessions": 207,
+        "users": 634
       },
       "gp": {
-        "sessions": 180,
-        "users": 764
+        "sessions": 178,
+        "users": 824
       }
     }
   }
