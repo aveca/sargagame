@@ -1232,22 +1232,22 @@
     "j21": "2026-07-05T19:20:40.090Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 29,
+    "daily_count": 30,
     "j14": "2026-06-28T19:22:55.176Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-05T19:20:41.871Z"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 29,
+    "daily_count": 30,
     "j14": "2026-06-29T04:11:47.484Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1298,11 +1298,11 @@
     "j21": "2026-07-06T20:00:14.741Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 29,
+    "daily_count": 30,
     "j14": "2026-06-30T03:41:53.530Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1323,9 +1323,9 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
-    "daily_count": 29,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
+    "daily_count": 30,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-01T09:49:25.510Z",
@@ -1349,10 +1349,10 @@
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 29,
+    "daily_count": 30,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-04T08:39:51.952Z",
@@ -1360,9 +1360,9 @@
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
-    "daily_count": 29,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
+    "daily_count": 30,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -2104,11 +2104,11 @@
     "j7": "2026-07-20T19:47:16.271Z"
   },
   "3e0aaa8457fcd2a59252994d04f1c8f1": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
-    "daily_count": 13,
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-16",
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
+    "daily_count": 14,
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-26",
     "j3": "2026-07-16T13:53:12.223Z",
     "j7": "2026-07-20T19:47:20.747Z"
   },
@@ -2291,9 +2291,9 @@
     "j3": "2026-07-21T19:25:13.234Z"
   },
   "e3d5c00a939ea7c417be7d3447b96dc5": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
-    "daily_count": 8,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
+    "daily_count": 9,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:14.959Z",
@@ -2304,9 +2304,9 @@
     "j7": "2026-07-25T19:10:00.047Z"
   },
   "79fd17fed9f1a4748acffc4ac5b16154": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
-    "daily_count": 8,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
+    "daily_count": 9,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:19.217Z",
@@ -2342,9 +2342,9 @@
     "j3": "2026-07-22T19:22:21.556Z"
   },
   "f7eaa1aa31cdd5c6b8040934abf15a29": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
-    "daily_count": 6,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
+    "daily_count": 7,
     "j3": "2026-07-23T02:46:50.281Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-23"
@@ -2384,9 +2384,9 @@
     "j3": "2026-07-23T19:20:19.290Z"
   },
   "ab5e0b44fcb4aa9bd51e8154e23eed5e": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
-    "daily_count": 6,
+    "daily_last": "2026-07-26",
+    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
+    "daily_count": 7,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-23",
     "j3": "2026-07-23T19:20:21.868Z"
@@ -2445,22 +2445,26 @@
   },
   "c4f75e3186ec31a6772150829cac0817": {},
   "6570ee243e636ec8963453e0c966b3e7": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Playa Holbox|clean|83|clean|9|domingo",
-    "daily_count": 2
+    "daily_last": "2026-07-26",
+    "daily_sig": "Playa Holbox|clean|88|clean|7|lunes",
+    "daily_count": 3
   },
   "5bcbe7eedd18f3a4cbca7c492fd15045": {},
   "c1b5d6d3a99dcc47215b4feb40d516d2": {},
   "c608d36d73c7721a73b4ad413f0227ff": {
-    "daily_last": "2026-07-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-26",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|0|",
+    "daily_count": 2
   },
   "9a4fa6d27faf929dd370169492033ff5": {},
   "270601851ef0ce8b7305e15b9f75f381": {},
   "14a9dfe7475f8e1acd71e866367a77a4": {},
   "cc6e474307575497e9074e9e8bb69f91": {},
-  "d21c217443fdcb97410b13c92ad8c344": {},
+  "d21c217443fdcb97410b13c92ad8c344": {
+    "daily_last": "2026-07-26",
+    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
+    "daily_count": 1
+  },
   "47310dd43856a70d7ef0efea8a69e557": {},
   "d7b56091bfe00d50c09b7e0d84106ca9": {},
   "0de879a4836aad927d255b6e81a40972": {}
