@@ -4727,10 +4727,10 @@
   },
   {
     "date": "2026-07-26",
-    "time": "2026-07-26T13:32:03.212Z",
+    "time": "2026-07-26T19:17:11.941Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 466,
+    "emails": 469,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -4756,7 +4756,7 @@
       }
     },
     "email": {
-      "sent": 3419,
+      "sent": 3423,
       "delivered": null,
       "opened": null,
       "clicked": null,
