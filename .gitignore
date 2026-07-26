@@ -163,3 +163,6 @@ _*.cjs
 # Veilleurs : scratch de rapatriement des artifacts (CI). Les briefs (out/), le
 # DIGEST.md et latest-digest.json SONT commités ; ce dossier temporaire ne l'est jamais.
 scripts/veilleurs/_artifacts/
+
+# Vite dev build artefact
+/dev/

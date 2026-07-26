@@ -1323,7 +1323,7 @@ export default function WorldMapView({
   )
 
   return(
-    <div ref={wrapRef} className="sg-onink-scope" style={{
+    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1" style={{
       // Safari : inset:0 atteint le vrai bas (au-dessus de la toolbar) → on le garde.
       // iOS standalone SEULEMENT (html.sg-standalone, cf. script index.html) : inset:0
       // clippe au layout viewport (~852) plus court que l'écran réel (896) → bande vide
