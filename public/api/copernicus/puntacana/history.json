@@ -1975,8 +1975,8 @@
         },
         {
           "id": "pc005",
-          "afai": 0.19,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "pc006",
@@ -1995,13 +1995,13 @@
         },
         {
           "id": "pc009",
-          "afai": 0.2,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "pc010",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "pc011",
@@ -2010,8 +2010,8 @@
         },
         {
           "id": "pc012",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         }
       ]
     }
