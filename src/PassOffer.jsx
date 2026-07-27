@@ -264,6 +264,16 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
           </div>
         )}
 
+        {/* Urgence saison — pic sargasses */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "14px 0 0", padding: "10px 13px", borderRadius: 12, background: "rgba(255,199,44,.08)", border: "1px solid rgba(255,199,44,.2)" }}>
+          <span style={{ fontSize: 16 }}>🌊</span>
+          <span style={{ fontSize: 12, lineHeight: 1.4, fontWeight: 700, color: "rgba(234,247,244,.85)" }}>
+            {_t(lang, <>La saison sargasses <b style={{ color: "#FFC72C" }}>pointe dès juin</b>. Chaque jour sans prévision = risque de surprise sur ta plage.</>,
+              <>Sargassum season <b style={{ color: "#FFC72C" }}>peaks from June</b>. Every day without a forecast = surprise on your beach.</>,
+              <>La temporada de sargazo <b style={{ color: "#FFC72C" }}>comienza en junio</b>. Cada día sin pronóstico = sorpresa en tu playa.</>)}
+          </span>
+        </div>
+
         {/* GRILLE PASS */}
         <div style={{ margin: "18px 0 0", display: "flex", flexDirection: "column", gap: 11 }}>
           {/* 7 jours — ancre basse */}
@@ -305,8 +315,16 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
               ))}
             </span>
             <span className="sg-paygold" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 15, borderRadius: 14, padding: "15px", fontFamily: "inherit", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)", color: "#190c2c", fontSize: 16, fontWeight: 800 }}>
-              {_t(lang, "Activer mes 30 jours →", "Activate my 30 days →", "Activar mis 30 días →")}
+              {_t(lang, "Ne rate plus une seule journée →", "Don't miss another day →", "No pierdas ni un día más →")}
             </span>
+            {/* Réassurance post-CTA — paiement sécurisé + accès immédiat */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
+              </svg>
+              {_t(lang, "Paiement chiffré · Accès immédiat", "Encrypted payment · Instant access", "Pago cifrado · Acceso inmediato")}
+            </div>
           </button>
 
           {/* Saison — local uniquement */}
