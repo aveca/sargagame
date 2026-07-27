@@ -202,5 +202,46 @@ if ($status === 'paid') {
     // mapping que stripe-webhook.php (invoice.payment_failed). Pas de marqueur :
     // un retry recurrent ulterieur peut repasser 'paid'.
     mol_forward_fulfillment($cfg, $pid, $email, $cents, $currency, $island, $plan, $source, 'invoice.payment_failed');
+
+    // ── EMAIL DE RELANCE AUTOMATIQUE (B2C pass only, ADDITIF) ──────────────────
+    // Si le client a un email et que c'est un pass B2C (pas un abo B2B ni un renouvellement),
+    // on lui envoie un email avec un lien de retry. Le client n'a pas à chercher comment
+    // réessayer — le lien ouvre directement le paywall pré-rempli sur son appareil.
+    // Les raisons d'échec les plus courantes : 3DS abandonnée (timeout navigateur),
+    // carte refusée (fonds insuffisants), 3DS échouée (code incorrect). Le webhook
+    // reçoit le même status pour toutes — on envoie la relance dans TOUS les cas.
+    if (!empty($meta['pass']) && $email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $failReason = '';
+        $details = $pay['details'] ?? [];
+        if (isset($details['failureCode'])) {
+            $failReasonMap = [
+                '3d_secure'            => '3D Secure verification was not completed',
+                '3d_secure_canceled'   => '3D Secure verification was cancelled',
+                '3d_secure_failed'     => '3D Secure verification failed',
+                'card_declined'        => 'Card was declined',
+                'insufficient_funds'   => 'Insufficient funds',
+                'expired_card'         => 'Card has expired',
+                'invalid_card_number'  => 'Invalid card number',
+                'invalid_cvc'          => 'Invalid CVC',
+                'card_blocked'         => 'Card is blocked',
+                'card_token_invalid'   => 'Card token invalid',
+                'download_expired'     => 'Download link expired',
+                'expired_off_session'  => 'Payment expired',
+            ];
+            $failReason = $failReasonMap[$details['failureCode']] ?? ('Error: ' . $details['failureCode']);
+        }
+        mol_payment_failed_retry_email($cfg, $pid, $email, $amount['value'] ?? '?', $currency, $island, $plan, $failReason);
+    }
+    // ── ALERTE FONDATEUR sur échec B2B (pas de relance auto, nécessite suivi) ───
+    if (($meta['b2b'] ?? '') === '1' || in_array(($meta['plan'] ?? ''), ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'], true)) {
+        if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            mol_founder_alert(
+                '⚠️ Mollie B2B ' . $status . ' : ' . $plan . ' (' . ($amount['value'] ?? '?') . ' ' . $currency . ')',
+                '<p>Paiement B2B <b>' . htmlspecialchars($pid) . '</b> — statut <b>' . htmlspecialchars($status) . '</b>.</p>'
+                . '<p>Plan : ' . htmlspecialchars($plan) . ' — email : <b>' . htmlspecialchars($email) . '</b></p>'
+                . '<p>Action : relancer le client ou vérifier dans le dashboard Mollie.</p>'
+            );
+        }
+    }
 }
 exit;

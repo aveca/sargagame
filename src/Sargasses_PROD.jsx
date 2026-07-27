@@ -10961,10 +10961,22 @@ export default function App(){
               else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
               // Le reload (clean()) perd l'état mémoire onActivated → poser le flag pour
               // que showWelcome déclenche splash « Premium activé » + PaidOnboarding,
-              // comme le chemin inline. Sinon le payeur 3DS atterrit sans confirmation.
+              // comme le chemin inline. Sinon le payeur 3DS atterrait sans confirmation.
               localStorage.setItem("sg_premium_welcome","1")
             }catch(_){}
             track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
+          } else {
+            // ── Paiement 3DS échoué → redirect vers ?payment_failed=1 ─────────
+            // Le client a tenté la 3DS mais ça n'a pas abouti (timeout, code incorrect,
+            // annulation). On le redirige vers le handler payment_failed qui ouvre le
+            // paywall en mode retry avec un message explicatif + email pré-rempli.
+            try{
+              sessionStorage.removeItem("sg_mollie_pending")
+              const failUrl="/?payment_failed=1"
+                +(ctx.email?"&email="+encodeURIComponent(ctx.email):"")
+                +(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")
+              window.location.replace(failUrl);return
+            }catch(_){}
           }
           clean()
         }).catch(async()=>{
@@ -10976,6 +10988,28 @@ export default function App(){
           }catch(_){}
           clean()
         })
+    }catch(_){}
+  },[])
+  // Handle ?payment_failed=1 → relance automatique (email retry link)
+  // Le client revient ici depuis l'email de relance (ou après un retour 3DS échoué).
+  // On stocke le contexte (email, plan) pour que le paywall s'affiche en mode "retry"
+  // avec un message explicatif, puis on ouvre le modal directement.
+  useEffect(()=>{
+    try{
+      const q=window.location.search
+      if(!/[?&]payment_failed=1/.test(q))return
+      const params=new URLSearchParams(q)
+      const failedEmail=params.get("email")||""
+      const failedPlan=params.get("plan")||""
+      // Stocke le contexte d'échec pour le paywall (retry mode)
+      try{
+        sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,ts:Date.now()}))
+      }catch(_){}
+      // Nettoie l'URL puis ouvre le paywall
+      const cleanUrl=window.location.pathname+(window.location.hash||"")
+      window.history.replaceState({},document.title,cleanUrl)
+      // Déclenche l'ouverture du paywall après un court délai (laisse le state s'initialiser)
+      setTimeout(()=>{try{document.dispatchEvent(new CustomEvent("sg_open_paywall",{detail:{retry:true,email:failedEmail,plan:failedPlan}}))}catch(_){}},300)
     }catch(_){}
   },[])
   // Handle ?manage=1 → open Stripe Customer Portal
@@ -12743,6 +12777,16 @@ export default function App(){
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
   },[captureGate])
+
+  // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
+  // Le handler ?payment_failed=1 dispatch ce custom event pour ouvrir le paywall
+  // en mode retry. PremiumModal lit sg_payment_retry depuis sessionStorage pour
+  // pré-remplir l'email et afficher le message d'erreur explicatif.
+  useEffect(()=>{
+    const handler=(e)=>{try{openPremium(e?.detail?.retry?"payment_retry":"nav")}catch(_){}}
+    document.addEventListener("sg_open_paywall",handler)
+    return()=>{document.removeEventListener("sg_open_paywall",handler)}
+  },[openPremium])
 
   // ════════ MENU CLIC-DROIT « LE VEILLEUR » (desktop souris) ════════════════════
   // Le clic droit sur la SCÈNE/CARTE montrait le menu navigateur = cul-de-sac hors-

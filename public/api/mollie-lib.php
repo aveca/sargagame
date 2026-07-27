@@ -507,6 +507,74 @@ function mol_send_mail($to, $subject, $html, $replyTo = '') {
     return @mail($to, $subj, $html, $h, '-falerte@sargasses-martinique.com');
 }
 
+// ── Email de relance automatique en cas de PAIEMENT ÉCHOUÉ (3DS abandonnée / carte refusée) ──
+// Envoie un email multilangue (FR/EN/ES) avec un lien de retry qui rouvre le paywall
+// directement sur l'appareil du client. Le lien porte l'email ET le plan dans des params
+// URL pour que le paywall se pré-remplisse (zéro friction). Idempotent par pid (marqueur
+// fichier passfail_<pid>), throttle 1 email/30 min par email (anti-spam si retry multiples).
+// NE CRÉE AUCUN PAIEMENT — c'est juste un lien de retry. Best-effort (ne doit JAMAIS
+// faire échouer le webhook). Appelé par mollie-webhook.php sur status=failed/canceled/expired.
+function mol_payment_failed_retry_email($cfg, $pid, $email, $amount, $currency, $island, $plan, $reason = '') {
+    if (!is_string($pid) || $pid === '' || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $dir = __DIR__ . '/data';
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+
+    // Idempotence par pid (on n'envoie qu'UN email de relance par paiement échoué)
+    $marker = $dir . '/passfail_' . preg_replace('/[^a-zA-Z0-9_]/', '', $pid);
+    if (file_exists($marker)) return false;
+
+    // Throttle par email : max 1 email toutes les 30 min (anti-spam sur retry multiples)
+    $throttle = $dir . '/passfail_throttle_' . substr(hash('sha256', strtolower($email)), 0, 24);
+    if (file_exists($throttle) && (time() - @filemtime($throttle)) < 1800) return false;
+
+    @file_put_contents($marker, date('c'));
+    @file_put_contents($throttle, date('c'));
+
+    $brand  = mol_b2b_region_brand($island);
+    $domain = $brand['domain'];
+    $lang   = $brand['lang'];
+
+    // Lien de retry : ouvre l'app avec le paywall pré-rempli et un flag error=payment_failed
+    // pour que le front affiche un message explicatif + propose un nouveau essai
+    $retryUrl = 'https://' . $domain . '/?payment_failed=1&email=' . rawurlencode(strtolower(trim($email))) . '&plan=' . rawurlencode($plan);
+    $btn = 'background:#009E8E;color:#fff;font-weight:600;text-decoration:none;border-radius:10px;display:inline-block;padding:13px 26px';
+    $amountDisplay = $amount . ' ' . $currency;
+
+    if ($lang === 'en') {
+        $titre = 'Payment needs attention — try again';
+        $reasonText = $reason !== '' ? ' Reason: ' . htmlspecialchars($reason) . '.' : '';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Your payment of ' . htmlspecialchars($amountDisplay) . ' wasn\'t completed</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">We noticed your card payment for the Sargasses pass didn\'t go through (3D Secure not completed or card declined).' . $reasonText . '</p>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">No worries — <strong>your card was NOT charged</strong>. You can try again with the same card or a different one in just a few taps.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($retryUrl) . '" style="' . $btn . '">Retry payment &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">The link above opens the app with your payment ready to complete. It works on any device.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    } elseif ($lang === 'es') {
+        $titre = 'Pago necesita atención — inténtalo de nuevo';
+        $reasonText = $reason !== '' ? ' Motivo: ' . htmlspecialchars($reason) . '.' : '';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Tu pago de ' . htmlspecialchars($amountDisplay) . ' no se completó</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Detectamos que el pago con tarjeta del pase Sargasses no se completó (3D Secure no completado o tarjeta rechazada).' . $reasonText . '</p>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">No te preocupes — <strong>tu tarjeta NO fue cobrada</strong>. Puedes intentarlo de nuevo con la misma tarjeta o otra diferente en solo unos toques.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($retryUrl) . '" style="' . $btn . '">Reintentar pago &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">El enlace anterior abre la app con tu pago listo para completar. Funciona en cualquier dispositivo.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    } else {
+        $titre = 'Paiement en attente — réessayez';
+        $reasonText = $reason !== '' ? ' Motif : ' . htmlspecialchars($reason) . '.' : '';
+        $html = '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:22px;color:#1a1a1a">'
+            . '<h2 style="margin:0 0 12px">Votre paiement de ' . htmlspecialchars($amountDisplay) . ' n\'a pas abouti</h2>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Nous avons constaté que votre paiement par carte pour le pass Sargasses ne s\'est pas terminé (3D Secure non complété ou carte refusée).' . $reasonText . '</p>'
+            . '<p style="font-size:15px;line-height:1.6;margin:0 0 16px">Pas d\'inquiétude — <strong>votre carte n\'a PAS été débitée</strong>. Vous pouvez réessayer avec la même carte ou une autre en quelques taps.</p>'
+            . '<p style="margin:0 0 22px"><a href="' . htmlspecialchars($retryUrl) . '" style="' . $btn . '">Réessayer le paiement &rarr;</a></p>'
+            . '<p style="font-size:13px;color:#555;line-height:1.55">Le lien ci-dessus ouvre l\'app avec votre paiement prêt à finaliser. Fonctionne sur tous les appareils.</p>'
+            . '<p style="font-size:12px;color:#999;margin-top:18px">' . htmlspecialchars($domain) . ' &mdash; Le Veilleur.</p></div>';
+    }
+    mol_send_mail($email, $titre, $html);
+    return true;
+}
+
 // Alerte FONDATEUR (boîte Gmail, fondateur 100 % mobile) — wrapper mol_send_mail.
 // Utilisée par mollie-webhook.php : remboursement/chargeback détecté, paiement
 // paylink B2B annuel reçu. Best-effort (ne doit JAMAIS faire échouer le webhook).
