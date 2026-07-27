@@ -4834,7 +4834,7 @@
   },
   {
     "date": "2026-07-27",
-    "time": "2026-07-27T10:20:06.160Z",
+    "time": "2026-07-27T14:41:42.102Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 472,
@@ -4863,7 +4863,7 @@
       }
     },
     "email": {
-      "sent": 3430,
+      "sent": 3459,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -4941,7 +4941,7 @@
       "date": "2026-07-26",
       "mq": {
         "sessions": 205,
-        "users": 623
+        "users": 641
       },
       "gp": {
         "sessions": 208,
