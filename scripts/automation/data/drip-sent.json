@@ -2113,14 +2113,16 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-26",
     "j3": "2026-07-16T13:53:12.223Z",
-    "j7": "2026-07-20T19:47:20.747Z"
+    "j7": "2026-07-20T19:47:20.747Z",
+    "j14": "2026-07-27T14:33:50.710Z"
   },
   "b3b33cd774b6cede067fe451206f1c1f": {
     "j3": "2026-07-16T13:53:02.314Z"
   },
   "7dd8f5e9baa3b208a33272aa0e2df594": {
     "j3": "2026-07-16T13:53:04.285Z",
-    "j7": "2026-07-20T19:47:18.349Z"
+    "j7": "2026-07-20T19:47:18.349Z",
+    "j14": "2026-07-27T14:33:48.772Z"
   },
   "039ac9392d5170a79d63b0b7740a76ae": {
     "j3": "2026-07-16T19:13:33.021Z",
@@ -2294,9 +2296,9 @@
     "j3": "2026-07-21T19:25:13.234Z"
   },
   "e3d5c00a939ea7c417be7d3447b96dc5": {
-    "daily_last": "2026-07-26",
-    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
-    "daily_count": 9,
+    "daily_last": "2026-07-27",
+    "daily_sig": "Palm Beach|clean|86|clean|0|",
+    "daily_count": 10,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:14.959Z",
@@ -2307,9 +2309,9 @@
     "j7": "2026-07-25T19:10:00.047Z"
   },
   "79fd17fed9f1a4748acffc4ac5b16154": {
-    "daily_last": "2026-07-26",
-    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
-    "daily_count": 9,
+    "daily_last": "2026-07-27",
+    "daily_sig": "Palm Beach|clean|86|clean|0|",
+    "daily_count": 10,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
     "j3": "2026-07-21T19:25:19.217Z",
@@ -2347,9 +2349,9 @@
     "j3": "2026-07-22T19:22:21.556Z"
   },
   "f7eaa1aa31cdd5c6b8040934abf15a29": {
-    "daily_last": "2026-07-26",
-    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-27",
+    "daily_sig": "Palm Beach|clean|86|clean|0|",
+    "daily_count": 8,
     "j3": "2026-07-23T02:46:50.281Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-23",
@@ -2390,9 +2392,9 @@
     "j3": "2026-07-23T19:20:19.290Z"
   },
   "ab5e0b44fcb4aa9bd51e8154e23eed5e": {
-    "daily_last": "2026-07-26",
-    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
-    "daily_count": 7,
+    "daily_last": "2026-07-27",
+    "daily_sig": "Palm Beach|clean|86|clean|0|",
+    "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-23",
     "j3": "2026-07-23T19:20:21.868Z"
@@ -2469,9 +2471,9 @@
   "14a9dfe7475f8e1acd71e866367a77a4": {},
   "cc6e474307575497e9074e9e8bb69f91": {},
   "d21c217443fdcb97410b13c92ad8c344": {
-    "daily_last": "2026-07-26",
-    "daily_sig": "Fort Lauderdale Beach|clean|96|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-27",
+    "daily_sig": "Palm Beach|clean|86|clean|0|",
+    "daily_count": 2
   },
   "47310dd43856a70d7ef0efea8a69e557": {},
   "d7b56091bfe00d50c09b7e0d84106ca9": {},
