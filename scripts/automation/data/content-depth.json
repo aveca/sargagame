@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-20T13:28:28.587Z",
+  "generatedAt": "2026-07-27T14:02:11.118Z",
   "sites": {
     "mq": {
       "pageCount": 362,
       "medianWords": 41,
-      "thinCount": 209,
-      "richCount": 79,
+      "thinCount": 210,
+      "richCount": 83,
       "thinPages": [
         {
           "url": "/en/best-beaches-martinique/",
@@ -151,11 +151,11 @@
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1838
+          "words": 1840
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1833
+          "words": 1835
         },
         {
           "url": "/plages/anse-corps-de-garde/",
@@ -166,7 +166,7 @@
           "words": 1823
         },
         {
-          "url": "/plages/grande-anse-du-carbet/",
+          "url": "/plages/bourg-de-tartane/",
           "words": 1818
         }
       ]
@@ -175,7 +175,7 @@
       "pageCount": 401,
       "medianWords": 193,
       "thinCount": 209,
-      "richCount": 111,
+      "richCount": 114,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -329,11 +329,11 @@
         },
         {
           "url": "/plages/plage-de-malendure/",
-          "words": 1846
+          "words": 1844
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1841
+          "words": 1839
         },
         {
           "url": "/plages/plage-du-gosier/",

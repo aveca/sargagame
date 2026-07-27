@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-20T13:28:27.796Z",
+  "generatedAt": "2026-07-27T14:02:09.843Z",
   "sites": {
     "mq": {
       "pageCount": 362,
       "noIncomingCount": 193,
       "fewIncomingCount": 42,
-      "phantomCount": 11,
+      "phantomCount": 8,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -65,7 +65,7 @@
         {
           "url": "/for-hotels/",
           "in": 0,
-          "out": 2
+          "out": 1
         },
         {
           "url": "/google22dbf19e7b743f5a.html",
@@ -262,12 +262,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 14
+          "out": 33
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 13
+          "out": 17
         },
         {
           "url": "/en/sargassum-health/",
@@ -437,6 +437,11 @@
           "out": 55
         },
         {
+          "url": "/fiabilite/",
+          "in": 46,
+          "out": 8
+        },
+        {
           "url": "/saison-sargasses-martinique/",
           "in": 28,
           "out": 14
@@ -447,19 +452,14 @@
           "out": 12
         },
         {
-          "url": "/fiabilite/",
-          "in": 24,
-          "out": 8
+          "url": "/plages/grande-anse-d-arlet/",
+          "in": 26,
+          "out": 10
         },
         {
           "url": "/a-propos/",
-          "in": 22,
+          "in": 24,
           "out": 9
-        },
-        {
-          "url": "/plages/grande-anse-d-arlet/",
-          "in": 22,
-          "out": 10
         }
       ],
       "topDonors": [
@@ -471,12 +471,22 @@
         {
           "url": "/conditions/uv-fort/",
           "in": 6,
+          "out": 36
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
           "out": 35
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 33
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
           "in": 6,
-          "out": 24
+          "out": 33
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -494,24 +504,14 @@
           "out": 20
         },
         {
-          "url": "/",
-          "in": 186,
+          "url": "/conditions/snorkeling/",
+          "in": 1,
           "out": 17
         },
         {
-          "url": "/sargasses-la-trinite/",
-          "in": 3,
-          "out": 16
-        },
-        {
-          "url": "/sargasses-sainte-anne-martinique/",
-          "in": 9,
-          "out": 16
-        },
-        {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
-          "out": 16
+          "url": "/",
+          "in": 186,
+          "out": 17
         }
       ],
       "phantom": [
@@ -531,32 +531,9 @@
           ]
         },
         {
-          "url": "/reliability/",
-          "incomingFrom": [
-            "/expansion-survey/",
-            "/for-hotels/",
-            "/pro/en/collectivites/"
-          ]
-        },
-        {
-          "url": "/about/",
-          "incomingFrom": [
-            "/investigacion/",
-            "/research/"
-          ]
-        },
-        {
           "url": "/meteo-sargasses-guadeloupe/",
           "incomingFrom": [
             "/meteo-sargasses-martinique/"
-          ]
-        },
-        {
-          "url": "/fiabilidad/",
-          "incomingFrom": [
-            "/pro/es/barrera-vs-pronostico-sargazo/",
-            "/pro/es/collectivites/",
-            "/pro/es/costo-sargazo-hoteles/"
           ]
         },
         {
@@ -595,7 +572,7 @@
       "pageCount": 401,
       "noIncomingCount": 199,
       "fewIncomingCount": 42,
-      "phantomCount": 15,
+      "phantomCount": 12,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -670,7 +647,7 @@
         {
           "url": "/for-hotels/",
           "in": 0,
-          "out": 2
+          "out": 1
         },
         {
           "url": "/google22dbf19e7b743f5a.html",
@@ -852,12 +829,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 17
+          "out": 37
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 19
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -1027,6 +1004,11 @@
           "out": 85
         },
         {
+          "url": "/fiabilite/",
+          "in": 46,
+          "out": 8
+        },
+        {
           "url": "/plages/plages-sud-grande-terre/",
           "in": 36,
           "out": 38
@@ -1045,11 +1027,6 @@
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
           "out": 27
-        },
-        {
-          "url": "/fiabilite/",
-          "in": 24,
-          "out": 8
         }
       ],
       "topDonors": [
@@ -1064,7 +1041,17 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 37
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 36
+        },
+        {
+          "url": "/conditions/mer-calme/",
           "in": 6,
           "out": 36
         },
@@ -1084,19 +1071,9 @@
           "out": 25
         },
         {
-          "url": "/conditions/plages-enfants/",
+          "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 17
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 17
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 16
+          "out": 19
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
@@ -1122,32 +1099,9 @@
           ]
         },
         {
-          "url": "/reliability/",
-          "incomingFrom": [
-            "/expansion-survey/",
-            "/for-hotels/",
-            "/pro/en/collectivites/"
-          ]
-        },
-        {
-          "url": "/about/",
-          "incomingFrom": [
-            "/investigacion/",
-            "/research/"
-          ]
-        },
-        {
           "url": "/meteo-sargasses-martinique/",
           "incomingFrom": [
             "/meteo-sargasses-guadeloupe/"
-          ]
-        },
-        {
-          "url": "/fiabilidad/",
-          "incomingFrom": [
-            "/pro/es/barrera-vs-pronostico-sargazo/",
-            "/pro/es/collectivites/",
-            "/pro/es/costo-sargazo-hoteles/"
           ]
         },
         {

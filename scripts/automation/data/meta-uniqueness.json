@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T13:28:28.293Z",
+  "generatedAt": "2026-07-27T14:02:10.643Z",
   "sites": {
     "mq": {
       "pageCount": 362,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 543,
+      "issueCount": 544,
       "issues": [
         {
           "file": "404.html",
@@ -121,14 +121,19 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 106
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 99
+          "length": 100
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -189,12 +194,6 @@
           "kind": "title-length-warn",
           "length": 65,
           "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
-        },
-        {
-          "file": "en/satellite-sargassum-detection/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
         }
       ]
     },
@@ -227,7 +226,7 @@
           ]
         }
       ],
-      "issueCount": 596,
+      "issueCount": 597,
       "issues": [
         {
           "file": "404.html",
@@ -328,6 +327,11 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 107
@@ -335,7 +339,7 @@
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 99
+          "length": 100
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -385,11 +389,6 @@
           "kind": "title-length-warn",
           "length": 66,
           "value": "Sargassum alerts Guadeloupe & Martinique — Real-time notifications"
-        },
-        {
-          "file": "en/sargassum-alerts/index.html",
-          "kind": "desc-length-warn",
-          "length": 106
         }
       ]
     }
