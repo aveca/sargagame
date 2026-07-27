@@ -1638,6 +1638,43 @@
         "https://sargasses-martinique.com/pro/barrieres-vs-prevision/",
         "https://sargasses-martinique.com/pro/plan-sargasses-collectivite/"
       ]
+    },
+    {
+      "timestamp": "2026-07-27T19:29:10.826Z",
+      "script": "send-notifications",
+      "action": "no-changes",
+      "alertCount": 0,
+      "goodNewsCount": 0,
+      "dedupSkipped": 5
+    },
+    {
+      "timestamp": "2026-07-27T19:29:11.306Z",
+      "script": "send-notifications",
+      "action": "forecast-push-sent",
+      "count": 2,
+      "details": [
+        {
+          "type": "forecast-improvement",
+          "island": "puntacana",
+          "count": 1,
+          "sent": true,
+          "status": 200
+        },
+        {
+          "type": "forecast-degradation",
+          "island": "puntacana",
+          "count": 6,
+          "sent": true,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T19:29:16.384Z",
+      "script": "send-notifications",
+      "action": "weekly-digest-sent",
+      "mqStatus": 302,
+      "gpStatus": 302
     }
   ]
 }

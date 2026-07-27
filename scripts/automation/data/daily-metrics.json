@@ -4834,7 +4834,11 @@
   },
   {
     "date": "2026-07-27",
+<<<<<<< Updated upstream
     "time": "2026-07-27T19:25:38.333Z",
+=======
+    "time": "2026-07-27T19:40:40.884Z",
+>>>>>>> Stashed changes
     "payments": 20,
     "revenue": 132.8,
     "emails": 476,
@@ -4863,7 +4867,7 @@
       }
     },
     "email": {
-      "sent": 3459,
+      "sent": 3471,
       "delivered": null,
       "opened": null,
       "clicked": null,

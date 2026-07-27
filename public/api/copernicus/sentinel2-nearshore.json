@@ -1,7 +1,11 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
+<<<<<<< Updated upstream
   "updatedAt": "2026-07-27T19:21:04.351Z",
+=======
+  "updatedAt": "2026-07-27T19:28:52.556Z",
+>>>>>>> Stashed changes
   "lookbackDays": 12,
   "note": null,
   "beaches": {

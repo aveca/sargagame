@@ -1,6 +1,10 @@
 {
   "_comment": "Year-round beach conditions (Open-Meteo Marine+Forecast). Refreshed daily.",
+<<<<<<< Updated upstream
   "updatedAt": "2026-07-27T19:20:57.938Z",
+=======
+  "updatedAt": "2026-07-27T19:28:45.911Z",
+>>>>>>> Stashed changes
   "source": "open-meteo",
   "count": 200,
   "beaches": {

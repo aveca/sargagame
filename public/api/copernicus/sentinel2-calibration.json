@@ -7,6 +7,10 @@
     "clean": 0.009,
     "mod": 0.01
   },
+<<<<<<< Updated upstream
   "verifiedAt": "2026-07-27T19:20:57.991Z",
+=======
+  "verifiedAt": "2026-07-27T19:28:45.958Z",
+>>>>>>> Stashed changes
   "metric": "accord statut S2 near-shore vs ERDDAP settled (history), fenêtre ±5j"
 }

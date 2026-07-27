@@ -245,7 +245,11 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-06-28 → 2026-07-27) resultaron correctos (sobre 3053); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
+<<<<<<< Updated upstream
   "computed": "2026-07-27T19:21:35.591Z",
+=======
+  "computed": "2026-07-27T19:36:37.777Z",
+>>>>>>> Stashed changes
   "pairs": [
     {
       "snapshotDate": "2026-07-24",
