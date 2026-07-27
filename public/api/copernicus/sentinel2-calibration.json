@@ -1,16 +1,12 @@
 {
-  "active": true,
-  "reason": "validated",
-  "n": 35,
-  "agreement": 0.971,
+  "active": false,
+  "reason": "no-data",
+  "n": 0,
+  "agreement": null,
   "thresholds": {
-    "clean": 0.009,
-    "mod": 0.01
+    "clean": 0.005,
+    "mod": 0.015
   },
-<<<<<<< Updated upstream
-  "verifiedAt": "2026-07-27T19:20:57.991Z",
-=======
-  "verifiedAt": "2026-07-27T19:28:45.958Z",
->>>>>>> Stashed changes
+  "verifiedAt": "2026-07-27T20:05:56.622Z",
   "metric": "accord statut S2 near-shore vs ERDDAP settled (history), fenêtre ±5j"
 }
