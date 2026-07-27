@@ -2802,8 +2802,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           const typeOpacity=fType==="observation"?1:fType==="tendance"?.9:.6
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-              filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
-              pointerEvents:isLocked?"none":"auto"}}>
+              filter:isLocked?(i===freeThreshold?"blur(1px)":"blur(2px)"):"none",
+              opacity:isLocked?(i===freeThreshold?0.72:0.5):typeOpacity,
+              pointerEvents:isLocked?"none":"auto",
+              position:"relative"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
               {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
                 letterSpacing:".01em"}}>{dayTemp}°</span>}
@@ -2816,9 +2818,11 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 borderRadius:"6px 6px 2px 2px",
                 boxShadow:`0 -4px 14px -6px ${st.c}88, inset 0 1px 0 rgba(255,255,255,.3)`}}/>
               <span className="anton" style={{fontSize:11,lineHeight:1,letterSpacing:".02em",
-                color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase",marginTop:2}}>
+                color:isLocked&&i===freeThreshold?"#FFC72C":"var(--sg-mid,#5A5A5A)",
+                textTransform:"uppercase",marginTop:2}}>
                 {fcDay(d,lang)}
               </span>
+              {isLocked&&i===freeThreshold&&<span style={{display:"block",width:5,height:5,borderRadius:"50%",background:"#FFC72C",margin:"3px auto 0",boxShadow:"0 0 6px #FFC72C88"}}/>}
               {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
             </div>
           )

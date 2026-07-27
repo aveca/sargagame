@@ -1199,9 +1199,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
   const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
   // A/B preuve sociale (PassOffer) : badge communauté HONNÊTE (__COMM = plancher leads email).
-  const pwSocial=(()=>{try{const q=window.location.search;if(/[?&]pwsocial=1/.test(q))return true;if(/[?&]pwsocial=0/.test(q))return false;return abVariant("pw_socialproof",["control","proof"],[.5,.5])==="proof"}catch(_){return false}})()
+  // PROMU EN DÉFAUT — preuve sociale honnête toujours visible. Rollback ?pwsocial=0.
+  const pwSocial=(()=>{try{if(/[?&]pwsocial=0/.test(window.location.search))return false;if(/[?&]pwsocial=1/.test(window.location.search))return true;return true}catch(_){return true}})()
   // A/B fraîcheur (PassOffer) : "Données mises à jour il y a Xh" — récence réelle du pipeline.
-  const pwFresh=(()=>{try{const q=window.location.search;if(/[?&]pwfresh=1/.test(q))return true;if(/[?&]pwfresh=0/.test(q))return false;return abVariant("pw_freshness",["control","fresh"],[.5,.5])==="fresh"}catch(_){return false}})()
+  // PROMU EN DÉFAUT — fraîcheur toujours visible. Rollback ?pwfresh=0.
+  const pwFresh=(()=>{try{if(/[?&]pwfresh=0/.test(window.location.search))return false;if(/[?&]pwfresh=1/.test(window.location.search))return true;return true}catch(_){return true}})()
   const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
   // Preuve du moat au point de décision : lien /fiabilite/ à l'écran « Avant de
   // payer » (doctrine storytelling temps #5). Défaut ON, rollback ?pwrel=0.
@@ -2068,13 +2070,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const fmt=d=>d.toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{day:"numeric",month:"long"})
     return{remind:fmt(remindDate),charge:fmt(chargeDate)}
   })()
-  // Seasonal urgency — sargassum season is April-September
+  // Seasonal urgency — sargassum season is April-September (peak June-August)
   const now=new Date()
-  const seasonStart=new Date(now.getFullYear(),3,20) // ~20 April
-  const daysToSeason=Math.max(0,Math.ceil((seasonStart-now)/(1000*60*60*24)))
-  const seasonMsg=daysToSeason>0
-    ?_t(lang,`La saison commence dans ${daysToSeason} jours`,`Season starts in ${daysToSeason} days`,`La temporada empieza en ${daysToSeason} días`)
-    :_t(lang,"La saison des sargasses est là","Sargassum season is here","La temporada de sargazo ya está aquí")
+  const m=now.getMonth()
+  const inHigh=m>=5&&m<=7 // June-August = peak
+  const inSeason=m>=3&&m<=8 // April-September
+  const seasonMsg=inHigh
+    ?_t(lang,"Pic sargasses en cours · chaque jour sans prévision est un risque","Peak sargassum · every day without forecast is a risk","Pico de sargazo · cada día sin pronóstico es un riesgo")
+    :inSeason
+    ?_t(lang,"La saison des sargasses est là","Sargassum season is here","La temporada de sargazo ya está aquí")
+    :_t(lang,"La prochaine saison approche","Next season is approaching","La próxima temporada se acerca")
 
   // ── pw_hot_intent : paywall in-scene ancré plage (hot intent + beach ctx) ──
   // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source

@@ -268,9 +268,9 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
         <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "14px 0 0", padding: "10px 13px", borderRadius: 12, background: "rgba(255,199,44,.08)", border: "1px solid rgba(255,199,44,.2)" }}>
           <span style={{ fontSize: 16 }}>🌊</span>
           <span style={{ fontSize: 12, lineHeight: 1.4, fontWeight: 700, color: "rgba(234,247,244,.85)" }}>
-            {_t(lang, <>La saison sargasses <b style={{ color: "#FFC72C" }}>pointe dès juin</b>. Chaque jour sans prévision = risque de surprise sur ta plage.</>,
-              <>Sargassum season <b style={{ color: "#FFC72C" }}>peaks from June</b>. Every day without a forecast = surprise on your beach.</>,
-              <>La temporada de sargazo <b style={{ color: "#FFC72C" }}>comienza en junio</b>. Cada día sin pronóstico = sorpresa en tu playa.</>)}
+            {_t(lang, <>Pic sargasses <b style={{ color: "#FFC72C" }}>en cours</b>. Chaque jour sans prévision = risque de surprise sur ta plage.</>,
+              <>Sargassum <b style={{ color: "#FFC72C" }}>peak season</b>. Every day without a forecast = surprise on your beach.</>,
+              <>Pico de sargazo <b style={{ color: "#FFC72C" }}>en curso</b>. Cada día sin pronóstico = sorpresa en tu playa.</>)}
           </span>
         </div>
 
