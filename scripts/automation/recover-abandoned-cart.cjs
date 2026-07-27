@@ -327,6 +327,36 @@ async function main() {
     } catch (e) { console.log(`  ⚠️ Mollie recovery skip (fail-open): ${e.message}`) }
   }
 
+  // ── SUBSCRIBERS : leads email-only (onsite_checkout / pay_intent) ────────────
+  // Ces leads ont entré leur email au checkout mais n'ont JAMAIS créé de paiement
+  // (fermé l'onglet avant tokenisation carte). Le Mollie API ne les rattrape PAS
+  // (aucun paymentId). On les trouve dans subscribers.json. Relance à H+2 (au lieu
+  // de J+3 du drip normal). Exclut ceux qui ont fini par payer (paidH).
+  const SUB_PATH = path.join(__dirname, 'data', 'subscribers.json')
+  const EMAIL_SOURCES = new Set(['onsite_checkout', 'pay_intent'])
+  if (fs.existsSync(SUB_PATH)) {
+    try {
+      const subs = loadJSON(SUB_PATH, [])
+      const emailCands = []
+      for (const sub of subs) {
+        if (!EMAIL_SOURCES.has(sub.source || '')) continue
+        const email = (sub.email || '').trim().toLowerCase()
+        if (!email.includes('@')) continue
+        const h = emailHash(email)
+        if (ONLY_HASH && !h.startsWith(ONLY_HASH)) continue
+        if (seen.has(h) || activeHashes.has(h) || bouncedSet.has(h) || paidH?.has(h)) continue
+        if (!cadenceDue(cadence[h], NOW)) continue
+        const region = REGIONS[((sub.island || 'MQ')).toLowerCase()]
+        if (!region) continue
+        seen.add(h)
+        emailCands.push({ email, region, kind: 'abandoned', h, touch: (cadence[h]?.n || 0) + 1, source: sub.source })
+      }
+      console.log(`Subscribers email-only abandonnés : ${emailCands.length} (sources: onsite_checkout/pay_intent)`)
+      for (const c of emailCands) console.log(`  • ${logId(c.email)} | ${c.region.name} | ${c.source} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'}`)
+      candidates.push(...emailCands)
+    } catch (e) { console.log(`  ⚠️ Subscribers recovery skip (fail-open): ${e.message}`) }
+  }
+
   const byKind = candidates.reduce((m, c) => ((m[c.kind] = (m[c.kind] || 0) + 1), m), {})
   console.log(`Leads à relancer : ${candidates.length}`, byKind)
   for (const c of candidates) console.log(`  • ${logId(c.email)} | ${c.region.name} (${c.region.primaryLang}) | ${c.kind} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'} | "${copy(c.region, c.kind).subject}"`)
