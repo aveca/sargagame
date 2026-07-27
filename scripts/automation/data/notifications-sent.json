@@ -1,8 +1,4 @@
 {
-  "2026-07-19": [
-    "rivieramaya:rm005:clean>moderate",
-    "rivieramaya:rm011:clean>moderate"
-  ],
   "2026-07-20": [
     "rivieramaya:rm009:clean>moderate",
     "rivieramaya:rm005:moderate>clean"
@@ -95,5 +91,12 @@
     "puntacana:pc012:clean>moderate",
     "rivieramaya:rm008:clean>moderate",
     "rivieramaya:rm012:clean>moderate"
+  ],
+  "2026-07-27": [
+    "puntacana:pc008:clean>moderate",
+    "puntacana:pc009:clean>moderate",
+    "puntacana:pc010:clean>moderate",
+    "rivieramaya:rm017:clean>moderate",
+    "puntacana:pc004:moderate>clean"
   ]
 }
