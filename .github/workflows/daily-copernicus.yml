@@ -461,6 +461,9 @@ jobs:
           # secrets sont déjà exposés à d'autres steps de ce même workflow.
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          # Email pixel tracking (track-open.php / track-click.php) — aggregation
+          # des ouvertures/clics uniques depuis Supabase analytics_events.
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/daily-stats-check.cjs
 
       # Veille revenu proactive : diff les blocs stripe ET mollie de daily-metrics (que

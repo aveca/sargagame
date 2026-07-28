@@ -117,6 +117,26 @@ function applyBrand(html) {
   return /<head[^>]*>/i.test(out) ? out.replace(/(<head[^>]*>)/i, `$1${head}`) : head + out
 }
 
+// ─── Email tracking (opens + clicks) ──────────────────────────────────────────
+// Tracking first-party via endpoints PHP (track-open.php / track-click.php).
+// Usage : passer trackingId dans sendEmail() pour activer pixel + link wrapping.
+// trackingId doit être UNIQUE par envoi (UUID ou campaign_id — chaque email = 1 id).
+const TRACKING_URL = 'https://sargasses-martinique.com/api'
+
+function injectTracking(html, trackingId) {
+  if (!trackingId || !html) return html
+  let out = String(html)
+  // 1. Pixel ouverture : injecte avant </body> (ou à la fin si pas de body).
+  const pixel = `<img src="${TRACKING_URL}/track-open.php?id=${encodeURIComponent(trackingId)}" width="1" height="1" alt="" style="display:none!important;border:0;padding:0;margin:0" />`
+  out = /<\/body>/i.test(out) ? out.replace(/<\/body>/i, `${pixel}</body>`) : out + pixel
+  // 2. Wrap liens click : ne pas double-wraper ni cibler mailto/tel/javascript.
+  out = out.replace(
+    /href="(https?:\/\/[^"]+)"/gi,
+    (_m, url) => `href="${TRACKING_URL}/track-click.php?id=${encodeURIComponent(trackingId)}&url=${encodeURIComponent(url)}"`
+  )
+  return out
+}
+
 /**
  * Envoie un email "propre" via SMTP (boîte alerte@). Retourne un objet compatible
  * avec l'ancien appelant Resend : { data: { id }, error: null | Error }.
@@ -124,21 +144,23 @@ function applyBrand(html) {
  * Signatures supportées (back-compat) :
  *   sendEmail(opts)                 ← nouveau
  *   sendEmail(legacyResend, opts)   ← ancien (1er arg ignoré)
- * opts = { from, to, subject, html, preheader, unsubUrl, text?, replyTo?, headers? }
+ * opts = { from, to, subject, html, preheader, unsubUrl, text?, replyTo?, headers?, trackingId? }
  * headers = en-têtes SMTP additionnels (ex. Auto-Submitted pour un accusé auto,
  * RFC 3834 : un auto-répondeur conforme ne répond pas à un mail ainsi marqué).
  * Mergés avec List-Unsubscribe (unsubUrl garde le dernier mot sur ses 2 clés).
+ * trackingId = identifiant unique pour pixel/track (si omis = pas de tracking).
  */
 async function sendEmail(a, b) {
   const opts = (b === undefined) ? a : b
-  const { from, to, subject, html, preheader, unsubUrl, text, replyTo, headers } = opts || {}
+  const { from, to, subject, html, preheader, unsubUrl, text, replyTo, headers, trackingId } = opts || {}
   if (!mailReady()) {
     return { data: null, error: new Error('SMTP non configuré (SMTP_PASS manquant)') }
   }
+  const processedHtml = injectTracking(applyBrand(injectPreheader(html, preheader)), trackingId)
   const message = {
     from: normalizeFrom(from),
     to, subject,
-    html: applyBrand(injectPreheader(html, preheader)),
+    html: processedHtml,
     text: text || htmlToText(html),
   }
   if (replyTo) message.replyTo = replyTo
@@ -158,6 +180,6 @@ async function sendEmail(a, b) {
 
 module.exports = {
   sendEmail, mailReady, getTransport, normalizeFrom,
-  htmlToText, injectPreheader, applyBrand, brandHeader,
-  FONT_LINK, FONT_SANS, FONT_DISPLAY,
+  htmlToText, injectPreheader, applyBrand, brandHeader, injectTracking,
+  FONT_LINK, FONT_SANS, FONT_DISPLAY, TRACKING_URL,
 }

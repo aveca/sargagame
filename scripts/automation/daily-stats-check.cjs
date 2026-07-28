@@ -34,6 +34,15 @@ function fetchJSON(url) {
   })
 }
 
+// Vérité email opens/clicks (pixel first-party, track-open.php / track-click.php).
+// Skip si SUPABASE_SERVICE_KEY absent (runs locaux).
+async function emailEventsTruth() {
+  try {
+    const { main: aggregate } = require('./email-events-from-supabase.cjs')
+    return await aggregate()
+  } catch { return null }
+}
+
 // Vérité Stripe (lecture seule) — payments_real du funnel est connu MENTEUR
 // (réconciliations 2026-06-10/11 : 15 réels vs 1 affiché). Dé-gelé 2026-07-02 :
 // STRIPE_SECRET_KEY passe désormais AUSSI en env au step CI (daily-copernicus)
@@ -274,6 +283,12 @@ async function main() {
     }
   }
 
+  // 1d. Email events from pixel tracking (track-open.php / track-click.php).
+  const emailEventsResult = await emailEventsTruth()
+  if (emailEventsResult) {
+    console.log(`Email events (pixel): ${emailEventsResult.opens?.unique ?? 0} unique opens, ${emailEventsResult.clicks?.unique ?? 0} unique clicks`)
+  }
+
   // 2. Check pipeline freshness
   let pipelineOk = false
   try {
@@ -331,24 +346,37 @@ async function main() {
       revenueReal: funnel.revenue_real ?? null,
       rates: funnel.rates || null,
     } : lastKnown('funnel'),
-    // Engagement email — SMTP (Resend retiré le 21/06) n'alimente plus email_events :
-    // l'endpoint email_stats renvoie des delivered/opened/clicked/bounced FIGÉS aux
-    // derniers chiffres Resend pendant que `sent` (email_tracking) continue de monter.
-    // On ne persiste donc QUE `sent` (volume réel) ; opens/clics/bounces sont
-    // indisponibles sous SMTP (pas de pixel ni de webhook). La VRAIE mesure
-    // d'engagement = l'attribution conversion (bloc `stripe.emailAttributed`,
-    // email-roi.cjs), pas les opens. Réactiver les opens exigerait un pixel
-    // first-party (collect.php) — non câblé. NE PAS ré-écrire les compteurs morts.
-    email: emailStats && !emailStats.error && emailStats.counts ? {
-      sent: emailStats.counts.sent ?? lastKnown('email')?.sent ?? null,
-      delivered: null,
-      opened: null,
-      clicked: null,
-      bounced: null,
-      openRate: null,
-      clickRate: null,
-      tracking: 'smtp_no_events',
-    } : lastKnown('email'),
+    // Engagement email — pixel first-party (track-open.php / track-click.php) via
+    // Supabase analytics_events. Les uniques (opens/clicks) sont agrégés par
+    // email-events-from-supabase.cjs. Fallback : volume envoyé depuis Apps Script.
+    email: (() => {
+      const ev = emailEventsResult
+      const sent = emailStats && !emailStats.error && emailStats.counts
+        ? (emailStats.counts.sent ?? lastKnown('email')?.sent ?? null)
+        : lastKnown('email')?.sent ?? null
+      if (ev && ev.opens) {
+        return {
+          sent,
+          delivered: null,
+          opened: ev.opens.unique ?? null,
+          clicked: ev.clicks?.unique ?? null,
+          bounced: null,
+          openRate: ev.opens.unique && sent ? Math.round((ev.opens.unique / sent) * 10000) / 100 : null,
+          clickRate: ev.clickRate ?? null,
+          tracking: 'pixel_first_party',
+        }
+      }
+      return {
+        sent,
+        delivered: null,
+        opened: null,
+        clicked: null,
+        bounced: null,
+        openRate: null,
+        clickRate: null,
+        tracking: 'smtp_no_events',
+      }
+    })(),
     // Vérité Stripe (CI + local depuis 2026-07-02) — carry-forward dernière valeur connue
     stripe: (await stripeTruth()) || lastKnown('stripe'),
     // Vérité Mollie (caisse active) — carry-forward dernière valeur connue
