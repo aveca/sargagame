@@ -14,6 +14,7 @@
         if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
         if(d.checkoutUrl){
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          try{track("sg_checkout_redirect",{provider:PAY_PROVIDER,plan:_pc?_pc.pass:plan,cents:_pc?_pc.cents:null})}catch(_){}
           window.location.href=d.checkoutUrl;return
         }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.

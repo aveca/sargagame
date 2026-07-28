@@ -1,5 +1,6 @@
-import React, { useEffect, memo } from "react"
-import { getSegment } from "./lib/segment.js"
+import React,{useEffect,memo}from"react"
+import{getSegment}from"./lib/segment.js"
+import{track}from"./Sargasses_PROD.jsx"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
@@ -16,10 +17,11 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
   const cents = PASS.cents[cur]
-  useEffect(() => { sbeacon({ stage: "view", segment: seg, model: "oneprice" }) }, [])
-  const buy = () => {
-    sbeacon({ stage: "cta", segment: seg, pass: PASS.key, cents })
-    if (onBuy) onBuy({ c: cents, pass: PASS.key, days: PASS.days, segment: seg })
+  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
+  const buy=()=>{
+    sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
+    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg})}catch(_){}
+    if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
   const pd = perDay(cents, PASS.days, cur, lang)
