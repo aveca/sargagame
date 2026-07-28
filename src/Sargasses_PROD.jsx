@@ -2779,6 +2779,9 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     ?_t(lang,"+ brief matin & alertes","+ morning brief & alerts","+ brief matutino y alertas")
     :_t(lang,"+ brief matin & alertes · 7j gratuit","+ morning brief & alerts · 7 days free","+ brief matutino y alertas · 7 días gratis")
   const firstConf=visible[1]?.confidence||40
+  // Direction J+0→J+1 (flèche honnête, sans révéler le statut) — gap de curiosité.
+  const _RK={clean:0,moderate:1,avoid:2}
+  const _dir=(()=>{const r0=_RK[visible[0]?.status]??0,r1=_RK[visible[1]?.status];return r1==null?"→":r1>r0?"↘":r1<r0?"↗":"→"})()
   // Compute locked-day status colors for teaser strip
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
   return(
@@ -2821,6 +2824,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 color:isLocked&&i===freeThreshold?"#FFC72C":"var(--sg-mid,#5A5A5A)",
                 textTransform:"uppercase",marginTop:2}}>
                 {fcDay(d,lang)}
+                {isLocked&&i===freeThreshold&&<span style={{fontSize:10,marginLeft:2,opacity:.85}}>{_dir}</span>}
               </span>
               {isLocked&&i===freeThreshold&&<span style={{display:"block",width:5,height:5,borderRadius:"50%",background:"#FFC72C",margin:"3px auto 0",boxShadow:"0 0 6px #FFC72C88"}}/>}
               {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
@@ -13693,7 +13697,30 @@ export default function App(){
           }}/>}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
+        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
+          setShowPremium(false)
+          // EXIT-INTENT NUDGE — paywall fermé SANS payer → toast CTA de rattrapage.
+          // Honnête (aucune pression fabriquée : le pic saisonnier est réel), 1×/session,
+          // jamais si premium/pass actif. Rollback ?exitnudge=0.
+          try{
+            if(/[?&]exitnudge=0/.test(window.location.search))return
+            if(localStorage.getItem("sg_premium")==="1")return
+            const pe=parseInt(localStorage.getItem("sg_premium_pass_end")||"0",10)
+            if(pe&&pe>Date.now())return
+            if(sessionStorage.getItem("sg_exitnudge_shown"))return
+            sessionStorage.setItem("sg_exitnudge_shown","1")
+            track("sg_exit_nudge_view",{source:premiumSource||"unknown"})
+            setTimeout(()=>{
+              sgToast({
+                tone:"info",
+                title:_t(lang,"Ton pass t'attend","Your pass is waiting","Tu pase te espera"),
+                msg:_t(lang,"Pic sargasses en cours — un jour sans prévision peut gâcher ta plage.","Sargassum peak is here — one day without forecast can ruin your beach day.","Pico de sargazo en curso — un día sin pronóstico puede arruinar tu playa."),
+                duration:9000,
+                action:{label:_t(lang,"Voir les pass →","See passes →","Ver pases →"),onClick:()=>{try{track("sg_exit_nudge_click",{source:premiumSource||"unknown"})}catch(_){};openPremium("exit_nudge")}}
+              })
+            },450)
+          }catch(_){}
+        }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/></Suspense></ErrBound>}
 
