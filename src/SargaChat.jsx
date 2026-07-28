@@ -1,9 +1,10 @@
 // SargaChat.jsx — assistant guidé « Le Veilleur » (overlay chat), extrait du monolithe
 // pour alléger le bundle eager. Overlay hors first-paint (showChat, ouvert au clic).
 // Helpers partagés importés via exports nommés du monolithe — zéro duplication.
+// v2: Support input texte libre + keyword matching + frustration context
 import React,{useState,useEffect,useRef,useMemo}from"react"
 import{_t,track,BEACH_TO_SARG,IS_NEW_REGION,PAY_CAPTURE_ONLY,Veilleur,g,s}from"./Sargasses_PROD.jsx"
-export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClose}){
+export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClose,frustrationContext}){
   const t=(fr,en,es)=>_t(lang,fr,en,es)
   const cands=useMemo(()=>(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status),[allBeaches,island])
   const cleans=useMemo(()=>cands.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0)),[cands])
@@ -17,7 +18,48 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
     "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
     "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
     "¡Hola! Respondo con los datos satelitales de hoy — nada inventado. ¿Qué quieres saber?"),chips:rootChips}
-  const[msgs,setMsgs]=useState([hello])
+  const [msgs, setMsgs] = useState(() => {
+    // Personalize opening based on frustration context
+    if (frustrationContext) {
+      track("sg_chat_auto_opened", { type: frustrationContext.type })
+      
+      let contextMessage = ""
+      if (frustrationContext.type === "rage-click") {
+        contextMessage = t(
+          "Je vois que tu cherches quelque chose — je peux t'aider ?",
+          "I see you're looking for something — can I help?",
+          "Veo que buscas algo — ¿puedo ayudarte?"
+        )
+      } else if (frustrationContext.type === "scroll-frenzy") {
+        contextMessage = t(
+          "Tu cherches une info en particulier ? Je suis là pour t'aider.",
+          "Looking for specific info? I'm here to help.",
+          "¿Buscas información específica? Estoy aquí para ayudarte."
+        )
+      } else if (frustrationContext.type === "hesitation") {
+        contextMessage = t(
+          "Une question ? Je réponds avec les données satellite du jour.",
+          "Got a question? I answer with today's satellite data.",
+          "¿Tienes una pregunta? Respondo con los datos satelitales de hoy."
+        )
+      } else {
+        contextMessage = t(
+          "Je vois que tu cherches — comment je peux t'aider ?",
+          "I see you're searching — how can I help?",
+          "Veo que buscas — ¿cómo puedo ayudarte?"
+        )
+      }
+      
+      return [{
+        who: "bot",
+        text: contextMessage,
+        chips: rootChips
+      }]
+    }
+    
+    // Default hello message
+    return [hello]
+  })
   const[typing,setTyping]=useState(false)
   const bodyRef=useRef(null)
   useEffect(()=>{if(bodyRef.current)bodyRef.current.scrollTop=bodyRef.current.scrollHeight},[msgs,typing])
@@ -73,6 +115,27 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
     const lbl=c.label.replace(/^← /,"")
     if(c.k==="root"){setMsgs(m=>[...m,{who:"me",text:lbl},hello]);return}
     if(c.k==="cta"){track("sg_chat_cta",{});onClose();onPremium();return}
+    if(c.k==="email"){
+      // Email capture fallback
+      const email = prompt(t("Ton email :","Your email:","Tu email:"))
+      if (email && email.includes("@")) {
+        track("sg_chat_email_capture", { email: email.slice(0, 3) + "***" })
+        setMsgs(m => [...m, {
+          who: "me",
+          text: email
+        }, {
+          who: "bot",
+          text: t(
+            "Merci ! On te répond sous 24h. En attendant, regarde les plages propres aujourd'hui 👇",
+            "Thanks! We'll respond within 24h. In the meantime, check today's clean beaches 👇",
+            "¡Gracias! Te respondemos en 24h. Mientras tanto, mira las playas limpias de hoy 👇"
+          ),
+          chips: [{ k: "where", label: t("🏖 Voir les plages propres", "🏖 See clean beaches", "🏖 Ver playas limpias") }]
+        }])
+        // TODO: Send email to backend for human response
+      }
+      return
+    }
     // USD : /about/ (EN/ES, shipped 2026-06-11) — /a-propos/ n'existe que MQ/GP
     // (pointer /a-propos/ sur USD = 404 avalé par le fallback SPA).
     if(c.k==="about"){track("sg_chat_branch",{branch:"about_page"});window.location.href=IS_NEW_REGION?"/about/":"/a-propos/";return}
@@ -90,6 +153,65 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
       if(a)setMsgs(m=>[...m,{who:"bot",text:a.text,chips:a.chips}])
     },650)
   }
+  // Keyword matching for free text input
+  const matchKeyword = (text) => {
+    const lower = text.toLowerCase()
+    
+    // Beach/plage queries
+    if (lower.match(/plage|beach|playa|aller|go|ir|where|où|ou|dónde/)) return "where"
+    
+    // Tomorrow/forecast queries
+    if (lower.match(/demain|tomorrow|mañana|prévision|forecast|pronostico|j\+2|j\+1/)) return "tomorrow"
+    
+    // Premium queries
+    if (lower.match(/premium|pro|abonnement|subscription|abo|offre|offer|oferta|prix|price|precio|pay|payer|pagar/)) return "premium"
+    
+    // Trust/reliability queries
+    if (lower.match(/fiable|reliable|confiable|sûr|sure|seguro|trust|confiance|confianza|satellite|données|data|datos/)) return "trust"
+    
+    // Specific beach name queries
+    const beachMatch = allBeaches?.find(b => lower.includes(b.name.toLowerCase()))
+    if (beachMatch) return "open:" + beachMatch.id
+    
+    return null
+  }
+  
+  // Handle text input submission
+  const handleTextSubmit = (text) => {
+    if (!text.trim()) return
+    
+    track("sg_chat_text_input", { text: text.slice(0, 100) })
+    setMsgs(m => [...m, { who: "me", text }])
+    setTyping(true)
+    
+    setTimeout(() => {
+      setTyping(false)
+      const key = matchKeyword(text)
+      
+      if (key) {
+        const a = answer(key)
+        if (a) {
+          setMsgs(m => [...m, { who: "bot", text: a.text, chips: a.chips }])
+          return
+        }
+      }
+      
+      // Fallback: offer email capture
+      setMsgs(m => [...m, {
+        who: "bot",
+        text: t(
+          "Je n'ai pas bien compris. Tu veux qu'un humain te réponde ? Laisse ton email et on te contacte.",
+          "I didn't quite get that. Want a human to respond? Leave your email and we'll get back to you.",
+          "No entendí bien. ¿Quieres que un humano te responda? Deja tu email y te contactamos."
+        ),
+        chips: [
+          { k: "email", label: t("📧 Laisser mon email", "📧 Leave my email", "📧 Dejar mi email") },
+          { k: "root", label: t("← Autre question", "← Another question", "← Otra pregunta") }
+        ]
+      }])
+    }, 650)
+  }
+  
   const last=msgs[msgs.length-1]
   return(
     <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
@@ -142,6 +264,50 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
               ))}
             </div>
           )}
+        </div>
+        {/* Text input for free-form questions */}
+        <div style={{padding:"12px",borderTop:"1px solid rgba(255,255,255,.10)"}}>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            const input = e.target.elements.chatInput
+            if (input.value.trim()) {
+              handleTextSubmit(input.value)
+              input.value = ""
+            }
+          }} style={{display:"flex",gap:8}}>
+            <input 
+              name="chatInput"
+              type="text"
+              placeholder={t("Pose ta question...", "Ask your question...", "Haz tu pregunta...")}
+              style={{
+                flex:1,
+                background:"rgba(255,255,255,.07)",
+                border:"1px solid rgba(255,255,255,.20)",
+                borderRadius:12,
+                padding:"10px 14px",
+                color:"#fff",
+                fontSize:13.5,
+                fontFamily:"inherit",
+                outline:"none"
+              }}
+            />
+            <button 
+              type="submit"
+              style={{
+                background:"#FFC72C",
+                border:"none",
+                borderRadius:12,
+                padding:"0 18px",
+                color:"#120821",
+                fontWeight:700,
+                fontSize:13.5,
+                cursor:"pointer",
+                fontFamily:"inherit"
+              }}
+            >
+              {t("Envoyer", "Send", "Enviar")}
+            </button>
+          </form>
         </div>
       </div>
     </div>

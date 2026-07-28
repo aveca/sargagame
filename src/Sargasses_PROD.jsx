@@ -10,6 +10,7 @@ import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
+import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import "./Themes.css"
@@ -10866,6 +10867,7 @@ export default function App(){
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
+  const[frustrationContext,setFrustrationContext]=useState(null) // contexte frustration (auto-open chat)
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
   const[captureGateSrc,setCaptureGateSrc]=useState("")
@@ -10953,6 +10955,15 @@ export default function App(){
   const[premiumTick,setPremiumTick]=useState(0)
   const fcRetryRef=useRef(0) // retry borné (1) de la prévision étendue si premium + forecast.php KO transitoire
   const _premWasTrue=useRef(isPremium) // snapshot initial (premium déjà connu au mount)
+  // Frustration detection : auto-open chat si rage-click/scroll/hesitation
+  // Flag rollback : ?frustration=0 désactive (doctrine : pas de flag = pas de merge)
+  const frustrationEnabled=useMemo(()=>{try{return !/[?&]frustration=0(?:&|$)/.test(window.location.search)}catch(_){return true}},[])
+  useFrustrationDetection((ctx)=>{
+    if(!frustrationEnabled)return
+    setFrustrationContext(ctx)
+    setShowChat(true)
+    track("sg_frustration_auto_open",{type:ctx.type,page:ctx.page})
+  },{enabled:frustrationEnabled})
   useEffect(()=>{
     if(isPremium&&!_premWasTrue.current){ _premWasTrue.current=true; setPremiumTick(t=>t+1) }
   },[isPremium])
@@ -13821,7 +13832,7 @@ export default function App(){
           </button>
         )}
         {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
-          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/></Suspense></ErrBound>}
+          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
