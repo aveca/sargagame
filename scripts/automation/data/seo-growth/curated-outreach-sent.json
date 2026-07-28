@@ -41,8 +41,22 @@
       "emailHash": "ace76024809d49a707e9f4812748d208",
       "authority": "high",
       "market": "fr"
+    },
+    "meteofrance.gp": {
+      "date": "2026-07-28T12:04:21.902Z",
+      "status": "sent",
+      "emailHash": "c338b5c3f1c6093129c02cf3dc70883a",
+      "authority": "high",
+      "market": "fr"
+    },
+    "riviera-maya-news.com": {
+      "date": "2026-07-28T12:08:48.649Z",
+      "status": "sent",
+      "emailHash": "f875eb74d3865be92c8b4e5fb9fa4ae5",
+      "authority": "high",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-07-21T11:50:59.184Z",
-  "totalSent": 6
+  "lastRun": "2026-07-28T12:08:48.649Z",
+  "totalSent": 8
 }

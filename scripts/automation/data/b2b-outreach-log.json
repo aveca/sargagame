@@ -163,8 +163,44 @@
     "sainteluce.fr": {
       "date": "2026-07-21T11:54:01.423Z",
       "status": "no-email"
+    },
+    "ville-trinite.fr": {
+      "date": "2026-07-28T12:10:34.883Z",
+      "status": "no-email"
+    },
+    "ville-lamarin.fr": {
+      "date": "2026-07-28T12:10:35.118Z",
+      "status": "no-email"
+    },
+    "mairie-troisilets.fr": {
+      "date": "2026-07-28T12:10:35.461Z",
+      "status": "no-email"
+    },
+    "mairie-schoelcher.fr": {
+      "date": "2026-07-28T12:10:47.004Z",
+      "status": "no-email"
+    },
+    "ville-casepilote.fr": {
+      "date": "2026-07-28T12:10:47.263Z",
+      "status": "no-email"
+    },
+    "mairie-tartane.fr": {
+      "date": "2026-07-28T12:10:47.602Z",
+      "status": "no-email"
+    },
+    "macouba.fr": {
+      "date": "2026-07-28T12:10:47.870Z",
+      "status": "no-email"
+    },
+    "ville-vauclin.fr": {
+      "date": "2026-07-28T12:10:59.040Z",
+      "emailHash": "b4ccaf6de688a5e948522c437fd0201e",
+      "emailDomain": "mairie-vauclin.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
     }
   },
-  "lastRun": "2026-07-21T11:54:01.423Z",
-  "totalSent": 10
+  "lastRun": "2026-07-28T12:10:59.040Z",
+  "totalSent": 11
 }

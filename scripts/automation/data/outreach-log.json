@@ -331,8 +331,53 @@
       "error": null,
       "url": "https://www.piedsdanslesable.fr/plage-guadeloupe/sans-sargasses/",
       "market": "fr"
+    },
+    "1monde.net": {
+      "date": "2026-07-28T11:57:11.362Z",
+      "emailHash": "ecba152f824baf687480bc8d73894498",
+      "emailDomain": "1monde.net",
+      "status": "sent",
+      "error": null,
+      "url": "https://1monde.net/ou-se-baigner-en-guadeloupe-sans-sargasse/",
+      "market": "fr"
+    },
+    "vacances-aux-antilles.com": {
+      "date": "2026-07-28T11:57:13.830Z",
+      "emailHash": "360a6b67a503e6d133d5c1e2d6064999",
+      "emailDomain": "vacances-aux-antilles.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.vacances-aux-antilles.com/guadeloupe/sargasses/",
+      "market": "fr"
+    },
+    "karibinfo.com": {
+      "date": "2026-07-28T11:57:26.579Z",
+      "emailHash": "199cad5eb2a5a4ef993bd5f7d5ff91e7",
+      "emailDomain": "karibinfo.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.karibinfo.com/news/",
+      "market": "fr"
+    },
+    "we-love-guadeloupe.com": {
+      "date": "2026-07-28T11:57:30.142Z",
+      "emailHash": "e07112f14eab32eb828efd32c4fd225d",
+      "emailDomain": "we-love-guadeloupe.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.we-love-guadeloupe.com/",
+      "market": "fr"
+    },
+    "lagon-travel.com": {
+      "date": "2026-07-28T11:57:36.490Z",
+      "emailHash": "8a88c5eb6afaa0deb3509c84a72dd969",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lagon-travel.com/blog-voyage/",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-07-21T11:46:16.388Z",
-  "totalSent": 39
+  "lastRun": "2026-07-28T11:57:36.490Z",
+  "totalSent": 44
 }
