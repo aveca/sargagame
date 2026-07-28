@@ -15,6 +15,7 @@ import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import "./Themes.css"
 import "./app-runtime.css"
+import "./sg-ux-2026.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -4474,14 +4475,14 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
             le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
             mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
-        <div style={{display:"flex",alignItems:"center",gap:13,padding:"14px 16px",margin:"14px 0 12px",
-          background:sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:`4px 4px 0 ${COMIC.ink}`,
-          animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}>
-          <div aria-hidden style={{flexShrink:0}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
+        <div className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
+          background:status==="avoid"?"linear-gradient(135deg, #FF3B30 0%, #C70000 100%)":sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:status==="avoid"?"0 8px 24px rgba(255,59,48,0.4), 4px 4px 0 #8B0000":`4px 4px 0 ${COMIC.ink}`,
+          animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both",position:"relative",zIndex:1}}>
+          <div aria-hidden style={{flexShrink:0,filter:status==="avoid"?"drop-shadow(0 0 12px rgba(255,255,255,0.5))":"none"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
-            <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:COMIC.ink}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_terrainStatus
+            <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:status==="avoid"?"#fff":COMIC.ink,textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.big}</div>
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {_terrainStatus
               ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
                   ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
                   : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
@@ -4504,14 +4505,24 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         )}
 
         {/* Score + facteurs (carte) */}
-        <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
-          {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
-            {/* Score-vedette en JetBrains Mono (BIBLE : Mono pour tous les chiffres). */}
-            <div style={{fontFamily:"'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace",fontWeight:700,fontSize:38,lineHeight:.85,letterSpacing:"-1px",fontVariantNumeric:"tabular-nums",color:COMIC.ink}}>{scoreAnim}<span style={{fontSize:14,color:COMIC.sub}}>/100</span></div>
-            <div style={{font:"800 8.5px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".5px",marginTop:2}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
+        <div className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
+          {hasScore&&<div style={{flexShrink:0,textAlign:"center",position:"relative"}}>
+            {/* Score-vedette avec halo animé - WOW effect */}
+            <div className={status==="clean"?"score-blob-glow":"score-blob-pulse"} style={{
+              "--blob-color": status==="clean"?"#1EC8B0":status==="moderate"?"#FFC72C":"#FF3B30",
+              fontFamily:"'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace",
+              fontWeight:700,
+              fontSize:42,
+              lineHeight:.85,
+              letterSpacing:"-1.5px",
+              fontVariantNumeric:"tabular-nums",
+              color: status==="clean"?"#00B086":status==="moderate"?"#FF9500":"#FF3B30",
+              transition:"color 0.3s ease",
+            }}>{scoreAnim}<span style={{fontSize:14,color:COMIC.sub,fontWeight:600}}>/100</span></div>
+            <div style={{font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".8px",marginTop:4,textTransform:"uppercase"}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
           </div>}
-          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip" style={{animationDelay:(.18+i*.07)+"s"}}><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block"}}/>{c.t}</span>)
+          <div style={{display:"flex",flexWrap:"wrap",gap:7,flex:1}}>
+            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip ripple" style={{animationDelay:(.18+i*.07)+"s",cursor:"default"}}><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block",boxShadow:`0 0 6px ${c.c}`}}/>{c.t}</span>)
               :<span style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Conditions en cours de lecture…","Reading conditions…","Leyendo condiciones…")}</span>}
           </div>
         </div>
@@ -4527,11 +4538,27 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
             {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
           </div>
-          <div style={{display:"flex",gap:5,position:"relative"}}>
+          <div style={{display:"flex",gap:6,position:"relative"}}>
             {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
-              <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
-                <div className="bsc-bar" style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animationDelay:(.32+i*.05)+"s"}}/>
-                <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
+              <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
+                flex:1,
+                textAlign:"center",
+                filter:gated?"blur(3px)":"none",
+                opacity:gated?.65:1,
+                padding:"6px 4px",
+                borderRadius:10,
+                background: i===0?"linear-gradient(135deg, rgba(255,199,44,0.08) 0%, rgba(255,149,0,0.05) 100%)":"transparent",
+                border: i===0?"2px solid rgba(255,199,44,0.3)":"2px solid transparent",
+              }}>
+                <div className="bsc-bar" style={{
+                  height:36,
+                  borderRadius:8,
+                  border:`2.5px solid ${COMIC.ink}`,
+                  background:comicStatusColor(d.status),
+                  animationDelay:(.32+i*.05)+"s",
+                  boxShadow: i===0?`0 4px 12px ${comicStatusColor(d.status)}66`:"none",
+                }}/>
+                <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
               </div>)})}
             {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
@@ -4554,7 +4581,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* CTA collant — décision unique, or */}
         <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
-          <button className="bsc-gobtn sg-paygold" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
+          <button className="bsc-gobtn cta-premium ripple" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,position:"relative",zIndex:1}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
             <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"Pass unique, sans abonnement · rien à résilier","One-time pass, no subscription · nothing to cancel","Pase único, sin suscripción · nada que cancelar")}</div>
