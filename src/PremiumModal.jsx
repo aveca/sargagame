@@ -1,1853 +1,23 @@
-﻿/* PremiumModal â€” surface de paiement (PASS-ONLY Mollie on-site) + paywalls associÃ©s.
- * EXTRAIT de Sargasses_PROD.jsx (perf #173) pour sortir ~215 Ko de JS du chemin
- * critique : ce module est chargÃ© en LAZY (lazyWithRetry) Ã  l'ouverture du paywall.
- * âš ï¸ CHEMIN DE L'ARGENT â€” code dÃ©placÃ© Ã€ L'IDENTIQUE. Les helpers/constantes partagÃ©s
- * (track, _t, C, T, abVariant, startCheckout deps, loadMollieJs/Stripe/PayPal, pricingâ€¦)
- * sont importÃ©s depuis Sargasses_PROD.jsx via exports nommÃ©s (mÃªmes singletons). */
-import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
-import PassOffer from "./PassOffer.jsx"
-import {SeqDots} from "./SeqPrimitives.jsx"
-import {
-  BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
-  LINK_PRO, MOLLIE_PROFILE, MOLLIE_TESTMODE, MOL_FIELD, MOL_LABEL, NO_TRIAL, PAYPAL_CLIENT_ID, PAYPAL_PLANS,
-  PAYWALL_READY, PAY_CAPTURE_ONLY, PAY_CUR, PAY_LABEL, PAY_PROVIDER, PRICE_MO, PRICE_TRIP, PRICE_TRIP_EUR,
-  PRICE_YR, REGION, REGION_PAY, SARG_TO_BEACH, STRIPE_PK, SUPPORT_EMAIL, T, TRIP_CENTS,
-  VEILLEUR_MOOD, __COMM, __REL, _t, abVariant, fmtPassPrice, loadMollieJs, loadPayPalSdk,
-  loadStripeJs, miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy, sgToast, sgVerifySub, submitLead,
-  track, walletAvail
-} from "./Sargasses_PROD.jsx"
-
-// Route de la page Â« fiabilitÃ© Â» selon rÃ©gion/langue (miroir de reliabilityHref
-// dans Sargasses_PROD.jsx, non exportÃ©) : MQ/GP â†’ /fiabilite/, rÃ©gions US â†’ EN/ES.
-const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
-
-// useModalA11y â€” plancher a11y des modales du chemin de l'argent (paywall B2C + B2BModal).
-// Plancher dur CLAUDE.md : role=dialog (posÃ© inline sur le panel) + Ã‰chap + focus-trap +
-// restauration du focus au close. LÃ©ger (zÃ©ro dep â€” ce chunk est budget-sensible), mÃªme
-// esprit que les modales de ChasseHome (Escape + focus initial) mais avec un VRAI piÃ¨ge Tab.
-// - panelRef : ref du conteneur du dialog (oÃ¹ vivent les Ã©lÃ©ments focusables).
-// - onClose : appelÃ© sur Ã‰chap (passe `false` Ã  `escClose` si l'Ã‰chap est dÃ©jÃ  gÃ©rÃ© ailleurs,
-//   ex. PremiumModal a son propre handler trackÃ© â†’ on ne double pas le close).
-function useModalA11y(panelRef,onClose,escClose=true){
-  useEffect(()=>{
-    const panel=panelRef.current
-    const prevFocus=(typeof document!=="undefined"&&document.activeElement)||null
-    const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-    const focusables=()=>panel?Array.prototype.filter.call(panel.querySelectorAll(SEL),el=>el.offsetParent!==null||el===document.activeElement):[]
-    // Focus initial DANS le dialog (1er focusable) sans voler le focus Ã  un champ dÃ©jÃ  actif.
-    try{if(panel&&!panel.contains(document.activeElement)){const f=focusables();(f[0]||panel).focus&&(f[0]||panel).focus()}}catch(_){}
-    const onKey=e=>{
-      // Si un AUTRE dialog est ouvert PAR-DESSUS ce panel (ex. B2BModal au-dessus du paywall),
-      // ne pas piÃ©ger : la cible vit dans un dialog distinct â†’ on laisse le dialog du dessus gÃ©rer.
-      const inOther=(()=>{try{const t=e.target;const d=t&&t.closest&&t.closest('[role="dialog"][aria-modal="true"]');return d&&panel&&d!==panel&&!panel.contains(d)}catch(_){return false}})()
-      if(e.key==="Escape"){if(escClose&&!inOther){e.stopPropagation();onClose&&onClose()}return}
-      if(e.key!=="Tab"||!panel||inOther)return
-      const f=focusables();if(!f.length){e.preventDefault();return}
-      const first=f[0],last=f[f.length-1],a=document.activeElement
-      if(e.shiftKey&&(a===first||!panel.contains(a))){e.preventDefault();last.focus()}
-      else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
-    }
-    document.addEventListener("keydown",onKey,true)
-    return()=>{document.removeEventListener("keydown",onKey,true)
-      try{prevFocus&&prevFocus.focus&&prevFocus.focus()}catch(_){}}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
-}
-
-// B2BModal â€” OFFRE PRO rÃ©elle et chiffrÃ©e (pivot B2B, juin 2026). 3 tiers (Widget
-// gratuit / Pro Alertes 79â‚¬/mois / Territoire sur devis). Capture d'INTENTION HAUTE
-// (pas juste Â« brief gratuit Â») : le pro choisit un tier payant â†’ on enregistre
-// source distincte (b2b_pro_alertes / b2b_territoire / b2b_widget) + event
-// sg_b2b_intent avec le prix â†’ mesure la WILLINGNESS-TO-PAY sur 2-3 semaines.
-// Vente B2B early = concierge (dÃ©moâ†’facture) : le CTA capte l'intent, l'onboarding
-// est manuel au dÃ©but. ZÃ‰RO logique de paiement touchÃ©e (capture, pas billing).
-// Funnel HYBRIDE Territoire (mairies/offices/groupes hÃ´teliers) : l'accÃ¨s essai 30 j est
-// DÃ‰JÃ€ ouvert (token Ã©mis) ; CE bloc est un OPT-IN pur Â« programmons un point Â» â€” le secteur
-// public a besoin d'un devis / bon de commande / interlocuteur qu'un clic ne remplace pas.
-// POST /api/b2b-meeting.php â†’ email au fondateur (zÃ©ro paiement, zÃ©ro engagement). SynthÃ¨se
-// panel adverse 2026-06-29 (copywriter secteur public + DGS/office sceptiques) : accÃ¨s
-// DÃ‰COUPLÃ‰ de l'ask, Â« aucun prÃ©lÃ¨vement automatique Â» dit noir sur blanc, RGPD inline,
-// tarif indicatif HT, tÃ©lÃ©phone facultatif, lien /fiabilite/ avant de dÃ©cider.
-function TerritoireMeeting({lang,email,org}){
-  const I=COMIC
-  const [littoral,setLittoral]=useState("")
-  const [phone,setPhone]=useState("")
-  const [sent,setSent]=useState(false)
-  const [busy,setBusy]=useState(false)
-  const submit=()=>{
-    if(sent||busy)return
-    setBusy(true)
-    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    try{track("sg_b2b_meeting_request",{})}catch(_){}
-    fetch("/api/b2b-meeting.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,org,littoral:littoral.trim(),phone:phone.trim(),island})})
-      .then(()=>{setBusy(false);setSent(true)}).catch(()=>{setBusy(false);setSent(true)})
-  }
-  if(sent)return(
-    <div style={{marginTop:14,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`}}>
-      <div style={{font:"800 14px/1.3 'Bricolage Grotesque'",color:"#1c8f4e"}}>{_t(lang,"C'est notÃ© âœ“","Noted âœ“","Anotado âœ“")}</div>
-      <div style={{font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#41414a",marginTop:5}}>{_t(lang,"On vous Ã©crit pour caler 15 min et prÃ©parer votre devis (PDF). Votre accÃ¨s reste ouvert en attendant.","We'll email you to set up 15 min and prepare your quote (PDF). Your access stays open meanwhile.","Le escribimos para reservar 15 min y preparar su presupuesto (PDF). Su acceso sigue abierto mientras tanto.")}</div>
-    </div>
-  )
-  return(
-    <div style={{marginTop:14,padding:"14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:I.blue,boxShadow:`3px 3px 0 ${I.ink}`}}>
-      <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:"#fdfcf7"}}>ðŸ›ï¸ {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>
-      <div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#eef9f6",margin:"5px 0 10px"}}>{_t(lang,"Votre accÃ¨s est dÃ©jÃ  ouvert â€” explorez seul si vous prÃ©fÃ©rez. Un Ã©change de 15 min seulement si VOUS le souhaitez : on cale vos plages, votre devis et votre bon de commande. L'essai ne dÃ©clenche aucun prÃ©lÃ¨vement.","Your access is already open â€” explore on your own if you prefer. A 15-min call only if YOU want it: we scope your beaches, your quote and your purchase order. The trial triggers no charge.","Su acceso ya estÃ¡ abierto â€” explore solo si prefiere. Una llamada de 15 min solo si USTED quiere: definimos sus playas, su presupuesto y su orden de compra. La prueba no genera ningÃºn cobro.")}</div>
-      <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nÂº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
-      <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"TÃ©lÃ©phone (facultatif)","Phone (optional)","TelÃ©fono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
-      <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoiâ€¦","Sendingâ€¦","Enviandoâ€¦"):_t(lang,"Planifier un point Â· recevoir un devis â†’","Schedule a call Â· get a quote â†’","Reservar Â· recibir presupuesto â†’")}</button>
-      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#dff1ec",marginTop:9}}>{_t(lang,"DonnÃ©es satellite publiques (Copernicus/NOAA), auditables Â· Devis, bon de commande, facture â€” conforme RGPD & marchÃ© public Â· Un interlocuteur dÃ©diÃ©. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable Â· Quote, purchase order, invoice â€” GDPR & public-procurement compliant Â· A dedicated contact. Indicative price excl. tax.","Datos satelitales pÃºblicos (Copernicus/NOAA), auditables Â· Presupuesto, orden de compra, factura â€” conforme RGPD Â· Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>
-      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#cfe9e3",marginTop:6}}>{_t(lang,"Vos coordonnÃ©es servent uniquement Ã  vous recontacter (intÃ©rÃªt lÃ©gitime), conservÃ©es 12 mois, supprimÃ©es sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interÃ©s legÃ­timo), conservados 12 meses, eliminados a peticiÃ³n.")} <a href="/fiabilite/" style={{color:"#fdfcf7",textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut â†’","See what we're worth first â†’","Vea primero lo que valemos â†’")}</a></div>
-    </div>
-  )
-}
-
-// â”€â”€ Primitives de SÃ‰QUENCE (SeqDots + .sgseq-*) : SOURCE UNIQUE dans SeqPrimitives.jsx
-//    (extraites ici #425, demande fondateur 2026-07-02 Â« rÃ©utiliser pour scaler le B2C Â» ;
-//    B2BModal comic ET PassOffer premium sombre l'importent dÃ©sormais telles quelles).
-
-function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""}){
-  const dlgRef=useRef(null)
-  useModalA11y(dlgRef,onClose)   // role/aria-modal posÃ©s sur le panel ; Ã‰chap + focus-trap + restauration
-  const [tier,setTier]=useState("pro")
-  const [email,setEmail]=useState("")
-  // â”€â”€ Retry mode : relance automatique aprÃ¨s paiement Ã©chouÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Le lien email de relance ouvre l'app avec ?payment_failed=1 â†’ le handler dans
-  // Sargasses_PROD.jsx stocke le contexte dans sessionStorage (sg_payment_retry).
-  // Ici on lit ce contexte pour prÃ©-remplir l'email et afficher un message retry.
-  const [retryCtx,setRetryCtx]=useState(null)
-  useEffect(()=>{
-    try{
-      const raw=sessionStorage.getItem("sg_payment_retry")
-      if(!raw)return
-      const ctx=JSON.parse(raw)
-      if(ctx&&ctx.email&&Date.now()-(ctx.ts||0)<3600000){ // valide 1h max
-        setRetryCtx(ctx)
-        setEmail(ctx.email)
-        // Auto-open the payment step with a retry-specific error message
-        setTimeout(()=>{
-          setPayStep(true)
-          setPayError(_t(lang,
-            "Ton paiement prÃ©cÃ©dent n'a pas abouti (3D Secure ou carte). Ta carte n'a PAS Ã©tÃ© dÃ©bitÃ©e. RÃ©essaie avec la mÃªme carte ou une autre.",
-            "Your previous payment didn't go through (3D Secure or card). Your card was NOT charged. Try again with the same card or a different one.",
-            "Tu pago anterior no se completÃ³ (3D Secure o tarjeta). Tu tarjeta NO fue cobrada. IntÃ©ntalo de nuevo con la misma tarjeta u otra."))
-        },500)
-      }
-      sessionStorage.removeItem("sg_payment_retry")
-    }catch(_){}
-  },[])
-  const [org,setOrg]=useState("")
-  const [sent,setSent]=useState(false)
-  const [token,setToken]=useState("")   // token Pro 30 j renvoyÃ© par b2b-trial.php (essai INSTANTANÃ‰)
-  const [busy,setBusy]=useState(false)
-  // Querystring EFFECTIVE : le handler deeplink ?pro=1 fait replaceState AVANT le mount
-  // lazy de ce chunk â†’ location.search est dÃ©jÃ  vidÃ©. Il stashe search dans
-  // sessionStorage sg_b2b_qs (pattern sg_deep_plan) : flags + ?beach= y survivent.
-  const QS=(()=>{try{return (window.location.search||"")+" "+(sessionStorage.getItem("sg_b2b_qs")||"")}catch(_){try{return window.location.search||""}catch(_2){return ""}}})()
-  // Flag rollback ?b2bseq=0 â†’ Ã©cran unique d'origine (la sÃ©quence est le dÃ©faut).
-  const seqOn=!/[?&]b2bseq=0/.test(QS)
-  // Flag rollback : ?b2btrial=0 â†’ retombe sur l'ancien comportement (capture lead + Â« on
-  // vous recontacte sous 24h Â»), sans appel Ã  l'endpoint. Loi : pas de flag = pas de merge.
-  // (Lit QS et plus location.search : l'angle mort deeplink ?pro=1&b2btrial=0 est rÃ©parÃ©.)
-  const instantTrial=!/[?&]b2btrial=0/.test(QS)
-  const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
-  const I=COMIC
-  // â”€â”€ Ã‰tape courante de la SÃ‰QUENCE (1 constat/cadeau â†’ 2 renversement/preuve â†’
-  //    3 offre â†’ 4 ask). SuccÃ¨s/24h = Ã©tats sent/token existants, inchangÃ©s.
-  const [step,setStep]=useState(1)
-  // â”€â”€ Contexte data (props ADDITIVES, dÃ©gradation gracieuse si null) â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const isl=island||((REGION&&REGION.id)?String(REGION.id).toLowerCase():"mq")
-  const _lvls=Object.values(sargData?.levels||{})
-  const islandLvls=_lvls.filter(b=>isl==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
-  const cleanCount=islandLvls.filter(b=>b.status==="clean").length
-  const totalCount=islandLvls.length
-  // Plage active : contexte (prop beach) > deeplink ?beach=<id-sarg> > choix select > rien.
-  const [pickedId,setPickedId]=useState("")
-  const ctxSargId=beach?(IS_NEW_REGION?beach.id:(BEACH_TO_SARG[beach.id]||null)):null
-  const qBeachId=(()=>{const m=QS.match(/[?&]beach=([a-z0-9-]{1,60})/i);return m?m[1]:""})()
-  const lvlById=id=>id?islandLvls.find(l=>l.id===id)||null:null
-  const activeSargId=ctxSargId||(lvlById(qBeachId)?qBeachId:"")||pickedId||""
-  const pickMode=ctxSargId?"ctx":(lvlById(qBeachId)?"query":(pickedId?"picked":"none"))
-  const lvl=lvlById(activeSargId)
-  // Nom canonique (dÃ©rivation dupliquÃ©e de _nameOf â€” closures de PremiumModal inaccessibles ici).
-  const nameOf=lv=>{
-    if(!lv||!lv.id)return null
-    if(IS_NEW_REGION)return REGION.beaches?.find(b=>b.id===lv.id)?.name||null
-    return BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.name
-      ||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
-  }
-  const bName=lvl?nameOf(lvl):(beach&&beach.name)||null
-  // FraÃ®cheur HONNÃŠTE : erddapTimestamp = Â« Vu du satellite Â» ; sinon updatedAt =
-  // Â« DonnÃ©es mises Ã  jour Â» â€” jamais l'inverse (fausse fraÃ®cheur interdite, loi moat).
-  const freshLine=(()=>{
-    const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null
-    const src=sat||up;if(!src)return null
-    const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6))
-    if(!isFinite(h))return null
-    return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satÃ©lite hace ${h} h`)
-      :_t(lang,`DonnÃ©es mises Ã  jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)
-  })()
-  const STATUS={
-    clean:{c:"#27c46b",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},
-    moderate:{c:"#e8a800",l:_t(lang,"Algues modÃ©rÃ©es","Moderate seaweed","Algas moderadas")},
-    avoid:{c:"#e8522a",l:_t(lang,"Ã€ Ã©viter aujourd'hui","Avoid today","Evitar hoy")},
-  }
-  const stOf=lv2=>STATUS[lv2&&lv2.status]||null
-  // Grille Ã‰2 : la plage active si elle a un forecast, sinon la MEILLEURE plage de
-  // l'Ã®le qui en a un (nommÃ©e â€” jamais une grille anonyme), sinon pas de grille.
-  const fcLvl=(()=>{
-    const has=l2=>!!(l2&&sargData?.weekly?.[l2.id]?.forecast?.length)
-    if(has(lvl))return lvl
-    return [...islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
-  })()
-  const fcName=fcLvl?nameOf(fcLvl):null
-  const fcDays=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
-  // Preuve auditÃ©e : fetch PROPRE (les closures _trackRec/_recordProof de PremiumModal
-  // sont inaccessibles depuis ce composant frÃ¨re â€” duplication ciblÃ©e assumÃ©e).
-  const [trackRec,setTrackRec]=useState(null)
-  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
-  const proofLine=(()=>{
-    try{
-      const r=trackRec;if(!r||!r.byRegime)return null
-      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
-      if(!ent||!ent[1].cleanReliabilityPct)return null
-      const[reg,best]=ent
-      const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
-      // Loi claim hedgÃ© : un Â« 100 % Â» ne part JAMAIS nu â€” le rÃ©gime est nommÃ© quand
-      // c'est le calme (data-driven, jamais un label plaquÃ©), et la bande tous-rÃ©gimes
-      // 76-79 % + la mention confiance l'accompagnent toujours (ligne sous ce chiffre).
-      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
-      return _t(lang,
-        `${best.cleanReliabilityPct} % justes${calm} Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,
-        `${best.cleanReliabilityPct}% correct${calm} Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,
-        `${best.cleanReliabilityPct} % correctos${calm} Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)
-    }catch(_){return null}
-  })()
-  // Liens de paiement Mollie (self-service in-app) â€” chargÃ©s depuis le JSON publiÃ© par
-  // mollie-paylinks.cjs. Permet de PAYER l'annÃ©e directement, sans humain.
-  const [paylinks,setPaylinks]=useState(null)
-  useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}
-    try{track("sg_b2b_beach_pick",{mode:pickMode})}catch(_){}
-    try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
-  // {url, montant} devise-aware : domaines USD â†’ entrÃ©e `${key}_usd` du JSON (790/390 $),
-  // montant rendu depuis value (jamais en dur). Territoire = JAMAIS de paylink carte
-  // (verdict panel : un paiement CB juxtaposÃ© au parcours devis/BDC dÃ©crÃ©dibilise les 2).
-  const payOf=t=>{
-    const key={pro:"pro_annual",brief:"brief_annual"}[t];if(!key||!paylinks)return null
-    const k=(IS_NEW_REGION&&paylinks[key+"_usd"])?key+"_usd":key
-    const l=paylinks[k];if(!l||!l.url)return null
-    const v=String(l.value||"").replace(/\.00$/,"")
-    return {url:l.url,amt:v?(k.endsWith("_usd")?("$"+v):(v+" â‚¬")):null}
-  }
-  const payUrlOf=t=>{const p=payOf(t);return p?p.url:null}   // compat Ã©cran unique (?b2bseq=0)
-  // â”€â”€ Navigation de sÃ©quence : events funnel par Ã©tape + focus titre (a11y â€” le
-  //    focus-trap de useModalA11y ne focus qu'au mount, pas au swap d'Ã©tape).
-  const ctxKind=lvl?"beach":(totalCount>0?"island":"nodata")
-  const stepTitleRef=useRef(null)
-  const stepMounted=useRef(false)
-  useEffect(()=>{
-    if(!stepMounted.current){stepMounted.current=true;return}
-    try{stepTitleRef.current&&stepTitleRef.current.focus()}catch(_){}
-  },[step])
-  const goStep=n=>{setStep(n);try{track("sg_b2b_step",{step:n,ctx:ctxKind,tier,source:source||"unknown"})}catch(_){}}
-  const goBack=from=>{setStep(Math.max(1,from-1));try{track("sg_b2b_step_back",{from})}catch(_){}}
-  // Swipe-down close (copie du pattern Ã©prouvÃ© de PremiumModal, mÃªme fichier) : 4e voie
-  // de sortie (âœ• / Ã‰chap / backdrop / swipe). Guard scrollTop : ne pas voler le scroll.
-  const swipeY=useRef(0)
-  const onTS=e=>{swipeY.current=e.touches[0].clientY}
-  const onTM=e=>{
-    if(dlgRef.current&&dlgRef.current.scrollTop>5)return
-    const dy=e.touches[0].clientY-swipeY.current
-    if(dy>0&&dlgRef.current)dlgRef.current.style.transform=`translateY(${dy}px)`
-  }
-  const onTE=e=>{
-    if(dlgRef.current&&dlgRef.current.scrollTop>5){if(dlgRef.current)dlgRef.current.style.transform="";return}
-    const dy=(e.changedTouches[0]?.clientY||0)-swipeY.current
-    if(dy>60)onClose()
-    else if(dlgRef.current){dlgRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";dlgRef.current.style.transform="";setTimeout(()=>{if(dlgRef.current)dlgRef.current.style.transition=""},300)}
-  }
-  const typedRef=useRef(false)
-  const onOrgChange=e=>{
-    setOrg(e.target.value)
-    if(!typedRef.current&&e.target.value.trim().length>=3){typedRef.current=true;try{track("sg_b2b_widget_preview",{typed:1})}catch(_){}}
-  }
-  // Grille B2B (pricing arrÃªtÃ© panel 2026-06-29) : 3 tiers payants, essai 30j sans carte,
-  // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
-  // aucune WTP â€” c'est exactement ce qui a Ã©chouÃ©). Le hook = l'essai 30j time-boxÃ©.
-  const TIERS=[
-    {id:"brief",icon:"ðŸ“©",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 â‚¬/mois","â‚¬29/mo","29 â‚¬/mes"),
-      pitch:_t(lang,"Brief quotidien de vos plages + alerte Ã©chouage par email. Pour gÃ®tes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
-      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_brief"},
-    {id:"pro",icon:"ðŸ””",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 â‚¬/mois","â‚¬79/mo","79 â‚¬/mes"),featured:true,
-      pitch:_t(lang,"Devenez LA rÃ©fÃ©rence sargasses de votre plage : mis en avant dans l'app au moment oÃ¹ le voyageur vÃ©rifie avant de rÃ©server, brief du matin, alertes, prÃ©vision 7 j, et un encart Ã  vos couleurs sur votre propre site. Pour hÃ´tels & resorts.","Become THE sargassum reference for your beach: featured in the app right when travelers check before booking, morning brief, alerts, 7-day forecast, and a panel in your own colors on your website. For hotels & resorts.","ConviÃ©rtase en LA referencia de sargazo de su playa: destacado en la app justo cuando el viajero comprueba antes de reservar, informe matinal, alertas, pronÃ³stico 7 dÃ­as, y un panel con sus colores en su propia web. Para hoteles y resorts."),
-      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_pro"},
-    {id:"territoire",icon:"ðŸ›ï¸",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dÃ¨s 199 â‚¬/mois HT","from â‚¬199/mo excl. tax","desde 199 â‚¬/mes sin IVA"),
-      pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget pÃºblico. Para municipios y oficinas."),
-      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_territoire"},
-  ]
-  const cur=TIERS.find(t=>t.id===tier)||TIERS[1]
-  const submit=()=>{
-    if(!valid||sent||busy)return
-    try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
-    try{submitLead(email.trim(),cur.source)}catch(_){}
-    try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
-    // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j Ã©mis INSTANTANÃ‰MENT par
-    // /api/b2b-trial.php (zÃ©ro call, zÃ©ro attente, zÃ©ro humain) â†’ accÃ¨s Pro tout de suite +
-    // lien de paiement annuel direct. Territoire inclus (dÃ©cision fondateur : tout self-serve).
-    // Flag ?b2btrial=0 â†’ ancien flux capture-lead + message 24 h.
-    if(!instantTrial){setSent(true);return}
-    setBusy(true)
-    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email:email.trim(),name:org.trim(),island})})
-      .then(r=>r.json()).then(d=>{
-        if(d&&d.ok&&d.token){setToken(d.token);try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
-        setBusy(false);setSent(true)   // Ã©chec â†’ fallback gracieux : lead dÃ©jÃ  capturÃ©, message 24 h
-      }).catch(()=>{setBusy(false);setSent(true)})
-  }
-  // â”€â”€ Styles partagÃ©s de la sÃ©quence. Anti-thÃ¨me OBLIGATOIRE : .theme-comic button
-  //    {background:var(--sg-card)!important} repeint les boutons inline (la sÃ©lection
-  //    OR du tier Ã©tait invisible en prod â€” une des causes du Â« bizarre Â»). Recette
-  //    checklist : classes DOUBLÃ‰ES (0,2,0) battent .theme-comic button (0,1,1).
-  //    .sgseq-* = primitives gÃ©nÃ©riques rÃ©utilisables (scaler le B2C, fondateur 2026-07-02).
-  const CSS_B2F=`
-  .b2f-cta.b2f-cta{width:100%;text-align:center;font:800 16px/1 'Bricolage Grotesque',sans-serif!important;padding:16px;border-radius:15px!important;border:3px solid ${I.ink}!important;box-shadow:3px 3px 0 ${I.ink}!important;background:linear-gradient(180deg,#ffe06a,#ffc72c 55%,#e8a800)!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;cursor:pointer;letter-spacing:0}
-  .b2f-cta.b2f-cta:disabled{background:#e7e2d4!important;opacity:.7;cursor:default}
-  .b2f-cta.b2f-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${I.ink}!important}
-  .b2f-hero.b2f-hero{display:block;text-align:left;width:100%;box-sizing:border-box;background:linear-gradient(160deg,#fff3c8,#ffe08a)!important;border:3px solid ${I.ink}!important;box-shadow:4px 4px 0 ${I.ink}!important;border-radius:16px!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;padding:13px 14px;position:relative}
-  .b2f-row.b2f-row{display:block;text-align:left;width:100%;box-sizing:border-box;background:#fff!important;border:2.5px solid ${I.ink}!important;box-shadow:1px 1px 0 ${I.ink}!important;border-radius:12px!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;padding:10px 12px;min-height:44px;cursor:pointer}
-  .b2f-row.b2f-row:active{transform:translate(1px,1px);box-shadow:0 0 0 ${I.ink}!important}
-  .b2f-x.b2f-x{position:absolute;top:11px;right:11px;width:44px;height:44px;border-radius:50%!important;border:2.5px solid ${I.ink}!important;background:#fff!important;box-shadow:2px 2px 0 ${I.ink}!important;font-size:17px;font-weight:900;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;cursor:pointer;line-height:1;text-shadow:none!important;padding:0}
-  .b2f-back.b2f-back{position:absolute;top:11px;left:11px;width:44px;height:44px;border-radius:12px!important;border:2.5px solid ${I.ink}!important;background:#fff!important;box-shadow:2px 2px 0 ${I.ink}!important;font-size:20px;font-weight:900;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;cursor:pointer;line-height:1;text-shadow:none!important;padding:0}
-  .b2f-fc{border:2.5px solid ${I.ink};border-radius:14px;overflow:hidden;box-shadow:3px 3px 0 ${I.ink};background:#fff;margin:11px 0 10px}
-  .b2f-fc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 11px;background:#10343a;color:#fdfcf7;font:800 10px/1.25 'Bricolage Grotesque',sans-serif;letter-spacing:.07em;text-transform:uppercase;border-bottom:2.5px solid ${I.ink}}
-  .b2f-fc-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-  .b2f-fc-day{padding:8px 2px 9px;text-align:center;border-right:1.5px solid rgba(13,11,20,.12)}
-  .b2f-fc-day:last-child{border-right:none}
-  .b2f-fc-lab{font:800 9.5px/1 'Bricolage Grotesque',sans-serif;color:#52525b;text-transform:uppercase;margin-bottom:6px}
-  .b2f-fc-dot{width:14px;height:14px;border-radius:50%;border:2px solid ${I.ink};margin:0 auto}
-  .b2f-fc-conf{font:800 9px/1 'Bricolage Grotesque',sans-serif;color:#52525b;margin-top:5px}
-  .b2f-fc-day.lock{background:repeating-linear-gradient(45deg,#f3ecd9,#f3ecd9 4px,#eae1c8 4px,#eae1c8 8px)}
-  .b2f-sel.b2f-sel{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px!important;border:2.5px solid ${I.ink}!important;background:#fff!important;font:700 15px/1.2 'Bricolage Grotesque',sans-serif!important;color:${I.ink}!important;margin-top:9px}
-  @media (prefers-reduced-motion:no-preference){.sgseq-step{animation:sgseqIn .16s cubic-bezier(.16,1,.3,1) both}}
-  @keyframes sgseqIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
-  `
-  const titleStyle={fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,6.2vw,25px)",lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 8px",outline:"none"}
-  const bodyStyle={font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:11}
-  const inputStyle={width:"100%",boxSizing:"border-box",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}
-  // Chip prix = INFORMATION dÃ¨s Ã‰1 (rÃ¨gle Â« prix tÃ´t Â»), jamais un lien (l'ASK vit Ã  Ã‰4).
-  const proPay=payOf("pro")
-  const priceChip=(
-    <div style={{display:"flex",justifyContent:"center",marginTop:12}}>
-      <span style={{font:"800 11px/1.4 'Bricolage Grotesque'",color:I.ink,background:"#fff",border:`2px solid ${I.ink}`,borderRadius:999,padding:"6px 12px",boxShadow:`2px 2px 0 ${I.ink}`,textAlign:"center"}}>
-        {_t(lang,"Pro Â· 79 â‚¬/mois Â· essai 30 j sans carte","Pro Â· â‚¬79/mo Â· 30-day trial, no card","Pro Â· 79 â‚¬/mes Â· prueba 30 dÃ­as sin tarjeta")}
-        {proPay&&proPay.amt?_t(lang,` Â· ou ${proPay.amt}/an`,` Â· or ${proPay.amt}/yr`,` Â· o ${proPay.amt}/aÃ±o`):""}
-      </span>
-    </div>)
-  // SÃ©lecteur de plage (entrÃ©e sans contexte) : options = plages de l'Ã®le AYANT un
-  // verdict, dÃ©dupliquÃ©es par id satellite. Optionnel â€” avancer sans choisir reste possible.
-  const pickable=(()=>{
-    const seen=new Set(),out=[]
-    const src=IS_NEW_REGION?(REGION.beaches||[]).map(b=>({sid:b.id,name:b.name}))
-      :BEACHES_FALLBACK.filter(b=>b.island===isl&&BEACH_TO_SARG[b.id]).map(b=>({sid:BEACH_TO_SARG[b.id],name:b.name}))
-    for(const o of src){if(!o.sid||!o.name||seen.has(o.sid))continue;if(!islandLvls.some(l=>l.id===o.sid))continue;seen.add(o.sid);out.push(o)}
-    return out.sort((a,b)=>a.name.localeCompare(b.name))
-  })()
-  const st1=stOf(lvl)
-  const dayLab=i=>i===0?_t(lang,"Auj","Today","Hoy"):i===1?_t(lang,"Dem","Tom","MaÃ±"):"J+"+i
-  return(
-    <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>
-      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Offre Pro â€” HÃ´tels & collectivitÃ©s","Pro offer â€” Hotels & towns","Oferta Pro â€” Hoteles y municipios")} onClick={e=>e.stopPropagation()}
-        onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}
-        style={{width:"100%",maxWidth:430,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",
-        background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
-        border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",
-        fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>
-        <style>{CSS_B2F}</style>
-        <button className="b2f-x" onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}>âœ•</button>
-        {seqOn&&!sent&&step>1&&<button className="b2f-back" onClick={()=>goBack(step)} aria-label={_t(lang,"Retour","Back","AtrÃ¡s")}>â€¹</button>}
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`,marginLeft:seqOn&&!sent&&step>1?46:0}}>ðŸ¨ {_t(lang,"Pro Â· HÃ´tels & collectivitÃ©s","Pro Â· Hotels & towns","Pro Â· Hoteles y municipios")}</div>
-        {seqOn&&!sent&&<SeqDots n={4} at={step} ink={I.ink} gold={I.gold}/>}
-        {!sent&&!seqOn?<>
-          {/* â”€â”€ Ã‰CRAN UNIQUE D'ORIGINE (rollback ?b2bseq=0) â€” structure intacte, seul le
-              titre-peur est corrigÃ© (promesse positive = loi, le contrÃ´le ne doit pas
-              mesurer un message qui viole la doctrine). â”€â”€ */}
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:25,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 6px"}}>{_t(lang,"Connaissez la fin de l'histoire avant vos invitÃ©s.","Know the end of the story before your guests do.","Conozca el final de la historia antes que sus huÃ©spedes.")}</div>
-          <div style={{font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:14}}>{_t(lang,"Surveillance satellite de VOS plages : prÃ©venez avant l'Ã©chouage, rassurez clients et administrÃ©s.","Satellite monitoring of YOUR beaches: warn before sargassum lands, reassure guests and citizens.","Monitoreo satelital de SUS playas: avise antes de la llegada, tranquilice a clientes y ciudadanos.")}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:13}}>
-            {TIERS.map(t=>(
-              <button key={t.id} onClick={()=>setTier(t.id)} style={{textAlign:"left",position:"relative",padding:"12px 13px",borderRadius:14,cursor:"pointer",
-                border:`2.5px solid ${I.ink}`,background:tier===t.id?(t.featured?I.gold:"#fff"):"#fff",
-                boxShadow:tier===t.id?`3px 3px 0 ${I.ink}`:`1px 1px 0 ${I.ink}`,transition:"transform .08s ease",
-                outline:tier===t.id?`0`:"0",opacity:1}}>
-                {t.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}
-                <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>
-                  <span style={{font:"800 15px/1.1 'Bricolage Grotesque'",color:I.ink}}>{t.icon} {t.name}</span>
-                  <span style={{font:"800 14px/1 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{t.price}</span>
-                </div>
-                <div style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:4}}>{t.pitch}</div>
-              </button>
-            ))}
-          </div>
-          <input value={org} onChange={e=>setOrg(e.target.value)}
-            placeholder={_t(lang,"Nom de l'Ã©tablissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}
-            style={inputStyle}/>
-          <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
-            onKeyDown={e=>{if(e.key==="Enter")submit()}}
-            placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
-            style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
-          <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦"):cur.cta}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prÃ©lÃ¨vement automatique Â· âˆ’2 mois en annuel Â· stop quand vous voulez","30-day trial, no card, no auto-charge Â· 2 months free yearly Â· stop anytime","Prueba 30 dÃ­as, sin tarjeta, sin cobro automÃ¡tico Â· 2 meses gratis al aÃ±o Â· pare cuando quiera")}</div>
-          {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
-            <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'annÃ©e directement â†’","Or pay yearly directly â†’","O paga el aÃ±o directamente â†’")}</a>
-          </div>}
-        </>:!sent&&step===1?<div key={1} className="sgseq-step">
-          {/* â”€â”€ Ã‰1 CONSTAT + CADEAU (temps 1+2+3) : le verdict RÃ‰EL, gratuit, avant tout ask. â”€â”€ */}
-          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{bName
-            ?_t(lang,`${bName}, ce matin. MesurÃ©e, pas devinÃ©e.`,`${bName}, this morning. Measured, not guessed.`,`${bName}, esta maÃ±ana. Medida, no adivinada.`)
-            :_t(lang,"Vos plages, ce matin. MesurÃ©es, pas devinÃ©es.","Your beaches, this morning. Measured, not guessed.","Sus playas, esta maÃ±ana. Medidas, no adivinadas.")}</div>
-          {lvl&&st1?<>
-            <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
-              <span style={{width:16,height:16,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>
-              <div style={{minWidth:0}}>
-                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{bName||nameOf(lvl)} Â· {st1.l}</div>
-                <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>
-                  {lvl.confidence?_t(lang,`confiance ${lvl.confidence} %`,`${lvl.confidence}% confidence`,`confianza ${lvl.confidence} %`):null}
-                  {lvl.confidence&&freshLine?" Â· ":null}{freshLine}
-                </div>
-              </div>
-            </div>
-          </>:totalCount>0?<>
-            <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
-              <span style={{fontSize:20,flexShrink:0}} aria-hidden="true">ðŸ›°ï¸</span>
-              <div>
-                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages propres ce matin`,`${cleanCount}/${totalCount} beaches clean this morning`,`${cleanCount}/${totalCount} playas limpias esta maÃ±ana`)}</div>
-                {freshLine&&<div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>{freshLine}</div>}
-              </div>
-            </div>
-            {pickable.length>0&&<select className="b2f-sel" value={pickedId} aria-label={_t(lang,"Votre plage (optionnel)","Your beach (optional)","Su playa (opcional)")}
-              onChange={e=>{setPickedId(e.target.value);if(e.target.value){try{track("sg_b2b_beach_pick",{mode:"picked"})}catch(_){}}}}>
-              <option value="">{_t(lang,"Votre plage (optionnel)â€¦","Your beach (optional)â€¦","Su playa (opcional)â€¦")}</option>
-              {pickable.map(o=><option key={o.sid} value={o.sid}>{o.name}</option>)}
-            </select>}
-          </>:<>
-            <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              ðŸ›°ï¸ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. DonnÃ©e en cours de chargementâ€¦","The satellite passes over your beaches 4 times a day. Data loadingâ€¦","El satÃ©lite pasa 4 veces al dÃ­a sobre sus playas. Datos cargÃ¡ndoseâ€¦")}
-            </div>
-          </>}
-          <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit â€” vos clients comme vos administrÃ©s le consultent dÃ©jÃ  avant de venir.","This verdict is public and free â€” your guests and your citizens already check it before coming.","Este veredicto es pÃºblico y gratuito â€” sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
-          <div style={{font:"700 13px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:13}}>{_t(lang,"Personne n'aime le dÃ©couvrir dans un avis client.","No one likes finding out in a guest review.","A nadie le gusta descubrirlo en una reseÃ±a.")}</div>
-          <button className="b2f-cta" onClick={()=>goStep(2)}>{bName
-            ?_t(lang,`Voir la semaine de ${bName} â†’`,`See the week for ${bName} â†’`,`Ver la semana de ${bName} â†’`)
-            :_t(lang,"Voir la semaine de vos plages â†’","See the week for your beaches â†’","Ver la semana de sus playas â†’")}</button>
-          {priceChip}
-        </div>:!sent&&step===2?<div key={2} className="sgseq-step">
-          {/* â”€â”€ Ã‰2 RENVERSEMENT + HONNÃŠTETÃ‰ AUDITÃ‰E (temps 4+5) : la semaine rÃ©elle
-              verrouillÃ©e (Auj/Dem = SEULS jours rÃ©els du JSON â€” jamais une couleur
-              fabriquÃ©e sur J+2â€¦J+6, loi moat) + le registre d'erreurs public. â”€â”€ */}
-          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"La fin de l'histoire, avant vos invitÃ©s.","The end of the story â€” before your guests.","El final de la historia â€” antes que sus huÃ©spedes.")}</div>
-          <div style={bodyStyle}>{_t(lang,"Le satellite voit les bancs au large des jours avant la cÃ´te. Vous prÃ©parez, vous informez â€” clients comme administrÃ©s.","The satellite spots offshore rafts days before they reach the coast. You prepare, you inform â€” guests and citizens alike.","El satÃ©lite ve los bancos en alta mar dÃ­as antes de que lleguen a la costa. Usted se prepara, usted informa â€” clientes y ciudadanos por igual.")}</div>
-          {fcLvl&&fcDays.length>0&&<div className="b2f-fc">
-            <div className="b2f-fc-top"><span>{_t(lang,"PrÃ©vision 7 jours","7-day forecast","PronÃ³stico 7 dÃ­as")}</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fcName}</span></div>
-            <div className="b2f-fc-grid">
-              {Array.from({length:7},(_,i)=>{
-                const d=i<2?fcDays[i]:null
-                const stc=d?(STATUS[d.status]||null):null
-                return(<div key={i} className={"b2f-fc-day"+(d?"":" lock")}>
-                  <div className="b2f-fc-lab">{dayLab(i)}</div>
-                  {d&&stc?<><div className="b2f-fc-dot" style={{background:stc.c}}/><div className="b2f-fc-conf">{d.confidence?d.confidence+" %":""}</div></>
-                    :<div aria-hidden="true" style={{fontSize:13,lineHeight:"14px",color:"#6a6478"}}>ðŸ”’</div>}
-                </div>)
-              })}
-            </div>
-          </div>}
-          <div style={{font:"800 12px/1.4 'Bricolage Grotesque'",color:I.ink,background:`linear-gradient(180deg,#ffe9a8,#ffd75e)`,border:`2.5px solid ${I.ink}`,borderRadius:11,boxShadow:`2px 2px 0 ${I.ink}`,padding:"9px 12px",marginBottom:12}}>
-            {_t(lang,"Les 7 jours, plage par plage â€” inclus dans l'essai 30 j","All 7 days, beach by beach â€” included in the 30-day trial","Los 7 dÃ­as, playa por playa â€” incluidos en la prueba de 30 dÃ­as")}
-          </div>
-          <div style={{padding:"11px 12px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,marginBottom:12}}>
-            {proofLine&&<div style={{font:"800 12.5px/1.4 'Bricolage Grotesque'",color:I.ink}}>{proofLine}</div>}
-            <div style={{font:"700 11px/1.45 'Bricolage Grotesque'",color:"#52525b",marginTop:proofLine?5:0}}>{_t(lang,"76 Ã  79 % tous rÃ©gimes selon la saison Â· confiance affichÃ©e sur chaque alerte","76â€“79% across all regimes depending on season Â· confidence shown on every alert","76â€“79 % en todos los regÃ­menes segÃºn la temporada Â· confianza visible en cada alerta")}</div>
-            <a href={_relHref(lang)} target="_blank" rel="noopener" onClick={()=>{try{track("sg_b2b_rel_click",{step:2})}catch(_){}}} style={{display:"inline-block",font:"800 12px/1.4 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline",marginTop:6}}>{_t(lang,"VÃ©rifier le registre public â†’","Check the public record â†’","Ver el registro pÃºblico â†’")}</a>
-          </div>
-          <button className="b2f-cta" onClick={()=>goStep(3)}>{_t(lang,"Voir l'offre Pro â†’","See the Pro offer â†’","Ver la oferta Pro â†’")}</button>
-          <div style={{font:"600 11px/1.4 'Bricolage Grotesque'",color:"#6a6478",fontStyle:"italic",textAlign:"center",marginTop:10}}>{_t(lang,"Il regarde la mer, jamais vos clients.","He watches the sea, never your guests.","Mira el mar, nunca a sus clientes.")}</div>
-        </div>:!sent&&step===3?<div key={3} className="sgseq-step">
-          {/* â”€â”€ Ã‰3 OFFRE HIÃ‰RARCHISÃ‰E (temps 6a) : UNE dÃ©cision â€” le format. Pro hÃ©ros,
-              Brief/Territoire = rangÃ©es compactes visibles SANS clic (WTP non biaisÃ©e). â”€â”€ */}
-          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"Choisissez votre format. L'essai est offert.","Pick your format. The trial is on us.","Elija su formato. La prueba es gratis.")}</div>
-          <div className="b2f-hero" style={{marginBottom:9}}>
-            {cur.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}
-            <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>
-              <span style={{font:"800 16px/1.1 'Bricolage Grotesque'",color:I.ink}}>{cur.icon} {cur.name}</span>
-              <span style={{font:"800 13.5px/1.2 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{cur.id==="pro"&&proPay&&proPay.amt
-                ?_t(lang,`79 â‚¬/mois ou ${proPay.amt}/an`,`â‚¬79/mo or ${proPay.amt}/yr`,`79 â‚¬/mes o ${proPay.amt}/aÃ±o`)
-                :cur.price}</span>
-            </div>
-            {cur.id==="pro"?<ul style={{margin:"8px 0 2px",padding:"0 0 0 16px",font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#33333c"}}>
-              <li>{_t(lang,"Mis en avant dans l'app au moment oÃ¹ le voyageur vÃ©rifie avant de rÃ©server","Featured in the app right when travelers check before booking","Destacado en la app justo cuando el viajero comprueba antes de reservar")}</li>
-              <li>{_t(lang,"Brief du matin + alerte avant l'Ã©chouage","Morning brief + alert before it lands","Informe matinal + alerta antes de la llegada")}</li>
-              <li>{_t(lang,"PrÃ©vision 7 jours + encart Ã  vos couleurs sur votre site","7-day forecast + a panel in your colors on your website","PronÃ³stico 7 dÃ­as + panel con sus colores en su web")}</li>
-            </ul>:<div style={{font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#33333c",marginTop:7}}>{cur.pitch}</div>}
-            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:"#6a6478",marginTop:6}}>{cur.id==="pro"?_t(lang,"Pour hÃ´tels & resorts. 2 mois offerts en annuel.","For hotels & resorts. 2 months free yearly.","Para hoteles y resorts. 2 meses gratis al aÃ±o."):null}</div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:12}}>
-            {TIERS.filter(t=>t.id!==tier).map(t=>(
-              <button key={t.id} className="b2f-row" onClick={()=>{setTier(t.id);try{track("sg_b2b_tier_select",{tier:t.id})}catch(_){}}}>
-                <span style={{font:"800 13px/1.35 'Bricolage Grotesque'"}}>{t.icon} {t.name} â€” {t.price}</span>
-                <span style={{font:"600 11.5px/1.35 'Bricolage Grotesque'",color:"#52525b",display:"block"}}>{t.id==="brief"
-                  ?_t(lang,"Le brief quotidien par email. GÃ®tes, restos, clubs plage.","The daily brief by email. Guesthouses, restaurants, beach clubs.","El informe diario por email. Alojamientos, restaurantes, clubes de playa.")
-                  :t.id==="territoire"?_t(lang,"Communes & offices de tourisme : multi-plages, rapports, API.","Towns & tourism boards: multi-beach, reports, API.","Municipios y oficinas de turismo: multi-playa, informes, API.")
-                  :_t(lang,"HÃ´tels & resorts : app + brief + alertes + widget.","Hotels & resorts: app + brief + alerts + widget.","Hoteles y resorts: app + informe + alertas + widget.")}</span>
-              </button>
-            ))}
-          </div>
-          <button className="b2f-cta" onClick={()=>goStep(4)}>{_t(lang,"DÃ©marrer l'essai 30 j â€” sans carte â†’","Start the 30-day trial â€” no card â†’","Empezar la prueba de 30 dÃ­as â€” sin tarjeta â†’")}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prÃ©lÃ¨vement automatique Â· stop quand vous voulez","30-day trial, no card, no auto-charge Â· stop anytime","Prueba 30 dÃ­as, sin tarjeta, sin cobro automÃ¡tico Â· pare cuando quiera")}</div>
-        </div>:!sent?<div key={4} className="sgseq-step">
-          {/* â”€â”€ Ã‰4 L'ASK ISOLÃ‰ (temps 6b) : le SEUL Ã©cran qui demande quelque chose.
-              submit() STRICTEMENT INCHANGÃ‰ (money-path). Paylink = 1re apparition. â”€â”€ */}
-          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"Votre accÃ¨s s'ouvre maintenant.","Your access opens now.","Su acceso se abre ahora.")}</div>
-          <button className="b2f-row" onClick={()=>goBack(4)} style={{marginBottom:10}} aria-label={_t(lang,"Modifier le format","Change format","Cambiar formato")}>
-            <span style={{font:"800 12.5px/1.35 'Bricolage Grotesque'"}}>{cur.icon} {cur.name} Â· {cur.id==="pro"&&proPay&&proPay.amt?_t(lang,`79 â‚¬/mois ou ${proPay.amt}/an`,`â‚¬79/mo or ${proPay.amt}/yr`,`79 â‚¬/mes o ${proPay.amt}/aÃ±o`):cur.price} Â· {_t(lang,"essai 30 j sans carte","30-day trial, no card","prueba 30 dÃ­as sin tarjeta")}</span>
-            <span style={{font:"800 11.5px/1.35 'Bricolage Grotesque'",color:"#6a6478",display:"block",marginTop:2}}>{_t(lang,"Modifier â€¹","Change â€¹","Cambiar â€¹")}</span>
-          </button>
-          {tier==="pro"&&<>
-            <div style={{border:`2.5px solid ${I.ink}`,borderRadius:14,overflow:"hidden",boxShadow:`3px 3px 0 ${I.ink}`,background:"#fff",marginBottom:5}}>
-              <div style={{padding:"8px 12px",background:"#0a1620",color:"#fdfcf7",display:"flex",justifyContent:"space-between",gap:8}}>
-                <span style={{font:"800 12px/1.3 'Bricolage Grotesque'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{org.trim()||_t(lang,"Votre Ã©tablissement","Your property","Su establecimiento")}</span>
-                <span style={{font:"700 10.5px/1.4 'Bricolage Grotesque'",opacity:.75,whiteSpace:"nowrap"}}>{_t(lang,"par Le Veilleur","by Le Veilleur","por Le Veilleur")}</span>
-              </div>
-              <div style={{padding:"9px 12px",display:"flex",alignItems:"center",gap:8}}>
-                {lvl&&st1?<><span style={{width:12,height:12,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>
-                  <span style={{font:"800 12.5px/1.3 'Bricolage Grotesque'",color:I.ink}}>{(bName||nameOf(lvl))} Â· {st1.l}</span></>
-                  :<span style={{font:"700 12px/1.4 'Bricolage Grotesque'",color:"#52525b"}}>{_t(lang,"Le verdict satellite du jour de votre plage","Today's satellite verdict for your beach","El veredicto satelital del dÃ­a de su playa")}</span>}
-              </div>
-            </div>
-            <div style={{font:"700 10.5px/1.3 'Bricolage Grotesque'",color:"#6a6478",marginBottom:10}}>{_t(lang,"Votre encart, Ã  vos couleurs, sur votre site.","Your panel, in your colors, on your website.","Su panel, con sus colores, en su web.")}</div>
-          </>}
-          <input value={org} onChange={onOrgChange}
-            placeholder={_t(lang,"Nom de l'Ã©tablissement ou de la collectivitÃ© (optionnel)","Property or organization name (optional)","Nombre del establecimiento o de la entidad (opcional)")}
-            style={inputStyle}/>
-          <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
-            onKeyDown={e=>{if(e.key==="Enter")submit()}}
-            placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
-            style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
-          <button className="b2f-cta" onClick={submit} disabled={!valid||busy}>{busy?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦"):_t(lang,"Activer mon essai 30 j â†’","Activate my 30-day trial â†’","Activar mi prueba de 30 dÃ­as â†’")}</button>
-          <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"AccÃ¨s immÃ©diat â€” aucun email de confirmation Ã  cliquer Â· premier brief demain matin Ã  7 h","Instant access â€” no confirmation email to click Â· first brief in your inbox tomorrow at 7am","Acceso inmediato â€” sin email de confirmaciÃ³n Â· primer informe maÃ±ana a las 7 h")}</div>
-          <div style={{font:"600 10.5px/1.45 'Bricolage Grotesque'",color:"#6a6478",textAlign:"center",marginTop:7}}>{_t(lang,"Votre email sert Ã  ouvrir votre accÃ¨s et vous envoyer le brief (intÃ©rÃªt lÃ©gitime) Â· conservÃ© 12 mois Â· supprimÃ© sur simple demande.","Your email is used to open your access and send your brief (legitimate interest) Â· kept 12 months Â· deleted on request.","Su email sirve para abrir su acceso y enviarle el informe (interÃ©s legÃ­timo) Â· conservado 12 meses Â· eliminado a peticiÃ³n.")}</div>
-          {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:9}}>
-            <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"ask"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`DÃ©jÃ  dÃ©cidÃ© ? Payez l'annÃ©e directement â€” ${payOf(tier).amt} (2 mois offerts) â†’`,`Already decided? Pay the year directly â€” ${payOf(tier).amt} (2 months free) â†’`,`Â¿Ya decidido? Pague el aÃ±o directamente â€” ${payOf(tier).amt} (2 meses gratis) â†’`)}</a>
-          </div>}
-        </div>:token?<>
-          {/* Essai activÃ© INSTANTANÃ‰MENT : token Pro 30 j en main â†’ on envoie l'hÃ´tel
-             droit dans son espace (?k=token) dÃ©jÃ  marque-blanche. ZÃ©ro attente, zÃ©ro call. */}
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Essai activÃ© âœ“","Trial activated âœ“","Prueba activada âœ“")}</div>
-          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:8}}>{_t(lang,"Votre accÃ¨s Pro 30 jours est actif. Ouvrez votre espace pour brancher votre widget et vos alertes â€” on vient aussi de vous l'envoyer par email.","Your 30-day Pro access is live. Open your space to set up your widget and alerts â€” we've also just emailed it to you.","Su acceso Pro de 30 dÃ­as estÃ¡ activo. Abra su espacio para configurar su widget y alertas â€” tambiÃ©n se lo enviamos por email.")}</div>
-          <div style={{font:"700 12.5px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:14}}>{_t(lang,"Premier brief demain matin dans votre boÃ®te.","First brief lands in your inbox tomorrow morning.","Primer informe maÃ±ana por la maÃ±ana en su correo.")}</div>
-          <a href={`/pro/espace/?k=${encodeURIComponent(token)}`} onClick={()=>{try{track("sg_b2b_space_open",{tier:cur.id})}catch(_){}}} style={{display:"block",width:"100%",boxSizing:"border-box",textAlign:"center",textDecoration:"none",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Ouvrir mon espace Pro â†’","Open my Pro space â†’","Abrir mi espacio Pro â†’")}</a>
-          {/* Paylink annuel au PIC DE CONVICTION (post-activation, rÃ©ciprocitÃ© maximale) â€”
-             pro/brief seulement, JAMAIS territoire (le parcours devis/BDC occupe la place). */}
-          {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:10}}>
-            <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"confirm"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`Vous savez dÃ©jÃ  que vous resterez ? L'annÃ©e : ${payOf(tier).amt} (2 mois offerts) â†’`,`Already know you'll stay? The year: ${payOf(tier).amt} (2 months free) â†’`,`Â¿Ya sabe que se quedarÃ¡? El aÃ±o: ${payOf(tier).amt} (2 meses gratis) â†’`)}</a>
-          </div>}
-          {/* Territoire (mairies/communes) : accÃ¨s dÃ©jÃ  ouvert + opt-in Â« programmons un point Â»
-             â†’ demande de devis/RDV transfÃ©rÃ©e au fondateur (b2b-meeting.php). Funnel hybride. */}
-          {tier==="territoire"&&<TerritoireMeeting lang={lang} email={email.trim()} org={org.trim()}/>}
-        </>:<>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reÃ§u âœ“","Got it âœ“","Â¡Recibido âœ“")}</div>
-          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="territoire"
-            ? _t(lang,"On vous recontacte sous 24h pour cadrer votre dÃ©ploiement multi-plages.","We'll get back to you within 24h to scope your multi-beach rollout.","Le contactamos en 24h para definir su despliegue multiplaya.")
-            : _t(lang,"On vous recontacte sous 24h pour activer votre surveillance et dÃ©marrer.","We'll get back to you within 24h to set up your monitoring.","Le contactamos en 24h para activar su monitoreo.")}</div>
-          <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>
-        </>}
-      </div>
-    </div>
-  )
-}
-
-// â”€â”€ WorldPaywall â€” skin Â« continuitÃ© du monde SVG Â» (A/B pw_world). Jury winner.
-function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
-  const LL=T[lang]||T.fr
-  // Capture B2B (hÃ´tels/collectivitÃ©s) â€” porte discrÃ¨te vers le drip B2B existant.
-  const [showB2B,setShowB2B]=useState(false)
-  // â”€â”€ PalmarÃ¨s publiÃ© (Â« sell the track record, not the map Â») â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Le moat = notre fiabilitÃ© auditable. On la fetch Ã  l'OUVERTURE du paywall
-  // (1 seul fetch, modal montÃ© â†’ pas de prop-threading dans le monolithe) et on
-  // la surface au POINT DE DÃ‰CISION (fuite #1 modalâ†’CTA 2%) faÃ§on Airbnb : note
-  // + volume + Â« public Â». HonnÃªtetÃ© dure : on montre la fiabilitÃ© Â« mer propre Â»
-  // PAR RÃ‰GIME (le nombre fort qui ne s'auto-mutile jamais), JAMAIS le hit-rate
-  // par plage (descend Ã  23% en saison calme = self-harm, cf reliability-badge).
-  const[_trackRec,_setTrackRec]=useState(null)
-  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
-  const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
-  // A/B preuve sociale (PassOffer) : badge communautÃ© HONNÃŠTE (__COMM = plancher leads email).
-  // PROMU EN DÃ‰FAUT â€” preuve sociale honnÃªte toujours visible. Rollback ?pwsocial=0.
-  const pwSocial=(()=>{try{if(/[?&]pwsocial=0/.test(window.location.search))return false;if(/[?&]pwsocial=1/.test(window.location.search))return true;return true}catch(_){return true}})()
-  // A/B fraÃ®cheur (PassOffer) : "DonnÃ©es mises Ã  jour il y a Xh" â€” rÃ©cence rÃ©elle du pipeline.
-  // PROMU EN DÃ‰FAUT â€” fraÃ®cheur toujours visible. Rollback ?pwfresh=0.
-  const pwFresh=(()=>{try{if(/[?&]pwfresh=0/.test(window.location.search))return false;if(/[?&]pwfresh=1/.test(window.location.search))return true;return true}catch(_){return true}})()
-  const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
-  // Preuve du moat au point de dÃ©cision : lien /fiabilite/ Ã  l'Ã©cran Â« Avant de
-  // payer Â» (doctrine storytelling temps #5). DÃ©faut ON, rollback ?pwrel=0.
-  const pwRel=(()=>{try{return !/[?&]pwrel=0/.test(window.location.search)}catch(_){return true}})()
-  // RÃ©gime au plus gros Ã©chantillon Â« mer propre Â» = nombre fort ET honnÃªte.
-  const _recordProof=(()=>{
-    try{
-      const r=_trackRec;if(!r||!r.byRegime)return null
-      const best=Object.values(r.byRegime).filter(x=>x&&x.cleanSamples>0).sort((a,b)=>b.cleanSamples-a.cleanSamples)[0]
-      if(!best||!best.cleanReliabilityPct)return null
-      const pct=best.cleanReliabilityPct,nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
-      return _t(lang,
-        `${pct}% justes Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,
-        `${pct}% correct Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,
-        `${pct}% correctos Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)
-    }catch(_){return null}
-  })()
-  const hasAnnual=!!LINK_ANNUAL
-  const hasPro=!!LINK_PRO
-  // isPro = user has paid for the Pro tier (9.99â‚¬, unlocks WhatsApp alerts,
-  // 14-day forecast, priority email support). Separate flag from sg_premium
-  // so existing â‚¬4.99 subs keep their current access; Pro is strictly additive.
-  const isPro=typeof window!=="undefined"&&localStorage.getItem("sg_premium_pro")==="1"
-  // Real beach data from live sargassum.json â€” makes the "morning brief" preview genuine
-  // levels is keyed by numeric index ("0","1",...); beach id is in b.id field
-  const _lvls=Object.values(sargData?.levels||{})
-  const _islandLvls=_lvls.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
-  // MÃªme source que le header de liste (status==='clean') â€” l'ancien seuil
-  // score>=70 contredisait le compte "{x}/{y} plages propres" affichÃ© ailleurs.
-  const _cleanCount=_islandLvls.filter(b=>b.status==="clean").length
-  const _totalCount=_islandLvls.length
-  // FIX modalâ†’CTA (fuite #1, 2% sur 3416 modals) : en SAISON CALME (â‰¥80% propres,
-  // 64% du temps) l'argument Â« alerte AVANT que Ã§a tourne Â» tombe Ã  plat â€” rien ne
-  // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit
-  // SANS peur = la prÃ©vision (Â« sache oÃ¹ sera la mer DEMAIN Â»). ?pwcalm=1/0 en QA.
-  const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
-  // PROMU EN DÃ‰FAUT (cohÃ©rence Ã©lÃ©vation premium) : la value-prop POSITIVE en saison
-  // calme (Â« Sache oÃ¹ sera la mer demain Â») est le dÃ©faut 85%, 15% holdout mesurable.
-  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
-  const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
-  // Nouvelles rÃ©gions : ids opaques (pc001â€¦) â†’ nom rÃ©el depuis REGION.beaches.
-  // MQ/GP : derivation slug historique inchangÃ©e.
-  // Nom CANONIQUE â€” le slug-derive cassait les noms GP au point de dÃ©cision
-  // (Â« Pt Chateaux Â» au lieu de Â« Pointe des ChÃ¢teaux Â») â†’ modalâ†’CTA GP 0,9% (3Ã— MQ).
-  // MÃªme source que _kidsOf (BEACHES_FALLBACK via SARG_TO_BEACH) + track-record en
-  // filet (guardÃ©), slug-derive en dernier recours (anti-null pendant le fetch). wupuzpuuh.
-  const _nameOf=lv=>{
-    if(!lv||!lv.id)return null
-    if(IS_NEW_REGION)return REGION.beaches?.find(b=>b.id===lv.id)?.name||null
-    const canon=BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.name
-      ||(_trackRec&&_trackRec.byBeach&&_trackRec.byBeach[lv.id]&&_trackRec.byBeach[lv.id].name)
-    return canon||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
-  }
-  const _topName=_nameOf(_topBeach)
-  const _topScore=_topBeach?.score||null
-  // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
-  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
-  const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
-  const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
-  const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
-  const _ctxStatus=_hasBeachCtx?(beach&&beach.status)||null:null
-  // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer
-  // golden-hour. PRNG seedÃ© (stable entre renders = calme, jamais Math.random/render),
-  // capÃ© 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = Ã©toile-guide.
-  const _aggStatus=_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"
-  const _constelMood=VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein
-  const _constel=useMemo(()=>{
-    const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
-    return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
-  },[_islandLvls,_topBeach])
-  // Value card 02 : destination = vraie plage propre du jour calculÃ©e du live â€”
-  // plus aucun nom de plage inventÃ© ni changement d'Ã©tat fabriquÃ©.
-  const _cleanTop=_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]
-  const _exSwitch=_nameOf(_cleanTop)||_topName||null
-  // Value card 03 : vraie meilleure plage du samedi depuis le forecast hebdo.
-  // Suffixe enfants UNIQUEMENT si kids:true dans la donnÃ©e rÃ©gion.
-  const _kidsOf=lv=>{
-    if(!lv)return false
-    if(IS_NEW_REGION)return !!REGION.beaches?.find(b=>b.id===lv.id)?.kids
-    return !!BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.kids
-  }
-  const _wkend=(()=>{
-    const wk=sargData?.weekly||{}
-    const ref=_islandLvls.map(lv=>wk[lv.id]?.forecast).find(f=>Array.isArray(f)&&f.length)
-    if(!ref)return null
-    let satIdx=-1,sunIdx=-1
-    ref.forEach((f,i)=>{
-      if(!f?.date)return
-      const dow=new Date(f.date+"T12:00:00Z").getUTCDay()
-      if(satIdx<0&&dow===6)satIdx=i
-      if(sunIdx<0&&dow===0&&i>0)sunIdx=i
-    })
-    if(satIdx<0)return null
-    const cand=_islandLvls.map(lv=>{
-      const fc=wk[lv.id]?.forecast
-      if(!fc?.[satIdx]?.status)return null
-      return{lv,sat:fc[satIdx].status,sun:fc[sunIdx]?.status||null}
-    }).filter(Boolean)
-    if(!cand.length)return null
-    const cleanSat=cand.filter(c=>c.sat==="clean").sort((a,b)=>(b.lv.score||0)-(a.lv.score||0))
-    const pick=cleanSat[0]||[...cand].sort((a,b)=>(b.lv.score||0)-(a.lv.score||0))[0]
-    const name=_nameOf(pick.lv)
-    if(!name)return null
-    return{name,sat:pick.sat,kids:_kidsOf(pick.lv),allClean:pick.sat==="clean"&&pick.sun==="clean"}
-  })()
-  const modalOpenedAt=useRef(Date.now())
-  const panelRef=useRef(null)
-  const startYRef=useRef(0)
-  // Swipe-down to dismiss
-  const onTouchStartModal=e=>{startYRef.current=e.touches[0].clientY}
-  const onTouchMoveModal=e=>{
-    if(panelRef.current&&panelRef.current.scrollTop>5)return
-    const dy=e.touches[0].clientY-startYRef.current
-    if(dy>0&&panelRef.current)panelRef.current.style.transform=`translateY(${dy}px)`
-  }
-  const onTouchEndModal=e=>{
-    if(panelRef.current&&panelRef.current.scrollTop>5){if(panelRef.current)panelRef.current.style.transform="";return}
-    const dy=(e.changedTouches[0]?.clientY||0)-startYRef.current
-    if(dy>60)onClose()
-    else if(panelRef.current){panelRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";panelRef.current.style.transform="";setTimeout(()=>{if(panelRef.current)panelRef.current.style.transition=""},300)}
-  }
-  // Escape key to close (close TRACKÃ‰ â†’ gÃ©rÃ© ici, pas dans useModalA11y : escClose=false)
-  useEffect(()=>{
-    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}
-    document.addEventListener("keydown",h)
-    return()=>document.removeEventListener("keydown",h)
-  },[onClose,source])
-  // a11y plancher : focus-trap (Tab piÃ©gÃ© dans le panel) + restauration du focus au close.
-  // Ã‰chap dÃ©jÃ  gÃ©rÃ© juste au-dessus (trackÃ©) â†’ escClose=false pour ne pas doubler onClose.
-  useModalA11y(panelRef,onClose,false)
-  // Annuel par dÃ©faut (best practice SaaS : AOV +60%, churn plus bas, cash
-  // upfront) quand un lien annuel existe â€” sinon mensuel. Le badge -33% et le
-  // prix /mois Ã©quivalent vendent l'annuel sans forcer l'user Ã  diviser.
-  // USD (no-trial) : Mensuel par dÃ©faut â€” audit Starlink 2026-06-11 : leur 1er
-  // contact prix est TOUJOURS mensuel ; un Â« $79 billed today Â» prÃ©sÃ©lectionnÃ©
-  // 60s aprÃ¨s la dÃ©couverte = le point de rupture probable. EUR inchangÃ© (A/B).
-  // DÃ©faut plan : EUR (MQ/GP, REGION_PAY null) â†’ Annuel (engagement saison, +LTV) ;
-  // USD (REGION_PAY) â†’ Mensuel (audit Starlink : 1er contact prix mensuel). On
-  // dÃ©rive de REGION_PAY (et non plus de NO_TRIAL, dÃ©sormais true partout).
-  const[plan,setPlan]=useState(()=>{
-    // PrÃ©selection deep-link depuis /offres/ (?plan=â€¦), consommÃ©e une fois.
-    try{const dp=sessionStorage.getItem("sg_deep_plan");if(dp==="monthly"||dp==="annual"){sessionStorage.removeItem("sg_deep_plan");if(dp==="monthly"||hasAnnual)return dp}}catch(_){}
-    return hasAnnual&&!REGION_PAY?"annual":"monthly"
-  })
-  // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
-  //   pro â†’ annual â†’ monthly, only if Stripe Link is configured for that tier.
-  const effectivePlan=
-    (plan==="pro"&&hasPro)?"pro"
-    :(plan==="annual"&&hasAnnual)?"annual"
-    :"monthly"
-  const stripeLinkFor={monthly:LINK_MONTHLY,annual:LINK_ANNUAL,pro:LINK_PRO}
-  // Enrichit le Payment Link Stripe : prefilled_email (friction checkout -10/30%
-  // selon Stripe, l'email est dÃ©jÃ  en localStorage) + client_reference_id
-  // (dÃ©bloque l'attribution paiementâ†’source/plan/rÃ©gion, aujourd'hui aveugle â€”
-  // remonte dans le webhook + Stripe dashboard). buy.stripe.com = le processeur
-  // de paiement choisi par l'user, pas un tiers : prefill standard et attendu.
-  const stripeUrlWith=(link,plan)=>{
-    if(!link)return link
-    try{
-      const u=new URL(link)
-      const email=localStorage.getItem("sg_email")||""
-      if(email)u.searchParams.set("prefilled_email",email)
-      // ARMER le panier abandonnÃ© (audit widget-factory) : ce point est le
-      // chokepoint prÃ©-checkout. La banniÃ¨re de rÃ©cupÃ©ration (l.9564) LIT
-      // sg_checkout_abandoned mais rien ne l'Ã©crivait â†’ code mort. EffacÃ© Ã  la
-      // conversion (effet isPremium). Sans email la banniÃ¨re ne s'affiche pas (OK).
-      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}
-      const ref=[IS_NEW_REGION?REGION.id:(island||"mq"),plan||effectivePlan,source||"unknown"].join("_").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,200)
-      u.searchParams.set("client_reference_id",ref)
-      return u.toString()
-    }catch{return link}
-  }
-  // â”€â”€ Checkout ON-SITE (Stripe Payment Element, design maison) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Formulaire de paiement DANS le modal, aux couleurs de l'app : Payment
-  // Element (carte+Link) + Express Checkout (Apple/Google Pay), thÃ¨me sombre.
-  // AUCUN redirect, AUCUNE iframe Checkout (l'embedded mesurÃ© 12-27s le
-  // 2026-06-10 a Ã©tÃ© retirÃ© sur feedback utilisateur). Le SetupIntent +
-  // js.stripe.com sont prÃ©chauffÃ©s Ã  l'ouverture du paywall (~1s) ; au clic,
-  // les Elements montent en <1s. confirmSetup (3DS en iframe, jamais de
-  // redirect: types card+link only) â†’ action subscribe (essai 7j, prix
-  // rÃ©gion) â†’ premium activÃ© EN PLACE. Fallback intÃ©gral : Payment Link.
-  const[payStep,_setPayStep]=useState(false)
-  const payStepRef=useRef(false)
-  const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
-  const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
-  // Swipe-down to go back depuis l'Ã©cran paiement on-site (overlay z1300, rendu
-  // hors du panel â†’ ne bÃ©nÃ©ficie pas du swipe du paywall). MÃªme geste que le
-  // paywall : ne dÃ©clenche que si l'overlay est scrollÃ© tout en haut, glisse
-  // le contenu, et revient au paywall (setPayStep(false), JAMAIS onClose â†’
-  // l'user retombe sur le verdict gratuit, pas dans le vide).
-  const payScrollRef=useRef(null)
-  const payContentRef=useRef(null)
-  const payStartYRef=useRef(0)
-  const onTouchStartPay=e=>{payStartYRef.current=e.touches[0].clientY}
-  const onTouchMovePay=e=>{
-    if(payScrollRef.current&&payScrollRef.current.scrollTop>5)return
-    const dy=e.touches[0].clientY-payStartYRef.current
-    if(dy>0&&payContentRef.current)payContentRef.current.style.transform=`translateY(${dy}px)`
-  }
-  const onTouchEndPay=e=>{
-    const reset=()=>{if(payContentRef.current){payContentRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";payContentRef.current.style.transform="";setTimeout(()=>{if(payContentRef.current)payContentRef.current.style.transition=""},300)}}
-    if(payScrollRef.current&&payScrollRef.current.scrollTop>5){reset();return}
-    const dy=(e.changedTouches[0]?.clientY||0)-payStartYRef.current
-    if(dy>60){if(payContentRef.current)payContentRef.current.style.transform="";track("sg_pay_onsite_back",{plan:payPlanRef.current,via:"swipe"});setPayStep(false)}
-    else reset()
-  }
-  const[payReady,setPayReady]=useState(false)
-  const[payBusy,setPayBusy]=useState(false)
-  const[payError,setPayError]=useState("")
-  // Consentement RGPD/rÃ©tractation (renonciation au droit de rÃ©tractation 14 j contre
-  // fourniture immÃ©diate, art. L221-28 13Â° C. conso). Case NON prÃ©-cochÃ©e sur le chemin
-  // Pass B2C. DORMANTE par dÃ©faut : #250 a retenu le consentement IMPLICITE (Â« en validant
-  // l'achat, vous demandez l'exÃ©cution immÃ©diate Â», CGV) sans case â†’ on n'ajoute pas de
-  // friction money-path. Opt-in explicite via ?consent=1 si on veut afficher la case.
-  const consentFlag=(()=>{try{return /[?&]consent=1/.test(window.location.search)}catch(_){return false}})()
-  const[consentOk,setConsentOk]=useState(false)
-  const stripeRef=useRef(null)
-  const elementsRef=useRef(null)
-  const setupSecretRef=useRef(null)
-  const payPrewarmPromiseRef=useRef(null)
-  const payMountedRef=useRef(false)
-  const payPlanRef=useRef("monthly")
-  const payReadyRef=useRef(false)
-  const payEmailRef=useRef(null)
-  const payEmailCapturedRef=useRef("") // derniÃ¨re valeur d'email dÃ©jÃ  enrÃ´lÃ©e au blur (prÃ©-Stripe), Ã©vite les doublons
-  const paypalBtnRef=useRef(null) // pont PayPal : conteneur du bouton d'abo
-  const payDivRef=useRef(null)
-  const expressDivRef=useRef(null)
-  const mollieRef=useRef(null)        // pont Mollie : objet Mollie(profileId)
-  const mollieCardRef=useRef(null)    // pont Mollie : composant carte (Components)
-  // Composants Mollie INDIVIDUELS (au lieu du composant "card" combinÃ©) : on contrÃ´le
-  // 100% du thÃ¨me + on pose NOS propres libellÃ©s â†’ carte en thÃ¨me SOMBRE premium, plus
-  // de feuille blanche bolt-on. createToken() agrÃ¨ge tous les composants montÃ©s â†’ submit
-  // inchangÃ© (cf. doSubscribe). RÃ©fs : titulaire / numÃ©ro / expiration / CVC.
-  const molHolderRef=useRef(null)
-  const molNumberRef=useRef(null)
-  const molExpiryRef=useRef(null)
-  const molCvcRef=useRef(null)
-  // PrÃ©chauffage COMPLET dÃ¨s l'ouverture du paywall : SetupIntent + stripe.js
-  // + Elements + MOUNT du Payment Element dans l'overlay cachÃ©. MesurÃ©
-  // 2026-06-10 : stripe.js ~15s + boot de l'Ã©lÃ©ment ~12s sur ce rÃ©seau â€” tout
-  // doit booter PENDANT la lecture du paywall, pas au clic. Un SetupIntent
-  // n'est pas liÃ© au plan â†’ un seul prewarm pour tout le modal.
-  useEffect(()=>{
-    if(!PAYWALL_READY)return
-    payPrewarmPromiseRef.current=(async()=>{
-      if(PAY_CAPTURE_ONLY){payReadyRef.current=true;setPayReady(true);return} // capture : aucun form de paiement Ã  monter
-      // â”€â”€ Pont Mollie : monte les Components (carte on-site) au lieu du Payment
-      // Element Stripe. Pas de SetupIntent (le cardToken est crÃ©Ã© au submit). â”€â”€
-      if(PAY_PROVIDER==="mollie"){
-        await loadMollieJs()
-        const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
-        mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
-        if(!payMountedRef.current&&molNumberRef.current){
-          // Composants INDIVIDUELS (titulaire/numÃ©ro/expiration/CVC) au lieu du composant
-          // "card" combinÃ© : le combinÃ© rendait ses propres libellÃ©s en sombre NON-stylable
-          // (illisible sur l'overlay) â†’ on Ã©tait forcÃ© Ã  une feuille blanche bolt-on. Ici on
-          // pose NOS libellÃ©s (clairs) hors iframe + texte saisi clair sur champs sombres
-          // â†’ carte 100% dans le thÃ¨me premium, zÃ©ro blanc. `styles` ne stylise QUE le texte
-          // DANS l'iframe ; le fond visible = nos divs sombres. createToken() (doSubscribe)
-          // collecte tous les composants montÃ©s sur l'instance â†’ submit STRICTEMENT inchangÃ©.
-          // backgroundColor SOLIDE (et non transparent) sur l'input DANS l'iframe : sans
-          // lui, l'autofill iOS/Safari peint le champ en BLANC (le nom auto-rempli ressortait
-          // sur fond blanc, illisible). Mollie ne supporte ni boxShadow ni :-webkit-autofill
-          // (cf. docs styling) â†’ backgroundColor est le seul levier ; on le pose sur les 3
-          // Ã©tats pour couvrir l'autofill quel que soit l'Ã©tat de validation. Doit matcher
-          // MOL_FIELD (la div hÃ´te, dÃ©sormais solide #241837) pour zÃ©ro couture visible.
-          const _molBg="#241837"
-          const styles={base:{color:"#eef2f7",backgroundColor:_molBg,fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0",backgroundColor:_molBg},invalid:{color:"#FF8A66",backgroundColor:_molBg}}
-          const M=mollieRef.current
-          const holder=M.createComponent("cardHolder",{styles})
-          const number=M.createComponent("cardNumber",{styles})
-          const expiry=M.createComponent("expiryDate",{styles})
-          const cvc=M.createComponent("verificationCode",{styles})
-          holder.mount(molHolderRef.current)
-          number.mount(molNumberRef.current)
-          expiry.mount(molExpiryRef.current)
-          cvc.mount(molCvcRef.current)
-          mollieCardRef.current={holder,number,expiry,cvc} // rÃ©f agrÃ©gÃ©e (diagnostic/HMR)
-          payReadyRef.current=true;setPayReady(true)
-          payMountedRef.current=true
-        }
-        return
-      }
-      // PayPal : le bouton d'abo est montÃ© par un effet dÃ©diÃ© â†’ AUCUN Payment Element
-      // Stripe (sinon l'ancien champ carte Stripe s'affichait en plus du bouton).
-      if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}
-      const[r]=await Promise.all([
-        fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({action:"setup"})}),
-        loadStripeJs(),
-      ])
-      if(!r.ok)throw new Error("http "+r.status)
-      const{clientSecret}=await r.json()
-      if(!clientSecret)throw new Error("no clientSecret")
-      setupSecretRef.current=clientSecret
-      stripeRef.current=window.Stripe(STRIPE_PK)
-      elementsRef.current=stripeRef.current.elements({
-        clientSecret,
-        // locale = langue de l'UI du modal (et donc des labels + texte de mandat
-        // Â« En fournissant vos informationsâ€¦ Â» rendus PAR Stripe). Sans Ã§a, dÃ©faut
-        // 'auto' â†’ dÃ©tection navigateur : un site EN/USD (Florida) ou ES (Riviera/
-        // Punta Cana) affichait les labels en FR pour un navigateur FR. `lang` suit
-        // dÃ©jÃ  la rÃ©gion (primaryLang) + override path /en /es â†’ MQ/GP restent en FR.
-        locale:lang,
-        appearance:{theme:"night",variables:{
-          colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
-          colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",
-        }},
-      })
-      // PrÃ©-mount dans l'overlay cachÃ© (toujours rendu) â€” ready pendant la lecture
-      if(!payMountedRef.current&&payDivRef.current){
-        // Friction minimale : le champ telephone venait de l'enrolement Link â€”
-        // Link retire du SetupIntent (card only) = plus de telephone. NE PAS
-        // ajouter fields.billingDetails.phone:never ici : teste 2026-06-10, le
-        // Payment Element ne boote plus (ready ne fire jamais) avec cette option.
-        // business.name : sans lui le mandat Stripe affiche Â« you allow PAY to
-        // charge your card Â» â€” entitÃ© sans nom Ã  l'instant exact de la dÃ©cision
-        // (audit checkout 2026-06-11). defaultValues.country : le fallback Ã©tait
-        // Â« Martinique Â» (pays du compte) sur les sites USD â€” chaque visiteur US
-        // devait corriger + signal site Ã©tranger. EUR : comportement inchangÃ©.
-        const brandName=IS_NEW_REGION
-          ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))
-          :"Sargasses Martinique"
-        const pe=elementsRef.current.create("payment",{layout:"tabs",
-          business:{name:brandName},
-          ...(IS_NEW_REGION?{defaultValues:{billingDetails:{address:{country:REGION.countryCode||"US"}}}}:{}),
-        })
-        pe.mount(payDivRef.current)
-        pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})
-        try{
-          const ece=elementsRef.current.create("expressCheckout")
-          ece.mount(expressDivRef.current)
-          ece.on("confirm",(ev)=>{
-            try{const em=ev?.billingDetails?.email;if(em&&payEmailRef.current&&!payEmailRef.current.value)payEmailRef.current.value=em}catch(_){}
-            doSubscribeRef.current()
-          })
-        }catch(_){/* wallets indisponibles : la carte suffit */}
-        payMountedRef.current=true
-      }
-    })()
-    payPrewarmPromiseRef.current.catch(()=>{}) // l'Ã©chec est gÃ©rÃ© au clic (fallback)
-  },[])
-  // â”€â”€ Pont PayPal : rend le bouton d'abo quand l'Ã©cran paiement s'ouvre (abo only ;
-  // les passes restent en capture). createSubscription(plan_id) â†’ popup PayPal â†’
-  // onApprove pose sg_premium + confirme cÃ´tÃ© serveur (forward Apps Script). â”€â”€â”€â”€â”€â”€â”€
-  useEffect(()=>{
-    if(!payStep||PAY_PROVIDER!=="paypal"||passCtxRef.current||typeof window==="undefined")return
-    let cancelled=false
-    ;(async()=>{
-      try{
-        await loadPayPalSdk(PAYPAL_CLIENT_ID)
-        if(cancelled||!paypalBtnRef.current||!window.paypal)return
-        try{paypalBtnRef.current.replaceChildren()}catch(_){} // re-render propre
-        payReadyRef.current=true;setPayReady(true)
-        const plan=payPlanRef.current==="annual"?"annual":"monthly"
-        const isl=IS_NEW_REGION?REGION.id:(window.location.hostname.includes("guadeloupe")?"gp":"mq")
-        window.paypal.Buttons({
-          style:{layout:"vertical",color:"gold",shape:"pill",label:"subscribe"},
-          createSubscription:(d,actions)=>actions.subscription.create({
-            plan_id:PAYPAL_PLANS[plan],
-            custom_id:(isl+"_"+plan+"_"+(source||"unknown")).slice(0,127),
-          }),
-          onApprove:(d)=>{
-            const email=((payEmailRef.current&&payEmailRef.current.value)||localStorage.getItem("sg_email")||"").trim()
-            try{localStorage.setItem("sg_email",email)
-              localStorage.setItem("sg_premium","1");if(email)localStorage.setItem("sg_premium_email",email)}catch(_){}
-            try{submitLead(email,"paypal_sub")}catch(_){}
-            try{fetch("/api/paypal.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"confirm_subscription",subscriptionId:d.subscriptionID,email,plan})}).catch(()=>{})}catch(_){}
-            track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
-            onActivated&&onActivated();onClose&&onClose()
-          },
-          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)})},
-        }).render(paypalBtnRef.current)
-      }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu dÃ©marrer. RÃ©essaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}
-    })()
-    return ()=>{cancelled=true}
-  },[payStep])
-  const ppSub=PAY_PROVIDER==="paypal"&&!passCtxRef.current // abo PayPal (bouton) vs pass/capture
-  // Capture l'email DÃˆS qu'il quitte le champ (onBlur) sur l'Ã©cran de paiement â€”
-  // cÃ d au moment exact oÃ¹ l'user clique sur la carte/PayPal = Â« juste avant Stripe Â».
-  // Le partant qui tape son email puis hÃ©site sur la carte est un lead chaud : enrÃ´lÃ©
-  // dans le drip + panier abandonnÃ© armÃ©, MÃŠME sans paiement (carte refusÃ©e, 3DS
-  // abandonnÃ©, simple fermeture). Avant ce fix, submitLead ne partait qu'au clic final
-  // Â« Payer Â» (doSubscribe) ou onApprove PayPal â†’ tout ce trafic email Ã©tait perdu.
-  // Idempotent (garde sur la derniÃ¨re valeur) ; purement additif, zÃ©ro logique paiement.
-  const capturePayEmail=useCallback(()=>{
-    try{
-      const email=(payEmailRef.current?.value||"").trim()
-      if(!email||!email.includes("@")||!email.includes("."))return
-      if(payEmailCapturedRef.current===email)return
-      payEmailCapturedRef.current=email
-      try{localStorage.setItem("sg_email",email)}catch(_){}
-      try{submitLead(email,"pay_intent")}catch(_){}
-      // Arme la relance panier abandonnÃ© avec l'email dÃ©sormais connu (sinon la
-      // banniÃ¨re/recover-abandoned-cart restaient muets faute d'email).
-      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}
-      try{track("sg_pay_email_captured",{plan:payPlanRef.current,source:source||"unknown"})}catch(_){}
-    }catch(_){}
-  },[source])
-  const doSubscribe=useCallback(async()=>{
-    const plan=payPlanRef.current
-    if(payBusy)return
-    const email=(payEmailRef.current?.value||"").trim()
-    if(!email||!email.includes("@")||!email.includes(".")){
-      setPayError(_t(lang,"Entre ton email pour recevoir ton accÃ¨s.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
-      return
-    }
-    // Consentement requis sur le chemin Pass B2C payant (renonciation rÃ©tractation 14 j).
-    // Pas de gate en capture (offre gratuite, pas de paiement) ni sur l'abo (passCtxRef null),
-    // ni si le flag ?consent=0 dÃ©sactive la case.
-    if(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk){
-      setPayError(_t(lang,"Coche la case pour activer ton accÃ¨s immÃ©diat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
-      return
-    }
-    // â”€â”€ Mode CAPTURE : aucun paiement dispo â†’ on enregistre l'email (waitlist) +
-    // Ã©tat succÃ¨s. Relance Ã  la rÃ©ouverture (source 'mollie_waitlist'). â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    if(PAY_CAPTURE_ONLY){
-      // GAP FREEMIUM : paiements indispo â†’ on OFFRE 7j de premium contre l'email
-      // (liste chaude + accroche au produit). Relance Ã  la rÃ©ouverture (source
-      // 'gap_freemium') : Â« garde ton accÃ¨s pour 4,99 â‚¬ Â». AccÃ¨s time-boxÃ© = pas de
-      // fuite premium permanente + urgence de conversion.
-      setPayBusy(true);setPayError("")
-      try{submitLead(email,"gap_freemium")}catch(_){}
-      try{localStorage.setItem("sg_email",email)
-        localStorage.setItem("sg_premium_pass_end",String(Date.now()+7*86400000))
-      }catch(_){}
-      track("sg_gap_freemium_unlock",{plan:payPlanRef.current,pass:passCtxRef.current?passCtxRef.current.pass:null,source:source||"unknown"})
-      setPayBusy(false);onActivated&&onActivated();onClose&&onClose();return
-    }
-    // Lane Â« paiement indirect par mails Â» : enrÃ´le l'email haute-intention dans le
-    // drip AVANT de tenter le paiement â†’ rÃ©cupÃ©rable si carte refusÃ©e / 3DS abandonnÃ© /
-    // fermeture. NON-capture uniquement (en capture, gap_freemium ci-dessus suffit â€”
-    // Ã©vite le double submitLead qui gonflait les mÃ©triques de 2Ã— par dÃ©blocage).
+﻿/* PremiumModal â€” surface de paiement (PASS-ONLY Mollie on-site) + paywalls associÃ©s. * EXTRAIT de Sargasses_PROD.jsx (perf #173) pour sortir ~215 Ko de JS du chemin * critique : ce module est chargÃ© en LAZY (lazyWithRetry) Ã  l'ouverture du paywall. * âš ï¸ CHEMIN DE L'ARGENT â€” code dÃ©placÃ© Ã€ L'IDENTIQUE. Les helpers/constantes partagÃ©s * (track, _t, C, T, abVariant, startCheckout deps, loadMollieJs/Stripe/PayPal, pricingâ€¦) * sont importÃ©s depuis Sargasses_PROD.jsx via exports nommÃ©s (mÃªmes singletons). */import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"import PassOffer from "./PassOffer.jsx"import {SeqDots} from "./SeqPrimitives.jsx"import {  BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,  LINK_PRO, MOLLIE_PROFILE, MOLLIE_TESTMODE, MOL_FIELD, MOL_LABEL, NO_TRIAL, PAYPAL_CLIENT_ID, PAYPAL_PLANS,  PAYWALL_READY, PAY_CAPTURE_ONLY, PAY_CUR, PAY_LABEL, PAY_PROVIDER, PRICE_MO, PRICE_TRIP, PRICE_TRIP_EUR,  PRICE_YR, REGION, REGION_PAY, SARG_TO_BEACH, STRIPE_PK, SUPPORT_EMAIL, T, TRIP_CENTS,  VEILLEUR_MOOD, __COMM, __REL, _t, abVariant, fmtPassPrice, loadMollieJs, loadPayPalSdk,  loadStripeJs, miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy, sgToast, sgVerifySub, submitLead,  track, walletAvail} from "./Sargasses_PROD.jsx"// Route de la page Â« fiabilitÃ© Â» selon rÃ©gion/langue (miroir de reliabilityHref// dans Sargasses_PROD.jsx, non exportÃ©) : MQ/GP â†’ /fiabilite/, rÃ©gions US â†’ EN/ES.const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"// useModalA11y â€” plancher a11y des modales du chemin de l'argent (paywall B2C + B2BModal).// Plancher dur CLAUDE.md : role=dialog (posÃ© inline sur le panel) + Ã‰chap + focus-trap +// restauration du focus au close. LÃ©ger (zÃ©ro dep â€” ce chunk est budget-sensible), mÃªme// esprit que les modales de ChasseHome (Escape + focus initial) mais avec un VRAI piÃ¨ge Tab.// - panelRef : ref du conteneur du dialog (oÃ¹ vivent les Ã©lÃ©ments focusables).// - onClose : appelÃ© sur Ã‰chap (passe `false` Ã  `escClose` si l'Ã‰chap est dÃ©jÃ  gÃ©rÃ© ailleurs,//   ex. PremiumModal a son propre handler trackÃ© â†’ on ne double pas le close).function useModalA11y(panelRef,onClose,escClose=true){  useEffect(()=>{    const panel=panelRef.current    const prevFocus=(typeof document!=="undefined"&&document.activeElement)||null    const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'    const focusables=()=>panel?Array.prototype.filter.call(panel.querySelectorAll(SEL),el=>el.offsetParent!==null||el===document.activeElement):[]    // Focus initial DANS le dialog (1er focusable) sans voler le focus Ã  un champ dÃ©jÃ  actif.    try{if(panel&&!panel.contains(document.activeElement)){const f=focusables();(f[0]||panel).focus&&(f[0]||panel).focus()}}catch(_){}    const onKey=e=>{      // Si un AUTRE dialog est ouvert PAR-DESSUS ce panel (ex. B2BModal au-dessus du paywall),      // ne pas piÃ©ger : la cible vit dans un dialog distinct â†’ on laisse le dialog du dessus gÃ©rer.      const inOther=(()=>{try{const t=e.target;const d=t&&t.closest&&t.closest('[role="dialog"][aria-modal="true"]');return d&&panel&&d!==panel&&!panel.contains(d)}catch(_){return false}})()      if(e.key==="Escape"){if(escClose&&!inOther){e.stopPropagation();onClose&&onClose()}return}      if(e.key!=="Tab"||!panel||inOther)return      const f=focusables();if(!f.length){e.preventDefault();return}      const first=f[0],last=f[f.length-1],a=document.activeElement      if(e.shiftKey&&(a===first||!panel.contains(a))){e.preventDefault();last.focus()}      else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}    }    document.addEventListener("keydown",onKey,true)    return()=>{document.removeEventListener("keydown",onKey,true)      try{prevFocus&&prevFocus.focus&&prevFocus.focus()}catch(_){}}  // eslint-disable-next-line react-hooks/exhaustive-deps  },[])}// B2BModal â€” OFFRE PRO rÃ©elle et chiffrÃ©e (pivot B2B, juin 2026). 3 tiers (Widget// gratuit / Pro Alertes 79â‚¬/mois / Territoire sur devis). Capture d'INTENTION HAUTE// (pas juste Â« brief gratuit Â») : le pro choisit un tier payant â†’ on enregistre// source distincte (b2b_pro_alertes / b2b_territoire / b2b_widget) + event// sg_b2b_intent avec le prix â†’ mesure la WILLINGNESS-TO-PAY sur 2-3 semaines.// Vente B2B early = concierge (dÃ©moâ†’facture) : le CTA capte l'intent, l'onboarding// est manuel au dÃ©but. ZÃ‰RO logique de paiement touchÃ©e (capture, pas billing).// Funnel HYBRIDE Territoire (mairies/offices/groupes hÃ´teliers) : l'accÃ¨s essai 30 j est// DÃ‰JÃ€ ouvert (token Ã©mis) ; CE bloc est un OPT-IN pur Â« programmons un point Â» â€” le secteur// public a besoin d'un devis / bon de commande / interlocuteur qu'un clic ne remplace pas.// POST /api/b2b-meeting.php â†’ email au fondateur (zÃ©ro paiement, zÃ©ro engagement). SynthÃ¨se// panel adverse 2026-06-29 (copywriter secteur public + DGS/office sceptiques) : accÃ¨s// DÃ‰COUPLÃ‰ de l'ask, Â« aucun prÃ©lÃ¨vement automatique Â» dit noir sur blanc, RGPD inline,// tarif indicatif HT, tÃ©lÃ©phone facultatif, lien /fiabilite/ avant de dÃ©cider.function TerritoireMeeting({lang,email,org}){  const I=COMIC  const [littoral,setLittoral]=useState("")  const [phone,setPhone]=useState("")  const [sent,setSent]=useState(false)  const [busy,setBusy]=useState(false)  const submit=()=>{    if(sent||busy)return    setBusy(true)    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()    try{track("sg_b2b_meeting_request",{})}catch(_){}    fetch("/api/b2b-meeting.php",{method:"POST",headers:{"Content-Type":"application/json"},      body:JSON.stringify({email,org,littoral:littoral.trim(),phone:phone.trim(),island})})      .then(()=>{setBusy(false);setSent(true)}).catch(()=>{setBusy(false);setSent(true)})  }  if(sent)return(    <div style={{marginTop:14,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`}}>      <div style={{font:"800 14px/1.3 'Bricolage Grotesque'",color:"#1c8f4e"}}>{_t(lang,"C'est notÃ© âœ“","Noted âœ“","Anotado âœ“")}</div>      <div style={{font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#41414a",marginTop:5}}>{_t(lang,"On vous Ã©crit pour caler 15 min et prÃ©parer votre devis (PDF). Votre accÃ¨s reste ouvert en attendant.","We'll email you to set up 15 min and prepare your quote (PDF). Your access stays open meanwhile.","Le escribimos para reservar 15 min y preparar su presupuesto (PDF). Su acceso sigue abierto mientras tanto.")}</div>    </div>  )  return(    <div style={{marginTop:14,padding:"14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:I.blue,boxShadow:`3px 3px 0 ${I.ink}`}}>      <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:"#fdfcf7"}}>ðŸ›ï¸ {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>      <div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#eef9f6",margin:"5px 0 10px"}}>{_t(lang,"Votre accÃ¨s est dÃ©jÃ  ouvert â€” explorez seul si vous prÃ©fÃ©rez. Un Ã©change de 15 min seulement si VOUS le souhaitez : on cale vos plages, votre devis et votre bon de commande. L'essai ne dÃ©clenche aucun prÃ©lÃ¨vement.","Your access is already open â€” explore on your own if you prefer. A 15-min call only if YOU want it: we scope your beaches, your quote and your purchase order. The trial triggers no charge.","Su acceso ya estÃ¡ abierto â€” explore solo si prefiere. Una llamada de 15 min solo si USTED quiere: definimos sus playas, su presupuesto y su orden de compra. La prueba no genera ningÃºn cobro.")}</div>      <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nÂº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>      <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"TÃ©lÃ©phone (facultatif)","Phone (optional)","TelÃ©fono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>      <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoiâ€¦","Sendingâ€¦","Enviandoâ€¦"):_t(lang,"Planifier un point Â· recevoir un devis â†’","Schedule a call Â· get a quote â†’","Reservar Â· recibir presupuesto â†’")}</button>      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#dff1ec",marginTop:9}}>{_t(lang,"DonnÃ©es satellite publiques (Copernicus/NOAA), auditables Â· Devis, bon de commande, facture â€” conforme RGPD & marchÃ© public Â· Un interlocuteur dÃ©diÃ©. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable Â· Quote, purchase order, invoice â€” GDPR & public-procurement compliant Â· A dedicated contact. Indicative price excl. tax.","Datos satelitales pÃºblicos (Copernicus/NOAA), auditables Â· Presupuesto, orden de compra, factura â€” conforme RGPD Â· Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>      <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#cfe9e3",marginTop:6}}>{_t(lang,"Vos coordonnÃ©es servent uniquement Ã  vous recontacter (intÃ©rÃªt lÃ©gitime), conservÃ©es 12 mois, supprimÃ©es sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interÃ©s legÃ­timo), conservados 12 meses, eliminados a peticiÃ³n.")} <a href="/fiabilite/" style={{color:"#fdfcf7",textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut â†’","See what we're worth first â†’","Vea primero lo que valemos â†’")}</a></div>    </div>  )}// â”€â”€ Primitives de SÃ‰QUENCE (SeqDots + .sgseq-*) : SOURCE UNIQUE dans SeqPrimitives.jsx//    (extraites ici #425, demande fondateur 2026-07-02 Â« rÃ©utiliser pour scaler le B2C Â» ;//    B2BModal comic ET PassOffer premium sombre l'importent dÃ©sormais telles quelles).function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""}){  const dlgRef=useRef(null)  useModalA11y(dlgRef,onClose)   // role/aria-modal posÃ©s sur le panel ; Ã‰chap + focus-trap + restauration  const [tier,setTier]=useState("pro")  const [email,setEmail]=useState("")  // â”€â”€ Retry mode : relance automatique aprÃ¨s paiement Ã©chouÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  // Le lien email de relance ouvre l'app avec ?payment_failed=1 â†’ le handler dans  // Sargasses_PROD.jsx stocke le contexte dans sessionStorage (sg_payment_retry).  // Ici on lit ce contexte pour prÃ©-remplir l'email et afficher un message retry.  const [retryCtx,setRetryCtx]=useState(null)  useEffect(()=>{    try{      const raw=sessionStorage.getItem("sg_payment_retry")      if(!raw)return      const ctx=JSON.parse(raw)      if(ctx&&ctx.email&&Date.now()-(ctx.ts||0)<3600000){ // valide 1h max        setRetryCtx(ctx)        setEmail(ctx.email)        // Auto-open the payment step with a retry-specific error message        setTimeout(()=>{          setPayStep(true)          setPayError(_t(lang,            "Ton paiement prÃ©cÃ©dent n'a pas abouti (3D Secure ou carte). Ta carte n'a PAS Ã©tÃ© dÃ©bitÃ©e. RÃ©essaie avec la mÃªme carte ou une autre.",            "Your previous payment didn't go through (3D Secure or card). Your card was NOT charged. Try again with the same card or a different one.",            "Tu pago anterior no se completÃ³ (3D Secure o tarjeta). Tu tarjeta NO fue cobrada. IntÃ©ntalo de nuevo con la misma tarjeta u otra."))        },500)      }      sessionStorage.removeItem("sg_payment_retry")    }catch(_){}  },[])  const [org,setOrg]=useState("")  const [sent,setSent]=useState(false)  const [token,setToken]=useState("")   // token Pro 30 j renvoyÃ© par b2b-trial.php (essai INSTANTANÃ‰)  const [busy,setBusy]=useState(false)  // Querystring EFFECTIVE : le handler deeplink ?pro=1 fait replaceState AVANT le mount  // lazy de ce chunk â†’ location.search est dÃ©jÃ  vidÃ©. Il stashe search dans  // sessionStorage sg_b2b_qs (pattern sg_deep_plan) : flags + ?beach= y survivent.  const QS=(()=>{try{return (window.location.search||"")+" "+(sessionStorage.getItem("sg_b2b_qs")||"")}catch(_){try{return window.location.search||""}catch(_2){return ""}}})()  // Flag rollback ?b2bseq=0 â†’ Ã©cran unique d'origine (la sÃ©quence est le dÃ©faut).  const seqOn=!/[?&]b2bseq=0/.test(QS)  // Flag rollback : ?b2btrial=0 â†’ retombe sur l'ancien comportement (capture lead + Â« on  // vous recontacte sous 24h Â»), sans appel Ã  l'endpoint. Loi : pas de flag = pas de merge.  // (Lit QS et plus location.search : l'angle mort deeplink ?pro=1&b2btrial=0 est rÃ©parÃ©.)  const instantTrial=!/[?&]b2btrial=0/.test(QS)  const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())  const I=COMIC  // â”€â”€ Ã‰tape courante de la SÃ‰QUENCE (1 constat/cadeau â†’ 2 renversement/preuve â†’  //    3 offre â†’ 4 ask). SuccÃ¨s/24h = Ã©tats sent/token existants, inchangÃ©s.  const [step,setStep]=useState(1)  // â”€â”€ Contexte data (props ADDITIVES, dÃ©gradation gracieuse si null) â”€â”€â”€â”€â”€â”€â”€â”€â”€  const isl=island||((REGION&&REGION.id)?String(REGION.id).toLowerCase():"mq")  const _lvls=Object.values(sargData?.levels||{})  const islandLvls=_lvls.filter(b=>isl==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))  const cleanCount=islandLvls.filter(b=>b.status==="clean").length  const totalCount=islandLvls.length  // Plage active : contexte (prop beach) > deeplink ?beach=<id-sarg> > choix select > rien.  const [pickedId,setPickedId]=useState("")  const ctxSargId=beach?(IS_NEW_REGION?beach.id:(BEACH_TO_SARG[beach.id]||null)):null  const qBeachId=(()=>{const m=QS.match(/[?&]beach=([a-z0-9-]{1,60})/i);return m?m[1]:""})()  const lvlById=id=>id?islandLvls.find(l=>l.id===id)||null:null  const activeSargId=ctxSargId||(lvlById(qBeachId)?qBeachId:"")||pickedId||""  const pickMode=ctxSargId?"ctx":(lvlById(qBeachId)?"query":(pickedId?"picked":"none"))  const lvl=lvlById(activeSargId)  // Nom canonique (dÃ©rivation dupliquÃ©e de _nameOf â€” closures de PremiumModal inaccessibles ici).  const nameOf=lv=>{    if(!lv||!lv.id)return null    if(IS_NEW_REGION)return REGION.beaches?.find(b=>b.id===lv.id)?.name||null    return BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.name      ||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null  }  const bName=lvl?nameOf(lvl):(beach&&beach.name)||null  // FraÃ®cheur HONNÃŠTE : erddapTimestamp = Â« Vu du satellite Â» ; sinon updatedAt =  // Â« DonnÃ©es mises Ã  jour Â» â€” jamais l'inverse (fausse fraÃ®cheur interdite, loi moat).  const freshLine=(()=>{    const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null    const src=sat||up;if(!src)return null    const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6))    if(!isFinite(h))return null    return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satÃ©lite hace ${h} h`)      :_t(lang,`DonnÃ©es mises Ã  jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)  })()  const STATUS={    clean:{c:"#27c46b",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},    moderate:{c:"#e8a800",l:_t(lang,"Algues modÃ©rÃ©es","Moderate seaweed","Algas moderadas")},    avoid:{c:"#e8522a",l:_t(lang,"Ã€ Ã©viter aujourd'hui","Avoid today","Evitar hoy")},  }  const stOf=lv2=>STATUS[lv2&&lv2.status]||null  // Grille Ã‰2 : la plage active si elle a un forecast, sinon la MEILLEURE plage de  // l'Ã®le qui en a un (nommÃ©e â€” jamais une grille anonyme), sinon pas de grille.  const fcLvl=(()=>{    const has=l2=>!!(l2&&sargData?.weekly?.[l2.id]?.forecast?.length)    if(has(lvl))return lvl    return [...islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null  })()  const fcName=fcLvl?nameOf(fcLvl):null  const fcDays=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]  // Preuve auditÃ©e : fetch PROPRE (les closures _trackRec/_recordProof de PremiumModal  // sont inaccessibles depuis ce composant frÃ¨re â€” duplication ciblÃ©e assumÃ©e).  const [trackRec,setTrackRec]=useState(null)  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])  const proofLine=(()=>{    try{      const r=trackRec;if(!r||!r.byRegime)return null      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]      if(!ent||!ent[1].cleanReliabilityPct)return null      const[reg,best]=ent      const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")      // Loi claim hedgÃ© : un Â« 100 % Â» ne part JAMAIS nu â€” le rÃ©gime est nommÃ© quand      // c'est le calme (data-driven, jamais un label plaquÃ©), et la bande tous-rÃ©gimes      // 76-79 % + la mention confiance l'accompagnent toujours (ligne sous ce chiffre).      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""      return _t(lang,        `${best.cleanReliabilityPct} % justes${calm} Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,        `${best.cleanReliabilityPct}% correct${calm} Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,        `${best.cleanReliabilityPct} % correctos${calm} Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)    }catch(_){return null}  })()  // Liens de paiement Mollie (self-service in-app) â€” chargÃ©s depuis le JSON publiÃ© par  // mollie-paylinks.cjs. Permet de PAYER l'annÃ©e directement, sans humain.  const [paylinks,setPaylinks]=useState(null)  useEffect(()=>{try{track("sg_b2b_offer_view",{})}catch(_){}    try{track("sg_b2b_beach_pick",{mode:pickMode})}catch(_){}    try{fetch("/api/b2b-paylinks.json",{cache:"no-store"}).then(r=>r.json()).then(d=>setPaylinks(d&&d.links||{})).catch(()=>{})}catch(_){}  // eslint-disable-next-line react-hooks/exhaustive-deps  },[])  // {url, montant} devise-aware : domaines USD â†’ entrÃ©e `${key}_usd` du JSON (790/390 $),  // montant rendu depuis value (jamais en dur). Territoire = JAMAIS de paylink carte  // (verdict panel : un paiement CB juxtaposÃ© au parcours devis/BDC dÃ©crÃ©dibilise les 2).  const payOf=t=>{    const key={pro:"pro_annual",brief:"brief_annual"}[t];if(!key||!paylinks)return null    const k=(IS_NEW_REGION&&paylinks[key+"_usd"])?key+"_usd":key    const l=paylinks[k];if(!l||!l.url)return null    const v=String(l.value||"").replace(/\.00$/,"")    return {url:l.url,amt:v?(k.endsWith("_usd")?("$"+v):(v+" â‚¬")):null}  }  const payUrlOf=t=>{const p=payOf(t);return p?p.url:null}   // compat Ã©cran unique (?b2bseq=0)  // â”€â”€ Navigation de sÃ©quence : events funnel par Ã©tape + focus titre (a11y â€” le  //    focus-trap de useModalA11y ne focus qu'au mount, pas au swap d'Ã©tape).  const ctxKind=lvl?"beach":(totalCount>0?"island":"nodata")  const stepTitleRef=useRef(null)  const stepMounted=useRef(false)  useEffect(()=>{    if(!stepMounted.current){stepMounted.current=true;return}    try{stepTitleRef.current&&stepTitleRef.current.focus()}catch(_){}  },[step])  const goStep=n=>{setStep(n);try{track("sg_b2b_step",{step:n,ctx:ctxKind,tier,source:source||"unknown"})}catch(_){}}  const goBack=from=>{setStep(Math.max(1,from-1));try{track("sg_b2b_step_back",{from})}catch(_){}}  // Swipe-down close (copie du pattern Ã©prouvÃ© de PremiumModal, mÃªme fichier) : 4e voie  // de sortie (âœ• / Ã‰chap / backdrop / swipe). Guard scrollTop : ne pas voler le scroll.  const swipeY=useRef(0)  const onTS=e=>{swipeY.current=e.touches[0].clientY}  const onTM=e=>{    if(dlgRef.current&&dlgRef.current.scrollTop>5)return    const dy=e.touches[0].clientY-swipeY.current    if(dy>0&&dlgRef.current)dlgRef.current.style.transform=`translateY(${dy}px)`  }  const onTE=e=>{    if(dlgRef.current&&dlgRef.current.scrollTop>5){if(dlgRef.current)dlgRef.current.style.transform="";return}    const dy=(e.changedTouches[0]?.clientY||0)-swipeY.current    if(dy>60)onClose()    else if(dlgRef.current){dlgRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";dlgRef.current.style.transform="";setTimeout(()=>{if(dlgRef.current)dlgRef.current.style.transition=""},300)}  }  const typedRef=useRef(false)  const onOrgChange=e=>{    setOrg(e.target.value)    if(!typedRef.current&&e.target.value.trim().length>=3){typedRef.current=true;try{track("sg_b2b_widget_preview",{typed:1})}catch(_){}}  }  // Grille B2B (pricing arrÃªtÃ© panel 2026-06-29) : 3 tiers payants, essai 30j sans carte,  // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve  // aucune WTP â€” c'est exactement ce qui a Ã©chouÃ©). Le hook = l'essai 30j time-boxÃ©.  const TIERS=[    {id:"brief",icon:"ðŸ“©",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 â‚¬/mois","â‚¬29/mo","29 â‚¬/mes"),      pitch:_t(lang,"Brief quotidien de vos plages + alerte Ã©chouage par email. Pour gÃ®tes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_brief"},    {id:"pro",icon:"ðŸ””",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 â‚¬/mois","â‚¬79/mo","79 â‚¬/mes"),featured:true,      pitch:_t(lang,"Devenez LA rÃ©fÃ©rence sargasses de votre plage : mis en avant dans l'app au moment oÃ¹ le voyageur vÃ©rifie avant de rÃ©server, brief du matin, alertes, prÃ©vision 7 j, et un encart Ã  vos couleurs sur votre propre site. Pour hÃ´tels & resorts.","Become THE sargassum reference for your beach: featured in the app right when travelers check before booking, morning brief, alerts, 7-day forecast, and a panel in your own colors on your website. For hotels & resorts.","ConviÃ©rtase en LA referencia de sargazo de su playa: destacado en la app justo cuando el viajero comprueba antes de reservar, informe matinal, alertas, pronÃ³stico 7 dÃ­as, y un panel con sus colores en su propia web. Para hoteles y resorts."),      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_pro"},    {id:"territoire",icon:"ðŸ›ï¸",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dÃ¨s 199 â‚¬/mois HT","from â‚¬199/mo excl. tax","desde 199 â‚¬/mes sin IVA"),      pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget pÃºblico. Para municipios y oficinas."),      cta:_t(lang,"DÃ©marrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 dÃ­as"),source:"b2b_territoire"},  ]  const cur=TIERS.find(t=>t.id===tier)||TIERS[1]  const submit=()=>{    if(!valid||sent||busy)return    try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}    try{submitLead(email.trim(),cur.source)}catch(_){}    try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}    // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j Ã©mis INSTANTANÃ‰MENT par    // /api/b2b-trial.php (zÃ©ro call, zÃ©ro attente, zÃ©ro humain) â†’ accÃ¨s Pro tout de suite +    // lien de paiement annuel direct. Territoire inclus (dÃ©cision fondateur : tout self-serve).    // Flag ?b2btrial=0 â†’ ancien flux capture-lead + message 24 h.    if(!instantTrial){setSent(true);return}    setBusy(true)    const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()    fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},      body:JSON.stringify({email:email.trim(),name:org.trim(),island})})      .then(r=>r.json()).then(d=>{        if(d&&d.ok&&d.token){setToken(d.token);try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}        setBusy(false);setSent(true)   // Ã©chec â†’ fallback gracieux : lead dÃ©jÃ  capturÃ©, message 24 h      }).catch(()=>{setBusy(false);setSent(true)})  }  // â”€â”€ Styles partagÃ©s de la sÃ©quence. Anti-thÃ¨me OBLIGATOIRE : .theme-comic button  //    {background:var(--sg-card)!important} repeint les boutons inline (la sÃ©lection  //    OR du tier Ã©tait invisible en prod â€” une des causes du Â« bizarre Â»). Recette  //    checklist : classes DOUBLÃ‰ES (0,2,0) battent .theme-comic button (0,1,1).  //    .sgseq-* = primitives gÃ©nÃ©riques rÃ©utilisables (scaler le B2C, fondateur 2026-07-02).  const CSS_B2F=`  .b2f-cta.b2f-cta{width:100%;text-align:center;font:800 16px/1 'Bricolage Grotesque',sans-serif!important;padding:16px;border-radius:15px!important;border:3px solid ${I.ink}!important;box-shadow:3px 3px 0 ${I.ink}!important;background:linear-gradient(180deg,#ffe06a,#ffc72c 55%,#e8a800)!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;cursor:pointer;letter-spacing:0}  .b2f-cta.b2f-cta:disabled{background:#e7e2d4!important;opacity:.7;cursor:default}  .b2f-cta.b2f-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${I.ink}!important}  .b2f-hero.b2f-hero{display:block;text-align:left;width:100%;box-sizing:border-box;background:linear-gradient(160deg,#fff3c8,#ffe08a)!important;border:3px solid ${I.ink}!important;box-shadow:4px 4px 0 ${I.ink}!important;border-radius:16px!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;padding:13px 14px;position:relative}  .b2f-row.b2f-row{display:block;text-align:left;width:100%;box-sizing:border-box;background:#fff!important;border:2.5px solid ${I.ink}!important;box-shadow:1px 1px 0 ${I.ink}!important;border-radius:12px!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;padding:10px 12px;min-height:44px;cursor:pointer}  .b2f-row.b2f-row:active{transform:translate(1px,1px);box-shadow:0 0 0 ${I.ink}!important}  .b2f-x.b2f-x{position:absolute;top:11px;right:11px;width:44px;height:44px;border-radius:50%!important;border:2.5px solid ${I.ink}!important;background:#fff!important;box-shadow:2px 2px 0 ${I.ink}!important;font-size:17px;font-weight:900;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;cursor:pointer;line-height:1;text-shadow:none!important;padding:0}  .b2f-back.b2f-back{position:absolute;top:11px;left:11px;width:44px;height:44px;border-radius:12px!important;border:2.5px solid ${I.ink}!important;background:#fff!important;box-shadow:2px 2px 0 ${I.ink}!important;font-size:20px;font-weight:900;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;cursor:pointer;line-height:1;text-shadow:none!important;padding:0}  .b2f-fc{border:2.5px solid ${I.ink};border-radius:14px;overflow:hidden;box-shadow:3px 3px 0 ${I.ink};background:#fff;margin:11px 0 10px}  .b2f-fc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 11px;background:#10343a;color:#fdfcf7;font:800 10px/1.25 'Bricolage Grotesque',sans-serif;letter-spacing:.07em;text-transform:uppercase;border-bottom:2.5px solid ${I.ink}}  .b2f-fc-grid{display:grid;grid-template-columns:repeat(7,1fr)}  .b2f-fc-day{padding:8px 2px 9px;text-align:center;border-right:1.5px solid rgba(13,11,20,.12)}  .b2f-fc-day:last-child{border-right:none}  .b2f-fc-lab{font:800 9.5px/1 'Bricolage Grotesque',sans-serif;color:#52525b;text-transform:uppercase;margin-bottom:6px}  .b2f-fc-dot{width:14px;height:14px;border-radius:50%;border:2px solid ${I.ink};margin:0 auto}  .b2f-fc-conf{font:800 9px/1 'Bricolage Grotesque',sans-serif;color:#52525b;margin-top:5px}  .b2f-fc-day.lock{background:repeating-linear-gradient(45deg,#f3ecd9,#f3ecd9 4px,#eae1c8 4px,#eae1c8 8px)}  .b2f-sel.b2f-sel{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border-radius:12px!important;border:2.5px solid ${I.ink}!important;background:#fff!important;font:700 15px/1.2 'Bricolage Grotesque',sans-serif!important;color:${I.ink}!important;margin-top:9px}  @media (prefers-reduced-motion:no-preference){.sgseq-step{animation:sgseqIn .16s cubic-bezier(.16,1,.3,1) both}}  @keyframes sgseqIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}  `  const titleStyle={fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,6.2vw,25px)",lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 8px",outline:"none"}  const bodyStyle={font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:11}  const inputStyle={width:"100%",boxSizing:"border-box",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}  // Chip prix = INFORMATION dÃ¨s Ã‰1 (rÃ¨gle Â« prix tÃ´t Â»), jamais un lien (l'ASK vit Ã  Ã‰4).  const proPay=payOf("pro")  const priceChip=(    <div style={{display:"flex",justifyContent:"center",marginTop:12}}>      <span style={{font:"800 11px/1.4 'Bricolage Grotesque'",color:I.ink,background:"#fff",border:`2px solid ${I.ink}`,borderRadius:999,padding:"6px 12px",boxShadow:`2px 2px 0 ${I.ink}`,textAlign:"center"}}>        {_t(lang,"Pro Â· 79 â‚¬/mois Â· essai 30 j sans carte","Pro Â· â‚¬79/mo Â· 30-day trial, no card","Pro Â· 79 â‚¬/mes Â· prueba 30 dÃ­as sin tarjeta")}        {proPay&&proPay.amt?_t(lang,` Â· ou ${proPay.amt}/an`,` Â· or ${proPay.amt}/yr`,` Â· o ${proPay.amt}/aÃ±o`):""}      </span>    </div>)  // SÃ©lecteur de plage (entrÃ©e sans contexte) : options = plages de l'Ã®le AYANT un  // verdict, dÃ©dupliquÃ©es par id satellite. Optionnel â€” avancer sans choisir reste possible.  const pickable=(()=>{    const seen=new Set(),out=[]    const src=IS_NEW_REGION?(REGION.beaches||[]).map(b=>({sid:b.id,name:b.name}))      :BEACHES_FALLBACK.filter(b=>b.island===isl&&BEACH_TO_SARG[b.id]).map(b=>({sid:BEACH_TO_SARG[b.id],name:b.name}))    for(const o of src){if(!o.sid||!o.name||seen.has(o.sid))continue;if(!islandLvls.some(l=>l.id===o.sid))continue;seen.add(o.sid);out.push(o)}    return out.sort((a,b)=>a.name.localeCompare(b.name))  })()  const st1=stOf(lvl)  const dayLab=i=>i===0?_t(lang,"Auj","Today","Hoy"):i===1?_t(lang,"Dem","Tom","MaÃ±"):"J+"+i  return(    <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>      <div ref={dlgRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Offre Pro â€” HÃ´tels & collectivitÃ©s","Pro offer â€” Hotels & towns","Oferta Pro â€” Hoteles y municipios")} onClick={e=>e.stopPropagation()}        onTouchStart={onTS} onTouchMove={onTM} onTouchEnd={onTE}        style={{width:"100%",maxWidth:430,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",position:"relative",        background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",        border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",        fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>        <style>{CSS_B2F}</style>        <button className="b2f-x" onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}>âœ•</button>        {seqOn&&!sent&&step>1&&<button className="b2f-back" onClick={()=>goBack(step)} aria-label={_t(lang,"Retour","Back","AtrÃ¡s")}>â€¹</button>}        <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`,marginLeft:seqOn&&!sent&&step>1?46:0}}>ðŸ¨ {_t(lang,"Pro Â· HÃ´tels & collectivitÃ©s","Pro Â· Hotels & towns","Pro Â· Hoteles y municipios")}</div>        {seqOn&&!sent&&<SeqDots n={4} at={step} ink={I.ink} gold={I.gold}/>}        {!sent&&!seqOn?<>          {/* â”€â”€ Ã‰CRAN UNIQUE D'ORIGINE (rollback ?b2bseq=0) â€” structure intacte, seul le              titre-peur est corrigÃ© (promesse positive = loi, le contrÃ´le ne doit pas              mesurer un message qui viole la doctrine). â”€â”€ */}          <div style={{fontFamily:"'Anton',sans-serif",fontSize:25,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 6px"}}>{_t(lang,"Connaissez la fin de l'histoire avant vos invitÃ©s.","Know the end of the story before your guests do.","Conozca el final de la historia antes que sus huÃ©spedes.")}</div>          <div style={{font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:14}}>{_t(lang,"Surveillance satellite de VOS plages : prÃ©venez avant l'Ã©chouage, rassurez clients et administrÃ©s.","Satellite monitoring of YOUR beaches: warn before sargassum lands, reassure guests and citizens.","Monitoreo satelital de SUS playas: avise antes de la llegada, tranquilice a clientes y ciudadanos.")}</div>          <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:13}}>            {TIERS.map(t=>(              <button key={t.id} onClick={()=>setTier(t.id)} style={{textAlign:"left",position:"relative",padding:"12px 13px",borderRadius:14,cursor:"pointer",                border:`2.5px solid ${I.ink}`,background:tier===t.id?(t.featured?I.gold:"#fff"):"#fff",                boxShadow:tier===t.id?`3px 3px 0 ${I.ink}`:`1px 1px 0 ${I.ink}`,transition:"transform .08s ease",                outline:tier===t.id?`0`:"0",opacity:1}}>                {t.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}                <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>                  <span style={{font:"800 15px/1.1 'Bricolage Grotesque'",color:I.ink}}>{t.icon} {t.name}</span>                  <span style={{font:"800 14px/1 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{t.price}</span>                </div>                <div style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:4}}>{t.pitch}</div>              </button>            ))}          </div>          <input value={org} onChange={e=>setOrg(e.target.value)}            placeholder={_t(lang,"Nom de l'Ã©tablissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}            style={inputStyle}/>          <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}            onKeyDown={e=>{if(e.key==="Enter")submit()}}            placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}            style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>          <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦"):cur.cta}</button>          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prÃ©lÃ¨vement automatique Â· âˆ’2 mois en annuel Â· stop quand vous voulez","30-day trial, no card, no auto-charge Â· 2 months free yearly Â· stop anytime","Prueba 30 dÃ­as, sin tarjeta, sin cobro automÃ¡tico Â· 2 meses gratis al aÃ±o Â· pare cuando quiera")}</div>          {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>            <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'annÃ©e directement â†’","Or pay yearly directly â†’","O paga el aÃ±o directamente â†’")}</a>          </div>}        </>:!sent&&step===1?<div key={1} className="sgseq-step">          {/* â”€â”€ Ã‰1 CONSTAT + CADEAU (temps 1+2+3) : le verdict RÃ‰EL, gratuit, avant tout ask. â”€â”€ */}          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{bName            ?_t(lang,`${bName}, ce matin. MesurÃ©e, pas devinÃ©e.`,`${bName}, this morning. Measured, not guessed.`,`${bName}, esta maÃ±ana. Medida, no adivinada.`)            :_t(lang,"Vos plages, ce matin. MesurÃ©es, pas devinÃ©es.","Your beaches, this morning. Measured, not guessed.","Sus playas, esta maÃ±ana. Medidas, no adivinadas.")}</div>          {lvl&&st1?<>            <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>              <span style={{width:16,height:16,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>              <div style={{minWidth:0}}>                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{bName||nameOf(lvl)} Â· {st1.l}</div>                <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>                  {lvl.confidence?_t(lang,`confiance ${lvl.confidence} %`,`${lvl.confidence}% confidence`,`confianza ${lvl.confidence} %`):null}                  {lvl.confidence&&freshLine?" Â· ":null}{freshLine}                </div>              </div>            </div>          </>:totalCount>0?<>            <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>              <span style={{fontSize:20,flexShrink:0}} aria-hidden="true">ðŸ›°ï¸</span>              <div>                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages propres ce matin`,`${cleanCount}/${totalCount} beaches clean this morning`,`${cleanCount}/${totalCount} playas limpias esta maÃ±ana`)}</div>                {freshLine&&<div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>{freshLine}</div>}              </div>            </div>            {pickable.length>0&&<select className="b2f-sel" value={pickedId} aria-label={_t(lang,"Votre plage (optionnel)","Your beach (optional)","Su playa (opcional)")}              onChange={e=>{setPickedId(e.target.value);if(e.target.value){try{track("sg_b2b_beach_pick",{mode:"picked"})}catch(_){}}}}>              <option value="">{_t(lang,"Votre plage (optionnel)â€¦","Your beach (optional)â€¦","Su playa (opcional)â€¦")}</option>              {pickable.map(o=><option key={o.sid} value={o.sid}>{o.name}</option>)}            </select>}          </>:<>            <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>              ðŸ›°ï¸ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. DonnÃ©e en cours de chargementâ€¦","The satellite passes over your beaches 4 times a day. Data loadingâ€¦","El satÃ©lite pasa 4 veces al dÃ­a sobre sus playas. Datos cargÃ¡ndoseâ€¦")}            </div>          </>}          <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit â€” vos clients comme vos administrÃ©s le consultent dÃ©jÃ  avant de venir.","This verdict is public and free â€” your guests and your citizens already check it before coming.","Este veredicto es pÃºblico y gratuito â€” sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>          <div style={{font:"700 13px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:13}}>{_t(lang,"Personne n'aime le dÃ©couvrir dans un avis client.","No one likes finding out in a guest review.","A nadie le gusta descubrirlo en una reseÃ±a.")}</div>          <button className="b2f-cta" onClick={()=>goStep(2)}>{bName            ?_t(lang,`Voir la semaine de ${bName} â†’`,`See the week for ${bName} â†’`,`Ver la semana de ${bName} â†’`)            :_t(lang,"Voir la semaine de vos plages â†’","See the week for your beaches â†’","Ver la semana de sus playas â†’")}</button>          {priceChip}        </div>:!sent&&step===2?<div key={2} className="sgseq-step">          {/* â”€â”€ Ã‰2 RENVERSEMENT + HONNÃŠTETÃ‰ AUDITÃ‰E (temps 4+5) : la semaine rÃ©elle              verrouillÃ©e (Auj/Dem = SEULS jours rÃ©els du JSON â€” jamais une couleur              fabriquÃ©e sur J+2â€¦J+6, loi moat) + le registre d'erreurs public. â”€â”€ */}          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"La fin de l'histoire, avant vos invitÃ©s.","The end of the story â€” before your guests.","El final de la historia â€” antes que sus huÃ©spedes.")}</div>          <div style={bodyStyle}>{_t(lang,"Le satellite voit les bancs au large des jours avant la cÃ´te. Vous prÃ©parez, vous informez â€” clients comme administrÃ©s.","The satellite spots offshore rafts days before they reach the coast. You prepare, you inform â€” guests and citizens alike.","El satÃ©lite ve los bancos en alta mar dÃ­as antes de que lleguen a la costa. Usted se prepara, usted informa â€” clientes y ciudadanos por igual.")}</div>          {fcLvl&&fcDays.length>0&&<div className="b2f-fc">            <div className="b2f-fc-top"><span>{_t(lang,"PrÃ©vision 7 jours","7-day forecast","PronÃ³stico 7 dÃ­as")}</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fcName}</span></div>            <div className="b2f-fc-grid">              {Array.from({length:7},(_,i)=>{                const d=i<2?fcDays[i]:null                const stc=d?(STATUS[d.status]||null):null                return(<div key={i} className={"b2f-fc-day"+(d?"":" lock")}>                  <div className="b2f-fc-lab">{dayLab(i)}</div>                  {d&&stc?<><div className="b2f-fc-dot" style={{background:stc.c}}/><div className="b2f-fc-conf">{d.confidence?d.confidence+" %":""}</div></>                    :<div aria-hidden="true" style={{fontSize:13,lineHeight:"14px",color:"#6a6478"}}>ðŸ”’</div>}                </div>)              })}            </div>          </div>}          <div style={{font:"800 12px/1.4 'Bricolage Grotesque'",color:I.ink,background:`linear-gradient(180deg,#ffe9a8,#ffd75e)`,border:`2.5px solid ${I.ink}`,borderRadius:11,boxShadow:`2px 2px 0 ${I.ink}`,padding:"9px 12px",marginBottom:12}}>            {_t(lang,"Les 7 jours, plage par plage â€” inclus dans l'essai 30 j","All 7 days, beach by beach â€” included in the 30-day trial","Los 7 dÃ­as, playa por playa â€” incluidos en la prueba de 30 dÃ­as")}          </div>          <div style={{padding:"11px 12px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,marginBottom:12}}>            {proofLine&&<div style={{font:"800 12.5px/1.4 'Bricolage Grotesque'",color:I.ink}}>{proofLine}</div>}            <div style={{font:"700 11px/1.45 'Bricolage Grotesque'",color:"#52525b",marginTop:proofLine?5:0}}>{_t(lang,"76 Ã  79 % tous rÃ©gimes selon la saison Â· confiance affichÃ©e sur chaque alerte","76â€“79% across all regimes depending on season Â· confidence shown on every alert","76â€“79 % en todos los regÃ­menes segÃºn la temporada Â· confianza visible en cada alerta")}</div>            <a href={_relHref(lang)} target="_blank" rel="noopener" onClick={()=>{try{track("sg_b2b_rel_click",{step:2})}catch(_){}}} style={{display:"inline-block",font:"800 12px/1.4 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline",marginTop:6}}>{_t(lang,"VÃ©rifier le registre public â†’","Check the public record â†’","Ver el registro pÃºblico â†’")}</a>          </div>          <button className="b2f-cta" onClick={()=>goStep(3)}>{_t(lang,"Voir l'offre Pro â†’","See the Pro offer â†’","Ver la oferta Pro â†’")}</button>          <div style={{font:"600 11px/1.4 'Bricolage Grotesque'",color:"#6a6478",fontStyle:"italic",textAlign:"center",marginTop:10}}>{_t(lang,"Il regarde la mer, jamais vos clients.","He watches the sea, never your guests.","Mira el mar, nunca a sus clientes.")}</div>        </div>:!sent&&step===3?<div key={3} className="sgseq-step">          {/* â”€â”€ Ã‰3 OFFRE HIÃ‰RARCHISÃ‰E (temps 6a) : UNE dÃ©cision â€” le format. Pro hÃ©ros,              Brief/Territoire = rangÃ©es compactes visibles SANS clic (WTP non biaisÃ©e). â”€â”€ */}          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"Choisissez votre format. L'essai est offert.","Pick your format. The trial is on us.","Elija su formato. La prueba es gratis.")}</div>          <div className="b2f-hero" style={{marginBottom:9}}>            {cur.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}            <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>              <span style={{font:"800 16px/1.1 'Bricolage Grotesque'",color:I.ink}}>{cur.icon} {cur.name}</span>              <span style={{font:"800 13.5px/1.2 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{cur.id==="pro"&&proPay&&proPay.amt                ?_t(lang,`79 â‚¬/mois ou ${proPay.amt}/an`,`â‚¬79/mo or ${proPay.amt}/yr`,`79 â‚¬/mes o ${proPay.amt}/aÃ±o`)                :cur.price}</span>            </div>            {cur.id==="pro"?<ul style={{margin:"8px 0 2px",padding:"0 0 0 16px",font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#33333c"}}>              <li>{_t(lang,"Mis en avant dans l'app au moment oÃ¹ le voyageur vÃ©rifie avant de rÃ©server","Featured in the app right when travelers check before booking","Destacado en la app justo cuando el viajero comprueba antes de reservar")}</li>              <li>{_t(lang,"Brief du matin + alerte avant l'Ã©chouage","Morning brief + alert before it lands","Informe matinal + alerta antes de la llegada")}</li>              <li>{_t(lang,"PrÃ©vision 7 jours + encart Ã  vos couleurs sur votre site","7-day forecast + a panel in your colors on your website","PronÃ³stico 7 dÃ­as + panel con sus colores en su web")}</li>            </ul>:<div style={{font:"600 12.5px/1.5 'Bricolage Grotesque'",color:"#33333c",marginTop:7}}>{cur.pitch}</div>}            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:"#6a6478",marginTop:6}}>{cur.id==="pro"?_t(lang,"Pour hÃ´tels & resorts. 2 mois offerts en annuel.","For hotels & resorts. 2 months free yearly.","Para hoteles y resorts. 2 meses gratis al aÃ±o."):null}</div>          </div>          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:12}}>            {TIERS.filter(t=>t.id!==tier).map(t=>(              <button key={t.id} className="b2f-row" onClick={()=>{setTier(t.id);try{track("sg_b2b_tier_select",{tier:t.id})}catch(_){}}}>                <span style={{font:"800 13px/1.35 'Bricolage Grotesque'"}}>{t.icon} {t.name} â€” {t.price}</span>                <span style={{font:"600 11.5px/1.35 'Bricolage Grotesque'",color:"#52525b",display:"block"}}>{t.id==="brief"                  ?_t(lang,"Le brief quotidien par email. GÃ®tes, restos, clubs plage.","The daily brief by email. Guesthouses, restaurants, beach clubs.","El informe diario por email. Alojamientos, restaurantes, clubes de playa.")                  :t.id==="territoire"?_t(lang,"Communes & offices de tourisme : multi-plages, rapports, API.","Towns & tourism boards: multi-beach, reports, API.","Municipios y oficinas de turismo: multi-playa, informes, API.")                  :_t(lang,"HÃ´tels & resorts : app + brief + alertes + widget.","Hotels & resorts: app + brief + alerts + widget.","Hoteles y resorts: app + informe + alertas + widget.")}</span>              </button>            ))}          </div>          <button className="b2f-cta" onClick={()=>goStep(4)}>{_t(lang,"DÃ©marrer l'essai 30 j â€” sans carte â†’","Start the 30-day trial â€” no card â†’","Empezar la prueba de 30 dÃ­as â€” sin tarjeta â†’")}</button>          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prÃ©lÃ¨vement automatique Â· stop quand vous voulez","30-day trial, no card, no auto-charge Â· stop anytime","Prueba 30 dÃ­as, sin tarjeta, sin cobro automÃ¡tico Â· pare cuando quiera")}</div>        </div>:!sent?<div key={4} className="sgseq-step">          {/* â”€â”€ Ã‰4 L'ASK ISOLÃ‰ (temps 6b) : le SEUL Ã©cran qui demande quelque chose.              submit() STRICTEMENT INCHANGÃ‰ (money-path). Paylink = 1re apparition. â”€â”€ */}          <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"Votre accÃ¨s s'ouvre maintenant.","Your access opens now.","Su acceso se abre ahora.")}</div>          <button className="b2f-row" onClick={()=>goBack(4)} style={{marginBottom:10}} aria-label={_t(lang,"Modifier le format","Change format","Cambiar formato")}>            <span style={{font:"800 12.5px/1.35 'Bricolage Grotesque'"}}>{cur.icon} {cur.name} Â· {cur.id==="pro"&&proPay&&proPay.amt?_t(lang,`79 â‚¬/mois ou ${proPay.amt}/an`,`â‚¬79/mo or ${proPay.amt}/yr`,`79 â‚¬/mes o ${proPay.amt}/aÃ±o`):cur.price} Â· {_t(lang,"essai 30 j sans carte","30-day trial, no card","prueba 30 dÃ­as sin tarjeta")}</span>            <span style={{font:"800 11.5px/1.35 'Bricolage Grotesque'",color:"#6a6478",display:"block",marginTop:2}}>{_t(lang,"Modifier â€¹","Change â€¹","Cambiar â€¹")}</span>          </button>          {tier==="pro"&&<>            <div style={{border:`2.5px solid ${I.ink}`,borderRadius:14,overflow:"hidden",boxShadow:`3px 3px 0 ${I.ink}`,background:"#fff",marginBottom:5}}>              <div style={{padding:"8px 12px",background:"#0a1620",color:"#fdfcf7",display:"flex",justifyContent:"space-between",gap:8}}>                <span style={{font:"800 12px/1.3 'Bricolage Grotesque'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{org.trim()||_t(lang,"Votre Ã©tablissement","Your property","Su establecimiento")}</span>                <span style={{font:"700 10.5px/1.4 'Bricolage Grotesque'",opacity:.75,whiteSpace:"nowrap"}}>{_t(lang,"par Le Veilleur","by Le Veilleur","por Le Veilleur")}</span>              </div>              <div style={{padding:"9px 12px",display:"flex",alignItems:"center",gap:8}}>                {lvl&&st1?<><span style={{width:12,height:12,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>                  <span style={{font:"800 12.5px/1.3 'Bricolage Grotesque'",color:I.ink}}>{(bName||nameOf(lvl))} Â· {st1.l}</span></>                  :<span style={{font:"700 12px/1.4 'Bricolage Grotesque'",color:"#52525b"}}>{_t(lang,"Le verdict satellite du jour de votre plage","Today's satellite verdict for your beach","El veredicto satelital del dÃ­a de su playa")}</span>}              </div>            </div>            <div style={{font:"700 10.5px/1.3 'Bricolage Grotesque'",color:"#6a6478",marginBottom:10}}>{_t(lang,"Votre encart, Ã  vos couleurs, sur votre site.","Your panel, in your colors, on your website.","Su panel, con sus colores, en su web.")}</div>          </>}          <input value={org} onChange={onOrgChange}            placeholder={_t(lang,"Nom de l'Ã©tablissement ou de la collectivitÃ© (optionnel)","Property or organization name (optional)","Nombre del establecimiento o de la entidad (opcional)")}            style={inputStyle}/>          <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}            onKeyDown={e=>{if(e.key==="Enter")submit()}}            placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}            style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>          <button className="b2f-cta" onClick={submit} disabled={!valid||busy}>{busy?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦"):_t(lang,"Activer mon essai 30 j â†’","Activate my 30-day trial â†’","Activar mi prueba de 30 dÃ­as â†’")}</button>          <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"AccÃ¨s immÃ©diat â€” aucun email de confirmation Ã  cliquer Â· premier brief demain matin Ã  7 h","Instant access â€” no confirmation email to click Â· first brief in your inbox tomorrow at 7am","Acceso inmediato â€” sin email de confirmaciÃ³n Â· primer informe maÃ±ana a las 7 h")}</div>          <div style={{font:"600 10.5px/1.45 'Bricolage Grotesque'",color:"#6a6478",textAlign:"center",marginTop:7}}>{_t(lang,"Votre email sert Ã  ouvrir votre accÃ¨s et vous envoyer le brief (intÃ©rÃªt lÃ©gitime) Â· conservÃ© 12 mois Â· supprimÃ© sur simple demande.","Your email is used to open your access and send your brief (legitimate interest) Â· kept 12 months Â· deleted on request.","Su email sirve para abrir su acceso y enviarle el informe (interÃ©s legÃ­timo) Â· conservado 12 meses Â· eliminado a peticiÃ³n.")}</div>          {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:9}}>            <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"ask"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`DÃ©jÃ  dÃ©cidÃ© ? Payez l'annÃ©e directement â€” ${payOf(tier).amt} (2 mois offerts) â†’`,`Already decided? Pay the year directly â€” ${payOf(tier).amt} (2 months free) â†’`,`Â¿Ya decidido? Pague el aÃ±o directamente â€” ${payOf(tier).amt} (2 meses gratis) â†’`)}</a>          </div>}        </div>:token?<>          {/* Essai activÃ© INSTANTANÃ‰MENT : token Pro 30 j en main â†’ on envoie l'hÃ´tel             droit dans son espace (?k=token) dÃ©jÃ  marque-blanche. ZÃ©ro attente, zÃ©ro call. */}          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Essai activÃ© âœ“","Trial activated âœ“","Prueba activada âœ“")}</div>          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:8}}>{_t(lang,"Votre accÃ¨s Pro 30 jours est actif. Ouvrez votre espace pour brancher votre widget et vos alertes â€” on vient aussi de vous l'envoyer par email.","Your 30-day Pro access is live. Open your space to set up your widget and alerts â€” we've also just emailed it to you.","Su acceso Pro de 30 dÃ­as estÃ¡ activo. Abra su espacio para configurar su widget y alertas â€” tambiÃ©n se lo enviamos por email.")}</div>          <div style={{font:"700 12.5px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:14}}>{_t(lang,"Premier brief demain matin dans votre boÃ®te.","First brief lands in your inbox tomorrow morning.","Primer informe maÃ±ana por la maÃ±ana en su correo.")}</div>          <a href={`/pro/espace/?k=${encodeURIComponent(token)}`} onClick={()=>{try{track("sg_b2b_space_open",{tier:cur.id})}catch(_){}}} style={{display:"block",width:"100%",boxSizing:"border-box",textAlign:"center",textDecoration:"none",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Ouvrir mon espace Pro â†’","Open my Pro space â†’","Abrir mi espacio Pro â†’")}</a>          {/* Paylink annuel au PIC DE CONVICTION (post-activation, rÃ©ciprocitÃ© maximale) â€”             pro/brief seulement, JAMAIS territoire (le parcours devis/BDC occupe la place). */}          {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:10}}>            <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"confirm"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`Vous savez dÃ©jÃ  que vous resterez ? L'annÃ©e : ${payOf(tier).amt} (2 mois offerts) â†’`,`Already know you'll stay? The year: ${payOf(tier).amt} (2 months free) â†’`,`Â¿Ya sabe que se quedarÃ¡? El aÃ±o: ${payOf(tier).amt} (2 meses gratis) â†’`)}</a>          </div>}          {/* Territoire (mairies/communes) : accÃ¨s dÃ©jÃ  ouvert + opt-in Â« programmons un point Â»             â†’ demande de devis/RDV transfÃ©rÃ©e au fondateur (b2b-meeting.php). Funnel hybride. */}          {tier==="territoire"&&<TerritoireMeeting lang={lang} email={email.trim()} org={org.trim()}/>}        </>:<>          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reÃ§u âœ“","Got it âœ“","Â¡Recibido âœ“")}</div>          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{tier==="territoire"            ? _t(lang,"On vous recontacte sous 24h pour cadrer votre dÃ©ploiement multi-plages.","We'll get back to you within 24h to scope your multi-beach rollout.","Le contactamos en 24h para definir su despliegue multiplaya.")            : _t(lang,"On vous recontacte sous 24h pour activer votre surveillance et dÃ©marrer.","We'll get back to you within 24h to set up your monitoring.","Le contactamos en 24h para activar su monitoreo.")}</div>          <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>        </>}      </div>    </div>  )}// â”€â”€ WorldPaywall â€” skin Â« continuitÃ© du monde SVG Â» (A/B pw_world). Jury winner.function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){  const LL=T[lang]||T.fr  // Capture B2B (hÃ´tels/collectivitÃ©s) â€” porte discrÃ¨te vers le drip B2B existant.  const [showB2B,setShowB2B]=useState(false)  // â”€â”€ PalmarÃ¨s publiÃ© (Â« sell the track record, not the map Â») â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  // Le moat = notre fiabilitÃ© auditable. On la fetch Ã  l'OUVERTURE du paywall  // (1 seul fetch, modal montÃ© â†’ pas de prop-threading dans le monolithe) et on  // la surface au POINT DE DÃ‰CISION (fuite #1 modalâ†’CTA 2%) faÃ§on Airbnb : note  // + volume + Â« public Â». HonnÃªtetÃ© dure : on montre la fiabilitÃ© Â« mer propre Â»  // PAR RÃ‰GIME (le nombre fort qui ne s'auto-mutile jamais), JAMAIS le hit-rate  // par plage (descend Ã  23% en saison calme = self-harm, cf reliability-badge).  const[_trackRec,_setTrackRec]=useState(null)  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])  const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()  // A/B preuve sociale (PassOffer) : badge communautÃ© HONNÃŠTE (__COMM = plancher leads email).  // PROMU EN DÃ‰FAUT â€” preuve sociale honnÃªte toujours visible. Rollback ?pwsocial=0.  const pwSocial=(()=>{try{if(/[?&]pwsocial=0/.test(window.location.search))return false;if(/[?&]pwsocial=1/.test(window.location.search))return true;return true}catch(_){return true}})()  // A/B fraÃ®cheur (PassOffer) : "DonnÃ©es mises Ã  jour il y a Xh" â€” rÃ©cence rÃ©elle du pipeline.  // PROMU EN DÃ‰FAUT â€” fraÃ®cheur toujours visible. Rollback ?pwfresh=0.  const pwFresh=(()=>{try{if(/[?&]pwfresh=0/.test(window.location.search))return false;if(/[?&]pwfresh=1/.test(window.location.search))return true;return true}catch(_){return true}})()  const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null  // Preuve du moat au point de dÃ©cision : lien /fiabilite/ Ã  l'Ã©cran Â« Avant de  // payer Â» (doctrine storytelling temps #5). DÃ©faut ON, rollback ?pwrel=0.  const pwRel=(()=>{try{return !/[?&]pwrel=0/.test(window.location.search)}catch(_){return true}})()  // RÃ©gime au plus gros Ã©chantillon Â« mer propre Â» = nombre fort ET honnÃªte.  const _recordProof=(()=>{    try{      const r=_trackRec;if(!r||!r.byRegime)return null      const best=Object.values(r.byRegime).filter(x=>x&&x.cleanSamples>0).sort((a,b)=>b.cleanSamples-a.cleanSamples)[0]      if(!best||!best.cleanReliabilityPct)return null      const pct=best.cleanReliabilityPct,nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")      return _t(lang,        `${pct}% justes Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,        `${pct}% correct Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,        `${pct}% correctos Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)    }catch(_){return null}  })()  const hasAnnual=!!LINK_ANNUAL  const hasPro=!!LINK_PRO  // isPro = user has paid for the Pro tier (9.99â‚¬, unlocks WhatsApp alerts,  // 14-day forecast, priority email support). Separate flag from sg_premium  // so existing â‚¬4.99 subs keep their current access; Pro is strictly additive.  const isPro=typeof window!=="undefined"&&localStorage.getItem("sg_premium_pro")==="1"  // Real beach data from live sargassum.json â€” makes the "morning brief" preview genuine  // levels is keyed by numeric index ("0","1",...); beach id is in b.id field  const _lvls=Object.values(sargData?.levels||{})  const _islandLvls=_lvls.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))  // MÃªme source que le header de liste (status==='clean') â€” l'ancien seuil  // score>=70 contredisait le compte "{x}/{y} plages propres" affichÃ© ailleurs.  const _cleanCount=_islandLvls.filter(b=>b.status==="clean").length  const _totalCount=_islandLvls.length  // FIX modalâ†’CTA (fuite #1, 2% sur 3416 modals) : en SAISON CALME (â‰¥80% propres,  // 64% du temps) l'argument Â« alerte AVANT que Ã§a tourne Â» tombe Ã  plat â€” rien ne  // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit  // SANS peur = la prÃ©vision (Â« sache oÃ¹ sera la mer DEMAIN Â»). ?pwcalm=1/0 en QA.  const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8  // PROMU EN DÃ‰FAUT (cohÃ©rence Ã©lÃ©vation premium) : la value-prop POSITIVE en saison  // calme (Â« Sache oÃ¹ sera la mer demain Â») est le dÃ©faut 85%, 15% holdout mesurable.  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()  const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]  // Nouvelles rÃ©gions : ids opaques (pc001â€¦) â†’ nom rÃ©el depuis REGION.beaches.  // MQ/GP : derivation slug historique inchangÃ©e.  // Nom CANONIQUE â€” le slug-derive cassait les noms GP au point de dÃ©cision  // (Â« Pt Chateaux Â» au lieu de Â« Pointe des ChÃ¢teaux Â») â†’ modalâ†’CTA GP 0,9% (3Ã— MQ).  // MÃªme source que _kidsOf (BEACHES_FALLBACK via SARG_TO_BEACH) + track-record en  // filet (guardÃ©), slug-derive en dernier recours (anti-null pendant le fetch). wupuzpuuh.  const _nameOf=lv=>{    if(!lv||!lv.id)return null    if(IS_NEW_REGION)return REGION.beaches?.find(b=>b.id===lv.id)?.name||null    const canon=BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.name      ||(_trackRec&&_trackRec.byBeach&&_trackRec.byBeach[lv.id]&&_trackRec.byBeach[lv.id].name)    return canon||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null  }  const _topName=_nameOf(_topBeach)  const _topScore=_topBeach?.score||null  // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]  const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))  const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null  const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null  const _ctxStatus=_hasBeachCtx?(beach&&beach.status)||null:null  // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer  // golden-hour. PRNG seedÃ© (stable entre renders = calme, jamais Math.random/render),  // capÃ© 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = Ã©toile-guide.  const _aggStatus=_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"  const _constelMood=VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein  const _constel=useMemo(()=>{    const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}    return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})  },[_islandLvls,_topBeach])  // Value card 02 : destination = vraie plage propre du jour calculÃ©e du live â€”  // plus aucun nom de plage inventÃ© ni changement d'Ã©tat fabriquÃ©.  const _cleanTop=_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]  const _exSwitch=_nameOf(_cleanTop)||_topName||null  // Value card 03 : vraie meilleure plage du samedi depuis le forecast hebdo.  // Suffixe enfants UNIQUEMENT si kids:true dans la donnÃ©e rÃ©gion.  const _kidsOf=lv=>{    if(!lv)return false    if(IS_NEW_REGION)return !!REGION.beaches?.find(b=>b.id===lv.id)?.kids    return !!BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.kids  }  const _wkend=(()=>{    const wk=sargData?.weekly||{}    const ref=_islandLvls.map(lv=>wk[lv.id]?.forecast).find(f=>Array.isArray(f)&&f.length)    if(!ref)return null    let satIdx=-1,sunIdx=-1    ref.forEach((f,i)=>{      if(!f?.date)return      const dow=new Date(f.date+"T12:00:00Z").getUTCDay()      if(satIdx<0&&dow===6)satIdx=i      if(sunIdx<0&&dow===0&&i>0)sunIdx=i    })    if(satIdx<0)return null    const cand=_islandLvls.map(lv=>{      const fc=wk[lv.id]?.forecast      if(!fc?.[satIdx]?.status)return null      return{lv,sat:fc[satIdx].status,sun:fc[sunIdx]?.status||null}    }).filter(Boolean)    if(!cand.length)return null    const cleanSat=cand.filter(c=>c.sat==="clean").sort((a,b)=>(b.lv.score||0)-(a.lv.score||0))    const pick=cleanSat[0]||[...cand].sort((a,b)=>(b.lv.score||0)-(a.lv.score||0))[0]    const name=_nameOf(pick.lv)    if(!name)return null    return{name,sat:pick.sat,kids:_kidsOf(pick.lv),allClean:pick.sat==="clean"&&pick.sun==="clean"}  })()  const modalOpenedAt=useRef(Date.now())  const panelRef=useRef(null)  const startYRef=useRef(0)  // Swipe-down to dismiss  const onTouchStartModal=e=>{startYRef.current=e.touches[0].clientY}  const onTouchMoveModal=e=>{    if(panelRef.current&&panelRef.current.scrollTop>5)return    const dy=e.touches[0].clientY-startYRef.current    if(dy>0&&panelRef.current)panelRef.current.style.transform=`translateY(${dy}px)`  }  const onTouchEndModal=e=>{    if(panelRef.current&&panelRef.current.scrollTop>5){if(panelRef.current)panelRef.current.style.transform="";return}    const dy=(e.changedTouches[0]?.clientY||0)-startYRef.current    if(dy>60)onClose()    else if(panelRef.current){panelRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";panelRef.current.style.transform="";setTimeout(()=>{if(panelRef.current)panelRef.current.style.transition=""},300)}  }  // Escape key to close (close TRACKÃ‰ â†’ gÃ©rÃ© ici, pas dans useModalA11y : escClose=false)  useEffect(()=>{    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}    document.addEventListener("keydown",h)    return()=>document.removeEventListener("keydown",h)  },[onClose,source])  // a11y plancher : focus-trap (Tab piÃ©gÃ© dans le panel) + restauration du focus au close.  // Ã‰chap dÃ©jÃ  gÃ©rÃ© juste au-dessus (trackÃ©) â†’ escClose=false pour ne pas doubler onClose.  useModalA11y(panelRef,onClose,false)  // Annuel par dÃ©faut (best practice SaaS : AOV +60%, churn plus bas, cash  // upfront) quand un lien annuel existe â€” sinon mensuel. Le badge -33% et le  // prix /mois Ã©quivalent vendent l'annuel sans forcer l'user Ã  diviser.  // USD (no-trial) : Mensuel par dÃ©faut â€” audit Starlink 2026-06-11 : leur 1er  // contact prix est TOUJOURS mensuel ; un Â« $79 billed today Â» prÃ©sÃ©lectionnÃ©  // 60s aprÃ¨s la dÃ©couverte = le point de rupture probable. EUR inchangÃ© (A/B).  // DÃ©faut plan : EUR (MQ/GP, REGION_PAY null) â†’ Annuel (engagement saison, +LTV) ;  // USD (REGION_PAY) â†’ Mensuel (audit Starlink : 1er contact prix mensuel). On  // dÃ©rive de REGION_PAY (et non plus de NO_TRIAL, dÃ©sormais true partout).  const[plan,setPlan]=useState(()=>{    // PrÃ©selection deep-link depuis /offres/ (?plan=â€¦), consommÃ©e une fois.    try{const dp=sessionStorage.getItem("sg_deep_plan");if(dp==="monthly"||dp==="annual"){sessionStorage.removeItem("sg_deep_plan");if(dp==="monthly"||hasAnnual)return dp}}catch(_){}    return hasAnnual&&!REGION_PAY?"annual":"monthly"  })  // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:  //   pro â†’ annual â†’ monthly, only if Stripe Link is configured for that tier.  const effectivePlan=    (plan==="pro"&&hasPro)?"pro"    :(plan==="annual"&&hasAnnual)?"annual"    :"monthly"  const stripeLinkFor={monthly:LINK_MONTHLY,annual:LINK_ANNUAL,pro:LINK_PRO}  // Enrichit le Payment Link Stripe : prefilled_email (friction checkout -10/30%  // selon Stripe, l'email est dÃ©jÃ  en localStorage) + client_reference_id  // (dÃ©bloque l'attribution paiementâ†’source/plan/rÃ©gion, aujourd'hui aveugle â€”  // remonte dans le webhook + Stripe dashboard). buy.stripe.com = le processeur  // de paiement choisi par l'user, pas un tiers : prefill standard et attendu.  const stripeUrlWith=(link,plan)=>{    if(!link)return link    try{      const u=new URL(link)      const email=localStorage.getItem("sg_email")||""      if(email)u.searchParams.set("prefilled_email",email)      // ARMER le panier abandonnÃ© (audit widget-factory) : ce point est le      // chokepoint prÃ©-checkout. La banniÃ¨re de rÃ©cupÃ©ration (l.9564) LIT      // sg_checkout_abandoned mais rien ne l'Ã©crivait â†’ code mort. EffacÃ© Ã  la      // conversion (effet isPremium). Sans email la banniÃ¨re ne s'affiche pas (OK).      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}      const ref=[IS_NEW_REGION?REGION.id:(island||"mq"),plan||effectivePlan,source||"unknown"].join("_").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,200)      u.searchParams.set("client_reference_id",ref)      return u.toString()    }catch{return link}  }  // â”€â”€ Checkout ON-SITE (Stripe Payment Element, design maison) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  // Formulaire de paiement DANS le modal, aux couleurs de l'app : Payment  // Element (carte+Link) + Express Checkout (Apple/Google Pay), thÃ¨me sombre.  // AUCUN redirect, AUCUNE iframe Checkout (l'embedded mesurÃ© 12-27s le  // 2026-06-10 a Ã©tÃ© retirÃ© sur feedback utilisateur). Le SetupIntent +  // js.stripe.com sont prÃ©chauffÃ©s Ã  l'ouverture du paywall (~1s) ; au clic,  // les Elements montent en <1s. confirmSetup (3DS en iframe, jamais de  // redirect: types card+link only) â†’ action subscribe (essai 7j, prix  // rÃ©gion) â†’ premium activÃ© EN PLACE. Fallback intÃ©gral : Payment Link.  const[payStep,_setPayStep]=useState(false)  const payStepRef=useRef(false)  const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)  const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])  // Swipe-down to go back depuis l'Ã©cran paiement on-site (overlay z1300, rendu  // hors du panel â†’ ne bÃ©nÃ©ficie pas du swipe du paywall). MÃªme geste que le  // paywall : ne dÃ©clenche que si l'overlay est scrollÃ© tout en haut, glisse  // le contenu, et revient au paywall (setPayStep(false), JAMAIS onClose â†’  // l'user retombe sur le verdict gratuit, pas dans le vide).  const payScrollRef=useRef(null)  const payContentRef=useRef(null)  const payStartYRef=useRef(0)  const onTouchStartPay=e=>{payStartYRef.current=e.touches[0].clientY}  const onTouchMovePay=e=>{    if(payScrollRef.current&&payScrollRef.current.scrollTop>5)return    const dy=e.touches[0].clientY-payStartYRef.current    if(dy>0&&payContentRef.current)payContentRef.current.style.transform=`translateY(${dy}px)`  }  const onTouchEndPay=e=>{    const reset=()=>{if(payContentRef.current){payContentRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";payContentRef.current.style.transform="";setTimeout(()=>{if(payContentRef.current)payContentRef.current.style.transition=""},300)}}    if(payScrollRef.current&&payScrollRef.current.scrollTop>5){reset();return}    const dy=(e.changedTouches[0]?.clientY||0)-payStartYRef.current    if(dy>60){if(payContentRef.current)payContentRef.current.style.transform="";track("sg_pay_onsite_back",{plan:payPlanRef.current,via:"swipe"});setPayStep(false)}    else reset()  }  const[payReady,setPayReady]=useState(false)  const[payBusy,setPayBusy]=useState(false)  const[payError,setPayError]=useState("")  // Consentement RGPD/rÃ©tractation (renonciation au droit de rÃ©tractation 14 j contre  // fourniture immÃ©diate, art. L221-28 13Â° C. conso). Case NON prÃ©-cochÃ©e sur le chemin  // Pass B2C. DORMANTE par dÃ©faut : #250 a retenu le consentement IMPLICITE (Â« en validant  // l'achat, vous demandez l'exÃ©cution immÃ©diate Â», CGV) sans case â†’ on n'ajoute pas de  // friction money-path. Opt-in explicite via ?consent=1 si on veut afficher la case.  const stripeRef=useRef(null)  const elementsRef=useRef(null)  const setupSecretRef=useRef(null)  const payPrewarmPromiseRef=useRef(null)  const payMountedRef=useRef(false)  const payPlanRef=useRef("monthly")  const payReadyRef=useRef(false)  const payEmailRef=useRef(null)  const payEmailCapturedRef=useRef("") // derniÃ¨re valeur d'email dÃ©jÃ  enrÃ´lÃ©e au blur (prÃ©-Stripe), Ã©vite les doublons  const paypalBtnRef=useRef(null) // pont PayPal : conteneur du bouton d'abo  const payDivRef=useRef(null)  const expressDivRef=useRef(null)  const mollieRef=useRef(null)        // pont Mollie : objet Mollie(profileId)  const mollieCardRef=useRef(null)    // pont Mollie : composant carte (Components)  // Composants Mollie INDIVIDUELS (au lieu du composant "card" combinÃ©) : on contrÃ´le  // 100% du thÃ¨me + on pose NOS propres libellÃ©s â†’ carte en thÃ¨me SOMBRE premium, plus  // de feuille blanche bolt-on. createToken() agrÃ¨ge tous les composants montÃ©s â†’ submit  // inchangÃ© (cf. doSubscribe). RÃ©fs : titulaire / numÃ©ro / expiration / CVC.  const molHolderRef=useRef(null)  const molNumberRef=useRef(null)  const molExpiryRef=useRef(null)  const molCvcRef=useRef(null)  // PrÃ©chauffage COMPLET dÃ¨s l'ouverture du paywall : SetupIntent + stripe.js  // + Elements + MOUNT du Payment Element dans l'overlay cachÃ©. MesurÃ©  // 2026-06-10 : stripe.js ~15s + boot de l'Ã©lÃ©ment ~12s sur ce rÃ©seau â€” tout  // doit booter PENDANT la lecture du paywall, pas au clic. Un SetupIntent  // n'est pas liÃ© au plan â†’ un seul prewarm pour tout le modal.  useEffect(()=>{    if(!PAYWALL_READY)return    payPrewarmPromiseRef.current=(async()=>{      if(PAY_CAPTURE_ONLY){payReadyRef.current=true;setPayReady(true);return} // capture : aucun form de paiement Ã  monter      // â”€â”€ Pont Mollie : monte les Components (carte on-site) au lieu du Payment      // Element Stripe. Pas de SetupIntent (le cardToken est crÃ©Ã© au submit). â”€â”€      if(PAY_PROVIDER==="mollie"){        await loadMollieJs()        const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"        mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})        if(!payMountedRef.current&&molNumberRef.current){          // Composants INDIVIDUELS (titulaire/numÃ©ro/expiration/CVC) au lieu du composant          // "card" combinÃ© : le combinÃ© rendait ses propres libellÃ©s en sombre NON-stylable          // (illisible sur l'overlay) â†’ on Ã©tait forcÃ© Ã  une feuille blanche bolt-on. Ici on          // pose NOS libellÃ©s (clairs) hors iframe + texte saisi clair sur champs sombres          // â†’ carte 100% dans le thÃ¨me premium, zÃ©ro blanc. `styles` ne stylise QUE le texte          // DANS l'iframe ; le fond visible = nos divs sombres. createToken() (doSubscribe)          // collecte tous les composants montÃ©s sur l'instance â†’ submit STRICTEMENT inchangÃ©.          // backgroundColor SOLIDE (et non transparent) sur l'input DANS l'iframe : sans          // lui, l'autofill iOS/Safari peint le champ en BLANC (le nom auto-rempli ressortait          // sur fond blanc, illisible). Mollie ne supporte ni boxShadow ni :-webkit-autofill          // (cf. docs styling) â†’ backgroundColor est le seul levier ; on le pose sur les 3          // Ã©tats pour couvrir l'autofill quel que soit l'Ã©tat de validation. Doit matcher          // MOL_FIELD (la div hÃ´te, dÃ©sormais solide #241837) pour zÃ©ro couture visible.          const _molBg="#241837"          const styles={base:{color:"#eef2f7",backgroundColor:_molBg,fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0",backgroundColor:_molBg},invalid:{color:"#FF8A66",backgroundColor:_molBg}}          const M=mollieRef.current          const holder=M.createComponent("cardHolder",{styles})          const number=M.createComponent("cardNumber",{styles})          const expiry=M.createComponent("expiryDate",{styles})          const cvc=M.createComponent("verificationCode",{styles})          holder.mount(molHolderRef.current)          number.mount(molNumberRef.current)          expiry.mount(molExpiryRef.current)          cvc.mount(molCvcRef.current)          mollieCardRef.current={holder,number,expiry,cvc} // rÃ©f agrÃ©gÃ©e (diagnostic/HMR)          payReadyRef.current=true;setPayReady(true)          payMountedRef.current=true        }        return      }      // PayPal : le bouton d'abo est montÃ© par un effet dÃ©diÃ© â†’ AUCUN Payment Element      // Stripe (sinon l'ancien champ carte Stripe s'affichait en plus du bouton).      if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}      const[r]=await Promise.all([        fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},          body:JSON.stringify({action:"setup"})}),        loadStripeJs(),      ])      if(!r.ok)throw new Error("http "+r.status)      const{clientSecret}=await r.json()      if(!clientSecret)throw new Error("no clientSecret")      setupSecretRef.current=clientSecret      stripeRef.current=window.Stripe(STRIPE_PK)      elementsRef.current=stripeRef.current.elements({        clientSecret,        // locale = langue de l'UI du modal (et donc des labels + texte de mandat        // Â« En fournissant vos informationsâ€¦ Â» rendus PAR Stripe). Sans Ã§a, dÃ©faut        // 'auto' â†’ dÃ©tection navigateur : un site EN/USD (Florida) ou ES (Riviera/        // Punta Cana) affichait les labels en FR pour un navigateur FR. `lang` suit        // dÃ©jÃ  la rÃ©gion (primaryLang) + override path /en /es â†’ MQ/GP restent en FR.        locale:lang,        appearance:{theme:"night",variables:{          colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",          colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",        }},      })      // PrÃ©-mount dans l'overlay cachÃ© (toujours rendu) â€” ready pendant la lecture      if(!payMountedRef.current&&payDivRef.current){        // Friction minimale : le champ telephone venait de l'enrolement Link â€”        // Link retire du SetupIntent (card only) = plus de telephone. NE PAS        // ajouter fields.billingDetails.phone:never ici : teste 2026-06-10, le        // Payment Element ne boote plus (ready ne fire jamais) avec cette option.        // business.name : sans lui le mandat Stripe affiche Â« you allow PAY to        // charge your card Â» â€” entitÃ© sans nom Ã  l'instant exact de la dÃ©cision        // (audit checkout 2026-06-11). defaultValues.country : le fallback Ã©tait        // Â« Martinique Â» (pays du compte) sur les sites USD â€” chaque visiteur US        // devait corriger + signal site Ã©tranger. EUR : comportement inchangÃ©.        const brandName=IS_NEW_REGION          ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))          :"Sargasses Martinique"        const pe=elementsRef.current.create("payment",{layout:"tabs",          business:{name:brandName},          ...(IS_NEW_REGION?{defaultValues:{billingDetails:{address:{country:REGION.countryCode||"US"}}}}:{}),        })        pe.mount(payDivRef.current)        pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})        try{          const ece=elementsRef.current.create("expressCheckout")          ece.mount(expressDivRef.current)          ece.on("confirm",(ev)=>{            try{const em=ev?.billingDetails?.email;if(em&&payEmailRef.current&&!payEmailRef.current.value)payEmailRef.current.value=em}catch(_){}            doSubscribeRef.current()          })        }catch(_){/* wallets indisponibles : la carte suffit */}        payMountedRef.current=true      }    })()    payPrewarmPromiseRef.current.catch(()=>{}) // l'Ã©chec est gÃ©rÃ© au clic (fallback)  },[])  // â”€â”€ Pont PayPal : rend le bouton d'abo quand l'Ã©cran paiement s'ouvre (abo only ;  // les passes restent en capture). createSubscription(plan_id) â†’ popup PayPal â†’  // onApprove pose sg_premium + confirme cÃ´tÃ© serveur (forward Apps Script). â”€â”€â”€â”€â”€â”€â”€  useEffect(()=>{    if(!payStep||PAY_PROVIDER!=="paypal"||passCtxRef.current||typeof window==="undefined")return    let cancelled=false    ;(async()=>{      try{        await loadPayPalSdk(PAYPAL_CLIENT_ID)        if(cancelled||!paypalBtnRef.current||!window.paypal)return        try{paypalBtnRef.current.replaceChildren()}catch(_){} // re-render propre        payReadyRef.current=true;setPayReady(true)        const plan=payPlanRef.current==="annual"?"annual":"monthly"        const isl=IS_NEW_REGION?REGION.id:(window.location.hostname.includes("guadeloupe")?"gp":"mq")        window.paypal.Buttons({          style:{layout:"vertical",color:"gold",shape:"pill",label:"subscribe"},          createSubscription:(d,actions)=>actions.subscription.create({            plan_id:PAYPAL_PLANS[plan],            custom_id:(isl+"_"+plan+"_"+(source||"unknown")).slice(0,127),          }),          onApprove:(d)=>{            const email=((payEmailRef.current&&payEmailRef.current.value)||localStorage.getItem("sg_email")||"").trim()            try{localStorage.setItem("sg_email",email)              localStorage.setItem("sg_premium","1");if(email)localStorage.setItem("sg_premium_email",email)}catch(_){}            try{submitLead(email,"paypal_sub")}catch(_){}            try{fetch("/api/paypal.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"confirm_subscription",subscriptionId:d.subscriptionID,email,plan})}).catch(()=>{})}catch(_){}            track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})            onActivated&&onActivated();onClose&&onClose()          },          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)})},        }).render(paypalBtnRef.current)      }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu dÃ©marrer. RÃ©essaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}    })()    return ()=>{cancelled=true}  },[payStep])  const ppSub=PAY_PROVIDER==="paypal"&&!passCtxRef.current // abo PayPal (bouton) vs pass/capture  // Capture l'email DÃˆS qu'il quitte le champ (onBlur) sur l'Ã©cran de paiement â€”  // cÃ d au moment exact oÃ¹ l'user clique sur la carte/PayPal = Â« juste avant Stripe Â».  // Le partant qui tape son email puis hÃ©site sur la carte est un lead chaud : enrÃ´lÃ©  // dans le drip + panier abandonnÃ© armÃ©, MÃŠME sans paiement (carte refusÃ©e, 3DS  // abandonnÃ©, simple fermeture). Avant ce fix, submitLead ne partait qu'au clic final  // Â« Payer Â» (doSubscribe) ou onApprove PayPal â†’ tout ce trafic email Ã©tait perdu.  // Idempotent (garde sur la derniÃ¨re valeur) ; purement additif, zÃ©ro logique paiement.  const capturePayEmail=useCallback(()=>{    try{      const email=(payEmailRef.current?.value||"").trim()      if(!email||!email.includes("@")||!email.includes("."))return      if(payEmailCapturedRef.current===email)return      payEmailCapturedRef.current=email      try{localStorage.setItem("sg_email",email)}catch(_){}      try{submitLead(email,"pay_intent")}catch(_){}      // Arme la relance panier abandonnÃ© avec l'email dÃ©sormais connu (sinon la      // banniÃ¨re/recover-abandoned-cart restaient muets faute d'email).      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}      try{track("sg_pay_email_captured",{plan:payPlanRef.current,source:source||"unknown"})}catch(_){}    }catch(_){}  },[source])  const doSubscribe=useCallback(async()=>{    const plan=payPlanRef.current    if(payBusy)return    const email=(payEmailRef.current?.value||"").trim()    if(!email||!email.includes("@")||!email.includes(".")){      setPayError(_t(lang,"Entre ton email pour recevoir ton accÃ¨s.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))      return    }    // Consentement requis sur le chemin Pass B2C payant (renonciation rÃ©tractation 14 j).    // Pas de gate en capture (offre gratuite, pas de paiement) ni sur l'abo (passCtxRef null),    // ni si le flag ?consent=0 dÃ©sactive la case.        // â”€â”€ Mode CAPTURE : aucun paiement dispo â†’ on enregistre l'email (waitlist) +    // Ã©tat succÃ¨s. Relance Ã  la rÃ©ouverture (source 'mollie_waitlist'). â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€    if(PAY_CAPTURE_ONLY){      // GAP FREEMIUM : paiements indispo â†’ on OFFRE 7j de premium contre l'email      // (liste chaude + accroche au produit). Relance Ã  la rÃ©ouverture (source      // 'gap_freemium') : Â« garde ton accÃ¨s pour 4,99 â‚¬ Â». AccÃ¨s time-boxÃ© = pas de      // fuite premium permanente + urgence de conversion.      setPayBusy(true);setPayError("")      try{submitLead(email,"gap_freemium")}catch(_){}      try{localStorage.setItem("sg_email",email)        localStorage.setItem("sg_premium_pass_end",String(Date.now()+7*86400000))      }catch(_){}      track("sg_gap_freemium_unlock",{plan:payPlanRef.current,pass:passCtxRef.current?passCtxRef.current.pass:null,source:source||"unknown"})      setPayBusy(false);onActivated&&onActivated();onClose&&onClose();return    }    // Enrôle l'email (récupérable si abandon)
     try{submitLead(email,"onsite_checkout")}catch(_){}
-    // â”€â”€ Pont Mollie : createToken (Components) â†’ mollie.php. 3DS â†’ redirect+retour
-    // (?mollie_return=1 confirme + dÃ©bloque). Sinon confirme inline puis dÃ©bloque. â”€
+    // —— Hosted checkout Mollie : pas de carte, pas de token, redirect direct ——
     if(PAY_PROVIDER==="mollie"){
       setPayBusy(true);setPayError("")
       try{
-        const{token,error:tErr}=await mollieRef.current.createToken()
-        if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"VÃ©rifie ta carte.","Check your card.","Revisa tu tarjeta."))
         const _pc=passCtxRef.current
-        // Parrainage (Mollie) : transmet le code parrain + le mien (attribution
-        // enregistrÃ©e cÃ´tÃ© serveur ; la rÃ©compense est appliquÃ©e au go-live Mollie,
-        // cf. MOLLIE_MIGRATION.md â€” Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-          :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,redirectUrl:window.location.origin+window.location.pathname+"?mollie_return=1"}
+          :{action:"create_subscription",plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
         if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
-        if(d.checkoutUrl){ // 3DS : stocke le contexte de dÃ©blocage puis redirige vers Mollie
+        if(d.checkoutUrl){
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
           window.location.href=d.checkoutUrl;return
         }
-        // Pas de 3DS : confirme cÃ´tÃ© serveur (source de vÃ©ritÃ©) puis dÃ©bloque.
-        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-        const cd=await cr.json().catch(()=>({}))
-        if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-        localStorage.setItem("sg_email",email)
-        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
-        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
-        setPayBusy(false);onActivated?.();onClose();return
-      }catch(e){
-        setPayBusy(false)
-        const msg=(e&&e.message)?String(e.message):""
-        setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
-        track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
-        return
-      }
-    }
-    setPayBusy(true);setPayError("")
-    try{
-      const{error:subErr}=await elementsRef.current.submit()
-      if(subErr)throw subErr
-      const{error,setupIntent}=await stripeRef.current.confirmSetup({
-        elements:elementsRef.current,clientSecret:setupSecretRef.current,
-        redirect:"if_required",
-        confirmParams:{return_url:window.location.origin+"/?setup_return=1",payment_method_data:{billing_details:{email}}},
-      })
-      if(error)throw error
-      // PASS one-time (pw_pass_onsite) : MÃŠME carte collectÃ©e, on facture UNE fois (PaymentIntent), pas d'abo.
-      const _pc=passCtxRef.current
-      if(_pc){
-        const pr=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({action:"pay_once",email,pass:_pc.pass,cents:_pc.cents,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
-        const pd=await pr.json().catch(()=>({}))
-        if(!pr.ok||pd.error||!pd.paymentIntentId)throw new Error(pd.error||"pay_once failed")
-        if(pd.paymentFailed)throw new Error(_t(lang,"Carte refusÃ©e. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))
-        if(pd.requiresAction&&pd.piClientSecret){
-          const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(pd.piClientSecret)
-          if(payErr)throw payErr
-          if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing")throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-        }
-        localStorage.setItem("sg_email",email)
-        localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))
-        track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
-        setPayBusy(false);onActivated?.();onClose();return
-      }
-      // Parrainage : transmet le code parrain (le filleul ramenÃ© crÃ©dite le parrain
-      // de jours de pass â€” cf. mollie.php refcredit) + mon propre code en metadata customer.
-      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
-      const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown",referredBy:_refBy,myReferralCode:_myRef})})
-      const d=await r.json().catch(()=>({}))
-      if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")
-      // NO_TRIAL (USD) : la 1re facture part immÃ©diatement â€” si la banque
-      // exige une confirmation (3DS), on la joue ici, dans le mÃªme Ã©cran.
-      if(d.paymentFailed)throw new Error(_t(lang,"Carte refusÃ©e. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))
-      if(d.requiresAction&&d.piClientSecret){
-        const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(d.piClientSecret)
-        if(payErr)throw payErr
-        if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing"){
-          throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-        }
-        track("sg_pay_onsite_3ds",{plan,status:paymentIntent?.status||"unknown"})
-      }
-      // SUCCÃˆS â€” premium activÃ© en place, zÃ©ro redirect
-      localStorage.setItem("sg_email",email)
-      localStorage.setItem("sg_premium","1")
-      localStorage.setItem("sg_premium_email",email)
-      if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
-      track("sg_conversion",{session_id:d.subscriptionId,method:"onsite",plan})
-      if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan})
-      setPayBusy(false)
-      onActivated?.()
-      onClose()
-    }catch(e){
-      setPayBusy(false)
-      const msg=(e&&e.message)?String(e.message):""
-      setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
-      track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
-    }
-  },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
-  const doSubscribeRef=useRef(doSubscribe)
-  useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
-  // â”€â”€ Apple Pay / Google Pay (Mollie) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // On NE fait PAS l'intÃ©gration directe (qui imposerait d'hÃ©berger le fichier de
-  // vÃ©rification de domaine Apple + un test device). On force `method` cÃ´tÃ© serveur
-  // â†’ Mollie renvoie son checkout hÃ©bergÃ© oÃ¹ la feuille native du wallet s'affiche
-  // (sur LEUR domaine, dÃ©jÃ  vÃ©rifiÃ© chez Apple/Google). Retour ?mollie_return=1 â†’
-  // mÃªme confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).
-  // Wallet via REDIRECT Mollie (checkout hÃ©bergÃ©) â€” fallback universel : Google Pay, ou
-  // Apple Pay quand l'intÃ©gration directe n'est pas dispo / domaine pas encore validÃ©.
-  const walletRedirect=useCallback(async(method)=>{
-    const _pc=passCtxRef.current
-    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
-    const plan=payPlanRef.current
-    setPayBusy(true);setPayError("")
-    if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
-    try{
-      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
-      const body=_pc
-        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-        :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
-      const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-      const d=await r.json().catch(()=>({}))
-      if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
-      track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
-      if(d.checkoutUrl){
-        try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
-        window.location.href=d.checkoutUrl;return
-      }
-      const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-      const cd=await cr.json().catch(()=>({}))
-      if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-      if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
-      else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
-      setPayBusy(false);onActivated?.();onClose()
-    }catch(e){
-      setPayBusy(false)
-      const msg=(e&&e.message)?String(e.message):""
-      setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
-      try{setPayStep(true)}catch(_){}
-      track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
-    }
-  },[lang,source,onActivated,onClose])
-  // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()
-  // DOIVENT Ãªtre synchrones dans le geste utilisateur (sinon Safari refuse la feuille).
-  const payWithWallet=useCallback((method)=>{
-    if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
-    const _pc=passCtxRef.current
-    // MÃªme garde de consentement que le bouton carte sur le chemin Pass B2C.
-    if(consentFlag&&_pc&&!consentOk){
-      setPayError(_t(lang,"Coche la case pour activer ton accÃ¨s immÃ©diat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
-      return
-    }
-    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
-    const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
-    if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
-      setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","AÃ±ade tu email primero."))
-      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
-      return
-    }
-    // â”€â”€ Apple Pay ON-SITE (direct) : feuille NATIVE sur notre page, zÃ©ro redirect â”€â”€
-    if(method==="applepay"&&typeof window!=="undefined"&&window.ApplePaySession){
-      let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}
-      if(canAP){
-        try{
-          const cents=_pc?_pc.cents:499
-          // countryCode = pays MARCHAND (compte Mollie FR) â†’ "FR" pour toutes les rÃ©gions.
-          // currencyCode = devise de la transaction â†’ USD pour les rÃ©gions touristes.
-          const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],
-            supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
-            total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
-            requiredBillingContactFields:["email"]})
-          setPayBusy(true);setPayError("")
-          track("sg_pay_wallet_start",{plan:payPlanRef.current,provider:"mollie",method:"applepay_native",pass:_pc?_pc.pass:null})
-          ses.onvalidatemerchant=async(ev)=>{
-            try{
-              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"applepay_session",validationUrl:ev.validationURL})})
-              const sess=await r.json().catch(()=>null)
-              if(!r.ok||!sess||sess.error)throw new Error("validation")
-              ses.completeMerchantValidation(sess)
-            }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay") /* domaine pas validÃ© chez Mollie â†’ redirect de secours */}
-          }
-          ses.onpaymentauthorized=async(ev)=>{
-            try{
-              const token=JSON.stringify(ev.payment.token)
-              const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
-              const body=_pc
-                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
-                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
-              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-              const d=await r.json().catch(()=>({}))
-              if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
-              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-              const cd=await cr.json().catch(()=>({}))
-              if(!cd.paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}
-              ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
-              if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
-              if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
-              else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
-              setPayBusy(false);onActivated?.();onClose()
-            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}
-          }
-          ses.oncancel=()=>{setPayBusy(false)}
-          ses.begin()
-          return
-        }catch(_){ /* Ã©chec init ApplePaySession â†’ fallback redirect ci-dessous */ }
-      }
-    }
-    // â”€â”€ Fallback / Google Pay : redirect Mollie hÃ©bergÃ© (marche sans domaine validÃ©) â”€â”€
-    walletRedirect(method)
-  },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
-  const startCheckout=useCallback(async(plan,via)=>{
-    passCtxRef.current=null // entrÃ©e ABONNEMENT : ce n'est pas un pass one-time
-    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
-    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via});setPayStep(true);return}
-    // Checkout 100% ON-SITE â€” plus de redirect off-site buy.stripe.com. En cas
-    // d'Ã©chec de montage (rÃ©seau lent / Stripe.js bloquÃ©), erreur + Â« RÃ©essayer Â»
-    // DANS l'overlay (recharge propre) : on ne quitte jamais le domaine.
-    const onsiteError=(why)=>{
-      track("sg_pay_onsite_fail",{plan,source:source||"unknown",via:via+"_"+why})
-      setPayError(_t(lang,"Le paiement sÃ©curisÃ© n'a pas pu dÃ©marrer. VÃ©rifie ta connexion et rÃ©essaie.","Secure checkout couldn't start. Check your connection and retry.","El pago seguro no pudo iniciarse. Revisa tu conexiÃ³n y reintÃ©ntalo."))
-    }
-    payPlanRef.current=plan
-    // Arme la rÃ©cupÃ©ration de panier abandonnÃ© (ex-effet de bord de stripeUrlWith) :
-    // la banniÃ¨re de relance lit sg_checkout_abandoned.
-    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
-    setPayError("")
-    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})
-    setPayStep(true) // rÃ©vÃ¨le l'Ã©tape (le formulaire prÃ©-montÃ© est dÃ©jÃ  prÃªt ou boote)
-    const t0=Date.now()
-    try{
-      // Le prewarm a dÃ©jÃ  tout lancÃ© Ã  l'ouverture du modal. Budget large :
-      // l'Ã©tape est visible avec spinner ; en cas d'Ã©chec â†’ erreur + rÃ©essayer.
-      await Promise.race([
-        payPrewarmPromiseRef.current||Promise.reject(new Error("no prewarm")),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error("prewarm timeout")),20000)),
-      ])
-      track("sg_pay_onsite_open",{plan,via,ms:Date.now()-t0,ready:payReadyRef.current})
-      // L'Ã©lÃ©ment monte (ou est montÃ©) ; si ready n'arrive pas â†’ erreur in-place.
-      setTimeout(()=>{
-        if(payStepRef.current&&!payReadyRef.current&&payPlanRef.current===plan){
-          try{console.error("sg_onsite_slow_element")}catch(_){}
-          onsiteError("slow")
-        }
-      },20000)
-    }catch(e){
-      try{console.error("sg_onsite_mount_fail",e)}catch(_){}
-      onsiteError("fallback")
-    }
-  },[source,lang])
-  // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run):
-  // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks. The
-  // sample_first JSX branches + ctaOrder/sampleAvailable consts were removed
-  // 2026-06-10 (dead-code cleanup) â€” paid-first (control) is the only layout.
-  // Stripe Prelude A/B (pw_prelude): control=direct redirect (v1), prelude=2-step
-  // micro-interstitial inside modal. Design v2 bet #2 â€” addresses the 50% drop
-  // measured at redirectâ†’payment by showing "exactly what happens" (plan summary,
-  // timeline, trust row) before the tab navigates to buy.stripe.com.
-  // pw_prelude HARVESTED 2026-06-18 â†’ inlined to control "direct". ab-eval 28j :
-  // prelude=0% (n=210) vs direct=0.79% (n=252) â€” l'interstitiel ajoute une Ã©tape
-  // sans bÃ©nÃ©fice mesurable (cf. methodo [[reference_ab_tests]] : conversion non
-  // concluable Ã  ce traffic, on RÃ‰COLTE le bras simple en tÃªte). DÃ©faut = chemin
-  // direct (plus court, en tÃªte). RÃ©versible : restaurer abVariant("pw_prelude",â€¦).
-  const preludeVariant="direct"
-  // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tÃªte golden-hour + Veilleur +
-  // promesse) au lieu d'un mur sombre plat â€” cible la fuite modalâ†’CTA 2%. N'habille QUE le
-  // shell, AUCUN changement Ã  la logique de paiement. Mesurable (modal_open/cta identiques).
-  const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
-  // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero
-  // scenePay. PROMU EN DÃ‰FAUT (verdict design fondateur : la premium DOIT Ãªtre au niveau
-  // home, pas un mur sombre A/B-gatÃ© Ã  une minoritÃ©) â†’ 85% voient la scÃ¨ne golden-hour,
-  // 15% holdout (mur sombre) = filet sÃ©curitÃ©-revenu mesurable. ?pwconstel=0 force le holdout.
-  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
-  // A/B pw_comic â€” REFONTE PAYWALL Â« COMIC-BOOK / BD Â» (PRODUCT.md Â§6, pivot 19/06).
-  // Tue Â« le paywall blanc gÃ©nÃ©rique Â» (cards translucides sur vert sombre) : remplace
-  // TOUT le pitch + l'action par une scÃ¨ne golden-hour comic + cases BD paper/ink (mÃªmes
-  // tokens .lc- que ChasseDetail). Asset validÃ© = design/proto-paywall-comic.html. NE TOUCHE
-  // PAS la logique de paiement : le CTA appelle startCheckout(effectivePlan,"comic") inchangÃ©,
-  // l'overlay payStep on-site (rendu hors panel) reste montÃ©.
-  // PROMU EN DÃ‰FAUT 2026-06-19 (rendu WebKit mobile vÃ©rifiÃ© OK, 0 erreur JS, smoke) : tous
-  // les visiteurs ont le paywall comic â€” un seul monde, fin de la roulette. Override debug
-  // ?pwcomic=0 = revient au PremiumModal legacy (rollback revenu instantanÃ© si besoin).
-  const pwComic=(()=>{try{return !/[?&]pwcomic=0/.test(window.location.search)}catch(_){return true}})()
-  // A/B pw_world â€” skin Â« CONTINUITÃ‰ DU MONDE SVG Â» (gagnant jury). Quand actif, REMPLACE
-  // ComicPaywall par WorldPaywall (mÃªmes props, ZÃ‰RO logique de paiement touchÃ©e : le CTA
-  // appelle startCheckout(effectivePlan,"world") inchangÃ©). PUBLIÃ‰ 100% (GO fondateur 22/06
-  // Â« passe direct Ã  100% Â») : WorldPaywall = LE paywall par dÃ©faut, remplace ComicPaywall pour
-  // tous. ROLLBACK INSTANTANÃ‰ = ?pwworld=0 (force le contrÃ´le ComicPaywall) ; surveiller le MRR
-  // Stripe (daily-metrics). Asset : design/wow-candidates/paywall-world-continuity.html.
-  const pwWorld=(()=>{try{if(/[?&]pwworld=0/.test(window.location.search))return false}catch(_){}; return true})()
-  // VÃ©rif d'abo existant (PWA installÃ©e aprÃ¨s paiement) â€” extraite en callback pour
-  // que les deux skins (comic + classique) la partagent sans dupliquer la logique.
-  const verifyExistingSub=useCallback(()=>{
-    track("sg_premium_already_click",{source:source||"unknown"})
-    const em=prompt(_t(lang,"Entre l'email utilisÃ© pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripciÃ³n:"))
-    if(!em||!em.includes("@"))return
-    sgVerifySub(em).then(d=>{
-      if(d.active){
-        // Pass one-time : accÃ¨s TIME-BOXÃ‰ (passEnd en ms) â€” on pose sg_premium_pass_end,
-        // PAS le flag permanent sg_premium (un pass n'est pas un abo Ã  vie). Abo = inchangÃ©.
-        if(d.passEnd&&d.kind==="pass"){localStorage.setItem("sg_premium_pass_end",String(d.passEnd));localStorage.setItem("sg_premium_email",em);localStorage.setItem("sg_email",em)}
-        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em);if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))}
-        track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
-      else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
-        sgToast({tone:"error",title:_t(lang,"Aucun abonnement trouvÃ©","No subscription found","No se encontrÃ³ suscripciÃ³n"),msg:_t(lang,"VÃ©rifie l'adresse, ou Ã©cris-moi Ã  "+SUPPORT_EMAIL+".","Check the address, or write to me at "+SUPPORT_EMAIL+".","Verifica la direcciÃ³n, o escrÃ­beme a "+SUPPORT_EMAIL+".")})}
-    }).catch(e=>{track("sg_premium_already_failed",{reason:e?.message||"network"})
-      sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection issue","Sin conexiÃ³n"),msg:_t(lang,"RÃ©essaie dans un instant.","Try again in a moment.","IntÃ©ntalo de nuevo en un momento.")})})
-  },[lang,source,onActivated,onClose])
-  // A/B pw_pass : storefront Â« paie Ã  l'usage Â» (passes one-time) en tÃªte du paywall. ?pwpass=1/0.
-  // PASS-ONLY + MOLLIE PARTOUT (2026-06-26) : le modÃ¨le abo est abandonnÃ© (jamais vendu Ã  49â‚¬,
-  // mismatch touriste/saisonnier, + wallets on-site = one-time only). PassOffer est dÃ©sormais
-  // MULTI-DEVISE (catalogue eur/usd, prix $ pour les rÃ©gions touristes) et 100% on-site Mollie
-  // (zÃ©ro lien buy.stripe.com) â†’ il rend correctement sur TOUTES les rÃ©gions, EUR comme USD.
-  // pwPass dÃ©faut = ON (100% pass). ?pwpass=0 = Ã©chappe vers l'ancien paywall abo (secours).
-  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()
-  // Paiement on-site one-time des passes â€” OFF par dÃ©faut (le redirect reste le dÃ©faut qui marche). ?passonsite=1 pour live-test carte.
-  // FORCÃ‰ ON-SITE (2026-06-24) : Stripe est mort â†’ les liens off-site buy.stripe.com
-  // de PassOffer redirigeaient vers un checkout cassÃ© en sautant la capture. DÃ©faut
-  // passÃ© [1,0]â†’[0,1] : tout pass passe par passCtxRef/setPayStep (capture maintenant,
-  // Mollie create_payment au go-live). ?passonsite=0 force l'ancien off-site (mort).
-  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[0,1])==="on"}catch(_){return false}})()
-  // Mode PASS-ONLY effectif : on n'affiche QUE PassOffer (sombre) et on masque tout l'UI
-  // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde
-  // l'ancien flux email-offert (passOnly=false â†’ l'UI abo/capture s'affiche normalement).
-  const passOnly=pwPass&&!PAY_CAPTURE_ONLY
-  // â”€â”€ passseq (A/B pw_pass_seq) â€” verdict panel adverse 2026-07-02 Â« offre-first Â» â”€â”€
-  //    Le B2C = ask 1-tap WALLET (impulsif), PAS un formulaire B2B â†’ sÃ©quencer EN AMONT
-  //    de la grille est friction-nÃ©gatif : l'offre RESTE l'Ã©cran d'atterrissage (0 tap
-  //    ajoutÃ©). Seule diffÃ©rence du bras Â« seq Â» : le lien Â« voir nos erreurs Â» ouvre un
-  //    Ã©cran preuve IN-MODAL opt-in (grille 7 j rÃ©elle + registre) au lieu d'un onglet
-  //    /fiabilite/ externe (= leak). DÃ©tour EN AVAL, jamais avant l'offre â†’ l'impulsif
-  //    n'est jamais pÃ©nalisÃ©. (Le Â« wallet remontÃ© Â» du 1er jet a Ã©tÃ© RETIRÃ‰ Ã  la vÃ©rif :
-  //    la pile de valeur est dÃ©jÃ  AU-DESSUS de la grille â†’ dÃ©placer le wallet ne rÃ©duit pas
-  //    le temps-jusqu'au-wallet et fend la grille 3-SKU pour les locaux â€” no-op risquÃ©.)
-  //    Surface de REVENU PRIMAIRE â†’ JAMAIS default-on : A/B 50/50, mesure = Mollie par bras.
-  //    ?passseq=0 = PassOffer strictement inchangÃ© (rollback) Â· ?passseq=1 force.
-  const passSeq=passOnly&&(()=>{try{const q=window.location.search;
-    if(/[?&]passseq=0/.test(q))return false;if(/[?&]passseq=1/.test(q))return true;
-    return abVariant("pw_pass_seq",["control","seq"],[.5,.5])==="seq"}catch(_){return false}})()
-  // DonnÃ©es PRÃ‰CALCULÃ‰ES de l'Ã©cran preuve Ã‰2 (helpers rÃ©gion dispo ICI â†’ PassOffer reste
-  // lean). MOAT : Auj/Dem = SEULS jours colorÃ©s (forecast RÃ‰EL du JSON) ; J+2..6 = null
-  // (cadenas cÃ´tÃ© PassOffer, JAMAIS une couleur fabriquÃ©e). proofLine = rÃ©gime au plus gros
-  // Ã©chantillon Â« mer propre Â», suffixe Â« (saison calme) Â» SEULEMENT si le rÃ©gime dominant
-  // EST calm (jamais un 100 % nu). FraÃ®cheur HONNÃŠTE : Â« Vu du satellite Â» seulement si
-  // erddapTimestamp, sinon Â« DonnÃ©es mises Ã  jour Â». DÃ©gradation gracieuse (null-safe).
-  const _seqProof=useMemo(()=>{
-    if(!passSeq)return null
-    const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)
-    const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()
-    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
-    const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
-    const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
-    const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
-      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
-      if(!ent||!ent[1].cleanReliabilityPct)return null
-      const[reg,best]=ent;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
-      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
-      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,
-        `${best.cleanReliabilityPct}% correct${calm} Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,
-        `${best.cleanReliabilityPct}% correctos${calm} Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)}catch(_){return null}})()
-    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
-      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
-      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satÃ©lite hace ${h} h`)
-        :_t(lang,`DonnÃ©es mises Ã  jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()
-    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[passSeq,sargData,beach,island,_trackRec,lang])
-  // A/B pw_season : surface le SKU Â« pass saison Â» dormant (19,99 â‚¬ paiement UNIQUE,
-  // 6 mois d'accÃ¨s, sans abo) comme alternative dans ComicPaywall. EUR uniquement
-  // (allowlist serveur pay_once = [799..2499]Â¢ ; 1999 OK). Cash d'avance + zÃ©ro churn.
-  // RÃ©versible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site dÃ©jÃ  Ã©prouvÃ© (p30).
-  const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
-  // A/B pw_trippass (USD only) : propose un accÃ¨s UNIQUE 7 jours (one-time,
-  // alignÃ© sÃ©jour, sans abonnement) EN PLUS de l'abo â€” rÃ©pond au mismatch
-  // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
-  // LINK_TRIP. Override URL ?pwtrip=1/0 pour QA. Le CTA Trip Pass a son PROPRE
-  // chemin (startTripPass) : ZÃ‰RO contact avec effectivePlan/stripeLinkFor.
-  // 2026-06-17 â€” Trip Pass RÃ‰ACTIVÃ‰ mais 100% ON-SITE : PaymentIntent one-time
-  // (create-checkout.php action:pay_once, devise USD par rÃ©gion), JAMAIS de
-  // redirect buy.stripe.com. GatÃ© aux rÃ©gions USD avec un prix trip parsable :
-  // rÃ©cupÃ¨re l'abandon ~$327/30j de la page hÃ©bergÃ©e + capture email â†’ relance
-  // possible (recover-abandoned-cart.cjs). Override QA ?pwtrip=1/0. MQ/GP (EUR)
-  // n'affichent jamais ce bloc (PRICE_TRIP null â†’ tripAB false).
-  const tripAB=(()=>{try{
-    if(!(IS_NEW_REGION&&REGION.currency==="USD"&&TRIP_CENTS>0))return false
-    const q=window.location.search
-    if(/[?&]pwtrip=1/.test(q))return true
-    if(/[?&]pwtrip=0/.test(q))return false
-    return true
-  }catch(_){return false}})()
-  // Trip Pass ON-SITE : mÃªme collecte de carte (SetupIntent â†’ Payment Element)
-  // que l'abo, puis facturation UNE fois via action:pay_once (branche _pc de
-  // doSubscribe). passCtxRef porte cents/devise/jours pour l'Ã©cran de paiement.
-  const startTripPass=useCallback(()=>{
-    if(TRIP_CENTS<=0)return
-    passCtxRef.current={pass:"trip7",cents:TRIP_CENTS,days:7,cur:"usd"}
-    try{track("sg_pass_cta",{pass:"trip7",cents:TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
-    // Arme la relance panier abandonnÃ© (la banniÃ¨re lit sg_checkout_abandoned).
-    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
-    setPayStep(true)
-  },[source,setPayStep])
-  // â”€â”€ Trip Pass EUR (MQ/GP) â€” MIROIR du Trip Pass USD ci-dessus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // AccÃ¨s UNIQUE 7 jours, 4,99 â‚¬ one-time (EUR_TRIP_CENTS=499), sans abonnement.
-  // EUR uniquement (!IS_NEW_REGION) : les rÃ©gions USD utilisent tripAB/startTripPass.
-  // A/B pw_trippass_eur (override ?pwtripeur=1/0). Chemin de checkout SÃ‰PARÃ‰ de
-  // l'abo (passCtxRef + action:pay_once, devise EUR) â€” ZÃ‰RO contact avec
-  // effectivePlan/stripeLinkFor. 499Â¢ DOIT Ãªtre dans l'allowlist serveur pay_once
-  // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799Â¢+) reste intact.
-  const tripEurAB=!IS_NEW_REGION&&(()=>{try{
-    const q=window.location.search
-    if(/[?&]pwtripeur=1/.test(q))return true
-    if(/[?&]pwtripeur=0/.test(q))return false
-    return abVariant("pw_trippass_eur",["control","trip"],[1,0])==="trip"
-  }catch(_){return false}})()
-  const startTripPassEur=useCallback(()=>{
-    passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
-    try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
-    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
-    setPayStep(true)
-  },[source,setPayStep])
-  const[showPrelude,setShowPrelude]=useState(false)
-  // Compute upcoming dates for the Prelude ledger
-  const _preludeDates=(()=>{
-    const today=new Date()
-    const remindDate=new Date(today.getTime()+5*24*3600*1000)
-    const chargeDate=new Date(today.getTime()+7*24*3600*1000)
-    const fmt=d=>d.toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{day:"numeric",month:"long"})
-    return{remind:fmt(remindDate),charge:fmt(chargeDate)}
-  })()
-  // Seasonal urgency â€” sargassum season is April-September (peak June-August)
-  const now=new Date()
-  const m=now.getMonth()
-  const inHigh=m>=5&&m<=7 // June-August = peak
-  const inSeason=m>=3&&m<=8 // April-September
-  const seasonMsg=inHigh
-    ?_t(lang,"Pic sargasses en cours Â· chaque jour sans prÃ©vision est un risque","Peak sargassum Â· every day without forecast is a risk","Pico de sargazo Â· cada dÃ­a sin pronÃ³stico es un riesgo")
-    :inSeason
-    ?_t(lang,"La saison des sargasses est lÃ ","Sargassum season is here","La temporada de sargazo ya estÃ¡ aquÃ­")
-    :_t(lang,"La prochaine saison approche","Next season is approaching","La prÃ³xima temporada se acerca")
-
-  // â”€â”€ pw_hot_intent : paywall in-scene ancrÃ© plage (hot intent + beach ctx) â”€â”€
-  // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source
-  // est hot-intent ET que beach est disponible dans le contexte courant.
-  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
-  const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
-  const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
-  if(pwHot&&beach){
-    const _st=beach.status||"clean"
-    const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
-    const _stLbl=_st==="clean"?_t(lang,"propre aujourd'hui","clean today","limpia hoy"):_st==="moderate"?_t(lang,"modÃ©rÃ©","moderate","moderada"):_t(lang,"Ã  Ã©viter","avoid","evitar")
-    const _sargId=BEACH_TO_SARG?.[beach.id]
-    const _fc=_sargId?sargData?.weekly?.[_sargId]?.forecast:null
-    let _nextDeg=null
-    if(_fc&&_fc.length>=2){const RANK={clean:0,moderate:1,avoid:2};const _t0=RANK[_fc[0]?.status]??0;for(let i=1;i<=5&&i<_fc.length;i++){const r=RANK[_fc[i]?.status];if(r!=null&&r>_t0){try{const dow=new Date((_fc[i].date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"});_nextDeg={when:dow,status:_fc[i].status}}catch(_){}break}}}
-    return(
-      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Alerte sargasses","Sargassum alert","Alerta de sargazo")} style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
-        <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#6a2f9e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>
-            <linearGradient id="hiSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
-            <radialGradient id="hiSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95"/><stop offset=".4" stopColor="#FFD884" stopOpacity=".55"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/></radialGradient>
-            <linearGradient id="hiLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138"/><stop offset="1" stopColor="#16242A"/></linearGradient>
-            <radialGradient id="hiGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".5"/><stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/></radialGradient>
-          </defs>
-          <rect width="390" height="430" fill="url(#hiSky)"/>
-          <circle cx="262" cy="300" r="120" fill="url(#hiSun)"/>
-          <circle cx="262" cy="300" r="30" fill="#FFE6A8" opacity=".9"/>
-          <path d="M0 300 Q40 286 86 296 L120 300 Z" fill="#0E1F25" opacity=".8"/>
-          <path d="M286 282 q14 -40 30 -2 q8 22 4 22 l-44 0 q-2 -10 10 -18 Z" fill="#12262B" opacity=".92"/>
-          <rect x="0" y="300" width="390" height="240" fill="url(#hiSea)"/>
-          <path d="M232 304 L292 304 L320 540 L204 540 Z" fill="#FFD884" opacity=".10"/>
-          <ellipse cx="262" cy="324" rx="40" ry="4" fill="#FFD884" opacity=".30"/>
-          <ellipse cx="262" cy="356" rx="58" ry="4.5" fill="#FFD884" opacity=".16"/>
-          <path d="M0 470 Q150 446 390 486 L390 720 L0 720 Z" fill="url(#hiLand)"/>
-          <path d="M0 470 Q150 446 390 486" fill="none" stroke="#FFD884" strokeWidth="1.4" opacity=".26"/>
-          <circle cx="116" cy="372" r="52" fill="url(#hiGlow)"/>
-          <circle cx="116" cy="372" r="7.5" fill={_stCol} stroke="#06121A" strokeWidth="1.4"/>
-          <circle cx="116" cy="372" r="13" fill="none" stroke="#FFE6A8" strokeWidth="1.2" opacity=".6"/>
-        </svg>
-        <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,12,16,0) 0%,rgba(4,12,16,.22) 34%,rgba(4,12,16,.70) 64%,rgba(4,12,16,.93) 100%)"}}/>
-        <button onClick={()=>{track("sg_premium_modal_close",{source:source||"unknown",via:"hot_close"});onClose()}}
-          style={{position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,width:34,height:34,borderRadius:"50%",
-            background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",
-            color:"#fff",fontSize:18,cursor:"pointer",zIndex:10,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>Ã—</button>
-        <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"22px 22px calc(26px + env(safe-area-inset-bottom))",color:"#EAF7F4"}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,216,132,.12)",border:"1px solid rgba(255,216,132,.30)",borderRadius:999,padding:"6px 12px 6px 9px",marginBottom:16}}>
-            <div style={{width:9,height:9,borderRadius:"50%",background:_stCol,boxShadow:`0 0 0 3px ${_stCol}38`}}/>
-            <span style={{font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".01em"}}>{beach.name}</span>
-            <span style={{fontSize:11,opacity:.7,fontWeight:600}}>Â· {_stLbl}</span>
-          </div>
-          <div className="anton" style={{fontSize:28,lineHeight:1.06,margin:"0 0 16px",textShadow:"0 2px 18px rgba(0,0,0,.45)"}}>
-            {_t(lang,<>Le Veilleur surveille <span style={{color:"#FFC72C"}}>{beach.name}</span> et te prÃ©vient.</>,<>The Watcher monitors <span style={{color:"#FFC72C"}}>{beach.name}</span> and alerts you.</>,<>El VigÃ­a vigila <span style={{color:"#FFC72C"}}>{beach.name}</span> y te avisa.</>)}
-          </div>
-          {_nextDeg&&(
-            <div style={{display:"flex",gap:13,alignItems:"flex-start",background:"rgba(232,82,42,.13)",border:"1px solid rgba(232,82,42,.34)",borderRadius:15,padding:"14px 15px",marginBottom:18}}>
-              <span style={{fontSize:19,lineHeight:1,flexShrink:0,marginTop:1}}>âš ï¸</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#FFB59E",marginBottom:3}}>
-                  {_t(lang,`DÃ©gradation prÃ©vue : ${_nextDeg.when}`,`Forecast degradation: ${_nextDeg.when}`,`Desmejora prevista: ${_nextDeg.when}`)}
-                </div>
-                <div style={{font:"600 12.5px/1.45 system-ui,sans-serif",color:"rgba(234,247,244,.92)"}}>
-                  {_t(lang,"Le satellite voit les sargasses arriver. Tu seras prÃ©venu avant que Ã§a tourne.","Satellite detects incoming sargassum. You'll be alerted before conditions change.","El satÃ©lite detecta sargazo llegando. RecibirÃ¡s alerta antes del cambio.")}
-                </div>
-                <span style={{display:"block",marginTop:6,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.55)",letterSpacing:".02em"}}>
-                  {/* Chiffre RÃ‰EL injectÃ© au build (__REL, mÃªme source que /fiabilite/ + badge rel_hot_cta).
-                      JAMAIS de "80%" hardcodÃ© : on publie le clean-rate par rÃ©gime (cf regimeReliability.note). */}
-                  {(()=>{
-                    if(__REL&&typeof __REL.cleanPct==="number"){const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila");return _t(lang,`DonnÃ©e Copernicus Â· ${__REL.cleanPct}% Â« mer propre Â» vÃ©rifiÃ©es Â· ${reg}`,`Copernicus data Â· ${__REL.cleanPct}% â€œclean waterâ€ verified Â· ${reg}`,`Datos Copernicus Â· ${__REL.cleanPct}% â€œagua limpiaâ€ verificados Â· ${reg}`)}
-                    if(__REL&&typeof __REL.global==="number")return _t(lang,`DonnÃ©e Copernicus Â· ${__REL.global}% justes / 30 j`,`Copernicus data Â· ${__REL.global}% accurate / 30d`,`Datos Copernicus Â· ${__REL.global}% exactos / 30d`)
-                    return _t(lang,"DonnÃ©e Copernicus Â· backtest quotidien","Copernicus data Â· daily backtest","Datos Copernicus Â· backtest diario")
-                  })()}
-                </span>
-              </div>
-            </div>
-          )}
-          <button onClick={()=>startCheckout("monthly","hot_intent")}
-            style={{display:"block",width:"100%",border:"none",cursor:"pointer",fontFamily:"inherit",textAlign:"center",borderRadius:15,padding:"16px 18px",
-              background:"linear-gradient(135deg,#FFC72C,#E8A800)",color:"#1A2B26",boxShadow:"0 10px 30px rgba(232,168,0,.30)"}}>
-            <div style={{font:"800 16.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".005em"}}>
-              {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
-            </div>
-            <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts Â· juste ton email","7 days premium on us Â· just your email","7 dÃ­as premium gratis Â· solo tu email"):_t(lang,"Pass dÃ¨s 7,99 â‚¬ Â· paiement unique, sans abonnement","Pass from â‚¬7.99 Â· one-time, no subscription","Pase desde 7,99 â‚¬ Â· pago Ãºnico, sin suscripciÃ³n")}
-            </div>
-          </button>
-          <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
-            {PAY_CAPTURE_ONLY?_t(lang,"Sans carte Â· juste ton email","No card Â· just your email","Sin tarjeta Â· solo tu email"):_t(lang,"Sans engagement Â· Paiement sÃ©curisÃ© "+PAY_LABEL,"No commitment Â· Secure "+PAY_LABEL+" payment","Sin compromiso Â· Pago seguro "+PAY_LABEL)}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return(
-    <>
-      <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer â€” sinon le clic paraÃ®t "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
-      <div ref={panelRef} className="sg-modal-panel" role="dialog" aria-modal="true" aria-label={_t(lang,"PrÃ©visions premium","Premium forecast","PronÃ³stico premium")} onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
-        position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
-        // Refonte CONTINUATION DE SCÃˆNE (arm constellation = dÃ©faut) : le golden-hour
-        // descend Ã  travers tout le modal (ciel â†’ mer profonde â†’ nuit) â†’ la premium
-        // est UNE scÃ¨ne continue, pas une feuille sombre. Holdout garde le sombre.
-        /* halftone Ben-Day comic (rÃ©f Spider-Verse) par-dessus le dÃ©gradÃ© â€” texte intact */
-        background:passOnly
-          ? "linear-gradient(145deg,#190c2c,#120821)"
-          : pwComic
-          ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"
-          : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),
-        borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
-        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflowX:"hidden",overflowY:"auto",
-      }}>
-        <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
-        {/* Close X top-right â€” resolves Design feedback "no close affordance
-            visible, users dismiss by backdrop tap". Sticky so always reachable
-            even when modal is scrolled. */}
-        <button
-          aria-label={_t(lang,"Fermer","Close","Cerrar")}
-          onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
-          style={{position:"absolute",top:14,right:14,width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,
-            borderRadius:"50%",background:(pwComic&&!passOnly)?"#ffd23f":"rgba(255,255,255,.08)",border:(pwComic&&!passOnly)?"2.5px solid #0d0b14":"none",
-            color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,
-            boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
-            zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>Ã—</button>
-        {/* â”€â”€ PASS-ONLY : offre UNIQUE, un prix, un CTA (simplifiÃ© 2026-07-28) â”€â”€ */}
-        <PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null}
-          onBuy={(item)=>{
-          try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
-          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||30,cur:PAY_CUR}
-          setPayStep(true)
-        }}/>
-        {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}
-
-      </div>
-      {/* Ã‰tape paiement ON-SITE â€” overlay sombre au-dessus du modal (z 1300),
-          design maison : email + Apple/Google Pay + Payment Element (carte).
-          TOUJOURS rendu (cachÃ©) pour que les Elements montÃ©s persistent. */}
-      <div ref={payScrollRef} onTouchStart={onTouchStartPay} onTouchMove={onTouchMovePay} onTouchEnd={onTouchEndPay}
-        style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
-        display:"flex",flexDirection:"column",overflowX:"hidden",overflowY:"auto",
-        // hors-Ã©cran (PAS visibility:hidden : les iframes Stripe ne bootent pas
-        // dans un conteneur hidden â€” le prÃ©-mount resterait gelÃ©)
-        transform:payStep?"none":"translateX(-200vw)",
-        pointerEvents:payStep?"auto":"none"}}>
-        {/* padding-top safe-area : sinon en PWA standalone iOS le bouton Â« Retour Â»
-            est coincÃ© sous la barre d'Ã©tat systÃ¨me (taps interceptÃ©s) â†’ injoignable. */}
-        <div ref={payContentRef} style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"calc(16px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <button onClick={()=>{track("sg_pay_onsite_back",{plan:payPlanRef.current});setPayStep(false)}}
-              className="sg-payplain"
-              style={{background:"none",border:"none",color:"rgba(255,255,255,.65)",fontSize:14,cursor:"pointer",
-                fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"8px 0"}}>
-              â† {_t(lang,"Retour","Back","AtrÃ¡s")}
-            </button>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",display:"flex",alignItems:"center",gap:8}}>
-              {/* Marque sur l'Ã©cran paiement (audit : full-screen sans aucun nom de site) */}
-              {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
-                {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
-              </span>}
-              ðŸ”’ {PAY_CAPTURE_ONLY?_t(lang,"Sans carte","No card","Sin tarjeta"):PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
-            </span>
-          </div>
-          <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
-            {ppSub
-              ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")
-              :PAY_CAPTURE_ONLY
-              ?_t(lang,"DÃ©bloque ta semaine â€” c'est offert","Unlock your week â€” on us","Desbloquea tu semana â€” gratis")
-              :passCtxRef.current
-              ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} dÃ­as`)
-              :NO_TRIAL
-              ?_t(lang,"Active ta reco du jour","Activate your daily pick","Activa tu playa del dÃ­a")
-              :_t(lang,"DÃ©marre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
-          </h3>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
-            {ppSub
-              ?_t(lang,"Paie en sÃ©curitÃ© avec PayPal Â· annule quand tu veux","Pay securely with PayPal Â· cancel anytime","Paga seguro con PayPal Â· cancela cuando quieras")
-              :PAY_CAPTURE_ONLY
-              ?_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accÃ¨s premium 7 jours est OFFERT â€” ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US â€” your email and you're in.","Pagos en mantenimiento unos dÃ­as. Mientras, tu acceso premium 7 dÃ­as es GRATIS â€” tu email y listo.")
-              :passCtxRef.current
-              ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} Â· ${passCtxRef.current.days} jours d'accÃ¨s complet Â· paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} Â· ${passCtxRef.current.days} days full access Â· one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} Â· ${passCtxRef.current.days} dÃ­as Â· pago Ãºnico`)
-              :NO_TRIAL
-              ?<>{payPlanRef.current==="annual"
-                  ?_t(lang,`${PRICE_YR}/an Â· facturÃ© aujourd'hui`,`${PRICE_YR}/yr Â· billed today`,`${PRICE_YR}/aÃ±o Â· se cobra hoy`)
-                  :_t(lang,`${PRICE_MO}/mois Â· facturÃ© aujourd'hui`,`${PRICE_MO}/mo Â· billed today`,`${PRICE_MO}/mes Â· se cobra hoy`)} Â· {_t(lang,"annule en 2 clics","cancel in 2 clicks","cancela en 2 clics")}</>
-              :<>{_t(lang,"0 â‚¬ aujourd'hui","$0 today","$0 hoy")} Â· {payPlanRef.current==="annual"
-                  ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 â‚¬"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/aÃ±o en 7 dÃ­as`)
-                  :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 â‚¬"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 dÃ­as`)} Â· {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
-          </div>
-          {/* E-mail EN PREMIER (avant les wallets) : notre abo est liÃ© Ã  l'email
-              (livraison de l'accÃ¨s + reÃ§u), donc Apple/Google Pay en a besoin. Le poser
-              en tÃªte + expliquer pourquoi â†’ plus de "tape Apple Pay â†’ erreur surprise". */}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(
-            <div style={{marginBottom:14}}>
-              <label style={MOL_LABEL}>{_t(lang,"E-mail (reÃ§u d'accÃ¨s)","Email (access receipt)","Email (recibo de acceso)")}</label>
-              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
-                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
-                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
-                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,
-                  fontSize:16,fontFamily:"inherit",outline:"none",
-                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:6}}>{_t(lang,"Pour t'envoyer ton reÃ§u et ton accÃ¨s premium.","To send your receipt and premium access.","Para enviarte tu recibo y acceso premium.")}</div>
-            </div>
-          )}
-          {/* Wallets express (Apple Pay / Google Pay) â€” Mollie, hors capture. Tap â†’
-              feuille native via le checkout hÃ©bergÃ© Mollie (payWithWallet). AffichÃ©s
-              uniquement si le device les supporte (walletAvail). Carte = repli on-site. */}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
-            const w=walletAvail()
-            if(!w.apple&&!w.google)return null
-            return(
-              <div style={{marginBottom:14}}>
-                {w.apple&&(
-                  <button type="button" aria-label="Apple Pay" disabled={payBusy} onClick={()=>payWithWallet("applepay")}
-                    className="sg-wbtn sg-wbtn-dark"
-                    style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#000",color:"#fff",
-                      fontFamily:"inherit",fontWeight:600,fontSize:17,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
-                      display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:w.google?8:0}}>
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.564 13.13c-.03-2.79 2.28-4.13 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.77-1.95 3.38-.5 8.38 1.39 11.13.93 1.34 2.03 2.85 3.47 2.8 1.39-.06 1.92-.9 3.6-.9 1.67 0 2.15.9 3.62.87 1.5-.03 2.45-1.37 3.36-2.72 1.06-1.56 1.5-3.07 1.52-3.15-.03-.01-2.92-1.12-2.95-4.44zM14.78 4.62c.77-.93 1.29-2.22 1.15-3.51-1.11.04-2.45.74-3.24 1.67-.71.82-1.33 2.14-1.16 3.4 1.24.1 2.51-.63 3.25-1.56z"/></svg>
-                    Pay
-                  </button>
-                )}
-                {w.google&&(
-                  <button type="button" aria-label="Google Pay" disabled={payBusy} onClick={()=>payWithWallet("googlepay")}
-                    className="sg-wbtn sg-wbtn-light"
-                    style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:"#fff",color:"#3c4043",
-                      fontFamily:"inherit",fontWeight:600,fontSize:15.5,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
-                      display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
-                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Google Pay
-                  </button>
-                )}
-                <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14}}>
-                  <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
-                  <span style={{fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"ou par carte","or by card","o con tarjeta")}</span>
-                  <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
-                </div>
-              </div>
-            )
-          })()}
-          {/* Mode carte Mollie : panneau SOMBRE premium (zÃ©ro blanc). E-mail + 4 champs
-              carte (composants Mollie individuels montÃ©s dans nos divs sombres MOL_FIELD,
-              libellÃ©s clairs MOL_LABEL hors iframe). RepÃ¨res Visa/Mastercard sur le numÃ©ro
-              (confiance au moment du paiement). Capture / PayPal / Stripe â†’ champ sombre. */}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"?(
-            <div style={{background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
-              borderRadius:16,border:"1px solid rgba(255,255,255,.10)",
-              padding:"14px 14px 4px",boxShadow:"0 8px 30px rgba(0,0,0,.30)"}}>
-              <label style={MOL_LABEL}>{_t(lang,"Nom du titulaire","Cardholder name","Nombre del titular")}</label>
-              <div ref={molHolderRef} style={MOL_FIELD}/>
-              <label style={MOL_LABEL}>{_t(lang,"NumÃ©ro de carte","Card number","NÃºmero de tarjeta")}</label>
-              <div style={{position:"relative"}}>
-                <div ref={molNumberRef} style={{...MOL_FIELD,paddingRight:74}}/>
-                <span aria-hidden="true" style={{position:"absolute",right:11,top:15,display:"flex",gap:5,alignItems:"center",pointerEvents:"none"}}>
-                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><text x="24" y="21" fontFamily="Arial,Helvetica,sans-serif" fontSize="13" fontWeight="700" fill="#1A1F71" textAnchor="middle" letterSpacing="0.5">VISA</text></svg>
-                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><circle cx="20" cy="16" r="9" fill="#EB001B"/><circle cx="28" cy="16" r="9" fill="#F79E1B" fillOpacity="0.85"/></svg>
-                </span>
-              </div>
-              <div style={{display:"flex",gap:11}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <label style={MOL_LABEL}>{_t(lang,"Expiration","Expiry","Caducidad")}</label>
-                  <div ref={molExpiryRef} style={MOL_FIELD}/>
-                </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <label style={MOL_LABEL}>CVC</label>
-                  <div ref={molCvcRef} style={MOL_FIELD}/>
-                </div>
-              </div>
-              {/* RÃ©assurance au point d'anxiÃ©tÃ© max (saisie carte) â€” levier conversion D. */}
-              <div style={{display:"flex",alignItems:"center",gap:7,marginTop:12,fontSize:11.5,color:"rgba(255,255,255,.5)",lineHeight:1.35}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
-                  <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
-                  <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
-                </svg>
-                {_t(lang,"Paiement chiffrÃ© Â· tes donnÃ©es carte ne sont jamais stockÃ©es chez nous","Encrypted payment Â· your card data is never stored on our servers","Pago cifrado Â· tus datos de tarjeta nunca se guardan en nuestros servidores")}
-              </div>
-            </div>
-          ):(
-            <>
-              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
-                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
-                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
-                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
-                  fontSize:16,fontFamily:"inherit",outline:"none",
-                  border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>
-              {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
-              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
-              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}
-            </>
-          )}
-          {!payReady&&payStep&&(
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>
-              <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
-                borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
-              <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>
-                {PAY_CAPTURE_ONLY?_t(lang,"On t'ouvre l'accÃ¨sâ€¦","Opening your accessâ€¦","Abriendo tu accesoâ€¦"):_t(lang,"Paiement sÃ©curisÃ©â€¦","Secure checkoutâ€¦","Pago seguroâ€¦")}
-              </span>
-              <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
-            </div>
-          )}
-          {payError&&(()=>{
-            const isRetry=!!retryCtx
-            return(
-            <div role="alert" style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:12,padding:"11px 13px",
-              borderRadius:12,background:isRetry?"rgba(255,199,44,.12)":"rgba(232,82,42,.12)",borderLeft:isRetry?"4px solid #FFC72C":"4px solid #E8522A"}}>
-              {isRetry?(
-                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#FFC72C"}}>
-                  <path d="M8 1v6l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
-                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                </svg>
-              ):(
-                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#F4845F"}}>
-                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-              )}
-              <div style={{color:isRetry?"#FFE8B0":"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
-            </div>
-            )
-          })()}
-          {/* Consentement rÃ©tractation 14 j â€” chemin Pass B2C payant uniquement.
-              Case NON prÃ©-cochÃ©e ; tant qu'elle n'est pas cochÃ©e, le bouton payer est
-              dÃ©sactivÃ©. Flag ?consent=0 â†’ case retirÃ©e (comportement d'avant). */}
-          {consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&(
-            <label style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:16,padding:"11px 13px",
-              borderRadius:12,background:"#13261F",border:"1px solid rgba(255,255,255,.14)",cursor:"pointer"}}>
-              <input type="checkbox" checked={consentOk} onChange={e=>{setConsentOk(e.target.checked);if(e.target.checked)setPayError("")}}
-                style={{flexShrink:0,marginTop:2,width:18,height:18,accentColor:"#FFC72C",cursor:"pointer"}}/>
-              <span style={{fontSize:11.5,lineHeight:1.45,color:"rgba(255,255,255,.72)"}}>
-                {_t(lang,
-                  "J'accepte que ma prÃ©vision 7 jours et mes alertes me soient fournies immÃ©diatement, dÃ¨s mon paiement, et je reconnais qu'en demandant cet accÃ¨s immÃ©diat je perds mon droit de rÃ©tractation de 14 jours une fois l'accÃ¨s ouvert (art. L221-28 13Â° du Code de la consommation).",
-                  "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13Â° French Consumer Code / Directive 2011/83/EU).",
-                  "Acepto que mi previsiÃ³n de 7 dÃ­as y mis alertas se me faciliten de inmediato, en cuanto pague, y reconozco que al solicitar este acceso inmediato pierdo mi derecho de desistimiento de 14 dÃ­as una vez abierto el acceso (art. L221-28 13Â° del CÃ³digo de Consumo francÃ©s).")}
-              </span>
-            </label>
-          )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)} className="gbtn sg-paygold"
-            style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
-              cursor:payBusy?"wait":((consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk)?"not-allowed":"pointer"),fontFamily:"inherit",fontWeight:800,fontSize:15.5,
-              opacity:(payBusy||(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk))?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            {payBusy
-              ?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦")
-              :PAY_CAPTURE_ONLY
-              ?_t(lang,"DÃ©bloquer gratuitement â†’","Unlock free â†’","Desbloquear gratis â†’")
-              :passCtxRef.current
-              ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)
-              :NO_TRIAL
-              ?(payPlanRef.current==="annual"
-                ?_t(lang,`Payer ${PRICE_YR} â€” activer maintenant`,`Pay ${PRICE_YR} â€” activate now`,`Pagar ${PRICE_YR} â€” activar ya`)
-                :_t(lang,`Payer ${PRICE_MO} â€” activer maintenant`,`Pay ${PRICE_MO} â€” activate now`,`Pagar ${PRICE_MO} â€” activar ya`))
-              :_t(lang,"DÃ©marrer l'essai â€” 0 â‚¬ aujourd'hui","Start trial â€” $0 today","Empezar prueba â€” $0 hoy")}
-          </button>}
-          <div style={{textAlign:"center",marginTop:12,fontSize:10.5,color:"rgba(255,255,255,.4)"}}>
-            {ppSub
-              ?_t(lang,"Sans engagement Â· annule en 2 clics Â· sÃ©curisÃ© par PayPal","No commitment Â· cancel in 2 clicks Â· secured by PayPal","Sin compromiso Â· cancela en 2 clics Â· seguro con PayPal")
-              :PAY_CAPTURE_ONLY
-              ?_t(lang,"Offert le temps qu'on rouvre Â· sans carte Â· juste ton email","On us while we reopen Â· no card Â· just your email","Gratis mientras reabrimos Â· sin tarjeta Â· solo tu email")
-              :NO_TRIAL
-              ?_t(lang,"Sans engagement Â· Annule en 2 clics Â· "+PAY_LABEL+" sÃ©curisÃ©","No commitment Â· Cancel in 2 clicks Â· Secured by "+PAY_LABEL,"Sin compromiso Â· Cancela en 2 clics Â· "+PAY_LABEL+" seguro")
-              :_t(lang,"Sans engagement Â· Rappel 2 jours avant la 1re charge","No commitment Â· Reminder 2 days before first charge","Sin compromiso Â· Recordatorio 2 dÃ­as antes del primer cobro")}
-          </div>
-          {/* Consentement contenu numÃ©rique (verdict panel 2026-06-29 : disclosure lÃ©gÃ¨re
-              cadrÃ©e Â« gain Â», JAMAIS une case bloquante Â« je renonce Â»). Porte les 2 volets
-              lÃ©gaux (accÃ¨s immÃ©diat demandÃ© + rÃ©tractation 14 j caduque) ; le consentement
-              est portÃ© par l'acte de paiement, tracÃ© en metadata Mollie (create_payment).
-              MasquÃ©e si ?consent=1 (case explicite dormante affichÃ©e) â†’ pas de doublon. */}
-          {!consentFlag&&!PAY_CAPTURE_ONLY&&<div style={{textAlign:"center",marginTop:8,fontSize:10,lineHeight:1.45,color:"rgba(255,255,255,.34)"}}>
-            {_t(lang,"AccÃ¨s immÃ©diat : en payant, vous demandez la livraison tout de suite â€” le droit de rÃ©tractation de 14 j ne s'applique plus une fois l'accÃ¨s ouvert.","Immediate access: by paying, you request delivery right away â€” the 14-day right of withdrawal no longer applies once access is open.","Acceso inmediato: al pagar, solicitas la entrega de inmediato â€” el derecho de desistimiento de 14 dÃ­as deja de aplicarse una vez abierto el acceso.")}{" "}
-            <a href="/cgv.html" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","TÃ©rminos")}</a>
-          </div>}
-          {/* 2026-06-17 â€” bouton off-site Â« continuer sur Stripe Â» RETIRÃ‰ (checkout
-              100% on-site). En cas d'Ã©chec de montage : bouton RÃ©essayer (recharge
-              propre), jamais de redirect off-site. */}
-          {payError&&(
-          <button onClick={()=>{location.reload()}} style={{background:"none",border:"1px solid rgba(255,255,255,.25)",
-            borderRadius:12,color:"rgba(255,255,255,.8)",fontSize:12.5,fontWeight:600,padding:"11px 14px",width:"100%",
-            cursor:"pointer",fontFamily:"inherit",marginTop:14}}>
-            {_t(lang,"â†» RÃ©essayer le paiement sÃ©curisÃ©","â†» Retry secure checkout","â†» Reintentar el pago seguro")}
-          </button>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
-
-export default PremiumModal
-export {B2BModal}
+        // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})        const cd=await cr.json().catch(()=>({}))        if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))        localStorage.setItem("sg_email",email)        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}        setPayBusy(false);onActivated?.();onClose();return      }catch(e){        setPayBusy(false)        const msg=(e&&e.message)?String(e.message):""        setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))        track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})        return      }    }    setPayBusy(true);setPayError("")    try{      const{error:subErr}=await elementsRef.current.submit()      if(subErr)throw subErr      const{error,setupIntent}=await stripeRef.current.confirmSetup({        elements:elementsRef.current,clientSecret:setupSecretRef.current,        redirect:"if_required",        confirmParams:{return_url:window.location.origin+"/?setup_return=1",payment_method_data:{billing_details:{email}}},      })      if(error)throw error      // PASS one-time (pw_pass_onsite) : MÃŠME carte collectÃ©e, on facture UNE fois (PaymentIntent), pas d'abo.      const _pc=passCtxRef.current      if(_pc){        const pr=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},          body:JSON.stringify({action:"pay_once",email,pass:_pc.pass,cents:_pc.cents,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})        const pd=await pr.json().catch(()=>({}))        if(!pr.ok||pd.error||!pd.paymentIntentId)throw new Error(pd.error||"pay_once failed")        if(pd.paymentFailed)throw new Error(_t(lang,"Carte refusÃ©e. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))        if(pd.requiresAction&&pd.piClientSecret){          const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(pd.piClientSecret)          if(payErr)throw payErr          if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing")throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))        }        localStorage.setItem("sg_email",email)        localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))        track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})        setPayBusy(false);onActivated?.();onClose();return      }      // Parrainage : transmet le code parrain (le filleul ramenÃ© crÃ©dite le parrain      // de jours de pass â€” cf. mollie.php refcredit) + mon propre code en metadata customer.      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()      const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},        body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown",referredBy:_refBy,myReferralCode:_myRef})})      const d=await r.json().catch(()=>({}))      if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")      // NO_TRIAL (USD) : la 1re facture part immÃ©diatement â€” si la banque      // exige une confirmation (3DS), on la joue ici, dans le mÃªme Ã©cran.      if(d.paymentFailed)throw new Error(_t(lang,"Carte refusÃ©e. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))      if(d.requiresAction&&d.piClientSecret){        const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(d.piClientSecret)        if(payErr)throw payErr        if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing"){          throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))        }        track("sg_pay_onsite_3ds",{plan,status:paymentIntent?.status||"unknown"})      }      // SUCCÃˆS â€” premium activÃ© en place, zÃ©ro redirect      localStorage.setItem("sg_email",email)      localStorage.setItem("sg_premium","1")      localStorage.setItem("sg_premium_email",email)      if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))      track("sg_conversion",{session_id:d.subscriptionId,method:"onsite",plan})      if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan})      setPayBusy(false)      onActivated?.()      onClose()    }catch(e){      setPayBusy(false)      const msg=(e&&e.message)?String(e.message):""      setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))      track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})    }  },[lang,source,payBusy,onActivated,onClose])  const doSubscribeRef=useRef(doSubscribe)  useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])  // â”€â”€ Apple Pay / Google Pay (Mollie) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  // On NE fait PAS l'intÃ©gration directe (qui imposerait d'hÃ©berger le fichier de  // vÃ©rification de domaine Apple + un test device). On force `method` cÃ´tÃ© serveur  // â†’ Mollie renvoie son checkout hÃ©bergÃ© oÃ¹ la feuille native du wallet s'affiche  // (sur LEUR domaine, dÃ©jÃ  vÃ©rifiÃ© chez Apple/Google). Retour ?mollie_return=1 â†’  // mÃªme confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).  // Wallet via REDIRECT Mollie (checkout hÃ©bergÃ©) â€” fallback universel : Google Pay, ou  // Apple Pay quand l'intÃ©gration directe n'est pas dispo / domaine pas encore validÃ©.  const walletRedirect=useCallback(async(method)=>{    const _pc=passCtxRef.current    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()    const plan=payPlanRef.current    setPayBusy(true);setPayError("")    if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}    try{      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()      const body=_pc        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}        :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}      const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})      const d=await r.json().catch(()=>({}))      if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")      track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})      if(d.checkoutUrl){        try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}        window.location.href=d.checkoutUrl;return      }      const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})      const cd=await cr.json().catch(()=>({}))      if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))      if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}      else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}      setPayBusy(false);onActivated?.();onClose()    }catch(e){      setPayBusy(false)      const msg=(e&&e.message)?String(e.message):""      setPayError(msg||_t(lang,"Paiement impossible. RÃ©essaie.","Payment failed. Retry.","Pago imposible. Reintenta."))      try{setPayStep(true)}catch(_){}      track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})    }  },[lang,source,onActivated,onClose])  // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()  // DOIVENT Ãªtre synchrones dans le geste utilisateur (sinon Safari refuse la feuille).  const payWithWallet=useCallback((method)=>{    if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return    const _pc=passCtxRef.current    // MÃªme garde de consentement que le bouton carte sur le chemin Pass B2C.        const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()    const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)    if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)      setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","AÃ±ade tu email primero."))      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}      return    }    // â”€â”€ Apple Pay ON-SITE (direct) : feuille NATIVE sur notre page, zÃ©ro redirect â”€â”€    if(method==="applepay"&&typeof window!=="undefined"&&window.ApplePaySession){      let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}      if(canAP){        try{          const cents=_pc?_pc.cents:499          // countryCode = pays MARCHAND (compte Mollie FR) â†’ "FR" pour toutes les rÃ©gions.          // currencyCode = devise de la transaction â†’ USD pour les rÃ©gions touristes.          const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],            supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],            total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},            requiredBillingContactFields:["email"]})          setPayBusy(true);setPayError("")          track("sg_pay_wallet_start",{plan:payPlanRef.current,provider:"mollie",method:"applepay_native",pass:_pc?_pc.pass:null})          ses.onvalidatemerchant=async(ev)=>{            try{              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"applepay_session",validationUrl:ev.validationURL})})              const sess=await r.json().catch(()=>null)              if(!r.ok||!sess||sess.error)throw new Error("validation")              ses.completeMerchantValidation(sess)            }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay") /* domaine pas validÃ© chez Mollie â†’ redirect de secours */}          }          ses.onpaymentauthorized=async(ev)=>{            try{              const token=JSON.stringify(ev.payment.token)              const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""              const body=_pc                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})              const d=await r.json().catch(()=>({}))              if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})              const cd=await cr.json().catch(()=>({}))              if(!cd.paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}              ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)              if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}              if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}              else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}              setPayBusy(false);onActivated?.();onClose()            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmÃ©. RÃ©essaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}          }          ses.oncancel=()=>{setPayBusy(false)}          ses.begin()          return        }catch(_){ /* Ã©chec init ApplePaySession â†’ fallback redirect ci-dessous */ }      }    }    // â”€â”€ Fallback / Google Pay : redirect Mollie hÃ©bergÃ© (marche sans domaine validÃ©) â”€â”€    walletRedirect(method)  },[lang,source,onActivated,onClose,walletRedirect])  const startCheckout=useCallback(async(plan,via)=>{    passCtxRef.current=null // entrÃ©e ABONNEMENT : ce n'est pas un pass one-time    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via});setPayStep(true);return}    // Checkout 100% ON-SITE â€” plus de redirect off-site buy.stripe.com. En cas    // d'Ã©chec de montage (rÃ©seau lent / Stripe.js bloquÃ©), erreur + Â« RÃ©essayer Â»    // DANS l'overlay (recharge propre) : on ne quitte jamais le domaine.    const onsiteError=(why)=>{      track("sg_pay_onsite_fail",{plan,source:source||"unknown",via:via+"_"+why})      setPayError(_t(lang,"Le paiement sÃ©curisÃ© n'a pas pu dÃ©marrer. VÃ©rifie ta connexion et rÃ©essaie.","Secure checkout couldn't start. Check your connection and retry.","El pago seguro no pudo iniciarse. Revisa tu conexiÃ³n y reintÃ©ntalo."))    }    payPlanRef.current=plan    // Arme la rÃ©cupÃ©ration de panier abandonnÃ© (ex-effet de bord de stripeUrlWith) :    // la banniÃ¨re de relance lit sg_checkout_abandoned.    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}    setPayError("")    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})    setPayStep(true) // rÃ©vÃ¨le l'Ã©tape (le formulaire prÃ©-montÃ© est dÃ©jÃ  prÃªt ou boote)    const t0=Date.now()    try{      // Le prewarm a dÃ©jÃ  tout lancÃ© Ã  l'ouverture du modal. Budget large :      // l'Ã©tape est visible avec spinner ; en cas d'Ã©chec â†’ erreur + rÃ©essayer.      await Promise.race([        payPrewarmPromiseRef.current||Promise.reject(new Error("no prewarm")),        new Promise((_,rej)=>setTimeout(()=>rej(new Error("prewarm timeout")),20000)),      ])      track("sg_pay_onsite_open",{plan,via,ms:Date.now()-t0,ready:payReadyRef.current})      // L'Ã©lÃ©ment monte (ou est montÃ©) ; si ready n'arrive pas â†’ erreur in-place.      setTimeout(()=>{        if(payStepRef.current&&!payReadyRef.current&&payPlanRef.current===plan){          try{console.error("sg_onsite_slow_element")}catch(_){}          onsiteError("slow")        }      },20000)    }catch(e){      try{console.error("sg_onsite_mount_fail",e)}catch(_){}      onsiteError("fallback")    }  },[source,lang])  // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run):  // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks. The  // sample_first JSX branches + ctaOrder/sampleAvailable consts were removed  // 2026-06-10 (dead-code cleanup) â€” paid-first (control) is the only layout.  // Stripe Prelude A/B (pw_prelude): control=direct redirect (v1), prelude=2-step  // micro-interstitial inside modal. Design v2 bet #2 â€” addresses the 50% drop  // measured at redirectâ†’payment by showing "exactly what happens" (plan summary,  // timeline, trust row) before the tab navigates to buy.stripe.com.  // pw_prelude HARVESTED 2026-06-18 â†’ inlined to control "direct". ab-eval 28j :  // prelude=0% (n=210) vs direct=0.79% (n=252) â€” l'interstitiel ajoute une Ã©tape  // sans bÃ©nÃ©fice mesurable (cf. methodo [[reference_ab_tests]] : conversion non  // concluable Ã  ce traffic, on RÃ‰COLTE le bras simple en tÃªte). DÃ©faut = chemin  // direct (plus court, en tÃªte). RÃ©versible : restaurer abVariant("pw_prelude",â€¦).  const preludeVariant="direct"  // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tÃªte golden-hour + Veilleur +  // promesse) au lieu d'un mur sombre plat â€” cible la fuite modalâ†’CTA 2%. N'habille QUE le  // shell, AUCUN changement Ã  la logique de paiement. Mesurable (modal_open/cta identiques).  const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()  // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero  // scenePay. PROMU EN DÃ‰FAUT (verdict design fondateur : la premium DOIT Ãªtre au niveau  // home, pas un mur sombre A/B-gatÃ© Ã  une minoritÃ©) â†’ 85% voient la scÃ¨ne golden-hour,  // 15% holdout (mur sombre) = filet sÃ©curitÃ©-revenu mesurable. ?pwconstel=0 force le holdout.  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()  // A/B pw_comic â€” REFONTE PAYWALL Â« COMIC-BOOK / BD Â» (PRODUCT.md Â§6, pivot 19/06).  // Tue Â« le paywall blanc gÃ©nÃ©rique Â» (cards translucides sur vert sombre) : remplace  // TOUT le pitch + l'action par une scÃ¨ne golden-hour comic + cases BD paper/ink (mÃªmes  // tokens .lc- que ChasseDetail). Asset validÃ© = design/proto-paywall-comic.html. NE TOUCHE  // PAS la logique de paiement : le CTA appelle startCheckout(effectivePlan,"comic") inchangÃ©,  // l'overlay payStep on-site (rendu hors panel) reste montÃ©.  // PROMU EN DÃ‰FAUT 2026-06-19 (rendu WebKit mobile vÃ©rifiÃ© OK, 0 erreur JS, smoke) : tous  // les visiteurs ont le paywall comic â€” un seul monde, fin de la roulette. Override debug  // ?pwcomic=0 = revient au PremiumModal legacy (rollback revenu instantanÃ© si besoin).  const pwComic=(()=>{try{return !/[?&]pwcomic=0/.test(window.location.search)}catch(_){return true}})()  // A/B pw_world â€” skin Â« CONTINUITÃ‰ DU MONDE SVG Â» (gagnant jury). Quand actif, REMPLACE  // ComicPaywall par WorldPaywall (mÃªmes props, ZÃ‰RO logique de paiement touchÃ©e : le CTA  // appelle startCheckout(effectivePlan,"world") inchangÃ©). PUBLIÃ‰ 100% (GO fondateur 22/06  // Â« passe direct Ã  100% Â») : WorldPaywall = LE paywall par dÃ©faut, remplace ComicPaywall pour  // tous. ROLLBACK INSTANTANÃ‰ = ?pwworld=0 (force le contrÃ´le ComicPaywall) ; surveiller le MRR  // Stripe (daily-metrics). Asset : design/wow-candidates/paywall-world-continuity.html.  const pwWorld=(()=>{try{if(/[?&]pwworld=0/.test(window.location.search))return false}catch(_){}; return true})()  // VÃ©rif d'abo existant (PWA installÃ©e aprÃ¨s paiement) â€” extraite en callback pour  // que les deux skins (comic + classique) la partagent sans dupliquer la logique.  const verifyExistingSub=useCallback(()=>{    track("sg_premium_already_click",{source:source||"unknown"})    const em=prompt(_t(lang,"Entre l'email utilisÃ© pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripciÃ³n:"))    if(!em||!em.includes("@"))return    sgVerifySub(em).then(d=>{      if(d.active){        // Pass one-time : accÃ¨s TIME-BOXÃ‰ (passEnd en ms) â€” on pose sg_premium_pass_end,        // PAS le flag permanent sg_premium (un pass n'est pas un abo Ã  vie). Abo = inchangÃ©.        if(d.passEnd&&d.kind==="pass"){localStorage.setItem("sg_premium_pass_end",String(d.passEnd));localStorage.setItem("sg_premium_email",em);localStorage.setItem("sg_email",em)}        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em);if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))}        track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}      else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})        sgToast({tone:"error",title:_t(lang,"Aucun abonnement trouvÃ©","No subscription found","No se encontrÃ³ suscripciÃ³n"),msg:_t(lang,"VÃ©rifie l'adresse, ou Ã©cris-moi Ã  "+SUPPORT_EMAIL+".","Check the address, or write to me at "+SUPPORT_EMAIL+".","Verifica la direcciÃ³n, o escrÃ­beme a "+SUPPORT_EMAIL+".")})}    }).catch(e=>{track("sg_premium_already_failed",{reason:e?.message||"network"})      sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection issue","Sin conexiÃ³n"),msg:_t(lang,"RÃ©essaie dans un instant.","Try again in a moment.","IntÃ©ntalo de nuevo en un momento.")})})  },[lang,source,onActivated,onClose])  // A/B pw_pass : storefront Â« paie Ã  l'usage Â» (passes one-time) en tÃªte du paywall. ?pwpass=1/0.  // PASS-ONLY + MOLLIE PARTOUT (2026-06-26) : le modÃ¨le abo est abandonnÃ© (jamais vendu Ã  49â‚¬,  // mismatch touriste/saisonnier, + wallets on-site = one-time only). PassOffer est dÃ©sormais  // MULTI-DEVISE (catalogue eur/usd, prix $ pour les rÃ©gions touristes) et 100% on-site Mollie  // (zÃ©ro lien buy.stripe.com) â†’ il rend correctement sur TOUTES les rÃ©gions, EUR comme USD.  // pwPass dÃ©faut = ON (100% pass). ?pwpass=0 = Ã©chappe vers l'ancien paywall abo (secours).  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()  // Paiement on-site one-time des passes â€” OFF par dÃ©faut (le redirect reste le dÃ©faut qui marche). ?passonsite=1 pour live-test carte.  // FORCÃ‰ ON-SITE (2026-06-24) : Stripe est mort â†’ les liens off-site buy.stripe.com  // de PassOffer redirigeaient vers un checkout cassÃ© en sautant la capture. DÃ©faut  // passÃ© [1,0]â†’[0,1] : tout pass passe par passCtxRef/setPayStep (capture maintenant,  // Mollie create_payment au go-live). ?passonsite=0 force l'ancien off-site (mort).  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[0,1])==="on"}catch(_){return false}})()  // Mode PASS-ONLY effectif : on n'affiche QUE PassOffer (sombre) et on masque tout l'UI  // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde  // l'ancien flux email-offert (passOnly=false â†’ l'UI abo/capture s'affiche normalement).  const passOnly=pwPass&&!PAY_CAPTURE_ONLY  // â”€â”€ passseq (A/B pw_pass_seq) â€” verdict panel adverse 2026-07-02 Â« offre-first Â» â”€â”€  //    Le B2C = ask 1-tap WALLET (impulsif), PAS un formulaire B2B â†’ sÃ©quencer EN AMONT  //    de la grille est friction-nÃ©gatif : l'offre RESTE l'Ã©cran d'atterrissage (0 tap  //    ajoutÃ©). Seule diffÃ©rence du bras Â« seq Â» : le lien Â« voir nos erreurs Â» ouvre un  //    Ã©cran preuve IN-MODAL opt-in (grille 7 j rÃ©elle + registre) au lieu d'un onglet  //    /fiabilite/ externe (= leak). DÃ©tour EN AVAL, jamais avant l'offre â†’ l'impulsif  //    n'est jamais pÃ©nalisÃ©. (Le Â« wallet remontÃ© Â» du 1er jet a Ã©tÃ© RETIRÃ‰ Ã  la vÃ©rif :  //    la pile de valeur est dÃ©jÃ  AU-DESSUS de la grille â†’ dÃ©placer le wallet ne rÃ©duit pas  //    le temps-jusqu'au-wallet et fend la grille 3-SKU pour les locaux â€” no-op risquÃ©.)  //    Surface de REVENU PRIMAIRE â†’ JAMAIS default-on : A/B 50/50, mesure = Mollie par bras.  //    ?passseq=0 = PassOffer strictement inchangÃ© (rollback) Â· ?passseq=1 force.  const passSeq=passOnly&&(()=>{try{const q=window.location.search;    if(/[?&]passseq=0/.test(q))return false;if(/[?&]passseq=1/.test(q))return true;    return abVariant("pw_pass_seq",["control","seq"],[.5,.5])==="seq"}catch(_){return false}})()  // DonnÃ©es PRÃ‰CALCULÃ‰ES de l'Ã©cran preuve Ã‰2 (helpers rÃ©gion dispo ICI â†’ PassOffer reste  // lean). MOAT : Auj/Dem = SEULS jours colorÃ©s (forecast RÃ‰EL du JSON) ; J+2..6 = null  // (cadenas cÃ´tÃ© PassOffer, JAMAIS une couleur fabriquÃ©e). proofLine = rÃ©gime au plus gros  // Ã©chantillon Â« mer propre Â», suffixe Â« (saison calme) Â» SEULEMENT si le rÃ©gime dominant  // EST calm (jamais un 100 % nu). FraÃ®cheur HONNÃŠTE : Â« Vu du satellite Â» seulement si  // erddapTimestamp, sinon Â« DonnÃ©es mises Ã  jour Â». DÃ©gradation gracieuse (null-safe).  const _seqProof=useMemo(()=>{    if(!passSeq)return null    const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)    const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null    const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]    const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})    const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]      if(!ent||!ent[1].cleanReliabilityPct)return null      const[reg,best]=ent;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} Â· ${nf} prÃ©visions Â« mer propre Â» vÃ©rifiÃ©es Â· registre public`,        `${best.cleanReliabilityPct}% correct${calm} Â· ${nf} â€œclean waterâ€ forecasts satellite-checked Â· public record`,        `${best.cleanReliabilityPct}% correctos${calm} Â· ${nf} pronÃ³sticos â€œagua limpiaâ€ verificados Â· registro pÃºblico`)}catch(_){return null}})()    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satÃ©lite hace ${h} h`)        :_t(lang,`DonnÃ©es mises Ã  jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}  // eslint-disable-next-line react-hooks/exhaustive-deps  },[passSeq,sargData,beach,island,_trackRec,lang])  // A/B pw_season : surface le SKU Â« pass saison Â» dormant (19,99 â‚¬ paiement UNIQUE,  // 6 mois d'accÃ¨s, sans abo) comme alternative dans ComicPaywall. EUR uniquement  // (allowlist serveur pay_once = [799..2499]Â¢ ; 1999 OK). Cash d'avance + zÃ©ro churn.  // RÃ©versible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site dÃ©jÃ  Ã©prouvÃ© (p30).  const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()  // A/B pw_trippass (USD only) : propose un accÃ¨s UNIQUE 7 jours (one-time,  // alignÃ© sÃ©jour, sans abonnement) EN PLUS de l'abo â€” rÃ©pond au mismatch  // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de  // LINK_TRIP. Override URL ?pwtrip=1/0 pour QA. Le CTA Trip Pass a son PROPRE  // chemin (startTripPass) : ZÃ‰RO contact avec effectivePlan/stripeLinkFor.  // 2026-06-17 â€” Trip Pass RÃ‰ACTIVÃ‰ mais 100% ON-SITE : PaymentIntent one-time  // (create-checkout.php action:pay_once, devise USD par rÃ©gion), JAMAIS de  // redirect buy.stripe.com. GatÃ© aux rÃ©gions USD avec un prix trip parsable :  // rÃ©cupÃ¨re l'abandon ~$327/30j de la page hÃ©bergÃ©e + capture email â†’ relance  // possible (recover-abandoned-cart.cjs). Override QA ?pwtrip=1/0. MQ/GP (EUR)  // n'affichent jamais ce bloc (PRICE_TRIP null â†’ tripAB false).  const tripAB=(()=>{try{    if(!(IS_NEW_REGION&&REGION.currency==="USD"&&TRIP_CENTS>0))return false    const q=window.location.search    if(/[?&]pwtrip=1/.test(q))return true    if(/[?&]pwtrip=0/.test(q))return false    return true  }catch(_){return false}})()  // Trip Pass ON-SITE : mÃªme collecte de carte (SetupIntent â†’ Payment Element)  // que l'abo, puis facturation UNE fois via action:pay_once (branche _pc de  // doSubscribe). passCtxRef porte cents/devise/jours pour l'Ã©cran de paiement.  const startTripPass=useCallback(()=>{    if(TRIP_CENTS<=0)return    passCtxRef.current={pass:"trip7",cents:TRIP_CENTS,days:7,cur:"usd"}    try{track("sg_pass_cta",{pass:"trip7",cents:TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}    // Arme la relance panier abandonnÃ© (la banniÃ¨re lit sg_checkout_abandoned).    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}    setPayStep(true)  },[source,setPayStep])  // â”€â”€ Trip Pass EUR (MQ/GP) â€” MIROIR du Trip Pass USD ci-dessus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  // AccÃ¨s UNIQUE 7 jours, 4,99 â‚¬ one-time (EUR_TRIP_CENTS=499), sans abonnement.  // EUR uniquement (!IS_NEW_REGION) : les rÃ©gions USD utilisent tripAB/startTripPass.  // A/B pw_trippass_eur (override ?pwtripeur=1/0). Chemin de checkout SÃ‰PARÃ‰ de  // l'abo (passCtxRef + action:pay_once, devise EUR) â€” ZÃ‰RO contact avec  // effectivePlan/stripeLinkFor. 499Â¢ DOIT Ãªtre dans l'allowlist serveur pay_once  // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799Â¢+) reste intact.  const tripEurAB=!IS_NEW_REGION&&(()=>{try{    const q=window.location.search    if(/[?&]pwtripeur=1/.test(q))return true    if(/[?&]pwtripeur=0/.test(q))return false    return abVariant("pw_trippass_eur",["control","trip"],[1,0])==="trip"  }catch(_){return false}})()  const startTripPassEur=useCallback(()=>{    passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}    try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}    setPayStep(true)  },[source,setPayStep])  const[showPrelude,setShowPrelude]=useState(false)  // Compute upcoming dates for the Prelude ledger  const _preludeDates=(()=>{    const today=new Date()    const remindDate=new Date(today.getTime()+5*24*3600*1000)    const chargeDate=new Date(today.getTime()+7*24*3600*1000)    const fmt=d=>d.toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{day:"numeric",month:"long"})    return{remind:fmt(remindDate),charge:fmt(chargeDate)}  })()  // Seasonal urgency â€” sargassum season is April-September (peak June-August)  const now=new Date()  const m=now.getMonth()  const inHigh=m>=5&&m<=7 // June-August = peak  const inSeason=m>=3&&m<=8 // April-September  const seasonMsg=inHigh    ?_t(lang,"Pic sargasses en cours Â· chaque jour sans prÃ©vision est un risque","Peak sargassum Â· every day without forecast is a risk","Pico de sargazo Â· cada dÃ­a sin pronÃ³stico es un riesgo")    :inSeason    ?_t(lang,"La saison des sargasses est lÃ ","Sargassum season is here","La temporada de sargazo ya estÃ¡ aquÃ­")    :_t(lang,"La prochaine saison approche","Next season is approaching","La prÃ³xima temporada se acerca")  // â”€â”€ pw_hot_intent : paywall in-scene ancrÃ© plage (hot intent + beach ctx) â”€â”€  // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source  // est hot-intent ET que beach est disponible dans le contexte courant.  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]  const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))  const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()  if(pwHot&&beach){    const _st=beach.status||"clean"    const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"    const _stLbl=_st==="clean"?_t(lang,"propre aujourd'hui","clean today","limpia hoy"):_st==="moderate"?_t(lang,"modÃ©rÃ©","moderate","moderada"):_t(lang,"Ã  Ã©viter","avoid","evitar")    const _sargId=BEACH_TO_SARG?.[beach.id]    const _fc=_sargId?sargData?.weekly?.[_sargId]?.forecast:null    let _nextDeg=null    if(_fc&&_fc.length>=2){const RANK={clean:0,moderate:1,avoid:2};const _t0=RANK[_fc[0]?.status]??0;for(let i=1;i<=5&&i<_fc.length;i++){const r=RANK[_fc[i]?.status];if(r!=null&&r>_t0){try{const dow=new Date((_fc[i].date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"});_nextDeg={when:dow,status:_fc[i].status}}catch(_){}break}}}    return(      <div ref={panelRef} role="dialog" aria-modal="true" aria-label={_t(lang,"Alerte sargasses","Sargassum alert","Alerta de sargazo")} style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>        <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">          <defs>            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#6a2f9e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>            <linearGradient id="hiSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>            <radialGradient id="hiSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95"/><stop offset=".4" stopColor="#FFD884" stopOpacity=".55"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/></radialGradient>            <linearGradient id="hiLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138"/><stop offset="1" stopColor="#16242A"/></linearGradient>            <radialGradient id="hiGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".5"/><stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/></radialGradient>          </defs>          <rect width="390" height="430" fill="url(#hiSky)"/>          <circle cx="262" cy="300" r="120" fill="url(#hiSun)"/>          <circle cx="262" cy="300" r="30" fill="#FFE6A8" opacity=".9"/>          <path d="M0 300 Q40 286 86 296 L120 300 Z" fill="#0E1F25" opacity=".8"/>          <path d="M286 282 q14 -40 30 -2 q8 22 4 22 l-44 0 q-2 -10 10 -18 Z" fill="#12262B" opacity=".92"/>          <rect x="0" y="300" width="390" height="240" fill="url(#hiSea)"/>          <path d="M232 304 L292 304 L320 540 L204 540 Z" fill="#FFD884" opacity=".10"/>          <ellipse cx="262" cy="324" rx="40" ry="4" fill="#FFD884" opacity=".30"/>          <ellipse cx="262" cy="356" rx="58" ry="4.5" fill="#FFD884" opacity=".16"/>          <path d="M0 470 Q150 446 390 486 L390 720 L0 720 Z" fill="url(#hiLand)"/>          <path d="M0 470 Q150 446 390 486" fill="none" stroke="#FFD884" strokeWidth="1.4" opacity=".26"/>          <circle cx="116" cy="372" r="52" fill="url(#hiGlow)"/>          <circle cx="116" cy="372" r="7.5" fill={_stCol} stroke="#06121A" strokeWidth="1.4"/>          <circle cx="116" cy="372" r="13" fill="none" stroke="#FFE6A8" strokeWidth="1.2" opacity=".6"/>        </svg>        <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,12,16,0) 0%,rgba(4,12,16,.22) 34%,rgba(4,12,16,.70) 64%,rgba(4,12,16,.93) 100%)"}}/>        <button onClick={()=>{track("sg_premium_modal_close",{source:source||"unknown",via:"hot_close"});onClose()}}          style={{position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,width:34,height:34,borderRadius:"50%",            background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",            color:"#fff",fontSize:18,cursor:"pointer",zIndex:10,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>Ã—</button>        <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"22px 22px calc(26px + env(safe-area-inset-bottom))",color:"#EAF7F4"}}>          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,216,132,.12)",border:"1px solid rgba(255,216,132,.30)",borderRadius:999,padding:"6px 12px 6px 9px",marginBottom:16}}>            <div style={{width:9,height:9,borderRadius:"50%",background:_stCol,boxShadow:`0 0 0 3px ${_stCol}38`}}/>            <span style={{font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".01em"}}>{beach.name}</span>            <span style={{fontSize:11,opacity:.7,fontWeight:600}}>Â· {_stLbl}</span>          </div>          <div className="anton" style={{fontSize:28,lineHeight:1.06,margin:"0 0 16px",textShadow:"0 2px 18px rgba(0,0,0,.45)"}}>            {_t(lang,<>Le Veilleur surveille <span style={{color:"#FFC72C"}}>{beach.name}</span> et te prÃ©vient.</>,<>The Watcher monitors <span style={{color:"#FFC72C"}}>{beach.name}</span> and alerts you.</>,<>El VigÃ­a vigila <span style={{color:"#FFC72C"}}>{beach.name}</span> y te avisa.</>)}          </div>          {_nextDeg&&(            <div style={{display:"flex",gap:13,alignItems:"flex-start",background:"rgba(232,82,42,.13)",border:"1px solid rgba(232,82,42,.34)",borderRadius:15,padding:"14px 15px",marginBottom:18}}>              <span style={{fontSize:19,lineHeight:1,flexShrink:0,marginTop:1}}>âš ï¸</span>              <div style={{flex:1,minWidth:0}}>                <div style={{font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#FFB59E",marginBottom:3}}>                  {_t(lang,`DÃ©gradation prÃ©vue : ${_nextDeg.when}`,`Forecast degradation: ${_nextDeg.when}`,`Desmejora prevista: ${_nextDeg.when}`)}                </div>                <div style={{font:"600 12.5px/1.45 system-ui,sans-serif",color:"rgba(234,247,244,.92)"}}>                  {_t(lang,"Le satellite voit les sargasses arriver. Tu seras prÃ©venu avant que Ã§a tourne.","Satellite detects incoming sargassum. You'll be alerted before conditions change.","El satÃ©lite detecta sargazo llegando. RecibirÃ¡s alerta antes del cambio.")}                </div>                <span style={{display:"block",marginTop:6,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.55)",letterSpacing:".02em"}}>                  {/* Chiffre RÃ‰EL injectÃ© au build (__REL, mÃªme source que /fiabilite/ + badge rel_hot_cta).                      JAMAIS de "80%" hardcodÃ© : on publie le clean-rate par rÃ©gime (cf regimeReliability.note). */}                  {(()=>{                    if(__REL&&typeof __REL.cleanPct==="number"){const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila");return _t(lang,`DonnÃ©e Copernicus Â· ${__REL.cleanPct}% Â« mer propre Â» vÃ©rifiÃ©es Â· ${reg}`,`Copernicus data Â· ${__REL.cleanPct}% â€œclean waterâ€ verified Â· ${reg}`,`Datos Copernicus Â· ${__REL.cleanPct}% â€œagua limpiaâ€ verificados Â· ${reg}`)}                    if(__REL&&typeof __REL.global==="number")return _t(lang,`DonnÃ©e Copernicus Â· ${__REL.global}% justes / 30 j`,`Copernicus data Â· ${__REL.global}% accurate / 30d`,`Datos Copernicus Â· ${__REL.global}% exactos / 30d`)                    return _t(lang,"DonnÃ©e Copernicus Â· backtest quotidien","Copernicus data Â· daily backtest","Datos Copernicus Â· backtest diario")                  })()}                </span>              </div>            </div>          )}          <button onClick={()=>startCheckout("monthly","hot_intent")}            style={{display:"block",width:"100%",border:"none",cursor:"pointer",fontFamily:"inherit",textAlign:"center",borderRadius:15,padding:"16px 18px",              background:"linear-gradient(135deg,#FFC72C,#E8A800)",color:"#1A2B26",boxShadow:"0 10px 30px rgba(232,168,0,.30)"}}>            <div style={{font:"800 16.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".005em"}}>              {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}            </div>            <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts Â· juste ton email","7 days premium on us Â· just your email","7 dÃ­as premium gratis Â· solo tu email"):_t(lang,"Pass dÃ¨s 7,99 â‚¬ Â· paiement unique, sans abonnement","Pass from â‚¬7.99 Â· one-time, no subscription","Pase desde 7,99 â‚¬ Â· pago Ãºnico, sin suscripciÃ³n")}            </div>          </button>          <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>            {PAY_CAPTURE_ONLY?_t(lang,"Sans carte Â· juste ton email","No card Â· just your email","Sin tarjeta Â· solo tu email"):_t(lang,"Sans engagement Â· Paiement sÃ©curisÃ© "+PAY_LABEL,"No commitment Â· Secure "+PAY_LABEL+" payment","Sin compromiso Â· Pago seguro "+PAY_LABEL)}          </div>        </div>      </div>    )  }  return(    <>      <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer â€” sinon le clic paraÃ®t "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>      <div ref={panelRef} className="sg-modal-panel" role="dialog" aria-modal="true" aria-label={_t(lang,"PrÃ©visions premium","Premium forecast","PronÃ³stico premium")} onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{        position:"fixed",bottom:0,left:0,right:0,zIndex:1100,        // Refonte CONTINUATION DE SCÃˆNE (arm constellation = dÃ©faut) : le golden-hour        // descend Ã  travers tout le modal (ciel â†’ mer profonde â†’ nuit) â†’ la premium        // est UNE scÃ¨ne continue, pas une feuille sombre. Holdout garde le sombre.        /* halftone Ben-Day comic (rÃ©f Spider-Verse) par-dessus le dÃ©gradÃ© â€” texte intact */        background:passOnly          ? "linear-gradient(145deg,#190c2c,#120821)"          : pwComic          ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"          : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),        borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflowX:"hidden",overflowY:"auto",      }}>        <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>        {/* Close X top-right â€” resolves Design feedback "no close affordance            visible, users dismiss by backdrop tap". Sticky so always reachable            even when modal is scrolled. */}        <button          aria-label={_t(lang,"Fermer","Close","Cerrar")}          onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}          style={{position:"absolute",top:14,right:14,width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,            borderRadius:"50%",background:(pwComic&&!passOnly)?"#ffd23f":"rgba(255,255,255,.08)",border:(pwComic&&!passOnly)?"2.5px solid #0d0b14":"none",            color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,            boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",            zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>Ã—</button>        {/* â”€â”€ PASS-ONLY : offre UNIQUE, un prix, un CTA (simplifiÃ© 2026-07-28) â”€â”€ */}        <PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null}          onBuy={(item)=>{          try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||30,cur:PAY_CUR}          setPayStep(true)        }}/>        {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}      </div>      {/* Ã‰tape paiement ON-SITE â€” overlay sombre au-dessus du modal (z 1300),          design maison : email + Apple/Google Pay + Payment Element (carte).          TOUJOURS rendu (cachÃ©) pour que les Elements montÃ©s persistent. */}      <div ref={payScrollRef} onTouchStart={onTouchStartPay} onTouchMove={onTouchMovePay} onTouchEnd={onTouchEndPay}        style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",        display:"flex",flexDirection:"column",overflowX:"hidden",overflowY:"auto",        // hors-Ã©cran (PAS visibility:hidden : les iframes Stripe ne bootent pas        // dans un conteneur hidden â€” le prÃ©-mount resterait gelÃ©)        transform:payStep?"none":"translateX(-200vw)",        pointerEvents:payStep?"auto":"none"}}>        {/* padding-top safe-area : sinon en PWA standalone iOS le bouton Â« Retour Â»            est coincÃ© sous la barre d'Ã©tat systÃ¨me (taps interceptÃ©s) â†’ injoignable. */}        <div ref={payContentRef} style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"calc(16px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column"}}>          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>            <button onClick={()=>{track("sg_pay_onsite_back",{plan:payPlanRef.current});setPayStep(false)}}              className="sg-payplain"              style={{background:"none",border:"none",color:"rgba(255,255,255,.65)",fontSize:14,cursor:"pointer",                fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"8px 0"}}>              â† {_t(lang,"Retour","Back","AtrÃ¡s")}            </button>            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",display:"flex",alignItems:"center",gap:8}}>              {/* Marque sur l'Ã©cran paiement (audit : full-screen sans aucun nom de site) */}              {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>                {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}              </span>}              ðŸ”’ {PAY_CAPTURE_ONLY?_t(lang,"Sans carte","No card","Sin tarjeta"):PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}            </span>          </div>          <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>            {ppSub              ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")              :PAY_CAPTURE_ONLY              ?_t(lang,"DÃ©bloque ta semaine â€” c'est offert","Unlock your week â€” on us","Desbloquea tu semana â€” gratis")              :passCtxRef.current              ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} dÃ­as`)              :NO_TRIAL              ?_t(lang,"Active ta reco du jour","Activate your daily pick","Activa tu playa del dÃ­a")              :_t(lang,"DÃ©marre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}          </h3>          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>            {ppSub              ?_t(lang,"Paie en sÃ©curitÃ© avec PayPal Â· annule quand tu veux","Pay securely with PayPal Â· cancel anytime","Paga seguro con PayPal Â· cancela cuando quieras")              :PAY_CAPTURE_ONLY              ?_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accÃ¨s premium 7 jours est OFFERT â€” ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US â€” your email and you're in.","Pagos en mantenimiento unos dÃ­as. Mientras, tu acceso premium 7 dÃ­as es GRATIS â€” tu email y listo.")              :passCtxRef.current              ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} Â· ${passCtxRef.current.days} jours d'accÃ¨s complet Â· paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} Â· ${passCtxRef.current.days} days full access Â· one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} Â· ${passCtxRef.current.days} dÃ­as Â· pago Ãºnico`)              :NO_TRIAL              ?<>{payPlanRef.current==="annual"                  ?_t(lang,`${PRICE_YR}/an Â· facturÃ© aujourd'hui`,`${PRICE_YR}/yr Â· billed today`,`${PRICE_YR}/aÃ±o Â· se cobra hoy`)                  :_t(lang,`${PRICE_MO}/mois Â· facturÃ© aujourd'hui`,`${PRICE_MO}/mo Â· billed today`,`${PRICE_MO}/mes Â· se cobra hoy`)} Â· {_t(lang,"annule en 2 clics","cancel in 2 clicks","cancela en 2 clics")}</>              :<>{_t(lang,"0 â‚¬ aujourd'hui","$0 today","$0 hoy")} Â· {payPlanRef.current==="annual"                  ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 â‚¬"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/aÃ±o en 7 dÃ­as`)                  :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 â‚¬"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 dÃ­as`)} Â· {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}          </div>          {/* Email requis pour le checkout hébergé Mollie (réception accès + reçu) */}          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(            <div style={{marginBottom:14}}>              <label style={MOL_LABEL}>{_t(lang,"E-mail (reÃ§u d'accÃ¨s)","Email (access receipt)","Email (recibo de acceso)")}</label>              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"                onBlur={capturePayEmail}                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,                  fontSize:16,fontFamily:"inherit",outline:"none",                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:6}}>{_t(lang,"Pour t'envoyer ton reÃ§u et ton accÃ¨s premium.","To send your receipt and premium access.","Para enviarte tu recibo y acceso premium.")}</div>            </div>          )}                    
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="mollie"&&(
+            <>              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"                onBlur={capturePayEmail}                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,                  fontSize:16,fontFamily:"inherit",outline:"none",                  border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>              {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}            </>          )}
+          )}          {!payReady&&payStep&&(            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>              <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",                borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>              <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>                {PAY_CAPTURE_ONLY?_t(lang,"On t'ouvre l'accÃ¨sâ€¦","Opening your accessâ€¦","Abriendo tu accesoâ€¦"):_t(lang,"Paiement sÃ©curisÃ©â€¦","Secure checkoutâ€¦","Pago seguroâ€¦")}              </span>              <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>            </div>          )}          {payError&&(()=>{            const isRetry=!!retryCtx            return(            <div role="alert" style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:12,padding:"11px 13px",              borderRadius:12,background:isRetry?"rgba(255,199,44,.12)":"rgba(232,82,42,.12)",borderLeft:isRetry?"4px solid #FFC72C":"4px solid #E8522A"}}>              {isRetry?(                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#FFC72C"}}>                  <path d="M8 1v6l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>                </svg>              ):(                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#F4845F"}}>                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>                </svg>              )}              <div style={{color:isRetry?"#FFE8B0":"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>            </div>            )          })()}          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn sg-paygold"            style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,              cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,              opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>            {payBusy              ?_t(lang,"Activationâ€¦","Activatingâ€¦","Activandoâ€¦")              :PAY_CAPTURE_ONLY              ?_t(lang,"DÃ©bloquer gratuitement â†’","Unlock free â†’","Desbloquear gratis â†’")              :passCtxRef.current              ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)              :NO_TRIAL              ?(payPlanRef.current==="annual"                ?_t(lang,`Payer ${PRICE_YR} â€” activer maintenant`,`Pay ${PRICE_YR} â€” activate now`,`Pagar ${PRICE_YR} â€” activar ya`)                :_t(lang,`Payer ${PRICE_MO} â€” activer maintenant`,`Pay ${PRICE_MO} â€” activate now`,`Pagar ${PRICE_MO} â€” activar ya`))              :_t(lang,"DÃ©marrer l'essai â€” 0 â‚¬ aujourd'hui","Start trial â€” $0 today","Empezar prueba â€” $0 hoy")}          </button>}          <div style={{textAlign:"center",marginTop:12,fontSize:10.5,color:"rgba(255,255,255,.4)"}}>            {ppSub              ?_t(lang,"Sans engagement Â· annule en 2 clics Â· sÃ©curisÃ© par PayPal","No commitment Â· cancel in 2 clicks Â· secured by PayPal","Sin compromiso Â· cancela en 2 clics Â· seguro con PayPal")              :PAY_CAPTURE_ONLY              ?_t(lang,"Offert le temps qu'on rouvre Â· sans carte Â· juste ton email","On us while we reopen Â· no card Â· just your email","Gratis mientras reabrimos Â· sin tarjeta Â· solo tu email")              :NO_TRIAL              ?_t(lang,"Sans engagement Â· Annule en 2 clics Â· "+PAY_LABEL+" sÃ©curisÃ©","No commitment Â· Cancel in 2 clicks Â· Secured by "+PAY_LABEL,"Sin compromiso Â· Cancela en 2 clics Â· "+PAY_LABEL+" seguro")              :_t(lang,"Sans engagement Â· Rappel 2 jours avant la 1re charge","No commitment Â· Reminder 2 days before first charge","Sin compromiso Â· Recordatorio 2 dÃ­as antes del primer cobro")}          </div>          {payError&&(          <button onClick={()=>{location.reload()}} style={{background:"none",border:"1px solid rgba(255,255,255,.25)",            borderRadius:12,color:"rgba(255,255,255,.8)",fontSize:12.5,fontWeight:600,padding:"11px 14px",width:"100%",            cursor:"pointer",fontFamily:"inherit",marginTop:14}}>            {_t(lang,"â†» RÃ©essayer le paiement sÃ©curisÃ©","â†» Retry secure checkout","â†» Reintentar el pago seguro")}          </button>          )}        </div>      </div>    </>  )}export default PremiumModalexport {B2BModal}

@@ -12708,8 +12708,11 @@ export default function App(){
     if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
   },[showOnboarding])
+  // Map tooltip state — « Tape une plage » hint, shown once per session
+  const [mapTipDismissed,setMapTipDismissed]=useState(()=>{try{return sessionStorage.getItem("sg_map_tip")==="1"}catch(_){return true}})
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
-  const onMapBeach=useCallback(b=>{ if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick])
+  const onMapBeach=useCallback(b=>{ if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
+    if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
   // ⭐ Aperçu vendeur B2B ANCRÉ (grief fondateur 2026-07-02 : la démo ne s'affichait ni
   // au bon endroit sur la carte, ni sur la fiche). Depuis /pro/espace/, le lien « Voir
   // l'aperçu dans l'app » porte ?preview_beach=<id data|app> → on résout LA plage de
@@ -13943,6 +13946,18 @@ export default function App(){
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
 
+        )}
+
+        {!mapTipDismissed&&(
+          <div style={{position:"absolute",bottom:"max(20px,env(safe-area-inset-bottom,0px)+8px)",left:"50%",transform:"translateX(-50%)",zIndex:1400,pointerEvents:"none",animation:"mapTipFade 4s ease-out 8s both"}}>
+            <style>{`@keyframes mapTipFade{0%,60%{opacity:1;transform:translateX(-50%) translateY(0)}90%{opacity:0;transform:translateX(-50%) translateY(6px)}100%{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none}}`}</style>
+            <div style={{display:"inline-flex",alignItems:"center",gap:9,padding:"12px 20px",borderRadius:14,background:"rgba(13,17,23,.92)",border:"1.5px solid rgba(255,199,44,.35)",boxShadow:"0 4px 0 0 rgba(0,0,0,.35),0 8px 32px rgba(0,0,0,.4)"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7Z"/></svg>
+              <span style={{fontSize:14,fontWeight:700,color:"#EAF7F4",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",whiteSpace:"nowrap"}}>
+                {_t(lang,"Tape une plage","Tap a beach","Toca una playa")}
+              </span>
+            </div>
+          </div>
         )}
 
         {/* ⭐ DÉTAIL COMIC depuis la carte (PRODUCT.md §8) — pin tapé → ChasseDetail
