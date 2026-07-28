@@ -1,13 +1,71 @@
 {
-  "generated": "2026-07-27T19:41:44.770Z",
-  "date": "2026-07-27",
+  "generated": "2026-07-28T08:56:42.203Z",
+  "date": "2026-07-28",
   "days": 1,
   "regions": [
+    "mq",
+    "gp",
     "florida",
     "puntacana",
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "879b239a",
+      "subject": "feat(funnel): track pass_offer_view + pass_cta + checkout_redirect (fix #funnel-blindspot)"
+    },
+    {
+      "h": "0a95dd6c",
+      "subject": "feat(creative): Le Poste d'Observation — carte diorama, Veilleur vivant, fiche cinema, tide transition, share card"
+    },
+    {
+      "h": "e545777f",
+      "subject": "feat(paywall): hosted checkout Mollie — 1 clic email + redirect, no card form, no wallet, no consent"
+    },
+    {
+      "h": "80fe9cfb",
+      "subject": "Paywall simplification: single-offer PassOffer + PremiumModal cleanup"
+    },
+    {
+      "h": "47ad4fe9",
+      "subject": "feat: US B2B seed (58 hotels) + Barbados go-live prep + daily video brief pipeline"
+    },
+    {
+      "h": "e56ffb07",
+      "subject": "feat: recovery pipeline + relance paiements échoués + push win-back + parrainage via sheet + stratégie"
+    },
+    {
+      "h": "6ad8d500",
+      "subject": "feat(email): pixel + click tracking first-party (track-open/track-click PHP + Supabase events)"
+    },
+    {
+      "h": "7faed6b4",
+      "subject": "conversion: exit-intent nudge on paywall close + forecast direction arrow on J+1"
+    },
+    {
+      "h": "1ce536b4",
+      "subject": "conversion: J+1 teaser, social proof 100%, season peak urgency"
+    },
+    {
+      "h": "adfcf4fb",
+      "subject": "chore: update Copernicus data 2026-07-27 20:12 UTC"
+    },
+    {
+      "h": "96ff6c3b",
+      "subject": "feat: SEO 'seaweed' keywords + LocalBusiness schema + conversion urgency copy"
+    },
+    {
+      "h": "008d995e",
+      "subject": "chore: update Copernicus data 2026-07-27 19:59 UTC"
+    },
+    {
+      "h": "ab4cebb9",
+      "subject": "chore: email state 2026-07-27 19:41 UTC"
+    },
+    {
+      "h": "f9c34d79",
+      "subject": "chore: update Copernicus data 2026-07-27 19:27 UTC"
+    },
     {
       "h": "5baec964",
       "subject": "feat: retry-failed-payment.php — one-shot script to send retry email for a failed Mollie payment"
@@ -39,96 +97,134 @@
     {
       "h": "ce891dd9",
       "subject": "chore: email state 2026-07-27 09:58 UTC"
-    },
-    {
-      "h": "4b2455a5",
-      "subject": "chore: update Copernicus data 2026-07-27 03:07 UTC"
-    },
-    {
-      "h": "bd97a0e9",
-      "subject": "chore: email state 2026-07-27 03:07 UTC"
     }
   ],
   "perRegion": [
     {
-      "region": "florida",
-      "sessions": 196,
-      "friction": 1,
-      "dead_rate": 0.063,
+      "region": "mq",
+      "sessions": 41,
+      "friction": 2,
+      "dead_rate": 0.151,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.06,
-        "n": 600
+        "rate": 0.159,
+        "n": 82
       },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 15
-        }
-      ],
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.33
+        "rate": 0.22
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-26",
+      "prev_date": "2026-07-27",
       "changes": [
-        "🆕 dead-click : div (15)"
+        "sessions 32→41 (+28%)"
+      ]
+    },
+    {
+      "region": "gp",
+      "sessions": 72,
+      "friction": 0,
+      "dead_rate": 0.091,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.017,
+        "n": 59
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.25
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-27",
+      "changes": [
+        "sessions 28→72 (+157%)"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 65,
+      "friction": 0,
+      "dead_rate": 0.034,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.034,
+        "n": 88
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.43
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-27",
+      "changes": [
+        "sessions 196→65 (-67%)",
+        "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 102,
-      "friction": 3,
-      "dead_rate": 0.112,
+      "sessions": 45,
+      "friction": 0,
+      "dead_rate": 0.135,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.079,
-        "n": 229
+        "rate": 0.139,
+        "n": 36
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.39
+        "rate": 0.53
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-26",
+      "prev_date": "2026-07-27",
       "changes": [
-        "sessions 67→102 (+52%)",
-        "rage-clicks 0→3 ⚠️"
+        "sessions 102→45 (-56%)",
+        "rage-clicks 3→0 ✅"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 54,
+      "sessions": 23,
       "friction": 0,
-      "dead_rate": 0.07,
+      "dead_rate": 0.027,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.07,
-        "n": 71
+        "rate": 0.028,
+        "n": 36
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.34
+        "rate": 0.37
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-26",
+      "prev_date": "2026-07-27",
       "changes": [
-        "sessions 39→54 (+38%)"
+        "sessions 54→23 (-57%)"
       ]
     }
   ]
