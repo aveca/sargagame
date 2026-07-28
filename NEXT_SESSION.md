@@ -1,6 +1,11 @@
 # NEXT_SESSION — sargagame
 
-> **📊 2026-07-28 — SESSION ANALYTICS + RECOVERY ([commit `e56ffb07`](https://github.com/aveca/sargagame/commit/e56ffb07)).** Session data-driven : analyse complète de la Google Sheet (481 leads, 18 paiements) + GitHub workflows pour identifier les leviers de croissance. Changements additifs, zéro risque money-path.
+> **🌙 2026-07-28 — SESSION MARATHON : US B2B SEED + BARBADOS GO-LIVE + BRIEFS VIDÉO.** Nuit de prod : pipeline US B2B (58 hôtels semés), Barbados go-live préparé (code Mollie + purge Stripe), brief vidéo quotidien automatisé pour 5 régions. Ventes en 24h activées.
+> - **US B2B seed** : `b2b-us-enrich.cjs` + `merge-b2b-contacts.cjs` → 58 hôtels (FL 20, PC 18, RM 20) intégrés au pipeline `b2b-cold-outreach.cjs` via fichier unifié. Workflow activé (step B2B US enrich + merge avant cold outreach).
+> - **Barbados GO-LIVE** : `live: true`, Mollie USD (`mol_region_currency` + `mol_b2b_region_brand` câblés), résidus Stripe purgés (`KNOWN_REGIONS`). Bloquant restant : creds FTP + Mollie profile (action fondateur).
+> - **Brief vidéo quotidien** : `daily-brief.cjs` produit 5 briefs (MQ/GP/FL/PC/RM) via Remotion → `scripts/video/out/brief-<region>-<date>.mp4`. Automatisable en tâche planifiée Windows.
+> - **Recovery actifs** : cart recovery (MOLLIE_CART_RECOVERY=1), push-winback, pass-expiry winback, cold-lead reengage, dunning — tous --send dans le workflow schedule.
+> - **SUITE (prochaine session)** : (1) Activer B2B US outreach (surveiller CAP_NEW dans logs), (2) Valider Barbados sur prod (creds fondateur), (3) Publier brief vidéo FB (session Edge), (4) SVG hero assets par région.** Session data-driven : analyse complète de la Google Sheet (481 leads, 18 paiements) + GitHub workflows pour identifier les leviers de croissance. Changements additifs, zéro risque money-path.
 > - **Diagnostic complet** : GP convertit à 0.5% (197 leads → 1 paid) vs MQ 4.8%. USD : 98 leads → 2 paid. B2B : 0 vente. Parrainage : 0 actif. 3 paiements échoués non récupérés. Rapport dans `PLAN_STRATEGIQUE.md`.
 > - **Relances envoyées** (SMTP `alerte@`) : `egoursaud@wanadoo.fr` (2× tenté), `jcroulier@gmail.com` (déjà client), `hamitchell62@gmail.com` (Punta Cana USD), `admin@anoli-lodges.com` (B2B widget white-label).
 > - **Pipeline activé** : `MOLLIE_CART_RECOVERY=1` (récupération continue), `push-winback.cjs --send` (réveil dormants), `referral-from-sheet.cjs` remplace GAS bloqué (lecture Sheet directe).

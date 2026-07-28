@@ -270,8 +270,20 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/widget-convert.cjs --send
 
+      # US B2B enrichment + merge : seed les hôtels US (florida/puntacana/rivieramaya)
+      # dans la base de contacts B2B, puis fusionne MQ/GP + US → b2b-contacts-unified.json
+      # (lu par b2b-cold-outreach.cjs ci-dessous). Skip si la clé Google Places absente
+      # (seed statique de 58 hôtels utilisée). Idempotent, continue-on-error.
+      - name: B2B US enrich + merge
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          node scripts/automation/b2b-us-enrich.cjs --send
+          node scripts/automation/merge-b2b-contacts.cjs --send
+
       # Prospection B2B FROIDE automatisée (hôtels enrichis, email réel + hook perso).
       # Warmup : cap bas de nouveaux contacts/run (délivrabilité). Séquence c0 + relance c4.
+      # Source = b2b-contacts-unified.json (MQ/GP + US) si existant, fallback b2b-enriched.json.
       - name: B2B cold outreach (warmup)
         if: github.event_name == 'schedule'
         continue-on-error: true

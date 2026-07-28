@@ -62,7 +62,7 @@ function mol_api($method, $path, $body = null) {
 function mol_region_currency($island) {
     $i = strtolower((string)$island);
     if (in_array($i, ['mq', 'gp', ''], true)) return 'EUR';
-    if (in_array($i, ['florida', 'puntacana', 'rivieramaya'], true)) return 'USD';
+    if (in_array($i, ['florida', 'puntacana', 'rivieramaya', 'barbados'], true)) return 'USD';
     return null; // région inconnue → rejet
 }
 // Conservé pour rétro-compat (anciens appels). EUR-region = true.
@@ -85,6 +85,7 @@ function mol_b2b_region_brand($island) {
         case 'florida':   return ['domain' => 'sargassummiami.com',     'lang' => 'en'];
         case 'puntacana': return ['domain' => 'sargassumpuntacana.com', 'lang' => 'en'];
         case 'rivieramaya': return ['domain' => 'sargassumcancun.com',  'lang' => 'es'];
+        case 'barbados':  return ['domain' => 'sargassumbarbados.com',  'lang' => 'en'];
         case 'gp':        return ['domain' => 'sargasses-guadeloupe.com', 'lang' => 'fr'];
         default:          return ['domain' => 'sargasses-martinique.com', 'lang' => 'fr'];
     }
