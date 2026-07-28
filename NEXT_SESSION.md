@@ -1,5 +1,11 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-07-28 — PAYWALL SIMPLIFIÉ : OFFRE UNIQUE, UN PRIX, UN CTA.** Funnel 0,009% → passerelle unique pour éliminer la paralysie du choix.
+> - **PassOffer réécrit** : un seul produit (P30 14,99 € / 11,99 $). Plus de grille 3 cartes, plus de wallet, plus d'écran preuve A/B → 1 clic pour acheter.
+> - **PremiumModal allégé** : -2171 lignes (3136 → 1853). WorldPaywall (+938), ComicPaywall (+1186), legacy dark paywall (+667) supprimés. Seul PassOffer + B2BModal sont rendus.
+> - **Build OK** (Budget 195 Ko ≤ 210 Ko gzip) | **Smoke OK** (map+fiche+paywall, ERRORS=[], WHITE=[], RM_INFINITE=[])
+> - **SUITE** : (1) Surveiller les conversions PassOffer ces 48h, (2) Si le taux modal→CTA ne monte pas → revoir la friction (email capture, payment step), (3) Prochaine étape = Barbados + purger résidus Stripe
+
 > **💰 2026-07-28 — BLAST V2 : PAIEMENT DIRECT MOLLIE POUR CHAQUE LEAD.** 1 clic → Mollie → payer → premium auto-restauré. B2B CAP_NEW=30.
 > - **300+ paiements Mollie individuels créés** (1 par lead B2C) avec `metadata.email` + `metadata.pass` → webhook grant. `redirectUrl` = `?premium_email={email}` → frontend restore premium (pattern existant, zéro changement frontend).
 > - **CTA = checkout URL directe** (plus de lien vers paywall) : 1 clic → Mollie hosted page → CB/Apple Pay → redirect avec pass actif.
