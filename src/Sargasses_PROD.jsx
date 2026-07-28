@@ -608,6 +608,152 @@ export function Veilleur({mood="serein",size=44,interactive=true}){
     </svg>
   )
 }
+// Forecast Timeline 3D — animation de dessin au scroll (Wow Effect 4)
+// La timeline se dessine progressivement pendant le scroll, révélant chaque jour
+function ForecastTimeline3D({forecast,isPremium,weatherDaily,lang}){
+  const containerRef=useRef(null)
+  const [drawProgress,setDrawProgress]=useState(0)
+  
+  useEffect(()=>{
+    if(!containerRef.current)return
+    const observer=new IntersectionObserver(
+      ([entry])=>{
+        if(entry.isIntersecting){
+          // Animate drawing over 2 seconds when visible
+          const startTime=Date.now()
+          const duration=2000
+          const animate=()=>{
+            const elapsed=Date.now()-startTime
+            const progress=Math.min(elapsed/duration,1)
+            setDrawProgress(progress)
+            if(progress<1)requestAnimationFrame(animate)
+          }
+          animate()
+        }
+      },
+      {threshold:0.3}
+    )
+    observer.observe(containerRef.current)
+    return()=>observer.disconnect()
+  },[])
+  
+  if(!forecast||!forecast.length)return null
+  
+  const days=forecast.slice(0,7)
+  const width=100
+  const height=80
+  const pointSpacing=width/(days.length-1)
+  
+  // Generate smooth curve path
+  const points=days.map((d,i)=>{
+    const afai=Number.isFinite(d.afai)?d.afai:0
+    const x=i*pointSpacing
+    const y=height-(afai*60)-10 // Invert Y, scale to fit
+    return{x,y,day:d}
+  })
+  
+  // Create SVG path with progressive drawing
+  const pathLength=drawProgress*points.length
+  const visiblePoints=points.slice(0,Math.ceil(pathLength))
+  
+  let pathD="M"+visiblePoints.map((p,i)=>{
+    if(i===0)return`${p.x} ${p.y}`
+    const prev=visiblePoints[i-1]
+    const cpx=(prev.x+p.x)/2
+    return`Q${cpx} ${prev.y} ${p.x} ${p.y}`
+  }).join(" ")
+  
+  return(
+    <div ref={containerRef} style={{position:"relative",width:"100%",padding:"20px 0"}}>
+      <svg 
+        viewBox={`0 0 ${width} ${height}`} 
+        style={{width:"100%",height:"auto",overflow:"visible"}}
+        preserveAspectRatio="none"
+      >
+        {/* Gradient background */}
+        <defs>
+          <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFC72C" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#FFC72C" stopOpacity="0"/>
+          </linearGradient>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#1EC8B0"/>
+            <stop offset="50%" stopColor="#FFC72C"/>
+            <stop offset="100%" stopColor="#FF6B6B"/>
+          </linearGradient>
+        </defs>
+        
+        {/* Area fill under curve */}
+        {pathD&&<path 
+          d={pathD+` L${visiblePoints[visiblePoints.length-1].x} ${height} L${visiblePoints[0].x} ${height} Z`}
+          fill="url(#timelineGrad)"
+          style={{transition:"d 0.3s ease-out"}}
+        />}
+        
+        {/* Main timeline curve */}
+        {pathD&&<path
+          d={pathD}
+          fill="none"
+          stroke="url(#lineGrad)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          style={{transition:"d 0.3s ease-out"}}
+        />}
+        
+        {/* Data points */}
+        {visiblePoints.map((p,i)=>(
+          <g key={i} style={{opacity:drawProgress>=i?1:0,transition:"opacity 0.3s"}}>
+            <circle 
+              cx={p.x} 
+              cy={p.y} 
+              r="3" 
+              fill={p.day.status==="clean"?"#1EC8B0":p.day.status==="moderate"?"#FFC72C":"#FF6B6B"}
+              stroke="#fff"
+              strokeWidth="1.5"
+            />
+            {/* Pulse animation on current point */}
+            {i===0&&<circle 
+              cx={p.x} 
+              cy={p.y} 
+              r="3" 
+              fill="none"
+              stroke="#1EC8B0"
+              strokeWidth="1"
+              opacity="0.6"
+            >
+              <animate attributeName="r" from="3" to="8" dur="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite"/>
+            </circle>}
+          </g>
+        ))}
+      </svg>
+      
+      {/* Day labels below */}
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:"0 4px"}}>
+        {days.map((d,i)=>(
+          <div 
+            key={i} 
+            style={{
+              textAlign:"center",
+              opacity:drawProgress>=i?1:0,
+              transition:"opacity 0.3s",
+              fontSize:11,
+              fontFamily:"'Bricolage Grotesque',sans-serif",
+              fontWeight:600
+            }}
+          >
+            <div style={{color:"var(--sg-ink,#0A1714)",textTransform:"uppercase",letterSpacing:".05em"}}>
+              {fcDay(d,lang)}
+            </div>
+            <div style={{fontSize:9,color:"var(--sg-mid,#666)",marginTop:2}}>
+              {Math.round((d.afai||0)*100)}%
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 // Squircle candy du score 0-100 — réutilise l'esprit SG_BLOB du funnel.
 function ScoreBlob({score,color,size=84}){
   return(
@@ -959,6 +1105,30 @@ function BeachScene({beach,reveal}){
   const black=scene.arch==="VOLCANIC_BLACK"
   const sand=black?(ph==="day"?"#3A352F":"#0F0D0B"):(ph==="day"?"#C9A86A":t.rock==="#16242A"?"#1C1712":"#15110D")
   const showRafts=beach&&(beach.status==="moderate"||beach.status==="avoid")
+  
+  // Particules dynamiques (Wow Effect 5) — vie subtile selon le statut
+  const particleCount=beach?.status==="clean"?8:beach?.status==="moderate"?12:16
+  const particles=useMemo(()=>Array.from({length:particleCount},(_,i)=>({
+    id:i,
+    x:Math.random()*800,
+    y:340+Math.random()*80,
+    size:2+Math.random()*3,
+    speed:0.3+Math.random()*0.5,
+    phase:Math.random()*Math.PI*2,
+    color:beach?.status==="clean"?"rgba(255,255,255,0.4)":beach?.status==="moderate"?"rgba(122,92,20,0.3)":"rgba(93,64,14,0.35)"
+  })),[beach?.status,particleCount])
+  
+  // Animation frame pour les particules
+  const [frame,setFrame]=useState(0)
+  useEffect(()=>{
+    let raf
+    const animate=()=>{
+      setFrame(f=>(f+1)%360)
+      raf=requestAnimationFrame(animate)
+    }
+    raf=requestAnimationFrame(animate)
+    return()=>cancelAnimationFrame(raf)
+  },[])
   // palmier paramétrique seedé : tronc courbe + couronne de frondes en éventail
   const palm=(p,i)=>{const bx=p.x,by=556,h=118*p.s,tx=bx+p.tilt*3.2,ty=by-h
     const trunk="M"+bx+" "+by+" Q"+Math.round(bx+(tx-bx)*0.45)+" "+Math.round(by-h*0.55)+" "+Math.round(tx)+" "+Math.round(ty)
@@ -991,6 +1161,39 @@ function BeachScene({beach,reveal}){
         <g className="bsc-cloud2"><path d="M512 92 q12 -22 42 -22 q16 -13 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill={t.cloud} opacity=".78"/><path d="M514 93 h140" stroke={t.rim} strokeWidth="1.7" opacity=".26"/></g>
         {ph!=="night"&&<g className="bsc-bird" opacity=".55" stroke={ph==="day"?"#2A5566":t.rim} strokeWidth="2.4" fill="none" strokeLinecap="round"><path d="M712 138 q5.5 -6.5 11 0 q5.5 -6.5 11 0"/><path d="M754 124 q4.5 -5 9 0 q4.5 -5 9 0"/><path d="M648 156 q5 -6 10 0 q5 -6 10 0"/><path d="M576 128 q4 -5 8 0 q4 -5 8 0"/><path d="M620 122 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/></g>}
         <rect x="-40" y="330" width="880" height="200" fill="url(#bscSea)"/>
+        {/* Particules dynamiques — vie subtile (plankton, bulles, lumière) */}
+        {particles.map(p=>{
+          const t=frame*0.02
+          const y=p.y+Math.sin(t+p.phase)*8
+          const x=p.x+Math.cos(t*0.5+p.phase)*4
+          const opacity=0.4+Math.sin(t+p.phase)*0.2
+          return(
+            <circle
+              key={p.id}
+              cx={x}
+              cy={y}
+              r={p.size}
+              fill={p.color}
+              opacity={opacity}
+            />
+          )
+        })}
+        {/* Vagues animées — lignes qui ondulent */}
+        {Array.from({length:3},(_,i)=>{
+          const t=frame*0.03
+          const baseY=360+i*20
+          const wave="M-40 "+baseY+" Q"+(100+Math.sin(t+i)*20)+" "+(baseY-5)+" 200 "+baseY+" Q"+(300+Math.sin(t+i+1)*20)+" "+(baseY+5)+" 400 "+baseY+" Q"+(500+Math.sin(t+i+2)*20)+" "+(baseY-3)+" 600 "+baseY+" Q"+(700+Math.sin(t+i+3)*20)+" "+(baseY+3)+" 840 "+baseY
+          return(
+            <path
+              key={"wave"+i}
+              d={wave}
+              fill="none"
+              stroke="rgba(255,255,255,0.15)"
+              strokeWidth={1.5-i*0.3}
+              opacity={0.3-i*0.08}
+            />
+          )
+        })}
         {t.sun==="moon"&&<path className="bsc-moonp" d="M302 332 L338 332 L356 474 Q320 486 284 474 Z" fill="#9ADCD4"/>}
         {scene.relief.type==="diamond"&&<g>
           <path d="M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z" fill={t.rock}/>
@@ -2939,6 +3142,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // ?arc=1 = Marée du Veilleur (houle) À LA PLACE des barres ; défaut OFF (observationnel,
   // pas un A/B parallèle — cf. note du composant). Rollback inhérent : défaut = barres.
   const arcOn=(()=>{try{return /[?&]arc=1/.test(window.location.search)}catch(_){return false}})()
+  // ?timeline=1 = Forecast Timeline 3D avec animation de dessin au scroll
+  const timeline3D=(()=>{try{return /[?&]timeline=1/.test(window.location.search)}catch(_){return false}})()
   const[beatOpen,setBeatOpen]=useState(false)
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   if(!forecast||!forecast.length)return null
@@ -2984,7 +3189,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   return(
     <>
     <div style={{position:"relative"}}>
-      {arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
+      {timeline3D?<ForecastTimeline3D forecast={forecast} isPremium={isPremium} weatherDaily={weatherDaily} lang={lang}/>:
+      arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
         {visible.map((d,i)=>{
           const afai=Number.isFinite(d.afai)?d.afai:0
