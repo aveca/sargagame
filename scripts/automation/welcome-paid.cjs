@@ -19,7 +19,7 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
@@ -187,6 +187,7 @@ async function main() {
       const { data, error } = await sendEmail(resend, {
         from: `Sargasses <${FROM_DOMAIN}>`, to: q.email, subject: c.subject,
         html: buildHTML(q.region, q.email), preheader: c.pre, unsubUrl: unsubUrl(q.email, q.island),
+        trackingId: makeTrackingId('welcome_paid', q.email),
       })
       if (error) { console.log(`  ❌ ${logId(q.email)} : ${error.message || JSON.stringify(error)}`); continue }
       sentArr.push(q.h); saveJSON(SENT_PATH, sentArr)

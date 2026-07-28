@@ -18,7 +18,7 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 
@@ -926,6 +926,7 @@ async function main() {
       try {
         const { data, error } = await sendEmail(resend, {
           from, to: email, subject: _dAbOut.subject, html, preheader: _dAbOut.preheader, unsubUrl: unsub,
+          trackingId: makeTrackingId(`drip_${step.key}`, email),
         })
         if (error) {
           console.log(`  x ${logId(email)} [${step.key}]: ${error.message}`)
@@ -1035,6 +1036,7 @@ async function main() {
       const { data, error } = await sendEmail(resend, {
         from, to: email, subject: _dabOut.subject, html, preheader: _dabOut.preheader,
         unsubUrl: unsubUrl(email, island),
+        trackingId: makeTrackingId('drip_daily', email),
       })
       if (error) { console.log(`  x ${logId(email)} [daily]: ${error.message}`) }
       else {

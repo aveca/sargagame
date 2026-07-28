@@ -27,7 +27,7 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
 const { passDays } = require('./pass-expiry-winback.cjs')
 
@@ -198,7 +198,7 @@ async function main() {
     const lang = (region && region.primaryLang) || 'fr'
     if (!DO_SEND) { console.log(`  ~ [dry] ${logId(c.email)} (${c.island}, ${lang})`); count++; continue }
     try {
-      const { error } = await sendEmail({ from: t.from, to: c.email, subject: t.subject, html: t.body, preheader: t.pre, unsubUrl: unsubUrl(c.email, c.island) })
+      const { error } = await sendEmail({ from: t.from, to: c.email, subject: t.subject, html: t.body, preheader: t.pre, unsubUrl: unsubUrl(c.email, c.island), trackingId: makeTrackingId('welcome_paid_mollie', c.email) })
       if (error) { console.log(`  x ${logId(c.email)}: ${error.message}`); fail++; continue }
       sentSet.add(h)
       saveJSON(SENT_PATH, [...sentSet]) // flush incrémental (anti re-spam si crash mid-run)

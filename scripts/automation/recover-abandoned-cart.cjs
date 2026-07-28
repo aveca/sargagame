@@ -22,7 +22,7 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 const { getAllRegions } = require('../../regions/index.cjs')
@@ -381,6 +381,7 @@ async function main() {
       const { data, error } = await sendEmail(resend, {
         from, to: email, subject: _cabOut.subject, html: buildHTML(region, email, kind),
         preheader: _cabOut.preheader, unsubUrl: unsub,
+        trackingId: makeTrackingId(`recover_cart_${kind}`, email),
       })
       if (error) { console.log(`  ❌ ${logId(email)} : ${error.message}`); continue }
       console.log(`  ✅ ${logId(email)} (${region.name}/${kind})`)

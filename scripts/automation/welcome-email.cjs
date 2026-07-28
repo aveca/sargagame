@@ -14,7 +14,7 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 
@@ -406,6 +406,7 @@ async function main() {
         html: htmlBody,
         preheader: abOut.preheader,
         unsubUrl: unsub,
+        trackingId: makeTrackingId('welcome', sub.email),
       })
 
       if (error) {

@@ -87,6 +87,8 @@ scripts/automation/data/fb-reply-log.jsonl
 scripts/automation/data/subscribers.json
 # RGPD : segment clients payants (emails en clair) — régénéré par fetch-payers.cjs, JAMAIS commité
 scripts/automation/data/payers.json
+# RGPD : exports CSV de la Google Sheet (PII) — téléchargés pour analyse locale, JAMAIS commités
+scripts/automation/data/sheet-*.csv
 
 # Pipeline video (artefacts de rendu)
 scripts/video/out/

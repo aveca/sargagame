@@ -17,6 +17,7 @@
  */
 
 const nodemailer = require('nodemailer')
+const { logId } = require('./email-hash.cjs')
 
 // SMTP — boîte alerte@ (cPanel). Host/user/port non sensibles (defaults ici) ;
 // seul SMTP_PASS est un secret. Lecture PARESSEUSE de process.env : un script qui
@@ -123,6 +124,14 @@ function applyBrand(html) {
 // trackingId doit être UNIQUE par envoi (UUID ou campaign_id — chaque email = 1 id).
 const TRACKING_URL = 'https://sargasses-martinique.com/api'
 
+// trackingId canonique : "<campaign>:<YYYYMMDD>[:<hash8 email>]" — unique par
+// (campagne, jour, destinataire), zéro PII (hash8 corrélable aux fichiers d'état).
+function makeTrackingId(campaign, email) {
+  const day = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const h = email && String(email).includes('@') ? ':' + logId(email) : ''
+  return `${campaign}:${day}${h}`
+}
+
 function injectTracking(html, trackingId) {
   if (!trackingId || !html) return html
   let out = String(html)
@@ -180,6 +189,6 @@ async function sendEmail(a, b) {
 
 module.exports = {
   sendEmail, mailReady, getTransport, normalizeFrom,
-  htmlToText, injectPreheader, applyBrand, brandHeader, injectTracking,
+  htmlToText, injectPreheader, applyBrand, brandHeader, injectTracking, makeTrackingId,
   FONT_LINK, FONT_SANS, FONT_DISPLAY, TRACKING_URL,
 }

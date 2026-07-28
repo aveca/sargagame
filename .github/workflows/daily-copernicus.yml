@@ -145,6 +145,14 @@ jobs:
           ONESIGNAL_API_KEY_RIVIERAMAYA: ${{ secrets.ONESIGNAL_API_KEY_RIVIERAMAYA }}
         run: node scripts/automation/send-notifications.cjs
 
+      - name: Push win-back dormant users
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/push-winback.cjs --send
+
       # ── Email pipeline: clean bounces → fetch → send ──
       - name: Clean bounced emails from Sheet
         if: github.event_name == 'schedule'
@@ -291,6 +299,8 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_CART_RECOVERY: '1'
         run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=4
 
       # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
@@ -547,7 +557,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json public/api/b2b-paylinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -753,13 +763,13 @@ jobs:
             }
           "
 
-      # Referral REPORT (read-only, decision-support) : agrège share→landing→convert
-      # de la boucle parrainage + top parrains → data/referral-report.json (committé).
-      # No-op gracieux tant que l'action GAS `referral` n'est pas déployée (clasp push).
+      # Referral REPORT (read-only, decision-support) : lit la Google Sheet directement
+      # (bypass Apps Script clasp push bloqué) et agrège share→landing→convert.
+      # Sortie : data/referral-report.json (committé plus bas).
       - name: Referral report (read-only)
         if: github.event_name == 'schedule'
         continue-on-error: true
-        run: node scripts/automation/referral-report.cjs --days=90
+        run: node scripts/automation/referral-from-sheet.cjs
 
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
@@ -807,6 +817,7 @@ jobs:
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
+          [ -f scripts/automation/data/push-winback-sent.json ] && git add scripts/automation/data/push-winback-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           [ -f public/api/copernicus/track-record.json ] && git add public/api/copernicus/track-record.json
           # Sprint #3 — track-record validé citoyen : le journal des signalements DOIT être commité
