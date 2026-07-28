@@ -1,0 +1,73 @@
+name: Provision Barbados
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run (check only, no changes)'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Build Barbados site (VITE_REGION=barbados)
+      - name: Build Barbados site
+        run: |
+          VITE_REGION=barbados npm run build
+          VITE_REGION=barbados node scripts/prepare-ftp.cjs
+
+      # Inject Mollie config (same as daily-copernicus.yml does for other regions)
+      - name: Inject Mollie config into staging api/
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/write-mollie-config.cjs
+
+      # Run provisioning script (creates Mollie profile for Barbados if needed)
+      - name: Provision Mollie profile + config
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            node scripts/provision-barbados.cjs
+          else
+            node scripts/provision-barbados.cjs --send
+          fi
+
+      # Deploy via FTP (same as daily-copernicus — will skip if no FTP creds for Barbados)
+      - name: Deploy Barbados (FTPS or fast-deploy)
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          ONLY: barbados
+        run: node scripts/manual-ftp-deploy.cjs
+
+      # Health check
+      - name: Health check
+        run: |
+          sleep 10
+          STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://sargassumbarbados.com/" || echo 000)
+          echo "Barbados: HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::warning::Barbados health check: HTTP $STATUS (may need DNS or FTP setup)"
+          fi

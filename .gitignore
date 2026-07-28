@@ -15,6 +15,7 @@ node_modules
 dist
 martinique-ftp
 guadeloupe-ftp
+barbados-ftp
 
 # Env
 .env
