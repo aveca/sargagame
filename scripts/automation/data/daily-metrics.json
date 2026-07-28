@@ -98,22 +98,22 @@
   },
   {
     "date": "2026-07-28",
-    "time": "2026-07-28T14:16:48.102Z",
+    "time": "2026-07-28T19:31:18.069Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 483,
+    "emails": 484,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": null,
     "email": {
-      "sent": 3521,
+      "sent": 3525,
       "delivered": null,
-      "opened": 17,
-      "clicked": 2,
+      "opened": 21,
+      "clicked": 6,
       "bounced": null,
-      "openRate": 0.48,
-      "clickRate": 11.76,
+      "openRate": 0.6,
+      "clickRate": 28.57,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -158,15 +158,13 @@
           "total": 17.98
         },
         "EUR": {
-          "count": 4,
-          "total": 38.96
+          "count": 3,
+          "total": 30.97
         }
       },
       "refunds": {
-        "count": 1,
-        "total": {
-          "EUR": 7.99
-        }
+        "count": 0,
+        "total": {}
       },
       "chargebacks": {
         "count": 0,
@@ -177,8 +175,7 @@
         "1799efe3",
         "5510715a",
         "71733259",
-        "847abc3b",
-        "bf819a41"
+        "847abc3b"
       ]
     },
     "ga4": {
