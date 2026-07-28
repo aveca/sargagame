@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-28T08:46:20.477Z",
+  "updatedAt": "2026-07-28T14:12:30.683Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -7,7 +7,7 @@
   },
   "counts": {
     "discovered": 3,
-    "contacted": 130,
+    "contacted": 152,
     "lead": 4,
     "paid": 0
   },
@@ -1214,6 +1214,204 @@
       "name": null,
       "island": null,
       "contactedAt": "2026-07-28T08:43:34.685Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "d853e136b07f284fc20c2ff754160bdf": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.066Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "1d3f211fbdb4b81ee15fde4f339dbe60": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.495Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "b07b770f37c2dc6ecaac05691c94e29b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.837Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "f4dd22277b67d72fe0d7ae8ae79ce89b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:30.254Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "24d34c9fce3a30ef38fad7a033ebabc4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:30.706Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "bbdbad686094966d6ad4662b4a97452a": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:31.687Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "5ec5b586f022e87838fadb2802673807": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:32.116Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "4c837f6be35bfb8daa8cca59dd740158": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:32.448Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "32185bf2610191c03fcac3d3216a2749": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:34.452Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "c62d813b2266edc25e5d2f8e95dee3ac": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:34.931Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "4e342426455a8382a0dab2108c8b00fb": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:35.376Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "d7029fceb1e9be0d071db246470a7a90": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:35.817Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "2338d4c2df8adfaf63840dccf9759f6c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:36.128Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "c3053fc4fadca450a129fb3cb65bd51e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:36.542Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "3ccc36ec6db2fa1bf1cde9991dfff61c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:41.569Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "aff0aa46a9ef4e586e10cd45b74cc4f0": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.022Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "b8a34ea764c4c40f5e48aa9a677c060b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.533Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "f6e6f9c63e452e1196b6a063d9810690": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.954Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "5835247283f6e4f30c2e9424a8922bb4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:43.486Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "c4b78b5421cead5d672591ab4d545e8e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:43.845Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "ce94c3712f7f4d16201fa7838e9adbcf": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:44.403Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "attendre / relance programmée"
+    },
+    "ed2c1a86dfb93586bed900f77528a615": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:44.816Z",
       "isLead": false,
       "isPaid": false,
       "nextAction": "attendre / relance programmée"
