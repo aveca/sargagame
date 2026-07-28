@@ -229,6 +229,16 @@ jobs:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
         run: node scripts/automation/mollie-paylinks.cjs
 
+      # Mollie Payment Links TOUS PRODUITS (B2C passes + B2B annual + USD) :
+      # crée les liens de paiement direct pour tous les tiers (p7/p30/saison EUR+USD,
+      # brief_annual/pro_annual/territory EUR+USD). Idempotent, auto-réparation.
+      - name: Mollie all-product payment links
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-passlinks.cjs --send
+
       # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
       # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
       - name: Send B2B drip emails (Sargasses Pro)
@@ -406,6 +416,21 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/cold-lead-reengage.cjs --send
 
+      # Blast MOLLIE OFFRE à TOUS les leads (B2C + B2B) : envoie un email unique
+      # avec lien de paiement direct à tous les leads jamais convertis (246 + 58 US).
+      # Idempotent (blast-mollie-offer-sent.json), cap 500/jour. schedule-only.
+      # Exclut les déjà-payants (vérifié via API Mollie) et les bounced.
+      - name: Blast Mollie offer to ALL leads
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/blast-mollie-offer.cjs --send
+
       # Welcome PASS Mollie : onboarde les acheteurs de pass Mollie (la base client qui
       # croît — welcome-paid.cjs ne couvre QUE les abos Stripe legacy). En pass-only,
       # satisfaction → rachat = le revenu ; un onboarding propre + nudge partage (boucle
@@ -499,6 +524,16 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/revenue-watch.cjs --send
 
+      # MRR Mollie EXCLUSIF : track la croissance Mollie (MRR, passes, B2B, nombre
+      # de clients). Source = API Mollie (MOLLIE_API_KEY). Remplace Stripe comme
+      # indicateur de revenu principal. Rapport dans data/mollie-mrr.json + historique 90j.
+      - name: Mollie MRR tracker
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-mrr.cjs --send
+
       # Veille UX proactive : lit ux-report.json (audit hebdo) → alerte le fondateur
       # sur les problèmes CRITIQUES (rage/dead-clicks) qui sinon dorment dans le JSON.
       # Lecture seule, dédup ux-watch-seen.json (1 alerte/rapport). Ferme la boucle
@@ -569,7 +604,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
