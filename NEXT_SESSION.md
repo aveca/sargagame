@@ -1,6 +1,11 @@
 # NEXT_SESSION — sargagame
 
-> **🚀 2026-07-27 — CONVERSION SPRINT + SEO PUNTA CANA ([commit `1ce536b4`](https://github.com/aveca/sargagame/commit/1ce536b4) · workflows CI+Perf+Deploy VERTS `30313925262`/`30313925327`/`30313925379`).** Session revenue-maximization B2C + SEO. Tous les changements additifs avec rollback flags.
+> **📊 2026-07-28 — SESSION ANALYTICS + RECOVERY ([commit `e56ffb07`](https://github.com/aveca/sargagame/commit/e56ffb07)).** Session data-driven : analyse complète de la Google Sheet (481 leads, 18 paiements) + GitHub workflows pour identifier les leviers de croissance. Changements additifs, zéro risque money-path.
+> - **Diagnostic complet** : GP convertit à 0.5% (197 leads → 1 paid) vs MQ 4.8%. USD : 98 leads → 2 paid. B2B : 0 vente. Parrainage : 0 actif. 3 paiements échoués non récupérés. Rapport dans `PLAN_STRATEGIQUE.md`.
+> - **Relances envoyées** (SMTP `alerte@`) : `egoursaud@wanadoo.fr` (2× tenté), `jcroulier@gmail.com` (déjà client), `hamitchell62@gmail.com` (Punta Cana USD), `admin@anoli-lodges.com` (B2B widget white-label).
+> - **Pipeline activé** : `MOLLIE_CART_RECOVERY=1` (récupération continue), `push-winback.cjs --send` (réveil dormants), `referral-from-sheet.cjs` remplace GAS bloqué (lecture Sheet directe).
+> - **.gitignore** : protection PII `sheet-*.csv` (prévention fuite).
+> - **SUITE (prochaine session)** : (1) Assets SVG hero par région (1re scène), (2) Barbados go-live (Mollie + purge Stripe), (3) Pipeline vidéo brief plage YouTube Shorts, (4) Activer la relance-gap.yml (abandons checkout pré-Mollie), (5) Contenu SEO EN/ES pour MQ/GP.
 > - **J+1 teaser (ForecastChart)** : blur réduit `2px→1px`, opacity `0.55→0.72`, label J+1 en or `#FFC72C`, dot doré pulsant sous la barre → crée le gap de curiosité « demain change ».
 > - **Preuve sociale + fraîcheur** : A/B `pw_socialproof` + `pw_freshness` tués → 100% default (rollback `?pwsocial=0`/`?pwfresh=0`). Badge « 240+ vacanciers » + « Données il y a Xh » toujours visibles.
 > - **Urgence saison** : `seasonMsg` différencie pic (Jun-Aug = « en cours ») / saison / hors-saison. Banner PassOffer aligné (« Pic sargasses en cours »).
