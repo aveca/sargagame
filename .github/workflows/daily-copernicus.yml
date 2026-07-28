@@ -291,15 +291,15 @@ jobs:
           node scripts/automation/b2b-us-enrich.cjs --send
           node scripts/automation/merge-b2b-contacts.cjs --send
 
-      # Prospection B2B FROIDE automatisée (hôtels enrichis, email réel + hook perso).
-      # Warmup : cap bas de nouveaux contacts/run (délivrabilité). Séquence c0 + relance c4.
-      # Source = b2b-contacts-unified.json (MQ/GP + US) si existant, fallback b2b-enriched.json.
-      - name: B2B cold outreach (warmup)
+      # Prospection B2B FROIDE — cap HAUT (pas de warmup, on scale). 58 US hôtels +
+      # MQ/GP hotels = ~150 contacts. Envoi agressif : CAP_NEW=30, séquence c0+c4.
+      # La délivrabilité est protégée par SPF/DKIM et le List-Unsubscribe.
+      - name: B2B cold outreach (scale)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          CAP_NEW: '8'
+          CAP_NEW: '30'
         run: node scripts/automation/b2b-cold-outreach.cjs --send
 
       # Funnel B2B : agrège chaque prospect (découvert→contacté→lead→payé) + prochaine

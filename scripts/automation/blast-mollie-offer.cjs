@@ -41,8 +41,8 @@ function loadJSON(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')) }
 
 function pricing(region) {
   const isEUR = region === 'mq' || region === 'gp'
-  if (isEUR) return { symbol: '€', p7: '7.99', p30: '14.99', saison: '24.99' }
-  return { symbol: '$', p7: '5.99', p30: '11.99', saison: '19.99' }
+  if (isEUR) return { symbol: '€', p7: '7.99', p30: '14.99', saison: '24.99', pro: '690' }
+  return { symbol: '$', p7: '5.99', p30: '11.99', saison: '19.99', pro: '790' }
 }
 
 function regionConfig(island) {
