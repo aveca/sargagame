@@ -201,6 +201,35 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/drip-email.cjs
 
+      # Cart recovery — abandons de paiement relancés automatiquement.
+      # 3 touches automatiques : J+1 (doux), J+3 (ferme), J+5 (promo -2€).
+      # Idempotent : marqueurs sent_markers/cart-recovery-j{day}-sent.json.
+      # Dédup par hash(email)+jour, une seule relance par séquence.
+      # Mode --send dans le cron, dry-run par défaut.
+      - name: Cart recovery — J+1
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=1 --send --cap=30
+
+      - name: Cart recovery — J+3
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=3 --send --cap=30
+
+      - name: Cart recovery — J+5 (promo -2€)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=5 --send --cap=30
+
       # Brief QUOTIDIEN « tes plages aujourd'hui » (MQ/GP) — moteur d'habitude.
       # DRY-RUN (pas de --send) : le fondateur bascule en --send après une dry-run
       # propre (même prudence que dunning, le domaine porte aussi welcome/drip).
