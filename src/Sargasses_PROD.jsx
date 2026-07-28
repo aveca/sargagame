@@ -187,19 +187,37 @@ export function loadMollieJs(){
   })
   return _mollieJsPromise
 }
-// Disponibilité wallets (Apple Pay / Google Pay) — détection légère, sans charger
-// de SDK. Apple Pay : API native fiable (Safari/Apple uniquement). Google Pay :
-// pas de détection fiable sans pay.js → heuristique UA (Android, ou Chrome desktop),
-// jamais en même temps qu'Apple Pay (évite 2 wallets concurrents sur iOS). Si on se
-// trompe, le checkout hébergé Mollie propose de toute façon la carte en repli.
+// Disponibilité wallets (Apple Pay / Google Pay) — feature detection standard
+// Web Payments API (PaymentRequest.canMakePayment). Apple Pay : https://apple.com/apple-pay
+// Google Pay : https://google.com/pay. Cache 5 min en sessionStorage (clé sg_wallet_avail).
 export function walletAvail(){
-  try{
-    if(typeof window==="undefined")return {apple:false,google:false}
-    const ua=navigator.userAgent||""
-    const apple=!!(window.ApplePaySession&&window.ApplePaySession.canMakePayments&&window.ApplePaySession.canMakePayments())
-    const google=!apple&&(/Android/i.test(ua)||(/Chrome/.test(ua)&&!/Edg|OPR/.test(ua)))
-    return {apple,google}
-  }catch(_){return {apple:false,google:false}}
+  if(typeof window==="undefined"||!window.PaymentRequest){
+    return {apple:false,google:false}
+  }
+  const cacheKey="sg_wallet_avail"
+  const cached=sessionStorage.getItem(cacheKey)
+  if(cached){
+    try{return JSON.parse(cached)}catch{}
+  }
+  const check=async()=>{
+    const apple=await(async()=>{
+      try{
+        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        return await req.canMakePayment()
+      }catch{return false}
+    })()
+    const google=await(async()=>{
+      try{
+        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        return await req.canMakePayment()
+      }catch{return false}
+    })()
+    const result={apple,google}
+    sessionStorage.setItem(cacheKey,JSON.stringify(result))
+    setTimeout(()=>sessionStorage.removeItem(cacheKey),5*60*1000)
+    return result
+  }
+  return check()
 }
 // Styles partagés des champs carte Mollie (thème SOMBRE premium). MOL_FIELD = la div
 // sombre qui héberge l'iframe Mollie (porte la bordure + le fond visible) ; MOL_LABEL =

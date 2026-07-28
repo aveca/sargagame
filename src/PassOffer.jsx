@@ -21,6 +21,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
     try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg})}catch(_){}
+    localStorage.setItem('sg_checkout_started_at', Date.now())
     if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
