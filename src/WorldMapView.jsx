@@ -1221,6 +1221,7 @@ export default function WorldMapView({
   const cleanCnt  = beachList.filter(b=>b.days[day]==="clean").length // inconnu ≠ propre (anti-flash)
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = vantColor(beachList,day)
+  const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
 
   // Defs partagés (gradients + 2 filtres flous) — rendus à l'identique dans le SVG de bake ET le
   // SVG visible. IDs dupliqués mais définitions identiques → url(#id) résout pareil, inoffensif.
@@ -1265,6 +1266,7 @@ export default function WorldMapView({
       <pattern id="wmSargHalf" width="6" height="6" patternUnits="userSpaceOnUse">
         <circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/>
       </pattern>
+      <radialGradient id="wmSunBg" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#F2B05E" stopOpacity=".35"/><stop offset=".55" stopColor="#C97E3A" stopOpacity=".12"/><stop offset="1" stopColor="#C97E3A" stopOpacity="0"/></radialGradient>
       <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
       <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
       {/* Masque MER (greffe honnêteté) : rect viewBox MOINS l'île (evenodd) → le champ de sargasses
@@ -1359,6 +1361,13 @@ export default function WorldMapView({
         @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
         @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
         @keyframes wmTapPingStatic{0%{opacity:.75}100%{opacity:0}}
+        @keyframes driftL{0%{transform:translateX(0)}100%{transform:translateX(-200px)}}
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+        @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+        @keyframes boatPath{0%{transform:translate(-80px,540px)}100%{transform:translate(880px,260px)}}
+        .pulseAnim{animation:pulse 3s ease-in-out infinite}
+        .boatPath{animation:boatPath 120s linear infinite}
+        @media(prefers-reduced-motion:reduce){.drift{animation:none!important}.pulseAnim{animation:none!important}.boatPath{animation:none!important}}
       `}</style>
 
       {/* Bande horizon doré (heure dorée sur la mer) */}
@@ -1425,11 +1434,38 @@ export default function WorldMapView({
             faible il met la mémoire sous pression et n'aide pas le pinch-zoom ; la vraie promo
             couche = le bake raster du Stage 2.) */}
         <g ref={worldRef}>
+          {/* Sun glow behind islands — position determined by hour angle */}
+          <g aria-hidden="true" style={{pointerEvents:"none"}}>
+            <circle cx={sunPos.x} cy={sunPos.y} r="200" fill="url(#wmSunBg)" opacity=".55"/>
+            <ellipse cx={sunPos.x} cy={sunPos.y-120} rx="60" ry="160" fill="url(#wmSunBg)" opacity=".22"/>
+            <circle cx={sunPos.x} cy={sunPos.y} r="45" fill="#F2B05E" opacity=".12"/>
+          </g>
           {/* Monde statique : bitmap baké (GPU-composité, scalé par la caméra) si prêt ;
               sinon SVG live en fallback (zéro flash : la côte s'affiche tout de suite). */}
           {bakedUrl
             ? <image href={bakedUrl} x="0" y="0" width="800" height="600" preserveAspectRatio="none" style={{pointerEvents:"none"}}/>
             : staticWorld}
+
+          {/* Clouds drifting slowly across the map */}
+          <g className="drift" style={{pointerEvents:"none",animation:"driftL 130s cubic-bezier(.15,.65,.35,1) infinite"}} aria-hidden="true">
+            <path d="M120 450 Q145 432 170 442 Q195 425 220 435 Q245 422 270 438 Q290 428 310 448 L310 468 Q120 468 120 450Z" fill="#fff" opacity=".12"/>
+          </g>
+          <g className="drift" style={{pointerEvents:"none",animation:"driftL 160s cubic-bezier(.15,.65,.35,1) infinite 35s"}} aria-hidden="true">
+            <path d="M460 200 Q490 178 520 190 Q545 172 570 185 Q600 172 625 188 L625 210 Q460 210 460 200Z" fill="#fff" opacity=".1"/>
+          </g>
+          <g className="drift" style={{pointerEvents:"none",animation:"driftL 110s cubic-bezier(.15,.65,.35,1) infinite 70s"}} aria-hidden="true">
+            <path d="M340 350 Q368 332 392 342 Q418 324 444 338 Q468 324 494 340 L494 362 Q340 362 340 350Z" fill="#fff" opacity=".08"/>
+          </g>
+
+          {/* Small sailboat crossing the ocean */}
+          <g className="boatPath" style={{pointerEvents:"none",transformBox:"fill-box",transformOrigin:"0 0"}} aria-hidden="true">
+            <ellipse cx="0" cy="8" rx="16" ry="3" fill="#062033" opacity=".25"/>
+            <path d="M-14 0 L-10 8 L10 8 L14 0 Z" fill="#5b3a5e" stroke="#0d0b14" strokeWidth="1.8" strokeLinejoin="round"/>
+            <path d="M-12 0 L12 0" stroke="#0d0b14" strokeWidth="1.2" opacity=".5"/>
+            <line x1="0" y1="8" x2="0" y2="-14" stroke="#0d0b14" strokeWidth="1.8" strokeLinecap="round"/>
+            <path d="M0 -12 L0 5 L11 5 Z" fill="#ffd23f" stroke="#0d0b14" strokeWidth="1.2" strokeLinejoin="round"/>
+            <path d="M-1 -10 L-1 3 L-9 3 Z" fill="#fff" stroke="#0d0b14" strokeWidth="1.2" strokeLinejoin="round" opacity=".8"/>
+          </g>
 
           {/* Champ de sargasses au large — couche LIVE qui dérive LENTEMENT (peuplée impérativement).
               Clippée à la mer (jamais sur l'île). Sous les effets d'échouage + pins. Reste visible
@@ -1477,6 +1513,8 @@ export default function WorldMapView({
                 }}>
                 {/* Hit-zone tactile ≥44px (transparente, art inchangé) — fix dead/rage-clicks carte. */}
                 {!mapPinHitOff&&<circle r="22" cy="-9" fill="transparent"/>}
+                {/* Soft pulsing glow behind alert/moderate markers */}
+                {(st==="avoid"||st==="moderate")&&<circle r="18" cy="-9" fill={st==="avoid"?"#E8522A":"#B87A00"} opacity=".12" className="pulseAnim" style={{transformBox:"fill-box",transformOrigin:"center"}}/>}
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
@@ -1558,6 +1596,9 @@ export default function WorldMapView({
           {/* sourcil + sourire */}
           <path d="M44 47 Q60 41 76 47" stroke="#0d0b14" strokeWidth="3" fill="none" strokeLinecap="round"/>
           <path d="M50 89 Q60 95 70 89" stroke="#0d0b14" strokeWidth="3" fill="none" strokeLinecap="round"/>
+          {/* Orbital ring around Veilleur */}
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#ffd23f" strokeWidth="1" opacity=".12"
+            style={{pointerEvents:"none",transformOrigin:"60px 60px",transformBox:"fill-box",animation:noAnim?"none":"bob 6s ease-in-out infinite"}}/>
         </g>
       </svg>
 
