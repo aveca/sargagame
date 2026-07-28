@@ -524,25 +524,87 @@ async function _scMissedCard(opts,lang){
     return await _scShip(cv,"defi-veilleur.png",correct?_t(lang,"J'ai eu l'œil du Veilleur 🛰️🎯 — tu fais mieux ?","Got the Watchman's eye 🛰️🎯 — beat it?","Tuve el ojo del Vigía 🛰️🎯 — ¿me superas?"):_t(lang,"Le défi du Veilleur m'a eu 😅 — tu fais mieux ? 🛰️","The Watchman's Challenge fooled me 😅 — beat it? 🛰️","El Desafío del Vigía me engañó 😅 — ¿me superas? 🛰️"))
   }catch(e){return false}
 }
-export function Veilleur({mood="serein",size=44}){
+// Veilleur expressif — animations subtiles (doctrine calme respectée)
+// Eyes follow cursor, blink, mood transitions, head nod on scroll
+export function Veilleur({mood="serein",size=44,interactive=true}){
   const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
+  const [mousePos,setMousePos]=useState({x:0,y:0})
+  const [blinking,setBlinking]=useState(false)
+  const [headTilt,setHeadTilt]=useState(0)
+  const svgRef=useRef(null)
+  
+  // Track cursor for eye following
+  useEffect(()=>{
+    if(!interactive)return
+    const handleMouseMove=(e)=>{
+      if(!svgRef.current)return
+      const rect=svgRef.current.getBoundingClientRect()
+      const centerX=rect.left+rect.width/2
+      const centerY=rect.top+rect.height/2
+      const dx=(e.clientX-centerX)/window.innerWidth
+      const dy=(e.clientY-centerY)/window.innerHeight
+      setMousePos({x:Math.max(-1,Math.min(1,dx*3)),y:Math.max(-1,Math.min(1,dy*3))})
+    }
+    window.addEventListener('mousemove',handleMouseMove,{passive:true})
+    return()=>window.removeEventListener('mousemove',handleMouseMove)
+  },[interactive])
+  
+  // Blink animation (every 3-6 seconds, random)
+  useEffect(()=>{
+    if(!interactive)return
+    const blink=()=>{
+      setBlinking(true)
+      setTimeout(()=>setBlinking(false),150)
+    }
+    const interval=setInterval(blink,3000+Math.random()*3000)
+    return()=>clearInterval(interval)
+  },[interactive])
+  
+  // Head nod on scroll (subtle)
+  useEffect(()=>{
+    if(!interactive)return
+    let lastScroll=window.scrollY
+    const handleScroll=()=>{
+      const delta=window.scrollY-lastScroll
+      setHeadTilt(Math.max(-5,Math.min(5,delta*0.1)))
+      lastScroll=window.scrollY
+      setTimeout(()=>setHeadTilt(0),200)
+    }
+    window.addEventListener('scroll',handleScroll,{passive:true})
+    return()=>window.removeEventListener('scroll',handleScroll)
+  },[interactive])
+  
+  // Eye offset based on mouse position
+  const eyeOffsetX=mousePos.x*1.2
+  const eyeOffsetY=mousePos.y*0.8
+  
   return(
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
-      {/* Veilleur FIGÉ au repos (doctrine calme) — la vie vient de l'interaction, pas d'un bob idle */}
-      <g transform="translate(32,33)"><g className="sgv-bob"><g transform={`rotate(${m.tilt})`}>
-        <circle r="22" fill={m.halo} opacity=".15"/>
-        <circle r="14" fill={m.lens} opacity=".12"/>
-        <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
-        <rect x="-11" y="-11" width="22" height="7" rx="6" fill={m.lens}/>
-        <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
-        <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
-        {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
-        <circle cx="0" cy="2" r="5.4" fill="#0A1714"/>
-        <circle cx="0" cy="2" r="4" fill={m.lens}/>
-        <circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/>
-      </g></g></g>
+    <svg ref={svgRef} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
+      <g transform="translate(32,33)">
+        <g className="sgv-bob">
+          <g transform={`rotate(${m.tilt+headTilt})`} style={{transition:"transform 0.3s ease-out"}}>
+            <circle r="22" fill={m.halo} opacity=".15"/>
+            <circle r="14" fill={m.lens} opacity=".12"/>
+            <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+            <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+            <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
+            <rect x="-11" y="-11" width="22" height="7" rx="6" fill={m.lens}/>
+            <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
+            <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
+            {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
+            <circle cx="0" cy="2" r="5.4" fill="#0A1714"/>
+            <circle cx="0" cy="2" r="4" fill={m.lens}/>
+            {/* Pupille qui suit le curseur */}
+            <circle 
+              cx={-1.4+eyeOffsetX} 
+              cy={0.5+eyeOffsetY} 
+              r={blinking?0:1.4} 
+              fill="#EAFBF8"
+              style={{transition:"cx 0.1s ease-out, cy 0.1s ease-out, r 0.1s"}}
+            />
+          </g>
+        </g>
+      </g>
     </svg>
   )
 }
@@ -557,6 +619,122 @@ function ScoreBlob({score,color,size=84}){
     </svg>
   )
 }
+// ScoreBlob interactif avec effet morph au clic (Wow Effect 2)
+// Scale up + fade out → révèle la plage en dessous
+function ScoreBlobInteractive({score,color,size=84,onMorph,children}){
+  const [morphing,setMorphing]=useState(false)
+  const handleClick=()=>{
+    if(morphing)return
+    setMorphing(true)
+    track("sg_score_blob_morph",{score})
+    setTimeout(()=>{
+      onMorph?.()
+      setMorphing(false)
+    },400)
+  }
+  return(
+    <div 
+      onClick={handleClick}
+      style={{
+        cursor:"pointer",
+        transition:"transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s",
+        transform:morphing?"scale(1.5)":"scale(1)",
+        opacity:morphing?0:1,
+      }}
+    >
+      <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" style={{display:"block"}}>
+        <path 
+          d="M50 7 C79 7 93 21 93 50 C93 79 79 93 50 93 C21 93 7 79 7 50 C7 21 21 7 50 7 Z" 
+          fill={color}
+          style={{transition:"d 0.4s ease-out"}}
+        />
+        <ellipse cx="37" cy="29" rx="25" ry="15" fill="#fff" opacity=".16"/>
+        <text x="50" y="59" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle">{score}</text>
+        <text x="50" y="75" fontFamily="'Bricolage Grotesque',system-ui,sans-serif" fontSize="11" fontWeight="800" fill="#fff" textAnchor="middle" opacity=".82">/100</text>
+      </svg>
+      {children}
+    </div>
+  )
+}
+// Success Celebration — confettis dorés (Wow Effect 3)
+// Particules qui explosent au succès (trouver plage propre, devenir premium, etc.)
+let _celebrationSubs=new Set()
+function _celebrationEmit(type){for(const fn of _celebrationSubs)fn(type)}
+// triggerCelebration(type) → déclenche l'animation depuis n'importe où
+export function triggerCelebration(type="success"){
+  track("sg_celebration_trigger",{type})
+  _celebrationEmit(type)
+}
+function SuccessCelebration(){
+  const [particles,setParticles]=useState([])
+  const [active,setActive]=useState(false)
+  
+  useEffect(()=>{
+    const handler=(type)=>{
+      setActive(true)
+      // Génère 30 particules dorées avec trajectoires aléatoires
+      const newParticles=Array.from({length:30},(_,i)=>({
+        id:Date.now()+i,
+        x:50+Math.random()*20-10, // center ± 10%
+        y:50+Math.random()*20-10,
+        vx:(Math.random()-0.5)*8,
+        vy:-Math.random()*6-2, // upward
+        rotation:Math.random()*360,
+        scale:0.5+Math.random()*0.8,
+        color:type==="premium"?"#FFC72C":"#FFD700", // or premium = gold accent
+      }))
+      setParticles(newParticles)
+      setTimeout(()=>{
+        setActive(false)
+        setParticles([])
+      },1500)
+    }
+    _celebrationSubs.add(handler)
+    return()=>_celebrationSubs.delete(handler)
+  },[])
+  
+  if(!active)return null
+  
+  return(
+    <div 
+      style={{
+        position:"fixed",
+        inset:0,
+        pointerEvents:"none",
+        zIndex:9999,
+        overflow:"hidden",
+      }}
+    >
+      {particles.map(p=>(
+        <div
+          key={p.id}
+          style={{
+            position:"absolute",
+            left:`${p.x}%`,
+            top:`${p.y}%`,
+            width:12,
+            height:12,
+            background:p.color,
+            borderRadius:"50%",
+            boxShadow:`0 0 8px ${p.color}`,
+            transform:`translate(${p.vx*20}px,${p.vy*20}px) scale(${p.scale}) rotate(${p.rotation}deg)`,
+            opacity:0,
+            transition:"transform 1.5s ease-out, opacity 1.5s ease-out",
+            animation:"celebration-fade 1.5s ease-out forwards",
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes celebration-fade {
+          0% { opacity:1; transform: translate(0,0) scale(1) rotate(0deg); }
+          100% { opacity:0; transform: translate(var(--tx),var(--ty)) scale(0) rotate(720deg); }
+        }
+      `}</style>
+    </div>
+  )
+}
+// Expose globally for use anywhere
+try{if(typeof window!=="undefined"){window.triggerCelebration=triggerCelebration}}catch(_){}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TOAST CANONIQUE (.sg-toast) — source UNIQUE de marque (bible États & micro-copy).
@@ -10910,6 +11088,8 @@ export default function App(){
         try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
+        // Wow Effect 3: celebration on premium conversion
+        triggerCelebration("premium")
         if(sessionId){
           try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
@@ -10928,6 +11108,8 @@ export default function App(){
         s("sg_premium",true)
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"direct"})
+        // Wow Effect 3: celebration on premium conversion
+        triggerCelebration("premium")
         // Log payment to Apps Script (fire-and-forget)
         if(sessionId){
           try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
@@ -12710,6 +12892,8 @@ export default function App(){
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
+    // Wow Effect 3: celebration when finding a clean beach
+    if(b.status==="clean")triggerCelebration("clean_beach")
     // Marée du Veilleur : plongée carte→plage 1×/session au 1er ouverture (skippable, reduced-motion off).
     try{if(navDive&&b.status&&!sessionStorage.getItem("sg_dove")&&!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)){sessionStorage.setItem("sg_dove","1");setDiveBeach(b);track("sg_dive_play",{beach_id:b.id})}}catch(_){}
     setNextSuggestion(null) // clear any pending suggestion
@@ -12733,6 +12917,8 @@ export default function App(){
   const openComicBeach=useCallback(b=>{
     if(!b||!b.id)return
     setComicBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_map"})
+    // Wow Effect 3: celebration when finding a clean beach
+    if(b.status==="clean")triggerCelebration("clean_beach")
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
@@ -14103,6 +14289,8 @@ export default function App(){
         )}
         {/* Toasts de marque — remplace les alert() OS (singleton sgToast(...)) */}
         <SgToastHost lang={lang}/>
+        {/* Success celebrations — confettis dorés (Wow Effect 3) */}
+        <SuccessCelebration/>
       </div>
     </LangCtx.Provider>
   )
