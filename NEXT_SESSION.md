@@ -1,11 +1,11 @@
 # NEXT_SESSION — sargagame
 
-> **💰 2026-07-28 — SESSION MOLLIE REVENUE : LIENS DE PAIEMENT + BLAST 300 LEADS + MRR TRACKER.** Focus Mollie exclusif. Stripe = mort. Target €1000/mois.
-> - **12 liens de paiement Mollie créés** (tous produits) : B2C EUR (p7 7,99€ / p30 14,99€ / saison 24,99€) + USD ($5.99/$11.99/$19.99) + B2B annual EUR (brief 290€ / pro 690€ / territory 1990€) + USD ($390/$790). Liens auto-réparés si prix changé.
-> - **Blast offre à 300+ leads** : un email unique à TOUS les leads (246 B2C + 58 US B2B) avec CTA direct → paywall. Exclusion des déjà-payants (API Mollie). Idempotent. Cap 500/jour.
-> - **MRR Mollie tracker** : `mollie-mrr.cjs` lit l'API Mollie, calcule MRR (subs + passes + B2B), historique 90j, target €1000. Rapport dans `data/mollie-mrr.json`.
-> - **Pipeline recovery actif** : cart recovery (MOLLIE_CART_RECOVERY=1), push-winback, pass-expiry winback (--send), cold-lead reengage (--send), dunning (--send), B2B cold outreach (--send, CAP_NEW=8).
-> - **SUITE** : (1) Checker les logs du blast (taux ouverture/click), (2) Relancer le blast aux non-ouvreurs J+3, (3) Augmenter CAP_NEW B2B si warmup OK, (4) Activer la pub brief vidéo quand le funnel Mollie tourne.** Session data-driven : analyse complète de la Google Sheet (481 leads, 18 paiements) + GitHub workflows pour identifier les leviers de croissance. Changements additifs, zéro risque money-path.
+> **💰 2026-07-28 — BLAST V2 : PAIEMENT DIRECT MOLLIE POUR CHAQUE LEAD.** 1 clic → Mollie → payer → premium auto-restauré. B2B CAP_NEW=30.
+> - **300+ paiements Mollie individuels créés** (1 par lead B2C) avec `metadata.email` + `metadata.pass` → webhook grant. `redirectUrl` = `?premium_email={email}` → frontend restore premium (pattern existant, zéro changement frontend).
+> - **CTA = checkout URL directe** (plus de lien vers paywall) : 1 clic → Mollie hosted page → CB/Apple Pay → redirect avec pass actif.
+> - **B2B CAP_NEW passé de 8 à 30** : les 58 US hôtels + MQ/GP sont envoyés beaucoup plus vite. Messages personnalisés par hôtel (hook, name).
+> - **Résumé pipeline cron** : blast (300+ directs) + B2B outreach (30/j) + cart recovery + push-winback + pass-expiry + dunning + cold reengage + MRR tracker.
+> - **SUITE** : (1) Vérifier les logs après le prochain cycle cron, (2) Compter les conversions dans le dashboard Mollie après 24-48h, (3) Relancer les non-ouvreurs J+3 si le taux d'ouverture est bon.** Session data-driven : analyse complète de la Google Sheet (481 leads, 18 paiements) + GitHub workflows pour identifier les leviers de croissance. Changements additifs, zéro risque money-path.
 > - **Diagnostic complet** : GP convertit à 0.5% (197 leads → 1 paid) vs MQ 4.8%. USD : 98 leads → 2 paid. B2B : 0 vente. Parrainage : 0 actif. 3 paiements échoués non récupérés. Rapport dans `PLAN_STRATEGIQUE.md`.
 > - **Relances envoyées** (SMTP `alerte@`) : `egoursaud@wanadoo.fr` (2× tenté), `jcroulier@gmail.com` (déjà client), `hamitchell62@gmail.com` (Punta Cana USD), `admin@anoli-lodges.com` (B2B widget white-label).
 > - **Pipeline activé** : `MOLLIE_CART_RECOVERY=1` (récupération continue), `push-winback.cjs --send` (réveil dormants), `referral-from-sheet.cjs` remplace GAS bloqué (lecture Sheet directe).
