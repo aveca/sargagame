@@ -1,8 +1,4 @@
 {
-  "2026-07-20": [
-    "rivieramaya:rm009:clean>moderate",
-    "rivieramaya:rm005:moderate>clean"
-  ],
   "2026-07-21": [
     "gp:gp-grande-anse:clean>moderate",
     "rivieramaya:rm004:moderate>clean",
@@ -98,5 +94,11 @@
     "puntacana:pc010:clean>moderate",
     "rivieramaya:rm017:clean>moderate",
     "puntacana:pc004:moderate>clean"
+  ],
+  "2026-07-28": [
+    "puntacana:pc007:moderate>clean",
+    "rivieramaya:rm003:moderate>clean",
+    "rivieramaya:rm009:moderate>clean",
+    "rivieramaya:rm012:moderate>clean"
   ]
 }
