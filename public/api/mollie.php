@@ -36,7 +36,8 @@ try {
         $email = $data['email'] ?? '';
         $source = $data['source'] ?? 'unknown';
         $description = $data['description'] ?? ($pass ? "Sargasses Pass $pass" : 'Sargasses');
-        $paymentMethod = $data['paymentMethod'] ?? null;
+        $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null);
+        $cardToken = $data['cardToken'] ?? null;
 
         // ── Construction du montant : le front envoie cents (int), pas amount ──
         $cents = $data['cents'] ?? null;
@@ -133,8 +134,11 @@ try {
         if (!empty($data['applePayPaymentToken'])) {
             $paymentData['applePayPaymentToken'] = $data['applePayPaymentToken'];
         }
+        if (!empty($cardToken)) {
+            $paymentData['cardToken'] = $cardToken;
+        }
         if ($paymentMethod) {
-            $paymentData['paymentMethod'] = $paymentMethod;
+            $paymentData['method'] = $paymentMethod;
         }
 
         $payment = $mollie->payments->create($paymentData);
@@ -152,7 +156,7 @@ try {
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
         $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/pro/espace/';
         $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
-        $paymentMethod = $data['paymentMethod'] ?? null; // optional: 'applepay', 'googlepay', etc.
+        $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
         $metadata['plan'] = $planKey;
@@ -195,7 +199,7 @@ try {
         }
 
         if ($paymentMethod) {
-            $subscriptionData['paymentMethod'] = $paymentMethod;
+            $subscriptionData['method'] = $paymentMethod;
         }
 
         $subscription = $mollie->customer_subscriptions->create($customer->id, $subscriptionData);

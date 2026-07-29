@@ -4,74 +4,87 @@
  * Config secrets dans mollie-config.php (gitignored)
  */
 
-/**
- * Lightweight Mollie API client using cURL (no Composer/SDK dependency).
- * Replaces \Mollie\Api\MollieApiClient which is not installed on the server.
- */
+class SgPaymentResponse {
+    private array $resp;
+    public function __construct(array $resp) { $this->resp = $resp; }
+    public function getCheckoutUrl(): ?string { return $this->resp['_links']['checkout']['href'] ?? null; }
+    public function __get(string $name) { return $this->resp[$name] ?? null; }
+}
+
+class SgPaymentDetailResponse {
+    private array $resp;
+    public function __construct(array $resp) { $this->resp = $resp; }
+    public function isPaid(): bool { return ($this->resp['status'] ?? '') === 'paid' || ($this->resp['paid'] ?? false); }
+    public function __get(string $name) { return $this->resp[$name] ?? null; }
+}
+
+class SgCustomerResponse {
+    private array $resp;
+    public function __construct(array $resp) { $this->resp = $resp; }
+    public function __get(string $name) { return $this->resp[$name] ?? null; }
+}
+
+class SgSubscriptionResponse {
+    private array $resp;
+    public function __construct(array $resp) { $this->resp = $resp; }
+    public function __get(string $name) { return $this->resp[$name] ?? null; }
+}
+
 class SgMollieClient {
     private string $apiKey;
-    public object $payments;
-    public object $customers;
-    public object $customer_subscriptions;
+    public object|false $payments;
+    public object|false $customers;
+    public object|false $customer_subscriptions;
 
     public function __construct(string $apiKey) {
         $this->apiKey = $apiKey;
         $self = $this;
         $this->payments = new class($self) {
             private $c;
-            private array $lastCreateResp = [];
             public function __construct($c){ $this->c = $c; }
-            public function create(array $data): object {
+            public function create(array $data): SgPaymentResponse {
                 $resp = $this->c->_post('v2/payments', $data);
-                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null, 'getCheckoutUrl' => function() use ($resp) { return $resp['_links']['checkout']['href'] ?? null; }];
+                return new SgPaymentResponse($resp);
             }
-            public function get(string $id): object {
+            public function get(string $id): SgPaymentDetailResponse {
                 $resp = $this->c->_get("v2/payments/$id");
-                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null, 'paid' => $resp['paid'] ?? null, 'isPaid' => function() use ($resp) { return ($resp['status'] ?? '') === 'paid' || ($resp['paid'] ?? false); }];
-            }
-            public function getCheckoutUrl(): ?string {
-                return $this->lastCreateResp['_links']['checkout']['href'] ?? null;
+                return new SgPaymentDetailResponse($resp);
             }
         };
         $this->customers = new class($self) {
             private $c;
             public function __construct($c){ $this->c = $c; }
-            public function get(string $id): object {
+            public function get(string $id): SgCustomerResponse {
                 $resp = $this->c->_get("v2/customers/$id");
-                return (object)['id' => $resp['id'] ?? null];
+                return new SgCustomerResponse($resp);
             }
             public function page(array $params = []): array {
                 $query = http_build_query($params);
                 $resp = $this->c->_get('v2/customers?' . $query);
                 $items = $resp['_embedded']['customers'] ?? [];
-                return array_map(fn($c) => (object)['id' => $c['id'] ?? null], $items);
+                return array_map(fn($c) => new SgCustomerResponse($c), $items);
             }
-            public function create(array $data): object {
+            public function create(array $data): SgCustomerResponse {
                 $resp = $this->c->_post('v2/customers', $data);
-                return (object)['id' => $resp['id'] ?? null];
+                return new SgCustomerResponse($resp);
             }
         };
         $this->customer_subscriptions = new class($self) {
             private $c;
             public function __construct($c){ $this->c = $c; }
-            public function create(string $customerId, array $data): object {
+            public function create(string $customerId, array $data): SgSubscriptionResponse {
                 $resp = $this->c->_post("v2/customers/$customerId/subscriptions", $data);
-                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null];
+                return new SgSubscriptionResponse($resp);
             }
-            public function get(string $id): object {
+            public function get(string $id): SgSubscriptionResponse {
                 $resp = $this->c->_get("v2/subscriptions/$id");
-                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null];
+                return new SgSubscriptionResponse($resp);
             }
         };
     }
 
-    public function _get(string $path): array {
-        return $this->_request('GET', $path);
-    }
-
-    public function _post(string $path, array $data): array {
-        return $this->_request('POST', $path, $data);
-    }
+    public function _get(string $path): array { return $this->_request('GET', $path); }
+    public function _post(string $path, array $data): array { return $this->_request('POST', $path, $data); }
 
     private function _request(string $method, string $path, ?array $data = null): array {
         $ch = curl_init();
@@ -91,11 +104,7 @@ class SgMollieClient {
         }
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if (curl_errno($ch)) {
-            $err = curl_error($ch);
-            curl_close($ch);
-            throw new Exception('cURL error: ' . $err);
-        }
+        if (curl_errno($ch)) { $err = curl_error($ch); curl_close($ch); throw new Exception('cURL error: ' . $err); }
         curl_close($ch);
         $decoded = json_decode($response, true) ?: [];
         if ($httpCode >= 400) {
