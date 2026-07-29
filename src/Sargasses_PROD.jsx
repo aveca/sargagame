@@ -77,6 +77,7 @@ const VEILLE_OFF=(()=>{try{return /[?&]veille=0/.test(window.location.search)}ca
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
+const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
 // Détail plage « monde comic » (ChasseDetail) ouvert au tap d'un pin carte — garde le
 // joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
 // (PRODUCT.md §8 ⭐). Default ON, rollback ?mapdetail=0. Lazy → DOIT être sous Suspense.
@@ -12246,6 +12247,8 @@ export default function App(){
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
   const mapWorld=useMemo(()=>{try{return /[?&]map_world=0/.test(window.location.search)?"control":"world"}catch(_){return"world"}},[])
+  // Flag rollback ?view3d=0 — scène 3D immersive (Three.js, lazy chunk). Default OFF.
+  const view3d=useMemo(()=>{try{return /[?&]view3d=1/.test(window.location.search)}catch(_){return false}},[])
   // Carte monde RÉCHAUFFÉE golden-hour pour TOUS (décision produit 19/06 : un seul
   // monde comic cohérent, fin de la base teal froide). Override debug ?mapwarm=0.
   const mapWarm=useMemo(()=>{try{return /[?&]mapwarm=0/.test(window.location.search)?"control":"warm"}catch(_){return"warm"}},[])
@@ -14375,7 +14378,15 @@ export default function App(){
             ?<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
             :<MapIntroVideo/>
         )}
-        {showArchipel&&(mapWorld==="world"
+        {showArchipel&&(view3d
+          ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0a1620"}}/>}>
+              <LazyWorldView3D
+                beaches={allBeaches} lang={lang} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                onBeachClick={onMapBeach} onPremium={()=>openPremium("view3d")} isPremium={isPremium}
+                track={track}
+                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"view3d"})}}/>
+            </Suspense></ErrBound>
+          :mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
