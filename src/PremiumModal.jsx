@@ -1635,11 +1635,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-          :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
+          :{action:"create_subscription",cardToken:token,plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
-        if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
+        if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId))throw new Error(d.error||"payment failed")
         if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
           window.location.href=d.checkoutUrl;return
@@ -1742,11 +1742,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
-        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-        :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+        ?{action:"create_payment",paymentMethod:method,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
+        :{action:"create_subscription",paymentMethod:method,plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
-      if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
+      if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId))throw new Error(d.error||"payment failed")
        track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
        if(d.checkoutUrl){
          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
@@ -1810,11 +1810,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const token=JSON.stringify(ev.payment.token)
               const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
               const body=_pc
-                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
-                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
+                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,cur:_pc.cur,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
-              if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
+              if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
                const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
                const cd=await cr.json().catch(()=>({}))
                let paid=cd.paid===true
