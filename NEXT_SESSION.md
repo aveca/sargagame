@@ -20,10 +20,15 @@
 > - Direct Apple Pay inline status check: retry 3×2s (race condition)
 >
 > ### Deploy status
-> - Martinique ✅ fast deploy (1448 fichiers) — build `CGlyg-sF`
-> - Guadeloupe ✅ fast deploy (1513 fichiers) — build `CGlyg-sF`
+> - Martinique ✅ fast deploy (1448 fichiers) — build `DYH3y9Tr`
+> - Guadeloupe ✅ fast deploy (1513 fichiers) — build `DYH3y9Tr`
 > - Florida / Punta Cana / Riviera Maya — FTP fallback (slow, incomplete — deploy timed out)
 > - Barbados — no FTP credentials configured
+>
+> ### Wallet payment fixes (commit 3f78cef9, deployed)
+> - **Bug 1 (cur field)**: Added `cur:_pc.cur` to all 6 body locations (card, walletRedirect, Apple Pay direct — both create_payment and create_subscription). Without this, USD regions sent EUR cents → price validation failed → HTTP 500.
+> - **Bug 2 (method→paymentMethod)**: Renamed `method` → `paymentMethod` in walletRedirect body. PHP reads `$data['paymentMethod']` — the old `method` key was always null, so Mollie never got the payment method specified.
+> - **Bug 3 (subscriptionId)**: Changed `!d.paymentId` → `!d.paymentId&&!d.subscriptionId` in all 3 response checks. Subscriptions return `subscriptionId` not `paymentId`, so walletRedirect always threw "payment failed" for B2B monthly subscriptions.
 >
 > ### To test
 > - Try paying with card → should work now (was broken by mollie.php fatal + paywall crash)
