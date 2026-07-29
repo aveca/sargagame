@@ -5,7 +5,7 @@
  */
 
 require_once __DIR__ . '/mollie-config.php';
-require_once __DIR__ / 'mollie-lib.php';
+require_once __DIR__ . '/mollie-lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

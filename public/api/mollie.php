@@ -175,6 +175,24 @@ try {
         exit;
     }
 
+    if ($action === 'payment_status') {
+        $paymentId = $data['paymentId'] ?? '';
+        if (!$paymentId) throw new Exception('paymentId requis');
+        $payment = $mollie->payments->get($paymentId);
+        $status = $payment->status ?? 'unknown';
+        $paid = in_array($status, ['paid', 'settled', 'pending'], true);
+        echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId]);
+        exit;
+    }
+
+    if ($action === 'applepay_session') {
+        $validationUrl = $data['validationUrl'] ?? '';
+        if (!$validationUrl) throw new Exception('validationUrl requis');
+        $session = $mollie->applePay->sessions->create(['validationUrl' => $validationUrl]);
+        echo json_encode($session);
+        exit;
+    }
+
     http_response_code(400);
     echo json_encode(['error' => "Action inconnue: $action"]);
 } catch (Throwable $e) {
