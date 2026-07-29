@@ -12068,7 +12068,7 @@ export default function App(){
   // Solutions sargasses (SVG scrollytelling éducatif, escapable). ?solutions=1 QA + entrée chip.
   const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
   // L'Archipel du Veilleur (monde SVG libre pan/zoom, tournoi gagnant). QA ?archipel=1.
-  const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&]archipel=1/.test(window.location.search)}catch(_){return false}})
+  const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&](archipel|view3d)=1/.test(window.location.search)}catch(_){return false}})
   // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
   // DEVIENT le produit principal, plus un flag cache). 50/50, control = carte actuelle.
   // App full-SVG : le MONDE (WorldMapView/ArchipelView) EST la carte pour TOUS. La carte Leaflet
