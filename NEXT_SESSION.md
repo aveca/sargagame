@@ -2,6 +2,16 @@
 
 > **🎯 2026-07-29 — ALL PAYMENT FAILURES FIXED AND DEPLOYED (v2).**
 
+### 2026-07-29 (session active) — Apple Pay direct path wired
+
+- **Live verification** :
+  - `POST https://sargasses-martinique.com/api/mollie.php {action:create_payment}` → 200 `{"checkoutUrl":"https://www.mollie.com/checkout/select-method/...","paymentId":"tr_..."}` ✅
+  - 5/5 domains serve `/.well-known/apple-developer-merchantid-domain-association` (9096 / 9095 bytes) ✅
+  - 5/5 regions rate-limit active (anti-abus) ✅
+- **Apple Pay direct path fixed** : `SgMollieClient` n'exposait pas `applePay->sessions->create()`. Ajouté. `mollie.php` envoie maintenant `{validationUrl, domain}` (domain dérivé de `HTTP_HOST`).
+- **FL / PU / RM toujours en v217** : paiements marchent (SDK cURL déployé) mais SW bloque encore POST en théorie. Push v218 devrait déclencher re-deploy via CI.
+- **Build budget** : 201.1 Ko gzip (≤ 210 Ko OK).
+
 ### ROOT CAUSE 1: mollie.php PHP fatal (blocked ALL payments)
 In my earlier fix, I added `$payment->id` to the redirect URL in `mollie.php` line 109, but `$payment` doesn't exist yet — it's created at line 139 (`$payment = $mollie->payments->create(...)`). This caused a PHP fatal error on EVERY `create_payment` call, blocking ALL payments on mobile AND desktop.
 
@@ -68,4 +78,4 @@ POST /api/mollie.php {action:"create_payment",cents:499,pass:"trip7",email:"test
 - If card still fails → mollie.php 500 may still be cached on server (PHP opcache) or API key issue
 
 ### Previous commit history
-5c707c62 (inline retry), 0c7c9d9d (sg_widget_sign + applePayPaymentToken + webhook), 69198052 (payment_id URL fix which caused the fatal error), 302e5545 (initial URL fix).
+cc3ca937 (Apple Pay client + domain), 5ea26a2e (Google Pay exclusion + Mollie customer lookup), bed793bb (SgMollieClient complete), 31c0f8cc (exclude mollie-config.php), 1bb024ec (SgMollieClient cURL base), 5c707c62 (inline retry), 0c7c9d9d (sg_widget_sign + applePayPaymentToken + webhook), 69198052 (payment_id URL fix which caused the fatal error), 302e5545 (initial URL fix).
