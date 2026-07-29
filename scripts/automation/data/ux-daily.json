@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-29T08:54:04.285Z",
+  "generated": "2026-07-29T14:25:06.675Z",
   "date": "2026-07-29",
   "days": 1,
   "regions": [
@@ -10,6 +10,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "12cea91d",
+      "subject": "chore: update Copernicus data 2026-07-29 08:54 UTC"
+    },
+    {
+      "h": "42b0886f",
+      "subject": "chore: email state 2026-07-29 08:54 UTC"
+    },
     {
       "h": "b876cdd4",
       "subject": "chore: update Copernicus data 2026-07-29 02:52 UTC"
@@ -85,39 +93,23 @@
     {
       "h": "16eb15e1",
       "subject": "feat(funnel): track pass_offer_view + pass_cta + checkout_redirect + pricing + dynamic USD + cart recovery + Apple Pay + Google Pay fix + B2B monthly + dynamic pricing"
-    },
-    {
-      "h": "3c5eb48e",
-      "subject": "chore: update Copernicus data 2026-07-28 14:21 UTC"
-    },
-    {
-      "h": "f64479ce",
-      "subject": "chore: email state 2026-07-28 14:21 UTC"
-    },
-    {
-      "h": "efcac291",
-      "subject": "chore: update Copernicus data 2026-07-28 08:59 UTC"
-    },
-    {
-      "h": "04005490",
-      "subject": "chore: email state 2026-07-28 08:59 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 61,
+      "sessions": 118,
       "friction": 7,
-      "dead_rate": 0.112,
+      "dead_rate": 0.086,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.098,
-        "n": 123
+        "rate": 0.063,
+        "n": 206
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.28
+        "rate": 0.25
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -126,25 +118,30 @@
       "session_to_email": 0,
       "prev_date": "2026-07-28",
       "changes": [
-        "sessions 166→61 (-63%)",
+        "sessions 166→118 (-29%)",
         "✔︎ dead-click résolu : rect",
         "✔︎ dead-click résolu : div.lc-detail[role=dialog]"
       ]
     },
     {
       "region": "gp",
-      "sessions": 115,
-      "friction": 0,
-      "dead_rate": 0.048,
+      "sessions": 227,
+      "friction": 10,
+      "dead_rate": 0.046,
       "dead_worst": {
         "screen": "beach",
-        "rate": 0.095,
-        "n": 21
+        "rate": 0.057,
+        "n": 53
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 11
+        }
+      ],
       "bored_worst": {
         "screen": "beach",
-        "rate": 0.42
+        "rate": 0.33
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -153,20 +150,74 @@
       "session_to_email": 0,
       "prev_date": "2026-07-28",
       "changes": [
-        "sessions 353→115 (-67%)",
-        "✔︎ dead-click résolu : div",
+        "sessions 353→227 (-36%)",
+        "rage-clicks 1→10 ⚠️",
         "✔︎ dead-click résolu : rect"
       ]
     },
     {
       "region": "florida",
-      "sessions": 56,
-      "friction": 1,
-      "dead_rate": 0.118,
+      "sessions": 103,
+      "friction": 4,
+      "dead_rate": 0.26,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.118,
-        "n": 127
+        "rate": 0.244,
+        "n": 193
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.31
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-28",
+      "changes": [
+        "sessions 220→103 (-53%)",
+        "dead-rate 0.056→0.26 (+0.2) ⚠️",
+        "rage-clicks 1→4 ⚠️"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 50,
+      "friction": 0,
+      "dead_rate": 0.165,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.103,
+        "n": 87
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.26
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-28",
+      "changes": [
+        "sessions 152→50 (-67%)",
+        "dead-rate 0.085→0.165 (+0.1) ⚠️",
+        "✔︎ dead-click résolu : div"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 36,
+      "friction": 0,
+      "dead_rate": 0.417,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.357,
+        "n": 42
       },
       "top_dead_els": [],
       "bored_worst": {
@@ -180,61 +231,8 @@
       "session_to_email": 0,
       "prev_date": "2026-07-28",
       "changes": [
-        "sessions 220→56 (-75%)",
-        "dead-rate 0.056→0.118 (+0.1) ⚠️"
-      ]
-    },
-    {
-      "region": "puntacana",
-      "sessions": 20,
-      "friction": 0,
-      "dead_rate": 0.158,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.088,
-        "n": 34
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.35
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-28",
-      "changes": [
-        "sessions 152→20 (-87%)",
-        "dead-rate 0.085→0.158 (+0.1) ⚠️",
-        "✔︎ dead-click résolu : div"
-      ]
-    },
-    {
-      "region": "rivieramaya",
-      "sessions": 25,
-      "friction": 0,
-      "dead_rate": 0.26,
-      "dead_worst": {
-        "screen": "premium",
-        "rate": 0.258,
-        "n": 31
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.36
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-28",
-      "changes": [
-        "sessions 78→25 (-68%)",
-        "dead-rate 0.143→0.26 (+0.1) ⚠️"
+        "sessions 78→36 (-54%)",
+        "dead-rate 0.143→0.417 (+0.3) ⚠️"
       ]
     }
   ]
