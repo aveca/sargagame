@@ -1,5 +1,14 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-07-28 — MASTER_AUDIT + 30-DAY BATTLE PLAN COMPLETED.** 7 audits parallèles (persona #0 Product Manager, #1 UX Designer, #5 Growth Hacker, #6 AI/ML Expert, #7 CTO Scale) → `MASTER_AUDIT.md` (50+ recommandations cross-référencées) + `30DAY_BATTLE_PLAN.md` (4 semaines, 1 développeur, 2h/jour, rollback flags).
+> - **Audit #0 (Paying User)** : 15 insights. Le #1 levier = A13 (montrer J+1 gratuitement avant paywall) — la source `map_scrub_forecast` est la SEULE à produire des conversions dans `daily-metrics.json`. Email capture trop tardif (A1), pas de win-back pour passes expirées (A10), B2B sans onboarding (A5).
+> - **Audit #5 (Quick Wins CRO)** : 20 améliorations. Top 3 : CTA copy (E1), social proof sur WorldPaywall/ComicPaywall (E2), durée dans le sous-texte CTA (E4). Toutes TRIVIAL/EASY.
+> - **Audit #6 (AI/ML)** : 10 opportunités. F1 (ML forecast — données d'entraînement déjà dans le repo), F6 (alertes prédictives — OneSignal déjà branché), F9 (briefs AI-générés), F3 (chat data-grounded).
+> - **Audit #7 (Hypergrowth)** : 20 goulots. G1 (Apps Script perd 7× les leads), G3 (grants de paiement sur filesystem partagé), G4 (builds séquentiels vs plafond 75min), G10 (6+ sync points manuels pour nouvelles régions), G15 (CI gate cassé — smoke exit-0).
+> - **Fixes CRO déjà appliqués** (session précédente) : CTA "Commencer maintenant →" (PassOffer.jsx:87), gradients décoratifs supprimés (PassOffer.jsx:32-33), garantie "Satisfait ou remboursé" → "Paiement sécurisé" (PassOffer.jsx:132), copy légal adoucie (PremiumModal.jsx:3195-3197), explication email post-paiement pour Apple/Google Pay (PremiumModal.jsx:3067).
+> - **Verification** : Build ✅ (201 Ko ≤ 210 Ko) · PHP lint ✅ · UX smoke 4/4 ✅ · Bundle budget ✅
+> - **SUITE** : Exécuter Week 1 du `30DAY_BATTLE_PLAN.md` (P0 : A12 rotation secrets, G1 migration leads→Supabase, G2 purge job, G3 grants→Supabase, G15 CI gate). Priorité absolue : ne pas casser le money-path Mollie.
+
 > **🎯 2026-07-28 — PAYWALL SIMPLIFIÉ : OFFRE UNIQUE, UN PRIX, UN CTA.** Funnel 0,009% → passerelle unique pour éliminer la paralysie du choix.
 > - **PassOffer réécrit** : un seul produit (P30 14,99 € / 11,99 $). Plus de grille 3 cartes, plus de wallet, plus d'écran preuve A/B → 1 clic pour acheter.
 > - **PremiumModal allégé** : -2171 lignes (3136 → 1853). WorldPaywall (+938), ComicPaywall (+1186), legacy dark paywall (+667) supprimés. Seul PassOffer + B2BModal sont rendus.

@@ -102,9 +102,12 @@ try {
         if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
 
         // ── Redirect 3DS : retour sur la page principale avec ?mollie_return=1 ──
+        // On inclut le paymentId dans l'URL pour que le handler puisse retrouver
+        // le contexte même quand iOS Safari a vidé le sessionStorage (Apple Pay).
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
-        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
+        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1&payment_id=" . urlencode($payment->id);
+        if ($email) $redirectUrl .= "&email=" . urlencode($email);
         $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────

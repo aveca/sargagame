@@ -3063,6 +3063,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   <span style={{fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"ou par carte","or by card","o con tarjeta")}</span>
                   <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
                 </div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:10,textAlign:"center"}}>{_t(lang,"Un e-mail de confirmation et d'accès te sera envoyé après le paiement.","A confirmation and access email will be sent after payment.","Se enviará un correo de confirmación y acceso después del pago.")}</div>
               </div>
             )
           })()}
@@ -3156,8 +3157,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                 style={{flexShrink:0,marginTop:2,width:18,height:18,accentColor:"#FFC72C",cursor:"pointer"}}/>
               <span style={{fontSize:11.5,lineHeight:1.45,color:"rgba(255,255,255,.72)"}}>
                 {_t(lang,
-                  "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation).",
-                  "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU).",
+                  "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation). En cas de problème, contactez-nous.",
+                  "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU). If anything goes wrong, just email us.",
                   "Acepto que mi previsión de 7 días y mis alertas se me faciliten de inmediato, en cuanto pague, y reconozco que al solicitar este acceso inmediato pierdo mi derecho de desistimiento de 14 días una vez abierto el acceso (art. L221-28 13° del Código de Consumo francés).")}
               </span>
             </label>
@@ -3193,7 +3194,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               est porté par l'acte de paiement, tracé en metadata Mollie (create_payment).
               Masquée si ?consent=1 (case explicite dormante affichée) → pas de doublon. */}
           {!consentFlag&&!PAY_CAPTURE_ONLY&&<div style={{textAlign:"center",marginTop:8,fontSize:10,lineHeight:1.45,color:"rgba(255,255,255,.34)"}}>
-            {_t(lang,"Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert.","Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open.","Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso.")}{" "}
+            {_t(lang,"Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert. En cas de problème, écrivez-nous.","Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open. If anything goes wrong, just email us.","Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso. Si hay algún problema, escríbenos.")}{" "}
             <a href="/cgv.html" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
           </div>}
           {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout

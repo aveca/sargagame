@@ -11399,49 +11399,48 @@ export default function App(){
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
   // ── Retour 3DS Mollie (?mollie_return=1) : confirme le paiement côté serveur
-  // (source de vérité), pose le premium en localStorage, puis reload propre. ───
+  // (source de vérité), pose le premium en localStorage, puis reload propre.
+  // FIX Apple Pay iOS : le sessionStorage peut être vidé après le redirect Mollie,
+  // donc on lit aussi le paymentId depuis l'URL (?payment_id=xxx).
+  // Si aucun contexte disponible, on tente une vérification par email en fallback.
+  // Statut pending : on relance 3× avec 2 s d'espace, car Mollie peut retourner
+  // pending (paiement en cours de confirmation) avant le webhook. ────────────
   useEffect(()=>{
-    try{
-      if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
-      let ctx=null;try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
-      const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
-      if(!ctx||!ctx.paymentId){clean();return}
-      fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId})})
-        .then(r=>r.json()).then(d=>{
-          if(d&&d.paid){
-            try{localStorage.setItem("sg_email",ctx.email||"")
-              if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
-              else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
-              // Le reload (clean()) perd l'état mémoire onActivated → poser le flag pour
-              // que showWelcome déclenche splash « Premium activé » + PaidOnboarding,
-              // comme le chemin inline. Sinon le payeur 3DS atterrait sans confirmation.
-              localStorage.setItem("sg_premium_welcome","1")
-            }catch(_){}
-            track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
-          } else {
-            // ── Paiement 3DS échoué → redirect vers ?payment_failed=1 ─────────
-            // Le client a tenté la 3DS mais ça n'a pas abouti (timeout, code incorrect,
-            // annulation). On le redirige vers le handler payment_failed qui ouvre le
-            // paywall en mode retry avec un message explicatif + email pré-rempli.
-            try{
-              sessionStorage.removeItem("sg_mollie_pending")
-              const failUrl="/?payment_failed=1"
-                +(ctx.email?"&email="+encodeURIComponent(ctx.email):"")
-                +(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")
-              window.location.replace(failUrl);return
-            }catch(_){}
-          }
-          clean()
-        }).catch(async()=>{
-          // payment_status injoignable (réseau) : le paiement a pu réussir côté
-          // serveur (webhook). Avant d'abandonner, on tente la vérif d'abo par email
-          // → évite de perdre un vrai payeur sur un blip réseau au retour 3DS.
-          try{const v=ctx.email?await sgVerifySub(ctx.email):null
-            if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.paymentId,method:"mollie_3ds_fallback",plan:ctx.plan})}
-          }catch(_){}
-          clean()
-        })
-    }catch(_){}
+    const run=async()=>{
+      try{
+        if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
+        let ctx=null
+        try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
+        // Fallback URL : si sessionStorage vidé (iOS Safari Apple Pay)
+        if(!ctx||!ctx.paymentId){const urlPaymentId=new URLSearchParams(window.location.search).get("payment_id");if(urlPaymentId){ctx={paymentId:urlPaymentId}}}
+        // Fallback email quand aucun paymentId dispo
+        if((!ctx||!ctx.paymentId)&&!ctx?.email){const urlEmail=new URLSearchParams(window.location.search).get("email");if(urlEmail){ctx={paymentId:null,email:urlEmail}}}
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        if(!ctx||!ctx.paymentId){
+          if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
+          clean();return
+        }
+        let paid=null
+        for(let attempt=0;attempt<3;attempt++){
+          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId})});const d=await r.json()
+            if(d&&d.paid){paid=true;break}
+            if(d&&d.status==="paid"){paid=true;break}
+            paid=false;if(attempt<2)await new Promise(r=>setTimeout(r,2000))
+          }catch(_){paid=false}
+        }
+        if(paid===true){
+          try{localStorage.setItem("sg_email",ctx.email||"")
+            if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
+            else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
+            localStorage.setItem("sg_premium_welcome","1")}catch(_){}
+          track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
+        } else {
+          try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
+        }
+        clean()
+      }catch(_){}
+    }
+    run()
   },[])
   // Handle ?payment_failed=1 → relance automatique (email retry link)
   // Le client revient ici depuis l'email de relance (ou après un retour 3DS échoué).

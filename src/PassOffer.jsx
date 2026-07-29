@@ -29,8 +29,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
 
   return (
     <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
-      <div aria-hidden style={{ position: "absolute", top: -160, left: "50%", transform: "translateX(-50%)", width: "min(500px,100%)", maxWidth: "100%", height: 340, background: "radial-gradient(ellipse at 50% 40%,rgba(255,199,44,.20),rgba(255,199,44,.06) 44%,transparent 70%)", pointerEvents: "none" }} />
-      <div aria-hidden style={{ position: "absolute", top: -80, right: -60, width: 200, height: 200, background: "radial-gradient(circle,rgba(232,168,0,.10),transparent 60%)", pointerEvents: "none" }} />
+
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
@@ -84,7 +83,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: "none",
             }}>
-              {_t(lang, "Voir toutes les plages →", "See all beaches →", "Ver todas las playas →")}
+              {_t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
             </span>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -129,7 +128,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           <span>Mollie</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Pas d'abonnement", "No subscription", "Sin suscripción")}</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "30 jours", "30 days", "30 días")}</span><span aria-hidden="true">·</span>
-          <span>{_t(lang, "Satisfait ou remboursé", "Money-back guarantee", "Satisfecho o reembolsado")}</span>
+          <span>{_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}</span>
         </div>
       </div>
     </div>
