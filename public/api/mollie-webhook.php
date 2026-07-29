@@ -13,7 +13,8 @@ $raw = file_get_contents('php://input');
 
 // Vérification signature webhook Mollie (fail-open si non configuré)
 // Mollie envoie X-Mollie-Signature = HMAC-SHA256(body, webhook_secret)
-$webhookSecret = defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '';
+$cfg = require_once __DIR__ . '/mollie-config.php';
+$webhookSecret = is_array($cfg) ? ($cfg['webhook_secret'] ?? '') : (defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '');
 if ($webhookSecret && !empty($_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {
     $expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
     if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {

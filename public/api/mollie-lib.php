@@ -19,6 +19,7 @@ class SgMollieClient {
         $self = $this;
         $this->payments = new class($self) {
             private $c;
+            private array $lastCreateResp = [];
             public function __construct($c){ $this->c = $c; }
             public function create(array $data): object {
                 $resp = $this->c->_post('v2/payments', $data);
@@ -27,6 +28,9 @@ class SgMollieClient {
             public function get(string $id): object {
                 $resp = $this->c->_get("v2/payments/$id");
                 return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null, 'paid' => $resp['paid'] ?? null, 'isPaid' => function() use ($resp) { return ($resp['status'] ?? '') === 'paid' || ($resp['paid'] ?? false); }];
+            }
+            public function getCheckoutUrl(): ?string {
+                return $this->lastCreateResp['_links']['checkout']['href'] ?? null;
             }
         };
         $this->customers = new class($self) {
@@ -103,8 +107,11 @@ class SgMollieClient {
 }
 
 function getMollieClient(): SgMollieClient {
-    require_once __DIR__ . '/mollie-config.php';
-    return new SgMollieClient(MOLLIE_API_KEY);
+    // Use require (not require_once) because mollie.php already did require_once
+    // and require_once would return true (boolean) on subsequent calls
+    $cfg = require __DIR__ . '/mollie-config.php';
+    $apiKey = is_array($cfg) ? ($cfg['api_key'] ?? '') : (defined('MOLLIE_API_KEY') ? MOLLIE_API_KEY : '');
+    return new SgMollieClient($apiKey);
 }
 
 /**
