@@ -10,6 +10,20 @@ require_once __DIR__ . '/mollie-lib.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $raw = file_get_contents('php://input');
+
+// Vérification signature webhook Mollie (fail-open si non configuré)
+// Mollie envoie X-Mollie-Signature = HMAC-SHA256(body, webhook_secret)
+$webhookSecret = defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '';
+if ($webhookSecret && !empty($_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {
+    $expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
+    if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {
+        error_log('[mollie-webhook] INVALID SIGNATURE — possible forgery');
+        http_response_code(403);
+        echo json_encode(['error' => 'invalid_signature']);
+        exit;
+    }
+}
+
 $data = json_decode($raw, true) ?? [];
 
 $id = $data['id'] ?? '';
@@ -65,10 +79,10 @@ try {
             }
         }
 
-        // Handle cancellation/expiration
+        // Handle cancellation/expiration — revoke Pro token
         if (in_array($event, ['subscription.canceled', 'subscription.expired'], true)) {
-            // Could revoke token here if needed - for now just log
-            error_log("[mollie-webhook] subscription.$event id=$id plan=$planKey customer=$customerId");
+            mol_b2b_revoke($subscription->id);
+            error_log("[mollie-webhook] subscription.$event REVOKED id=$id plan=$planKey customer=$customerId");
         }
 
         http_response_code(200);

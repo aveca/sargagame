@@ -72,6 +72,27 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 }
 
 /**
+ * Revoke Pro token for a subscription (called on cancellation/expiration)
+ */
+function mol_b2b_revoke(string $subscriptionId): void {
+    $grantKey = 'mollie_grant_' . $subscriptionId;
+    $revokeKey = 'mollie_revoked_' . $subscriptionId;
+    set_transient($revokeKey, '1', 365 * 86400); // mark revoked for 1 year
+    // Remove the grant transient (token no longer valid)
+    $file = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
+    if (file_exists($file)) @unlink($file);
+    error_log("[mol_b2b_revoke] revoked sub=$subscriptionId");
+}
+
+/**
+ * Check if a subscription token has been revoked
+ */
+function mol_b2b_is_revoked(string $subscriptionId): bool {
+    $revokeKey = 'mollie_revoked_' . $subscriptionId;
+    return get_transient($revokeKey) !== null;
+}
+
+/**
  * Simple transient store (file-based, survives deploy)
  */
 function get_transient(string $key): ?string {

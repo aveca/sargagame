@@ -6,9 +6,13 @@
 
 require_once __DIR__ . '/mollie-config.php';
 require_once __DIR__ . '/mollie-lib.php';
+require_once __DIR__ . '/_ratelimit.php';
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+// CORS whitelist — SYNC avec create-checkout.php / paypal.php
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com','https://sargassummiami.com','https://sargassumcancun.com'];
+if (in_array($origin, $allowed, true)) header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -19,6 +23,9 @@ $raw = file_get_contents('php://input');
 $data = json_decode($raw, true) ?? [];
 
 $action = $data['action'] ?? '';
+
+// Rate limiting anti-abus (fail-open, même infra que create-checkout.php)
+sg_rate_limit('mol_' . $action, 20);
 
 try {
     $mollie = getMollieClient();
@@ -38,9 +45,29 @@ try {
             throw new Exception('amount {value,currency} requis');
         }
 
-        // Prix dynamique USD haute saison (juin-nov) — exempt trip_usd
+        // Validation prix côté serveur (anti-tampering)
+        // Passes B2C one-time : allowlist de clés connues + montants EUR fixes
         $pass = $data['pass'] ?? null;
         $currency = $amount['currency'];
+        $amountVal = (float)$amount['value'];
+        // Montants EUR connus (cents → EUR) — source = PassOffer.jsx + mollie-config.example.php
+        $eurPassPrices = ['p30' => 14.99, 'p7' => 7.99, 'saison' => 24.99, 'trip7' => 4.99];
+        $priceValid = false;
+        if ($pass && isset($eurPassPrices[$pass])) {
+            if ($currency === 'EUR') {
+                $priceValid = (abs($amountVal - $eurPassPrices[$pass]) < 0.02);
+            } else {
+                // USD : montant positif et plausible (> 0.50, < 50)
+                $priceValid = ($amountVal > 0.50 && $amountVal < 50);
+            }
+        } elseif (!$pass) {
+            // Subscription (B2B monthly) — montants defined in mollie-lib.php mol_b2b_plans()
+            $priceValid = ($amountVal > 0 && $amountVal < 300);
+        }
+        if (!$priceValid) {
+            error_log("[mollie.php] price tamper: pass=$pass amount=$amountVal currency=$currency");
+            throw new Exception('Prix invalide');
+        }
         if ($currency === 'USD' && $pass && $pass !== 'trip') {
             $month = (int)date('n');
             if ($month >= 6 && $month <= 11) {

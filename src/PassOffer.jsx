@@ -118,6 +118,13 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {_t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
 
+        {/* Transparence prix USD haute saison (juin-nov) */}
+        {cur === "usd" && (() => { const m = new Date().getMonth() + 1; return (m >= 6 && m <= 11) ? (
+          <div style={{ textAlign: "center", marginTop: 8, fontSize: 10.5, color: "rgba(234,247,244,.45)", letterSpacing: ".01em" }}>
+            {_t(lang, "Tarif haute saison · +15 % sur les passes 30 j et saison", "High-season rate · +15 % on 30-day & season passes", "Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
+          </div>
+        ) : null })()}
+
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Pas d'abonnement", "No subscription", "Sin suscripción")}</span><span aria-hidden="true">·</span>

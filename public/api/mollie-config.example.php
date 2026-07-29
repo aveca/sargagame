@@ -12,6 +12,7 @@ return [
     'api_key'    => 'test_REPLACE_ME',   // test_ | live_ — SECRET, server only, never shipped to the browser
     'profile_id' => 'pfl_REPLACE_ME',    // PUBLIC — injected into mollie.js on the front (Components on-site)
     'resend_key' => '',                  // welcome email (optionnel, réutilise la clé Resend ; vide = pas d'email)
+    // 'webhook_secret' => '',           // HMAC secret for webhook signature verification (Mollie dashboard → Webhooks → Secret)
     // 'appsscript_url' => 'https://script.google.com/macros/s/DEPLOYMENT_ID/exec',
 
     // Montants des abonnements récurrents. Mollie crée les subscriptions INLINE

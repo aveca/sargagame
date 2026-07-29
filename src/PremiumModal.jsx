@@ -1430,6 +1430,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payReadyRef=useRef(false)
   const payEmailRef=useRef(null)
   const payEmailCapturedRef=useRef("") // dernière valeur d'email déjà enrôlée au blur (pré-Stripe), évite les doublons
+  const payEmailDebounceRef=useRef(null) // debounce timer pour capture email sur input (pas juste blur)
   const paypalBtnRef=useRef(null) // pont PayPal : conteneur du bouton d'abo
   const payDivRef=useRef(null)
   const expressDivRef=useRef(null)
@@ -1605,6 +1606,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       try{track("sg_pay_email_captured",{plan:payPlanRef.current,source:source||"unknown"})}catch(_){}
     }catch(_){}
   },[source])
+  // Capture email sur chaque saisie (debounced 800ms) — pas juste au blur.
+  // Le user qui tape son email puis hésite est un lead chaud : enrôlé tôt = récupérable.
+  const onPayEmailInput=useCallback(()=>{
+    clearTimeout(payEmailDebounceRef.current)
+    payEmailDebounceRef.current=setTimeout(()=>{capturePayEmail()},800)
+  },[capturePayEmail])
   const doSubscribe=useCallback(async()=>{
     const plan=payPlanRef.current
     if(payBusy)return
@@ -2198,7 +2205,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <button
           aria-label={_t(lang,"Fermer","Close","Cerrar")}
           onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
-          style={{position:"absolute",top:14,right:14,width:(pwComic&&!passOnly)?34:30,height:(pwComic&&!passOnly)?34:30,
+          style={{position:"absolute",top:14,right:14,width:44,height:44,
             borderRadius:"50%",background:(pwComic&&!passOnly)?"#ffd23f":"rgba(255,255,255,.08)",border:(pwComic&&!passOnly)?"2.5px solid #0d0b14":"none",
             color:(pwComic&&!passOnly)?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:(pwComic&&!passOnly)?800:400,
             boxShadow:(pwComic&&!passOnly)?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
@@ -2877,6 +2884,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             </div>
           </div>
         </div>
+        {/* Transparence prix USD haute saison (juin-nov) : afficher la tarification
+            saisonnière AVANT le paiement pour préserver la confiance (moat honnêteté).
+            Petit texte discret, pas de bloc séparé — ne casse pas le flow. */}
+        {PAY_CUR==="usd"&&(()=>{const m=new Date().getMonth()+1;return(m>=6&&m<=11)?(
+          <div style={{textAlign:"center",marginTop:6,fontSize:10.5,color:"rgba(255,255,255,.45)",letterSpacing:".01em"}}>
+            {_t(lang,"Tarif haute saison en cours · +15 % applies outside trip passes","High-season rate · +15 % on 30-day & season passes","Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
+          </div>
+        ):null})()}
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>
@@ -2991,6 +3006,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
                   :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
+          {/* Preuve sociale au moment d'imaximum d'anxiété (saisie email/carte) — levier
+              conversion. Affiche le nombre de leads communautaires (__COMM = plancher). */}
+          {__COMM>0&&(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:14,fontSize:12,fontWeight:600,color:"rgba(255,199,44,.75)"}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+              {_t(lang,`Déjà ${__COMM}+ qui suivent leurs plages`,`${__COMM}+ people track their beaches`,`${__COMM}+ personas rastrean sus playas`)}
+            </div>
+          )}
           {/* E-mail EN PREMIER (avant les wallets) : notre abo est lié à l'email
               (livraison de l'accès + reçu), donc Apple/Google Pay en a besoin. Le poser
               en tête + expliquer pourquoi → plus de "tape Apple Pay → erreur surprise". */}
@@ -2998,7 +3021,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             <div style={{marginBottom:14}}>
               <label style={MOL_LABEL}>{_t(lang,"E-mail (reçu d'accès)","Email (access receipt)","Email (recibo de acceso)")}</label>
               <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
+                onBlur={capturePayEmail} onChange={onPayEmailInput}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
                 style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,
@@ -3083,7 +3106,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ):(
             <>
               <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
+                onBlur={capturePayEmail} onChange={onPayEmailInput}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
                 style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
