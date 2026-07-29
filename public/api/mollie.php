@@ -171,9 +171,11 @@ try {
         if (!empty($data['customerId'])) {
             $customer = $mollie->customers->get($data['customerId']);
         } elseif (!empty($data['email'])) {
-            // Try to get existing customer by email
-            $customers = $mollie->customers->page(['email' => $data['email'], 'limit' => 1]);
-            foreach ($customers as $c) { $customer = $c; break; }
+            // Try to get existing customer by email (filter client-side since Mollie API doesn't support email filter)
+            $customers = $mollie->customers->page(['limit' => 50]);
+            foreach ($customers as $c) {
+                if (($c->email ?? '') === $data['email']) { $customer = $c; break; }
+            }
             if (!$customer) {
                 $customer = $mollie->customers->create([
                     'email' => $data['email'],
@@ -192,6 +194,7 @@ try {
             'webhookUrl' => $webhookUrl,
             'metadata' => $metadata,
             'mandateId' => $data['mandateId'] ?? null,
+            'interval' => $plan['interval'] ?? '1 month',
         ];
 
         if ($hosted) {
