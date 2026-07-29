@@ -37,7 +37,7 @@ function mol_b2b_plans(): array {
  * Grant Pro token once per subscription (idempotent via subscriptionId)
  * Gère mensuel (renouvelable 30j) vs annuel (365j)
  */
-function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId): array {
+function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId, ?int $durationDaysOverride = null): array {
     require_once __DIR__ . '/widget-token.php';
 
     $grantKey = 'mollie_grant_' . $subscriptionId;
@@ -46,14 +46,8 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
         return ['granted' => false, 'reason' => 'already_granted', 'token' => $existing];
     }
 
-    $plans = mol_b2b_plans();
-    if (!isset($plans[$planKey])) {
-        return ['granted' => false, 'reason' => 'unknown_plan'];
-    }
-
-    $plan = $plans[$planKey];
     $isMonthly = in_array($planKey, ['pro_monthly', 'brief_monthly'], true);
-    $durationDays = $isMonthly ? 30 : 365;
+    $durationDays = $durationDaysOverride ?? ($isMonthly ? 30 : 365);
     $expiresAt = time() + ($durationDays * 86400);
 
     $token = sg_widget_sign([
@@ -144,6 +138,16 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
     error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt));
 
     return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days];
+}
+
+/**
+ * Revoke a B2C pass grant (called on payment failure)
+ */
+function mol_b2c_pass_revoke(string $paymentId): void {
+    $grantKey = 'mol_b2c_pass_' . $paymentId;
+    $grantFile = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
+    if (file_exists($grantFile)) @unlink($grantFile);
+    error_log("[mol_b2c_pass_revoke] paymentId=$paymentId");
 }
 
 /**

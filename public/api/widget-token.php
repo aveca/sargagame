@@ -21,9 +21,15 @@ function sg_widget_b64url_dec($s) { return base64_decode(strtr($s, '-_', '+/'));
 
 /** Génère un jeton PRO pour un host donné (ex. domaine de l'hôtel), valable $days jours. */
 function sg_widget_sign($host, $days = 400) {
-    $payload = sg_widget_b64url(json_encode(['h' => (string)$host, 'exp' => time() + (int)$days * 86400]));
-    $sig = sg_widget_b64url(hash_hmac('sha256', $payload, sg_widget_secret(), true));
-    return $payload . '.' . $sig;
+    if (is_array($host)) {
+        $payload = $host;
+        if (!isset($payload['exp'])) $payload['exp'] = time() + (int)$days * 86400;
+    } else {
+        $payload = ['h' => (string)$host, 'exp' => time() + (int)$days * 86400];
+    }
+    $b64payload = sg_widget_b64url(json_encode($payload));
+    $sig = sg_widget_b64url(hash_hmac('sha256', $b64payload, sg_widget_secret(), true));
+    return $b64payload . '.' . $sig;
 }
 /** Vérifie un jeton. Retourne le payload décodé {h,exp} si valide, false sinon. */
 function sg_widget_verify($k) {

@@ -49,8 +49,11 @@ try {
             $pass = $metadata['pass'] ?? '';
             $email = $metadata['email'] ?? '';
 
-            if (in_array($source, ['b2b_annual', 'b2b_monthly'], true)) {
-                // B2B annual or monthly - grant handled by subscription webhook
+            if (in_array($source, ['b2b_annual'], true)) {
+                mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
+                error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id");
+            } elseif (in_array($source, ['b2b_monthly'], true)) {
+                // B2B monthly - grant handled by subscription webhook
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
             } elseif ($pass && in_array($pass, ['p30', 'trip7', 'season'], true)) {
                 // B2C pass — grant côté serveur (backup du localStorage frontend)
@@ -72,13 +75,29 @@ try {
         error_log("[mollie-webhook] subscription.$event id=$id status=$status plan=$planKey customer=$customerId");
 
         // Grant Pro token for B2B monthly subscriptions (active/pending)
-        if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
-            if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                if (in_array($status, ['active', 'pending'], true)) {
-                    mol_b2b_grant_once($customerId, $planKey, $subscription->id);
-                }
-            }
-        }
+         if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
+             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
+                 if (in_array($status, ['active', 'pending'], true)) {
+                     mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 }
+             }
+         }
+
+         if ($event === 'subscription.paid') {
+             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
+                 mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId");
+             }
+         }
+
+         if ($event === 'subscription.charge_failed') {
+             error_log("[mollie-webhook] subscription.charge_failed id=$id plan=$planKey customer=$customerId");
+         }
+
+         if ($event === 'payment.failed') {
+             mol_b2c_pass_revoke($id);
+             error_log("[mollie-webhook] payment.failed pass paymentId=$id");
+         }
 
         // Handle cancellation/expiration — revoke Pro token
         if (in_array($event, ['subscription.canceled', 'subscription.expired'], true)) {
