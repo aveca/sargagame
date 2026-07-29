@@ -1,17 +1,38 @@
 # NEXT_SESSION — sargagame
 
-> **🎯 2026-07-29 — ALL MONEY-PATH BUGS FIXED AND COMMITTED.**
-> - Fix 1 (CRITICAL): `sg_widget_sign()` in `widget-token.php` — called with an array from `mol_b2b_grant_once()`, PHP cast to "Array" string → ALL B2B Pro tokens were forged (h:"Array", 400 days default). Fixed: `sg_widget_sign()` now accepts array payload with explicit `exp`.
-> - Fix 2 (CRITICAL): `applePayPaymentToken` was never passed to Mollie API in `create_payment` → direct Apple Pay silently failed. Fixed: `mollie.php` now passes `applePayPaymentToken` to `payments->create()`.
-> - Fix 3 (iOS): sessionStorage wipe after Apple Pay redirect on iOS Safari → `?mollie_return=1` handler lost context → premium never activated. Fixed: redirect URL now carries `payment_id+email` as URL params; handler reads from URL if sessionStorage empty; polls `pending` 3×; email fallback.
-> - Fix 4: Webhook missing events — `subscription.paid` (recurring renewal) → Pro now extends on each renewal; `subscription.charge_failed` → logged; `payment.failed` → B2C pass revoked via new `mol_b2c_pass_revoke()`; B2B annual one-time `payment.paid` → Pro grant (365d override).
-> - Commit `0c7c9d9d` — all fixes together. Build ✅ · PHP lint ✅ · Bundle 201KB ≤ 210KB ✅
-> - Deploy still needed — use Apps Script deploy script or `clasp push` as per deploy workflow.
+> **🎯 2026-07-29 — ALL MONEY-PATH BUGS FIXED, COMMITTED & DEPLOYED (Martinique + Guadeloupe fast deploy ✅).** 3 commits in sequence.
 >
-> **Full Mollie audit notes:** 2 distinct bugs found in Apple Pay flow: direct path (applePayPaymentToken ignored) + hosted fallback (sessionStorage iOS wipe). Both fixed. Webhook had 4 missing event handlers. sg_widget_sign was broken for B2B. All now fixed.
+> ### Commits
+> - `5c707c62` — direct Apple Pay inline status race condition fix (retry 3×2s)
+> - `0c7c9d9d` — sg_widget_sign array fix + applePayPaymentToken pass-through + webhook renewal+failure + B2B annual grant
+> - `69198052` — hosted checkout redirect payment_id+email in URL + handler retry pending + email fallback
 >
-> **🎯 2026-07-28 — MASTER_AUDIT + 30-DAY BATTLE PLAN COMPLETED.** 7 audits parallèles → `MASTER_AUDIT.md` + `30DAY_BATTLE_PLAN.md`.
-> - Audit #0–#7 summary, CRO quick wins partially applied.
-> - Suite: Week 1 P0 tasks from `30DAY_BATTLE_PLAN.md`.
+> ### Bugs found and fixed (7 total)
+> | Bug | Where | Fix |
+> |-----|-------|-----|
+> | `sg_widget_sign()` array→string cast → ALL B2B Pro tokens broken (`h:"Array"`) | `widget-token.php` | Now accepts array payload with explicit `exp` |
+> | `applePayPaymentToken` ignored in `create_payment` → direct Apple Pay silent fail | `mollie.php` | Passed through to Mollie `payments->create()` |
+> | Direct Apple Pay inline status check: no retry → Mollie hasn't settled yet → immediate "not paid" cancel | `PremiumModal.jsx` onpaymentauthorized | Retry loop 3×2s |
+> | iOS Safari wipes sessionStorage after Apple Pay redirect → hosted checkout handler loses context | `mollie.php` + `Sargasses_PROD.jsx` | payment_id+email in URL; handler reads URL if sessionStorage empty; polls pending 3×; email fallback |
+> | `subscription.paid` missing → renewals never extend Pro access | `mollie-webhook.php` | Added handler re-grants Pro |
+> | `subscription.charge_failed` / `payment.failed` missing → failed payments never revoke | `mollie-webhook.php` + `mollie-lib.php` | Added handlers + new `mol_b2c_pass_revoke()` |
+> | B2B annual `payment.paid` → no grant (just logged) | `mollie-webhook.php` | Now calls `mol_b2b_grant_once(365d override)` |
 >
-> **🎯 2026-07-28 — PAYWALL SIMPLIFIÉ.** PassOffer réécrit (1 produit, 1 prix, 1 CTA). PremiumModal allégé (-2171 lignes).
+> ### Deploy status
+> - Martinique ✅ fast deploy (1448 fichiers, 321 Mo)
+> - Guadeloupe ✅ fast deploy (1513 fichiers, 370 Mo)
+> - Punta Cana / Riviera Maya / Florida — fallback FTP still syncing (smaller assets)
+> - Barbados — skipped (no FTP credentials)
+> - Apps Script: `clasp push` = founder mobile only (AGENTS.md rule)
+>
+> ### What Apple Pay looks like now
+> - **Direct path** (domain validated in Mollie): Apple Pay sheet → instant payment → inline status (retry 3×2s) → premium activated immediately. No redirect, no sessionStorage.
+> - **Hosted fallback** (domain not validated): Mollie hosted checkout → user pays → Mollie redirects to `?mollie_return=1&payment_id=xxx&email=yyy` → handler reads URL → polls pending → premium activated.
+> - Both paths now have proper retry logic.
+>
+> ### Verify with user
+> - If Apple Pay still fails, test: direct Apple Pay path → if Mollie domain not validated, fallback to hosted redirect → check browser console for errors
+> - Also ask: does the **credit card** flow work (it goes through `doSubscribe` → same `mollie_return=1` handler now fixed)
+>
+> **🎯 2026-07-28 — MASTER_AUDIT + 30-DAY BATTLE PLAN COMPLETED.** See earlier notes.
+> **🎯 2026-07-28 — PAYWALL SIMPLIFIÉ.** See earlier notes.

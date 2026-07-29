@@ -1666,7 +1666,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         const d=await r.json().catch(()=>({}))
         if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
         if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
-          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
           window.location.href=d.checkoutUrl;return
         }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
@@ -1772,11 +1772,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
-      track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
-      if(d.checkoutUrl){
-        try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
-        window.location.href=d.checkoutUrl;return
-      }
+       track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
+       if(d.checkoutUrl){
+         try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+         window.location.href=d.checkoutUrl;return
+       }
       const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
       const cd=await cr.json().catch(()=>({}))
       if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))

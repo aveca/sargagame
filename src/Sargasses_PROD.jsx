@@ -11400,9 +11400,6 @@ export default function App(){
 
   // ── Retour 3DS Mollie (?mollie_return=1) : confirme le paiement côté serveur
   // (source de vérité), pose le premium en localStorage, puis reload propre.
-  // FIX Apple Pay iOS : le sessionStorage peut être vidé après le redirect Mollie,
-  // donc on lit aussi le paymentId depuis l'URL (?payment_id=xxx).
-  // Si aucun contexte disponible, on tente une vérification par email en fallback.
   // Statut pending : on relance 3× avec 2 s d'espace, car Mollie peut retourner
   // pending (paiement en cours de confirmation) avant le webhook. ────────────
   useEffect(()=>{
@@ -11411,10 +11408,15 @@ export default function App(){
         if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
         let ctx=null
         try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
-        // Fallback URL : si sessionStorage vidé (iOS Safari Apple Pay)
-        if(!ctx||!ctx.paymentId){const urlPaymentId=new URLSearchParams(window.location.search).get("payment_id");if(urlPaymentId){ctx={paymentId:urlPaymentId}}}
-        // Fallback email quand aucun paymentId dispo
-        if((!ctx||!ctx.paymentId)&&!ctx?.email){const urlEmail=new URLSearchParams(window.location.search).get("email");if(urlEmail){ctx={paymentId:null,email:urlEmail}}}
+        if(!ctx||!ctx.paymentId){
+          // sessionStorage vidé (iOS Safari ou bfcache) → lire localStorage
+          try{const ls=JSON.parse(localStorage.getItem("sg_mollie_pending")||"null");if(ls&&ls.paymentId){ctx=ls}}catch(_){}
+        }
+        if(!ctx||!ctx.paymentId){
+          // localStorage aussi vide → fallback email via sgVerifySub
+          const storedEmail=localStorage.getItem("sg_email")||""
+          if(storedEmail){ctx={paymentId:null,email:storedEmail}}
+        }
         const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
         if(!ctx||!ctx.paymentId){
           if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
