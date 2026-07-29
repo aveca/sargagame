@@ -90,3 +90,35 @@ function set_transient(string $key, string $value, int $ttl): void {
     $data = ['value' => $value, 'expires' => time() + $ttl];
     file_put_contents($file, json_encode($data), LOCK_EX);
 }
+
+// Ajout de la fonction pour créer un paiement Mollie
+function mol_create_payment($amount, $currency, $description, $redirectUrl, $webhookUrl) {
+    try {
+        $mollie = getMollieClient();
+        
+        $payment = $mollie->payments->create([
+            "amount" => [
+                "value" => number_format($amount / 100, 2, '.', ''),
+                "currency" => $currency,
+            ],
+            "description" => $description,
+            "redirectUrl" => $redirectUrl,
+            "webhookUrl" => $webhookUrl,
+            "metadata" => [
+                "order_id" => uniqid("sg_order_"),
+            ],
+        ]);
+        
+        return [
+            'success' => true,
+            'payment_id' => $payment->id,
+            'checkout_url' => $payment->getCheckoutUrl(),
+        ];
+    } catch (Exception $e) {
+        error_log("[Mollie Payment Error] " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
+    }
+}
