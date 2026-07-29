@@ -215,7 +215,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
   const last=msgs[msgs.length-1]
   return(
     <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
-      <div className="sg-onink-scope" style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
+      <div style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
         background:"#120821",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
         boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",
