@@ -180,8 +180,10 @@ export default function WorldView3D({
     setCameraReady(true)
 
     let frame = 0
+    let paused = false
     const animate = () => {
       rafRef.current = requestAnimationFrame(animate)
+      if (paused) return
       controls.update()
       frame++
 
@@ -217,8 +219,12 @@ export default function WorldView3D({
     }
     window.addEventListener('resize', onResize)
 
+    const onVisibility = () => { paused = document.hidden }
+    document.addEventListener('visibilitychange', onVisibility)
+
     return () => {
       window.removeEventListener('resize', onResize)
+      document.removeEventListener('visibilitychange', onVisibility)
       cancelAnimationFrame(rafRef.current)
       controls.dispose()
       renderer.dispose()
@@ -307,60 +313,65 @@ export default function WorldView3D({
     const raycaster = new THREE.Raycaster()
     const mouse = new THREE.Vector2()
     const el = containerRef.current
+    let lastMove = 0
+    let touchStartX = 0, touchStartY = 0, touchMoved = false
 
-    const onMove = (e) => {
+    const hitTest = (cx, cy) => {
       const rect = el.getBoundingClientRect()
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+      mouse.x = ((cx - rect.left) / rect.width) * 2 - 1
+      mouse.y = -((cy - rect.top) / rect.height) * 2 + 1
       raycaster.setFromCamera(mouse, cameraRef.current)
       const cones = Array.from(pinsRef.current.values()).map(g => g.children[0])
       const hits = raycaster.intersectObjects(cones)
-      if (hits.length > 0) {
-        const b = hits[0].object.parent.userData.beach
-        setHovered(b)
-        el.style.cursor = 'pointer'
-      } else {
-        setHovered(null)
-        el.style.cursor = 'grab'
-      }
+      return hits.length > 0 ? hits[0].object.parent.userData.beach : null
+    }
+
+    const onMove = (e) => {
+      const now = Date.now()
+      if (now - lastMove < 50) return
+      lastMove = now
+      const b = hitTest(e.clientX, e.clientY)
+      if (b) { setHovered(b); el.style.cursor = 'pointer' }
+      else { setHovered(null); el.style.cursor = 'grab' }
     }
 
     const onClick = (e) => {
-      const rect = el.getBoundingClientRect()
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
-      raycaster.setFromCamera(mouse, cameraRef.current)
-      const cones = Array.from(pinsRef.current.values()).map(g => g.children[0])
-      const hits = raycaster.intersectObjects(cones)
-      if (hits.length > 0) {
-        const b = hits[0].object.parent.userData.beach
-        try { track('sg_3d_pin_click', { beach: b.name, status: b.status }) } catch (_) {}
-        onBeachClick(b)
-      }
+      const b = hitTest(e.clientX, e.clientY)
+      if (b) { try { track('sg_3d_pin_click', { beach: b.name, status: b.status }) } catch (_) {}; onBeachClick(b) }
+    }
+
+    const onTouchStart = (e) => {
+      if (e.touches.length !== 1) return
+      touchStartX = e.touches[0].clientX
+      touchStartY = e.touches[0].clientY
+      touchMoved = false
+    }
+
+    const onTouchMove = (e) => {
+      if (e.touches.length !== 1) return
+      const dx = e.touches[0].clientX - touchStartX
+      const dy = e.touches[0].clientY - touchStartY
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) touchMoved = true
     }
 
     const onTouchEnd = (e) => {
+      if (touchMoved) return
       if (e.changedTouches.length !== 1) return
       const t = e.changedTouches[0]
-      const rect = el.getBoundingClientRect()
-      mouse.x = ((t.clientX - rect.left) / rect.width) * 2 - 1
-      mouse.y = -((t.clientY - rect.top) / rect.height) * 2 + 1
-      raycaster.setFromCamera(mouse, cameraRef.current)
-      const cones = Array.from(pinsRef.current.values()).map(g => g.children[0])
-      const hits = raycaster.intersectObjects(cones)
-      if (hits.length > 0) {
-        const b = hits[0].object.parent.userData.beach
-        try { track('sg_3d_pin_tap', { beach: b.name, status: b.status }) } catch (_) {}
-        onBeachClick(b)
-      }
+      const b = hitTest(t.clientX, t.clientY)
+      if (b) { try { track('sg_3d_pin_tap', { beach: b.name, status: b.status }) } catch (_) {}; onBeachClick(b) }
     }
 
     el.addEventListener('mousemove', onMove)
     el.addEventListener('click', onClick)
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: true })
     el.addEventListener('touchend', onTouchEnd)
     return () => {
       el.removeEventListener('mousemove', onMove)
       el.removeEventListener('click', onClick)
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
       el.style.cursor = 'default'
     }

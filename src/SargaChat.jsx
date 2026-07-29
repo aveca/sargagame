@@ -214,7 +214,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
   
   const last=msgs[msgs.length-1]
   return(
-    <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
+    <div role="dialog" aria-modal="true" aria-label={t("Assistant","Assistant","Asistente")} style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
       <div style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
         background:"#120821",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
         boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
@@ -243,8 +243,8 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
               </span>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",
-            fontSize:18,cursor:"pointer",padding:4}}>✕</button>
+          <button onClick={onClose} aria-label={t("Fermer","Close","Cerrar")} style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",
+            fontSize:18,cursor:"pointer",padding:12,minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
         <div ref={bodyRef} style={{overflowY:"auto",overflowX:"hidden",padding:"14px 12px",display:"flex",flexDirection:"column",gap:10}}>
           {msgs.map((m,i)=>(
@@ -260,7 +260,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
               {last.chips.map((c,i)=>(
                 <button key={i} onClick={()=>onChip(c)} style={{background:"rgba(255,199,44,.1)",
                   border:"1px solid rgba(255,199,44,.45)",color:"#FFC72C",fontFamily:"inherit",fontWeight:700,
-                  fontSize:12.5,padding:"9px 13px",borderRadius:999,cursor:"pointer",textAlign:"left"}}>{c.label}</button>
+                  fontSize:12.5,padding:"9px 13px",minHeight:44,borderRadius:999,cursor:"pointer",textAlign:"left"}}>{c.label}</button>
               ))}
             </div>
           )}
@@ -298,6 +298,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
                 border:"none",
                 borderRadius:12,
                 padding:"0 18px",
+                minHeight:44,
                 color:"#120821",
                 fontWeight:700,
                 fontSize:13.5,

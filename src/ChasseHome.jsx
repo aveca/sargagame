@@ -667,7 +667,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=new Date(Date.now()+i*864e5)
-                const dl=["D","L","M","M","J","V","S"][d.getDay()]
+                const dayMap={fr:["D","L","M","M","J","V","S"],en:["S","M","T","W","T","F","S"],es:["D","L","M","X","J","V","S"]}
+                const dl=(dayMap[lang]||dayMap.fr)[d.getDay()]
                 // Premium sans série (plage non couverte) : estimation par PERSISTANCE du
                 // statut du jour (confiance basse, jamais de carré gris muet — un payant
                 // doit toujours voir une donnée). Gratuit → cadenas (verrou intentionnel).
@@ -1515,9 +1516,13 @@ export default function ChasseHome(props){
     if(idx>prev){ localStorage.setItem("sg_chasse_rank",String(idx)); if(prev>=0&&idx>0){ setLevelUp(tier.cur); if(track)try{track("sg_chasse_levelup",{rank:idx})}catch(_){} } }
   }catch(_){} },[tier,track])
   const dateLbl = useMemo(()=>{
-    const d=new Date(), moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."]
-    return d.getDate()+" "+moFR[d.getMonth()]
-  },[])
+    const d=new Date(), mo={
+      fr:["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."],
+      en:["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],
+      es:["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"]
+    }
+    return d.getDate()+" "+(mo[lang]||mo.fr)[d.getMonth()]
+  },[lang])
 
   /* ---- BADGES (BadgesSheet) — déblocages à partir de DONNÉES RÉELLES ----
      Flag kill-switch ?badges=0 (défaut on) ; ?badges=1 force l'ouverture au mount.
