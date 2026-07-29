@@ -111,31 +111,6 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   useModalA11y(dlgRef,onClose)   // role/aria-modal posés sur le panel ; Échap + focus-trap + restauration
   const [tier,setTier]=useState("pro")
   const [email,setEmail]=useState("")
-  // ── Retry mode : relance automatique après paiement échoué ──────────────────
-  // Le lien email de relance ouvre l'app avec ?payment_failed=1 → le handler dans
-  // Sargasses_PROD.jsx stocke le contexte dans sessionStorage (sg_payment_retry).
-  // Ici on lit ce contexte pour pré-remplir l'email et afficher un message retry.
-  const [retryCtx,setRetryCtx]=useState(null)
-  useEffect(()=>{
-    try{
-      const raw=sessionStorage.getItem("sg_payment_retry")
-      if(!raw)return
-      const ctx=JSON.parse(raw)
-      if(ctx&&ctx.email&&Date.now()-(ctx.ts||0)<3600000){ // valide 1h max
-        setRetryCtx(ctx)
-        setEmail(ctx.email)
-        // Auto-open the payment step with a retry-specific error message
-        setTimeout(()=>{
-          setPayStep(true)
-          setPayError(_t(lang,
-            "Ton paiement précédent n'a pas abouti (3D Secure ou carte). Ta carte n'a PAS été débitée. Réessaie avec la même carte ou une autre.",
-            "Your previous payment didn't go through (3D Secure or card). Your card was NOT charged. Try again with the same card or a different one.",
-            "Tu pago anterior no se completó (3D Secure o tarjeta). Tu tarjeta NO fue cobrada. Inténtalo de nuevo con la misma tarjeta u otra."))
-        },500)
-      }
-      sessionStorage.removeItem("sg_payment_retry")
-    }catch(_){}
-  },[])
   const [org,setOrg]=useState("")
   const [sent,setSent]=useState(false)
   const [token,setToken]=useState("")   // token Pro 30 j renvoyé par b2b-trial.php (essai INSTANTANÉ)
@@ -3129,25 +3104,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>
           )}
-          {payError&&(()=>{
-            const isRetry=!!retryCtx
-            return(
+          {payError&&(
             <div role="alert" style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:12,padding:"11px 13px",
-              borderRadius:12,background:isRetry?"rgba(255,199,44,.12)":"rgba(232,82,42,.12)",borderLeft:isRetry?"4px solid #FFC72C":"4px solid #E8522A"}}>
-              {isRetry?(
-                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#FFC72C"}}>
-                  <path d="M8 1v6l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
-                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                </svg>
-              ):(
-                <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#F4845F"}}>
-                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-              )}
-              <div style={{color:isRetry?"#FFE8B0":"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
+              borderRadius:12,background:"rgba(232,82,42,.12)",borderLeft:"4px solid #E8522A"}}>
+              <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#F4845F"}}>
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
-            )
-          })()}
+          )}
           {/* Consentement rétractation 14 j — chemin Pass B2C payant uniquement.
               Case NON pré-cochée ; tant qu'elle n'est pas cochée, le bouton payer est
               désactivé. Flag ?consent=0 → case retirée (comportement d'avant). */}
