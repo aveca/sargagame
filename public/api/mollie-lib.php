@@ -112,6 +112,53 @@ function set_transient(string $key, string $value, int $ttl): void {
     file_put_contents($file, json_encode($data), LOCK_EX);
 }
 
+/**
+ * Grant B2C pass — backup server-side du localStorage frontend.
+ * Idempotent : même paymentId = pas de double grant.
+ * Durées : p30=30j, trip7=7j, season=210j
+ */
+function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, array $metadata = []): array {
+    $grantKey = 'mol_b2c_pass_' . $paymentId;
+    $existing = get_transient($grantKey);
+    if ($existing) {
+        return ['granted' => false, 'reason' => 'already_granted'];
+    }
+
+    $durations = ['p30' => 30, 'trip7' => 7, 'season' => 210];
+    $days = $durations[$pass] ?? 30;
+    $expiresAt = time() + ($days * 86400);
+    $currency = $metadata['currency'] ?? 'EUR';
+
+    $grantData = json_encode([
+        'pass' => $pass,
+        'email' => $email,
+        'currency' => $currency,
+        'expires_at' => $expiresAt,
+        'payment_id' => $paymentId,
+        'granted_at' => time(),
+    ]);
+
+    set_transient($grantKey, $grantData, $days * 86400 + 86400);
+
+    // Log pour audit (email PII pas loggé en clair dans error_log)
+    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt));
+
+    return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days];
+}
+
+/**
+ * Check if a B2C pass payment has been granted (for verification cross-device)
+ */
+function mol_b2c_pass_check(string $paymentId): ?array {
+    $grantKey = 'mol_b2c_pass_' . $paymentId;
+    $data = get_transient($grantKey);
+    if (!$data) return null;
+    $decoded = json_decode($data, true);
+    if (!$decoded) return null;
+    if (($decoded['expires_at'] ?? 0) < time()) return null;
+    return $decoded;
+}
+
 // Ajout de la fonction pour créer un paiement Mollie
 function mol_create_payment($amount, $currency, $description, $redirectUrl, $webhookUrl) {
     try {

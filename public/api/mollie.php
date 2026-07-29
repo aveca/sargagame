@@ -32,47 +32,90 @@ try {
 
     if ($action === 'create_payment') {
         // One-off payment (B2C pass, B2B annual)
-        $amount = $data['amount'] ?? null;
-        $description = $data['description'] ?? 'Sargasses';
-        $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/success/';
-        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
-        $metadata = $data['metadata'] ?? [];
-        $metadata['source'] = $metadata['source'] ?? 'web';
+        $pass = $data['pass'] ?? null;
+        $email = $data['email'] ?? '';
+        $source = $data['source'] ?? 'unknown';
+        $description = $data['description'] ?? ($pass ? "Sargasses Pass $pass" : 'Sargasses');
+        $paymentMethod = $data['paymentMethod'] ?? null;
 
-        $paymentMethod = $data['paymentMethod'] ?? null; // optional: 'applepay', 'googlepay'
-
-        if (!$amount || !isset($amount['value']) || !isset($amount['currency'])) {
-            throw new Exception('amount {value,currency} requis');
+        // ── Construction du montant : le front envoie cents (int), pas amount ──
+        $cents = $data['cents'] ?? null;
+        $amountObj = $data['amount'] ?? null;
+        if ($cents !== null) {
+            // Frontend normal : {pass:"p30", cents:1499, ...}
+            $cents = (int)$cents;
+            if ($cents <= 0) throw new Exception('cents invalide');
+            $currency = strtoupper($data['cur'] ?? 'EUR');
+            if (!in_array($currency, ['EUR', 'USD'], true)) $currency = 'EUR';
+            $amountVal = $cents / 100;
+            $amount = ['value' => number_format($amountVal, 2, '.', ''), 'currency' => $currency];
+        } elseif ($amountObj && isset($amountObj['value']) && isset($amountObj['currency'])) {
+            // Legacy / Mollie API direct : {amount:{value:"14.99", currency:"EUR"}}
+            $amount = $amountObj;
+            $currency = $amount['currency'];
+            $amountVal = (float)$amount['value'];
+        } else {
+            throw new Exception('cents ou amount {value,currency} requis');
         }
 
-        // Validation prix côté serveur (anti-tampering)
-        // Passes B2C one-time : allowlist de clés connues + montants EUR fixes
-        $pass = $data['pass'] ?? null;
-        $currency = $amount['currency'];
-        $amountVal = (float)$amount['value'];
-        // Montants EUR connus (cents → EUR) — source = PassOffer.jsx + mollie-config.example.php
-        $eurPassPrices = ['p30' => 14.99, 'p7' => 7.99, 'saison' => 24.99, 'trip7' => 4.99];
+        // ── Validation prix côté serveur (anti-tampering) ─────────────────────
+        // Allowlist complète : pass -> {EUR: montant, USD: montant|null}
+        // USD null = montant variable par région (trip7) → fallback plausibilité
+        $passPrices = [
+            'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
+            'trip7'  => ['EUR' => 4.99,  'USD' => null],
+            'season' => ['EUR' => 24.99, 'USD' => null],
+        ];
         $priceValid = false;
-        if ($pass && isset($eurPassPrices[$pass])) {
-            if ($currency === 'EUR') {
-                $priceValid = (abs($amountVal - $eurPassPrices[$pass]) < 0.02);
+        if ($pass && isset($passPrices[$pass])) {
+            $expected = $passPrices[$pass][$currency] ?? null;
+            if ($expected !== null) {
+                $priceValid = (abs($amountVal - $expected) < 0.02);
             } else {
-                // USD : montant positif et plausible (> 0.50, < 50)
+                // Prix USD variable (trip7/season) : plausibilité
                 $priceValid = ($amountVal > 0.50 && $amountVal < 50);
             }
         } elseif (!$pass) {
-            // Subscription (B2B monthly) — montants defined in mollie-lib.php mol_b2b_plans()
+            // Subscription (B2B monthly) — montants defined in mol_b2b_plans()
             $priceValid = ($amountVal > 0 && $amountVal < 300);
         }
         if (!$priceValid) {
             error_log("[mollie.php] price tamper: pass=$pass amount=$amountVal currency=$currency");
             throw new Exception('Prix invalide');
         }
-        if ($currency === 'USD' && $pass && $pass !== 'trip') {
+
+        // ── Surcharge USD peak season (juin-novembre, hors trip7) ─────────────
+        if ($currency === 'USD' && $pass && $pass !== 'trip7') {
             $month = (int)date('n');
             if ($month >= 6 && $month <= 11) {
                 $amount['value'] = (string)round((float)$amount['value'] * 1.15, 2);
             }
+        }
+
+        // ── Metadata : pass + email pour webhook + audit ──────────────────────
+        $metadata = $data['metadata'] ?? [];
+        $metadata['source'] = $source;
+        $metadata['pass'] = $pass ?? '';
+        $metadata['email'] = $email;
+        $metadata['lang'] = $data['lang'] ?? 'fr';
+        if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
+        if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
+
+        // ── Redirect 3DS : retour sur la page principale avec ?mollie_return=1 ──
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
+        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
+        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
+
+        // ── Protection double checkout (idempotence 60s par email+pass) ───────
+        if ($pass && $email) {
+            $idemKey = 'mol_checkout_' . md5($email . '|' . $pass);
+            $existing = get_transient($idemKey);
+            if ($existing) {
+                error_log("[mollie.php] double checkout blocked: email=$email pass=$pass");
+                throw new Exception('Paiement déjà en cours. Attends 60 secondes.');
+            }
+            set_transient($idemKey, '1', 60);
         }
 
         $paymentData = [
@@ -207,7 +250,9 @@ try {
         if (!$paymentId) throw new Exception('paymentId requis');
         $payment = $mollie->payments->get($paymentId);
         $status = $payment->status ?? 'unknown';
-        $paid = in_array($status, ['paid', 'settled', 'pending'], true);
+        // Seul "paid" = payé. "pending" = en attente (virement, 3DS non terminé).
+        // "settled" = payé + viré (plus tardif, couvert par paid).
+        $paid = in_array($status, ['paid', 'settled'], true);
         echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId]);
         exit;
     }

@@ -46,14 +46,15 @@ try {
 
         if ($status === 'paid') {
             $source = $metadata['source'] ?? 'unknown';
+            $pass = $metadata['pass'] ?? '';
+            $email = $metadata['email'] ?? '';
 
             if (in_array($source, ['b2b_annual', 'b2b_monthly'], true)) {
                 // B2B annual or monthly - grant handled by subscription webhook
-                // but we log for audit
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
-            } elseif (str_starts_with($source, 'b2c_')) {
-                // B2C pass - handled by existing logic if needed
-                error_log("[mollie-webhook] B2C payment.paid source=$source paymentId=$id");
+            } elseif ($pass && in_array($pass, ['p30', 'trip7', 'season'], true)) {
+                // B2C pass — grant côté serveur (backup du localStorage frontend)
+                mol_b2c_pass_grant($id, $pass, $email, $metadata);
             }
         }
         http_response_code(200);
