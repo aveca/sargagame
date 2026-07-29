@@ -1088,18 +1088,20 @@ Sitemap: https://${domain}/sitemap.xml
   }
 
   // api/ : mêmes endpoints PHP que MQ/GP, copiés depuis public/api/ —
-  // SAUF stripe-config.php (gitignoré, déployé à part via deploy-stripe-config.cjs).
+  // SAUF stripe-config.php et mollie-config.php (gitignorés, déployés à part).
   const apiSrc = path.join(root, 'public', 'api')
   if (fs.existsSync(apiSrc)) {
     for (const name of fs.readdirSync(apiSrc)) {
-      if (!name.endsWith('.php') || name === 'stripe-config.php') continue
+      if (!name.endsWith('.php') || name === 'stripe-config.php' || name === 'mollie-config.php') continue
       fs.mkdirSync(path.join(out, 'api'), { recursive: true })
       fs.copyFileSync(path.join(apiSrc, name), path.join(out, 'api', name))
     }
   }
-  // Ceinture + bretelles : jamais de stripe-config.php dans un dossier FTP neuf.
+  // Ceinture + bretelles : jamais de stripe-config.php ni mollie-config.php dans un dossier FTP neuf.
   const strayStripeConfig = path.join(out, 'api', 'stripe-config.php')
   if (fs.existsSync(strayStripeConfig)) fs.rmSync(strayStripeConfig)
+  const strayMollieConfig = path.join(out, 'api', 'mollie-config.php')
+  if (fs.existsExists(strayMollieConfig)) fs.rmSync(strayMollieConfig)
 
   // README + BUILD.txt (mêmes repères que MQ/GP)
   const readme = `# Upload FTP ${title} — Sargassum

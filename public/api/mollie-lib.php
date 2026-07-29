@@ -73,7 +73,7 @@ class SgMollieClient {
         return $this->_request('POST', $path, $data);
     }
 
-    private function _request(string $method, string $path, array $data = null): array {
+    private function _request(string $method, string $path, ?array $data = null): array {
         $ch = curl_init();
         $url = 'https://api.mollie.com/' . $path;
         $headers = [

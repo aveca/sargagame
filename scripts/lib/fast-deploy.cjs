@@ -26,7 +26,7 @@ const AdmZip = require("adm-zip")
 // Fichiers JAMAIS embarqués dans le zip : secrets server-only que l'extraction
 // ne doit pas pouvoir régresser (stripe-config.php est gitignoré et provisionné
 // à part). L'extraction n'efface pas les fichiers absents du zip → ils survivent.
-const ZIP_EXCLUDE = new Set(["stripe-config.php", "_deploy-secret.php", "_deploy.zip"])
+const ZIP_EXCLUDE = new Set(["stripe-config.php", "mollie-config.php", "_deploy-secret.php", "_deploy.zip"])
 
 function httpJson(url, timeoutMs, headers) {
   return new Promise((resolve, reject) => {
