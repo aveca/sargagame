@@ -35,10 +35,25 @@ class SgMollieClient {
     public object|false $payments;
     public object|false $customers;
     public object|false $customer_subscriptions;
+    public object $applePay;
 
     public function __construct(string $apiKey) {
         $this->apiKey = $apiKey;
         $self = $this;
+        $this->applePay = new class($self) {
+            private $c;
+            public function __construct($c){ $this->c = $c; }
+            public function sessions(): object {
+                return new class($this->c) {
+                    private $c;
+                    public function __construct($c){ $this->c = $c; }
+                    public function create(array $data): array {
+                        $resp = $this->c->_post('v2/wallets/applepay/sessions', $data);
+                        return $resp;
+                    }
+                };
+            }
+        };
         $this->payments = new class($self) {
             private $c;
             public function __construct($c){ $this->c = $c; }

@@ -273,7 +273,11 @@ try {
     if ($action === 'applepay_session') {
         $validationUrl = $data['validationUrl'] ?? '';
         if (!$validationUrl) throw new Exception('validationUrl requis');
-        $session = $mollie->applePay->sessions->create(['validationUrl' => $validationUrl]);
+        $domain = $data['domain'] ?? ($_SERVER['HTTP_HOST'] ?? '');
+        $session = $mollie->applePay->sessions->create([
+            'validationUrl' => $validationUrl,
+            'domain' => $domain,
+        ]);
         echo json_encode($session);
         exit;
     }
