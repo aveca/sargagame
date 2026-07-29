@@ -108,7 +108,7 @@ if (!in_array($type, $HANDLED_TYPES, true)) {
 // SYNC MANUEL avec les ids de regions/*.json (regions/index.cjs est du CommonJS,
 // non chargeable depuis PHP — scripts/test-stripe-webhook.cjs verifie la parite).
 // Legacy : le front historique envoie 'MQ'/'GP' en majuscules → compare en lowercase.
-$KNOWN_REGIONS = ['mq', 'gp', 'puntacana', 'florida', 'rivieramaya'];
+$KNOWN_REGIONS = ['mq', 'gp', 'puntacana', 'florida', 'rivieramaya', 'barbados'];
 
 $obj = (isset($event['data']['object']) && is_array($event['data']['object'])) ? $event['data']['object'] : [];
 
