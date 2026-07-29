@@ -1840,10 +1840,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
-              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-              const cd=await cr.json().catch(()=>({}))
-              if(!cd.paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}
-              ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
+               const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+               const cd=await cr.json().catch(()=>({}))
+               let paid=cd.paid===true
+               if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
+               ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
               else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
