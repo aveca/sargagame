@@ -4,11 +4,107 @@
  * Config secrets dans mollie-config.php (gitignored)
  */
 
-function getMollieClient(): \Mollie\Api\MollieApiClient {
+/**
+ * Lightweight Mollie API client using cURL (no Composer/SDK dependency).
+ * Replaces \Mollie\Api\MollieApiClient which is not installed on the server.
+ */
+class SgMollieClient {
+    private string $apiKey;
+    public object $payments;
+    public object $customers;
+    public object $customer_subscriptions;
+
+    public function __construct(string $apiKey) {
+        $this->apiKey = $apiKey;
+        $self = $this;
+        $this->payments = new class($self) {
+            private $c;
+            public function __construct($c){ $this->c = $c; }
+            public function create(array $data): object {
+                $resp = $this->c->_post('v2/payments', $data);
+                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null, 'getCheckoutUrl' => function() use ($resp) { return $resp['_links']['checkout']['href'] ?? null; }];
+            }
+            public function get(string $id): object {
+                $resp = $this->c->_get("v2/payments/$id");
+                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null, 'paid' => $resp['paid'] ?? null, 'isPaid' => function() use ($resp) { return ($resp['status'] ?? '') === 'paid' || ($resp['paid'] ?? false); }];
+            }
+        };
+        $this->customers = new class($self) {
+            private $c;
+            public function __construct($c){ $this->c = $c; }
+            public function get(string $id): object {
+                $resp = $this->c->_get("v2/customers/$id");
+                return (object)['id' => $resp['id'] ?? null];
+            }
+            public function page(array $params = []): array {
+                $query = http_build_query($params);
+                $resp = $this->c->_get('v2/customers?' . $query);
+                $items = $resp['_embedded']['customers'] ?? [];
+                return array_map(fn($c) => (object)['id' => $c['id'] ?? null], $items);
+            }
+            public function create(array $data): object {
+                $resp = $this->c->_post('v2/customers', $data);
+                return (object)['id' => $resp['id'] ?? null];
+            }
+        };
+        $this->customer_subscriptions = new class($self) {
+            private $c;
+            public function __construct($c){ $this->c = $c; }
+            public function create(string $customerId, array $data): object {
+                $resp = $this->c->_post("v2/customers/$customerId/subscriptions", $data);
+                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null];
+            }
+            public function get(string $id): object {
+                $resp = $this->c->_get("v2/subscriptions/$id");
+                return (object)['id' => $resp['id'] ?? null, 'status' => $resp['status'] ?? null];
+            }
+        };
+    }
+
+    public function _get(string $path): array {
+        return $this->_request('GET', $path);
+    }
+
+    public function _post(string $path, array $data): array {
+        return $this->_request('POST', $path, $data);
+    }
+
+    private function _request(string $method, string $path, array $data = null): array {
+        $ch = curl_init();
+        $url = 'https://api.mollie.com/' . $path;
+        $headers = [
+            'Authorization: Bearer ' . $this->apiKey,
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ];
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if ($method === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_errno($ch)) {
+            $err = curl_error($ch);
+            curl_close($ch);
+            throw new Exception('cURL error: ' . $err);
+        }
+        curl_close($ch);
+        $decoded = json_decode($response, true) ?: [];
+        if ($httpCode >= 400) {
+            $msg = $decoded['detail'] ?? $decoded['title'] ?? ('HTTP ' . $httpCode);
+            throw new Exception('Mollie API error: ' . $msg);
+        }
+        return $decoded;
+    }
+}
+
+function getMollieClient(): SgMollieClient {
     require_once __DIR__ . '/mollie-config.php';
-    $mollie = new \Mollie\Api\MollieApiClient();
-    $mollie->setApiKey(MOLLIE_API_KEY);
-    return $mollie;
+    return new SgMollieClient(MOLLIE_API_KEY);
 }
 
 /**
