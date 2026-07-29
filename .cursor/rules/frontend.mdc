@@ -1,0 +1,73 @@
+---
+description: Règles frontend — composants, UX mobile, design system Le Veilleur, tokens, animation.
+globs: ["src/**/*.jsx", "src/**/*.js", "src/**/*.css", "public/**/*.html"]
+alwaysApply: false
+---
+
+# Frontend — Règles Sargagame
+
+## Design System « Le Veilleur »
+
+### Fonts
+- **Anton** : display/titres (display, uppercase, letter-spacing -.02em)
+- **Bricolage Grotesque** : corps (`font-family` du `<html>`)
+
+### Couleurs
+- Or `#FFC72C` : accent/CTA/mascotte
+- Ink sombre : texte principal
+- Ancre app/SW/standalone : `#0d1117`
+- Navy `#0a1620` : thème B2B uniquement (`/pro/*`, widget)
+
+### Lanes de tokens (NE PAS mélanger)
+- `--sg-*` runtime in-app : `src/Themes.css` + `src/app-runtime.css` + `index.html`
+- `.lc-*` paper/ink in-app : `ChasseHome`, `ComicDetail`, `PremiumModal`
+- `SCENE_TOKENS` golden-hour : SEO uniquement, JAMAIS au runtime
+
+## Mobile-first — Lois
+
+1. **Fermeture swipe-down** : `useSwipeClose` (`src/useSwipeClose.js`), jamais de hook maison
+2. **4 voies de sortie min** : ✕ (≥44px) · Échap · tap backdrop · swipe-down
+3. **Rendu hors couche carte** : `createPortal(…, document.body)` + `className="sg-onink-scope"`
+4. **Une décision/un écran** : lisible au pouce, ≥44px tap, `clamp()` typo
+5. **Tester 360/390/430px** : jamais de titre fixe qui déborde
+
+## Accessibilité (plancher dur)
+
+- `role="dialog"` + Échap + focus-trap sur modales
+- `prefers-reduced-motion` = plancher (animations dégradées statiques)
+- Contraste suffisant sur ink/paper
+- Jamais d'info portée par la couleur seule
+
+## Anti-régression UI (checklist ship)
+
+Avant tout merge touchant l'UI :
+
+- [ ] Skin thème qui écrase l'inline (`.theme-comic` → `!important`)
+- [ ] Tokens comic inertes (vars `--sg-*` sous comic résolvent LIGHT)
+- [ ] `#root` effondré sous comic (→ `position:fixed` ou portal)
+- [ ] Contraste texte sombre sur fond sombre
+- [ ] Convention mobile oubliée (swipe, 4 sorties, clamp, ≥44px)
+- [ ] i18n : pas de texte FR en dur (toujours `_t(fr,en,es)`)
+
+## Composants clés
+
+| Composant | Fichier | Rôle |
+|-----------|---------|------|
+| `WorldMapView` | `WorldMapView.jsx` | Carte SVG vedette (funnel), eager preload |
+| `ChasseHome` | `ChasseHome.jsx` | Home comic, 8 flags rollback |
+| `PremiumModal` | `PremiumModal.jsx` | Paywall lazy, paiement on-site |
+| `PassOffer` | `PassOffer.jsx` | Card offre pass (p30, 14.99€/11.99$) |
+| `SargaChat` | `SargaChat.jsx` | Chat IA (lazy) |
+| `BeachSheet` | `BeachSheet.jsx` | Feuille détail plage |
+| `WeekHub` | `WeekHub.jsx` | Hub prévisions semaine |
+
+## Flags rollback (loi : pas de flag = pas de merge)
+
+Flags vivants (défaut ON, `?flag=0` désactive) :
+- `pwcomic` — paywall comic (PremiumModal.jsx)
+- `pwworld` — paywall world continuity
+- `pwconstel` — constellation golden-hour
+- `pwscene` — scenePay
+- `mapdetail`, `onboard` — Sargasses_PROD.jsx
+- `fc7`, `ladder`, `badges`, `alerts`, `space`, `h2snote`, `streak7`, `partners` — ChasseHome.jsx
+- `pwpass` — storefront pass
