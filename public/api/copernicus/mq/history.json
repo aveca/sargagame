@@ -8180,7 +8180,7 @@
         },
         {
           "id": "mq016",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -8195,12 +8195,12 @@
         },
         {
           "id": "mq020",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "mq021",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -8300,7 +8300,7 @@
         },
         {
           "id": "mq044",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {

@@ -177,7 +177,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-27 → 2026-07-29) resultaron correctos (sobre 60); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-07-29T02:42:30.126Z",
+  "computed": "2026-07-29T08:49:31.848Z",
   "pairs": [
     {
       "snapshotDate": "2026-07-27",
@@ -209,11 +209,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.04
     },
     {
       "snapshotDate": "2026-07-27",
@@ -947,11 +947,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-07-28",
