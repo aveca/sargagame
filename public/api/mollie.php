@@ -129,7 +129,9 @@ try {
             'metadata' => $metadata,
             'locale' => $data['locale'] ?? 'fr_FR',
         ];
-
+        if (!empty($data['applePayPaymentToken'])) {
+            $paymentData['applePayPaymentToken'] = $data['applePayPaymentToken'];
+        }
         if ($paymentMethod) {
             $paymentData['paymentMethod'] = $paymentMethod;
         }
