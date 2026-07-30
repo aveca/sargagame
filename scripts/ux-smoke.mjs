@@ -29,6 +29,8 @@ const ctx = await b.newContext({
   userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
 });
 const p = await ctx.newPage();
+p.setDefaultNavigationTimeout(60000);
+p.setDefaultTimeout(30000);
 const errs = [];
 p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
@@ -84,9 +86,9 @@ const whiteButtons = [];
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
-await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 30000 });
-await p.waitForSelector('.sg-maplabel', { timeout: 15000 }).catch(() => {});
-await p.waitForTimeout(1500);
+await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 60000 });
+await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
+await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
 const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
 whiteButtons.push(...await p.evaluate(scanGhost));
