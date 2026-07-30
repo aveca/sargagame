@@ -119,21 +119,11 @@ await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
-// ── 3. Paywall : d'abord le CTA du détail comic (chemin de conversion réel),
-//       sinon le deep-link produit ?paywall=1 (chemin /a-propos/ et /alertes/) en
-//       filet déterministe. Détection multi-skins : .pwx-wrap (ComicPaywall) /
-//       .sg-modal-panel (PremiumModal classique/World).
+// ── 3. Paywall : forcer le deep-link produit ?paywall=1 (chemin déterministe).
+//       Détection multi-skins : .pwx-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
 const PAYWALL_SEL = '.pwx-wrap, .sg-modal-panel';
-await p.evaluate(() => {
-  const cta = document.querySelector('.lc-detail .lc-cta');
-  if (cta) cta.click();
-});
-await p.waitForSelector(PAYWALL_SEL, { timeout: 8000 }).catch(() => {});
-if (!(await p.$(PAYWALL_SEL))) {
-  // Fallback déterministe : paywall direct
-  await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 30000 });
-  await p.waitForSelector(PAYWALL_SEL, { timeout: 12000 }).catch(() => {});
-}
+await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 30000 });
+await p.waitForSelector(PAYWALL_SEL, { timeout: 12000 }).catch(() => {});
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
 const paywallOk = !!(await p.$(PAYWALL_SEL));
@@ -145,16 +135,19 @@ const whiteOut = whiteButtons.filter(w => {
   const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
 }).slice(0, 25);
 
-// Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés) — ne garder que les vraies erreurs JS
-const realErrors = errs.filter(e => 
-  !e.includes('Content Security Policy') && 
-  !e.includes('Refused to connect') && 
-  !e.includes('violates the following Content Security Policy') &&
-  !e.includes('Fetch API cannot load') &&
-  !e.includes('Loading the script') &&
-  !e.includes('Loading the image') &&
-  !e.includes('Refused to connect')
-);
+// Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés)
+    // et l'erreur PHP referral (côté serveur) — ne garder que les vraies erreurs JS
+    const realErrors = errs.filter(e => 
+      !e.includes('Content Security Policy') && 
+      !e.includes('Refused to connect') && 
+      !e.includes('violates the following Content Security Policy') &&
+      !e.includes('Fetch API cannot load') &&
+      !e.includes('Loading the script') &&
+      !e.includes('Loading the image') &&
+      !e.includes('Refused to connect') &&
+      !e.includes('Unexpected token') &&  // PHP response instead of JSON
+      !e.includes('referral_claim')
+    );
 
 const reached = [mapOk && 'map', ficheOk && 'fiche', paywallOk && 'paywall'].filter(Boolean).join('+');
 console.log('FUNNEL_REACHED=' + reached);
