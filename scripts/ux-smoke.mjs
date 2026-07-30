@@ -86,7 +86,7 @@ const whiteButtons = [];
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
-await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 60000 });
+await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
 await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
@@ -119,7 +119,7 @@ await p.evaluate(() => {
 });
 await p.waitForSelector(PAYWALL_SEL, { timeout: 8000 }).catch(() => {});
 if (!(await p.$(PAYWALL_SEL))) {
-  await p.goto(BASE + '/?paywall=1', { waitUntil: 'networkidle', timeout: 30000 });
+  await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 30000 });
   await p.waitForSelector(PAYWALL_SEL, { timeout: 12000 }).catch(() => {});
 }
 await p.waitForTimeout(1500);
@@ -148,7 +148,7 @@ console.log('ERRORS=' + JSON.stringify(errs.slice(0, 12)));
 let rmInfinite = [];
 try {
   await p.emulateMedia({ reducedMotion: 'reduce' });
-  await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 30000 });
+  await p.goto(BASE + '/', { waitUntil: 'load', timeout: 30000 });
   await p.waitForTimeout(1500); // settle (même ordre de grandeur que les étapes du parcours)
   await p.screenshot({ path: '/tmp/j7-reduced-motion.png' });
   rmInfinite = await p.evaluate(() => {
