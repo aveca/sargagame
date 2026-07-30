@@ -122,17 +122,17 @@ whiteButtons.push(...await p.evaluate(scanGhost));
 // ── 3. Paywall : forcer le deep-link produit ?paywall=1 (chemin déterministe).
 //       Détection multi-skins : .pww-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
-await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 30000 });
-// Attendre que le paywall soit visible (pas juste présent dans le DOM)
+await p.goto(BASE + '/?paywall=1', { waitUntil: 'networkidle', timeout: 45000 });
+// Attendre que le paywall soit visible (pas juste présent dans le DOM) — lazy chunk peut être lent en CI
 await p.waitForFunction(
   (sel) => {
     const el = document.querySelector(sel);
     return el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
   },
   PAYWALL_SEL,
-  { timeout: 15000 }
+  { timeout: 30000 }
 ).catch(() => {});
-await p.waitForTimeout(1500);
+await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
 const paywallOk = !!(await p.$(PAYWALL_SEL));
 whiteButtons.push(...await p.evaluate(scanGhost));
