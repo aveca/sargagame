@@ -37,7 +37,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 @keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.3)}60%{transform:scale(.9)}100%{transform:scale(1)}}
 .heart-pop{animation:heartPop .4s cubic-bezier(.22,1,.36,1)}
 /* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
-.sg-pin{backface-visibility:hidden;will-change:transform}
+.sg-pin{backface-visibility:hidden}
 .sg-pin:hover{transform:scale(1.12)!important}
 .sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out 1 both}
 @keyframes sgPinNearest{
@@ -468,6 +468,23 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   background:#FFC72C;box-shadow:inset 0 0 0 1.5px var(--sg-ink,#0d0d0d)}
 .sg-ctxv-lbl{flex:1;min-width:0}
 @keyframes sgCtxvIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+
+/* ══════════ BEACH SCENE animations ══════════ */
+.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}
+@keyframes bscCloud{to{transform:translateX(-46px)}}
+.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}
+@keyframes bscCloud2{to{transform:translateX(40px)}}
+.bsc-beam{opacity:.1}
+.bsc-shim{opacity:.5}
+.bsc-moonp{opacity:.34}
+@keyframes bscReveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+.bsc-reveal{animation:bscReveal .85s cubic-bezier(.22,1,.36,1) both;transform-origin:50% 60%}
+
+/* ══════════ CELEBRATION animation ══════════ */
+@keyframes celebration-fade{
+  0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0) rotate(720deg)}
+}
 
 /* Reduced motion — kill infinite animations, keep one-shot transitions */
 @media(prefers-reduced-motion:reduce){

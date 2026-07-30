@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://script.google.com https://www.clarity.ms; frame-src 'self' https://js.stripe.com https://www.paypal.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com;">
     <!-- theme-color piloté en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
          theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein → on l'a
          d'abord RETIRÉ. Mais sans theme-color, Safari iOS (≥15, surtout la barre flottante
@@ -16,13 +17,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <script>
+<script>
       /* iOS standalone (écran d'accueil) : position:fixed/100vh/100dvh ne descendent
-         PAS jusqu'au bord bas réel (bug viewport standalone) → bande vide en bas, tous
-         écrans. Les 3 fixes CSS précédents (couleur, position:fixed, longhand) ont
-         échoué car tous purement CSS. Ici on MESURE la vraie hauteur visible
-         (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
-         + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+          PAS jusqu'au bord bas réel (bug viewport standalone) → bande vide en bas, tous
+          écrans. Les 3 fixes CSS précédents (couleur, position:fixed, longhand) ont
+          échoué car tous purement CSS. Ici on MESURE la vraie hauteur visible
+          (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
+          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
       (function(){var d=document.documentElement;
         /* theme-color = cadre sombre de l'app (#0d1117) → barre basse Safari iOS constante
            (sinon elle échantillonne le contenu doré = bande or mouvante, cf. commentaire head). */
@@ -48,6 +49,17 @@
         addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
         addEventListener('load',function(){vh();setTimeout(vh,300)});
         if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script>
+    <script>
+      /* Apple Pay domain validation check — sets __SG_APPLEPAY_DOMAIN_READY when
+         the domain verification file exists at /.well-known/apple-developer-merchantid-domain-association
+         This enables Apple Pay ON-SITE (direct) instead of fallback redirect. */
+      (function(){
+        var checkUrl = '/.well-known/apple-developer-merchantid-domain-association';
+        fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
+          .catch(function(){});
+      })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

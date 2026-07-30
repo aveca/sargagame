@@ -886,12 +886,6 @@ function SuccessCelebration(){
           }}
         />
       ))}
-      <style>{`
-        @keyframes celebration-fade {
-          0% { opacity:1; transform: translate(0,0) scale(1) rotate(0deg); }
-          100% { opacity:0; transform: translate(var(--tx),var(--ty)) scale(0) rotate(720deg); }
-        }
-      `}</style>
     </div>
   )
 }
@@ -1166,7 +1160,11 @@ function BeachScene({beach,reveal}){
   useEffect(()=>{
     if(!visible)return
     let raf
-    const animate=()=>{setFrame(f=>(f+1)%360);raf=requestAnimationFrame(animate)}
+    let lastFrame=0
+    const animate=(now)=>{
+      if(now-lastFrame>66){setFrame(f=>(f+1)%360);lastFrame=now}
+      raf=requestAnimationFrame(animate)
+    }
     raf=requestAnimationFrame(animate)
     return()=>cancelAnimationFrame(raf)
   },[visible])
@@ -1185,7 +1183,6 @@ function BeachScene({beach,reveal}){
         {/* CALME (INCRÉMENT 0 spec wdiiae0wd) : au repos la scène est un TABLEAU. On tue les 11
             boucles idle (glit/raft/rake/net/swim/bird/shim/sat/beam/rays/moonp) — éléments figés à
             leur opacité de repos. Seuls les 2 nuages très lents subsistent. La vie viendra de `reveal`. */}
-        <style>{`.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-beam{opacity:.1}.bsc-shim{opacity:.5}.bsc-moonp{opacity:.34}@keyframes bscReveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}.bsc-reveal{animation:bscReveal .85s cubic-bezier(.22,1,.36,1) both;transform-origin:50% 60%}@media(prefers-reduced-motion:reduce){.bsc-cloud,.bsc-cloud2,.bsc-reveal{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
           <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={waterTint(t.seaT,beach&&beach.afai)}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
@@ -2223,7 +2220,7 @@ function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect
 //    vide). On le met en file localStorage + on le rejoue au boot et au retour du
 //    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
 //    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
-const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+const SG_REPORT_URL=APPS_SCRIPT_URL
 // Upload photo visiteur RETIRÉ (décision fondateur + panel adverse 2026-07-02 : « on ne
 // fait pas d'image, le SVG de NOTRE donnée satellite est le produit »). L'upload, la
 // galerie et la récompense « Éclaireur » 24 h sont désarmés ; le backend Supabase reste
@@ -3282,7 +3279,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
           `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
+        role="button" tabIndex={0}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
         background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
@@ -3302,7 +3300,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     </div>
     {/* Locked-days teaser strip — outside the chart overlay so always visible */}
     {lockedDays.length>0&&(
-      <div onClick={()=>openLock("strip")}
+      <div onClick={()=>openLock("strip")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("strip")}}}
+        role="button" tabIndex={0}
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
@@ -3424,7 +3423,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
             </div>
           </div>
           <button onClick={onShowMap} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
-            width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.45)",border:"1px solid rgba(255,255,255,.22)",
+            width:44,height:44,borderRadius:"50%",background:"rgba(4,9,11,.45)",border:"1px solid rgba(255,255,255,.22)",
             color:"#fff",fontSize:16,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>
         </div>
         <h1 style={{fontFamily:"'Anton',sans-serif",fontSize:38,lineHeight:.95,textTransform:"uppercase",
@@ -3618,7 +3617,7 @@ function VerdictRadarScan({beach,lang,onDisagree}){
     const last=g(ctkey,0)
     return(last&&Date.now()-last<12*3600*1000)?g(ckey,null):null
   })
-  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const live=beach._src==="live"
   const stepLbl=live
     ?[_t(lang,"Satellite","Satellite","Satélite"),_t(lang,"Normalisation","Normalization","Normalización")]
@@ -5135,7 +5134,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Forecast teaser — masqué en fc_position=top (ForecastChart déjà visible) */}
           {!isPremium&&!fcUp&&forecast&&forecast[1]&&(
-            <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
+            <div onClick={e=>{e.stopPropagation();track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
+              onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}}
+              role="button" tabIndex={0}
               style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
                 background:"linear-gradient(135deg,#190c2c,#142824)",
                 border:"1px solid rgba(232,168,0,.2)",
@@ -5902,6 +5903,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
               {/* Forecast lock strip — fav only, !isPremium, A/B list_fclock */}
               {fcDays&&(
                 <div onClick={e=>{e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}
+                  onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}}
+                  role="button" tabIndex={0}
                   style={{margin:"0 14px 13px",padding:"12px 14px",borderRadius:12,
                     background:"rgba(232,168,0,.10)",
                     border:`2px solid ${SG.gold}`,cursor:"pointer"}}>
@@ -6371,7 +6374,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     try{localStorage.setItem("sg_email",heroEmail)}catch{}
     try{
       const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-      fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+      fetch(APPS_SCRIPT_URL,{
         method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
         body:JSON.stringify({email:heroEmail,island:isl,source:"hero_inline",date:new Date().toISOString()})
       }).catch(()=>{})
@@ -7678,10 +7681,12 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
   const[sent,setSent]=useState(false)
   const[err,setErr]=useState(false)
+  const[busy,setBusy]=useState(false)
 
   function submit(e){
     e.preventDefault()
     if(!email||!email.includes("@")){setErr(true);return}
+    setBusy(true)
     setSent(true)
     onSubmit(email)
   }
@@ -7738,16 +7743,17 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
                 border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
                 fontSize:16,fontFamily:"inherit",background:PAY_CAPTURE_ONLY?"#fff":"rgba(255,255,255,.05)",
                 outline:"none",color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",transition:"border 0.2s ease"}}/>
-            <button type="submit" className="sg-paygold" style={{
+            <button type="submit" disabled={busy} className="sg-paygold" style={{
               position:"absolute",right:6,top:6,bottom:6,
-              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:"pointer",
+              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:busy?"wait":"pointer",
               background:PAY_CAPTURE_ONLY?"#ffd23f":"linear-gradient(135deg,#3fd07f,#5b3a8e)",
               display:"flex",alignItems:"center",justifyContent:"center",
-              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)"}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)",
+              opacity:busy?0.6:1}}>
+              {busy?"…":<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              </svg>}
             </button>
           </form>
 
@@ -7770,7 +7776,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           
           <div style={{textAlign:"center", width:"100%"}}>
             <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
-              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
+              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"12px 8px",minHeight:44,fontFamily:"inherit"}}>
               {_t(lang,"Non merci, fermer","No thanks, close","No gracias, cerrar")}
             </button>
           </div>
@@ -7795,9 +7801,11 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
 function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
+  const[busy,setBusy]=useState(false)
   const submit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     s("sg_email",email)
     submitLead(email,"exit_intent")
     track("sg_exitcap_submit",{trigger,beach_id:pick&&pick.id,score:pick&&pick.score})
@@ -7825,15 +7833,15 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
               value={email} onChange={e=>setEmail(e.target.value)}
               style={{flex:1,padding:"9px 12px",borderRadius:10,border:"1px solid rgba(255,255,255,.14)",
                 fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",outline:"none",minWidth:0,color:"#fff"}}/>
-            <button type="submit" style={{padding:"9px 13px",borderRadius:10,border:"none",cursor:"pointer",
-              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:12.5,fontWeight:800,whiteSpace:"nowrap",fontFamily:"inherit"}}>
-              {_t(lang,"Recevoir →","Get it →","Recibir →")}
+            <button type="submit" disabled={busy} style={{padding:"9px 13px",borderRadius:10,border:"none",cursor:busy?"wait":"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:12.5,fontWeight:800,whiteSpace:"nowrap",fontFamily:"inherit",opacity:busy?0.6:1}}>
+              {busy?"…":_t(lang,"Recevoir →","Get it →","Recibir →")}
             </button>
           </div>
         </form>
         <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{background:"none",border:"none",color:"rgba(255,255,255,.8)",fontSize:20,lineHeight:1,cursor:"pointer",
-            padding:0,alignSelf:"flex-start",width:32,height:32,flexShrink:0}}>×</button>
+            padding:0,alignSelf:"flex-start",width:44,height:44,flexShrink:0}}>×</button>
       </>)}
     </div>
   )
@@ -8002,7 +8010,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
             </div>
             <div style={{textAlign:"center",marginTop:9}}>
-              <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
+            <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer",minHeight:44,padding:"10px 0"}}>
                 {_t(lang,"Non merci, je pars sans","No thanks, I'll leave without it","No gracias, me voy sin él")}
               </button>
             </div>
@@ -8016,6 +8024,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
 function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
+  const[busy,setBusy]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
   // Show from first visit (was visit 2+). Already subscribed → hide définitivement
@@ -8036,6 +8045,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const handleSubmit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     track("sg_email_submit",{source,variant:em1V})
     s("sg_email",email)
     s("sg_email_prompt",true)
@@ -8120,20 +8130,20 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
           </div>
           <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
             <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
-              value={email} onChange={e=>setEmail(e.target.value)}
+              value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
               style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
-                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
-            <button type="submit" style={{padding:"10px 16px",borderRadius:12,border:"none",cursor:"pointer",
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff",opacity:busy?0.6:1}}/>
+            <button type="submit" disabled={busy} style={{padding:"10px 16px",borderRadius:12,border:"none",cursor:busy?"wait":"pointer",
               background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:13,fontWeight:800,
-              whiteSpace:"nowrap",fontFamily:"inherit",boxShadow:"0 2px 12px rgba(232,168,0,.3)"}}>
-              {_t(lang,"Commencer →","Start →","Empezar →")}
+              whiteSpace:"nowrap",fontFamily:"inherit",boxShadow:"0 2px 12px rgba(232,168,0,.3)",opacity:busy?0.6:1}}>
+              {busy?"…":_t(lang,"Commencer →","Start →","Empezar →")}
             </button>
           </form>
-          <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
-            display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
-            color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
-            {_t(lang,"Plus tard","Not now","Ahora no")}
-          </button>
+        <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
+          display:"block",margin:"8px auto 0",background:"none",border:"none",
+          cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:"10px 0",minHeight:44}}>
+          {_t(lang,"Plus tard","Not now","Ahora no")}
+        </button>
         </div>
       </div>
     )
@@ -8181,11 +8191,11 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
             {_t(lang,"OK","Go","OK")}
           </button>
         </form>
-        <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
-          display:"block",margin:"8px auto 0",background:"none",border:"none",
-          cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
-          {_t(lang,"Plus tard","Not now","Ahora no")}
-        </button>
+          <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
+            display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
+            color:"rgba(255,255,255,.3)",fontSize:11,padding:"10px 0",minHeight:44}}>
+            {_t(lang,"Plus tard","Not now","Ahora no")}
+          </button>
       </div>
     </div>
   )
@@ -8217,7 +8227,7 @@ function FeedbackWidget(){
   const submit=()=>{
     track("sg_feedback",{rating,text:text.slice(0,200)})
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+    try{fetch(APPS_SCRIPT_URL,{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -8666,15 +8676,17 @@ function AlertCapture({beach,lang}){
   const[open,setOpen]=useState(false)
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
+  const[busy,setBusy]=useState(false)
   const[hidden]=useState(()=>{try{return !!localStorage.getItem("sg_email")}catch(_){return false}})
   if(hidden)return null
   const submit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     track("sg_email_submit",{source:"beach_alert",beach_id:beach.id})
     try{localStorage.setItem("sg_email",email)}catch(_){}
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+    try{fetch(APPS_SCRIPT_URL,{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({email,island,source:"beach_alert",beach_id:beach.id,date:new Date().toISOString()})
     }).catch(()=>{})}catch(_){}
@@ -8709,8 +8721,8 @@ function AlertCapture({beach,lang}){
         value={email} onChange={e=>setEmail(e.target.value)}
         style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:16,fontFamily:"inherit",
           border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
-      <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",
-        fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14}}>OK</button>
+      <button type="submit" disabled={busy} style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:busy?"wait":"pointer",
+        fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14,opacity:busy?0.6:1}}>{busy?"…":"OK"}</button>
     </form>
   )
 }
@@ -10326,7 +10338,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
     } catch (_) {}
 
     const islandCode = IS_NEW_REGION ? REGION.id.toUpperCase() : window.location.hostname.includes("guadeloupe") ? "GP" : "MQ"
-    fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", {
+    fetch(APPS_SCRIPT_URL, {
       method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ email, island: islandCode, source: "alertes", date: new Date().toISOString() })
     })
@@ -10605,7 +10617,7 @@ function VerdictDuJourCard({beach,lang}){
   const[guess,setGuess]=useState(prior?prior.guess:null)
   const[best]=useState(()=>g("sg_vdj_best",0)||0)
   const cachedRef=useRef(!!prior)
-  useEffect(()=>{if(cachedRef.current){try{track("sg_verdict_cached_view",{beach_id:beach.id})}catch(_){}}},[])// eslint-disable-line
+  useEffect(()=>{if(cachedRef.current){try{track("sg_verdict_cached_view",{beach_id:beach.id})}catch(_){}}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const correct=guess===real
   const opts=[
     {s:"clean",e:"😎",l:_t(lang,"Propre","Clean","Limpia"),c:"#22C55E"},
@@ -10844,7 +10856,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
     root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
     return()=>io.disconnect()
   },[items.length])
-  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
   return(
     <div role="region" aria-label={_t(lang,"Monde Sargasses","Sargassum World","Mundo Sargazo")} style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
@@ -10978,7 +10990,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     }
     setReady(true)
     try{track("sg_archipel_open",{beaches:count})}catch(_){}
-  },[initialZone])// eslint-disable-line
+  },[initialZone])// eslint-disable-line react-hooks/exhaustive-deps -- zone change is intentional trigger, not a dep
   // SCROLL / molette / swipe / flèches = VISITE plage-à-plage (doctrine #24 : le
   //   scroll pilote la VISITE, JAMAIS le zoom — zoom = pincer/double-tap). La caméra
   //   glisse vers la plage suivante/précédente. Fin de liste = BOUCLE (jamais bloqué,
@@ -10995,7 +11007,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog"][aria-modal="true"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
     el.addEventListener("wheel",onWheel,{passive:false});window.addEventListener("keydown",onKey)
     return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
-  },[])// eslint-disable-line
+  },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-time wheel/keydown listener setup
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
   const onDown=e=>{movedRef.current=false;stopInertia();velRef.current={x:0,y:0};pannedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
@@ -11364,7 +11376,7 @@ export default function App(){
         // Wow Effect 3: celebration on premium conversion
         triggerCelebration("premium")
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+          try{fetch(APPS_SCRIPT_URL,{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
@@ -11385,7 +11397,7 @@ export default function App(){
         triggerCelebration("premium")
         // Log payment to Apps Script (fire-and-forget)
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+          try{fetch(APPS_SCRIPT_URL,{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
@@ -11442,6 +11454,8 @@ export default function App(){
   // Statut pending : on relance 3× avec 2 s d'espace, car Mollie peut retourner
   // pending (paiement en cours de confirmation) avant le webhook. ────────────
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
     const run=async()=>{
       try{
         if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
@@ -11463,12 +11477,14 @@ export default function App(){
         }
         let paid=null
         for(let attempt=0;attempt<3;attempt++){
-          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId})});const d=await r.json()
+          if(signal.aborted)break
+          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
             if(d&&d.paid){paid=true;break}
             if(d&&d.status==="paid"){paid=true;break}
             paid=false;if(attempt<2)await new Promise(r=>setTimeout(r,2000))
           }catch(_){paid=false}
         }
+        if(signal.aborted)return
         if(paid===true){
           try{localStorage.setItem("sg_email",ctx.email||"")
             if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
@@ -11482,6 +11498,7 @@ export default function App(){
       }catch(_){}
     }
     run()
+    return()=>ac.abort()
   },[])
   // Handle ?payment_failed=1 → relance automatique (email retry link)
   // Le client revient ici depuis l'email de relance (ou après un retour 3DS échoué).
@@ -12628,16 +12645,19 @@ export default function App(){
   // "tous les scores à 73" bug). With it, the snap passed to computeScore
   // varies per beach, so ranking + label + reason actually differentiate.
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     Promise.all([
-      fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null),
+      fetch("/data/beaches-list.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/copernicus/sargassum.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/weather/beaches-weather.json",{signal}).then(r=>r.json()).catch(()=>null),
       // SIGNALEMENTS (local, rapide) DANS le fetch principal → les pins affichent leur VRAI statut
       // (escaladé par les signalements) dès le 1er rendu, au lieu de flasher vert→rouge/jaune.
       // app-reports.json = snapshot des reports IN-APP (le live Apps Script ~2,5 s reste en différé
       // pour la fraîcheur) ; fb-reports.json = signaux Facebook scrapés. On fusionne les deux.
-      fetch("/api/community/app-reports.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
+      fetch("/api/community/app-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/community/fb-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
       // Gating J+2→J+7 : si on a une credential (token widget / email payeur), on
       // récupère la prévision COMPLÈTE EN PARALLÈLE → merge AVANT l'interpolation
       // ci-dessous (sinon les plages interpolées n'auraient pas leurs J+2-6).
@@ -12647,6 +12667,7 @@ export default function App(){
       // puis le retry borné (1×, ci-dessous) le récupère hors chemin critique.
       Promise.race([fetchFullForecast(),new Promise(res=>setTimeout(()=>res(null),4000))])
     ]).then(([beachData,sargResult,beachWx,appReports,fbReports,fcFull])=>{
+      if(cancelled)return
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)
       // Merge prévision complète (premium/abonné/widget) dans sargResult.weekly
@@ -12835,6 +12856,7 @@ export default function App(){
       }
       setAllBeaches(beaches)
     })
+    return()=>{cancelled=true;ac.abort()}
   },[premiumTick]) // re-run sur upgrade premium (gating : récupère J+2-6 + ré-interpole)
 
   // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data.
@@ -12843,12 +12865,16 @@ export default function App(){
   // FB signals are pre-aggregated and gated by a ≥3-reports threshold in rankBeaches to
   // prevent single posts from moving the hero pick.
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     const t=setTimeout(()=>{
       Promise.all([
-        fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports").then(r=>r.json()).catch(()=>null),
-        fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
-        fetch("/api/community/fb-posts.json").then(r=>r.json()).catch(()=>null),
+        fetch(APPS_SCRIPT_URL+"?action=beach_reports",{signal}).then(r=>r.json()).catch(()=>null),
+        fetch("/api/community/fb-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
+        fetch("/api/community/fb-posts.json",{signal}).then(r=>r.json()).catch(()=>null),
       ]).then(([userData,fbData,fbPostsData])=>{
+        if(cancelled)return
         const merged={}
         const merge=(src)=>{
           if(!src?.reports)return
@@ -12867,37 +12893,40 @@ export default function App(){
         if(fbPostsData?.postsByBeach)setFbPosts(fbPostsData.postsByBeach)
       })
     },3000)
-    return()=>clearTimeout(t)
+    return()=>{cancelled=true;clearTimeout(t);ac.abort()}
   },[])
 
   // Fetch beaches-images.json — immédiat quand le Hero Verdict va s'afficher
   // (il a besoin de la photo), sinon différé (seulement utile à l'ouverture
   // d'une fiche).
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     const t=setTimeout(()=>{
-      fetch("/data/beaches-images.json")
-        .then(r=>r.json())
+      fetch("/data/beaches-images.json",{signal})
+        .then(r=>r.ok?r.json():null)
         .then(data=>{
-          if(data&&typeof data==="object")setImageMap(data)
+          if(!cancelled&&data&&typeof data==="object")setImageMap(data)
         })
         .catch(()=>{})
       // Score qualité photo (compute-photo-quality.cjs) — optionnel : le hero
       // fonctionne sans, il perd juste le départage « Beau ».
-      fetch("/data/beaches-images-quality.json")
-        .then(r=>r.json())
+      fetch("/data/beaches-images-quality.json",{signal})
+        .then(r=>r.ok?r.json():null)
         .then(data=>{
-          if(data&&typeof data==="object")setImageQ(data)
+          if(!cancelled&&data&&typeof data==="object")setImageQ(data)
         })
         .catch(()=>{})
       // Manifest des boucles vidéo hero — optionnel : sans lui, hero photo.
-      fetch("/videos/hero/manifest.json")
+      fetch("/videos/hero/manifest.json",{signal})
         .then(r=>r.ok?r.json():null)
         .then(m=>{
-          if(m&&Array.isArray(m.ids))setHeroVids(m.ids)
+          if(!cancelled&&m&&Array.isArray(m.ids))setHeroVids(m.ids)
         })
         .catch(()=>{})
     },showHero?0:1500)
-    return()=>clearTimeout(t)
+    return()=>{cancelled=true;clearTimeout(t);ac.abort()}
   },[])
 
   // Apply community reports overlay SEPARATELY — no re-fetch of sargassum.json
@@ -12924,13 +12953,15 @@ export default function App(){
 
   // Fetch history.json for trend chart — deferred (only needed in beach sheet)
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
     const t=setTimeout(()=>{
-      fetch("/api/copernicus/history.json")
+      fetch("/api/copernicus/history.json",{signal})
         .then(r=>r.json())
         .then(data=>{if(data?.history)setHistoryData(data.history)})
         .catch(()=>{})
     },2000)
-    return()=>clearTimeout(t)
+    return()=>{clearTimeout(t);ac.abort()}
   },[])
 
   // P6 — géoloc À LA DEMANDE (clic « Près de moi ») : c'est le rung #2 du molo_ladder
@@ -13429,7 +13460,7 @@ export default function App(){
     // dénominateur modal_open (cause directe de la fuite modal→CTA 2,2%) + modal
     // interruptif = anti-doctrine calme. Le mur ne s'ouvre PLUS que sur intention
     // CHAUDE (forecast-lock, CTA, dock Veilleur). Réversible (retirer ce return).
-    return // eslint-disable-line
+    return // eslint-disable-line -- intentional early return: wall disabled until warm intent
     if(isPremium)return
     if(g("sg_visit_count",0)<2)return
     try{if(sessionStorage.getItem("sg_eng_shown"))return}catch{}
@@ -13462,7 +13493,7 @@ export default function App(){
       // FLUIDITÉ : plus de splash 2s par défaut — on atterrit DIRECT sur la carte.
       // (?splash=1 pour le revoir.) La marque est déjà sur la carte elle-même.
       return false;
-      // eslint-disable-next-line no-unreachable
+      // eslint-disable-next-line no-unreachable -- dead code after return: kept for reference
       const path=window.location.pathname;
       if(!(path==="/"||path===""||path==="/index.html")) return false;
       if(sessionStorage.getItem("sg_splash_seen")) return false;
@@ -13534,7 +13565,7 @@ export default function App(){
   const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
   const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
   // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
-  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
 
   // Kiosk isolé : quand ?demo=1, on ne rend QUE la vitrine (aucun rendu de l'app
   // derrière → perf + zéro interférence funnel). Tous les hooks ci-dessus ont déjà

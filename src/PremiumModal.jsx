@@ -1458,55 +1458,48 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const molNumberRef=useRef(null)
   const molExpiryRef=useRef(null)
   const molCvcRef=useRef(null)
-  // Préchauffage COMPLET dès l'ouverture du paywall : SetupIntent + stripe.js
-  // + Elements + MOUNT du Payment Element dans l'overlay caché. Mesuré
-  // 2026-06-10 : stripe.js ~15s + boot de l'élément ~12s sur ce réseau — tout
-  // doit booter PENDANT la lecture du paywall, pas au clic. Un SetupIntent
-  // n'est pas lié au plan → un seul prewarm pour tout le modal.
+  // Préchauffage SCRIPT Mollie.js dès l'ouverture (avant affichage step paiement).
+  // Le MONTAGE des Components (mount) se fait dans un effet séparé qui dépend de payStep,
+  // car les refs (molNumberRef etc.) n'existent que quand le step paiement est rendu.
   useEffect(()=>{
     if(!PAYWALL_READY)return
-    payPrewarmPromiseRef.current=(async()=>{
-      if(PAY_CAPTURE_ONLY){payReadyRef.current=true;setPayReady(true);return} // capture : aucun form de paiement à monter
-      // ── Pont Mollie : monte les Components (carte on-site) au lieu du Payment
-      // Element Stripe. Pas de SetupIntent (le cardToken est créé au submit). ──
-      if(PAY_PROVIDER==="mollie"){
-        await loadMollieJs()
+    if(PAY_CAPTURE_ONLY){payReadyRef.current=true;setPayReady(true);return}
+    if(PAY_PROVIDER==="mollie"){
+      const p=loadMollieJs().then(()=>{
         const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
         mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
-        if(!payMountedRef.current&&molNumberRef.current){
-          // Composants INDIVIDUELS (titulaire/numéro/expiration/CVC) au lieu du composant
-          // "card" combiné : le combiné rendait ses propres libellés en sombre NON-stylable
-          // (illisible sur l'overlay) → on était forcé à une feuille blanche bolt-on. Ici on
-          // pose NOS libellés (clairs) hors iframe + texte saisi clair sur champs sombres
-          // → carte 100% dans le thème premium, zéro blanc. `styles` ne stylise QUE le texte
-          // DANS l'iframe ; le fond visible = nos divs sombres. createToken() (doSubscribe)
-          // collecte tous les composants montés sur l'instance → submit STRICTEMENT inchangé.
-          // backgroundColor SOLIDE (et non transparent) sur l'input DANS l'iframe : sans
-          // lui, l'autofill iOS/Safari peint le champ en BLANC (le nom auto-rempli ressortait
-          // sur fond blanc, illisible). Mollie ne supporte ni boxShadow ni :-webkit-autofill
-          // (cf. docs styling) → backgroundColor est le seul levier ; on le pose sur les 3
-          // états pour couvrir l'autofill quel que soit l'état de validation. Doit matcher
-          // MOL_FIELD (la div hôte, désormais solide #241837) pour zéro couture visible.
-          const _molBg="#241837"
-          const styles={base:{color:"#eef2f7",backgroundColor:_molBg,fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0",backgroundColor:_molBg},invalid:{color:"#FF8A66",backgroundColor:_molBg}}
-          const M=mollieRef.current
-          const holder=M.createComponent("cardHolder",{styles})
-          const number=M.createComponent("cardNumber",{styles})
-          const expiry=M.createComponent("expiryDate",{styles})
-          const cvc=M.createComponent("verificationCode",{styles})
-          holder.mount(molHolderRef.current)
-          number.mount(molNumberRef.current)
-          expiry.mount(molExpiryRef.current)
-          cvc.mount(molCvcRef.current)
-          mollieCardRef.current={holder,number,expiry,cvc} // réf agrégée (diagnostic/HMR)
-          payReadyRef.current=true;setPayReady(true)
-          payMountedRef.current=true
-        }
-        return
-      }
-      // PayPal : le bouton d'abo est monté par un effet dédié → AUCUN Payment Element
-      // Stripe (sinon l'ancien champ carte Stripe s'affichait en plus du bouton).
-      if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}
+        payReadyRef.current=true;setPayReady(true)
+      })
+      payPrewarmPromiseRef.current=p
+      return
+    }
+    if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}
+  },[PAYWALL_READY,PAY_CAPTURE_ONLY,PAY_PROVIDER,lang])
+
+  // MONTAGE des Components Mollie : ne s'exécute QUE quand payStep=true (refs disponibles)
+useEffect(()=>{
+    if(!payStep||PAY_CAPTURE_ONLY||PAY_PROVIDER!=="mollie"||payMountedRef.current)return
+    if(!mollieRef.current||!molNumberRef.current)return
+    const _molBg="#241837"
+    const styles={base:{color:"#eef2f7",backgroundColor:_molBg,fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0",backgroundColor:_molBg},invalid:{color:"#FF8A66",backgroundColor:_molBg}}
+    const M=mollieRef.current
+    const holder=M.createComponent("cardHolder",{styles})
+    const number=M.createComponent("cardNumber",{styles})
+    const expiry=M.createComponent("expiryDate",{styles})
+    const cvc=M.createComponent("verificationCode",{styles})
+    holder.mount(molHolderRef.current)
+    number.mount(molNumberRef.current)
+    expiry.mount(molExpiryRef.current)
+    cvc.mount(molCvcRef.current)
+    mollieCardRef.current={holder,number,expiry,cvc}
+    payMountedRef.current=true
+  },[payStep,lang])
+
+  // Stripe prewarm : charge SetupIntent + Elements + Payment Element DANS l'overlay caché
+  // (toujours rendu). Budget 20s : prewarm→ready→user clique→pas d'attente.
+  useEffect(()=>{
+    if(PAY_CAPTURE_ONLY||PAY_PROVIDER!=="stripe")return
+    const prewarm=async()=>{
       const[r]=await Promise.all([
         fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({action:"setup"})}),
@@ -1519,11 +1512,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       stripeRef.current=window.Stripe(STRIPE_PK)
       elementsRef.current=stripeRef.current.elements({
         clientSecret,
-        // locale = langue de l'UI du modal (et donc des labels + texte de mandat
-        // « En fournissant vos informations… » rendus PAR Stripe). Sans ça, défaut
-        // 'auto' → détection navigateur : un site EN/USD (Florida) ou ES (Riviera/
-        // Punta Cana) affichait les labels en FR pour un navigateur FR. `lang` suit
-        // déjà la région (primaryLang) + override path /en /es → MQ/GP restent en FR.
         locale:lang,
         appearance:{theme:"night",variables:{
           colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
@@ -1532,15 +1520,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       })
       // Pré-mount dans l'overlay caché (toujours rendu) — ready pendant la lecture
       if(!payMountedRef.current&&payDivRef.current){
-        // Friction minimale : le champ telephone venait de l'enrolement Link —
-        // Link retire du SetupIntent (card only) = plus de telephone. NE PAS
-        // ajouter fields.billingDetails.phone:never ici : teste 2026-06-10, le
-        // Payment Element ne boote plus (ready ne fire jamais) avec cette option.
-        // business.name : sans lui le mandat Stripe affiche « you allow PAY to
-        // charge your card » — entité sans nom à l'instant exact de la décision
-        // (audit checkout 2026-06-11). defaultValues.country : le fallback était
-        // « Martinique » (pays du compte) sur les sites USD — chaque visiteur US
-        // devait corriger + signal site étranger. EUR : comportement inchangé.
         const brandName=IS_NEW_REGION
           ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))
           :"Sargasses Martinique"
@@ -1560,8 +1539,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         }catch(_){/* wallets indisponibles : la carte suffit */}
         payMountedRef.current=true
       }
-    })()
-    payPrewarmPromiseRef.current.catch(()=>{}) // l'échec est géré au clic (fallback)
+    }
+    payPrewarmPromiseRef.current=prewarm()
+    payPrewarmPromiseRef.current.catch(()=>{})
   },[])
   // Keyboard: Escape ferme, Enter = payer (si payStep et pas busy)
   useEffect(()=>{
@@ -1801,7 +1781,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // même confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).
   // Wallet via REDIRECT Mollie (checkout hébergé) — fallback universel : Google Pay, ou
   // Apple Pay quand l'intégration directe n'est pas dispo / domaine pas encore validé.
-  const walletRedirect=useCallback(async(method)=>{
+const walletRedirect=useCallback(async(method)=>{
     const _pc=passCtxRef.current
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
     const plan=payPlanRef.current
@@ -1810,8 +1790,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
-        ?{action:"create_payment",...(method!=="googlepay"&&{paymentMethod:method}),pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-        :{action:"create_subscription",...(method!=="googlepay"&&{paymentMethod:method}),plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+        ?{action:"create_payment",paymentMethod:method,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
+        :{action:"create_subscription",paymentMethod:method,plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId))throw new Error(d.error||"payment failed")
@@ -1822,22 +1802,22 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
          setPayRedirecting(true)
          window.location.href=d.checkoutUrl;return
        }
-      const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-      const cd=await cr.json().catch(()=>({}))
-      if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-      if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
-      else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
-      setPayBusy(false)
-      setPaySuccess(true)
-      setTimeout(()=>{onActivated?.();onClose()},900)
-    }catch(e){
-      setPayBusy(false)
-      const msg=(e&&e.message)?String(e.message):""
-      setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
-      try{setPayStep(true)}catch(_){}
-      track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
-    }
-  },[lang,source,onActivated,onClose])
+       const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+       const cd=await cr.json().catch(()=>({}))
+       if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+       if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
+       else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
+       setPayBusy(false)
+       setPaySuccess(true)
+       setTimeout(()=>{onActivated?.();onClose()},900)
+     }catch(e){
+       setPayBusy(false)
+       const msg=(e&&e.message)?String(e.message):""
+       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
+       try{setPayStep(true)}catch(_){}
+       track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
+     }
+   },[lang,source,onActivated,onClose])
   // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()
   // DOIVENT être synchrones dans le geste utilisateur (sinon Safari refuse la feuille).
   const payWithWallet=useCallback((method)=>{
