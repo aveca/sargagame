@@ -119,11 +119,16 @@ await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
-// ── 3. Paywall : forcer le deep-link produit ?paywall=1 (chemin déterministe).
+// ── 3. Paywall : déclencher directement via openPremium (bypass deep-link + useEffect lent).
 //       Détection multi-skins : .pww-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
-await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
-// Attendre que le paywall soit visible — chunk lazy lent en CI (53 Ko gzip), timeout très long
+await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
+// Attendre que l'app soit montée puis déclencher le paywall via openPremium
+await p.waitForFunction(() => !!window.openPremium, { timeout: 15000 }).catch(() => {});
+await p.evaluate(() => {
+  try { window.openPremium?.('deeplink'); } catch (_) {}
+});
+// Attendre que le paywall soit visible — chunk lazy lent en CI (53 Ko gzip)
 await p.waitForFunction(
   (sel) => {
     const el = document.querySelector(sel);
