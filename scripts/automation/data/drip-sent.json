@@ -2553,16 +2553,23 @@
   "e0fd5e833b5959a8cec3bfa45435ee7f": {
     "j3": "2026-07-30T02:26:47.088Z"
   },
-  "e53edce28c77623128d77bbd734b440e": {},
-  "8d67833f75a1272d4b1b598bc7cee9f2": {},
+  "e53edce28c77623128d77bbd734b440e": {
+    "j3": "2026-07-30T19:30:30.976Z"
+  },
+  "8d67833f75a1272d4b1b598bc7cee9f2": {
+    "j3": "2026-07-30T19:30:33.280Z"
+  },
   "a493d1109f8f7e5b0e098a3e0cebef46": {
     "daily_last": "2026-07-30",
     "daily_sig": "Macao Beach|clean|74|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-30"
+    "install_nudge_last": "2026-07-30",
+    "j3": "2026-07-30T19:30:35.229Z"
   },
-  "12bb617c4ac570a0110d15ded2821475": {},
+  "12bb617c4ac570a0110d15ded2821475": {
+    "j3": "2026-07-30T19:30:37.508Z"
+  },
   "000c63e348d3aac02fa9df25d65a8a39": {},
   "f2ce5c7562b83c6f9aaa36cc32e820d2": {
     "daily_last": "2026-07-30",
@@ -2602,5 +2609,6 @@
   "9da18b89b4a74d4ff5765d4de9d26e58": {},
   "1466fd25f55b0fddacc5a7877407728a": {},
   "70d9cc5fa4e3266520a308d71035b1ab": {},
-  "1daef1d0f9eefab3af9ba677efc15af0": {}
+  "1daef1d0f9eefab3af9ba677efc15af0": {},
+  "702806e2dbadca74c3e1a3d81dd29121": {}
 }
