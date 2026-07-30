@@ -119,11 +119,13 @@ const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargass
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
-  componentDidCatch(e){sgLogError("errbound",e);try{this.props.onError&&this.props.onError(e)}catch(_){}}
+  componentDidCatch(e){
+    try{sgLogError("errbound",e)}catch(_){}
+    try{this.props.onError&&this.props.onError(e)}catch(_){}
+  }
   render(){
     if(this.state.err){
       if(this.props.fallback!==undefined)return this.props.fallback
-      // FIX : fallback friendly au lieu de <pre> stack trace en prod
       return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",minHeight:120,padding:16,textAlign:"center",fontFamily:"system-ui,sans-serif",fontSize:14,color:"rgba(255,255,255,.6)"}},
         React.createElement("span",null,"Une erreur s'est produite. Réessayez ou rafraîchissez la page."))
     }
@@ -963,11 +965,19 @@ try{if(typeof window!=="undefined"){window.sgToast=sgToast;window.sgDismissToast
 // pour les flux critiques (paiement, webhook, referral). Loggue en prod
 // sans casser le flow utilisateur. Rollback : supprimer les appels.
 const sgLogError=(ctx,err)=>{try{
-  const msg=err&&err.message?err.message:String(err)
+  let msg=""; try{ msg=err&&err.message?err.message:String(err) }catch(_){ msg="[unserializable error]" }
   console.error("[sg]",ctx,msg)
   // Optionnel : envoyer à un service d'erreur si disponible
   // if(window.sgErrorReporter)window.sgErrorReporter(ctx,err)
 }catch(_){}}
+
+// Global error handlers for unhandled rejections/exceptions
+try{
+  if(typeof window!=="undefined"){
+    window.addEventListener("unhandledrejection",e=>{try{sgLogError("unhandledrejection",e.reason)}catch(_){e.preventDefault()}})
+    window.addEventListener("error",e=>{try{sgLogError("window_error",e.error||e.message)}catch(_){}})
+  }
+}catch(_){}
 
 // ── PRNG DÉTERMINISTE (BeachScene v2, spec wdiiae0wd) — une plage = TOUJOURS la même
 //    scène (seed depuis beach.id). FNV-1a 32-bit + mulberry32. JAMAIS Math.random/Date.now
