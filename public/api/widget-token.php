@@ -10,6 +10,9 @@
  *
  * Le secret est DÉRIVÉ du webhook_secret (jamais la clé Stripe brute), stable, jamais exposé.
  * Le jeton encode {h:host, exp:timestamp} → non forgeable sans le secret, expirable.
+ *
+ * RÉVOCATION : si le token encode subscription_id ET que mol_b2b_is_revoked() retourne
+ * true, le verify retourne false. Couvre subscription.canceled/expired → token désactivé.
  */
 function sg_widget_secret() {
     $cfg = @include __DIR__ . '/stripe-config.php';
@@ -40,6 +43,16 @@ function sg_widget_verify($k) {
     $d = json_decode(sg_widget_b64url_dec($parts[0]), true);
     if (!is_array($d)) return false;
     if (!empty($d['exp']) && (int)$d['exp'] < time()) return false;
+    // Vérification révocation Mollie (lazy include, file-based, peut être absent sur dev)
+    if (!empty($d['subscription_id']) && !empty($d['type']) && $d['type'] === 'b2b_pro') {
+        $molLib = __DIR__ . '/mollie-lib.php';
+        if (file_exists($molLib)) {
+            @require_once $molLib;
+            if (function_exists('mol_b2b_is_revoked') && mol_b2b_is_revoked((string)$d['subscription_id'])) {
+                return false;
+            }
+        }
+    }
     return $d;
 }
 

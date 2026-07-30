@@ -269,6 +269,13 @@ try {
     if ($action === 'applepay_session') {
         $validationUrl = $data['validationUrl'] ?? '';
         if (!$validationUrl) throw new Exception('validationUrl requis');
+        // Mollie exige que validationURL provienne d'Apple (apple.com domain).
+        // Whitelist stricte pour éviter qu'un client forge une URL et fasse valider
+        // un domaine arbitraire par Mollie via notre backend (anti-abus).
+        if (!preg_match('#^https://(apple|cdn-apple|guzzoni).*\.apple\.com/#i', $validationUrl)) {
+            error_log("[mollie.php] applepay_session rejected validationUrl=$validationUrl");
+            throw new Exception('validationUrl doit provenir d\'apple.com');
+        }
         $domain = $data['domain'] ?? ($_SERVER['HTTP_HOST'] ?? '');
         $session = $mollie->applePay->sessions->create([
             'validationUrl' => $validationUrl,

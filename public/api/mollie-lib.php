@@ -194,14 +194,18 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 
 /**
  * Revoke Pro token for a subscription (called on cancellation/expiration)
+ * Supprime le grant (le token ne peut plus être validé via sg_widget_verify).
  */
 function mol_b2b_revoke(string $subscriptionId): void {
     $grantKey = 'mollie_grant_' . $subscriptionId;
     $revokeKey = 'mollie_revoked_' . $subscriptionId;
     set_transient($revokeKey, '1', 365 * 86400); // mark revoked for 1 year
-    // Remove the grant transient (token no longer valid)
-    $file = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
-    if (file_exists($file)) @unlink($file);
+    // Supprime le grant transient en double : clé normale + variante md5
+    $fileGrant = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
+    $fileGrantMd5 = sys_get_temp_dir() . '/mollie_transient_' . md5('mollie_grant_' . $subscriptionId);
+    foreach ([$fileGrant, $fileGrantMd5] as $f) {
+        if (file_exists($f)) @unlink($f);
+    }
     error_log("[mol_b2b_revoke] revoked sub=$subscriptionId");
 }
 
