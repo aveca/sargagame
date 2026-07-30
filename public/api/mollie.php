@@ -188,7 +188,6 @@ try {
         }
 
         $subscriptionData = [
-            'customerId' => $customer->id,
             'amount' => ['value' => number_format($plan['amount'], 2, '.', ''), 'currency' => $plan['currency']],
             'description' => $plan['description'],
             'webhookUrl' => $webhookUrl,
@@ -196,10 +195,7 @@ try {
             'mandateId' => $data['mandateId'] ?? null,
             'interval' => $plan['interval'] ?? '1 month',
         ];
-
-        if ($hosted) {
-            $subscriptionData['redirectUrl'] = $redirectUrl;
-        }
+        // Note: redirectUrl not supported for customer subscriptions endpoint
 
         if ($paymentMethod) {
             $subscriptionData['method'] = $paymentMethod;

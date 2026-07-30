@@ -1990,7 +1990,7 @@ export const CSS=`
 .lc-gomap-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
 .lc-gomap-tx b{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);letter-spacing:.3px}
 .lc-gomap-tx small{font-weight:800;font-size:11.5px;color:#eaf7ff;margin-top:2px}
-.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:34px;height:34px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:44px;height:44px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
 .lc-streak{flex:0 0 auto;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:4px 10px;
   box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:1}
 .lc-streak .lc-fire{font-size:15px}
@@ -2095,7 +2095,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 var(--ink)}}
 .lc-detail-name,.lc-pack-lbl{animation:lc-chroma 1.6s steps(3) infinite alternate}
 .lc-reduce .lc-detail-name,.lc-reduce .lc-pack-lbl{animation:none}
-.lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:42px;height:42px;border-radius:50%;
+.lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:44px;height:44px;border-radius:50%;
   -webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
@@ -2458,7 +2458,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
-.lc-badge-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+.lc-badge-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-badge-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:16px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
@@ -2535,7 +2535,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
    z-index 1140 < badges 1150 < détail 1200 < levelup 1250.
    --paper / --ink / ombres dures ; Anton titre, Comic Neue corps.
    ==================================================================== */
-.lc-bells{position:relative;flex:0 0 auto;width:38px;height:38px;cursor:pointer;-webkit-appearance:none;appearance:none;
+.lc-bells{position:relative;flex:0 0 auto;width:44px;height:44px;cursor:pointer;-webkit-appearance:none;appearance:none;
   background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink);
   display:grid;place-items:center;forced-color-adjust:none;transition:transform .08s}
 .lc-bells:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
@@ -2545,7 +2545,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   background:var(--red);border:2px solid var(--ink);border-radius:11px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-root .lc-bells{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
 /* MON ESPACE (#10) — bouton header + sheet */
-.lc-spacebtn{flex:0 0 auto;width:38px;height:38px;margin-left:4px;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:18px;line-height:1;
+.lc-spacebtn{flex:0 0 auto;width:44px;height:44px;margin-left:4px;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:18px;line-height:1;
   display:flex;align-items:center;justify-content:center;background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
 .lc-spacebtn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
 .lc-root .lc-spacebtn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
@@ -2580,7 +2580,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-alerts-modal{position:relative;width:100%;max-width:440px;margin:auto 0;
   background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
-.lc-alerts-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+.lc-alerts-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-alerts-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:18px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}

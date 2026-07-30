@@ -119,8 +119,16 @@ const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargass
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
-  componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack);try{this.props.onError&&this.props.onError(e)}catch(_){}}
-  render(){if(this.state.err)return this.props.fallback!==undefined?this.props.fallback:React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
+  componentDidCatch(e){sgLogError("errbound",e);try{this.props.onError&&this.props.onError(e)}catch(_){}}
+  render(){
+    if(this.state.err){
+      if(this.props.fallback!==undefined)return this.props.fallback
+      // FIX : fallback friendly au lieu de <pre> stack trace en prod
+      return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",minHeight:120,padding:16,textAlign:"center",fontFamily:"system-ui,sans-serif",fontSize:14,color:"rgba(255,255,255,.6)"}},
+        React.createElement("span",null,"Une erreur s'est produite. Réessayez ou rafraîchissez la page."))
+    }
+    return this.props.children
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -536,9 +544,15 @@ export function Veilleur({mood="serein",size=44,interactive=true}){
   const svgRef=useRef(null)
   
   // Track cursor for eye following
+  // FIX : throttle à 16ms (~60fps) — avant, chaque mousemove déclenchait un setState
+  // → N Veilleurs mounted = N × 60 setState/sec = jank
   useEffect(()=>{
     if(!interactive)return
+    let last=0
     const handleMouseMove=(e)=>{
+      const now=Date.now()
+      if(now-last<16)return
+      last=now
       if(!svgRef.current)return
       const rect=svgRef.current.getBoundingClientRect()
       const centerX=rect.left+rect.width/2
@@ -951,6 +965,16 @@ function SgToastHost({lang="fr"}){
 // API canonique exposée (QA + call-sites éventuels hors composant), comme sgArchetypeOf/sgHasUnlock.
 try{if(typeof window!=="undefined"){window.sgToast=sgToast;window.sgDismissToast=sgDismissToast}}catch(_){}
 
+// ── Error logging minimal (P0-2) : remplace les .catch(()=>{}) silencieux
+// pour les flux critiques (paiement, webhook, referral). Loggue en prod
+// sans casser le flow utilisateur. Rollback : supprimer les appels.
+const sgLogError=(ctx,err)=>{try{
+  const msg=err&&err.message?err.message:String(err)
+  console.error("[sg]",ctx,msg)
+  // Optionnel : envoyer à un service d'erreur si disponible
+  // if(window.sgErrorReporter)window.sgErrorReporter(ctx,err)
+}catch(_){}}
+
 // ── PRNG DÉTERMINISTE (BeachScene v2, spec wdiiae0wd) — une plage = TOUJOURS la même
 //    scène (seed depuis beach.id). FNV-1a 32-bit + mulberry32. JAMAIS Math.random/Date.now
 //    (sinon la scène se re-randomise à chaque render + casse SSR). Tirages dans un ordre fixe.
@@ -1109,28 +1133,43 @@ function BeachScene({beach,reveal}){
   const showRafts=beach&&(beach.status==="moderate"||beach.status==="avoid")
   
   // Particules dynamiques (Wow Effect 5) — vie subtile selon le statut
+  // FIX : seed PRNG déterministe au lieu de Math.random() (interdit par convention)
   const particleCount=beach?.status==="clean"?8:beach?.status==="moderate"?12:16
-  const particles=useMemo(()=>Array.from({length:particleCount},(_,i)=>({
+  const particles=useMemo(()=>{let s=beach?.id?beach.id.split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0):42
+    const rng=()=>{s^=s<<13;s^=s>>17;s^=s<<5;return((s>>>0)%1000)/1000}
+    return Array.from({length:particleCount},(_,i)=>({
     id:i,
-    x:Math.random()*800,
-    y:340+Math.random()*80,
-    size:2+Math.random()*3,
-    speed:0.3+Math.random()*0.5,
-    phase:Math.random()*Math.PI*2,
+    x:rng()*800,
+    y:340+rng()*80,
+    size:2+rng()*3,
+    speed:0.3+rng()*0.5,
+    phase:rng()*Math.PI*2,
     color:beach?.status==="clean"?"rgba(255,255,255,0.4)":beach?.status==="moderate"?"rgba(122,92,20,0.3)":"rgba(93,64,14,0.35)"
-  })),[beach?.status,particleCount])
+  }))},[beach?.status,particleCount,beach?.id])
   
   // Animation frame pour les particules
-  const [frame,setFrame]=useState(0)
+  // FIX : IntersectionObserver gating — pause la boucle rAF hors viewport (battery mobile)
+  // + reduced-motion check pour respecter la préférence utilisateur
+  const containerRef=useRef(null)
+  const[visible,setVisible]=useState(false)
   useEffect(()=>{
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return
+    }catch(_){}
+    const el=containerRef.current
+    if(!el)return
+    const io=new IntersectionObserver(([e])=>setVisible(e.isIntersecting),{threshold:0.05})
+    io.observe(el)
+    return()=>io.disconnect()
+  },[])
+  const[frame,setFrame]=useState(0)
+  useEffect(()=>{
+    if(!visible)return
     let raf
-    const animate=()=>{
-      setFrame(f=>(f+1)%360)
-      raf=requestAnimationFrame(animate)
-    }
+    const animate=()=>{setFrame(f=>(f+1)%360);raf=requestAnimationFrame(animate)}
     raf=requestAnimationFrame(animate)
     return()=>cancelAnimationFrame(raf)
-  },[])
+  },[visible])
   // palmier paramétrique seedé : tronc courbe + couronne de frondes en éventail
   const palm=(p,i)=>{const bx=p.x,by=556,h=118*p.s,tx=bx+p.tilt*3.2,ty=by-h
     const trunk="M"+bx+" "+by+" Q"+Math.round(bx+(tx-bx)*0.45)+" "+Math.round(by-h*0.55)+" "+Math.round(tx)+" "+Math.round(ty)
@@ -1141,7 +1180,7 @@ function BeachScene({beach,reveal}){
       fr.push("M"+Math.round(tx)+" "+Math.round(ty)+" Q"+mx+" "+my+" "+ex+" "+ey)}
     return(<g key={i}><path d={trunk} stroke={t.trunk} strokeWidth={Math.max(5,12*p.s)} fill="none" strokeLinecap="round"/><g fill="none" stroke={t.frond} strokeWidth={Math.max(4,8*p.s)} strokeLinecap="round">{fr.map((d,j)=>(<path key={j} d={d}/>))}</g></g>)}
   return(
-    <div aria-hidden="true" className={reveal?"bsc-reveal":undefined} style={{position:"absolute",inset:0}}>
+    <div ref={containerRef} aria-hidden="true" className={reveal?"bsc-reveal":undefined} style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
         {/* CALME (INCRÉMENT 0 spec wdiiae0wd) : au repos la scène est un TABLEAU. On tue les 11
             boucles idle (glit/raft/rake/net/swim/bird/shim/sat/beam/rays/moonp) — éléments figés à
@@ -11329,7 +11368,7 @@ export default function App(){
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(()=>{})}catch(ex){}
+          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
         }
         // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
         // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
@@ -11665,7 +11704,7 @@ export default function App(){
   // paywall) charge toujours Stripe.js au besoin — zéro impact checkout.
   useEffect(()=>{
     if(PAY_PROVIDER!=="stripe")return
-    const t=setTimeout(()=>{loadStripeJs().catch(()=>{})},3000)
+    const t=setTimeout(()=>{loadStripeJs().catch(e=>sgLogError("stripe_js_load",e))},3000)
     return()=>clearTimeout(t)
   },[])
 
@@ -11910,7 +11949,7 @@ export default function App(){
             try{setIsPremium(true)}catch(_){}
             track("sg_referral_reward_claimed",{days})
             try{sgToast({tone:"success",title:_t(lang,"Merci d'avoir partagé 🌊","Thanks for sharing 🌊","Gracias por compartir 🌊"),msg:_t(lang,`Un filleul a pris un pass — +${days} jours de Veilleur pour toi.`,`A friend got a pass — +${days} Watchman days for you.`,`Un amigo tomó un pase — +${days} días de Vigía para ti.`)})}catch(_){}
-          }).catch(()=>{})
+          }).catch(e=>sgLogError("referral_claim",e))
       },2500)
       return()=>clearTimeout(t)
     }catch(_){}
@@ -12285,11 +12324,15 @@ export default function App(){
   },[])
   // Sortie ANIMÉE du hero (audit fluidité 2026-06-11 : le cut brut en 20ms était
   // LE moment « pas fluide » de la 1re impression) : fondu+scale 300ms puis démontage.
+  // FIX clics successifs : setShowHero(false) IMMÉDIAT (libère le renderspace pour le
+  // prochain écran). L'animation de sortie est portée par heroExiting (300ms timeout),
+  // pas par showHero — le hero n'est plus rendu mais heroExiting garde l'opacité 0→1.
   const[heroExiting,setHeroExiting]=useState(false)
   const dismissHero=useCallback(action=>{
     try{sessionStorage.setItem("sg_hero_seen","1")}catch(_){}
     setHeroExiting(true)
-    setTimeout(()=>{setShowHero(false);setHeroExiting(false)},300)
+    setShowHero(false)
+    setTimeout(()=>setHeroExiting(false),300)
     track("sg_hero_dismiss",{action})
   },[])
   // Plage du hero : la plus proche PROPRE si géoloc déjà accordée, sinon le
@@ -13125,9 +13168,11 @@ export default function App(){
   // "Next beach" suggestion state — drives browse loop after sheet close
   const[nextSuggestion,setNextSuggestion]=useState(null)
   const nextSuggestTimer=useRef(null)
+  const lastMapClickRef=useRef(0) // FIX : debounce anti-spam clics rapides carte
 
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
+    setComicBeach(null) // FIX : fermer le comic detail si ouvert — mutual exclusion
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
     // Wow Effect 3: celebration when finding a clean beach
     if(b.status==="clean")triggerCelebration("clean_beach")
@@ -13153,6 +13198,7 @@ export default function App(){
   const [comicBeach,setComicBeach]=useState(null)
   const openComicBeach=useCallback(b=>{
     if(!b||!b.id)return
+    setSelectedBeach(null) // FIX : fermer la fiche data si ouverte — mutual exclusion
     setComicBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_map"})
     // Wow Effect 3: celebration when finding a clean beach
     if(b.status==="clean")triggerCelebration("clean_beach")
@@ -13163,8 +13209,19 @@ export default function App(){
   // Map tooltip state — « Tape une plage » hint, shown once per session
   const [mapTipDismissed,setMapTipDismissed]=useState(()=>{try{return sessionStorage.getItem("sg_map_tip")==="1"}catch(_){return true}})
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
-  const onMapBeach=useCallback(b=>{ if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
-    if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
+  // FIX clics successifs : fermer TOUS les overlays avant d'ouvrir le détail — évite le
+  // chevauchement hero+comic, discovery+beach, etc. quand l'utilisateur tape rapidement.
+  // + debounce 350ms anti-spam pour ignorer les doubles-taps accidentels.
+  const onMapBeach=useCallback(b=>{
+    const now=Date.now()
+    if(now-lastMapClickRef.current<350)return
+    lastMapClickRef.current=now
+    if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
+    setShowHero(false);setHeroExiting(false)
+    setShowDiscovery(false);setShowSolutions(false);setShowWorld(false)
+    setShowArchipel(false);setShowChat(false);setShowVeille(false)
+    if(mapDetail)openComicBeach(b); else onBeachClick(b)
+  },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
   // ⭐ Aperçu vendeur B2B ANCRÉ (grief fondateur 2026-07-02 : la démo ne s'affichait ni
   // au bon endroit sur la carte, ni sur la fiche). Depuis /pro/espace/, le lien « Voir
   // l'aperçu dans l'app » porte ?preview_beach=<id data|app> → on résout LA plage de
@@ -13423,6 +13480,12 @@ export default function App(){
       return false;
     }catch(_){ return false; }
   });
+
+  // GDPR Cookie Consent — banner affiché si pas de choix enregistré.
+  // GA4 consent par défaut DENIED (index.html) ; l'acceptation grant analytics_storage.
+  const[cookieConsent,setCookieConsent]=useState(()=>{
+    try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
+  })
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
   // Marché de l'onboarding : Martinique → null (chaînes legacy intactes). GP + régions
   // internationales recevaient « Martinique » sur le 1er écran (bug cohérence corrigé).
@@ -14536,6 +14599,46 @@ export default function App(){
         <SgToastHost lang={lang}/>
         {/* Success celebrations — confettis dorés (Wow Effect 3) */}
         <SuccessCelebration/>
+
+        {/* GDPR Cookie Consent Banner — affiché si pas de choix enregistré.
+            Accepter → grant analytics_storage via gtag consent update.
+            Refuser → analytics reste denied (comportement par défaut index.html).
+            Rollback ?cookiebanner=0. */}
+        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
+          <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1600,
+            background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
+            borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
+            display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
+            <div style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,.72)"}}>
+              {_t(lang,
+                "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
+                "We use cookies to improve experience and measure analytics. You can accept or decline.",
+                "Usamos cookies para mejorar la experiencia y medir la audiencia. Puedes aceptar o rechazar.")}
+              {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
+                style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
+            </div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              <button onClick={()=>{
+                try{localStorage.setItem("sg_cookie_consent","accepted")}catch(_){}
+                setCookieConsent("accepted")
+                try{if(window.gtag)gtag('consent','update',{analytics_storage:'granted'})}catch(_){}
+                try{track("sg_cookie_accept",{island})}catch(_){}
+              }} style={{flex:"1 1 140px",background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:10,
+                padding:"12px 16px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",
+                boxShadow:"2px 2px 0 rgba(0,0,0,.35)",minHeight:44}}>
+                {_t(lang,"Accepter","Accept","Aceptar")}
+              </button>
+              <button onClick={()=>{
+                try{localStorage.setItem("sg_cookie_consent","denied")}catch(_){}
+                setCookieConsent("denied")
+                try{track("sg_cookie_deny",{island})}catch(_){}
+              }} style={{flex:"1 1 140px",background:"transparent",color:"rgba(255,255,255,.6)",border:"1.5px solid rgba(255,255,255,.2)",borderRadius:10,
+                padding:"12px 16px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit",minHeight:44}}>
+                {_t(lang,"Refuser","Decline","Rechazar")}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </LangCtx.Provider>
   )

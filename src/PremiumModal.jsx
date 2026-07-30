@@ -17,6 +17,32 @@ import {
   track, walletAvail
 } from "./Sargasses_PROD.jsx"
 
+// Simple media query hook (no deps)
+function useMediaQuery(query){
+  const [matches, setMatches] = useState(false)
+  useEffect(()=>{
+    if(typeof window==="undefined") return
+    const mq = window.matchMedia(query)
+    setMatches(mq.matches)
+    const handler = (e)=>setMatches(e.matches)
+    mq.addEventListener?.("change", handler)
+    return ()=>mq.removeEventListener?.("change", handler)
+  },[query])
+  return matches
+}
+
+// CompareRow for Gratuit vs Premium table
+const CompareRow=({label,free,pro})=>(
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",alignItems:"center",borderTop:"1px solid rgba(255,255,255,.04)",padding:"7px 4px",gap:4}}>
+    <div style={{color:"rgba(255,255,255,.5)",fontSize:12}}>{label}</div>
+    <div style={{textAlign:"center",color:free?"#22C55E":"#E8522A",fontSize:14}}>{free?"✓":"✗"}</div>
+    <div style={{textAlign:"center",color:pro?"#22C55E":"#E8522A",fontSize:14}}>{pro?"✓":"✗"}</div>
+  </div>
+)
+
+// Skeleton during prewarm
+const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"column",gap:16}}>{[1,2,3].map(i=>(<div key={i} style={{height:18,borderRadius:6,background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}{[1,2].map(i=>(<div key={i} style={{height:52,borderRadius:12,background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}</div>)
+
 // Route de la page « fiabilité » selon région/langue (miroir de reliabilityHref
 // dans Sargasses_PROD.jsx, non exporté) : MQ/GP → /fiabilite/, régions US → EN/ES.
 const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
@@ -1159,6 +1185,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
     </div>
   </>)
 }
+
+
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
   // Capture B2B (hôtels/collectivités) — porte discrète vers le drip B2B existant.
@@ -1389,6 +1417,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
   const[payError,setPayError]=useState("")
+  const[payRedirecting,setPayRedirecting]=useState(false)
+  const[paySuccess,setPaySuccess]=useState(false)
+  // Copy variant A/B
+  const copyVariant = (()=>{try{const q=window.location.search;if(/[?&]pwcopy=/.test(q))return q.match(/pwcopy=([^&]+)/)[1];return abVariant("pw_copy",["urgency","value","trust"],[.33,.34,.33])}catch(_){return "value"}})()
+  // Error messages actionables
+  const errorMsg = (code)=>({
+    card_declined: _t(lang,"Votre banque a refusé le paiement. Essayez une autre carte ou contactez-la.","Your bank declined the payment. Try another card or contact them.","Tu banco rechazó el pago. Prueba otra tarjeta o contacta con ellos."),
+    insufficient_funds: _t(lang,"Fonds insuffisants. Vérifiez votre solde ou changez de carte.","Insufficient funds. Check your balance or use another card.","Fondos insuficientes. Verifica tu saldo o usa otra tarjeta."),
+    expired_card: _t(lang,"Cette carte a expiré. Utilisez une carte valide.","This card has expired. Use a valid card.","Esta tarjeta ha caducado. Usa una tarjeta válida."),
+    generic: _t(lang,"Un souci technique. Réessayez dans 30s ou changez de moyen de paiement.","Technical issue. Retry in 30s or change payment method.","Un problema técnico. Reintenta en 30s o cambia de método de pago.")
+  }[code] || _t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
   // Consentement RGPD/rétractation (renonciation au droit de rétractation 14 j contre
   // fourniture immédiate, art. L221-28 13° C. conso). Case NON pré-cochée sur le chemin
   // Pass B2C. DORMANTE par défaut : #250 a retenu le consentement IMPLICITE (« en validant
@@ -1524,6 +1563,33 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     })()
     payPrewarmPromiseRef.current.catch(()=>{}) // l'échec est géré au clic (fallback)
   },[])
+  // Keyboard: Escape ferme, Enter = payer (si payStep et pas busy)
+  useEffect(()=>{
+    const handleKey=(e)=>{
+      if(e.key==="Escape") onClose()
+      if(e.key==="Enter" && payStep && !payBusy && !payRedirecting) doSubscribe()
+    }
+    document.addEventListener("keydown", handleKey)
+    return ()=>document.removeEventListener("keydown", handleKey)
+  },[payStep, payBusy, payRedirecting, onClose, doSubscribe])
+  // Reduced motion media query
+  const [reduceMotion, setReduceMotion] = useState(false)
+  useEffect(()=>{
+    if(typeof window==="undefined") return
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setReduceMotion(mq.matches)
+    const handler = (e)=>setReduceMotion(e.matches)
+    mq.addEventListener?.("change", handler)
+    return ()=>mq.removeEventListener?.("change", handler)
+  },[])
+  // Email preview date (expires in 7 days for pass, or trial end)
+  useEffect(()=>{
+    const dateEl = document.getElementById("sg-email-preview-date")
+    if(dateEl){
+      const exp = passCtxRef.current ? Date.now() + (passCtxRef.current.days||7)*86400000 : Date.now() + 7*86400000
+      dateEl.textContent = new Date(exp).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
+    }
+  },[lang, passCtxRef.current])
   // ── Pont PayPal : rend le bouton d'abo quand l'écran paiement s'ouvre (abo only ;
   // les passes restent en capture). createSubscription(plan_id) → popup PayPal →
   // onApprove pose sg_premium + confirme côté serveur (forward Apps Script). ───────
@@ -1651,7 +1717,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         localStorage.setItem("sg_email",email)
         if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
         else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
-        setPayBusy(false);onActivated?.();onClose();return
+        setPayBusy(false)
+        setPaySuccess(true)
+        setTimeout(()=>{onActivated?.();onClose()},900);return
       }catch(e){
         setPayBusy(false)
         const msg=(e&&e.message)?String(e.message):""
@@ -1750,6 +1818,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
        track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
        if(d.checkoutUrl){
          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+         // État "Redirection…" visible avant de quitter la page
+         setPayRedirecting(true)
          window.location.href=d.checkoutUrl;return
        }
       const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
@@ -1757,7 +1827,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
       if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
       else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
-      setPayBusy(false);onActivated?.();onClose()
+      setPayBusy(false)
+      setPaySuccess(true)
+      setTimeout(()=>{onActivated?.();onClose()},900)
     }catch(e){
       setPayBusy(false)
       const msg=(e&&e.message)?String(e.message):""
@@ -1771,26 +1843,25 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payWithWallet=useCallback((method)=>{
     if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
     const _pc=passCtxRef.current
-    // Même garde de consentement que le bouton carte sur le chemin Pass B2C.
     if(consentFlag&&_pc&&!consentOk){
       setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
       return
     }
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
     const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
-    if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
+    if(!_pc&&!emailOk){
       setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
       try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
       return
     }
     // ── Apple Pay ON-SITE (direct) : feuille NATIVE sur notre page, zéro redirect ──
+    // Nécessite domaine validé chez Apple + Mollie. Si pas validé → fallback hosted.
+    const applePayDomainReady = typeof window !== "undefined" && window.__SG_APPLEPAY_DOMAIN_READY === true
     if(method==="applepay"&&typeof window!=="undefined"&&window.ApplePaySession){
       let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}
-      if(canAP){
+      if(canAP && applePayDomainReady){
         try{
           const cents=_pc?_pc.cents:499
-          // countryCode = pays MARCHAND (compte Mollie FR) → "FR" pour toutes les régions.
-          // currencyCode = devise de la transaction → USD pour les régions touristes.
           const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],
             supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
             total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
@@ -1803,7 +1874,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const sess=await r.json().catch(()=>null)
               if(!r.ok||!sess||sess.error)throw new Error("validation")
               ses.completeMerchantValidation(sess)
-            }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay") /* domaine pas validé chez Mollie → redirect de secours */}
+            }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay")}
           }
           ses.onpaymentauthorized=async(ev)=>{
             try{
@@ -1823,7 +1894,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
               else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
-              setPayBusy(false);onActivated?.();onClose()
+              setPayBusy(false)
+              setPaySuccess(true)
+              setTimeout(()=>{onActivated?.();onClose()},900)
             }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}
           }
           ses.oncancel=()=>{setPayBusy(false)}
@@ -3012,26 +3085,32 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
             const w=walletAvail()
             if(!w.apple&&!w.google)return null
+            const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?499:499)
+            const amountStr = (cents/100).toFixed(2) + (PAY_CUR==="usd"?" $":" €")
+            // Ordre : device natif en premier
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
+            const isAndroid = /Android/.test(navigator.userAgent)
+            const order = isIOS ? ["apple","google"] : isAndroid ? ["google","apple"] : ["apple","google"]
             return(
               <div style={{marginBottom:14}}>
-                {w.apple&&(
+                {order.includes("apple") && w.apple && (
                   <button type="button" aria-label="Apple Pay" disabled={payBusy} onClick={()=>payWithWallet("applepay")}
                     className="sg-wbtn sg-wbtn-dark"
                     style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#000",color:"#fff",
                       fontFamily:"inherit",fontWeight:600,fontSize:17,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
                       display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:w.google?8:0}}>
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.564 13.13c-.03-2.79 2.28-4.13 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.77-1.95 3.38-.5 8.38 1.39 11.13.93 1.34 2.03 2.85 3.47 2.8 1.39-.06 1.92-.9 3.6-.9 1.67 0 2.15.9 3.62.87 1.5-.03 2.45-1.37 3.36-2.72 1.06-1.56 1.5-3.07 1.52-3.15-.03-.01-2.92-1.12-2.95-4.44zM14.78 4.62c.77-.93 1.29-2.22 1.15-3.51-1.11.04-2.45.74-3.24 1.67-.71.82-1.33 2.14-1.16 3.4 1.24.1 2.51-.63 3.25-1.56z"/></svg>
-                    Pay
+                    <span>{_t(lang,`Payer ${amountStr} — Face ID / Touch ID`,`Pay ${amountStr} — Face ID / Touch ID`,`Pagar ${amountStr} — Face ID / Touch ID`)}</span>
                   </button>
                 )}
-                {w.google&&(
+                {order.includes("google") && w.google && (
                   <button type="button" aria-label="Google Pay" disabled={payBusy} onClick={()=>payWithWallet("googlepay")}
                     className="sg-wbtn sg-wbtn-light"
                     style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:"#fff",color:"#3c4043",
                       fontFamily:"inherit",fontWeight:600,fontSize:15.5,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
                       display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Google Pay
+                    <span>{_t(lang,`Payer ${amountStr} — empreinte / code`,`Pay ${amountStr} — fingerprint / PIN`,`Pagar ${amountStr} — huella / PIN`)}</span>
                   </button>
                 )}
                 <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14}}>
@@ -3040,6 +3119,40 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
                 </div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:10,textAlign:"center"}}>{_t(lang,"Un e-mail de confirmation et d'accès te sera envoyé après le paiement.","A confirmation and access email will be sent after payment.","Se enviará un correo de confirmación y acceso después del pago.")}</div>
+                <div style={{fontSize:10,color:"rgba(255,199,44,.6)",marginTop:6,textAlign:"center"}}>
+                  🔒 {_t(lang,"Paiement sécurisé par Mollie (PCI-DSS Level 1) · ","Payment secured by Mollie (PCI-DSS Level 1) · ","Pago seguro por Mollie (PCI-DSS Level 1) · ")}
+                  <a href="/fiabilite/" target="_blank" rel="noopener" style={{color:"#ffc72c",textDecoration:"underline"}}>{_t(lang,"Pourquoi on est transparents","Why we're transparent","Por qué somos transparentes")}</a>
+                </div>
+                {/* Compare table Gratuit vs Premium */}
+                <div style={{marginTop:16,fontSize:11.5,color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.08)",borderRadius:10,overflow:"hidden"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",textAlign:"center",background:"rgba(255,255,255,.03)"}}>
+                    <div style={{padding:"8px 4px",color:"rgba(255,255,255,.4)"}}></div>
+                    <div style={{padding:"8px 4px",fontWeight:600,color:"#ffc72c"}}>{_t(lang,"Gratuit","Free","Gratis")}</div>
+                    <div style={{padding:"8px 4px",fontWeight:600,color:"#fff"}}>{_t(lang,"Premium","Premium","Premium")}</div>
+                  </div>
+                  <CompareRow label={_t(lang,"Verdict jour","Daily verdict","Veredicto diario")} free={true} pro={true}/>
+                  <CompareRow label={_t(lang,"Prévision 3j","3-day forecast","Previsión 3d")} free={false} pro={true}/>
+                  <CompareRow label={_t(lang,"Prévision 7j","7-day forecast","Previsión 7d")} free={false} pro={true}/>
+                  <CompareRow label={_t(lang,"Alertes push","Push alerts","Alertas push")} free={false} pro={true}/>
+                  <CompareRow label={_t(lang,"Historique 30j","30-day history","Historial 30d")} free={false} pro={true}/>
+                  <CompareRow label={_t(lang,"Sans pub","No ads","Sin anuncios")} free={false} pro={true}/>
+                </div>
+                {/* Email preview accordion */}
+                <details style={{marginTop:12,fontSize:11,color:"rgba(255,255,255,.55)"}}>
+                  <summary style={{cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontWeight:600}}>{_t(lang,"📧 À quoi ressemble l'email de confirmation ?","📧 What the confirmation email looks like?","📧 ¿Cómo es el email de confirmación?")}</span>
+                  </summary>
+                  <div style={{marginTop:10,padding:12,borderRadius:8,background:"rgba(0,0,0,.3)",border:"1px solid rgba(255,199,44,.15)",fontFamily:"monospace",fontSize:11,color:"#eef2f7",lineHeight:1.6}}>
+                    <div style={{color:"#ffc72c",marginBottom:6}}>Objet: ✅ {_t(lang,"Votre accès Premium Sargasses est activé","Your Sargasses Premium access is activated","Tu acceso Premium Sargasses está activado")}</div>
+                    <div>{_t(lang,"Votre pass expire le","Your pass expires on","Tu pase expira el")} <strong id="sg-email-preview-date"></strong></div>
+                    <div style={{marginTop:10}}><a href="#" style={{color:"#ffc72c"}}>{_t(lang,"Ouvrir l'app →","Open app →","Abrir app →")}</a></div>
+                  </div>
+                </details>
+                {/* Garantie */}
+                <div style={{marginTop:12,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 12px",borderRadius:10,background:"rgba(22,101,52,.15)",border:"1px solid rgba(34,197,94,.2)"}}>
+                  <span style={{fontSize:16}}>🔁</span>
+                  <span style={{fontSize:11.5,fontWeight:600,color:"#86efac"}}>{_t(lang,"Pas satisfait ? Remboursé sous 48h — sans justification.","Not happy? Refund within 48h — no questions.","¿No convencido? Reembolso en 48h — sin preguntas.")}</span>
+                </div>
               </div>
             )
           })()}

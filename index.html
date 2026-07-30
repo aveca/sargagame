@@ -215,9 +215,10 @@
   </script>
   <!-- Google Analytics 4 — gtag.js (159 Ko !) DIFFÉRÉ à l'idle (injecté dans boot() ci-dessous)
        pour le sortir du chemin critique de chargement. Le stub gtag() + dataLayer queue les events
-       en attendant → ils partent quand gtag.js arrive (zéro perte). GA4 reste branché pour le funnel. -->
+       en attendant → ils partent quand gtag.js arrive (zéro perte). GA4 reste branché pour le funnel.
+       GDPR : consent par défaut DENIED — le banner cookie (sg_cookie_consent) grant analytics. -->
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-  gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
   gtag('js',new Date());gtag('config','G-V8JGMDZZ2Y',{transport_url:'https://www.google-analytics.com'});</script>
   <!-- Stripe.js — chargé à la demande (seulement si l'utilisateur ouvre Premium) -->
   <script>
