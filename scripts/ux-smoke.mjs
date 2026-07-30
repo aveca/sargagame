@@ -119,14 +119,23 @@ await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
-// ── 3. Paywall : déclencher directement via openPremium (bypass deep-link + useEffect lent).
-//       Détection multi-skins : .pww-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
+// ── 3. Paywall : précharger le chunk lazy PremiumModal puis déclencher via deep-link.
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
-await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
-// Attendre que l'app soit montée puis déclencher le paywall via openPremium
-await p.waitForFunction(() => !!window.openPremium, { timeout: 15000 }).catch(() => {});
-await p.evaluate(() => {
-  try { window.openPremium?.('deeplink'); } catch (_) {}
+await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
+// Précharger le chunk lazy PremiumModal (le nom du fichier change à chaque build)
+await p.evaluate(async () => {
+  try {
+    const scripts = document.querySelectorAll('script[type="module"][src*="PremiumModal"]');
+    if (scripts.length) {
+      await import(scripts[0].src);
+    } else {
+      // Fallback : chercher le lien preload/prefetch
+      const links = document.querySelectorAll('link[href*="PremiumModal"]');
+      for (const link of links) {
+        try { await import(link.href); } catch (_) {}
+      }
+    }
+  } catch (_) {}
 });
 // Attendre que le paywall soit visible — chunk lazy lent en CI (53 Ko gzip)
 await p.waitForFunction(
