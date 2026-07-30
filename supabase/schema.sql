@@ -182,3 +182,34 @@ create policy "anon insert analytics" on public.analytics_events
 
 create index if not exists analytics_events_ts_idx on public.analytics_events (ts desc);
 create index if not exists analytics_events_event_idx on public.analytics_events (event);
+
+-- =====================================================================
+-- payment_grants — MIRROR des grants B2C/B2B (migration file-based → Supabase).
+-- Rempli par mol_supabase_mirror() dans mollie-lib.php (webhook Mollie).
+-- But : survie aux restarts/déploys (le file-based /tmp est volatil).
+-- RLS : lecture service_role seulement, écriture = webhook PHP (service key).
+-- =====================================================================
+
+create table if not exists public.payment_grants (
+  id          bigint generated always as identity primary key,
+  created_at  timestamptz not null default now(),
+  payment_id  text,           -- B2C : paymentId Mollie (pay_once)
+  subscription_id text,       -- B2B mensuel : subscriptionId
+  type        text not null,  -- 'b2c_pass' | 'b2b_pro'
+  pass        text,           -- B2C : 'p30' | 'trip7' | 'season'
+  plan        text,           -- B2B : 'pro_monthly' | 'brief_monthly' | 'pro_annual' (one-time)
+  email       text,           -- B2C : email payeur
+  customer_id text,           -- B2B : customerId Mollie
+  currency    text,           -- B2C : EUR/USD
+  expires_at  timestamptz not null,
+  granted_at  timestamptz not null,
+  metadata    jsonb,          -- B2C : metadata complet du paiement
+  unique (payment_id),
+  unique (subscription_id)
+);
+
+alter table public.payment_grants enable row level security;
+
+-- Anon NE PEUT PAS lire (PII : email, customer_id) — lecture service_role seulement
+-- Écriture = webhook Mollie (clé service) via mol_supabase_mirror()
+-- Pas de policy INSERT anon → écriture côté serveur seulement

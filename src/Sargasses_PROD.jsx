@@ -1938,6 +1938,8 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // fetch fire-and-forget était silencieusement perdu si la page naviguait pendant
 // la requête (capture = levier #1, on ne peut PAS perdre un email saisi) ou si
 // Apps Script était froid. sendBeacon survit à l'unload ; fallback fetch keepalive.
+// MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
+// pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
   try{
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
@@ -1945,6 +1947,8 @@ export function submitLead(email,source){
     if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
     fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
   }catch{}
+  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
 // ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas

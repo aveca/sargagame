@@ -598,6 +598,15 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/factory-heartbeat-watch.cjs --send
 
+      # Purge analytics_events > 90j (Supabase) — keep funnel table lean, RGPD.
+      # Schedule-only, non-bloquant. Utilise SUPABASE_SERVICE_KEY secret.
+      - name: Purge analytics_events (> 90j)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/purge-analytics.cjs
+
       # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
       # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
       # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle

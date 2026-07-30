@@ -9,6 +9,7 @@ on:
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,3 +21,19 @@ jobs:
         run: npm test
       - name: Verify Build
         run: npm run build
+      - name: Check bundle budget (JS eager ≤ 210 Ko gzip)
+        run: node scripts/check-bundle-budget.cjs
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      - name: Start Vite preview (build output)
+        run: npx vite preview --port 4173 &
+      - name: Wait for preview server
+        run: sleep 5
+      - name: Run UX smoke test (mobile funnel)
+        run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
+      - name: Verify smoke tokens
+        run: |
+          grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log
+          grep -q 'ERRORS=\[\]' /tmp/smoke.log
+          grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log
+          grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log

@@ -187,6 +187,16 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 
     set_transient($grantKey, $token, $durationDays * 86400 + 86400); // TTL = durée + 1 jour
 
+    // Supabase mirror (best-effort)
+    mol_supabase_mirror('payment_grants', [
+        'subscription_id' => $subscriptionId,
+        'type' => 'b2b_pro',
+        'plan' => $planKey,
+        'customer_id' => $customerId,
+        'expires_at' => date('c', $expiresAt),
+        'granted_at' => date('c', time()),
+    ]);
+
     error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId expires=" . date('c', $expiresAt));
 
     return ['granted' => true, 'token' => $token, 'expires_at' => $expiresAt, 'plan' => $planKey];
@@ -238,6 +248,36 @@ function set_transient(string $key, string $value, int $ttl): void {
 }
 
 /**
+ * Supabase mirror for payment grants — write-only (service key on server).
+ * Best-effort, never throws (logs only). Avoids /tmp loss on deploy/restart.
+ */
+function mol_supabase_mirror(string $table, array $data): void {
+    $supabaseUrl = getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = getenv('SUPABASE_SERVICE_KEY') ?: '';
+    if (!$serviceKey) return; // skip silently if not configured
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $supabaseUrl . '/rest/v1/' . $table,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'apikey: ' . $serviceKey,
+            'Authorization: Bearer ' . $serviceKey,
+            'Content-Type: application/json',
+            'Prefer: return=minimal',
+        ],
+        CURLOPT_TIMEOUT => 10,
+    ]);
+    $resp = curl_exec($ch);
+    if (curl_errno($ch)) {
+        error_log('[mol_supabase_mirror] cURL error: ' . curl_error($ch));
+    }
+    curl_close($ch);
+}
+
+/**
  * Grant B2C pass — backup server-side du localStorage frontend.
  * Idempotent : même paymentId = pas de double grant.
  * Durées : p30=30j, trip7=7j, season=210j
@@ -265,7 +305,18 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
 
     set_transient($grantKey, $grantData, $days * 86400 + 86400);
 
-    // Log pour audit (email PII pas loggé en clair dans error_log)
+    // Supabase mirror (best-effort, no-op if not configured)
+    mol_supabase_mirror('payment_grants', [
+        'payment_id' => $paymentId,
+        'type' => 'b2c_pass',
+        'pass' => $pass,
+        'email' => $email,
+        'currency' => $currency,
+        'expires_at' => date('c', $expiresAt),
+        'granted_at' => date('c', time()),
+        'metadata' => $metadata,
+    ]);
+
     error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt));
 
     return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days];
