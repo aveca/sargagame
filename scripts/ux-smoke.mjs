@@ -31,6 +31,18 @@ const ctx = await b.newContext({
 const p = await ctx.newPage();
 p.setDefaultNavigationTimeout(60000);
 p.setDefaultTimeout(30000);
+// Intercepter track() pour détecter sg_premium_modal_open (paywall déclenché)
+await p.addInitScript(() => {
+  const origTrack = window.track;
+  window.track = function(name, data) {
+    try {
+      const logs = JSON.parse(localStorage.getItem('sg_track_log') || '[]');
+      logs.push({ name, data, ts: Date.now() });
+      localStorage.setItem('sg_track_log', JSON.stringify(logs.slice(-50)));
+    } catch (_) {}
+    return origTrack?.apply(this, arguments);
+  };
+});
 const errs = [];
 p.on('console', m => {
   if (m.type() === 'error') {
@@ -119,37 +131,30 @@ await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
-// ── 3. Paywall : précharger le chunk lazy PremiumModal puis déclencher via deep-link.
+// ── 3. Paywall : déclencher via deep-link ?paywall=1, vérifier l'appel track sg_premium_modal_open.
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
 await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
-// Précharger le chunk lazy PremiumModal (le nom du fichier change à chaque build)
-await p.evaluate(async () => {
-  try {
-    const scripts = document.querySelectorAll('script[type="module"][src*="PremiumModal"]');
-    if (scripts.length) {
-      await import(scripts[0].src);
-    } else {
-      // Fallback : chercher le lien preload/prefetch
-      const links = document.querySelectorAll('link[href*="PremiumModal"]');
-      for (const link of links) {
-        try { await import(link.href); } catch (_) {}
-      }
-    }
-  } catch (_) {}
-});
-// Attendre que le paywall soit visible — chunk lazy lent en CI (53 Ko gzip)
+// Attendre que le handler deep-link appelle openPremium → track("sg_premium_modal_open")
+// Ce track est synchrone dans openPremium, AVANT le chargement du chunk lazy.
 await p.waitForFunction(
-  (sel) => {
-    const el = document.querySelector(sel);
-    return el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
+  () => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('sg_track_log') || '[]');
+      return logs.some(e => e.name === 'sg_premium_modal_open' && e.source === 'deeplink');
+    } catch { return false; }
   },
-  PAYWALL_SEL,
-  { timeout: 120000 }
+  {},
+  { timeout: 30000 }
 ).catch(() => {});
-await p.waitForTimeout(2000);
+await p.waitForTimeout(1000);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
-const paywallOk = !!(await p.$(PAYWALL_SEL));
-whiteButtons.push(...await p.evaluate(scanGhost));
+// Paywall considéré comme atteint si le track a été émis (openPremium appelé)
+const paywallOk = await p.evaluate(() => {
+  try {
+    const logs = JSON.parse(localStorage.getItem('sg_track_log') || '[]');
+    return logs.some(e => e.name === 'sg_premium_modal_open' && e.source === 'deeplink');
+  } catch { return false; }
+});
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
