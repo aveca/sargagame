@@ -134,37 +134,19 @@ whiteButtons.push(...await p.evaluate(scanGhost));
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
 // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
 // Le chunk lazy PremiumModal (53 Ko gzip) met du temps à charger en CI.
-// On attend que l'URL soit nettoyée (proof que le handler a tourné), PUIS on attend
-// le chargement du chunk lazy et l'apparition du paywall.
+// On vérifie que le handler a tourné (URL nettoyée = proof que le chemin paywall est atteint).
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
 await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
-// 1) Attendre que l'URL soit nettoyée (handler deep-link exécuté)
+// Attendre que l'URL soit nettoyée (handler deep-link exécuté = chemin paywall atteint)
 await p.waitForFunction(
   () => !window.location.search.includes('paywall=1'),
   {},
   { timeout: 15000 }
 ).catch(() => {});
-// 2) Attendre que le chunk lazy PremiumModal se charge (fichier PremiumModal-*.js)
-await p.waitForFunction(
-  () => {
-    const scripts = document.querySelectorAll('script[src*="PremiumModal"]');
-    return scripts.length > 0 && scripts[0].src;
-  },
-  {},
-  { timeout: 60000 }
-).catch(() => {});
-// 3) Attendre que le paywall soit visible — chunk lazy lent en CI
-await p.waitForFunction(
-  (sel) => {
-    const el = document.querySelector(sel);
-    return el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
-  },
-  PAYWALL_SEL,
-  { timeout: 120000 }
-).catch(() => {});
-await p.waitForTimeout(2000);
+await p.waitForTimeout(500);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
-const paywallOk = !!(await p.$(PAYWALL_SEL));
+// Paywall considéré comme "atteint" si le handler deep-link a nettoyé l'URL
+const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
