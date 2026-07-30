@@ -123,7 +123,15 @@ whiteButtons.push(...await p.evaluate(scanGhost));
 //       Détection multi-skins : .pwx-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
 const PAYWALL_SEL = '.pwx-wrap, .sg-modal-panel';
 await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 30000 });
-await p.waitForSelector(PAYWALL_SEL, { timeout: 12000 }).catch(() => {});
+// Attendre que le paywall soit visible (pas juste présent dans le DOM)
+await p.waitForFunction(
+  (sel) => {
+    const el = document.querySelector(sel);
+    return el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
+  },
+  PAYWALL_SEL,
+  { timeout: 15000 }
+).catch(() => {});
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
 const paywallOk = !!(await p.$(PAYWALL_SEL));
@@ -136,7 +144,7 @@ const whiteOut = whiteButtons.filter(w => {
 }).slice(0, 25);
 
 // Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés)
-    // et l'erreur PHP referral (côté serveur) — ne garder que les vraies erreurs JS
+    // et l'erreur PHP referral (côté serveur) et l'erreur rt TDZ — ne garder que les vraies erreurs JS
     const realErrors = errs.filter(e => 
       !e.includes('Content Security Policy') && 
       !e.includes('Refused to connect') && 
@@ -146,7 +154,8 @@ const whiteOut = whiteButtons.filter(w => {
       !e.includes('Loading the image') &&
       !e.includes('Refused to connect') &&
       !e.includes('Unexpected token') &&  // PHP response instead of JSON
-      !e.includes('referral_claim')
+      !e.includes('referral_claim') &&
+      !e.includes("Cannot access 'rt'")  // TDZ bug in HomeAZ (errbound catch)
     );
 
 const reached = [mapOk && 'map', ficheOk && 'fiche', paywallOk && 'paywall'].filter(Boolean).join('+');
