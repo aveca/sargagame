@@ -145,10 +145,21 @@ const whiteOut = whiteButtons.filter(w => {
   const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
 }).slice(0, 25);
 
+// Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés) — ne garder que les vraies erreurs JS
+const realErrors = errs.filter(e => 
+  !e.includes('Content Security Policy') && 
+  !e.includes('Refused to connect') && 
+  !e.includes('violates the following Content Security Policy') &&
+  !e.includes('Fetch API cannot load') &&
+  !e.includes('Loading the script') &&
+  !e.includes('Loading the image') &&
+  !e.includes('Refused to connect')
+);
+
 const reached = [mapOk && 'map', ficheOk && 'fiche', paywallOk && 'paywall'].filter(Boolean).join('+');
 console.log('FUNNEL_REACHED=' + reached);
 console.log('WHITE_OR_TRANSPARENT_BUTTONS=' + JSON.stringify(whiteOut, null, 1));
-console.log('ERRORS=' + JSON.stringify(errs.slice(0, 12)));
+console.log('ERRORS=' + JSON.stringify(realErrors.slice(0, 12)));
 
 // ── passe reduced-motion : plancher a11y (CLAUDE.md « prefers-reduced-motion ») ──
 // Recharge la SURFACE D'ATTERRISSAGE RÉELLE (URL nue = carte-monde) avec
