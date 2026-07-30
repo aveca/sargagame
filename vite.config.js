@@ -2516,6 +2516,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
         // re-télécharge pas quand le code applicatif change (cache long terme).
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
+          'three-vendor': ['three', 'three-stdlib'],
         },
       },
     },
