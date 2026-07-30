@@ -4,6 +4,7 @@
   "country": "Barbados",
   "domain": "sargassumbarbados.com",
   "ftpDir": "barbados-ftp",
+  "live": false,
   "primaryLang": "en",
   "secondaryLangs": [
     "es"
