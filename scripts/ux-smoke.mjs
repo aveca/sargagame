@@ -123,6 +123,8 @@ whiteButtons.push(...await p.evaluate(scanGhost));
 //       Détection multi-skins : .pww-wrap (ComicPaywall) / .sg-modal-panel (PremiumModal classique/World).
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
 await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 45000 });
+// Attendre network idle pour laisser le temps au chunk lazy PremiumModal de se charger
+await p.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
 // Attendre que le paywall soit visible (pas juste présent dans le DOM) — lazy chunk peut être lent en CI
 await p.waitForFunction(
   (sel) => {
