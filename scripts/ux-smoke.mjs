@@ -131,30 +131,40 @@ await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
-// ── 3. Paywall : déclencher via deep-link ?paywall=1, vérifier l'appel track sg_premium_modal_open.
+// ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
+// puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
+// Le chunk lazy PremiumModal (53 Ko gzip) met du temps à charger en CI.
+// On attend que l'URL soit nettoyée (proof que le handler a tourné), PUIS on attend
+// le chargement du chunk lazy et l'apparition du paywall.
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
 await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
-// Attendre que le handler deep-link appelle openPremium → track("sg_premium_modal_open")
-// Ce track est synchrone dans openPremium, AVANT le chargement du chunk lazy.
+// 1) Attendre que l'URL soit nettoyée (handler deep-link exécuté)
+await p.waitForFunction(
+  () => !window.location.search.includes('paywall=1'),
+  {},
+  { timeout: 15000 }
+).catch(() => {});
+// 2) Attendre que le chunk lazy PremiumModal se charge (fichier PremiumModal-*.js)
 await p.waitForFunction(
   () => {
-    try {
-      const logs = JSON.parse(localStorage.getItem('sg_track_log') || '[]');
-      return logs.some(e => e.name === 'sg_premium_modal_open' && e.source === 'deeplink');
-    } catch { return false; }
+    const scripts = document.querySelectorAll('script[src*="PremiumModal"]');
+    return scripts.length > 0 && scripts[0].src;
   },
   {},
-  { timeout: 30000 }
+  { timeout: 60000 }
 ).catch(() => {});
-await p.waitForTimeout(1000);
+// 3) Attendre que le paywall soit visible — chunk lazy lent en CI
+await p.waitForFunction(
+  (sel) => {
+    const el = document.querySelector(sel);
+    return el && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
+  },
+  PAYWALL_SEL,
+  { timeout: 120000 }
+).catch(() => {});
+await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
-// Paywall considéré comme atteint si le track a été émis (openPremium appelé)
-const paywallOk = await p.evaluate(() => {
-  try {
-    const logs = JSON.parse(localStorage.getItem('sg_track_log') || '[]');
-    return logs.some(e => e.name === 'sg_premium_modal_open' && e.source === 'deeplink');
-  } catch { return false; }
-});
+const paywallOk = !!(await p.$(PAYWALL_SEL));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
