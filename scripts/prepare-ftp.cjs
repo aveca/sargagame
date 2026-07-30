@@ -1101,7 +1101,7 @@ Sitemap: https://${domain}/sitemap.xml
   const strayStripeConfig = path.join(out, 'api', 'stripe-config.php')
   if (fs.existsSync(strayStripeConfig)) fs.rmSync(strayStripeConfig)
   const strayMollieConfig = path.join(out, 'api', 'mollie-config.php')
-  if (fs.existsExists(strayMollieConfig)) fs.rmSync(strayMollieConfig)
+  if (fs.existsSync(strayMollieConfig)) fs.rmSync(strayMollieConfig)
 
   // README + BUILD.txt (mêmes repères que MQ/GP)
   const readme = `# Upload FTP ${title} — Sargassum
