@@ -2121,10 +2121,10 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
  /* Chips info NON tappables : bordure légère + fond neutre + PAS d'ombre (la grammaire
-    bordure épaisse+ombre = « pressable » dans tout le système comic, cf. .lc-chip —
-    collision d'affordance mesurée en dead-clicks). pointer-events:none pour tuer les
-    dead-clicks sans changer le layout. */
- .lc-detail-fact{font-size:13px;font-weight:800;background:#f3f1f7;border:1.5px solid #c9c3d2;border-radius:20px;padding:6px 12px;pointer-events:none}
+   bordure épaisse+ombre = « pressable » dans tout le système comic, cf. .lc-chip —
+   collision d'affordance mesurée en dead-clicks). pointer-events:none pour tuer les
+   dead-clicks sans changer le layout. */
+.lc-detail-fact{font-size:13px;font-weight:800;background:#f3f1f7;border:1.5px solid #c9c3d2;border-radius:20px;padding:6px 12px;pointer-events:none}
 .lc-why{margin:0 0 16px}
 .lc-why .lc-season-body a{color:inherit;font-weight:800}
 .lc-why-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;width:fit-content;align-items:center;

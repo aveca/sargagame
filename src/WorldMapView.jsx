@@ -1802,6 +1802,7 @@ export default function WorldMapView({
                 value={emailVal} onChange={e=>setEmailVal(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
                 placeholder={_t(lang,"ton@email — verdict gratuit","your@email — free verdict","tu@email — veredicto gratis")}
+                aria-label={_t(lang,"Ton email pour le verdict gratuit","Your email for free verdict","Tu email para el veredicto gratis")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
                   padding:"6px 9px",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
               <button type="button" onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}

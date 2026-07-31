@@ -3248,6 +3248,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
                 onBlur={capturePayEmail} onChange={onPayEmailInput}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                aria-label={_t(lang,"E-mail pour le reçu d'accès","Email for access receipt","Email para el recibo de acceso")}
                 style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
                   fontSize:16,fontFamily:"inherit",outline:"none",
                   border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>
