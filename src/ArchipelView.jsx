@@ -7,8 +7,8 @@ import ScoreBlob from"./ScoreBlob.jsx"
 import WorldAfaiGauge from"./WorldAfaiGauge.jsx"
 
 const COAST_ZONES={}
-const MID=0.82,FAR=0.32,NEAR=2.6,MID=0.82
-const SPAN_PX=1000,MID=0.82,FAR=0.32,NEAR=2.6
+const MID=0.82,FAR=0.32,NEAR=2.6
+const SPAN_PX=1000
 
 function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone,onRequestGeo,dataReady=true}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
@@ -23,7 +23,6 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const SAT_SAY={fr:["Hé ! Je bosse, là 🛰️","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu 😄","Eh, je travaille, moi !"],en:["Hey! I'm working 🛰️","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me 😄","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando 🛰️","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste 😄","¡Eh, que trabajo!"]}
   const veilleurSpeak=()=>{const arr=SAT_SAY[lang]||SAT_SAY.fr;setSatSay(arr[sayIdxRef.current%arr.length]);sayIdxRef.current++;if(sayTimerRef.current)clearTimeout(sayTimerRef.current)}
   const[ready,setReady]=useState(false)
-  const SPAN_PX=1000,MID=0.82,FAR=0.32,NEAR=2.6
   const{proj,count}=useMemo(()=>{
     const list=(beaches||[]).filter(b=>b&&b.lat!=null&&b.lng!=null&&(!island||b.island===island))
     if(!list.length)return{proj:[],count:0}
