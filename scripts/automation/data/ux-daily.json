@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-30T19:35:55.971Z",
-  "date": "2026-07-30",
+  "generated": "2026-07-31T03:05:02.899Z",
+  "date": "2026-07-31",
   "days": 1,
   "regions": [
     "mq",
@@ -10,6 +10,18 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "97b1fcff",
+      "subject": "chore: update Copernicus data 2026-07-30 20:09 UTC"
+    },
+    {
+      "h": "82f7d63d",
+      "subject": "chore: update Copernicus data 2026-07-30 19:54 UTC"
+    },
+    {
+      "h": "8b4a90b7",
+      "subject": "chore: email state 2026-07-30 19:35 UTC"
+    },
     {
       "h": "5961f397",
       "subject": "chore: update Copernicus data 2026-07-30 14:11 UTC"
@@ -49,205 +61,135 @@
     {
       "h": "cee92236",
       "subject": "fix(payment): fix Apple Pay on-site + Google Pay paymentMethod + currency always passed"
-    },
-    {
-      "h": "e250b967",
-      "subject": "chore: update Copernicus data 2026-07-30 02:43 UTC"
-    },
-    {
-      "h": "4221a0eb",
-      "subject": "chore: email state 2026-07-30 02:43 UTC"
-    },
-    {
-      "h": "c9f1cd83",
-      "subject": "fix(uiux): pre-delivery audit — P0/P1/P2/P3 fixes + GDPR + cleanup"
-    },
-    {
-      "h": "23d298c9",
-      "subject": "fix(webhook): add barbados to KNOWN_REGIONS (parity with regions/index.cjs)"
-    },
-    {
-      "h": "cc3ca937",
-      "subject": "fix(applepay): expose SgMollieClient applePay->sessions->create() + add required domain param"
-    },
-    {
-      "h": "af53beec",
-      "subject": "fix(payments): Google Pay via hosted checkout + Mollie customer lookup + interval fix"
-    },
-    {
-      "h": "fce01908",
-      "subject": "fix: complete Mollie payment fix — cURL client, config handling, opcache guards, response objects"
-    },
-    {
-      "h": "fbfc5ade",
-      "subject": "fix: exclude mollie-config.php from deploy (gitignored secret); fix opcache issue with require vs require_once"
-    },
-    {
-      "h": "456b9c05",
-      "subject": "fix: replace missing Mollie PHP SDK with cURL-based SgMollieClient; handle server's array-based config format"
-    },
-    {
-      "h": "fe5af038",
-      "subject": "fix: replace missing Mollie PHP SDK with lightweight cURL-based SgMollieClient"
-    },
-    {
-      "h": "91ad85ec",
-      "subject": "fix wallet payments: add cur field, rename method to paymentMethod, accept subscriptionId in response"
-    },
-    {
-      "h": "75436bb8",
-      "subject": "fix paywall crash: remove retryCtx state causing ReferenceError on payError render"
-    },
-    {
-      "h": "db140e21",
-      "subject": "fix all payments broken: revert payment_id-in-redirectUrl (caused fatal ->id before create), add localStorage sg_mollie_pending fallback for iOS wipe, inline payment_status retry for direct Apple Pay"
-    },
-    {
-      "h": "a88a9c8b",
-      "subject": "fix applepay inline: add retry loop for inline payment_status check (3x2s) — direct Apple Pay race condition where Mollie hasn't settled yet on first check"
-    },
-    {
-      "h": "d3d8e2e5",
-      "subject": "fix money-path: sg_widget_sign array payload fix; applePayPaymentToken pass-through; webhook renewal+failure handlers; B2B annual grant"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 187,
-      "friction": 18,
-      "dead_rate": 0.119,
-      "dead_worst": {
-        "screen": "beach",
-        "rate": 0.294,
-        "n": 34
-      },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 20
-        },
-        {
-          "el": "rect",
-          "count": 13
-        }
-      ],
-      "bored_worst": {
-        "screen": "beach",
-        "rate": 0.22
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-29",
-      "changes": [
-        "🆕 dead-click : rect (13)"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 375,
-      "friction": 3,
-      "dead_rate": 0.078,
+      "sessions": 28,
+      "friction": 6,
+      "dead_rate": 0.218,
       "dead_worst": {
         "screen": "premium",
-        "rate": 0.138,
-        "n": 80
+        "rate": 0.257,
+        "n": 35
       },
       "top_dead_els": [
         {
           "el": "div",
-          "count": 16
+          "count": 11
         }
       ],
       "bored_worst": {
-        "screen": "beach",
-        "rate": 0.2
+        "screen": "world",
+        "rate": 0.19
       },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
+      "modal_to_cta": 9.1,
+      "cta_to_redirect": 100,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-29",
+      "prev_date": "2026-07-30",
       "changes": [
-        "rage-clicks 11→3 ✅",
+        "sessions 187→28 (-85%)",
+        "dead-rate 0.119→0.218 (+0.1) ⚠️",
+        "rage-clicks 18→6 ✅",
+        "modal→CTA 0%→9.1% (+9.1%) ✅",
+        "CTA→redirect 0%→100% (+100%) ✅",
         "✔︎ dead-click résolu : rect"
       ]
     },
     {
-      "region": "florida",
-      "sessions": 190,
-      "friction": 3,
-      "dead_rate": 0.103,
+      "region": "gp",
+      "sessions": 29,
+      "friction": 0,
+      "dead_rate": 0.059,
       "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.256,
-        "n": 78
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "map_map",
-        "rate": 0.22
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-07-29",
-      "changes": [
-        "sessions 160→190 (+19%)",
-        "dead-rate 0.348→0.103 (-0.2) ✅"
-      ]
-    },
-    {
-      "region": "puntacana",
-      "sessions": 85,
-      "friction": 1,
-      "dead_rate": 0.084,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.293,
-        "n": 41
+        "screen": "world",
+        "rate": 0.022,
+        "n": 46
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.28
+        "rate": 0.24
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-29",
+      "prev_date": "2026-07-30",
       "changes": [
-        "dead-rate 0.187→0.084 (-0.1) ✅"
+        "sessions 375→29 (-92%)",
+        "rage-clicks 3→0 ✅",
+        "✔︎ dead-click résolu : div"
       ]
     },
     {
-      "region": "rivieramaya",
-      "sessions": 73,
-      "friction": 2,
-      "dead_rate": 0.128,
+      "region": "florida",
+      "sessions": 30,
+      "friction": 0,
+      "dead_rate": 0.156,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.3
+        "rate": 0.27
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-29",
+      "prev_date": "2026-07-30",
       "changes": [
-        "sessions 55→73 (+33%)",
-        "dead-rate 0.405→0.128 (-0.3) ✅"
+        "sessions 190→30 (-84%)",
+        "dead-rate 0.103→0.156 (+0.1) ⚠️",
+        "rage-clicks 3→0 ✅"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 9,
+      "friction": 11,
+      "dead_rate": 0.848,
+      "dead_worst": {
+        "screen": "beach",
+        "rate": 0.981,
+        "n": 54
+      },
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-30",
+      "changes": [
+        "sessions 85→9 (-89%)",
+        "dead-rate 0.084→0.848 (+0.8) ⚠️",
+        "rage-clicks 1→11 ⚠️"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 11,
+      "friction": 0,
+      "dead_rate": 0.043,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-07-30",
+      "changes": [
+        "sessions 73→11 (-85%)",
+        "dead-rate 0.128→0.043 (-0.1) ✅"
       ]
     }
   ]
