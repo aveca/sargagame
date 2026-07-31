@@ -1710,11 +1710,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
            }
            throw new Error(userMsg)
          }
-         if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
-           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
-           setPayRedirecting(true)
-           window.location.href=d.checkoutUrl;return
-         }
+          if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
+            try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+            setPayRedirecting(true)
+            // Ensure redirect UI shows before navigation
+            setTimeout(()=>window.location.href=d.checkoutUrl,50);return
+          }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
         const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
         const cd=await cr.json().catch(()=>({}))

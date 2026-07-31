@@ -11493,6 +11493,12 @@ export default function App(){
         for(let attempt=0;attempt<3;attempt++){
           if(signal.aborted)break
           try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
+            if(d&&d.terminal&&d.status){
+              // Handle terminal failure status immediately (canceled, expired, failed)
+              const terminalMsg={canceled:_t("Paiement annulé","Payment canceled","Pago cancelado"),expired:_t("Paiement expiré","Payment expired","Pago expirado"),failed:_t("Paiement échoué","Payment failed","Pago fallido")}
+              const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")+(d.status?"&status="+encodeURIComponent(d.status):"")+(terminalMsg[d.status]||"")
+              try{window.location.replace(failUrl);return}catch(_){}
+            }
             if(d&&d.paid){paid=true;break}
             if(d&&d.status==="paid"){paid=true;break}
             paid=false;if(attempt<2)await new Promise(r=>setTimeout(r,2000))

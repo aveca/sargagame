@@ -259,10 +259,12 @@ try {
         if (!$paymentId) throw new Exception('paymentId requis');
         $payment = $mollie->payments->get($paymentId);
         $status = $payment->status ?? 'unknown';
+        // Terminal statuses (canceled, expired, failed) indicate final failure
+        $terminal = in_array($status, ['canceled', 'expired', 'failed'], true);
         // Seul "paid" = payé. "pending" = en attente (virement, 3DS non terminé).
         // "settled" = payé + viré (plus tardif, couvert par paid).
         $paid = in_array($status, ['paid', 'settled'], true);
-        echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId]);
+        echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId, 'terminal' => $terminal]);
         exit;
     }
 
