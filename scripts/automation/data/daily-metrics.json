@@ -379,22 +379,22 @@
   },
   {
     "date": "2026-07-31",
-    "time": "2026-07-31T08:59:37.639Z",
+    "time": "2026-07-31T14:19:57.828Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 499,
+    "emails": 501,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": null,
     "email": {
-      "sent": 3663,
+      "sent": 3698,
       "delivered": null,
-      "opened": 70,
-      "clicked": 36,
+      "opened": 80,
+      "clicked": 39,
       "bounced": null,
-      "openRate": 1.91,
-      "clickRate": 51.43,
+      "openRate": 2.16,
+      "clickRate": 48.75,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -461,8 +461,8 @@
     "ga4": {
       "date": "2026-07-30",
       "mq": {
-        "sessions": 60,
-        "users": 1597
+        "sessions": 61,
+        "users": 1775
       },
       "gp": {
         "sessions": 83,
