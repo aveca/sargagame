@@ -1990,12 +1990,12 @@
         },
         {
           "id": "pc008",
-          "afai": 0.17,
+          "afai": 0.18,
           "status": "moderate"
         },
         {
           "id": "pc009",
-          "afai": 0.16,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
@@ -2729,14 +2729,14 @@
       "beach": "pc008",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.17
+      "afai": 0.18
     },
     {
       "date": "2026-07-31",
       "beach": "pc009",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.17
     },
     {
       "date": "2026-07-31",

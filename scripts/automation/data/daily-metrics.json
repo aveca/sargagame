@@ -379,16 +379,16 @@
   },
   {
     "date": "2026-07-31",
-    "time": "2026-07-31T03:01:45.742Z",
+    "time": "2026-07-31T08:59:37.639Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 497,
+    "emails": 499,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": null,
     "email": {
-      "sent": 3660,
+      "sent": 3663,
       "delivered": null,
       "opened": 70,
       "clicked": 36,
@@ -466,7 +466,7 @@
       },
       "gp": {
         "sessions": 83,
-        "users": 1685
+        "users": 1938
       }
     }
   }
