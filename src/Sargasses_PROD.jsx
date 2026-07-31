@@ -7,7 +7,7 @@
  */
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
-import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"

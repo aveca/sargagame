@@ -552,7 +552,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   },[beach,head,track]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
-      ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}>
+      ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}
+      onClick={e=>{ if(e.target===e.currentTarget){ onClose() } }}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
@@ -2119,9 +2120,11 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-detail-scnum small{font-size:14px;opacity:.6}
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-/* Chips info NON tappables : pas d'ombre portée (la grammaire bordure+ombre = « pressable »
-   dans tout le système comic, cf. .lc-chip — collision d'affordance mesurée en dead-clicks). */
-.lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px}
+ /* Chips info NON tappables : bordure légère + fond neutre + PAS d'ombre (la grammaire
+    bordure épaisse+ombre = « pressable » dans tout le système comic, cf. .lc-chip —
+    collision d'affordance mesurée en dead-clicks). pointer-events:none pour tuer les
+    dead-clicks sans changer le layout. */
+ .lc-detail-fact{font-size:13px;font-weight:800;background:#f3f1f7;border:1.5px solid #c9c3d2;border-radius:20px;padding:6px 12px;pointer-events:none}
 .lc-why{margin:0 0 16px}
 .lc-why .lc-season-body a{color:inherit;font-weight:800}
 .lc-why-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;width:fit-content;align-items:center;

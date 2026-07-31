@@ -10,7 +10,7 @@
  */
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
-import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
 const LazyWeekHub = React.lazy(()=>import("./WeekHub"))
@@ -1325,7 +1325,9 @@ export default function WorldMapView({
   )
 
   return(
-    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1" style={{
+    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1"
+      onClick={e=>{ if(e.target===e.currentTarget){ try{track&&track("sg_map_bg_tap",{})}catch(_){}; e.stopPropagation() }}}
+      style={{
       // Safari : inset:0 atteint le vrai bas (au-dessus de la toolbar) → on le garde.
       // iOS standalone SEULEMENT (html.sg-standalone, cf. script index.html) : inset:0
       // clippe au layout viewport (~852) plus court que l'écran réel (896) → bande vide
@@ -1536,14 +1538,14 @@ export default function WorldMapView({
                 {mapPremium&&(()=>{
                   if(mapFriseOff){
                     if(b.firstHit==null||b.firstHit<1)return null
-                    return(<g transform="translate(0 -31)" aria-hidden="true">
+                    return(<g transform="translate(0 -31)" aria-hidden="true" pointerEvents="none">
                       <rect x="-14" y="-7" width="28" height="13.5" rx="6.75" fill="#FFC72C" stroke={INK} strokeWidth="1.4"/>
                       <text x="0" y="2.7" textAnchor="middle" fontSize="8" fontWeight="800" fill="#0d0b14" fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
                     </g>)
                   }
                   if(b.firstHit!=null&&b.firstHit>=1){
                     const far=b.firstHit>=4, w=far?25:28
-                    return(<g transform="translate(0 -31)" aria-label={`${_t(lang,"bascule","flips","cambia")} ${ti(lang,DAY_LBL[b.firstHit])}`}>
+                    return(<g transform="translate(0 -31)" aria-label={`${_t(lang,"bascule","flips","cambia")} ${ti(lang,DAY_LBL[b.firstHit])}`} pointerEvents="none">
                       <rect x={-w/2} y="-7" width={w} height="13.5" rx="6.75" fill={far?"#F2A57A":"#E8522A"} stroke={INK} strokeWidth="1.4"/>
                       <text x="0" y="2.7" textAnchor="middle" fontSize={far?7:8} fontWeight="800" fill="#fff" fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{ti(lang,DAY_LBL[b.firstHit])}</text>
                     </g>)
@@ -1617,6 +1619,7 @@ export default function WorldMapView({
               data-vy={b.vy}
               data-status={st}
               data-sel={selected?.id===b.id?"1":"0"}
+              data-vmui="1"
               {...(!mapLabelTapOff?{role:"button",tabIndex:0,"aria-label":b.name,onClick:openB,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openB(e)}}}:{})}
               style={{
                 position:"absolute",left:0,top:0,

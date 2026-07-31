@@ -1928,14 +1928,18 @@ const walletRedirect=useCallback(async(method)=>{
               const body=_pc
                 ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
                 :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,cur:_pcCur,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
-              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
-               const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-               const cd=await cr.json().catch(()=>({}))
-               let paid=cd.paid===true
-               if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
-               ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
+              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+              const cd=await cr.json().catch(()=>({}))
+              if(cd.terminal&&cd.status){
+                const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
+                throw new Error(statusMsg[cd.status]||_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+              }
+              let paid=cd.paid===true
+              if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
+              ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
               else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
