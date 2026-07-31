@@ -5584,6 +5584,7 @@ function SearchBar({value,onChange,lang}){
         </svg>
         <input type="search" value={value} onChange={e=>onChange(e.target.value)}
           placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+          aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
           enterKeyHint="search"
           onFocus={()=>setFocused(true)}
@@ -5732,6 +5733,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
             onFocus={()=>setQFocus(true)} onBlur={()=>setQFocus(false)}
             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
             placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+            aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
             style={{flex:1,background:"none",border:"none",outline:"none",fontSize:16,color:"var(--sg-ink,"+SG.ink+")",fontFamily:"inherit",fontWeight:600,letterSpacing:0,minWidth:0}}/>
           {q&&<button onClick={()=>setQ("")} aria-label={_t(lang,"Effacer","Clear","Borrar")} className="sg-field-clear">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>
@@ -6480,6 +6482,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         <input
           type="email" inputMode="email" autoComplete="email"
           placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
+          aria-label={_t(lang,"Ton email pour la reco quotidienne","Your email for daily pick","Tu email para la recomendación diaria")}
           value={heroEmail}
           onChange={e=>setHeroEmail(e.target.value)}
           onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
@@ -7752,6 +7755,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           <form onSubmit={submit} style={{width:"100%",position:"relative",marginBottom:16}}>
             <input type="email" inputMode="email" autoComplete="email"
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              aria-label={_t(lang,"Ton email pour le brief","Your email for the brief","Tu email para el informe")}
               value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
               style={{width:"100%",boxSizing:"border-box",padding:"16px 64px 16px 20px",borderRadius:999,
                 border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
@@ -7844,6 +7848,7 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
           </div>
           <div style={{display:"flex",gap:7}}>
             <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              aria-label={_t(lang,"Ton email pour la prévision","Your email for the forecast","Tu email para el pronóstico")}
               value={email} onChange={e=>setEmail(e.target.value)}
               style={{flex:1,padding:"9px 12px",borderRadius:10,border:"1px solid rgba(255,255,255,.14)",
                 fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",outline:"none",minWidth:0,color:"#fff"}}/>
@@ -8006,6 +8011,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                 </svg>
                 <input type="email" inputMode="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}
                   placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+                  aria-label={_t(lang,"Ton email pour débloquer la semaine","Your email to unlock the week","Tu email para desbloquear la semana")}
                   style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
               </div>
               <button type="submit" className="sg-paygold" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
@@ -8144,6 +8150,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
           </div>
           <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
             <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              aria-label={_t(lang,"Ton email pour le brief matinal","Your email for morning brief","Tu email para el informe matinal")}
               value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
               style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
                 fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff",opacity:busy?0.6:1}}/>
@@ -8192,6 +8199,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
         </div>
         <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
           <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+            aria-label={_t(lang,"Ton email pour l'alerte","Your email for alerts","Tu email para alertas")}
             value={email} onChange={e=>setEmail(e.target.value)}
             style={{flex:1,padding:"10px 14px",borderRadius:12,
               border:"1px solid rgba(255,255,255,.12)",
@@ -8732,6 +8740,7 @@ function AlertCapture({beach,lang}){
     <form onSubmit={submit} style={{display:"flex",gap:8,margin:"0 0 14px"}}>
       <input type="email" inputMode="email" autoComplete="email" required autoFocus
         placeholder={_t(lang,"Ton email — verdict chaque matin","Your email — verdict every morning","Tu email — veredicto cada mañana")}
+        aria-label={_t(lang,"Ton email pour le verdict quotidien","Your email for daily verdict","Tu email para el veredicto diario")}
         value={email} onChange={e=>setEmail(e.target.value)}
         style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:16,fontFamily:"inherit",
           border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
@@ -10172,6 +10181,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                   type="search" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
                   onFocus={()=>track("sg_landing_pick_search",{})}
                   placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+                  aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
                   style={{width:"100%",minHeight:48,boxSizing:"border-box",background:"var(--sg-card,#fff)",
                     border:"2.5px solid #0D0D0D",borderRadius:12,padding:"13px 14px 13px 42px",
                     color:"var(--sg-ink,#0D0D0D)",fontSize:16,fontWeight:600,fontFamily:"inherit",outline:"none",
@@ -10449,6 +10459,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
                 </div>
                 <form onSubmit={handleSubmit} style={{display:"flex",gap:10,alignItems:"center"}}>
                   <input type="email" inputMode="email" autoComplete="email" required placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+                    aria-label={_t(lang,"Ton email pour le verdict de cette plage","Your email for this beach verdict","Tu email para el veredicto de esta playa")}
                     value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
                     style={{flex:1,padding:"12px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
                   <button type="submit" disabled={busy}
@@ -11978,7 +11989,7 @@ export default function App(){
         try{localStorage.setItem("sg_refclaim_ts",String(Date.now()))}catch(_){}
         fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"claim_referral_credit",code})})
           .then(r=>r.json()).then(d=>{
-            const days=Math.max(0,Math.min(365,parseInt(d&&d.days)||0))
+            const days=Math.max(0,Math.min(30,parseInt(d&&d.days)||0))
             if(days<=0)return
             const cur=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
             const end=Math.max(Date.now(),cur||0)+days*86400000

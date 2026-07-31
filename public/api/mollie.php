@@ -268,6 +268,21 @@ try {
         exit;
     }
 
+    if ($action === 'claim_referral_credit') {
+        // 🔒 Verrouillé 2026-07-31 : aucun ledger referrals en place (TASK-P0-002).
+        // Crédite 0 jour tant que le ledger réel n'est pas implémenté.
+        // Format réponse préservé pour compatibilité front (days=0 → toast ignoré).
+        $code = $data['code'] ?? '';
+        if (!preg_match('/^REF-[A-Z0-9]{6}$/', $code)) {
+            throw new Exception('Code de parrainage invalide');
+        }
+
+        $days = 0;
+
+        echo json_encode(['days' => $days, 'code' => $code, 'enabled' => false]);
+        exit;
+    }
+
     if ($action === 'applepay_session') {
         $validationUrl = $data['validationUrl'] ?? '';
         if (!$validationUrl) throw new Exception('validationUrl requis');
