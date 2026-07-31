@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-07-31 — release_engineer (OpenCode)
+
+**Production Release Cleanup & Validation :**
+
+- Fix bug syntaxe `ArchipelView.jsx` : const dupliquées `MID/FAR/NEAR` (esbuild error bloquant)
+- Recréé `scripts/lib/coast-zones.js` (import manquant cassé par nettoyage debug files)
+- Nettoyage complet fichiers debug/temp : `scripts/temp/`, `tests/screenshots/`, `debug-logs/`, `ui-audit-results/`, scripts debug
+- Gate de ship complet validé :
+  - ✅ `npm run build` — exit 0
+  - ✅ `check-bundle-budget` — 202.4 Ko gzip ≤ 210 Ko
+  - ✅ PHP lint — 7 fichiers OK (mollie, paypal, widget, b2b-trial)
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+  - ✅ `regions/index.cjs` — 6 régions valides
+- MAJ `.ai/current_state.md` + `.ai/tasks.md` (handoff)
+
+**Files :** `src/ArchipelView.jsx`, `scripts/lib/coast-zones.js`, `.ai/current_state.md`
+
+---
+
 ## 2026-07-31 — CTO_agent (OpenCode)
 
 **Transformation AI-native complète :**

@@ -12,6 +12,7 @@
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
 - [x] P1 - B2B recurring Mollie (#210, @coding_agent)
+- [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
 
 ---
 
