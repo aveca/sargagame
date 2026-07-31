@@ -7,7 +7,8 @@
 import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
-import {
+import * as SG from "./Sargasses_PROD.jsx"
+const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
   LINK_PRO, MOLLIE_PROFILE, MOLLIE_TESTMODE, MOL_FIELD, MOL_LABEL, NO_TRIAL, PAYPAL_CLIENT_ID, PAYPAL_PLANS,
   PAYWALL_READY, PAY_CAPTURE_ONLY, PAY_CUR, PAY_LABEL, PAY_PROVIDER, PRICE_MO, PRICE_TRIP, PRICE_TRIP_EUR,
@@ -15,7 +16,7 @@ import {
   VEILLEUR_MOOD, __COMM, __REL, _t, abVariant, fmtPassPrice, loadMollieJs, loadPayPalSdk,
   loadStripeJs, miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy, sgToast, sgVerifySub, submitLead,
   track, walletAvail
-} from "./Sargasses_PROD.jsx"
+} = SG
 
 // Simple media query hook (no deps)
 function useMediaQuery(query){
@@ -1468,6 +1469,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       const p=loadMollieJs().then(()=>{
         const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
         mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
+        // payReady au chargement SDK (comportement d'origine) : le bouton s'active,
+        // et createToken() (avec retry ci-dessous) gère le window entre SDK et mount.
         payReadyRef.current=true;setPayReady(true)
       })
       payPrewarmPromiseRef.current=p
@@ -1477,7 +1480,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   },[PAYWALL_READY,PAY_CAPTURE_ONLY,PAY_PROVIDER,lang])
 
   // MONTAGE des Components Mollie : ne s'exécute QUE quand payStep=true (refs disponibles)
-useEffect(()=>{
+  useEffect(()=>{
     if(!payStep||PAY_CAPTURE_ONLY||PAY_PROVIDER!=="mollie"||payMountedRef.current)return
     if(!mollieRef.current||!molNumberRef.current)return
     const _molBg="#241837"
@@ -1543,15 +1546,6 @@ useEffect(()=>{
     payPrewarmPromiseRef.current=prewarm()
     payPrewarmPromiseRef.current.catch(()=>{})
   },[])
-  // Keyboard: Escape ferme, Enter = payer (si payStep et pas busy)
-  useEffect(()=>{
-    const handleKey=(e)=>{
-      if(e.key==="Escape") onClose()
-      if(e.key==="Enter" && payStep && !payBusy && !payRedirecting) doSubscribe()
-    }
-    document.addEventListener("keydown", handleKey)
-    return ()=>document.removeEventListener("keydown", handleKey)
-  },[payStep, payBusy, payRedirecting, onClose, doSubscribe])
   // Reduced motion media query
   const [reduceMotion, setReduceMotion] = useState(false)
   useEffect(()=>{
@@ -1636,6 +1630,12 @@ useEffect(()=>{
   const doSubscribe=useCallback(async()=>{
     const plan=payPlanRef.current
     if(payBusy)return
+    // Components pas encore prêts (SDK chargé ≠ composants montés chez Mollie) :
+    // message clair au lieu de l'erreur SDK brute « Components are not yet loaded ».
+    if(PAY_PROVIDER!=="paypal"&&!PAY_CAPTURE_ONLY&&!payReadyRef.current){
+      setPayError(_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento."))
+      return
+    }
     const email=(payEmailRef.current?.value||"").trim()
     if(!email||!email.includes("@")||!email.includes(".")){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
@@ -1673,26 +1673,55 @@ useEffect(()=>{
     if(PAY_PROVIDER==="mollie"){
       setPayBusy(true);setPayError("")
       try{
-        const{token,error:tErr}=await mollieRef.current.createToken()
+        // createToken exige les composants montés : si le SDK répond « not yet
+        // loaded » (iframes encore en boot juste après le mount), on réessaie
+        // brièvement avant d'abandonner.
+        let token=null,tErr=null
+        for(let i=0;i<3;i++){
+          const res=await mollieRef.current.createToken()
+          if(res.token){token=res.token;break}
+          tErr=res.error
+          if(!/not yet loaded|not loaded/i.test(String((tErr&&tErr.message)||"")))break
+          await new Promise(r=>setTimeout(r,700))
+        }
         if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
         const _pc=passCtxRef.current
+        const _pcCur=_pc?_pc.cur:undefined
         // Parrainage (Mollie) : transmet le code parrain + le mien (attribution
         // enregistrée côté serveur ; la récompense est appliquée au go-live Mollie,
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
           ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-          :{action:"create_subscription",cardToken:token,plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
-        const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-        const d=await r.json().catch(()=>({}))
-        if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId))throw new Error(d.error||"payment failed")
-        if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
-          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
-          window.location.href=d.checkoutUrl;return
-        }
+          :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+         const d=await r.json().catch(()=>({}))
+         if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
+           const errMsg=d.error||""
+           let userMsg
+           if(/Unauthorized|Invalid Authorization|api_key/i.test(errMsg)){
+             userMsg=_t(lang,"Le paiement est temporairement indisponible. Réessaie dans quelques instants.","Payment is temporarily unavailable. Please try again shortly.","El pago no está disponible temporalmente. Intenta de nuevo en unos instantes.")
+           }else if(/price tamper|Prix invalide/i.test(errMsg)){
+             userMsg=_t(lang,"Le prix a été modifié. Réessaie depuis le début.","The price was modified. Please restart the checkout.","El precio fue modificado. Reinicia el pago.")
+           }else if(/already in progress|déjà en cours/i.test(errMsg)){
+             userMsg=_t(lang,"Un paiement est déjà en cours pour cette commande. Attends quelques secondes ou réessaie.","A payment is already in progress for this order. Wait a few seconds or retry.","Ya hay un pago en curso para este pedido. Espera unos segundos o reintenta.")
+           }else{
+              userMsg=errMsg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")
+           }
+           throw new Error(userMsg)
+         }
+         if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
+           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+           setPayRedirecting(true)
+           window.location.href=d.checkoutUrl;return
+         }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
         const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
         const cd=await cr.json().catch(()=>({}))
+        if(cd.terminal&&cd.status){
+          const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
+          throw new Error(statusMsg[cd.status]||_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+        }
         if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
         localStorage.setItem("sg_email",email)
         if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
@@ -1703,7 +1732,11 @@ useEffect(()=>{
       }catch(e){
         setPayBusy(false)
         const msg=(e&&e.message)?String(e.message):""
-        setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
+        // Erreur SDK brute (« Components are not yet loaded ») → message clair,
+        // jamais de jargon technique devant l'utilisateur.
+        setPayError(/not yet loaded|not loaded/i.test(msg)
+          ?_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento.")
+          :(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")))
         track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
         return
       }
@@ -1773,6 +1806,17 @@ useEffect(()=>{
   },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
   const doSubscribeRef=useRef(doSubscribe)
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
+  // Keyboard: Escape ferme, Enter = payer (si payStep et pas busy).
+  // Placé APRÈS la déclaration de doSubscribe (TDZ) — avant, le deps array
+  // lisait doSubscribe pendant le render → ReferenceError au moindre montage.
+  useEffect(()=>{
+    const handleKey=(e)=>{
+      if(e.key==="Escape") onClose()
+      if(e.key==="Enter" && payStep && !payBusy && !payRedirecting) doSubscribe()
+    }
+    document.addEventListener("keydown", handleKey)
+    return ()=>document.removeEventListener("keydown", handleKey)
+  },[payStep, payBusy, payRedirecting, onClose, doSubscribe])
   // ── Apple Pay / Google Pay (Mollie) ─────────────────────────────────────────
   // On NE fait PAS l'intégration directe (qui imposerait d'héberger le fichier de
   // vérification de domaine Apple + un test device). On force `method` côté serveur
@@ -1782,34 +1826,53 @@ useEffect(()=>{
   // Wallet via REDIRECT Mollie (checkout hébergé) — fallback universel : Google Pay, ou
   // Apple Pay quand l'intégration directe n'est pas dispo / domaine pas encore validé.
 const walletRedirect=useCallback(async(method)=>{
-    const _pc=passCtxRef.current
-    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
-    const plan=payPlanRef.current
-    setPayBusy(true);setPayError("")
-    if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
-    try{
-      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
-      const body=_pc
-        ?{action:"create_payment",paymentMethod:method,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-        :{action:"create_subscription",paymentMethod:method,plan,email,cur:_pc.cur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
-      const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-      const d=await r.json().catch(()=>({}))
-      if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId))throw new Error(d.error||"payment failed")
-       track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
-       if(d.checkoutUrl){
-         try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
-         // État "Redirection…" visible avant de quitter la page
-         setPayRedirecting(true)
-         window.location.href=d.checkoutUrl;return
+      const _pc=passCtxRef.current
+      const _pcCur=_pc?_pc.cur:undefined
+      const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
+      const plan=payPlanRef.current
+      setPayBusy(true);setPayError("")
+      if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
+      try{
+        const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
+       const body=_pc
+           ?{action:"create_payment",paymentMethod:method,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
+           :{action:"create_subscription",paymentMethod:method,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+       const d=await r.json().catch(()=>({}))
+       if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
+         const errMsg=d.error||""
+         let userMsg
+         if(/Unauthorized|Invalid Authorization|api_key/i.test(errMsg)){
+           userMsg=_t(lang,"Le paiement est temporairement indisponible. Réessaie dans quelques instants.","Payment is temporarily unavailable. Please try again shortly.","El pago no está disponible temporalmente. Intenta de nuevo en unos instantes.")
+         }else if(/price tamper|Prix invalide/i.test(errMsg)){
+           userMsg=_t(lang,"Le prix a été modifié. Réessaie depuis le début.","The price was modified. Please restart the checkout.","El precio fue modificado. Reinicia el pago.")
+         }else if(/already in progress|déjà en cours/i.test(errMsg)){
+           userMsg=_t(lang,"Un paiement est déjà en cours pour cette commande. Attends quelques secondes ou réessaie.","A payment is already in progress for this order. Wait a few seconds or retry.","Ya hay un pago en curso para este pedido. Espera unos segundos o reintenta.")
+         }else{
+           userMsg=d.error||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")
+         }
+         throw new Error(userMsg)
        }
-       const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
-       const cd=await cr.json().catch(()=>({}))
-       if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
-       if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
-       else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
-       setPayBusy(false)
-       setPaySuccess(true)
-       setTimeout(()=>{onActivated?.();onClose()},900)
+        track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
+        if(d.checkoutUrl){
+          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          // État "Redirection…" visible avant de quitter la page
+          setPayRedirecting(true)
+          window.location.href=d.checkoutUrl;return
+        }
+        // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+        const cd=await cr.json().catch(()=>({}))
+        if(cd.terminal&&cd.status){
+          const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
+          throw new Error(statusMsg[cd.status]||_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+        }
+        if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
+        setPayBusy(false)
+        setPaySuccess(true)
+        setTimeout(()=>{onActivated?.();onClose()},900)
      }catch(e){
        setPayBusy(false)
        const msg=(e&&e.message)?String(e.message):""
@@ -1860,9 +1923,10 @@ const walletRedirect=useCallback(async(method)=>{
             try{
               const token=JSON.stringify(ev.payment.token)
               const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
+              const _pcCur=_pc?_pc.cur:undefined
               const body=_pc
                 ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
-                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,cur:_pc.cur,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,cur:_pcCur,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
@@ -3193,6 +3257,19 @@ const walletRedirect=useCallback(async(method)=>{
                 borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
               <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>
                 {PAY_CAPTURE_ONLY?_t(lang,"On t'ouvre l'accès…","Opening your access…","Abriendo tu acceso…"):_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
+              </span>
+              <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
+            </div>
+          )}
+          {payRedirecting&&(
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"20px 0"}}>
+              <div style={{width:32,height:32,borderRadius:"50%",border:"3px solid rgba(255,199,44,.3)",
+                borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
+              <span style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>
+                {_t(lang,"Tu es redirigé vers Mollie…","You are being redirected to Mollie…","Se te redirige a Mollie…")}
+              </span>
+              <span style={{fontSize:11,color:"rgba(255,255,255,.35)",textAlign:"center"}}>
+                {_t(lang,"Ne ferme pas cette page","Do not close this page","No cierres esta página")}
               </span>
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>

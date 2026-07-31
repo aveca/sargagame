@@ -1,81 +1,64 @@
 # NEXT_SESSION — sargagame
 
-> **🎯 2026-07-29 — ALL PAYMENT FAILURES FIXED AND DEPLOYED (v2).**
+> **🎯 2026-07-30 — PAYMENT FLOW FIX + UI IMPROVEMENTS**
 
-### 2026-07-29 (session active) — Apple Pay direct path wired
+### 2026-07-30 — Mollie payment flow fixes and checkout UI improvements
 
-- **Live verification** :
-  - `POST https://sargasses-martinique.com/api/mollie.php {action:create_payment}` → 200 `{"checkoutUrl":"https://www.mollie.com/checkout/select-method/...","paymentId":"tr_..."}` ✅
-  - 5/5 domains serve `/.well-known/apple-developer-merchantid-domain-association` (9096 / 9095 bytes) ✅
-  - 5/5 regions rate-limit active (anti-abus) ✅
-- **Apple Pay direct path fixed** : `SgMollieClient` n'exposait pas `applePay->sessions->create()`. Ajouté. `mollie.php` envoie maintenant `{validationUrl, domain}` (domain dérivé de `HTTP_HOST`).
-- **FL / PU / RM toujours en v217** : paiements marchent (SDK cURL déployé) mais SW bloque encore POST en théorie. Push v218 devrait déclencher re-deploy via CI.
-- **Build budget** : 201.1 Ko gzip (≤ 210 Ko OK).
+#### Bugs fixed
+1. **mollie.php `payment_status` action** — Added `terminal` field to response for canceled/expired/failed statuses. Previously only `paid`/`settled` was handled; other statuses fell through silently.
+2. **PremiumModal.jsx doSubscribe error classification** — Added user-friendly error messages for common Mollie API errors: Unauthorized (API key issues), price tampering, double checkout, and generic failures. Previously raw error strings were shown to users.
+3. **PremiumModal.jsx walletRedirect error classification** — Same error classification applied to wallet redirect path (Apple Pay fallback, Google Pay).
+4. **PremiumModal.jsx terminal status handling** — Added proper handling for Mollie terminal statuses (canceled, expired, failed) in both doSubscribe non-3DS path and walletRedirect path. Users now see specific messages like "Paiement annulé" instead of generic "Paiement impossible".
+5. **Sargasses_PROD.jsx mollie_return handler** — Added terminal status detection in the payment polling loop. If Mollie reports a terminal failure status (canceled/expired/failed) during polling, the flow immediately redirects to `?payment_failed=1` instead of waiting for all 3 retry attempts.
+6. **PremiumModal.jsx redirecting UI** — Added visual "redirecting to Mollie" overlay with spinner and "Ne ferme pas cette page" message when `payRedirecting` state is true.
 
-### ROOT CAUSE 1: mollie.php PHP fatal (blocked ALL payments)
-In my earlier fix, I added `$payment->id` to the redirect URL in `mollie.php` line 109, but `$payment` doesn't exist yet — it's created at line 139 (`$payment = $mollie->payments->create(...)`). This caused a PHP fatal error on EVERY `create_payment` call, blocking ALL payments on mobile AND desktop.
+#### UI improvements
+- **Better error messages**: Mollie API errors are now classified and shown as user-friendly French/English/Spanish messages instead of raw technical strings
+- **Redirecting feedback**: Visual indicator when user is being redirected to Mollie hosted checkout
+- **Terminal status handling**: Users see specific messages for canceled/expired/failed payments instead of generic errors
+- **Consistent error classification**: Same error taxonomy applied to doSubscribe, walletRedirect, and applePay paths
 
-**Fix (commit c2e1f8f8)**: Reverted the `payment_id`-in-URL approach. Now the handler uses localStorage `sg_mollie_pending` as fallback when sessionStorage is wiped (iOS Safari). `walletRedirect()` also persists to localStorage.
+#### Files modified
+- `public/api/mollie.php` — Added `terminal` field to payment_status response
+- `src/PremiumModal.jsx` — Error classification, terminal status handling, redirecting UI
+- `src/Sargasses_PROD.jsx` — Terminal status detection in mollie_return handler
 
-### ROOT CAUSE 2: retryCtx crash (paywall unmounted → user sees map)
-The `retryCtx` state (`const [retryCtx,setRetryCtx]=useState(null)` inside B2BModal) was causing a `ReferenceError: retryCtx is not defined` at runtime when `payError` was set (e.g., after mollie.php 500). React's `componentDidCatch` caught it → B2BModal unmounted → `onClose()` → user sent back to map with NO payment screen.
+#### Tests
+- `npm run build` ✅
+- `node scripts/check-bundle-budget.cjs` ✅ (202.6 Ko gzip ≤ 210 Ko)
+- `php -l public/api/mollie.php` ✅
+- `php -l public/api/mollie-lib.php` ✅
+- `php -l public/api/mollie-webhook.php` ✅
+- `php -l public/api/create-checkout.php` ✅
+- `node scripts/ux-smoke.mjs` ✅ (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- `node scripts/run-tests.cjs` ✅ (38+38+16+14 regions/orientation pass, 0 fail)
 
-**Fix (commit 754dacd9)**: Removed `retryCtx` state entirely. The paywall error display now uses a uniform error style (no retry-specific branch). This was the reason users saw "back to map" instead of an error message.
+#### Remaining issues
+- **webhook_secret not configured**: `mollie-config.php` has `webhook_secret` commented out → webhook signature verification is fail-open. Needs to be set in the server config via `mollie-config.php` on the FTP deploy.
+- **Live API key in config**: `mollie-config.php` contains `live_H6BUh7uxdUkFKAnBQhz3tRVsuerNPs` — this is gitignored and only exists on the server, but should be verified it's not committed anywhere in git history.
+- **PremiumModal.jsx complexity**: The file is now ~3353 lines with many A/B test variants. Consider splitting into smaller modules for long-term maintainability.
+- **No dedicated payment success/cancel/error pages**: The app uses query parameters and generic error handling. Dedicated pages would improve the UX.
+- **Playwright E2E testing**: Could not run Playwright tests locally (preview server not persistent in this environment). Should be run in CI or locally with `npx playwright test`.
+- **Florida region test warning**: `[regions] ⚠️ florida.json ignorée (invalide, non-core)` — appears to be a stale warning from a previous data format; all 20 Florida beaches currently have correct `island: "florida"`.
 
-### ROOT CAUSE 3: Mollie PHP SDK NOT INSTALLED ON SERVER (blocked ALL payments)
-`getMollieClient()` in `mollie-lib.php` tried to `new \Mollie\Api\MollieApiClient()` but the class didn't exist — no `composer.json`, no `vendor/` on server. Every `create_payment` call threw HTTP 500 "Class Mollie\\Api\\MollieApiClient not found".
+#### 2026-07-31 — Payment flow error classification bug fix
 
-**Fix (commit 1b2b4dce)**: Replaced the missing Mollie PHP SDK with a lightweight cURL-based `SgMollieClient` class (no Composer dependency). It implements `payments->create/get`, `customers->get/page/create`, `customer_subscriptions->create/get` — exactly what the codebase uses.
+#### Bugs fixed
+1. **PremiumModal.jsx `doSubscribe` error fallback (line 1709)** — `msg` was undefined in the `doSubscribe` try-block scope (it only exists in the `catch(e)` block). The `else` branch for unknown Mollie API errors unconditionally fell through to the generic "Paiement impossible" French message instead of showing the actual server error. Fixed by replacing `msg` with `errMsg` so the real server error is shown as fallback. This affects users who see a non-matching Mollie API error — they now get the actual error string instead of a misleading generic message.
 
-### ROOT CAUSE 4: Server config uses array format, not constants
-Server's `mollie-config.php` (generated by `write-mollie-config.cjs` from GitHub secret) returns an array: `['api_key' => 'live_...', 'profile_id' => 'pfl_...']`. But `getMollieClient()` used `MOLLIE_API_KEY` constant — which only exists in the local placeholder `mollie-config.php`. The `require_once` returned `true` (boolean) on second call because `mollie.php` already `require_once`d it, so `$cfg` was `true` → empty API key → "Invalid Authorization header".
+#### Previous session history
 
-**Fixes**:
-- `getMollieClient()`: uses `require` (not `require_once`) and reads `is_array($cfg) ? $cfg['api_key'] : MOLLIE_API_KEY`
-- `mollie-webhook.php`: same pattern for `MOLLIE_WEBHOOK_SECRET`
-- Added `mollie-config.php` to `ZIP_EXCLUDE` in fast-deploy to prevent overwriting server's generated config
-- Added `mollie-config.php` to skip list in `prepare-ftp.cjs` (like `stripe-config.php`)
-
-### ROOT CAUSE 5: getCheckoutUrl was a property, not a method
-The cURL client returned an object with `getCheckoutUrl` as an arrow-function property, but `mollie.php` calls `$payment->getCheckoutUrl()` as a method → "Call to undefined method stdClass::getCheckoutUrl()".
-
-**Fix**: Created proper response classes (`SgPaymentResponse`, `SgPaymentDetailResponse`, etc.) with real methods (`getCheckoutUrl()`, `isPaid()`, etc.) and `__get` for dynamic property access.
-
-### Wallet payment fixes (commit 3f78cef9, deployed)
-- **Bug 1 (cur field)**: Added `cur:_pc.cur` to all 6 body locations (card, walletRedirect, Apple Pay direct — both create_payment and create_subscription). Without this, USD regions sent EUR cents → price validation failed → HTTP 500.
-- **Bug 2 (method→paymentMethod)**: Renamed `method` → `paymentMethod` in walletRedirect body. PHP reads `$data['paymentMethod']` — the old `method` key was always null, so Mollie never got the payment method specified.
-- **Bug 3 (subscriptionId)**: Changed `!d.paymentId` → `!d.paymentId&&!d.subscriptionId` in all 3 response checks. Subscriptions return `subscriptionId` not `paymentId`, so walletRedirect always threw "payment failed" for B2B monthly subscriptions.
-
-### Additional fixes (commit 0c7c9d9d, deployed)
-- `sg_widget_sign()` array payload fix (was breaking ALL B2B Pro tokens)
-- `applePayPaymentToken` now passed to Mollie `payments->create()` (direct Apple Pay)
-- `subscription.paid` / `charge_failed` / `payment.failed` handlers added
-- B2B annual one-time payment now grants Pro (365d override)
-- Direct Apple Pay inline status check: retry 3×2s (race condition)
+### Previous ROOT CAUSES (documented in prior sessions)
+- mollie.php PHP fatal from `$payment->id` before creation
+- retryCtx crash in B2BModal
+- Mollie PHP SDK not installed on server
+- Server config array vs constants mismatch
+- getCheckoutUrl property vs method
+- Wallet payment fixes (cur field, paymentMethod, subscriptionId)
+- `msg` undefined in doSubscribe error fallback (2026-07-31)
 
 ### Deploy status
-- Martinique ✅ fast deploy — build `DYH3y9Tr`
-- Guadeloupe ✅ fast deploy — build `DYH3y9Tr`
-- Florida / Punta Cana / Riviera Maya — FTP fallback (slow, incomplete — deploy timed out)
+- Martinique ✅ fast deploy — build v218
+- Guadeloupe ✅ fast deploy — build v218
+- Florida / Punta Cana / Riviera Maya — FTP fallback (slow, incomplete)
 - Barbados — no FTP credentials configured
-
-### Verification
-```bash
-# Martinique
-POST /api/mollie.php {action:"create_payment",cents:499,pass:"trip7",email:"test@test.fr",cur:"EUR"}
-→ 200 {"checkoutUrl":"https://www.mollie.com/checkout/select-method/...","paymentId":"tr_..."}
-
-# Guadeloupe
-POST /api/mollie.php {action:"create_payment",cents:499,pass:"trip7",email:"test@test.fr",cur:"EUR"}
-→ 200 {"checkoutUrl":"https://www.mollie.com/checkout/select-method/...","paymentId":"tr_..."}
-```
-
-### To test
-- Try paying with card → should work now (was broken by mollie.php fatal + paywall crash + missing SDK)
-- Try Apple Pay → direct path (if Mollie domain validated) or hosted fallback
-- Check browser console (F12) for any remaining errors after test
-- If Apple Pay still fails → check Mollie dashboard: is Apple Pay enabled as a payment method?
-- If card still fails → mollie.php 500 may still be cached on server (PHP opcache) or API key issue
-
-### Previous commit history
-cc3ca937 (Apple Pay client + domain), 5ea26a2e (Google Pay exclusion + Mollie customer lookup), bed793bb (SgMollieClient complete), 31c0f8cc (exclude mollie-config.php), 1bb024ec (SgMollieClient cURL base), 5c707c62 (inline retry), 0c7c9d9d (sg_widget_sign + applePayPaymentToken + webhook), 69198052 (payment_id URL fix which caused the fatal error), 302e5545 (initial URL fix).
