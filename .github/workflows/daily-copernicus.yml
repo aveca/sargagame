@@ -1031,7 +1031,11 @@ jobs:
             STATUS=000
             for ATTEMPT in 1 2 3; do
               TS=$(date +%s)
-              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D/?t=$TS" || echo 000)
+              # UA + Accept explicites : Cloudflare WAF renvoie 415 sur le curl
+              # par défaut du runner GH (UA "curl/7.x" + Accept "*/*" minimal).
+              # On imite un user-agent standard pour passer le WAF.
+              # (run 30669647829, 2026-07-31 : tous les domaines en 415 alors qu'ils servent du 200 côté navigateur)
+              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" "https://$D/?t=$TS" || echo 000)
               [ "$STATUS" = "200" ] && break
               [ "$ATTEMPT" -lt 3 ] && { echo "$D: HTTP $STATUS (tentative $ATTEMPT/3) — retry…"; sleep $((ATTEMPT * 2)); }
             done
@@ -1069,7 +1073,8 @@ jobs:
             check_sw() {
               local out=""
               for D in $1; do
-                GOT=$(curl -sL --max-time 15 "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
+                # UA explicite pour passer Cloudflare WAF (cf. health check principal)
+                GOT=$(curl -sL --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: */*" "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
                 [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
               done
               echo "$out"
