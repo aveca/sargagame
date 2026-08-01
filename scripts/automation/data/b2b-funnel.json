@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-01T08:24:13.421Z",
+  "updatedAt": "2026-08-01T13:24:05.657Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -1000,7 +1000,7 @@
       "contactedAt": "2026-07-28T08:43:23.563Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "8a378432a79cb4cb24f32f619c06a68b": {
       "stage": "contacted",
@@ -1009,7 +1009,7 @@
       "contactedAt": "2026-07-28T08:43:23.902Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "b63012bf905ee25a3b0232f8d08d4a16": {
       "stage": "contacted",
@@ -1018,7 +1018,7 @@
       "contactedAt": "2026-07-28T08:43:24.199Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "9ca20c2813628f3ccac6786d7fb6db3b": {
       "stage": "contacted",
@@ -1099,7 +1099,7 @@
       "contactedAt": "2026-07-28T08:43:28.239Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "605512d7f836ca4a4e3ac30e2919f620": {
       "stage": "contacted",
@@ -1117,7 +1117,7 @@
       "contactedAt": "2026-07-28T08:43:29.519Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "46e5c9c394955d8c414d223ed0ef53a4": {
       "stage": "contacted",
@@ -1198,7 +1198,7 @@
       "contactedAt": "2026-07-28T08:43:33.792Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "8577d67b4d85b15bf83926a946c8d232": {
       "stage": "contacted",
@@ -1207,7 +1207,7 @@
       "contactedAt": "2026-07-28T08:43:34.346Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "relance c4 (auto)"
     },
     "3374484be57cb66185c8eb6f37e7405e": {
       "stage": "contacted",
