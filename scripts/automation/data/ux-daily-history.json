@@ -4352,23 +4352,23 @@
   {
     "date": "2026-08-01",
     "region": "gp",
-    "sessions": 129,
+    "sessions": 275,
     "friction": 0,
-    "dead_rate": 0.08,
+    "dead_rate": 0.09,
     "dead_worst": {
-      "screen": "beach",
-      "rate": 0.226,
-      "n": 31
+      "screen": "map_map",
+      "rate": 0.168,
+      "n": 107
     },
     "top_dead_els": [
       {
         "el": "div",
-        "count": 11
+        "count": 20
       }
     ],
     "bored_worst": {
       "screen": "beach",
-      "rate": 0.36
+      "rate": 0.23
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4379,18 +4379,18 @@
   {
     "date": "2026-08-01",
     "region": "florida",
-    "sessions": 136,
-    "friction": 0,
-    "dead_rate": 0.04,
+    "sessions": 231,
+    "friction": 1,
+    "dead_rate": 0.064,
     "dead_worst": {
       "screen": "map_map",
-      "rate": 0.143,
-      "n": 28
+      "rate": 0.262,
+      "n": 65
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.25
+      "rate": 0.26
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4401,18 +4401,18 @@
   {
     "date": "2026-08-01",
     "region": "puntacana",
-    "sessions": 88,
+    "sessions": 121,
     "friction": 0,
-    "dead_rate": 0.172,
+    "dead_rate": 0.14,
     "dead_worst": {
       "screen": "map_map",
-      "rate": 0.303,
-      "n": 33
+      "rate": 0.289,
+      "n": 38
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.38
+      "rate": 0.4
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4423,14 +4423,18 @@
   {
     "date": "2026-08-01",
     "region": "rivieramaya",
-    "sessions": 56,
+    "sessions": 108,
     "friction": 0,
-    "dead_rate": 0,
-    "dead_worst": null,
+    "dead_rate": 0.022,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.029,
+      "n": 35
+    },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.38
+      "rate": 0.45
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
