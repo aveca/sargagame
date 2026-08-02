@@ -41,8 +41,14 @@ const CompareRow=({label,free,pro})=>(
   </div>
 )
 
-// Skeleton during prewarm
-const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"column",gap:16}}>{[1,2,3].map(i=>(<div key={i} style={{height:18,borderRadius:6,background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}{[1,2].map(i=>(<div key={i} style={{height:52,borderRadius:12,background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}</div>)
+// Skeleton during prewarm — premium golden-hour shimmer
+const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"column",gap:16,padding:16}}>
+  <div style={{height:14,borderRadius:999,background:"linear-gradient(90deg,rgba(255,199,44,.06) 25%,rgba(255,199,44,.14) 50%,rgba(255,199,44,.06) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite",width:"40%"}}/>
+  <div style={{height:28,borderRadius:8,background:"linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.10) 50%,rgba(255,255,255,.04) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>
+  <div style={{height:14,borderRadius:999,background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite",width:"70%"}}/>
+  {[1,2].map(i=>(<div key={i} style={{height:56,borderRadius:14,border:"1px solid rgba(255,255,255,.08)",background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}
+  <div style={{height:48,borderRadius:14,border:"1.5px solid rgba(255,199,44,.25)",background:"linear-gradient(90deg,rgba(255,199,44,.06) 25%,rgba(255,199,44,.12) 50%,rgba(255,199,44,.06) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>
+</div>)
 
 // Route de la page « fiabilité » selon région/langue (miroir de reliabilityHref
 // dans Sargasses_PROD.jsx, non exporté) : MQ/GP → /fiabilite/, régions US → EN/ES.
@@ -120,8 +126,8 @@ function TerritoireMeeting({lang,email,org}){
     <div style={{marginTop:14,padding:"14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:I.blue,boxShadow:`3px 3px 0 ${I.ink}`}}>
       <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:"#fdfcf7"}}>🏛️ {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>
       <div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#eef9f6",margin:"5px 0 10px"}}>{_t(lang,"Votre accès est déjà ouvert — explorez seul si vous préférez. Un échange de 15 min seulement si VOUS le souhaitez : on cale vos plages, votre devis et votre bon de commande. L'essai ne déclenche aucun prélèvement.","Your access is already open — explore on your own if you prefer. A 15-min call only if YOU want it: we scope your beaches, your quote and your purchase order. The trial triggers no charge.","Su acceso ya está abierto — explore solo si prefiere. Una llamada de 15 min solo si USTED quiere: definimos sus playas, su presupuesto y su orden de compra. La prueba no genera ningún cobro.")}</div>
-      <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
-      <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
+      <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} aria-label={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
+      <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} aria-label={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
       <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoi…","Sending…","Enviando…"):_t(lang,"Planifier un point · recevoir un devis →","Schedule a call · get a quote →","Reservar · recibir presupuesto →")}</button>
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#dff1ec",marginTop:9}}>{_t(lang,"Données satellite publiques (Copernicus/NOAA), auditables · Devis, bon de commande, facture — conforme RGPD & marché public · Un interlocuteur dédié. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable · Quote, purchase order, invoice — GDPR & public-procurement compliant · A dedicated contact. Indicative price excl. tax.","Datos satelitales públicos (Copernicus/NOAA), auditables · Presupuesto, orden de compra, factura — conforme RGPD · Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#cfe9e3",marginTop:6}}>{_t(lang,"Vos coordonnées servent uniquement à vous recontacter (intérêt légitime), conservées 12 mois, supprimées sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interés legítimo), conservados 12 meses, eliminados a petición.")} <a href="/fiabilite/" style={{color:"#fdfcf7",textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut →","See what we're worth first →","Vea primero lo que valemos →")}</a></div>
@@ -395,10 +401,12 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
           </div>
           <input value={org} onChange={e=>setOrg(e.target.value)}
             placeholder={_t(lang,"Nom de l'établissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}
+            aria-label={_t(lang,"Nom de l'établissement (optionnel)","Property name (optional)","Nombre del establecimiento (opcional)")}
             style={inputStyle}/>
           <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
+            aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prélèvement automatique · −2 mois en annuel · stop quand vous voulez","30-day trial, no card, no auto-charge · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta, sin cobro automático · 2 meses gratis al año · pare cuando quiera")}</div>
@@ -531,10 +539,12 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
           </>}
           <input value={org} onChange={onOrgChange}
             placeholder={_t(lang,"Nom de l'établissement ou de la collectivité (optionnel)","Property or organization name (optional)","Nombre del establecimiento o de la entidad (opcional)")}
+            aria-label={_t(lang,"Nom de l'établissement ou de la collectivité (optionnel)","Property or organization name (optional)","Nombre del establecimiento o de la entidad (opcional)")}
             style={inputStyle}/>
           <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
+            aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button className="b2f-cta" onClick={submit} disabled={!valid||busy}>{busy?_t(lang,"Activation…","Activating…","Activando…"):_t(lang,"Activer mon essai 30 j →","Activate my 30-day trial →","Activar mi prueba de 30 días →")}</button>
           <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Accès immédiat — aucun email de confirmation à cliquer · premier brief demain matin à 7 h","Instant access — no confirmation email to click · first brief in your inbox tomorrow at 7am","Acceso inmediato — sin email de confirmación · primer informe mañana a las 7 h")}</div>
@@ -2060,13 +2070,12 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   // MULTI-DEVISE (catalogue eur/usd, prix $ pour les régions touristes) et 100% on-site Mollie
   // (zéro lien buy.stripe.com) → il rend correctement sur TOUTES les régions, EUR comme USD.
   // pwPass défaut = ON (100% pass). ?pwpass=0 = échappe vers l'ancien paywall abo (secours).
-  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[0,1])==="pass"}catch(_){return true}})()
-  // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
-  // FORCÉ ON-SITE (2026-06-24) : Stripe est mort → les liens off-site buy.stripe.com
-  // de PassOffer redirigeaient vers un checkout cassé en sautant la capture. Défaut
-  // passé [1,0]→[0,1] : tout pass passe par passCtxRef/setPayStep (capture maintenant,
-  // Mollie create_payment au go-live). ?passonsite=0 force l'ancien off-site (mort).
-  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[0,1])==="on"}catch(_){return false}})()
+  // DÉCIDÉ 2026-06-26 : 100% pass → abVariant retiré, hardcodé true. Rollback : ?pwpass=0
+  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=0/.test(q))return false;return true}catch(_){return true}})()
+  // Paiement on-site one-time des passes — FORCÉ ON (2026-06-24) : Stripe est mort → les liens off-site buy.stripe.com
+  // de PassOffer redirigeaient vers un checkout cassé en sautant la capture.
+  // DÉCIDÉ 2026-06-24 : 100% on-site → abVariant retiré, hardcodé true. Rollback : ?passonsite=0
+  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=0/.test(q))return false;return true}catch(_){return true}})()
   // Mode PASS-ONLY effectif : on n'affiche QUE PassOffer (sombre) et on masque tout l'UI
   // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde
   // l'ancien flux email-offert (passOnly=false → l'UI abo/capture s'affiche normalement).
@@ -2154,11 +2163,13 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   // l'abo (passCtxRef + action:pay_once, devise EUR) — ZÉRO contact avec
   // effectivePlan/stripeLinkFor. 499¢ DOIT être dans l'allowlist serveur pay_once
   // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
+  // A/B pw_trippass_eur_ab (override ?pwtripeur=1/0). 50/50 control vs trip.
+  // Rollback QA : ?pwtripeur=0 force control, ?pwtripeur=1 force trip.
   const tripEurAB=!IS_NEW_REGION&&(()=>{try{
     const q=window.location.search
     if(/[?&]pwtripeur=1/.test(q))return true
     if(/[?&]pwtripeur=0/.test(q))return false
-    return abVariant("pw_trippass_eur",["control","trip"],[1,0])==="trip"
+    return abVariant("pw_trippass_eur_ab",["control","trip"],[.5,.5])==="trip"
   }catch(_){return false}})()
   const startTripPassEur=useCallback(()=>{
     passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
@@ -2926,7 +2937,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           </div>
         )}
 
-        {/* Trip Pass EUR (A/B pw_trippass_eur, MQ/GP) — MIROIR EXACT du bloc USD
+        {/* Trip Pass EUR (A/B pw_trippass_eur_ab, MQ/GP) — MIROIR EXACT du bloc USD
             ci-dessus, devise EUR, chemin de checkout SÉPARÉ (startTripPassEur →
             passCtxRef + action:pay_once). N'apparaît PAS si le storefront pass
             off-site (pwPass/PassOffer) est déjà affiché (évite deux surfaces
@@ -2934,13 +2945,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {!PAY_CAPTURE_ONLY&&tripEurAB&&!pwPass&&(
           <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
             border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
-            <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:10,marginBottom:2}}>
-              <span style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em"}}>
-                {_t(lang,"Juste pour ton séjour ?","Just here for your trip?","¿Solo por tu viaje?")}
-              </span>
-              <span style={{fontSize:11,color:"rgba(255,255,255,.55)"}}>
-                {_t(lang,"sans abonnement","no subscription","sin suscripción")}
-              </span>
+            <div style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em",marginBottom:8}}>
+              {_t(lang,"4,99 € · 7 jours","€4.99 · 7 days","4,99 € · 7 días")}
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.82)",lineHeight:1.35,marginBottom:10}}>
               {_t(lang,
