@@ -65,6 +65,12 @@ memory
 .playwright-mcp/
 session*-*.png
 responsive-*.png
+# Test artefacts (Playwright + audits) — regenerated on every run, never committed
+test-results/
+ui-audit-results/
+tests/screenshots/
+# Vite dev server log (local run only)
+logs-dev.txt
 
 # Perf harness screenshots (scripts/perf/*.png) — the .cjs harnesses are committed,
 # their PNG outputs (before/after captures) are local artefacts, regenerated on each run.
