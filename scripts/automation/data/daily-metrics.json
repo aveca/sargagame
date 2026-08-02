@@ -565,7 +565,7 @@
   },
   {
     "date": "2026-08-02",
-    "time": "2026-08-02T17:51:00.642Z",
+    "time": "2026-08-02T19:20:00.398Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 519,
@@ -574,13 +574,13 @@
     "pipelineOk": true,
     "funnel": null,
     "email": {
-      "sent": 3797,
+      "sent": 3810,
       "delivered": null,
-      "opened": 140,
+      "opened": 144,
       "clicked": 68,
       "bounced": null,
-      "openRate": 3.69,
-      "clickRate": 48.57,
+      "openRate": 3.78,
+      "clickRate": 47.22,
       "tracking": "pixel_first_party"
     },
     "stripe": {
