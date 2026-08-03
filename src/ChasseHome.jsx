@@ -483,6 +483,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 }
 
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -605,6 +606,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
+        {v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        </button>}
         <H2sNote status={beach.status} lang={lang}/>
 
         {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE

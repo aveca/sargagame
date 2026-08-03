@@ -15,14 +15,18 @@ $raw = file_get_contents('php://input');
 // Mollie envoie X-Mollie-Signature = HMAC-SHA256(body, webhook_secret)
 $cfg = require_once __DIR__ . '/mollie-config.php';
 $webhookSecret = is_array($cfg) ? ($cfg['webhook_secret'] ?? '') : (defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '');
-if ($webhookSecret && !empty($_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {
-    $expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
-    if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'])) {
-        error_log('[mollie-webhook] INVALID SIGNATURE — possible forgery');
-        http_response_code(403);
-        echo json_encode(['error' => 'invalid_signature']);
-        exit;
-    }
+if (!$webhookSecret) {
+    error_log('[mollie-webhook] webhook_secret missing');
+    http_response_code(503);
+    echo json_encode(['error' => 'webhook_unavailable']);
+    exit;
+}
+$expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
+if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'] ?? '')) {
+    error_log('[mollie-webhook] INVALID SIGNATURE — possible forgery');
+    http_response_code(403);
+    echo json_encode(['error' => 'invalid_signature']);
+    exit;
 }
 
 $data = json_decode($raw, true) ?? [];

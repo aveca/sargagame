@@ -17,13 +17,14 @@ import React, { useMemo } from "react"
 import { ChasseDetail, CSS as LC_CSS } from "./ChasseHome"
 
 export default function ComicDetail(props){
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const reduce = useMemo(()=>{
     try{ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) }
     catch(_){ return false }
   },[])
   return (
     <div
-      className={"lc-root lc-portal"+(reduce?" lc-reduce":"")}
+      className={"lc-root lc-portal"+(reduce?" lc-reduce":"")+(v2Enabled?" sg-v2-comic-detail":"")}
       style={{padding:0,background:"none",minHeight:0,position:"static"}}
     >
       <style>{LC_CSS}</style>

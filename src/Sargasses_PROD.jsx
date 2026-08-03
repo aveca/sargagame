@@ -13464,12 +13464,13 @@ export default function App(){
   const proB2BSrc=useRef("app")   // point d'entrée du B2BModal (events sg_b2b_step)
   useEffect(()=>{try{
     const p=new URLSearchParams(window.location.search)
-    if(p.get("paywall")==="1"){
+    if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
       // Préselection depuis /offres/ : ?plan=monthly|annual pré-coche le bon toggle.
       // Capturé AVANT le replaceState (qui efface la querystring) ; consommé par le
       // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
       const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
-      const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+      const canceled=p.get("paywall")==="cancel"
+      const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
     else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
       // Le replaceState ci-dessous efface la querystring AVANT le mount lazy du B2BModal
       // → stash de search (pattern sg_deep_plan) : ?b2bseq/?b2btrial/?beach= y survivent.
@@ -13548,6 +13549,7 @@ export default function App(){
   const[cookieConsent,setCookieConsent]=useState(()=>{
     try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
   })
+  const v2UiEnabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
   // Marché de l'onboarding : Martinique → null (chaînes legacy intactes). GP + régions
   // internationales recevaient « Martinique » sur le 1er écran (bug cohérence corrigé).
@@ -14667,7 +14669,7 @@ export default function App(){
             Refuser → analytics reste denied (comportement par défaut index.html).
             Rollback ?cookiebanner=0. */}
         {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
-          <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1600,
+          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1600,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
             borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
             display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>

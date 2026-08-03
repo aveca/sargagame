@@ -198,6 +198,7 @@ export default function BeachSheet({
   onPremiumClick,isPremium=false,sargData,userPos,forecast:forecastProp,
   track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts
 }){
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
@@ -270,7 +271,7 @@ export default function BeachSheet({
 
       {/* Sheet */}
       <div ref={swipe.ref} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
-        className="bs-sheet"
+        className={"bs-sheet"+(v2Enabled?" sg-v2-beach-sheet":"")}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
@@ -286,7 +287,7 @@ export default function BeachSheet({
         </button>
 
         {/* ── HERO: golden-hour scene + beach name ── */}
-        <div style={{position:"relative",height:"min(480px,46svh)",overflow:"hidden",borderRadius:"0 0 26px 26px",margin:"-10px -16px 0"}}>
+        <div className={v2Enabled?"sg-v2-beach-hero":undefined} style={{position:"relative",height:"min(480px,46svh)",overflow:"hidden",borderRadius:"0 0 26px 26px",margin:"-10px -16px 0"}}>
           <BeachHeroScene beach={beach}/>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.12) 0%, transparent 35%, transparent 50%, rgba(0,0,0,.5) 100%)"}}/>
           <div style={{position:"absolute",top:"38%",left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
