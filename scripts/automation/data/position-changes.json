@@ -1,52 +1,76 @@
 {
-  "generatedAt": "2026-07-27T14:02:04.336Z",
-  "comparedTo": "2026-07-20",
+  "generatedAt": "2026-08-03T14:02:54.211Z",
+  "comparedTo": "2026-07-27",
   "alerts": {
     "drops": [
       {
         "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/en/",
-        "prevPos": 36.9,
-        "currPos": 40.3,
-        "delta": 3.4,
-        "impressions": 367
+        "page": "https://sargassumcancun.com/",
+        "prevPos": 28.9,
+        "currPos": 42.8,
+        "delta": 13.9,
+        "impressions": 283
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/",
+        "prevPos": 1.3,
+        "currPos": 20.2,
+        "delta": 18.9,
+        "impressions": 42
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+        "prevPos": 2.3,
+        "currPos": 6.1,
+        "delta": 3.8,
+        "impressions": 137
       },
       {
         "site": "mq",
-        "page": "https://sargasses-martinique.com/plages/anse-collat/",
-        "prevPos": 9.8,
-        "currPos": 13,
-        "delta": 3.2,
-        "impressions": 22
+        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+        "prevPos": 23.5,
+        "currPos": 30.5,
+        "delta": 7,
+        "impressions": 33
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/es/playas/punta-cana-beach/",
+        "prevPos": 54.9,
+        "currPos": 59.5,
+        "delta": 4.6,
+        "impressions": 34
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/meilleures-plages-guadeloupe-sargasses/",
+        "prevPos": 7.9,
+        "currPos": 11.3,
+        "delta": 3.4,
+        "impressions": 40
       }
     ],
     "gains": [
       {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
-        "prevPos": 33.9,
-        "currPos": 23.5,
-        "delta": -10.4,
-        "impressions": 20
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/semaforo-del-sargazo/",
+        "prevPos": 55.2,
+        "currPos": 44.2,
+        "delta": -11,
+        "impressions": 85
       },
       {
         "site": "puntacana",
-        "page": "https://sargassumpuntacana.com/es/",
-        "prevPos": 40.8,
-        "currPos": 34.7,
-        "delta": -6.1,
-        "impressions": 77
+        "page": "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/",
+        "prevPos": 29,
+        "currPos": 23.5,
+        "delta": -5.5,
+        "impressions": 64
       }
     ],
-    "appeared": [
-      {
-        "site": "florida",
-        "page": "https://sargassummiami.com/seaweed-map/",
-        "avgPos": 35.1,
-        "clicks": 4,
-        "impressions": 50
-      }
-    ],
+    "appeared": [],
     "vanished": [],
     "queryDrops": [],
     "queryGains": []

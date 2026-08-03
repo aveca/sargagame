@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-27T14:02:10.643Z",
+  "generatedAt": "2026-08-03T14:03:02.769Z",
   "sites": {
     "mq": {
-      "pageCount": 362,
-      "uniqueTitles": 204,
-      "uniqueDescs": 187,
+      "pageCount": 364,
+      "uniqueTitles": 206,
+      "uniqueDescs": 189,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 544,
+      "issueCount": 546,
       "issues": [
         {
           "file": "404.html",
@@ -121,11 +121,6 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 107
@@ -133,13 +128,18 @@
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 100
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec UV très fort aujourd’hui — Martinique (protégez-vous)"
+        },
+        {
+          "file": "confidentialite/index.html",
+          "kind": "desc-too-long",
+          "length": 268
         },
         {
           "file": "confidentialite.html",
@@ -198,9 +198,9 @@
       ]
     },
     "gp": {
-      "pageCount": 401,
-      "uniqueTitles": 243,
-      "uniqueDescs": 227,
+      "pageCount": 403,
+      "uniqueTitles": 245,
+      "uniqueDescs": 229,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -226,7 +226,7 @@
           ]
         }
       ],
-      "issueCount": 597,
+      "issueCount": 599,
       "issues": [
         {
           "file": "404.html",
@@ -327,11 +327,6 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 107
@@ -339,13 +334,18 @@
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 100
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec UV très fort aujourd’hui — Guadeloupe (protégez-vous)"
+        },
+        {
+          "file": "confidentialite/index.html",
+          "kind": "desc-too-long",
+          "length": 268
         },
         {
           "file": "confidentialite.html",

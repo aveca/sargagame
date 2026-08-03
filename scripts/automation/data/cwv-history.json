@@ -1,17 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-05-04",
-      "sites": {
-        "mq": {
-          "combined": null
-        },
-        "gp": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-05-11",
       "sites": {
         "mq": {
@@ -378,6 +367,94 @@
             },
             "TTFB": {
               "p75": 923,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
+    },
+    {
+      "date": "2026-08-03",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 3579,
+              "good": null
+            },
+            "INP": {
+              "p75": 435,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 998,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 3660,
+              "good": null
+            },
+            "INP": {
+              "p75": 578,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.02,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 980,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 3209,
+              "good": null
+            },
+            "INP": {
+              "p75": 310,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 680,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 3206,
+              "good": null
+            },
+            "INP": {
+              "p75": 259,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 862,
               "good": null
             }
           }
