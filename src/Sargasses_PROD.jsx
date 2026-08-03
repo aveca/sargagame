@@ -13,6 +13,7 @@ import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
@@ -14514,22 +14515,35 @@ export default function App(){
                 track={track}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"view3d"})}}/>
             </Suspense></ErrBound>
-          :mapWorld==="world"
+:mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>
-              <LazyWorldMapView
-                beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
-                rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
-                arrivals={mapArrivals}
-                forecastByBeach={mapForecastByBeach}
-                onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
-                onShare={shareBeachCard}
-                seasonOutlook={sargData?.seasonOutlook||null}
-                topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
-                onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
-                previewBeach={previewBeachObj}
-                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
-                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+              <>
+                <AroundMeController
+                  beaches={allBeaches}
+                  region={IS_NEW_REGION ? REGION : null}
+                  island={island}
+                  lang={lang}
+                  onOpenBeach={onMapBeach}
+                  track={track}
+                  isPremium={isPremium}
+                  locked={!isPremium}
+                  openPremium={openPremium}
+                />
+                <LazyWorldMapView
+                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
+                  rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
+                  arrivals={mapArrivals}
+                  forecastByBeach={mapForecastByBeach}
+                  onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
+                  onShare={shareBeachCard}
+                  seasonOutlook={sargData?.seasonOutlook||null}
+                  topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
+                  onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
+                  previewBeach={previewBeachObj}
+                  onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
+                  onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+              </>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
 
