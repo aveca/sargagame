@@ -759,13 +759,14 @@ jobs:
         if: steps.check_build.outputs.full == 'true'
         run: node scripts/prepare-ftp.cjs
 
-      # Injecte api/mollie-config.php (clé live) dans les dossiers de staging EUR à
-      # partir du secret MOLLIE_API_KEY. La clé n'est lue que via env: (jamais dans une
-      # ligne shell → pas dans les logs). No-op silencieux si le secret est absent.
+      # Injecte api/mollie-config.php (clé live + webhook_secret) dans les dossiers de staging EUR à
+      # partir des secrets MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET. Les secrets ne sont lus que via env:
+      # (jamais dans une ligne shell → pas dans les logs). Échoue explicitement si webhook_secret absent.
       - name: Inject Mollie config into staging api/ dirs
         if: steps.check_build.outputs.full == 'true'
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
         run: node scripts/write-mollie-config.cjs
 
       - name: Submit URLs to Google Indexing
@@ -809,6 +810,15 @@ jobs:
             node scripts/prepare-ftp.cjs
             echo "First run — did full build"
           fi
+
+      # Inject Mollie config (api_key + webhook_secret) into staging api/ dirs on EVERY deploy
+      # (not just full builds) so config stays in sync with GitHub secrets.
+      - name: Inject Mollie config into staging api/ dirs (data-only path)
+        if: steps.check_build.outputs.full == 'false'
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+        run: node scripts/write-mollie-config.cjs
 
       # ── 2c. Data-only nouvelles régions : copie les JSON frais de chaque
       # région (public/api/copernicus/<id>/) vers <ftpDir>/api/copernicus/ —

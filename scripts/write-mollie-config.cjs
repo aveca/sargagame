@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ── Génère api/mollie-config.php au DÉPLOIEMENT, depuis le secret GitHub MOLLIE_API_KEY ──
+// ── Génère api/mollie-config.php au DÉPLOIEMENT, depuis les secrets GitHub MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET ──
 // But : le fondateur colle sa clé Mollie UNE fois dans GitHub (Settings → Secrets →
 // Actions → MOLLIE_API_KEY) et le déploiement écrit/livre le fichier tout seul, sur les
 // régions EUR. Plus aucune manip FTP/cPanel. La clé n'est jamais committée
@@ -18,14 +18,26 @@ const apiKey = (process.env.MOLLIE_API_KEY || '').trim()
 if (!apiKey) { console.error('MOLLIE_API_KEY absent → mollie-config.php non généré (les paiements restent en mode capture). Ajoute le secret GitHub pour activer Mollie.'); process.exit(0) }
 if (!/^(live|test)_/.test(apiKey)) { console.error('MOLLIE_API_KEY : préfixe inattendu (live_ ou test_ attendu) → abandon, rien écrit.'); process.exit(1) }
 
+const webhookSecret = (process.env.MOLLIE_WEBHOOK_SECRET || '').trim()
+if (!webhookSecret) {
+  console.error('MOLLIE_WEBHOOK_SECRET absent → build bloqué. Le webhook Mollie est fail-closed (HTTP 503 sans secret). Ajoute le secret GitHub MOLLIE_WEBHOOK_SECRET (Dashboard Mollie → Webhooks → Secret).')
+  process.exit(1)
+}
+if (webhookSecret.length < 16) {
+  console.error('MOLLIE_WEBHOOK_SECRET trop court (min 16 caractères) → abandon.')
+  process.exit(1)
+}
+
 const php = `<?php
 // GÉNÉRÉ par scripts/write-mollie-config.cjs au déploiement — NE PAS COMMITTER, NE PAS ÉDITER.
-// api_key = secret GitHub MOLLIE_API_KEY. Bloqué en HTTP via api/.htaccess (Require all denied).
+// api_key = secret GitHub MOLLIE_API_KEY. webhook_secret = secret GitHub MOLLIE_WEBHOOK_SECRET.
+// Bloqué en HTTP via api/.htaccess (Require all denied).
 return [
-    'api_key'    => ${JSON.stringify(apiKey)},
-    'profile_id' => 'pfl_t8KCk4Cm2C',
-    'resend_key' => '',
-    'subscription' => [
+    'api_key'       => ${JSON.stringify(apiKey)},
+    'webhook_secret' => ${JSON.stringify(webhookSecret)},
+    'profile_id'    => 'pfl_t8KCk4Cm2C',
+    'resend_key'    => '',
+    'subscription'  => [
         'monthly' => ['amount' => '4.99',  'currency' => 'EUR', 'interval' => '1 month'],
         'annual'  => ['amount' => '49.00', 'currency' => 'EUR', 'interval' => '12 months'],
     ],
@@ -50,7 +62,7 @@ for (const d of stagingDirs) {
   if (!htOk) { skipped.push(d + ' (api/.htaccess ne protège pas mollie-config.php)'); continue }
   fs.writeFileSync(path.join(apiDir, 'mollie-config.php'), php, 'utf-8')
   written++
-  console.log('   → mollie-config.php écrit dans ' + d + '/api/  (préfixe clé ' + apiKey.slice(0, 5) + ')')
+  console.log('   → mollie-config.php écrit dans ' + d + '/api/  (préfixe clé ' + apiKey.slice(0, 5) + ', webhook_secret: ***' + webhookSecret.slice(-4) + ')')
 }
 if (written === 0) console.error('⚠️ Aucun mollie-config.php écrit (lancer APRÈS prepare-ftp.cjs). Ignorés : ' + (skipped.join('; ') || 'aucun dossier *-ftp/api/ trouvé'))
 else if (skipped.length) console.log('   (ignorés par sécurité : ' + skipped.join('; ') + ')')
