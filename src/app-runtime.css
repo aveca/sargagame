@@ -494,3 +494,149 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   .heart-pop{animation:none !important}
   .sg-sk{animation:none !important;background:var(--sg-cardS,#EFEDE6) !important}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SARGAGAME V2 · Phase 0 design system application
+   Scoped classes only. Rollback is handled by ?sguxv2=0 at component level.
+   No new asset, font or eager dependency is introduced here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --sg-v2-ink:#0D0B14;
+  --sg-v2-paper:#FDF6E3;
+  --sg-v2-gold:#FFC72C;
+  --sg-v2-gold-soft:#FFE47A;
+  --sg-v2-teal:#009E8E;
+  --sg-v2-clean:#22C55E;
+  --sg-v2-check:#F59E0B;
+  --sg-v2-avoid:#E8522A;
+  --sg-v2-shadow-hard:3px 3px 0 var(--sg-v2-ink);
+  --sg-v2-shadow-soft:0 14px 40px rgba(13,11,20,.18);
+}
+
+/* La fiche devient une histoire de décision plutôt que cinq écrans entiers.
+   Le verdict reste premier ; le détail reste disponible dessous. */
+.sg-v2-beach-sheet .bs-story-section{
+  min-height:clamp(360px,54svh,520px) !important;
+  padding:28px 20px !important;
+}
+.sg-v2-beach-sheet .sg-v2-beach-hero{
+  height:min(380px,38svh) !important;
+}
+.sg-v2-beach-sheet .bs-gobtn{
+  min-height:52px;
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+.sg-v2-beach-sheet .bs-gobtn:focus-visible,
+.sg-v2-beach-sheet button:focus-visible,
+.sg-v2-comic-detail button:focus-visible,
+.sg-v2-paywall-panel button:focus-visible{
+  outline:3px solid var(--sg-v2-gold-soft);
+  outline-offset:3px;
+}
+
+/* ComicDetail est la fiche par défaut du parcours carte. Même promesse que la
+   BeachSheet fallback : le verdict arrive vite et l'action reste atteignable. */
+.sg-v2-comic-detail .lc-detail-illu{
+  height:clamp(190px,27svh,230px);
+}
+.sg-v2-comic-detail .lc-detail-body{
+  padding:14px 18px 52px;
+}
+.sg-v2-comic-detail .lc-detail-sub{
+  margin:8px 0 11px;
+}
+.sg-v2-comic-detail .lc-detail-score{
+  margin-bottom:11px;
+}
+.sg-v2-comic-detail .lc-detail-facts{
+  margin-bottom:13px;
+}
+.sg-v2-comic-detail .lc-detail-actions{
+  position:sticky;
+  bottom:0;
+  z-index:4;
+  margin:14px -18px -52px;
+  padding:10px 18px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(253,246,227,0),rgba(253,246,227,.97) 24%);
+}
+.sg-v2-comic-detail .lc-detail-full{
+  min-height:48px;
+}
+.sg-v2-comic-detail .lc-detail-go{
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+.sg-v2-comic-detail .lc-detail-body > .lc-cta.yel:not(.lc-v2-early-cta):not(.lc-detail-detailcta){
+  display:none;
+}
+.sg-v2-comic-detail .lc-v2-early-cta{
+  display:block;
+  width:100%;
+  min-height:52px;
+  margin:0 0 14px;
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+
+/* Consent remains explicit, but must not hide the verdict or the next action
+   on a 390px viewport. The two choices and privacy link stay unchanged. */
+.sg-v2-cookie-banner{
+  padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) !important;
+  gap:8px !important;
+}
+.sg-v2-cookie-banner > div:first-child{
+  font-size:12px !important;
+  line-height:1.3 !important;
+}
+.sg-v2-cookie-banner > div:last-child{
+  gap:8px !important;
+}
+.sg-v2-cookie-banner button{
+  min-height:40px !important;
+  padding:9px 12px !important;
+  font-size:13px !important;
+}
+
+/* Le paywall garde son offre et sa logique de paiement, mais devient une
+   surface premium unique sur mobile et respecte la zone de l'iPhone. */
+.sg-v2-paywall-panel,
+.sg-v2-checkout-panel{
+  padding-bottom:calc(20px + env(safe-area-inset-bottom)) !important;
+}
+.sg-v2-paywall-panel .sg-v2-pass-offer,
+.sg-v2-checkout-panel .sg-v2-pass-offer{
+  width:min(100%,620px);
+  margin-inline:auto;
+}
+.sg-v2-pass-offer .sg-passcard-hero{
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.sg-v2-pass-offer .sg-passcard-hero:hover{
+  border-color:rgba(255,228,122,.88) !important;
+  box-shadow:0 5px 0 rgba(0,0,0,.35),0 18px 44px rgba(232,168,0,.25),inset 0 0 0 1px rgba(255,228,122,.24) !important;
+}
+.sg-v2-pass-offer .sg-passcard-hero:active{
+  transform:translateY(2px);
+}
+
+@media (min-width:768px){
+  .sg-v2-cookie-banner{
+    flex-direction:row !important;
+    align-items:center;
+    padding:10px max(18px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  .sg-v2-cookie-banner > div:first-child{
+    flex:1;
+  }
+  .sg-v2-cookie-banner > div:last-child{
+    min-width:300px;
+  }
+  .sg-v2-beach-sheet .bs-story-section{
+    min-height:420px !important;
+    padding:32px 28px !important;
+  }
+  .sg-v2-beach-sheet .sg-v2-beach-hero{
+    height:min(400px,42svh) !important;
+  }
+  .sg-v2-comic-detail .lc-detail-body{
+    padding-bottom:60px;
+  }
+}

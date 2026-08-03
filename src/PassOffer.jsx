@@ -14,6 +14,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
 const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
   const cents = PASS.cents[cur]
@@ -28,7 +29,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const pd = perDay(cents, PASS.days, cur, lang)
 
   return (
-    <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+    <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>

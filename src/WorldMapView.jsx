@@ -207,6 +207,8 @@ export default function WorldMapView({
   beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
 }){
+  // V2 est reversible sans redeploy: le holdout conserve la surface historique.
+  const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
   // Prévision 7j sur la carte = bénéfice Premium n°1 (le « waouh » qui retire les
@@ -333,6 +335,8 @@ export default function WorldMapView({
   const labelLayerRef = useRef(null)
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
   const bakedObjUrlRef = useRef(null)  // objectURL du PNG baké (toBlob) → à révoquer (anti-leak)
+  const pendingBakedUrlRef = useRef(null) // bitmap prêt, conservé jusqu'au premier geste
+  const mapInteractedRef = useRef(false) // le SVG initial reste le rendu LCP ; raster après interaction
   const fxRef      = useRef(null)  // couche live des effets d'échouage (au-dessus du monde baké)
   const fieldRef   = useRef(null)  // couche live du champ de sargasses au large (dérive lente)
   const audioRef   = useRef(null)  // AudioContext (lazy, débloqué au 1er geste)
@@ -569,7 +573,12 @@ export default function WorldMapView({
               if(cancelled){ URL.revokeObjectURL(url); return }
               if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
               bakedObjUrlRef.current=url
-              setBakedUrl(url)
+              // Le bake est une optimisation de pan/zoom, pas le rendu initial. Le laisser
+              // remplacer le SVG au repos le faisait devenir le LCP mobile tardif (image
+              // blob). On garde donc le même SVG visible jusqu'au premier geste utilisateur;
+              // dès ce geste, le bitmap déjà décodé prend le relais sans changer le design.
+              if(mapInteractedRef.current) setBakedUrl(url)
+              else pendingBakedUrlRef.current=url
             }
             const pre=new Image()
             pre.onload=()=>{ (pre.decode?pre.decode():Promise.resolve()).then(commit,commit) }
@@ -932,6 +941,8 @@ export default function WorldMapView({
     let moved=false
 
     const onDown=e=>{
+      mapInteractedRef.current=true
+      if(pendingBakedUrlRef.current){ setBakedUrl(pendingBakedUrlRef.current); pendingBakedUrlRef.current=null }
       // 1er geste utilisateur : débloque l'AudioContext (exigence navigateurs) + rejoue l'échouage
       // UNE fois AVEC le son (à l'ouverture il a joué muet, audio verrouillé). Ensuite : plus de
       // re-trigger (le drapeau reste). C'est le « shroump » d'arrivée quand l'utilisateur engage.
@@ -1691,6 +1702,7 @@ export default function WorldMapView({
             <div style={{display:"flex",alignItems:"center",gap:6,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,padding:"6px 10px"}}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" style={{opacity:.5,flexShrink:0}}><circle cx="10" cy="10" r="6.5"/><path d="m20 20-5-5"/></svg>
               <input value={query} onChange={e=>setQuery(e.target.value)}
+                aria-label={_t(lang,"Chercher une plage","Search for a beach","Buscar una playa")}
                 placeholder={_t(lang,"Chercher…","Search…","Buscar…")}
                 /* font-size 16px OBLIGATOIRE : iOS Safari zoome la page dès qu'un <input>
                    focus a un font-size < 16px, et NE réinitialise PAS ce zoom quand l'overlay
@@ -1790,7 +1802,7 @@ export default function WorldMapView({
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
               Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}
-          {!emailHidden&&!emailSent&&(
+          {(!mapV2||selected)&&!emailHidden&&!emailSent&&(
             <div onPointerDown={e=>{try{e.stopPropagation()}catch(_){}}}
               style={{
                 marginTop:9,display:"flex",alignItems:"center",gap:7,pointerEvents:"auto",

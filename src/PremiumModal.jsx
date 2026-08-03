@@ -1199,6 +1199,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 
 
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const LL=T[lang]||T.fr
   // Capture B2B (hôtels/collectivités) — porte discrète vers le drip B2B existant.
   const [showB2B,setShowB2B]=useState(false)
@@ -2293,7 +2294,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   return(
     <>
       <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
-      <div ref={panelRef} className="sg-modal-panel" role="dialog" aria-modal="true" aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")} onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
+      <div ref={panelRef} className={"sg-modal-panel"+(v2Enabled?(payStep?" sg-v2-checkout-panel":" sg-v2-paywall-panel"):"")} role="dialog" aria-modal="true" aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")} onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         // Refonte CONTINUATION DE SCÈNE (arm constellation = défaut) : le golden-hour
         // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium
