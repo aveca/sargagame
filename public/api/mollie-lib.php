@@ -170,7 +170,7 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
     $grantKey = 'mollie_grant_' . $subscriptionId;
     $existing = get_transient($grantKey);
     if ($existing) {
-        return ['granted' => false, 'reason' => 'already_granted', 'token' => $existing];
+        return ['granted' => false, 'reason' => 'already_granted', 'token' => $existing, 'mirror_ok' => true];
     }
 
     $isMonthly = in_array($planKey, ['pro_monthly', 'brief_monthly'], true);
@@ -187,8 +187,8 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 
     set_transient($grantKey, $token, $durationDays * 86400 + 86400); // TTL = durée + 1 jour
 
-    // Supabase mirror (best-effort)
-    mol_supabase_mirror('payment_grants', [
+    // Supabase mirror (returns false on failure to trigger retry)
+    $mirrorOk = mol_supabase_mirror('payment_grants', [
         'subscription_id' => $subscriptionId,
         'type' => 'b2b_pro',
         'plan' => $planKey,
@@ -197,9 +197,9 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
         'granted_at' => date('c', time()),
     ]);
 
-    error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId expires=" . date('c', $expiresAt));
+    error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
 
-    return ['granted' => true, 'token' => $token, 'expires_at' => $expiresAt, 'plan' => $planKey];
+    return ['granted' => true, 'token' => $token, 'expires_at' => $expiresAt, 'plan' => $planKey, 'mirror_ok' => $mirrorOk];
 }
 
 /**
@@ -249,13 +249,13 @@ function set_transient(string $key, string $value, int $ttl): void {
 
 /**
  * Supabase mirror for payment grants — write-only (service key on server).
- * Best-effort, never throws (logs only). Avoids /tmp loss on deploy/restart.
+ * Best-effort, returns boolean success. Avoids /tmp loss on deploy/restart.
  */
-function mol_supabase_mirror(string $table, array $data): void {
+function mol_supabase_mirror(string $table, array $data): bool {
     global $cfg;  // BUG-2026-011 : $cfg chargé par require_once mollie-config.php (caller side)
-    $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
-    $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
-    if (!$serviceKey) return; // skip silently if not configured
+    $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
+    if (!$serviceKey) return true; // skip silently if not configured (return true = skip ok)
 
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -274,8 +274,16 @@ function mol_supabase_mirror(string $table, array $data): void {
     $resp = curl_exec($ch);
     if (curl_errno($ch)) {
         error_log('[mol_supabase_mirror] cURL error: ' . curl_error($ch));
+        curl_close($ch);
+        return false;
     }
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    if ($httpCode >= 400) {
+        error_log('[mol_supabase_mirror] HTTP error: ' . $httpCode);
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -287,7 +295,7 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
     $grantKey = 'mol_b2c_pass_' . $paymentId;
     $existing = get_transient($grantKey);
     if ($existing) {
-        return ['granted' => false, 'reason' => 'already_granted'];
+        return ['granted' => false, 'reason' => 'already_granted', 'mirror_ok' => true];
     }
 
     $durations = ['p30' => 30, 'trip7' => 7, 'season' => 210];
@@ -306,8 +314,8 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
 
     set_transient($grantKey, $grantData, $days * 86400 + 86400);
 
-    // Supabase mirror (best-effort, no-op if not configured)
-    mol_supabase_mirror('payment_grants', [
+    // Supabase mirror (returns false on failure to trigger retry)
+    $mirrorOk = mol_supabase_mirror('payment_grants', [
         'payment_id' => $paymentId,
         'type' => 'b2c_pass',
         'pass' => $pass,
@@ -318,9 +326,9 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
         'metadata' => $metadata,
     ]);
 
-    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt));
+    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
 
-    return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days];
+    return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days, 'mirror_ok' => $mirrorOk];
 }
 
 /**
