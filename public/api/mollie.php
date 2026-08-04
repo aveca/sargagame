@@ -65,7 +65,7 @@ try {
         $passPrices = [
             'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
             'trip7'  => ['EUR' => 4.99,  'USD' => null],
-            'season' => ['EUR' => 24.99, 'USD' => null],
+            'season' => ['EUR' => 19.99, 'USD' => null],
         ];
         $priceValid = false;
         if ($pass && isset($passPrices[$pass])) {
