@@ -32,7 +32,7 @@ const PRODUCTS = [
   // ── B2C EUR (MQ/GP) ──
   { id: 'pass_p7_eur',       value: '7.99',  currency: 'EUR', desc: 'Pass 7 jours — Sargasses' },
   { id: 'pass_p30_eur',      value: '14.99', currency: 'EUR', desc: 'Pass 30 jours — Sargasses' },
-  { id: 'pass_saison_eur',   value: '24.99', currency: 'EUR', desc: 'Pass Saison — Sargasses' },
+  { id: 'pass_saison_eur',   value: '19.99', currency: 'EUR', desc: 'Pass Saison — Sargasses' },
   // ── B2C USD (florida/puntacana/rivieramaya) ──
   { id: 'pass_p7_usd',       value: '5.99',  currency: 'USD', desc: '7-Day Pass — Sargassum' },
   { id: 'pass_p30_usd',      value: '11.99', currency: 'USD', desc: '30-Day Pass — Sargassum' },
