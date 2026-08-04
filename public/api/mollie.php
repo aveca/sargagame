@@ -4,9 +4,14 @@
  * Config (secrets) dans mollie-config.php (gitignored) — template : mollie-config.example.php
  */
 
-require_once __DIR__ . '/mollie-config.php';
 require_once __DIR__ . '/mollie-lib.php';
 require_once __DIR__ . '/_ratelimit.php';
+// BUG-2026-011 : $cfg must be assigned (require_once alone drops the return value).
+// Use require (not require_once) so the anonymous return array is captured.
+// Subsequent calls to require_once mollie-config.php elsewhere (e.g. mollie-lib.php:136
+// uses plain require) will re-execute harmlessly and return the same array.
+$cfg = require __DIR__ . '/mollie-config.php';
+if (!is_array($cfg)) $cfg = [];  // garde-fou si mollie-config.php absent/corrompu
 
 header('Content-Type: application/json; charset=utf-8');
 // CORS whitelist — SYNC avec create-checkout.php / paypal.php
@@ -284,8 +289,8 @@ try {
         }
         // Same fallback as mollie-lib.php webhook mirror.
 // Supabase URL is public; service key remains secret.
-        $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
-        $serviceKey  = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
+        $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+        $serviceKey  = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
         if (!$supabaseUrl || !$serviceKey) {
             // Supabase non configuré — échec propre, fallback Stripe côté front.
             error_log('[mollie.php] verify_subscription: SUPABASE_URL/SERVICE_KEY absents');

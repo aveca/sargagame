@@ -253,8 +253,8 @@ function set_transient(string $key, string $value, int $ttl): void {
  */
 function mol_supabase_mirror(string $table, array $data): void {
     global $cfg;  // BUG-2026-011 : $cfg chargé par require_once mollie-config.php (caller side)
-    $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
-    $serviceKey = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
+    $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
     if (!$serviceKey) return; // skip silently if not configured
 
     $ch = curl_init();
