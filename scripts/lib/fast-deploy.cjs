@@ -26,7 +26,16 @@ const AdmZip = require("adm-zip")
 // Fichiers JAMAIS embarqués dans le zip : secrets server-only que l'extraction
 // ne doit pas pouvoir régresser (stripe-config.php est gitignoré et provisionné
 // à part). L'extraction n'efface pas les fichiers absents du zip → ils survivent.
-const ZIP_EXCLUDE = new Set(["stripe-config.php", "mollie-config.php", "_deploy-secret.php", "_deploy.zip"])
+//
+// ATTENTION — mollie-config.php est VOLONTAIREMENT EMBARQUÉ dans le zip (retiré
+// de la liste d'exclusion le 2026-08-03 pour fix BUG-2026-007 : le webhook_secret
+// n'était jamais déployé car le fichier était exclu → webhook Mollie 503 en prod).
+// Sécurité : write-mollie-config.cjs est run AVANT le deploy en CI avec
+// MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET (GitHub secrets). Si webhook_secret
+// manque, write-mollie-config.cjs exit 1 → build bloqué → pas de deploy.
+// Donc le mollie-config.php embarqué dans le zip est toujours valide.
+// Pour stripe-config.php à part (provisionné manuellement), on garde l'exclusion.
+const ZIP_EXCLUDE = new Set(["stripe-config.php", "_deploy-secret.php", "_deploy.zip"])
 
 function httpJson(url, timeoutMs, headers) {
   return new Promise((resolve, reject) => {
