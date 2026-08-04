@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T14:16:43.884Z",
+  "generated": "2026-08-04T19:46:24.964Z",
   "date": "2026-08-04",
   "days": 1,
   "regions": [
@@ -10,6 +10,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "08d0660a",
+      "subject": "chore: update Copernicus data 2026-08-04 14:16 UTC"
+    },
+    {
+      "h": "4289c406",
+      "subject": "chore: email state 2026-08-04 14:16 UTC"
+    },
     {
       "h": "a0d044fb",
       "subject": "chore: update Copernicus data 2026-08-04 08:43 UTC"
@@ -69,44 +77,28 @@
     {
       "h": "50c16817",
       "subject": "chore: update Copernicus data 2026-08-03 20:03 UTC"
-    },
-    {
-      "h": "db348cc1",
-      "subject": "chore: email state 2026-08-03 19:44 UTC"
-    },
-    {
-      "h": "049a0073",
-      "subject": "chore: update Copernicus data 2026-08-03 18:56 UTC"
-    },
-    {
-      "h": "b182687a",
-      "subject": "chore: update Copernicus data 2026-08-03 14:53 UTC"
-    },
-    {
-      "h": "be7bfbfa",
-      "subject": "chore: email state 2026-08-03 14:53 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 130,
+      "sessions": 208,
       "friction": 2,
-      "dead_rate": 0.095,
+      "dead_rate": 0.088,
       "dead_worst": {
         "screen": "map_map",
-        "rate": 0.246,
-        "n": 57
+        "rate": 0.215,
+        "n": 107
       },
       "top_dead_els": [
         {
           "el": "div",
-          "count": 10
+          "count": 14
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.2
+        "rate": 0.19
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -115,24 +107,28 @@
       "session_to_email": 0,
       "prev_date": "2026-08-03",
       "changes": [
-        "sessions 239→130 (-46%)",
         "rage-clicks 12→2 ✅"
       ]
     },
     {
       "region": "gp",
-      "sessions": 148,
+      "sessions": 249,
       "friction": 0,
-      "dead_rate": 0.061,
+      "dead_rate": 0.052,
       "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.083,
-        "n": 72
+        "screen": "beach",
+        "rate": 0.103,
+        "n": 58
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 12
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.18
+        "rate": 0.17
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -141,24 +137,28 @@
       "session_to_email": 0,
       "prev_date": "2026-08-03",
       "changes": [
-        "sessions 329→148 (-55%)",
-        "✔︎ dead-click résolu : div"
+        "sessions 329→249 (-24%)"
       ]
     },
     {
       "region": "florida",
-      "sessions": 107,
+      "sessions": 180,
       "friction": 1,
-      "dead_rate": 0.063,
+      "dead_rate": 0.075,
       "dead_worst": {
         "screen": "map_map",
-        "rate": 0.088,
-        "n": 34
+        "rate": 0.136,
+        "n": 66
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 11
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.28
+        "rate": 0.23
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -167,24 +167,23 @@
       "session_to_email": 0,
       "prev_date": "2026-08-03",
       "changes": [
-        "sessions 188→107 (-43%)",
-        "✔︎ dead-click résolu : div"
+        "stable (aucun mouvement notable)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 71,
+      "sessions": 106,
       "friction": 0,
-      "dead_rate": 0.065,
+      "dead_rate": 0.054,
       "dead_worst": {
         "screen": "map_map",
-        "rate": 0.182,
-        "n": 22
+        "rate": 0.129,
+        "n": 31
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.26
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -193,19 +192,23 @@
       "session_to_email": 0,
       "prev_date": "2026-08-03",
       "changes": [
-        "sessions 97→71 (-27%)"
+        "stable (aucun mouvement notable)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 57,
+      "sessions": 90,
       "friction": 0,
-      "dead_rate": 0.069,
-      "dead_worst": null,
+      "dead_rate": 0.05,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.114,
+        "n": 44
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.32
+        "rate": 0.31
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -214,7 +217,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-03",
       "changes": [
-        "sessions 41→57 (+39%)"
+        "sessions 41→90 (+120%)"
       ]
     }
   ]
