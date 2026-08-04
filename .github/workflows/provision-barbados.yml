@@ -39,6 +39,7 @@ jobs:
       - name: Inject Mollie config into staging api/
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011
         run: node scripts/write-mollie-config.cjs
 
       # Run provisioning script (creates Mollie profile for Barbados if needed)

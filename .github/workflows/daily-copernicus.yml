@@ -767,6 +767,7 @@ jobs:
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
           MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
         run: node scripts/write-mollie-config.cjs
 
       - name: Submit URLs to Google Indexing
@@ -818,6 +819,7 @@ jobs:
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
           MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
         run: node scripts/write-mollie-config.cjs
 
       # ── 2c. Data-only nouvelles régions : copie les JSON frais de chaque

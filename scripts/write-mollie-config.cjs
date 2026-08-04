@@ -28,15 +28,28 @@ if (webhookSecret.length < 16) {
   process.exit(1)
 }
 
+// BUG-2026-011 : SUPABASE_SERVICE_KEY nécessaire pour payment_grants mirror (webhook)
+// + verify_subscription (mollie.php). Sans clé : mirror skip silently + handler retourne
+// lookup_failed (fallback Stripe préserve l'UX, mais cross-device pass recovery inopérant).
+// Non bloquant (process.exit(0)) car les paiements Mollie restent fonctionnels sans Supabase.
+const supabaseServiceKey = (process.env.SUPABASE_SERVICE_KEY || '').trim()
+const supabaseUrl = 'https://rswdmjtdzrucqzzukfmd.supabase.co'  // public Project Ref, hardcoded comme mollie-lib.php:255 fallback
+if (!supabaseServiceKey) {
+  console.warn('⚠️ SUPABASE_SERVICE_KEY absent → mollie-config.php généré sans supabase_service_key. payment_grants mirror + verify_subscription resteront inopérants (BUG-2026-011 latent). Ajoute le secret GitHub SUPABASE_SERVICE_KEY pour activer cross-device pass recovery.')
+}
+
 const php = `<?php
 // GÉNÉRÉ par scripts/write-mollie-config.cjs au déploiement — NE PAS COMMITTER, NE PAS ÉDITER.
 // api_key = secret GitHub MOLLIE_API_KEY. webhook_secret = secret GitHub MOLLIE_WEBHOOK_SECRET.
+// supabase_service_key = secret GitHub SUPABASE_SERVICE_KEY (service_role, RLS bypass).
 // Bloqué en HTTP via api/.htaccess (Require all denied).
 return [
     'api_key'       => ${JSON.stringify(apiKey)},
     'webhook_secret' => ${JSON.stringify(webhookSecret)},
     'profile_id'    => 'pfl_t8KCk4Cm2C',
     'resend_key'    => '',
+    'supabase_url'         => ${JSON.stringify(supabaseUrl)},
+    'supabase_service_key' => ${JSON.stringify(supabaseServiceKey)},
     'subscription'  => [
         'monthly' => ['amount' => '4.99',  'currency' => 'EUR', 'interval' => '1 month'],
         'annual'  => ['amount' => '49.00', 'currency' => 'EUR', 'interval' => '12 months'],
@@ -62,7 +75,9 @@ for (const d of stagingDirs) {
   if (!htOk) { skipped.push(d + ' (api/.htaccess ne protège pas mollie-config.php)'); continue }
   fs.writeFileSync(path.join(apiDir, 'mollie-config.php'), php, 'utf-8')
   written++
-  console.log('   → mollie-config.php écrit dans ' + d + '/api/  (préfixe clé ' + apiKey.slice(0, 5) + ', webhook_secret: ***' + webhookSecret.slice(-4) + ')')
+  // Log safe : préfixe clé Mollie + 4 derniers chars webhook_secret + supabase present/absent (jamais la valeur)
+  const supaStatus = supabaseServiceKey ? 'present (***' + supabaseServiceKey.slice(-4) + ')' : 'ABSENT'
+  console.log('   → mollie-config.php écrit dans ' + d + '/api/  (préfixe clé ' + apiKey.slice(0, 5) + ', webhook_secret: ***' + webhookSecret.slice(-4) + ', supabase_service_key: ' + supaStatus + ')')
 }
 if (written === 0) console.error('⚠️ Aucun mollie-config.php écrit (lancer APRÈS prepare-ftp.cjs). Ignorés : ' + (skipped.join('; ') || 'aucun dossier *-ftp/api/ trouvé'))
 else if (skipped.length) console.log('   (ignorés par sécurité : ' + skipped.join('; ') + ')')

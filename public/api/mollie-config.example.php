@@ -10,6 +10,14 @@ return [
     'resend_key'    => '',                  // welcome email (optionnel, réutilise la clé Resend ; vide = pas d'email)
     // 'appsscript_url' => 'https://script.google.com/macros/s/DEPLOYMENT_ID/exec',
 
+    // Supabase — payment_grants persistence (BUG-2026-010 cross-device pass recovery
+    // + BUG-2026-011 webhook mirror). URL = public (Project Ref), service_key = SECRET
+    // service_role (bypass RLS). Lu par mollie.php:verify_subscription + mollie-lib.php
+    // mol_supabase_mirror(). Sans service_key, mirror skip silently + verify_subscription
+    // retourne lookup_failed (fallback Stripe préserve l'UX).
+    'supabase_url'         => 'https://rswdmjtdzrucqzzukfmd.supabase.co',  // PUBLIC — Project Ref
+    'supabase_service_key' => '',                                           // SECRET service_role — vide = désactivé
+
     // Montants des abonnements récurrents. Mollie crée les subscriptions INLINE
     // (amount + interval), PAS de plan_id pré-créé comme PayPal. La présence de
     // l'entrée = allowlist serveur (anti-tampering : un montant forgé est rejeté).

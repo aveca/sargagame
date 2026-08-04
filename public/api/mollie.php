@@ -284,8 +284,8 @@ try {
         }
         // Same fallback as mollie-lib.php webhook mirror.
 // Supabase URL is public; service key remains secret.
-        $supabaseUrl = getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
-        $serviceKey  = getenv('SUPABASE_SERVICE_KEY') ?: '';
+        $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+        $serviceKey  = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
         if (!$supabaseUrl || !$serviceKey) {
             // Supabase non configuré — échec propre, fallback Stripe côté front.
             error_log('[mollie.php] verify_subscription: SUPABASE_URL/SERVICE_KEY absents');
