@@ -282,7 +282,9 @@ try {
             echo json_encode(['error' => 'Missing email']);
             exit;
         }
-        $supabaseUrl = getenv('SUPABASE_URL') ?: '';
+        // Same fallback as mollie-lib.php webhook mirror.
+// Supabase URL is public; service key remains secret.
+        $supabaseUrl = getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
         $serviceKey  = getenv('SUPABASE_SERVICE_KEY') ?: '';
         if (!$supabaseUrl || !$serviceKey) {
             // Supabase non configuré — échec propre, fallback Stripe côté front.

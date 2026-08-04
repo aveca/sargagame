@@ -26,8 +26,9 @@ check('handler verify_subscription présent', /if\s*\(\s*\$action\s*===\s*['"]ve
 //    Pattern réel : if (!$email || !strpos($email, '@'))
 check("email validé (non-vide + @)", /if\s*\(\s*!\s*\$email\s*\|\|\s*!\s*strpos\(\s*\$email\s*,\s*['"]@['"]\s*\)\s*\)/.test(src));
 
-// 3. Source de vérité Supabase (pas Mollie API directe)
+// 3. Utilise SUPABASE_URL getenv + fallback hardcodé
 check('utilise SUPABASE_URL getenv', /getenv\(['"]SUPABASE_URL['"]\)/.test(src));
+check('fallback SUPABASE_URL hardcodé', /getenv\(['"]SUPABASE_URL['"]\)\s*\?:\s*['"]https:\/\/rswdmjtdzrucqzzukfmd\.supabase\.co['"]/.test(src));
 check('utilise SUPABASE_SERVICE_KEY getenv', /getenv\(['"]SUPABASE_SERVICE_KEY['"]\)/.test(src));
 
 // 4. Requête sur payment_grants filtrée type=b2c_pass + expires_at>now()
