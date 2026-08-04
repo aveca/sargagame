@@ -4,7 +4,7 @@
  * (B2C passes + B2B annual) et les publie dans public/api/mollie-passlinks.json.
  *
  * Contrairement à mollie-paylinks.cjs (B2B annual only), ici on couvre :
- *   B2C : p7 (7,99 € / $5.99), p30 (14,99 € / $11.99), saison (24,99 € / $19.99)
+ *   B2C : p7 (7,99 € / $5.99), p30 (14,99 € / $11.99), saison (19,99 € / $19.99)
  *   B2B : brief_annual (290 €), pro_annual (690 €), territory_annual (1990 €)
  *   B2B USD : brief_annual_usd ($390), pro_annual_usd ($790)
  *
