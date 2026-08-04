@@ -3204,11 +3204,12 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
                     <div style={{marginTop:10}}><a href="#" style={{color:"#ffc72c"}}>{_t(lang,"Ouvrir l'app →","Open app →","Abrir app →")}</a></div>
                   </div>
                 </details>
-                {/* Garantie */}
-                <div style={{marginTop:12,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 12px",borderRadius:10,background:"rgba(22,101,52,.15)",border:"1px solid rgba(34,197,94,.2)"}}>
-                  <span style={{fontSize:16}}>🔁</span>
-                  <span style={{fontSize:11.5,fontWeight:600,color:"#86efac"}}>{_t(lang,"Pas satisfait ? Remboursé sous 48h — sans justification.","Not happy? Refund within 48h — no questions.","¿No convencido? Reembolso en 48h — sin preguntas.")}</span>
-                </div>
+                {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) :
+                    pass one-time, accès numérique immédiat → pas de garantie de remboursement
+                    volontaire. Voir remboursement.html (service non remboursable au titre
+                    de la rétractation, art. L221-28 13° C.conso) + cgv.html.
+                    BUG-2026-A3 : bloc garantie 48h previously affiché ici contre-disait
+                    remboursement.html et les commentaires RETIRÉE des lignes 919/1175/2976. */}
               </div>
             )
           })()}
