@@ -1,6 +1,6 @@
 {
   "_note": "Liens de paiement Mollie — tous produits (généré par mollie-passlinks.cjs)",
-  "updatedAt": "2026-08-04T02:33:00.364Z",
+  "updatedAt": "2026-08-04T05:36:17.031Z",
   "links": {
     "pass_p7_eur": {
       "id": "pl_6hjMENKg4kouhchhcUE5D",
@@ -19,12 +19,12 @@
       "createdAt": "2026-07-28T08:43:02.623Z"
     },
     "pass_saison_eur": {
-      "id": "pl_nQ3EgRWggHWqUzQAKeKE8",
-      "url": "https://payment-links.mollie.com/payment/nQ3EgRWggHWqUzQAKeKE8",
-      "value": "24.99",
+      "id": "pl_qkigRjioyw7gSSa8cBQfn",
+      "url": "https://payment-links.mollie.com/payment/qkigRjioyw7gSSa8cBQfn",
+      "value": "19.99",
       "currency": "EUR",
       "webhooked": true,
-      "createdAt": "2026-07-28T08:43:03.828Z"
+      "createdAt": "2026-08-04T05:36:17.029Z"
     },
     "pass_p7_usd": {
       "id": "pl_6rbwkTPnrFv5zxnUE7eTH",

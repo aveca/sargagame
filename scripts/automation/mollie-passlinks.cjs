@@ -49,7 +49,7 @@ const PRODUCTS = [
 function loadKey() {
   if (process.env.MOLLIE_API_KEY) return process.env.MOLLIE_API_KEY.trim()
   for (const p of ['public/api/mollie-config.php', 'martinique-ftp/api/mollie-config.php']) {
-    try { const t = fs.readFileSync(path.join(__dirname, '..', '..', p), 'utf8'); const m = t.match(/'api_key'\s*=>\s*'([^']+)'/); if (m && !m[1].includes('REPLACE')) return m[1] } catch {}
+    try { const t = fs.readFileSync(path.join(__dirname, '..', '..', p), 'utf8'); const m = t.match(/'api_key'\s*=>\s*['"]([^'"]+)['"]/); if (m && !m[1].includes('REPLACE')) return m[1] } catch {}
   }
   return null
 }
