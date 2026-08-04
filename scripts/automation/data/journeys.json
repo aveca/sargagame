@@ -1,0 +1,130 @@
+{
+  "_comment": "Journey templates + bucket quotas for the REAL screen-recording harness (journey-recorder.cjs). Screen-recording of the REAL product, human-like. NEVER AI-generated video (doctrine: no AI slop). Buckets: short=1-10min, long=10-20min. Edit here to add/tune journeys; the recorder reads this file.",
+  "bucketQuotas": { "short": 4, "long": 2 },
+  "buckets": {
+    "short": { "minMs": 60000, "maxMs": 600000 },
+    "long":  { "minMs": 600000, "maxMs": 1200000 }
+  },
+  "journeys": [
+    {
+      "id": "b2c_discovery_salines_quick",
+      "persona": "Voyageur presse qui verifie sa plage preferee avant de partir (mobile)",
+      "bucket": "short",
+      "weight": 3,
+      "expectedKpis": ["sg_session_start", "sg_forecast_lock_click", "sg_premium_modal_open"],
+      "steps": [
+        { "action": "goto", "target": "/", "note": "Atterrissage accueil/carte, attendre mount (sg_session_start fire au useEffect L11054)", "dwellMs": 4000 },
+        { "action": "scroll", "note": "Scroll doux pour reveler le verdict du jour sous la carte", "dwellMs": 1500 },
+        { "action": "dwell", "dwellMs": 3000, "note": "Lecture du verdict gratuit (moat = preuve avant ask)" },
+        { "action": "goto", "target": "/plages/plage-des-salines/", "note": "Deep-link fiche plage reelle", "dwellMs": 3500 },
+        { "action": "scroll", "note": "Descendre vers la prevision 7j / cadran verdict" },
+        { "action": "hover", "target": "button, [role=button]", "note": "Survol du 1er CTA visible (mouvement souris humain)" },
+        { "action": "maybeClick", "target": "[data-testid=forecast-lock], button, [role=button]", "note": "Clic sur le lock prevision 7j -> openLock -> sg_forecast_lock_click puis openPremium('forecast')", "dwellMs": 2500 },
+        { "action": "dwell", "dwellMs": 3000, "note": "Regarde le paywall s'ouvrir (sg_premium_modal_open), pas de conversion" }
+      ]
+    },
+    {
+      "id": "b2c_paywall_convert_intent_quick",
+      "persona": "Voyageur convaincu pret a debloquer la prevision (intention d'achat, pas de paiement reel)",
+      "bucket": "short",
+      "weight": 2,
+      "expectedKpis": ["sg_session_start", "sg_forecast_lock_click", "sg_premium_modal_open", "sg_premium_modal_cta", "sg_pass_cta", "sg_checkout_redirect"],
+      "steps": [
+        { "action": "goto", "target": "/plages/anse-mitan/", "note": "Entree directe sur une fiche plage", "dwellMs": 3500 },
+        { "action": "scroll", "note": "Parcours de la fiche jusqu'au bloc prevision" },
+        { "action": "dwell", "dwellMs": 2500, "note": "Lecture verdict + fiabilite" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "Ouvrir le paywall via lock/CTA forecast -> sg_forecast_lock_click + sg_premium_modal_open" },
+        { "action": "dwell", "dwellMs": 3500, "note": "Lecture de l'offre pass dans PremiumModal" },
+        { "action": "hover", "target": "button, [role=button]", "note": "Survol des tiers de prix" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "Clic CTA d'achat dans le modal -> sg_premium_modal_cta + sg_pass_cta + sg_checkout_redirect (s'arrete a la redirection, aucun vrai paiement)", "dwellMs": 2500 },
+        { "action": "dwell", "dwellMs": 2000, "note": "Fin sur l'ecran de redirection Mollie/capture" }
+      ]
+    },
+    {
+      "id": "b2c_map_browse_multi_beach_quick",
+      "persona": "Vacancier indecis qui compare plusieurs plages sur la carte",
+      "bucket": "short",
+      "weight": 2,
+      "expectedKpis": ["sg_session_start", "sg_premium_modal_open"],
+      "steps": [
+        { "action": "goto", "target": "/?nav=map", "note": "Carte-first (fallback map vivant)", "dwellMs": 4000 },
+        { "action": "hover", "target": ".sg-maplabel, [role=button]", "note": "Survol de labels de plage sur la carte SVG" },
+        { "action": "scroll", "note": "Pan/scroll doux de la carte" },
+        { "action": "goto", "target": "/carte-sargasses/", "note": "Page carte SEO", "dwellMs": 3000 },
+        { "action": "goto", "target": "/plages/grande-anse-d-arlet/", "dwellMs": 3000, "note": "Premiere plage" },
+        { "action": "dwell", "dwellMs": 2500, "note": "Lecture verdict" },
+        { "action": "goto", "target": "/plages/anse-noire/", "dwellMs": 3000, "note": "Deuxieme plage comparee" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "Tap CTA premium sur une fiche -> sg_premium_modal_open" }
+      ]
+    },
+    {
+      "id": "b2c_previsions_alertes_quick",
+      "persona": "Utilisateur qui cherche les previsions et veut etre alerte",
+      "bucket": "short",
+      "weight": 2,
+      "expectedKpis": ["sg_session_start", "sg_premium_modal_open"],
+      "steps": [
+        { "action": "goto", "target": "/previsions/", "note": "Page previsions SEO", "dwellMs": 3500 },
+        { "action": "scroll", "note": "Lecture des previsions" },
+        { "action": "dwell", "dwellMs": 2500 },
+        { "action": "goto", "target": "/alertes/", "note": "Page alertes", "dwellMs": 3000 },
+        { "action": "scroll", "note": "Decouverte de la promesse alertes" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "CTA alertes/premium visible -> openPremium -> sg_premium_modal_open", "dwellMs": 2500 }
+      ]
+    },
+    {
+      "id": "b2c_deep_explorer_long",
+      "persona": "Voyageur meticuleux qui explore tout le produit avant de decider (session longue)",
+      "bucket": "long",
+      "weight": 2,
+      "expectedKpis": ["sg_session_start", "sg_forecast_lock_click", "sg_premium_modal_open", "sg_premium_modal_cta", "sg_pass_cta", "sg_checkout_redirect"],
+      "steps": [
+        { "action": "goto", "target": "/", "dwellMs": 6000, "note": "Atterrissage, sg_session_start" },
+        { "action": "scroll", "note": "Exploration lente de l'accueil" },
+        { "action": "dwell", "dwellMs": 5000, "note": "Lecture verdict + fiabilite (long dwell)" },
+        { "action": "goto", "target": "/carte-sargasses/", "dwellMs": 5000 },
+        { "action": "hover", "target": ".sg-maplabel, [role=button]", "note": "Survol labels carte" },
+        { "action": "goto", "target": "/plages/plage-des-salines/", "dwellMs": 6000 },
+        { "action": "scroll", "note": "Lecture fiche complete" },
+        { "action": "dwell", "dwellMs": 5000, "note": "Etude verdict Salines" },
+        { "action": "goto", "target": "/plages/pointe-faula/", "dwellMs": 5000, "note": "2e plage" },
+        { "action": "scroll" },
+        { "action": "dwell", "dwellMs": 4000 },
+        { "action": "goto", "target": "/plages/anse-trabaud/", "dwellMs": 5000, "note": "3e plage" },
+        { "action": "scroll" },
+        { "action": "dwell", "dwellMs": 4000 },
+        { "action": "goto", "target": "/previsions/", "dwellMs": 4000, "note": "Verif previsions generales" },
+        { "action": "goto", "target": "/plages/anse-mitan/", "dwellMs": 4000, "note": "Retour sur une fiche pour convertir" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "Lock forecast -> sg_forecast_lock_click + sg_premium_modal_open", "dwellMs": 3000 },
+        { "action": "dwell", "dwellMs": 4000, "note": "Etude longue de l'offre pass" },
+        { "action": "hover", "target": "button, [role=button]", "note": "Comparaison des tiers" },
+        { "action": "maybeClick", "target": "button, [role=button]", "note": "CTA achat -> sg_premium_modal_cta + sg_pass_cta + sg_checkout_redirect", "dwellMs": 3000 },
+        { "action": "dwell", "dwellMs": 3000, "note": "Fin sur redirection paiement (aucun paiement reel)" }
+      ]
+    },
+    {
+      "id": "b2b_hotelier_trial_long",
+      "persona": "Hotelier qui evalue l'offre Pro et demarre un essai self-serve (piste B2B, session longue)",
+      "bucket": "long",
+      "weight": 1,
+      "expectedKpis": ["sg_session_start", "sg_premium_modal_open"],
+      "steps": [
+        { "action": "goto", "target": "/", "dwellMs": 5000, "note": "Decouvre le produit cote grand public d'abord" },
+        { "action": "scroll", "note": "Voit le verdict par plage (preuve de valeur)" },
+        { "action": "dwell", "dwellMs": 4000 },
+        { "action": "goto", "target": "/plages/pointe-faula/", "dwellMs": 5000, "note": "Verifie la plage de son etablissement" },
+        { "action": "scroll" },
+        { "action": "dwell", "dwellMs": 4000, "note": "Evalue la fiabilite du verdict" },
+        { "action": "goto", "target": "/pro/", "dwellMs": 6000, "note": "Landing Pro B2B" },
+        { "action": "scroll", "note": "Lecture lente de l'offre Pro (pricing, /fiabilite/, garantie)" },
+        { "action": "dwell", "dwellMs": 6000, "note": "Etude de l'offre 79 EUR/mo, essai 30j sans carte" },
+        { "action": "hover", "target": "a, button, [role=button]", "note": "Survol des CTA essai/paylink" },
+        { "action": "goto", "target": "/pro/espace/?beach=pointe-faula&name=Hotel%20Test&partner=demo", "dwellMs": 6000, "note": "Espace Pro self-serve (params reels beach&name&partner) -- peut declencher b2b-trial.php (flagge par capture reseau si atteint)" },
+        { "action": "scroll", "note": "Exploration du widget marque blanche / config" },
+        { "action": "dwell", "dwellMs": 5000 },
+        { "action": "maybeClick", "target": "button, a[role=button], [role=button]", "note": "Tap CTA essai/config visible (resilient, elements visibles uniquement)", "dwellMs": 3000 },
+        { "action": "dwell", "dwellMs": 3000, "note": "Regarde l'ecran essai/widget" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+[
+  {
+    "type": "intro",
+    "seconds": 4,
+    "title": "LE VEILLEUR",
+    "subtitle": "on regarde la mer pour vous"
+  },
+  {
+    "type": "caption",
+    "seconds": 7,
+    "title": "Le problème",
+    "accent": "red",
+    "bullets": [
+      "Les sargasses gâchent des vacances — et des réputations.",
+      "Personne ne prévient : le vent tourne, l'algue arrive.",
+      "On découvre les algues une fois la serviette posée."
+    ]
+  },
+  {
+    "type": "section",
+    "seconds": 2.5,
+    "label": "Chapitre 1",
+    "title": "La carte"
+  },
+  {
+    "type": "image",
+    "seconds": 5,
+    "src": "",
+    "caption": "La carte-monde : chaque plage, un verdict",
+    "kenburns": "in"
+  },
+  {
+    "type": "image",
+    "seconds": 5,
+    "src": "",
+    "caption": "Le verdict par plage : mer propre ou pas, AUJOURD'HUI",
+    "kenburns": "left"
+  },
+  {
+    "type": "section",
+    "seconds": 2.5,
+    "label": "Chapitre 2",
+    "title": "La prévision"
+  },
+  {
+    "type": "image",
+    "seconds": 5,
+    "src": "",
+    "caption": "7 jours : les jours qui décident du séjour",
+    "kenburns": "out"
+  },
+  {
+    "type": "reel",
+    "seconds": 7,
+    "name": "VeilleurReel"
+  },
+  {
+    "type": "section",
+    "seconds": 2.5,
+    "label": "Chapitre 3",
+    "title": "Le moat : l'honnêteté"
+  },
+  {
+    "type": "caption",
+    "seconds": 8,
+    "title": "Mesuré au satellite, pas deviné",
+    "accent": "green",
+    "bullets": [
+      "100 % de la donnée est mesurée, jamais inventée.",
+      "On publie notre taux d'erreur sur /fiabilite/.",
+      "L'argent ne touche jamais le verdict."
+    ]
+  },
+  {
+    "type": "section",
+    "seconds": 2.5,
+    "label": "Chapitre 4",
+    "title": "Pour les hôtels"
+  },
+  {
+    "type": "image",
+    "seconds": 5,
+    "src": "",
+    "caption": "Le widget : l'état de VOS plages, daté, sur VOTRE site",
+    "kenburns": "right"
+  },
+  {
+    "type": "caption",
+    "seconds": 7,
+    "title": "Zéro call, essai 30 j",
+    "accent": "gold",
+    "bullets": [
+      "100 % self-serve : aucun appel, aucun rendez-vous.",
+      "79 € / mois ou 690 € / an (2 mois offerts).",
+      "Ne perdez plus une réservation à une surprise."
+    ]
+  },
+  {
+    "type": "reel",
+    "seconds": 7,
+    "name": "BgReel"
+  },
+  {
+    "type": "outro",
+    "seconds": 5,
+    "title": "Voir ma plage — gratuit",
+    "cta": "sargasses-martinique.com"
+  }
+]

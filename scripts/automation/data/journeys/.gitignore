@@ -1,0 +1,5 @@
+# Recorded journeys are generated artifacts (mp4/webm captures of the real app +
+# per-run manifests + the append-only run-index). They feed the TourVideo screencap
+# chapters locally / in CI; they are NOT source. Keep the folder, ignore its contents.
+*
+!.gitignore
