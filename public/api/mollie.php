@@ -268,6 +268,89 @@ try {
         exit;
     }
 
+    if ($action === 'verify_subscription') {
+        // BUG-2026-010 : déblocage cross-device des passes Mollie one-time.
+        // Source de vérité = Supabase payment_grants (mirror posé par le webhook).
+        // Le front (sgVerifySub) appelle mollie.php + create-checkout.php en parallèle ;
+        // sans ce handler, un pass Mollie one-time payé sur un appareil ne pouvait pas
+        // être restauré sur un nouvel appareil via ?premium_email=… (path canoniaque).
+        // Shape de retour aligné sur Stripe/PayPal : {active, kind, passEnd, status}
+        // ou {active:false, reason}. Ne lève jamais (préserve fallback Stripe côté front).
+        $email = trim($data['email'] ?? '');
+        if (!$email || !strpos($email, '@')) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing email']);
+            exit;
+        }
+        $supabaseUrl = getenv('SUPABASE_URL') ?: '';
+        $serviceKey  = getenv('SUPABASE_SERVICE_KEY') ?: '';
+        if (!$supabaseUrl || !$serviceKey) {
+            // Supabase non configuré — échec propre, fallback Stripe côté front.
+            error_log('[mollie.php] verify_subscription: SUPABASE_URL/SERVICE_KEY absents');
+            echo json_encode(['active' => false, 'reason' => 'lookup_failed']);
+            exit;
+        }
+        // Select le grant le plus récent pour cet email, type=b2c_pass, non expiré.
+        // select=pass,expires_at,payment_id — ne remonte pas PII inutile (customer_id).
+        $qs = http_build_query([
+            'select' => 'pass,expires_at,payment_id',
+            'type'   => 'eq.b2c_pass',
+            'email'  => 'eq.' . $email,
+            'expires_at' => 'gt.now()',
+            'order'  => 'expires_at.desc',
+            'limit'  => '1',
+        ]);
+        $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?' . $qs;
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => [
+                'apikey: ' . $serviceKey,
+                'Authorization: Bearer ' . $serviceKey,
+                'Accept: application/json',
+            ],
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $resp  = curl_exec($ch);
+        $err   = curl_errno($ch);
+        $code  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($err || $code >= 400) {
+            error_log("[mollie.php] verify_subscription: Supabase err=$err code=$code");
+            echo json_encode(['active' => false, 'reason' => 'lookup_failed']);
+            exit;
+        }
+        $rows = json_decode($resp, true) ?? [];
+        if (!is_array($rows) || empty($rows)) {
+            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            exit;
+        }
+        $row = $rows[0];
+        $expiresAtIso = $row['expires_at'] ?? null;
+        if (!$expiresAtIso) {
+            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            exit;
+        }
+        $passEnd = strtotime($expiresAtIso);
+        if ($passEnd === false || $passEnd <= time()) {
+            // Double-garde : Supabase a déjà filtré expires_at>now() mais on revérifie
+            // au cas où l'horloge PHP soit skewée.
+            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            exit;
+        }
+        // passEnd en ms (epoch) — aligné sur le format lu par le front
+        // (sg_premium_pass_end = Date.now()+days*86400000).
+        echo json_encode([
+            'active'  => true,
+            'kind'    => 'pass',
+            'pass'    => $row['pass'] ?? null,
+            'passEnd' => $passEnd * 1000,
+            'status'  => 'paid',
+        ]);
+        exit;
+    }
+
     if ($action === 'claim_referral_credit') {
         // 🔒 Verrouillé 2026-07-31 : aucun ledger referrals en place (TASK-P0-002).
         // Crédite 0 jour tant que le ledger réel n'est pas implémenté.
