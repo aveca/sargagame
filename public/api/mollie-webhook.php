@@ -4,16 +4,20 @@
  * Config dans mollie-config.php (gitignored) — template mollie-config.example.php
  */
 
-require_once __DIR__ . '/mollie-config.php';
 require_once __DIR__ . '/mollie-lib.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 $raw = file_get_contents('php://input');
 
-// Vérification signature webhook Mollie (fail-open si non configuré)
+// Vérification signature webhook Mollie (fail-closed : HTTP 503 si webhook_secret absent)
 // Mollie envoie X-Mollie-Signature = HMAC-SHA256(body, webhook_secret)
-$cfg = require_once __DIR__ . '/mollie-config.php';
+// BUG-2026-008 (corrigé 2026-08-03) : on utilisait require_once deux fois sur
+// mollie-config.php. Le 2e appel retournait `true` (fichier déjà inclus) au lieu
+// du tableau retourné par `return [...]`. Conséquence : $cfg = true,
+// is_array(true) = false → $webhookSecret = '' → HTTP 503 éternel.
+// Fix : un seul require (sans _once) qui récupère la valeur du return.
+$cfg = require __DIR__ . '/mollie-config.php';
 $webhookSecret = is_array($cfg) ? ($cfg['webhook_secret'] ?? '') : (defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '');
 if (!$webhookSecret) {
     error_log('[mollie-webhook] webhook_secret missing');
