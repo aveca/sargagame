@@ -62,6 +62,9 @@ try {
             if ($pass && in_array($pass, ['p30', 'trip7', 'season'], true)) {
                 mol_b2c_pass_revoke($id);
                 error_log("[mollie-webhook] payment.failed revoke pass=$pass paymentId=$id");
+            } elseif ($source === 'b2b_monthly') {
+                // B2B monthly subscription payment failed - grant handled by subscription webhook (subscription.charge_failed)
+                error_log("[mollie-webhook] payment.failed b2b_monthly paymentId=$id");
             }
             http_response_code(200);
             echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status, 'event' => $event]);
