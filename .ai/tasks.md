@@ -33,7 +33,7 @@
 - **Description** : Le taux modal→CTA est de 1.5% (16,766 opens → 254 clicks). Les users ferment le modal sans cliquer. Refonte du paywall : CTA plus visible, copy plus engageant, preuve sociale, sticky CTA mobile.
 - **Source** : Rapport analytics 178k events (2026-08-05)
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by ui_agent — PR #546 déploie sticky CTA + trust badges + copy. Reste : preuve sociale, A/B testing.
 
 ### TASK-P0-003 Corriger le checkout (quasi-inexistant)
 - **Priorité** : P0
@@ -41,7 +41,7 @@
 - **Description** : 14 checkout views sur 16,766 modal opens = le lien vers le paiement est cassé ou invisible. Vérifier le redirect Mollie on-site, le bouton checkout dans le modal, et le flow complet.
 - **Source** : Rapport analytics 178k events (2026-08-05)
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by coding_agent — PR #546 corrige le bug clé "saison"→"season" (paiement Mollie rejeté). Checkout Stripe EUR fonctionnel (1999¢ allowlist). USD toujours bloqué (allowlist [599]).
 
 ---
 
@@ -77,7 +77,7 @@
 - **Description** : 1,065 events `sg_friction` = problème UX à identifier. Lire les logs, identifier les patterns (scroll bloqué, clic impossible, animation sans reduced-motion).
 - **Source** : Rapport analytics 178k events (2026-08-05)
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by qa_agent — PR #548 ajoute tracking `sg_premium_modal_close via:"swipe_down"`. Reste : analyser 1,065 events `sg_friction` existants.
 
 ### TASK-P1-001 Purger les A/B tests morts
 - **Priorité** : P1

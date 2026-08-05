@@ -4,56 +4,53 @@
 
 ---
 
-## 2026-08-05 10:00 UTC · Agent: OpenCode (ui_agent + coding_agent)
+## 2026-08-05 12:00 UTC · Agent: OpenCode (ui_agent + coding_agent)
 
 ### Travail effectué
-- **Intégration Agent UI/UX Autonome** : Création du prompt 07 + mise à jour des rôles + ajout de 12 tâches analytics
-- Analyse du rapport analytics complet (178,816 events, 5 régions)
-- Identification des goulots : modal→CTA (1.5%), checkout (14 views), A/B tests (45+ variants)
+- ✅ PR #545 — Documentation agent (prompt 07, rôles, AGENTS.md, tasks, current_state)
+- ✅ PR #546 — **CRITICAL FIX** : alignement clé "saison"→"season" PassOffer.jsx↔backend mollie.php
+- ✅ PR #547 — Hardening mollie-lib.php (Supabase mirror, CRITICAL log sur clé manquante)
+- ✅ PR #548 — Analytics swipe-down tracking (PremiumModal.jsx)
+- Analyse complète du pipeline paiement : Mollie on-site vs Stripe vs PayPal allowlists
+- Découverte critique : USD price mismatch (1499¢ frontend vs $19.99 mollie-passlinks.json)
 
-### Fichiers modifiés
-- `.ai/prompts/07-uiux-autonomous-agent.md` — **Créé** : prompt autonome UI/UX (boucle 8 phases, métriques cibles)
-- `.ai/roles/ui-ux-agent.md` — Ajout section "Mode autonome" référençant prompt 07
-- `AGENTS.md` — Ajout ligne prompt 07 dans tableau des prompts
-- `.ai/tasks.md` — 12 nouvelles tâches P0→P3 extraites du rapport analytics
-- `.ai/current_state.md` — Ce fichier
+### Fichiers modifiés (3 PRs)
+- PR #546 (`agent/ui/ux-pass-saison`) : `src/PassOffer.jsx`, `src/app-runtime.css`, `CLAUDE.md`, `public/api/mollie-config.example.php`
+- PR #547 (`agent/coding/mollie-mirror`) : `public/api/mollie-lib.php`
+- PR #548 (`agent/qa/analytics-swipe`) : `src/PremiumModal.jsx`
 
-### Findings analytics critiques (178k events)
-- **Modal→CTA** : 1.5% (cible >5%) — Goulot principal
-- **Checkout** : 14 views / 16,766 opens — Quasi-inexistant
-- **A/B tests** : 45+ variants en parallèle — Mosaïque incohérente
-- **Source "unknown"** : 27% — Perte de data
-- **Push acceptance** : 13% — Primer mal formulé
-- **Friction** : 1,065 events — Problème UX non identifié
+### Découvertes critiques (paiement)
+- **PassOffer.jsx L9** : `key: "saison"` ≠ backend `"season"` → paiement Mollie rejeté "Prix invalide"
+  - ✅ CORRIGÉ (PR #546)
+- **USD cents** : 1499¢ ($14.99) ≠ mollie-passlinks.json $19.99 → ⏸️ en attente décision produit
+- **USD allowlist Stripe/PayPal** : `[599]` uniquement → saison $19.99 pas encore supporté on-site
+  - ⚠️ Nécessite mise à jour allowlist si produit décide de vendre saison en USD
 
-### Tâches créées (12)
-| ID | Priorité | Tâche |
-|----|----------|-------|
-| TASK-P0-002 | P0 | Réparer funnel modal→CTA |
-| TASK-P0-003 | P0 | Corriger checkout |
-| TASK-P1-004 | P1 | Corriger tracking unknown |
-| TASK-P1-005 | P1 | Solariser A/B tests |
-| TASK-P1-006 | P1 | Améliorer push primer |
-| TASK-P1-007 | P1 | Investiguer friction |
-| TASK-P2-005 | P2 | Optimiser régions USD |
-| TASK-P2-006 | P2 | Améliorer jeu |
-| TASK-P2-007 | P2 | Cleanup A/B morts |
-| TASK-P3-001 | P3 | Email recovery |
-| TASK-P3-002 | P3 | Preuve sociale modal |
-| TASK-P3-003 | P3 | A/B pricing |
+### Tasks.md update
+- TASK-P0-002 : [~] in_progress — PR #546 déploie sticky CTA + trust badges + copy
+- TASK-P0-003 : [~] in_progress — PR #546 corrige le bug clé saison→season
+- TASK-P1-007 : [~] in_progress — PR #548 ajoute tracking swipe_down
 
 ### Tests réalisés
-- [ ] Aucun code produit modifié (documentation agent uniquement)
+- [x] PR #545 — doc only, aucun code produit
+- [x] PR #546 — `php -l mollie-config.example.php` ✓, `npx esbuild PassOffer.jsx` ✓
+- [x] PR #547 — `php -l mollie-lib.php` ✓
+- [x] PR #548 — `npx esbuild PremiumModal.jsx` ✓
+- [ ] Pas de test E2E (PRs non bloquantes, rollback git revert disponible)
 
 ### Prochaine action recommandée
-1. **TASK-P0-002** : Réparer le funnel modal→CTA (1.5% → >5%) — Rôle : ui_agent
-2. **TASK-P0-003** : Corriger le checkout (14 views) — Rôle : coding_agent
-3. **TASK-P1-005** : Solariser A/B tests (45+ → 5) — Rôle : product_agent
+1. **[PENDING]** — Décider : vendre le pass saison en USD ($19.99) on-site ?
+   → Si OUI : mettre à jour `create-checkout.php` + `paypal.php` allowlist `[599]` → `[599, 1999]` + PassOffer.jsx `usd: 1499` → `usd: 1999`
+   → Si NON : garder tel quel (USD islands = trip7 only)
+2. **[PENDING]** — Vérifier `SUPABASE_SERVICE_KEY` sur tous les serveurs FTP (PR #547)
+3. **[P2]** — Nettoyer code mort Stripe/PayPal (3 PRs, allowlists, configs)
 
-### Branche / PR
-- Branche : `main` (pas de branche créée, documentation uniquement)
-- PR : aucune
-- Commit : aucun (fichiers non commités)
+### Branches / PRs actives
+- `agent/ui/TASK-P0-001-doc` → PR #545 ✅ (documentation)
+- `agent/ui/ux-pass-saison` → PR #546 ✅ (paywall + key fix)
+- `agent/coding/mollie-mirror` → PR #547 ✅ (Supabase mirror)
+- `agent/qa/analytics-swipe` → PR #548 ✅ (analytics)
+- `main` : 37 fichiers non commités restants (autres tâches non liées)
 
 ---
 
