@@ -1338,7 +1338,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const onTouchEndModal=e=>{
     if(panelRef.current&&panelRef.current.scrollTop>5){if(panelRef.current)panelRef.current.style.transform="";return}
     const dy=(e.changedTouches[0]?.clientY||0)-startYRef.current
-    if(dy>60)onClose()
+    if(dy>60){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"swipe_down"});onClose()}
     else if(panelRef.current){panelRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";panelRef.current.style.transform="";setTimeout(()=>{if(panelRef.current)panelRef.current.style.transition=""},300)}
   }
   // Escape key to close (close TRACKÉ → géré ici, pas dans useModalA11y : escClose=false)
