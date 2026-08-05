@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-04T02:40:50.308Z",
-  "date": "2026-08-04",
+  "generated": "2026-08-05T14:20:04.327Z",
+  "date": "2026-08-05",
   "days": 1,
   "regions": [
     "mq",
@@ -11,190 +11,192 @@
   ],
   "shipped": [
     {
-      "h": "2bc97356",
-      "subject": "release: merge Around Me Intelligence + fix BUG-2026-008 Mollie webhook require_once"
+      "h": "f262ab00",
+      "subject": "chore: update Copernicus data 2026-08-05 08:45 UTC"
     },
     {
-      "h": "03e7db3e",
-      "subject": "fix(mollie): remove double require_once on mollie-config.php"
+      "h": "b5a86156",
+      "subject": "chore: email state 2026-08-05 08:45 UTC"
     },
     {
-      "h": "a4788180",
-      "subject": "feat: add world around me intelligence"
+      "h": "c23c38e4",
+      "subject": "feat(analytics): payment_failed all providers + paywall personalization + feature_click"
     },
     {
-      "h": "a502050a",
-      "subject": "chore: update Copernicus data 2026-08-03 20:10 UTC"
+      "h": "b37a364f",
+      "subject": "feat(analytics): granular funnel diagnostics + engagement tracking"
     },
     {
-      "h": "50c16817",
-      "subject": "chore: update Copernicus data 2026-08-03 20:03 UTC"
+      "h": "34a6b5d7",
+      "subject": "feat(analytics): funnel analytics production + rapport matinal"
     },
     {
-      "h": "db348cc1",
-      "subject": "chore: email state 2026-08-03 19:44 UTC"
+      "h": "657c4302",
+      "subject": "feat(cro): A/B freeze + Playwright funnel E2E + US builds fix"
     },
     {
-      "h": "049a0073",
-      "subject": "chore: update Copernicus data 2026-08-03 18:56 UTC"
+      "h": "4ab24017",
+      "subject": "chore: update Copernicus data 2026-08-05 02:47 UTC"
     },
     {
-      "h": "b182687a",
-      "subject": "chore: update Copernicus data 2026-08-03 14:53 UTC"
+      "h": "4759ef67",
+      "subject": "chore: email state 2026-08-05 02:47 UTC"
     },
     {
-      "h": "be7bfbfa",
-      "subject": "chore: email state 2026-08-03 14:53 UTC"
+      "h": "3c795e0c",
+      "subject": "Merge remote: resolve CRO-UI-01 merge conflicts"
     },
     {
-      "h": "eb81192f",
-      "subject": "chore: update Copernicus data 2026-08-03 09:52 UTC"
+      "h": "ec3ca7b4",
+      "subject": "feat(cro): improve premium paywall UI — sticky CTA bars, trust badges near action"
     },
     {
-      "h": "d6a3d3b7",
-      "subject": "chore: email state 2026-08-03 09:52 UTC"
+      "h": "946ecaa9",
+      "subject": "chore: update Copernicus data 2026-08-04 20:04 UTC"
     },
     {
-      "h": "1b3a3d1a",
-      "subject": "chore: update Copernicus data 2026-08-03 07:33 UTC"
-    },
-    {
-      "h": "747f0913",
-      "subject": "release: merge v2.0.0-rc1 (mollie webhook signature + V2 UI gated)"
-    },
-    {
-      "h": "85850548",
-      "subject": "fix(mollie+premium): RC v2 — webhook signature obligatoire + V2 Premium UX gated"
-    },
-    {
-      "h": "143e343c",
-      "subject": "chore: update Copernicus data 2026-08-03 03:05 UTC"
-    },
-    {
-      "h": "d602b4a9",
-      "subject": "chore: email state 2026-08-03 03:05 UTC"
+      "h": "35429e89",
+      "subject": "chore: email state 2026-08-04 19:46 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 40,
-      "friction": 1,
-      "dead_rate": 0.143,
+      "sessions": 108,
+      "friction": 4,
+      "dead_rate": 0.149,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.059,
-        "n": 34
+        "screen": "map_map",
+        "rate": 0.247,
+        "n": 93
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 17
+        },
+        {
+          "el": "rect",
+          "count": 12
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.2
+        "rate": 0.16
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 239→40 (-83%)",
-        "dead-rate 0.088→0.143 (+0.1) ⚠️",
-        "rage-clicks 12→1 ✅",
-        "✔︎ dead-click résolu : div"
+        "sessions 208→108 (-48%)",
+        "dead-rate 0.088→0.149 (+0.1) ⚠️",
+        "🆕 dead-click : rect (12)"
       ]
     },
     {
       "region": "gp",
-      "sessions": 23,
+      "sessions": 190,
       "friction": 0,
-      "dead_rate": 0.022,
-      "dead_worst": null,
-      "top_dead_els": [],
+      "dead_rate": 0.069,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.138,
+        "n": 167
+      },
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 11
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.17
+        "rate": 0.22
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 329→23 (-93%)",
-        "dead-rate 0.087→0.022 (-0.1) ✅",
-        "✔︎ dead-click résolu : div"
+        "sessions 249→190 (-24%)"
       ]
     },
     {
       "region": "florida",
-      "sessions": 37,
+      "sessions": 88,
       "friction": 0,
-      "dead_rate": 0.026,
+      "dead_rate": 0.13,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.029,
-        "n": 35
+        "rate": 0.094,
+        "n": 53
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.38
+        "rate": 0.28
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 188→37 (-80%)",
-        "dead-rate 0.108→0.026 (-0.1) ✅",
+        "sessions 180→88 (-51%)",
+        "dead-rate 0.075→0.13 (+0.1) ⚠️",
         "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 16,
+      "sessions": 63,
       "friction": 0,
-      "dead_rate": 0.125,
-      "dead_worst": null,
+      "dead_rate": 0.089,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.25,
+        "n": 24
+      },
       "top_dead_els": [],
       "bored_worst": {
-        "screen": "world",
-        "rate": 0.41
+        "screen": "map_map",
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 97→16 (-84%)"
+        "sessions 106→63 (-41%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 19,
+      "sessions": 62,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.45
+        "rate": 0.34
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 41→19 (-54%)",
-        "dead-rate 0.067→0 (-0.1) ✅"
+        "sessions 90→62 (-31%)"
       ]
     }
   ]

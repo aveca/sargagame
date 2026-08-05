@@ -55,8 +55,22 @@
       "emailHash": "f875eb74d3865be92c8b4e5fb9fa4ae5",
       "authority": "high",
       "market": "mx"
+    },
+    "aztecaquintanaroo.com": {
+      "date": "2026-08-04T12:13:14.251Z",
+      "status": "sent",
+      "emailHash": "afa9b60288f117673e971213519efb64",
+      "authority": "high",
+      "market": "mx"
+    },
+    "optics.marine.usf.edu": {
+      "date": "2026-08-04T12:13:17.806Z",
+      "status": "sent",
+      "emailHash": "409862627f033fd0095c893eb3773f89",
+      "authority": "high",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-07-28T12:08:48.649Z",
-  "totalSent": 8
+  "lastRun": "2026-08-04T12:13:17.806Z",
+  "totalSent": 10
 }

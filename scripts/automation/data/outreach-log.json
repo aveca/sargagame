@@ -376,8 +376,62 @@
       "error": null,
       "url": "https://www.lagon-travel.com/blog-voyage/",
       "market": "fr"
+    },
+    "trotteurs-addict.com": {
+      "date": "2026-08-04T12:01:23.219Z",
+      "emailHash": "742293bb7fa0336ddb3cfcbae4650442",
+      "emailDomain": "trotteurs-addict.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://trotteurs-addict.com/guadeloupe/",
+      "market": "fr"
+    },
+    "noscoeursvoyageurs.fr": {
+      "date": "2026-08-04T12:02:09.519Z",
+      "emailHash": "eb1622c0514ed3486ea7c2bedc6eb99e",
+      "emailDomain": "2x-300x30-1.png.webp",
+      "status": "failed",
+      "error": "Can't send mail - all recipients were rejected: 550-The mail server could not deliver mail to ncvnew@2x-300x30-1.png.webp.  The\n550-account or domain may not exist, they may be blacklisted, or missing the\n550 proper dns entries.",
+      "url": "https://www.noscoeursvoyageurs.fr/les-plages-de-guadeloupe/",
+      "market": "fr"
+    },
+    "rentiles.fr": {
+      "date": "2026-08-04T12:02:12.891Z",
+      "emailHash": "ca5b6c7063e3d50af0aab05276bad3f4",
+      "emailDomain": "rentiles.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.rentiles.fr/blog-voyage/idee-itineraire-10-jours-guadeloupe.html",
+      "market": "fr"
+    },
+    "heures-saines.com": {
+      "date": "2026-08-04T12:02:16.921Z",
+      "emailHash": "ef556a3b23faa88334496f23d1eb833b",
+      "emailDomain": "heures-saines.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.heures-saines.com/",
+      "market": "fr"
+    },
+    "pisquettes.com": {
+      "date": "2026-08-04T12:02:18.402Z",
+      "emailHash": "2720dd2d6b07a5e54b43e8590df4445f",
+      "emailDomain": "pisquettes.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.pisquettes.com/",
+      "market": "fr"
+    },
+    "floridarambler.com": {
+      "date": "2026-08-04T12:02:22.237Z",
+      "emailHash": "c3563f8eb25d5fc8a06e6bc16ef161a4",
+      "emailDomain": "floridarambler.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.floridarambler.com/beaches/sargassum-seaweed-florida-beaches/",
+      "market": "us"
     }
   },
-  "lastRun": "2026-07-28T11:57:36.490Z",
-  "totalSent": 44
+  "lastRun": "2026-08-04T12:02:22.237Z",
+  "totalSent": 49
 }

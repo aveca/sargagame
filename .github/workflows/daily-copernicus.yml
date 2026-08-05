@@ -607,6 +607,28 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/purge-analytics.cjs
 
+      # Funnel aggregation from Supabase analytics_events → funnel-snapshot.json.
+      # Complementary data source to first-party stats.php (ux-daily.json).
+      # Reads public.analytics_events (written by frontend logAnalyticsEvent),
+      # counts funnel steps, calculates rates. continue-on-error: non-blocking.
+      # Schedule-only (1 snapshot/day). Uses SUPABASE_SERVICE_KEY (service_role read).
+      - name: Funnel from Supabase (complementary)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-from-supabase.cjs --days=7
+
+      # Rapport matinal funnel : 24h glissantes, funnel complet (map→beach→verdict→paywall→cta→checkout→paid)
+      # + taux étape→étape + diagnostic automatique + JSON structuré.
+      # Schedule-only. continue-on-error: non-blocking. Uses SUPABASE_SERVICE_KEY.
+      - name: Daily funnel report
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-daily-report.cjs
+
       # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
       # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
       # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
@@ -642,7 +664,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -829,14 +851,31 @@ jobs:
       # Pas de grid/banks/forecast-archive : ces overlays MQ/GP sont purgés des
       # nouvelles régions. Le deploy FTPS plus bas n'upload que ce mini-dossier
       # (manual-ftp-deploy.cjs upload le contenu de <ftpDir>/ tel quel).
-      - name: Quick data deploy nouvelles régions (no full build)
+      # Quick data deploy nouvelles régions : copie les JSONs Copernicus frais dans
+      # chaque <ftpDir>/api/copernicus/. Si le dossier FTP n'existe pas ou est incomplet
+      # (pas d'index.html = aucune page HTML), on fait un build complet pour cette
+      # région AVANT de copier les données — sinon on déploierait un site vide (BUG-2026-002).
+      - name: Quick data deploy nouvelles régions (full build si incomplet)
         if: steps.check_build.outputs.full == 'false'
         run: |
           node -e "
             const fs = require('fs'), path = require('path');
+            const { execSync } = require('child_process');
             const { getAllRegions } = require('./regions/index.cjs');
-            for (const r of getAllRegions()) {
-              if (['mq', 'gp'].includes(r.id)) continue;
+            const usRegions = getAllRegions().filter(r => !['mq', 'gp'].includes(r.id));
+            // Étape 1 : build complet pour les régions sans index.html
+            for (const r of usRegions) {
+              const indexHtml = path.join(r.ftpDir, 'index.html');
+              if (fs.existsSync(indexHtml)) {
+                console.log(r.id + ': FTP dir complet (index.html existe)');
+                continue;
+              }
+              console.log(r.id + ': FTP dir incomplet → build complet');
+              execSync('VITE_REGION=' + r.id + ' npm run build', { stdio: 'inherit', cwd: '.' });
+              execSync('VITE_REGION=' + r.id + ' node scripts/prepare-ftp.cjs', { stdio: 'inherit', cwd: '.' });
+            }
+            // Étape 2 : copier les données fraîches dans toutes les régions US
+            for (const r of usRegions) {
               const src = path.join('public', 'api', 'copernicus', r.id);
               if (!fs.existsSync(path.join(src, 'sargassum.json'))) { console.log('skip ' + r.id + ' (pas de data fraiche)'); continue; }
               const dest = path.join(r.ftpDir, 'api', 'copernicus');
@@ -845,8 +884,6 @@ jobs:
                 const s = path.join(src, f);
                 if (fs.existsSync(s)) fs.copyFileSync(s, path.join(dest, f));
               }
-              // Gating J+2→J+7 : prévision PRIVÉE complète de la région + .htaccess Deny
-              // (sinon forecast.php de la région → 503 / J+2-6 périmés pour le premium).
               const priv = path.join(src, '_private', 'forecast-full.json');
               if (fs.existsSync(priv)) {
                 const pdest = path.join(dest, '_private');
@@ -900,6 +937,8 @@ jobs:
           # Tracking UX journalier (rapport + série temporelle) — append-only inter-runs.
           [ -f scripts/automation/data/ux-daily.json ] && git add scripts/automation/data/ux-daily.json
           [ -f scripts/automation/data/ux-daily-history.json ] && git add scripts/automation/data/ux-daily-history.json
+          [ -f scripts/automation/data/funnel-snapshot.json ] && git add scripts/automation/data/funnel-snapshot.json
+          [ -f scripts/automation/data/funnel-daily-report.json ] && git add scripts/automation/data/funnel-daily-report.json
           [ -f scripts/automation/data/referral-report.json ] && git add scripts/automation/data/referral-report.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
