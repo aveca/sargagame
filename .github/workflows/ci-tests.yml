@@ -25,7 +25,7 @@ jobs:
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
         run: npx playwright install chromium
-- name: Start Vite preview (build output)
+      - name: Start Vite preview (build output)
         run: |
           nohup npx vite preview --port 4173 --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
           echo $! > /tmp/vite-preview.pid
