@@ -159,6 +159,20 @@
 
 ---
 
+## P2 — Backlog normal
+
+### TASK-P2-008 Définir la stratégie commerciale du Pass Season en régions USD
+- **Priorité** : P2
+- **Rôle** : product_agent + data_agent
+- **Description** : `PassOffer.jsx` affiche le pass "season" pour les régions USD (Florida, Riviera Maya, Punta Cana) avec `cents: 1499` ($14.99), mais `mollie-passlinks.json` a `pass_saison_usd` à $19.99. Le parcours Mollie on-site accepte le prix via plausibility check ($0.50–$50), donc aucun rejet, mais incohérence prix affiché vs. prix canonical.
+  - **Decision requise** : (a) vendre season en USD → aligner frontend à $19.99 (1999¢) ; (b) masquer PassOffer pour USD → utiliser trip7 ($5.99) ; (c) garder $14.99 comme prix promotionnel → créer lien Mollie à $14.99
+  - **Source de vérité unique** : mollie-passlinks.cjs L35-39 + mollie-passlinks.json L45-51
+- **Source** : Analyse PR #546 (2026-08-05)
+- **Estimation** : 2h (décision + implémentation)
+- **Statut** : [ ] pending
+
+---
+
 ## P3 — Améliorations
 
 ### TASK-P3-001 Email recovery (51 éligibles, 41% taux)
