@@ -4820,18 +4820,27 @@
   {
     "date": "2026-08-05",
     "region": "mq",
-    "sessions": 20,
-    "friction": 0,
-    "dead_rate": 0.192,
+    "sessions": 47,
+    "friction": 4,
+    "dead_rate": 0.198,
     "dead_worst": {
-      "screen": "world",
-      "rate": 0.087,
-      "n": 23
+      "screen": "map_map",
+      "rate": 0.279,
+      "n": 68
     },
-    "top_dead_els": [],
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 17
+      },
+      {
+        "el": "rect",
+        "count": 12
+      }
+    ],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.21
+      "rate": 0.17
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4842,14 +4851,14 @@
   {
     "date": "2026-08-05",
     "region": "gp",
-    "sessions": 29,
+    "sessions": 48,
     "friction": 0,
-    "dead_rate": 0.027,
+    "dead_rate": 0.046,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.22
+      "rate": 0.24
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4860,14 +4869,18 @@
   {
     "date": "2026-08-05",
     "region": "florida",
-    "sessions": 33,
+    "sessions": 50,
     "friction": 0,
-    "dead_rate": 0,
-    "dead_worst": null,
+    "dead_rate": 0.14,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.091,
+      "n": 44
+    },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.36
+      "rate": 0.3
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -4878,12 +4891,15 @@
   {
     "date": "2026-08-05",
     "region": "puntacana",
-    "sessions": 15,
+    "sessions": 35,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
     "top_dead_els": [],
-    "bored_worst": null,
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.18
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
@@ -4893,14 +4909,14 @@
   {
     "date": "2026-08-05",
     "region": "rivieramaya",
-    "sessions": 22,
+    "sessions": 42,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.41
+      "rate": 0.29
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,

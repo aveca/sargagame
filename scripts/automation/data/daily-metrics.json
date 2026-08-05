@@ -884,7 +884,7 @@
   },
   {
     "date": "2026-08-05",
-    "time": "2026-08-05T02:41:09.614Z",
+    "time": "2026-08-05T08:44:24.197Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 522,
@@ -915,11 +915,11 @@
     "email": {
       "sent": 3914,
       "delivered": null,
-      "opened": 194,
-      "clicked": 94,
+      "opened": 192,
+      "clicked": 96,
       "bounced": null,
-      "openRate": 4.96,
-      "clickRate": 48.45,
+      "openRate": 4.91,
+      "clickRate": 50,
       "tracking": "pixel_first_party"
     },
     "stripe": {

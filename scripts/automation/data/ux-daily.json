@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-05T02:44:31.306Z",
+  "generated": "2026-08-05T08:45:00.232Z",
   "date": "2026-08-05",
   "days": 1,
   "regions": [
@@ -10,6 +10,30 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "c23c38e4",
+      "subject": "feat(analytics): payment_failed all providers + paywall personalization + feature_click"
+    },
+    {
+      "h": "b37a364f",
+      "subject": "feat(analytics): granular funnel diagnostics + engagement tracking"
+    },
+    {
+      "h": "34a6b5d7",
+      "subject": "feat(analytics): funnel analytics production + rapport matinal"
+    },
+    {
+      "h": "657c4302",
+      "subject": "feat(cro): A/B freeze + Playwright funnel E2E + US builds fix"
+    },
+    {
+      "h": "4ab24017",
+      "subject": "chore: update Copernicus data 2026-08-05 02:47 UTC"
+    },
+    {
+      "h": "4759ef67",
+      "subject": "chore: email state 2026-08-05 02:47 UTC"
+    },
     {
       "h": "3c795e0c",
       "subject": "Merge remote: resolve CRO-UI-01 merge conflicts"
@@ -33,55 +57,32 @@
     {
       "h": "4289c406",
       "subject": "chore: email state 2026-08-04 14:16 UTC"
-    },
-    {
-      "h": "a0d044fb",
-      "subject": "chore: update Copernicus data 2026-08-04 08:43 UTC"
-    },
-    {
-      "h": "8ef32495",
-      "subject": "chore: email state 2026-08-04 08:43 UTC"
-    },
-    {
-      "h": "d81abaf2",
-      "subject": "fix(mollie): BUG-2026-011 fixup - assign \\ + use ?: for empty-string fallback"
-    },
-    {
-      "h": "e0222863",
-      "subject": "fix(mollie): BUG-2026-011 inject SUPABASE_SERVICE_KEY via mollie-config.php"
-    },
-    {
-      "h": "ec53b88f",
-      "subject": "fix(mollie): recreate saison EUR payment link at 19.99€"
-    },
-    {
-      "h": "bab4366a",
-      "subject": "fix(mollie): align season pass price to 19.99€ (was 24.99€)"
-    },
-    {
-      "h": "51f5baa7",
-      "subject": "fix(mollie): add SUPABASE_URL fallback for verify_subscription"
-    },
-    {
-      "h": "82a9e066",
-      "subject": "fix(mollie): BUG-2026-010 cross-device pass recovery via verify_subscription"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 20,
-      "friction": 0,
-      "dead_rate": 0.192,
+      "sessions": 47,
+      "friction": 4,
+      "dead_rate": 0.198,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.087,
-        "n": 23
+        "screen": "map_map",
+        "rate": 0.279,
+        "n": 68
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 17
+        },
+        {
+          "el": "rect",
+          "count": 12
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.21
+        "rate": 0.17
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -90,21 +91,21 @@
       "session_to_email": 0,
       "prev_date": "2026-08-04",
       "changes": [
-        "sessions 208→20 (-90%)",
-        "dead-rate 0.088→0.192 (+0.1) ⚠️",
-        "✔︎ dead-click résolu : div"
+        "sessions 208→47 (-77%)",
+        "dead-rate 0.088→0.198 (+0.1) ⚠️",
+        "🆕 dead-click : rect (12)"
       ]
     },
     {
       "region": "gp",
-      "sessions": 29,
+      "sessions": 48,
       "friction": 0,
-      "dead_rate": 0.027,
+      "dead_rate": 0.046,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.22
+        "rate": 0.24
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -113,20 +114,24 @@
       "session_to_email": 0,
       "prev_date": "2026-08-04",
       "changes": [
-        "sessions 249→29 (-88%)",
+        "sessions 249→48 (-81%)",
         "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "florida",
-      "sessions": 33,
+      "sessions": 50,
       "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
+      "dead_rate": 0.14,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.091,
+        "n": 44
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.36
+        "rate": 0.3
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -135,40 +140,21 @@
       "session_to_email": 0,
       "prev_date": "2026-08-04",
       "changes": [
-        "sessions 180→33 (-82%)",
-        "dead-rate 0.075→0 (-0.1) ✅",
+        "sessions 180→50 (-72%)",
+        "dead-rate 0.075→0.14 (+0.1) ⚠️",
         "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 15,
-      "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
-      "top_dead_els": [],
-      "bored_worst": null,
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-04",
-      "changes": [
-        "sessions 106→15 (-86%)",
-        "dead-rate 0.054→0 (-0.1) ✅"
-      ]
-    },
-    {
-      "region": "rivieramaya",
-      "sessions": 22,
+      "sessions": 35,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.41
+        "rate": 0.18
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -177,7 +163,29 @@
       "session_to_email": 0,
       "prev_date": "2026-08-04",
       "changes": [
-        "sessions 90→22 (-76%)"
+        "sessions 106→35 (-67%)",
+        "dead-rate 0.054→0 (-0.1) ✅"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 42,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.29
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-04",
+      "changes": [
+        "sessions 90→42 (-53%)"
       ]
     }
   ]
