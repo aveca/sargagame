@@ -491,6 +491,7 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .gbtn::after{animation:none !important}
   .sg-nearest-ring,.sg-eta-badge,.pulse,.sg-drift-path{animation:none !important}
+  .sg-pulse-cta{animation:none !important}
   .heart-pop{animation:none !important}
   .sg-sk{animation:none !important;background:var(--sg-cardS,#EFEDE6) !important}
 }
@@ -615,6 +616,10 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
 }
 .sg-v2-pass-offer .sg-passcard-hero:active{
   transform:translateY(2px);
+}
+@keyframes sg-pulse-cta{
+  0%,100%{box-shadow:0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)}
+  50%{box-shadow:0 4px 0 0 rgba(0,0,0,.30),0 8px 32px rgba(232,168,0,.45),0 0 0 3px rgba(255,199,44,.25)}
 }
 
 @media (min-width:768px){

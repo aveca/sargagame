@@ -1,4 +1,4 @@
-import React,{useEffect,memo}from"react"
+import React,{useEffect,useRef,memo}from"react"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
 
@@ -6,18 +6,43 @@ const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
-const PASS = { key: "p30", cents: { eur: 1499, usd: 1199 }, days: 30 }
+const PASS = { key: "season", cents: { eur: 1999, usd: 1499 }, days: 30 }
 
 const money = (c, cur, lang) => (cur === "usd" ? "$" + (c / 100).toFixed(2) : lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
 const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
+const TrustBadge = ({icon, title, desc}) => (
+  <div style={{
+    display: "flex", alignItems: "center", gap: 8, padding: "10px 12px",
+    background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,199,44,.25)",
+    borderRadius: 12, minWidth: 0, flex: 1
+  }}>
+    <span style={{flex:"0 0 auto",width:28,height:28,borderRadius:"50%",background:"rgba(255,199,44,.15)",display:"grid",placeItems:"center"}}>{icon}</span>
+    <div style={{minWidth:0}}>
+      <div style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.2}}>{title}</div>
+      <div style={{fontSize:10,fontWeight:600,color:"rgba(234,247,244,.6)",lineHeight:1.2,marginTop:1}}>{desc}</div>
+    </div>
+  </div>
+)
+
 const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
   const cents = PASS.cents[cur]
+  const stickyCtaRef = useRef(null)
+  const [showSticky, setShowSticky] = React.useState(false)
+
+  React.useEffect(()=>{
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>setShowSticky(!e.isIntersecting))
+    },{rootMargin:"0px 0px 120px 0px"})
+    if(stickyCtaRef.current) io.observe(stickyCtaRef.current)
+    return ()=>io.disconnect()
+  },[])
+
   useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
@@ -30,7 +55,13 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   return (
     <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
 
-      <div style={{ position: "relative", zIndex: 1 }}>
+      <div style={{ position: "relative", zIndex: 1, paddingBottom: showSticky ? 100 : 0 }}>
+        {(() => { const m = new Date().getMonth() + 1; const inPeak = m >= 5 && m <= 8; const inSeason = m >= 3 && m <= 8; return inSeason ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", marginBottom: 14, borderRadius: 12, background: inPeak ? "rgba(232,82,42,.15)" : "rgba(255,199,44,.12)", border: `1px solid ${inPeak ? "rgba(232,82,42,.35)" : "rgba(255,199,44,.25)"}`, fontSize: 12, fontWeight: 700, color: inPeak ? "#FFB59E" : "#FFC72C" }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: inPeak ? "#E8522A" : "#FFC72C", flexShrink: 0, boxShadow: `0 0 6px ${inPeak ? "#E8522A50" : "#FFC72C50"}` }} />
+            {_t(lang, inPeak ? "Pic sargasses en cours — chaque jour sans prévision est un risque" : "Saison sargasses active — protège tes plages", inPeak ? "Peak sargassum — every day without forecast is a risk" : "Sargassum season — protect your beaches", inPeak ? "Pico de sargazo — cada día sin pronóstico es un riesgo" : "Temporada de sargazo — protege tus playas")}
+          </div>
+        ) : null })()}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
           {_t(lang, "Le Veilleur", "The Watchman", "El Vigía")}
@@ -52,7 +83,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             <span style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>
-                  {_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}
+                  {_t(lang, "Pass saison", "Season pass", "Pase temporada")}
                 </span>
                 <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "rgba(234,247,244,.6)", marginTop: 4 }}>
                   {_t(lang, "Toutes les plages · Prévision 7 j", "All beaches · 7-day forecast", "Todas las playas · Pronóstico 7 d")}
@@ -82,10 +113,11 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               color: "#190c2c",
               boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: "none",
+              animation: "sg-pulse-cta 2.5s ease-in-out infinite",
             }}>
-              {_t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
+              {_t(lang, "Protéger mes plages maintenant →", "Protect my beaches now →", "Proteger mis playas ahora →")}
             </span>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
+            <div ref={stickyCtaRef} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                 <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
                 <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
@@ -93,6 +125,13 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               {_t(lang, "Paiement sécurisé · Accès immédiat", "Secure payment · Instant access", "Pago seguro · Acceso inmediato")}
             </div>
           </button>
+        </div>
+
+        {/* Trust badges row - closer to CTA */}
+        <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+          <TrustBadge icon="🛡" title={_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")} desc={_t(lang,"Mollie · 3D Secure","Mollie · 3D Secure","Mollie · 3D Secure")} />
+          <TrustBadge icon="📧" title={_t(lang,"Sans carte","No card","Sin tarjeta")} desc={_t(lang,"Juste ton email","Just your email","Solo tu email")} />
+          <TrustBadge icon="✕" title={_t(lang,"Sans engagement","No strings","Sin compromiso")} desc={_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")} />
         </div>
 
         {(community > 0 || freshTs) && (
@@ -130,9 +169,30 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           <span>{_t(lang, "30 jours", "30 days", "30 días")}</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}</span>
         </div>
+
+        {/* Sticky CTA sentinel */}
+        <div ref={stickyCtaRef} style={{height:1}} />
       </div>
+
+      {/* Sticky CTA on mobile */}
+      {showSticky && (
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999,
+          padding: "12px 16px 14px", background: "linear-gradient(180deg,rgba(13,11,20,0),rgba(13,11,20,.95) 30%,#0d0b14)",
+          borderTop: "1px solid rgba(255,199,44,.3)", boxShadow: "0 -4px 20px rgba(0,0,0,.4)"
+        }}>
+          <button onClick={buy} style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            padding: "14px 16px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "inherit",
+            fontSize: 16, fontWeight: 800, color: "#190c2c",
+            background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
+            boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)"
+          }}>
+            {_t(lang, "Protéger mes plages maintenant →", "Protect my beaches now →", "Proteger mis playas ahora →")}
+          </button>
+        </div>
+      )}
     </div>
   )
 })
-
 export default PassOffer

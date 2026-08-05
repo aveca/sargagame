@@ -14,8 +14,8 @@
 - **MRR** : Stripe legacy (abos EUR historiques) = source de vérité, mais **la valeur vivante se LIT** dans le bloc `stripe` de `daily-metrics.json` (§Session Startup check 3 / `npm run session`) — **ne PAS re-coder le chiffre en dur, il dérive** (ordre de grandeur au 2026-07-02 : ~€70/mo, ~14 abos, pastDue 0 ; le funnel Apps Script sous-compte ~7×, JAMAIS lui). Conversions pass/USD/Mollie → dashboard Mollie. ~246 leads emails (capturés au checkout, B2C non anonyme, relançable).
 
 ### Modèle de prix (source unique)
-
-- **B2C pass one-time** : EUR 7,99 / 14,99 / 24,99 € · USD 5,99 / 11,99 / 19,99 $.
+ 
+ - **B2C pass one-time** : EUR 7,99 / 14,99 / 19,99 € · USD 5,99 / 11,99 / 19,99 $.
 - **B2B annuel (paylinks Mollie)** : `brief_annual` = 290 € (LIVE) · `pro_annual` = **690 €** (décision panel 2026-06-29). L'entrée `pro_annual` périmée à 790 € a été **retirée** de `public/api/b2b-paylinks.json` (PR #211 + #212) → le step « Ensure B2B Mollie payment links » du pipeline **frappe un lien neuf à 690 €** au prochain run planifié (clé `MOLLIE_API_KEY`). En attendant, le CTA « payer l'année » se cache et retombe sur `/?pro=1` / `/pro/pricing/`. ✅ **Lien 690 € validé par un vrai paiement test fondateur (2026-07-01).**
 - **B2B mensuel récurrent (Pro 79 € / Brief 29 €) = câblé EN REPO (#210)** : `mol_b2b_plans()` dans `public/api/mollie-lib.php` porte les montants (in-repo, **PAS** dans `mollie-config.php`, **ZÉRO action fondateur**) ; `mollie.php` `create_subscription` les résout (allowlist) et `mol_b2b_grant_once()` émet le token Pro au paiement. Reste : l'exposition front complète (émission auto du token d'essai 30 j à la capture, cf. `NEXT_SESSION.md`). Les **abos récurrents B2C** restent legacy/Stripe-only (modèle B2C = pass-only).
 - **Essai Pro** : 30 j sans carte, 100 % self-serve (confirmé).
