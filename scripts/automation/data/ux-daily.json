@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-04T19:46:24.964Z",
-  "date": "2026-08-04",
+  "generated": "2026-08-05T02:44:31.306Z",
+  "date": "2026-08-05",
   "days": 1,
   "regions": [
     "mq",
@@ -10,6 +10,22 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "3c795e0c",
+      "subject": "Merge remote: resolve CRO-UI-01 merge conflicts"
+    },
+    {
+      "h": "ec3ca7b4",
+      "subject": "feat(cro): improve premium paywall UI — sticky CTA bars, trust badges near action"
+    },
+    {
+      "h": "946ecaa9",
+      "subject": "chore: update Copernicus data 2026-08-04 20:04 UTC"
+    },
+    {
+      "h": "35429e89",
+      "subject": "chore: email state 2026-08-04 19:46 UTC"
+    },
     {
       "h": "08d0660a",
       "subject": "chore: update Copernicus data 2026-08-04 14:16 UTC"
@@ -49,175 +65,119 @@
     {
       "h": "82a9e066",
       "subject": "fix(mollie): BUG-2026-010 cross-device pass recovery via verify_subscription"
-    },
-    {
-      "h": "7fbfffda",
-      "subject": "chore: update Copernicus data 2026-08-04 02:43 UTC"
-    },
-    {
-      "h": "b2796ab0",
-      "subject": "chore: email state 2026-08-04 02:43 UTC"
-    },
-    {
-      "h": "2bc97356",
-      "subject": "release: merge Around Me Intelligence + fix BUG-2026-008 Mollie webhook require_once"
-    },
-    {
-      "h": "03e7db3e",
-      "subject": "fix(mollie): remove double require_once on mollie-config.php"
-    },
-    {
-      "h": "a4788180",
-      "subject": "feat: add world around me intelligence"
-    },
-    {
-      "h": "a502050a",
-      "subject": "chore: update Copernicus data 2026-08-03 20:10 UTC"
-    },
-    {
-      "h": "50c16817",
-      "subject": "chore: update Copernicus data 2026-08-03 20:03 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 208,
-      "friction": 2,
-      "dead_rate": 0.088,
+      "sessions": 20,
+      "friction": 0,
+      "dead_rate": 0.192,
       "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.215,
-        "n": 107
+        "screen": "world",
+        "rate": 0.087,
+        "n": 23
       },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 14
-        }
-      ],
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.19
+        "rate": 0.21
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "rage-clicks 12→2 ✅"
+        "sessions 208→20 (-90%)",
+        "dead-rate 0.088→0.192 (+0.1) ⚠️",
+        "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "gp",
-      "sessions": 249,
+      "sessions": 29,
       "friction": 0,
-      "dead_rate": 0.052,
-      "dead_worst": {
-        "screen": "beach",
-        "rate": 0.103,
-        "n": 58
-      },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 12
-        }
-      ],
+      "dead_rate": 0.027,
+      "dead_worst": null,
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.17
+        "rate": 0.22
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 329→249 (-24%)"
+        "sessions 249→29 (-88%)",
+        "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "florida",
-      "sessions": 180,
-      "friction": 1,
-      "dead_rate": 0.075,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.136,
-        "n": 66
-      },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 11
-        }
-      ],
+      "sessions": 33,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.23
+        "rate": 0.36
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "stable (aucun mouvement notable)"
+        "sessions 180→33 (-82%)",
+        "dead-rate 0.075→0 (-0.1) ✅",
+        "✔︎ dead-click résolu : div"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 106,
+      "sessions": 15,
       "friction": 0,
-      "dead_rate": 0.054,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.129,
-        "n": 31
-      },
+      "dead_rate": 0,
+      "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.29
-      },
+      "bored_worst": null,
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "stable (aucun mouvement notable)"
+        "sessions 106→15 (-86%)",
+        "dead-rate 0.054→0 (-0.1) ✅"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 90,
+      "sessions": 22,
       "friction": 0,
-      "dead_rate": 0.05,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.114,
-        "n": 44
-      },
+      "dead_rate": 0,
+      "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.31
+        "rate": 0.41
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-03",
+      "prev_date": "2026-08-04",
       "changes": [
-        "sessions 41→90 (+120%)"
+        "sessions 90→22 (-76%)"
       ]
     }
   ]
