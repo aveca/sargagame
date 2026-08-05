@@ -1943,6 +1943,17 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
   "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
 export function track(event,params={}){
+  // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
+  // This allows tests to intercept internal track() calls
+  // Use a recursion guard to prevent infinite loops when window.track calls back into track
+  if(typeof window!=="undefined" && window.track && window.track !== track && !track._calling){
+    track._calling = true;
+    try {
+      return window.track(event,params);
+    } finally {
+      track._calling = false;
+    }
+  }
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
@@ -1983,6 +1994,8 @@ export function track(event,params={}){
   // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
   try{sgCollectEvent(event,p)}catch(e){}
 }
+// Expose track globally for E2E test interception (non-prod: no-op in production if window undefined)
+try{if(typeof window!=="undefined")window.track=track}catch{}
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
   try{
@@ -13415,6 +13428,7 @@ export default function App(){
   },[selectedBeach,allBeaches])
 
   const FORECAST_GATE_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","forecast_scrub_premium","whisper_veilleur"]
+  const hasAnnual=!!LINK_ANNUAL
   const openPremium=useCallback((src)=>{
     const s=src||"nav"
     // capture_gate : intercept si A/B actif + source forecast + pas encore d'email
@@ -13526,27 +13540,27 @@ export default function App(){
   // Capture B2B PRO (self-serve, sans appel) — joignable en deep-link ?pro=1
   // depuis l'email d'outreach B2B. Brief quotidien gratuit, drip automatique.
   const [showProB2B,setShowProB2B]=useState(false)
-  const proB2BSrc=useRef("app")   // point d'entrée du B2BModal (events sg_b2b_step)
-  useEffect(()=>{try{
-    const p=new URLSearchParams(window.location.search)
-    if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
-      // Préselection depuis /offres/ : ?plan=monthly|annual pré-coche le bon toggle.
-      // Capturé AVANT le replaceState (qui efface la querystring) ; consommé par le
-      // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
-      const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
-      const canceled=p.get("paywall")==="cancel"
-      const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
-    else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
-      // Le replaceState ci-dessous efface la querystring AVANT le mount lazy du B2BModal
-      // → stash de search (pattern sg_deep_plan) : ?b2bseq/?b2btrial/?beach= y survivent.
-      try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
-      // Tracking funnel PAR PROSPECT : le token b= (hash8 du destinataire, posé dans
-      // les emails B2B) + la campagne → on sait QUI a cliqué (b2b-funnel lit ce signal).
-      try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
-      try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
-      window.history.replaceState({},"",window.location.pathname)}
-    else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
-  }catch(_){}},[openPremium])
+  const proB2BSrc=useRef("app")
+  const handleDeepLink=useCallback(()=>{
+    try{
+      const p=new URLSearchParams(window.location.search)
+      if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
+        const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
+        const canceled=p.get("paywall")==="cancel"
+        const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+      else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
+        try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
+        try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
+        try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
+        window.history.replaceState({},"",window.location.pathname)}
+      else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
+    }catch(e){
+      console.error("[DEEPLINK ERROR]", e)
+    }
+  },[openPremium])
+  useEffect(()=>{
+    handleDeepLink()
+  },[handleDeepLink])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
