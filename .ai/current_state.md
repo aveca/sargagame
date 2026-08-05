@@ -4,43 +4,56 @@
 
 ---
 
-## 2026-07-31 20:45 UTC · Agent: Release Engineer (OpenCode)
+## 2026-08-05 10:00 UTC · Agent: OpenCode (ui_agent + coding_agent)
 
 ### Travail effectué
-- **Production Release Cleanup** : Nettoyage complet, tests, optimisation pour déploiement production
-- Fix bug syntaxe `ArchipelView.jsx` (const dupliquées MID/FAR/NEAR)
-- Recréation `scripts/lib/coast-zones.js` (import manquant cassé par nettoyage)
-- Nettoyage fichiers debug/temp (scripts/temp/, tests/screenshots/, debug-logs/, etc.)
-- Validation complète Gate de ship
+- **Intégration Agent UI/UX Autonome** : Création du prompt 07 + mise à jour des rôles + ajout de 12 tâches analytics
+- Analyse du rapport analytics complet (178,816 events, 5 régions)
+- Identification des goulots : modal→CTA (1.5%), checkout (14 views), A/B tests (45+ variants)
 
 ### Fichiers modifiés
-- `src/ArchipelView.jsx` — fix const dupliquées (esbuild error)
-- `scripts/lib/coast-zones.js` — recréé (zones côtières 6 régions)
-- `.ai/current_state.md` — ce fichier
+- `.ai/prompts/07-uiux-autonomous-agent.md` — **Créé** : prompt autonome UI/UX (boucle 8 phases, métriques cibles)
+- `.ai/roles/ui-ux-agent.md` — Ajout section "Mode autonome" référençant prompt 07
+- `AGENTS.md` — Ajout ligne prompt 07 dans tableau des prompts
+- `.ai/tasks.md` — 12 nouvelles tâches P0→P3 extraites du rapport analytics
+- `.ai/current_state.md` — Ce fichier
 
-### État actuel du produit
-- **Pipeline** : erddap-live, run 17.7h STALE, satellite 32.5h OK (workflow daily-copernicus lancé)
-- **Paiements** : Mollie on-site actif (EUR MQ/GP + USD FL/PC/RM)
-- **B2B** : Pro 79 €/mois, 690 €/an, essai 30j, outreach automatique
-- **CI/CD** : 33+ workflows GitHub Actions autonomes
-- **A/B tests** : ~50+ active, en cours de purge (TASK-P1-001)
-- **Build** : ✅ succès, bundle 202.4 Ko gzip ≤ 210 Ko budget
-- **Tests** : ✅ ux-smoke 4 tokens (FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
-- **PHP** : ✅ syntaxe OK sur tous endpoints Mollie/PayPal
-- **Régions** : ✅ validation 6 régions OK
+### Findings analytics critiques (178k events)
+- **Modal→CTA** : 1.5% (cible >5%) — Goulot principal
+- **Checkout** : 14 views / 16,766 opens — Quasi-inexistant
+- **A/B tests** : 45+ variants en parallèle — Mosaïque incohérente
+- **Source "unknown"** : 27% — Perte de data
+- **Push acceptance** : 13% — Primer mal formulé
+- **Friction** : 1,065 events — Problème UX non identifié
 
-### Problèmes restants
-- Webhook secret Mollie pas configuré sur FTP (TASK-P0-001)
-- 50+ flags A/B à consolider (TASK-P1-001)
-- PremiumModal.jsx trop gros (~3352 lignes) (TASK-P2-001)
-- Facturation B2B répétée pas encore exposée front (TASK-P2-002)
-- Barbados préparée mais pas câblée (résidus Stripe à purger)
+### Tâches créées (12)
+| ID | Priorité | Tâche |
+|----|----------|-------|
+| TASK-P0-002 | P0 | Réparer funnel modal→CTA |
+| TASK-P0-003 | P0 | Corriger checkout |
+| TASK-P1-004 | P1 | Corriger tracking unknown |
+| TASK-P1-005 | P1 | Solariser A/B tests |
+| TASK-P1-006 | P1 | Améliorer push primer |
+| TASK-P1-007 | P1 | Investiguer friction |
+| TASK-P2-005 | P2 | Optimiser régions USD |
+| TASK-P2-006 | P2 | Améliorer jeu |
+| TASK-P2-007 | P2 | Cleanup A/B morts |
+| TASK-P3-001 | P3 | Email recovery |
+| TASK-P3-002 | P3 | Preuve sociale modal |
+| TASK-P3-003 | P3 | A/B pricing |
+
+### Tests réalisés
+- [ ] Aucun code produit modifié (documentation agent uniquement)
 
 ### Prochaine action recommandée
-1. Configurer webhook secret Mollie en prod (TASK-P0-001)
-2. Purger A/B tests non significatifs (TASK-P1-001)
-3. Splitter PremiumModal.jsx (TASK-P2-001)
-4. Exposer facturation B2B récurrente front (TASK-P2-002)
+1. **TASK-P0-002** : Réparer le funnel modal→CTA (1.5% → >5%) — Rôle : ui_agent
+2. **TASK-P0-003** : Corriger le checkout (14 views) — Rôle : coding_agent
+3. **TASK-P1-005** : Solariser A/B tests (45+ → 5) — Rôle : product_agent
+
+### Branche / PR
+- Branche : `main` (pas de branche créée, documentation uniquement)
+- PR : aucune
+- Commit : aucun (fichiers non commités)
 
 ---
 

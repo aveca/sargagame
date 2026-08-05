@@ -23,11 +23,61 @@
 - **Rôle** : coding_agent
 - **Description** : `mollie-config.php` a `webhook_secret` commenté → signature webhook non vérifiée. Doit être configuré sur chaque serveur FTP après deploy.
 - **Estimation** : 30 min
-- **Statut** : [ ] code_ready, [ ] deployed_to_prod
+- **Statut** : [x] code_ready, [ ] deployed_to_prod
+
+---
+
+### TASK-P0-002 Réparer le funnel modal→CTA
+- **Priorité** : P0
+- **Rôle** : ui_agent + coding_agent
+- **Description** : Le taux modal→CTA est de 1.5% (16,766 opens → 254 clicks). Les users ferment le modal sans cliquer. Refonte du paywall : CTA plus visible, copy plus engageant, preuve sociale, sticky CTA mobile.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 4h
+- **Statut** : [ ] pending
+
+### TASK-P0-003 Corriger le checkout (quasi-inexistant)
+- **Priorité** : P0
+- **Rôle** : coding_agent + qa_agent
+- **Description** : 14 checkout views sur 16,766 modal opens = le lien vers le paiement est cassé ou invisible. Vérifier le redirect Mollie on-site, le bouton checkout dans le modal, et le flow complet.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 3h
+- **Statut** : [ ] pending
 
 ---
 
 ## P1 — Haute priorité
+
+### TASK-P1-004 Corriger tracking source "unknown" (27%)
+- **Priorité** : P1
+- **Rôle** : coding_agent + data_agent
+- **Description** : 27% des sources modal sont "unknown" = perte de data analytique. Corriger le tracking des sources dans PremiumModal.jsx et Sargasses_PROD.jsx.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
+### TASK-P1-005 Solariser les A/B tests (45+ → 5 max)
+- **Priorité** : P1
+- **Rôle** : product_agent + coding_agent
+- **Description** : 45+ variants A/B en parallèle = mosaïque incohérente et signal faible. PRODUCT.md §5 dit "On fige UN parcours". Réduire à max 5 concurrents. Fusionner les tests redondants.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 4h
+- **Statut** : [ ] pending
+
+### TASK-P1-006 Améliorer push primer (13% → >30%)
+- **Priorité** : P1
+- **Rôle** : ui_agent + growth_agent
+- **Description** : Le push primer n'est accepté que à 13% (58/450). Le timing ou le copy est mauvais. Tester un primer différé (après 2ème visite) avec copy orienté valeur.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
+### TASK-P1-007 Investiguer friction (1,065 events)
+- **Priorité** : P1
+- **Rôle** : qa_agent + ui_agent
+- **Description** : 1,065 events `sg_friction` = problème UX à identifier. Lire les logs, identifier les patterns (scroll bloqué, clic impossible, animation sans reduced-motion).
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
 
 ### TASK-P1-001 Purger les A/B tests morts
 - **Priorité** : P1
@@ -54,6 +104,30 @@
 ---
 
 ## P2 — Backlog normal
+
+### TASK-P2-005 Optimiser les régions USD (FL/PC/RM)
+- **Priorité** : P2
+- **Rôle** : growth_agent + coding_agent
+- **Description** : Florida (7.5%), PuntaCana (3.4%), RivieraMaya (2.1%) ont du trafic mais pas de conversion visible. Vérifier le funnel par région, le pricing USD, et l'adaptation linguistique.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 3h
+- **Statut** : [ ] pending
+
+### TASK-P2-006 Améliorer le jeu (0.05% → >1% engagement)
+- **Priorité** : P2
+- **Rôle** : ui_agent + growth_agent
+- **Description** : 70 starts / 144k sessions = 0.05% engagement. Le jeu est un levier de rétention potentiel. Améliorer la visibilité du CTA jeu, le onboarding, et la boucle de récompense.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 3h
+- **Statut** : [ ] pending
+
+### TASK-P2-007 Cleanup variants A/B non concluants
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : Supprimer les A/B non conclusants identifiés dans le rapport. Garder uniquement les tests avec résultats significatifs. Complémentaire à TASK-P1-005.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
 
 ### TASK-P2-001 Spliter PremiumModal.jsx (~3 352, lignes)
 - **Priorité** : P2
@@ -86,6 +160,30 @@
 ---
 
 ## P3 — Améliorations
+
+### TASK-P3-001 Email recovery (51 éligibles, 41% taux)
+- **Priorité** : P3
+- **Rôle** : growth_agent + coding_agent
+- **Description** : 51 utilisateurs éligibles au checkout recovery, 21 clicks (41% taux). Câbler le drip email automatique pour les abandons checkout.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 3h
+- **Statut** : [ ] pending
+
+### TASK-P3-002 Preuve sociale dans le modal
+- **Priorité** : P3
+- **Rôle** : ui_agent + copy_agent
+- **Description** : Ajouter des témoignages ou compteur de users satisfaits dans le paywall. Le rapport note l'absence de social proof comme frein à la conversion.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
+### TASK-P3-003 A/B pricing monthly vs annual vs season
+- **Priorité** : P3
+- **Rôle** : product_agent + coding_agent
+- **Description** : Le plan monthly domine (9 ventes), annual sous-performant (1). Tester un pricing annual avec réduction plus agressive ou un season pass. Vérifier la cohérence avec `mol_b2b_plans()`.
+- **Source** : Rapport analytics 178k events (2026-08-05)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
 
 - [ ] Spliter paywall comic/plan B en composants séparés
 - [ ] Améliorer PrenderDelivery légères des Mails monitoring de la

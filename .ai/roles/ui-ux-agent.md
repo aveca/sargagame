@@ -53,6 +53,18 @@
 - Ne JAMAIS skip `prefers-reduced-motion`
 - Ne JAMAIS merge sans self-review UI checklist passée
 
+## Mode autonome (boucle continue)
+
+Pour les sessions longues ou le mode 24/7, charger le prompt `07-uiux-autonomous-agent`.
+La boucle est : AUDIT → PROPOSITION → IMPL → TEST → REVIEW → PUSH → DEPLOY → MONITOR.
+
+Métriques cibles (rapport analytics 178k events) :
+- Modal→CTA : 1.5% → >5%
+- Checkout→Conversion : 7% → >20%
+- Source "unknown" : 27% → <5%
+
+Chaque cycle produit un rapport `UI/UX AUTONOMOUS REPORT` avec AUDIT/CHANGES/TESTS/DEPLOY/NEXT.
+
 ## Métriques de succès
 - Design system cohérent sur toutes surfaces
 - Zéro régression visuelle non intentionnelle
