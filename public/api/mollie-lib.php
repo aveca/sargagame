@@ -250,12 +250,22 @@ function set_transient(string $key, string $value, int $ttl): void {
 /**
  * Supabase mirror for payment grants — write-only (service key on server).
  * Best-effort, returns boolean success. Avoids /tmp loss on deploy/restart.
+ *
+ * Contract:
+ * - Returns true  : mirror succeeded OR skipped (service_key missing)
+ * - Returns false : mirror failed (network/HTTP error) -> triggers webhook retry
+ *
+ * Note: Service key missing = return false to trigger webhook retry (not silent success).
+ *       Caller must handle false = mirror_failed -> webhook 500 + retry.
  */
 function mol_supabase_mirror(string $table, array $data): bool {
     global $cfg;  // BUG-2026-011 : $cfg chargé par require_once mollie-config.php (caller side)
     $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
     $serviceKey = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
-    if (!$serviceKey) return true; // skip silently if not configured (return true = skip ok)
+    if (!$serviceKey) {
+        error_log('[mol_supabase_mirror] CRITICAL: SUPABASE_SERVICE_KEY missing for table=' . $table . ' key=' . ($data['payment_id'] ?? $data['subscription_id'] ?? 'unknown'));
+        return false; // trigger webhook retry via mirror_ok=false
+    }
 
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -267,20 +277,23 @@ function mol_supabase_mirror(string $table, array $data): bool {
             'apikey: ' . $serviceKey,
             'Authorization: Bearer ' . $serviceKey,
             'Content-Type: application/json',
-            'Prefer: return=minimal',
+            'Prefer: return=minimal,resolution=merge-duplicates',
         ],
         CURLOPT_TIMEOUT => 10,
     ]);
     $resp = curl_exec($ch);
     if (curl_errno($ch)) {
-        error_log('[mol_supabase_mirror] cURL error: ' . curl_error($ch));
+        $err = curl_error($ch);
+        $key = $data['payment_id'] ?? $data['subscription_id'] ?? 'unknown';
+        error_log('[mol_supabase_mirror] cURL error: ' . $err . ' | table=' . $table . ' key=' . $key);
         curl_close($ch);
         return false;
     }
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     if ($httpCode >= 400) {
-        error_log('[mol_supabase_mirror] HTTP error: ' . $httpCode);
+        $key = $data['payment_id'] ?? $data['subscription_id'] ?? 'unknown';
+        error_log('[mol_supabase_mirror] HTTP error: ' . $httpCode . ' | table=' . $table . ' key=' . $key);
         return false;
     }
     return true;
