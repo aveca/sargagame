@@ -1,4 +1,4 @@
-import React,{useEffect,memo}from"react"
+import React,{useEffect,memo,useRef,useState}from"react"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
 
@@ -27,6 +27,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
   const pd = perDay(cents, PASS.days, cur, lang)
+  const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
 
   return (
     <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
@@ -132,6 +133,22 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           <span>{_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}</span>
         </div>
       </div>
+
+      {!noSticky && (
+        <div className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, background: "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: "1px solid rgba(255,199,44,.25)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both" }}>
+          <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: "#EAF7F4", lineHeight: 1.3 }}>
+            {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
+          </span>
+          <button onClick={buy} style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)", color: "#190c2c", fontWeight: 800, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 0 0 rgba(0,0,0,.20)" }}>
+            {_t(lang, "Voir le prix →", "See price →", "Ver precio →")}
+          </button>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
+            <span>🔒 Mollie</span><span aria-hidden="true">·</span>
+            <span>💳 {_t(lang,"Sans carte","No card","Sin tarjeta")}</span><span aria-hidden="true">·</span>
+            <span>⚡ 2 {_t(lang,"clics","clicks","clics")}</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 })

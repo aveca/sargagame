@@ -1,0 +1,101 @@
+{
+  "window_hours": 24,
+  "since": "2026-08-04T14:20:01.126Z",
+  "total_events": 3245,
+  "funnel": [
+    {
+      "key": "map_open",
+      "label": "Map opened",
+      "icon": "🗺️",
+      "count": 0
+    },
+    {
+      "key": "beach_open",
+      "label": "Beach selected",
+      "icon": "🏖️",
+      "count": 0
+    },
+    {
+      "key": "verdict_scan_view",
+      "label": "Verdict viewed",
+      "icon": "📊",
+      "count": 0
+    },
+    {
+      "key": "premium_modal_open",
+      "label": "Paywall seen",
+      "icon": "🔒",
+      "count": 0
+    },
+    {
+      "key": "cta",
+      "label": "CTA clicked",
+      "icon": "👆",
+      "count": 0
+    },
+    {
+      "key": "checkout_redirect",
+      "label": "Checkout clicked",
+      "icon": "💳",
+      "count": 0
+    },
+    {
+      "key": "conversion",
+      "label": "Paid",
+      "icon": "✅",
+      "count": 0
+    }
+  ],
+  "rates": [
+    {
+      "from": "Map opened",
+      "to": "Beach selected",
+      "rate": 0
+    },
+    {
+      "from": "Beach selected",
+      "to": "Verdict viewed",
+      "rate": 0
+    },
+    {
+      "from": "Verdict viewed",
+      "to": "Paywall seen",
+      "rate": 0
+    },
+    {
+      "from": "Paywall seen",
+      "to": "CTA clicked",
+      "rate": 0
+    },
+    {
+      "from": "CTA clicked",
+      "to": "Checkout clicked",
+      "rate": 0
+    },
+    {
+      "from": "Checkout clicked",
+      "to": "Paid",
+      "rate": 0
+    }
+  ],
+  "global_rate": 0,
+  "counts": {
+    "map_open": 0,
+    "beach_open": 0,
+    "verdict_scan_view": 0,
+    "premium_modal_open": 0,
+    "premium_modal_cta": 0,
+    "pass_cta": 0,
+    "checkout_redirect": 0,
+    "conversion": 0
+  },
+  "cta_total": 0,
+  "engagement": {
+    "verdict_expand": 0,
+    "forecast_view": 0,
+    "paywall_view": 0,
+    "payment_failed": 0,
+    "premium_feature_click": 0
+  },
+  "by_island": {}
+}
