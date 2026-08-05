@@ -21,7 +21,6 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
-    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg})}catch(_){}
     localStorage.setItem('sg_checkout_started_at', Date.now())
     if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
   }
