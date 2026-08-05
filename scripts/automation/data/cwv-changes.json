@@ -1,45 +1,15 @@
 {
-  "generatedAt": "2026-07-20T13:28:21.607Z",
+  "generatedAt": "2026-08-03T14:02:54.459Z",
   "kind": "delta",
   "changes": [
     {
-      "site": "gp",
+      "site": "puntacana",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 2895,
-      "to": 3246,
-      "delta": 351,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 2874,
-      "to": 3107,
-      "delta": 233,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 490,
-      "to": 554,
-      "delta": 64,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 275,
-      "to": 327,
-      "delta": 52,
-      "kind": "regression",
+      "from": 3432,
+      "to": 3206,
+      "delta": -226,
+      "kind": "improvement",
       "crossesThreshold": false
     }
   ]

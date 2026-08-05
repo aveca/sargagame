@@ -3167,5 +3167,1654 @@
     "redirect_to_conversion": 0,
     "session_to_conversion": 0,
     "session_to_email": 0
+  },
+  {
+    "date": "2026-07-23",
+    "region": "mq",
+    "sessions": 219,
+    "friction": 1,
+    "dead_rate": 0.229,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.3,
+      "n": 20
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 87
+      },
+      {
+        "el": "div",
+        "count": 17
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.32
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-23",
+    "region": "gp",
+    "sessions": 253,
+    "friction": 2,
+    "dead_rate": 0.159,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.2,
+      "n": 20
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 38
+      },
+      {
+        "el": "div",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.26
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-23",
+    "region": "florida",
+    "sessions": 225,
+    "friction": 2,
+    "dead_rate": 0.387,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.396,
+      "n": 614
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 190
+      },
+      {
+        "el": "div",
+        "count": 22
+      },
+      {
+        "el": "span.lc-detail-fact",
+        "count": 10
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.38
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-23",
+    "region": "puntacana",
+    "sessions": 73,
+    "friction": 1,
+    "dead_rate": 0.394,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.407,
+      "n": 194
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 38
+      },
+      {
+        "el": "span.lc-detail-fact",
+        "count": 13
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.28
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-23",
+    "region": "rivieramaya",
+    "sessions": 59,
+    "friction": 0,
+    "dead_rate": 0.5,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.507,
+      "n": 69
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 33
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.37
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-24",
+    "region": "mq",
+    "sessions": 175,
+    "friction": 0,
+    "dead_rate": 0.2,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.195,
+      "n": 226
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 28
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.36
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-24",
+    "region": "gp",
+    "sessions": 264,
+    "friction": 3,
+    "dead_rate": 0.191,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.257,
+      "n": 35
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 62
+      },
+      {
+        "el": "div",
+        "count": 14
+      },
+      {
+        "el": "span.lc-detail-fact",
+        "count": 10
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.32
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-24",
+    "region": "florida",
+    "sessions": 162,
+    "friction": 2,
+    "dead_rate": 0.308,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.31,
+      "n": 558
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 146
+      },
+      {
+        "el": "div",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.35
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-24",
+    "region": "puntacana",
+    "sessions": 77,
+    "friction": 4,
+    "dead_rate": 0.435,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.447,
+      "n": 244
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 79
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.26
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-24",
+    "region": "rivieramaya",
+    "sessions": 39,
+    "friction": 0,
+    "dead_rate": 0.388,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.378,
+      "n": 82
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 22
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.3
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-25",
+    "region": "mq",
+    "sessions": 100,
+    "friction": 0,
+    "dead_rate": 0.329,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.345,
+      "n": 142
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 40
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.28
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-25",
+    "region": "gp",
+    "sessions": 140,
+    "friction": 0,
+    "dead_rate": 0.138,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.142,
+      "n": 226
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 10
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.34
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-25",
+    "region": "florida",
+    "sessions": 102,
+    "friction": 1,
+    "dead_rate": 0.233,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.232,
+      "n": 241
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 37
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.34
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-25",
+    "region": "puntacana",
+    "sessions": 45,
+    "friction": 0,
+    "dead_rate": 0.315,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.324,
+      "n": 108
+    },
+    "top_dead_els": [
+      {
+        "el": "div.sg-onink-scope",
+        "count": 24
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.27
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-25",
+    "region": "rivieramaya",
+    "sessions": 16,
+    "friction": 0,
+    "dead_rate": 0.143,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.27
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-26",
+    "region": "mq",
+    "sessions": 158,
+    "friction": 0,
+    "dead_rate": 0.062,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.049,
+      "n": 344
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.38
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-26",
+    "region": "gp",
+    "sessions": 293,
+    "friction": 2,
+    "dead_rate": 0.066,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.063,
+      "n": 936
+    },
+    "top_dead_els": [
+      {
+        "el": "rect",
+        "count": 16
+      },
+      {
+        "el": "div",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.36
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-26",
+    "region": "florida",
+    "sessions": 190,
+    "friction": 0,
+    "dead_rate": 0.041,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.035,
+      "n": 492
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.38
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-26",
+    "region": "puntacana",
+    "sessions": 67,
+    "friction": 0,
+    "dead_rate": 0.114,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.107,
+      "n": 75
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.33
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-26",
+    "region": "rivieramaya",
+    "sessions": 39,
+    "friction": 0,
+    "dead_rate": 0.07,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.071,
+      "n": 42
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.21
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-27",
+    "region": "mq",
+    "sessions": 32,
+    "friction": 0,
+    "dead_rate": 0.13,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.133,
+      "n": 45
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.42
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-27",
+    "region": "gp",
+    "sessions": 28,
+    "friction": 0,
+    "dead_rate": 0.056,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.031,
+      "n": 32
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.1
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-27",
+    "region": "florida",
+    "sessions": 196,
+    "friction": 1,
+    "dead_rate": 0.063,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.06,
+      "n": 600
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 15
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.33
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-27",
+    "region": "puntacana",
+    "sessions": 102,
+    "friction": 3,
+    "dead_rate": 0.112,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.079,
+      "n": 229
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.39
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-27",
+    "region": "rivieramaya",
+    "sessions": 54,
+    "friction": 0,
+    "dead_rate": 0.07,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.07,
+      "n": 71
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.34
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-28",
+    "region": "mq",
+    "sessions": 166,
+    "friction": 6,
+    "dead_rate": 0.113,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.13,
+      "n": 23
+    },
+    "top_dead_els": [
+      {
+        "el": "rect",
+        "count": 11
+      },
+      {
+        "el": "div.lc-detail[role=dialog]",
+        "count": 10
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.29
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-28",
+    "region": "gp",
+    "sessions": 353,
+    "friction": 1,
+    "dead_rate": 0.069,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.45,
+      "n": 20
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 14
+      },
+      {
+        "el": "rect",
+        "count": 13
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.31
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-28",
+    "region": "florida",
+    "sessions": 220,
+    "friction": 1,
+    "dead_rate": 0.056,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.16,
+      "n": 25
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.33
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-28",
+    "region": "puntacana",
+    "sessions": 152,
+    "friction": 1,
+    "dead_rate": 0.085,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.08,
+      "n": 362
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 17
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.51
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-28",
+    "region": "rivieramaya",
+    "sessions": 78,
+    "friction": 2,
+    "dead_rate": 0.143,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.333,
+      "n": 27
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.54
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-29",
+    "region": "mq",
+    "sessions": 203,
+    "friction": 16,
+    "dead_rate": 0.091,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.076,
+      "n": 419
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 17
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.24
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-29",
+    "region": "gp",
+    "sessions": 354,
+    "friction": 11,
+    "dead_rate": 0.055,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.056,
+      "n": 72
+    },
+    "top_dead_els": [
+      {
+        "el": "rect",
+        "count": 17
+      },
+      {
+        "el": "div",
+        "count": 17
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.32
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-29",
+    "region": "florida",
+    "sessions": 160,
+    "friction": 4,
+    "dead_rate": 0.348,
+    "dead_worst": {
+      "screen": "mapintro",
+      "rate": 0.889,
+      "n": 36
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.31
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-29",
+    "region": "puntacana",
+    "sessions": 84,
+    "friction": 0,
+    "dead_rate": 0.187,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.132,
+      "n": 167
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.28
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-29",
+    "region": "rivieramaya",
+    "sessions": 55,
+    "friction": 0,
+    "dead_rate": 0.405,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.281,
+      "n": 57
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "mapintro",
+      "rate": 0.39
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-30",
+    "region": "mq",
+    "sessions": 187,
+    "friction": 18,
+    "dead_rate": 0.119,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.294,
+      "n": 34
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 20
+      },
+      {
+        "el": "rect",
+        "count": 13
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.22
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-30",
+    "region": "gp",
+    "sessions": 375,
+    "friction": 3,
+    "dead_rate": 0.078,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.138,
+      "n": 80
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 16
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.2
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-30",
+    "region": "florida",
+    "sessions": 190,
+    "friction": 3,
+    "dead_rate": 0.103,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.256,
+      "n": 78
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "map_map",
+      "rate": 0.22
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-30",
+    "region": "puntacana",
+    "sessions": 85,
+    "friction": 1,
+    "dead_rate": 0.084,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.293,
+      "n": 41
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.28
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-30",
+    "region": "rivieramaya",
+    "sessions": 73,
+    "friction": 2,
+    "dead_rate": 0.128,
+    "dead_worst": null,
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.3
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-31",
+    "region": "mq",
+    "sessions": 234,
+    "friction": 11,
+    "dead_rate": 0.167,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.322,
+      "n": 115
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 36
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.27
+    },
+    "modal_to_cta": 6.1,
+    "cta_to_redirect": 100,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-31",
+    "region": "gp",
+    "sessions": 325,
+    "friction": 2,
+    "dead_rate": 0.068,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.189,
+      "n": 74
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 21
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.2
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-31",
+    "region": "florida",
+    "sessions": 174,
+    "friction": 0,
+    "dead_rate": 0.059,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.106,
+      "n": 66
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "map_map",
+      "rate": 0.25
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-31",
+    "region": "puntacana",
+    "sessions": 106,
+    "friction": 12,
+    "dead_rate": 0.284,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.844,
+      "n": 64
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.15
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-07-31",
+    "region": "rivieramaya",
+    "sessions": 64,
+    "friction": 1,
+    "dead_rate": 0.083,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.037,
+      "n": 81
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-01",
+    "region": "mq",
+    "sessions": 104,
+    "friction": 0,
+    "dead_rate": 0.096,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.176,
+      "n": 34
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-01",
+    "region": "gp",
+    "sessions": 275,
+    "friction": 0,
+    "dead_rate": 0.09,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.168,
+      "n": 107
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 20
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-01",
+    "region": "florida",
+    "sessions": 231,
+    "friction": 1,
+    "dead_rate": 0.064,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.262,
+      "n": 65
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.26
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-01",
+    "region": "puntacana",
+    "sessions": 121,
+    "friction": 0,
+    "dead_rate": 0.14,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.289,
+      "n": 38
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.4
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-01",
+    "region": "rivieramaya",
+    "sessions": 108,
+    "friction": 0,
+    "dead_rate": 0.022,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.029,
+      "n": 35
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.45
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-02",
+    "region": "mq",
+    "sessions": 286,
+    "friction": 5,
+    "dead_rate": 0.088,
+    "dead_worst": {
+      "screen": "premium",
+      "rate": 0.324,
+      "n": 34
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 17
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.33
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-02",
+    "region": "gp",
+    "sessions": 353,
+    "friction": 2,
+    "dead_rate": 0.093,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.297,
+      "n": 74
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 44
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.22
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-02",
+    "region": "florida",
+    "sessions": 180,
+    "friction": 1,
+    "dead_rate": 0.09,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.186,
+      "n": 113
+    },
+    "top_dead_els": [
+      {
+        "el": "rect",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.34
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-02",
+    "region": "puntacana",
+    "sessions": 86,
+    "friction": 0,
+    "dead_rate": 0.101,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.217,
+      "n": 46
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.27
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-02",
+    "region": "rivieramaya",
+    "sessions": 62,
+    "friction": 0,
+    "dead_rate": 0.142,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.23,
+      "n": 61
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.3
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-03",
+    "region": "mq",
+    "sessions": 239,
+    "friction": 12,
+    "dead_rate": 0.088,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.218,
+      "n": 101
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 16
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.26
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-03",
+    "region": "gp",
+    "sessions": 329,
+    "friction": 0,
+    "dead_rate": 0.087,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.194,
+      "n": 67
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 24
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.21
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-03",
+    "region": "florida",
+    "sessions": 188,
+    "friction": 1,
+    "dead_rate": 0.108,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.333,
+      "n": 21
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 16
+      }
+    ],
+    "bored_worst": {
+      "screen": "beach",
+      "rate": 0.39
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-03",
+    "region": "puntacana",
+    "sessions": 97,
+    "friction": 0,
+    "dead_rate": 0.083,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.259,
+      "n": 58
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-03",
+    "region": "rivieramaya",
+    "sessions": 41,
+    "friction": 0,
+    "dead_rate": 0.067,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.077,
+      "n": 39
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-04",
+    "region": "mq",
+    "sessions": 208,
+    "friction": 2,
+    "dead_rate": 0.088,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.215,
+      "n": 107
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 14
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.19
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-04",
+    "region": "gp",
+    "sessions": 249,
+    "friction": 0,
+    "dead_rate": 0.052,
+    "dead_worst": {
+      "screen": "beach",
+      "rate": 0.103,
+      "n": 58
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 12
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.17
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-04",
+    "region": "florida",
+    "sessions": 180,
+    "friction": 1,
+    "dead_rate": 0.075,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.136,
+      "n": 66
+    },
+    "top_dead_els": [
+      {
+        "el": "div",
+        "count": 11
+      }
+    ],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.23
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-04",
+    "region": "puntacana",
+    "sessions": 106,
+    "friction": 0,
+    "dead_rate": 0.054,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.129,
+      "n": 31
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.29
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
+  },
+  {
+    "date": "2026-08-04",
+    "region": "rivieramaya",
+    "sessions": 90,
+    "friction": 0,
+    "dead_rate": 0.05,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.114,
+      "n": 44
+    },
+    "top_dead_els": [],
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.31
+    },
+    "modal_to_cta": 0,
+    "cta_to_redirect": 0,
+    "redirect_to_conversion": 0,
+    "session_to_conversion": 0,
+    "session_to_email": 0
   }
 ]

@@ -48,6 +48,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--ink);line-hei
 .wrap .card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:14px;padding:16px 18px;margin:14px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .wrap .upd{color:var(--mid);font-size:.85rem;margin-top:26px}
 
+/* ── Tableaux (inventaires cookies / sous-traitants) ────────────────── */
+.wrap table{width:100%;border-collapse:collapse;margin:14px 0 18px;font-size:.9rem;line-height:1.5}
+.wrap th,.wrap td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top}
+.wrap th{background:var(--bg2);font-weight:700;color:var(--ink)}
+.wrap td{color:var(--ink)}
+.wrap .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
 /* ── Footer société (golden-hour, le bloc "pro") ────────────────────── */
 .sg-foot{margin-top:44px;background:
     radial-gradient(120% 160% at 12% -30%,rgba(255,199,44,.12),transparent 58%),

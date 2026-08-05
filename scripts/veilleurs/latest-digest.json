@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-22",
+  "date": "2026-08-04",
   "count": 10,
   "veilleurs": [
     {
@@ -9,7 +9,7 @@
       "market": "B2C voyageurs",
       "depth": 0,
       "status": "live",
-      "date": "2026-07-22",
+      "date": "2026-08-04",
       "mode": "script",
       "headline": "Sable en veille sur B2C voyageurs"
     },
@@ -20,7 +20,7 @@
       "market": "Hôtels & resorts (B2B)",
       "depth": 5,
       "status": "emerging",
-      "date": "2026-07-21",
+      "date": "2026-08-04",
       "mode": "recon",
       "headline": "Récif en veille sur Hôtels & resorts (B2B)"
     },
@@ -31,7 +31,7 @@
       "market": "Collectivités & offices de tourisme",
       "depth": 15,
       "status": "greenfield",
-      "date": "2026-07-20",
+      "date": "2026-08-03",
       "mode": "recon",
       "headline": "Digue en veille sur Collectivités & offices de tourisme"
     },
@@ -42,7 +42,7 @@
       "market": "Immobilier côtier",
       "depth": 30,
       "status": "greenfield",
-      "date": "2026-07-21",
+      "date": "2026-08-04",
       "mode": "recon",
       "headline": "Amarre en veille sur Immobilier côtier"
     },
@@ -53,7 +53,7 @@
       "market": "Assurance & réassurance climat",
       "depth": 80,
       "status": "greenfield",
-      "date": "2026-07-22",
+      "date": "2026-07-29",
       "mode": "recon",
       "headline": "Baromètre en veille sur Assurance & réassurance climat"
     },
@@ -64,7 +64,7 @@
       "market": "Croisière, ports & maritime",
       "depth": 200,
       "status": "greenfield",
-      "date": "2026-07-16",
+      "date": "2026-07-30",
       "mode": "recon",
       "headline": "Sillage en veille sur Croisière, ports & maritime"
     },
@@ -75,7 +75,7 @@
       "market": "Pêche & aquaculture",
       "depth": 500,
       "status": "greenfield",
-      "date": "2026-07-17",
+      "date": "2026-07-31",
       "mode": "recon",
       "headline": "Filet en veille sur Pêche & aquaculture"
     },
@@ -86,7 +86,7 @@
       "market": "Énergie & dessalement côtiers",
       "depth": 1000,
       "status": "greenfield",
-      "date": "2026-07-18",
+      "date": "2026-08-01",
       "mode": "recon",
       "headline": "Courant en veille sur Énergie & dessalement côtiers"
     },
@@ -97,7 +97,7 @@
       "market": "Licence data / API",
       "depth": 2000,
       "status": "emerging",
-      "date": "2026-07-22",
+      "date": "2026-08-01",
       "mode": "recon",
       "headline": "Prisme en veille sur Licence data / API"
     },
@@ -108,7 +108,7 @@
       "market": "Souverain, spatial & climat",
       "depth": 6000,
       "status": "greenfield",
-      "date": "2026-07-19",
+      "date": "2026-08-02",
       "mode": "recon",
       "headline": "Abysse en veille sur Souverain, spatial & climat"
     }

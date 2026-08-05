@@ -1,0 +1,464 @@
+/* sg-ux-2026.css — UI/UX design system pour level up */
+/* Glassmorphism, micro-interactions, animations fluides */
+/* Version : 2026-07-28 */
+
+/* ============================================
+   1. GLASSMORPHISM - Modales premium
+   ============================================ */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark {
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 199, 44, 0.2);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   2. SCORE BLOB - Pulse + Glow
+   ============================================ */
+.score-blob-pulse {
+  animation: scorePulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px currentColor);
+}
+
+@keyframes scorePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.score-blob-glow {
+  filter: drop-shadow(0 0 30px var(--blob-color, #FFC72C))
+          drop-shadow(0 0 60px var(--blob-color, #FFC72C));
+  animation: scoreGlow 3s ease-in-out infinite;
+}
+
+@keyframes scoreGlow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 30px var(--blob-color, #FFC72C))
+            drop-shadow(0 0 60px var(--blob-color, #FFC72C));
+  }
+  50% { 
+    filter: drop-shadow(0 0 40px var(--blob-color, #FFC72C))
+            drop-shadow(0 0 80px var(--blob-color, #FFC72C));
+  }
+}
+
+/* ============================================
+   3. URGENCY - Alerte rouge animée
+   ============================================ */
+.urgency-alert {
+  background: linear-gradient(135deg, #FF3B30 0%, #FF6B6B 100%);
+  position: relative;
+  overflow: hidden;
+  animation: urgencyPulse 1.5s ease-in-out infinite;
+}
+
+.urgency-alert::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    transparent 70%);
+  animation: urgencyShine 3s linear infinite;
+}
+
+@keyframes urgencyPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(255, 59, 48, 0.4); }
+  50% { box-shadow: 0 8px 40px rgba(255, 59, 48, 0.6); }
+}
+
+@keyframes urgencyShine {
+  0% { transform: translateX(-100%) translateY(-100%); }
+  100% { transform: translateX(100%) translateY(100%); }
+}
+
+/* ============================================
+   4. FORECAST CARDS - Hover effects
+   ============================================ */
+.forecast-card {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.forecast-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.forecast-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.forecast-card:hover::before {
+  transform: translateX(100%);
+}
+
+.forecast-card:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   5. CTA BUTTONS - Premium glow
+   ============================================ */
+.cta-premium {
+  background: linear-gradient(135deg, #FFC72C 0%, #FF9500 100%);
+  color: #0D1117;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 
+    0 4px 12px rgba(255, 199, 44, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.cta-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.cta-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(255, 199, 44, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.cta-premium:hover::before {
+  left: 100%;
+}
+
+.cta-premium:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ============================================
+   6. RIPPLE EFFECT - Micro-interaction
+   ============================================ */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple:active::after {
+  width: 300px;
+  height: 300px;
+  transition: width 0s, height 0s;
+}
+
+/* ============================================
+   7. MODAL SLIDE-IN - Glassmorphism
+   ============================================ */
+.modal-slide-in {
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(13, 17, 23, 0.5);
+  animation: backdropFadeIn 0.3s ease;
+}
+
+@keyframes backdropFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ============================================
+   8. MAP PINS - Elevation + Glow
+   ============================================ */
+.map-pin {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.map-pin:hover {
+  transform: scale(1.3) translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))
+          drop-shadow(0 0 20px currentColor);
+  z-index: 100;
+}
+
+.map-pin-clean {
+  color: #1EC8B0;
+}
+
+.map-pin-moderate {
+  color: #FFC72C;
+}
+
+.map-pin-avoid {
+  color: #FF3B30;
+  animation: pinAvoidPulse 2s ease-in-out infinite;
+}
+
+@keyframes pinAvoidPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ============================================
+   9. STATUS BADGE - Modern pill
+   ============================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.status-badge-clean {
+  background: linear-gradient(135deg, #1EC8B0 0%, #00B086 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(30, 200, 176, 0.3);
+}
+
+.status-badge-moderate {
+  background: linear-gradient(135deg, #FFC72C 0%, #FF9500 100%);
+  color: #0D1117;
+  box-shadow: 0 2px 8px rgba(255, 199, 44, 0.3);
+}
+
+.status-badge-avoid {
+  background: linear-gradient(135deg, #FF3B30 0%, #C70000 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4);
+  animation: badgeAvoidPulse 2s ease-in-out infinite;
+}
+
+@keyframes badgeAvoidPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4); }
+  50% { box-shadow: 0 4px 16px rgba(255, 59, 48, 0.6); }
+}
+
+/* ============================================
+   10. LE VEILLEUR - Animation de scan
+   ============================================ */
+.veilleur-scan {
+  position: relative;
+  display: inline-block;
+}
+
+.veilleur-scan::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    currentColor 0%, 
+    transparent 100%);
+  transform: translateY(-50%);
+  animation: scanLine 3s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+  0%, 100% { 
+    width: 0;
+    opacity: 0;
+  }
+  50% { 
+    width: 60px;
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   11. GRADIENT TEXT - Premium
+   ============================================ */
+.gradient-text-gold {
+  background: linear-gradient(135deg, #FFC72C 0%, #FF9500 50%, #FFD700 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.gradient-text-teal {
+  background: linear-gradient(135deg, #1EC8B0 0%, #00B086 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-purple {
+  background: linear-gradient(135deg, #6B2F9E 0%, #C97E3A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============================================
+   12. ELEVATION CARDS - Modern depth
+   ============================================ */
+.elevation-1 {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.elevation-2 {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.elevation-3 {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.elevation-4 {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   13. PROGRESS BAR - Animated
+   ============================================ */
+.progress-bar-animated {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  height: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1EC8B0 0%, #FFC72C 100%);
+  position: relative;
+  overflow: hidden;
+  animation: progressShine 2s linear infinite;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  animation: progressShine 2s linear infinite;
+}
+
+@keyframes progressShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ============================================
+   14. SKELETON LOADING - Smooth
+   ============================================ */
+.skeleton {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.05) 25%, 
+    rgba(255, 255, 255, 0.15) 50%, 
+    rgba(255, 255, 255, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeletonLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   15. REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .score-blob-pulse,
+  .score-blob-glow,
+  .urgency-alert,
+  .map-pin-avoid,
+  .status-badge-avoid,
+  .progress-bar-fill,
+  .forecast-card::before,
+  .cta-premium::before {
+    animation: none !important;
+  }
+  
+  .forecast-card:hover {
+    transform: none;
+  }
+}

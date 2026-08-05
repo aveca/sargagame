@@ -13,17 +13,31 @@ button{-webkit-appearance:none;appearance:none;background:none;border:none;font-
 button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .12s}
 button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opacity:.9;transition:transform .07s ease}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
-.leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
-.leaflet-control-attribution{display:none!important}
-/* Marker glow — status-colored halo around beach dots */
-.leaflet-interactive{filter:drop-shadow(0 0 4px rgba(255,255,255,.3))}
+
+/* ═══ Z-INDEX REGISTRY (P1-2) — source de vérité unique.
+   TOUT nouvel overlay DOIT utiliser une de ces variables.
+   Valeurs intermédiaires = espaces réservés (10 unités entre chaque). */
+:root{
+  --z-sheet:1010;
+  --z-backdrop:1005;
+  --z-map:1020;
+  --z-map-intro:1019;
+  --z-header:700;
+  --z-fab:960;
+  --z-hero:1050;
+  --z-premium:1100;
+  --z-comic:1200;
+  --z-chat:1090;
+  --z-toast:1480;
+  --z-banner:1500;
+  --z-celebration:9999;
+}
+
 /* Fav heart bounce */
 @keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.3)}60%{transform:scale(.9)}100%{transform:scale(1)}}
 .heart-pop{animation:heartPop .4s cubic-bezier(.22,1,.36,1)}
-.leaflet-control-zoom{display:none!important}
-.leaflet-interactive{cursor:pointer!important}
 /* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
-.sg-pin{backface-visibility:hidden;will-change:transform}
+.sg-pin{backface-visibility:hidden}
 .sg-pin:hover{transform:scale(1.12)!important}
 .sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out 1 both}
 @keyframes sgPinNearest{
@@ -78,7 +92,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 @keyframes sgFadeOut{to{opacity:0}}
 .backdrop-exit{animation:sgFadeOut .25s ease forwards}
 @media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
-.sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
+.sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab;min-height:44px;padding:19px 0;margin-top:0;margin-bottom:0}
 
 /* Backdrop */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1005;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
@@ -170,10 +184,10 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 @keyframes sg-live-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 /* TOP RAIL — segment commun : contour ink 2.5px + pop-1 dure (0 blur) */
 .sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
-.sg-seg{height:40px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
+.sg-seg{height:44px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
   box-shadow:2px 2px 0 var(--sg-ink,#0d0b14)!important;border-radius:13px!important;
   display:flex;align-items:center;flex-shrink:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-.sg-seg.sg-seg-home{width:40px;justify-content:center;padding:0!important;overflow:hidden}
+.sg-seg.sg-seg-home{width:44px;justify-content:center;padding:0!important;overflow:hidden}
 .sg-seg.sg-seg-home svg{width:22px;height:22px;display:block}
 /* Toggle MQ/GP : SEULE surface or pleine de la barre */
 .sg-iso{position:relative;overflow:hidden;padding:0!important}
@@ -195,7 +209,7 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
   flex-shrink:1;min-width:0;font-family:"JetBrains Mono",ui-monospace,monospace}
 /* Util (theme + lang) : 2 boutons, pictos SVG ink, labels Bricolage 800 */
 .sg-util{overflow:hidden;padding:0!important}
-.sg-util button{width:38px;height:100%;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;
+.sg-util button{width:44px;height:100%;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;
   cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sg-ink,#0d0b14)!important;text-shadow:none!important}
 .sg-util button+button{border-left:2.5px solid var(--sg-ink,#0d0b14)!important}
 .sg-util .sg-lang{font-family:"Bricolage Grotesque",sans-serif!important;font-weight:800!important;font-size:14px;letter-spacing:.02em}
@@ -264,12 +278,12 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   .sg-rail{gap:5px}
   .sg-iso button{padding:0 10px!important;font-size:13px}
   .sg-live{padding:0 9px!important;gap:5px}
-  .sg-util button{width:34px}
+  .sg-util button{width:44px}
 }
 @media(max-width:360px){
   .sg-rail{gap:4px}
-  .sg-seg{height:38px}
-  .sg-seg.sg-seg-home{width:38px}
+  .sg-seg{height:44px}
+  .sg-seg.sg-seg-home{width:44px}
   .sg-iso button{padding:0 8px!important}
   .sg-live .sg-live-age{display:none}
 }
@@ -404,16 +418,17 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
 .sg-toast__msg{font-size:15px;line-height:1.4;font-weight:600;color:var(--sg-mid,#3a3a3a);margin-top:2px}
 .sg-toast__title + .sg-toast__msg{margin-top:3px}
 .sg-toast__act{margin-top:10px;font-family:'Bricolage Grotesque',sans-serif !important;font-weight:800 !important;
-  font-size:13px !important;min-height:40px;padding:8px 14px !important;
+  font-size:13px !important;min-height:44px;padding:8px 14px !important;
   background:#fff !important;color:var(--sg-ink,#0d0d0d) !important;
   border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:12px !important;
   box-shadow:2px 2px 0 var(--sg-ink,#0d0d0d) !important;text-shadow:none !important;cursor:pointer}
 .sg-toast__act:active{transform:translate(2px,2px) !important;box-shadow:0 0 0 var(--sg-ink,#0d0d0d) !important}
-.sg-toast__x{flex-shrink:0;width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;
+.sg-toast__x{flex-shrink:0;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;
   border:none !important;background:none !important;box-shadow:none !important;color:var(--sg-mid,#5a5a5a) !important;
   cursor:pointer;padding:0 !important;border-radius:10px !important;margin:-4px -4px 0 0}
 .sg-toast__x:active{transform:scale(.9)}
 @keyframes sgToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes sgStickyIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);
@@ -455,6 +470,23 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
 .sg-ctxv-lbl{flex:1;min-width:0}
 @keyframes sgCtxvIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 
+/* ══════════ BEACH SCENE animations ══════════ */
+.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}
+@keyframes bscCloud{to{transform:translateX(-46px)}}
+.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}
+@keyframes bscCloud2{to{transform:translateX(40px)}}
+.bsc-beam{opacity:.1}
+.bsc-shim{opacity:.5}
+.bsc-moonp{opacity:.34}
+@keyframes bscReveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+.bsc-reveal{animation:bscReveal .85s cubic-bezier(.22,1,.36,1) both;transform-origin:50% 60%}
+
+/* ══════════ CELEBRATION animation ══════════ */
+@keyframes celebration-fade{
+  0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0) rotate(720deg)}
+}
+
 /* Reduced motion — kill infinite animations, keep one-shot transitions */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -462,4 +494,150 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   .sg-nearest-ring,.sg-eta-badge,.pulse,.sg-drift-path{animation:none !important}
   .heart-pop{animation:none !important}
   .sg-sk{animation:none !important;background:var(--sg-cardS,#EFEDE6) !important}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SARGAGAME V2 · Phase 0 design system application
+   Scoped classes only. Rollback is handled by ?sguxv2=0 at component level.
+   No new asset, font or eager dependency is introduced here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --sg-v2-ink:#0D0B14;
+  --sg-v2-paper:#FDF6E3;
+  --sg-v2-gold:#FFC72C;
+  --sg-v2-gold-soft:#FFE47A;
+  --sg-v2-teal:#009E8E;
+  --sg-v2-clean:#22C55E;
+  --sg-v2-check:#F59E0B;
+  --sg-v2-avoid:#E8522A;
+  --sg-v2-shadow-hard:3px 3px 0 var(--sg-v2-ink);
+  --sg-v2-shadow-soft:0 14px 40px rgba(13,11,20,.18);
+}
+
+/* La fiche devient une histoire de décision plutôt que cinq écrans entiers.
+   Le verdict reste premier ; le détail reste disponible dessous. */
+.sg-v2-beach-sheet .bs-story-section{
+  min-height:clamp(360px,54svh,520px) !important;
+  padding:28px 20px !important;
+}
+.sg-v2-beach-sheet .sg-v2-beach-hero{
+  height:min(380px,38svh) !important;
+}
+.sg-v2-beach-sheet .bs-gobtn{
+  min-height:52px;
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+.sg-v2-beach-sheet .bs-gobtn:focus-visible,
+.sg-v2-beach-sheet button:focus-visible,
+.sg-v2-comic-detail button:focus-visible,
+.sg-v2-paywall-panel button:focus-visible{
+  outline:3px solid var(--sg-v2-gold-soft);
+  outline-offset:3px;
+}
+
+/* ComicDetail est la fiche par défaut du parcours carte. Même promesse que la
+   BeachSheet fallback : le verdict arrive vite et l'action reste atteignable. */
+.sg-v2-comic-detail .lc-detail-illu{
+  height:clamp(190px,27svh,230px);
+}
+.sg-v2-comic-detail .lc-detail-body{
+  padding:14px 18px 52px;
+}
+.sg-v2-comic-detail .lc-detail-sub{
+  margin:8px 0 11px;
+}
+.sg-v2-comic-detail .lc-detail-score{
+  margin-bottom:11px;
+}
+.sg-v2-comic-detail .lc-detail-facts{
+  margin-bottom:13px;
+}
+.sg-v2-comic-detail .lc-detail-actions{
+  position:sticky;
+  bottom:0;
+  z-index:4;
+  margin:14px -18px -52px;
+  padding:10px 18px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(253,246,227,0),rgba(253,246,227,.97) 24%);
+}
+.sg-v2-comic-detail .lc-detail-full{
+  min-height:48px;
+}
+.sg-v2-comic-detail .lc-detail-go{
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+.sg-v2-comic-detail .lc-detail-body > .lc-cta.yel:not(.lc-v2-early-cta):not(.lc-detail-detailcta){
+  display:none;
+}
+.sg-v2-comic-detail .lc-v2-early-cta{
+  display:block;
+  width:100%;
+  min-height:52px;
+  margin:0 0 14px;
+  box-shadow:var(--sg-v2-shadow-hard);
+}
+
+/* Consent remains explicit, but must not hide the verdict or the next action
+   on a 390px viewport. The two choices and privacy link stay unchanged. */
+.sg-v2-cookie-banner{
+  padding:10px max(12px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) !important;
+  gap:8px !important;
+}
+.sg-v2-cookie-banner > div:first-child{
+  font-size:12px !important;
+  line-height:1.3 !important;
+}
+.sg-v2-cookie-banner > div:last-child{
+  gap:8px !important;
+}
+.sg-v2-cookie-banner button{
+  min-height:40px !important;
+  padding:9px 12px !important;
+  font-size:13px !important;
+}
+
+/* Le paywall garde son offre et sa logique de paiement, mais devient une
+   surface premium unique sur mobile et respecte la zone de l'iPhone. */
+.sg-v2-paywall-panel,
+.sg-v2-checkout-panel{
+  padding-bottom:calc(20px + env(safe-area-inset-bottom)) !important;
+}
+.sg-v2-paywall-panel .sg-v2-pass-offer,
+.sg-v2-checkout-panel .sg-v2-pass-offer{
+  width:min(100%,620px);
+  margin-inline:auto;
+}
+.sg-v2-pass-offer .sg-passcard-hero{
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.sg-v2-pass-offer .sg-passcard-hero:hover{
+  border-color:rgba(255,228,122,.88) !important;
+  box-shadow:0 5px 0 rgba(0,0,0,.35),0 18px 44px rgba(232,168,0,.25),inset 0 0 0 1px rgba(255,228,122,.24) !important;
+}
+.sg-v2-pass-offer .sg-passcard-hero:active{
+  transform:translateY(2px);
+}
+
+@media (min-width:768px){
+  .sg-v2-cookie-banner{
+    flex-direction:row !important;
+    align-items:center;
+    padding:10px max(18px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  .sg-v2-cookie-banner > div:first-child{
+    flex:1;
+  }
+  .sg-v2-cookie-banner > div:last-child{
+    min-width:300px;
+  }
+  .sg-v2-beach-sheet .bs-story-section{
+    min-height:420px !important;
+    padding:32px 28px !important;
+  }
+  .sg-v2-beach-sheet .sg-v2-beach-hero{
+    height:min(400px,42svh) !important;
+  }
+  .sg-v2-comic-detail .lc-detail-body{
+    padding-bottom:60px;
+  }
 }

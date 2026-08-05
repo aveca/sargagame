@@ -35,7 +35,49 @@
       "value": "1990.00",
       "webhooked": true,
       "createdAt": "2026-07-02T03:41:14.824Z"
+    },
+    "trip_eur": {
+      "id": "pl_AansH7qySCmCkY8hGPR3K",
+      "url": "https://payment-links.mollie.com/payment/AansH7qySCmCkY8hGPR3K",
+      "value": "4.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:37.328Z"
+    },
+    "trip_usd": {
+      "id": "pl_rtywyW8nH4JpcvWyY47GP",
+      "url": "https://payment-links.mollie.com/payment/rtywyW8nH4JpcvWyY47GP",
+      "value": "4.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:38.889Z"
+    },
+    "sejour_eur": {
+      "id": "pl_6uFVxAzkUyqdvNzpV5R4f",
+      "url": "https://payment-links.mollie.com/payment/6uFVxAzkUyqdvNzpV5R4f",
+      "value": "12.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:40.089Z"
+    },
+    "sejour_usd": {
+      "id": "pl_xwjs5qndhV5iyrD88VXXn",
+      "url": "https://payment-links.mollie.com/payment/xwjs5qndhV5iyrD88VXXn",
+      "value": "9.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:41.197Z"
+    },
+    "saison_eur": {
+      "id": "pl_hFRkSfrzxWWcYxKBPhCiM",
+      "url": "https://payment-links.mollie.com/payment/hFRkSfrzxWWcYxKBPhCiM",
+      "value": "19.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:42.309Z"
+    },
+    "saison_usd": {
+      "id": "pl_DSA3QUxkpSs9fCCTiLZL9",
+      "url": "https://payment-links.mollie.com/payment/DSA3QUxkpSs9fCCTiLZL9",
+      "value": "14.99",
+      "webhooked": true,
+      "createdAt": "2026-07-28T19:26:43.487Z"
     }
   },
-  "updatedAt": "2026-07-22T19:25:10.458Z"
+  "updatedAt": "2026-08-04T19:41:17.410Z"
 }

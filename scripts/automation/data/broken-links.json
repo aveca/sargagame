@@ -1,18 +1,12 @@
 {
-  "generatedAt": "2026-07-20T13:28:27.959Z",
+  "generatedAt": "2026-08-03T14:03:02.207Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
-      "totalLinks": 6128,
-      "checkedLinks": 4790,
-      "brokenCount": 85,
+      "pageCount": 365,
+      "totalLinks": 6173,
+      "checkedLinks": 4829,
+      "brokenCount": 20,
       "broken": [
-        {
-          "from": "/api/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
-          "kind": "internal"
-        },
         {
           "from": "/carte-sargasses/",
           "href": "/meilleures-plages-guadeloupe-sargasses/",
@@ -32,33 +26,57 @@
           "kind": "internal"
         },
         {
-          "from": "/expansion-survey/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/for-hotels/",
-          "href": "/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "martinique-ftp/cookies/index.html",
           "kind": "internal"
         },
         {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "martinique-ftp/cookies/index.html",
           "kind": "internal"
         },
         {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
+          "from": "/confidentialite/",
+          "href": "/privacy/",
+          "target": "martinique-ftp/privacy/index.html",
           "kind": "internal"
         },
         {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
+          "from": "/confidentialite/",
+          "href": "/cgu/",
+          "target": "martinique-ftp/cgu/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "martinique-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cgu/",
+          "target": "martinique-ftp/cgu/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "martinique-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/privacy/",
+          "target": "martinique-ftp/privacy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/terms/",
+          "target": "martinique-ftp/terms/index.html",
           "kind": "internal"
         },
         {
@@ -71,414 +89,6 @@
           "from": "/previsions/",
           "href": "/meilleures-plages-guadeloupe-sargasses/",
           "target": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/collectivites/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/collectivites/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/",
-          "href": "/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/",
-          "href": "/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-martinique.com/reliability/",
-          "target": "martinique-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/collectivites/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/collectivites/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/",
-          "href": "/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/es/",
-          "href": "/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-martinique.com/fiabilidad/",
-          "target": "martinique-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "martinique-ftp/about/index.html",
           "kind": "internal"
         },
         {
@@ -520,17 +130,11 @@
       ]
     },
     "gp": {
-      "pageCount": 402,
-      "totalLinks": 7761,
-      "checkedLinks": 6060,
-      "brokenCount": 92,
+      "pageCount": 404,
+      "totalLinks": 7814,
+      "checkedLinks": 6107,
+      "brokenCount": 27,
       "broken": [
-        {
-          "from": "/api/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
-          "kind": "internal"
-        },
         {
           "from": "/carte-sargasses/",
           "href": "/meilleures-plages-martinique-sargasses/",
@@ -550,39 +154,63 @@
           "kind": "internal"
         },
         {
-          "from": "/expansion-survey/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "guadeloupe-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "guadeloupe-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/privacy/",
+          "target": "guadeloupe-ftp/privacy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cgu/",
+          "target": "guadeloupe-ftp/cgu/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "guadeloupe-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cgu/",
+          "target": "guadeloupe-ftp/cgu/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/cookies/",
+          "target": "guadeloupe-ftp/cookies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/privacy/",
+          "target": "guadeloupe-ftp/privacy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/confidentialite/",
+          "href": "/terms/",
+          "target": "guadeloupe-ftp/terms/index.html",
+          "kind": "internal"
         },
         {
           "from": "/faq/",
           "href": "/meilleures-plages-martinique-sargasses/",
           "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/for-hotels/",
-          "href": "/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/investigacion/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
           "kind": "internal"
         },
         {
@@ -595,414 +223,6 @@
           "from": "/previsions/",
           "href": "/meilleures-plages-martinique-sargasses/",
           "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/collectivites/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/collectivites/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/cost-of-sargassum-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/",
-          "href": "/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/",
-          "href": "/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/prepare-hotel-sargassum-season/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/pricing/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-barrier-vs-forecast/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-cancun-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-miami-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-forecast-punta-cana-hotels/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/en/sargassum-plan-coastal-towns/",
-          "href": "https://sargasses-guadeloupe.com/reliability/",
-          "target": "guadeloupe-ftp/reliability/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/barrera-vs-pronostico-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/collectivites/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/collectivites/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/costo-sargazo-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/hotels/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/",
-          "href": "/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/es/",
-          "href": "/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/plan-sargazo-municipios/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/preparar-hotel-temporada-sargazo/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pricing/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-cancun-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/pro/es/pronostico-sargazo-punta-cana-hoteles/",
-          "href": "https://sargasses-guadeloupe.com/fiabilidad/",
-          "target": "guadeloupe-ftp/fiabilidad/index.html",
-          "kind": "cross-domain"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/research/",
-          "href": "/about/",
-          "target": "guadeloupe-ftp/about/index.html",
           "kind": "internal"
         },
         {

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow"/>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
 <link rel="icon" href="/favicon.ico" sizes="any"/>
-<title>Where should The Watcher look next? — Sargassum market survey</title>
+<title>Where should The Watcher look next? â€” Sargassum market survey</title>
 <meta name="description" content="Help us decide where to launch next. 60 seconds, no signup."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,7 +48,7 @@
 <body>
 <div class="page">
   <div class="hero">
-    <div class="eyebrow">Le Veilleur · Expansion research</div>
+    <div class="eyebrow">Le Veilleur Â· Expansion research</div>
     <h1>Where should we look next?</h1>
     <p>We watch the sargassum satellite feed and forecast it per beach for hotels &amp; municipalities in the Caribbean, Gulf and Atlantic. Before we build a new market, we ask the people who'd actually use it. 60 seconds, no signup, no spam.</p>
   </div>
@@ -57,17 +57,17 @@
     <div class="fld">
       <label for="market">Which destination are you in?</label>
       <select id="market" name="market" required>
-        <option value="" disabled selected>Choose a destination…</option>
+        <option value="" disabled selected>Choose a destinationâ€¦</option>
         <option value="jamaica">Jamaica</option>
         <option value="puertorico">Puerto Rico</option>
         <option value="turkscaicos">Turks &amp; Caicos</option>
         <option value="usvi">US Virgin Islands</option>
         <option value="belize">Belize</option>
-        <option value="abc_islands">Aruba / Curaçao / Bonaire</option>
-        <option value="colombia">Colombia (Cartagena / San Andrés)</option>
+        <option value="abc_islands">Aruba / CuraÃ§ao / Bonaire</option>
+        <option value="colombia">Colombia (Cartagena / San AndrÃ©s)</option>
         <option value="panama">Panama (Bocas del Toro)</option>
         <option value="costarica">Costa Rica (Caribbean coast)</option>
-        <option value="westafrica">West Africa (Ghana / Côte d'Ivoire)</option>
+        <option value="westafrica">West Africa (Ghana / CÃ´te d'Ivoire)</option>
         <option value="other">Somewhere else</option>
       </select>
       <div class="hint" id="otherWrap" hidden>
@@ -76,9 +76,9 @@
     </div>
 
     <div class="fld">
-      <label for="orgType">You are…</label>
+      <label for="orgType">You areâ€¦</label>
       <select id="orgType" name="orgType" required>
-        <option value="" disabled selected>Choose one…</option>
+        <option value="" disabled selected>Choose oneâ€¦</option>
         <option value="hotel">A hotel / resort</option>
         <option value="municipality">A municipality / tourism board</option>
         <option value="other">Something else</option>
@@ -98,30 +98,30 @@
       <div class="scale" id="scale1b" style="margin-top:8px" role="radiogroup" aria-label="Sargassum problem severity (6-10)">
         <button type="button" data-v="6">6</button><button type="button" data-v="7">7</button><button type="button" data-v="8">8</button><button type="button" data-v="9">9</button><button type="button" data-v="10">10</button>
       </div>
-      <div class="scale-labels"><span>1 · barely noticeable</span><span>10 · turns guests away</span></div>
+      <div class="scale-labels"><span>1 Â· barely noticeable</span><span>10 Â· turns guests away</span></div>
     </div>
 
     <div class="fld">
-      <label for="email">Email — get notified if we launch here (optional)</label>
+      <label for="email">Email â€” get notified if we launch here (optional)</label>
       <input type="email" id="email" name="email" maxlength="200" placeholder="you@hotel.com"/>
     </div>
 
     <div class="fld">
       <label for="note">Anything else? (optional)</label>
-      <textarea id="note" name="note" maxlength="500" placeholder="Which beaches, which season, anything we should know…"></textarea>
+      <textarea id="note" name="note" maxlength="500" placeholder="Which beaches, which season, anything we should knowâ€¦"></textarea>
     </div>
 
     <button type="submit" class="submit" id="submitBtn" disabled>Send</button>
   </form>
 
   <div class="done" id="done" hidden>
-    <div class="glyph">🛰️</div>
-    <h2>Got it — thank you</h2>
-    <p>We read every reply. If your destination gets enough interest, you'll hear from us before we launch — and you'll get first access.</p>
-    <a href="https://sargasses-martinique.com/">See The Watcher in action →</a>
+    <div class="glyph">ðŸ›°ï¸</div>
+    <h2>Got it â€” thank you</h2>
+    <p>We read every reply. If your destination gets enough interest, you'll hear from us before we launch â€” and you'll get first access.</p>
+    <a href="https://sargasses-martinique.com/">See The Watcher in action â†’</a>
   </div>
 
-  <div class="foot">We publish our forecast accuracy for every live market — <a href="https://sargasses-martinique.com/reliability/" style="color:inherit">check our track record</a>. This form is not a purchase or a commitment — just research.</div>
+  <div class="foot">We publish our forecast accuracy for every live market â€” <a href="https://sargasses-martinique.com/fiabilite/" style="color:inherit">check our track record</a>. This form is not a purchase or a commitment â€” just research.</div>
 </div>
 <script>
 (function(){
@@ -156,7 +156,7 @@
   form.addEventListener('submit',function(e){
     e.preventDefault();
     if(submitBtn.disabled) return;
-    submitBtn.disabled=true; submitBtn.textContent='Sending…';
+    submitBtn.disabled=true; submitBtn.textContent='Sendingâ€¦';
     var market = marketSel.value==='other' ? (document.getElementById('marketOther').value||'other').trim().slice(0,80) : marketSel.value;
     var payload={
       event:'sg_market_vote',

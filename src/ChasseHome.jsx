@@ -483,6 +483,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 }
 
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
+  const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -552,7 +553,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   },[beach,head,track]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
-      ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}>
+      ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}
+      onClick={e=>{ if(e.target===e.currentTarget){ onClose() } }}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
@@ -604,6 +606,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
+        {v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        </button>}
         <H2sNote status={beach.status} lang={lang}/>
 
         {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE
@@ -667,7 +672,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=new Date(Date.now()+i*864e5)
-                const dl=["D","L","M","M","J","V","S"][d.getDay()]
+                const dayMap={fr:["D","L","M","M","J","V","S"],en:["S","M","T","W","T","F","S"],es:["D","L","M","X","J","V","S"]}
+                const dl=(dayMap[lang]||dayMap.fr)[d.getDay()]
                 // Premium sans série (plage non couverte) : estimation par PERSISTANCE du
                 // statut du jour (confiance basse, jamais de carré gris muet — un payant
                 // doit toujours voir une donnée). Gratuit → cadenas (verrou intentionnel).
@@ -1515,9 +1521,13 @@ export default function ChasseHome(props){
     if(idx>prev){ localStorage.setItem("sg_chasse_rank",String(idx)); if(prev>=0&&idx>0){ setLevelUp(tier.cur); if(track)try{track("sg_chasse_levelup",{rank:idx})}catch(_){} } }
   }catch(_){} },[tier,track])
   const dateLbl = useMemo(()=>{
-    const d=new Date(), moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."]
-    return d.getDate()+" "+moFR[d.getMonth()]
-  },[])
+    const d=new Date(), mo={
+      fr:["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."],
+      en:["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],
+      es:["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"]
+    }
+    return d.getDate()+" "+(mo[lang]||mo.fr)[d.getMonth()]
+  },[lang])
 
   /* ---- BADGES (BadgesSheet) — déblocages à partir de DONNÉES RÉELLES ----
      Flag kill-switch ?badges=0 (défaut on) ; ?badges=1 force l'ouverture au mount.
@@ -1985,7 +1995,7 @@ export const CSS=`
 .lc-gomap-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
 .lc-gomap-tx b{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);letter-spacing:.3px}
 .lc-gomap-tx small{font-weight:800;font-size:11.5px;color:#eaf7ff;margin-top:2px}
-.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:34px;height:34px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:44px;height:44px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
 .lc-streak{flex:0 0 auto;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:4px 10px;
   box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:1}
 .lc-streak .lc-fire{font-size:15px}
@@ -2090,7 +2100,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 var(--ink)}}
 .lc-detail-name,.lc-pack-lbl{animation:lc-chroma 1.6s steps(3) infinite alternate}
 .lc-reduce .lc-detail-name,.lc-reduce .lc-pack-lbl{animation:none}
-.lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:42px;height:42px;border-radius:50%;
+.lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:44px;height:44px;border-radius:50%;
   -webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
@@ -2114,9 +2124,11 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-detail-scnum small{font-size:14px;opacity:.6}
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-/* Chips info NON tappables : pas d'ombre portée (la grammaire bordure+ombre = « pressable »
-   dans tout le système comic, cf. .lc-chip — collision d'affordance mesurée en dead-clicks). */
-.lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px}
+ /* Chips info NON tappables : bordure légère + fond neutre + PAS d'ombre (la grammaire
+   bordure épaisse+ombre = « pressable » dans tout le système comic, cf. .lc-chip —
+   collision d'affordance mesurée en dead-clicks). pointer-events:none pour tuer les
+   dead-clicks sans changer le layout. */
+.lc-detail-fact{font-size:13px;font-weight:800;background:#f3f1f7;border:1.5px solid #c9c3d2;border-radius:20px;padding:6px 12px;pointer-events:none}
 .lc-why{margin:0 0 16px}
 .lc-why .lc-season-body a{color:inherit;font-weight:800}
 .lc-why-btn{-webkit-appearance:none;appearance:none;box-sizing:border-box;display:flex;width:fit-content;align-items:center;
@@ -2453,7 +2465,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
-.lc-badge-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+.lc-badge-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-badge-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:16px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
@@ -2530,7 +2542,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
    z-index 1140 < badges 1150 < détail 1200 < levelup 1250.
    --paper / --ink / ombres dures ; Anton titre, Comic Neue corps.
    ==================================================================== */
-.lc-bells{position:relative;flex:0 0 auto;width:38px;height:38px;cursor:pointer;-webkit-appearance:none;appearance:none;
+.lc-bells{position:relative;flex:0 0 auto;width:44px;height:44px;cursor:pointer;-webkit-appearance:none;appearance:none;
   background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink);
   display:grid;place-items:center;forced-color-adjust:none;transition:transform .08s}
 .lc-bells:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
@@ -2540,7 +2552,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   background:var(--red);border:2px solid var(--ink);border-radius:11px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-root .lc-bells{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
 /* MON ESPACE (#10) — bouton header + sheet */
-.lc-spacebtn{flex:0 0 auto;width:38px;height:38px;margin-left:4px;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:18px;line-height:1;
+.lc-spacebtn{flex:0 0 auto;width:44px;height:44px;margin-left:4px;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:18px;line-height:1;
   display:flex;align-items:center;justify-content:center;background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
 .lc-spacebtn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
 .lc-root .lc-spacebtn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
@@ -2575,7 +2587,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-alerts-modal{position:relative;width:100%;max-width:440px;margin:auto 0;
   background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
-.lc-alerts-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+.lc-alerts-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-alerts-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:18px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}

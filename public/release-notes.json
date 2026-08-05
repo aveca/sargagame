@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v217",
+  "current": "v218",
   "releases": [
+    {
+      "v": "v218",
+      "date": "2026-07-29",
+      "title": {
+        "fr": "Paiements corrigés + SW fix",
+        "en": "Payments fixed + SW fix",
+        "es": "Pagos arreglados + SW fix"
+      },
+      "items": [
+        {
+          "emoji": "💳",
+          "fr": "Paiements Google Pay / Apple Pay / Carte restaurés — Mollie SDK remplacé par client cURL natif.",
+          "en": "Google Pay / Apple Pay / Card payments restored — Mollie SDK replaced with native cURL client.",
+          "es": "Pagos Google Pay / Apple Pay / Tarjeta restaurados — SDK Mollie reemplazado por cliente cURL nativo."
+        },
+        {
+          "emoji": "🛠️",
+          "fr": "Service Worker ne bloque plus les POST /api (paiements) — bypass natif pour méthodes non-GET.",
+          "en": "Service Worker no longer blocks POST /api (payments) — native bypass for non-GET methods.",
+          "es": "Service Worker ya no bloquea POST /api (pagos) — bypass nativo para métodos no-GET."
+        }
+      ]
+    },
     {
       "v": "v217",
       "date": "2026-06-22",

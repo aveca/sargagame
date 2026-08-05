@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-20T13:28:28.293Z",
+  "generatedAt": "2026-08-03T14:03:02.769Z",
   "sites": {
     "mq": {
-      "pageCount": 362,
-      "uniqueTitles": 204,
-      "uniqueDescs": 187,
+      "pageCount": 364,
+      "uniqueTitles": 206,
+      "uniqueDescs": 189,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 543,
+      "issueCount": 546,
       "issues": [
         {
           "file": "404.html",
@@ -123,7 +123,7 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 106
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -135,6 +135,11 @@
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec UV très fort aujourd’hui — Martinique (protégez-vous)"
+        },
+        {
+          "file": "confidentialite/index.html",
+          "kind": "desc-too-long",
+          "length": 268
         },
         {
           "file": "confidentialite.html",
@@ -189,19 +194,13 @@
           "kind": "title-length-warn",
           "length": 65,
           "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
-        },
-        {
-          "file": "en/satellite-sargassum-detection/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
         }
       ]
     },
     "gp": {
-      "pageCount": 401,
-      "uniqueTitles": 243,
-      "uniqueDescs": 227,
+      "pageCount": 403,
+      "uniqueTitles": 245,
+      "uniqueDescs": 229,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -227,7 +226,7 @@
           ]
         }
       ],
-      "issueCount": 596,
+      "issueCount": 599,
       "issues": [
         {
           "file": "404.html",
@@ -344,6 +343,11 @@
           "value": "Plages avec UV très fort aujourd’hui — Guadeloupe (protégez-vous)"
         },
         {
+          "file": "confidentialite/index.html",
+          "kind": "desc-too-long",
+          "length": 268
+        },
+        {
           "file": "confidentialite.html",
           "kind": "title-length-warn",
           "length": 64,
@@ -385,11 +389,6 @@
           "kind": "title-length-warn",
           "length": 66,
           "value": "Sargassum alerts Guadeloupe & Martinique — Real-time notifications"
-        },
-        {
-          "file": "en/sargassum-alerts/index.html",
-          "kind": "desc-length-warn",
-          "length": 106
         }
       ]
     }

@@ -10,6 +10,9 @@
  *
  * Le secret est DÉRIVÉ du webhook_secret (jamais la clé Stripe brute), stable, jamais exposé.
  * Le jeton encode {h:host, exp:timestamp} → non forgeable sans le secret, expirable.
+ *
+ * RÉVOCATION : si le token encode subscription_id ET que mol_b2b_is_revoked() retourne
+ * true, le verify retourne false. Couvre subscription.canceled/expired → token désactivé.
  */
 function sg_widget_secret() {
     $cfg = @include __DIR__ . '/stripe-config.php';
@@ -21,9 +24,15 @@ function sg_widget_b64url_dec($s) { return base64_decode(strtr($s, '-_', '+/'));
 
 /** Génère un jeton PRO pour un host donné (ex. domaine de l'hôtel), valable $days jours. */
 function sg_widget_sign($host, $days = 400) {
-    $payload = sg_widget_b64url(json_encode(['h' => (string)$host, 'exp' => time() + (int)$days * 86400]));
-    $sig = sg_widget_b64url(hash_hmac('sha256', $payload, sg_widget_secret(), true));
-    return $payload . '.' . $sig;
+    if (is_array($host)) {
+        $payload = $host;
+        if (!isset($payload['exp'])) $payload['exp'] = time() + (int)$days * 86400;
+    } else {
+        $payload = ['h' => (string)$host, 'exp' => time() + (int)$days * 86400];
+    }
+    $b64payload = sg_widget_b64url(json_encode($payload));
+    $sig = sg_widget_b64url(hash_hmac('sha256', $b64payload, sg_widget_secret(), true));
+    return $b64payload . '.' . $sig;
 }
 /** Vérifie un jeton. Retourne le payload décodé {h,exp} si valide, false sinon. */
 function sg_widget_verify($k) {
@@ -34,6 +43,16 @@ function sg_widget_verify($k) {
     $d = json_decode(sg_widget_b64url_dec($parts[0]), true);
     if (!is_array($d)) return false;
     if (!empty($d['exp']) && (int)$d['exp'] < time()) return false;
+    // Vérification révocation Mollie (lazy include, file-based, peut être absent sur dev)
+    if (!empty($d['subscription_id']) && !empty($d['type']) && $d['type'] === 'b2b_pro') {
+        $molLib = __DIR__ . '/mollie-lib.php';
+        if (file_exists($molLib)) {
+            @require_once $molLib;
+            if (function_exists('mol_b2b_is_revoked') && mol_b2b_is_revoked((string)$d['subscription_id'])) {
+                return false;
+            }
+        }
+    }
     return $d;
 }
 

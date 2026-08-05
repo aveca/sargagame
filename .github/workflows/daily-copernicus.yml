@@ -145,6 +145,14 @@ jobs:
           ONESIGNAL_API_KEY_RIVIERAMAYA: ${{ secrets.ONESIGNAL_API_KEY_RIVIERAMAYA }}
         run: node scripts/automation/send-notifications.cjs
 
+      - name: Push win-back dormant users
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/push-winback.cjs --send
+
       # ── Email pipeline: clean bounces → fetch → send ──
       - name: Clean bounced emails from Sheet
         if: github.event_name == 'schedule'
@@ -193,6 +201,35 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/drip-email.cjs
 
+      # Cart recovery — abandons de paiement relancés automatiquement.
+      # 3 touches automatiques : J+1 (doux), J+3 (ferme), J+5 (promo -2€).
+      # Idempotent : marqueurs sent_markers/cart-recovery-j{day}-sent.json.
+      # Dédup par hash(email)+jour, une seule relance par séquence.
+      # Mode --send dans le cron, dry-run par défaut.
+      - name: Cart recovery — J+1
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=1 --send --cap=30
+
+      - name: Cart recovery — J+3
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=3 --send --cap=30
+
+      - name: Cart recovery — J+5 (promo -2€)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=5 --send --cap=30
+
       # Brief QUOTIDIEN « tes plages aujourd'hui » (MQ/GP) — moteur d'habitude.
       # DRY-RUN (pas de --send) : le fondateur bascule en --send après une dry-run
       # propre (même prudence que dunning, le domaine porte aussi welcome/drip).
@@ -220,6 +257,16 @@ jobs:
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
         run: node scripts/automation/mollie-paylinks.cjs
+
+      # Mollie Payment Links TOUS PRODUITS (B2C passes + B2B annual + USD) :
+      # crée les liens de paiement direct pour tous les tiers (p7/p30/saison EUR+USD,
+      # brief_annual/pro_annual/territory EUR+USD). Idempotent, auto-réparation.
+      - name: Mollie all-product payment links
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-passlinks.cjs --send
 
       # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
       # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
@@ -262,14 +309,26 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/widget-convert.cjs --send
 
-      # Prospection B2B FROIDE automatisée (hôtels enrichis, email réel + hook perso).
-      # Warmup : cap bas de nouveaux contacts/run (délivrabilité). Séquence c0 + relance c4.
-      - name: B2B cold outreach (warmup)
+      # US B2B enrichment + merge : seed les hôtels US (florida/puntacana/rivieramaya)
+      # dans la base de contacts B2B, puis fusionne MQ/GP + US → b2b-contacts-unified.json
+      # (lu par b2b-cold-outreach.cjs ci-dessous). Skip si la clé Google Places absente
+      # (seed statique de 58 hôtels utilisée). Idempotent, continue-on-error.
+      - name: B2B US enrich + merge
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          node scripts/automation/b2b-us-enrich.cjs --send
+          node scripts/automation/merge-b2b-contacts.cjs --send
+
+      # Prospection B2B FROIDE — cap HAUT (pas de warmup, on scale). 58 US hôtels +
+      # MQ/GP hotels = ~150 contacts. Envoi agressif : CAP_NEW=30, séquence c0+c4.
+      # La délivrabilité est protégée par SPF/DKIM et le List-Unsubscribe.
+      - name: B2B cold outreach (scale)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          CAP_NEW: '8'
+          CAP_NEW: '30'
         run: node scripts/automation/b2b-cold-outreach.cjs --send
 
       # Funnel B2B : agrège chaque prospect (découvert→contacté→lead→payé) + prochaine
@@ -291,6 +350,8 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_CART_RECOVERY: '1'
         run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=4
 
       # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
@@ -384,6 +445,21 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/cold-lead-reengage.cjs --send
 
+      # Blast MOLLIE OFFRE à TOUS les leads (B2C + B2B) : envoie un email unique
+      # avec lien de paiement direct à tous les leads jamais convertis (246 + 58 US).
+      # Idempotent (blast-mollie-offer-sent.json), cap 500/jour. schedule-only.
+      # Exclut les déjà-payants (vérifié via API Mollie) et les bounced.
+      - name: Blast Mollie offer to ALL leads
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/blast-mollie-offer.cjs --send
+
       # Welcome PASS Mollie : onboarde les acheteurs de pass Mollie (la base client qui
       # croît — welcome-paid.cjs ne couvre QUE les abos Stripe legacy). En pass-only,
       # satisfaction → rachat = le revenu ; un onboarding propre + nudge partage (boucle
@@ -461,6 +537,9 @@ jobs:
           # secrets sont déjà exposés à d'autres steps de ce même workflow.
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          # Email pixel tracking (track-open.php / track-click.php) — aggregation
+          # des ouvertures/clics uniques depuis Supabase analytics_events.
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/daily-stats-check.cjs
 
       # Veille revenu proactive : diff les blocs stripe ET mollie de daily-metrics (que
@@ -473,6 +552,16 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/revenue-watch.cjs --send
+
+      # MRR Mollie EXCLUSIF : track la croissance Mollie (MRR, passes, B2B, nombre
+      # de clients). Source = API Mollie (MOLLIE_API_KEY). Remplace Stripe comme
+      # indicateur de revenu principal. Rapport dans data/mollie-mrr.json + historique 90j.
+      - name: Mollie MRR tracker
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-mrr.cjs --send
 
       # Veille UX proactive : lit ux-report.json (audit hebdo) → alerte le fondateur
       # sur les problèmes CRITIQUES (rage/dead-clicks) qui sinon dorment dans le JSON.
@@ -509,6 +598,15 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/factory-heartbeat-watch.cjs --send
 
+      # Purge analytics_events > 90j (Supabase) — keep funnel table lean, RGPD.
+      # Schedule-only, non-bloquant. Utilise SUPABASE_SERVICE_KEY secret.
+      - name: Purge analytics_events (> 90j)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/purge-analytics.cjs
+
       # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
       # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
       # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
@@ -544,7 +642,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json public/api/b2b-paylinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -661,13 +759,15 @@ jobs:
         if: steps.check_build.outputs.full == 'true'
         run: node scripts/prepare-ftp.cjs
 
-      # Injecte api/mollie-config.php (clé live) dans les dossiers de staging EUR à
-      # partir du secret MOLLIE_API_KEY. La clé n'est lue que via env: (jamais dans une
-      # ligne shell → pas dans les logs). No-op silencieux si le secret est absent.
+      # Injecte api/mollie-config.php (clé live + webhook_secret) dans les dossiers de staging EUR à
+      # partir des secrets MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET. Les secrets ne sont lus que via env:
+      # (jamais dans une ligne shell → pas dans les logs). Échoue explicitement si webhook_secret absent.
       - name: Inject Mollie config into staging api/ dirs
         if: steps.check_build.outputs.full == 'true'
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
         run: node scripts/write-mollie-config.cjs
 
       - name: Submit URLs to Google Indexing
@@ -712,6 +812,16 @@ jobs:
             echo "First run — did full build"
           fi
 
+      # Inject Mollie config (api_key + webhook_secret) into staging api/ dirs on EVERY deploy
+      # (not just full builds) so config stays in sync with GitHub secrets.
+      - name: Inject Mollie config into staging api/ dirs (data-only path)
+        if: steps.check_build.outputs.full == 'false'
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
+        run: node scripts/write-mollie-config.cjs
+
       # ── 2c. Data-only nouvelles régions : copie les JSON frais de chaque
       # région (public/api/copernicus/<id>/) vers <ftpDir>/api/copernicus/ —
       # mêmes fichiers que prepareNewRegion() dans scripts/prepare-ftp.cjs
@@ -750,13 +860,13 @@ jobs:
             }
           "
 
-      # Referral REPORT (read-only, decision-support) : agrège share→landing→convert
-      # de la boucle parrainage + top parrains → data/referral-report.json (committé).
-      # No-op gracieux tant que l'action GAS `referral` n'est pas déployée (clasp push).
+      # Referral REPORT (read-only, decision-support) : lit la Google Sheet directement
+      # (bypass Apps Script clasp push bloqué) et agrège share→landing→convert.
+      # Sortie : data/referral-report.json (committé plus bas).
       - name: Referral report (read-only)
         if: github.event_name == 'schedule'
         continue-on-error: true
-        run: node scripts/automation/referral-report.cjs --days=90
+        run: node scripts/automation/referral-from-sheet.cjs
 
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
@@ -804,6 +914,7 @@ jobs:
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
+          [ -f scripts/automation/data/push-winback-sent.json ] && git add scripts/automation/data/push-winback-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           [ -f public/api/copernicus/track-record.json ] && git add public/api/copernicus/track-record.json
           # Sprint #3 — track-record validé citoyen : le journal des signalements DOIT être commité
@@ -932,7 +1043,11 @@ jobs:
             STATUS=000
             for ATTEMPT in 1 2 3; do
               TS=$(date +%s)
-              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D/?t=$TS" || echo 000)
+              # UA + Accept explicites : Cloudflare WAF renvoie 415 sur le curl
+              # par défaut du runner GH (UA "curl/7.x" + Accept "*/*" minimal).
+              # On imite un user-agent standard pour passer le WAF.
+              # (run 30669647829, 2026-07-31 : tous les domaines en 415 alors qu'ils servent du 200 côté navigateur)
+              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" "https://$D/?t=$TS" || echo 000)
               [ "$STATUS" = "200" ] && break
               [ "$ATTEMPT" -lt 3 ] && { echo "$D: HTTP $STATUS (tentative $ATTEMPT/3) — retry…"; sleep $((ATTEMPT * 2)); }
             done
@@ -970,7 +1085,8 @@ jobs:
             check_sw() {
               local out=""
               for D in $1; do
-                GOT=$(curl -sL --max-time 15 "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
+                # UA explicite pour passer Cloudflare WAF (cf. health check principal)
+                GOT=$(curl -sL --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: */*" "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
                 [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
               done
               echo "$out"

@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #05070a;
+  --color-panel: #0b0f14;
+  --color-panel2: #0d131b;
+  --color-ink: #ecefe9;
+  --color-dim: #8a93a1;
+  --color-faint: #4a5261;
+  --color-lime: #c9f158;
+  --color-teal: #62e6c8;
+  --color-coral: #ff6b5b;
+  --color-amber: #ffb84d;
+  --color-line: #1b2230;
+  --font-display: var(--font-grotesk), system-ui, sans-serif;
+  --font-mono2: var(--font-mono), ui-monospace, monospace;
+  --font-serif2: var(--font-serif), Georgia, serif;
+}
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-lime);
+  color: #05070a;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #05070a; }
+::-webkit-scrollbar-thumb { background: #1b2230; border-radius: 8px; border: 2px solid #05070a; }
+::-webkit-scrollbar-thumb:hover { background: #2a344a; }
+
+/* ── grain ── */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 900ms steps(4) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, 2%); }
+  100% { transform: translate(2%, -1%); }
+}
+
+/* ── primitives ── */
+.kicker {
+  font-family: var(--font-mono2);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-dim);
+}
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.001)), var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+.panel-hover {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
+}
+.panel-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(201, 241, 88, 0.35);
+  box-shadow: 0 12px 40px -18px rgba(201, 241, 88, 0.15);
+}
+.hairline { border-color: var(--color-line); }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+.glow-lime { text-shadow: 0 0 24px rgba(201, 241, 88, 0.45); }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: reveal-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes reveal-up { to { opacity: 1; transform: none; } }
+
+.tick { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: tick-draw 1.4s ease forwards; }
+@keyframes tick-draw { to { stroke-dashoffset: 0; } }
+
+.grow-bar { transform-origin: left; animation: grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform: scaleX(0); }
+@keyframes grow { to { transform: scaleX(1); } }
+
+.select-dark {
+  background: #0b0f14;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  color: var(--color-ink);
+  font-family: var(--font-mono2);
+  font-size: 0.72rem;
+  padding: 5px 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.select-dark:hover, .select-dark:focus { border-color: rgba(201, 241, 88, 0.5); }
+
+.chip {
+  font-family: var(--font-mono2);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--color-dim);
+  white-space: nowrap;
+}
+
+.link-underline {
+  background-image: linear-gradient(var(--color-lime), var(--color-lime));
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-underline:hover { background-size: 100% 1px; }
+
+tr.row-hover { transition: background 0.15s; }
+tr.row-hover:hover { background: rgba(201, 241, 88, 0.035); }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; color: #111; }
+  .panel { border-color: #ddd; background: #fff; box-shadow: none; }
+}

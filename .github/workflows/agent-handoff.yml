@@ -1,0 +1,311 @@
+name: Agent Handoff Automation
+
+on:
+  schedule:
+    # Toutes les 4 heures : vérifie s'il y a du travail en attente
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: 'Task ID to force-pick (e.g., TASK-P1-001)'
+        required: false
+        type: string
+      agent_type:
+        description: 'Agent type to run (coding, qa, ui, security, devops, data, growth)'
+        required: false
+        type: string
+        default: 'coding'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  agent-handoff:
+    name: Agent Handoff Loop
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      # ══════════════════════════════════════════════════════════════
+      # 1. SETUP — Checkout + Node + Dependencies
+      # ══════════════════════════════════════════════════════════════
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      # ══════════════════════════════════════════════════════════════
+      # 2. READ STATE — Lire current_state + tasks
+      # ══════════════════════════════════════════════════════════════
+      - name: Read current state
+        id: read_state
+        run: |
+          echo "=== CURRENT STATE ==="
+          cat .ai/current_state.md | head -80
+          echo ""
+          echo "=== TASKS BACKLOG ==="
+          cat .ai/tasks.md
+
+      # ══════════════════════════════════════════════════════════════
+      # 3. PICK TASK — Choisir la priorité #1 disponible
+      # ══════════════════════════════════════════════════════════════
+      - name: Pick next task
+        id: pick_task
+        run: |
+          # Si task_id forcé via workflow_dispatch
+          if [ -n "${{ github.event.inputs.task_id }}" ]; then
+            TASK_ID="${{ github.event.inputs.task_id }}"
+            AGENT_TYPE="${{ github.event.inputs.agent_type }}"
+            echo "Forced task: $TASK_ID by $AGENT_TYPE"
+          else
+            # Parser .ai/tasks.md pour trouver la première tâche [ ] non assignée
+            # Priorité : P0 > P1 > P2 > P3, ordre FIFO dans le fichier
+            TASK_LINE=$(grep -E '^\s*-\s*\[\s*\]' .ai/tasks.md | head -1)
+            if [ -z "$TASK_LINE" ]; then
+              echo "No pending tasks found"
+              echo "task_id=" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Extraire TASK-ID (format: TASK-PX-NNN)
+            TASK_ID=$(echo "$TASK_LINE" | grep -oE 'TASK-P[0-9]-[0-9]{3}')
+            
+            # Déterminer le rôle depuis la ligne (Rôle: xxx_agent)
+            AGENT_TYPE=$(echo "$TASK_LINE" | grep -oE 'Rôle\s*:\s*(\w+)_agent' | cut -d' ' -f2 | sed 's/_agent//')
+            if [ -z "$AGENT_TYPE" ]; then
+              # Fallback : déduire depuis la priorité
+              if echo "$TASK_LINE" | grep -q 'P0'; then AGENT_TYPE="coding"; fi
+            fi
+            AGENT_TYPE=${AGENT_TYPE:-coding}
+            
+            echo "Auto-picked: $TASK_ID by $AGENT_TYPE"
+          fi
+          
+          echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
+          echo "agent_type=$AGENT_TYPE" >> $GITHUB_OUTPUT
+
+      # ══════════════════════════════════════════════════════════════
+      # 4. CLAIM TASK — Marquer comme in_progress
+      # ══════════════════════════════════════════════════════════════
+      - name: Claim task in tasks.md
+        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        run: |
+          TASK_ID="${{ steps.pick_task.outputs.task_id }}"
+          AGENT_TYPE="${{ steps.pick_task.outputs.agent_type }}"
+          
+          # Remplacer [ ] par [~] in_progress by <agent>
+          sed -i "s/^- \[ \] $TASK_ID/- [~] $TASK_ID — in_progress by ${AGENT_TYPE}_agent/" .ai/tasks.md
+          
+          git config user.name "agent-handoff[bot]"
+          git config user.email "agent-handoff@users.noreply.github.com"
+          git add .ai/tasks.md
+          git commit -m "chore(tasks): claim $TASK_ID by ${AGENT_TYPE}_agent"
+          git push
+
+      # ══════════════════════════════════════════════════════════════
+      # 5. CREATE BRANCH — Branche de travail agent/<type>/<task>
+      # ══════════════════════════════════════════════════════════════
+      - name: Create work branch
+        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        run: |
+          TASK_ID="${{ steps.pick_task.outputs.task_id }}"
+          AGENT_TYPE="${{ steps.pick_task.outputs.agent_type }}"
+          BRANCH="agent/${AGENT_TYPE}/${TASK_ID}"
+          
+          git checkout -b "$BRANCH"
+          git push -u origin "$BRANCH"
+          
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      # ══════════════════════════════════════════════════════════════
+      # 6. EXECUTE WORK — Lancer l'agent approprié
+      # ══════════════════════════════════════════════════════════════
+      - name: Execute agent work
+        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        id: agent_work
+        run: |
+          TASK_ID="${{ steps.pick_task.outputs.task_id }}"
+          AGENT_TYPE="${{ steps.pick_task.outputs.agent_type }}"
+          
+          echo "=== Starting work for $TASK_ID as $AGENT_TYPE agent ==="
+          
+          # Selon le type d'agent, lancer le script approprié
+          case "$AGENT_TYPE" in
+            coding)
+              # Pour coding agent : on ne peut pas coder vraiment en CI
+              # On crée une issue pour qu'un agent externe (OpenCode/Codex/CC) la prenne
+              echo "Coding task requires external agent. Creating tracking issue..."
+              gh issue create \
+                --title "[AUTO] $TASK_ID — Assigned to coding_agent" \
+                --body "## Task: $TASK_ID
+                
+**Assigned to**: coding_agent (external: OpenCode/Codex/Claude Code)
+**Branch**: \`agent/coding/$TASK_ID\`
+**Instructions**: 
+1. Read \`.ai/current_state.md\` + \`.ai/tasks.md\`
+2. Work on branch \`agent/coding/$TASK_ID\`
+3. Follow Gate de ship (build + smoke + bundle + PHP lint)
+4. Update \`.ai/changelog.md\` + \`.ai/current_state.md\` + \`.ai/tasks.md\`
+5. Push + PR → auto-merge if CI green
+
+**Gate de ship**:
+- \`npm run build\` exit 0
+- \`node scripts/check-bundle-budget.cjs\` ≤ 210 Ko
+- \`php -l\` on modified PHP files
+- \`node scripts/ux-smoke.mjs\` → 4 tokens OK
+
+See \`.ai/roles/coding-agent.md\` for full role definition." \
+                --label "agent:coding,auto-assigned" \
+                --assignee "@me"
+              ;;
+            qa)
+              echo "Running QA agent: Playwright E2E tests..."
+              # Lancer les tests Playwright existants
+              npx playwright test --reporter=line || true
+              ;;
+            ui)
+              echo "UI agent: Visual regression check..."
+              # Build + preview + capture screenshots
+              npm run build
+              npx vite preview --port 4173 &
+              sleep 5
+              npx playwright test tests/visual-regression.spec.ts --reporter=line || true
+              kill %1
+              ;;
+            security)
+              echo "Security agent: Audit dependencies + secrets scan..."
+              npm audit --audit-level=high || true
+              # Scan secrets
+              if grep -rE "(live_|sk_|sb_secret_)" --include="*.js" --include="*.jsx" --include="*.ts" --include="*.php" src/ public/ scripts/ 2>/dev/null | grep -v ".example.php" | grep -v "node_modules"; then
+                echo "⚠️ POTENTIAL SECRETS FOUND!"
+                exit 1
+              fi
+              echo "No secrets in committed code"
+              ;;
+            devops)
+              echo "DevOps agent: Check CI/CD health..."
+              gh run list --repo ${{ github.repository }} --limit 10 --json conclusion,headBranch,createdAt --jq '.[] | "\(.conclusion)\t\(.headBranch)\t\(.createdAt)"'
+              ;;
+            data)
+              echo "Data agent: Check pipeline freshness..."
+              node -e "
+                const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));
+                const run=(Date.now()-new Date(d.updatedAt))/3.6e6;
+                const sat=d.erddapTimestamp?(Date.now()-new Date(d.erddapTimestamp).getTime())/3.6e6:null;
+                console.log('Pipeline age:', run.toFixed(1)+'h', run<12?'OK':'STALE');
+                console.log('Satellite age:', sat?sat.toFixed(1)+'h':'n/a', (d.stale||(sat&&sat>=36))?'STALE':'OK');
+              "
+              ;;
+            growth)
+              echo "Growth agent: Check business metrics..."
+              node -e "
+                const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/daily-metrics.json','utf-8'));
+                const l=d[d.length-1];
+                console.log('Last:', l.date, '| Payments:', l.payments, '| Emails:', l.emails);
+                const s=[...d].reverse().find(x=>x.stripe&&x.stripe.active!=null).stripe;
+                console.log('MRR Stripe: €'+s.mrr.eur+' |', s.active, 'actifs');
+              "
+              ;;
+            *)
+              echo "Unknown agent type: $AGENT_TYPE"
+              exit 1
+              ;;
+          esac
+          
+          echo "Agent work step completed for $TASK_ID"
+
+      # ══════════════════════════════════════════════════════════════
+      # 7. VALIDATE — Gate de ship (si coding agent a poussé du code)
+      # ══════════════════════════════════════════════════════════════
+      - name: Validate Gate de ship
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event.inputs.task_id == '' }}
+        run: |
+          # Ce step ne s'exécute que si le travail a été fait sur la branche
+          # En pratique, l'agent externe pousse sur la branche, puis ce workflow
+          # peut être re-déclenché sur push pour valider
+          echo "Gate validation would run here on push to agent/* branch"
+          echo "See .github/workflows/ci-tests.yml for actual CI gate"
+
+      # ══════════════════════════════════════════════════════════════
+      # 8. HANDOFF — Créer PR + documenter
+      # ══════════════════════════════════════════════════════════════
+      - name: Create handoff PR
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && startsWith(github.ref, 'refs/heads/agent/') }}
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          TASK_ID=$(echo "$BRANCH" | cut -d'/' -f3)
+          AGENT_TYPE=$(echo "$BRANCH" | cut -d'/' -f2)
+          
+          # Vérifier que les checks passent
+          # (En réalité, ci-tests.yml valide déjà)
+          
+          gh pr create \
+            --title "$TASK_ID: ${AGENT_TYPE} agent work" \
+            --body "## Automated handoff PR
+
+**Task**: $TASK_ID
+**Agent**: ${AGENT_TYPE}_agent
+**Branch**: \`$BRANCH\`
+
+### Changes
+\`\`\`diff
+$(git diff --stat main...HEAD)
+\`\`\`
+
+### Gate de ship
+- [ ] Build passed
+- [ ] Bundle budget ≤ 210 Ko
+- [ ] PHP lint passed
+- [ ] Smoke tests: 4 tokens OK
+
+### Handoff
+- \`.ai/changelog.md\` updated
+- \`.ai/current_state.md\` updated (template)
+- \`.ai/tasks.md\` → [x] done
+
+**Auto-merge**: Will merge when all checks pass (mandat fondateur 100% mobile)." \
+            --base main \
+            --label "auto-handoff,${AGENT_TYPE}"
+
+      # ══════════════════════════════════════════════════════════════
+      # 9. AUTO-MERGE — Si CI vert, merge direct sur main
+      # ══════════════════════════════════════════════════════════════
+      - name: Auto-merge if CI green
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && github.event.pull_request.labels.*.name contains 'auto-handoff' }}
+        run: |
+          # Attendre que tous les checks soient verts
+          # Puis merge auto (pas de demande permission)
+          gh pr merge --auto --squash --delete-branch
+
+      # ══════════════════════════════════════════════════════════════
+      # 10. POST-MERGE — Déclencher deploy + MAJ tasks
+      # ══════════════════════════════════════════════════════════════
+      - name: Post-merge tasks update
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          # La tâche vient d'être mergée sur main
+          # Marquer [x] done dans .ai/tasks.md
+          # (Le fichier a été mis à jour par l'agent dans son handoff)
+          echo "Task completed and merged to main"
+          
+          # Vérifier déploiement
+          sleep 30
+          gh run list --repo ${{ github.repository }} --workflow daily-copernicus.yml --limit 1 --json conclusion --jq '.[0].conclusion'

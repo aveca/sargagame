@@ -191,6 +191,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
               <div style={{display:"flex", gap:7, flexWrap:"wrap"}}>
                 <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
                   placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                  aria-label={_t(lang,"Ton email pour le brief matinal","Your email for morning brief","Tu email para el informe matinal")}
                   style={{flex:"1 1 160px", minHeight:44, fontSize:16, padding:"10px 12px", border:`2px solid ${INK}`, borderRadius:11, background:"#fffbf0", color:INK, fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}/>
                 <button onClick={saveEmail} disabled={!(email&&email.includes("@")&&email.includes("."))}
                   style={{...goldBtn, width:"auto", flex:"0 0 auto", padding:"0 16px", opacity:(email&&email.includes("@")&&email.includes("."))?1:.55}}>{_t(lang,"Recevoir","Get it","Recibir")}</button>

@@ -515,8 +515,8 @@ export function initHomeAZ(SR, HOST, opts){
     if(hit(evt.target,"#buoyA")){ tapBuoy("buoyA"); return; }
     if(hit(evt.target,"#buoyB")){ tapBuoy("buoyB"); return; }
     if(hit(evt.target,"#shoreMat")){ pickRaft(-1,true); return; }
-    var rt=hit(evt.target,".raft");
-    if(rt && rt.id && rt.id.indexOf("raft")===0){ pickRaft(parseInt(rt.id.replace("raft",""),10)-1,false); return; }
+    var el=hit(evt.target,".raft");
+    if(el && el.id && el.id.indexOf("raft")===0){ pickRaft(parseInt(el.id.replace("raft",""),10)-1,false); return; }
     if(hit(evt.target,"#alertNotif")){ openPremium("scene_alert"); return; }
     if(c.y>=324 && c.y<=476 && c.x>=0 && c.x<=800){ placeBoom(c.x,c.y,false); return; }
     // Taps qui tombaient « dans le vide » (ciel / sable) — source #1 de dead-clicks

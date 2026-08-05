@@ -1,30 +1,30 @@
 {
-  "generatedAt": "2026-07-20T13:28:21.498Z",
+  "generatedAt": "2026-08-03T14:02:54.270Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
       "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 3,
+        "editorial": 4,
         "beach": 0,
-        "other": 5
+        "other": 4
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7927,
-          "clicks": 2060
+          "impressions": 9054,
+          "clicks": 1840
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 2042,
-          "clicks": 244
+          "impressions": 1637,
+          "clicks": 171
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-martinique.com/alertes/",
-          "impressions": 0,
+          "impressions": 2,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -35,6 +35,16 @@
         {
           "url": "https://sargasses-martinique.com/danger-sargasses-h2s/",
           "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/",
+            "https://sargasses-martinique.com/carte-sargasses/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions/",
+          "impressions": 5,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -66,16 +76,6 @@
           "url": "https://sargasses-martinique.com/en/best-beaches-no-sargassum/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
-          "impressions": 3,
-          "clicks": 1,
           "kind": "other",
           "recommendedLinkSources": [
             "https://sargasses-martinique.com/",
@@ -115,20 +115,20 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 14705,
-          "clicks": 2182
+          "impressions": 14171,
+          "clicks": 2435
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 4368,
-          "clicks": 448
+          "impressions": 3940,
+          "clicks": 498
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-guadeloupe.com/alertes/",
-          "impressions": 4,
-          "clicks": 1,
+          "impressions": 0,
+          "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
             "https://sargasses-guadeloupe.com/",
@@ -177,8 +177,8 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
-          "impressions": 0,
-          "clicks": 0,
+          "impressions": 2,
+          "clicks": 1,
           "kind": "other",
           "recommendedLinkSources": [
             "https://sargasses-guadeloupe.com/",

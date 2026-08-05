@@ -163,8 +163,76 @@
     "sainteluce.fr": {
       "date": "2026-07-21T11:54:01.423Z",
       "status": "no-email"
+    },
+    "ville-trinite.fr": {
+      "date": "2026-07-28T12:10:34.883Z",
+      "status": "no-email"
+    },
+    "ville-lamarin.fr": {
+      "date": "2026-07-28T12:10:35.118Z",
+      "status": "no-email"
+    },
+    "mairie-troisilets.fr": {
+      "date": "2026-07-28T12:10:35.461Z",
+      "status": "no-email"
+    },
+    "mairie-schoelcher.fr": {
+      "date": "2026-07-28T12:10:47.004Z",
+      "status": "no-email"
+    },
+    "ville-casepilote.fr": {
+      "date": "2026-07-28T12:10:47.263Z",
+      "status": "no-email"
+    },
+    "mairie-tartane.fr": {
+      "date": "2026-07-28T12:10:47.602Z",
+      "status": "no-email"
+    },
+    "macouba.fr": {
+      "date": "2026-07-28T12:10:47.870Z",
+      "status": "no-email"
+    },
+    "ville-vauclin.fr": {
+      "date": "2026-07-28T12:10:59.040Z",
+      "emailHash": "b4ccaf6de688a5e948522c437fd0201e",
+      "emailDomain": "mairie-vauclin.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "mairie-anses-arlet.fr": {
+      "date": "2026-08-04T12:15:24.805Z",
+      "status": "no-email"
+    },
+    "tourisme-sainteanne-martinique.com": {
+      "date": "2026-08-04T12:15:25.035Z",
+      "status": "no-email"
+    },
+    "tourisme-troisilets.com": {
+      "date": "2026-08-04T12:15:25.260Z",
+      "status": "no-email"
+    },
+    "kalinago-beach.com": {
+      "date": "2026-08-04T12:15:25.463Z",
+      "status": "no-email"
+    },
+    "lapetiteanse.com": {
+      "date": "2026-08-04T12:15:25.664Z",
+      "status": "no-email"
+    },
+    "ilet-oscar.com": {
+      "date": "2026-08-04T12:15:25.884Z",
+      "status": "no-email"
+    },
+    "hotel-le-marouba.com": {
+      "date": "2026-08-04T12:15:26.121Z",
+      "status": "no-email"
+    },
+    "langley-resort-fort-royal.com": {
+      "date": "2026-08-04T12:15:26.409Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-07-21T11:54:01.423Z",
-  "totalSent": 10
+  "lastRun": "2026-08-04T12:15:26.409Z",
+  "totalSent": 11
 }

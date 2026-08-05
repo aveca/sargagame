@@ -7,13 +7,16 @@
  */
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
-import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
+import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
 import "./app-runtime.css"
+import "./sg-ux-2026.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -75,6 +78,7 @@ const VEILLE_OFF=(()=>{try{return /[?&]veille=0/.test(window.location.search)}ca
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
+const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
 // Détail plage « monde comic » (ChasseDetail) ouvert au tap d'un pin carte — garde le
 // joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
 // (PRODUCT.md §8 ⭐). Default ON, rollback ?mapdetail=0. Lazy → DOIT être sous Suspense.
@@ -116,8 +120,18 @@ const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargass
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
-  componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack);try{this.props.onError&&this.props.onError(e)}catch(_){}}
-  render(){if(this.state.err)return this.props.fallback!==undefined?this.props.fallback:React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
+  componentDidCatch(e){
+    try{sgLogError("errbound",e)}catch(_){}
+    try{this.props.onError&&this.props.onError(e)}catch(_){}
+  }
+  render(){
+    if(this.state.err){
+      if(this.props.fallback!==undefined)return this.props.fallback
+      return React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",minHeight:120,padding:16,textAlign:"center",fontFamily:"system-ui,sans-serif",fontSize:14,color:"rgba(255,255,255,.6)"}},
+        React.createElement("span",null,"Une erreur s'est produite. Réessayez ou rafraîchissez la page."))
+    }
+    return this.props.children
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -187,19 +201,37 @@ export function loadMollieJs(){
   })
   return _mollieJsPromise
 }
-// Disponibilité wallets (Apple Pay / Google Pay) — détection légère, sans charger
-// de SDK. Apple Pay : API native fiable (Safari/Apple uniquement). Google Pay :
-// pas de détection fiable sans pay.js → heuristique UA (Android, ou Chrome desktop),
-// jamais en même temps qu'Apple Pay (évite 2 wallets concurrents sur iOS). Si on se
-// trompe, le checkout hébergé Mollie propose de toute façon la carte en repli.
+// Disponibilité wallets (Apple Pay / Google Pay) — feature detection standard
+// Web Payments API (PaymentRequest.canMakePayment). Apple Pay : https://apple.com/apple-pay
+// Google Pay : https://google.com/pay. Cache 5 min en sessionStorage (clé sg_wallet_avail).
 export function walletAvail(){
-  try{
-    if(typeof window==="undefined")return {apple:false,google:false}
-    const ua=navigator.userAgent||""
-    const apple=!!(window.ApplePaySession&&window.ApplePaySession.canMakePayments&&window.ApplePaySession.canMakePayments())
-    const google=!apple&&(/Android/i.test(ua)||(/Chrome/.test(ua)&&!/Edg|OPR/.test(ua)))
-    return {apple,google}
-  }catch(_){return {apple:false,google:false}}
+  if(typeof window==="undefined"||!window.PaymentRequest){
+    return {apple:false,google:false}
+  }
+  const cacheKey="sg_wallet_avail"
+  const cached=sessionStorage.getItem(cacheKey)
+  if(cached){
+    try{return JSON.parse(cached)}catch{}
+  }
+  const check=async()=>{
+    const apple=await(async()=>{
+      try{
+        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        return await req.canMakePayment()
+      }catch{return false}
+    })()
+    const google=await(async()=>{
+      try{
+        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        return await req.canMakePayment()
+      }catch{return false}
+    })()
+    const result={apple,google}
+    sessionStorage.setItem(cacheKey,JSON.stringify(result))
+    setTimeout(()=>sessionStorage.removeItem(cacheKey),5*60*1000)
+    return result
+  }
+  return check()
 }
 // Styles partagés des champs carte Mollie (thème SOMBRE premium). MOL_FIELD = la div
 // sombre qui héberge l'iframe Mollie (porte la bordure + le fond visible) ; MOL_LABEL =
@@ -505,26 +537,240 @@ async function _scMissedCard(opts,lang){
     return await _scShip(cv,"defi-veilleur.png",correct?_t(lang,"J'ai eu l'œil du Veilleur 🛰️🎯 — tu fais mieux ?","Got the Watchman's eye 🛰️🎯 — beat it?","Tuve el ojo del Vigía 🛰️🎯 — ¿me superas?"):_t(lang,"Le défi du Veilleur m'a eu 😅 — tu fais mieux ? 🛰️","The Watchman's Challenge fooled me 😅 — beat it? 🛰️","El Desafío del Vigía me engañó 😅 — ¿me superas? 🛰️"))
   }catch(e){return false}
 }
-export function Veilleur({mood="serein",size=44}){
+// Veilleur expressif — animations subtiles (doctrine calme respectée)
+// Eyes follow cursor, blink, mood transitions, head nod on scroll
+export function Veilleur({mood="serein",size=44,interactive=true}){
   const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
+  const [mousePos,setMousePos]=useState({x:0,y:0})
+  const [blinking,setBlinking]=useState(false)
+  const [headTilt,setHeadTilt]=useState(0)
+  const svgRef=useRef(null)
+  
+  // Track cursor for eye following
+  // FIX : throttle à 16ms (~60fps) — avant, chaque mousemove déclenchait un setState
+  // → N Veilleurs mounted = N × 60 setState/sec = jank
+  useEffect(()=>{
+    if(!interactive)return
+    let last=0
+    const handleMouseMove=(e)=>{
+      const now=Date.now()
+      if(now-last<16)return
+      last=now
+      if(!svgRef.current)return
+      const rect=svgRef.current.getBoundingClientRect()
+      const centerX=rect.left+rect.width/2
+      const centerY=rect.top+rect.height/2
+      const dx=(e.clientX-centerX)/window.innerWidth
+      const dy=(e.clientY-centerY)/window.innerHeight
+      setMousePos({x:Math.max(-1,Math.min(1,dx*3)),y:Math.max(-1,Math.min(1,dy*3))})
+    }
+    window.addEventListener('mousemove',handleMouseMove,{passive:true})
+    return()=>window.removeEventListener('mousemove',handleMouseMove)
+  },[interactive])
+  
+  // Blink animation (every 3-6 seconds, random)
+  useEffect(()=>{
+    if(!interactive)return
+    const blink=()=>{
+      setBlinking(true)
+      setTimeout(()=>setBlinking(false),150)
+    }
+    const interval=setInterval(blink,3000+Math.random()*3000)
+    return()=>clearInterval(interval)
+  },[interactive])
+  
+  // Head nod on scroll (subtle)
+  useEffect(()=>{
+    if(!interactive)return
+    let lastScroll=window.scrollY
+    const handleScroll=()=>{
+      const delta=window.scrollY-lastScroll
+      setHeadTilt(Math.max(-5,Math.min(5,delta*0.1)))
+      lastScroll=window.scrollY
+      setTimeout(()=>setHeadTilt(0),200)
+    }
+    window.addEventListener('scroll',handleScroll,{passive:true})
+    return()=>window.removeEventListener('scroll',handleScroll)
+  },[interactive])
+  
+  // Eye offset based on mouse position
+  const eyeOffsetX=mousePos.x*1.2
+  const eyeOffsetY=mousePos.y*0.8
+  
   return(
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
-      {/* Veilleur FIGÉ au repos (doctrine calme) — la vie vient de l'interaction, pas d'un bob idle */}
-      <g transform="translate(32,33)"><g className="sgv-bob"><g transform={`rotate(${m.tilt})`}>
-        <circle r="22" fill={m.halo} opacity=".15"/>
-        <circle r="14" fill={m.lens} opacity=".12"/>
-        <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
-        <rect x="-11" y="-11" width="22" height="7" rx="6" fill={m.lens}/>
-        <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
-        <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
-        {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
-        <circle cx="0" cy="2" r="5.4" fill="#0A1714"/>
-        <circle cx="0" cy="2" r="4" fill={m.lens}/>
-        <circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/>
-      </g></g></g>
+    <svg ref={svgRef} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
+      <g transform="translate(32,33)">
+        <g className="sgv-bob">
+          <g transform={`rotate(${m.tilt+headTilt})`} style={{transition:"transform 0.3s ease-out"}}>
+            <circle r="22" fill={m.halo} opacity=".15"/>
+            <circle r="14" fill={m.lens} opacity=".12"/>
+            <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+            <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+            <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
+            <rect x="-11" y="-11" width="22" height="7" rx="6" fill={m.lens}/>
+            <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
+            <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
+            {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
+            <circle cx="0" cy="2" r="5.4" fill="#0A1714"/>
+            <circle cx="0" cy="2" r="4" fill={m.lens}/>
+            {/* Pupille qui suit le curseur */}
+            <circle 
+              cx={-1.4+eyeOffsetX} 
+              cy={0.5+eyeOffsetY} 
+              r={blinking?0:1.4} 
+              fill="#EAFBF8"
+              style={{transition:"cx 0.1s ease-out, cy 0.1s ease-out, r 0.1s"}}
+            />
+          </g>
+        </g>
+      </g>
     </svg>
+  )
+}
+// Forecast Timeline 3D — animation de dessin au scroll (Wow Effect 4)
+// La timeline se dessine progressivement pendant le scroll, révélant chaque jour
+function ForecastTimeline3D({forecast,isPremium,weatherDaily,lang}){
+  const containerRef=useRef(null)
+  const [drawProgress,setDrawProgress]=useState(0)
+  
+  useEffect(()=>{
+    if(!containerRef.current)return
+    const observer=new IntersectionObserver(
+      ([entry])=>{
+        if(entry.isIntersecting){
+          // Animate drawing over 2 seconds when visible
+          const startTime=Date.now()
+          const duration=2000
+          const animate=()=>{
+            const elapsed=Date.now()-startTime
+            const progress=Math.min(elapsed/duration,1)
+            setDrawProgress(progress)
+            if(progress<1)requestAnimationFrame(animate)
+          }
+          animate()
+        }
+      },
+      {threshold:0.3}
+    )
+    observer.observe(containerRef.current)
+    return()=>observer.disconnect()
+  },[])
+  
+  if(!forecast||!forecast.length)return null
+  
+  const days=forecast.slice(0,7)
+  const width=100
+  const height=80
+  const pointSpacing=width/(days.length-1)
+  
+  // Generate smooth curve path
+  const points=days.map((d,i)=>{
+    const afai=Number.isFinite(d.afai)?d.afai:0
+    const x=i*pointSpacing
+    const y=height-(afai*60)-10 // Invert Y, scale to fit
+    return{x,y,day:d}
+  })
+  
+  // Create SVG path with progressive drawing
+  const pathLength=drawProgress*points.length
+  const visiblePoints=points.slice(0,Math.ceil(pathLength))
+  
+  let pathD="M"+visiblePoints.map((p,i)=>{
+    if(i===0)return`${p.x} ${p.y}`
+    const prev=visiblePoints[i-1]
+    const cpx=(prev.x+p.x)/2
+    return`Q${cpx} ${prev.y} ${p.x} ${p.y}`
+  }).join(" ")
+  
+  return(
+    <div ref={containerRef} style={{position:"relative",width:"100%",padding:"20px 0"}}>
+      <svg 
+        viewBox={`0 0 ${width} ${height}`} 
+        style={{width:"100%",height:"auto",overflow:"visible"}}
+        preserveAspectRatio="none"
+      >
+        {/* Gradient background */}
+        <defs>
+          <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFC72C" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#FFC72C" stopOpacity="0"/>
+          </linearGradient>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#1EC8B0"/>
+            <stop offset="50%" stopColor="#FFC72C"/>
+            <stop offset="100%" stopColor="#FF6B6B"/>
+          </linearGradient>
+        </defs>
+        
+        {/* Area fill under curve */}
+        {pathD&&<path 
+          d={pathD+` L${visiblePoints[visiblePoints.length-1].x} ${height} L${visiblePoints[0].x} ${height} Z`}
+          fill="url(#timelineGrad)"
+          style={{transition:"d 0.3s ease-out"}}
+        />}
+        
+        {/* Main timeline curve */}
+        {pathD&&<path
+          d={pathD}
+          fill="none"
+          stroke="url(#lineGrad)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          style={{transition:"d 0.3s ease-out"}}
+        />}
+        
+        {/* Data points */}
+        {visiblePoints.map((p,i)=>(
+          <g key={i} style={{opacity:drawProgress>=i?1:0,transition:"opacity 0.3s"}}>
+            <circle 
+              cx={p.x} 
+              cy={p.y} 
+              r="3" 
+              fill={p.day.status==="clean"?"#1EC8B0":p.day.status==="moderate"?"#FFC72C":"#FF6B6B"}
+              stroke="#fff"
+              strokeWidth="1.5"
+            />
+            {/* Pulse animation on current point */}
+            {i===0&&<circle 
+              cx={p.x} 
+              cy={p.y} 
+              r="3" 
+              fill="none"
+              stroke="#1EC8B0"
+              strokeWidth="1"
+              opacity="0.6"
+            >
+              <animate attributeName="r" from="3" to="8" dur="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite"/>
+            </circle>}
+          </g>
+        ))}
+      </svg>
+      
+      {/* Day labels below */}
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:"0 4px"}}>
+        {days.map((d,i)=>(
+          <div 
+            key={i} 
+            style={{
+              textAlign:"center",
+              opacity:drawProgress>=i?1:0,
+              transition:"opacity 0.3s",
+              fontSize:11,
+              fontFamily:"'Bricolage Grotesque',sans-serif",
+              fontWeight:600
+            }}
+          >
+            <div style={{color:"var(--sg-ink,#0A1714)",textTransform:"uppercase",letterSpacing:".05em"}}>
+              {fcDay(d,lang)}
+            </div>
+            <div style={{fontSize:9,color:"var(--sg-mid,#666)",marginTop:2}}>
+              {Math.round((d.afai||0)*100)}%
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 // Squircle candy du score 0-100 — réutilise l'esprit SG_BLOB du funnel.
@@ -538,6 +784,116 @@ function ScoreBlob({score,color,size=84}){
     </svg>
   )
 }
+// ScoreBlob interactif avec effet morph au clic (Wow Effect 2)
+// Scale up + fade out → révèle la plage en dessous
+function ScoreBlobInteractive({score,color,size=84,onMorph,children}){
+  const [morphing,setMorphing]=useState(false)
+  const handleClick=()=>{
+    if(morphing)return
+    setMorphing(true)
+    track("sg_score_blob_morph",{score})
+    setTimeout(()=>{
+      onMorph?.()
+      setMorphing(false)
+    },400)
+  }
+  return(
+    <div 
+      onClick={handleClick}
+      style={{
+        cursor:"pointer",
+        transition:"transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s",
+        transform:morphing?"scale(1.5)":"scale(1)",
+        opacity:morphing?0:1,
+      }}
+    >
+      <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" style={{display:"block"}}>
+        <path 
+          d="M50 7 C79 7 93 21 93 50 C93 79 79 93 50 93 C21 93 7 79 7 50 C7 21 21 7 50 7 Z" 
+          fill={color}
+          style={{transition:"d 0.4s ease-out"}}
+        />
+        <ellipse cx="37" cy="29" rx="25" ry="15" fill="#fff" opacity=".16"/>
+        <text x="50" y="59" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle">{score}</text>
+        <text x="50" y="75" fontFamily="'Bricolage Grotesque',system-ui,sans-serif" fontSize="11" fontWeight="800" fill="#fff" textAnchor="middle" opacity=".82">/100</text>
+      </svg>
+      {children}
+    </div>
+  )
+}
+// Success Celebration — confettis dorés (Wow Effect 3)
+// Particules qui explosent au succès (trouver plage propre, devenir premium, etc.)
+let _celebrationSubs=new Set()
+function _celebrationEmit(type){for(const fn of _celebrationSubs)fn(type)}
+// triggerCelebration(type) → déclenche l'animation depuis n'importe où
+export function triggerCelebration(type="success"){
+  track("sg_celebration_trigger",{type})
+  _celebrationEmit(type)
+}
+function SuccessCelebration(){
+  const [particles,setParticles]=useState([])
+  const [active,setActive]=useState(false)
+  
+  useEffect(()=>{
+    const handler=(type)=>{
+      setActive(true)
+      // Génère 30 particules dorées avec trajectoires aléatoires
+      const newParticles=Array.from({length:30},(_,i)=>({
+        id:Date.now()+i,
+        x:50+Math.random()*20-10, // center ± 10%
+        y:50+Math.random()*20-10,
+        vx:(Math.random()-0.5)*8,
+        vy:-Math.random()*6-2, // upward
+        rotation:Math.random()*360,
+        scale:0.5+Math.random()*0.8,
+        color:type==="premium"?"#FFC72C":"#FFD700", // or premium = gold accent
+      }))
+      setParticles(newParticles)
+      setTimeout(()=>{
+        setActive(false)
+        setParticles([])
+      },1500)
+    }
+    _celebrationSubs.add(handler)
+    return()=>_celebrationSubs.delete(handler)
+  },[])
+  
+  if(!active)return null
+  
+  return(
+    <div 
+      style={{
+        position:"fixed",
+        inset:0,
+        pointerEvents:"none",
+        zIndex:9999,
+        overflow:"hidden",
+      }}
+    >
+      {particles.map(p=>(
+        <div
+          key={p.id}
+          style={{
+            position:"absolute",
+            left:`${p.x}%`,
+            top:`${p.y}%`,
+            width:12,
+            height:12,
+            background:p.color,
+            borderRadius:"50%",
+            boxShadow:`0 0 8px ${p.color}`,
+            transform:`translate(${p.vx*20}px,${p.vy*20}px) scale(${p.scale}) rotate(${p.rotation}deg)`,
+            opacity:0,
+            transition:"transform 1.5s ease-out, opacity 1.5s ease-out",
+            animation:"celebration-fade 1.5s ease-out forwards",
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+// Expose globally for use anywhere
+try{if(typeof window!=="undefined"){window.triggerCelebration=triggerCelebration}}catch(_){}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TOAST CANONIQUE (.sg-toast) — source UNIQUE de marque (bible États & micro-copy).
@@ -605,6 +961,24 @@ function SgToastHost({lang="fr"}){
 }
 // API canonique exposée (QA + call-sites éventuels hors composant), comme sgArchetypeOf/sgHasUnlock.
 try{if(typeof window!=="undefined"){window.sgToast=sgToast;window.sgDismissToast=sgDismissToast}}catch(_){}
+
+// ── Error logging minimal (P0-2) : remplace les .catch(()=>{}) silencieux
+// pour les flux critiques (paiement, webhook, referral). Loggue en prod
+// sans casser le flow utilisateur. Rollback : supprimer les appels.
+const sgLogError=(ctx,err)=>{try{
+  let msg=""; try{ msg=err&&err.message?err.message:String(err) }catch(_){ msg="[unserializable error]" }
+  console.error("[sg]",ctx,msg)
+  // Optionnel : envoyer à un service d'erreur si disponible
+  // if(window.sgErrorReporter)window.sgErrorReporter(ctx,err)
+}catch(_){}}
+
+// Global error handlers for unhandled rejections/exceptions
+try{
+  if(typeof window!=="undefined"){
+    window.addEventListener("unhandledrejection",e=>{try{sgLogError("unhandledrejection",e.reason)}catch(_){e.preventDefault()}})
+    window.addEventListener("error",e=>{try{sgLogError("window_error",e.error||e.message)}catch(_){}})
+  }
+}catch(_){}
 
 // ── PRNG DÉTERMINISTE (BeachScene v2, spec wdiiae0wd) — une plage = TOUJOURS la même
 //    scène (seed depuis beach.id). FNV-1a 32-bit + mulberry32. JAMAIS Math.random/Date.now
@@ -762,6 +1136,49 @@ function BeachScene({beach,reveal}){
   const black=scene.arch==="VOLCANIC_BLACK"
   const sand=black?(ph==="day"?"#3A352F":"#0F0D0B"):(ph==="day"?"#C9A86A":t.rock==="#16242A"?"#1C1712":"#15110D")
   const showRafts=beach&&(beach.status==="moderate"||beach.status==="avoid")
+  
+  // Particules dynamiques (Wow Effect 5) — vie subtile selon le statut
+  // FIX : seed PRNG déterministe au lieu de Math.random() (interdit par convention)
+  const particleCount=beach?.status==="clean"?8:beach?.status==="moderate"?12:16
+  const particles=useMemo(()=>{let s=beach?.id?beach.id.split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0):42
+    const rng=()=>{s^=s<<13;s^=s>>17;s^=s<<5;return((s>>>0)%1000)/1000}
+    return Array.from({length:particleCount},(_,i)=>({
+    id:i,
+    x:rng()*800,
+    y:340+rng()*80,
+    size:2+rng()*3,
+    speed:0.3+rng()*0.5,
+    phase:rng()*Math.PI*2,
+    color:beach?.status==="clean"?"rgba(255,255,255,0.4)":beach?.status==="moderate"?"rgba(122,92,20,0.3)":"rgba(93,64,14,0.35)"
+  }))},[beach?.status,particleCount,beach?.id])
+  
+  // Animation frame pour les particules
+  // FIX : IntersectionObserver gating — pause la boucle rAF hors viewport (battery mobile)
+  // + reduced-motion check pour respecter la préférence utilisateur
+  const containerRef=useRef(null)
+  const[visible,setVisible]=useState(false)
+  useEffect(()=>{
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return
+    }catch(_){}
+    const el=containerRef.current
+    if(!el)return
+    const io=new IntersectionObserver(([e])=>setVisible(e.isIntersecting),{threshold:0.05})
+    io.observe(el)
+    return()=>io.disconnect()
+  },[])
+  const[frame,setFrame]=useState(0)
+  useEffect(()=>{
+    if(!visible)return
+    let raf
+    let lastFrame=0
+    const animate=(now)=>{
+      if(now-lastFrame>66){setFrame(f=>(f+1)%360);lastFrame=now}
+      raf=requestAnimationFrame(animate)
+    }
+    raf=requestAnimationFrame(animate)
+    return()=>cancelAnimationFrame(raf)
+  },[visible])
   // palmier paramétrique seedé : tronc courbe + couronne de frondes en éventail
   const palm=(p,i)=>{const bx=p.x,by=556,h=118*p.s,tx=bx+p.tilt*3.2,ty=by-h
     const trunk="M"+bx+" "+by+" Q"+Math.round(bx+(tx-bx)*0.45)+" "+Math.round(by-h*0.55)+" "+Math.round(tx)+" "+Math.round(ty)
@@ -772,12 +1189,11 @@ function BeachScene({beach,reveal}){
       fr.push("M"+Math.round(tx)+" "+Math.round(ty)+" Q"+mx+" "+my+" "+ex+" "+ey)}
     return(<g key={i}><path d={trunk} stroke={t.trunk} strokeWidth={Math.max(5,12*p.s)} fill="none" strokeLinecap="round"/><g fill="none" stroke={t.frond} strokeWidth={Math.max(4,8*p.s)} strokeLinecap="round">{fr.map((d,j)=>(<path key={j} d={d}/>))}</g></g>)}
   return(
-    <div aria-hidden="true" className={reveal?"bsc-reveal":undefined} style={{position:"absolute",inset:0}}>
+    <div ref={containerRef} aria-hidden="true" className={reveal?"bsc-reveal":undefined} style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
         {/* CALME (INCRÉMENT 0 spec wdiiae0wd) : au repos la scène est un TABLEAU. On tue les 11
             boucles idle (glit/raft/rake/net/swim/bird/shim/sat/beam/rays/moonp) — éléments figés à
             leur opacité de repos. Seuls les 2 nuages très lents subsistent. La vie viendra de `reveal`. */}
-        <style>{`.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-beam{opacity:.1}.bsc-shim{opacity:.5}.bsc-moonp{opacity:.34}@keyframes bscReveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}.bsc-reveal{animation:bscReveal .85s cubic-bezier(.22,1,.36,1) both;transform-origin:50% 60%}@media(prefers-reduced-motion:reduce){.bsc-cloud,.bsc-cloud2,.bsc-reveal{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
           <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={waterTint(t.seaT,beach&&beach.afai)}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
@@ -794,6 +1210,39 @@ function BeachScene({beach,reveal}){
         <g className="bsc-cloud2"><path d="M512 92 q12 -22 42 -22 q16 -13 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill={t.cloud} opacity=".78"/><path d="M514 93 h140" stroke={t.rim} strokeWidth="1.7" opacity=".26"/></g>
         {ph!=="night"&&<g className="bsc-bird" opacity=".55" stroke={ph==="day"?"#2A5566":t.rim} strokeWidth="2.4" fill="none" strokeLinecap="round"><path d="M712 138 q5.5 -6.5 11 0 q5.5 -6.5 11 0"/><path d="M754 124 q4.5 -5 9 0 q4.5 -5 9 0"/><path d="M648 156 q5 -6 10 0 q5 -6 10 0"/><path d="M576 128 q4 -5 8 0 q4 -5 8 0"/><path d="M620 122 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/></g>}
         <rect x="-40" y="330" width="880" height="200" fill="url(#bscSea)"/>
+        {/* Particules dynamiques — vie subtile (plankton, bulles, lumière) */}
+        {particles.map(p=>{
+          const t=frame*0.02
+          const y=p.y+Math.sin(t+p.phase)*8
+          const x=p.x+Math.cos(t*0.5+p.phase)*4
+          const opacity=0.4+Math.sin(t+p.phase)*0.2
+          return(
+            <circle
+              key={p.id}
+              cx={x}
+              cy={y}
+              r={p.size}
+              fill={p.color}
+              opacity={opacity}
+            />
+          )
+        })}
+        {/* Vagues animées — lignes qui ondulent */}
+        {Array.from({length:3},(_,i)=>{
+          const t=frame*0.03
+          const baseY=360+i*20
+          const wave="M-40 "+baseY+" Q"+(100+Math.sin(t+i)*20)+" "+(baseY-5)+" 200 "+baseY+" Q"+(300+Math.sin(t+i+1)*20)+" "+(baseY+5)+" 400 "+baseY+" Q"+(500+Math.sin(t+i+2)*20)+" "+(baseY-3)+" 600 "+baseY+" Q"+(700+Math.sin(t+i+3)*20)+" "+(baseY+3)+" 840 "+baseY
+          return(
+            <path
+              key={"wave"+i}
+              d={wave}
+              fill="none"
+              stroke="rgba(255,255,255,0.15)"
+              strokeWidth={1.5-i*0.3}
+              opacity={0.3-i*0.08}
+            />
+          )
+        })}
         {t.sun==="moon"&&<path className="bsc-moonp" d="M302 332 L338 332 L356 474 Q320 486 284 474 Z" fill="#9ADCD4"/>}
         {scene.relief.type==="diamond"&&<g>
           <path d="M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z" fill={t.rock}/>
@@ -1421,7 +1870,7 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
-  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated",
+  "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
   // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
   "sg_pass_proof_open","sg_pass_seq_back",
@@ -1490,6 +1939,8 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // fetch fire-and-forget était silencieusement perdu si la page naviguait pendant
 // la requête (capture = levier #1, on ne peut PAS perdre un email saisi) ou si
 // Apps Script était froid. sendBeacon survit à l'unload ; fallback fetch keepalive.
+// MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
+// pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
   try{
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
@@ -1497,6 +1948,8 @@ export function submitLead(email,source){
     if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
     fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
   }catch{}
+  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
 // ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas
@@ -1782,7 +2235,7 @@ function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect
 //    vide). On le met en file localStorage + on le rejoue au boot et au retour du
 //    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
 //    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
-const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+const SG_REPORT_URL=APPS_SCRIPT_URL
 // Upload photo visiteur RETIRÉ (décision fondateur + panel adverse 2026-07-02 : « on ne
 // fait pas d'image, le SVG de NOTRE donnée satellite est le produit »). L'upload, la
 // galerie et la récompense « Éclaireur » 24 h sont désarmés ; le backend Supabase reste
@@ -2742,6 +3195,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // ?arc=1 = Marée du Veilleur (houle) À LA PLACE des barres ; défaut OFF (observationnel,
   // pas un A/B parallèle — cf. note du composant). Rollback inhérent : défaut = barres.
   const arcOn=(()=>{try{return /[?&]arc=1/.test(window.location.search)}catch(_){return false}})()
+  // ?timeline=1 = Forecast Timeline 3D avec animation de dessin au scroll
+  const timeline3D=(()=>{try{return /[?&]timeline=1/.test(window.location.search)}catch(_){return false}})()
   const[beatOpen,setBeatOpen]=useState(false)
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   if(!forecast||!forecast.length)return null
@@ -2779,12 +3234,16 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     ?_t(lang,"+ brief matin & alertes","+ morning brief & alerts","+ brief matutino y alertas")
     :_t(lang,"+ brief matin & alertes · 7j gratuit","+ morning brief & alerts · 7 days free","+ brief matutino y alertas · 7 días gratis")
   const firstConf=visible[1]?.confidence||40
+  // Direction J+0→J+1 (flèche honnête, sans révéler le statut) — gap de curiosité.
+  const _RK={clean:0,moderate:1,avoid:2}
+  const _dir=(()=>{const r0=_RK[visible[0]?.status]??0,r1=_RK[visible[1]?.status];return r1==null?"→":r1>r0?"↘":r1<r0?"↗":"→"})()
   // Compute locked-day status colors for teaser strip
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
   return(
     <>
     <div style={{position:"relative"}}>
-      {arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
+      {timeline3D?<ForecastTimeline3D forecast={forecast} isPremium={isPremium} weatherDaily={weatherDaily} lang={lang}/>:
+      arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
         {visible.map((d,i)=>{
           const afai=Number.isFinite(d.afai)?d.afai:0
@@ -2802,8 +3261,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           const typeOpacity=fType==="observation"?1:fType==="tendance"?.9:.6
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-              filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
-              pointerEvents:isLocked?"none":"auto"}}>
+              filter:isLocked?(i===freeThreshold?"blur(1px)":"blur(2px)"):"none",
+              opacity:isLocked?(i===freeThreshold?0.72:0.5):typeOpacity,
+              pointerEvents:isLocked?"none":"auto",
+              position:"relative"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
               {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
                 letterSpacing:".01em"}}>{dayTemp}°</span>}
@@ -2816,9 +3277,12 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 borderRadius:"6px 6px 2px 2px",
                 boxShadow:`0 -4px 14px -6px ${st.c}88, inset 0 1px 0 rgba(255,255,255,.3)`}}/>
               <span className="anton" style={{fontSize:11,lineHeight:1,letterSpacing:".02em",
-                color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase",marginTop:2}}>
+                color:isLocked&&i===freeThreshold?"#FFC72C":"var(--sg-mid,#5A5A5A)",
+                textTransform:"uppercase",marginTop:2}}>
                 {fcDay(d,lang)}
+                {isLocked&&i===freeThreshold&&<span style={{fontSize:10,marginLeft:2,opacity:.85}}>{_dir}</span>}
               </span>
+              {isLocked&&i===freeThreshold&&<span style={{display:"block",width:5,height:5,borderRadius:"50%",background:"#FFC72C",margin:"3px auto 0",boxShadow:"0 0 6px #FFC72C88"}}/>}
               {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
             </div>
           )
@@ -2830,7 +3294,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
           `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
+        role="button" tabIndex={0}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
         background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
@@ -2850,7 +3315,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     </div>
     {/* Locked-days teaser strip — outside the chart overlay so always visible */}
     {lockedDays.length>0&&(
-      <div onClick={()=>openLock("strip")}
+      <div onClick={()=>openLock("strip")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("strip")}}}
+        role="button" tabIndex={0}
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
@@ -2972,7 +3438,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
             </div>
           </div>
           <button onClick={onShowMap} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
-            width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.45)",border:"1px solid rgba(255,255,255,.22)",
+            width:44,height:44,borderRadius:"50%",background:"rgba(4,9,11,.45)",border:"1px solid rgba(255,255,255,.22)",
             color:"#fff",fontSize:16,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>
         </div>
         <h1 style={{fontFamily:"'Anton',sans-serif",fontSize:38,lineHeight:.95,textTransform:"uppercase",
@@ -3166,7 +3632,7 @@ function VerdictRadarScan({beach,lang,onDisagree}){
     const last=g(ctkey,0)
     return(last&&Date.now()-last<12*3600*1000)?g(ckey,null):null
   })
-  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const live=beach._src==="live"
   const stepLbl=live
     ?[_t(lang,"Satellite","Satellite","Satélite"),_t(lang,"Normalisation","Normalization","Normalización")]
@@ -4063,14 +4529,14 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
             le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
             mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
-        <div style={{display:"flex",alignItems:"center",gap:13,padding:"14px 16px",margin:"14px 0 12px",
-          background:sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:`4px 4px 0 ${COMIC.ink}`,
-          animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}>
-          <div aria-hidden style={{flexShrink:0}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
+        <div className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
+          background:status==="avoid"?"linear-gradient(135deg, #FF3B30 0%, #C70000 100%)":sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:status==="avoid"?"0 8px 24px rgba(255,59,48,0.4), 4px 4px 0 #8B0000":`4px 4px 0 ${COMIC.ink}`,
+          animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both",position:"relative",zIndex:1}}>
+          <div aria-hidden style={{flexShrink:0,filter:status==="avoid"?"drop-shadow(0 0 12px rgba(255,255,255,0.5))":"none"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
-            <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:COMIC.ink}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_terrainStatus
+            <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:status==="avoid"?"#fff":COMIC.ink,textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.big}</div>
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {_terrainStatus
               ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
                   ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
                   : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
@@ -4093,14 +4559,24 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         )}
 
         {/* Score + facteurs (carte) */}
-        <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
-          {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
-            {/* Score-vedette en JetBrains Mono (BIBLE : Mono pour tous les chiffres). */}
-            <div style={{fontFamily:"'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace",fontWeight:700,fontSize:38,lineHeight:.85,letterSpacing:"-1px",fontVariantNumeric:"tabular-nums",color:COMIC.ink}}>{scoreAnim}<span style={{fontSize:14,color:COMIC.sub}}>/100</span></div>
-            <div style={{font:"800 8.5px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".5px",marginTop:2}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
+        <div className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
+          {hasScore&&<div style={{flexShrink:0,textAlign:"center",position:"relative"}}>
+            {/* Score-vedette avec halo animé - WOW effect */}
+            <div className={status==="clean"?"score-blob-glow":"score-blob-pulse"} style={{
+              "--blob-color": status==="clean"?"#1EC8B0":status==="moderate"?"#FFC72C":"#FF3B30",
+              fontFamily:"'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace",
+              fontWeight:700,
+              fontSize:42,
+              lineHeight:.85,
+              letterSpacing:"-1.5px",
+              fontVariantNumeric:"tabular-nums",
+              color: status==="clean"?"#00B086":status==="moderate"?"#FF9500":"#FF3B30",
+              transition:"color 0.3s ease",
+            }}>{scoreAnim}<span style={{fontSize:14,color:COMIC.sub,fontWeight:600}}>/100</span></div>
+            <div style={{font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".8px",marginTop:4,textTransform:"uppercase"}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
           </div>}
-          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip" style={{animationDelay:(.18+i*.07)+"s"}}><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block"}}/>{c.t}</span>)
+          <div style={{display:"flex",flexWrap:"wrap",gap:7,flex:1}}>
+            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip ripple" style={{animationDelay:(.18+i*.07)+"s",cursor:"default"}}><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block",boxShadow:`0 0 6px ${c.c}`}}/>{c.t}</span>)
               :<span style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Conditions en cours de lecture…","Reading conditions…","Leyendo condiciones…")}</span>}
           </div>
         </div>
@@ -4116,11 +4592,27 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
             {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
           </div>
-          <div style={{display:"flex",gap:5,position:"relative"}}>
+          <div style={{display:"flex",gap:6,position:"relative"}}>
             {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
-              <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
-                <div className="bsc-bar" style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animationDelay:(.32+i*.05)+"s"}}/>
-                <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
+              <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
+                flex:1,
+                textAlign:"center",
+                filter:gated?"blur(3px)":"none",
+                opacity:gated?.65:1,
+                padding:"6px 4px",
+                borderRadius:10,
+                background: i===0?"linear-gradient(135deg, rgba(255,199,44,0.08) 0%, rgba(255,149,0,0.05) 100%)":"transparent",
+                border: i===0?"2px solid rgba(255,199,44,0.3)":"2px solid transparent",
+              }}>
+                <div className="bsc-bar" style={{
+                  height:36,
+                  borderRadius:8,
+                  border:`2.5px solid ${COMIC.ink}`,
+                  background:comicStatusColor(d.status),
+                  animationDelay:(.32+i*.05)+"s",
+                  boxShadow: i===0?`0 4px 12px ${comicStatusColor(d.status)}66`:"none",
+                }}/>
+                <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
               </div>)})}
             {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
@@ -4143,7 +4635,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* CTA collant — décision unique, or */}
         <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
-          <button className="bsc-gobtn sg-paygold" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
+          <button className="bsc-gobtn cta-premium ripple" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,position:"relative",zIndex:1}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
             <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"Pass unique, sans abonnement · rien à résilier","One-time pass, no subscription · nothing to cancel","Pase único, sin suscripción · nada que cancelar")}</div>
@@ -4657,7 +5149,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Forecast teaser — masqué en fc_position=top (ForecastChart déjà visible) */}
           {!isPremium&&!fcUp&&forecast&&forecast[1]&&(
-            <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
+            <div onClick={e=>{e.stopPropagation();track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
+              onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}}
+              role="button" tabIndex={0}
               style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
                 background:"linear-gradient(135deg,#190c2c,#142824)",
                 border:"1px solid rgba(232,168,0,.2)",
@@ -5091,6 +5585,7 @@ function SearchBar({value,onChange,lang}){
         </svg>
         <input type="search" value={value} onChange={e=>onChange(e.target.value)}
           placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+          aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
           enterKeyHint="search"
           onFocus={()=>setFocused(true)}
@@ -5239,6 +5734,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
             onFocus={()=>setQFocus(true)} onBlur={()=>setQFocus(false)}
             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
             placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+            aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
             style={{flex:1,background:"none",border:"none",outline:"none",fontSize:16,color:"var(--sg-ink,"+SG.ink+")",fontFamily:"inherit",fontWeight:600,letterSpacing:0,minWidth:0}}/>
           {q&&<button onClick={()=>setQ("")} aria-label={_t(lang,"Effacer","Clear","Borrar")} className="sg-field-clear">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>
@@ -5424,6 +5920,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
               {/* Forecast lock strip — fav only, !isPremium, A/B list_fclock */}
               {fcDays&&(
                 <div onClick={e=>{e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}
+                  onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}}
+                  role="button" tabIndex={0}
                   style={{margin:"0 14px 13px",padding:"12px 14px",borderRadius:12,
                     background:"rgba(232,168,0,.10)",
                     border:`2px solid ${SG.gold}`,cursor:"pointer"}}>
@@ -5893,7 +6391,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     try{localStorage.setItem("sg_email",heroEmail)}catch{}
     try{
       const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-      fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+      fetch(APPS_SCRIPT_URL,{
         method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
         body:JSON.stringify({email:heroEmail,island:isl,source:"hero_inline",date:new Date().toISOString()})
       }).catch(()=>{})
@@ -5985,6 +6483,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         <input
           type="email" inputMode="email" autoComplete="email"
           placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
+          aria-label={_t(lang,"Ton email pour la reco quotidienne","Your email for daily pick","Tu email para la recomendación diaria")}
           value={heroEmail}
           onChange={e=>setHeroEmail(e.target.value)}
           onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
@@ -7200,10 +7699,12 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
   const[sent,setSent]=useState(false)
   const[err,setErr]=useState(false)
+  const[busy,setBusy]=useState(false)
 
   function submit(e){
     e.preventDefault()
     if(!email||!email.includes("@")){setErr(true);return}
+    setBusy(true)
     setSent(true)
     onSubmit(email)
   }
@@ -7255,21 +7756,23 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           <form onSubmit={submit} style={{width:"100%",position:"relative",marginBottom:16}}>
             <input type="email" inputMode="email" autoComplete="email"
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              aria-label={_t(lang,"Ton email pour le brief","Your email for the brief","Tu email para el informe")}
               value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
               style={{width:"100%",boxSizing:"border-box",padding:"16px 64px 16px 20px",borderRadius:999,
                 border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
                 fontSize:16,fontFamily:"inherit",background:PAY_CAPTURE_ONLY?"#fff":"rgba(255,255,255,.05)",
                 outline:"none",color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",transition:"border 0.2s ease"}}/>
-            <button type="submit" className="sg-paygold" style={{
+            <button type="submit" disabled={busy} className="sg-paygold" style={{
               position:"absolute",right:6,top:6,bottom:6,
-              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:"pointer",
+              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:busy?"wait":"pointer",
               background:PAY_CAPTURE_ONLY?"#ffd23f":"linear-gradient(135deg,#3fd07f,#5b3a8e)",
               display:"flex",alignItems:"center",justifyContent:"center",
-              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)"}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)",
+              opacity:busy?0.6:1}}>
+              {busy?"…":<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              </svg>}
             </button>
           </form>
 
@@ -7292,7 +7795,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           
           <div style={{textAlign:"center", width:"100%"}}>
             <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
-              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
+              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"12px 8px",minHeight:44,fontFamily:"inherit"}}>
               {_t(lang,"Non merci, fermer","No thanks, close","No gracias, cerrar")}
             </button>
           </div>
@@ -7317,9 +7820,11 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
 function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
+  const[busy,setBusy]=useState(false)
   const submit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     s("sg_email",email)
     submitLead(email,"exit_intent")
     track("sg_exitcap_submit",{trigger,beach_id:pick&&pick.id,score:pick&&pick.score})
@@ -7344,18 +7849,19 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
           </div>
           <div style={{display:"flex",gap:7}}>
             <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              aria-label={_t(lang,"Ton email pour la prévision","Your email for the forecast","Tu email para el pronóstico")}
               value={email} onChange={e=>setEmail(e.target.value)}
               style={{flex:1,padding:"9px 12px",borderRadius:10,border:"1px solid rgba(255,255,255,.14)",
                 fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",outline:"none",minWidth:0,color:"#fff"}}/>
-            <button type="submit" style={{padding:"9px 13px",borderRadius:10,border:"none",cursor:"pointer",
-              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:12.5,fontWeight:800,whiteSpace:"nowrap",fontFamily:"inherit"}}>
-              {_t(lang,"Recevoir →","Get it →","Recibir →")}
+            <button type="submit" disabled={busy} style={{padding:"9px 13px",borderRadius:10,border:"none",cursor:busy?"wait":"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:12.5,fontWeight:800,whiteSpace:"nowrap",fontFamily:"inherit",opacity:busy?0.6:1}}>
+              {busy?"…":_t(lang,"Recevoir →","Get it →","Recibir →")}
             </button>
           </div>
         </form>
         <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{background:"none",border:"none",color:"rgba(255,255,255,.8)",fontSize:20,lineHeight:1,cursor:"pointer",
-            padding:0,alignSelf:"flex-start",width:32,height:32,flexShrink:0}}>×</button>
+            padding:0,alignSelf:"flex-start",width:44,height:44,flexShrink:0}}>×</button>
       </>)}
     </div>
   )
@@ -7506,6 +8012,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                 </svg>
                 <input type="email" inputMode="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}
                   placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+                  aria-label={_t(lang,"Ton email pour débloquer la semaine","Your email to unlock the week","Tu email para desbloquear la semana")}
                   style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
               </div>
               <button type="submit" className="sg-paygold" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
@@ -7524,7 +8031,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
             </div>
             <div style={{textAlign:"center",marginTop:9}}>
-              <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
+            <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer",minHeight:44,padding:"10px 0"}}>
                 {_t(lang,"Non merci, je pars sans","No thanks, I'll leave without it","No gracias, me voy sin él")}
               </button>
             </div>
@@ -7538,6 +8045,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
 function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
+  const[busy,setBusy]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
   // Show from first visit (was visit 2+). Already subscribed → hide définitivement
@@ -7558,6 +8066,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const handleSubmit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     track("sg_email_submit",{source,variant:em1V})
     s("sg_email",email)
     s("sg_email_prompt",true)
@@ -7642,20 +8151,21 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
           </div>
           <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
             <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
-              value={email} onChange={e=>setEmail(e.target.value)}
+              aria-label={_t(lang,"Ton email pour le brief matinal","Your email for morning brief","Tu email para el informe matinal")}
+              value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
               style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
-                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
-            <button type="submit" style={{padding:"10px 16px",borderRadius:12,border:"none",cursor:"pointer",
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff",opacity:busy?0.6:1}}/>
+            <button type="submit" disabled={busy} style={{padding:"10px 16px",borderRadius:12,border:"none",cursor:busy?"wait":"pointer",
               background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:13,fontWeight:800,
-              whiteSpace:"nowrap",fontFamily:"inherit",boxShadow:"0 2px 12px rgba(232,168,0,.3)"}}>
-              {_t(lang,"Commencer →","Start →","Empezar →")}
+              whiteSpace:"nowrap",fontFamily:"inherit",boxShadow:"0 2px 12px rgba(232,168,0,.3)",opacity:busy?0.6:1}}>
+              {busy?"…":_t(lang,"Commencer →","Start →","Empezar →")}
             </button>
           </form>
-          <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
-            display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
-            color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
-            {_t(lang,"Plus tard","Not now","Ahora no")}
-          </button>
+        <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
+          display:"block",margin:"8px auto 0",background:"none",border:"none",
+          cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:"10px 0",minHeight:44}}>
+          {_t(lang,"Plus tard","Not now","Ahora no")}
+        </button>
         </div>
       </div>
     )
@@ -7690,6 +8200,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
         </div>
         <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
           <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+            aria-label={_t(lang,"Ton email pour l'alerte","Your email for alerts","Tu email para alertas")}
             value={email} onChange={e=>setEmail(e.target.value)}
             style={{flex:1,padding:"10px 14px",borderRadius:12,
               border:"1px solid rgba(255,255,255,.12)",
@@ -7703,11 +8214,11 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
             {_t(lang,"OK","Go","OK")}
           </button>
         </form>
-        <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
-          display:"block",margin:"8px auto 0",background:"none",border:"none",
-          cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
-          {_t(lang,"Plus tard","Not now","Ahora no")}
-        </button>
+          <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
+            display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
+            color:"rgba(255,255,255,.3)",fontSize:11,padding:"10px 0",minHeight:44}}>
+            {_t(lang,"Plus tard","Not now","Ahora no")}
+          </button>
       </div>
     </div>
   )
@@ -7739,7 +8250,7 @@ function FeedbackWidget(){
   const submit=()=>{
     track("sg_feedback",{rating,text:text.slice(0,200)})
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+    try{fetch(APPS_SCRIPT_URL,{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -8188,15 +8699,17 @@ function AlertCapture({beach,lang}){
   const[open,setOpen]=useState(false)
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
+  const[busy,setBusy]=useState(false)
   const[hidden]=useState(()=>{try{return !!localStorage.getItem("sg_email")}catch(_){return false}})
   if(hidden)return null
   const submit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    setBusy(true)
     track("sg_email_submit",{source:"beach_alert",beach_id:beach.id})
     try{localStorage.setItem("sg_email",email)}catch(_){}
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+    try{fetch(APPS_SCRIPT_URL,{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({email,island,source:"beach_alert",beach_id:beach.id,date:new Date().toISOString()})
     }).catch(()=>{})}catch(_){}
@@ -8228,11 +8741,12 @@ function AlertCapture({beach,lang}){
     <form onSubmit={submit} style={{display:"flex",gap:8,margin:"0 0 14px"}}>
       <input type="email" inputMode="email" autoComplete="email" required autoFocus
         placeholder={_t(lang,"Ton email — verdict chaque matin","Your email — verdict every morning","Tu email — veredicto cada mañana")}
+        aria-label={_t(lang,"Ton email pour le verdict quotidien","Your email for daily verdict","Tu email para el veredicto diario")}
         value={email} onChange={e=>setEmail(e.target.value)}
         style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:16,fontFamily:"inherit",
           border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
-      <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",
-        fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14}}>OK</button>
+      <button type="submit" disabled={busy} style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:busy?"wait":"pointer",
+        fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14,opacity:busy?0.6:1}}>{busy?"…":"OK"}</button>
     </form>
   )
 }
@@ -9668,6 +10182,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                   type="search" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
                   onFocus={()=>track("sg_landing_pick_search",{})}
                   placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+                  aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
                   style={{width:"100%",minHeight:48,boxSizing:"border-box",background:"var(--sg-card,#fff)",
                     border:"2.5px solid #0D0D0D",borderRadius:12,padding:"13px 14px 13px 42px",
                     color:"var(--sg-ink,#0D0D0D)",fontSize:16,fontWeight:600,fontFamily:"inherit",outline:"none",
@@ -9848,7 +10363,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
     } catch (_) {}
 
     const islandCode = IS_NEW_REGION ? REGION.id.toUpperCase() : window.location.hostname.includes("guadeloupe") ? "GP" : "MQ"
-    fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", {
+    fetch(APPS_SCRIPT_URL, {
       method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ email, island: islandCode, source: "alertes", date: new Date().toISOString() })
     })
@@ -9945,6 +10460,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
                 </div>
                 <form onSubmit={handleSubmit} style={{display:"flex",gap:10,alignItems:"center"}}>
                   <input type="email" inputMode="email" autoComplete="email" required placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+                    aria-label={_t(lang,"Ton email pour le verdict de cette plage","Your email for this beach verdict","Tu email para el veredicto de esta playa")}
                     value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
                     style={{flex:1,padding:"12px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
                   <button type="submit" disabled={busy}
@@ -10127,7 +10643,7 @@ function VerdictDuJourCard({beach,lang}){
   const[guess,setGuess]=useState(prior?prior.guess:null)
   const[best]=useState(()=>g("sg_vdj_best",0)||0)
   const cachedRef=useRef(!!prior)
-  useEffect(()=>{if(cachedRef.current){try{track("sg_verdict_cached_view",{beach_id:beach.id})}catch(_){}}},[])// eslint-disable-line
+  useEffect(()=>{if(cachedRef.current){try{track("sg_verdict_cached_view",{beach_id:beach.id})}catch(_){}}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const correct=guess===real
   const opts=[
     {s:"clean",e:"😎",l:_t(lang,"Propre","Clean","Limpia"),c:"#22C55E"},
@@ -10366,7 +10882,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
     root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
     return()=>io.disconnect()
   },[items.length])
-  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
   return(
     <div role="region" aria-label={_t(lang,"Monde Sargasses","Sargassum World","Mundo Sargazo")} style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
@@ -10500,7 +11016,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     }
     setReady(true)
     try{track("sg_archipel_open",{beaches:count})}catch(_){}
-  },[initialZone])// eslint-disable-line
+  },[initialZone])// eslint-disable-line react-hooks/exhaustive-deps -- zone change is intentional trigger, not a dep
   // SCROLL / molette / swipe / flèches = VISITE plage-à-plage (doctrine #24 : le
   //   scroll pilote la VISITE, JAMAIS le zoom — zoom = pincer/double-tap). La caméra
   //   glisse vers la plage suivante/précédente. Fin de liste = BOUCLE (jamais bloqué,
@@ -10517,7 +11033,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog"][aria-modal="true"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
     el.addEventListener("wheel",onWheel,{passive:false});window.addEventListener("keydown",onKey)
     return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
-  },[])// eslint-disable-line
+  },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-time wheel/keydown listener setup
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
   const onDown=e=>{movedRef.current=false;stopInertia();velRef.current={x:0,y:0};pannedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
@@ -10840,6 +11356,7 @@ export default function App(){
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
+  const[frustrationContext,setFrustrationContext]=useState(null) // contexte frustration (auto-open chat)
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
   const[captureGateSrc,setCaptureGateSrc]=useState("")
@@ -10882,12 +11399,14 @@ export default function App(){
         try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
+        // Wow Effect 3: celebration on premium conversion
+        triggerCelebration("premium")
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+          try{fetch(APPS_SCRIPT_URL,{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(()=>{})}catch(ex){}
+          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
         }
         // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
         // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
@@ -10900,9 +11419,11 @@ export default function App(){
         s("sg_premium",true)
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"direct"})
+        // Wow Effect 3: celebration on premium conversion
+        triggerCelebration("premium")
         // Log payment to Apps Script (fire-and-forget)
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+          try{fetch(APPS_SCRIPT_URL,{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
@@ -10927,6 +11448,15 @@ export default function App(){
   const[premiumTick,setPremiumTick]=useState(0)
   const fcRetryRef=useRef(0) // retry borné (1) de la prévision étendue si premium + forecast.php KO transitoire
   const _premWasTrue=useRef(isPremium) // snapshot initial (premium déjà connu au mount)
+  // Frustration detection : auto-open chat si rage-click/scroll/hesitation
+  // Flag rollback : ?frustration=0 désactive (doctrine : pas de flag = pas de merge)
+  const frustrationEnabled=useMemo(()=>{try{return !/[?&]frustration=0(?:&|$)/.test(window.location.search)}catch(_){return true}},[])
+  useFrustrationDetection((ctx)=>{
+    if(!frustrationEnabled)return
+    setFrustrationContext(ctx)
+    setShowChat(true)
+    track("sg_frustration_auto_open",{type:ctx.type,page:ctx.page})
+  },{enabled:frustrationEnabled})
   useEffect(()=>{
     if(isPremium&&!_premWasTrue.current){ _premWasTrue.current=true; setPremiumTick(t=>t+1) }
   },[isPremium])
@@ -10946,36 +11476,82 @@ export default function App(){
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
   // ── Retour 3DS Mollie (?mollie_return=1) : confirme le paiement côté serveur
-  // (source de vérité), pose le premium en localStorage, puis reload propre. ───
+  // (source de vérité), pose le premium en localStorage, puis reload propre.
+  // Statut pending : on relance 3× avec 2 s d'espace, car Mollie peut retourner
+  // pending (paiement en cours de confirmation) avant le webhook. ────────────
+  useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    const run=async()=>{
+      try{
+        if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
+        let ctx=null
+        try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
+        if(!ctx||!ctx.paymentId){
+          // sessionStorage vidé (iOS Safari ou bfcache) → lire localStorage
+          try{const ls=JSON.parse(localStorage.getItem("sg_mollie_pending")||"null");if(ls&&ls.paymentId){ctx=ls}}catch(_){}
+        }
+        if(!ctx||!ctx.paymentId){
+          // localStorage aussi vide → fallback email via sgVerifySub
+          const storedEmail=localStorage.getItem("sg_email")||""
+          if(storedEmail){ctx={paymentId:null,email:storedEmail}}
+        }
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        if(!ctx||!ctx.paymentId){
+          if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
+          clean();return
+        }
+        let paid=null
+        for(let attempt=0;attempt<3;attempt++){
+          if(signal.aborted)break
+          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
+            if(d&&d.terminal&&d.status){
+              // Handle terminal failure status immediately (canceled, expired, failed)
+              const terminalMsg={canceled:_t("Paiement annulé","Payment canceled","Pago cancelado"),expired:_t("Paiement expiré","Payment expired","Pago expirado"),failed:_t("Paiement échoué","Payment failed","Pago fallido")}
+              const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")+(d.status?"&status="+encodeURIComponent(d.status):"")+(terminalMsg[d.status]||"")
+              try{window.location.replace(failUrl);return}catch(_){}
+            }
+            if(d&&d.paid){paid=true;break}
+            if(d&&d.status==="paid"){paid=true;break}
+            paid=false;if(attempt<2)await new Promise(r=>setTimeout(r,2000))
+          }catch(_){paid=false}
+        }
+        if(signal.aborted)return
+        if(paid===true){
+          try{localStorage.setItem("sg_email",ctx.email||"")
+            if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
+            else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
+            localStorage.setItem("sg_premium_welcome","1")}catch(_){}
+          track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
+        } else {
+          try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
+        }
+        clean()
+      }catch(_){}
+    }
+    run()
+    return()=>ac.abort()
+  },[])
+  // Handle ?payment_failed=1 → relance automatique (email retry link)
+  // Le client revient ici depuis l'email de relance (ou après un retour 3DS échoué).
+  // On stocke le contexte (email, plan) pour que le paywall s'affiche en mode "retry"
+  // avec un message explicatif, puis on ouvre le modal directement.
   useEffect(()=>{
     try{
-      if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
-      let ctx=null;try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
-      const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
-      if(!ctx||!ctx.paymentId){clean();return}
-      fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId})})
-        .then(r=>r.json()).then(d=>{
-          if(d&&d.paid){
-            try{localStorage.setItem("sg_email",ctx.email||"")
-              if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
-              else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
-              // Le reload (clean()) perd l'état mémoire onActivated → poser le flag pour
-              // que showWelcome déclenche splash « Premium activé » + PaidOnboarding,
-              // comme le chemin inline. Sinon le payeur 3DS atterrit sans confirmation.
-              localStorage.setItem("sg_premium_welcome","1")
-            }catch(_){}
-            track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
-          }
-          clean()
-        }).catch(async()=>{
-          // payment_status injoignable (réseau) : le paiement a pu réussir côté
-          // serveur (webhook). Avant d'abandonner, on tente la vérif d'abo par email
-          // → évite de perdre un vrai payeur sur un blip réseau au retour 3DS.
-          try{const v=ctx.email?await sgVerifySub(ctx.email):null
-            if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.paymentId,method:"mollie_3ds_fallback",plan:ctx.plan})}
-          }catch(_){}
-          clean()
-        })
+      const q=window.location.search
+      if(!/[?&]payment_failed=1/.test(q))return
+      const params=new URLSearchParams(q)
+      const failedEmail=params.get("email")||""
+      const failedPlan=params.get("plan")||""
+      // Stocke le contexte d'échec pour le paywall (retry mode)
+      try{
+        sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,ts:Date.now()}))
+      }catch(_){}
+      // Nettoie l'URL puis ouvre le paywall
+      const cleanUrl=window.location.pathname+(window.location.hash||"")
+      window.history.replaceState({},document.title,cleanUrl)
+      // Déclenche l'ouverture du paywall après un court délai (laisse le state s'initialiser)
+      setTimeout(()=>{try{document.dispatchEvent(new CustomEvent("sg_open_paywall",{detail:{retry:true,email:failedEmail,plan:failedPlan}}))}catch(_){}},300)
     }catch(_){}
   },[])
   // Handle ?manage=1 → open Stripe Customer Portal
@@ -11177,7 +11753,7 @@ export default function App(){
   // paywall) charge toujours Stripe.js au besoin — zéro impact checkout.
   useEffect(()=>{
     if(PAY_PROVIDER!=="stripe")return
-    const t=setTimeout(()=>{loadStripeJs().catch(()=>{})},3000)
+    const t=setTimeout(()=>{loadStripeJs().catch(e=>sgLogError("stripe_js_load",e))},3000)
     return()=>clearTimeout(t)
   },[])
 
@@ -11414,7 +11990,7 @@ export default function App(){
         try{localStorage.setItem("sg_refclaim_ts",String(Date.now()))}catch(_){}
         fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"claim_referral_credit",code})})
           .then(r=>r.json()).then(d=>{
-            const days=Math.max(0,Math.min(365,parseInt(d&&d.days)||0))
+            const days=Math.max(0,Math.min(30,parseInt(d&&d.days)||0))
             if(days<=0)return
             const cur=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
             const end=Math.max(Date.now(),cur||0)+days*86400000
@@ -11422,7 +11998,7 @@ export default function App(){
             try{setIsPremium(true)}catch(_){}
             track("sg_referral_reward_claimed",{days})
             try{sgToast({tone:"success",title:_t(lang,"Merci d'avoir partagé 🌊","Thanks for sharing 🌊","Gracias por compartir 🌊"),msg:_t(lang,`Un filleul a pris un pass — +${days} jours de Veilleur pour toi.`,`A friend got a pass — +${days} Watchman days for you.`,`Un amigo tomó un pase — +${days} días de Vigía para ti.`)})}catch(_){}
-          }).catch(()=>{})
+          }).catch(e=>sgLogError("referral_claim",e))
       },2500)
       return()=>clearTimeout(t)
     }catch(_){}
@@ -11581,7 +12157,7 @@ export default function App(){
   // Solutions sargasses (SVG scrollytelling éducatif, escapable). ?solutions=1 QA + entrée chip.
   const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
   // L'Archipel du Veilleur (monde SVG libre pan/zoom, tournoi gagnant). QA ?archipel=1.
-  const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&]archipel=1/.test(window.location.search)}catch(_){return false}})
+  const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&](archipel|view3d)=1/.test(window.location.search)}catch(_){return false}})
   // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
   // DEVIENT le produit principal, plus un flag cache). 50/50, control = carte actuelle.
   // App full-SVG : le MONDE (WorldMapView/ArchipelView) EST la carte pour TOUS. La carte Leaflet
@@ -11760,6 +12336,8 @@ export default function App(){
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
   const mapWorld=useMemo(()=>{try{return /[?&]map_world=0/.test(window.location.search)?"control":"world"}catch(_){return"world"}},[])
+  // Flag rollback ?view3d=0 — scène 3D immersive (Three.js, lazy chunk). Default OFF.
+  const view3d=useMemo(()=>{try{return /[?&]view3d=1/.test(window.location.search)}catch(_){return false}},[])
   // Carte monde RÉCHAUFFÉE golden-hour pour TOUS (décision produit 19/06 : un seul
   // monde comic cohérent, fin de la base teal froide). Override debug ?mapwarm=0.
   const mapWarm=useMemo(()=>{try{return /[?&]mapwarm=0/.test(window.location.search)?"control":"warm"}catch(_){return"warm"}},[])
@@ -11795,11 +12373,15 @@ export default function App(){
   },[])
   // Sortie ANIMÉE du hero (audit fluidité 2026-06-11 : le cut brut en 20ms était
   // LE moment « pas fluide » de la 1re impression) : fondu+scale 300ms puis démontage.
+  // FIX clics successifs : setShowHero(false) IMMÉDIAT (libère le renderspace pour le
+  // prochain écran). L'animation de sortie est portée par heroExiting (300ms timeout),
+  // pas par showHero — le hero n'est plus rendu mais heroExiting garde l'opacité 0→1.
   const[heroExiting,setHeroExiting]=useState(false)
   const dismissHero=useCallback(action=>{
     try{sessionStorage.setItem("sg_hero_seen","1")}catch(_){}
     setHeroExiting(true)
-    setTimeout(()=>{setShowHero(false);setHeroExiting(false)},300)
+    setShowHero(false)
+    setTimeout(()=>setHeroExiting(false),300)
     track("sg_hero_dismiss",{action})
   },[])
   // Plage du hero : la plus proche PROPRE si géoloc déjà accordée, sinon le
@@ -12095,16 +12677,19 @@ export default function App(){
   // "tous les scores à 73" bug). With it, the snap passed to computeScore
   // varies per beach, so ranking + label + reason actually differentiate.
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     Promise.all([
-      fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null),
+      fetch("/data/beaches-list.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/copernicus/sargassum.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/weather/beaches-weather.json",{signal}).then(r=>r.json()).catch(()=>null),
       // SIGNALEMENTS (local, rapide) DANS le fetch principal → les pins affichent leur VRAI statut
       // (escaladé par les signalements) dès le 1er rendu, au lieu de flasher vert→rouge/jaune.
       // app-reports.json = snapshot des reports IN-APP (le live Apps Script ~2,5 s reste en différé
       // pour la fraîcheur) ; fb-reports.json = signaux Facebook scrapés. On fusionne les deux.
-      fetch("/api/community/app-reports.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
+      fetch("/api/community/app-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
+      fetch("/api/community/fb-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
       // Gating J+2→J+7 : si on a une credential (token widget / email payeur), on
       // récupère la prévision COMPLÈTE EN PARALLÈLE → merge AVANT l'interpolation
       // ci-dessous (sinon les plages interpolées n'auraient pas leurs J+2-6).
@@ -12114,6 +12699,7 @@ export default function App(){
       // puis le retry borné (1×, ci-dessous) le récupère hors chemin critique.
       Promise.race([fetchFullForecast(),new Promise(res=>setTimeout(()=>res(null),4000))])
     ]).then(([beachData,sargResult,beachWx,appReports,fbReports,fcFull])=>{
+      if(cancelled)return
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)
       // Merge prévision complète (premium/abonné/widget) dans sargResult.weekly
@@ -12302,6 +12888,7 @@ export default function App(){
       }
       setAllBeaches(beaches)
     })
+    return()=>{cancelled=true;ac.abort()}
   },[premiumTick]) // re-run sur upgrade premium (gating : récupère J+2-6 + ré-interpole)
 
   // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data.
@@ -12310,12 +12897,16 @@ export default function App(){
   // FB signals are pre-aggregated and gated by a ≥3-reports threshold in rankBeaches to
   // prevent single posts from moving the hero pick.
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     const t=setTimeout(()=>{
       Promise.all([
-        fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports").then(r=>r.json()).catch(()=>null),
-        fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
-        fetch("/api/community/fb-posts.json").then(r=>r.json()).catch(()=>null),
+        fetch(APPS_SCRIPT_URL+"?action=beach_reports",{signal}).then(r=>r.json()).catch(()=>null),
+        fetch("/api/community/fb-reports.json",{signal}).then(r=>r.json()).catch(()=>null),
+        fetch("/api/community/fb-posts.json",{signal}).then(r=>r.json()).catch(()=>null),
       ]).then(([userData,fbData,fbPostsData])=>{
+        if(cancelled)return
         const merged={}
         const merge=(src)=>{
           if(!src?.reports)return
@@ -12334,37 +12925,40 @@ export default function App(){
         if(fbPostsData?.postsByBeach)setFbPosts(fbPostsData.postsByBeach)
       })
     },3000)
-    return()=>clearTimeout(t)
+    return()=>{cancelled=true;clearTimeout(t);ac.abort()}
   },[])
 
   // Fetch beaches-images.json — immédiat quand le Hero Verdict va s'afficher
   // (il a besoin de la photo), sinon différé (seulement utile à l'ouverture
   // d'une fiche).
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
+    let cancelled=false
     const t=setTimeout(()=>{
-      fetch("/data/beaches-images.json")
-        .then(r=>r.json())
+      fetch("/data/beaches-images.json",{signal})
+        .then(r=>r.ok?r.json():null)
         .then(data=>{
-          if(data&&typeof data==="object")setImageMap(data)
+          if(!cancelled&&data&&typeof data==="object")setImageMap(data)
         })
         .catch(()=>{})
       // Score qualité photo (compute-photo-quality.cjs) — optionnel : le hero
       // fonctionne sans, il perd juste le départage « Beau ».
-      fetch("/data/beaches-images-quality.json")
-        .then(r=>r.json())
+      fetch("/data/beaches-images-quality.json",{signal})
+        .then(r=>r.ok?r.json():null)
         .then(data=>{
-          if(data&&typeof data==="object")setImageQ(data)
+          if(!cancelled&&data&&typeof data==="object")setImageQ(data)
         })
         .catch(()=>{})
       // Manifest des boucles vidéo hero — optionnel : sans lui, hero photo.
-      fetch("/videos/hero/manifest.json")
+      fetch("/videos/hero/manifest.json",{signal})
         .then(r=>r.ok?r.json():null)
         .then(m=>{
-          if(m&&Array.isArray(m.ids))setHeroVids(m.ids)
+          if(!cancelled&&m&&Array.isArray(m.ids))setHeroVids(m.ids)
         })
         .catch(()=>{})
     },showHero?0:1500)
-    return()=>clearTimeout(t)
+    return()=>{cancelled=true;clearTimeout(t);ac.abort()}
   },[])
 
   // Apply community reports overlay SEPARATELY — no re-fetch of sargassum.json
@@ -12391,13 +12985,15 @@ export default function App(){
 
   // Fetch history.json for trend chart — deferred (only needed in beach sheet)
   useEffect(()=>{
+    const ac=new AbortController()
+    const{signal}=ac
     const t=setTimeout(()=>{
-      fetch("/api/copernicus/history.json")
+      fetch("/api/copernicus/history.json",{signal})
         .then(r=>r.json())
         .then(data=>{if(data?.history)setHistoryData(data.history)})
         .catch(()=>{})
     },2000)
-    return()=>clearTimeout(t)
+    return()=>{clearTimeout(t);ac.abort()}
   },[])
 
   // P6 — géoloc À LA DEMANDE (clic « Près de moi ») : c'est le rung #2 du molo_ladder
@@ -12635,10 +13231,14 @@ export default function App(){
   // "Next beach" suggestion state — drives browse loop after sheet close
   const[nextSuggestion,setNextSuggestion]=useState(null)
   const nextSuggestTimer=useRef(null)
+  const lastMapClickRef=useRef(0) // FIX : debounce anti-spam clics rapides carte
 
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
+    setComicBeach(null) // FIX : fermer le comic detail si ouvert — mutual exclusion
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
+    // Wow Effect 3: celebration when finding a clean beach
+    if(b.status==="clean")triggerCelebration("clean_beach")
     // Marée du Veilleur : plongée carte→plage 1×/session au 1er ouverture (skippable, reduced-motion off).
     try{if(navDive&&b.status&&!sessionStorage.getItem("sg_dove")&&!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)){sessionStorage.setItem("sg_dove","1");setDiveBeach(b);track("sg_dive_play",{beach_id:b.id})}}catch(_){}
     setNextSuggestion(null) // clear any pending suggestion
@@ -12661,13 +13261,30 @@ export default function App(){
   const [comicBeach,setComicBeach]=useState(null)
   const openComicBeach=useCallback(b=>{
     if(!b||!b.id)return
+    setSelectedBeach(null) // FIX : fermer la fiche data si ouverte — mutual exclusion
     setComicBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_map"})
+    // Wow Effect 3: celebration when finding a clean beach
+    if(b.status==="clean")triggerCelebration("clean_beach")
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
   },[showOnboarding])
+  // Map tooltip state — « Tape une plage » hint, shown once per session
+  const [mapTipDismissed,setMapTipDismissed]=useState(()=>{try{return sessionStorage.getItem("sg_map_tip")==="1"}catch(_){return true}})
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
-  const onMapBeach=useCallback(b=>{ if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick])
+  // FIX clics successifs : fermer TOUS les overlays avant d'ouvrir le détail — évite le
+  // chevauchement hero+comic, discovery+beach, etc. quand l'utilisateur tape rapidement.
+  // + debounce 350ms anti-spam pour ignorer les doubles-taps accidentels.
+  const onMapBeach=useCallback(b=>{
+    const now=Date.now()
+    if(now-lastMapClickRef.current<350)return
+    lastMapClickRef.current=now
+    if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
+    setShowHero(false);setHeroExiting(false)
+    setShowDiscovery(false);setShowSolutions(false);setShowWorld(false)
+    setShowArchipel(false);setShowChat(false);setShowVeille(false)
+    if(mapDetail)openComicBeach(b); else onBeachClick(b)
+  },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
   // ⭐ Aperçu vendeur B2B ANCRÉ (grief fondateur 2026-07-02 : la démo ne s'affichait ni
   // au bon endroit sur la carte, ni sur la fiche). Depuis /pro/espace/, le lien « Voir
   // l'aperçu dans l'app » porte ?preview_beach=<id data|app> → on résout LA plage de
@@ -12743,6 +13360,16 @@ export default function App(){
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
   },[captureGate])
+
+  // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
+  // Le handler ?payment_failed=1 dispatch ce custom event pour ouvrir le paywall
+  // en mode retry. PremiumModal lit sg_payment_retry depuis sessionStorage pour
+  // pré-remplir l'email et afficher le message d'erreur explicatif.
+  useEffect(()=>{
+    const handler=(e)=>{try{openPremium(e?.detail?.retry?"payment_retry":"nav")}catch(_){}}
+    document.addEventListener("sg_open_paywall",handler)
+    return()=>{document.removeEventListener("sg_open_paywall",handler)}
+  },[openPremium])
 
   // ════════ MENU CLIC-DROIT « LE VEILLEUR » (desktop souris) ════════════════════
   // Le clic droit sur la SCÈNE/CARTE montrait le menu navigateur = cul-de-sac hors-
@@ -12838,12 +13465,13 @@ export default function App(){
   const proB2BSrc=useRef("app")   // point d'entrée du B2BModal (events sg_b2b_step)
   useEffect(()=>{try{
     const p=new URLSearchParams(window.location.search)
-    if(p.get("paywall")==="1"){
+    if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
       // Préselection depuis /offres/ : ?plan=monthly|annual pré-coche le bon toggle.
       // Capturé AVANT le replaceState (qui efface la querystring) ; consommé par le
       // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
       const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
-      const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+      const canceled=p.get("paywall")==="cancel"
+      const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
     else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
       // Le replaceState ci-dessous efface la querystring AVANT le mount lazy du B2BModal
       // → stash de search (pattern sg_deep_plan) : ?b2bseq/?b2btrial/?beach= y survivent.
@@ -12865,7 +13493,7 @@ export default function App(){
     // dénominateur modal_open (cause directe de la fuite modal→CTA 2,2%) + modal
     // interruptif = anti-doctrine calme. Le mur ne s'ouvre PLUS que sur intention
     // CHAUDE (forecast-lock, CTA, dock Veilleur). Réversible (retirer ce return).
-    return // eslint-disable-line
+    return // eslint-disable-line -- intentional early return: wall disabled until warm intent
     if(isPremium)return
     if(g("sg_visit_count",0)<2)return
     try{if(sessionStorage.getItem("sg_eng_shown"))return}catch{}
@@ -12898,7 +13526,7 @@ export default function App(){
       // FLUIDITÉ : plus de splash 2s par défaut — on atterrit DIRECT sur la carte.
       // (?splash=1 pour le revoir.) La marque est déjà sur la carte elle-même.
       return false;
-      // eslint-disable-next-line no-unreachable
+      // eslint-disable-next-line no-unreachable -- dead code after return: kept for reference
       const path=window.location.pathname;
       if(!(path==="/"||path===""||path==="/index.html")) return false;
       if(sessionStorage.getItem("sg_splash_seen")) return false;
@@ -12916,6 +13544,13 @@ export default function App(){
       return false;
     }catch(_){ return false; }
   });
+
+  // GDPR Cookie Consent — banner affiché si pas de choix enregistré.
+  // GA4 consent par défaut DENIED (index.html) ; l'acceptation grant analytics_storage.
+  const[cookieConsent,setCookieConsent]=useState(()=>{
+    try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
+  })
+  const v2UiEnabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
   // Marché de l'onboarding : Martinique → null (chaînes legacy intactes). GP + régions
   // internationales recevaient « Martinique » sur le 1er écran (bug cohérence corrigé).
@@ -12964,7 +13599,7 @@ export default function App(){
   const demoSrc=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]src=([^&]+)/);return m?decodeURIComponent(m[1]):"lobby"}catch(_){return "lobby"}},[])
   const demoPartner=useMemo(()=>{try{const m=(window.location.search||"").match(/[?&]partner=([^&]+)/);return m?decodeURIComponent(m[1]):null}catch(_){return null}},[])
   // Atterrissage d'un scan QR de hall (?utm_medium=qr) → event de conversion display→app.
-  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{try{if(/[?&]utm_medium=qr/.test(window.location.search||"")){const m=(window.location.search||"").match(/[?&]utm_campaign=([^&]+)/);track("sg_lobby_scan",{partner:m?decodeURIComponent(m[1]):"",src:"lobby"})}}catch(_){}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
 
   // Kiosk isolé : quand ?demo=1, on ne rend QUE la vitrine (aucun rendu de l'app
   // derrière → perf + zéro interférence funnel). Tous les hooks ci-dessus ont déjà
@@ -13645,7 +14280,30 @@ export default function App(){
           }}/>}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
+        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
+          setShowPremium(false)
+          // EXIT-INTENT NUDGE — paywall fermé SANS payer → toast CTA de rattrapage.
+          // Honnête (aucune pression fabriquée : le pic saisonnier est réel), 1×/session,
+          // jamais si premium/pass actif. Rollback ?exitnudge=0.
+          try{
+            if(/[?&]exitnudge=0/.test(window.location.search))return
+            if(localStorage.getItem("sg_premium")==="1")return
+            const pe=parseInt(localStorage.getItem("sg_premium_pass_end")||"0",10)
+            if(pe&&pe>Date.now())return
+            if(sessionStorage.getItem("sg_exitnudge_shown"))return
+            sessionStorage.setItem("sg_exitnudge_shown","1")
+            track("sg_exit_nudge_view",{source:premiumSource||"unknown"})
+            setTimeout(()=>{
+              sgToast({
+                tone:"info",
+                title:_t(lang,"Ton pass t'attend","Your pass is waiting","Tu pase te espera"),
+                msg:_t(lang,"Pic sargasses en cours — un jour sans prévision peut gâcher ta plage.","Sargassum peak is here — one day without forecast can ruin your beach day.","Pico de sargazo en curso — un día sin pronóstico puede arruinar tu playa."),
+                duration:9000,
+                action:{label:_t(lang,"Voir les pass →","See passes →","Ver pases →"),onClick:()=>{try{track("sg_exit_nudge_click",{source:premiumSource||"unknown"})}catch(_){};openPremium("exit_nudge")}}
+              })
+            },450)
+          }catch(_){}
+        }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/></Suspense></ErrBound>}
 
@@ -13725,7 +14383,7 @@ export default function App(){
           </button>
         )}
         {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
-          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/></Suspense></ErrBound>}
+          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
@@ -13849,25 +14507,58 @@ export default function App(){
             ?<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
             :<MapIntroVideo/>
         )}
-        {showArchipel&&(mapWorld==="world"
+        {showArchipel&&(view3d
+          ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0a1620"}}/>}>
+              <LazyWorldView3D
+                beaches={allBeaches} lang={lang} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                onBeachClick={onMapBeach} onPremium={()=>openPremium("view3d")} isPremium={isPremium}
+                track={track}
+                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"view3d"})}}/>
+            </Suspense></ErrBound>
+:mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0d1117"}}/>}>
-              <LazyWorldMapView
-                beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
-                rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
-                arrivals={mapArrivals}
-                forecastByBeach={mapForecastByBeach}
-                onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
-                onShare={shareBeachCard}
-                seasonOutlook={sargData?.seasonOutlook||null}
-                topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
-                onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
-                previewBeach={previewBeachObj}
-                onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
-                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+              <>
+                <AroundMeController
+                  beaches={allBeaches}
+                  region={IS_NEW_REGION ? REGION : null}
+                  island={island}
+                  lang={lang}
+                  onOpenBeach={onMapBeach}
+                  track={track}
+                  isPremium={isPremium}
+                  locked={!isPremium}
+                  openPremium={openPremium}
+                />
+                <LazyWorldMapView
+                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
+                  rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
+                  arrivals={mapArrivals}
+                  forecastByBeach={mapForecastByBeach}
+                  onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
+                  onShare={shareBeachCard}
+                  seasonOutlook={sargData?.seasonOutlook||null}
+                  topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
+                  onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
+                  previewBeach={previewBeachObj}
+                  onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
+                  onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+              </>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
 
+        )}
+
+        {!mapTipDismissed&&(
+          <div style={{position:"absolute",bottom:"max(20px,env(safe-area-inset-bottom,0px)+8px)",left:"50%",transform:"translateX(-50%)",zIndex:1400,pointerEvents:"none",animation:"mapTipFade 4s ease-out 8s both"}}>
+            <style>{`@keyframes mapTipFade{0%,60%{opacity:1;transform:translateX(-50%) translateY(0)}90%{opacity:0;transform:translateX(-50%) translateY(6px)}100%{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none}}`}</style>
+            <div style={{display:"inline-flex",alignItems:"center",gap:9,padding:"12px 20px",borderRadius:14,background:"rgba(13,17,23,.92)",border:"1.5px solid rgba(255,199,44,.35)",boxShadow:"0 4px 0 0 rgba(0,0,0,.35),0 8px 32px rgba(0,0,0,.4)"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7Z"/></svg>
+              <span style={{fontSize:14,fontWeight:700,color:"#EAF7F4",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",whiteSpace:"nowrap"}}>
+                {_t(lang,"Tape une plage","Tap a beach","Toca una playa")}
+              </span>
+            </div>
+          </div>
         )}
 
         {/* ⭐ DÉTAIL COMIC depuis la carte (PRODUCT.md §8) — pin tapé → ChasseDetail
@@ -13984,6 +14675,48 @@ export default function App(){
         )}
         {/* Toasts de marque — remplace les alert() OS (singleton sgToast(...)) */}
         <SgToastHost lang={lang}/>
+        {/* Success celebrations — confettis dorés (Wow Effect 3) */}
+        <SuccessCelebration/>
+
+        {/* GDPR Cookie Consent Banner — affiché si pas de choix enregistré.
+            Accepter → grant analytics_storage via gtag consent update.
+            Refuser → analytics reste denied (comportement par défaut index.html).
+            Rollback ?cookiebanner=0. */}
+        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
+          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1600,
+            background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
+            borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
+            display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
+            <div style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,.72)"}}>
+              {_t(lang,
+                "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
+                "We use cookies to improve experience and measure analytics. You can accept or decline.",
+                "Usamos cookies para mejorar la experiencia y medir la audiencia. Puedes aceptar o rechazar.")}
+              {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
+                style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
+            </div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+              <button onClick={()=>{
+                try{localStorage.setItem("sg_cookie_consent","accepted")}catch(_){}
+                setCookieConsent("accepted")
+                try{if(window.gtag)gtag('consent','update',{analytics_storage:'granted'})}catch(_){}
+                try{track("sg_cookie_accept",{island})}catch(_){}
+              }} style={{flex:"1 1 140px",background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:10,
+                padding:"12px 16px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",
+                boxShadow:"2px 2px 0 rgba(0,0,0,.35)",minHeight:44}}>
+                {_t(lang,"Accepter","Accept","Aceptar")}
+              </button>
+              <button onClick={()=>{
+                try{localStorage.setItem("sg_cookie_consent","denied")}catch(_){}
+                setCookieConsent("denied")
+                try{track("sg_cookie_deny",{island})}catch(_){}
+              }} style={{flex:"1 1 140px",background:"transparent",color:"rgba(255,255,255,.6)",border:"1.5px solid rgba(255,255,255,.2)",borderRadius:10,
+                padding:"12px 16px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit",minHeight:44}}>
+                {_t(lang,"Refuser","Decline","Rechazar")}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </LangCtx.Provider>
   )

@@ -36,7 +36,7 @@ const WEBHOOK = 'https://sargasses-martinique.com/api/mollie-webhook.php'
 // L'annuel reste l'ancre/option « verrouiller » ; le mensuel récurrent (79/29 €) est la
 // porte d'entrée par défaut, à câbler en plans Mollie (mollie-config.php, action fondateur).
 const TIERS = [
-  // EUR (MQ/GP)
+  // EUR (MQ/GP) — B2B annuel
   { id: 'brief_annual',     value: '290.00', currency: 'EUR', label: 'Sargasses Pro — Brief (abonnement annuel)' },
   { id: 'pro_annual',       value: '690.00', currency: 'EUR', label: 'Sargasses Pro — Pro : widget marque-blanche + brief + alertes (abonnement annuel)' },
   // Territory (mairies / offices / groupes hôteliers) : 199 €/mois → 1 990 €/an (2 mois offerts).
@@ -45,13 +45,27 @@ const TIERS = [
   // USD (florida/puntacana/rivieramaya) — grille de réf. Pro $790 / Brief $390 (Mollie encaisse l'USD).
   { id: 'brief_annual_usd', value: '390.00', currency: 'USD', label: 'Sargassum Pro — Brief (annual)' },
   { id: 'pro_annual_usd',   value: '790.00', currency: 'USD', label: 'Sargassum Pro — Pro: white-label widget + brief + alerts (annual)' },
+  // B2C PASS ONE-TIME — grille unifiée (EUR + USD) — pricing panel 2026-07-28
+  // Anciennes valeurs gardées en commentaire pour rollback visuel (rollback instantané = décommenter + commenter les nouvelles).
+  // trip_eur    : 499  (inchangé)  // trip_eur    : 499
+  // trip_usd    : 499  (↓ de 599)  // trip_usd    : 599
+  // sejour_eur  : 1299 (↓ de 1499) // sejour_eur  : 1499
+  // sejour_usd  : 999  (↓ de 1199) // sejour_usd  : 1199
+  // saison_eur  : 1999 (↓ de 2499) // saison_eur  : 2499
+  // saison_usd  : 1499 (↓ de 1999) // saison_usd  : 1999
+  { id: 'trip_eur',     value: '4.99',   currency: 'EUR', label: 'Sargasses Pass — Escale 1 jour (EUR)' },
+  { id: 'trip_usd',     value: '4.99',   currency: 'USD', label: 'Sargassum Pass — 1-Day Trip (USD)' },
+  { id: 'sejour_eur',   value: '12.99',  currency: 'EUR', label: 'Sargasses Pass — Séjour 7 jours (EUR)' },
+  { id: 'sejour_usd',   value: '9.99',   currency: 'USD', label: 'Sargassum Pass — 7-Day Stay (USD)' },
+  { id: 'saison_eur',   value: '19.99',  currency: 'EUR', label: 'Sargasses Pass — Saison 30 jours (EUR)' },
+  { id: 'saison_usd',   value: '14.99',  currency: 'USD', label: 'Sargassum Pass — 30-Day Season (USD)' },
 ]
 
 function loadKey() {
   if (process.env.MOLLIE_API_KEY) return process.env.MOLLIE_API_KEY.trim()
   // fallback local : api/mollie-config.php (extraction grossière de 'api_key' => '...')
   for (const p of ['public/api/mollie-config.php', 'martinique-ftp/api/mollie-config.php']) {
-    try { const t = fs.readFileSync(path.join(__dirname, '..', '..', p), 'utf8'); const m = t.match(/'api_key'\s*=>\s*'([^']+)'/); if (m && !m[1].includes('REPLACE')) return m[1] } catch {}
+    try { const t = fs.readFileSync(path.join(__dirname, '..', '..', p), 'utf8'); const m = t.match(/'api_key'\s*=>\s*['"]([^'"]+)['"]/); if (m && !m[1].includes('REPLACE')) return m[1] } catch {}
   }
   return null
 }

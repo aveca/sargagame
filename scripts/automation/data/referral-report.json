@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-07-28T14:21:29.587Z",
+  "source": "sheet-direct",
+  "window_days": 90,
+  "shares": 0,
+  "landings": 0,
+  "converts": 0,
+  "rates": {
+    "share_to_landing": "0.0",
+    "landing_to_convert": "0.0"
+  },
+  "top": []
+}

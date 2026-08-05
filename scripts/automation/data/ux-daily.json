@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-22T08:37:09.917Z",
-  "date": "2026-07-22",
+  "generated": "2026-08-04T19:46:24.964Z",
+  "date": "2026-08-04",
   "days": 1,
   "regions": [
     "mq",
@@ -11,172 +11,213 @@
   ],
   "shipped": [
     {
-      "h": "57841134",
-      "subject": "chore: update Copernicus data 2026-07-22 02:53 UTC"
+      "h": "08d0660a",
+      "subject": "chore: update Copernicus data 2026-08-04 14:16 UTC"
     },
     {
-      "h": "2fb277c4",
-      "subject": "chore: email state 2026-07-22 02:53 UTC"
+      "h": "4289c406",
+      "subject": "chore: email state 2026-08-04 14:16 UTC"
     },
     {
-      "h": "29fa5599",
-      "subject": "chore: update Copernicus data 2026-07-21 19:50 UTC"
+      "h": "a0d044fb",
+      "subject": "chore: update Copernicus data 2026-08-04 08:43 UTC"
     },
     {
-      "h": "2b26e8cd",
-      "subject": "chore: email state 2026-07-21 19:30 UTC"
+      "h": "8ef32495",
+      "subject": "chore: email state 2026-08-04 08:43 UTC"
     },
     {
-      "h": "7b231dac",
-      "subject": "chore: update Copernicus data 2026-07-21 14:00 UTC"
+      "h": "d81abaf2",
+      "subject": "fix(mollie): BUG-2026-011 fixup - assign \\ + use ?: for empty-string fallback"
     },
     {
-      "h": "d6353479",
-      "subject": "chore: email state 2026-07-21 14:00 UTC"
+      "h": "e0222863",
+      "subject": "fix(mollie): BUG-2026-011 inject SUPABASE_SERVICE_KEY via mollie-config.php"
     },
     {
-      "h": "1b018dc4",
-      "subject": "chore: update Copernicus data 2026-07-21 08:56 UTC"
+      "h": "ec53b88f",
+      "subject": "fix(mollie): recreate saison EUR payment link at 19.99€"
+    },
+    {
+      "h": "bab4366a",
+      "subject": "fix(mollie): align season pass price to 19.99€ (was 24.99€)"
+    },
+    {
+      "h": "51f5baa7",
+      "subject": "fix(mollie): add SUPABASE_URL fallback for verify_subscription"
+    },
+    {
+      "h": "82a9e066",
+      "subject": "fix(mollie): BUG-2026-010 cross-device pass recovery via verify_subscription"
+    },
+    {
+      "h": "7fbfffda",
+      "subject": "chore: update Copernicus data 2026-08-04 02:43 UTC"
+    },
+    {
+      "h": "b2796ab0",
+      "subject": "chore: email state 2026-08-04 02:43 UTC"
+    },
+    {
+      "h": "2bc97356",
+      "subject": "release: merge Around Me Intelligence + fix BUG-2026-008 Mollie webhook require_once"
+    },
+    {
+      "h": "03e7db3e",
+      "subject": "fix(mollie): remove double require_once on mollie-config.php"
+    },
+    {
+      "h": "a4788180",
+      "subject": "feat: add world around me intelligence"
+    },
+    {
+      "h": "a502050a",
+      "subject": "chore: update Copernicus data 2026-08-03 20:10 UTC"
+    },
+    {
+      "h": "50c16817",
+      "subject": "chore: update Copernicus data 2026-08-03 20:03 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 48,
-      "friction": 0,
-      "dead_rate": 0.431,
+      "sessions": 208,
+      "friction": 2,
+      "dead_rate": 0.088,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.434,
-        "n": 129
+        "screen": "map_map",
+        "rate": 0.215,
+        "n": 107
       },
       "top_dead_els": [
         {
-          "el": "div.sg-onink-scope",
-          "count": 51
+          "el": "div",
+          "count": 14
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.28
+        "rate": 0.19
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-21",
+      "prev_date": "2026-08-03",
       "changes": [
-        "sessions 210→48 (-77%)",
-        "dead-rate 0.137→0.431 (+0.3) ⚠️",
-        "rage-clicks 3→0 ✅",
-        "✔︎ dead-click résolu : div"
+        "rage-clicks 12→2 ✅"
       ]
     },
     {
       "region": "gp",
-      "sessions": 58,
+      "sessions": 249,
       "friction": 0,
-      "dead_rate": 0.078,
+      "dead_rate": 0.052,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.061,
-        "n": 66
-      },
-      "top_dead_els": [],
-      "bored_worst": {
         "screen": "beach",
-        "rate": 0.35
+        "rate": 0.103,
+        "n": 58
+      },
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 12
+        }
+      ],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.17
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-21",
+      "prev_date": "2026-08-03",
       "changes": [
-        "sessions 369→58 (-84%)",
-        "rage-clicks 3→0 ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope",
-        "✔︎ dead-click résolu : div"
+        "sessions 329→249 (-24%)"
       ]
     },
     {
       "region": "florida",
-      "sessions": 55,
-      "friction": 3,
-      "dead_rate": 0.084,
+      "sessions": 180,
+      "friction": 1,
+      "dead_rate": 0.075,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.079,
-        "n": 101
+        "screen": "map_map",
+        "rate": 0.136,
+        "n": 66
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 11
+        }
+      ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.36
+        "rate": 0.23
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-21",
+      "prev_date": "2026-08-03",
       "changes": [
-        "sessions 179→55 (-69%)",
-        "dead-rate 0.361→0.084 (-0.3) ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope"
+        "stable (aucun mouvement notable)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 18,
+      "sessions": 106,
       "friction": 0,
-      "dead_rate": 0.192,
+      "dead_rate": 0.054,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.176,
-        "n": 51
+        "screen": "map_map",
+        "rate": 0.129,
+        "n": 31
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.32
+        "rate": 0.29
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-21",
+      "prev_date": "2026-08-03",
       "changes": [
-        "sessions 93→18 (-81%)",
-        "dead-rate 0.383→0.192 (-0.2) ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope"
+        "stable (aucun mouvement notable)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 13,
+      "sessions": 90,
       "friction": 0,
-      "dead_rate": 0.094,
+      "dead_rate": 0.05,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.094,
-        "n": 32
+        "screen": "map_map",
+        "rate": 0.114,
+        "n": 44
       },
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.31
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-07-21",
+      "prev_date": "2026-08-03",
       "changes": [
-        "sessions 46→13 (-72%)",
-        "dead-rate 0.293→0.094 (-0.2) ✅",
-        "✔︎ dead-click résolu : div.sg-onink-scope"
+        "sessions 41→90 (+120%)"
       ]
     }
   ]

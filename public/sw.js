@@ -5,7 +5,7 @@
 // `prebuild`). Publier une release = monter `current` dans release-notes.json :
 // le SW + version.json se bumpent ensemble sur toute la flotte (cf. bug clic
 // plages juin 2026 = bundle figé faute de bump manuel).
-const CACHE_NAME = 'sargasses-v217'
+const CACHE_NAME = 'sargasses-v218'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/favicon.ico', '/favicon-32x32.png', '/favicon-16x16.png', '/apple-touch-icon.png', '/icon-192.png', '/icon-512.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 // PRECACHE_ASSETS = TOUT le graphe JS/CSS buildé (+ data verdict). VIDE dans ce template
@@ -87,6 +87,10 @@ function networkFirst(req, timeoutMs) {
 }
 
 self.addEventListener('fetch', (e) => {
+  // BYPASS SW for ALL non-GET requests — never cache, never intercept
+  if (e.request.method !== 'GET') {
+    return // let browser handle directly
+  }
   const url = new URL(e.request.url)
 
   // Stale-while-revalidate for /data/ files (beaches-list, images)

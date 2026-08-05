@@ -8,31 +8,36 @@
         "beachName": "Plage des Salines",
         "commune": "Sainte-Anne",
         "island": "Martinique",
-        "beachQueriesCount": 3,
+        "beachQueriesCount": 4,
         "topBeachQueries": [
           {
             "query": "plage des salines sargasses",
-            "impressions": 54,
-            "clicks": 7
+            "impressions": 77,
+            "clicks": 12
           },
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           },
           {
             "query": "sargasse plage des salines martinique",
-            "impressions": 6,
-            "clicks": 2
+            "impressions": 9,
+            "clicks": 5
+          },
+          {
+            "query": "plage des salines martinique sargasses aujourd'hui 2026",
+            "impressions": 4,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Plage des Salines Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage des Salines (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage des Salines (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage des salines sargasses\" (54 imp), \"sargasse guadeloupe sainte-anne\" (28 imp), \"sargasse plage des salines martinique\" (6 imp).",
-      "timestamp": "2026-07-20T13:28:21.684Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage des salines sargasses\" (77 imp), \"sargasse guadeloupe sainte-anne\" (26 imp), \"sargasse plage des salines martinique\" (9 imp).",
+      "timestamp": "2026-08-03T14:02:54.586Z"
     },
     {
       "rule": "beach-meta",
@@ -46,17 +51,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Anse Caritan Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Caritan (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Caritan (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.586Z"
     },
     {
       "rule": "beach-meta",
@@ -66,21 +71,26 @@
         "beachName": "Anse Meunier",
         "commune": "Sainte-Anne",
         "island": "Martinique",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
+          },
+          {
+            "query": "anse meunier",
+            "impressions": 1,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Meunier Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Meunier (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Meunier (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp), \"anse meunier\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.587Z"
     },
     {
       "rule": "beach-meta",
@@ -94,17 +104,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Plage du Bourg (Sainte-Anne) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Bourg (Sainte-Anne) (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Bourg (Sainte-Anne) (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.587Z"
     },
     {
       "rule": "beach-meta",
@@ -118,22 +128,22 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           },
           {
             "query": "anse trabaud sargasses",
-            "impressions": 13,
-            "clicks": 2
+            "impressions": 17,
+            "clicks": 5
           }
         ]
       },
       "result": {
         "title": "Anse Trabaud Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Trabaud (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Trabaud (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp), \"anse trabaud sargasses\" (13 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp), \"anse trabaud sargasses\" (17 imp).",
+      "timestamp": "2026-08-03T14:02:54.588Z"
     },
     {
       "rule": "beach-meta",
@@ -147,17 +157,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Anse Macabou Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Macabou (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Macabou (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.588Z"
     },
     {
       "rule": "beach-meta",
@@ -167,26 +177,41 @@
         "beachName": "Anse Michel",
         "commune": "Sainte-Anne",
         "island": "Martinique",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 5,
         "topBeachQueries": [
           {
             "query": "anse michel sargasse",
-            "impressions": 75,
-            "clicks": 15
+            "impressions": 87,
+            "clicks": 23
           },
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
+          },
+          {
+            "query": "anse michel martinique sargasse",
+            "impressions": 21,
+            "clicks": 3
+          },
+          {
+            "query": "anse michel martinique sargasses aujourd'hui 2026",
+            "impressions": 3,
+            "clicks": 0
+          },
+          {
+            "query": "anse michel",
+            "impressions": 2,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Michel Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Michel (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Michel (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse michel sargasse\" (75 imp), \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.685Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse michel sargasse\" (87 imp), \"sargasse guadeloupe sainte-anne\" (26 imp), \"anse michel martinique sargasse\" (21 imp).",
+      "timestamp": "2026-08-03T14:02:54.589Z"
     },
     {
       "rule": "beach-meta",
@@ -196,15 +221,21 @@
         "beachName": "Plage du Marin",
         "commune": "Le Marin",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "le marin",
+            "impressions": 1,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Plage du Marin Le Marin — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Marin (Le Marin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Marin (Le Marin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Marin\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.686Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Marin\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le marin\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.589Z"
     },
     {
       "rule": "beach-meta",
@@ -214,20 +245,30 @@
         "beachName": "Anse Figuier",
         "commune": "Rivière-Pilote",
         "island": "Martinique",
-        "beachQueriesCount": 3,
+        "beachQueriesCount": 6,
         "topBeachQueries": [
           {
             "query": "anse figuier sargasse",
-            "impressions": 21,
+            "impressions": 23,
+            "clicks": 0
+          },
+          {
+            "query": "anse figuier martinique",
+            "impressions": 12,
             "clicks": 0
           },
           {
             "query": "anse figuier les saintes",
-            "impressions": 4,
+            "impressions": 5,
             "clicks": 0
           },
           {
-            "query": "anse figuier saintes",
+            "query": "anse figuier",
+            "impressions": 1,
+            "clicks": 0
+          },
+          {
+            "query": "martinique anse figuier",
             "impressions": 1,
             "clicks": 0
           }
@@ -235,10 +276,10 @@
       },
       "result": {
         "title": "Anse Figuier Rivière-Pilote — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Figuier (Rivière-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Figuier (Rivière-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Rivière-Pilote\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse figuier sargasse\" (21 imp), \"anse figuier les saintes\" (4 imp), \"anse figuier saintes\" (1 imp).",
-      "timestamp": "2026-07-20T13:28:21.686Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Rivière-Pilote\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse figuier sargasse\" (23 imp), \"anse figuier martinique\" (12 imp), \"anse figuier les saintes\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.589Z"
     },
     {
       "rule": "beach-meta",
@@ -253,10 +294,10 @@
       },
       "result": {
         "title": "Anse à l'Âne Les Trois-Îlets — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à l'Âne (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à l'Âne (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Trois-Îlets\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.686Z"
+      "timestamp": "2026-08-03T14:02:54.590Z"
     },
     {
       "rule": "beach-meta",
@@ -271,10 +312,10 @@
       },
       "result": {
         "title": "Anse Mitan Les Trois-Îlets — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Mitan (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Mitan (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Trois-Îlets\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.686Z"
+      "timestamp": "2026-08-03T14:02:54.590Z"
     },
     {
       "rule": "beach-meta",
@@ -289,10 +330,10 @@
       },
       "result": {
         "title": "Anse Noire Les Anses-d'Arlet — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Noire (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Noire (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Anses-d'Arlet\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.687Z"
+      "timestamp": "2026-08-03T14:02:54.590Z"
     },
     {
       "rule": "beach-meta",
@@ -302,21 +343,26 @@
         "beachName": "Anse Dufour",
         "commune": "Les Anses-d'Arlet",
         "island": "Martinique",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
           {
             "query": "anse dufour sargasse",
-            "impressions": 9,
-            "clicks": 7
+            "impressions": 7,
+            "clicks": 4
+          },
+          {
+            "query": "anse dufour",
+            "impressions": 1,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Dufour Les Anses-d'Arlet — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Dufour (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Dufour (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Anses-d'Arlet\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse dufour sargasse\" (9 imp).",
-      "timestamp": "2026-07-20T13:28:21.687Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Anses-d'Arlet\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse dufour sargasse\" (7 imp), \"anse dufour\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.591Z"
     },
     {
       "rule": "beach-meta",
@@ -331,10 +377,10 @@
       },
       "result": {
         "title": "Grande Anse d'Arlet — Sargasses Martinique aujourd'hui 2026",
-        "description": "Sargasses Grande Anse d'Arlet (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Grande Anse d'Arlet (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Anses-d'Arlet\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.687Z"
+      "timestamp": "2026-08-03T14:02:54.591Z"
     },
     {
       "rule": "beach-meta",
@@ -349,10 +395,10 @@
       },
       "result": {
         "title": "Petite Anse d'Arlet — Sargasses Martinique aujourd'hui 2026",
-        "description": "Sargasses Petite Anse d'Arlet (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Petite Anse d'Arlet (Les Anses-d'Arlet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Anses-d'Arlet\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "timestamp": "2026-08-03T14:02:54.591Z"
     },
     {
       "rule": "beach-meta",
@@ -366,7 +412,7 @@
         "topBeachQueries": [
           {
             "query": "plage du diamant sargasse",
-            "impressions": 74,
+            "impressions": 28,
             "clicks": 6
           },
           {
@@ -376,27 +422,27 @@
           },
           {
             "query": "le diamant martinique sargasse",
-            "impressions": 18,
+            "impressions": 12,
+            "clicks": 0
+          },
+          {
+            "query": "le diamant sargasse",
+            "impressions": 11,
             "clicks": 1
           },
           {
             "query": "sargasse le diamant",
-            "impressions": 15,
+            "impressions": 8,
             "clicks": 3
-          },
-          {
-            "query": "le diamant sargasse",
-            "impressions": 14,
-            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Plage du Diamant Le Diamant — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Diamant (Le Diamant) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Diamant (Le Diamant) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Diamant\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage du diamant sargasse\" (74 imp), \"sargasse plage du diamant\" (20 imp), \"le diamant martinique sargasse\" (18 imp).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Diamant\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage du diamant sargasse\" (28 imp), \"sargasse plage du diamant\" (20 imp), \"le diamant martinique sargasse\" (12 imp).",
+      "timestamp": "2026-08-03T14:02:54.591Z"
     },
     {
       "rule": "beach-meta",
@@ -406,31 +452,36 @@
         "beachName": "Anse Cafard",
         "commune": "Le Diamant",
         "island": "Martinique",
-        "beachQueriesCount": 3,
+        "beachQueriesCount": 4,
         "topBeachQueries": [
           {
             "query": "le diamant martinique sargasse",
-            "impressions": 18,
+            "impressions": 12,
+            "clicks": 0
+          },
+          {
+            "query": "le diamant sargasse",
+            "impressions": 11,
             "clicks": 1
           },
           {
             "query": "sargasse le diamant",
-            "impressions": 15,
+            "impressions": 8,
             "clicks": 3
           },
           {
-            "query": "le diamant sargasse",
-            "impressions": 14,
-            "clicks": 2
+            "query": "météo près de le diamant",
+            "impressions": 1,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Cafard Le Diamant — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Cafard (Le Diamant) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Cafard (Le Diamant) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Diamant\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le diamant martinique sargasse\" (18 imp), \"sargasse le diamant\" (15 imp), \"le diamant sargasse\" (14 imp).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Diamant\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le diamant martinique sargasse\" (12 imp), \"le diamant sargasse\" (11 imp), \"sargasse le diamant\" (8 imp).",
+      "timestamp": "2026-08-03T14:02:54.591Z"
     },
     {
       "rule": "beach-meta",
@@ -463,10 +514,10 @@
       },
       "result": {
         "title": "Anse Gros Raisins Sainte-Luce — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Gros Raisins (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Gros Raisins (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Luce\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "timestamp": "2026-08-03T14:02:54.592Z"
     },
     {
       "rule": "beach-meta",
@@ -481,10 +532,10 @@
       },
       "result": {
         "title": "Plage de Sainte-Luce — Sargasses Martinique aujourd'hui 2026",
-        "description": "Sargasses Plage de Sainte-Luce (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Sainte-Luce (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Luce\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "timestamp": "2026-08-03T14:02:54.592Z"
     },
     {
       "rule": "beach-meta",
@@ -494,15 +545,21 @@
         "beachName": "Anse Corps de Garde",
         "commune": "Sainte-Luce",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "anse corps de garde martinique",
+            "impressions": 2,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Anse Corps de Garde Sainte-Luce — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Corps de Garde (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Corps de Garde (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Luce\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Luce\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse corps de garde martinique\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.592Z"
     },
     {
       "rule": "beach-meta",
@@ -517,10 +574,10 @@
       },
       "result": {
         "title": "Pointe Borgnesse Rivière-Pilote — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe Borgnesse (Rivière-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe Borgnesse (Rivière-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Rivière-Pilote\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "timestamp": "2026-08-03T14:02:54.593Z"
     },
     {
       "rule": "beach-meta",
@@ -530,15 +587,21 @@
         "beachName": "Plage de la Française",
         "commune": "Fort-de-France",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "plage de la française",
+            "impressions": 1,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Plage de la Française — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de la Française (Fort-de-France) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de la Française (Fort-de-France) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Fort-de-France\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.688Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Fort-de-France\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage de la française\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.593Z"
     },
     {
       "rule": "beach-meta",
@@ -559,10 +622,10 @@
       },
       "result": {
         "title": "Anse Madame Schoelcher — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Madame (Schoelcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Madame (Schoelcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Schoelcher\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse madame\" (1 imp).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "timestamp": "2026-08-03T14:02:54.593Z"
     },
     {
       "rule": "beach-meta",
@@ -577,10 +640,10 @@
       },
       "result": {
         "title": "Plage de Schœlcher Schœlcher — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Schœlcher (Schœlcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Schœlcher (Schœlcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Schœlcher\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "timestamp": "2026-08-03T14:02:54.594Z"
     },
     {
       "rule": "beach-meta",
@@ -590,25 +653,20 @@
         "beachName": "Anse Collat",
         "commune": "Schœlcher",
         "island": "Martinique",
-        "beachQueriesCount": 4,
+        "beachQueriesCount": 3,
         "topBeachQueries": [
           {
             "query": "anse collat",
-            "impressions": 33,
+            "impressions": 10,
             "clicks": 0
           },
           {
             "query": "anse collat martinique",
-            "impressions": 20,
+            "impressions": 4,
             "clicks": 1
           },
           {
             "query": "plage de l'anse collat",
-            "impressions": 6,
-            "clicks": 0
-          },
-          {
-            "query": "plage anse collat martinique",
             "impressions": 1,
             "clicks": 0
           }
@@ -616,10 +674,10 @@
       },
       "result": {
         "title": "Anse Collat Schœlcher — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Collat (Schœlcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Collat (Schœlcher) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Schœlcher\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse collat\" (33 imp), \"anse collat martinique\" (20 imp), \"plage de l'anse collat\" (6 imp).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Schœlcher\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse collat\" (10 imp), \"anse collat martinique\" (4 imp), \"plage de l'anse collat\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.594Z"
     },
     {
       "rule": "beach-meta",
@@ -634,10 +692,10 @@
       },
       "result": {
         "title": "Grande Anse du Carbet Le Carbet — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Grande Anse du Carbet (Le Carbet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Grande Anse du Carbet (Le Carbet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Carbet\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "timestamp": "2026-08-03T14:02:54.594Z"
     },
     {
       "rule": "beach-meta",
@@ -647,15 +705,26 @@
         "beachName": "Anse Turin",
         "commune": "Le Carbet",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 2,
+        "topBeachQueries": [
+          {
+            "query": "anse turin",
+            "impressions": 2,
+            "clicks": 0
+          },
+          {
+            "query": "anse turin martinique",
+            "impressions": 2,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Anse Turin Le Carbet — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Turin (Le Carbet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Turin (Le Carbet) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Carbet\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Carbet\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse turin\" (2 imp), \"anse turin martinique\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.595Z"
     },
     {
       "rule": "beach-meta",
@@ -670,10 +739,10 @@
       },
       "result": {
         "title": "Plage de Saint-Pierre — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Saint-Pierre (Saint-Pierre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Saint-Pierre (Saint-Pierre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-Pierre\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.689Z"
+      "timestamp": "2026-08-03T14:02:54.595Z"
     },
     {
       "rule": "beach-meta",
@@ -683,15 +752,21 @@
         "beachName": "Anse Belleville",
         "commune": "Le Prêcheur",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "anse belleville martinique",
+            "impressions": 12,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Anse Belleville Le Prêcheur — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Belleville (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Belleville (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse belleville martinique\" (12 imp).",
+      "timestamp": "2026-08-03T14:02:54.595Z"
     },
     {
       "rule": "beach-meta",
@@ -706,10 +781,10 @@
       },
       "result": {
         "title": "Anse Couleuvre Le Prêcheur — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Couleuvre (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Couleuvre (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "timestamp": "2026-08-03T14:02:54.596Z"
     },
     {
       "rule": "beach-meta",
@@ -724,10 +799,10 @@
       },
       "result": {
         "title": "Anse Céron Le Prêcheur — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Céron (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Céron (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "timestamp": "2026-08-03T14:02:54.596Z"
     },
     {
       "rule": "beach-meta",
@@ -742,10 +817,10 @@
       },
       "result": {
         "title": "Bourg de Tartane La Trinité — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Bourg de Tartane (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Bourg de Tartane (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "timestamp": "2026-08-03T14:02:54.596Z"
     },
     {
       "rule": "beach-meta",
@@ -755,21 +830,15 @@
         "beachName": "Anse Bonneville",
         "commune": "La Trinité",
         "island": "Martinique",
-        "beachQueriesCount": 1,
-        "topBeachQueries": [
-          {
-            "query": "anse bonneville",
-            "impressions": 4,
-            "clicks": 0
-          }
-        ]
+        "beachQueriesCount": 0,
+        "topBeachQueries": []
       },
       "result": {
         "title": "Anse Bonneville La Trinité — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Bonneville (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Bonneville (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse bonneville\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
+      "timestamp": "2026-08-03T14:02:54.597Z"
     },
     {
       "rule": "beach-meta",
@@ -784,10 +853,10 @@
       },
       "result": {
         "title": "Anse L’Étang La Trinité — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse L’Étang (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse L’Étang (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "timestamp": "2026-08-03T14:02:54.597Z"
     },
     {
       "rule": "beach-meta",
@@ -802,10 +871,10 @@
       },
       "result": {
         "title": "Les Raisiniers La Trinité — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Les Raisiniers (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Les Raisiniers (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.690Z"
+      "timestamp": "2026-08-03T14:02:54.597Z"
     },
     {
       "rule": "beach-meta",
@@ -820,10 +889,10 @@
       },
       "result": {
         "title": "L’Autre Bord (Trinité) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses L’Autre Bord (Trinité) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses L’Autre Bord (Trinité) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "timestamp": "2026-08-03T14:02:54.597Z"
     },
     {
       "rule": "beach-meta",
@@ -838,10 +907,10 @@
       },
       "result": {
         "title": "Anse Cosmy La Trinité — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Cosmy (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Cosmy (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -856,10 +925,10 @@
       },
       "result": {
         "title": "Anse Rivière (Trinité) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Rivière (Trinité) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Rivière (Trinité) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -869,8 +938,13 @@
         "beachName": "Baie Coco",
         "commune": "Le Robert",
         "island": "Martinique",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
+          {
+            "query": "baie coco martinique",
+            "impressions": 3,
+            "clicks": 0
+          },
           {
             "query": "plage baie coco",
             "impressions": 1,
@@ -880,10 +954,10 @@
       },
       "result": {
         "title": "Baie Coco Le Robert — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Baie Coco (Le Robert) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses à Baie Coco (Le Robert, Martinique) aujourd'hui — mesuré au satellite, pas deviné. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Robert\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage baie coco\" (1 imp).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Robert\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"baie coco martinique\" (3 imp), \"plage baie coco\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -893,26 +967,21 @@
         "beachName": "Pointe Faula",
         "commune": "Le Vauclin",
         "island": "Martinique",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "pointe faula sargasses",
-            "impressions": 44,
-            "clicks": 5
-          },
-          {
-            "query": "pointe faula sargasse",
-            "impressions": 4,
-            "clicks": 0
+            "impressions": 63,
+            "clicks": 4
           }
         ]
       },
       "result": {
         "title": "Pointe Faula Le Vauclin — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe Faula (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe Faula (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Vauclin\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"pointe faula sargasses\" (44 imp), \"pointe faula sargasse\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Vauclin\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"pointe faula sargasses\" (63 imp).",
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -927,10 +996,10 @@
       },
       "result": {
         "title": "Macabou Nord Le Vauclin — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Macabou Nord (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Macabou Nord (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Vauclin\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -945,10 +1014,10 @@
       },
       "result": {
         "title": "Anse Grosse Roche Le Vauclin — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Grosse Roche (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Grosse Roche (Le Vauclin) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Vauclin\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.691Z"
+      "timestamp": "2026-08-03T14:02:54.598Z"
     },
     {
       "rule": "beach-meta",
@@ -958,15 +1027,21 @@
         "beachName": "Plage de Sinaï",
         "commune": "Grand’Rivière",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "plage de sinaï martinique",
+            "impressions": 2,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Plage de Sinaï Grand’Rivière — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Sinaï (Grand’Rivière) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Sinaï (Grand’Rivière) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Grand’Rivière\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.692Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Grand’Rivière\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage de sinaï martinique\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.599Z"
     },
     {
       "rule": "beach-meta",
@@ -981,10 +1056,10 @@
       },
       "result": {
         "title": "Plage de Grand’Rivière — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Grand’Rivière (Grand’Rivière) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Grand’Rivière (Grand’Rivière) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Grand’Rivière\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.692Z"
+      "timestamp": "2026-08-03T14:02:54.599Z"
     },
     {
       "rule": "beach-meta",
@@ -999,10 +1074,10 @@
       },
       "result": {
         "title": "Anse Charpentier Sainte-Marie — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Charpentier (Sainte-Marie) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Charpentier (Sainte-Marie) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Marie\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.692Z"
+      "timestamp": "2026-08-03T14:02:54.600Z"
     },
     {
       "rule": "beach-meta",
@@ -1017,10 +1092,10 @@
       },
       "result": {
         "title": "Bourg Sainte-Marie Sainte-Marie — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Bourg Sainte-Marie (Sainte-Marie) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Bourg Sainte-Marie (Sainte-Marie) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Marie\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.692Z"
+      "timestamp": "2026-08-03T14:02:54.600Z"
     },
     {
       "rule": "beach-meta",
@@ -1035,10 +1110,10 @@
       },
       "result": {
         "title": "Anse Mabouya Sainte-Luce — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Mabouya (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Mabouya (Sainte-Luce) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Luce\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.692Z"
+      "timestamp": "2026-08-03T14:02:54.600Z"
     },
     {
       "rule": "beach-meta",
@@ -1048,21 +1123,26 @@
         "beachName": "Plage des Boucaniers",
         "commune": "Sainte-Anne",
         "island": "Martinique",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
+          },
+          {
+            "query": "plage des boucaniers",
+            "impressions": 2,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Plage des Boucaniers — Sargasses Martinique aujourd'hui 2026",
-        "description": "Sargasses Plage des Boucaniers (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage des Boucaniers (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp), \"plage des boucaniers\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.600Z"
     },
     {
       "rule": "beach-meta",
@@ -1076,17 +1156,17 @@
         "topBeachQueries": [
           {
             "query": "pointe du bout",
-            "impressions": 3,
+            "impressions": 1,
             "clicks": 1
           }
         ]
       },
       "result": {
         "title": "Pointe du Bout Les Trois-Îlets — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe du Bout (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe du Bout (Les Trois-Îlets) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Trois-Îlets\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"pointe du bout\" (3 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Les Trois-Îlets\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"pointe du bout\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.601Z"
     },
     {
       "rule": "beach-meta",
@@ -1101,10 +1181,10 @@
       },
       "result": {
         "title": "Bourg de Case-Pilote — Sargasses Martinique aujourd'hui 2026",
-        "description": "Sargasses Bourg de Case-Pilote (Case-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Bourg de Case-Pilote (Case-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Case-Pilote\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "timestamp": "2026-08-03T14:02:54.601Z"
     },
     {
       "rule": "beach-meta",
@@ -1119,10 +1199,10 @@
       },
       "result": {
         "title": "Plage du Vétiver Case-Pilote — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Vétiver (Case-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Vétiver (Case-Pilote) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Case-Pilote\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "timestamp": "2026-08-03T14:02:54.601Z"
     },
     {
       "rule": "beach-meta",
@@ -1132,15 +1212,21 @@
         "beachName": "Anse des Galets",
         "commune": "Le Prêcheur",
         "island": "Martinique",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "anse des galets martinique",
+            "impressions": 2,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Anse des Galets Le Prêcheur — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse des Galets (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse des Galets (Le Prêcheur) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Prêcheur\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse des galets martinique\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.601Z"
     },
     {
       "rule": "beach-meta",
@@ -1154,17 +1240,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Plage de Saint-François — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Saint-François (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Saint-François (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.602Z"
     },
     {
       "rule": "beach-meta",
@@ -1178,22 +1264,22 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           },
           {
             "query": "plage des raisins clairs sargasses",
-            "impressions": 11,
-            "clicks": 3
+            "impressions": 28,
+            "clicks": 12
           }
         ]
       },
       "result": {
         "title": "Plage des Raisins Clairs — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage des Raisins Clairs (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage des Raisins Clairs (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp), \"plage des raisins clairs sargasses\" (11 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp), \"plage des raisins clairs sargasses\" (28 imp).",
+      "timestamp": "2026-08-03T14:02:54.602Z"
     },
     {
       "rule": "beach-meta",
@@ -1206,28 +1292,28 @@
         "beachQueriesCount": 3,
         "topBeachQueries": [
           {
-            "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
+            "query": "plage de la datcha",
+            "impressions": 17,
+            "clicks": 3
           },
           {
-            "query": "plage de la datcha",
-            "impressions": 11,
+            "query": "le gosier sargasses",
+            "impressions": 5,
             "clicks": 2
           },
           {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "query": "plage de la datcha sargasse",
+            "impressions": 2,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "La Datcha Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses La Datcha (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses à La Datcha (Le Gosier, Guadeloupe) aujourd'hui — mesuré au satellite, pas deviné. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"plage de la datcha\" (11 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage de la datcha\" (17 imp), \"le gosier sargasses\" (5 imp), \"plage de la datcha sargasse\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.602Z"
     },
     {
       "rule": "beach-meta",
@@ -1237,26 +1323,31 @@
         "beachName": "Anse à la Gourde",
         "commune": "Saint-François",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 3,
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           },
           {
             "query": "anse à la gourde",
-            "impressions": 8,
+            "impressions": 10,
+            "clicks": 0
+          },
+          {
+            "query": "anse à la gourde guadeloupe",
+            "impressions": 2,
             "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse à la Gourde Saint-François — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à la Gourde (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à la Gourde (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp), \"anse à la gourde\" (8 imp).",
-      "timestamp": "2026-07-20T13:28:21.693Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp), \"anse à la gourde\" (10 imp), \"anse à la gourde guadeloupe\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.603Z"
     },
     {
       "rule": "beach-meta",
@@ -1270,17 +1361,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Pointe des Châteaux — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Pointe des Châteaux (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe des Châteaux (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.603Z"
     },
     {
       "rule": "beach-meta",
@@ -1294,17 +1385,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Anse Tarare Saint-François — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Tarare (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Tarare (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.604Z"
     },
     {
       "rule": "beach-meta",
@@ -1318,22 +1409,22 @@
         "topBeachQueries": [
           {
             "query": "plage bois jolan sargasse",
-            "impressions": 41,
-            "clicks": 24
+            "impressions": 46,
+            "clicks": 26
           },
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Plage Bois Jolan Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage Bois Jolan (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage Bois Jolan (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage bois jolan sargasse\" (41 imp), \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage bois jolan sargasse\" (46 imp), \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.604Z"
     },
     {
       "rule": "beach-meta",
@@ -1346,28 +1437,28 @@
         "beachQueriesCount": 3,
         "topBeachQueries": [
           {
+            "query": "plage de la caravelle sargasse",
+            "impressions": 42,
+            "clicks": 14
+          },
+          {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           },
           {
             "query": "plage de la caravelle guadeloupe sargasse",
-            "impressions": 24,
-            "clicks": 15
-          },
-          {
-            "query": "plage de la caravelle sargasse",
-            "impressions": 21,
-            "clicks": 9
+            "impressions": 25,
+            "clicks": 10
           }
         ]
       },
       "result": {
         "title": "Plage de la Caravelle — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de la Caravelle (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de la Caravelle (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp), \"plage de la caravelle guadeloupe sargasse\" (24 imp), \"plage de la caravelle sargasse\" (21 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage de la caravelle sargasse\" (42 imp), \"sargasse guadeloupe sainte-anne\" (26 imp), \"plage de la caravelle guadeloupe sargasse\" (25 imp).",
+      "timestamp": "2026-08-03T14:02:54.604Z"
     },
     {
       "rule": "beach-meta",
@@ -1381,17 +1472,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Plage de Sainte-Anne — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Sainte-Anne (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Sainte-Anne (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.604Z"
     },
     {
       "rule": "beach-meta",
@@ -1405,17 +1496,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Anse Kahouanne Saint-François — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Kahouanne (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Kahouanne (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.694Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.604Z"
     },
     {
       "rule": "beach-meta",
@@ -1425,26 +1516,21 @@
         "beachName": "Plage du Gosier",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Plage du Gosier Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Gosier (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Gosier (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.605Z"
     },
     {
       "rule": "beach-meta",
@@ -1454,26 +1540,21 @@
         "beachName": "Petit-Havre (Gosier)",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Petit-Havre (Gosier) Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Petit-Havre (Gosier) (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Petit-Havre (Gosier) (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.605Z"
     },
     {
       "rule": "beach-meta",
@@ -1488,10 +1569,10 @@
       },
       "result": {
         "title": "Plage de Bas-du-Fort — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Bas-du-Fort (Pointe-à-Pitre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Bas-du-Fort (Pointe-à-Pitre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Pointe-à-Pitre\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "timestamp": "2026-08-03T14:02:54.605Z"
     },
     {
       "rule": "beach-meta",
@@ -1505,17 +1586,17 @@
         "topBeachQueries": [
           {
             "query": "porte d'enfer guadeloupe sargasse",
-            "impressions": 3,
-            "clicks": 1
+            "impressions": 4,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Porte d'Enfer Anse-Bertrand — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Porte d'Enfer (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Porte d'Enfer (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Anse-Bertrand\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"porte d'enfer guadeloupe sargasse\" (3 imp).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Anse-Bertrand\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"porte d'enfer guadeloupe sargasse\" (4 imp).",
+      "timestamp": "2026-08-03T14:02:54.605Z"
     },
     {
       "rule": "beach-meta",
@@ -1530,10 +1611,10 @@
       },
       "result": {
         "title": "Anse Laborde Anse-Bertrand — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Laborde (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Laborde (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Anse-Bertrand\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "timestamp": "2026-08-03T14:02:54.605Z"
     },
     {
       "rule": "beach-meta",
@@ -1543,21 +1624,26 @@
         "beachName": "Plage du Souffleur",
         "commune": "Le Moule",
         "island": "Guadeloupe",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
           {
             "query": "plage du souffleur sargasse",
-            "impressions": 16,
-            "clicks": 8
+            "impressions": 20,
+            "clicks": 9
+          },
+          {
+            "query": "plage le moule guadeloupe sargasse",
+            "impressions": 2,
+            "clicks": 1
           }
         ]
       },
       "result": {
         "title": "Plage du Souffleur Le Moule — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Souffleur (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Souffleur (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage du souffleur sargasse\" (16 imp).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage du souffleur sargasse\" (20 imp), \"plage le moule guadeloupe sargasse\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.606Z"
     },
     {
       "rule": "beach-meta",
@@ -1572,10 +1658,10 @@
       },
       "result": {
         "title": "Plage de Petit-Bourg — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Petit-Bourg (Petit-Bourg) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Petit-Bourg (Petit-Bourg) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Petit-Bourg\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "timestamp": "2026-08-03T14:02:54.606Z"
     },
     {
       "rule": "beach-meta",
@@ -1585,15 +1671,21 @@
         "beachName": "Plage de La Désirade",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Plage de La Désirade — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de La Désirade (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de La Désirade (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.606Z"
     },
     {
       "rule": "beach-meta",
@@ -1608,10 +1700,10 @@
       },
       "result": {
         "title": "Anse-Bertrand Nord — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Anse-Bertrand Nord (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse-Bertrand Nord (Anse-Bertrand) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Anse-Bertrand\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.695Z"
+      "timestamp": "2026-08-03T14:02:54.606Z"
     },
     {
       "rule": "beach-meta",
@@ -1626,10 +1718,10 @@
       },
       "result": {
         "title": "Plage de Grande Anse — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Grande Anse (Trois-Rivières) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Grande Anse (Trois-Rivières) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Trois-Rivières\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "timestamp": "2026-08-03T14:02:54.606Z"
     },
     {
       "rule": "beach-meta",
@@ -1643,17 +1735,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Anse à la Barque (Ste-Anne) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à la Barque (Ste-Anne) (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à la Barque (Ste-Anne) (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1668,10 +1760,10 @@
       },
       "result": {
         "title": "Plage de Deshaies Deshaies — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Deshaies (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Deshaies (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Deshaies\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1686,10 +1778,10 @@
       },
       "result": {
         "title": "La Grande Anse (Deshaies) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses La Grande Anse (Deshaies) (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses La Grande Anse (Deshaies) (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Deshaies\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1699,26 +1791,21 @@
         "beachName": "Plage de la Verdure",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Plage de la Verdure Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de la Verdure (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de la Verdure (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1733,10 +1820,10 @@
       },
       "result": {
         "title": "Plage de Clugny Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Clugny (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Clugny (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1751,10 +1838,10 @@
       },
       "result": {
         "title": "Plage de Nogent Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Nogent (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Nogent (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.696Z"
+      "timestamp": "2026-08-03T14:02:54.607Z"
     },
     {
       "rule": "beach-meta",
@@ -1769,10 +1856,10 @@
       },
       "result": {
         "title": "Plage de Baille-Argent — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Baille-Argent (Pointe-Noire) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Baille-Argent (Pointe-Noire) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Pointe-Noire\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "timestamp": "2026-08-03T14:02:54.608Z"
     },
     {
       "rule": "beach-meta",
@@ -1782,15 +1869,21 @@
         "beachName": "Plage de Malendure",
         "commune": "Bouillante",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "sargasse bouillante guadeloupe",
+            "impressions": 6,
+            "clicks": 2
+          }
+        ]
       },
       "result": {
         "title": "Plage de Malendure Bouillante — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Malendure (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Malendure (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse bouillante guadeloupe\" (6 imp).",
+      "timestamp": "2026-08-03T14:02:54.608Z"
     },
     {
       "rule": "beach-meta",
@@ -1800,15 +1893,21 @@
         "beachName": "Anse à Sable",
         "commune": "Bouillante",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "sargasse bouillante guadeloupe",
+            "impressions": 6,
+            "clicks": 2
+          }
+        ]
       },
       "result": {
         "title": "Anse à Sable Bouillante — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à Sable (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à Sable (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse bouillante guadeloupe\" (6 imp).",
+      "timestamp": "2026-08-03T14:02:54.608Z"
     },
     {
       "rule": "beach-meta",
@@ -1818,15 +1917,21 @@
         "beachName": "Petite Plage Malendure",
         "commune": "Bouillante",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "sargasse bouillante guadeloupe",
+            "impressions": 6,
+            "clicks": 2
+          }
+        ]
       },
       "result": {
         "title": "Petite Plage Malendure — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Petite Plage Malendure (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Petite Plage Malendure (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse bouillante guadeloupe\" (6 imp).",
+      "timestamp": "2026-08-03T14:02:54.608Z"
     },
     {
       "rule": "beach-meta",
@@ -1836,15 +1941,21 @@
         "beachName": "Plage des Amandiers",
         "commune": "Bouillante",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "sargasse bouillante guadeloupe",
+            "impressions": 6,
+            "clicks": 2
+          }
+        ]
       },
       "result": {
         "title": "Plage des Amandiers Bouillante — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage des Amandiers (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage des Amandiers (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse bouillante guadeloupe\" (6 imp).",
+      "timestamp": "2026-08-03T14:02:54.608Z"
     },
     {
       "rule": "beach-meta",
@@ -1859,10 +1970,10 @@
       },
       "result": {
         "title": "Plage de Capesterre-Belle-Eau — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Capesterre-Belle-Eau (Capesterre-Belle-Eau) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Capesterre-Belle-Eau (Capesterre-Belle-Eau) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Capesterre-Belle-Eau\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "timestamp": "2026-08-03T14:02:54.609Z"
     },
     {
       "rule": "beach-meta",
@@ -1877,10 +1988,10 @@
       },
       "result": {
         "title": "Plage de Capesterre (MG) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Capesterre (MG) (Capesterre-de-Marie-Galante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Capesterre (MG) (Capesterre-de-Marie-Galante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Capesterre-de-Marie-Galante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "timestamp": "2026-08-03T14:02:54.609Z"
     },
     {
       "rule": "beach-meta",
@@ -1895,10 +2006,10 @@
       },
       "result": {
         "title": "Plage de Grand-Bourg — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Grand-Bourg (Grand-Bourg) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Grand-Bourg (Grand-Bourg) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Grand-Bourg\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "timestamp": "2026-08-03T14:02:54.609Z"
     },
     {
       "rule": "beach-meta",
@@ -1913,10 +2024,10 @@
       },
       "result": {
         "title": "Plage du Vieux-Fort Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Vieux-Fort (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Vieux-Fort (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.697Z"
+      "timestamp": "2026-08-03T14:02:54.609Z"
     },
     {
       "rule": "beach-meta",
@@ -1931,10 +2042,10 @@
       },
       "result": {
         "title": "Anse Piton Saint-Louis — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Piton (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Piton (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-Louis\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "timestamp": "2026-08-03T14:02:54.610Z"
     },
     {
       "rule": "beach-meta",
@@ -1949,10 +2060,10 @@
       },
       "result": {
         "title": "Plage de Pompierre — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Pompierre (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Pompierre (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "timestamp": "2026-08-03T14:02:54.610Z"
     },
     {
       "rule": "beach-meta",
@@ -1973,10 +2084,10 @@
       },
       "result": {
         "title": "Plage Pain de Sucre — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage Pain de Sucre (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage Pain de Sucre (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage pain de sucre les saintes\" (1 imp).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "timestamp": "2026-08-03T14:02:54.610Z"
     },
     {
       "rule": "beach-meta",
@@ -1990,7 +2101,7 @@
         "topBeachQueries": [
           {
             "query": "anse rodrigue",
-            "impressions": 15,
+            "impressions": 14,
             "clicks": 0
           },
           {
@@ -2002,10 +2113,10 @@
       },
       "result": {
         "title": "Anse Rodrigue — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Anse Rodrigue (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Rodrigue (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse rodrigue\" (15 imp), \"anse rodrigue les saintes\" (1 imp).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse rodrigue\" (14 imp), \"anse rodrigue les saintes\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.610Z"
     },
     {
       "rule": "beach-meta",
@@ -2020,10 +2131,10 @@
       },
       "result": {
         "title": "Anse Mire — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Anse Mire (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Mire (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "timestamp": "2026-08-03T14:02:54.610Z"
     },
     {
       "rule": "beach-meta",
@@ -2033,15 +2144,21 @@
         "beachName": "Plage de Baie-Mahault (Désirade)",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Plage de Baie-Mahault (Désirade) — Sargasses aujourd'hui",
-        "description": "Sargasses Plage de Baie-Mahault (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Baie-Mahault (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.611Z"
     },
     {
       "rule": "beach-meta",
@@ -2051,15 +2168,21 @@
         "beachName": "Le Souffleur (Désirade)",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Le Souffleur (Désirade) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Le Souffleur (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Le Souffleur (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.698Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.611Z"
     },
     {
       "rule": "beach-meta",
@@ -2074,10 +2197,10 @@
       },
       "result": {
         "title": "L’Autre Bord Port-Louis — Sargasses aujourd'hui 2026",
-        "description": "Sargasses L’Autre Bord (Port-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses L’Autre Bord (Port-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Port-Louis\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "timestamp": "2026-08-03T14:02:54.611Z"
     },
     {
       "rule": "beach-meta",
@@ -2087,26 +2210,21 @@
         "beachName": "Saint-Félix",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Saint-Félix Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Saint-Félix (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Saint-Félix (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.611Z"
     },
     {
       "rule": "beach-meta",
@@ -2120,27 +2238,27 @@
         "topBeachQueries": [
           {
             "query": "anse champagne guadeloupe",
-            "impressions": 128,
+            "impressions": 152,
+            "clicks": 2
+          },
+          {
+            "query": "anse champagne",
+            "impressions": 36,
             "clicks": 0
           },
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
-          },
-          {
-            "query": "anse champagne",
-            "impressions": 25,
-            "clicks": 0
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Anse Champagne Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Champagne (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Champagne (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse champagne guadeloupe\" (128 imp), \"sargasse guadeloupe sainte-anne\" (28 imp), \"anse champagne\" (25 imp).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse champagne guadeloupe\" (152 imp), \"anse champagne\" (36 imp), \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.612Z"
     },
     {
       "rule": "beach-meta",
@@ -2154,17 +2272,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Anse de la Baie Olive — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse de la Baie Olive (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse de la Baie Olive (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.612Z"
     },
     {
       "rule": "beach-meta",
@@ -2174,15 +2292,21 @@
         "beachName": "Anse de Pigeon",
         "commune": "Bouillante",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "sargasse bouillante guadeloupe",
+            "impressions": 6,
+            "clicks": 2
+          }
+        ]
       },
       "result": {
         "title": "Anse de Pigeon Bouillante — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse de Pigeon (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse de Pigeon (Bouillante) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Bouillante\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse bouillante guadeloupe\" (6 imp).",
+      "timestamp": "2026-08-03T14:02:54.612Z"
     },
     {
       "rule": "beach-meta",
@@ -2196,22 +2320,22 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           },
           {
             "query": "anse du mancenillier",
-            "impressions": 3,
+            "impressions": 1,
             "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse du Mancenillier — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Anse du Mancenillier (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse du Mancenillier (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp), \"anse du mancenillier\" (3 imp).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp), \"anse du mancenillier\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.612Z"
     },
     {
       "rule": "beach-meta",
@@ -2226,10 +2350,10 @@
       },
       "result": {
         "title": "Plage de la Perle Deshaies — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de la Perle (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de la Perle (Deshaies) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Deshaies\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "timestamp": "2026-08-03T14:02:54.612Z"
     },
     {
       "rule": "beach-meta",
@@ -2239,26 +2363,21 @@
         "beachName": "Pointe de la Verdure",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Pointe de la Verdure Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe de la Verdure (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe de la Verdure (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.699Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.613Z"
     },
     {
       "rule": "beach-meta",
@@ -2273,10 +2392,10 @@
       },
       "result": {
         "title": "Anse Canot (Marie-Galante) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Canot (Marie-Galante) (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Canot (Marie-Galante) (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-Louis\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "timestamp": "2026-08-03T14:02:54.613Z"
     },
     {
       "rule": "beach-meta",
@@ -2286,26 +2405,21 @@
         "beachName": "Saint-Félix Sud",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Saint-Félix Sud Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Saint-Félix Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Saint-Félix Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.613Z"
     },
     {
       "rule": "beach-meta",
@@ -2320,10 +2434,10 @@
       },
       "result": {
         "title": "Plage de Fouillole — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Plage de Fouillole (Pointe-à-Pitre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Fouillole (Pointe-à-Pitre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Pointe-à-Pitre\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "timestamp": "2026-08-03T14:02:54.613Z"
     },
     {
       "rule": "beach-meta",
@@ -2333,21 +2447,26 @@
         "beachName": "Anse Gros Sable",
         "commune": "Sainte-Anne",
         "island": "Guadeloupe",
-        "beachQueriesCount": 1,
+        "beachQueriesCount": 2,
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
+          },
+          {
+            "query": "anse gros sable",
+            "impressions": 2,
+            "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Gros Sable Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Gros Sable (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Gros Sable (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp), \"anse gros sable\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.613Z"
     },
     {
       "rule": "beach-meta",
@@ -2357,26 +2476,21 @@
         "beachName": "Petit-Havre Sud",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Petit-Havre Sud Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Petit-Havre Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Petit-Havre Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.614Z"
     },
     {
       "rule": "beach-meta",
@@ -2390,17 +2504,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Anse Sainte-Marguerite — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Sainte-Marguerite (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Sainte-Marguerite (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.614Z"
     },
     {
       "rule": "beach-meta",
@@ -2414,17 +2528,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Les Salines (Saint-François) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Les Salines (Saint-François) (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Les Salines (Saint-François) (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.700Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.614Z"
     },
     {
       "rule": "beach-meta",
@@ -2438,17 +2552,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe saint-françois",
-            "impressions": 22,
-            "clicks": 4
+            "impressions": 53,
+            "clicks": 6
           }
         ]
       },
       "result": {
         "title": "Anse à l’Eau Saint-François — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à l’Eau (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à l’Eau (Saint-François) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (22 imp).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-François\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe saint-françois\" (53 imp).",
+      "timestamp": "2026-08-03T14:02:54.614Z"
     },
     {
       "rule": "beach-meta",
@@ -2463,10 +2577,10 @@
       },
       "result": {
         "title": "Anse du Figuier (Saintes) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse du Figuier (Saintes) (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse du Figuier (Saintes) (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "timestamp": "2026-08-03T14:02:54.615Z"
     },
     {
       "rule": "beach-meta",
@@ -2481,10 +2595,10 @@
       },
       "result": {
         "title": "Anse de Galet Petit-Canal — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse de Galet (Petit-Canal) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse de Galet (Petit-Canal) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Petit-Canal\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "timestamp": "2026-08-03T14:02:54.615Z"
     },
     {
       "rule": "beach-meta",
@@ -2494,15 +2608,21 @@
         "beachName": "Plage du Moule",
         "commune": "Le Moule",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "plage le moule guadeloupe sargasse",
+            "impressions": 2,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Plage du Moule Le Moule — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Moule (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Moule (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage le moule guadeloupe sargasse\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.615Z"
     },
     {
       "rule": "beach-meta",
@@ -2516,17 +2636,17 @@
         "topBeachQueries": [
           {
             "query": "anse crawen",
-            "impressions": 3,
+            "impressions": 1,
             "clicks": 0
           }
         ]
       },
       "result": {
         "title": "Anse Crawen — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses Anse Crawen (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Crawen (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse crawen\" (3 imp).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"anse crawen\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.615Z"
     },
     {
       "rule": "beach-meta",
@@ -2541,10 +2661,10 @@
       },
       "result": {
         "title": "Anse à la Barque (VH) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse à la Barque (VH) (Vieux-Habitants) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse à la Barque (VH) (Vieux-Habitants) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Vieux-Habitants\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "timestamp": "2026-08-03T14:02:54.615Z"
     },
     {
       "rule": "beach-meta",
@@ -2554,15 +2674,21 @@
         "beachName": "Plage de Bananier",
         "commune": "Basse-Terre",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "basse-terre",
+            "impressions": 1,
+            "clicks": 0
+          }
+        ]
       },
       "result": {
         "title": "Plage de Bananier Basse-Terre — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Bananier (Basse-Terre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Bananier (Basse-Terre) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Basse-Terre\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Basse-Terre\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"basse-terre\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.616Z"
     },
     {
       "rule": "beach-meta",
@@ -2577,10 +2703,10 @@
       },
       "result": {
         "title": "Anse Turlet Vieux-Habitants — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse Turlet (Vieux-Habitants) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse Turlet (Vieux-Habitants) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Vieux-Habitants\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.701Z"
+      "timestamp": "2026-08-03T14:02:54.616Z"
     },
     {
       "rule": "beach-meta",
@@ -2595,10 +2721,10 @@
       },
       "result": {
         "title": "Anse du Bourg (Saintes) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse du Bourg (Saintes) (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse du Bourg (Saintes) (Terre-de-Haut (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Haut (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "timestamp": "2026-08-03T14:02:54.616Z"
     },
     {
       "rule": "beach-meta",
@@ -2613,10 +2739,10 @@
       },
       "result": {
         "title": "Plage de Cluny Nord Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Cluny Nord (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Cluny Nord (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "timestamp": "2026-08-03T14:02:54.616Z"
     },
     {
       "rule": "beach-meta",
@@ -2631,10 +2757,10 @@
       },
       "result": {
         "title": "Plage de Tillet Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Tillet (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Tillet (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "timestamp": "2026-08-03T14:02:54.616Z"
     },
     {
       "rule": "beach-meta",
@@ -2644,26 +2770,21 @@
         "beachName": "Grand Baie",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Grand Baie Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Grand Baie (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Grand Baie (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.617Z"
     },
     {
       "rule": "beach-meta",
@@ -2673,26 +2794,21 @@
         "beachName": "Grand Baie Sud",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Grand Baie Sud Le Gosier — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Grand Baie Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Grand Baie Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.617Z"
     },
     {
       "rule": "beach-meta",
@@ -2702,26 +2818,21 @@
         "beachName": "Plage de Bas-du-Fort Sud",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Plage de Bas-du-Fort Sud — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Bas-du-Fort Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Bas-du-Fort Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.617Z"
     },
     {
       "rule": "beach-meta",
@@ -2736,10 +2847,10 @@
       },
       "result": {
         "title": "Plage de Moustique Saint-Louis — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Moustique (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Moustique (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-Louis\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "timestamp": "2026-08-03T14:02:54.617Z"
     },
     {
       "rule": "beach-meta",
@@ -2754,10 +2865,10 @@
       },
       "result": {
         "title": "Vieux-Fort (Sainte-Rose) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Vieux-Fort (Sainte-Rose) (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Vieux-Fort (Sainte-Rose) (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.702Z"
+      "timestamp": "2026-08-03T14:02:54.617Z"
     },
     {
       "rule": "beach-meta",
@@ -2772,10 +2883,10 @@
       },
       "result": {
         "title": "Gros Cap Sainte-Rose — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Gros Cap (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Gros Cap (Sainte-Rose) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Rose\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "timestamp": "2026-08-03T14:02:54.618Z"
     },
     {
       "rule": "beach-meta",
@@ -2790,10 +2901,10 @@
       },
       "result": {
         "title": "La Feuillère — Sargasses Guadeloupe aujourd'hui 2026",
-        "description": "Sargasses La Feuillère (Terre-de-Bas (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses La Feuillère (Terre-de-Bas (Les Saintes)) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Terre-de-Bas (Les Saintes)\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "timestamp": "2026-08-03T14:02:54.618Z"
     },
     {
       "rule": "beach-meta",
@@ -2807,17 +2918,17 @@
         "topBeachQueries": [
           {
             "query": "sargasse guadeloupe sainte-anne",
-            "impressions": 28,
-            "clicks": 9
+            "impressions": 26,
+            "clicks": 8
           }
         ]
       },
       "result": {
         "title": "Plage du Manganao Sainte-Anne — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage du Manganao (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage du Manganao (Sainte-Anne) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (28 imp).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Sainte-Anne\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"sargasse guadeloupe sainte-anne\" (26 imp).",
+      "timestamp": "2026-08-03T14:02:54.618Z"
     },
     {
       "rule": "beach-meta",
@@ -2827,26 +2938,21 @@
         "beachName": "Pointe de la Verdure Sud",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Pointe de la Verdure Sud — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe de la Verdure Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe de la Verdure Sud (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.618Z"
     },
     {
       "rule": "beach-meta",
@@ -2856,26 +2962,21 @@
         "beachName": "Plage de Sainte-Claire",
         "commune": "Le Gosier",
         "island": "Guadeloupe",
-        "beachQueriesCount": 2,
+        "beachQueriesCount": 1,
         "topBeachQueries": [
           {
             "query": "le gosier sargasses",
-            "impressions": 12,
-            "clicks": 5
-          },
-          {
-            "query": "sargasse le gosier",
-            "impressions": 4,
-            "clicks": 3
+            "impressions": 5,
+            "clicks": 2
           }
         ]
       },
       "result": {
         "title": "Plage de Sainte-Claire — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Sainte-Claire (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Sainte-Claire (Le Gosier) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (12 imp), \"sargasse le gosier\" (4 imp).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Gosier\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"le gosier sargasses\" (5 imp).",
+      "timestamp": "2026-08-03T14:02:54.618Z"
     },
     {
       "rule": "beach-meta",
@@ -2890,10 +2991,10 @@
       },
       "result": {
         "title": "Anse de Vieux-Fort (MG) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Anse de Vieux-Fort (MG) (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Anse de Vieux-Fort (MG) (Saint-Louis) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Saint-Louis\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "timestamp": "2026-08-03T14:02:54.619Z"
     },
     {
       "rule": "beach-meta",
@@ -2903,15 +3004,21 @@
         "beachName": "Plage de Babin",
         "commune": "Le Moule",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "plage le moule guadeloupe sargasse",
+            "impressions": 2,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Plage de Babin Le Moule — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de Babin (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de Babin (Le Moule) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"Le Moule\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"plage le moule guadeloupe sargasse\" (2 imp).",
+      "timestamp": "2026-08-03T14:02:54.619Z"
     },
     {
       "rule": "beach-meta",
@@ -2921,15 +3028,21 @@
         "beachName": "Plage de La Désirade Sud",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Plage de La Désirade Sud — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Plage de La Désirade Sud (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Plage de La Désirade Sud (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.619Z"
     },
     {
       "rule": "beach-meta",
@@ -2939,15 +3052,21 @@
         "beachName": "Grande Anse (Désirade)",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Grande Anse (Désirade) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Grande Anse (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Grande Anse (Désirade) (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.703Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.619Z"
     },
     {
       "rule": "h1-suggestion",
@@ -2961,7 +3080,7 @@
         "h1": "Sargasses Martinique en temps réel — Carte et plages aujourd'hui"
       },
       "reason": "Homepage H1: combines top GSC keywords \"en temps réel\" (162 clicks) and \"aujourd'hui\" (30 clicks) with island name.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "h1-suggestion",
@@ -2972,10 +3091,10 @@
         "island": "Martinique"
       },
       "result": {
-        "h1": "Carte des sargasses Martinique en temps réel — 20 juillet 2026"
+        "h1": "Carte des sargasses Martinique en temps réel — 3 août 2026"
       },
       "reason": "Carte H1: \"carte\" is top search intent, combined with \"en temps réel\" and current date for freshness signal.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "h1-suggestion",
@@ -2989,7 +3108,7 @@
         "h1": "Alertes sargasses Martinique — la dépêche du matin, mesurée au satellite"
       },
       "reason": "Alertes H1: targets notification-seeking users with \"gratuites\" value prop and island name for local SEO.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "h1-suggestion",
@@ -3003,7 +3122,7 @@
         "h1": "Sargasses Guadeloupe en temps réel — Carte et plages aujourd'hui"
       },
       "reason": "Homepage H1: combines top GSC keywords \"en temps réel\" (162 clicks) and \"aujourd'hui\" (30 clicks) with island name.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "h1-suggestion",
@@ -3014,10 +3133,10 @@
         "island": "Guadeloupe"
       },
       "result": {
-        "h1": "Carte des sargasses Guadeloupe en temps réel — 20 juillet 2026"
+        "h1": "Carte des sargasses Guadeloupe en temps réel — 3 août 2026"
       },
       "reason": "Carte H1: \"carte\" is top search intent, combined with \"en temps réel\" and current date for freshness signal.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "h1-suggestion",
@@ -3031,7 +3150,7 @@
         "h1": "Alertes sargasses Guadeloupe — la dépêche du matin, mesurée au satellite"
       },
       "reason": "Alertes H1: targets notification-seeking users with \"gratuites\" value prop and island name for local SEO.",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.620Z"
     },
     {
       "rule": "beach-meta",
@@ -3041,15 +3160,21 @@
         "beachName": "Île de la Petite Terre",
         "commune": "La Désirade",
         "island": "Guadeloupe",
-        "beachQueriesCount": 0,
-        "topBeachQueries": []
+        "beachQueriesCount": 1,
+        "topBeachQueries": [
+          {
+            "query": "la désirade sargasse",
+            "impressions": 1,
+            "clicks": 1
+          }
+        ]
       },
       "result": {
         "title": "Île de la Petite Terre — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Île de la Petite Terre (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Île de la Petite Terre (La Désirade) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
-      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Désirade\" (local SEO). Includes year \"2026\" (freshness signal). Top GSC queries for this beach: \"la désirade sargasse\" (1 imp).",
+      "timestamp": "2026-08-03T14:02:54.619Z"
     },
     {
       "rule": "beach-meta",
@@ -3064,11 +3189,11 @@
       },
       "result": {
         "title": "Pointe Fort (Caravelle) — Sargasses aujourd'hui 2026",
-        "description": "Sargasses Pointe Fort (Caravelle) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 20 juillet 2026."
+        "description": "Sargasses Pointe Fort (Caravelle) (La Trinité) aujourd'hui. Carte en temps réel, prévisions 7 jours. Mis à jour le 3 août 2026."
       },
       "reason": "Includes \"aujourd'hui\" (GSC: 30 clicks proven). Includes \"en temps réel\" (GSC: 162 clicks proven). Includes commune \"La Trinité\" (local SEO). Includes year \"2026\" (freshness signal).",
-      "timestamp": "2026-07-20T13:28:21.704Z"
+      "timestamp": "2026-08-03T14:02:54.619Z"
     }
   ],
-  "lastRun": "2026-07-20T13:28:21.684Z"
+  "lastRun": "2026-08-03T14:02:54.585Z"
 }

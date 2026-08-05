@@ -1084,23 +1084,23 @@
     "j21": "2026-07-03T03:00:56.402Z"
   },
   "56c8db20918240754ce1bfae61e9326b": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T07:17:42.597Z",
     "j7": "2026-06-19T10:26:18.113Z",
     "j14": "2026-06-26T09:27:07.949Z",
-    "daily_count": 26,
+    "daily_count": 28,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-03T09:21:58.213Z"
   },
   "9feebc22d15c1eb7dbddc5524dad888e": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-15T12:14:16.627Z",
     "j7": "2026-06-19T10:26:19.849Z",
     "j14": "2026-06-26T09:27:09.664Z",
-    "daily_count": 26,
+    "daily_count": 28,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-03T09:22:02.114Z"
@@ -1232,22 +1232,22 @@
     "j21": "2026-07-05T19:20:40.090Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_last": "2026-07-29",
+    "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z",
-    "daily_count": 26,
+    "daily_count": 33,
     "j14": "2026-06-28T19:22:55.176Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-05T19:20:41.871Z"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_last": "2026-07-29",
+    "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z",
-    "daily_count": 26,
+    "daily_count": 33,
     "j14": "2026-06-29T04:11:47.484Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1270,22 +1270,22 @@
     "install_nudge_last": "2026-06-30"
   },
   "73847215716df27d0e0585585d502598": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-18T15:24:25.329Z",
     "j7": "2026-06-22T17:00:05.186Z",
-    "daily_count": 26,
+    "daily_count": 28,
     "j14": "2026-06-29T15:49:58.831Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j21": "2026-07-06T15:36:45.485Z"
   },
   "bf819a41db0f3e6744fa07d5e6b56e5f": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
     "j3": "2026-06-18T20:26:12.876Z",
     "j7": "2026-06-22T20:48:43.358Z",
-    "daily_count": 26,
+    "daily_count": 28,
     "j14": "2026-06-29T20:00:42.532Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1298,11 +1298,11 @@
     "j21": "2026-07-06T20:00:14.741Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_last": "2026-07-29",
+    "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z",
-    "daily_count": 26,
+    "daily_count": 33,
     "j14": "2026-06-30T03:41:53.530Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1323,9 +1323,9 @@
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z",
     "j7": "2026-06-24T09:36:10.282Z",
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 26,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 39,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-01T09:49:25.510Z",
@@ -1349,10 +1349,10 @@
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z",
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
     "j7": "2026-06-27T08:39:07.505Z",
-    "daily_count": 26,
+    "daily_count": 39,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
     "j14": "2026-07-04T08:39:51.952Z",
@@ -1360,9 +1360,9 @@
   },
   "5f70c9989a0ad27402f1c4f4da22e0d0": {
     "j3": "2026-06-23T14:51:29.309Z",
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 26,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 39,
     "j7": "2026-06-27T13:43:05.532Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1395,10 +1395,10 @@
     "j21": "2026-07-13T14:37:37.063Z"
   },
   "d1d35f18f6c8be599cec77d79fd44473": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
     "j3": "2026-06-25T14:36:37.406Z",
-    "daily_count": 26,
+    "daily_count": 39,
     "j7": "2026-06-29T15:50:01.935Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1412,10 +1412,10 @@
     "j21": "2026-07-13T14:37:41.208Z"
   },
   "02806e59b2d3f402afc0b20d0f3f2bab": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
     "j3": "2026-06-25T14:36:41.043Z",
-    "daily_count": 26,
+    "daily_count": 39,
     "j7": "2026-06-29T15:50:06.123Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1499,9 +1499,9 @@
     "j14": "2026-07-07T19:55:15.893Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 26,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 39,
     "j3": "2026-06-27T13:43:09.354Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1545,9 +1545,9 @@
     "j7": "2026-07-03T03:00:58.462Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 26,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 39,
     "j3": "2026-06-29T04:11:53.346Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1799,12 +1799,14 @@
   "f24d2cdda48b7593d1bdc9e8407eb44d": {
     "j3": "2026-07-05T03:27:24.705Z",
     "j7": "2026-07-09T03:02:16.479Z",
-    "j14": "2026-07-16T02:35:07.267Z"
+    "j14": "2026-07-16T02:35:07.267Z",
+    "j21": "2026-07-23T02:46:47.317Z"
   },
   "97c7c018dd71f2b08d294859533f5aa2": {
     "j3": "2026-07-05T03:27:26.377Z",
     "j7": "2026-07-09T09:39:19.787Z",
-    "j14": "2026-07-16T08:13:06.238Z"
+    "j14": "2026-07-16T08:13:06.238Z",
+    "j21": "2026-07-23T08:33:38.505Z"
   },
   "0d81ca2e62768e955246ae5e576b69f2": {},
   "9e931b8b79b844cf7949fca7ef1863b7": {},
@@ -1815,7 +1817,8 @@
   "e8d79bb034ecf727d53b43f12ec90b57": {
     "j3": "2026-07-06T03:35:35.974Z",
     "j7": "2026-07-10T03:21:43.403Z",
-    "j14": "2026-07-17T02:40:07.008Z"
+    "j14": "2026-07-17T02:40:07.008Z",
+    "j21": "2026-07-24T02:41:57.053Z"
   },
   "bb504d7d4a22982eb3732cf9805235ee": {},
   "d5753869528bfc8a9c65062136f07a76": {},
@@ -1836,19 +1839,21 @@
     "j7": "2026-07-10T19:30:38.653Z"
   },
   "0719411b6ef13537b924e81b94f763b3": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 19,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 32,
     "j3": "2026-07-07T09:41:51.748Z",
-    "install_nudge_count": 2,
-    "install_nudge_last": "2026-07-17",
+    "install_nudge_count": 3,
+    "install_nudge_last": "2026-07-27",
     "j7": "2026-07-11T13:19:06.474Z",
-    "j14": "2026-07-18T13:17:51.149Z"
+    "j14": "2026-07-18T13:17:51.149Z",
+    "j21": "2026-07-25T08:08:50.527Z"
   },
   "55e7f5baa510ed57abcf1c3039e8af39": {
     "j3": "2026-07-07T14:37:27.639Z",
     "j7": "2026-07-11T13:19:08.138Z",
-    "j14": "2026-07-18T13:17:53.172Z"
+    "j14": "2026-07-18T13:17:53.172Z",
+    "j21": "2026-07-25T13:28:43.611Z"
   },
   "eaa339322e61bb9d6235583c04a60c8f": {
     "j3": "2026-07-07T14:37:30.084Z",
@@ -1858,19 +1863,21 @@
     "j3": "2026-07-07T19:55:19.813Z"
   },
   "514b3e54c667029f802166864ae8d425": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 19,
-    "install_nudge_count": 2,
-    "install_nudge_last": "2026-07-17",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 32,
+    "install_nudge_count": 3,
+    "install_nudge_last": "2026-07-27",
     "j3": "2026-07-07T19:55:21.832Z",
     "j7": "2026-07-11T19:06:09.365Z",
-    "j14": "2026-07-18T19:07:12.521Z"
+    "j14": "2026-07-18T19:07:12.521Z",
+    "j21": "2026-07-25T19:09:53.662Z"
   },
   "4eeaae2b9bb829d73f8d5f538060553c": {
     "j3": "2026-07-08T02:44:22.848Z",
     "j7": "2026-07-12T02:47:55.538Z",
-    "j14": "2026-07-19T02:44:36.711Z"
+    "j14": "2026-07-19T02:44:36.711Z",
+    "j21": "2026-07-26T02:49:47.100Z"
   },
   "d1dc250c02daf73c3859c0d86e9969d3": {
     "daily_last": "2026-07-10",
@@ -1914,7 +1921,8 @@
   "57fd0d486880e9e2d01fb9c71e0d6d8d": {
     "j3": "2026-07-09T19:49:33.358Z",
     "j7": "2026-07-13T19:26:55.535Z",
-    "j14": "2026-07-20T19:47:14.177Z"
+    "j14": "2026-07-20T19:47:14.177Z",
+    "j21": "2026-07-27T19:32:23.220Z"
   },
   "686dd4504b33cd91f26c0103c54ac24d": {
     "j3": "2026-07-09T19:49:35.456Z",
@@ -1934,19 +1942,21 @@
     "j7": "2026-07-14T13:46:39.329Z"
   },
   "09bb176312018b6f3506119efc770f44": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 16,
+    "daily_last": "2026-07-29",
+    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_count": 23,
     "install_nudge_count": 2,
     "install_nudge_last": "2026-07-20",
     "j3": "2026-07-10T14:29:27.005Z",
     "j7": "2026-07-14T13:46:44.435Z",
-    "j14": "2026-07-21T13:52:29.320Z"
+    "j14": "2026-07-21T13:52:29.320Z",
+    "j21": "2026-07-28T14:08:59.077Z"
   },
   "5733c3e478a2eead0750f1d9e7390a01": {
     "j3": "2026-07-10T14:29:19.814Z",
     "j7": "2026-07-14T13:46:37.211Z",
-    "j14": "2026-07-21T13:52:27.698Z"
+    "j14": "2026-07-21T13:52:27.698Z",
+    "j21": "2026-07-28T14:08:56.241Z"
   },
   "717332591fea452be6f78278a6c55a45": {
     "j3": "2026-07-10T14:29:24.972Z",
@@ -1955,12 +1965,14 @@
   "ba40446967c6e7dbe4e4d1b5585e0a29": {
     "j3": "2026-07-11T02:37:32.280Z",
     "j7": "2026-07-15T02:30:26.283Z",
-    "j14": "2026-07-22T02:40:23.470Z"
+    "j14": "2026-07-22T02:40:23.470Z",
+    "j21": "2026-07-29T02:39:02.330Z"
   },
   "177bd47aaf13f94ffa68d1b450502c26": {
     "j3": "2026-07-11T02:37:33.955Z",
     "j7": "2026-07-15T02:30:28.200Z",
-    "j14": "2026-07-22T02:40:25.292Z"
+    "j14": "2026-07-22T02:40:25.292Z",
+    "j21": "2026-07-29T02:39:04.164Z"
   },
   "1cfb8bfbbed83d05858088c473a75369": {},
   "c73a61071f1e5d50b6c0590e930c8ddc": {
@@ -2007,17 +2019,19 @@
     "j7": "2026-07-17T02:40:08.632Z"
   },
   "85cac83a1ef7f4ea7efcc28a91e2c6fa": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 13,
+    "daily_last": "2026-07-29",
+    "daily_sig": "Anse Madame|clean|81|clean|0|",
+    "daily_count": 20,
     "j3": "2026-07-13T02:49:38.050Z",
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-13",
-    "j7": "2026-07-17T02:40:10.561Z"
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-23",
+    "j7": "2026-07-17T02:40:10.561Z",
+    "j14": "2026-07-24T02:41:59.329Z"
   },
   "9301af94fb1c52459e7b50410c8e202d": {
     "j3": "2026-07-13T14:38:01.939Z",
-    "j7": "2026-07-17T13:28:05.072Z"
+    "j7": "2026-07-17T13:28:05.072Z",
+    "j14": "2026-07-24T13:47:51.921Z"
   },
   "df518ffbf18c575f73d868a4d00e9d38": {
     "j3": "2026-07-13T19:26:59.222Z"
@@ -2027,7 +2041,9 @@
   },
   "6398840297648509eba72aeb10b167c7": {
     "j3": "2026-07-14T19:22:58.634Z",
-    "j7": "2026-07-18T19:07:14.348Z"
+    "j7": "2026-07-18T19:07:14.348Z",
+    "j14": "2026-07-25T19:09:55.457Z",
+    "j21": "2026-08-01T19:10:40.374Z"
   },
   "e06b70c031f7261225181ec95bf7b692": {
     "daily_last": "2026-07-17",
@@ -2042,7 +2058,9 @@
   },
   "17f180beb19ab926f07950496d87c3f6": {
     "j3": "2026-07-15T02:30:29.922Z",
-    "j7": "2026-07-19T02:44:38.787Z"
+    "j7": "2026-07-19T02:44:38.787Z",
+    "j14": "2026-07-26T02:49:49.048Z",
+    "j21": "2026-08-02T02:48:32.105Z"
   },
   "c094730a60b0958313e5d12ef6158ace": {
     "j3": "2026-07-15T08:10:02.925Z"
@@ -2069,11 +2087,15 @@
   },
   "28ae4b20a3601860f734e97922d522e8": {
     "j3": "2026-07-16T02:35:13.400Z",
-    "j7": "2026-07-20T02:58:28.446Z"
+    "j7": "2026-07-20T02:58:28.446Z",
+    "j14": "2026-07-27T02:56:58.121Z",
+    "j21": "2026-08-03T02:49:01.838Z"
   },
   "09940066022b6c46ef67c9b7a243f073": {
     "j3": "2026-07-16T02:35:15.308Z",
-    "j7": "2026-07-20T02:58:30.348Z"
+    "j7": "2026-07-20T02:58:30.348Z",
+    "j14": "2026-07-27T02:57:00.130Z",
+    "j21": "2026-08-03T02:49:04.767Z"
   },
   "9d68c6b5ca904b1b3173eaf65d576e33": {
     "daily_last": "2026-07-17",
@@ -2084,37 +2106,47 @@
     "install_nudge_last": "2026-07-16"
   },
   "b5a538525d310703b6f9d73d3fdab97e": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 10,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 23,
     "j3": "2026-07-16T13:53:00.625Z",
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-16",
-    "j7": "2026-07-20T19:47:16.271Z"
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-26",
+    "j7": "2026-07-20T19:47:16.271Z",
+    "j14": "2026-07-27T09:52:46.922Z",
+    "j21": "2026-08-03T09:43:46.272Z"
   },
   "3e0aaa8457fcd2a59252994d04f1c8f1": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 10,
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-16",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 23,
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-26",
     "j3": "2026-07-16T13:53:12.223Z",
-    "j7": "2026-07-20T19:47:20.747Z"
+    "j7": "2026-07-20T19:47:20.747Z",
+    "j14": "2026-07-27T14:33:50.710Z",
+    "j21": "2026-08-03T14:39:20.970Z"
   },
   "b3b33cd774b6cede067fe451206f1c1f": {
     "j3": "2026-07-16T13:53:02.314Z"
   },
   "7dd8f5e9baa3b208a33272aa0e2df594": {
     "j3": "2026-07-16T13:53:04.285Z",
-    "j7": "2026-07-20T19:47:18.349Z"
+    "j7": "2026-07-20T19:47:18.349Z",
+    "j14": "2026-07-27T14:33:48.772Z",
+    "j21": "2026-08-03T14:39:02.610Z"
   },
   "039ac9392d5170a79d63b0b7740a76ae": {
     "j3": "2026-07-16T19:13:33.021Z",
-    "j7": "2026-07-20T19:47:23.187Z"
+    "j7": "2026-07-20T19:47:23.187Z",
+    "j14": "2026-07-27T19:32:25.426Z",
+    "j21": "2026-08-03T19:36:51.709Z"
   },
   "41eceac93f8e7aff82e2867385d3a1d2": {
     "j3": "2026-07-16T19:13:36.234Z",
-    "j7": "2026-07-20T19:47:25.544Z"
+    "j7": "2026-07-20T19:47:25.544Z",
+    "j14": "2026-07-27T19:32:28.236Z",
+    "j21": "2026-08-03T19:36:53.455Z"
   },
   "43c883531767aeae2ff8327156eca4cf": {
     "daily_last": "2026-07-17",
@@ -2134,23 +2166,30 @@
   },
   "c74ca3ca24996d8760c415efb92a2393": {
     "j3": "2026-07-17T02:40:14.110Z",
-    "j7": "2026-07-21T02:39:41.825Z"
+    "j7": "2026-07-21T02:39:41.825Z",
+    "j14": "2026-07-28T08:36:42.077Z",
+    "j21": "2026-08-04T02:29:57.899Z"
   },
   "73ef2ca0e5ce6b0e2d728bf80868fe2e": {
     "j3": "2026-07-17T02:40:15.697Z"
   },
   "229e93a7b58f74252c050b309bd69be5": {
     "j3": "2026-07-17T13:28:07.250Z",
-    "j7": "2026-07-21T13:52:31.295Z"
+    "j7": "2026-07-21T13:52:31.295Z",
+    "j14": "2026-07-28T14:09:01.042Z",
+    "j21": "2026-08-04T14:11:05.268Z"
   },
   "3310e4cd1d8b9737a96339b6d510f7c1": {},
   "7aba71670fafa766927264b8a494b12d": {
     "j3": "2026-07-17T19:11:25.410Z",
-    "j7": "2026-07-21T13:52:33.276Z"
+    "j7": "2026-07-21T13:52:33.276Z",
+    "j14": "2026-07-28T14:09:03.145Z",
+    "j21": "2026-08-04T14:11:07.474Z"
   },
   "89aa3babd117549d4259fe4f245c7c8d": {
     "j3": "2026-07-17T19:11:27.317Z",
-    "j7": "2026-07-21T19:25:03.973Z"
+    "j7": "2026-07-21T19:25:03.973Z",
+    "j14": "2026-07-28T14:09:04.731Z"
   },
   "a51ec3bceefb14745d95dc85588b146d": {
     "j3": "2026-07-17T19:11:29.683Z",
@@ -2158,16 +2197,19 @@
   },
   "035eba302c4dba0d7a64ed5bf9535825": {
     "j3": "2026-07-17T19:11:31.313Z",
-    "j7": "2026-07-21T19:25:09.878Z"
+    "j7": "2026-07-21T19:25:09.878Z",
+    "j14": "2026-07-28T19:26:28.126Z",
+    "j21": "2026-08-04T19:39:08.505Z"
   },
   "313fb5c251346b407924b7fa7bcf562a": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 8,
+    "daily_last": "2026-07-28",
+    "daily_sig": "Anse Madame|clean|83|clean|0|",
+    "daily_count": 14,
     "j3": "2026-07-18T02:31:16.762Z",
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-18",
-    "j7": "2026-07-22T02:40:26.823Z"
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-28",
+    "j7": "2026-07-22T02:40:26.823Z",
+    "j14": "2026-07-29T02:39:05.746Z"
   },
   "e05185a94d4440ce2c5f22b2689d90ce": {
     "j3": "2026-07-18T02:31:18.716Z",
@@ -2175,12 +2217,13 @@
   },
   "3b5f0700a9ef726eaadf21057a3c5109": {
     "j3": "2026-07-18T02:31:20.848Z",
-    "j7": "2026-07-22T02:40:30.137Z"
+    "j7": "2026-07-22T02:40:30.137Z",
+    "j14": "2026-07-29T02:39:07.594Z"
   },
   "1193254875b084b639ff350303db985e": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 8,
+    "daily_last": "2026-07-24",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
+    "daily_count": 10,
     "j3": "2026-07-18T02:31:23.367Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
@@ -2188,22 +2231,24 @@
   },
   "f168862bc95f05b6d63e0325ef3006c5": {},
   "84c69d4dae5d80b011420853f9877f61": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 8,
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-18",
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 21,
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-28",
     "j3": "2026-07-18T13:17:55.619Z",
-    "j7": "2026-07-22T13:53:13.146Z"
+    "j7": "2026-07-22T13:53:13.146Z",
+    "j14": "2026-07-29T14:12:27.964Z"
   },
   "f736e587fc88ebad9926ed312ad0c4cb": {
     "j3": "2026-07-18T13:17:57.515Z",
-    "j7": "2026-07-22T13:53:15.450Z"
+    "j7": "2026-07-22T13:53:15.450Z",
+    "j14": "2026-07-29T14:12:31.154Z"
   },
   "4953668d8c12edb46c48e5b85c0c4c50": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 8,
+    "daily_last": "2026-07-24",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
+    "daily_count": 10,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-18",
     "j3": "2026-07-18T19:07:16.798Z",
@@ -2212,48 +2257,68 @@
   "a22692714ca678eb79eb70e70f29359c": {},
   "2fdb336732c904d6a807964d4961d661": {},
   "d48ec9a24b54586d8bbb28e549769675": {
-    "j3": "2026-07-19T19:09:01.118Z"
+    "j3": "2026-07-19T19:09:01.118Z",
+    "j7": "2026-07-23T19:20:09.607Z"
   },
   "1d56aebeeade201da4bbf6af263593c1": {},
   "76bde437edbd577c77caa05d88a1b53d": {
-    "j3": "2026-07-19T19:09:04.234Z"
+    "j3": "2026-07-19T19:09:04.234Z",
+    "j7": "2026-07-23T19:20:12.132Z"
   },
   "6c879c46e58d0ea08b3b1fc7efdaf9a4": {
-    "j3": "2026-07-20T02:58:33.113Z"
+    "j3": "2026-07-20T02:58:33.113Z",
+    "j7": "2026-07-24T02:42:02.906Z"
   },
   "ca213bbed63d1d68021c74f001b6c672": {
-    "j3": "2026-07-20T09:00:44.786Z"
+    "j3": "2026-07-20T09:00:44.786Z",
+    "j7": "2026-07-24T08:27:33.383Z"
   },
   "76848885ee0eca1b97236ed8954fb757": {
-    "j3": "2026-07-20T19:47:27.517Z"
+    "j3": "2026-07-20T19:47:27.517Z",
+    "j7": "2026-07-24T19:28:11.617Z",
+    "j14": "2026-07-31T14:12:19.821Z"
   },
   "44158bc97aad17ac2ee0e22d203e37ee": {
-    "j3": "2026-07-20T19:47:29.332Z"
+    "j3": "2026-07-20T19:47:29.332Z",
+    "j7": "2026-07-24T19:28:13.544Z",
+    "j14": "2026-07-31T19:27:16.869Z"
   },
   "20feb02ed9a03818313c5daaafce5af1": {},
   "e17908d3be0a0c1b59891d2d69656361": {
-    "j3": "2026-07-20T19:47:33.135Z"
+    "j3": "2026-07-20T19:47:33.135Z",
+    "j7": "2026-07-24T19:28:17.300Z",
+    "j14": "2026-07-31T19:27:19.830Z"
   },
   "825b50d9fa3bcac3620afc7d44350b94": {
-    "j3": "2026-07-20T19:47:35.251Z"
+    "j3": "2026-07-20T19:47:35.251Z",
+    "j7": "2026-07-24T19:28:19.084Z",
+    "j14": "2026-07-31T19:27:22.870Z"
   },
   "b5bd6c289073b43bdfd431d37e93738a": {
     "j3": "2026-07-21T02:39:46.007Z"
   },
   "15955e1d7151ac5a7c66be647bbde1be": {
-    "j3": "2026-07-21T02:39:48.074Z"
+    "j3": "2026-07-21T02:39:48.074Z",
+    "j7": "2026-07-25T02:40:33.097Z",
+    "j14": "2026-08-01T02:51:02.548Z"
   },
   "02df5fff88047cd6e697d3598ac3df8a": {
-    "j3": "2026-07-21T02:39:49.779Z"
+    "j3": "2026-07-21T02:39:49.779Z",
+    "j7": "2026-07-25T02:40:35.258Z",
+    "j14": "2026-08-01T02:51:04.542Z"
   },
   "6d6ef0f56b2fcc1416ee1ee7e134de81": {
-    "j3": "2026-07-21T02:39:51.181Z"
+    "j3": "2026-07-21T02:39:51.181Z",
+    "j7": "2026-07-25T02:40:37.512Z",
+    "j14": "2026-08-01T02:51:06.399Z"
   },
   "b6b60e22b2bb69c08dfa2cacba2c6429": {
     "j3": "2026-07-21T08:28:37.302Z"
   },
   "e9a08abeb20458f3f30e52a9b8b5b554": {
-    "j3": "2026-07-21T13:52:37.425Z"
+    "j3": "2026-07-21T13:52:37.425Z",
+    "j7": "2026-07-25T13:28:47.873Z",
+    "j14": "2026-08-01T13:20:50.440Z"
   },
   "19ade54483990286ca12163438ee6188": {
     "j3": "2026-07-21T13:52:39.250Z"
@@ -2268,65 +2333,93 @@
     "j3": "2026-07-21T19:25:13.234Z"
   },
   "e3d5c00a939ea7c417be7d3447b96dc5": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
-    "daily_count": 5,
+    "daily_last": "2026-07-29",
+    "daily_sig": "Haulover Beach|clean|91|clean|0|",
+    "daily_count": 12,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-07-21",
-    "j3": "2026-07-21T19:25:14.959Z"
+    "j3": "2026-07-21T19:25:14.959Z",
+    "j7": "2026-07-25T19:09:58.362Z"
   },
   "88d2bffdce676bfdacf7716f58ceeebd": {
-    "j3": "2026-07-21T19:25:17.491Z"
+    "j3": "2026-07-21T19:25:17.491Z",
+    "j7": "2026-07-25T19:10:00.047Z",
+    "j14": "2026-08-01T19:10:43.433Z"
   },
   "79fd17fed9f1a4748acffc4ac5b16154": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
-    "daily_count": 5,
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-21",
-    "j3": "2026-07-21T19:25:19.217Z"
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 18,
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-07-31",
+    "j3": "2026-07-21T19:25:19.217Z",
+    "j7": "2026-07-25T19:10:02.985Z",
+    "j14": "2026-08-01T19:10:45.107Z"
   },
   "6033173492761ac0ebf926a1338b6c42": {
-    "j3": "2026-07-22T02:40:34.573Z"
+    "j3": "2026-07-22T02:40:34.573Z",
+    "j7": "2026-07-26T02:49:51.409Z",
+    "j14": "2026-08-02T02:48:35.208Z"
   },
   "4e7f45069e4a3b6baeb53e6b2e481793": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 4,
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 17,
     "j3": "2026-07-22T02:40:36.399Z",
-    "install_nudge_count": 1,
-    "install_nudge_last": "2026-07-22"
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-08-01",
+    "j7": "2026-07-26T02:49:53.063Z",
+    "j14": "2026-08-02T02:48:36.930Z"
   },
   "847abc3b4d6aeb4910f2454e41691423": {
-    "j3": "2026-07-22T08:29:24.713Z"
+    "j3": "2026-07-22T08:29:24.713Z",
+    "j7": "2026-07-26T08:29:13.109Z",
+    "j14": "2026-08-02T08:27:28.998Z"
   },
   "405a7d36a5007d5e545f7105499fde46": {
-    "j3": "2026-07-22T13:53:18.275Z"
+    "j3": "2026-07-22T13:53:18.275Z",
+    "j7": "2026-07-26T13:24:22.471Z",
+    "j14": "2026-08-02T19:12:26.896Z"
   },
   "f91ee63732f5bbff7012097e3acc2afa": {
     "j3": "2026-07-22T13:53:19.779Z"
   },
   "7f30960ec4391f5fa24d362e56007c19": {
-    "j3": "2026-07-22T19:22:19.750Z"
+    "j3": "2026-07-22T19:22:19.750Z",
+    "j7": "2026-07-26T19:12:41.603Z",
+    "j14": "2026-08-02T19:12:29.017Z"
   },
   "bf850169724d5c0bc790e29922b05586": {
     "j3": "2026-07-22T19:22:21.556Z"
   },
   "f7eaa1aa31cdd5c6b8040934abf15a29": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 16,
+    "j3": "2026-07-23T02:46:50.281Z",
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-08-02",
+    "j7": "2026-07-27T02:57:03.608Z",
+    "j14": "2026-08-03T02:49:08.145Z"
   },
   "69df196f9b2d37b14e6199e023b70cc7": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|83|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 5,
+    "j3": "2026-07-23T08:33:41.765Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-23"
   },
-  "ad116c679b07e17528fbbd26168705c9": {},
+  "ad116c679b07e17528fbbd26168705c9": {
+    "j3": "2026-07-23T08:33:43.860Z"
+  },
   "067a46b95c4f3936824bc2f673c41453": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Cabeza de Toro|clean|83|moderate|7|Thursday",
-    "daily_count": 3
+    "daily_last": "2026-07-24",
+    "daily_sig": "Macao Beach|moderate|75|moderate|0|",
+    "daily_count": 5,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-23",
+    "j3": "2026-07-23T13:58:42.841Z"
   },
   "e521ffeb4c65198e02cc9f6c81fa853f": {},
   "6f429a3179ff0a28823dfbc555d18624": {
@@ -2334,36 +2427,350 @@
     "daily_sig": "Uvero Alto|clean|78|clean|9|Wednesday",
     "daily_count": 2
   },
-  "c69ee9b8f94d47423c83ff90b7ab1a01": {},
-  "7e52d307a3c2b65434f570c0677000d8": {},
-  "2b990f6d3555f2e8035b5000919910c5": {},
+  "c69ee9b8f94d47423c83ff90b7ab1a01": {
+    "j3": "2026-07-23T19:20:14.963Z"
+  },
+  "7e52d307a3c2b65434f570c0677000d8": {
+    "j3": "2026-07-23T19:20:17.418Z"
+  },
+  "2b990f6d3555f2e8035b5000919910c5": {
+    "j3": "2026-07-23T19:20:19.290Z",
+    "j7": "2026-07-27T19:32:31.096Z",
+    "j14": "2026-08-03T19:36:57.305Z"
+  },
   "ab5e0b44fcb4aa9bd51e8154e23eed5e": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|91|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 16,
+    "install_nudge_count": 2,
+    "install_nudge_last": "2026-08-02",
+    "j3": "2026-07-23T19:20:21.868Z",
+    "j7": "2026-07-27T19:32:33.241Z",
+    "j14": "2026-08-03T19:36:59.188Z"
   },
   "63ef1e90183ceb2552fb2426ee7e5af1": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Plage de Grande Anse|clean|88|clean|2|jeudi",
-    "daily_count": 2
+    "daily_last": "2026-07-24",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-24",
+    "j3": "2026-07-24T13:47:55.033Z"
   },
-  "09a504e7c56eb0c2e9984cde61ece052": {},
+  "09a504e7c56eb0c2e9984cde61ece052": {
+    "j3": "2026-07-24T13:47:56.677Z"
+  },
   "f1281e9dc17cd42bd86ea5a3b445dc1d": {},
-  "d72a7742d859a76b02d51b38a0ef44c8": {},
+  "d72a7742d859a76b02d51b38a0ef44c8": {
+    "j3": "2026-07-24T19:28:21.756Z",
+    "j7": "2026-07-28T19:26:31.231Z",
+    "j14": "2026-08-04T19:39:37.142Z"
+  },
   "bdc4b47a5ba80465a63e57e3f588188b": {},
   "87629a0283d6ac8030dc1542f237802c": {},
   "e0d781ff850d37b19101fdef63b91be9": {},
   "3343d5a36ef6956ab6ba43c37824a9b9": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Precheur|clean|78|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|74|clean|0|",
+    "daily_count": 3
   },
   "e882e9d65f2156b0b3c30af9bb39de3a": {
-    "daily_last": "2026-07-22",
-    "daily_sig": "Miami Beach|clean|79|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-07-24",
+    "daily_sig": "Cocoa Beach|clean|88|clean|0|",
+    "daily_count": 3
   },
   "820307e26c7a657a608d59a3c21c9356": {},
   "b233316f0d8bced4db8d2aef89ddae9d": {},
-  "934b4c78dab4d15073472261b19b6880": {}
+  "934b4c78dab4d15073472261b19b6880": {},
+  "61e5dcc583c386a65ef9a5da093056a5": {
+    "daily_last": "2026-07-24",
+    "daily_sig": "Macao Beach|moderate|75|moderate|0|",
+    "daily_count": 2
+  },
+  "1f750215796fcec228641b059c6146ae": {},
+  "bb2c9b1d4d0590e6345bb68f84fa25d4": {},
+  "c412afedbebbe25c7992b2e6fb002910": {},
+  "638d642596299f1cde8f08c74211d2ce": {
+    "daily_last": "2026-07-24",
+    "daily_sig": "Cocoa Beach|clean|88|clean|0|",
+    "daily_count": 2
+  },
+  "868961bb89cf078226b1bbd9b3dd52b7": {},
+  "e5de0676f3c6b9f779fbd1f01faf493e": {},
+  "83083ea519f2b4bca8af78fdee50b090": {},
+  "d10b0cac23358ba05f1e646572077843": {
+    "daily_last": "2026-07-24",
+    "daily_sig": "Anse Madame|clean|79|clean|0|",
+    "daily_count": 1
+  },
+  "c4f75e3186ec31a6772150829cac0817": {
+    "j3": "2026-07-27T19:32:35.432Z",
+    "j7": "2026-07-31T19:27:25.309Z"
+  },
+  "6570ee243e636ec8963453e0c966b3e7": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Playa Holbox|clean|91|clean|14|miércoles",
+    "daily_count": 12,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-27",
+    "j3": "2026-07-27T19:32:37.524Z",
+    "j7": "2026-07-31T19:27:26.813Z"
+  },
+  "5bcbe7eedd18f3a4cbca7c492fd15045": {
+    "j3": "2026-07-28T08:40:12.238Z",
+    "j7": "2026-08-01T02:51:08.525Z"
+  },
+  "c1b5d6d3a99dcc47215b4feb40d516d2": {
+    "j3": "2026-07-28T08:40:15.138Z",
+    "j7": "2026-08-01T08:21:12.322Z"
+  },
+  "c608d36d73c7721a73b4ad413f0227ff": {
+    "daily_last": "2026-07-29",
+    "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
+    "daily_count": 5,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-28",
+    "j3": "2026-07-28T14:09:08.359Z"
+  },
+  "9a4fa6d27faf929dd370169492033ff5": {
+    "j3": "2026-07-28T14:09:10.216Z"
+  },
+  "270601851ef0ce8b7305e15b9f75f381": {
+    "j3": "2026-07-28T14:09:11.920Z",
+    "j7": "2026-08-01T13:20:53.271Z"
+  },
+  "14a9dfe7475f8e1acd71e866367a77a4": {
+    "j3": "2026-07-28T14:09:14.787Z",
+    "j7": "2026-08-01T13:20:54.568Z"
+  },
+  "cc6e474307575497e9074e9e8bb69f91": {
+    "j3": "2026-07-28T19:26:33.337Z",
+    "j7": "2026-08-01T19:10:47.527Z"
+  },
+  "d21c217443fdcb97410b13c92ad8c344": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 10,
+    "j3": "2026-07-29T02:39:13.728Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-29",
+    "j7": "2026-08-02T02:48:39.008Z"
+  },
+  "47310dd43856a70d7ef0efea8a69e557": {
+    "j3": "2026-07-29T02:39:15.756Z",
+    "j7": "2026-08-02T02:48:40.119Z"
+  },
+  "d7b56091bfe00d50c09b7e0d84106ca9": {
+    "j3": "2026-07-29T08:43:24.650Z",
+    "j7": "2026-08-02T08:27:31.937Z"
+  },
+  "0de879a4836aad927d255b6e81a40972": {
+    "j3": "2026-07-29T08:43:27.424Z",
+    "j7": "2026-08-02T08:27:34.240Z"
+  },
+  "ab001e6fee84ecedfa71891e4a9bdc96": {
+    "j3": "2026-07-29T14:12:34.521Z"
+  },
+  "fa4da2a1c3bb7760e0a6a0451a7bbf29": {
+    "j3": "2026-07-29T14:12:36.967Z"
+  },
+  "15bd0b82a2ce8c1320e4b7a9e7237ef3": {
+    "j3": "2026-07-29T19:18:32.574Z",
+    "j7": "2026-08-02T19:12:31.290Z"
+  },
+  "e0b2f577b67225324475d26d406af2d3": {
+    "j3": "2026-07-29T19:18:34.824Z",
+    "j7": "2026-08-02T19:12:32.857Z"
+  },
+  "cafc5038afe3f74959f6c238cd3bebea": {
+    "j3": "2026-07-29T19:18:43.200Z",
+    "j7": "2026-08-02T19:12:34.475Z"
+  },
+  "6ddc1da89f77942dad6335155dbb8749": {
+    "j3": "2026-07-30T02:26:43.751Z"
+  },
+  "0338b109821068a5c82aa4635b1d8cbb": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 9,
+    "j3": "2026-07-30T02:26:45.727Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-30",
+    "j7": "2026-08-03T02:49:10.730Z"
+  },
+  "e0fd5e833b5959a8cec3bfa45435ee7f": {
+    "j3": "2026-07-30T02:26:47.088Z"
+  },
+  "e53edce28c77623128d77bbd734b440e": {
+    "j3": "2026-07-30T19:30:30.976Z",
+    "j7": "2026-08-03T19:37:01.051Z"
+  },
+  "8d67833f75a1272d4b1b598bc7cee9f2": {
+    "j3": "2026-07-30T19:30:33.280Z"
+  },
+  "a493d1109f8f7e5b0e098a3e0cebef46": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Bavaro Beach|clean|78|clean|0|",
+    "daily_count": 9,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-30",
+    "j3": "2026-07-30T19:30:35.229Z",
+    "j7": "2026-08-03T19:37:02.636Z"
+  },
+  "12bb617c4ac570a0110d15ded2821475": {
+    "j3": "2026-07-30T19:30:37.508Z",
+    "j7": "2026-08-03T19:37:04.156Z"
+  },
+  "000c63e348d3aac02fa9df25d65a8a39": {
+    "j3": "2026-07-31T02:50:54.264Z",
+    "j7": "2026-08-04T02:30:01.061Z"
+  },
+  "f2ce5c7562b83c6f9aaa36cc32e820d2": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Bavaro Beach|clean|78|clean|0|",
+    "daily_count": 8,
+    "j3": "2026-07-31T02:50:56.810Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-31",
+    "j7": "2026-08-04T02:30:02.628Z"
+  },
+  "29fe6ed76d229014fbc6530c0a597eef": {
+    "j3": "2026-07-31T02:50:58.581Z",
+    "j7": "2026-08-04T02:30:04.659Z"
+  },
+  "9e79a04e29a0f459e896efd26cd0faa0": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 8,
+    "j3": "2026-07-31T02:51:00.863Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-07-31",
+    "j7": "2026-08-04T02:30:08.601Z"
+  },
+  "d12833aa7cfd9703ddbffd626738370f": {
+    "j3": "2026-07-31T02:51:02.428Z",
+    "j7": "2026-08-04T02:30:10.977Z"
+  },
+  "3f49e3da3448621140a7cebbbf091bf4": {
+    "j3": "2026-07-31T14:12:26.630Z",
+    "j7": "2026-08-04T14:11:11.861Z"
+  },
+  "a9336d9ddd41bca3cfb9e9098eab8b5b": {
+    "j3": "2026-07-31T14:12:28.385Z",
+    "j7": "2026-08-04T14:11:13.776Z"
+  },
+  "5da0349c1568ba35306504a4c91a3ce0": {
+    "j3": "2026-07-31T19:27:28.102Z",
+    "j7": "2026-08-04T19:41:10.219Z"
+  },
+  "5cd14a367436b4f93dfdbbd2c993e716": {},
+  "8a1ce22cdab356622dcd1c27d4a5f1a8": {},
+  "4a05e53016a4b973f6139f54dbd9b4fc": {},
+  "faaa3fd19a2b8d13bdfb2be30822fdfd": {
+    "daily_last": "2026-07-29",
+    "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
+    "daily_count": 1
+  },
+  "fe204d8a7f34efe14d05b6be2c89e287": {},
+  "fb3b9b5ba878f28ca56a5ba7c3d2de04": {
+    "daily_last": "2026-07-29",
+    "daily_sig": "Grande Anse d'Arlet|clean|69|clean|0|",
+    "daily_count": 1
+  },
+  "df07d7c03e91fbd1c5341b7c37eb5df7": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Bavaro Beach|clean|78|clean|0|",
+    "daily_count": 6,
+    "j3": "2026-08-02T02:48:42.144Z",
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-08-02"
+  },
+  "48e424e71674d44b79b00d46d97b104c": {},
+  "9da18b89b4a74d4ff5765d4de9d26e58": {
+    "j3": "2026-08-02T02:48:43.956Z"
+  },
+  "1466fd25f55b0fddacc5a7877407728a": {
+    "j3": "2026-08-02T13:23:45.084Z"
+  },
+  "70d9cc5fa4e3266520a308d71035b1ab": {},
+  "1daef1d0f9eefab3af9ba677efc15af0": {},
+  "702806e2dbadca74c3e1a3d81dd29121": {},
+  "b16615077666bcb3157208650d0eda78": {},
+  "b96386fc2bc4622e9d61717a3aa15217": {},
+  "c9d7cbf0552b1bcb904585cd9ffa3bed": {},
+  "3d7916ee31acf3a9419d613419a3900f": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Bavaro Beach|clean|78|clean|0|",
+    "daily_count": 5,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-08-03",
+    "j3": "2026-08-03T14:39:24.502Z"
+  },
+  "829f9bd49234b54727eaa74c1903fda9": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 5,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-08-03",
+    "j3": "2026-08-03T14:39:26.589Z"
+  },
+  "86faf9520fff99b714f5c906ff96af10": {
+    "j3": "2026-08-03T19:37:06.033Z"
+  },
+  "432ba9e76f14c7cf9e2003e3364bfbbd": {
+    "j3": "2026-08-03T19:37:07.596Z"
+  },
+  "1c4a51803645f7eeb1ff7337612afdee": {
+    "j3": "2026-08-04T02:30:13.728Z"
+  },
+  "a7458507020346eebaeb77fa083dc746": {
+    "j3": "2026-08-04T19:41:12.352Z"
+  },
+  "c03cd4d8a02506f11baf359f01948ab9": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Anse Madame|clean|88|clean|0|",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-08-04",
+    "j3": "2026-08-04T19:41:13.938Z"
+  },
+  "a29265755987f970c3b5c125c97f9324": {},
+  "41d18da83a89abd5593ed0803a114635": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 3
+  },
+  "54a8198444c566a8b0f7e1a7e756d66b": {},
+  "858c362845891d48e8ee70d55054a03f": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 3
+  },
+  "c1f97d01d3d0afbde157bf5860aea3af": {},
+  "364c95cf49ac34abb175b3e3c2b4ee3b": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Playa Holbox|clean|91|clean|14|miércoles",
+    "daily_count": 3
+  },
+  "747dfcc984472048dd97ff578e940ccf": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Playa Holbox|clean|91|clean|14|miércoles",
+    "daily_count": 3
+  },
+  "e17eb7c5269abdb31c31596bf2927f0f": {},
+  "ce79e674d9a966ec1e542eb3fa22d24c": {},
+  "4910732cd968c816c9214d00478bf577": {},
+  "b1296728b690d38ab178a205b7362285": {},
+  "5f5c409a906828259835d51c42e377e9": {},
+  "45f990361f60c717747d1888cff38655": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
+    "daily_count": 3
+  },
+  "43eed7bbba4f6a17ccbd75135f34fd14": {},
+  "db625dbe1f4120f7c0da1f93bd7ec4fb": {
+    "daily_last": "2026-08-04",
+    "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
+    "daily_count": 3
+  },
+  "c76e14ea92a35e54ac398bc719493101": {}
 }

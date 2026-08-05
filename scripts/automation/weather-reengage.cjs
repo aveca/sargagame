@@ -164,7 +164,7 @@ function buildHtml(island, snap) {
       <p>Voici, mesurées au satellite ce matin, des <b>criques qui restent propres</b> :</p>
       ${list}
       <p>Le Veilleur te donne <b>LA plage du jour, plage par plage</b>, avec la tendance 7 jours. La carte reste <b>gratuite</b> — deviens celui qui sait toujours où aller pendant que les autres tombent sur les algues.</p>
-      <p>Si tu veux le matin sans mauvaise surprise : le <b>Pass</b> est un <b>paiement unique, sans abonnement</b> — 7 jours dès <b>7,99 €</b>, 14 jours <b>14,99 €</b>, 30 jours <b>24,99 €</b>.</p>
+      <p>Si tu veux le matin sans mauvaise surprise : le <b>Pass</b> est un <b>paiement unique, sans abonnement</b> — 7 jours dès <b>7,99 €</b>, 14 jours <b>14,99 €</b>, saison <b>19,99 €</b>.</p>
       <p style="text-align:center;margin:22px 0"><a href="${cta}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 30px;border-radius:12px">Voir les plages propres</a></p>
       <p style="font-size:12px;color:#8a97a5">Mesuré au satellite, pas deviné. On publie nos erreurs : <a href="${fia}" style="color:#0E7C66">~76 % à 79 % de fiabilité selon la saison</a>. <a href="${map}" style="color:#0E7C66">Ou reste sur la carte gratuite</a>.</p>
     </div>`

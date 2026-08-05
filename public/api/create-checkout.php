@@ -547,7 +547,7 @@ if ($action === 'pay_once') {
     $currency = $isUsd ? 'usd' : 'eur';
     // EUR (MQ/GP) : 499 = Trip Pass 7j on-site (4,99 € one-time, miroir du
     // tripPass USD $5.99). 799..2499 = passes historiques (PassOffer p7/p30) +
-    // pass saison 1999. Ajouter 499 ouvre le checkout one-time EUR au Trip Pass.
+    // pass saison 1999 (19,99 €). Ajouter 499 ouvre le checkout one-time EUR au Trip Pass.
     $ALLOWED_CENTS = $isUsd ? [599] : [499, 799, 999, 1499, 1999, 2499];
     if (!$setupIntentId || !in_array($cents, $ALLOWED_CENTS, true)) {
         http_response_code(400);

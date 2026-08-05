@@ -57,6 +57,13 @@
       "h1": "Mapa del Sargazo en Vivo de Punta Cana",
       "intro": "Este es un mapa de algas en vivo e interactivo de Punta Cana — cada playa, de Uvero Alto a Juanillo, tiene su propio estado en colores: limpia, moderada o evitar. El mapa funciona con imágenes satelitales de Copernicus actualizadas cuatro veces al día, combinadas con reportes de gente que está parada en la arena en este momento. Toca cualquier playa para ver su estado actual, una calificación de 0 a 100 y el panorama de sargazo a 7 días. A diferencia de las guías de temporada estáticas, este mapa cambia cuando cambia el mar: un giro de viento en la noche puede limpiar Bávaro y cargar Macao a la hora del almuerzo. Revísalo la mañana que vayas — ahí es cuando vale la pena."
     },
+    "seaweed": {
+      "slug": "algas-punta-cana",
+      "title": "Algas en Punta Cana Hoy — Estado del Sargazo por Playa en Vivo",
+      "desc": "¿Hay algas en Punta Cana ahora mismo? Estado en vivo de cada playa, Beach Score 0-100 y pronóstico a 7 días. Actualizado 4× al día con datos satelitales.",
+      "h1": "Algas en Punta Cana — Estado de Playas en Vivo Hoy",
+      "intro": "Las algas (sargazo) en Punta Cana cambian playa por playa, día a día — y a veces hora por hora en temporada alta. Esta página te da el estado en vivo de cada playa monitoreada, de Uvero Alto a Juanillo, actualizado cuatro veces al día con imágenes satelitales de Copernicus. Sin promedios de temporada, sin suposiciones: solo las condiciones reales de algas de hoy, una calificación Beach Score 0–100 para cada lugar y un pronóstico a 7 días para que planifiques tus días de playa alrededor del alga, no al revés. Cap Cana y Cabeza de Toro suelen estar más limpias gracias a la protección del arrecife; la franja abierta de Bávaro–Macao–Uvero Alto mira al Atlántico y acumula más algas en temporada. Pero el mar reescribe ese patrón cada semana — y por exactamente esa razón existe este rastreador en vivo. Revísalo la mañana que salgas y sabrás exactamente lo que te espera."
+    },
     "season": {
       "intro": "¿Planeas un viaje a Punta Cana y te preguntas por el sargazo? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planear alrededor de ello. En corto: de noviembre a mediados de marzo es fiablemente limpio; el Gran Cinturón de Sargazo del Atlántico llega de abril a octubre, más fuerte de mayo a agosto. Si tus fechas son flexibles, ese único dato decide tu viaje.",
       "slug": "temporada-sargazo-punta-cana",
