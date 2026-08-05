@@ -2218,7 +2218,8 @@
   "3b5f0700a9ef726eaadf21057a3c5109": {
     "j3": "2026-07-18T02:31:20.848Z",
     "j7": "2026-07-22T02:40:30.137Z",
-    "j14": "2026-07-29T02:39:07.594Z"
+    "j14": "2026-07-29T02:39:07.594Z",
+    "j21": "2026-08-05T02:32:23.178Z"
   },
   "1193254875b084b639ff350303db985e": {
     "daily_last": "2026-07-24",
@@ -2733,19 +2734,27 @@
     "install_nudge_last": "2026-08-04",
     "j3": "2026-08-04T19:41:13.938Z"
   },
-  "a29265755987f970c3b5c125c97f9324": {},
+  "a29265755987f970c3b5c125c97f9324": {
+    "j3": "2026-08-05T02:32:39.967Z"
+  },
   "41d18da83a89abd5593ed0803a114635": {
     "daily_last": "2026-08-04",
     "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
-    "daily_count": 3
+    "daily_count": 3,
+    "j3": "2026-08-05T02:33:28.388Z"
   },
-  "54a8198444c566a8b0f7e1a7e756d66b": {},
+  "54a8198444c566a8b0f7e1a7e756d66b": {
+    "j3": "2026-08-05T02:33:45.330Z"
+  },
   "858c362845891d48e8ee70d55054a03f": {
     "daily_last": "2026-08-04",
     "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
-    "daily_count": 3
+    "daily_count": 3,
+    "j3": "2026-08-05T02:33:47.326Z"
   },
-  "c1f97d01d3d0afbde157bf5860aea3af": {},
+  "c1f97d01d3d0afbde157bf5860aea3af": {
+    "j3": "2026-08-05T02:33:50.240Z"
+  },
   "364c95cf49ac34abb175b3e3c2b4ee3b": {
     "daily_last": "2026-08-04",
     "daily_sig": "Playa Holbox|clean|91|clean|14|miércoles",
@@ -2772,5 +2781,7 @@
     "daily_sig": "Fort Lauderdale Beach|clean|88|clean|0|",
     "daily_count": 3
   },
-  "c76e14ea92a35e54ac398bc719493101": {}
+  "c76e14ea92a35e54ac398bc719493101": {},
+  "333267bd32f1611bd7b5528c4b54eaeb": {},
+  "3f232414869c2f43ae8ea94af9f16c4a": {}
 }
