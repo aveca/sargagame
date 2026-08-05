@@ -25,15 +25,18 @@ jobs:
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
         run: npx playwright install chromium
-      - name: Start Vite preview (build output)
-        run: npx vite preview --port 4173 --host &
+- name: Start Vite preview (build output)
+        run: |
+          nohup npx vite preview --port 4173 --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
+          echo $! > /tmp/vite-preview.pid
       - name: Wait for preview server ready
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:4173 >/dev/null; then echo "Preview server ready"; exit 0; fi
-            sleep 2
+            if curl -fs http://127.0.0.1:4173 >/dev/null; then echo "Preview server ready"; exit 0; fi
+            sleep 1
           done
           echo "Preview server failed to start"
+          cat /tmp/vite-preview.log
           exit 1
       - name: Run UX smoke test (mobile funnel)
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
