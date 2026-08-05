@@ -2665,7 +2665,9 @@
   },
   "5cd14a367436b4f93dfdbbd2c993e716": {},
   "8a1ce22cdab356622dcd1c27d4a5f1a8": {},
-  "4a05e53016a4b973f6139f54dbd9b4fc": {},
+  "4a05e53016a4b973f6139f54dbd9b4fc": {
+    "j3": "2026-08-05T08:36:14.125Z"
+  },
   "faaa3fd19a2b8d13bdfb2be30822fdfd": {
     "daily_last": "2026-07-29",
     "daily_sig": "Plage de Grande Anse|clean|82|clean|1|jeudi",
@@ -2758,7 +2760,8 @@
   "364c95cf49ac34abb175b3e3c2b4ee3b": {
     "daily_last": "2026-08-04",
     "daily_sig": "Playa Holbox|clean|91|clean|14|miércoles",
-    "daily_count": 3
+    "daily_count": 3,
+    "j3": "2026-08-05T08:36:10.855Z"
   },
   "747dfcc984472048dd97ff578e940ccf": {
     "daily_last": "2026-08-04",
