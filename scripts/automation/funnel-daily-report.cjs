@@ -105,6 +105,15 @@ function computeReport(rows) {
   // Taux global (top→bottom)
   const globalRate = pct(counts.conversion, counts.map_open)
 
+  // Engagement events (diagnostic)
+  const ENGAGEMENT_EVENTS = ['verdict_expand', 'forecast_view', 'paywall_view', 'payment_failed']
+  const engagement = {}
+  for (const k of ENGAGEMENT_EVENTS) engagement[k] = 0
+  for (const r of rows) {
+    const evt = String(r.event || '').replace(/^sg_/, '')
+    if (engagement[evt] !== undefined) engagement[evt]++
+  }
+
   // Par île
   const byIsland = {}
   for (const r of rows) {
@@ -116,7 +125,7 @@ function computeReport(rows) {
     }
   }
 
-  return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, by_island: byIsland }
+  return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, engagement, by_island: byIsland }
 }
 
 function formatReport(report, windowHours) {
@@ -148,6 +157,16 @@ function formatReport(report, windowHours) {
 
   // Taux global
   lines.push(`  🎯 Global: map_open → paid = ${report.global_rate}%`)
+  lines.push('')
+
+  // Engagement events (diagnostic)
+  lines.push('  📈 Engagement (diagnostic):')
+  lines.push('  ───────────────────────────')
+  const eng = report.engagement || {}
+  lines.push(`    Verdict expanded:   ${eng.verdict_expand || 0}`)
+  lines.push(`    Forecast viewed:    ${eng.forecast_view || 0}`)
+  lines.push(`    Paywall viewed:     ${eng.paywall_view || 0}`)
+  lines.push(`    Payment failed:     ${eng.payment_failed || 0}`)
   lines.push('')
 
   // Par île

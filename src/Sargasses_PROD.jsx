@@ -1927,9 +1927,10 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 // Funnel complet : map_open → beach_open → verdict → paywall → cta → checkout → conversion
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
-  "sg_map_open","sg_beach_open","sg_verdict_scan_view",
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+  // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
+  "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
@@ -3260,6 +3261,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const timeline3D=(()=>{try{return /[?&]timeline=1/.test(window.location.search)}catch(_){return false}})()
   const[beatOpen,setBeatOpen]=useState(false)
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
+  // Analytics : forecast chart viewed (one-shot)
+  useEffect(()=>{if(forecast&&forecast.length){try{track("sg_forecast_view",{days:forecast.length,reliable_horizon:weeklyData?.reliableHorizon||3})}catch(_){}}},[])
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   // v3: cap visible days at J+3 (horizon beyond that is unreliable per backtest)
@@ -3574,7 +3577,7 @@ function MethodologyLink({beach,lang,sargData}){
     ?(fr?"NOAA ERDDAP (satellite AFAI) → Normalisation → Votre écran":"NOAA ERDDAP (satellite AFAI) → Normalization → Your screen")
     :(fr?"3 plages proches avec satellite → Interpolation IDW → Votre écran":"3 nearest satellite beaches → IDW interpolation → Your screen")
   return(<div style={{marginBottom:8}}>
-    <button onClick={()=>setOpen(!open)} style={{
+    <button onClick={()=>{setOpen(!open);try{track("sg_verdict_expand",{beach_id:beach.id,expanded:!open})}catch(_){}}} style={{
       background:"none",border:"none",padding:0,cursor:"pointer",
       fontSize:10,color:"var(--sg-mid,#999)",textDecoration:"underline",fontWeight:500,
     }}>{fr?"Comment c'est calculé ?":"How is this calculated?"} {open?"▲":"▼"}</button>
@@ -3693,7 +3696,7 @@ function VerdictRadarScan({beach,lang,onDisagree}){
     const last=g(ctkey,0)
     return(last&&Date.now()-last<12*3600*1000)?g(ckey,null):null
   })
-  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
+  useEffect(()=>{try{track("sg_verdict_scan_view",{beach_id:beach.id,island:beach.island,status:beach.status,src:beach._src||null,forecast_available:!!beach._src})}catch(_){}},[])  // eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
   const live=beach._src==="live"
   const stepLbl=live
     ?[_t(lang,"Satellite","Satellite","Satélite"),_t(lang,"Normalisation","Normalization","Normalización")]
@@ -13419,7 +13422,7 @@ export default function App(){
       let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
-    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
+    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
   },[captureGate])
 
   // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───

@@ -1342,7 +1342,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   }
   // Escape key to close (close TRACKÉ → géré ici, pas dans useModalA11y : escClose=false)
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}
+    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);const maxScroll=panelRef.current?Math.round((panelRef.current.scrollTop/(panelRef.current.scrollHeight-panelRef.current.clientHeight||1))*100):0;track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,scroll_depth:maxScroll});onClose()}}
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
@@ -1813,6 +1813,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       const msg=(e&&e.message)?String(e.message):""
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
       track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
+      track("sg_payment_failed",{plan,source:source||"unknown",provider:PAY_PROVIDER,reason:msg.slice(0,50)})
     }
   },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
   const doSubscribeRef=useRef(doSubscribe)
@@ -1969,8 +1970,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
-    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
-    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via});setPayStep(true);return}
+    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
+    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
     // Checkout 100% ON-SITE — plus de redirect off-site buy.stripe.com. En cas
     // d'échec de montage (réseau lent / Stripe.js bloqué), erreur + « Réessayer »
     // DANS l'overlay (recharge propre) : on ne quitte jamais le domaine.
@@ -1983,7 +1984,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     // la bannière de relance lit sg_checkout_abandoned.
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayError("")
-    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})
+    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via,provider:PAY_PROVIDER,product:plan})
     setPayStep(true) // révèle l'étape (le formulaire pré-monté est déjà prêt ou boote)
     const t0=Date.now()
     try{
