@@ -177,5 +177,20 @@ _*.cjs
 # DIGEST.md et latest-digest.json SONT commités ; ce dossier temporaire ne l'est jamais.
 scripts/veilleurs/_artifacts/
 
+# QA automation framework — artefacts régénérés à chaque run, JAMAIS committés (PR C)
+automation/output/
+*.err.log
+qa-report*.json
+public/api/data/rl_*.json
+playwright-report/
+qa-shots/
+.qa-pids*.xml
+logs-dev-err.txt
+preview.err.log
+preview.log
+dist-fl/
+dist-gp/
+dist-mq/
+
 # Vite dev build artefact
 /dev/
