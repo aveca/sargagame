@@ -1853,13 +1853,70 @@ export const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 /* ═══════════════════════════════════════════════════════════════════════════
    A/B TESTING + ANALYTICS
    ═══════════════════════════════════════════════════════════════════════════ */
+
+// A/B FREEZE MAP — 2026-08-04
+// Tests ACTIFS (revenu critique) : ne pas freezer.
+// TOUT le reste est gelé sur le control (ou la variante dominante promue).
+// Pour activer un test : retirer l'entrée de AB_FREEZE_MAP.
+// Pour désactiver un test : ajouter l'entrée avec la valeur voulue.
+const AB_FREEZE_MAP = {
+  // Tests CONVERSION — garder actifs (revenu direct)
+  "pw_copy": null,           // 3-way CTA copy (urgency/value/trust) — LIRE le variant
+  "pw_pass_seq": null,       // Pass offer sequencing — LIRE le variant
+
+  // TOUT LE RESTE → gelé sur control (index 0) sauf si promu (variante dominante)
+  "dataviz": "control",
+  "pw_beat": "beat",         // Promu 85% → garder la variante dominante
+  "pw_beach_story": "control",
+  "pw_verdict_guess": "control",
+  "pw_planb": "control",
+  "pw_h2s": "control",
+  "fc_position": "control",
+  "aw_hero_height": "control",
+  "list_fclock": "control",
+  "em1": "control",
+  "em2": "control",
+  "aw_hero_video": "control",
+  "nav_maree": "control",
+  "pw_mapground": "control",
+  "aw_press_verdict": "control",
+  "pw_freshness": "control",
+  "stations": "control",
+  "prev_az": "control",
+  "clean_list": "control",
+  "pw_alertes": "control",
+  "pw_conditions": "control",
+  "landing_funnel": "control",
+  "exitcap": "control",
+  "wn1": "control",
+  // PremiumModal variants — gelés
+  "pw_proof": "control",
+  "pw_calm": "calm",         // Promu 85%
+  "pw_scene": "control",
+  "pw_constel": "constel",   // Promu 85%
+  "pw_season": "control",
+  "pw_trippass_eur_ab": "control",
+  "pw_hot_intent": "control",
+}
+
 export function abVariant(testId,variants,weights){
-  const ab=g("sg_ab",{})
-  if(ab[testId]!=null&&ab[testId]<variants.length)return variants[ab[testId]]
-  const r=Math.random();let cum=0,pick=0
-  for(let i=0;i<weights.length;i++){cum+=weights[i];if(r<cum){pick=i;break}}
-  ab[testId]=pick;s("sg_ab",ab)
-  return variants[pick]
+  // A/B freeze : si le test est dans la freeze map, retourner la valeur gelée
+  if (testId in AB_FREEZE_MAP) {
+    const frozen = AB_FREEZE_MAP[testId]
+    if (frozen === null) {
+      // Test actif — laisser le random fonctionner (mais les users existants gardent leur assignment)
+      const ab=g("sg_ab",{})
+      if(ab[testId]!=null&&ab[testId]<variants.length)return variants[ab[testId]]
+      const r=Math.random();let cum=0,pick=0
+      for(let i=0;i<weights.length;i++){cum+=weights[i];if(r<cum){pick=i;break}}
+      ab[testId]=pick;s("sg_ab",ab)
+      return variants[pick]
+    }
+    // Test gelé — retourner la valeur fixe (ignorer l'assignment existant)
+    return frozen
+  }
+  // Hors map = legacy test non listé → control par défaut (sécurité)
+  return variants[0]
 }
 
 const TRACK_QUEUE_KEY="sg_track_queue"

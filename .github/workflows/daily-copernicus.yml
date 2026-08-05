@@ -841,14 +841,31 @@ jobs:
       # Pas de grid/banks/forecast-archive : ces overlays MQ/GP sont purgés des
       # nouvelles régions. Le deploy FTPS plus bas n'upload que ce mini-dossier
       # (manual-ftp-deploy.cjs upload le contenu de <ftpDir>/ tel quel).
-      - name: Quick data deploy nouvelles régions (no full build)
+      # Quick data deploy nouvelles régions : copie les JSONs Copernicus frais dans
+      # chaque <ftpDir>/api/copernicus/. Si le dossier FTP n'existe pas ou est incomplet
+      # (pas d'index.html = aucune page HTML), on fait un build complet pour cette
+      # région AVANT de copier les données — sinon on déploierait un site vide (BUG-2026-002).
+      - name: Quick data deploy nouvelles régions (full build si incomplet)
         if: steps.check_build.outputs.full == 'false'
         run: |
           node -e "
             const fs = require('fs'), path = require('path');
+            const { execSync } = require('child_process');
             const { getAllRegions } = require('./regions/index.cjs');
-            for (const r of getAllRegions()) {
-              if (['mq', 'gp'].includes(r.id)) continue;
+            const usRegions = getAllRegions().filter(r => !['mq', 'gp'].includes(r.id));
+            // Étape 1 : build complet pour les régions sans index.html
+            for (const r of usRegions) {
+              const indexHtml = path.join(r.ftpDir, 'index.html');
+              if (fs.existsSync(indexHtml)) {
+                console.log(r.id + ': FTP dir complet (index.html existe)');
+                continue;
+              }
+              console.log(r.id + ': FTP dir incomplet → build complet');
+              execSync('VITE_REGION=' + r.id + ' npm run build', { stdio: 'inherit', cwd: '.' });
+              execSync('VITE_REGION=' + r.id + ' node scripts/prepare-ftp.cjs', { stdio: 'inherit', cwd: '.' });
+            }
+            // Étape 2 : copier les données fraîches dans toutes les régions US
+            for (const r of usRegions) {
               const src = path.join('public', 'api', 'copernicus', r.id);
               if (!fs.existsSync(path.join(src, 'sargassum.json'))) { console.log('skip ' + r.id + ' (pas de data fraiche)'); continue; }
               const dest = path.join(r.ftpDir, 'api', 'copernicus');
@@ -857,8 +874,6 @@ jobs:
                 const s = path.join(src, f);
                 if (fs.existsSync(s)) fs.copyFileSync(s, path.join(dest, f));
               }
-              // Gating J+2→J+7 : prévision PRIVÉE complète de la région + .htaccess Deny
-              // (sinon forecast.php de la région → 503 / J+2-6 périmés pour le premium).
               const priv = path.join(src, '_private', 'forecast-full.json');
               if (fs.existsSync(priv)) {
                 const pdest = path.join(dest, '_private');
