@@ -1722,7 +1722,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
            throw new Error(userMsg)
          }
           if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
-            try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+            try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email,source:source||"unknown"}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email,source:source||"unknown"}))}catch(_){}
             setPayRedirecting(true)
             // Ensure redirect UI shows before navigation
             setTimeout(()=>window.location.href=d.checkoutUrl,50);return
@@ -1736,8 +1736,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         }
         if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
         localStorage.setItem("sg_email",email)
-        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
-        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
+        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days,source:source||"unknown"})}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan,source:source||"unknown"});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
         setPayBusy(false)
         setPaySuccess(true)
         setTimeout(()=>{onActivated?.();onClose()},900);return
@@ -1867,7 +1867,7 @@ const walletRedirect=useCallback(async(method)=>{
        }
         track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
         if(d.checkoutUrl){
-          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email,source:source||"unknown"}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email,source:source||"unknown"}))}catch(_){}
           // État "Redirection…" visible avant de quitter la page
           setPayRedirecting(true)
           window.location.href=d.checkoutUrl;return

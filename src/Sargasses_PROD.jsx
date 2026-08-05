@@ -11522,7 +11522,7 @@ export default function App(){
             if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
             localStorage.setItem("sg_premium_welcome","1")}catch(_){}
-          track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
+          track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan,source:ctx.source||"unknown"})
         } else {
           try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
         }
