@@ -607,6 +607,18 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/purge-analytics.cjs
 
+      # Funnel aggregation from Supabase analytics_events → funnel-snapshot.json.
+      # Complementary data source to first-party stats.php (ux-daily.json).
+      # Reads public.analytics_events (written by frontend logAnalyticsEvent),
+      # counts funnel steps, calculates rates. continue-on-error: non-blocking.
+      # Schedule-only (1 snapshot/day). Uses SUPABASE_SERVICE_KEY (service_role read).
+      - name: Funnel from Supabase (complementary)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-from-supabase.cjs --days=7
+
       # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
       # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
       # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
@@ -642,7 +654,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -900,6 +912,7 @@ jobs:
           # Tracking UX journalier (rapport + série temporelle) — append-only inter-runs.
           [ -f scripts/automation/data/ux-daily.json ] && git add scripts/automation/data/ux-daily.json
           [ -f scripts/automation/data/ux-daily-history.json ] && git add scripts/automation/data/ux-daily-history.json
+          [ -f scripts/automation/data/funnel-snapshot.json ] && git add scripts/automation/data/funnel-snapshot.json
           [ -f scripts/automation/data/referral-report.json ] && git add scripts/automation/data/referral-report.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
