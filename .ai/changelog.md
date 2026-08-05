@@ -36,7 +36,56 @@
 
 ---
 
-## 2026-07-30 — coding_agent (Claude Code)
+## 2026-08-05 — ui_agent (OpenCode)
+
+**Paywall key alignment + UI enhancement :**
+
+- **CRITICAL FIX** : `PassOffer.jsx` émettait `key: "saison"` mais le backend
+  (`mollie.php` allowlist L73, `mollie-webhook.php` L88) n'accepte que `"season"`.
+  → Tous les paiements Mollie on-site étaient rejetés ("Prix invalide").
+  → Corrigé : `"saison"` → `"season"`.
+- `PassOffer.jsx` : rollout "Pass saison" (19,99€), TrustBadge (secure/no-card/no-commit),
+  bannière saisonnière pic (Juin-Août), sticky CTA mobile via IntersectionObserver,
+  animation pulse, copy bénéfice ("Protéger mes plages maintenant").
+  - ⚠️ USD cents (1499 = $14.99) ≠ mollie-passlinks.json ($19.99) — en attente décision produit.
+- `mollie-config.example.php` : `'saison'` → `'season'` (alignement template).
+- `CLAUDE.md` : tier B2C 24,99 → 19,99€ (aligné mollie-passlinks.cjs commit bab4366a).
+- `app-runtime.css` : `@keyframes sg-pulse-cta` + reduced-motion override.
+- Gate de ship local : `php -l` ✓, `npx esbuild` ✓.
+
+**Files :** `src/PassOffer.jsx`, `public/api/mollie-config.example.php`, `CLAUDE.md`, `src/app-runtime.css`
+**PR :** #546 — `agent/ui/ux-pass-saison`
+
+---
+
+## 2026-08-05 — coding_agent (OpenCode)
+
+**Supabase mirror hardening :**
+
+- `mol_supabase_mirror()` : log CRITICAL + return `false` quand `SUPABASE_SERVICE_KEY` manquant
+  (au lieu de `return true` silencieux). Déclenche webhook retry au lieu de perdre les grants.
+- `Prefer: return=minimal,resolution=merge-duplicates` (upsert idempotent).
+- Logs améliorés : table + key context.
+- ⚠️ Risque : retry loop si clé manquante sur un serveur. Vérifier sur tous les serveurs FTP.
+
+**Files :** `public/api/mollie-lib.php`
+**PR :** #547 — `agent/coding/mollie-mirror`
+
+---
+
+## 2026-08-05 — qa_agent (OpenCode)
+
+**Analytics tracking :**
+
+- `PremiumModal.jsx` : track `sg_premium_modal_close` avec `via:"swipe_down"` + `time_spent`
+  lors du swipe-to-close. Suit le schema existant (7 autres variants : escape, close_x,
+  world_close, comic_close, hot_close, prelude_close, backdrop).
+- Aucun changement UI/functional — analytics only.
+
+**Files :** `src/PremiumModal.jsx`
+**PR :** #548 — `agent/qa/analytics-swipe`
+
+---
 
 **Payment grouping fixes :**
 - Classified Mollie API errors (user-friendly fr/en/es)

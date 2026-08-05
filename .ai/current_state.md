@@ -4,43 +4,53 @@
 
 ---
 
-## 2026-07-31 20:45 UTC · Agent: Release Engineer (OpenCode)
+## 2026-08-05 12:00 UTC · Agent: OpenCode (ui_agent + coding_agent)
 
 ### Travail effectué
-- **Production Release Cleanup** : Nettoyage complet, tests, optimisation pour déploiement production
-- Fix bug syntaxe `ArchipelView.jsx` (const dupliquées MID/FAR/NEAR)
-- Recréation `scripts/lib/coast-zones.js` (import manquant cassé par nettoyage)
-- Nettoyage fichiers debug/temp (scripts/temp/, tests/screenshots/, debug-logs/, etc.)
-- Validation complète Gate de ship
+- ✅ PR #545 — Documentation agent (prompt 07, rôles, AGENTS.md, tasks, current_state)
+- ✅ PR #546 — **CRITICAL FIX** : alignement clé "saison"→"season" PassOffer.jsx↔backend mollie.php
+- ✅ PR #547 — Hardening mollie-lib.php (Supabase mirror, CRITICAL log sur clé manquante)
+- ✅ PR #548 — Analytics swipe-down tracking (PremiumModal.jsx)
+- Analyse complète du pipeline paiement : Mollie on-site vs Stripe vs PayPal allowlists
+- Découverte critique : USD price mismatch (1499¢ frontend vs $19.99 mollie-passlinks.json)
 
-### Fichiers modifiés
-- `src/ArchipelView.jsx` — fix const dupliquées (esbuild error)
-- `scripts/lib/coast-zones.js` — recréé (zones côtières 6 régions)
-- `.ai/current_state.md` — ce fichier
+### Fichiers modifiés (3 PRs)
+- PR #546 (`agent/ui/ux-pass-saison`) : `src/PassOffer.jsx`, `src/app-runtime.css`, `CLAUDE.md`, `public/api/mollie-config.example.php`
+- PR #547 (`agent/coding/mollie-mirror`) : `public/api/mollie-lib.php`
+- PR #548 (`agent/qa/analytics-swipe`) : `src/PremiumModal.jsx`
 
-### État actuel du produit
-- **Pipeline** : erddap-live, run 17.7h STALE, satellite 32.5h OK (workflow daily-copernicus lancé)
-- **Paiements** : Mollie on-site actif (EUR MQ/GP + USD FL/PC/RM)
-- **B2B** : Pro 79 €/mois, 690 €/an, essai 30j, outreach automatique
-- **CI/CD** : 33+ workflows GitHub Actions autonomes
-- **A/B tests** : ~50+ active, en cours de purge (TASK-P1-001)
-- **Build** : ✅ succès, bundle 202.4 Ko gzip ≤ 210 Ko budget
-- **Tests** : ✅ ux-smoke 4 tokens (FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
-- **PHP** : ✅ syntaxe OK sur tous endpoints Mollie/PayPal
-- **Régions** : ✅ validation 6 régions OK
+### Découvertes critiques (paiement)
+- **PassOffer.jsx L9** : `key: "saison"` ≠ backend `"season"` → paiement Mollie rejeté "Prix invalide"
+  - ✅ CORRIGÉ (PR #546)
+- **USD cents** : 1499¢ ($14.99) ≠ mollie-passlinks.json $19.99 → ⏸️ en attente décision produit
+- **USD allowlist Stripe/PayPal** : `[599]` uniquement → saison $19.99 pas encore supporté on-site
+  - ⚠️ Nécessite mise à jour allowlist si produit décide de vendre saison en USD
 
-### Problèmes restants
-- Webhook secret Mollie pas configuré sur FTP (TASK-P0-001)
-- 50+ flags A/B à consolider (TASK-P1-001)
-- PremiumModal.jsx trop gros (~3352 lignes) (TASK-P2-001)
-- Facturation B2B répétée pas encore exposée front (TASK-P2-002)
-- Barbados préparée mais pas câblée (résidus Stripe à purger)
+### Tasks.md update
+- TASK-P0-002 : [~] in_progress — PR #546 déploie sticky CTA + trust badges + copy
+- TASK-P0-003 : [~] in_progress — PR #546 corrige le bug clé saison→season
+- TASK-P1-007 : [~] in_progress — PR #548 ajoute tracking swipe_down
+
+### Tests réalisés
+- [x] PR #545 — doc only, aucun code produit
+- [x] PR #546 — `php -l mollie-config.example.php` ✓, `npx esbuild PassOffer.jsx` ✓
+- [x] PR #547 — `php -l mollie-lib.php` ✓
+- [x] PR #548 — `npx esbuild PremiumModal.jsx` ✓
+- [ ] Pas de test E2E (PRs non bloquantes, rollback git revert disponible)
 
 ### Prochaine action recommandée
-1. Configurer webhook secret Mollie en prod (TASK-P0-001)
-2. Purger A/B tests non significatifs (TASK-P1-001)
-3. Splitter PremiumModal.jsx (TASK-P2-001)
-4. Exposer facturation B2B récurrente front (TASK-P2-002)
+1. **[PENDING]** — Décider : vendre le pass saison en USD ($19.99) on-site ?
+   → Si OUI : mettre à jour `create-checkout.php` + `paypal.php` allowlist `[599]` → `[599, 1999]` + PassOffer.jsx `usd: 1499` → `usd: 1999`
+   → Si NON : garder tel quel (USD islands = trip7 only)
+2. **[PENDING]** — Vérifier `SUPABASE_SERVICE_KEY` sur tous les serveurs FTP (PR #547)
+3. **[P2]** — Nettoyer code mort Stripe/PayPal (3 PRs, allowlists, configs)
+
+### Branches / PRs actives
+- `agent/ui/TASK-P0-001-doc` → PR #545 ✅ (documentation)
+- `agent/ui/ux-pass-saison` → PR #546 ✅ (paywall + key fix)
+- `agent/coding/mollie-mirror` → PR #547 ✅ (Supabase mirror)
+- `agent/qa/analytics-swipe` → PR #548 ✅ (analytics)
+- `main` : 37 fichiers non commités restants (autres tâches non liées)
 
 ---
 

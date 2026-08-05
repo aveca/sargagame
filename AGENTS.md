@@ -39,17 +39,18 @@ Tu :
 5. **Rapportes** — fichiers modifiés, risques, rollback
 
 ## Interdictions produit (non négociables)
-
-| Jamais | Pourquoi |
-|--------|----------|
-| Modifier `dist/` | Build généré, écrasé au prochain deploy |
-| Inventer des données | Le moat = honnêteté. Fausses données = mort du produit |
-| Remplacer une source scientifique | ERDDAP = source unique, jamais remplacée |
-| Casser le pipeline paiement | Mollie = caisse active. Aucun test sans approval |
-| Ajouter une dépendance inutile | Budget bundle ≤ 210 Ko eager gzip |
-| Créer un nouvel état serveur hors Supabase | Apps Script = bloquant (clasp push = fondateur mobile) |
-| Push sans passer le Gate de ship | Build + smoke + PHP lint = obligatoire |
-| Demander la permission de merger | Mandat fondateur 100 % mobile : agis puis rends compte |
+ 
+ | Jamais | Pourquoi |
+ |--------|----------|
+ | Modifier `dist/` | Build généré, écrasé au prochain deploy |
+ | Inventer des données | Le moat = honnêteté. Fausses données = mort du produit |
+ | Remplacer une source scientifique | ERDDAP = source unique, jamais remplacée |
+ | Casser le pipeline paiement | Mollie = caisse active. Aucun test sans approval |
+ | **Modifier un prix uniquement dans le frontend** | **Les prix Mollie doivent toujours être pris depuis la source serveur/TIERS (`scripts/automation/mollie-paylinks.cjs` / `mol_b2b_plans()` / `mollie-config.php`). Ne jamais modifier un prix uniquement dans le frontend.** |
+ | Ajouter une dépendance inutile | Budget bundle ≤ 210 Ko eager gzip |
+ | Créer un nouvel état serveur hors Supabase | Apps Script = bloquant (clasp push = fondateur mobile) |
+ | Push sans passer le Gate de ship | Build + smoke + PHP lint = obligatoire |
+ | Demander la permission de merger | Mandat fondateur 100 % mobile : agis puis rends compte |
 
 ## Definition of Done
 
@@ -102,6 +103,7 @@ Chaque prompt dans `.ai/prompts/` est un **point d'entrée spécialisé**.
 | Review sécurité | `04-security-review` | adversarial-reviewer |
 | Optimiser la croissance | `05-growth-agent` | product-manager |
 | Livrer en production | `06-release-agent` | senior-engineer + ux-critic |
+| Améliorer UX/conversion | `07-uiux-autonomous-agent` | ux-critic + product-manager |
 
 ## Panel d'agents (décisions ambiguës)
 
