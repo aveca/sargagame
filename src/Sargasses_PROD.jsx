@@ -1925,7 +1925,11 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // compteur Apps Script/Code.js → plus de clasp push pour le corriger). Agrégées
 // par scripts/automation/funnel-from-supabase.cjs. Allowlist volontaire (pas TOUT
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
-const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+// Funnel complet : map_open → beach_open → verdict → paywall → cta → checkout → conversion
+const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
+  "sg_map_open","sg_beach_open","sg_verdict_scan_view",
+  // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
+  "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
