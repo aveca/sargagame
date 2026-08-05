@@ -21,10 +21,10 @@ if (!WEBHOOK_URL.includes('localhost') && !WEBHOOK_SECRET) {
 async function checkWebhookAvailable() {
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2000);
-        await fetch(WEBHOOK_URL, { method: 'GET', signal: controller.signal });
+        const timeout = setTimeout(() => controller.abort(), 1500);
+        const res = await fetch(WEBHOOK_URL, { method: 'HEAD', signal: controller.signal });
         clearTimeout(timeout);
-        return true;
+        return res.ok; // true seulement si 2xx
     } catch (_) {
         return false;
     }
