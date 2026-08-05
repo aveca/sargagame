@@ -588,13 +588,13 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
 // pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
 // aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
 function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
-  // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
-  const ST=ctxStatus||(beach&&beach.status)||null
-  const ctxLoc=ctxName||topName||null
-  // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
-  // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
-  // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
-  const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
+   // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
+   const ST=ctxStatus||(beach&&beach.status)||null
+   const ctxLoc=ctxName||topName||null
+   // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
+   // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
+   // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
+   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
   const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
@@ -756,9 +756,9 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-wrap .pww-season-alt em{color:#5A5A5A!important;-webkit-text-fill-color:#5A5A5A!important}
       /* Les liens secondaires ne doivent JAMAIS devenir des pavés pleins → fond/bordure neutralisés,
          couleur encre lisible sur papier (le teal b2b vire encre aussi pour battre arcade/sticker). */
-      .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
-      .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
-    `}</style>
+       .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
+       .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
+     `}</style>
     <div className="pww-wrap">
       {/* HERO : la même mer golden-hour que la carte */}
       <div className="pww-hero">
@@ -949,13 +949,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
 function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
-  const ST=ctxStatus||(beach&&beach.status)||null
-  const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
-  const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
-  const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
-  const ctx=ctxName||topName
-  const best=topName
-  // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
+   const ST=ctxStatus||(beach&&beach.status)||null
+   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
+   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
+   const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
+   const ctx=ctxName||topName
+   const best=topName
+   // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
   // propre, ~64% du temps) la promesse de PEUR « avant que ta plage tourne » contredit
   // l'observation → dissonance → pas de clic. On bascule vers la value-prop POSITIVE que
   // le gratuit n'a PAS (la prévision DEMAIN). Honnête : on n'invente aucun danger.
@@ -979,8 +979,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const ctaSub=NO_TRIAL
     ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
     :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
-  const panel=(num,gold,kicker,line,meta)=>(
-    <div className={"pwx-panel"+(gold?" gold":"")}>
+  const panel=(num,gold,kicker,line,meta,featureKey)=>(
+    <div className={"pwx-panel"+(gold?" gold":"")} onClick={()=>{if(featureKey){try{track("sg_premium_feature_click",{feature:featureKey,source:source||"unknown"})}catch(_){}}}} style={{cursor:pointer}}>
       <span className="pwx-num">{num}</span>
       <span className="pwx-pc">
         <span className="pwx-kick">{kicker}</span>
@@ -1078,8 +1078,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         .pwx-act{animation:pwxRise .34s var(--punch) .5s both}
         .pwx-cta{animation:pwxCtaIn .34s var(--punch) .56s both}
       }
-      @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}.pwx-plan{transition:none}.pwx-cta{transition:none}.pwx-pow{display:none}}
-    `}</style>
+       @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}.pwx-plan{transition:none}.pwx-cta{transition:none}.pwx-pow{display:none}}
+     `}</style>
     <div className="pwx-wrap">
       <div className="pwx-hero">
         <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -1120,24 +1120,28 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       <div className="pwx-body">
         <h2 className="pwx-title">{calm
           ?_t(lang,<>Sache où sera la mer <em>demain</em><br/>pas juste aujourd'hui</>,<>Know where the sea will be <em>tomorrow</em><br/>not just today</>,<>Sabe dónde estará el mar <em>mañana</em><br/>no solo hoy</>)
+          :_ctxStatus==="avoid"?_t(lang,<>Évite les plages <em>chargées</em><br/>pendant ton séjour</>,<>Avoid <em>sargassum-heavy</em><br/>beaches on your trip</>,<>Evita playas <em>con sargazo</em><br/>durante tu estancia</>)
+          :_ctxStatus==="moderate"?_t(lang,<>Surveille ta plage <em>avant</em><br/>qu'elle ne bascule</>,<>Watch your beach <em>before</em><br/>it flips</>,<>Vigila tu playa <em>antes</em><br/>de que cambie</>)
           :_t(lang,<>Sois <em>prévenu</em><br/>avant que ta plage tourne</>,<>Know <em>before</em><br/>your beach turns</>,<>Entérate <em>antes</em><br/>de que tu playa cambie</>)}</h2>
         <p className="pwx-sub">{calm
           ?_t(lang,<>Le gratuit te montre aujourd'hui. Le Veilleur te montre les <b>7 prochains jours</b> — et t'écrit le matin où ça vaut le détour.</>,<>Free shows you today. The Watcher shows you the <b>next 7 days</b> — and emails you the morning it's worth the trip.</>,<>Lo gratis te muestra hoy. El Vigía te muestra los <b>próximos 7 días</b> — y te avisa la mañana que vale la pena.</>)
+          :_ctxStatus==="avoid"?_t(lang,<>Cette plage est <b>saturée</b> aujourd'hui. Le Veilleur te prévient quand une <b>plage voisine redevient propre</b>.</>,<>This beach is <b>heavy</b> today. The Watcher alerts you when a <b>nearby beach clears up</b>.</>,<>Esta playa está <b>cargada</b> hoy. El Vigía te avisa cuando una <b>playa cercana mejora</b>.</>)
+          :_ctxStatus==="moderate"?_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)
           :_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
 
         {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
           best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
-          topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"))}
+          topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"),"daily_brief")}
         {calm
           ?panel("02",false,_t(lang,"Quand ça change","When it changes","Cuando cambia"),
             _t(lang,"Tes plages favorites, surveillées","Your saved beaches, watched","Tus playas favoritas, vigiladas"),
-            _t(lang,"Le jour où une bascule, tu le sais avant de partir","The day one flips, you know before you go","El día que una cambia, lo sabes antes de salir"))
+            _t(lang,"Le jour où une bascule, tu le sais avant de partir","The day one flips, you know before you go","El día que una cambia, lo sabes antes de salir"),"favorites")
           :panel("02",false,_t(lang,"Alerte instantanée","Instant alert","Alerta instantánea"),
             _t(lang,"Ta plage favorite a changé","Your saved beach just changed","Tu playa favorita cambió"),
-            exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"))}
+            exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"),"alerts")}
         {panel("03",false,_t(lang,"Le weekend","Weekend forecast","El fin de semana"),
           wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Samedi : ta meilleure plage","Saturday: your top beach","El sábado: tu mejor playa"),
-          wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"))}
+          wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"),"forecast_7d")}
 
         {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
             registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
@@ -1186,17 +1190,16 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
               <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
             </span>
           </button>}
-          <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
-          {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
-          <div className="pwx-secure">🔒 {captureMode
-            ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
-            :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
-        </div>
-      </div>
-    </div>
-  </>)
-}
-
+           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
+           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
+           <div className="pwx-secure">🔒 {captureMode
+             ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
+             :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
+         </div>
+       </div>
+     </div>
+   </>)
+ }
 
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
@@ -1343,7 +1346,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   }
   // Escape key to close (close TRACKÉ → géré ici, pas dans useModalA11y : escClose=false)
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}
+    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);const maxScroll=panelRef.current?Math.round((panelRef.current.scrollTop/(panelRef.current.scrollHeight-panelRef.current.clientHeight||1))*100):0;track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,scroll_depth:maxScroll});onClose()}}
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
@@ -1604,7 +1607,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
             onActivated&&onActivated();onClose&&onClose()
           },
-          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)})},
+          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)});track("sg_payment_failed",{plan,source:source||"unknown",provider:"paypal",reason:String((err&&err.message)||"unknown").slice(0,50)})},
         }).render(paypalBtnRef.current)
       }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu démarrer. Réessaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}
     })()
@@ -1750,6 +1753,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ?_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento.")
           :(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")))
         track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
+        track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:msg.slice(0,50)})
         return
       }
     }
@@ -1814,6 +1818,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       const msg=(e&&e.message)?String(e.message):""
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
       track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
+      track("sg_payment_failed",{plan,source:source||"unknown",provider:PAY_PROVIDER,reason:msg.slice(0,50)})
     }
   },[lang,source,payBusy,onActivated,onClose,consentFlag,consentOk])
   const doSubscribeRef=useRef(doSubscribe)
@@ -1891,6 +1896,7 @@ const walletRedirect=useCallback(async(method)=>{
        setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
        try{setPayStep(true)}catch(_){}
        track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
+       track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:msg.slice(0,50)})
      }
    },[lang,source,onActivated,onClose])
   // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()
@@ -1957,7 +1963,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               setPayBusy(false)
               setPaySuccess(true)
               setTimeout(()=>{onActivated?.();onClose()},900)
-            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}
+            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)});track("sg_payment_failed",{plan:payPlanRef.current,source:source||"unknown",provider:"mollie",reason:String((e&&e.message)||"unknown").slice(0,50)})}
           }
           ses.oncancel=()=>{setPayBusy(false)}
           ses.begin()
@@ -1970,8 +1976,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
-    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
-    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via});setPayStep(true);return}
+    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
+    if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
     // Checkout 100% ON-SITE — plus de redirect off-site buy.stripe.com. En cas
     // d'échec de montage (réseau lent / Stripe.js bloqué), erreur + « Réessayer »
     // DANS l'overlay (recharge propre) : on ne quitte jamais le domaine.
@@ -1984,7 +1990,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     // la bannière de relance lit sg_checkout_abandoned.
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayError("")
-    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})
+    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via,provider:PAY_PROVIDER,product:plan})
     setPayStep(true) // révèle l'étape (le formulaire pré-monté est déjà prêt ou boote)
     const t0=Date.now()
     try{

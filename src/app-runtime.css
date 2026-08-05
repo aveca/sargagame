@@ -428,6 +428,7 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   cursor:pointer;padding:0 !important;border-radius:10px !important;margin:-4px -4px 0 0}
 .sg-toast__x:active{transform:scale(.9)}
 @keyframes sgToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes sgStickyIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);

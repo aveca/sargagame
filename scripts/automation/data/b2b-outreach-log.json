@@ -199,8 +199,40 @@
       "island": "mq",
       "status": "sent",
       "error": null
+    },
+    "mairie-anses-arlet.fr": {
+      "date": "2026-08-04T12:15:24.805Z",
+      "status": "no-email"
+    },
+    "tourisme-sainteanne-martinique.com": {
+      "date": "2026-08-04T12:15:25.035Z",
+      "status": "no-email"
+    },
+    "tourisme-troisilets.com": {
+      "date": "2026-08-04T12:15:25.260Z",
+      "status": "no-email"
+    },
+    "kalinago-beach.com": {
+      "date": "2026-08-04T12:15:25.463Z",
+      "status": "no-email"
+    },
+    "lapetiteanse.com": {
+      "date": "2026-08-04T12:15:25.664Z",
+      "status": "no-email"
+    },
+    "ilet-oscar.com": {
+      "date": "2026-08-04T12:15:25.884Z",
+      "status": "no-email"
+    },
+    "hotel-le-marouba.com": {
+      "date": "2026-08-04T12:15:26.121Z",
+      "status": "no-email"
+    },
+    "langley-resort-fort-royal.com": {
+      "date": "2026-08-04T12:15:26.409Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-07-28T12:10:59.040Z",
+  "lastRun": "2026-08-04T12:15:26.409Z",
   "totalSent": 11
 }
