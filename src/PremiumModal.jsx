@@ -979,8 +979,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const ctaSub=NO_TRIAL
     ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
     :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
-  const panel=(num,gold,kicker,line,meta)=>(
-    <div className={"pwx-panel"+(gold?" gold":"")}>
+  const panel=(num,gold,kicker,line,meta,featureKey)=>(
+    <div className={"pwx-panel"+(gold?" gold":"")} onClick={()=>{if(featureKey){try{track("sg_premium_feature_click",{feature:featureKey,source:source||"unknown"})}catch(_){}}}} style={{cursor:pointer}}>
       <span className="pwx-num">{num}</span>
       <span className="pwx-pc">
         <span className="pwx-kick">{kicker}</span>
@@ -1120,24 +1120,28 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       <div className="pwx-body">
         <h2 className="pwx-title">{calm
           ?_t(lang,<>Sache où sera la mer <em>demain</em><br/>pas juste aujourd'hui</>,<>Know where the sea will be <em>tomorrow</em><br/>not just today</>,<>Sabe dónde estará el mar <em>mañana</em><br/>no solo hoy</>)
+          :_ctxStatus==="avoid"?_t(lang,<>Évite les plages <em>chargées</em><br/>pendant ton séjour</>,<>Avoid <em>sargassum-heavy</em><br/>beaches on your trip</>,<>Evita playas <em>con sargazo</em><br/>durante tu estancia</>)
+          :_ctxStatus==="moderate"?_t(lang,<>Surveille ta plage <em>avant</em><br/>qu'elle ne bascule</>,<>Watch your beach <em>before</em><br/>it flips</>,<>Vigila tu playa <em>antes</em><br/>de que cambie</>)
           :_t(lang,<>Sois <em>prévenu</em><br/>avant que ta plage tourne</>,<>Know <em>before</em><br/>your beach turns</>,<>Entérate <em>antes</em><br/>de que tu playa cambie</>)}</h2>
         <p className="pwx-sub">{calm
           ?_t(lang,<>Le gratuit te montre aujourd'hui. Le Veilleur te montre les <b>7 prochains jours</b> — et t'écrit le matin où ça vaut le détour.</>,<>Free shows you today. The Watcher shows you the <b>next 7 days</b> — and emails you the morning it's worth the trip.</>,<>Lo gratis te muestra hoy. El Vigía te muestra los <b>próximos 7 días</b> — y te avisa la mañana que vale la pena.</>)
+          :_ctxStatus==="avoid"?_t(lang,<>Cette plage est <b>saturée</b> aujourd'hui. Le Veilleur te prévient quand une <b>plage voisine redevient propre</b>.</>,<>This beach is <b>heavy</b> today. The Watcher alerts you when a <b>nearby beach clears up</b>.</>,<>Esta playa está <b>cargada</b> hoy. El Vigía te avisa cuando una <b>playa cercana mejora</b>.</>)
+          :_ctxStatus==="moderate"?_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)
           :_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
 
         {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
           best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
-          topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"))}
+          topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"),"daily_brief")}
         {calm
           ?panel("02",false,_t(lang,"Quand ça change","When it changes","Cuando cambia"),
             _t(lang,"Tes plages favorites, surveillées","Your saved beaches, watched","Tus playas favoritas, vigiladas"),
-            _t(lang,"Le jour où une bascule, tu le sais avant de partir","The day one flips, you know before you go","El día que una cambia, lo sabes antes de salir"))
+            _t(lang,"Le jour où une bascule, tu le sais avant de partir","The day one flips, you know before you go","El día que una cambia, lo sabes antes de salir"),"favorites")
           :panel("02",false,_t(lang,"Alerte instantanée","Instant alert","Alerta instantánea"),
             _t(lang,"Ta plage favorite a changé","Your saved beach just changed","Tu playa favorita cambió"),
-            exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"))}
+            exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"),"alerts")}
         {panel("03",false,_t(lang,"Le weekend","Weekend forecast","El fin de semana"),
           wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Samedi : ta meilleure plage","Saturday: your top beach","El sábado: tu mejor playa"),
-          wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"))}
+          wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"),"forecast_7d")}
 
         {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
             registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
@@ -1603,7 +1607,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
             onActivated&&onActivated();onClose&&onClose()
           },
-          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)})},
+          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)});track("sg_payment_failed",{plan,source:source||"unknown",provider:"paypal",reason:String((err&&err.message)||"unknown").slice(0,50)})},
         }).render(paypalBtnRef.current)
       }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu démarrer. Réessaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}
     })()
@@ -1749,6 +1753,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ?_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento.")
           :(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")))
         track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
+        track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:msg.slice(0,50)})
         return
       }
     }
@@ -1891,6 +1896,7 @@ const walletRedirect=useCallback(async(method)=>{
        setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
        try{setPayStep(true)}catch(_){}
        track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
+       track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:msg.slice(0,50)})
      }
    },[lang,source,onActivated,onClose])
   // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()
@@ -1957,7 +1963,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               setPayBusy(false)
               setPaySuccess(true)
               setTimeout(()=>{onActivated?.();onClose()},900)
-            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}
+            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)});track("sg_payment_failed",{plan:payPlanRef.current,source:source||"unknown",provider:"mollie",reason:String((e&&e.message)||"unknown").slice(0,50)})}
           }
           ses.oncancel=()=>{setPayBusy(false)}
           ses.begin()

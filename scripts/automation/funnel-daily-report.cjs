@@ -106,7 +106,7 @@ function computeReport(rows) {
   const globalRate = pct(counts.conversion, counts.map_open)
 
   // Engagement events (diagnostic)
-  const ENGAGEMENT_EVENTS = ['verdict_expand', 'forecast_view', 'paywall_view', 'payment_failed']
+  const ENGAGEMENT_EVENTS = ['verdict_expand', 'forecast_view', 'paywall_view', 'payment_failed', 'premium_feature_click']
   const engagement = {}
   for (const k of ENGAGEMENT_EVENTS) engagement[k] = 0
   for (const r of rows) {
@@ -166,6 +166,7 @@ function formatReport(report, windowHours) {
   lines.push(`    Verdict expanded:   ${eng.verdict_expand || 0}`)
   lines.push(`    Forecast viewed:    ${eng.forecast_view || 0}`)
   lines.push(`    Paywall viewed:     ${eng.paywall_view || 0}`)
+  lines.push(`    Feature clicks:     ${eng.premium_feature_click || 0}`)
   lines.push(`    Payment failed:     ${eng.payment_failed || 0}`)
   lines.push('')
 

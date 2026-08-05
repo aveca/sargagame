@@ -1930,7 +1930,7 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
-  "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed",
+  "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
