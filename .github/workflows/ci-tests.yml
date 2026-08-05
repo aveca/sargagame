@@ -1,4 +1,4 @@
-name: CI Tests
+﻿name: CI Tests
 
 on:
   push:
@@ -21,11 +21,11 @@ jobs:
         run: npm test
       - name: Verify Build
         run: npm run build
-      - name: Check bundle budget (JS eager ≤ 210 Ko gzip)
+      - name: Check bundle budget (JS eager Ôëñ 210 Ko gzip)
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
         run: npx playwright install chromium
-- name: Start Vite preview (build output)
+      - name: Start Vite preview (build output)
         run: |
           nohup npx vite preview --port 4173 --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
           echo $! > /tmp/vite-preview.pid
