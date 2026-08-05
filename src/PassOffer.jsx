@@ -43,11 +43,15 @@ const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" st
  * method}) → le parent route vers Mollie on-site (carte ou wallet). Pas de Stripe.
  */
 export default function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, wallet = null, seq = false, proof = null, onProofOpen, onProofBack }) {
-  const cur = currency === "usd" ? "usd" : "eur"
-  const { P7, P30, SAISON } = CAT[cur]
-  const seg = getSegment()
-  const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
-  const showSeason = seg === "habitue" || seg === "local"
+   const cur = currency === "usd" ? "usd" : "eur"
+   const { P7, P30, SAISON } = CAT[cur]
+   const seg = getSegment()
+   const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
+   const [ctaVisible,setCtaVisible]=useState(true)
+   const ctaRef=useRef(null)
+   const noSticky=typeof window!=="undefined"&&/[?&]nosticky=0/.test(window.location.search)
+   useEffect(()=>{const obs=new IntersectionObserver(([e])=>{setCtaVisible(e.isIntersecting)},{threshold:0.1});if(ctaRef.current)obs.observe(ctaRef.current);return()=>obs.disconnect()},[])
+   const showSeason = seg === "habitue" || seg === "local"
   // Ancrages devise-aware : journée gâchée (~200) + prix/jour du pass héros 30j.
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
   const pd30 = perDay(P30.c, P30.days, cur, lang)
@@ -192,6 +196,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
 
   return (
     <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+      <style>{`@keyframes sgStickyIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
       {/* halo doré diffus (golden-hour, ancre l'or premium) */}
       <div aria-hidden style={{ position: "absolute", top: -130, left: "50%", transform: "translateX(-50%)", width: "min(420px,100%)", maxWidth: "100%", height: 280, background: "radial-gradient(ellipse at center,rgba(255,199,44,.16),transparent 64%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -304,7 +309,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
                 </span>
               ))}
             </span>
-            <span className="sg-paygold" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 15, borderRadius: 14, padding: "15px", fontFamily: "inherit", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)", color: "#190c2c", fontSize: 16, fontWeight: 800 }}>
+            <span className="sg-paygold" ref={ctaRef} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 15, borderRadius: 14, padding: "15px", fontFamily: "inherit", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)", color: "#190c2c", fontSize: 16, fontWeight: 800 }}>
               {_t(lang, "Activer mes 30 jours →", "Activate my 30 days →", "Activar mis 30 días →")}
             </span>
           </button>
@@ -325,10 +330,25 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
             immédiat → pas de garantie de remboursement volontaire). Réassurance « paiement
             unique · accès immédiat » portée par la ligne ci-dessus. */}
 
-        <div style={{ margin: "14px 0 2px", textAlign: "center", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
-          {_t(lang, "Paiement sécurisé Mollie · Pas d'abonnement · Pas de renouvellement", "Secure Mollie payment · No subscription · No auto-renew", "Pago seguro Mollie · Sin suscripción · Sin renovación")}
-        </div>
-      </div>
-    </div>
-  )
-}
+         <div style={{ margin: "14px 0 2px", textAlign: "center", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
+           {_t(lang, "Paiement sécurisé Mollie · Pas d'abonnement · Pas de renouvellement", "Secure Mollie payment · No subscription · No auto-renew", "Pago seguro Mollie · Sin suscripción · Sin renovación")}
+         </div>
+
+         {/* ── Sticky CTA bar (mobile) ── */}
+         {!noSticky&&ctaVisible===false&&<div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100,background:"#190c2c",borderTop:"2.5px solid #FFC72C",boxShadow:"0 -4px 20px rgba(0,0,0,.3)",padding:"10px 14px",animation:"sgStickyIn .3s ease-out both"}}>
+           <div style={{maxWidth:480,margin:"0 auto",display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+             <button onClick={()=>{const b=document.querySelector('.sg-passcard-hero');if(b)b.scrollIntoView({behavior:'smooth',block:'center'})}} style={{flex:1,minWidth:0,display:"block",width:"100%",border:"2.5px solid #FFC72C",borderRadius:12,padding:"10px 12px 9px",cursor:"pointer",fontFamily:"inherit",textAlign:"center",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)",color:"#190c2c",fontWeight:800,fontSize:13,boxShadow:"0 3px 0 #190c2c",forcedColorAdjust:"none"}}>
+               <span style={{display:"block",fontSize:13,fontWeight:800,letterSpacing:.3}}>{_t(lang,"Activer mes 30 jours →","Activate my 30 days →","Activar mis 30 días →")}</span>
+               <span style={{display:"block",fontSize:10,fontWeight:600,opacity:.8,marginTop:2}}>{_t(lang,"Paiement unique · sans abonnement","One-time · no subscription","Pago único · sin suscripción")}</span>
+             </button>
+             <div style={{display:"flex",gap:5,flexShrink:0}}>
+               <span style={{display:"flex",alignItems:"center",gap:3,fontSize:8.5,fontWeight:700,color:"#EAF7F4",whiteSpace:"nowrap"}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2Z"/></svg>Mollie</span>
+               <span style={{display:"flex",alignItems:"center",gap:3,fontSize:8.5,fontWeight:700,color:"#EAF7F4",whiteSpace:"nowrap"}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{_t(lang,"Sans carte","No card","Sin tarjeta")}</span>
+               <span style={{display:"flex",alignItems:"center",gap:3,fontSize:8.5,fontWeight:700,color:"#EAF7F4",whiteSpace:"nowrap"}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>{_t(lang,"Sans engagement","No strings","Sin compromiso")}</span>
+             </div>
+           </div>
+         </div>}
+       </div>
+     </div>
+   )
+ }

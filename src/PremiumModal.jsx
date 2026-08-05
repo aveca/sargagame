@@ -551,13 +551,13 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
 // pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
 // aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
 function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
-  // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
-  const ST=ctxStatus||(beach&&beach.status)||null
-  const ctxLoc=ctxName||topName||null
-  // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
-  // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
-  // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
-  const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
+   // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
+   const ST=ctxStatus||(beach&&beach.status)||null
+   const ctxLoc=ctxName||topName||null
+   // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
+   // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
+   // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
+   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
   const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
@@ -719,9 +719,9 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-wrap .pww-season-alt em{color:#5A5A5A!important;-webkit-text-fill-color:#5A5A5A!important}
       /* Les liens secondaires ne doivent JAMAIS devenir des pavés pleins → fond/bordure neutralisés,
          couleur encre lisible sur papier (le teal b2b vire encre aussi pour battre arcade/sticker). */
-      .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
-      .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
-    `}</style>
+       .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
+       .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
+     `}</style>
     <div className="pww-wrap">
       {/* HERO : la même mer golden-hour que la carte */}
       <div className="pww-hero">
@@ -912,13 +912,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
 function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
-  const ST=ctxStatus||(beach&&beach.status)||null
-  const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
-  const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
-  const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
-  const ctx=ctxName||topName
-  const best=topName
-  // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
+   const ST=ctxStatus||(beach&&beach.status)||null
+   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
+   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
+   const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
+   const ctx=ctxName||topName
+   const best=topName
+   // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
   // propre, ~64% du temps) la promesse de PEUR « avant que ta plage tourne » contredit
   // l'observation → dissonance → pas de clic. On bascule vers la value-prop POSITIVE que
   // le gratuit n'a PAS (la prévision DEMAIN). Honnête : on n'invente aucun danger.
@@ -1041,8 +1041,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         .pwx-act{animation:pwxRise .34s var(--punch) .5s both}
         .pwx-cta{animation:pwxCtaIn .34s var(--punch) .56s both}
       }
-      @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}.pwx-plan{transition:none}.pwx-cta{transition:none}.pwx-pow{display:none}}
-    `}</style>
+       @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}.pwx-plan{transition:none}.pwx-cta{transition:none}.pwx-pow{display:none}}
+     `}</style>
     <div className="pwx-wrap">
       <div className="pwx-hero">
         <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -1151,14 +1151,14 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </button>}
           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un pass","I already have a pass","Ya tengo un pase")}</button>
           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
-          <div className="pwx-secure">🔒 {captureMode
-            ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
-            :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
-        </div>
-      </div>
-    </div>
-  </>)
-}
+           <div className="pwx-secure">🔒 {captureMode
+             ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
+             :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
+         </div>
+       </div>
+     </div>
+   </>)
+ }
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
   // Capture B2B (hôtels/collectivités) — porte discrète vers le drip B2B existant.
