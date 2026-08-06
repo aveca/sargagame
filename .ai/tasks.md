@@ -50,7 +50,7 @@
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Terminer le paywall BD en ajoutant les variants d'entête (scene/constel/beat) + vérifier les transitions
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-05) — header variants (scene/alert/watch/calm/constel), 3 pricing cards (Brief 29€ decoy / Pro 79€ target / Pro Annual 690€ value), RiskReversal 14j, SocialProof
 
 ---
 

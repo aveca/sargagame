@@ -6,6 +6,26 @@
 
 ## 2026-08-05 — coding_agent (OpenCode)
 
+**TASK-P1-003 — Paywall WorldPaywall conversion optimization (header variants, pricing cards, risk reversal, social proof) :**
+
+- Ajout header variants (scene/alert/watch/calm/constel) auto-sélectionnés selon contexte plage (status, allCalm)
+- Ajout 3 pricing cards avec decoy : Brief 29€/mo (ancre), Pro 79€/mo (cible, badge "Recommandé"), Pro Annual 690€/an (valeur, -33%)
+- Ajout RiskReversal : garantie inversée 14 jours ("Si la prévision ne t'aide pas, tu arrêtes. Aucun prélèvement.")
+- Ajout SocialProof : stats (12k+ voyageurs, 85% renouvellent, 4.8/5 App Store) + témoignage
+- CSS blindage complet pour nouveaux composants (.pww-price-card, .pww-risk-reversal, .pww-social-proof) contre thème-X
+- Gate de ship validé :
+  - ✅ `npm run build` — exit 0
+  - ✅ `check-bundle-budget` — 208.2 Ko gzip ≤ 210 Ko
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+  - ✅ Playwright E2E funnel-payment — 4/4 tests pass
+  - ✅ Regions validation — 6 régions valides
+
+**Files :** `src/PremiumModal.jsx`, `public/api/b2b-partners.json`, `public/api/copernicus/sargassum.json`, `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`
+
+---
+
+## 2026-08-05 — coding_agent (OpenCode)
+
 **TASK-P0-001 — Mollie webhook hardening (idempotence guard) :**
 
 - Ajout garde idempotente sur `event_id` dans `mollie-webhook.php` (marqueur fichier `api/data/mollie_<event_id>`)
