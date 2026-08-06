@@ -1,6 +1,6 @@
 {
   "window_hours": 24,
-  "since": "2026-08-05T02:46:04.500Z",
+  "since": "2026-08-05T08:40:36.885Z",
   "total_events": 6078,
   "funnel": [
     {
@@ -93,7 +93,7 @@
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 85,
+    "paywall_view": 107,
     "payment_failed": 0,
     "premium_feature_click": 0
   },

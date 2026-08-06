@@ -1,60 +1,60 @@
 {
   "window_days": 7,
-  "since": "2026-07-30T02:46:01.131Z",
-  "total_rows": 19454,
+  "since": "2026-07-30T08:40:35.552Z",
+  "total_rows": 19833,
   "counts": {
-    "session_start": 12088,
+    "session_start": 12254,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1318,
+    "premium_modal_open": 1311,
     "premium_modal_cta": 4,
-    "pass_cta": 92,
+    "pass_cta": 98,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 4,
-    "b2b_offer_view": 49,
+    "b2b_offer_view": 48,
     "b2b_step": 25,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 96,
+  "cta_total": 102,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 7.3,
-    "cta_to_redirect": 4.2,
+    "modal_to_cta": 7.8,
+    "cta_to_redirect": 3.9,
     "cta_to_conversion": 0
   },
   "by_island": {
-    "PUNTACANA": {
-      "session_start": 757,
-      "b2b_offer_view": 10,
-      "premium_modal_open": 47,
-      "b2b_step": 6,
-      "pass_cta": 2
-    },
     "GP": {
-      "session_start": 4431,
-      "premium_modal_open": 251,
+      "session_start": 4446,
+      "premium_modal_open": 248,
       "pass_cta": 14,
       "b2b_offer_view": 2
     },
-    "FLORIDA": {
-      "session_start": 1495,
-      "premium_modal_open": 102,
-      "b2b_offer_view": 2,
+    "PUNTACANA": {
+      "session_start": 753,
+      "premium_modal_open": 47,
+      "b2b_offer_view": 9,
+      "b2b_step": 6,
       "pass_cta": 2
     },
     "MQ": {
-      "session_start": 5064,
-      "premium_modal_open": 896,
+      "session_start": 5218,
+      "premium_modal_open": 891,
       "b2b_offer_view": 31,
-      "pass_cta": 72,
+      "pass_cta": 78,
       "checkout_redirect": 4,
       "premium_modal_cta": 4,
       "b2b_step": 16
     },
+    "FLORIDA": {
+      "session_start": 1499,
+      "premium_modal_open": 103,
+      "b2b_offer_view": 2,
+      "pass_cta": 2
+    },
     "RIVIERAMAYA": {
-      "session_start": 341,
+      "session_start": 338,
       "b2b_offer_view": 4,
       "b2b_step": 3,
       "premium_modal_open": 22,
