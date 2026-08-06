@@ -2686,11 +2686,13 @@
     "daily_count": 7,
     "j3": "2026-08-02T02:48:42.144Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-02"
+    "install_nudge_last": "2026-08-02",
+    "j7": "2026-08-06T02:35:04.058Z"
   },
   "48e424e71674d44b79b00d46d97b104c": {},
   "9da18b89b4a74d4ff5765d4de9d26e58": {
-    "j3": "2026-08-02T02:48:43.956Z"
+    "j3": "2026-08-02T02:48:43.956Z",
+    "j7": "2026-08-06T02:35:06.605Z"
   },
   "1466fd25f55b0fddacc5a7877407728a": {
     "j3": "2026-08-02T13:23:45.084Z"
@@ -2786,23 +2788,31 @@
   "b1296728b690d38ab178a205b7362285": {
     "j3": "2026-08-05T14:09:27.070Z"
   },
-  "5f5c409a906828259835d51c42e377e9": {},
+  "5f5c409a906828259835d51c42e377e9": {
+    "j3": "2026-08-06T02:35:09.120Z"
+  },
   "45f990361f60c717747d1888cff38655": {
     "daily_last": "2026-08-05",
     "daily_sig": "Plage de Grande Anse|clean|82|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-05"
+    "install_nudge_last": "2026-08-05",
+    "j3": "2026-08-06T02:35:11.346Z"
   },
-  "43eed7bbba4f6a17ccbd75135f34fd14": {},
+  "43eed7bbba4f6a17ccbd75135f34fd14": {
+    "j3": "2026-08-06T02:35:13.342Z"
+  },
   "db625dbe1f4120f7c0da1f93bd7ec4fb": {
     "daily_last": "2026-08-05",
     "daily_sig": "Jupiter Beach|clean|88|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-05"
+    "install_nudge_last": "2026-08-05",
+    "j3": "2026-08-06T02:35:23.202Z"
   },
-  "c76e14ea92a35e54ac398bc719493101": {},
+  "c76e14ea92a35e54ac398bc719493101": {
+    "j3": "2026-08-06T02:35:25.956Z"
+  },
   "333267bd32f1611bd7b5528c4b54eaeb": {
     "daily_last": "2026-08-05",
     "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
@@ -2812,5 +2822,6 @@
     "daily_last": "2026-08-05",
     "daily_sig": "Jupiter Beach|clean|88|clean|0|",
     "daily_count": 1
-  }
+  },
+  "94c35534f45ab6f02bf4a052c5e67d4c": {}
 }
