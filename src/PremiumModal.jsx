@@ -8,6 +8,7 @@ import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import * as SG from "./Sargasses_PROD.jsx"
+import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "./ga4-ecommerce.js"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
   LINK_PRO, MOLLIE_PROFILE, MOLLIE_TESTMODE, MOL_FIELD, MOL_LABEL, NO_TRIAL, PAYPAL_CLIENT_ID, PAYPAL_PLANS,
@@ -1605,6 +1606,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             try{submitLead(email,"paypal_sub")}catch(_){}
             try{fetch("/api/paypal.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"confirm_subscription",subscriptionId:d.subscriptionID,email,plan})}).catch(()=>{})}catch(_){}
             track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
+            // GA4 Ecommerce: purchase
+            try{
+              const meta = getPlanMeta(plan, PAY_CUR || 'EUR');
+              purchase(d.subscriptionID, plan, meta.price, meta.currency, 'paypal');
+            }catch(_){}
             onActivated&&onActivated();onClose&&onClose()
           },
           onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)});track("sg_payment_failed",{plan,source:source||"unknown",provider:"paypal",reason:String((err&&err.message)||"unknown").slice(0,50)})},
@@ -1741,6 +1747,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         localStorage.setItem("sg_email",email)
         if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
         else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
+        // GA4 Ecommerce: purchase
+        try{
+          const meta = _pc ? getPlanMeta(_pc.pass, PAY_CUR || 'EUR') : getPlanMeta(plan, PAY_CUR || 'EUR');
+          purchase(d.paymentId, _pc ? _pc.pass : plan, meta.price, meta.currency, 'mollie');
+        }catch(_){}
         setPayBusy(false)
         setPaySuccess(true)
         setTimeout(()=>{onActivated?.();onClose()},900);return
@@ -1783,6 +1794,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         localStorage.setItem("sg_email",email)
         localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))
         track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
+        // GA4 Ecommerce: purchase
+        try{
+          const meta = getPlanMeta(_pc.pass, PAY_CUR || 'EUR');
+          purchase(pd.paymentIntentId, _pc.pass, meta.price, meta.currency, 'mollie_onsite');
+        }catch(_){}
         setPayBusy(false);onActivated?.();onClose();return
       }
       // Parrainage : transmet le code parrain (le filleul ramené crédite le parrain
@@ -1809,6 +1825,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       localStorage.setItem("sg_premium_email",email)
       if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
       track("sg_conversion",{session_id:d.subscriptionId,method:"onsite",plan})
+      // GA4 Ecommerce: purchase
+      try{
+        const meta = getPlanMeta(plan, PAY_CUR || 'EUR');
+        purchase(d.subscriptionId, plan, meta.price, meta.currency, 'mollie_onsite');
+      }catch(_){}
       if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan})
       setPayBusy(false)
       onActivated?.()
@@ -1958,9 +1979,14 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
               ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
-              if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
-              else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
-              setPayBusy(false)
+if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
+               else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
+               // GA4 Ecommerce: purchase
+               try{
+                 const meta = _pc ? getPlanMeta(_pc.pass, PAY_CUR || 'EUR') : getPlanMeta(payPlanRef.current, PAY_CUR || 'EUR');
+                 purchase(d.paymentId, _pc ? _pc.pass : payPlanRef.current, meta.price, meta.currency, 'apple_pay');
+               }catch(_){}
+               setPayBusy(false)
               setPaySuccess(true)
               setTimeout(()=>{onActivated?.();onClose()},900)
             }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)});track("sg_payment_failed",{plan:payPlanRef.current,source:source||"unknown",provider:"mollie",reason:String((e&&e.message)||"unknown").slice(0,50)})}
@@ -1976,6 +2002,11 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   },[lang,source,onActivated,onClose,walletRedirect,consentFlag,consentOk])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
+    // GA4 Ecommerce: begin_checkout
+    try{
+      const meta = getPlanMeta(plan, PAY_CUR || 'EUR');
+      beginCheckout(plan, source || 'unknown', meta.price, meta.currency);
+    }catch(_){}
     if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
     if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via,provider:PAY_PROVIDER,product:plan});setPayStep(true);return}
     // Checkout 100% ON-SITE — plus de redirect off-site buy.stripe.com. En cas

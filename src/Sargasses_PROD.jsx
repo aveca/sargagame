@@ -14,6 +14,7 @@ import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
+import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
@@ -1996,6 +1997,10 @@ export function track(event,params={}){
 }
 // Expose track globally for E2E test interception (non-prod: no-op in production if window undefined)
 try{if(typeof window!=="undefined")window.track=track}catch{}
+
+// GA4 Ecommerce exports (re-export from ga4-ecommerce.js)
+export {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
+
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
   try{
@@ -13437,6 +13442,16 @@ export default function App(){
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
+    // GA4 Ecommerce: view_promotion (paywall shown) + begin_checkout (intent)
+    try{
+      if(hasAnnual){
+        viewPromotion('pro_annual', 'paywall_annual');
+        beginCheckout('pro_annual', s, PRICE_YR ? parseFloat(PRICE_YR.replace(/[^0-9.]/g,'')) : 690, 'EUR');
+      }else{
+        viewPromotion('pro_monthly', 'paywall_monthly');
+        beginCheckout('pro_monthly', s, PRICE_MO ? parseFloat(PRICE_MO.replace(/[^0-9.]/g,'')) : 79, 'EUR');
+      }
+    }catch(_){}
   },[captureGate])
 
   // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
