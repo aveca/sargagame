@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-07-30T08:40:35.552Z",
-  "total_rows": 19833,
+  "since": "2026-07-30T14:19:18.750Z",
+  "total_rows": 21237,
   "counts": {
-    "session_start": 12254,
+    "session_start": 12482,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1311,
+    "premium_modal_open": 1318,
     "premium_modal_cta": 4,
     "pass_cta": 98,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 4,
-    "b2b_offer_view": 48,
+    "b2b_offer_view": 49,
     "b2b_step": 25,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -20,44 +20,44 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 7.8,
+    "modal_to_cta": 7.7,
     "cta_to_redirect": 3.9,
     "cta_to_conversion": 0
   },
   "by_island": {
     "GP": {
-      "session_start": 4446,
-      "premium_modal_open": 248,
+      "session_start": 4479,
+      "premium_modal_open": 239,
       "pass_cta": 14,
-      "b2b_offer_view": 2
+      "b2b_offer_view": 3
     },
-    "PUNTACANA": {
-      "session_start": 753,
-      "premium_modal_open": 47,
-      "b2b_offer_view": 9,
-      "b2b_step": 6,
+    "FLORIDA": {
+      "session_start": 1544,
+      "premium_modal_open": 108,
+      "b2b_offer_view": 2,
       "pass_cta": 2
     },
     "MQ": {
-      "session_start": 5218,
-      "premium_modal_open": 891,
+      "session_start": 5328,
+      "premium_modal_open": 900,
       "b2b_offer_view": 31,
       "pass_cta": 78,
       "checkout_redirect": 4,
       "premium_modal_cta": 4,
       "b2b_step": 16
     },
-    "FLORIDA": {
-      "session_start": 1499,
-      "premium_modal_open": 103,
-      "b2b_offer_view": 2,
-      "pass_cta": 2
-    },
     "RIVIERAMAYA": {
-      "session_start": 338,
+      "session_start": 342,
       "b2b_offer_view": 4,
       "b2b_step": 3,
       "premium_modal_open": 22,
+      "pass_cta": 2
+    },
+    "PUNTACANA": {
+      "session_start": 789,
+      "premium_modal_open": 49,
+      "b2b_offer_view": 9,
+      "b2b_step": 6,
       "pass_cta": 2
     }
   }

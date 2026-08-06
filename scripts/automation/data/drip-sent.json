@@ -2695,7 +2695,8 @@
     "j7": "2026-08-06T02:35:06.605Z"
   },
   "1466fd25f55b0fddacc5a7877407728a": {
-    "j3": "2026-08-02T13:23:45.084Z"
+    "j3": "2026-08-02T13:23:45.084Z",
+    "j7": "2026-08-06T14:11:23.297Z"
   },
   "70d9cc5fa4e3266520a308d71035b1ab": {},
   "1daef1d0f9eefab3af9ba677efc15af0": {},
@@ -2814,9 +2815,9 @@
     "j3": "2026-08-06T02:35:25.956Z"
   },
   "333267bd32f1611bd7b5528c4b54eaeb": {
-    "daily_last": "2026-08-05",
-    "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
-    "daily_count": 1
+    "daily_last": "2026-08-06",
+    "daily_sig": "Plage de Grande Anse|clean|85|clean|0|",
+    "daily_count": 2
   },
   "3f232414869c2f43ae8ea94af9f16c4a": {
     "daily_last": "2026-08-06",
@@ -2832,5 +2833,6 @@
     "daily_last": "2026-08-06",
     "daily_sig": "Plage de Grande Anse|clean|90|clean|0|",
     "daily_count": 1
-  }
+  },
+  "444b7de9afc8a5cc098379f02c92c1e8": {}
 }
