@@ -13,6 +13,7 @@
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
 - [x] P1 - B2B recurring Mollie (#210, @coding_agent)
 - [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
+- [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
 
 ---
 
@@ -23,7 +24,7 @@
 - **Rôle** : coding_agent
 - **Description** : `mollie-config.php` a `webhook_secret` commenté → signature webhook non vérifiée. Doit être configuré sur chaque serveur FTP après deploy.
 - **Estimation** : 30 min
-- **Statut** : [ ] code_ready, [ ] deployed_to_prod
+- **Statut** : [x] done by coding_agent (2026-08-05) — fail-closed au deploy + idempotence event_id implémentée
 
 ---
 

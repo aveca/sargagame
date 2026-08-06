@@ -38,10 +38,21 @@ $data = json_decode($raw, true) ?? [];
 $id = $data['id'] ?? '';
 $type = $data['type'] ?? '';
 $event = $data['event'] ?? '';
+$eventId = $data['id'] ?? ''; // Mollie event ID for idempotency
 
 if (!$id || !$type) {
     http_response_code(400);
     echo json_encode(['error' => 'id + type requis']);
+    exit;
+}
+
+// Idempotence sur event_id (marqueur fichier dans api/data/ — non servi par HTTP)
+$dataDir = __DIR__ . '/data';
+if (!is_dir($dataDir)) { @mkdir($dataDir, 0755, true); }
+$marker = $dataDir . '/mollie_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $eventId);
+if ($eventId !== '' && file_exists($marker)) {
+    http_response_code(200);
+    echo json_encode(['received' => true, 'duplicate' => true]);
     exit;
 }
 
@@ -66,6 +77,9 @@ try {
                 // B2B monthly subscription payment failed - grant handled by subscription webhook (subscription.charge_failed)
                 error_log("[mollie-webhook] payment.failed b2b_monthly paymentId=$id");
             }
+            // Marquer l'event comme traité (idempotence)
+            @file_put_contents($marker, '');
+            
             http_response_code(200);
             echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status, 'event' => $event]);
             exit;
@@ -98,12 +112,16 @@ try {
                 exit;
             }
             
+            // Marquer l'event comme traité (idempotence)
+            @file_put_contents($marker, '');
+            
             http_response_code(200);
             echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status]);
             exit;
         }
         
         // For other payment statuses (pending, canceled, expired, etc.)
+        @file_put_contents($marker, '');
         http_response_code(200);
         echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status]);
         exit;
@@ -150,20 +168,24 @@ try {
 
          // payment.failed for subscriptions is now handled in payment branch
 
-         // Handle cancellation/expiration — revoke Pro token
-         if (in_array($event, ['subscription.canceled', 'subscription.expired'], true)) {
-             mol_b2b_revoke($subscription->id);
-             error_log("[mollie-webhook] subscription.$event REVOKED id=$id plan=$planKey customer=$customerId");
-         }
+// Handle cancellation/expiration — revoke Pro token
+          if (in_array($event, ['subscription.canceled', 'subscription.expired'], true)) {
+              mol_b2b_revoke($subscription->id);
+              error_log("[mollie-webhook] subscription.$event REVOKED id=$id plan=$planKey customer=$customerId");
+          }
 
-         http_response_code(200);
-         echo json_encode(['received' => true, 'type' => 'subscription', 'status' => $status, 'event' => $event]);
-         exit;
+          // Marquer l'event comme traité (idempotence)
+          @file_put_contents($marker, '');
+          
+          http_response_code(200);
+          echo json_encode(['received' => true, 'type' => 'subscription', 'status' => $status, 'event' => $event]);
+          exit;
     }
 
     if ($type === 'customer') {
         $customer = $mollie->customers->get($id);
         error_log("[mollie-webhook] customer.$event id=$id");
+        @file_put_contents($marker, '');
         http_response_code(200);
         echo json_encode(['received' => true, 'type' => 'customer']);
         exit;
@@ -171,11 +193,13 @@ try {
 
     if ($type === 'mandate') {
         error_log("[mollie-webhook] mandate.$event id=$id");
+        @file_put_contents($marker, '');
         http_response_code(200);
         echo json_encode(['received' => true, 'type' => 'mandate']);
         exit;
     }
 
+    @file_put_contents($marker, '');
     http_response_code(200);
     echo json_encode(['received' => true, 'type' => $type, 'note' => 'unhandled_type_logged']);
 } catch (Throwable $e) {

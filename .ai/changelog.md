@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-08-05 — coding_agent (OpenCode)
+
+**TASK-P0-001 — Mollie webhook hardening (idempotence guard) :**
+
+- Ajout garde idempotente sur `event_id` dans `mollie-webhook.php` (marqueur fichier `api/data/mollie_<event_id>`)
+- Protection contre replay webhook Mollie (HTTP 200 + `duplicate: true` si déjà traité)
+- Pattern aligné sur `stripe-webhook.php` (file-based markers dans `api/data/` protégé par .htaccess)
+- Préfixe `mollie_` évite collision avec marqueurs Stripe
+- Fail-closed existant confirmé : webhook_secret manquant → 503 (config), signature invalide → 403
+- Idempotence métier déjà présente via `mol_b2b_grant_once()` / `mol_b2c_pass_grant()` (subscriptionId / paymentId)
+- Tests unitaires créés : `tests/integration/mollie-webhook.test.php`
+- Gate de ship validé :
+  - ✅ `npm run build` — exit 0
+  - ✅ `check-bundle-budget` — 207.2 Ko gzip ≤ 210 Ko
+  - ✅ PHP lint — `mollie-webhook.php`, `mollie-lib.php` OK
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+  - ✅ Playwright E2E funnel-payment — 4/4 tests pass
+
+**Files :** `public/api/mollie-webhook.php`, `tests/integration/mollie-webhook.test.php`, `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`
+
+---
+
 ## 2026-07-31 — release_engineer (OpenCode)
 
 **Production Release Cleanup & Validation :**
