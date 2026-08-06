@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-08-06T08:36:03.595Z",
+  "generatedAt": "2026-08-06T14:14:45.019Z",
   "window": {
     "from": "2026-07-27",
     "to": "2026-08-06",
@@ -15,9 +15,9 @@
     "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-08-06T08:36:03.487Z",
+    "computedAt": "2026-08-06T14:14:44.939Z",
     "backtestAgeHours": 0,
-    "observationLagDays": -1,
+    "observationLagDays": 0,
     "stale": false
   },
   "sampleSize": 945,
@@ -101,7 +101,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-deshaies",
@@ -173,7 +173,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.002
+      "afaiMAE": 0.004
     },
     {
       "id": "anse-madame",
@@ -253,7 +253,7 @@
       "island": "mq",
       "samples": 45,
       "hitRatePct": 87,
-      "afaiMAE": 0.05
+      "afaiMAE": 0.052
     }
   ],
   "disclaimer": "Au-delà de J+3 la fiabilité décroît (prévision indicative). Les alertes (sargasses attendues) sont émises à confiance prudente tant que la donnée satellite ne les confirme pas. La période couverte est dans « window » ; les chiffres sont recalculés à chaque mise à jour de l'archive.",
