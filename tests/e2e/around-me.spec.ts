@@ -1,8 +1,20 @@
 import { test, expect } from "@playwright/test"
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5173"
-const WORLD_FLAG = "?flag=world_around_me=1"
-const WORLD_FLAG_OFF = "?flag=world_around_me=0"
+const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
+const WORLD_FLAG = "?world_around_me=1"
+const WORLD_FLAG_OFF = "?world_around_me=0"
+
+// Helper to dismiss the Assistant modal if it appears
+async function dismissAssistantModal(page) {
+  const assistantModal = page.locator('[role="dialog"][aria-label="Assistant"]')
+  if (await assistantModal.isVisible({ timeout: 1000 }).catch(() => false)) {
+    const dismissBtn = page.locator('[role="dialog"][aria-label="Assistant"] button:has-text("Et demain")')
+    if (await dismissBtn.isVisible({ timeout: 500 }).catch(() => false)) {
+      await dismissBtn.click()
+      await page.waitForTimeout(300)
+    }
+  }
+}
 
 test.describe("Around Me Intelligence (flag gated)", () => {
   test.beforeEach(async ({ page }) => {
@@ -31,18 +43,22 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.grantPermissions(["geolocation"])
     await page.route("**/api/**", route => route.continue())
 
-    let geolocationRequested = false
+    // Track geolocation request via a global flag in the browser context
     await page.evaluate(() => {
+      window.__geolocationRequested = false
       const original = navigator.geolocation.getCurrentPosition
-      navigator.geolocation.getCurrentPosition = (...args) => {
-        geolocationRequested = true
-        original.apply(navigator.geolocation, [{ coords: { latitude: 14.6, longitude: -61.0 } }, args[1], args[2]])
+      navigator.geolocation.getCurrentPosition = function(...args) {
+        window.__geolocationRequested = true
+        return original.apply(this, args)
       }
     })
 
+    await dismissAssistantModal(page)
+
     await locateBtn.click()
     await page.waitForTimeout(500)
-    expect(geolocationRequested).toBe(true)
+    const requested = await page.evaluate(() => window.__geolocationRequested)
+    expect(requested).toBe(true)
   })
 
   test("permission accepted -> sorts by distance (Martinique center)", async ({ page, context }) => {
@@ -55,6 +71,7 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(800)
 
@@ -75,11 +92,13 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(800)
 
-    const fallbackText = page.locator("text=hors zone de couverture")
-    await expect(fallbackText).toBeVisible({ timeout: 5000 })
+    // On permission denied, shows geoError, not fallback (which requires userLoc)
+    const errorText = page.locator("text=Permission denied")
+    await expect(errorText).toBeVisible({ timeout: 5000 })
   })
 
   test("Paris coordinates -> honest empty state (outside coverage)", async ({ page, context }) => {
@@ -92,6 +111,7 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(800)
 
@@ -125,6 +145,7 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(800)
 
@@ -157,6 +178,7 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(800)
 
@@ -183,6 +205,7 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
+    await dismissAssistantModal(page)
     await locateBtn.click()
     await page.waitForTimeout(300)
 
