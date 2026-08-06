@@ -4,50 +4,48 @@
 
 ---
 
-## 2026-08-05 21:30 UTC · Agent: coding_agent (OpenCode)
+## 2026-08-05 22:15 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
-- **TASK-P1-003 — Paywall WorldPaywall conversion optimization** :
-  - Header variants (scene/alert/watch/calm/constel) auto-sélectionnés selon contexte plage
-  - 3 pricing cards avec decoy : Brief 29€/mo (ancre), Pro 79€/mo (cible, badge "Recommandé"), Pro Annual 690€/an (valeur, -33%)
-  - RiskReversal : garantie inversée 14 jours ("Si la prévision ne t'aide pas, tu arrêtes. Aucun prélèvement.")
-  - SocialProof : stats (12k+ voyageurs, 85% renouvellent, 4.8/5 App Store) + témoignage
-  - CSS blindage complet pour nouveaux composants contre thèmes A/B
-  - Gate de ship validé : build ✅, bundle 208.2 Ko ≤ 210 Ko, ux-smoke 4 tokens ✅, E2E 4/4 ✅, régions 6/6 ✅
+- **TASK-P1-001 — Purge dead A/B tests** :
+  - Purged 32+ dead A/B test variants across Sargasses_PROD.jsx and PremiumModal.jsx
+  - Hardcoded promoted variants (pw_beat=beat, pw_calm=calm, pw_constel=constel) at 85% promotion
+  - Simplified AB_FREEZE_MAP from 40+ entries to 2 active tests: pw_copy (3-way CTA copy), pw_pass_seq (pass offer sequencing)
+  - Bundle budget improved: 193.5 Ko gzip (was 208.2 Ko) — 14.7 Ko saved
+  - Gate de ship validé : build ✅, bundle 193.5 Ko ≤ 210 Ko, ux-smoke 4 tokens ✅, E2E 4/4 ✅, régions 6/6 ✅
 
 ### Fichiers modifiés
-- `src/PremiumModal.jsx` — WorldPaywall avec header variants, PricingCards, RiskReversal, SocialProof + CSS blindage
-- `public/api/b2b-partners.json` — régénéré par build
-- `public/api/copernicus/sargassum.json` — mis à jour par build
+- `src/Sargasses_PROD.jsx` — Purged A/B tests, hardcoded promoted variants, simplified AB_FREEZE_MAP
+- `src/PremiumModal.jsx` — Purged A/B tests, hardcoded promoted variants
 
 ### Tests réalisés
 - [x] npm run build → exit 0
-- [x] check-bundle-budget → 208.2 Ko ≤ 210 Ko
+- [x] check-bundle-budget → 193.5 Ko ≤ 210 Ko
 - [x] php -l → OK (aucun fichier PHP touché)
 - [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
 - [x] playwright test → 4/4 passed (funnel-payment)
+- [x] regions validation → 6/6 OK
 
 ### Problèmes restants
 - [ ] Webhook secret Mollie pas configuré sur FTP (TASK-P0-001) — fail-closed + idempotence en place, manque secret en prod
-- [ ] 50+ flags A/B à consolider (TASK-P1-001)
 - [ ] PremiumModal.jsx trop gros (~3352 lignes) (TASK-P2-001)
 - [ ] Facturation B2B répétée pas encore exposée front (TASK-P2-002)
 - [ ] Barbados préparée mais pas câblée (résidus Stripe à purger)
 
 ### Prochaine action recommandée
 1. Configurer webhook secret Mollie en prod (TASK-P0-001)
-2. Purger A/B tests non significatifs (TASK-P1-001)
+2. Tests E2E Playwright du funnel payant (TASK-P1-002)
 3. Spliter PremiumModal.jsx (TASK-P2-001) — seulement si besoin budget bundle
 4. Exposer facturation B2B récurrente front (TASK-P2-002)
 
 ### Branche / PR
-- Branche : `agent/coding/TASK-P1-003`
+- Branche : `agent/coding/TASK-P1-001`
 - PR : # (à créer)
-- Commit head : `ecf0a79a`
+- Commit head : `24b0784b`
 
 ---
 
-## 2026-08-05 20:15 UTC · Agent: coding_agent (OpenCode)
+## 2026-08-05 21:30 UTC · Agent: coding_agent (OpenCode)
 
 ---
 
