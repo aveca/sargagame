@@ -1542,7 +1542,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // par plage (descend à 23% en saison calme = self-harm, cf reliability-badge).
   const[_trackRec,_setTrackRec]=useState(null)
   useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
-  const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
+  // A/B preuve moat (pw_proof) : registre public d'erreurs au point de décision.
+  // GELÉ → control (false)
+  const pwProof = false
   // A/B preuve sociale (PassOffer) : badge communauté HONNÊTE (__COMM = plancher leads email).
   // PROMU EN DÉFAUT — preuve sociale honnête toujours visible. Rollback ?pwsocial=0.
   const pwSocial=(()=>{try{if(/[?&]pwsocial=0/.test(window.location.search))return false;if(/[?&]pwsocial=1/.test(window.location.search))return true;return true}catch(_){return true}})()
@@ -1587,7 +1589,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
   // PROMU EN DÉFAUT (cohérence élévation premium) : la value-prop POSITIVE en saison
   // calme (« Sache où sera la mer demain ») est le défaut 85%, 15% holdout mesurable.
-  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
+  // HARDCODED → true (promu 85%)
+  const pwCalm = true
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
@@ -2387,12 +2390,14 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tête golden-hour + Veilleur +
   // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
-  const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const scenePay = false
   // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero
   // scenePay. PROMU EN DÉFAUT (verdict design fondateur : la premium DOIT être au niveau
   // home, pas un mur sombre A/B-gaté à une minorité) → 85% voient la scène golden-hour,
   // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
-  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
+  // HARDCODED → true (promu 85%)
+  const pwConstel = true
   // A/B pw_comic — REFONTE PAYWALL « COMIC-BOOK / BD » (PRODUCT.md §6, pivot 19/06).
   // Tue « le paywall blanc générique » (cards translucides sur vert sombre) : remplace
   // TOUT le pitch + l'action par une scène golden-hour comic + cases BD paper/ink (mêmes
@@ -2490,7 +2495,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
   // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
-  const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const pwSeason = false
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
@@ -2529,12 +2535,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
   // A/B pw_trippass_eur_ab (override ?pwtripeur=1/0). 50/50 control vs trip.
   // Rollback QA : ?pwtripeur=0 force control, ?pwtripeur=1 force trip.
-  const tripEurAB=!IS_NEW_REGION&&(()=>{try{
-    const q=window.location.search
-    if(/[?&]pwtripeur=1/.test(q))return true
-    if(/[?&]pwtripeur=0/.test(q))return false
-    return abVariant("pw_trippass_eur_ab",["control","trip"],[.5,.5])==="trip"
-  }catch(_){return false}})()
+  // GELÉ → control (false)
+  const tripEurAB = false
   const startTripPassEur=useCallback(()=>{
     passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
     try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
@@ -2564,9 +2566,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // ── pw_hot_intent : paywall in-scene ancré plage (hot intent + beach ctx) ──
   // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source
   // est hot-intent ET que beach est disponible dans le contexte courant.
-  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
-  const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
-  const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const pwHot = false
   if(pwHot&&beach){
     const _st=beach.status||"clean"
     const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
