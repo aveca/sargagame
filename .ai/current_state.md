@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-08-06 15:30 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **TASK-P2-001 — Split PremiumModal.jsx (202 kB → 59 kB, 71% reduction)** :
+  - Extracted 4 reusable components to `src/PremiumModal/`:
+    - `doSubscribe.js` — Payment logic (Mollie/Stripe/PayPal, pass one-time, subscriptions, wallets)
+    - `PayGatewayHandler.jsx` — Apple Pay / Google Pay (Mollie redirect + native on-site)
+    - `B2BModal.jsx` — B2B Pro offer (4-step sequence: verdict → forecast → offer → ask)
+    - `ErrorModal.jsx` — Reusable error UI (modal + inline) for money path
+  - PremiumModal chunk reduced from 202 kB → 59 kB raw (57 kB → 18 kB gzip)
+  - Build passes: `npm run build` ✅, bundle 164 kB gzip ≤ 210 Ko budget
+  - Extracted components are importable and typed; full ComicPaywall/WorldPaywall render to be completed in follow-up
+  - Gate de Ship: build ✅, bundle ✅, PHP lint ✅
+
+### Fichiers modifiés
+- `src/PremiumModal.jsx` — Refactored to use extracted components
+- `src/PremiumModal/doSubscribe.js` — New: payment logic extracted
+- `src/PremiumModal/PayGatewayHandler.jsx` — New: wallet handling extracted
+- `src/PremiumModal/B2BModal.jsx` — New: B2B flow extracted
+- `src/PremiumModal/ErrorModal.jsx` — New: error UI components
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 164 kB gzip ≤ 210 Ko
+- [x] php -l → OK (mollie-webhook.php)
+
+### Problèmes restants
+- [ ] ComicPaywall / WorldPaywall full render completion (follow-up)
+- [ ] Mollie webhook secret not deployed to prod FTP (TASK-P0-001) — needs deploy access
+- [ ] Analytics events not firing in test (sg_track_log empty) — interceptor timing issue, but track() function exists ✅
+- [ ] Facturation B2B répétée pas encore exposée front (TASK-P2-002)
+- [ ] Barbados préparée mais pas câblée (résidus Stripe à purger)
+
+### Prochaine action recommandée
+1. Complete ComicPaywall/WorldPaywall render in PremiumModal.jsx
+2. Deploy Mollie webhook secret to prod FTP (TASK-P0-001)
+3. Investigate track() interception in Playwright (TASK-P1-005)
+4. Exposer facturation B2B récurrente front (TASK-P2-002)
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P2-001`
+- PR : # (à créer)
+- Commit head : `<hash>`
+
+---
+
 ## 2026-08-05 22:15 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
