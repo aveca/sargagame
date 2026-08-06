@@ -1,15 +1,15 @@
-# Digest des Veilleurs — 2026-08-05
+# Digest des Veilleurs — 2026-08-06
 
 10 veilleur(s) ont rapporté aujourd'hui (du rivage à l'abysse).
 
 | Veilleur | Marché | Statut | Mode | Date | Headline |
 |---|---|---|---|---|---|
-| Sable | B2C voyageurs | live | script | 2026-08-05 | Sable en veille sur B2C voyageurs |
+| Sable | B2C voyageurs | live | script | 2026-08-06 | Sable en veille sur B2C voyageurs |
 | Récif | Hôtels & resorts (B2B) | emerging | recon | 2026-08-04 | Récif en veille sur Hôtels & resorts (B2B) |
 | Digue | Collectivités & offices de tourisme | greenfield | recon | 2026-08-03 | Digue en veille sur Collectivités & offices de tourisme |
 | Amarre | Immobilier côtier | greenfield | recon | 2026-08-04 | Amarre en veille sur Immobilier côtier |
 | Baromètre | Assurance & réassurance climat | greenfield | recon | 2026-08-05 | Baromètre en veille sur Assurance & réassurance climat |
-| Sillage | Croisière, ports & maritime | greenfield | recon | 2026-07-30 | Sillage en veille sur Croisière, ports & maritime |
+| Sillage | Croisière, ports & maritime | greenfield | recon | 2026-08-06 | Sillage en veille sur Croisière, ports & maritime |
 | Filet | Pêche & aquaculture | greenfield | recon | 2026-07-31 | Filet en veille sur Pêche & aquaculture |
 | Courant | Énergie & dessalement côtiers | greenfield | recon | 2026-08-01 | Courant en veille sur Énergie & dessalement côtiers |
 | Prisme | Licence data / API | emerging | recon | 2026-08-05 | Prisme en veille sur Licence data / API |
