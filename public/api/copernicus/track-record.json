@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-08-06T02:38:44.352Z",
+  "generatedAt": "2026-08-06T08:36:03.595Z",
   "window": {
     "from": "2026-07-27",
     "to": "2026-08-06",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-08-06T02:38:44.249Z",
+    "computedAt": "2026-08-06T08:36:03.487Z",
     "backtestAgeHours": 0,
     "observationLagDays": -1,
     "stale": false
@@ -101,7 +101,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.009
+      "afaiMAE": 0.01
     },
     {
       "id": "gp-deshaies",
@@ -109,7 +109,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.006
+      "afaiMAE": 0.007
     },
     {
       "id": "gp-grande-anse",
@@ -117,7 +117,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.009
+      "afaiMAE": 0.01
     },
     {
       "id": "gp-gosier",
@@ -125,7 +125,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-moule",
@@ -133,7 +133,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0
+      "afaiMAE": 0.002
     },
     {
       "id": "gp-malendure",
@@ -149,7 +149,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-pt-chateaux",
@@ -157,7 +157,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.002
+      "afaiMAE": 0.003
     },
     {
       "id": "gp-sainte-anne",
@@ -165,7 +165,7 @@
       "island": "gp",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.011
+      "afaiMAE": 0.012
     },
     {
       "id": "gp-vieux-fort",
@@ -205,7 +205,7 @@
       "island": "mq",
       "samples": 45,
       "hitRatePct": 100,
-      "afaiMAE": 0.016
+      "afaiMAE": 0.017
     },
     {
       "id": "diamant",
