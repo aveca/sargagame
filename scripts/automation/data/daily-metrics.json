@@ -997,10 +997,10 @@
   },
   {
     "date": "2026-08-06",
-    "time": "2026-08-06T14:18:48.286Z",
+    "time": "2026-08-06T19:32:58.531Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 525,
+    "emails": 527,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -1028,11 +1028,11 @@
     "email": {
       "sent": 4015,
       "delivered": null,
-      "opened": 222,
+      "opened": 219,
       "clicked": 113,
       "bounced": null,
-      "openRate": 5.53,
-      "clickRate": 50.9,
+      "openRate": 5.45,
+      "clickRate": 51.6,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -1075,10 +1075,6 @@
         "USD": {
           "count": 2,
           "total": 17.98
-        },
-        "EUR": {
-          "count": 1,
-          "total": 7.99
         }
       },
       "refunds": {
@@ -1099,11 +1095,11 @@
       "date": "2026-08-05",
       "mq": {
         "sessions": 40,
-        "users": 3076
+        "users": 3462
       },
       "gp": {
-        "sessions": 163,
-        "users": 4049
+        "sessions": 165,
+        "users": 4446
       }
     }
   }
