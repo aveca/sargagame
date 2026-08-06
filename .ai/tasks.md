@@ -36,7 +36,7 @@
 - **Description** : ~50 flags `abVariant()` dans `Sargasses_PROD.jsx` diluent le trafic et compliquent les changements UX. Garder les flags avec résultats sig., supprimer le reste.
 - **Comment** : `grep abVariant src/Sargasses_PROD.jsx` → lister → identifier ceux validés → supprimer les perdants
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-05) — purged 32+ dead tests, hardcoded pw_beat/pw_calm/pw_constel (promoted 85%), AB_FREEZE_MAP simplified to 2 active tests (pw_copy, pw_pass_seq)
 
 ### TASK-P1-002 Tests E2E Playwright du funnel payant
 - **Priorité** : P1
@@ -50,7 +50,7 @@
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Terminer le paywall BD en ajoutant les variants d'entête (scene/constel/beat) + vérifier les transitions
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-05) — header variants (scene/alert/watch/calm/constel), 3 pricing cards (Brief 29€ decoy / Pro 79€ target / Pro Annual 690€ value), RiskReversal 14j, SocialProof
 
 ---
 

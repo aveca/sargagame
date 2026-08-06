@@ -1433,7 +1433,7 @@ export default function WorldMapView({
 
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
       <svg
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",zIndex:1,touchAction:"none"}}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",zIndex:1,touchAction:"none",pointerEvents:"none"}}
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -1503,7 +1503,7 @@ export default function WorldMapView({
             if(pinTier[b.id]==="dot"&&!isSel){
               const dotCol=st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
               return(
-                <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
+                <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer",pointerEvents:"auto"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
                   <circle r={mapPinHitOff?"8":"12"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
@@ -1515,7 +1515,7 @@ export default function WorldMapView({
             return(
               <g key={b.id}
                 transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`}
-                style={{cursor:"pointer"}}
+                style={{cursor:"pointer",pointerEvents:"auto"}}
                 onClick={e=>{ e.stopPropagation();
                   // Tap pin → OUVRE la fiche directement (chemin tactile fiable : le pin est
                   // dans le SVG qui reçoit le touch ; le CTA « Voir la plage » en couche chrome

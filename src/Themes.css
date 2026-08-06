@@ -20,7 +20,7 @@
    « cartes rouges moches » / « plus de rouge ») et du bleu #1f93d4 jamais validé.
    Toute activation future = REDESIGN (panel adverse + screenshots multi-écrans +
    flag ?comictokens=0 + audit des paires de contraste), JAMAIS un bugfix
-   opportuniste. Réf. croisée : app-runtime.css ~L230 (workarounds consommateurs). */
+   opportuniste. Réf. croisée : app-runtime.css ~L230 (workarounds consommateurs), .ai/ui-audit.md. */
 :root.theme-comic{
   --sg-bg:#1f93d4; --sg-bgD:#0f6f9e;
   --sg-card:#fdf6e3; --sg-cardS:#f3e7c9;
@@ -87,6 +87,22 @@ body.theme-comic{
   box-shadow:0 0 0 var(--sg-ink) !important;transform:translate(3px,3px) !important}
 .theme-comic .sg-bottom-nav{background:var(--sg-card) !important;border-top:3px solid var(--sg-ink) !important}
 .theme-comic .sheet-handle{background:var(--sg-ink) !important;opacity:.85}
+
+/* Reduced motion — plancher dur (cf. design-system) */
+@media (prefers-reduced-motion: reduce) {
+  .theme-comic .live .dot,
+  .theme-comic .cta,
+  .theme-comic .halo,
+  .theme-comic button,
+  .theme-comic [role="button"] {
+    animation: none !important;
+    transition: none !important;
+  }
+  .theme-comic .sg-cta,
+  .theme-comic [class*="cta"] {
+    animation: none !important;
+  }
+}
 
 /* ============================ commun : contenu au-dessus du fond ============================ */
 /* ⚠️ MINE-ROOT-RELATIVE — position:relative effondre #root à ~0-74px en mode

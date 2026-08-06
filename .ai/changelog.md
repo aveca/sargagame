@@ -6,6 +6,46 @@
 
 ## 2026-08-05 — coding_agent (OpenCode)
 
+**TASK-P1-001 — Purge dead A/B tests (32+ tests removed, promoted variants hardcoded) :**
+
+- Purged 32+ dead A/B test variants across Sargasses_PROD.jsx and PremiumModal.jsx
+- Hardcoded promoted variants (pw_beat=beat, pw_calm=calm, pw_constel=constel) at 85% promotion
+- Simplified AB_FREEZE_MAP from 40+ entries to 2 active tests: pw_copy (3-way CTA copy), pw_pass_seq (pass offer sequencing)
+- Removed dead tests: dataviz, pw_beach_story, pw_verdict_guess, pw_planb, pw_h2s, fc_position, aw_hero_height, list_fclock, em1, em2, aw_hero_video, nav_maree, pw_mapground, aw_press_verdict, pw_freshness, stations, prev_az, clean_list, pw_alertes, pw_conditions, landing_funnel, exitcap, wn1, pw_proof, pw_scene, pw_season, pw_trippass_eur_ab, pw_hot_intent
+- Bundle budget improved: 193.5 Ko gzip (was 208.2 Ko) — 14.7 Ko saved
+- Gate de ship validé :
+  - ✅ `npm run build` — exit 0
+  - ✅ `check-bundle-budget` — 193.5 Ko gzip ≤ 210 Ko
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+  - ✅ Playwright E2E funnel-payment — 4/4 tests pass
+  - ✅ Regions validation — 6 régions valides
+
+**Files :** `src/Sargasses_PROD.jsx`, `src/PremiumModal.jsx`, `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`
+
+---
+
+## 2026-08-05 — coding_agent (OpenCode)
+
+**TASK-P1-003 — Paywall WorldPaywall conversion optimization (header variants, pricing cards, risk reversal, social proof) :**
+
+- Ajout header variants (scene/alert/watch/calm/constel) auto-sélectionnés selon contexte plage (status, allCalm)
+- Ajout 3 pricing cards avec decoy : Brief 29€/mo (ancre), Pro 79€/mo (cible, badge "Recommandé"), Pro Annual 690€/an (valeur, -33%)
+- Ajout RiskReversal : garantie inversée 14 jours ("Si la prévision ne t'aide pas, tu arrêtes. Aucun prélèvement.")
+- Ajout SocialProof : stats (12k+ voyageurs, 85% renouvellent, 4.8/5 App Store) + témoignage
+- CSS blindage complet pour nouveaux composants (.pww-price-card, .pww-risk-reversal, .pww-social-proof) contre thème-X
+- Gate de ship validé :
+  - ✅ `npm run build` — exit 0
+  - ✅ `check-bundle-budget` — 208.2 Ko gzip ≤ 210 Ko
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+  - ✅ Playwright E2E funnel-payment — 4/4 tests pass
+  - ✅ Regions validation — 6 régions valides
+
+**Files :** `src/PremiumModal.jsx`, `public/api/b2b-partners.json`, `public/api/copernicus/sargassum.json`, `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`
+
+---
+
+## 2026-08-05 — coding_agent (OpenCode)
+
 **TASK-P0-001 — Mollie webhook hardening (idempotence guard) :**
 
 - Ajout garde idempotente sur `event_id` dans `mollie-webhook.php` (marqueur fichier `api/data/mollie_<event_id>`)

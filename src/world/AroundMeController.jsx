@@ -96,15 +96,20 @@ export function AroundMeController({ beaches, region, island, lang = "fr", onOpe
     <div
       data-testid="around-me-controller"
       style={{
-        position: "relative",
-        zIndex: 20,
+        position: "fixed",
+        zIndex: 1030,
+        bottom: 120,
+        left: 0,
+        right: 0,
         maxWidth: 360,
-        margin: "12px auto 0",
+        margin: "0 auto 12px",
         ...GLASS,
-        borderRadius: 14,
+        borderRadius: "14px 14px 0 0",
         padding: 14,
+        paddingBottom: "max(14px, env(safe-area-inset-bottom))",
         fontFamily: "'Bricolage Grotesque',system-ui,sans-serif",
         color: "#fff",
+        boxShadow: "0 -4px 20px rgba(0,0,0,.3)",
       }}
     >
       {showInfo && (

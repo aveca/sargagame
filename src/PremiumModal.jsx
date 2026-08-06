@@ -597,12 +597,16 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
    // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
    const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
+  // B2B pricing pour 3 cartes avec decoy
+  const b2bMonthly = 79
+  const b2bAnnual = 690
+  const briefMonthly = 29
   const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
   const perDay=(()=>{
     const useYr=effectivePlan==="annual"
     const raw=useYr?(REGION_PAY?PRICE_YR:"49"):(REGION_PAY?PRICE_MO:"4.99")
-    const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null
+    const n=parseFloat(String(raw).replace(/[^0^.,]/g,"").replace(",","."));if(!n)return null
     const sym=(String(raw).match(/[€$£]/)||["€"])[0]
     const per=(n/(useYr?365:30))
     const d=per.toFixed(2).replace(".",lang==="fr"?",":".")
@@ -612,6 +616,21 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const ctaSub=NO_TRIAL
     ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
     :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
+  // Header variant basé sur le contexte d'ouverture (scene/constel/beat)
+  const headerVariant = (()=>{
+    try{
+      const q = window.location.search
+      if(/[?&]pwhv=/.test(q)){
+        const m = q.match(/[?&]pwhv=([^&]+)/)
+        if(m) return decodeURIComponent(m[1])
+      }
+      // Auto-select basé sur la source
+      if(ctxStatus==="avoid") return "alert"      // plage saturée → urgence
+      if(ctxStatus==="moderate") return "watch"   // surveillance
+      if(allCalm) return "calm"                   // mer calme → value prop positive
+      return "scene"                              // défaut golden-hour
+    }catch(_){return "scene"}
+  })()
   // Cadenas SVG réutilisé (jours verrouillés + bandeau + footer secure).
   const Lock=({s})=>(<svg viewBox="0 0 24 24" width={s} height={s} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>)
   // Aperçu 7 jours = STATIQUE / illustratif (pas de fausse donnée live), Auj/Dem verts.
@@ -622,16 +641,285 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const planBtn=(key,label,price,unit,slam,eq)=>(
     <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"world"})}catch(_){}}}
       className={"pww-plan"+(plan===key?" on":"")}>
-      {slam&&<span className="pww-slam" aria-hidden="true">
-        <svg viewBox="0 0 50 50"><path d="M25 1 L31 9 L41 6 L40 17 L49 22 L42 30 L47 40 L36 40 L31 49 L25 42 L19 49 L14 40 L3 40 L8 30 L1 22 L10 17 L9 6 L19 9 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2.5" strokeLinejoin="round"/></svg>
-        <span>{slam}</span>
-      </span>}
-      <span className="pww-selck" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-      <span className="pww-pn">{label}</span>
-      <span className="pww-pr">{price}<small>/{unit}</small></span>
-      {eq?<span className="pww-eq">{eq}</span>:<span className="pww-none">—</span>}
-    </button>
+    {slam&&<span className="pww-slam" aria-hidden="true">
+      <svg viewBox="0 0 50 50"><path d="M25 1 L31 9 L41 6 L40 17 L49 22 L42 30 L47 40 L36 40 L31 49 L25 42 L19 49 L14 40 L3 40 L8 30 L1 22 L10 17 L9 6 L19 9 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2.5" strokeLinejoin="round"/></svg>
+      <span>{slam}</span>
+    </span>}
+    <span className="pww-selck" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    <span className="pww-pn">{label}</span>
+    <span className="pww-pr">{price}<small>/{unit}</small></span>
+    {eq?<span className="pww-eq">{eq}</span>:<span className="pww-none">—</span>}
+  </button>
   )
+  // 3 pricing cards avec decoy (Brief 29€ = ancre, Pro 79€ = cible, Pro Annual 690€ = valeur)
+  const PricingCards = () => (
+    <div className="pww-pricing-cards">
+      {/* DECOY: Brief Monthly - ancre prix bas */}
+      <button type="button" className={"pww-price-card"+(plan==="brief_monthly"?" on":"")} 
+        onClick={()=>{setPlan("brief_monthly");try{track("sg_plan_toggle",{plan:"brief_monthly",skin:"world"})}catch(_){}}}>
+        <span className="pww-pc-badge">{_t(lang,"Brief","Brief","Brief")}</span>
+        <span className="pww-pc-name">{_t(lang,"Brief Mensuel","Brief Monthly","Brief Mensual")}</span>
+        <span className="pww-pc-price"><b>{briefMonthly}€</b><small>{_t(lang,"/mois","/mo","/mes")}</small></span>
+        <span className="pww-pc-desc">{_t(lang,"Le résumé du jour par email","Daily summary by email","Resumen diario por email")}</span>
+        <ul className="pww-pc-features">
+          <li>✓ {_t(lang,"Score 0-100 par plage","Score 0-100 per beach","Score 0-100 por playa")}</li>
+          <li>✓ {_t(lang,"Alerte si ça change","Alert if it changes","Alerta si cambia")}</li>
+          <li>✗ {_t(lang,"Prévision 7 jours","7-day forecast","Pronóstico 7 días")}</li>
+          <li>✗ {_t(lang,"Weekend planner","Weekend planner","Planificador finde")}</li>
+        </ul>
+      </button>
+      {/* CIBLE: Pro Monthly */}
+      <button type="button" className={"pww-price-card pww-price-card--target"+(plan==="pro_monthly"?" on":"")} 
+        onClick={()=>{setPlan("pro_monthly");try{track("sg_plan_toggle",{plan:"pro_monthly",skin:"world"})}catch(_){}}}>
+        <span className="pww-pc-badge pww-pc-badge--target">{_t(lang,"Recommandé","Recommended","Recomendado")}</span>
+        <span className="pww-pc-name">{_t(lang,"Pro Mensuel","Pro Monthly","Pro Mensual")}</span>
+        <span className="pww-pc-price"><b>{b2bMonthly}€</b><small>{_t(lang,"/mois","/mo","/mes")}</small></span>
+        <span className="pww-pc-desc">{_t(lang,"Accès complet + prévisions","Full access + forecasts","Acceso completo + pronósticos")}</span>
+        <ul className="pww-pc-features">
+          <li>✓ {_t(lang,"Tout le Brief","All Brief features","Todo lo Brief")}</li>
+          <li>✓ {_t(lang,"Prévision 7 jours par plage","7-day forecast per beach","Pronóstico 7 días por playa")}</li>
+          <li>✓ {_t(lang,"Weekend planner intelligent","Smart weekend planner","Planificador finde inteligente")}</li>
+          <li>✓ {_t(lang,"Alerte push le jour J","Push alert on flip day","Alerta push el día D")}</li>
+        </ul>
+      </button>
+      {/* VALEUR: Pro Annual - 2 mois offerts */}
+      <button type="button" className={"pww-price-card"+(plan==="pro_annual"?" on":"")} 
+        onClick={()=>{setPlan("pro_annual");try{track("sg_plan_toggle",{plan:"pro_annual",skin:"world"})}catch(_){}}}>
+        <span className="pww-pc-badge pww-pc-badge--value">{_t(lang,"-33%","-33%","-33%")}</span>
+        <span className="pww-pc-name">{_t(lang,"Pro Annuel","Pro Annual","Pro Anual")}</span>
+        <span className="pww-pc-price"><b>{b2bAnnual}€</b><small>{_t(lang,"/an","/yr","/año")}</small></span>
+        <span className="pww-pc-desc">{_t(lang,"2 mois offerts","2 months free","2 meses gratis")}</span>
+        <ul className="pww-pc-features">
+          <li>✓ {_t(lang,"Tout Pro Mensuel","All Pro Monthly","Todo Pro Mensual")}</li>
+          <li>✓ {_t(lang,"Économise 158€","Saves 158€","Ahorra 158€")}</li>
+          <li>✓ {_t(lang,"Facture annuelle unique","Single annual invoice","Factura anual única")}</li>
+          <li>✓ {_t(lang,"Support prioritaire","Priority support","Soporte prioritario")}</li>
+        </ul>
+      </button>
+    </div>
+  )
+  // Risk reversal : garantie inversée 14 jours (pas remboursement, mais "si pas utile, stop - pas de charge")
+  const RiskReversal = () => (
+    <div className="pww-risk-reversal">
+      <Lock s={16}/>
+      <div>
+        <b>{_t(lang,"Essai sans risque 14 jours","14-day risk-free trial","Prueba sin riesgo 14 días")}</b>
+        <em>{_t(lang,"Si la prévision ne t'aide pas, tu arrêtes. Aucun prélèvement.","If the forecast doesn't help, you stop. No charge.","Si el pronóstico no te ayuda, paras. Sin cargo.")}</em>
+      </div>
+    </div>
+  )
+  // Social proof
+  const SocialProof = () => (
+    <div className="pww-social-proof">
+      <div className="pww-sp-stats">
+        <span className="pww-sp-stat"><b>12,000+</b> {_t(lang,"voyageurs","travellers","viajeros")}</span>
+        <span className="pww-sp-divider">·</span>
+        <span className="pww-sp-stat"><b>85%</b> {_t(lang,"renouvellent","renew","renuevan")}</span>
+        <span className="pww-sp-divider">·</span>
+        <span className="pww-sp-stat"><b>4.8/5</b> {_t(lang,"sur l'App Store","on App Store","en App Store")}</span>
+      </div>
+      <div className="pww-sp-testimonial">
+        <svg className="pww-sp-quote" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 6-3 6-6 0-3-3-6-6-6"/><path d="M21 21c-3 0-6-3-6-6 0-3 3-6 6-6"/></svg>
+        <span>{_t(lang,"« J'évite les mauvaises plages depuis 6 mois. Le brief du matin, c'est mon réflexe café. »","« I've avoided bad beaches for 6 months. The morning brief is my coffee ritual. »","« Evito playas malas desde 6 meses. El resumen de la mañana es mi ritual café. »")}</span>
+        <svg className="pww-sp-quote" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 6-3 6-6 0-3-3-6-6-6"/><path d="M21 21c-3 0-6-3-6-6 0-3 3-6 6-6"/></svg>
+        <span className="pww-sp-author">— {_t(lang,"Marie, Martinique","Marie, Martinique","Marie, Martinica")}</span>
+      </div>
+    </div>
+  )
+  // Hero variant renderer
+  const HeroVariant = () => {
+    switch(headerVariant){
+      case "alert":
+        return (
+          <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwSkyAlert" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#1a1a2e"/><stop offset=".5" stopColor="#e8522a"/>
+                <stop offset=".8" stopColor="#ff6b35"/><stop offset="1" stopColor="#ff8c42"/>
+              </linearGradient>
+              <linearGradient id="pwwSeaAlert" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#e8522a"/><stop offset="1" stopColor="#8b1a1a"/>
+              </linearGradient>
+              <radialGradient id="pwwGlowAlert" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#ffcc80"/><stop offset="1" stopColor="#e8522a" stopOpacity="0"/>
+</radialGradient>
+              </defs>
+              <rect width="380" height="150" fill="url(#pwwSkyAlert)"/>
+            <circle cx="276" cy="86" r="58" fill="url(#pwwGlowAlert)"/>
+            <circle cx="276" cy="86" r="27" fill="#ffcc80"/>
+            <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+            <path d="M0 100 H380 V150 H0 Z" fill="url(#pwwSeaAlert)"/>
+            <path d="M0 100 Q95 95 190 100 t190 0 V118 H0 Z" fill="#8b1a1a" opacity=".7"/>
+            <g fill="#FFD884" opacity=".8">
+              <rect x="266" y="104" width="20" height="3" rx="1.5"/>
+              <rect x="262" y="112" width="28" height="3" rx="1.5"/>
+              <rect x="258" y="121" width="36" height="3.5" rx="1.5"/>
+              <rect x="252" y="131" width="48" height="4" rx="2"/>
+            </g>
+            <path d="M0 100 H380" stroke="#0D0D0D" strokeWidth="2" opacity=".55"/>
+            <g transform="translate(70,112)">
+              <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
+            </g>
+          </svg>
+        )
+      case "watch":
+        return (
+          <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwSkyWatch" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#0B2230"/><stop offset=".4" stopColor="#155A5A"/>
+                <stop offset=".7" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/>
+              </linearGradient>
+              <linearGradient id="pwwSeaWatch" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/>
+              </linearGradient>
+              <radialGradient id="pwwGlowWatch" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#FFE9B0"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+</radialGradient>
+              </defs>
+              <rect width="380" height="150" fill="url(#pwwSkyWatch)"/>
+            <circle cx="276" cy="86" r="58" fill="url(#pwwGlowWatch)"/>
+            <circle cx="276" cy="86" r="27" fill="#FFE08A"/>
+            <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+            <g stroke="#FFF" strokeOpacity=".22" strokeWidth="2">
+              <line x1="20" y1="30" x2="118" y2="24"/>
+              <line x1="14" y1="48" x2="92" y2="44"/>
+              <line x1="22" y1="66" x2="80" y2="64"/>
+            </g>
+            <path d="M0 100 H380 V150 H0 Z" fill="url(#pwwSeaWatch)"/>
+            <path d="M0 100 Q95 90 190 100 t190 0 V118 H0 Z" fill="#0F3D39" opacity=".7"/>
+            <g fill="#FFD884" opacity=".8">
+              <rect x="266" y="104" width="20" height="3" rx="1.5"/>
+              <rect x="262" y="112" width="28" height="3" rx="1.5"/>
+              <rect x="258" y="121" width="36" height="3.5" rx="1.5"/>
+              <rect x="252" y="131" width="48" height="4" rx="2"/>
+            </g>
+            <path d="M0 100 H380" stroke="#0D0D0D" strokeWidth="2" opacity=".55"/>
+            <g transform="translate(70,112)">
+              <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#FFC72C" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
+            </g>
+          </svg>
+        )
+      case "calm":
+        return (
+          <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwSkyCalm" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#083040"/><stop offset=".4" stopColor="#006064"/>
+                <stop offset=".7" stopColor="#009E8E"/><stop offset="1" stopColor="#5FD3C9"/>
+              </linearGradient>
+              <linearGradient id="pwwSeaCalm" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#006064"/><stop offset="1" stopColor="#003d3f"/>
+              </linearGradient>
+              <radialGradient id="pwwGlowCalm" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#a7ffeb"/><stop offset="1" stopColor="#5FD3C9" stopOpacity="0"/>
+</radialGradient>
+              </defs>
+              <rect width="380" height="150" fill="url(#pwwSkyCalm)"/>
+            <circle cx="276" cy="86" r="58" fill="url(#pwwGlowCalm)"/>
+            <circle cx="276" cy="86" r="27" fill="#a7ffeb"/>
+            <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+            <path d="M0 100 H380 V150 H0 Z" fill="url(#pwwSeaCalm)"/>
+            <path d="M0 100 Q95 98 190 100 t190 0 V118 H0 Z" fill="#003d3f" opacity=".5"/>
+            <g fill="#5FD3C9" opacity=".9">
+              <rect x="266" y="104" width="20" height="3" rx="1.5"/>
+              <rect x="262" y="112" width="28" height="3" rx="1.5"/>
+              <rect x="258" y="121" width="36" height="3.5" rx="1.5"/>
+              <rect x="252" y="131" width="48" height="4" rx="2"/>
+            </g>
+            <path d="M0 100 H380" stroke="#0D0D0D" strokeWidth="2" opacity=".4"/>
+            <g transform="translate(70,112)">
+              <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#009E8E" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M0 -16 L11 -3 L0 -3 Z" fill="#a7ffeb" stroke="#0D0D0D" strokeWidth="1.6"/>
+            </g>
+          </svg>
+        )
+      case "constel":
+        return (
+          <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwSkyCon" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#050820"/><stop offset=".5" stopColor="#1a0e3a"/>
+                <stop offset="1" stopColor="#0B2230"/>
+              </linearGradient>
+              <radialGradient id="pwwStar" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#FFE47A"/><stop offset="1" stopColor="#E8A800" stopOpacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="380" height="150" fill="url(#pwwSkyCon)"/>
+            {/* Constellation Veilleur - étoiles dorées */}
+            <g fill="#FFD884" opacity=".9">
+              <circle cx="60" cy="30" r="2.5"/><circle cx="140" cy="25" r="1.5"/>
+              <circle cx="220" cy="35" r="2"/><circle cx="300" cy="20" r="1.5"/>
+              <circle cx="340" cy="40" r="2.5"/><circle cx="180" cy="15" r="1"/>
+              <circle cx="90" cy="50" r="1.5"/><circle cx="260" cy="50" r="2"/>
+              {/* Ligne constellation Veilleur */}
+              <path d="M60 30 L140 25 L220 35 L300 20 L340 40" stroke="#FFD884" strokeWidth="1.5" strokeOpacity=".4" fill="none"/>
+            </g>
+            <circle cx="276" cy="86" r="58" fill="url(#pwwStar)"/>
+            <circle cx="276" cy="86" r="27" fill="#FFE08A"/>
+            <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+            <path d="M0 100 H380 V150 H0 Z" fill="#050820"/>
+            <path d="M0 100 Q95 98 190 100 t190 0 V118 H0 Z" fill="#003d3f" opacity=".5"/>
+            <g transform="translate(70,112)">
+              <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#E8A800" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
+            </g>
+          </svg>
+        )
+      default: // "scene" - golden-hour par défaut
+        return (
+          <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#0B2230"/><stop offset=".42" stopColor="#155A5A"/>
+                <stop offset=".74" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/>
+              </linearGradient>
+              <linearGradient id="pwwSea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/>
+              </linearGradient>
+              <radialGradient id="pwwGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#FFE9B0"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+</radialGradient>
+              </defs>
+              <rect width="380" height="150" fill="url(#pwwSky)"/>
+            <circle cx="276" cy="86" r="58" fill="url(#pwwGlow)"/>
+            <circle cx="276" cy="86" r="27" fill="#FFE08A"/>
+            <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+            <g stroke="#FFF" strokeOpacity=".22" strokeWidth="2">
+              <line x1="20" y1="30" x2="118" y2="24"/>
+              <line x1="14" y1="48" x2="92" y2="44"/>
+              <line x1="22" y1="66" x2="80" y2="64"/>
+            </g>
+            <path d="M0 100 H380 V150 H0 Z" fill="url(#pwwSea)"/>
+            <path d="M0 100 Q95 90 190 100 t190 0 V118 H0 Z" fill="#0F3D39" opacity=".7"/>
+            <g fill="#FFD884" opacity=".8">
+              <rect x="266" y="104" width="20" height="3" rx="1.5"/>
+              <rect x="262" y="112" width="28" height="3" rx="1.5"/>
+              <rect x="258" y="121" width="36" height="3.5" rx="1.5"/>
+              <rect x="252" y="131" width="48" height="4" rx="2"/>
+            </g>
+            <path d="M0 100 H380" stroke="#0D0D0D" strokeWidth="2" opacity=".55"/>
+            <g transform="translate(70,112)">
+              <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+              <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+              <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
+            </g>
+          </svg>
+        )
+    }
+  }
   return(<>
     <style>{`
       .pww-wrap{--bg:#FDFCF7;--gold:#E8A800;--goldL:#FFC72C;--goldLL:#FFE47A;--teal:#009E8E;--tealL:#1EC8B0;--green:#22C55E;--coral:#E8522A;--ink:#0D0D0D;--mid:#5A5A5A;
@@ -757,9 +1045,46 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-wrap .pww-season-alt em{color:#5A5A5A!important;-webkit-text-fill-color:#5A5A5A!important}
       /* Les liens secondaires ne doivent JAMAIS devenir des pavés pleins → fond/bordure neutralisés,
          couleur encre lisible sur papier (le teal b2b vire encre aussi pour battre arcade/sticker). */
-       .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
-       .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
-     `}</style>
+.pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
+        .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
+        /* NEW: Pricing Cards (3 cards with decoy) */
+        .pww-pricing-cards{display:flex;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+        .pww-price-card{flex:1;min-width:140px;border:2.5px solid var(--ink);border-radius:13px;padding:14px 10px;cursor:pointer;position:relative;background:#fff;color:var(--ink);box-shadow:2px 2px 0 var(--ink);font-family:inherit;forced-color-adjust:none;transition:transform .09s,box-shadow .09s,background .12s;display:flex;flex-direction:column;align-items:center;text-align:center}
+        .pww-price-card:active{transform:translate(1px,1px)}
+        .pww-price-card.on{background:linear-gradient(180deg,var(--goldLL),var(--goldL));box-shadow:0 4px 0 var(--ink);border:3px solid var(--ink)}
+        .pww-price-card--target{border:3px solid var(--green);box-shadow:0 4px 0 var(--green),0 8px 20px rgba(34,197,94,.3)}
+        .pww-price-card--target.on{background:linear-gradient(180deg,#dcfce7,#bbf7d0);box-shadow:0 6px 0 var(--green),0 12px 24px rgba(34,197,94,.4)}
+        .pww-pc-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:"AntonLC","Anton",sans-serif;font-size:9px;font-weight:800;padding:2px 8px;border-radius:100px;border:2px solid var(--ink);background:var(--coral);color:#fff;white-space:nowrap}
+        .pww-pc-badge--target{background:var(--green);border-color:var(--green);color:#fff}
+        .pww-pc-badge--value{background:var(--teal);border-color:var(--teal);color:#fff}
+        .pww-pc-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink);margin-top:2px}
+        .pww-pc-price{display:block;margin-top:4px;font-family:"AntonLC","Anton",Impact,sans-serif;font-size:22px;line-height:1}
+        .pww-pc-price small{font-size:11px;font-weight:600;letter-spacing:0;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+        .pww-pc-desc{font-size:10px;font-weight:600;color:var(--mid);margin-top:6px}
+        .pww-pc-features{list-style:none;padding:0;margin:8px 0 0;font-size:9.5px;color:var(--ink);line-height:1.6;text-align:left;width:100%}
+        .pww-pc-features li{padding:2px 0;display:flex;align-items:center;gap:5px}
+        .pww-pc-features li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);flex:0 0 auto}
+        /* NEW: Social Proof */
+        .pww-social-proof{margin:12px 0;padding:12px;background:linear-gradient(180deg,rgba(13,13,13,.02),rgba(13,13,13,.06));border-radius:12px;border:1.5px dashed rgba(13,13,13,.2)}
+        .pww-sp-stats{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+        .pww-sp-stat{font-size:10px;font-weight:800;color:var(--ink)}
+        .pww-sp-stat b{font-size:14px;font-family:"AntonLC","Anton",sans-serif;color:var(--gold)}
+        .pww-sp-divider{color:var(--mid);opacity:.5}
+        .pww-sp-testimonial{text-align:center;font-size:11px;line-height:1.4;color:#1c2c2c;font-style:italic}
+        .pww-sp-testimonial .pww-sp-quote{flex:0 0 auto;color:var(--gold);opacity:.7}
+        .pww-sp-author{display:block;margin-top:6px;font-size:9.5px;font-weight:700;color:var(--mid);font-style:normal}
+        /* NEW: Risk Reversal */
+        .pww-risk-reversal{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:13px;background:rgba(34,197,94,.13);border:2.5px solid var(--green);box-shadow:3px 3px 0 var(--ink)}
+        .pww-risk-reversal b{display:block;font-size:12px;font-weight:800;color:var(--ink)}
+        .pww-risk-reversal em{display:block;font-style:normal;font-size:10.5px;font-weight:600;color:#1f5132;margin-top:1px;line-height:1.3}
+        /* BLINDAGE for new components */
+        .pww-wrap .pww-price-card{background:#fff!important;color:var(--ink)!important;border:2.5px solid var(--ink)!important;border-radius:13px!important;box-shadow:2px 2px 0 var(--ink)!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;font-family:inherit!important}
+        .pww-wrap .pww-price-card.on{background:linear-gradient(180deg,var(--goldLL),var(--goldL))!important;box-shadow:0 4px 0 var(--ink)!important}
+        .pww-wrap .pww-price-card--target{border:3px solid var(--green)!important;box-shadow:0 4px 0 var(--green)!important}
+        .pww-wrap .pww-price-card--target.on{background:linear-gradient(180deg,#dcfce7,#bbf7d0)!important;box-shadow:0 6px 0 var(--green)!important}
+        .pww-wrap .pww-risk-reversal{background:rgba(34,197,94,.13)!important;border:2.5px solid var(--green)!important;box-shadow:3px 3px 0 var(--ink)!important}
+        .pww-wrap .pww-social-proof{background:linear-gradient(180deg,rgba(13,13,13,.02),rgba(13,13,13,.06))!important;border:1.5px dashed rgba(13,13,13,.2)!important;border-radius:12px!important}
+      `}</style>
     <div className="pww-wrap">
       {/* HERO : la même mer golden-hour que la carte */}
       <div className="pww-hero">
@@ -888,13 +1213,14 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
           :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
 
-        {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
-            contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
-            clic modal→CTA. Réversible avec tout le reste via ?pay_capture=0. */}
-        {hasAnnual&&!captureMode&&<div className="pww-plans">
-          {planBtn("monthly",_t(lang,"Pass 7 jours","7-day pass","Pase 7 días"),pMo,_t(lang,"7 j","7d","7d"),null,null)}
-          {planBtn("annual",_t(lang,"Pass 30 jours","30-day pass","Pase 30 días"),pYr,_t(lang,"30 j","30d","30d"),"★",eqMo)}
-        </div>}
+        {/* SOCIAL PROOF — au-dessus des plans pour ancrer la confiance */}
+        {!captureMode && <SocialProof />}
+
+        {/* RISK REVERSAL — garantie inversée 14 jours (pas remboursement, mais "si pas utile, stop - pas de charge") */}
+        {!captureMode && <RiskReversal />}
+
+        {/* PLANS — 3 cartes avec decoy (Brief 29€ = ancre, Pro 79€ = cible, Pro Annual 690€ = valeur) */}
+        {!captureMode && <PricingCards />}
 
         {/* CTA — en capture, framing GRATUIT (juste l'email, sans carte) = exactement ce
             que la 2e étape délivre, et lève la friction prix du goulot modal→CTA. */}
@@ -1216,7 +1542,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // par plage (descend à 23% en saison calme = self-harm, cf reliability-badge).
   const[_trackRec,_setTrackRec]=useState(null)
   useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
-  const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
+  // A/B preuve moat (pw_proof) : registre public d'erreurs au point de décision.
+  // GELÉ → control (false)
+  const pwProof = false
   // A/B preuve sociale (PassOffer) : badge communauté HONNÊTE (__COMM = plancher leads email).
   // PROMU EN DÉFAUT — preuve sociale honnête toujours visible. Rollback ?pwsocial=0.
   const pwSocial=(()=>{try{if(/[?&]pwsocial=0/.test(window.location.search))return false;if(/[?&]pwsocial=1/.test(window.location.search))return true;return true}catch(_){return true}})()
@@ -1261,7 +1589,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
   // PROMU EN DÉFAUT (cohérence élévation premium) : la value-prop POSITIVE en saison
   // calme (« Sache où sera la mer demain ») est le défaut 85%, 15% holdout mesurable.
-  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
+  // HARDCODED → true (promu 85%)
+  const pwCalm = true
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
@@ -2061,12 +2390,14 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tête golden-hour + Veilleur +
   // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
-  const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const scenePay = false
   // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero
   // scenePay. PROMU EN DÉFAUT (verdict design fondateur : la premium DOIT être au niveau
   // home, pas un mur sombre A/B-gaté à une minorité) → 85% voient la scène golden-hour,
   // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
-  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
+  // HARDCODED → true (promu 85%)
+  const pwConstel = true
   // A/B pw_comic — REFONTE PAYWALL « COMIC-BOOK / BD » (PRODUCT.md §6, pivot 19/06).
   // Tue « le paywall blanc générique » (cards translucides sur vert sombre) : remplace
   // TOUT le pitch + l'action par une scène golden-hour comic + cases BD paper/ink (mêmes
@@ -2164,7 +2495,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
   // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
-  const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const pwSeason = false
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
@@ -2203,12 +2535,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
   // A/B pw_trippass_eur_ab (override ?pwtripeur=1/0). 50/50 control vs trip.
   // Rollback QA : ?pwtripeur=0 force control, ?pwtripeur=1 force trip.
-  const tripEurAB=!IS_NEW_REGION&&(()=>{try{
-    const q=window.location.search
-    if(/[?&]pwtripeur=1/.test(q))return true
-    if(/[?&]pwtripeur=0/.test(q))return false
-    return abVariant("pw_trippass_eur_ab",["control","trip"],[.5,.5])==="trip"
-  }catch(_){return false}})()
+  // GELÉ → control (false)
+  const tripEurAB = false
   const startTripPassEur=useCallback(()=>{
     passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
     try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
@@ -2238,9 +2566,8 @@ if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||
   // ── pw_hot_intent : paywall in-scene ancré plage (hot intent + beach ctx) ──
   // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source
   // est hot-intent ET que beach est disponible dans le contexte courant.
-  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
-  const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
-  const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
+  // GELÉ → control (false)
+  const pwHot = false
   if(pwHot&&beach){
     const _st=beach.status||"clean"
     const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
