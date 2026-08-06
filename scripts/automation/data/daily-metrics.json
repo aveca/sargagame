@@ -997,10 +997,10 @@
   },
   {
     "date": "2026-08-06",
-    "time": "2026-08-06T19:32:58.531Z",
+    "time": "2026-08-06T23:52:06.686Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 527,
+    "emails": 528,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -1094,12 +1094,12 @@
     "ga4": {
       "date": "2026-08-05",
       "mq": {
-        "sessions": 40,
-        "users": 3462
+        "sessions": 39,
+        "users": 7442
       },
       "gp": {
-        "sessions": 165,
-        "users": 4446
+        "sessions": 170,
+        "users": 3225
       }
     }
   }

@@ -3305,7 +3305,7 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3335,17 +3335,17 @@
         },
         {
           "id": "pt-marin",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -3360,12 +3360,12 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
