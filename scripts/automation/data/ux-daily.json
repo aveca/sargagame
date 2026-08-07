@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07T03:01:49.160Z",
+  "generated": "2026-08-07T07:20:41.658Z",
   "date": "2026-08-07",
   "days": 1,
   "regions": [
@@ -10,6 +10,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "af335cc4",
+      "subject": "chore: update Copernicus data 2026-08-07 03:02 UTC"
+    },
+    {
+      "h": "d0fffdd2",
+      "subject": "chore: email state 2026-08-07 03:01 UTC"
+    },
     {
       "h": "14dd2a6f",
       "subject": "chore: update Copernicus data 2026-08-07 00:15 UTC"
@@ -50,14 +58,18 @@
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 16,
+      "sessions": 25,
       "friction": 0,
-      "dead_rate": 0.167,
-      "dead_worst": null,
+      "dead_rate": 0.137,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.081,
+        "n": 37
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.25
+        "rate": 0.19
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -66,24 +78,49 @@
       "session_to_email": 0,
       "prev_date": "2026-08-06",
       "changes": [
-        "sessions 107→16 (-85%)",
-        "dead-rate 0.095→0.167 (+0.1) ⚠️"
+        "sessions 107→25 (-77%)"
       ]
     },
     {
       "region": "gp",
-      "sessions": 53,
+      "sessions": 83,
       "friction": 0,
-      "dead_rate": 0.057,
+      "dead_rate": 0.081,
       "dead_worst": {
         "screen": "map_map",
+        "rate": 0.088,
+        "n": 68
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "beach",
+        "rate": 0.3
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-06",
+      "changes": [
+        "sessions 249→83 (-67%)",
+        "✔︎ dead-click résolu : div"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 41,
+      "friction": 0,
+      "dead_rate": 0.042,
+      "dead_worst": {
+        "screen": "world",
         "rate": 0.063,
         "n": 32
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.27
+        "rate": 0.41
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -92,44 +129,24 @@
       "session_to_email": 0,
       "prev_date": "2026-08-06",
       "changes": [
-        "sessions 249→53 (-79%)",
-        "✔︎ dead-click résolu : div"
-      ]
-    },
-    {
-      "region": "florida",
-      "sessions": 24,
-      "friction": 0,
-      "dead_rate": 0.028,
-      "dead_worst": {
-        "screen": "world",
-        "rate": 0.038,
-        "n": 26
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.46
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-06",
-      "changes": [
-        "sessions 91→24 (-74%)",
-        "dead-rate 0.084→0.028 (-0.1) ✅"
+        "sessions 91→41 (-55%)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 10,
+      "sessions": 24,
       "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
+      "dead_rate": 0.196,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.229,
+        "n": 35
+      },
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.19
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -137,18 +154,21 @@
       "session_to_email": 0,
       "prev_date": "2026-08-06",
       "changes": [
-        "sessions 47→10 (-79%)",
-        "dead-rate 0.063→0 (-0.1) ✅"
+        "sessions 47→24 (-49%)",
+        "dead-rate 0.063→0.196 (+0.1) ⚠️"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 7,
+      "sessions": 18,
       "friction": 0,
-      "dead_rate": 0,
+      "dead_rate": 0.083,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.28
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -156,8 +176,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-06",
       "changes": [
-        "sessions 29→7 (-76%)",
-        "dead-rate 0.105→0 (-0.1) ✅"
+        "sessions 29→18 (-38%)"
       ]
     }
   ]

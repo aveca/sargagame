@@ -3335,7 +3335,7 @@
         },
         {
           "id": "pt-marin",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -3355,22 +3355,22 @@
         },
         {
           "id": "precheur",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -3380,17 +3380,17 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.08,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {

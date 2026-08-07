@@ -5055,14 +5055,18 @@
   {
     "date": "2026-08-07",
     "region": "mq",
-    "sessions": 16,
+    "sessions": 25,
     "friction": 0,
-    "dead_rate": 0.167,
-    "dead_worst": null,
+    "dead_rate": 0.137,
+    "dead_worst": {
+      "screen": "world",
+      "rate": 0.081,
+      "n": 37
+    },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.25
+      "rate": 0.19
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5073,18 +5077,18 @@
   {
     "date": "2026-08-07",
     "region": "gp",
-    "sessions": 53,
+    "sessions": 83,
     "friction": 0,
-    "dead_rate": 0.057,
+    "dead_rate": 0.081,
     "dead_worst": {
       "screen": "map_map",
-      "rate": 0.063,
-      "n": 32
+      "rate": 0.088,
+      "n": 68
     },
     "top_dead_els": [],
     "bored_worst": {
-      "screen": "world",
-      "rate": 0.27
+      "screen": "beach",
+      "rate": 0.3
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5095,18 +5099,18 @@
   {
     "date": "2026-08-07",
     "region": "florida",
-    "sessions": 24,
+    "sessions": 41,
     "friction": 0,
-    "dead_rate": 0.028,
+    "dead_rate": 0.042,
     "dead_worst": {
       "screen": "world",
-      "rate": 0.038,
-      "n": 26
+      "rate": 0.063,
+      "n": 32
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.46
+      "rate": 0.41
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5117,12 +5121,19 @@
   {
     "date": "2026-08-07",
     "region": "puntacana",
-    "sessions": 10,
+    "sessions": 24,
     "friction": 0,
-    "dead_rate": 0,
-    "dead_worst": null,
+    "dead_rate": 0.196,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.229,
+      "n": 35
+    },
     "top_dead_els": [],
-    "bored_worst": null,
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.19
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
@@ -5132,12 +5143,15 @@
   {
     "date": "2026-08-07",
     "region": "rivieramaya",
-    "sessions": 7,
+    "sessions": 18,
     "friction": 0,
-    "dead_rate": 0,
+    "dead_rate": 0.083,
     "dead_worst": null,
     "top_dead_els": [],
-    "bored_worst": null,
+    "bored_worst": {
+      "screen": "world",
+      "rate": 0.28
+    },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
     "redirect_to_conversion": 0,
