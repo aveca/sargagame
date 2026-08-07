@@ -72,8 +72,14 @@ function pp_token() {
         CURLOPT_TIMEOUT        => 10,
     ]);
     $body = curl_exec($ch);
+    $err  = curl_errno($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    if ($err || !$body) {
+        http_response_code(502);
+        echo json_encode(['error' => 'paypal auth unreachable']);
+        exit;
+    }
     $data = json_decode($body, true);
     if ($code >= 400 || empty($data['access_token'])) {
         http_response_code(500);
@@ -96,8 +102,10 @@ function pp_api($method, $path, $body = null, $token = null) {
     ]);
     if ($body !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
     $resp = curl_exec($ch);
+    $err  = curl_errno($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    if ($err || $resp === false) return [$code ?: 502, null];
     return [$code, json_decode($resp, true)];
 }
 

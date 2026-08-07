@@ -1846,49 +1846,59 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // (toujours rendu). Budget 20s : prewarm→ready→user clique→pas d'attente.
   useEffect(()=>{
     if(PAY_CAPTURE_ONLY||PAY_PROVIDER!=="stripe")return
+    let cancelled=false
+    const ac=new AbortController()
     const prewarm=async()=>{
-      const[r]=await Promise.all([
-        fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({action:"setup"})}),
-        loadStripeJs(),
-      ])
-      if(!r.ok)throw new Error("http "+r.status)
-      const{clientSecret}=await r.json()
-      if(!clientSecret)throw new Error("no clientSecret")
-      setupSecretRef.current=clientSecret
-      stripeRef.current=window.Stripe(STRIPE_PK)
-      elementsRef.current=stripeRef.current.elements({
-        clientSecret,
-        locale:lang,
-        appearance:{theme:"night",variables:{
-          colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
-          colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",
-        }},
-      })
-      // Pré-mount dans l'overlay caché (toujours rendu) — ready pendant la lecture
-      if(!payMountedRef.current&&payDivRef.current){
-        const brandName=IS_NEW_REGION
-          ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))
-          :"Sargasses Martinique"
-        const pe=elementsRef.current.create("payment",{layout:"tabs",
-          business:{name:brandName},
-          ...(IS_NEW_REGION?{defaultValues:{billingDetails:{address:{country:REGION.countryCode||"US"}}}}:{}),
+      try{
+        const[r]=await Promise.all([
+          fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"setup"}),signal:ac.signal}),
+          loadStripeJs(),
+        ])
+        if(cancelled)return
+        if(!r.ok)throw new Error("http "+r.status)
+        const{clientSecret}=await r.json()
+        if(!clientSecret)throw new Error("no clientSecret")
+        if(cancelled)return
+        setupSecretRef.current=clientSecret
+        stripeRef.current=window.Stripe(STRIPE_PK)
+        elementsRef.current=stripeRef.current.elements({
+          clientSecret,
+          locale:lang,
+          appearance:{theme:"night",variables:{
+            colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
+            colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",
+          }},
         })
-        pe.mount(payDivRef.current)
-        pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})
-        try{
-          const ece=elementsRef.current.create("expressCheckout")
-          ece.mount(expressDivRef.current)
-          ece.on("confirm",(ev)=>{
-            try{const em=ev?.billingDetails?.email;if(em&&payEmailRef.current&&!payEmailRef.current.value)payEmailRef.current.value=em}catch(_){}
-            doSubscribeRef.current()
+        // Pré-mount dans l'overlay caché (toujours rendu) — ready pendant la lecture
+        if(!cancelled&&!payMountedRef.current&&payDivRef.current){
+          const brandName=IS_NEW_REGION
+            ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))
+            :"Sargasses Martinique"
+          const pe=elementsRef.current.create("payment",{layout:"tabs",
+            business:{name:brandName},
+            ...(IS_NEW_REGION?{defaultValues:{billingDetails:{address:{country:REGION.countryCode||"US"}}}}:{}),
           })
-        }catch(_){/* wallets indisponibles : la carte suffit */}
-        payMountedRef.current=true
+          pe.mount(payDivRef.current)
+          pe.on("ready",()=>{if(!cancelled){payReadyRef.current=true;setPayReady(true)}})
+          try{
+            const ece=elementsRef.current.create("expressCheckout")
+            ece.mount(expressDivRef.current)
+            ece.on("confirm",(ev)=>{
+              try{const em=ev?.billingDetails?.email;if(em&&payEmailRef.current&&!payEmailRef.current.value)payEmailRef.current.value=em}catch(_){}
+              doSubscribeRef.current()
+            })
+          }catch(_){/* wallets indisponibles : la carte suffit */}
+          payMountedRef.current=true
+        }
+      }catch(e){
+        // AbortError = cleanup normal, silencieux
+        if(e?.name!=="AbortError")console.error("sg_stripe_prewarm",e)
       }
     }
     payPrewarmPromiseRef.current=prewarm()
     payPrewarmPromiseRef.current.catch(()=>{})
+    return ()=>{cancelled=true;ac.abort()}
   },[])
   // Reduced motion media query
   const [reduceMotion, setReduceMotion] = useState(false)
@@ -1901,13 +1911,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     return ()=>mq.removeEventListener?.("change", handler)
   },[])
   // Email preview date (expires in 7 days for pass, or trial end)
+  // Note: passCtxRef.current is a ref — mutations don't trigger re-renders.
+  // We depend on [lang] only; the ref value is read fresh on each run.
   useEffect(()=>{
     const dateEl = document.getElementById("sg-email-preview-date")
     if(dateEl){
       const exp = passCtxRef.current ? Date.now() + (passCtxRef.current.days||7)*86400000 : Date.now() + 7*86400000
       dateEl.textContent = new Date(exp).toLocaleDateString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
     }
-  },[lang, passCtxRef.current])
+  },[lang])
   // ── Pont PayPal : rend le bouton d'abo quand l'écran paiement s'ouvre (abo only ;
   // les passes restent en capture). createSubscription(plan_id) → popup PayPal →
   // onApprove pose sg_premium + confirme côté serveur (forward Apps Script). ───────

@@ -40,7 +40,9 @@ curl_setopt_array($ch, [
     CURLOPT_TIMEOUT => 10,
 ]);
 $tokBody = curl_exec($ch);
+$tokErr  = curl_errno($ch);
 curl_close($ch);
+if ($tokErr || !$tokBody) { http_response_code(502); echo json_encode(['error' => 'paypal auth unreachable']); exit; }
 $token = json_decode($tokBody, true)['access_token'] ?? '';
 if (!$token) { http_response_code(500); echo json_encode(['error' => 'auth']); exit; }
 

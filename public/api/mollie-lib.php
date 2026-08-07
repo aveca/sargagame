@@ -294,7 +294,9 @@ function mol_b2b_is_revoked(string $subscriptionId): bool {
 function get_transient(string $key): ?string {
     $file = sys_get_temp_dir() . '/mollie_transient_' . md5($key);
     if (!file_exists($file)) return null;
-    $data = json_decode(file_get_contents($file), true);
+    $raw = @file_get_contents($file);
+    if ($raw === false) return null;
+    $data = json_decode($raw, true);
     if (!$data || ($data['expires'] ?? 0) < time()) {
         @unlink($file);
         return null;
@@ -305,7 +307,7 @@ function get_transient(string $key): ?string {
 function set_transient(string $key, string $value, int $ttl): void {
     $file = sys_get_temp_dir() . '/mollie_transient_' . md5($key);
     $data = ['value' => $value, 'expires' => time() + $ttl];
-    file_put_contents($file, json_encode($data), LOCK_EX);
+    @file_put_contents($file, json_encode($data), LOCK_EX);
 }
 
 /**
