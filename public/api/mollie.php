@@ -113,7 +113,10 @@ try {
         // ou localStorage (sg_email) pour retrouver le contexte. Sur iOS Safari
         // où sessionStorage est effacé, le fallback email vérifie via sgVerifySub.
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
+        // Validate HTTP_HOST against known domains to prevent Host header injection
+        $allowedHosts = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
+        $rawHost = $_SERVER['HTTP_HOST'] ?? '';
+        $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
         $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
         $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
 
@@ -159,8 +162,10 @@ try {
         // Hosted checkout for B2B monthly subscriptions
         $planKey = $data['plan'] ?? '';          // 'pro_monthly' | 'brief_monthly'
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
-        $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/pro/espace/';
-        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
+        $subScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $subHost = in_array(($_SERVER['HTTP_HOST'] ?? ''), $allowedHosts, true) ? $_SERVER['HTTP_HOST'] : 'sargasses-martinique.com';
+        $redirectUrl = $data['redirectUrl'] ?? "{$subScheme}://{$subHost}/pro/espace/";
+        $webhookUrl = $data['webhookUrl'] ?? "{$subScheme}://{$subHost}/public/api/mollie-webhook.php";
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';

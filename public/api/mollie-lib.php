@@ -222,7 +222,7 @@ function mol_b2b_revoke(string $subscriptionId): void {
         $supabaseUrl = $cfg['supabase_url'] ?? '';
         $serviceKey  = $cfg['supabase_service_key'] ?? '';
         if ($supabaseUrl && $serviceKey) {
-            $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?payment_id=eq.' . rawurlencode($subscriptionId) . '&type=eq.b2b_pro';
+            $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?subscription_id=eq.' . rawurlencode($subscriptionId) . '&type=eq.b2b_pro';
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_CUSTOMREQUEST => 'PATCH',
@@ -259,7 +259,7 @@ function mol_b2b_is_revoked(string $subscriptionId): bool {
         if ($supabaseUrl && $serviceKey) {
             $qs = http_build_query([
                 'select' => 'status',
-                'payment_id' => 'eq.' . $subscriptionId,
+                'subscription_id' => 'eq.' . $subscriptionId,
                 'type' => 'eq.b2b_pro',
                 'status' => 'eq.revoked',
                 'limit' => '1',

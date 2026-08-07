@@ -20,8 +20,8 @@ $ISLAND_BY_ORIGIN = [
 ];
 $island = $ISLAND_BY_ORIGIN[$origin] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
+if (($_SERVER['REQUEST_METHOD'] ?? 'POST') === 'OPTIONS') { http_response_code(204); exit; }
+if (($_SERVER['REQUEST_METHOD'] ?? 'POST') !== 'POST') { http_response_code(405); exit; }
 
 $cfg = require __DIR__ . '/stripe-config.php';
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
@@ -57,8 +57,14 @@ function stripe($method, $path, $params = []) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
     }
     $body = curl_exec($ch);
+    $err  = curl_errno($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    if ($err || !$body) {
+        http_response_code(502);
+        echo json_encode(['error' => 'Stripe API unreachable (network error)']);
+        exit;
+    }
     $data = json_decode($body, true);
     if ($code >= 400) {
         http_response_code(500);
@@ -434,7 +440,10 @@ if ($action === 'subscribe') {
 
     // Email de bienvenue (fire-and-forget)
     try {
-        $island = (strpos($origin, 'guadeloupe') !== false) ? 'GP' : 'MQ';
+        // Use $island from ISLAND_BY_ORIGIN mapping (already set on line 21)
+        // for correct from-address and language per region
+        // buildWelcomeEmail expects 'GP' or 'MQ' — map US regions to 'MQ' (lang handles EN)
+        $islandForEmail = ($island === 'gp') ? 'GP' : 'MQ';
         $domain = parse_url($origin, PHP_URL_HOST) ?: 'sargasses-martinique.com';
         if (strpos($plan, 'pro_widget') === 0) {
             // Widget PRO : envoyer le snippet d'intégration avec le jeton ?k= signé (marque blanche).
@@ -451,7 +460,7 @@ if ($action === 'subscribe') {
             $subject = ($lang === 'en')
                 ? "You're in - your 7-day forecast is live"
                 : "C'est parti - tes previsions 7 jours sont actives";
-            $html = buildWelcomeEmail($island, $sub['trial_end'], $domain, $lang);
+            $html = buildWelcomeEmail($islandForEmail, $sub['trial_end'], $domain, $lang);
         }
         resend($email, $subject, $html);
         // Log to Google Sheet (fire-and-forget)
@@ -460,7 +469,7 @@ if ($action === 'subscribe') {
             'to' => $email,
             'subject' => $subject,
             'email_type' => 'post_checkout',
-            'island' => $island,
+            'island' => $island ?: 'mq',
             'status' => 'sent',
             'plan' => $plan,
             'source' => $input['source'] ?? '',

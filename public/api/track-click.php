@@ -19,6 +19,8 @@ if (!$id || !$url) {
 
 // Décoder l'URL (le front encode une fois, le PHP reçoit l'encodé).
 $url = rawurldecode($url);
+// Strip CRLF to prevent HTTP header injection
+$url = str_replace(['\r', '\n', "\r", "\n"], '', $url);
 
 // Whitelist : http/https uniquement (pas javascript:, data:, file:).
 if (!preg_match('/^https?:\/\//i', $url)) {
