@@ -430,8 +430,53 @@
       "error": null,
       "url": "https://www.floridarambler.com/beaches/sargassum-seaweed-florida-beaches/",
       "market": "us"
+    },
+    "wlrn.org": {
+      "date": "2026-08-07T17:02:31.691Z",
+      "emailHash": "9d414558d9dcbac4cefc19681210c2dc",
+      "emailDomain": "wlrn.org",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.wlrn.org/environment",
+      "market": "us"
+    },
+    "local10.com": {
+      "date": "2026-08-07T17:02:33.634Z",
+      "emailHash": "5b9d60eae2e14c6b6c78188d22ca6a1d",
+      "emailDomain": "wplg.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.local10.com/news/local/",
+      "market": "us"
+    },
+    "nbcmiami.com": {
+      "date": "2026-08-07T17:02:39.565Z",
+      "emailHash": "d5fc0a90600f1d17f01765d70c9b9272",
+      "emailDomain": "nbcmiami.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.nbcmiami.com/news/local/",
+      "market": "us"
+    },
+    "cbs12.com": {
+      "date": "2026-08-07T17:02:43.186Z",
+      "emailHash": "51f1d14a587777ba84bcc57c27d89126",
+      "emailDomain": "cbs12.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://cbs12.com/news/local",
+      "market": "us"
+    },
+    "mynews13.com": {
+      "date": "2026-08-07T17:02:46.397Z",
+      "emailHash": "0782b17f2da449a93ceef71e0eb58806",
+      "emailDomain": "mynews13.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.mynews13.com/fl/orlando/news",
+      "market": "us"
     }
   },
-  "lastRun": "2026-08-04T12:02:22.237Z",
-  "totalSent": 49
+  "lastRun": "2026-08-07T17:02:46.397Z",
+  "totalSent": 54
 }

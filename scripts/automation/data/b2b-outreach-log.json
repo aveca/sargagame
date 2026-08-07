@@ -231,8 +231,44 @@
     "langley-resort-fort-royal.com": {
       "date": "2026-08-04T12:15:26.409Z",
       "status": "no-email"
+    },
+    "bwasibo.com": {
+      "date": "2026-08-07T17:15:44.947Z",
+      "status": "no-email"
+    },
+    "toubana.com": {
+      "date": "2026-08-07T17:15:49.044Z",
+      "emailHash": "7c8394c00c89be4b2566b1a6727e48ae",
+      "emailDomain": "toubana.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "lacreolebeach.com": {
+      "date": "2026-08-07T17:15:52.334Z",
+      "status": "no-email"
+    },
+    "fleurdepicsa.com": {
+      "date": "2026-08-07T17:15:52.560Z",
+      "status": "no-email"
+    },
+    "canelladeau.com": {
+      "date": "2026-08-07T17:15:52.733Z",
+      "status": "no-email"
+    },
+    "lecaraibe.com": {
+      "date": "2026-08-07T17:15:52.958Z",
+      "status": "no-email"
+    },
+    "hotelbananier.com": {
+      "date": "2026-08-07T17:15:53.209Z",
+      "status": "no-email"
+    },
+    "auberge-distillerie.fr": {
+      "date": "2026-08-07T17:15:57.502Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-08-04T12:15:26.409Z",
-  "totalSent": 11
+  "lastRun": "2026-08-07T17:15:57.502Z",
+  "totalSent": 12
 }

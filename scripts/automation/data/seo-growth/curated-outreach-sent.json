@@ -69,8 +69,22 @@
       "emailHash": "409862627f033fd0095c893eb3773f89",
       "authority": "high",
       "market": "mx"
+    },
+    "caricoos.org": {
+      "date": "2026-08-07T17:14:01.077Z",
+      "status": "sent",
+      "emailHash": "0760292178c024ed5ad9c5508972e63e",
+      "authority": "high",
+      "market": "mx"
+    },
+    "cast.caribbeanhotelandtourism.com": {
+      "date": "2026-08-07T17:14:34.172Z",
+      "status": "sent",
+      "emailHash": "7466e590e2d7c56260397fd807e0afc2",
+      "authority": "high",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-08-04T12:13:17.806Z",
-  "totalSent": 10
+  "lastRun": "2026-08-07T17:14:34.172Z",
+  "totalSent": 12
 }
