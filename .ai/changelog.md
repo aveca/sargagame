@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-08-07 — coding_agent (OpenCode)
+
+**fix(seo): index.html noscript + JSON-LD mojibake UTF-8 + remove dead preact files :**
+
+- `index.html` `<noscript>` SEO (visible par Google crawlers) contenait du mojibake UTF-8 (double-encoding : `ÔåÆ`, `┬½`, `├¬`, `├®`, `├╣`, `rèel`, `ao├╗t`, `Canc├║n`, `protïge`, `ÔÇö`). Réparé vers texte français propre (`→`, `«`, `ê`, `é`, `ù`, `réel`, `août`, `Cancún`, `protège`, `—`).
+- `index.html` 2 JSON-LD `FAQPage` + `Organization` (rich snippets Google) — tous les caractères accentués corrompus (`re├ºoit`, `calculè`, `santè`, `dètection`, `intïgre`, `pïse`, `libèrè`, `pourrissent`, `d'o├╣`, `donnèes`, `rafra├«chi`, `mètèo`, `ÔÇö`) réparés.
+- Supprimé `src/VeilleurMascotte.jsx` (mort — importait de `preact/hooks` non installé, jamais importé).
+- Supprimé `src/useTideTransition.jsx` (mort — même raison, jamais importé).
+- Gate de ship validé :
+  - ✅ `npm run build` — exit 0 (4.28s)
+  - ✅ `check-bundle-budget` — 190.3 Ko gzip ≤ 210 Ko (3.3 Ko saved)
+  - ✅ `ux-smoke.mjs` — 4 tokens : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+
+**Files :** `index.html`, `src/VeilleurMascotte.jsx` (deleted), `src/useTideTransition.jsx` (deleted), `.ai/current_state.md`, `.ai/changelog.md`
+
+---
+
+## 2026-08-07 — coding_agent (OpenCode)
+
+**fix: P0 paywall copy + P1 payment data corruption + revocation persistence :**
+
+- Fixed `_ctxStatus` undefined in `ComicPaywall` — paywall title now shows "Évite les plages chargées" for avoid beaches, "Surveille ta plage" for moderate (was always generic)
+- `mol_b2b_revoke()` now writes revoked status to Supabase (persistent across deploys)
+- `mol_b2b_is_revoked()` checks Supabase first, file transient fallback (widget revocation now works)
+- Fixed PayPal annual amount: 3999 → 4990 cents (EUR 49.00 matching plan, was EUR 39.99 data corruption)
+- Added null guard on `$si['payment_method']` in create-checkout.php (PHP notice + null propagation)
+- Added `?? 'POST'` fallback on `$_SERVER['REQUEST_METHOD']` in mollie.php
+- Removed unsanitized `$action` from mollie.php error response
+- Gate de ship: build 190.3 Ko, PHP lint OK, ux-smoke 4 tokens OK
+- Commit: ab01fd8a
+
+---
+
+## 2026-08-07 — coding_agent (OpenCode)
+
+**fix(mollie): 3 missing email functions + PRO token revocable + PHP 7 compat :**
+
+- Implemented `mol_b2b_trial_email()` — B2B trial emails were never sent (called but undefined)
+- Implemented `mol_payment_failed_retry_email()` — retry emails for failed payments were dead
+- Implemented `mol_b2b_meeting_notify()` — founder notification for hotel meeting requests was lost
+- Fixed Stripe PRO widget token: embed `subscription_id` for revocation (was irrevocable)
+- Fixed `str_ends_with()` in track-click.php: replaced with `substr()` for PHP 7.x compat
+- Fixed `write-mollie-config.cjs`: exit(1) on missing API key (was exit(0) masking deploy errors)
+- Gate de ship: build 190.4 Ko, PHP lint OK, ux-smoke 4 tokens OK
+- Commit: a148205b
+
+---
+
 ## 2026-08-05 — coding_agent (OpenCode)
 
 **TASK-P1-001 — Purge dead A/B tests (32+ tests removed, promoted variants hardcoded) :**

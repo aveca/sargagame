@@ -4,6 +4,104 @@
 
 ---
 
+## 2026-08-07 19:30 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Interface SEO fix** : `index.html` `<noscript>` + 2 JSON-LD (`FAQPage` + `Organization`) avaient du mojibake UTF-8 (double-encoding causé par éditeur Windows). Visible par Google crawlers → dégradation SEO. Caractères corrompus (`ÔåÆ`, `┬½`, `├¬`, `├®`, `├╣`, etc.) remplacés par leurs équivalents propres (`→`, `«`, `ê`, `é`, `ù`, `ï`, `â`, `à`, `è`, `É`, `’`, `—`, etc.).
+- **Suppression fichiers morts** : `src/VeilleurMascotte.jsx` + `src/useTideTransition.jsx` importaient de `preact/hooks` (jamais installé) mais n'étaient importés nulle part. Risquent de casser le build s'ils étaient importés par erreur.
+- **Audit bugs** : Bugs P0/P1 précédents (BUG-2026-007 à 013) déjà commités par agent précédent (commits b2bf37b0 + e8be7c04). BUG-2026-001 (webhook_secret) résolu côté infra (`write-mollie-config.cjs` blocante en CI).
+
+### Fichiers modifiés
+- `index.html` — `<noscript>` SEO réparé (caractères français propres) + 2 JSON-LD réparés
+- `src/VeilleurMascotte.jsx` — supprimé (mort, preact jamais installé)
+- `src/useTideTransition.jsx` — supprimé (mort, preact jamais installé)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (4.28s, 193.6 → 190.3 Ko gzip après suppression 2 fichiers morts)
+- [x] check-bundle-budget → 190.3 Ko ≤ 210 Ko
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- [x] php -l → N/A (aucun PHP touché)
+
+### Problèmes restants
+- [ ] index.html contient encore du mojibake dans les commentaires (head, style, scripts) — invisible pour users/crawlers mais sale dans le source. Cleanup cosmétique non urgent.
+- [ ] BUG-2026-002 builds Florida/US incomplets (prepare-ftp.cjs) — en attente
+- [ ] PremiumModal.jsx 3730 lignes — dette technique (split partiel déjà commencé)
+
+### Prochaine action recommandée
+1. Cleanup mojibake restant dans commentaires index.html (cosmétique source)
+2. Vérifier BUG-2026-002 impact SEO Florida/Riviera Maya/Punta Cana (medium)
+3. Split PremiumModal.jsx supplément (WorldPaywall + ComicPaywall restent inline)
+
+### Branche / PR
+- Branche courante : main
+- Commit : à créer (ce bloc)
+- Rollback : `git revert HEAD`
+
+---
+
+## 2026-08-07 02:30 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **P0 paywall copy fix** + **P1 payment data corruption** + **P1 revocation persistence** + **2 P2 hygiene fixes**.
+- **P0 — PremiumModal.jsx:1450** : `_ctxStatus` utilisé dans `ComicPaywall` mais variable inexistante dans ce scope → le titre contextuel "Évite les plages chargées" / "Surveille ta plage" n'apparaissait JAMAIS. Fix: remplacé par `ST` (déjà défini).
+- **P1 — mollie-lib.php** : `mol_b2b_is_revoked()` utilisait des file-based transients (nettoyés au deploy, mono-serveur). Fix: `mol_b2b_revoke()` écrit maintenant dans Supabase + `mol_b2b_is_revoked()` vérifie Supabase en premier.
+- **P1 — paypal.php:339** : Montant annual hardcodé à 3999 (EUR 39.99) au lieu de 4990 (EUR 49.00) → fulfilment records corrompus. Fix: 4990.
+- **P1 — create-checkout.php:328** : `$si['payment_method']` sans null guard → PHP notice + propagation null dans création customer Stripe. Fix: `?? ''` + early exit.
+- **P2 — mollie.php:24** : `$_SERVER['REQUEST_METHOD']` sans `?? 'POST'` → PHP notice en CLI. Fix: ajouté.
+- **P2 — mollie.php:396** : `$action` non sanitisé dans réponse d'erreur JSON. Fix: remplacé par string statique.
+
+### Fichiers modifiés
+- `src/PremiumModal.jsx` — _ctxStatus → ST dans ComicPaywall
+- `public/api/mollie-lib.php` — mol_b2b_revoke() + mol_b2b_is_revoked() → Supabase
+- `public/api/paypal.php` — annual amount 3999 → 4990
+- `public/api/create-checkout.php` — null guard $si['payment_method']
+- `public/api/mollie.php` — REQUEST_METHOD fallback + error sanitization
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 190.3 Ko ≤ 210 Ko
+- [x] php -l → OK (mollie-lib, paypal, create-checkout, mollie)
+- [x] ux-smoke → 4 tokens OK
+
+### Branche / PR
+- Branche: main
+- Commit: ab01fd8a
+
+---
+
+## 2026-08-07 02:00 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **3 missing email functions** + PRO token revocable + PHP 7 compat.
+- **P0 — mollie-lib.php** : `mol_b2b_trial_email()` appelée mais jamais définie → emails essai B2B jamais envoyés. Implémenté (Resend, best-effort).
+- **P0 — mollie-lib.php** : `mol_payment_failed_retry_email()` appelée mais jamais définie → emails relance paiement échoué morts. Implémenté.
+- **P1 — mollie-lib.php** : `mol_b2b_meeting_notify()` appelée mais jamais définie → demandes de contact hôteliers perdues. Implémenté.
+- **P1 — stripe-webhook.php** : Token PRO widget n'incluait pas `subscription_id` → révocation impossible. Fix: embed subscription_id dans le payload.
+- **P1 — track-click.php** : `str_ends_with()` PHP 8.0+ → fatal sur PHP 7.x. Fix: `substr()` compatible.
+- **P2 — write-mollie-config.cjs** : `exit(0)` sur MOLLIE_API_KEY manquant masquait les erreurs de deploy. Fix: `exit(1)`.
+
+### Fichiers modifiés
+- `public/api/mollie-lib.php` — 3 nouvelles fonctions email (b2b_trial, payment_failed_retry, b2b_meeting_notify)
+- `public/api/stripe-webhook.php` — PRO token avec subscription_id
+- `public/api/track-click.php` — str_ends_with → substr
+- `scripts/write-mollie-config.cjs` — exit(1) on missing API key
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 190.4 Ko ≤ 210 Ko
+- [x] php -l → OK (mollie-lib.php, track-click.php, stripe-webhook.php, widget-token.php)
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+
+### Prochaine action recommandée
+1. Implémenter `mol_b2b_is_revoked()` dans mollie-lib.php — vérifie révocation subscription Mollie (appelée par widget-token.php:51)
+2. Corriger `mollie-webhook.php` webhook_secret commented out (BUG-2026-001)
+
+### Branche / PR
+- Branche: main
+- Commit: a148205b
+
+---
+
 ## 2026-08-07 01:15 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

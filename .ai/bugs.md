@@ -73,6 +73,21 @@
 - **Description** : `strpos($email, '@')` accepte des emails invalides comme `@` ou `@.`. Risque d'injection requête Supabase via email malformé.
 - **Fix** : [x] Remplacé par `filter_var($email, FILTER_VALIDATE_EMAIL)` (2026-08-07)
 
+### BUG-2026-014 — index.html `<noscript>` + JSON-LD mojibake UTF-8 (SEO)
+
+- **Date** : 2026-08-07 · **Sévérité** : HIGH (SEO)
+- **Fichier** : `index.html` lignes 98, 101, 372-386
+- **Description** : Le `<noscript>` SEO (contenu de secours crawlé par Google) + 2 JSON-LD `FAQPage` + `Organization` (rich snippets Google) contenaient du mojibake UTF-8 (double-encoding causé par éditeur Windows). Tous les caractères accentués français étaient corrompus : `rèel` (→ `réel`), `ÔåÆ` (→ `→`), `┬½` (→ `«`), `├¬` (→ `ê`), `├®` (→ `é`), `ao├╗t` (→ `août`), `Canc├║n` (→ `Cancún`), `protïge` (→ `protège`), `intïgre` (→ `intègre`), `pïse` (→ `pèse`), `libèrè` (→ `libéré`), `d'o├╣` (→ `d'où`), `donnèes` (→ `données`), `rafra├«chi` (→ `rafraîchi`), `mètèo` (→ `météo`), `ÔÇö` (→ `—`).
+- **Impact** : FAQ rich snippets Google affichaient du texte corrompu, `<noscript>` aussi (SEO text de secours).
+- **Fix** : [x] Noscript + 2 JSON-LD réparés avec caractères UTF-8 propres (2026-08-07)
+
+### BUG-2026-015 — Fichiers morts JSX importent preact (jamais installé)
+
+- **Date** : 2026-08-07 · **Sévérité** : LOW
+- **Fichiers** : `src/VeilleurMascotte.jsx`, `src/useTideTransition.jsx`
+- **Description** : 2 fichiers JSX importent `preact` et `preact/hooks` (non installé — l'app utilise React) mais ne sont jamais importés ailleurs dans le codebase. Risque : import accidentel → crash import (useCallback is not defined). Posait problème historique dans smoke (`[sg] errbound useCallback is not defined`).
+- **Fix** : [x] Fichiers supprimés du repo (2026-08-07)
+
 ---
 
 ## 🟩 Résolus
