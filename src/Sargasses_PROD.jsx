@@ -6426,6 +6426,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
   // First-visit inline email capture (persisted via localStorage once submitted OR dismissed)
   const[heroEmail,setHeroEmail]=useState("")
   const[heroEmailSent,setHeroEmailSent]=useState(false)
+  const[heroEmailBusy,setHeroEmailBusy]=useState(false)
   const[heroEmailHidden,setHeroEmailHidden]=useState(()=>{
     try{return !!localStorage.getItem("sg_email")||!!localStorage.getItem("sg_hero_email_dismiss")}catch{return false}
   })
@@ -6543,7 +6544,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         />
         <button
           onClick={submitHeroEmail}
-          disabled={!heroEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail)}
+          disabled={!heroEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail)||heroEmailBusy}
           style={{
             padding:"8px 15px",borderRadius:9,
             border:"2px solid #0D0D0D",
@@ -6554,7 +6555,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
             fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
           }}
-        >{_t(lang,"Recevoir","Get it","Recibir")}</button>
+        >{heroEmailBusy?_t(lang,"Envoi...","Sending...","Enviando..."):_t(lang,"Recevoir","Get it","Recibir")}</button>
         <button
           onClick={()=>{
             try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
