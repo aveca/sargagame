@@ -642,3 +642,24 @@ function mol_payment_failed_retry_email(array $cfg, string $pid, string $email, 
     error_log("[mol_payment_failed_retry_email] sent to {$email} pid={$pid}");
     return true;
 }
+
+
+/**
+ * Analytics event helper (fire-and-forget to Supabase analytics_events).
+ * Safe to call from anywhere — silently no-ops on failure.
+ */
+function sg_analytics_event(string $event, array $params = [], string $island = ''): void {
+    $cfg = @include __DIR__ . '/mollie-config.php';
+    $supabaseUrl = is_array($cfg) ? ($cfg['supabase_url'] ?? '') : '';
+    $anonKey = 'sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz';
+    if (!$supabaseUrl) return;
+    $body = json_encode(['event' => $event, 'params' => array_merge($params, ['island' => $island])]);
+    $ch = curl_init($supabaseUrl . '/rest/v1/analytics_events');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body,
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 3,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'apikey: ' . $anonKey, 'Authorization: Bearer ' . $anonKey, 'Prefer: return=minimal'],
+    ]);
+    @curl_exec($ch);
+    @curl_close($ch);
+}

@@ -10,7 +10,9 @@ ini_set('display_errors', '0');
 header('Content-Type: application/json');
 
 // Secret optionnel (anti-abus) — sans clé, le script fonctionne mais avec throttle strict
-$key = $_GET['key'] ?? '';
+// Anti-abus: rate limit 10/h/IP (le secret key n'est plus utilisé — voir BUG-2026)
+@include_once __DIR__ . '/_ratelimit.php';
+if (function_exists('sg_rate_limit')) sg_rate_limit('retry_failed_payment', 10);
 $pid = preg_replace('/[^a-zA-Z0-9_]/', '', $_GET['pid'] ?? '');
 if (!$pid || strpos($pid, 'tr_') !== 0) {
     http_response_code(400);

@@ -17,6 +17,15 @@ header('Content-Type: application/json; charset=utf-8');
 // CORS whitelist — SYNC avec create-checkout.php / paypal.php
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com','https://sargassummiami.com','https://sargassumcancun.com'];
+
+// Validate user-provided URL is on an allowed Sargasses domain (anti-SSRF/exfiltration)
+function mollie_validate_url($url, $allowedHosts) {
+    if (!$url) return false;
+    $p = parse_url($url);
+    if (!isset($p['scheme']) || !in_array($p['scheme'], ['https','http'], true)) return false;
+    if (!isset($p['host'])) return false;
+    return in_array(strtolower($p['host']), $allowedHosts, true);
+}
 if (in_array($origin, $allowed, true)) header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -117,8 +126,9 @@ try {
         $allowedHosts = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
         $rawHost = $_SERVER['HTTP_HOST'] ?? '';
         $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
-        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
-        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
+        $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
+        $redirectUrl = $userRedirect ?? "$scheme://$host/?mollie_return=1";
+        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php"; // Always server-controlled
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -164,8 +174,9 @@ try {
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
         $subScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $subHost = in_array(($_SERVER['HTTP_HOST'] ?? ''), $allowedHosts, true) ? $_SERVER['HTTP_HOST'] : 'sargasses-martinique.com';
-        $redirectUrl = $data['redirectUrl'] ?? "{$subScheme}://{$subHost}/pro/espace/";
-        $webhookUrl = $data['webhookUrl'] ?? "{$subScheme}://{$subHost}/public/api/mollie-webhook.php";
+        $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
+        $redirectUrl = $userRedirect ?? "{$subScheme}://{$subHost}/pro/espace/";
+        $webhookUrl = "{$subScheme}://{$subHost}/public/api/mollie-webhook.php"; // Always server-controlled
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
@@ -259,7 +270,10 @@ try {
             throw new Exception('customerId et mandateId requis');
         }
 
-        $mandate = $mollie->customer_mandates->get($customerId, $mandateId);
+        // customer_mandates not yet exposed by SgMollieClient — return 501 until implemented
+        http_response_code(501);
+        echo json_encode(['error' => 'mandate_lookup_not_implemented']);
+        // $mandate = $mollie->customer_mandates->get($customerId, $mandateId);
         echo json_encode(['mandate' => $mandate]);
         exit;
     }

@@ -256,7 +256,7 @@ if ($action === 'embedded') {
     $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
     $byRegion = $cfg['prices_by_region'] ?? [];
     $regionPrices = ($island !== '' && isset($byRegion[$island])) ? $byRegion[$island] : null;
-    $price = $regionPrices[$plan] ?? ($cfg['prices'][$plan] ?? ($cfg['prices']['monthly'] ?? ''));
+    $price = (is_array($regionPrices) ? $regionPrices[$plan] : null) ?? ($cfg['prices'][$plan] ?? ($cfg['prices']['monthly'] ?? ''));
     if (!$price) {
         http_response_code(500);
         echo json_encode(['error' => 'no price configured']);
