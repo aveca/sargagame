@@ -57,7 +57,7 @@
 - **Date** : 2026-08-07 · **Sévérité** : MEDIUM
 - **Fichier** : `public/api/copernicus/forecast.php:56`
 - **Description** : `mol_access_for_email()` n'existe pas → l'accès forecast premium par email est cassé. Les utilisateurs payants ne peuvent pas débloquer la prévision J+2→J+7 depuis un autre appareil.
-- **Fix** : [x] Ajouté garde `function_exists()` (2026-08-07)
+- **Fix** : [x] Fonction implémentée dans mollie-lib.php (query Supabase payment_grants) + garde `function_exists()` dans forecast.php (2026-08-07)
 
 ### BUG-2026-012 — Messages d'exception Mollie exposés en réponse HTTP
 

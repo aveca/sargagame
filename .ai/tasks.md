@@ -127,6 +127,9 @@
 - [x] **BUG-FIX-007**: P2 — mollie.php verify_subscription email validation fix
 - [x] **BUG-FIX-008**: P2 — create-checkout.php in_array() strict mode fix
 
+### Commit
+- `b2bf37b0` — fix(security): 9 PHP bugs fixed — 3 P0 crash fixes + security hardening
+
 ### Remaining — Ranked by Business Impact
 - [ ] **P0-01**: Add static CTA in HTML source (before React mount) — "Voir ma plage →" button
 - [ ] **P0-02**: Mollie webhook secret → ensure deployed on all 5 FTP domains

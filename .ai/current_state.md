@@ -42,6 +42,7 @@
 
 ### Branche / PR
 - Branche courante : main
+- Commit : `b2bf37b0` (pushé, auto-deploy en cours via daily-copernicus.yml)
 - Aucune PR ouverte
 
 ---
