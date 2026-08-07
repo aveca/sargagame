@@ -126,9 +126,12 @@
 - [x] **BUG-FIX-006**: P1 — forecast.php mol_access_for_email() guard
 - [x] **BUG-FIX-007**: P2 — mollie.php verify_subscription email validation fix
 - [x] **BUG-FIX-008**: P2 — create-checkout.php in_array() strict mode fix
+- [x] **BUG-FIX-009**: retry-failed-payment.php undefined $status variable fix
+- [x] **IMPROVE-001**: Sargasses_PROD.jsx dead PassOffer import removed (-3.2 Ko bundle)
+- [x] **IMPROVE-002**: Google Fonts @import → self-hosted in colors_and_type.css + legal.css
 
 ### Commit
-- `b2bf37b0` — fix(security): 9 PHP bugs fixed — 3 P0 crash fixes + security hardening
+- `e8be7c04` — fix: undefined $status, dead PassOffer import, Google Fonts self-hosted
 
 ### Remaining — Ranked by Business Impact
 - [ ] **P0-01**: Add static CTA in HTML source (before React mount) — "Voir ma plage →" button
