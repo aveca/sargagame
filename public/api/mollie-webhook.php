@@ -205,5 +205,5 @@ try {
 } catch (Throwable $e) {
     error_log('[mollie-webhook] ERROR: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'webhook_processing_error']);
 }

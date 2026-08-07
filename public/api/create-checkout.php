@@ -6,7 +6,7 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 // CommonJS, non chargeable depuis PHP). Ajouter ici chaque nouvelle region
 // qui sert ce endpoint (scripts/test-stripe-webhook.cjs verifie la coherence).
 $allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com','https://sargassummiami.com','https://sargassumcancun.com'];
-if (in_array($origin, $allowed)) header("Access-Control-Allow-Origin: $origin");
+if (in_array($origin, $allowed, true)) header("Access-Control-Allow-Origin: $origin");
 
 // Region du domaine appelant → metadata.island sur customer + subscription,
 // pour que stripe-webhook.php puisse attribuer les events de lifecycle

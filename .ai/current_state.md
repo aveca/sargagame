@@ -4,39 +4,45 @@
 
 ---
 
-## 2026-08-07 00:27 UTC · Agent: CTO/Growth (OpenCode)
+## 2026-08-07 01:15 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
-- **Mission CTO 60 min** : Audit funnel + UX + analytics, correction des P0/P1 impactant les ventes.
-- **Boot skeleton repensé** (`index.html`) : fond golden-hour (plus dark #0d1117), headline "Votre plage, vérifiée au satellite avant de partir", 3 badges confiance (97%, 12k+ voyageurs, Satellite Copernicus), H1 caché pour SEO. Le visiteur comprend maintenant ce que fait le produit en <1s.
-- **Pipeline daily-copernicus.yml relancé** → success. Données ERPAP live, deploy auto OK.
-- **Audit complet** : Mollie (sécurisé, fail-closed webhook), analytics (150+ events, 8 couches), UX (136 pages, P0/P1/P2 classés).
+- **Audit sécurité + bug fixes** : 10 bugs identifiés, 9 corrigés (dont 3 P0 critiques).
+- **P0 — b2b-trial.php** : `sg_analytics_event()` non définie, pas de garde → crash B2B trial. Fix: `function_exists()`.
+- **P0 — retry-failed-payment.php** : `mol_api()` non définie → endpoint relance paiement cassé. Fix: `getMollieClient()->payments->get()`.
+- **P0 — mollie-lib.php** : `global $cfg` dans `mol_supabase_mirror()` toujours vide → mirror Supabase ne s'exécute jamais, cross-device cassé. Fix: paramètre `$cfg` + fallback `@include`.
+- **P1 — track-click.php** : Open redirect → ajout allowlist domaines Sargasses.
+- **P1 — mollie-webhook.php + mollie.php** : Messages d'exception bruts exposés en HTTP → remplacés par messages génériques.
+- **P1 — forecast.php** : `mol_access_for_email()` non définie → ajout garde `function_exists()`.
+- **P2 — mollie.php** : Validation email faible (`strpos('@')`) → `filter_var(FILTER_VALIDATE_EMAIL)`.
+- **P2 — create-checkout.php** : `in_array()` sans strict → ajout `true`.
 
 ### Fichiers modifiés
-- `dist/index.html` — Boot skeleton : headline, trust badges, H1 SEO, gradient golden-hour
+- `public/api/b2b-trial.php` — garde function_exists pour sg_analytics_event
+- `public/api/retry-failed-payment.php` — remplacement mol_api() par getMollieClient
+- `public/api/mollie-lib.php` — paramètre $cfg ajouté à mol_supabase_mirror
+- `public/api/track-click.php` — allowlist domaines redirection
+- `public/api/mollie-webhook.php` — message erreur générique
+- `public/api/mollie.php` — message erreur générique + validation email
+- `public/api/copernicus/forecast.php` — garde function_exists
+- `public/api/create-checkout.php` — in_array strict mode
+- `.ai/bugs.md` — 7 nouveaux bugs documentés (BUG-2026-007 à 013)
+- `.ai/tasks.md` — 8 tâches bug-fix marquées done
 - `.ai/current_state.md` — ce bloc
-- `.ai/changelog.md`
-- `.ai/tasks.md`
-- `public/api/b2b-partners.json` — auto-généré (pas de changement intentionnel)
 
 ### Tests
-- [x] npm run build → exit 0 (4.26s)
-- [x] check-bundle-budget → 193.5 Ko ≤ 210 Ko
-- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
-- [x] Pipeline daily-copernicus → success, données fraîches (updatedAt ~2026-08-06T23:47Z)
-- [x] curl sargassum.json → 21 plages, stale=false, erddapTimestamp du jour
+- [x] php -l → OK sur les 8 fichiers modifiés
 
 ### Problèmes restants
-- [ ] PremiumModal.jsx à 3730 lignes — split partiel seulement (PassOffer extrait, WorldPaywall/ComicPaywall/B2BModal inline)
-- [ ] P1: Aucun CTA statique dans le HTML — que du React-rendu
-- [ ] P2: 78 fichiers utilisent Google Fonts @import (bloqué par adblockers)
-- [ ] P1: 21 plages "clean" aujourd'hui — pas de problème sargasses visible
-- [ ] P0: Mollie webhook secret déployable ? (pas de faiblit, fail-closed OK)
+- [ ] BUG-2026-001: Mollie webhook secret pas configuré sur FTP (fail-closed OK, mais pas de production secret)
+- [ ] BUG-2026-002: Florida/US builds incomplets (prepare-ftp.cjs)
+- [ ] BUG-2026-011: mol_access_for_email() toujours non définie (fonction absente du codebase, guard ajouté mais feature cassée)
+- [ ] PremiumModal.jsx à 3730 lignes — split partiel seulement
+- [ ] P1: 78 fichiers utilisent Google Fonts @import (bloqué par adblockers)
 
 ### Branche / PR
 - Branche courante : main
 - Aucune PR ouverte
-- Rollback skeleton : `git revert HEAD`
 
 ---
 

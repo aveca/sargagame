@@ -282,7 +282,7 @@ try {
         // Shape de retour aligné sur Stripe/PayPal : {active, kind, passEnd, status}
         // ou {active:false, reason}. Ne lève jamais (préserve fallback Stripe côté front).
         $email = trim($data['email'] ?? '');
-        if (!$email || !strpos($email, '@')) {
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
             echo json_encode(['error' => 'Missing email']);
             exit;
@@ -397,5 +397,5 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     error_log('[mollie.php] ' . $e->getMessage());
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'payment_processing_error']);
 }

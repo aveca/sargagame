@@ -53,7 +53,7 @@ if (!$authorized) {
         $cfg = @include __DIR__ . '/../mollie-config.php';
         if (is_array($cfg)) {
             require_once __DIR__ . '/../mollie-lib.php';
-            if (mol_access_for_email($email)) $authorized = true;
+            if (function_exists('mol_access_for_email') && mol_access_for_email($email)) $authorized = true;
         }
     }
 }

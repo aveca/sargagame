@@ -22,14 +22,20 @@ $cfg = require __DIR__ . '/mollie-config.php';
 require_once __DIR__ . '/mollie-lib.php';
 
 // Fetch le paiement depuis l'API Mollie
-list($code, $pay) = mol_api('GET', '/payments/' . rawurlencode($pid));
-if ($code >= 400 || !is_array($pay)) {
+try {
+    $mollie = getMollieClient();
+    $payment = $mollie->payments->get($pid);
+    $pay = [
+        'status'   => $payment->status ?? 'unknown',
+        'metadata' => (array)($payment->metadata ?? []),
+        'amount'   => (array)($payment->amount ?? []),
+        'details'  => (array)($payment->details ?? []),
+    ];
+} catch (Exception $e) {
     http_response_code(404);
-    echo json_encode(['error' => 'payment not found', 'mollie_code' => $code]);
+    echo json_encode(['error' => 'payment not found', 'detail' => 'Invalid payment ID or Mollie API error']);
     exit;
 }
-
-$status = $pay['status'] ?? '';
 $meta   = $pay['metadata'] ?? [];
 $amount = $pay['amount'] ?? [];
 $email  = $meta['email'] ?? '';
@@ -71,16 +77,9 @@ if (isset($details['failureCode'])) {
 }
 
 // Envoie l'email de relance
-$sent = mol_payment_failed_retry_email(
-    $cfg,
-    $pid,
-    $email,
-    $amount['value'] ?? '?',
-    $currency,
-    $island,
-    $plan,
-    $reason
-);
+$sent = function_exists('mol_payment_failed_retry_email')
+    ? mol_payment_failed_retry_email($cfg, $pid, $email, $amount['value'] ?? '?', $currency, $island, $plan, $reason)
+    : false;
 
 echo json_encode([
     'ok'       => $sent,

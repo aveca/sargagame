@@ -24,12 +24,54 @@
 - **Reproduction** : lancer `prepare-ftp.cjs` with `--regions florida` — plusieurs pages manquants.
 - **Statut** : [ ] Dans le pipe
 
-### BUG-2026-003 — Trop de flags A/B (>50) — dilue significativité
+### BUG-2026-007 — mol_api() non définie dans retry-failed-payment.php
 
-- **Date** : 2026-07-31 · **Sévérité** : LOW (pas visible/ser propose)
-- **Fichier** : `src/Sargasses_PROD.jsx`
-- **Description** : 50+ `abVariant()` dans la source créént un montage Statistical à mesure, à remettre UTILE que version pour obtenir un signal dans une évaluation valide; cela ralentit also les nouveaux
-- **Plan** : `à résoudre comme partie` du Nettle P1 purge précnom.
+- **Date** : 2026-08-07 · **Sévérité** : HIGH
+- **Fichier** : `public/api/retry-failed-payment.php:25`
+- **Description** : `mol_api()` n'existe pas dans le codebase → crash fatal à chaque appel. L'endpoint de relance paiement échoué est totalement cassé.
+- **Fix** : [x] Remplacé par `getMollieClient()->payments->get($pid)` (2026-08-07)
+
+### BUG-2026-008 — sg_analytics_event() non définie dans b2b-trial.php
+
+- **Date** : 2026-08-07 · **Sévérité** : HIGH
+- **Fichier** : `public/api/b2b-trial.php:95`
+- **Description** : `sg_analytics_event()` n'est pas définie dans mollie-lib.php. Appelée sans garde `function_exists()` → crash fatal. L'essai B2B ne retourne jamais le token au client (500).
+- **Fix** : [x] Ajouté garde `function_exists()` (2026-08-07)
+
+### BUG-2026-009 — mol_supabase_mirror() ne writes jamais (global $cfg toujours vide)
+
+- **Date** : 2026-08-07 · **Sévérité** : HIGH
+- **Fichier** : `public/api/mollie-lib.php:255`
+- **Description** : `global $cfg` dans `mol_supabase_mirror()` est toujours vide car les callers chargent `$cfg` en scope local. Le mirror Supabase ne s'exécute jamais → les grants de passes/pro ne sont pas persistés côté serveur, cross-device cassé.
+- **Fix** : [x] Paramètre `$cfg` optionnel ajouté, fallback `@include` mollie-config (2026-08-07)
+
+### BUG-2026-010 — Open redirect dans track-click.php
+
+- **Date** : 2026-08-07 · **Sévérité** : MEDIUM
+- **Fichier** : `public/api/track-click.php:54`
+- **Description** : L'endpoint de tracking email redirige vers n'importe quelle URL http/https sans allowlist de domaines. Vecteur de phishing via emails Sargasses.
+- **Fix** : [x] Allowlist de domaines Sargasses ajoutée (2026-08-07)
+
+### BUG-2026-011 — mol_access_for_email() non définie dans forecast.php
+
+- **Date** : 2026-08-07 · **Sévérité** : MEDIUM
+- **Fichier** : `public/api/copernicus/forecast.php:56`
+- **Description** : `mol_access_for_email()` n'existe pas → l'accès forecast premium par email est cassé. Les utilisateurs payants ne peuvent pas débloquer la prévision J+2→J+7 depuis un autre appareil.
+- **Fix** : [x] Ajouté garde `function_exists()` (2026-08-07)
+
+### BUG-2026-012 — Messages d'exception Mollie exposés en réponse HTTP
+
+- **Date** : 2026-08-07 · **Sévérité** : MEDIUM
+- **Fichiers** : `mollie-webhook.php:208`, `mollie.php:400`
+- **Description** : Les messages d'exception Mollie API sont renvoyés bruts au client. Peuvent fuiter des détails internes (chemins fichiers, format API keys).
+- **Fix** : [x] Messages remplacés par 'webhook_processing_error' / 'payment_processing_error' (2026-08-07)
+
+### BUG-2026-013 — Validation email faible dans verify_subscription
+
+- **Date** : 2026-08-07 · **Sévérité** : LOW
+- **Fichier** : `public/api/mollie.php:284`
+- **Description** : `strpos($email, '@')` accepte des emails invalides comme `@` ou `@.`. Risque d'injection requête Supabase via email malformé.
+- **Fix** : [x] Remplacé par `filter_var($email, FILTER_VALIDATE_EMAIL)` (2026-08-07)
 
 ---
 
@@ -46,6 +88,27 @@
 ### BUG-2026-006. terminé en regrouper: Mol duplicates et status.
 
 - **Date** : 2026-07-30 done → and field to web.
+
+### BUG-2026-007 mol_api() non définie — retry-failed-payment.php
+- **Date** : 2026-08-07 · **Fix** : [x] Replaced with getMollieClient()->payments->get()
+
+### BUG-2026-008 sg_analytics_event() non définie — b2b-trial.php
+- **Date** : 2026-08-07 · **Fix** : [x] Added function_exists() guard
+
+### BUG-2026-009 mol_supabase_mirror() global $cfg always empty
+- **Date** : 2026-08-07 · **Fix** : [x] Added $cfg parameter + @include fallback
+
+### BUG-2026-010 Open redirect — track-click.php
+- **Date** : 2026-08-07 · **Fix** : [x] Domain allowlist added
+
+### BUG-2026-011 mol_access_for_email() undefined — forecast.php
+- **Date** : 2026-08-07 · **Fix** : [x] Added function_exists() guard
+
+### BUG-2026-012 Exception messages leaked — mollie-webhook.php, mollie.php
+- **Date** : 2026-08-07 · **Fix** : [x] Generic error messages returned
+
+### BUG-2026-013 Weak email validation — mollie.php verify_subscription
+- **Date** : 2026-08-07 · **Fix** : [x] Replaced strpos('@') with filter_var FILTER_VALIDATE_EMAIL
 
 ---
 

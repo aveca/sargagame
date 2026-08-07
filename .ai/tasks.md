@@ -114,10 +114,18 @@
 ## 2026-08-07 — CTO Sprint entries
 
 ### Done
-- [x] **CTO-SP01**: Boot skeleton ggolden-hour gradient + headline + trust badges + H1 SEO (index.html)
+- [x] **CTO-SP01**: Boot skeleton golden-hour gradient + headline + trust badges + H1 SEO (index.html)
 - [x] **CTO-SP02**: Relaunch daily-copernicus pipeline (data was 30h stale)
 - [x] **CTO-SP03**: Full UX/payment/analytics audit (P0/P1/P2 classified)
-- [x] **CTO-SP04**: Gate de ip: build 193.5 Ko, smoke OK, PHP clean
+- [x] **CTO-SP04**: Gate de ship: build 193.5 Ko, smoke OK, PHP clean
+- [x] **BUG-FIX-001**: P0 — b2b-trial.php sg_analytics_event() crash fix
+- [x] **BUG-FIX-002**: P0 — retry-failed-payment.php mol_api() crash fix
+- [x] **BUG-FIX-003**: P0 — mollie-lib.php mol_supabase_mirror() global $cfg fix
+- [x] **BUG-FIX-004**: P1 — track-click.php open redirect domain allowlist
+- [x] **BUG-FIX-005**: P1 — mollie-webhook.php + mollie.php exception leak fix
+- [x] **BUG-FIX-006**: P1 — forecast.php mol_access_for_email() guard
+- [x] **BUG-FIX-007**: P2 — mollie.php verify_subscription email validation fix
+- [x] **BUG-FIX-008**: P2 — create-checkout.php in_array() strict mode fix
 
 ### Remaining — Ranked by Business Impact
 - [ ] **P0-01**: Add static CTA in HTML source (before React mount) — "Voir ma plage →" button

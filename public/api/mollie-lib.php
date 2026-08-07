@@ -248,11 +248,67 @@ function set_transient(string $key, string $value, int $ttl): void {
 }
 
 /**
+ * Check if an email has an active pass/subscription (cross-device premium access).
+ * Queries Supabase payment_grants for non-expired B2C passes or B2B Pro grants.
+ * Used by forecast.php for email-based premium forecast access.
+ */
+function mol_access_for_email(string $email): bool {
+    $email = trim(strtolower($email));
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+
+    $cfg = @include __DIR__ . '/mollie-config.php';
+    if (!is_array($cfg)) $cfg = [];
+    $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
+    if (!$serviceKey) return false;
+
+    // Query Supabase: any non-expired grant for this email (B2C pass or B2B pro)
+    $qs = http_build_query([
+        'select'    => 'type,expires_at',
+        'email'     => 'eq.' . $email,
+        'expires_at' => 'gt.now()',
+        'order'     => 'expires_at.desc',
+        'limit'     => '1',
+    ]);
+    $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?' . $qs;
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL            => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => [
+            'apikey: ' . $serviceKey,
+            'Authorization: Bearer ' . $serviceKey,
+            'Accept: application/json',
+        ],
+        CURLOPT_TIMEOUT        => 8,
+    ]);
+    $resp = curl_exec($ch);
+    $err  = curl_errno($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($err || $code >= 400) {
+        error_log("[mol_access_for_email] Supabase lookup failed: err=$err code=$code email=$email");
+        return false;
+    }
+
+    $rows = json_decode($resp, true) ?? [];
+    if (!is_array($rows) || empty($rows)) return false;
+
+    // At least one non-expired grant found
+    return true;
+}
+
+/**
  * Supabase mirror for payment grants — write-only (service key on server).
  * Best-effort, returns boolean success. Avoids /tmp loss on deploy/restart.
+ * Accepts $cfg as parameter (fixes global $cfg always-empty bug).
  */
-function mol_supabase_mirror(string $table, array $data): bool {
-    global $cfg;  // BUG-2026-011 : $cfg chargé par require_once mollie-config.php (caller side)
+function mol_supabase_mirror(string $table, array $data, ?array $cfg = null): bool {
+    if ($cfg === null) {
+        $cfg = @include __DIR__ . '/mollie-config.php';
+        if (!is_array($cfg)) $cfg = [];
+    }
     $supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
     $serviceKey = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
     if (!$serviceKey) return true; // skip silently if not configured (return true = skip ok)

@@ -26,6 +26,20 @@ if (!preg_match('/^https?:\/\//i', $url)) {
     exit;
 }
 
+// Whitelist domaines autorisés (anti-phishing)
+$redirectHosts = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
+$parsedRedirect = parse_url($url);
+$redirectHost = $parsedRedirect['host'] ?? '';
+$redirectBase = preg_replace('/^www\./', '', $redirectHost);
+$allowed = false;
+foreach ($redirectHosts as $h) {
+    if ($redirectBase === $h || str_ends_with($redirectBase, '.' . $h)) { $allowed = true; break; }
+}
+if (!$allowed) {
+    header('Location: /');
+    exit;
+}
+
 // Log best-effort vers Supabase.
 $supabaseUrl = 'https://rswdmjtdzrucqzzukfmd.supabase.co';
 $anon = 'sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz';
