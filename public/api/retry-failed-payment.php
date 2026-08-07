@@ -42,6 +42,7 @@ $email  = $meta['email'] ?? '';
 $plan   = $meta['pass'] ?? ($meta['plan'] ?? 'unknown');
 $island = $meta['island'] ?? 'puntacana';
 $currency = $amount['currency'] ?? 'USD';
+$status = $pay['status'] ?? 'unknown';
 
 // Email fallback : cardHolder si pas dans metadata
 if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {

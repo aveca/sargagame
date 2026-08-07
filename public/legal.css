@@ -3,7 +3,7 @@
    cgv / confidentialite / remboursement / mentions-legales. Brand tokens + polices
    alignés sur a-propos/colors_and_type.css : papier crème, or signal, golden-hour
    sombre en chrome, Anton (titres) + Bricolage Grotesque (corps). Dark-mode auto. */
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
+@import url('/fonts/fonts.css');
 :root{
   --bg:#FDFCF7; --bg2:#F7F5EF; --card:#FFFFFF;
   --ink:#0D0D0D; --mid:#686868;
