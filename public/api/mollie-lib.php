@@ -204,27 +204,88 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 
 /**
  * Revoke Pro token for a subscription (called on cancellation/expiration)
- * Supprime le grant (le token ne peut plus être validé via sg_widget_verify).
+ * Supprime le grant + mark revoked in Supabase (persistent across deploys).
  */
 function mol_b2b_revoke(string $subscriptionId): void {
     $grantKey = 'mollie_grant_' . $subscriptionId;
     $revokeKey = 'mollie_revoked_' . $subscriptionId;
-    set_transient($revokeKey, '1', 365 * 86400); // mark revoked for 1 year
-    // Supprime le grant transient en double : clé normale + variante md5
+    set_transient($revokeKey, '1', 365 * 86400); // file fallback
+    // Supprime le grant transient
     $fileGrant = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
     $fileGrantMd5 = sys_get_temp_dir() . '/mollie_transient_' . md5('mollie_grant_' . $subscriptionId);
     foreach ([$fileGrant, $fileGrantMd5] as $f) {
         if (file_exists($f)) @unlink($f);
     }
+    // Supabase: mark grant as revoked (persistent across deploys/servers)
+    $cfg = @include __DIR__ . '/mollie-config.php';
+    if (is_array($cfg)) {
+        $supabaseUrl = $cfg['supabase_url'] ?? '';
+        $serviceKey  = $cfg['supabase_service_key'] ?? '';
+        if ($supabaseUrl && $serviceKey) {
+            $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?payment_id=eq.' . rawurlencode($subscriptionId) . '&type=eq.b2b_pro';
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_CUSTOMREQUEST => 'PATCH',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POSTFIELDS => json_encode(['status' => 'revoked']),
+                CURLOPT_HTTPHEADER => [
+                    'apikey: ' . $serviceKey,
+                    'Authorization: Bearer ' . $serviceKey,
+                    'Content-Type: application/json',
+                    'Prefer: return=minimal',
+                ],
+                CURLOPT_TIMEOUT => 8,
+            ]);
+            @curl_exec($ch);
+            @curl_close($ch);
+        }
+    }
     error_log("[mol_b2b_revoke] revoked sub=$subscriptionId");
 }
 
 /**
- * Check if a subscription token has been revoked
+ * Check if a subscription token has been revoked.
+ * Checks Supabase first (persistent), falls back to file transient.
  */
 function mol_b2b_is_revoked(string $subscriptionId): bool {
+    // File transient fallback (instant, single-server)
     $revokeKey = 'mollie_revoked_' . $subscriptionId;
-    return get_transient($revokeKey) !== null;
+    if (get_transient($revokeKey) !== null) return true;
+    // Supabase check (persistent across deploys)
+    $cfg = @include __DIR__ . '/mollie-config.php';
+    if (is_array($cfg)) {
+        $supabaseUrl = $cfg['supabase_url'] ?? '';
+        $serviceKey  = $cfg['supabase_service_key'] ?? '';
+        if ($supabaseUrl && $serviceKey) {
+            $qs = http_build_query([
+                'select' => 'status',
+                'payment_id' => 'eq.' . $subscriptionId,
+                'type' => 'eq.b2b_pro',
+                'status' => 'eq.revoked',
+                'limit' => '1',
+            ]);
+            $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?' . $qs;
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    'apikey: ' . $serviceKey,
+                    'Authorization: Bearer ' . $serviceKey,
+                    'Accept: application/json',
+                ],
+                CURLOPT_TIMEOUT => 5,
+            ]);
+            $resp = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($code >= 200 && $code < 300) {
+                $rows = json_decode($resp, true) ?? [];
+                if (!empty($rows)) return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**

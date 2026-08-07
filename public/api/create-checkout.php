@@ -325,7 +325,12 @@ if ($action === 'subscribe') {
 
     // Recuperer le payment method du SetupIntent
     $si = stripe('GET', "/setup_intents/$setupIntentId");
-    $pm = $si['payment_method'];
+    $pm = $si['payment_method'] ?? '';
+    if (!$pm) {
+        http_response_code(400);
+        echo json_encode(['error' => 'SetupIntent has no payment_method attached']);
+        exit;
+    }
 
     // Creer le client Stripe
     $customerParams = [

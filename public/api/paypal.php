@@ -336,7 +336,7 @@ if ($action === 'confirm_subscription') {
         if ($email !== '') pp_store_sub($email, $subId);
         ignore_user_abort(true);
         if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
-        $cents = $planIn === 'annual' ? 3999 : 499;
+        $cents = $planIn === 'annual' ? 4990 : 499;
         pp_forward_fulfillment($cfg, $subId, $email, $cents, 'eur', $island, $planIn, 'paypal_button');
     }
     exit;

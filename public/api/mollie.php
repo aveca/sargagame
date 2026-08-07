@@ -21,8 +21,8 @@ if (in_array($origin, $allowed, true)) header("Access-Control-Allow-Origin: $ori
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['error'=>'POST only']); exit; }
+if (($_SERVER['REQUEST_METHOD'] ?? 'POST') === 'OPTIONS') { http_response_code(204); exit; }
+if (($_SERVER['REQUEST_METHOD'] ?? 'POST') !== 'POST') { http_response_code(405); echo json_encode(['error'=>'POST only']); exit; }
 
 $raw = file_get_contents('php://input');
 $data = json_decode($raw, true) ?? [];
@@ -393,7 +393,7 @@ try {
     }
 
     http_response_code(400);
-    echo json_encode(['error' => "Action inconnue: $action"]);
+    echo json_encode(['error' => 'action_inconnue']);
 } catch (Throwable $e) {
     http_response_code(500);
     error_log('[mollie.php] ' . $e->getMessage());
