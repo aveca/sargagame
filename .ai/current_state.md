@@ -4,6 +4,103 @@
 
 ---
 
+## 2026-08-07 21:00 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **P1 security hardening** + **P2 backend hardening** + **UI email capture improvements**.
+- **P1 — mollie.php** : webhookUrl et redirectUrl user-controlled → SSRF/data exfiltration. Fix: validation contre allowed hosts + webhookUrl toujours server-controlled.
+- **P1 — mollie.php** : `customer_mandates` property undefined → fatal error. Fix: 501 not_implemented.
+- **P1 — retry-failed-payment.php** : `$key` dead-code (false security). Fix: rate limit 10/h/IP via sg_rate_limit().
+- **P1 — mollie-lib.php** : `sg_analytics_event()` never defined → B2B funnel events lost. Fix: implemented fire-and-forget to Supabase analytics_events.
+- **P2 — create-checkout.php** : null[$plan] PHP 8 warning. Fix: is_array() guard.
+- **P2 — paypal.php + paypal-webhook.php** : curl_errno checks added on token/api calls.
+- **P2 — mollie-lib.php** : @ suppression on get_transient/set_transient file I/O.
+- **UI — Sargasses_PROD.jsx** : Email validation improved (proper regex), CTA copy "OK" → "Recevoir", loading state added.
+
+### Legal pages (5 regions + RGPD)
+- mentions-legales.html + cgv.html + confidentialite.html updated to cover 5 domains
+- Added TVA FR40882370703, Hébergement section, Propriété intellectuelle details
+- Added Médiation section (CGV art. 11), article L.221-28 13° reference
+- Added RGPD rights mention, Last updated date
+
+### Fichiers modifiés
+- `public/api/mollie.php` — URL validation, customer_mandates fix
+- `public/api/mollie-lib.php` — sg_analytics_event(), transient guards
+- `public/api/retry-failed-payment.php` — rate limiting, dead-code removed
+- `public/api/create-checkout.php` — null guard
+- `public/api/paypal.php` — curl_errno checks
+- `public/api/paypal-webhook.php` — curl_errno check
+- `public/cgv.html`, `public/confidentialite.html`, `public/mentions-legales.html` — 5 regions + RGPD
+- `src/Sargasses_PROD.jsx` — email validation + CTA + loading state
+
+### Tests réalisés
+- [x] npm run build → exit 0 (190.4 Ko gzip)
+- [x] check-bundle-budget → OK
+- [x] php -l → OK (all touched files)
+- [x] ux-smoke → 4 tokens OK
+
+### Branche / PR
+- Commits: b01e6b0e (legal), 1c19f280 (legal push), f6ffa74a (email), d63e0b65 (loading), e76dba74 (security)
+
+---
+
+## 2026-08-07 20:30 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **P2 hardening pass** : PayPal curl checks + transient guards + Stripe prewarm cleanup.
+- **P2 — paypal.php** : `pp_token()` and `pp_api()` had no `curl_errno` check → PHP notices on network failure. Fix: added error checks + 502 responses.
+- **P2 — paypal-webhook.php** : Token fetch had no `curl_errno` check. Fix: added error check + 502 response.
+- **P2 — mollie-lib.php** : `get_transient()` and `set_transient()` had no `@` suppression on file I/O → PHP warnings on full/read-only `/tmp`. Fix: added `@` suppression + false check.
+- **P2 — PremiumModal.jsx** : Stripe prewarm `useEffect` had no AbortController/cleanup → setState on unmounted component if modal closes during prewarm. Fix: added AbortController + `cancelled` flag + cleanup function.
+- **P2 — PremiumModal.jsx** : `passCtxRef.current` in useEffect dependency array (refs don't trigger re-renders). Fix: removed from deps, added explanatory comment.
+
+### Fichiers modifiés
+- `public/api/paypal.php` — curl_errno checks in pp_token() and pp_api()
+- `public/api/paypal-webhook.php` — curl_errno check on token fetch
+- `public/api/mollie-lib.php` — @ suppression on get_transient/set_transient
+- `src/PremiumModal.jsx` — AbortController + cleanup on Stripe prewarm, removed ref from deps
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 190.4 Ko ≤ 210 Ko
+- [x] php -l → OK (mollie-lib, paypal, paypal-webhook)
+- [x] ux-smoke → 4 tokens OK
+
+### Branche / PR
+- Branche: main
+- Commit: 60665315
+
+---
+
+## 2026-08-07 20:00 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **P0 B2B revocation fix** + **P1 security hardening** + **P1 welcome email region fix** + **P2 hygiene**.
+- **P0 — mollie-lib.php** : `mol_b2b_revoke()` and `mol_b2b_is_revoked()` queried `payment_id` column but grant writes `subscription_id` → revocation silently broken in Supabase. Fix: column name corrected to `subscription_id`. Now revocation persists across deploys.
+- **P1 — create-checkout.php** : `stripe()` function had no `curl_errno` check → returned `null` on network failure, crashing all callers (array access on null). Fix: added error check + 502 response.
+- **P1 — create-checkout.php:437** : Welcome email `$island` overwritten to hardcoded `MQ`/`GP` → US region subscribers (Florida, Punta Cana, Riviera Maya) received French emails from wrong domain. Fix: use `ISLAND_BY_ORIGIN` mapping, `lang` parameter handles localization.
+- **P1 — track-click.php** : CRLF injection in `Location:` header — `\r\n` not stripped from URL before `header()`. Fix: `str_replace` to strip CRLF characters.
+- **P2 — create-checkout.php** : `$_SERVER['REQUEST_METHOD']` without `??` fallback. Fix: added `?? 'POST'`.
+- **P2 — mollie.php** : `$_SERVER['HTTP_HOST']` used unvalidated in redirect/webhook URLs → Host header injection. Fix: validate against allowed domains list before URL construction.
+
+### Fichiers modifiés
+- `public/api/mollie-lib.php` — subscription_id column in revoke/is_revoked
+- `public/api/create-checkout.php` — stripe() error handling + welcome email region + REQUEST_METHOD fallback
+- `public/api/track-click.php` — CRLF injection fix
+- `public/api/mollie.php` — HTTP_HOST validation against allowed domains
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 190.3 Ko ≤ 210 Ko
+- [x] php -l → OK (mollie-lib, create-checkout, track-click, mollie)
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+
+### Branche / PR
+- Branche: main
+- Commit: 39ba6c71
+
+---
+
 ## 2026-08-07 19:30 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
