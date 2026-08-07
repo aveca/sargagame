@@ -6561,7 +6561,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             setHeroEmailHidden(true)
             track("sg_hero_email_dismiss")
           }}
-          aria-label="dismiss"
+          aria-label={_t(lang,"Fermer","Dismiss","Cerrar")}
           style={{
             background:"none",border:"none",cursor:"pointer",
             color:"rgba(13,13,13,.5)",padding:"4px 2px",
