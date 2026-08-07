@@ -6430,7 +6430,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     try{return !!localStorage.getItem("sg_email")||!!localStorage.getItem("sg_hero_email_dismiss")}catch{return false}
   })
   const submitHeroEmail=()=>{
-    if(!heroEmail||!heroEmail.includes("@"))return
+    if(!heroEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail))return
     track("sg_hero_email_submit",{beach_id:top?.id,score:top?.score})
     try{localStorage.setItem("sg_email",heroEmail)}catch{}
     try{
@@ -6543,7 +6543,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         />
         <button
           onClick={submitHeroEmail}
-          disabled={!heroEmail||!heroEmail.includes("@")}
+          disabled={!heroEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail)}
           style={{
             padding:"8px 15px",borderRadius:9,
             border:"2px solid #0D0D0D",
@@ -6554,7 +6554,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
             fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
           }}
-        >OK</button>
+        >{_t(lang,"Recevoir","Get it","Recibir")}</button>
         <button
           onClick={()=>{
             try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
