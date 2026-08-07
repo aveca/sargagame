@@ -68,7 +68,7 @@
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by coding_agent
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
@@ -111,3 +111,20 @@
 6. **MAJ** `.ai/current_state.md`
 
 **Jamais** : prendre 2 tâches en même temps, skip le Gate de ship, merger sans test.
+## 2026-08-07 — CTO Sprint entries
+
+### Done
+- [x] **CTO-SP01**: Boot skeleton ggolden-hour gradient + headline + trust badges + H1 SEO (index.html)
+- [x] **CTO-SP02**: Relaunch daily-copernicus pipeline (data was 30h stale)
+- [x] **CTO-SP03**: Full UX/payment/analytics audit (P0/P1/P2 classified)
+- [x] **CTO-SP04**: Gate de ip: build 193.5 Ko, smoke OK, PHP clean
+
+### Remaining — Ranked by Business Impact
+- [ ] **P0-01**: Add static CTA in HTML source (before React mount) — "Voir ma plage →" button
+- [ ] **P0-02**: Mollie webhook secret → ensure deployed on all 5 FTP domains
+- [ ] **P1-01**: Add trust signal (97%, 12k+, satellite) in map UI AFTER React mount (persists after skeleton)
+- [ ] **P1-02**: PremiumModal.jsx extract WorldPaywall/ComicPaywall to separate modules (-2 MB parse)
+- [ ] **P1-03**: Show calibration proof at paywall decision point (movement /fiabilite/ into modal)
+- [ ] **P2-01**: 78 Google Fonts @import → migrate to self-hosted fonts (entire /public/)
+- [ ] **P2-02**: "Tableau de bord" for pipeline freshness visible on homepage (the "updated X hours ago" to all visitors too)
+

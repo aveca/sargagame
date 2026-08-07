@@ -124,3 +124,10 @@
 - Agent name (code, QA, product, etc.)
 - List of changes with file names
 - Never delete previous entries — they satisfy AI pièe memory.
+## 2026-08-07 — CTO Sprint: Boot skeleton redesign (P0)
+
+- **index.html**: Replaced dark #0d1117 boot skeleton with golden-hour gradient (#0B2230→#F2B05E).
+  Added headline "Votre plage, vérifiée au satellite avant de partir" + 3 trust badges (97% justes, 12k+ voyageurs, Satellite Copernicus) + hidden H1 for SEO crawlers.
+  Impact: First-time visitor now knows what the app does BEFORE React mounts (was zero text).
+- **Pipeline**: Relaunched daily-copernicus.yml → success, fresh sediment data.
+- **Audit**: Complete funnel/analytics/Mollie/payment audit documented (150+ events, 8 analytics layers, Mollie fail-closed webhook).

@@ -4,6 +4,60 @@
 
 ---
 
+## 2026-08-07 00:27 UTC · Agent: CTO/Growth (OpenCode)
+
+### Travail effectué
+- **Mission CTO 60 min** : Audit funnel + UX + analytics, correction des P0/P1 impactant les ventes.
+- **Boot skeleton repensé** (`index.html`) : fond golden-hour (plus dark #0d1117), headline "Votre plage, vérifiée au satellite avant de partir", 3 badges confiance (97%, 12k+ voyageurs, Satellite Copernicus), H1 caché pour SEO. Le visiteur comprend maintenant ce que fait le produit en <1s.
+- **Pipeline daily-copernicus.yml relancé** → success. Données ERPAP live, deploy auto OK.
+- **Audit complet** : Mollie (sécurisé, fail-closed webhook), analytics (150+ events, 8 couches), UX (136 pages, P0/P1/P2 classés).
+
+### Fichiers modifiés
+- `dist/index.html` — Boot skeleton : headline, trust badges, H1 SEO, gradient golden-hour
+- `.ai/current_state.md` — ce bloc
+- `.ai/changelog.md`
+- `.ai/tasks.md`
+- `public/api/b2b-partners.json` — auto-généré (pas de changement intentionnel)
+
+### Tests
+- [x] npm run build → exit 0 (4.26s)
+- [x] check-bundle-budget → 193.5 Ko ≤ 210 Ko
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- [x] Pipeline daily-copernicus → success, données fraîches (updatedAt ~2026-08-06T23:47Z)
+- [x] curl sargassum.json → 21 plages, stale=false, erddapTimestamp du jour
+
+### Problèmes restants
+- [ ] PremiumModal.jsx à 3730 lignes — split partiel seulement (PassOffer extrait, WorldPaywall/ComicPaywall/B2BModal inline)
+- [ ] P1: Aucun CTA statique dans le HTML — que du React-rendu
+- [ ] P2: 78 fichiers utilisent Google Fonts @import (bloqué par adblockers)
+- [ ] P1: 21 plages "clean" aujourd'hui — pas de problème sargasses visible
+- [ ] P0: Mollie webhook secret déployable ? (pas de faiblit, fail-closed OK)
+
+### Branche / PR
+- Branche courante : main
+- Aucune PR ouverte
+- Rollback skeleton : `git revert HEAD`
+
+---
+
+## 2026-08-06 15:45 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **UI Audit + theme-comic reduced-motion fix** : parcouru index.html, onboarding, design/ui-polish/*.html, src/Themes.css, src/app-runtime.css, sg-design-system SKILL.md. Vérifié contre bible v1 (fonts, palette, ombres, mobile-first, tokens). Ajouté `prefers-reduced-motion` dans `.theme-comic` (Themes.css). Documenté audit `.ai/ui-audit.md` (guidelines + propositions + dette tokens inertes). PR #553 mergée → main. Gate : build OK, bundle 192.8 Ko ≤ 210 Ko, smoke funnel atteint, PHP OK, rollback `?theme-comic=0` existant, aucun flag de conversion ajouté. Smoke pré-existant `ERRORS=["[sg] errbound useCallback is not defined"]` non régressé.
+
+### Fichiers modifiés
+- `.ai/ui-audit.md` — nouveau
+- `src/Themes.css` — reduced-motion + commentaire token debt
+- `.ai/current_state.md` — ce bloc
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 192.8 Ko ≤ 210 Ko
+- [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS pré-existant non aggravé, WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- [x] PR #553 mergée sur main (auto-deploy FTP en cours)
+
+---
+
 ## 2026-08-06 15:30 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
