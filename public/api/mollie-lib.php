@@ -441,3 +441,141 @@ function mol_create_payment($amount, $currency, $description, $redirectUrl, $web
         ];
     }
 }
+
+/**
+ * Send B2B trial access email to hotel (Resend).
+ * Best-effort: never blocks the token response.
+ */
+function mol_b2b_trial_email(array $cfg, string $email, string $token, string $name, string $island, string $beach): bool {
+    $resendKey = $cfg['resend_key'] ?? '';
+    if (!$resendKey || !$email) return false;
+
+    $domainMap = [
+        'MQ' => 'sargasses-martinique.com', 'GP' => 'sargasses-guadeloupe.com',
+        'florida' => 'sargassummiami.com', 'puntacana' => 'sargassumpuntacana.com',
+        'rivieramaya' => 'sargassumcancun.com',
+    ];
+    $domain = $domainMap[$island] ?? 'sargasses-martinique.com';
+    $lang = in_array($island, ['florida', 'puntacana', 'rivieramaya']) ? 'en' : 'fr';
+    $accessUrl = "https://{$domain}/?k={$token}" . ($beach ? "&beach={$beach}" : '') . ($name ? "&name=" . urlencode($name) : '');
+
+    $title = $lang === 'en' ? 'Your PRO trial is active' : 'Ton essai PRO est actif';
+    $body  = $lang === 'en'
+        ? "Hi{$name} Your 30-day PRO trial is ready. Access your dashboard anytime:"
+        : "Bonjour{$name} Ton essai PRO de 30 jours est actif. Accède à ton espace à tout moment :";
+    $cta   = $lang === 'en' ? 'Open my dashboard' : 'Ouvrir mon espace';
+    $note  = $lang === 'en'
+        ? 'This link is unique and private. Share it with your team.'
+        : 'Ce lien est unique et confidentiel. Partage-le avec ton équipe.';
+
+    $html = '<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 12px;color:#0D1E1C">' . $title . '</h2>'
+        . '<p>' . $body . '</p>'
+        . '<p><a href="' . htmlspecialchars($accessUrl) . '" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px">' . $cta . ' &rarr;</a></p>'
+        . '<p style="color:#888;font-size:12px">' . $note . '</p>'
+        . '</div>';
+
+    $payload = json_encode([
+        'from'    => "Sargasses Pro <alerte@{$domain}>",
+        'to'      => [$email],
+        'subject' => $title,
+        'html'    => $html,
+    ]);
+    $ctx = stream_context_create(['http' => [
+        'method' => 'POST', 'timeout' => 10,
+        'header' => "Authorization: Bearer {$resendKey}\r\nContent-Type: application/json\r\n",
+        'content' => $payload, 'ignore_errors' => true,
+    ]]);
+    @file_get_contents('https://api.resend.com/emails', false, $ctx);
+    error_log("[mol_b2b_trial_email] sent to {$email} island={$island}");
+    return true;
+}
+
+/**
+ * Send notification to founder when a B2B meeting/demo is requested.
+ * Best-effort: never blocks the ok response.
+ */
+function mol_b2b_meeting_notify(array $cfg, array $data): bool {
+    $resendKey = $cfg['resend_key'] ?? '';
+    if (!$resendKey) return false;
+
+    $to = 'contact@sargasses-martinique.com';
+    $email  = $data['email'] ?? '';
+    $org    = $data['org'] ?? '';
+    $lit    = $data['littoral'] ?? '';
+    $phone  = $data['phone'] ?? '';
+    $island = $data['island'] ?? 'MQ';
+
+    $subject = "Nouvelle demande B2B — {$org}";
+    $html = '<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 12px">Nouvelle demande de démo / devis</h2>'
+        . '<table style="width:100%;border-collapse:collapse">'
+        . '<tr><td style="padding:6px 0;font-weight:700;width:100px">Email</td><td>' . htmlspecialchars($email) . '</td></tr>'
+        . '<tr><td style="padding:6px 0;font-weight:700">Organisation</td><td>' . htmlspecialchars($org) . '</td></tr>'
+        . '<tr><td style="padding:6px 0;font-weight:700">Littoral</td><td>' . htmlspecialchars($lit) . '</td></tr>'
+        . '<tr><td style="padding:6px 0;font-weight:700">Téléphone</td><td>' . htmlspecialchars($phone) . '</td></tr>'
+        . '<tr><td style="padding:6px 0;font-weight:700">Île</td><td>' . htmlspecialchars($island) . '</td></tr>'
+        . '</table>'
+        . '</div>';
+
+    $payload = json_encode([
+        'from'    => 'Sargasses B2B <alerte@sargasses-martinique.com>',
+        'to'      => [$to],
+        'subject' => $subject,
+        'html'    => $html,
+    ]);
+    $ctx = stream_context_create(['http' => [
+        'method' => 'POST', 'timeout' => 10,
+        'header' => "Authorization: Bearer {$resendKey}\r\nContent-Type: application/json\r\n",
+        'content' => $payload, 'ignore_errors' => true,
+    ]]);
+    @file_get_contents('https://api.resend.com/emails', false, $ctx);
+    error_log("[mol_b2b_meeting_notify] sent for {$email} org={$org}");
+    return true;
+}
+
+/**
+ * Send retry email for failed Mollie payment.
+ * Best-effort: returns false if not configured.
+ */
+function mol_payment_failed_retry_email(array $cfg, string $pid, string $email, string $amount, string $currency, string $island, string $plan, string $reason): bool {
+    $resendKey = $cfg['resend_key'] ?? '';
+    if (!$resendKey || !$email) return false;
+
+    $domainMap = [
+        'MQ' => 'sargasses-martinique.com', 'GP' => 'sargasses-guadeloupe.com',
+        'florida' => 'sargassummiami.com', 'puntacana' => 'sargassumpuntacana.com',
+        'rivieramaya' => 'sargassumcancun.com',
+    ];
+    $domain = $domainMap[$island] ?? 'sargasses-martinique.com';
+    $lang = in_array($island, ['florida', 'puntacana', 'rivieramaya']) ? 'en' : 'fr';
+
+    $title = $lang === 'en' ? 'Payment issue — retry now' : 'Problème de paiement — réessaie maintenant';
+    $body  = $lang === 'en'
+        ? "Your payment of {$amount} {$currency} could not be processed ({$reason}). No worries — try again:"
+        : "Ton paiement de {$amount} {$currency} n'a pas abouti ({$reason}). Pas de souci — réessaie :";
+    $cta   = $lang === 'en' ? 'Retry payment' : 'Réessayer le paiement';
+    $retryUrl = "https://{$domain}/?retry_pid=" . urlencode($pid);
+
+    $html = '<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a">'
+        . '<h2 style="margin:0 0 12px;color:#0D1E1C">' . $title . '</h2>'
+        . '<p>' . $body . '</p>'
+        . '<p><a href="' . htmlspecialchars($retryUrl) . '" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px">' . $cta . ' &rarr;</a></p>'
+        . '<p style="color:#888;font-size:12px">Pass: ' . htmlspecialchars($plan) . ' &middot; Ref: ' . htmlspecialchars($pid) . '</p>'
+        . '</div>';
+
+    $payload = json_encode([
+        'from'    => "Sargasses <alerte@{$domain}>",
+        'to'      => [$email],
+        'subject' => $title,
+        'html'    => $html,
+    ]);
+    $ctx = stream_context_create(['http' => [
+        'method' => 'POST', 'timeout' => 10,
+        'header' => "Authorization: Bearer {$resendKey}\r\nContent-Type: application/json\r\n",
+        'content' => $payload, 'ignore_errors' => true,
+    ]]);
+    @file_get_contents('https://api.resend.com/emails', false, $ctx);
+    error_log("[mol_payment_failed_retry_email] sent to {$email} pid={$pid}");
+    return true;
+}

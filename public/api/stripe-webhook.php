@@ -125,7 +125,9 @@ if ($type === 'checkout.session.completed'
     if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
     if ($proEmail && !empty($cfg['resend_key'])) {
         require_once __DIR__ . '/widget-token.php';
-        $k = sg_widget_sign($proEmail, 400);
+        $proTokenPayload = ['h' => $proEmail, 'type' => 'b2b_pro', 'exp' => time() + 400 * 86400];
+        if (!empty($obj['subscription'])) $proTokenPayload['subscription_id'] = (string)$obj['subscription'];
+        $k = sg_widget_sign($proTokenPayload, 400);
         $iframe = '<iframe src="https://sargasses-martinique.com/widget/embed/?beach=VOTRE-PLAGE&k=' . $k . '" style="width:100%;max-width:520px;height:230px;border:0" loading="lazy" title="Sargasses"></iframe>';
         $html = '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px">'
             . '<h2 style="margin:0 0 10px">Ton widget PRO est active</h2>'

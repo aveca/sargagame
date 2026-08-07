@@ -33,7 +33,7 @@ $redirectHost = $parsedRedirect['host'] ?? '';
 $redirectBase = preg_replace('/^www\./', '', $redirectHost);
 $allowed = false;
 foreach ($redirectHosts as $h) {
-    if ($redirectBase === $h || str_ends_with($redirectBase, '.' . $h)) { $allowed = true; break; }
+    if ($redirectBase === $h || substr($redirectBase, -(strlen($h) + 1)) === '.' . $h) { $allowed = true; break; }
 }
 if (!$allowed) {
     header('Location: /');

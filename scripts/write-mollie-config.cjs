@@ -15,7 +15,7 @@ const fs = require('fs')
 const path = require('path')
 
 const apiKey = (process.env.MOLLIE_API_KEY || '').trim()
-if (!apiKey) { console.error('MOLLIE_API_KEY absent → mollie-config.php non généré (les paiements restent en mode capture). Ajoute le secret GitHub pour activer Mollie.'); process.exit(0) }
+if (!apiKey) { console.error('MOLLIE_API_KEY absent → mollie-config.php non généré (les paiements restent en mode capture). Ajoute le secret GitHub pour activer Mollie.'); process.exit(1) }
 if (!/^(live|test)_/.test(apiKey)) { console.error('MOLLIE_API_KEY : préfixe inattendu (live_ ou test_ attendu) → abandon, rien écrit.'); process.exit(1) }
 
 const webhookSecret = (process.env.MOLLIE_WEBHOOK_SECRET || '').trim()
