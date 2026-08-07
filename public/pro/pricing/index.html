@@ -121,7 +121,29 @@
         <li>Widget premium inclus</li>
         <li>Fiabilité publiée et auditée, par régime — alertes de saison calme étiquetées faible confiance</li>
       </ul>
-      <a class="cta gold" href="/pro/espace/">Activer mon essai 30 j →</a>
+      <div class="trial-form" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="email" id="pro-trial-email" placeholder="votre@email.com" required style="flex:1;min-width:200px;padding:12px 16px;border:1px solid var(--sg-border-m);border-radius:10px;font-family:inherit;font-size:14px" aria-label="Email pour l'essai Pro 30j">
+        <button type="button" id="pro-trial-btn" class="cta gold" style="white-space:nowrap">Activer mon essai 30 j →</button>
+      </div>
+      <p class="trial-note" style="font-size:11px;color:var(--sg-mute);margin-top:8px">Sans carte · annulable quand vous voulez · lien d'accès envoyé par email</p>
+    </div>
+
+    <div class="plan" id="plan-brief">
+      <h3>Le Brief — Résumé quotidien</h3>
+      <p class="who">Gîtes, restos, clubs plage · informer sans gérer</p>
+      <div class="price">29 €/mois</div>
+      <p class="pnote">ou 290 €/an (2 mois offerts) · essai 30 jours gratuit, sans carte</p>
+      <ul>
+        <li>Le résumé du jour par email : état des plages + vigilance</li>
+        <li>Alerte si votre plage change (propre → modérée → chargée)</li>
+        <li>Widget gratuit inclus</li>
+        <li>Fiabilité publiée et auditée</li>
+      </ul>
+      <div class="trial-form" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="email" id="brief-trial-email" placeholder="votre@email.com" required style="flex:1;min-width:200px;padding:12px 16px;border:1px solid var(--sg-border-m);border-radius:10px;font-family:inherit;font-size:14px" aria-label="Email pour l'essai Brief 30j">
+        <button type="button" id="brief-trial-btn" class="cta gold" style="white-space:nowrap">Activer mon essai 30 j →</button>
+      </div>
+      <p class="trial-note" style="font-size:11px;color:var(--sg-mute);margin-top:8px">Sans carte · annulable quand vous voulez · lien d'accès envoyé par email</p>
     </div>
 
     <div class="plan" id="plan-territoire">
@@ -178,6 +200,33 @@
     }catch(e){}
   }).catch(function(){});
 })();
+
+function startTrial(planKey, emailInputId, btnId) {
+  var email = document.getElementById(emailInputId).value.trim();
+  var btn = document.getElementById(btnId);
+  if (!email || !email.includes('@')) { alert('Merci d\'entrer un email valide'); return; }
+  btn.disabled = true; btn.textContent = 'Activation...';
+  fetch('/api/b2b-trial.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, name: '', island: 'MQ' })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d.ok && d.token) {
+      window.location.href = '/pro/espace/?k=' + encodeURIComponent(d.token);
+    } else {
+      alert('Erreur: ' + (d.error || 'Activation échouée'));
+      btn.disabled = false; btn.textContent = 'Activer mon essai 30 j →';
+    }
+  }).catch(function(){
+    alert('Erreur réseau, réessayez');
+    btn.disabled = false; btn.textContent = 'Activer mon essai 30 j →';
+  });
+}
+
+document.getElementById('pro-trial-btn')?.addEventListener('click', function(){ startTrial('pro_monthly', 'pro-trial-email', 'pro-trial-btn'); });
+document.getElementById('brief-trial-btn')?.addEventListener('click', function(){ startTrial('brief_monthly', 'brief-trial-email', 'brief-trial-btn'); });
+document.getElementById('pro-trial-email')?.addEventListener('keydown', function(e){ if(e.key==='Enter') startTrial('pro_monthly', 'pro-trial-email', 'pro-trial-btn'); });
+document.getElementById('brief-trial-email')?.addEventListener('keydown', function(e){ if(e.key==='Enter') startTrial('brief_monthly', 'brief-trial-email', 'brief-trial-btn'); });
 </script>
 </body>
 </html>
