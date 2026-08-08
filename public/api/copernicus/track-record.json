@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-08-08T01:40:59.338Z",
+  "generatedAt": "2026-08-08T06:56:26.026Z",
   "window": {
     "from": "2026-07-27",
     "to": "2026-08-08",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-08-08T01:40:59.240Z",
+    "computedAt": "2026-08-08T06:56:25.925Z",
     "backtestAgeHours": 0,
     "observationLagDays": -1,
     "stale": false
@@ -117,7 +117,7 @@
       "island": "gp",
       "samples": 57,
       "hitRatePct": 100,
-      "afaiMAE": 0.018
+      "afaiMAE": 0.019
     },
     {
       "id": "gp-gosier",

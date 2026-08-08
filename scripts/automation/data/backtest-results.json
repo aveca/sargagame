@@ -110,7 +110,7 @@
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.018,
+      "afaiMAE": 0.019,
       "pairs": 57
     },
     "gp-malendure": {
@@ -219,7 +219,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-27 → 2026-08-08) resultaron correctos (sobre 1147); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-08-08T01:40:59.240Z",
+  "computed": "2026-08-08T06:56:25.925Z",
   "pairs": [
     {
       "snapshotDate": "2026-08-05",
@@ -395,11 +395,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-08-05",
@@ -1313,11 +1313,11 @@
         "confidence": 62
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-08-06",
@@ -1853,11 +1853,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-07",

@@ -1965,27 +1965,27 @@
         },
         {
           "id": "pc003",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "pc004",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "pc005",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "pc006",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "pc007",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2010,7 +2010,7 @@
         },
         {
           "id": "pc012",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         }
       ]

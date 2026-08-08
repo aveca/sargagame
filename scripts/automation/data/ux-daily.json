@@ -1,13 +1,23 @@
 {
-  "generated": "2026-08-08T01:49:00.530Z",
+  "generated": "2026-08-08T07:01:02.865Z",
   "date": "2026-08-08",
   "days": 1,
   "regions": [
+    "mq",
+    "gp",
     "florida",
     "puntacana",
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "abf54146",
+      "subject": "chore: update Copernicus data 2026-08-08 01:52 UTC"
+    },
+    {
+      "h": "73a15728",
+      "subject": "chore: email state 2026-08-08 01:51 UTC"
+    },
     {
       "h": "e76dba74",
       "subject": "fix(security): P1 SSRF/exfiltration + broken endpoint + dead code + null access"
@@ -87,27 +97,23 @@
     {
       "h": "adc724d3",
       "subject": "chore: email state 2026-08-07 07:20 UTC"
-    },
-    {
-      "h": "af335cc4",
-      "subject": "chore: update Copernicus data 2026-08-07 03:02 UTC"
-    },
-    {
-      "h": "d0fffdd2",
-      "subject": "chore: email state 2026-08-07 03:01 UTC"
     }
   ],
   "perRegion": [
     {
-      "region": "florida",
-      "sessions": 28,
-      "friction": 0,
-      "dead_rate": 0.077,
-      "dead_worst": null,
+      "region": "mq",
+      "sessions": 36,
+      "friction": 1,
+      "dead_rate": 0.065,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.057,
+        "n": 35
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.22
+        "rate": 0.37
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -116,17 +122,24 @@
       "session_to_email": 0,
       "prev_date": "2026-08-07",
       "changes": [
-        "sessions 78→28 (-64%)"
+        "sessions 110→36 (-67%)"
       ]
     },
     {
-      "region": "puntacana",
-      "sessions": 4,
+      "region": "gp",
+      "sessions": 59,
       "friction": 0,
-      "dead_rate": 0.333,
-      "dead_worst": null,
+      "dead_rate": 0.037,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.041,
+        "n": 49
+      },
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "beach",
+        "rate": 0.31
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -134,18 +147,68 @@
       "session_to_email": 0,
       "prev_date": "2026-08-07",
       "changes": [
-        "sessions 36→4 (-89%)",
+        "sessions 178→59 (-67%)",
+        "✔︎ dead-click résolu : div"
+      ]
+    },
+    {
+      "region": "florida",
+      "sessions": 66,
+      "friction": 0,
+      "dead_rate": 0.087,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.148,
+        "n": 27
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "map_map",
+        "rate": 0.17
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-07",
+      "changes": [
+        "sessions 78→66 (-15%)"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 20,
+      "friction": 0,
+      "dead_rate": 0.333,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.26
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-07",
+      "changes": [
+        "sessions 36→20 (-44%)",
         "dead-rate 0.169→0.333 (+0.2) ⚠️"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 11,
+      "sessions": 23,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.5
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -153,7 +216,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-07",
       "changes": [
-        "sessions 27→11 (-59%)",
+        "sessions 27→23 (-15%)",
         "dead-rate 0.083→0 (-0.1) ✅"
       ]
     }
