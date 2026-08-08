@@ -5166,18 +5166,18 @@
   {
     "date": "2026-08-08",
     "region": "florida",
-    "sessions": 66,
+    "sessions": 126,
     "friction": 0,
-    "dead_rate": 0.087,
+    "dead_rate": 0.079,
     "dead_worst": {
       "screen": "map_map",
-      "rate": 0.148,
-      "n": 27
+      "rate": 0.13,
+      "n": 46
     },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "map_map",
-      "rate": 0.17
+      "rate": 0.18
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5188,14 +5188,14 @@
   {
     "date": "2026-08-08",
     "region": "puntacana",
-    "sessions": 20,
+    "sessions": 54,
     "friction": 0,
-    "dead_rate": 0.333,
+    "dead_rate": 0.106,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.26
+      "rate": 0.32
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5206,14 +5206,14 @@
   {
     "date": "2026-08-08",
     "region": "rivieramaya",
-    "sessions": 23,
+    "sessions": 29,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
-      "rate": 0.5
+      "rate": 0.46
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5224,18 +5224,18 @@
   {
     "date": "2026-08-08",
     "region": "mq",
-    "sessions": 36,
+    "sessions": 136,
     "friction": 1,
-    "dead_rate": 0.065,
+    "dead_rate": 0.056,
     "dead_worst": {
-      "screen": "world",
-      "rate": 0.057,
-      "n": 35
+      "screen": "map_map",
+      "rate": 0.115,
+      "n": 26
     },
     "top_dead_els": [],
     "bored_worst": {
-      "screen": "world",
-      "rate": 0.37
+      "screen": "beach",
+      "rate": 0.48
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
@@ -5246,18 +5246,18 @@
   {
     "date": "2026-08-08",
     "region": "gp",
-    "sessions": 59,
+    "sessions": 156,
     "friction": 0,
-    "dead_rate": 0.037,
+    "dead_rate": 0.042,
     "dead_worst": {
-      "screen": "world",
-      "rate": 0.041,
-      "n": 49
+      "screen": "beach",
+      "rate": 0.056,
+      "n": 36
     },
     "top_dead_els": [],
     "bored_worst": {
-      "screen": "beach",
-      "rate": 0.31
+      "screen": "world",
+      "rate": 0.22
     },
     "modal_to_cta": 0,
     "cta_to_redirect": 0,
