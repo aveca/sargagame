@@ -71,6 +71,10 @@
   ],
   "2026-08-08": [
     "rivieramaya:rm005:clean>moderate",
-    "rivieramaya:rm011:clean>moderate"
+    "rivieramaya:rm011:clean>moderate",
+    "rivieramaya:rm004:moderate>clean",
+    "rivieramaya:rm008:moderate>clean",
+    "rivieramaya:rm012:moderate>clean",
+    "rivieramaya:rm020:moderate>clean"
   ]
 }
