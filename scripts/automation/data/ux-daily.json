@@ -1,15 +1,81 @@
 {
-  "generated": "2026-08-07T13:16:35.354Z",
-  "date": "2026-08-07",
+  "generated": "2026-08-08T01:49:00.530Z",
+  "date": "2026-08-08",
   "days": 1,
   "regions": [
-    "mq",
-    "gp",
     "florida",
     "puntacana",
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "e76dba74",
+      "subject": "fix(security): P1 SSRF/exfiltration + broken endpoint + dead code + null access"
+    },
+    {
+      "h": "d63e0b65",
+      "subject": "fix(ui): add loading state to email capture button"
+    },
+    {
+      "h": "f6ffa74a",
+      "subject": "fix(ui): improve email capture - proper validation + compelling CTA"
+    },
+    {
+      "h": "1c19f280",
+      "subject": "fix(legal): update all 3 legal pages to cover 5 regions + RGPD compliance"
+    },
+    {
+      "h": "722dd68f",
+      "subject": "chore: email state 2026-08-07 19:08 UTC"
+    },
+    {
+      "h": "e68d78bc",
+      "subject": "fix(ui): multilingual aria-label for hero email dismiss button"
+    },
+    {
+      "h": "60665315",
+      "subject": "fix: P2 PayPal curl checks + P2 transient guards + P2 Stripe prewarm cleanup"
+    },
+    {
+      "h": "39ba6c71",
+      "subject": "fix: P0 B2B revocation column mismatch + P1 security + P1 welcome email region"
+    },
+    {
+      "h": "1b341fc8",
+      "subject": "fix(seo+ui): repair index.html noscript + JSON-LD UTF-8 mojibake, remove dead preact files"
+    },
+    {
+      "h": "ab01fd8a",
+      "subject": "fix: P0 paywall copy + P1 payment data corruption + revocation persistence"
+    },
+    {
+      "h": "a148205b",
+      "subject": "fix(mollie): implement 3 missing email functions + PRO token revocable + PHP 7 compat"
+    },
+    {
+      "h": "e8be7c04",
+      "subject": "fix: undefined , dead PassOffer import, Google Fonts self-hosted"
+    },
+    {
+      "h": "b2bf37b0",
+      "subject": "fix(security): 9 PHP bugs fixed — 3 P0 crash fixes + security hardening"
+    },
+    {
+      "h": "940931f1",
+      "subject": "fix(seo): repair UTF-8 mojibake in title, description, meta tags"
+    },
+    {
+      "h": "4dd752ec",
+      "subject": "chore: weekly friday optimization 2026-08-07"
+    },
+    {
+      "h": "6e6ab95a",
+      "subject": "chore: update Copernicus data 2026-08-07 13:17 UTC"
+    },
+    {
+      "h": "3ace728a",
+      "subject": "chore: email state 2026-08-07 13:16 UTC"
+    },
     {
       "h": "62273958",
       "subject": "chore: weekly friday optimization 2026-08-07"
@@ -29,162 +95,66 @@
     {
       "h": "d0fffdd2",
       "subject": "chore: email state 2026-08-07 03:01 UTC"
-    },
-    {
-      "h": "14dd2a6f",
-      "subject": "chore: update Copernicus data 2026-08-07 00:15 UTC"
-    },
-    {
-      "h": "c9772726",
-      "subject": "chore: email state 2026-08-07 00:15 UTC"
-    },
-    {
-      "h": "51596e1c",
-      "subject": "chore: update Copernicus data 2026-08-06 23:53 UTC"
-    },
-    {
-      "h": "b42dd4cd",
-      "subject": "UI audit + reduced-motion theme-comic fix (#553)"
-    },
-    {
-      "h": "23b4d14d",
-      "subject": "chore: update Copernicus data 2026-08-06 19:34 UTC"
-    },
-    {
-      "h": "4a591c96",
-      "subject": "chore: update Copernicus data 2026-08-06 14:19 UTC"
-    },
-    {
-      "h": "08dcc83f",
-      "subject": "chore: email state 2026-08-06 14:19 UTC"
     }
   ],
   "perRegion": [
     {
-      "region": "mq",
-      "sessions": 110,
-      "friction": 0,
-      "dead_rate": 0.101,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.167,
-        "n": 42
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "beach",
-        "rate": 0.6
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-06",
-      "changes": [
-        "stable (aucun mouvement notable)"
-      ]
-    },
-    {
-      "region": "gp",
-      "sessions": 178,
+      "region": "florida",
+      "sessions": 28,
       "friction": 0,
       "dead_rate": 0.077,
-      "dead_worst": {
-        "screen": "beach",
-        "rate": 0.158,
-        "n": 38
-      },
-      "top_dead_els": [
-        {
-          "el": "div",
-          "count": 13
-        }
-      ],
-      "bored_worst": {
-        "screen": "beach",
-        "rate": 0.24
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-06",
-      "changes": [
-        "sessions 249→178 (-29%)"
-      ]
-    },
-    {
-      "region": "florida",
-      "sessions": 78,
-      "friction": 0,
-      "dead_rate": 0.097,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.172,
-        "n": 29
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.36
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-06",
-      "changes": [
-        "stable (aucun mouvement notable)"
-      ]
-    },
-    {
-      "region": "puntacana",
-      "sessions": 36,
-      "friction": 0,
-      "dead_rate": 0.169,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.229,
-        "n": 35
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "world",
-        "rate": 0.27
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-06",
-      "changes": [
-        "sessions 47→36 (-23%)",
-        "dead-rate 0.063→0.169 (+0.1) ⚠️"
-      ]
-    },
-    {
-      "region": "rivieramaya",
-      "sessions": 27,
-      "friction": 0,
-      "dead_rate": 0.083,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.3
+        "rate": 0.22
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-06",
+      "prev_date": "2026-08-07",
       "changes": [
-        "stable (aucun mouvement notable)"
+        "sessions 78→28 (-64%)"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 4,
+      "friction": 0,
+      "dead_rate": 0.333,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-07",
+      "changes": [
+        "sessions 36→4 (-89%)",
+        "dead-rate 0.169→0.333 (+0.2) ⚠️"
+      ]
+    },
+    {
+      "region": "rivieramaya",
+      "sessions": 11,
+      "friction": 0,
+      "dead_rate": 0,
+      "dead_worst": null,
+      "top_dead_els": [],
+      "bored_worst": null,
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-07",
+      "changes": [
+        "sessions 27→11 (-59%)",
+        "dead-rate 0.083→0 (-0.1) ✅"
       ]
     }
   ]
