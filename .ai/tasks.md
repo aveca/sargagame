@@ -68,7 +68,7 @@
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [~] in_progress by coding_agent
+- **Statut** : [x] done by coding_agent (2026-08-08) — Flow complet: mol_b2b_plans() définit Pro 79€/mo, Brief 29€/mo; /pro/pricing/ a trial forms → b2b-trial.php → token 30j auto-émis → redirect /pro/espace/?k=token; mollie.php?action=create_subscription gère le recurring; b2b-paylinks.json pour annuels 690€/290€. CTA exposition = /pro/ → /pro/pricing/ (déjà câblé).
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
@@ -82,7 +82,7 @@
 - **Rple** : coding_agent + UX_agent
 - **Description** : Animation compose BD (slide les bolting) pour transitions top niveau: echoin Euro ∈ payer from cert to
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by ui_ux_agent (2026-08-08) — PanelWipe « case BD » implémenté au montage du paywall (verdict→paywall = maillon critique funnel). Keyframes sgPwBackdrop/sgPwPanel + état pwEntering (mount-time 420ms). Rollback ?sgpwenter=0 + reduced-motion plancher dur. Audit design system + copyright 5 régions OK (cf. .ai/changelog.md)
 
 ---
 
@@ -129,6 +129,15 @@
 - [x] **BUG-FIX-009**: retry-failed-payment.php undefined $status variable fix
 - [x] **IMPROVE-001**: Sargasses_PROD.jsx dead PassOffer import removed (-3.2 Ko bundle)
 - [x] **IMPROVE-002**: Google Fonts @import → self-hosted in colors_and_type.css + legal.css
+- [x] **IMPROVE-003**: 3 missing email functions (mol_b2b_trial_email, mol_payment_failed_retry_email, mol_b2b_meeting_notify)
+- [x] **IMPROVE-004**: Stripe PRO token embeds subscription_id for revocation
+- [x] **IMPROVE-005**: track-click.php str_ends_with → substr (PHP 7.x compat)
+- [x] **IMPROVE-006**: write-mollie-config.cjs exit(1) on missing API key
+- [x] **BUG-FIX-010**: P0 — PremiumModal.jsx _ctxStatus undefined in ComicPaywall (paywall copy)
+- [x] **BUG-FIX-011**: P1 — mollie-lib.php mol_b2b_is_revoked() file transients → Supabase
+- [x] **BUG-FIX-012**: P1 — paypal.php annual amount 3999 → 4990 (data corruption)
+- [x] **BUG-FIX-013**: P1 — create-checkout.php missing null guard on payment_method
+- [x] **BUG-FIX-014**: P2 — mollie.php REQUEST_METHOD ?? 'POST' + error sanitization
 
 ### Commit
 - `e8be7c04` — fix: undefined $status, dead PassOffer import, Google Fonts self-hosted

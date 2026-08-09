@@ -22,9 +22,9 @@ console.log('BUG-2026-010 — mollie.php verify_subscription handler audit\n');
 // 1. Présence du handler
 check('handler verify_subscription présent', /if\s*\(\s*\$action\s*===\s*['"]verify_subscription['"]\s*\)/.test(src));
 
-// 2. Validation email (non-vide + présence @)
-//    Pattern réel : if (!$email || !strpos($email, '@'))
-check("email validé (non-vide + @)", /if\s*\(\s*!\s*\$email\s*\|\|\s*!\s*strpos\(\s*\$email\s*,\s*['"]@['"]\s*\)\s*\)/.test(src));
+// 2. Validation email (non-vide + format valide)
+//    Pattern réel : if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL))
+check("email validé (non-vide + format)", /if\s*\(\s*!\s*\$email\s*\|\|\s*!\s*filter_var\(\s*\$email\s*,\s*FILTER_VALIDATE_EMAIL\s*\)\s*\)/.test(src));
 
 // 3. Utilise SUPABASE_URL getenv + fallback hardcodé
 check('utilise SUPABASE_URL getenv', /getenv\(['"]SUPABASE_URL['"]\)/.test(src));

@@ -25,6 +25,7 @@ const AUTO = args.includes('--auto');
 const FORCE_TASK = args.find(a => a.startsWith('--task='))?.split('=')[1] || args[args.indexOf('--task') + 1];
 const COMPLETE = args.includes('--complete');
 const STATUS = args.includes('--status');
+const SHIP = args.includes('--ship');
 
 function readFile(p) { return fs.readFileSync(p, 'utf-8'); }
 function writeFile(p, c) { fs.writeFileSync(p, c, 'utf-8'); }
@@ -45,7 +46,6 @@ function parseTasks(content) {
     if (!match) {
       match = line.match(/^###\s+(TASK-P\d-\d{3})\s*(.*)/);
       if (match) {
-        // Chercher le statut dans les lignes suivantes
         tasks.push({
           status: ' ',
           id: match[1],
@@ -54,6 +54,12 @@ function parseTasks(content) {
         });
         continue;
       }
+    }
+    
+    // Update status from **Statut** : [x] line for header-format tasks
+    const statutMatch = line.match(/\*\*Statut\*\*\s*:\s*\[([ x~])\]/);
+    if (statutMatch && tasks.length) {
+      tasks[tasks.length - 1].status = statutMatch[1];
     }
     
     if (match) {
@@ -98,10 +104,39 @@ function getAgentTypeForTask(taskId) {
 
 function claimTask(taskId, agentType) {
   let content = readFile(TASKS_FILE);
-  content = content.replace(
-    new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
-    `$1 — in_progress by ${agentType}_agent`
-  );
+  // Format 1: checkbox — - [ ] TASK-PX-XXX
+  const cbRegex = new RegExp(`^(- \\[ \\] ${taskId})`, 'm');
+  if (cbRegex.test(content)) {
+    content = content.replace(cbRegex, `$1 — in_progress by ${agentType}_agent`);
+  } else {
+    // Format 2: header — ### TASK-PX-XXX ... **Statut** : [ ] pending
+    const lines = content.split('\n');
+    let found = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(taskId)) {
+        // Find the **Statut** line within the next 10 lines
+        for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+          if (lines[j].match(/\*\*Statut\*\*\s*:/)) {
+            lines[j] = lines[j].replace(
+              /\*\*Statut\*\*\s*:\s*\[[ x~]\].*/,
+              `**Statut** : [~] in_progress by ${agentType}_agent`
+            );
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+    }
+    content = lines.join('\n');
+    if (!found) {
+      console.log(`⚠️  Could not find Statut line for ${taskId}, appending after header`);
+      content = content.replace(
+        new RegExp(`(### ${taskId}[^\n]*\n)`),
+        `$1- **Statut** : [~] in_progress by ${agentType}_agent\n`
+      );
+    }
+  }
   writeFile(TASKS_FILE, content);
   run(`git add ${TASKS_FILE}`);
   run(`git commit -m "chore(tasks): claim ${taskId} by ${agentType}_agent"`);
@@ -110,10 +145,35 @@ function claimTask(taskId, agentType) {
 
 function completeTask(taskId, agentType) {
   let content = readFile(TASKS_FILE);
-  content = content.replace(
-    new RegExp(`^(- \\[~\\] ${taskId} .*in_progress by ${agentType}_agent)`, 'm'),
-    `$1 → [x] done by ${agentType}_agent (${new Date().toISOString().split('T')[0]})`
-  );
+  const today = new Date().toISOString().split('T')[0];
+  // Format 1: checkbox — - [~] TASK-PX-XXX ... in_progress by <agent>_agent
+  const cbRegex = new RegExp(`^(- \\[~\\] ${taskId} .*in_progress by ${agentType}_agent)`, 'm');
+  if (cbRegex.test(content)) {
+    content = content.replace(cbRegex, `$1 → [x] done by ${agentType}_agent (${today})`);
+  } else {
+    // Format 2: header — ### TASK-PX-XXX ... **Statut** : [~] in_progress by <agent>_agent
+    const lines = content.split('\n');
+    let found = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(taskId)) {
+        for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+          if (lines[j].match(/\*\*Statut\*\*\s*:/) && lines[j].includes('in_progress')) {
+            lines[j] = lines[j].replace(
+              /\*\*Statut\*\*\s*:.*in_progress by \w+_agent.*/,
+              `**Statut** : [x] done by ${agentType}_agent (${today})`
+            );
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+    }
+    content = lines.join('\n');
+    if (!found) {
+      console.log(`⚠️  Could not find in_progress Statut for ${taskId}`);
+    }
+  }
   writeFile(TASKS_FILE, content);
   run(`git add ${TASKS_FILE}`);
   run(`git commit -m "chore(tasks): complete ${taskId} by ${agentType}_agent"`);
@@ -229,6 +289,34 @@ if (STATUS) {
   process.exit(0);
 }
 
+if (SHIP) {
+  const branch = run('git branch --show-current');
+  if (!branch || branch === 'main') {
+    console.log('❌ Must be on an agent branch to ship');
+    process.exit(1);
+  }
+  const status = run('git status --short');
+  if (status) {
+    console.log('❌ Uncommitted changes — commit or stash first');
+    process.exit(1);
+  }
+  console.log(`🚀 Shipping ${branch}...`);
+  try {
+    run('git push origin ' + branch);
+    console.log(`✅ Pushed to origin/${branch}`);
+    try {
+      const pr = run(`gh pr create --title "${branch}" --body "Auto-generated PR from agent handoff" --base main 2>&1`);
+      console.log(`✅ PR created: ${pr.match(/https:\/\/[^\s]+/)?.[0] || pr}`);
+    } catch (e) {
+      console.log(`ℹ️  PR creation: ${e.message.includes('already exists') ? 'PR already exists' : e.message}`);
+    }
+  } catch (e) {
+    console.log(`❌ Push failed: ${e.message}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 if (COMPLETE) {
   const tasks = parseTasks(readFile(TASKS_FILE));
   const inProg = tasks.find(t => t.status === '~');
@@ -300,4 +388,5 @@ console.log('\nCommands:');
 console.log('  --auto           Pick and claim next task automatically');
 console.log('  --task TASK-ID   Force claim a specific task');
 console.log('  --complete       Mark current in-progress task as done');
+console.log('  --ship           Push branch + create PR (auto-merge if CI green)');
 console.log('  --status         Show current status');
