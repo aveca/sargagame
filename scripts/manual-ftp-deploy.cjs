@@ -265,20 +265,14 @@ async function deployOne(t) {
   return true
 }
 
+// Transient FTP errors — worth retrying with backoff.
+const TRANSIENT_FTP_RE = /ECONNRESET|timeout|ETIMEDOUT|control socket|ECONNREFUSED|EPIPE/i
+
 // Deploy complet d'UNE région : tente le chemin RAPIDE (zip → 1 STOR →
 // extraction serveur), retombe sur le chemin FTP fichier-par-fichier éprouvé
 // (deployOne) à la moindre erreur. Le fast path n'ajoute donc jamais de risque
 // net : pire cas = on a pingé un endpoint absent, puis on déploie comme avant.
-async function deployRegion(t, { token, noFast }) {
-  if (!t.host || !t.user || !t.pass) {
-    const ID = t.key.toUpperCase()
-    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
-    return "skipped"
-  }
-  if (!fs.existsSync(t.local)) {
-    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
-    return "skipped"
-  }
+async function deployRegionOnce(t, { token, noFast }) {
   let result
   if (!noFast && token) {
     try {
@@ -290,20 +284,55 @@ async function deployRegion(t, { token, noFast }) {
     }
   }
   if (result === undefined) result = await deployOne(t)
+  return result
+}
 
-  // Garde-fou cross-domain : le deploy n'efface jamais ce qui a été retiré du
-  // build → un slug passé MQ_ONLY/GP_ONLY après un 1er déploiement reste
-  // orphelin sur l'autre île (duplicate-content indexable, cf. residu 2026-06-19).
-  // On retire ces dossiers côté serveur APRÈS un upload réussi. Best-effort :
-  // ne doit jamais faire échouer le deploy. No-op pour les régions sans drops.
-  if (result === true) {
+// Wrapper avec retry + backoff exponentiel pour les erreurs FTP transientes.
+// Le serveur cPanel MQ/GP abandonne parfois la connexion TLS lors de runs
+// consécutives (runner US → hosting Caraïbes). Un simple retry avec délai
+// croissant résout la majorité des cas sans intervention manuelle.
+async function deployRegion(t, { token, noFast }) {
+  if (!t.host || !t.user || !t.pass) {
+    const ID = t.key.toUpperCase()
+    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
+    return "skipped"
+  }
+  if (!fs.existsSync(t.local)) {
+    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
+    return "skipped"
+  }
+
+  const MAX_RETRIES = 2
+  let lastErr
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      await purgeRegionResidues(t, { apply: true })
+      const result = await deployRegionOnce(t, { token, noFast })
+
+      // Garde-fou cross-domain : le deploy n'efface jamais ce qui a été retiré du
+      // build → un slug passé MQ_ONLY/GP_ONLY après un 1er déploiement reste
+      // orphelin sur l'autre île (duplicate-content indexable, cf. residu 2026-06-19).
+      // On retire ces dossiers côté serveur APRÈS un upload réussi. Best-effort :
+      // ne doit jamais faire échouer le deploy. No-op pour les régions sans drops.
+      if (result === true) {
+        try {
+          await purgeRegionResidues(t, { apply: true })
+        } catch (err) {
+          console.log(`  [${t.label}] purge cross-domain best-effort échouée (non bloquant): ${err.message}`)
+        }
+      }
+      return result
     } catch (err) {
-      console.log(`  [${t.label}] purge cross-domain best-effort échouée (non bloquant): ${err.message}`)
+      lastErr = err
+      if (attempt < MAX_RETRIES && TRANSIENT_FTP_RE.test(err.message)) {
+        const delay = 5000 * Math.pow(2, attempt) // 5s, 10s
+        console.log(`  [${t.label}] deploy failed (${err.message}) — retry ${attempt + 1}/${MAX_RETRIES} in ${delay / 1000}s…`)
+        await new Promise(r => setTimeout(r, delay))
+      } else {
+        throw err
+      }
     }
   }
-  return result
+  throw lastErr
 }
 
 // Mode --files : pousse une liste de fichiers ciblés vers les 5 régions, SANS
