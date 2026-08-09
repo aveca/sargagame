@@ -982,7 +982,7 @@ jobs:
           # git rebase refuse un arbre sale : le job modifie d'autres fichiers (build, JSON annexes…)
           git stash push -u -m "actions-pre-rebase" || true
           BRANCH="${GITHUB_REF_NAME:-main}"
-push_ok=0
+           push_ok=0
           for i in 1 2 3 4 5; do
             delay=$(( (i - 1) * 10 + 5 ))  # 5s, 15s, 25s, 35s, 45s
             git fetch origin "$BRANCH"
