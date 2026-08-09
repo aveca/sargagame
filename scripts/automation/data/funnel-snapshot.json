@@ -1,65 +1,65 @@
 {
   "window_days": 7,
-  "since": "2026-08-01T18:47:35.401Z",
-  "total_rows": 31940,
+  "since": "2026-08-02T01:51:11.122Z",
+  "total_rows": 32747,
   "counts": {
-    "session_start": 14199,
+    "session_start": 13986,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1629,
+    "premium_modal_open": 1618,
     "premium_modal_cta": 4,
-    "pass_cta": 108,
+    "pass_cta": 104,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 4,
-    "b2b_offer_view": 54,
+    "b2b_offer_view": 57,
     "b2b_step": 33,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 112,
+  "cta_total": 108,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 6.9,
-    "cta_to_redirect": 3.6,
+    "modal_to_cta": 6.7,
+    "cta_to_redirect": 3.7,
     "cta_to_conversion": 0
   },
   "by_island": {
     "FLORIDA": {
-      "session_start": 2079,
-      "premium_modal_open": 149,
-      "b2b_offer_view": 3,
+      "session_start": 2163,
+      "premium_modal_open": 154,
+      "b2b_offer_view": 4,
       "pass_cta": 12,
       "b2b_step": 1
     },
     "GP": {
-      "session_start": 4989,
-      "premium_modal_open": 256,
-      "pass_cta": 10,
-      "b2b_offer_view": 4
+      "session_start": 4950,
+      "premium_modal_open": 255,
+      "b2b_offer_view": 5,
+      "pass_cta": 8
     },
     "MQ": {
-      "session_start": 5728,
-      "premium_modal_open": 1109,
-      "pass_cta": 82,
+      "session_start": 5505,
+      "premium_modal_open": 1098,
+      "pass_cta": 80,
       "checkout_redirect": 4,
       "premium_modal_cta": 4,
       "b2b_offer_view": 32,
       "b2b_step": 22
     },
-    "RIVIERAMAYA": {
-      "session_start": 416,
-      "b2b_offer_view": 5,
-      "b2b_step": 4,
-      "premium_modal_open": 28,
-      "pass_cta": 2
-    },
     "PUNTACANA": {
-      "session_start": 987,
-      "premium_modal_open": 87,
+      "session_start": 965,
+      "premium_modal_open": 83,
       "pass_cta": 2,
       "b2b_offer_view": 10,
       "b2b_step": 6
+    },
+    "RIVIERAMAYA": {
+      "session_start": 403,
+      "b2b_offer_view": 6,
+      "b2b_step": 4,
+      "premium_modal_open": 28,
+      "pass_cta": 2
     }
   }
 }
