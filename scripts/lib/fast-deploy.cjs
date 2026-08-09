@@ -110,6 +110,7 @@ async function connect(t) {
   })
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
     client.ftp.socket.setKeepAlive(true, 10000)
+    client.ftp.socket.setTimeout(60000) // 60s per-transfer timeout
   }
   return client
 }

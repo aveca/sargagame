@@ -74,6 +74,7 @@ async function connect(t) {
   })
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
     client.ftp.socket.setKeepAlive(true, 10000)
+    client.ftp.socket.setTimeout(60000) // 60s per-transfer timeout (shared hosts drop idle sockets)
   }
   return client
 }
@@ -134,6 +135,9 @@ async function deployOne(t) {
 
   // Generic retry wrapper: fresh Client per attempt. Retries only on
   // ECONNRESET/timeout; other errors bubble up.
+  // Shared hosts (MQ/GP cPanel) drop control sockets after ~660 STORs — add
+  // inter-chunk cooldown to let the server clean up between sessions.
+  const isSharedHost = t.key === 'mq' || t.key === 'gp'
   async function withFreshClient(label, work) {
     const MAX = 5
     for (let attempt = 1; attempt <= MAX; attempt++) {
@@ -144,12 +148,14 @@ async function deployOne(t) {
         await work(client)
         client.trackProgress()
         client.close()
+        if (isSharedHost && attempt < MAX) await new Promise(r => setTimeout(r, 500)) // 500ms cooldown
         return count
       } catch (err) {
         client.trackProgress()
         try { client.close() } catch {}
         if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
         console.log(`  [${t.label}] ${label} reset @ ${count}, retry ${attempt + 1}/${MAX}…`)
+        if (isSharedHost) await new Promise(r => setTimeout(r, 1000)) // 1s cooldown on retry
       }
     }
   }
@@ -167,7 +173,8 @@ async function deployOne(t) {
   // fresh session per batch — the shared host resets the control socket past
   // ~660 cumulative STORs (beaches/ alone is now 422 files, so a single retry
   // after a mid-upload reset cumulates past the threshold).
-  const BATCH_SIZE = 100
+  // MQ/GP on shared cPanel: smaller batches (75) to stay under the 660 limit.
+  const BATCH_SIZE = isSharedHost ? 75 : 100
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false
@@ -252,6 +259,9 @@ async function deployOne(t) {
 
   const dt = ((Date.now() - t0) / 1000).toFixed(1)
   console.log(`[${t.label}] ✓ all chunks deployed in ${dt}s`)
+  if (parseFloat(dt) > 600) {
+    console.warn(`  [${t.label}] ⚠️ DEPLOY SLOW (${dt}s > 10min) — fast-path provision or smaller batches recommended`)
+  }
   return true
 }
 
@@ -397,9 +407,30 @@ async function main() {
     process.exit(summarize(results, picked, only) ? 0 : 1)
   }
 
-  // Défaut : full deploy, fast path + fallback, régions EN PARALLÈLE.
+  // Défaut : full deploy, fast path + fallback.
+  // Serialize same-host regions (MQ/GP share cPanel) to prevent connection
+  // contention — parallel FTP sessions to the same server cause socket drops.
   if (!token) console.log("⚠️  DEPLOY_TOKEN absent → fast path désactivé, fallback FTP fichier-par-fichier.")
-  const results = await Promise.allSettled(picked.map((t) => deployRegion(t, { token, noFast })))
+  const results = []
+  const hostGroups = new Map()
+  for (const t of picked) {
+    const key = t.host || '__none__'
+    if (!hostGroups.has(key)) hostGroups.set(key, [])
+    hostGroups.get(key).push(t)
+  }
+  for (const [host, group] of hostGroups) {
+    if (group.length > 1) {
+      console.log(`\n── Serializing ${group.length} regions on same host (${group[0].label}, ${group.map(t => t.key).join(',')}) ──`)
+    }
+    for (const t of group) {
+      try {
+        const value = await deployRegion(t, { token, noFast })
+        results.push({ status: 'fulfilled', value })
+      } catch (reason) {
+        results.push({ status: 'rejected', reason })
+      }
+    }
+  }
   process.exit(summarize(results, picked, only) ? 0 : 1)
 }
 
