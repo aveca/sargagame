@@ -1,65 +1,65 @@
 {
   "window_days": 7,
-  "since": "2026-08-02T12:37:34.466Z",
-  "total_rows": 33171,
+  "since": "2026-08-02T18:36:32.479Z",
+  "total_rows": 34547,
   "counts": {
-    "session_start": 13604,
+    "session_start": 13465,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1522,
+    "premium_modal_open": 1494,
     "premium_modal_cta": 3,
-    "pass_cta": 90,
+    "pass_cta": 84,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 3,
-    "b2b_offer_view": 49,
+    "b2b_offer_view": 45,
     "b2b_step": 29,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 93,
+  "cta_total": 87,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 6.1,
-    "cta_to_redirect": 3.2,
+    "modal_to_cta": 5.8,
+    "cta_to_redirect": 3.4,
     "cta_to_conversion": 0
   },
   "by_island": {
-    "MQ": {
-      "session_start": 5060,
-      "premium_modal_open": 991,
-      "b2b_offer_view": 25,
-      "pass_cta": 66,
-      "checkout_redirect": 3,
-      "premium_modal_cta": 3,
-      "b2b_step": 19
-    },
-    "GP": {
-      "session_start": 4988,
-      "premium_modal_open": 265,
-      "b2b_offer_view": 5,
-      "pass_cta": 8
+    "PUNTACANA": {
+      "session_start": 959,
+      "premium_modal_open": 87,
+      "pass_cta": 2,
+      "b2b_offer_view": 11,
+      "b2b_step": 6
     },
     "FLORIDA": {
-      "session_start": 2187,
-      "premium_modal_open": 158,
-      "b2b_offer_view": 4,
+      "session_start": 2335,
+      "premium_modal_open": 185,
+      "b2b_offer_view": 5,
       "pass_cta": 12,
       "b2b_step": 1
     },
+    "GP": {
+      "session_start": 4908,
+      "premium_modal_open": 274,
+      "pass_cta": 6,
+      "b2b_offer_view": 4
+    },
+    "MQ": {
+      "session_start": 4863,
+      "premium_modal_open": 923,
+      "b2b_offer_view": 20,
+      "checkout_redirect": 3,
+      "premium_modal_cta": 3,
+      "pass_cta": 62,
+      "b2b_step": 19
+    },
     "RIVIERAMAYA": {
-      "session_start": 409,
-      "premium_modal_open": 24,
+      "session_start": 400,
+      "premium_modal_open": 25,
       "pass_cta": 2,
       "b2b_offer_view": 5,
       "b2b_step": 3
-    },
-    "PUNTACANA": {
-      "session_start": 960,
-      "premium_modal_open": 84,
-      "pass_cta": 2,
-      "b2b_offer_view": 10,
-      "b2b_step": 6
     }
   }
 }

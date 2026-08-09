@@ -1,7 +1,7 @@
 {
   "window_hours": 24,
-  "since": "2026-08-08T12:37:36.847Z",
-  "total_events": 6099,
+  "since": "2026-08-08T18:36:37.138Z",
+  "total_events": 6346,
   "funnel": [
     {
       "key": "map_open",
@@ -93,7 +93,7 @@
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 167,
+    "paywall_view": 199,
     "payment_failed": 0,
     "premium_feature_click": 0
   },
