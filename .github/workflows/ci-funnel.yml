@@ -1,0 +1,34 @@
+name: Funnel Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  funnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/check-bundle-budget.cjs
+      - run: npx playwright install chromium
+      - name: Start preview
+        run: |
+          nohup npx vite preview --port 4173 --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
+          for i in {1..30}; do curl -fs http://127.0.0.1:4173 >/dev/null && exit 0; sleep 1; done
+          cat /tmp/vite-preview.log
+          exit 1
+      - name: Mobile funnel smoke
+        run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
+      - run: grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log
+      - run: grep -q 'ERRORS=\[\]' /tmp/smoke.log
+      - run: grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log

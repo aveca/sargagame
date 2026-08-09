@@ -1,0 +1,27 @@
+name: Branch Policy
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate agent branch naming
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [[ "$HEAD_REF" == "main" ]]; then
+            echo "Direct main PR is not allowed"
+            exit 1
+          fi
+          if [[ "$HEAD_REF" != agent/*/* && "$HEAD_REF" != chore/* && "$HEAD_REF" != fix/* && "$HEAD_REF" != feat/* && "$HEAD_REF" != hotfix/* && "$HEAD_REF" != dependabot/* ]]; then
+            echo "Unsupported branch name: $HEAD_REF"
+            echo "Expected agent/<role>/<task> or an explicit chore/fix/feat/hotfix branch."
+            exit 1
+          fi
+          echo "Branch policy OK: $HEAD_REF"
