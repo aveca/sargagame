@@ -84,7 +84,7 @@ jobs:
 
         with:
 
-          node-version: '20'
+          node-version: '24'
 
           cache: 'npm'
 

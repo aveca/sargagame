@@ -24,9 +24,11 @@ const OUT_PATH = path.join(__dirname, 'data', 'mollie-mrr.json')
 const SEND = process.argv.includes('--send')
 
 async function mollieGet(url, key) {
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
+  const base = 'https://api.mollie.com/v2/'
+  const fullUrl = url.startsWith('http') ? url : base + url
+  const res = await fetch(fullUrl, { headers: { Authorization: 'Bearer ' + key } })
   const j = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(`Mollie ${url}: ${j.detail || res.status}`)
+  if (!res.ok) throw new Error(`Mollie ${fullUrl}: ${j.detail || res.status}`)
   return j
 }
 

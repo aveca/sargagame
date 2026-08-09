@@ -23,6 +23,10 @@ const OUT_PATH = path.join(__dirname, 'data', 'referral-report.json')
 async function fetchCsv(sheet) {
   const url = SHEET_URL + sheet
   const res = await fetch(url, { redirect: 'follow' })
+  if (res.status === 401) {
+    console.log(`  ⚠️ Sheet ${sheet} requires auth (401) — skipping`)
+    return null
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status} pour sheet ${sheet}`)
   return res.text()
 }
@@ -48,6 +52,14 @@ async function main() {
     fetchCsv('payments'),
     fetchCsv('subscription_events'),
   ])
+
+  // Handle 401 - sheet not accessible
+  if (!emailsRaw || !paymentsRaw || !subsRaw) {
+    console.log('  ⚠️ One or more sheets not accessible — writing empty report')
+    const emptyReport = { shares: 0, landings: 0, converts: 0, total_referrals: 0, generated_at: new Date().toISOString() }
+    fs.writeFileSync(OUT_PATH, JSON.stringify(emptyReport, null, 2))
+    return
+  }
 
   const emails = parseCsv(emailsRaw)
   const payments = parseCsv(paymentsRaw)
