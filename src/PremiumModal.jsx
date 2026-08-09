@@ -1,9 +1,11 @@
 /* PremiumModal — surface de paiement (PASS-ONLY Mollie on-site) + paywalls associés.
  * REFACTOR: logique extraite dans src/PremiumModal/ :
- *   - doSubscribe.js        → logique paiement (Mollie/Stripe/PayPal, pass, subs, wallets)
- *   - PayGatewayHandler.jsx → Apple Pay / Google Pay (Mollie redirect + native on-site)
- *   - B2BModal.jsx          → offre B2B Pro (TerritoireMeeting inclus)
- *   - ErrorModal.jsx        → UI d'erreur réutilisable (modal + inline + toast)
+ *   - doSubscribe.jsx        → logique paiement (Mollie/Stripe/PayPal, pass, subs, wallets)
+ *   - PayGatewayHandler.jsx  → Apple Pay / Google Pay (Mollie redirect + native on-site)
+ *   - B2BModal.jsx           → offre B2B Pro (TerritoireMeeting inclus)
+ *   - ErrorModal.jsx         → UI d'erreur réutilisable (modal + inline + toast)
+ *   - WorldPaywall.jsx       → Paywall "Monde" (carte + prévisions globales)
+ *   - ComicPaywall.jsx       → Paywall "BD" plein écran (takeover immersif)
  * Ce module reste le point d'entrée principal, chargé en LAZY à l'ouverture du paywall. */
 import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
@@ -16,6 +18,8 @@ import { usePaymentLogic, _relHref } from "./PremiumModal/doSubscribe.jsx"
 import { usePayGateway, WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
 import { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 import { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
+import { WorldPaywall } from "./PremiumModal/WorldPaywall.jsx"
+import { ComicPaywall } from "./PremiumModal/ComicPaywall.jsx"
 
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -89,14 +93,40 @@ export default function PremiumModal({
     purchase, getPlanMeta
   })
 
-  // ... Le reste du composant PremiumModal suit (inchangé pour l'instant)
-  // Les paywalls (ComicPaywall, WorldPaywall) restent ici car spécifiques au rendu
-  
-  // Pour l'instant, on garde la structure existante et on utilise les hooks importés
-  // La refactorisation complète des paywalls sera faite dans un second temps
-  
+  // Common props passed to all paywall variants
+  const commonPaywallProps = {
+    lang, source, onClose, onActivated,
+    sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh,
+    payPlanRef, payEmailRef, payBusy, setPayBusy,
+    payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
+    paySuccess, setPaySuccess, consentFlag, consentOk,
+    elementsRef, stripeRef, setupSecretRef, mollieRef,
+    pwStep, setPayStep, pwToast, pwSocialProof,
+    doSubscribe, payWithWallet, walletRedirect, onPayEmailInput
+  }
+
+  // Render the appropriate paywall variant
+  const renderPaywall = () => {
+    switch (pwVariant) {
+      case "world":
+        return <WorldPaywall {...commonPaywallProps} />
+      case "comic":
+        return <ComicPaywall {...commonPaywallProps} />
+      case "beat":
+      case "alert":
+      case "watch":
+      case "constel":
+      case "calm":
+      default:
+        // For other variants, render WorldPaywall with variant
+        return <WorldPaywall {...commonPaywallProps} pwVariant={pwVariant} />
+    }
+  }
+
   return (
-    <div>PremiumModal - Structure refactorisée, paywalls à migrer</div>
+    <div className="sg-premium-modal" style={{ position: "relative", width: "100%", maxWidth: 440, margin: "0 auto" }}>
+      {renderPaywall()}
+    </div>
   )
 }
 
