@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { compareRow } from "../Sargasses_PROD.jsx"
+import { FiabiliteProof } from "./FiabiliteProof.jsx"
 
 const REGION_LABELS = {
   mq: { fr: "Martinique", en: "Martinique", es: "Martinica" },
@@ -306,6 +307,9 @@ export function WorldPaywall({
             onPayEmailInput={onPayEmailInput}
           />
         </div>
+        
+        {/* FiabiliteProof — Preuve de calibration inline au moment de la décision */}
+        <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
         
         {/* Trust signals */}
         <div style={{

@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"
 import { PassOffer } from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
+import { FiabiliteProof } from "./FiabiliteProof.jsx"
 
 const PANELS = [
   {
@@ -328,6 +329,9 @@ export function ComicPaywall({
         display: "flex", flexDirection: "column", gap: 12,
         alignItems: "center"
       }}>
+        {/* FiabiliteProof — Preuve de calibration inline au moment de la décision */}
+        <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
+        
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 8,
           background: "rgba(13,11,20,.9)", border: "1px solid rgba(255,199,44,.4)",
