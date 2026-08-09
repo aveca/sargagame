@@ -94,6 +94,24 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 @media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
 .sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab;min-height:44px;padding:19px 0;margin-top:0;margin-bottom:0}
 
+/* ═══ TRANSITION « CASE BD » — TASK-P2-004 ═══
+   PanelWipe entrée paywall : à l'apparition du .sg-modal-panel sous .sg-pwenter,
+   2 effets comic en série (380ms total, GPU-only, skippable) :
+   1) le backdrop prend une teinte golden-hour qui s'estompe vers le noir (la page
+      « tourne » : le ciel de la scène atomosphérique précédente se résorbe)
+   2) le panneau badine depuis le bas AVEC un mini-overshoot comic (cubic-bezier
+      1.56 au lieu de 0.72 par défaut) → effet « page qui claque » case BD.
+   Pures keyframes (zéro JS par frame), reduced-motion = saut à 1ms (l'esthétique
+   ne doit JAMAIS pénégaliser l'accessibilité, bible plancher dur).
+   Rollback global : ?sgpwenter=0 dans Sargasses_PROD.jsx retire .sg-pwenter. */
+@keyframes sgPwBackdrop{0%{opacity:0}12%{opacity:1}100%{opacity:1}}
+@keyframes sgPwPanel{0%{transform:translateY(100%)}62%{transform:translateY(-14px)}82%{transform:translateY(6px)}100%{transform:translateY(0)}}
+.sg-pwenter .backdrop{animation:sgPwBackdrop .26s ease-out both}
+.sg-pwenter .sg-modal-panel{animation:sgPwPanel .38s cubic-bezier(.34,1.4,.5,1) both}
+@media (prefers-reduced-motion:reduce){
+  .sg-pwenter .backdrop,.sg-pwenter .sg-modal-panel{animation-duration:.01ms !important;animation-iteration-count:1 !important}
+}
+
 /* Backdrop */
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1005;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}

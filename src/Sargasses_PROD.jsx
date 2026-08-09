@@ -12421,6 +12421,21 @@ const[landingFunnel]=useState(()=>LF_OVERRIDE||"control")
   // ventes (cohérent avec « 246 emails, 0 vente »). L'intent d'achat va maintenant
   // DIRECT au paywall. Override QA conservé : ?capture_gate=1 force le gate.
   const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;return false}catch(_){return false}},[])
+  // TASK-P2-004 — Transition « case BD » à l'apparition du paywall (PanelWipe).
+  // Pattern identique à `wipe`/`navDive` : flag opt-out (?sgpwenter=0 = OFF),
+  // reduced-motion = JAMAIS lancée (objet matchMedia skip).
+  // Effet purement MOUNT-TIME (animation CSS dans app-runtime.css .sg-pwenter),
+  // ne pénalise PAS la fermeture/le tracking (pwEntering retombe après 420ms).
+  const pwWipeOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]sgpwenter=0/.test(q))return false;return true}catch(_){return true}},[])
+  const[pwEntering,setPwEntering]=useState(false)
+  useEffect(()=>{
+    if(!showPremium){setPwEntering(false);return}
+    if(!pwWipeOn){return}
+    try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){setPwEntering(false);return}}catch(_){}
+    setPwEntering(true)
+    const t=setTimeout(()=>setPwEntering(false),420)
+    return()=>clearTimeout(t)
+  },[showPremium,pwWipeOn])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -14350,7 +14365,12 @@ useEffect(()=>{
           }}/>}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
+        {/* TASK-P2-004 — wrapper .sg-pwenter pose la transition « case BD » au mount
+            du paywall (voir app-runtime.css .sg-pwenter .backdrop/.sg-modal-panel).
+            display:contents garde le layout fixed/portal intact ; pwEntering retombe
+            après 420ms (useEffect) → aucune friction sur la fermeture/tracking.
+            Skipped : ?sgpwenter=0 OU prefers-reduced-motion (cf. fireWipe pattern). */}
+        {showPremium&&<div className={pwEntering?"sg-pwenter":undefined} style={{display:"contents"}}><ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
           setShowPremium(false)
           // EXIT-INTENT NUDGE — paywall fermé SANS payer → toast CTA de rattrapage.
           // Honnête (aucune pression fabriquée : le pic saisonnier est réel), 1×/session,
@@ -14375,7 +14395,7 @@ useEffect(()=>{
           }catch(_){}
         }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
-          beach={selectedBeach||null}/></Suspense></ErrBound>}
+          beach={selectedBeach||null}/></Suspense></ErrBound></div>}
 
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
