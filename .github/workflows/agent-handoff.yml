@@ -76,23 +76,52 @@ jobs:
             AGENT_TYPE="${{ github.event.inputs.agent_type }}"
             echo "Forced task: $TASK_ID by $AGENT_TYPE"
           else
-            # Parser .ai/tasks.md pour trouver la première tâche [ ] non assignée
-            # Priorité : P0 > P1 > P2 > P3, ordre FIFO dans le fichier
-            TASK_LINE=$(grep -E '^\s*-\s*\[\s*\]' .ai/tasks.md | head -1)
-            if [ -z "$TASK_LINE" ]; then
+            # Parser .ai/tasks.md : trouver la première tâche avec [ ] non assignée
+            # Le format est : ### TASK-PX-NNN <title> ... - [ ] pending
+            # On cherche les blocs TASK-XXX dont le status est [ ] pending
+            TASK_BLOCK=$(awk '
+              /^### TASK-/ { hdr=$0; next }
+              /^\s*-\s*\[\s*\]/ && hdr {
+                print hdr; hdr=""; exit
+              }
+              /^---|^## / { hdr="" }
+            ' .ai/tasks.md)
+            
+            if [ -z "$TASK_BLOCK" ]; then
               echo "No pending tasks found"
               echo "task_id=" >> $GITHUB_OUTPUT
               exit 0
             fi
             
-            # Extraire TASK-ID (format: TASK-PX-NNN)
-            TASK_ID=$(echo "$TASK_LINE" | grep -oE 'TASK-P[0-9]-[0-9]{3}')
+            # Extraire TASK-ID depuis le header (### TASK-PX-NNN ...)
+            TASK_ID=$(echo "$TASK_BLOCK" | grep -oE 'TASK-P[0-9]-[0-9]{3}')
             
-            # Déterminer le rôle depuis la ligne (Rôle: xxx_agent)
-            AGENT_TYPE=$(echo "$TASK_LINE" | grep -oE 'Rôle\s*:\s*(\w+)_agent' | cut -d' ' -f2 | sed 's/_agent//')
+            if [ -z "$TASK_ID" ]; then
+              echo "No valid TASK-ID found in block"
+              echo "task_id=" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Déterminer le rôle depuis la ligne Rôle: dans le bloc
+            # Chercher les 10 lignes suivantes après le header pour trouver Rôle:
+            AGENT_TYPE=$(awk -v hdr="$TASK_BLOCK" '
+              $0 == hdr { found=1; next }
+              found && /Rôle\s*:/ {
+                if (match($0, /(\w+)_agent/)) {
+                  n = split(substr($0, RSTART, RLENGTH), a, "_")
+                  print a[1]
+                }
+                exit
+              }
+              found && /^### |^---/ { exit }
+            ' .ai/tasks.md)
+            
             if [ -z "$AGENT_TYPE" ]; then
-              # Fallback : déduire depuis la priorité
-              if echo "$TASK_LINE" | grep -q 'P0'; then AGENT_TYPE="coding"; fi
+              # Fallback : déduire depuis la priorité dans le header
+              if echo "$TASK_BLOCK" | grep -q 'P0'; then AGENT_TYPE="coding"
+              elif echo "$TASK_BLOCK" | grep -q 'devops'; then AGENT_TYPE="devops"
+              else AGENT_TYPE="coding"
+              fi
             fi
             AGENT_TYPE=${AGENT_TYPE:-coding}
             
@@ -111,8 +140,16 @@ jobs:
           TASK_ID="${{ steps.pick_task.outputs.task_id }}"
           AGENT_TYPE="${{ steps.pick_task.outputs.agent_type }}"
           
-          # Remplacer [ ] par [~] in_progress by <agent>
-          sed -i "s/^- \[ \] $TASK_ID/- [~] $TASK_ID — in_progress by ${AGENT_TYPE}_agent/" .ai/tasks.md
+          # Remplacer [ ] par [~] in_progress by <agent> dans le bloc TASK_ID
+          # Le status est sur une ligne "- [ ] pending" ou "- [ ] ..." après le header ### TASK-XXX
+          awk -v tid="$TASK_ID" -v agent="${AGENT_TYPE}_agent" '
+            /^### TASK-/ && index($0, tid) { found=1; print; next }
+            found && /^\s*-\s*\[/ {
+              sub(/\[ \]/, "[~] in_progress by " agent)
+              found=0
+            }
+            { print }
+          ' .ai/tasks.md > .ai/tasks.md.tmp && mv .ai/tasks.md.tmp .ai/tasks.md
           
           git config user.name "agent-handoff[bot]"
           git config user.email "agent-handoff@users.noreply.github.com"
