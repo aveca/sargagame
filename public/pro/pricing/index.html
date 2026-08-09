@@ -126,6 +126,7 @@
         <button type="button" id="pro-trial-btn" class="cta gold" style="white-space:nowrap">Activer mon essai 30 j →</button>
       </div>
       <p class="trial-note" style="font-size:11px;color:var(--sg-mute);margin-top:8px">Sans carte · annulable quand vous voulez · lien d'accès envoyé par email</p>
+      <a href="/pro/espace/" id="pro-yearly-link" class="cta ghost" style="margin-top:10px;display:block">Verrouiller l'année — 690 € (2 mois offerts) →</a>
     </div>
 
     <div class="plan" id="plan-brief">
@@ -144,6 +145,7 @@
         <button type="button" id="brief-trial-btn" class="cta gold" style="white-space:nowrap">Activer mon essai 30 j →</button>
       </div>
       <p class="trial-note" style="font-size:11px;color:var(--sg-mute);margin-top:8px">Sans carte · annulable quand vous voulez · lien d'accès envoyé par email</p>
+      <a href="/pro/espace/" id="brief-yearly-link" class="cta ghost" style="margin-top:10px;display:block">Verrouiller l'année — 290 € (2 mois offerts) →</a>
     </div>
 
     <div class="plan" id="plan-territoire">
@@ -227,6 +229,16 @@ document.getElementById('pro-trial-btn')?.addEventListener('click', function(){ 
 document.getElementById('brief-trial-btn')?.addEventListener('click', function(){ startTrial('brief_monthly', 'brief-trial-email', 'brief-trial-btn'); });
 document.getElementById('pro-trial-email')?.addEventListener('keydown', function(e){ if(e.key==='Enter') startTrial('pro_monthly', 'pro-trial-email', 'pro-trial-btn'); });
 document.getElementById('brief-trial-email')?.addEventListener('keydown', function(e){ if(e.key==='Enter') startTrial('brief_monthly', 'brief-trial-email', 'brief-trial-btn'); });
+
+// CTA annuels : fetch des paylinks Mollie (pro_annual 690€ / brief_annual 290€).
+// Repli silencieux vers /pro/espace/ si le fetch échoue (le CTA reste utilisable).
+fetch('/api/b2b-paylinks.json', {cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+  var links = (d && d.links) || {};
+  var pro = links.pro_annual && links.pro_annual.url;
+  var brief = links.brief_annual && links.brief_annual.url;
+  if (pro) { var a = document.getElementById('pro-yearly-link'); if (a) a.href = pro; }
+  if (brief) { var b = document.getElementById('brief-yearly-link'); if (b) b.href = brief; }
+}).catch(function(){});
 </script>
 </body>
 </html>

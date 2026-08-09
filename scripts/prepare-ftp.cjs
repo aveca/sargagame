@@ -810,6 +810,11 @@ function prepareNewRegion(region) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
 
+  // Charger les resorts depuis le fichier régional (regions/resorts/<id>.json)
+  // car ils ne sont pas dans regions/<id>.json
+  const resortsPath = path.join(root, 'regions', 'resorts', `${region.id}.json`)
+  const regionResorts = fs.existsSync(resortsPath) ? JSON.parse(fs.readFileSync(resortsPath, 'utf-8')) : []
+
   // Exclusions : fichiers régénérés plus bas + artefacts des autres régions.
   const skip = new Set([
     ...COPY_SKIP_TOP,
@@ -908,20 +913,46 @@ function prepareNewRegion(region) {
   }
 
   // Pages plages : ne garder que les plages de la région.
-  const plagesDir = path.join(out, 'plages')
+  // Les régions USD utilisent /beaches/ (EN) et /playas/ (ES) au lieu de /plages/ (FR).
+  // region-seo-pages.cjs génère les pages sous t.beachesDir selon la langue.
+  const beachDirNames = ['plages', 'beaches', 'playas']
   const regionSlugs = beachSlugsFor(region)
-  if (fs.existsSync(plagesDir)) {
-    let removed = 0
-    for (const entry of fs.readdirSync(plagesDir)) {
-      const full = path.join(plagesDir, entry)
-      if (!fs.statSync(full).isDirectory()) continue // keep plages/index.html
-      if (!regionSlugs.has(entry)) {
-        fs.rmSync(full, { recursive: true })
-        removed++
+  for (const beachDirName of beachDirNames) {
+    const beachDir = path.join(out, beachDirName)
+    if (fs.existsSync(beachDir)) {
+      let removed = 0
+      for (const entry of fs.readdirSync(beachDir)) {
+        const full = path.join(beachDir, entry)
+        if (!fs.statSync(full).isDirectory()) continue // keep index.html
+        if (!regionSlugs.has(entry)) {
+          fs.rmSync(full, { recursive: true })
+          removed++
+        }
       }
+      const kept = fs.readdirSync(beachDir).filter(e => fs.statSync(path.join(beachDir, e)).isDirectory()).length
+      console.log(`   → ${beachDirName} filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
     }
-    const kept = fs.readdirSync(plagesDir).filter(e => fs.statSync(path.join(plagesDir, e)).isDirectory()).length
-    console.log(`   → plages filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
+  }
+
+  // Pages resorts/hôtels : ne garder que ceux de la région.
+  // EN → /resorts/, ES → /hoteles/
+  const resortDirNames = ['resorts', 'hoteles']
+  const regionResortSlugs = new Set((regionResorts || []).map(r => r.slug))
+  for (const resortDirName of resortDirNames) {
+    const resortDir = path.join(out, resortDirName)
+    if (fs.existsSync(resortDir)) {
+      let removed = 0
+      for (const entry of fs.readdirSync(resortDir)) {
+        const full = path.join(resortDir, entry)
+        if (!fs.statSync(full).isDirectory()) continue // keep index.html
+        if (!regionResortSlugs.has(entry)) {
+          fs.rmSync(full, { recursive: true })
+          removed++
+        }
+      }
+      const kept = fs.readdirSync(resortDir).filter(e => fs.statSync(path.join(resortDir, e)).isDirectory()).length
+      console.log(`   → ${resortDirName} filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
+    }
   }
 
   // OneSignal : même patch que le build partagé, avec l'app ID de la région.

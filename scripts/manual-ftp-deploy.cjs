@@ -74,6 +74,7 @@ async function connect(t) {
   })
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
     client.ftp.socket.setKeepAlive(true, 10000)
+    client.ftp.socket.setTimeout(60000) // 60s per-transfer timeout (shared hosts drop idle sockets)
   }
   return client
 }
@@ -134,6 +135,9 @@ async function deployOne(t) {
 
   // Generic retry wrapper: fresh Client per attempt. Retries only on
   // ECONNRESET/timeout; other errors bubble up.
+  // Shared hosts (MQ/GP cPanel) drop control sockets after ~660 STORs — add
+  // inter-chunk cooldown to let the server clean up between sessions.
+  const isSharedHost = t.key === 'mq' || t.key === 'gp'
   async function withFreshClient(label, work) {
     const MAX = 5
     for (let attempt = 1; attempt <= MAX; attempt++) {
@@ -144,12 +148,14 @@ async function deployOne(t) {
         await work(client)
         client.trackProgress()
         client.close()
+        if (isSharedHost && attempt < MAX) await new Promise(r => setTimeout(r, 500)) // 500ms cooldown
         return count
       } catch (err) {
         client.trackProgress()
         try { client.close() } catch {}
         if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
         console.log(`  [${t.label}] ${label} reset @ ${count}, retry ${attempt + 1}/${MAX}…`)
+        if (isSharedHost) await new Promise(r => setTimeout(r, 1000)) // 1s cooldown on retry
       }
     }
   }
@@ -167,7 +173,8 @@ async function deployOne(t) {
   // fresh session per batch — the shared host resets the control socket past
   // ~660 cumulative STORs (beaches/ alone is now 422 files, so a single retry
   // after a mid-upload reset cumulates past the threshold).
-  const BATCH_SIZE = 100
+  // MQ/GP on shared cPanel: smaller batches (75) to stay under the 660 limit.
+  const BATCH_SIZE = isSharedHost ? 75 : 100
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false
@@ -252,23 +259,20 @@ async function deployOne(t) {
 
   const dt = ((Date.now() - t0) / 1000).toFixed(1)
   console.log(`[${t.label}] ✓ all chunks deployed in ${dt}s`)
+  if (parseFloat(dt) > 600) {
+    console.warn(`  [${t.label}] ⚠️ DEPLOY SLOW (${dt}s > 10min) — fast-path provision or smaller batches recommended`)
+  }
   return true
 }
+
+// Transient FTP errors — worth retrying with backoff.
+const TRANSIENT_FTP_RE = /ECONNRESET|timeout|ETIMEDOUT|control socket|ECONNREFUSED|EPIPE/i
 
 // Deploy complet d'UNE région : tente le chemin RAPIDE (zip → 1 STOR →
 // extraction serveur), retombe sur le chemin FTP fichier-par-fichier éprouvé
 // (deployOne) à la moindre erreur. Le fast path n'ajoute donc jamais de risque
 // net : pire cas = on a pingé un endpoint absent, puis on déploie comme avant.
-async function deployRegion(t, { token, noFast }) {
-  if (!t.host || !t.user || !t.pass) {
-    const ID = t.key.toUpperCase()
-    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
-    return "skipped"
-  }
-  if (!fs.existsSync(t.local)) {
-    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
-    return "skipped"
-  }
+async function deployRegionOnce(t, { token, noFast }) {
   let result
   if (!noFast && token) {
     try {
@@ -280,20 +284,55 @@ async function deployRegion(t, { token, noFast }) {
     }
   }
   if (result === undefined) result = await deployOne(t)
+  return result
+}
 
-  // Garde-fou cross-domain : le deploy n'efface jamais ce qui a été retiré du
-  // build → un slug passé MQ_ONLY/GP_ONLY après un 1er déploiement reste
-  // orphelin sur l'autre île (duplicate-content indexable, cf. residu 2026-06-19).
-  // On retire ces dossiers côté serveur APRÈS un upload réussi. Best-effort :
-  // ne doit jamais faire échouer le deploy. No-op pour les régions sans drops.
-  if (result === true) {
+// Wrapper avec retry + backoff exponentiel pour les erreurs FTP transientes.
+// Le serveur cPanel MQ/GP abandonne parfois la connexion TLS lors de runs
+// consécutives (runner US → hosting Caraïbes). Un simple retry avec délai
+// croissant résout la majorité des cas sans intervention manuelle.
+async function deployRegion(t, { token, noFast }) {
+  if (!t.host || !t.user || !t.pass) {
+    const ID = t.key.toUpperCase()
+    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
+    return "skipped"
+  }
+  if (!fs.existsSync(t.local)) {
+    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
+    return "skipped"
+  }
+
+  const MAX_RETRIES = 2
+  let lastErr
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      await purgeRegionResidues(t, { apply: true })
+      const result = await deployRegionOnce(t, { token, noFast })
+
+      // Garde-fou cross-domain : le deploy n'efface jamais ce qui a été retiré du
+      // build → un slug passé MQ_ONLY/GP_ONLY après un 1er déploiement reste
+      // orphelin sur l'autre île (duplicate-content indexable, cf. residu 2026-06-19).
+      // On retire ces dossiers côté serveur APRÈS un upload réussi. Best-effort :
+      // ne doit jamais faire échouer le deploy. No-op pour les régions sans drops.
+      if (result === true) {
+        try {
+          await purgeRegionResidues(t, { apply: true })
+        } catch (err) {
+          console.log(`  [${t.label}] purge cross-domain best-effort échouée (non bloquant): ${err.message}`)
+        }
+      }
+      return result
     } catch (err) {
-      console.log(`  [${t.label}] purge cross-domain best-effort échouée (non bloquant): ${err.message}`)
+      lastErr = err
+      if (attempt < MAX_RETRIES && TRANSIENT_FTP_RE.test(err.message)) {
+        const delay = 5000 * Math.pow(2, attempt) // 5s, 10s
+        console.log(`  [${t.label}] deploy failed (${err.message}) — retry ${attempt + 1}/${MAX_RETRIES} in ${delay / 1000}s…`)
+        await new Promise(r => setTimeout(r, delay))
+      } else {
+        throw err
+      }
     }
   }
-  return result
+  throw lastErr
 }
 
 // Mode --files : pousse une liste de fichiers ciblés vers les 5 régions, SANS
@@ -397,9 +436,30 @@ async function main() {
     process.exit(summarize(results, picked, only) ? 0 : 1)
   }
 
-  // Défaut : full deploy, fast path + fallback, régions EN PARALLÈLE.
+  // Défaut : full deploy, fast path + fallback.
+  // Serialize same-host regions (MQ/GP share cPanel) to prevent connection
+  // contention — parallel FTP sessions to the same server cause socket drops.
   if (!token) console.log("⚠️  DEPLOY_TOKEN absent → fast path désactivé, fallback FTP fichier-par-fichier.")
-  const results = await Promise.allSettled(picked.map((t) => deployRegion(t, { token, noFast })))
+  const results = []
+  const hostGroups = new Map()
+  for (const t of picked) {
+    const key = t.host || '__none__'
+    if (!hostGroups.has(key)) hostGroups.set(key, [])
+    hostGroups.get(key).push(t)
+  }
+  for (const [host, group] of hostGroups) {
+    if (group.length > 1) {
+      console.log(`\n── Serializing ${group.length} regions on same host (${group[0].label}, ${group.map(t => t.key).join(',')}) ──`)
+    }
+    for (const t of group) {
+      try {
+        const value = await deployRegion(t, { token, noFast })
+        results.push({ status: 'fulfilled', value })
+      } catch (reason) {
+        results.push({ status: 'rejected', reason })
+      }
+    }
+  }
   process.exit(summarize(results, picked, only) ? 0 : 1)
 }
 
