@@ -654,7 +654,7 @@ jobs:
 
             - name: Auto-merge if CI green
 
-            if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && github.event.pull_request.labels.*.name contains 'auto-handoff' }}
+            if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'auto-handoff') }}
 
             run: |
 
