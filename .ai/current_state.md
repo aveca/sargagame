@@ -4,6 +4,98 @@
 
 ---
 
+## 2026-08-08 23:50 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : agent-handoff.cjs fixé pour header-format tasks + TASK-P2-002 marquée done.
+- **Détails** :
+  - `scripts/agent-handoff.cjs` : claimTask() et completeTask() gèrent désormais les deux formats (checkbox `- [ ]` ET header `### TASK-XXX` avec `**Statut** : [~]`). parseTasks() lit le statut depuis `**Statut** : [x/~]`. Nouvelle commande `--ship` (push + PR auto-create via `gh`).
+  - TASK-P2-002 (B2B recurring) vérifié et marqué done : le flow est déjà entièrement câblé (mol_b2b_plans(), /pro/pricing/ trial forms → b2b-trial.php → token 30j auto → /pro/espace/?k=, mollie.php create_subscription, b2b-paylinks.json annual).
+
+### Fichiers modifiés
+- `scripts/agent-handoff.cjs` — claim/complete fix header-format, parseTasks status reader, --ship command
+- `.ai/tasks.md` — TASK-P2-002 → [x] done
+- `.ai/changelog.md` — entrée 2026-08-08 coding_agent
+
+### Tests réalisés
+- [x] node scripts/agent-handoff.cjs --status → OK (3 pending, 1 in_progress, 4 done)
+- [x] npm run build → exit 0 (3.80s)
+- [x] check-bundle-budget → 190.5 Ko ≤ 210 Ko ✓
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+
+### Problèmes restants
+- [ ] Aucun nouveau
+
+### Prochaine action recommandée
+1. TASK-P1-002 (E2E Playwright funnel payant) — QA_agent
+2. Ship branch agent/ui/TASK-P2-004 (BD transitions done) — release_agent
+3. TASK-P2-001 (PremiumModal split) — coding_agent
+
+### Branche / PR
+- Branche : `agent/ui/TASK-P2-004`
+- PR : à créer
+- Commit head : à créer
+
+---
+
+## 2026-08-08 14:00 UTC · Agent: ui_ux_agent (OpenCode)
+
+### Travail effectué
+- **TASK-P2-004 — Transitions « case BD » entre écrans + audit design system**.
+- Transition BD « case » implémentée au montage du `PremiumModal` (verdict → paywall =
+  maillon le + critique du funnel, en cut sec jusqu'ici). Pattern panel-flip comic :
+  backdrop fade-in teinté + panneau slide-up AVEC overshoot `cubic-bezier(.34,1.4,.5,1)`
+  (effet « page qui claque » Spider-Verse). Pures keyframes CSS, GPU-only, skippable,
+  reduced-motion = saut 1ms (plancher dur bible). Flag rollback `?sgpwenter=0`.
+- **Audit design system** : tokens `--sg-*` (Themes.css + app-runtime.css) résolvent
+  LIGHT sous `.theme-comic` (DETTE-TOKENS-INERTES confirmée, non touchée — plancher).
+  Palette golden-hour `["#0B2230","#155A5A","#C97E3A","#F2B05E"]` conforme (HeroScene
+  L9224). Fonts 3 max (Anton + Bricolage + JetBrains Mono, 4e INTERDITE confirmée).
+- **Copyright/branding 5 régions OK** : `mentions-legales.html`, `cgv.html`,
+  `confidentialite.html`, `a-propos/index.html`, `offres/index.html` mentionnent les
+  5 domaines + © 2026 97TECH + TVA FR40882370703. Mascotte Le Veilleur cohérente
+  (`miVeil()` L1371 + `BrandIcon satellite` L8994). Aucune correction nécessaire.
+- **Transitions existantes auditées** : `SceneWipe` (accueil→carte, câblée),
+  `DiveTransition` (carte→fiche, OFF par défaut arm mort navDive), `.sheet-exit`/
+  `.backdrop-exit` (sortie bottom-sheet), `.view-enter`/`.view-exit` (entrées vues).
+
+### Fichiers modifiés
+- `src/app-runtime.css` — Nouvelles keyframes `sgPwBackdrop`/`sgPwPanel` + règle
+  `.sg-pwenter .backdrop/.sg-modal-panel` (L95-112, ~18 lignes)
+- `src/Sargasses_PROD.jsx` — État `pwWipeOn` + `pwEntering` (L12424-12438), wrapper
+  `div.sg-pwenter` autour de `PremiumModal` (L14368-14400, ~24 lignes)
+- `.ai/changelog.md` — entrée 2026-08-08
+- `.ai/tasks.md` — TASK-P2-004 marquée `[x] done`
+- `.ai/current_state.md` — ce bloc
+
+### Tests réalisés
+- [x] npm run build → exit 0 (3.64s)
+- [x] check-bundle-budget → 190.5 Ko ≤ 210 Ko (+0.1 Ko, sous budget)
+- [x] php -l → N/A (aucun PHP touché)
+- [x] ux-smoke → 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- [x] grep patterns critiques → sgPwBackdrop, sg-pwenter, pwWipeOn, pwEntering présents
+
+### Risques / rollback
+- **Risque minimal** : transition mount-time 420ms, ne pénalise PAS fermeture/tracking
+  (pwEntering retombe via setTimeout indépendamment du onClose). display:contents garde
+  le layout fixed/portal intact (vérifié : backdrop + sg-modal-panel toujours fixed).
+- **Rollback** : `?sgpwenter=0` retire la classe → cut sec d'avant (aucun état résiduel).
+  `git revert HEAD --no-edit` si besoin (commit à venir).
+- **Régression zéro** : pas de nouveau composant, pas de dépendance, pas de dist/, pas
+  de logique paiement touchée. Juste 2 keyframes CSS + 1 wrapper React.
+
+### Prochaine action recommandée
+1._ship: push branche + PR auto-merge vers main — Rôle : release_agent
+2. TASK-P2-002 (B2B recurring expose front) — toujours in_progress
+3. TASK-P1-002 (E2E Playwright funnel payant) — pending, QA_agent
+
+### Branche / PR
+- Branche : `agent/ui/TASK-P2-004`
+- PR : à créer
+- Commit head : à créer
+
+---
+
 ## 2026-08-07 21:00 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

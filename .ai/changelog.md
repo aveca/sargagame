@@ -4,6 +4,61 @@
 
 ---
 
+## 2026-08-08 — coding_agent (OpenCode)
+
+**fix: TASK-P2-002 done + agent-handoff.cjs header-format support**
+
+- `scripts/agent-handoff.cjs` — claim/complete functions now handle both checkbox format (`- [ ] TASK-PX-XXX`) and header format (`### TASK-PX-XXX` with `**Statut**` lines). parseTasks() now reads `**Statut** : [x/~]` from header tasks. Added `--ship` command (push + PR auto-create). All tested via `--status`.
+- `.ai/tasks.md` — TASK-P2-002 marked `[x] done` (B2B recurring flow already fully implemented: mol_b2b_plans(), /pro/pricing/ trial forms, b2b-trial.php auto-token, mollie.php create_subscription, b2b-paylinks.json annual links).
+
+---
+
+## 2026-08-08 — ui_ux_agent (OpenCode)
+
+**feat: TASK-P2-004 — Transitions « case BD » entre écrans + audit design system :**
+
+- `app-runtime.css:107-112` — Nouvelles keyframes `sgPwBackdrop` (fade-in teinté) et
+  `sgPwPanel` (slide-up + overshoot comic cubic-bezier(1.4) → effet « page qui claque »)
+  câblées sur `.sg-pwenter .backdrop` et `.sg-pwenter .sg-modal-panel`.
+  Pures GPU (transform/opacity), reduced-motion = saut 1ms (plancher dur bible).
+  Rollback : `?sgpwenter=0`.
+- `Sargasses_PROD.jsx:12424-12438` — Nouvel état `pwWipeOn` (flag opt-out) + `pwEntering`
+  (mount-time 420ms) qui pose la classe `sg-pwenter` au montage du `PremiumModal`.
+  Pattern identique à `wipe`/`navDive` (matchMedia skip = JAMAIS sous reduced-motion).
+- `Sargasses_PROD.jsx:14368-14400` — `PremiumModal` wrappé dans un `<div className="sg-pwenter">`
+  (`display:contents` → layout fixed/portal intact, sélecteurs CSS matchent le sous-arbre).
+  Build + bundle + smoke OK (190.5 Ko, +0.1 Ko). Aucune friction sur fermeture/tracking.
+- Audit design system : `--sg-*` runtime (Themes.css + app-runtime.css) résolvent les
+  tokens LIGHT d'index.html sous `.theme-comic` (DETTE-TOKENS-INERTES confirmée, non
+  touchée — plancher dur). Palette golden-hour `["#0B2230","#155A5A","#C97E3A","#F2B05E"]`
+  conforme (SCENE_TOKENS HeroScene L9224). Fonts : Anton (titres) + Bricolage Grotesque
+  (body) + JetBrains Mono (chiffres) = 3 max (4e INTERDITE confirmée).
+- Copyright/branding 5 régions : `mentions-legales.html`, `cgv.html`, `confidentialite.html`,
+  `a-propos/index.html`, `offres/index.html` mentionnent les 5 domaines + © 2026 97TECH +
+  TVA FR40882370703. Mascotte « Le Veilleur » via `miVeil()` (L1371) et `BrandIcon satellite`
+  (L8994) partout cohérente. Statut OK, aucune correction nécessaire.
+- Transitions existantes auditées : `SceneWipe` (L9151 — accueil→carte, déjà câblée),
+  `DiveTransition` (carte→fiche, OFF par défaut — navDive KO arm mort), `.sheet-exit`/
+  `.backdrop-exit` (sortie bottom-sheet), `.view-enter`/`.view-exit` (entrées vues).
+  Transition BD manquante IDÉNTIFIÉE et implémentée : verdict→paywall (moment critique
+  funnel). Carte↔liste laissé en cut sec (intentionnel : économie de rendu, vidéo exit).
+
+---
+
+## 2026-08-07 — coding_agent (OpenCode)
+
+**fix: P2 hardening — PayPal curl + transient guards + Stripe prewarm cleanup :**
+
+- `pp_token()` and `pp_api()` now check `curl_errno` — returns 502 on network failure instead of null
+- `paypal-webhook.php` token fetch now checks `curl_errno`
+- `get_transient()` and `set_transient()` now suppress file I/O errors (payment path resilience)
+- Stripe prewarm useEffect: added AbortController + cleanup function + `cancelled` flag
+- Removed `passCtxRef.current` from useEffect deps (refs don't trigger re-renders)
+- Gate de ship: build 190.4 Ko, PHP lint OK, ux-smoke 4 tokens OK
+- Commit: 60665315
+
+---
+
 ## 2026-08-07 — coding_agent (OpenCode)
 
 **fix(seo): index.html noscript + JSON-LD mojibake UTF-8 + remove dead preact files :**
