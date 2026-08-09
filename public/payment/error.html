@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Paiement échoué — Sargasses</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+  :root{--ink:#0A1714;--card:#10231E;--or:#FFC72C;--orL:#FFE08A;--teal:#5FD3C9;
+    --clean:#22C55E;--mod:#F59E0B;--avoid:#E8522A}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:linear-gradient(180deg,#0B2230,#155A5A 52%,#C97E3A 84%,#F2B05E);
+    color:#fff;font-family:'Bricolage Grotesque',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;
+    padding:24px;min-height:100vh}
+  .wrap{width:100%;max-width:440px;text-align:center}
+  .sat{width:54px;height:54px;margin:0 auto 14px;display:block}
+  .eyebrow{font:700 11px ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(255,255,255,.8);margin:0 0 6px}
+  h1{font-family:'Anton',system-ui,sans-serif;font-weight:400;letter-spacing:.01em;
+    text-transform:uppercase;font-size:clamp(26px,7vw,40px);line-height:1.02;margin:0 0 6px;
+    text-shadow:0 2px 16px rgba(0,0,0,.35)}
+  .q{font-size:15px;color:rgba(255,255,255,.9);margin:0 0 22px}
+  .btns{display:flex;flex-direction:column;gap:12px}
+  button{appearance:none;border:0;cursor:pointer;border-radius:16px;padding:18px 20px;
+    font:800 17px 'Bricolage Grotesque',system-ui,sans-serif;color:#0A1714;
+    display:flex;align-items:center;gap:14px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.22);
+    transition:transform .12s cubic-bezier(.34,1.56,.64,1)}
+  button:active{transform:scale(.97)}
+  button .em{font-size:26px;line-height:1}
+  .b-clean{background:linear-gradient(180deg,#34D77f,#22C55E)}
+  .b-mod{background:linear-gradient(180deg,#FFC34d,#F59E0B)}
+  .b-avoid{background:linear-gradient(180deg,#F4845F,#E8522A);color:#fff}
+  .note{font-size:12px;color:rgba(255,255,255,.66);margin:18px 0 0}
+  .done{display:none}
+  .done .big{font-size:46px;margin:0 0 8px}
+  .verdict{margin:16px auto 0;max-width:360px;background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.14);
+    border-radius:14px;padding:12px 14px;font-size:13.5px;color:rgba(255,255,255,.88)}
+  a{color:var(--orL);text-decoration:none}
+  .error-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,82,42,.15);
+    border:1px solid rgba(232,82,42,.4);border-radius:999px;padding:8px 16px;margin:0 0 12px;
+    font:700 12px ui-monospace,monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--avoid)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="error-badge">⚠️ Paiement échoué</div>
+
+  <svg class="sat" viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32,33)">
+    <circle r="22" fill="#E8522A" opacity=".15"/><circle r="14" fill="#E8522A" opacity=".12"/>
+    <circle cx="0" cy="2" r="10" fill="none" stroke="#E8522A" stroke-width="2.5"/>
+    <line x1="-5" y1="-3" x2="5" y2="7" stroke="#E8522A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="5" y1="-3" x2="-5" y2="7" stroke="#E8522A" stroke-width="2.5" stroke-linecap="round"/>
+  </g></svg>
+
+  <p class="eyebrow">Transaction non finalisée</p>
+  <h1>Ça n'a pas marché</h1>
+  <p class="q" id="msg">Une erreur est survenue. Pas de panique — rien n'a été débité.</p>
+
+  <div class="verdict" style="background:rgba(232,82,42,.12);border-color:rgba(232,82,42,.3);" id="errorDetail" style="display:none"></div>
+
+  <div class="btns">
+    <button class="b-clean" onclick="retry()">
+      <span class="em">🔁</span><span id="btnRetry">Réessayer</span>
+    </button>
+    <button class="b-mod" onclick="location.href='/'">
+      <span class="em">🗺️</span><span>Voir la carte</span>
+    </button>
+    <button class="b-avoid" onclick="contact()">
+      <span class="em">💬</span><span>Aide</span>
+    </button>
+  </div>
+
+  <p class="note">Aucun montant n'a été prélevé. Ton essai gratuit (si applicable) est intact.</p>
+</div>
+
+<script>
+(function(){
+  var P = new URLSearchParams(location.search);
+  var code = P.get('code') || 'unknown';
+  var reason = P.get('reason') || '';
+  var email = P.get('email') || '';
+
+  var T = {
+    fr: {
+      generic: 'Une erreur est survenue. Pas de panique — rien n\'a été débité.',
+      retry: 'Réessayer',
+      map: 'Voir la carte',
+      help: 'Aide',
+      reasons: {
+        expired: 'La session a expiré. Réessaie depuis le paywall.',
+        cancelled: 'Tu as annulé le paiement.',
+        declined: 'Carte refusée. Vérifie les fonds ou essaie une autre carte.',
+        failed: 'Échec technique. Réessaie dans quelques minutes.',
+        unknown: 'Erreur inconnue. Contacte le support si ça persiste.'
+      }
+    },
+    en: {
+      generic: 'Payment failed. No worries — nothing was charged.',
+      retry: 'Retry',
+      map: 'See map',
+      help: 'Help',
+      reasons: {
+        expired: 'Session expired. Retry from the paywall.',
+        cancelled: 'You cancelled the payment.',
+        declined: 'Card declined. Check funds or try another card.',
+        failed: 'Technical error. Retry in a few minutes.',
+        unknown: 'Unknown error. Contact support if it persists.'
+      }
+    },
+    es: {
+      generic: 'El pago falló. Tranquilo — no se cobró nada.',
+      retry: 'Reintentar',
+      map: 'Ver mapa',
+      help: 'Ayuda',
+      reasons: {
+        expired: 'Sesión expirada. Reintenta desde el paywall.',
+        cancelled: 'Cancelaste el pago.',
+        declined: 'Tarjeta rechazada. Verifica fondos o usa otra.',
+        failed: 'Error técnico. Reintenta en unos minutos.',
+        unknown: 'Error desconocido. Contacta soporte si persiste.'
+      }
+    }
+  };
+
+  var lang = (document.documentElement.lang || 'fr').slice(0,2);
+  var t = T[lang] || T.fr;
+
+  document.documentElement.lang = lang;
+  document.title = t.generic.split('.')[0] + ' — Sargasses';
+
+  document.querySelector('h1').textContent = t.generic.split('.')[0];
+  document.querySelector('.q').textContent = t.generic;
+
+  document.getElementById('btnRetry').textContent = t.retry;
+  document.querySelector('.b-mod span:last-child').textContent = t.map;
+  document.querySelector('.b-avoid span:last-child').textContent = t.help;
+
+  var reasonText = t.reasons[code] || t.reasons.unknown;
+  if (reason) reasonText += ' (' + reason + ')';
+  var detail = document.getElementById('errorDetail');
+  detail.style.display = 'block';
+  detail.innerHTML = '<div style="font-family:ui-monospace,monospace;font-size:12px;opacity:.9">Code : ' + code + '</div><div style="margin-top:8px">' + reasonText + '</div>';
+  if (email) detail.innerHTML += '<div style="margin-top:8px;font-size:13px;opacity:.8">📧 ' + email + '</div>';
+
+  window.retry = function() {
+    var returnUrl = '/paywall?' + new URLSearchParams({retry: '1', code: code}).toString();
+    location.href = returnUrl;
+  };
+  window.contact = function() {
+    location.href = '/contact?subject=payment-error&code=' + encodeURIComponent(code);
+  };
+})();
+</script>
+</body>
+</html>
