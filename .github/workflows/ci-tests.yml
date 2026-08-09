@@ -1,4 +1,4 @@
-﻿name: CI Tests
+name: CI Tests
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         run: npm test
       - name: Verify Build
         run: npm run build
-      - name: Check bundle budget (JS eager Ôëñ 210 Ko gzip)
+      - name: Check bundle budget (JS eager <= 210 Ko gzip)
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
         run: npx playwright install chromium
@@ -30,6 +30,7 @@ jobs:
           nohup npx vite preview --port 4173 --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
           echo $! > /tmp/vite-preview.pid
       - name: Wait for preview server ready
+        timeout-minutes: 2
         run: |
           for i in {1..30}; do
             if curl -fs http://127.0.0.1:4173 >/dev/null; then echo "Preview server ready"; exit 0; fi
@@ -39,8 +40,10 @@ jobs:
           cat /tmp/vite-preview.log
           exit 1
       - name: Run UX smoke test (mobile funnel)
+        timeout-minutes: 5
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
       - name: Verify smoke tokens
+        timeout-minutes: 2
         run: |
           grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log
           grep -q 'ERRORS=\[\]' /tmp/smoke.log
