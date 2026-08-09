@@ -19,6 +19,7 @@ concurrency:
 jobs:
   perf:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,6 +35,8 @@ jobs:
         run: node scripts/check-bundle-budget.cjs
 
       - name: Lighthouse CI (mobile) — report-only
-        run: npx --yes @lhci/cli@0.14.x autorun
+        continue-on-error: true
+        timeout-minutes: 10
+        run: timeout --signal=TERM --kill-after=30s 9m npx --yes @lhci/cli@0.14.x autorun || status=$?; if [ "${status:-0}" -eq 124 ] || [ "${status:-0}" -eq 143 ]; then echo 'Lighthouse timed out; report-only gate intentionally non-blocking.'; exit 0; fi; exit "${status:-0}"
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
