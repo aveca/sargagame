@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-08-10T01:02:37.975Z",
+  "generatedAt": "2026-08-10T07:10:55.453Z",
   "window": {
     "from": "2026-07-27",
     "to": "2026-08-10",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-08-10T01:02:37.864Z",
+    "computedAt": "2026-08-10T07:10:55.352Z",
     "backtestAgeHours": 0,
     "observationLagDays": -1,
     "stale": false
@@ -189,7 +189,7 @@
       "island": "mq",
       "samples": 69,
       "hitRatePct": 100,
-      "afaiMAE": 0.017
+      "afaiMAE": 0.018
     },
     {
       "id": "anse-noire",
@@ -245,7 +245,7 @@
       "island": "mq",
       "samples": 69,
       "hitRatePct": 97,
-      "afaiMAE": 0.023
+      "afaiMAE": 0.024
     },
     {
       "id": "tartane",

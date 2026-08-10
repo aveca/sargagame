@@ -60,7 +60,7 @@
     },
     "anse-mitan": {
       "statusHitRate": 100,
-      "afaiMAE": 0.017,
+      "afaiMAE": 0.018,
       "pairs": 69
     },
     "anse-noire": {
@@ -90,7 +90,7 @@
     },
     "sainte-anne": {
       "statusHitRate": 97,
-      "afaiMAE": 0.023,
+      "afaiMAE": 0.024,
       "pairs": 69
     },
     "les-salines": {
@@ -219,7 +219,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-27 → 2026-08-10) resultaron correctos (sobre 1389); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-08-10T01:02:37.864Z",
+  "computed": "2026-08-10T07:10:55.352Z",
   "pairs": [
     {
       "snapshotDate": "2026-08-07",
@@ -953,11 +953,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-08-08",
@@ -1169,11 +1169,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-08-08",
@@ -1673,11 +1673,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-08-09",
@@ -1781,11 +1781,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-08-09",
