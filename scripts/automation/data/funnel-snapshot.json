@@ -1,65 +1,62 @@
 {
   "window_days": 7,
-  "since": "2026-08-02T18:36:32.479Z",
-  "total_rows": 34547,
+  "since": "2026-08-03T01:09:57.144Z",
+  "total_rows": 35219,
   "counts": {
-    "session_start": 13465,
+    "session_start": 13375,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1494,
-    "premium_modal_cta": 3,
-    "pass_cta": 84,
+    "premium_modal_open": 1427,
+    "premium_modal_cta": 0,
+    "pass_cta": 76,
     "conversion": 0,
     "email_submit": 0,
-    "checkout_redirect": 3,
-    "b2b_offer_view": 45,
+    "checkout_redirect": 0,
+    "b2b_offer_view": 42,
     "b2b_step": 29,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 87,
+  "cta_total": 76,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 5.8,
-    "cta_to_redirect": 3.4,
+    "modal_to_cta": 5.3,
+    "cta_to_redirect": 0,
     "cta_to_conversion": 0
   },
   "by_island": {
-    "PUNTACANA": {
-      "session_start": 959,
-      "premium_modal_open": 87,
-      "pass_cta": 2,
-      "b2b_offer_view": 11,
-      "b2b_step": 6
+    "MQ": {
+      "session_start": 4681,
+      "premium_modal_open": 820,
+      "b2b_offer_view": 16,
+      "pass_cta": 58,
+      "b2b_step": 19
+    },
+    "RIVIERAMAYA": {
+      "session_start": 393,
+      "premium_modal_open": 24,
+      "b2b_offer_view": 6,
+      "b2b_step": 3
+    },
+    "GP": {
+      "session_start": 4951,
+      "premium_modal_open": 292,
+      "pass_cta": 4,
+      "b2b_offer_view": 4
     },
     "FLORIDA": {
-      "session_start": 2335,
-      "premium_modal_open": 185,
+      "session_start": 2380,
+      "premium_modal_open": 195,
       "b2b_offer_view": 5,
       "pass_cta": 12,
       "b2b_step": 1
     },
-    "GP": {
-      "session_start": 4908,
-      "premium_modal_open": 274,
-      "pass_cta": 6,
-      "b2b_offer_view": 4
-    },
-    "MQ": {
-      "session_start": 4863,
-      "premium_modal_open": 923,
-      "b2b_offer_view": 20,
-      "checkout_redirect": 3,
-      "premium_modal_cta": 3,
-      "pass_cta": 62,
-      "b2b_step": 19
-    },
-    "RIVIERAMAYA": {
-      "session_start": 400,
-      "premium_modal_open": 25,
+    "PUNTACANA": {
+      "session_start": 970,
+      "premium_modal_open": 96,
       "pass_cta": 2,
-      "b2b_offer_view": 5,
-      "b2b_step": 3
+      "b2b_offer_view": 11,
+      "b2b_step": 6
     }
   }
 }
