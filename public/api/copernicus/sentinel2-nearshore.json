@@ -1,7 +1,7 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
-  "updatedAt": "2026-08-09T18:24:31.716Z",
+  "updatedAt": "2026-08-10T00:55:55.034Z",
   "lookbackDays": 12,
   "note": null,
   "beaches": {
@@ -10,7 +10,7 @@
       "afaiLike": 0.05,
       "coverage": 0.56,
       "obsDate": "2026-08-05",
-      "ageDays": 4,
+      "ageDays": 5,
       "nPixels": 62201
     },
     "sainte-anne": {
@@ -18,7 +18,7 @@
       "afaiLike": 0.05,
       "coverage": 0.1,
       "obsDate": "2026-08-05",
-      "ageDays": 4,
+      "ageDays": 5,
       "nPixels": 11309
     },
     "pt-marin": {
@@ -26,7 +26,7 @@
       "afaiLike": 0.12,
       "coverage": 0.28,
       "obsDate": "2026-08-02",
-      "ageDays": 7,
+      "ageDays": 8,
       "nPixels": 31144
     },
     "diamant": {
@@ -34,7 +34,7 @@
       "afaiLike": 0.05,
       "coverage": 0.65,
       "obsDate": "2026-08-05",
-      "ageDays": 4,
+      "ageDays": 5,
       "nPixels": 71822
     },
     "tartane": {
@@ -42,7 +42,7 @@
       "afaiLike": 0.12,
       "coverage": 0.4,
       "obsDate": "2026-08-05",
-      "ageDays": 4,
+      "ageDays": 5,
       "nPixels": 44717
     }
   }
