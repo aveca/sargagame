@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-03T14:03:02.531Z",
+  "generatedAt": "2026-08-10T12:10:01.127Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
+      "pageCount": 366,
       "pagesWithSchema": 162,
       "totalBlocks": 630,
       "parseFailures": 0,
@@ -204,7 +204,7 @@
       ]
     },
     "gp": {
-      "pageCount": 403,
+      "pageCount": 405,
       "pagesWithSchema": 201,
       "totalBlocks": 766,
       "parseFailures": 0,

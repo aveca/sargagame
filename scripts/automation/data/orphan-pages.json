@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-08-03T14:02:54.270Z",
+  "generatedAt": "2026-08-10T12:09:53.109Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 8,
+      "orphanCount": 9,
       "orphansByKind": {
         "editorial": 4,
         "beach": 0,
-        "other": 4
+        "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 9054,
-          "clicks": 1840
+          "impressions": 9161,
+          "clicks": 1685
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1637,
-          "clicks": 171
+          "impressions": 1308,
+          "clicks": 121
         }
       ],
       "orphans": [
@@ -44,7 +44,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/previsions/",
-          "impressions": 5,
+          "impressions": 4,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -76,6 +76,16 @@
           "url": "https://sargasses-martinique.com/en/best-beaches-no-sargassum/",
           "impressions": 0,
           "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/",
+            "https://sargasses-martinique.com/carte-sargasses/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
+          "impressions": 4,
+          "clicks": 1,
           "kind": "other",
           "recommendedLinkSources": [
             "https://sargasses-martinique.com/",
@@ -115,13 +125,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 14171,
-          "clicks": 2435
+          "impressions": 13488,
+          "clicks": 2480
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 3940,
-          "clicks": 498
+          "impressions": 3503,
+          "clicks": 555
         }
       ],
       "orphans": [
@@ -157,7 +167,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
-          "impressions": 0,
+          "impressions": 1,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [

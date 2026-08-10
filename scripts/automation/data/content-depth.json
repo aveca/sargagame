@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-03T14:03:03.263Z",
+  "generatedAt": "2026-08-10T12:10:01.836Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
-      "medianWords": 44,
-      "thinCount": 211,
+      "pageCount": 366,
+      "medianWords": 41,
+      "thinCount": 212,
       "richCount": 80,
       "thinPages": [
         {
@@ -147,35 +147,35 @@
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "words": 1842
+          "words": 1849
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1834
+          "words": 1839
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1829
+          "words": 1834
         },
         {
           "url": "/plages/anse-corps-de-garde/",
+          "words": 1825
+        },
+        {
+          "url": "/plages/anse-mitan/",
           "words": 1824
         },
         {
           "url": "/plages/grande-anse-du-carbet/",
-          "words": 1818
-        },
-        {
-          "url": "/plages/anse-mitan/",
           "words": 1817
         }
       ]
     },
     "gp": {
-      "pageCount": 403,
-      "medianWords": 201,
-      "thinCount": 211,
-      "richCount": 112,
+      "pageCount": 405,
+      "medianWords": 195,
+      "thinCount": 212,
+      "richCount": 111,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -317,27 +317,27 @@
         },
         {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1883
+          "words": 1888
         },
         {
           "url": "/plages/plage-de-la-caravelle/",
-          "words": 1871
+          "words": 1876
         },
         {
           "url": "/plages/plage-de-deshaies/",
-          "words": 1848
+          "words": 1853
         },
         {
           "url": "/plages/plage-de-malendure/",
-          "words": 1840
+          "words": 1847
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1839
+          "words": 1840
         },
         {
           "url": "/plages/plage-du-gosier/",
-          "words": 1834
+          "words": 1839
         }
       ]
     }
