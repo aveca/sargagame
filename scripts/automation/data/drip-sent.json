@@ -2903,9 +2903,12 @@
     "daily_sig": "Plage de Grande Anse|clean|90|clean|1|mardi",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-10"
+    "install_nudge_last": "2026-08-10",
+    "j3": "2026-08-10T12:43:50.046Z"
   },
-  "c9eeab8b8869d4d2799d4c2d8b30779b": {},
+  "c9eeab8b8869d4d2799d4c2d8b30779b": {
+    "j3": "2026-08-10T12:43:51.801Z"
+  },
   "06eec7860b67e29866aca8661497aec3": {},
   "774cf3839e210837b6602e7427a49ca8": {
     "daily_last": "2026-08-10",

@@ -1,13 +1,13 @@
 {
   "window_days": 7,
-  "since": "2026-08-03T07:15:29.868Z",
-  "total_rows": 35028,
+  "since": "2026-08-03T12:51:44.246Z",
+  "total_rows": 35495,
   "counts": {
-    "session_start": 13087,
+    "session_start": 12969,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1337,
+    "premium_modal_open": 1353,
     "premium_modal_cta": 0,
-    "pass_cta": 61,
+    "pass_cta": 57,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 0,
@@ -16,47 +16,47 @@
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 61,
+  "cta_total": 57,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 4.6,
+    "modal_to_cta": 4.2,
     "cta_to_redirect": 0,
     "cta_to_conversion": 0
   },
   "by_island": {
-    "PUNTACANA": {
-      "session_start": 978,
-      "premium_modal_open": 112,
-      "pass_cta": 3,
-      "b2b_offer_view": 12,
-      "b2b_step": 6
-    },
     "MQ": {
-      "session_start": 4393,
-      "b2b_offer_view": 9,
-      "premium_modal_open": 709,
-      "pass_cta": 42,
+      "session_start": 4359,
+      "premium_modal_open": 693,
+      "pass_cta": 38,
+      "b2b_offer_view": 8,
       "b2b_step": 15
     },
     "FLORIDA": {
-      "session_start": 2385,
-      "premium_modal_open": 199,
+      "session_start": 2401,
+      "premium_modal_open": 205,
       "b2b_offer_view": 5,
       "pass_cta": 12,
       "b2b_step": 1
     },
+    "GP": {
+      "session_start": 4864,
+      "premium_modal_open": 314,
+      "pass_cta": 4,
+      "b2b_offer_view": 5
+    },
+    "PUNTACANA": {
+      "session_start": 966,
+      "premium_modal_open": 117,
+      "pass_cta": 3,
+      "b2b_offer_view": 12,
+      "b2b_step": 6
+    },
     "RIVIERAMAYA": {
-      "session_start": 386,
+      "session_start": 379,
       "premium_modal_open": 24,
       "b2b_offer_view": 6,
       "b2b_step": 3
-    },
-    "GP": {
-      "session_start": 4945,
-      "premium_modal_open": 293,
-      "pass_cta": 4,
-      "b2b_offer_view": 4
     }
   }
 }
