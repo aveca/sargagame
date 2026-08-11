@@ -72,6 +72,8 @@
     "rivieramaya:rm004:moderate>clean",
     "rivieramaya:rm005:moderate>clean",
     "rivieramaya:rm011:moderate>clean",
-    "rivieramaya:rm020:moderate>clean"
+    "rivieramaya:rm020:moderate>clean",
+    "rivieramaya:rm008:clean>moderate",
+    "rivieramaya:rm017:clean>moderate"
   ]
 }
