@@ -301,7 +301,7 @@ export function WorldPaywall({
             stripeRef={stripeRef}
             setupSecretRef={setupSecretRef}
             mollieRef={mollieRef}
-            doSubscribe={doSubscribe}
+            onBuy={doSubscribe}
             payWithWallet={payWithWallet}
             walletRedirect={walletRedirect}
             onPayEmailInput={onPayEmailInput}
