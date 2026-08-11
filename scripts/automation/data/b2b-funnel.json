@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-11T06:53:09.475Z",
+  "updatedAt": "2026-08-11T12:41:25.462Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -991,7 +991,7 @@
       "contactedAt": "2026-07-28T08:43:23.180Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "74c0435a981646a04a67558d6708ca2e": {
       "stage": "contacted",
@@ -1027,7 +1027,7 @@
       "contactedAt": "2026-07-28T08:43:24.633Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "73342bf076f90109082d69b63f3857de": {
       "stage": "contacted",
@@ -1036,7 +1036,7 @@
       "contactedAt": "2026-07-28T08:43:25.024Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "a7c93bdbfc989b3a54ce025b76c7a7f6": {
       "stage": "contacted",
@@ -1045,7 +1045,7 @@
       "contactedAt": "2026-07-28T08:43:25.572Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "0a0a133d6db24edc058483938381247c": {
       "stage": "contacted",
@@ -1054,7 +1054,7 @@
       "contactedAt": "2026-07-28T08:43:26.115Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "55c88d2d037fe4868eac95f5ca4d2942": {
       "stage": "contacted",
@@ -1063,7 +1063,7 @@
       "contactedAt": "2026-07-28T08:43:26.616Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "07398e02ff8915d458a2428ba8112e9c": {
       "stage": "contacted",
@@ -1072,7 +1072,7 @@
       "contactedAt": "2026-07-28T08:43:27.030Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "39b0108d37b9016ff902812efb32cd63": {
       "stage": "contacted",
@@ -1081,7 +1081,7 @@
       "contactedAt": "2026-07-28T08:43:27.404Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "d72d3cb2994533530a6cbc1f1c3ff5fe": {
       "stage": "contacted",
@@ -1090,7 +1090,7 @@
       "contactedAt": "2026-07-28T08:43:27.747Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "6383e0f3a0d151099a29a031e37070a3": {
       "stage": "contacted",
@@ -1108,7 +1108,7 @@
       "contactedAt": "2026-07-28T08:43:28.886Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "d7b17294fb769f0e1fb0ba535bc8be0f": {
       "stage": "contacted",
@@ -1126,7 +1126,7 @@
       "contactedAt": "2026-07-28T08:43:29.875Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "c8d3b8c9ab0a5dba15f844972fe6b7e4": {
       "stage": "contacted",
@@ -1135,7 +1135,7 @@
       "contactedAt": "2026-07-28T08:43:30.416Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "a943f45360ab607d9b31fe96bd576b85": {
       "stage": "contacted",
@@ -1144,7 +1144,7 @@
       "contactedAt": "2026-07-28T08:43:30.881Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "4bf13269b6330973750be5c61a28f29b": {
       "stage": "contacted",
@@ -1153,7 +1153,7 @@
       "contactedAt": "2026-07-28T08:43:32.177Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "c625bc797e5cb1f123ca998801f24f19": {
       "stage": "contacted",
@@ -1162,7 +1162,7 @@
       "contactedAt": "2026-07-28T08:43:32.514Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "fce0393d17236003d26b6e21d9ffe941": {
       "stage": "contacted",
@@ -1171,7 +1171,7 @@
       "contactedAt": "2026-07-28T08:43:32.821Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "faa51fedc67bc680e96f447e5c06511d": {
       "stage": "contacted",
@@ -1180,7 +1180,7 @@
       "contactedAt": "2026-07-28T08:43:33.136Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "8aeb77227b927667239a5964ab5c00ed": {
       "stage": "contacted",
@@ -1189,7 +1189,7 @@
       "contactedAt": "2026-07-28T08:43:33.450Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "87043c0443dea31ab6243266b165d352": {
       "stage": "contacted",
@@ -1216,7 +1216,7 @@
       "contactedAt": "2026-07-28T08:43:34.685Z",
       "isLead": false,
       "isPaid": false,
-      "nextAction": "attendre / relance programmée"
+      "nextAction": "sans réponse 14j → requalifier / pause"
     },
     "d853e136b07f284fc20c2ff754160bdf": {
       "stage": "contacted",
