@@ -4,6 +4,61 @@
 
 ---
 
+## 2026-08-11 — coding_agent (OpenCode)
+
+**fix(payment): BUG-2026-016 PassOffer passCtxRef perdu post-split + byte NUL WorldPaywall.jsx**
+
+Le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`) avait perdu toute la plomberie de paiement :
+- Refs/états créés en interne étaient juste passés en prop venant de nulle part (Sargasses_PROD.jsx n'envoie ni `passCtxRef`, ni `payPlanRef`, ni `payEmailRef`, ni `payBusy`, etc.)
+- `WorldPaywall` câblait `onBuy={doSubscribe}` : `doSubscribe` lisait `passCtxRef.current = undefined` → partait sur le chemin abonnement au lieu du pass one-time → `POST /api/mollie.php` `action=create_subscription` au lieu de `action=create_payment` → erreur Mollie → bouton "Commencer maintenant →" cassé.
+
+Fix :
+- `PremiumModal.jsx` recrée toutes les refs/états de paiement en interne (miroir ancien monolithe ~ligne 1739) :
+  `passCtxRef`, `payPlanRef`, `payEmailRef`, `payReadyRef`, `elementsRef`, `stripeRef`, `setupSecretRef`, `mollieRef`, `payBusy`, `payError`, `payRedirecting`, `paySuccess`, `payStep`, `consentOk`, `pwToast`, `pwSocialProof`.
+- Bridge `onPassBuy` :
+  ```js
+  const onPassBuy = (item) => {
+    track("sg_pass_cta", {pass:item.pass, cents:item.c, source, onsite:1, ...})
+    passCtxRef.current = {pass:item.pass, cents:item.c, days:item.days||..., cur:PAY_CUR}
+    if(item.method && item.method !== "card"){ payWithWallet(item.method); return }
+    doSubscribe()
+  }
+  ```
+- `WorldPaywall.jsx:304` → `onBuy={onPassBuy}` (était `onBuy={doSubscribe}`)
+- `ComicPaywall.jsx` reçoit aussi les nouvelles props (`setConsentOk`, `setPwToast`, `onPassBuy`) pour cohérence, même s'il n'a pas de PassOffer monté.
+- Bonus : troncation du byte NUL `\x00` en offset 14789 de `WorldPaywall.jsx` qui cassait le build (`esbuild: Unexpected "\x00"`), réécriture propre de `export default WorldPaywall\n`.
+
+### Fichiers modifiés
+- `src/PremiumModal.jsx` — Refs/états paiement créés en interne + bridge `onPassBuy` + propagation aux paywalls
+- `src/PremiumModal/WorldPaywall.jsx` — `onBuy={onPassBuy}`, nouvelle props (`setConsentOk`, `setPwToast`, `onPassBuy`) + clear byte NUL
+- `src/PremiumModal/ComicPaywall.jsx` — Props ajoutées (`setConsentOk`, `setPwToast`, `onPassBuy`) pour cohérence
+- `.ai/bugs.md` — BUG-2026-016 + BUG-2026-016b documentés
+- `.ai/changelog.md` — ce bloc
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.89s)
+- [x] `check-bundle-budget.cjs` → 189.7 Ko ≤ 210 Ko ✓
+- [x] `php -l` → OK (mollie.php, mollie-lib.php, mollie-webhook.php, create-checkout.php)
+- [x] `ux-smoke.mjs` → 4 tokens OK (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`)
+- [x] `playwright test tests/e2e/funnel-payment.spec.ts` → 8 passent, 5 échouent (inchangé vs main HEAD sans mon fix — coquille modale `.sg-modal-panel` perdue post-split, sera adressée dans TASK-P1-002)
+
+### Risques / rollback
+- **Risque minimal** : les refs sont créés en interne dans `PremiumModal.jsx`, aucune prop externe n'est attendue depuis `Sargasses_PROD.jsx`. Le comportement est identique à l'ancien `PremiumModal` monolithique.
+- **Rollback** : `git revert HEAD --no-edit` (le fix ne touche ni `dist/`, ni `mollie*.php`, ni logic de paiement backend — juste la plomberie React du paywall).
+- **Régression zéro** : les 5 tests Playwright qui échouent le faisaient déjà avant le fix (vérifié via `git stash`).
+
+### Prochaine action recommandée
+1. **TASK-P1-002 Playwright E2E funnel payant** — restaurer la coquille modale (`.sg-modal-panel`, backdrop, role="dialog") qui a été perdue post-split → 5 tests actuellement failing (pré-existants à ce fix).
+2. **TASK-P2-001 Spliter PremiumModal.jsx** — le fichier source `PremiumModal.jsx` est propre maintenant (176 lignes), mais `Sargasses_PROD.jsx` fait 14813 lignes.
+3. Audit UX post-fix : vérifier en prod que le clic Pass 30j déclenche bien `POST /api/mollie.php action=create_payment` (network tab) au lieu de `create_subscription`.
+
+### Branche / PR
+- Branche : `agent/coding/BUG-2026-016-passctxref-fix`
+- PR : à créer
+- Commit head : à créer
+
+---
+
 ## 2026-08-08 — coding_agent (OpenCode)
 
 **fix: TASK-P2-002 done + agent-handoff.cjs header-format support**

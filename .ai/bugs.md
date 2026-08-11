@@ -3,6 +3,26 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-016 — PassOffer onBuy prop was doSubscribe in WorldPaywall ( regression post-split )
+- **Date** : 2026-08-11 (diag + fix) · **Sévérité** : P0 — bouton d'achat pass 30j cassé
+- **Fichiers** : `src/PremiumModal/WorldPaywall.jsx:304`, `src/PremiumModal.jsx`
+- **Symptôme** : clic "Commencer maintenant →" sur Pass 30j déclenchait `create_subscription` Mollie (abo) au lieu de `create_payment` (pass one-time) → erreur Mollie côté serveur, paiement bloqué.
+- **Reproduction** : ouvrir paywall → cliquer Pass 30j → inspecter réseau : POST `/api/mollie.php` action=`create_subscription` au lieu de `create_payment`.
+- **Cause racine** : après le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`), la `passCtxRef` (refs qui disait à `doSubscribe` "c'est un pass one-time, pas un abo") a été perdue :
+  1. `PremiumModal.jsx` ne créait plus les refs de paiement (`passCtxRef`, `payPlanRef`, `payEmailRef`, etc.), ne les passait plus aux paywalls.
+  2. `WorldPaywall.jsx` câblait `onBuy={doSubscribe}` au lieu d'un wrapper qui remplit `passCtxRef.current` puis appelle `doSubscribe`.
+  3. Donc `doSubscribe` lisait `passCtxRef.current = undefined` → partait sur la branche abonnement (path `_pc` falsy) → `create_subscription` → serveur Mollie répond error car pas de plan abo valide.
+- **Fix** : [x] `PremiumModal.jsx` crée désormais toutes les refs/états de paiement en interne (miroir de l'ancien fichier monolithique ligne ~1739) + bridge `onPassBuy` qui remplit `passCtxRef.current = {pass, cents, days, cur: PAY_CUR}` puis appelle `doSubscribe` (restore comportement pré-split, ancien `onBuy` inline ligne ~2707). `WorldPaywall.jsx` câble `onBuy={onPassBuy}`. `ComicPaywall.jsx` reçoit aussi les props pour cohérence (mais n'a pas de PassOffer monté, juste un bouton narratif).
+- **Tests** : `npm run build` ✓ (3.89s), `check-bundle-budget` ✓ (189.7 Ko ≤ 210 Ko), `php -l` ✓ (mollie.php, mollie-lib.php, mollie-webhook.php, create-checkout.php), `ux-smoke.mjs` ✓ (4 tokens OK). Tests Playwright `tests/e2e/funnel-payment.spec.ts` : 8 passent, 5 échouent — mais les 5 échouent **également sur main HEAD sans mes changements** (coquille modale `.sg-modal-panel` perdue post-split, tâche séparée à adresser TASK-P1-002).
+
+### BUG-2026-016b — Byte NUL `\x00` dans WorldPaywall.jsx cassait le build
+- **Date** : 2026-08-11 · **Sévérité** : P0 — build cassé en local
+- **Fichier** : `src/PremiumModal/WorldPaywall.jsx:373`
+- **Symptôme** : `npm run build` → `esbuild: ERROR: Unexpected "\x00"` à la ligne 373
+- **Reproduction** : lecture des octets du fichier → byte 0x00 à l'offset 14789 (intercalé dans le commentaire `// force full build ...` ajouté manuellement)
+- **Cause racine** : un commentaire `// force full build 2026-08-11 14:46:55Z` a été écrit en UTF-16 LE avec null bytes intercalés, corrompant la fin du fichier.
+- **Fix** : [x] Troncation du fichier à l'offset 14761 (avant le commentaire corrompu) + réécriture propre de `export default WorldPaywall\n`. Diff réel = 2 lignes (export propre + newline final).
+
 ---
 
 ## 🟥 Non résolus

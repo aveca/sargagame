@@ -64,13 +64,28 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // PremiumModal — composant principal exporté
 export default function PremiumModal({
   lang, source, onClose, onActivated,
-  sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh, _passUpdatedAt,
-  passCtxRef, payPlanRef, payEmailRef, payBusy, setPayBusy,
-  payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
-  paySuccess, setPaySuccess, consentFlag, consentOk,
-  elementsRef, stripeRef, setupSecretRef, mollieRef,
-  pwStep, setPayStep, pwToast, pwSocialProof
+  sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh, _passUpdatedAt
 }){
+  // Refs/états de paiement — créés en interne (le split les avait perdus).
+  // Miroir de l'ancien PremiumModal monolithique (ligne ~1739 de l'ancien fichier).
+  const passCtxRef = useRef(null) // {pass,cents,days,cur} si achat d'un PASS, sinon null (abo)
+  const payPlanRef = useRef("pro") // plan d'abonnement courant (non utilisé par pass one-time)
+  const payEmailRef = useRef(null)
+  const payReadyRef = useRef(false)
+  const elementsRef = useRef(null)
+  const stripeRef = useRef(null)
+  const setupSecretRef = useRef(null)
+  const mollieRef = useRef(null)
+  const [payBusy, setPayBusy] = useState(false)
+  const [payError, setPayError] = useState("")
+  const [payRedirecting, setPayRedirecting] = useState(false)
+  const [paySuccess, setPaySuccess] = useState(false)
+  const [payStep, setPayStep] = useState(false)
+  const [consentOk, setConsentOk] = useState(false)
+  const consentFlag = !PAY_CAPTURE_ONLY // consentement requis seulement si paiement réel
+  const [pwToast, setPwToast] = useState(null)
+  const pwSocialProof = null
+
   // Hooks extraits
   const { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput } = usePaymentLogic({
     lang, source, onActivated, onClose,
@@ -93,16 +108,39 @@ export default function PremiumModal({
     purchase, getPlanMeta
   })
 
+  // Bridge PassOffer → doSubscribe : PassOffer.appelle onBuy({c,pass,days,segment})
+  // mais ne connaît pas passCtxRef. On remplit passCtxRef.current ici (restore du
+  // comportement pré-split, ancien PremiumModal.jsx ligne ~2707), puis on appelle
+  // doSubscribe qui lit _pc=passCtxRef.current et déclenche le chemin pass one-time
+  // (action:create_payment) au lieu du chemin abonnement (action:create_subscription).
+  const onPassBuy = useCallback((item)=>{
+    try{track("sg_pass_cta",{pass:item.pass, cents:item.c, source:source||"unknown", onsite:1, method:item.method||"card"})}catch(_){}
+    passCtxRef.current = {
+      pass: item.pass,
+      cents: item.c,
+      days: item.days || (item.pass === "p30" ? 30 : item.pass === "saison" ? 210 : 7),
+      cur: PAY_CUR
+    }
+    if(item.method && item.method !== "card"){
+      // Wallet (Apple Pay / Google Pay)
+      try{payWithWallet(item.method)}catch(_){}
+      return
+    }
+    // Carte on-site → déclenche doSubscribe ( lit passCtxRef.current automatiquement )
+    try{doSubscribe()}catch(_){}
+  },[source, track, payWithWallet, doSubscribe, PAY_CUR])
+
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated,
     sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
-    paySuccess, setPaySuccess, consentFlag, consentOk,
+    paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,
     elementsRef, stripeRef, setupSecretRef, mollieRef,
-    pwStep, setPayStep, pwToast, pwSocialProof,
-    doSubscribe, payWithWallet, walletRedirect, onPayEmailInput
+    pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
+    doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
+    onPassBuy
   }
 
   // Render the appropriate paywall variant
