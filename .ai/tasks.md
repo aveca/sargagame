@@ -14,6 +14,7 @@
 - [x] P1 - B2B recurring Mollie (#210, @coding_agent)
 - [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
 - [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
+- [x] P0 - Redesign funnel UX — BottomNav restaurée, FABs allégés, CTA clarifié (@coding_agent, 2026-08-11)
 
 ---
 

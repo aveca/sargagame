@@ -4,6 +4,68 @@
 
 ---
 
+## 2026-08-11 (2) — coding_agent (OpenCode)
+
+**feat(funnel): redesign UX — BottomNav restaurée + FABs allégés + CTA paywall clarifié**
+
+Plainte fondateur : « je comprends pas ce qu'il faut faire, je suis perdu, j'avance pas dans le funnel, je trouve pas utile, les étapes après la carte ? visite ? xp ? plages ? ».
+
+Diagnostic explore-agent (rapport 8 points : views, funnel canonique, carte→verdict, verdict→paywall, options post-carte, data-testids, verdict screen, dead-ends) :
+- `BottomNav` était **RETIREE** depuis 2026 (`Sargasses_PROD.jsx:14300`) → l'utilisateur n'avait plus de navigation persistante.
+- `view="list"` (Plages) et `view="learn"` (Science) étaient **orphelines** : aucun `setView` ne les appelait. L'utilisateur ne pouvait plus filtrer Plages / Premium depuis la carte.
+- 6 FABs empilés sur la droite (166/220/328/382/436 px) : SargaChat / Discovery / Solutions / Archipel / 10 Postes (+ le bouton Comprendre) → bruit visuel, surtout sur mobile, sans hiérarchie claire.
+- CTA sticky du verdict disait « Activer mon alerte → » (narration « Le Veilleur »), pas « Débloquer 7 jours » / « Premium » → **camouflait le paywall**, l'utilisateur ne savait pas que c'était la porte vers la prévision.
+
+Fix (3 primaries + 1 secondary) :
+- **BottomNav restaurée** : composant `BottomNav` existant (`Sargasses_PROD.jsx:3028-3114`) remonté. 3 onglets (Carte / Plages / Premium). Handler `onChangeView` route proprement : `setView("map")+showArchipel` / `setView("list")` / `openPremium("bottom_nav")`. Mount gaté `!selectedBeach && !showPremium && !hero && !onboarding` (n'apparaît pas par-dessus une fiche ou un paywall). Rollback `?sgnav=0`.
+- **3 FABs retirés** : Discovery (« Comprendre », was 220px), Solutions (ampoule, was 328px), 10 Postes (sonde, was 436px). L'entrée Discovery/Solutions/Verticals passe par le menu clic-droit « Le Veilleur » sur desktop, et SargaChat sur mobile. Overlays restent montables via `?discover=1`/`?solutions=1`/`?verticals=1`. Restent : SargaChat (96px, was 166px) + Archipel (150px, was 382px) = 2 FABs en pile claire.
+- **CTA paywall clarifié** : « Débloquer 7 jours → » pour non-premium (intent = prévisions) au lieu de « Activer mon alerte → ». Pour premium, label reste « Mes alertes »/« Voir mes alertes » (la porte convertie = l'usage). Appliqué dans `BeachSheet.jsx:235`, `Sargasses_PROD.jsx:4508` (BeachSheetComic), `WeekHub.jsx:592`.
+- **Search bar offset** : `bottom` 90px → 128px (`SGNAV_OFF?90:128`) pour ne pas chevaucher la BottomNav restaurée.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` :
+  - L60 : `SGNAV_OFF` flag rollback
+  - ~14193 : Search bar offset
+  - ~14300 : `BottomNav` mount restauré + handler `onChangeView`
+  - ~14476 : FAB SargaChat 166→96px
+  - ~14535 : FAB Archipel 382→150px
+  - ~14491-14553 : 3 FABs retirés (prédicat `false` au lieu de bouton)
+  - L4508 : `ctaLabel` BeachSheetComic clarifié
+- `src/BeachSheet.jsx:235` : `ctaLabel` clarifié
+- `src/WeekHub.jsx:592` : CTA inline clarifié
+- `.ai/current_state.md` : bloc 2026-08-11 21:10 UTC coding_agent
+- `.ai/changelog.md` : ce bloc
+- `.ai/tasks.md` : entrée redesign funnel ajoutée
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.69s)
+- [x] `check-bundle-budget.cjs` → 190.4 Ko ≤ 210 Ko gzip ✓ (BottomNav inline existant, pas de nouveau chunk)
+- [x] `php -l` → N/A (aucun PHP touché)
+- [x] `ux-smoke.mjs` via `vite preview :4173` → 4 tokens OK :
+  - `FUNNEL_REACHED=map+fiche+paywall`
+  - `ERRORS=[]`
+  - `WHITE_OR_TRANSPARENT_BUTTONS=[]`
+  - `RM_INFINITE=[]`
+
+### Risques / rollback
+- **Risque minimal** : BottomNav est un composant EXISTANT (pas ré-écrit) ; `view="list"` rendait déjà inline (`Sargasses_PROD.jsx:13847`) — il était simplement inaccessible. Aucun nouveau state, aucune nouvelle dépendance, juste une nouvelle fonction `openPremium("bottom_nav")` appel.
+- **Rollback global** : `?sgnav=0` cache la barre + restore l'ancien offset de search bar (90px).
+- **Rollback FABs** : manuel (revert hunks 14491, 14527, 14552).
+- **Rollback CTA label** : manuel (revert 3 hunks `ctaLabel`).
+- **Régression zéro** : aucune prop, aucun destructuring, aucun hook n'a été touché. Le changement est purement cosmétique + accessibilité navigationnelle.
+
+### Prochaine action recommandée
+1. **Vérifier en prod** post-deploy : ouvrir l'app fraîche sur mobile → vérifier BottomNav visible (3 onglets), carte sans 4 FABs superflus, tape une plage → sticky button « Débloquer 7 jours → ».
+2. **TEST-P1-002 Playwright E2E funnel payant** : ajouter un test Carte → Plages (onglet BottomNav) → Premium (onglet BottomNav) pour valider la navigation restaurée.
+3. **Analytics** : suivre nouveau event `sg_nav_tab` (tab=map/list/premium) vs `sg_premium_modal_open` (source=bottom_nav) vs sources legacy (beach_sheet, comic_map, etc.) → mesurer si la BottomNav cannibalise les sources existantes ou si elle apporte de nouveaux opens.
+
+### Branche / PR
+- Branche : `main` (priorité fondateur — deploy auto)
+- PR : N/A
+- Commit head : à pousser (`feat(funnel): redesign UX — BottomNav + FABs + CTA`)
+
+---
+
 ## 2026-08-11 — coding_agent (OpenCode)
 
 **fix(payment): BUG-2026-016 PassOffer passCtxRef perdu post-split + byte NUL WorldPaywall.jsx**

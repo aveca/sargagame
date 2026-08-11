@@ -57,6 +57,7 @@ const DemoReel=lazyWithRetry(()=>import("./DemoReel.jsx"))
 // actions branchées in-app. Rollback ?verticals=0 → cache l'entrée + l'overlay.
 const LazyVerticalesMap=lazyWithRetry(()=>import("./VerticalesMap.jsx"))
 const VERTICALES_OFF=(()=>{try{return /[?&]verticals=0/.test(window.location.search)}catch(_){return false}})()
+const SGNAV_OFF=(()=>{try{return /[?&]sgnav=0/.test(window.location.search)}catch(_){return false}})()
 // LE BRIEF DU MATIN — payload premium tangible (proto-veilleur-brief-matin porté). Lazy (chunk propre,
 // hors budget eager). Surface d'atterrissage (push/PWA/email) via deep-link ?brief=1 ; rollback ?brief=0.
 const LazyBriefMatin=lazyWithRetry(()=>import("./BriefMatin.jsx"))
@@ -4503,8 +4504,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   }
 
   // CTA — region-aware social proof (chiffres modestes & réels)
+  // Clarté funnel (redesign 2026-08-11) : « Débloquer 7 jours » pour non-premium
+  // (intent = prévisions) au lieu de « Activer mon alerte » qui camouflait le paywall.
   const socialN=200
-  const ctaLabel=isPremium?_t(lang,"Voir mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
+  const ctaLabel=isPremium?_t(lang,"Voir mes alertes","My alerts","Mis alertas"):_t(lang,"Débloquer 7 jours","Unlock 7 days","Desbloquear 7 días")
   // Premium : « Voir mes alertes » ne fait plus SEULEMENT fermer (promesse morte —
   // grief fondateur 2026-07-02) : il garantit d'abord permission push + nudge install
   // (onEnsureAlerts → ensurePushAlerts, no-op si ?alertpush=0), puis ferme.
@@ -14190,7 +14193,7 @@ useEffect(()=>{
         {view==="map"&&(
           <div style={{
             position:"absolute",left:0,right:0,zIndex:700,
-            bottom:"calc(90px + max(12px, env(safe-area-inset-bottom,0px)) + 8px)",
+            bottom:`calc(${SGNAV_OFF?90:128}px + max(12px, env(safe-area-inset-bottom,0px)) + 8px)`,
             padding:"0 16px",
             pointerEvents:"none",
             maxHeight:"calc(100vh - 140px)",
@@ -14297,11 +14300,27 @@ useEffect(()=>{
         {/* LEARN VIEW — educational tunnel */}
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
 
-        {/* BOTTOM NAV RETIRÉE (décision fondateur) — la barre Carte/Liste/Premium
-            faisait doublon avec le dock carte (Près de moi/Toutes/Veilleur) et alourdissait
-            le chargement. Navigation = carte (cœur produit) ; Premium reste accessible via
-            le dock « Veilleur », les CTA des fiches, les locks prévision. La vue Liste n'est
-            plus montée (économie de rendu). */}
+        {/* BOTTOM NAV RESTAURÉE (redesign funnel 2026-08-11) — la barre Carte/Plages/Premium
+            est le seul moyen persistant pour l'utilisateur de savoir où il est et où aller.
+            Sans elle, l'utilisateur était perdu après la carte (plainte fondateur : « je
+            comprends pas ce qu'il faut faire, je suis perdu »). On garde le composant
+            existant (BottomNav) + un handler onChangeView qui route les 3 vues proprement.
+            Rollback ?sgnav=0. La vue Liste est remontée (économie de rendu levée — la
+            clarté du funnel prime sur ~5 Ko de bundle lazy). */}
+        {!SGNAV_OFF&&view!=="learn"&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&!showOnboarding&&(
+          <BottomNav view={view==="list"?"list":"map"} lang={lang} premiumOpen={showPremium}
+            isPremium={isPremium} onChangeView={(id)=>{
+              if(id==="map"){setSelectedBeach(null);setComicBeach(null);setView("map");
+                setShowArchipel(true);setShowDiscovery(false);setShowSolutions(false);
+                setShowWorld(false);setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                track("sg_nav_tab",{tab:"map"})}
+              else if(id==="list"){setSelectedBeach(null);setComicBeach(null);setView("list");
+                setShowArchipel(false);setShowDiscovery(false);setShowSolutions(false);
+                setShowWorld(false);setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                track("sg_nav_tab",{tab:"list"})}
+              else if(id==="premium"){openPremium("bottom_nav");track("sg_nav_tab",{tab:"premium"})}
+            }}/>
+        )}
 
         {/* BOTTOM SHEET (beach detail) — refonte « Comic Pop » verdict-first (2026-06-21).
             Remplace l'ancien split BeachSheet/BeachDive : une seule fiche, cohérente
@@ -14456,7 +14475,7 @@ useEffect(()=>{
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(166px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:"calc(96px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
@@ -14475,21 +14494,16 @@ useEffect(()=>{
         {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
 
-        {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
+        {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay.
+            FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : le droit d'entrée aux
+            stories éducatives passe par le menu clic-droit « Le Veilleur » sur
+            desktop et le chat SargaChat sur mobile. La carte restait encombrée
+            par 6 FABs empilés → source de confusion (« je comprends pas ce qu'il
+            faut faire »). Maintenant : BottomNav (3 onglets clairs) + 2 FABs
+            seulement (Assistant + Archipel). L'overlay Discovery reste montable
+            via ?discover=1 ou setView("learn") ultérieur. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
-            className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
-              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-            {/* Comprendre = œil dans l'espace (orbite) — plus de 🛰️ OS */}
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <ellipse cx="12" cy="12" rx="10" ry="4.6" stroke="#1EC8B0" strokeWidth="1.7" transform="rotate(-28 12 12)"/>
-              <circle cx="12" cy="12" r="4" fill="none" stroke="#FDFCF7" strokeWidth="1.8"/>
-              <circle cx="12" cy="12" r="1.7" fill="#FFC72C"/>
-            </svg>
-          </button>
+          false
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
 
@@ -14506,20 +14520,12 @@ useEffect(()=>{
             }}/></Suspense></ErrBound>
         )}
 
-        {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
+        {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable.
+            FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : entrée passe par le menu
+            clic-droit « Le Veilleur » sur desktop, et le chat SargaChat sur mobile.
+            Overlay reste montable via ?solutions=1. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
-          <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
-            className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(328px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
-              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-            {/* Solutions = ampoule (idée/agir) — plus de 💡 OS */}
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3a6 6 0 0 0-3.6 10.8c.6.45.9 1 .9 1.7V16h5.4v-.5c0-.7.3-1.25.9-1.7A6 6 0 0 0 12 3z" stroke="#1EC8B0" strokeWidth="1.7" fill="none" strokeLinejoin="round"/>
-              <path d="M9.6 18.5h4.8M10.4 21h3.2" stroke="#FFC72C" strokeWidth="1.7" strokeLinecap="round"/>
-            </svg>
-          </button>
+          false
         )}
         {showSolutions&&<ErrBound><Suspense fallback={null}><SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
           onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/></Suspense></ErrBound>}
@@ -14528,7 +14534,7 @@ useEffect(()=>{
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(382px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:"calc(150px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
@@ -14541,24 +14547,12 @@ useEffect(()=>{
         )}
 
         {/* LES 10 POSTES — « Jusqu'où on descend » (10 verticales/marchés, 3 registres
-            d'honnêteté). Entrée sur la carte ; ouvre l'overlay lazy VerticalesMap.
-            Rollback ?verticals=0 → VERTICALES_OFF cache l'entrée + l'overlay. */}
+            d'honnêteté). FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : entrée passe
+            par le menu clic-droit « Le Veilleur » sur desktop, le chat SargaChat sur
+            mobile, et le lien /pro/ sur B2B. Overlay reste montable via ?verticals=1.
+            Rollback ?verticals=0 → VERTICALES_OFF cache l'overlay. */}
         {!VERTICALES_OFF&&!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showVerticals&&!selectedBeach&&view==="map"&&(
-          <button onClick={()=>setShowVerticals(true)} aria-label={_t(lang,"Jusqu'où on descend — nos 10 postes","How deep we go — our 10 posts","Hasta dónde bajamos — nuestros 10 puestos")}
-            className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(436px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
-              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-            {/* 10 postes = descente : sonde + paliers (or=surface/live → teal=profond) */}
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <line x1="12" y1="3" x2="12" y2="19" stroke="#FDFCF7" strokeWidth="1.3" strokeOpacity=".7"/>
-              <path d="M6 6.5h12" stroke="#FFC72C" strokeWidth="2.1" strokeLinecap="round"/>
-              <path d="M7 11h10" stroke="#1EC8B0" strokeWidth="1.9" strokeLinecap="round"/>
-              <path d="M8.5 15.5h7" stroke="#1EC8B0" strokeWidth="1.6" strokeLinecap="round" strokeOpacity=".65"/>
-              <circle cx="12" cy="19.6" r="2.1" fill="#FFC72C" stroke="#FDFCF7" strokeWidth="1.1"/>
-            </svg>
-          </button>
+          false
         )}
         {showVerticals&&<ErrBound><Suspense fallback={null}><LazyVerticalesMap lang={lang} track={track}
           onClose={()=>setShowVerticals(false)}

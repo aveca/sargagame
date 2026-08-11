@@ -231,8 +231,11 @@ export default function BeachSheet({
 
   const fave=favorites&&favorites.includes(beach?.id)
 
-  // CTA
-  const ctaLabel=isPremium?_t(lang,"Mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
+  // CTA — clair pour l'utilisateur non-premium : "Débloquer 7 jours" (intent = prévisions),
+  // narratif pour premium : "Mes alertes" (la porte convertie devient l'usage).
+  // Avant : "Activer mon alerte" pour tous → camouflait le paywall (plainte fondateur
+  // 2026-08-11 : « je comprends pas ce qu'il faut faire, je suis perdu »).
+  const ctaLabel=isPremium?_t(lang,"Mes alertes","My alerts","Mis alertas"):_t(lang,"Débloquer 7 jours","Unlock 7 days","Desbloquear 7 días")
   const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach?.id,status,premium:!!isPremium});if(isPremium){try{onEnsureAlerts&&onEnsureAlerts()}catch(_){};onClose&&onClose()}else{onPremiumClick&&onPremiumClick("beach_sheet")}}
 
   const requestClose=()=>{

@@ -4,6 +4,63 @@
 
 ---
 
+## 2026-08-11 21:10 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : Redesign funnel — BottomNav restaurée (Carte/Plages/Premium), FABs allégés (3 retirés), CTA paywall clarifié (« Débloquer 7 jours » au lieu de « Activer mon alerte »).
+- **Détails** :
+  - Plainte fondateur : « je comprends pas ce qu'il faut faire, je suis perdu, j'avance pas dans le funnel, je trouve pas utile, les étapes après la carte ? ».
+  - Diagnostic explore-agent : `BottomNav` était RETIRÉE depuis 2026 (commentaire `Sargasses_PROD.jsx:14300`), laissant l'utilisateur sans navigation persistante. Les vues `view="list"` et `view="learn"` étaient orphelines (aucun `setView` ne les appelait). 6 FABs empilés sur la droite (166/220/328/382/436 px) créeient du bruit visuel. Le CTA sticky du verdict disait « Activer mon alerte → » — label narratif qui camouflait le paywall.
+  - Fix 1 : `BottomNav` (composant existant `Sargasses_PROD.jsx:3028-3114`) restauré. Mount conditionné par `!SGNAV_OFF && view !== "learn" && view !== "premium" && !overlays`. Handler `onChangeView` route Carte (setView map + showArchipel), Plages (setView list), Premium (openPremium("bottom_nav")). Rollback `?sgnav=0`.
+  - Fix 2 : 3 FABs retirés — Discovery (Comprendre les sargasses, was 220px), Solutions (ampoule, was 328px), Les 10 Postes (sonde, was 436px). L'entrée Discovery/Solutions/Verticals passe par le menu clic-droit « Le Veilleur » sur desktop, et SargaChat sur mobile. Overlays restent montables via `?discover=1`/`?solutions=1`/`?verticals=1`. Restent sur la carte : SargaChat (96px, abaissé de 166px) + Archipel (150px, abaissé de 382px) = 2 FABs en pile claire.
+  - Fix 3 : CTA paywall renommé « Débloquer 7 jours » pour non-premium (intent = prévisions) dans `BeachSheet.jsx`, `Sargasses_PROD.jsx:4508` (BeachSheetComic), `WeekHub.jsx:592`. Pour premium, le label reste « Mes alertes » / « Voir mes alertes » (la porte convertie devient l'usage). Enlève le camouflage du paywall (la nut cuancer n'avait pas l'intent « acheter un pass » mais « voir la prévision »).
+  - Fix 4 : barre de recherche carte `bottom` ajustée de 90px → 128px (`SGNAV_OFF?90:128`) pour éviter le chevauchement avec la BottomNav restaurée.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` (lignes ~60, ~14200, ~14300, ~14457, ~14476, ~14535, ~14552, ~14553, ~14585, ~14586) :
+  - `SGNAV_OFF` flag rollback (id `?sgnav=0`)
+  - `BottomNav` mount restauré + handler `onChangeView`
+  - Predicate `false` au lieu de bouton sur 3 FABs (Discovery, Solutions, 10 Postes)
+  - FAB SargaChat 166px → 96px, FAB Archipel 382px → 150px
+  - Search bar offset `bottom` agrandi pour BottomNav
+  - `ctaLabel` BeachSheetComic : « Activer mon alerte » → « Débloquer 7 jours »
+- `src/BeachSheet.jsx:235` — `ctaLabel` : « Activer mon alerte » → « Débloquer 7 jours » (non-premium only)
+- `src/WeekHub.jsx:592` — CTA inline : « Activer mon alerte » → « Débloquer 7 jours »
+- `.ai/current_state.md` — ce bloc
+- `.ai/changelog.md` — entrée 2026-08-11 coding_agent redesign funnel
+- `.ai/tasks.md` — entrée redesign funnel ajoutée
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.69s)
+- [x] `check-bundle-budget.cjs` → 190.4 Ko ≤ 210 Ko ✓
+- [x] `php -l` → N/A (aucun PHP touché)
+- [x] `ux-smoke.mjs` via `vite preview :4173` → 4 tokens OK :
+  - `FUNNEL_REACHED=map+fiche+paywall`
+  - `ERRORS=[]`
+  - `WHITE_OR_TRANSPARENT_BUTTONS=[]`
+  - `RM_INFINITE=[]`
+
+### Risques / rollback
+- **Risque minimal** : BottomNav est un composant existant (terne pas réécrit) et `view="list"` rendait déjà inline (juste inaccessible — la connexion était absente). Aucun nouveau state, aucune nouvelle dépendance.
+- **Rollback global** : `?sgnav=0` cache la barre du bas et restore l'ancien bottom offset de la search bar (90px). Pour rollback sélectif FABs : manuellement (revert hunk 14552-14585).
+- **Bundle** : +3.1 Ko (la BottomNav est INLINE dans Sargasses_PROD.jsx, pas lazy — était déjà le cas avant son retrait). 190.4 Ko ≤ 210 Ko, sous budget.
+- **Funnel** : aucun changement au paywall logic, juste clarté d'étiquette. `openPremium` reste l'unique porte conversion, exactement le même appel.
+
+### Problèmes restants
+- [ ] Aucun bug fonctionnel introduit. Suggestion long-terme : scinder `Sargasses_PROD.jsx` (14 805 lignes) en chunks lazy pour soulager le parse eager (TASK-P2-001 existant, reformulé sous TASK-P3).
+
+### Prochaine action recommandée
+1. **Verifier en prod** post-deploy : sur mobile, ouvrir l'app fraîche → vérifier la BottomNav visible (3 onglets), la carte sans 4 FABs superflus, tape une plage → vérifier que le sticky bottom button dit « Débloquer 7 jours → ».
+2. **TASK-P1-002 Playwright E2E funnel payant** — avec BottomNav restaurée, ajouter un test de navigation Carte → Plages → Premium.
+3. Écoute analytics : comparaison `sg_nav_tab` (nouveau) vs `sg_premium_modal_open` source=bottom_nav vs les anciens sources (beach_sheet, comic_map, etc.).
+
+### Branche / PR
+- Branche : `main` (works direct — priorité fondateur)
+- PR : N/A (push direct main)
+- Commit head : à pousser
+
+---
+
 ## 2026-08-08 23:50 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

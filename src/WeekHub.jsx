@@ -589,7 +589,7 @@ export default function WeekHub({
                   "Sois prévenu la veille du jour où ta plage bascule — deviens celui qui ne se trompe jamais de crique.",
                   "Get warned the day before your beach turns — be the one who never picks the wrong cove.",
                   "Recibe el aviso la víspera del día en que tu playa cambia — sé quien nunca se equivoca de cala.")}</span>
-                <span style={{display:"inline-block", marginTop:8, font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"7px 12px", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Activer mon alerte","Turn on my alert","Activar mi aviso")} →</span>
+                <span style={{display:"inline-block", marginTop:8, font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:999, padding:"7px 12px", boxShadow:`2px 2px 0 ${INK}`}}>{_t(lang,"Débloquer 7 jours","Unlock 7 days","Desbloquear 7 días")} →</span>
               </span>
             </button>
           )}
