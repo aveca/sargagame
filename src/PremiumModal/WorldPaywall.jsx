@@ -57,6 +57,7 @@ export function WorldPaywall({
   setPaySuccess,
   consentFlag,
   consentOk,
+  setConsentOk,
   elementsRef,
   stripeRef,
   setupSecretRef,
@@ -64,11 +65,13 @@ export function WorldPaywall({
   pwStep,
   setPayStep,
   pwToast,
+  setPwToast,
   pwSocialProof,
   doSubscribe,
   payWithWallet,
   walletRedirect,
-  onPayEmailInput
+  onPayEmailInput,
+  onPassBuy
 }) {
   const stats = WORLD_STATS[lang] || WORLD_STATS.fr
   const regions = REGION_LABELS
@@ -301,7 +304,7 @@ export function WorldPaywall({
             stripeRef={stripeRef}
             setupSecretRef={setupSecretRef}
             mollieRef={mollieRef}
-            onBuy={doSubscribe}
+            onBuy={onPassBuy}
             payWithWallet={payWithWallet}
             walletRedirect={walletRedirect}
             onPayEmailInput={onPayEmailInput}
@@ -370,5 +373,5 @@ export function WorldPaywall({
   )
 }
 
-export default WorldPaywall/ /   f o r c e   f u l l   b u i l d   2 0 2 6 - 0 8 - 1 1   1 4 : 4 6 : 5 5 Z  
- 
+export default WorldPaywall
+

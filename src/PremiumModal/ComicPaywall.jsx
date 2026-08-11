@@ -156,6 +156,7 @@ export function ComicPaywall({
   setPaySuccess,
   consentFlag,
   consentOk,
+  setConsentOk,
   elementsRef,
   stripeRef,
   setupSecretRef,
@@ -163,11 +164,13 @@ export function ComicPaywall({
   pwStep,
   setPayStep,
   pwToast,
+  setPwToast,
   pwSocialProof,
   doSubscribe,
   payWithWallet,
   walletRedirect,
-  onPayEmailInput
+  onPayEmailInput,
+  onPassBuy
 }) {
   const [panel, setPanel] = useState(0)
   const [animating, setAnimating] = useState(false)
