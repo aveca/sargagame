@@ -1,49 +1,49 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
-  "updatedAt": "2026-08-10T18:42:02.532Z",
+  "updatedAt": "2026-08-11T00:55:13.966Z",
   "lookbackDays": 12,
   "note": null,
   "beaches": {
     "les-salines": {
-      "fai": -0.00134,
+      "fai": -0.00138,
       "afaiLike": 0.05,
-      "coverage": 0.56,
-      "obsDate": "2026-08-05",
-      "ageDays": 5,
-      "nPixels": 62201
+      "coverage": 0.89,
+      "obsDate": "2026-08-10",
+      "ageDays": 1,
+      "nPixels": 98535
     },
     "sainte-anne": {
-      "fai": -0.00267,
-      "afaiLike": 0.05,
-      "coverage": 0.1,
-      "obsDate": "2026-08-05",
-      "ageDays": 5,
-      "nPixels": 11309
+      "fai": 0.00609,
+      "afaiLike": 0.28,
+      "coverage": 0.24,
+      "obsDate": "2026-08-10",
+      "ageDays": 1,
+      "nPixels": 26573
     },
     "pt-marin": {
       "fai": 0.00457,
       "afaiLike": 0.12,
       "coverage": 0.28,
       "obsDate": "2026-08-02",
-      "ageDays": 8,
+      "ageDays": 9,
       "nPixels": 31144
     },
     "diamant": {
-      "fai": -0.00061,
-      "afaiLike": 0.05,
-      "coverage": 0.65,
-      "obsDate": "2026-08-05",
-      "ageDays": 5,
-      "nPixels": 71822
+      "fai": 0.00169,
+      "afaiLike": 0.12,
+      "coverage": 0.36,
+      "obsDate": "2026-08-10",
+      "ageDays": 1,
+      "nPixels": 39814
     },
     "tartane": {
-      "fai": 0.00034,
-      "afaiLike": 0.12,
-      "coverage": 0.4,
-      "obsDate": "2026-08-05",
-      "ageDays": 5,
-      "nPixels": 44717
+      "fai": 0.00745,
+      "afaiLike": 0.28,
+      "coverage": 0.14,
+      "obsDate": "2026-08-10",
+      "ageDays": 1,
+      "nPixels": 15789
     }
   }
 }

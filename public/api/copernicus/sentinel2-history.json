@@ -132,7 +132,35 @@
       "fai": 0.00034,
       "afaiLike": 0.12,
       "coverage": 0.4
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-08-10",
+      "fai": -0.00138,
+      "afaiLike": 0.05,
+      "coverage": 0.89
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-08-10",
+      "fai": 0.00609,
+      "afaiLike": 0.28,
+      "coverage": 0.24
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-08-10",
+      "fai": 0.00169,
+      "afaiLike": 0.12,
+      "coverage": 0.36
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-10",
+      "fai": 0.00745,
+      "afaiLike": 0.28,
+      "coverage": 0.14
     }
   ],
-  "updatedAt": "2026-08-10T18:42:02.533Z"
+  "updatedAt": "2026-08-11T00:55:13.966Z"
 }
