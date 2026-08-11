@@ -267,8 +267,48 @@
     "auberge-distillerie.fr": {
       "date": "2026-08-07T17:15:57.502Z",
       "status": "no-email"
+    },
+    "tendacayou.com": {
+      "date": "2026-08-11T11:01:56.101Z",
+      "emailHash": "21753d6c29c1a8e9dbc93db7dc9f7d73",
+      "emailDomain": "tendacayou.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "lejardinmalanga.com": {
+      "date": "2026-08-11T11:02:52.102Z",
+      "status": "no-email"
+    },
+    "habitation-grande-anse.com": {
+      "date": "2026-08-11T11:02:54.379Z",
+      "emailHash": "0f2d666cf53a811a584a0c3f23578609",
+      "emailDomain": "gmail.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "karibea-prao.com": {
+      "date": "2026-08-11T11:02:54.500Z",
+      "status": "no-email"
+    },
+    "salako.com": {
+      "date": "2026-08-11T11:02:56.865Z",
+      "status": "no-email"
+    },
+    "bois-joli.com": {
+      "date": "2026-08-11T11:02:57.182Z",
+      "status": "no-email"
+    },
+    "hotel-amaudo.fr": {
+      "date": "2026-08-11T11:02:57.588Z",
+      "status": "no-email"
+    },
+    "cocoyer-beach.com": {
+      "date": "2026-08-11T11:02:58.004Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-08-07T17:15:57.502Z",
-  "totalSent": 12
+  "lastRun": "2026-08-11T11:02:58.004Z",
+  "totalSent": 14
 }

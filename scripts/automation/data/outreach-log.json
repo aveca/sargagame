@@ -475,8 +475,53 @@
       "error": null,
       "url": "https://www.mynews13.com/fl/orlando/news",
       "market": "us"
+    },
+    "spacecoastdaily.com": {
+      "date": "2026-08-11T10:48:58.053Z",
+      "emailHash": "6c89f10db2bdb0be01fa7a2263826a8e",
+      "emailDomain": "spacecoastdaily.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://spacecoastdaily.com/",
+      "market": "us"
+    },
+    "keywestislandnews.com": {
+      "date": "2026-08-11T10:48:59.122Z",
+      "emailHash": "8e820273f6dabfaeccae5798c296857d",
+      "emailDomain": "keywestislandnews.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keywestislandnews.com/",
+      "market": "us"
+    },
+    "theinvadingsea.com": {
+      "date": "2026-08-11T10:49:08.901Z",
+      "emailHash": "8d16765f5714a833db5460b0145580aa",
+      "emailDomain": "fau.edu",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.theinvadingsea.com/",
+      "market": "us"
+    },
+    "keywestpaddle.com": {
+      "date": "2026-08-11T10:49:11.270Z",
+      "emailHash": "657989b16cf5fedc4642aeb2f7d74b0e",
+      "emailDomain": "keywestpaddle.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keywestpaddle.com/blog/",
+      "market": "us"
+    },
+    "everythingplayadelcarmen.com": {
+      "date": "2026-08-11T10:49:12.123Z",
+      "emailHash": "e9900bb33517a1d8147684530de0d5f9",
+      "emailDomain": "everythingplayadelcarmen.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.everythingplayadelcarmen.com/sargassum-forecast/",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-08-07T17:02:46.397Z",
-  "totalSent": 54
+  "lastRun": "2026-08-11T10:49:12.123Z",
+  "totalSent": 59
 }
