@@ -144,7 +144,7 @@
       "id": "sainte-anne",
       "obsDate": "2026-08-10",
       "fai": 0.00609,
-      "afaiLike": 0.28,
+      "afaiLike": 0.12,
       "coverage": 0.24
     },
     {
@@ -158,9 +158,9 @@
       "id": "tartane",
       "obsDate": "2026-08-10",
       "fai": 0.00745,
-      "afaiLike": 0.28,
+      "afaiLike": 0.12,
       "coverage": 0.14
     }
   ],
-  "updatedAt": "2026-08-11T00:55:13.966Z"
+  "updatedAt": "2026-08-11T06:49:26.155Z"
 }
