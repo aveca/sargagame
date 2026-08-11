@@ -1,22 +1,22 @@
 {
   "window_days": 7,
-  "since": "2026-08-04T12:46:22.371Z",
-  "total_rows": 39235,
+  "since": "2026-08-04T18:55:40.427Z",
+  "total_rows": 40916,
   "counts": {
-    "session_start": 13050,
+    "session_start": 13208,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1442,
+    "premium_modal_open": 1505,
     "premium_modal_cta": 0,
-    "pass_cta": 59,
+    "pass_cta": 62,
     "conversion": 0,
     "email_submit": 0,
     "checkout_redirect": 0,
-    "b2b_offer_view": 38,
+    "b2b_offer_view": 41,
     "b2b_step": 19,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 59,
+  "cta_total": 62,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
@@ -25,38 +25,38 @@
     "cta_to_conversion": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "session_start": 2524,
-      "premium_modal_open": 245,
-      "pass_cta": 12,
-      "b2b_offer_view": 5,
-      "b2b_step": 1
-    },
     "GP": {
-      "session_start": 4867,
-      "premium_modal_open": 327,
+      "session_start": 4929,
+      "premium_modal_open": 344,
       "pass_cta": 4,
       "b2b_offer_view": 7
     },
     "MQ": {
-      "session_start": 4343,
-      "premium_modal_open": 697,
-      "pass_cta": 42,
+      "session_start": 4386,
+      "premium_modal_open": 727,
+      "pass_cta": 45,
       "b2b_offer_view": 9,
       "b2b_step": 12
     },
-    "RIVIERAMAYA": {
-      "session_start": 325,
-      "premium_modal_open": 18,
+    "FLORIDA": {
+      "session_start": 2581,
+      "premium_modal_open": 247,
+      "pass_cta": 12,
       "b2b_offer_view": 5,
-      "b2b_step": 2
+      "b2b_step": 1
     },
     "PUNTACANA": {
-      "session_start": 991,
-      "premium_modal_open": 155,
-      "b2b_offer_view": 12,
+      "session_start": 997,
+      "b2b_offer_view": 15,
+      "premium_modal_open": 167,
       "b2b_step": 4,
       "pass_cta": 1
+    },
+    "RIVIERAMAYA": {
+      "session_start": 315,
+      "premium_modal_open": 20,
+      "b2b_offer_view": 5,
+      "b2b_step": 2
     }
   }
 }
