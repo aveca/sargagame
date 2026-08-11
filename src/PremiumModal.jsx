@@ -161,10 +161,59 @@ export default function PremiumModal({
     }
   }
 
+  // Tracking durée d'ouverture du modal (pour analytics close)
+  const modalOpenedAt = useRef(Date.now())
+  useEffect(()=>{ modalOpenedAt.current = Date.now() }, [])
+
   return (
-    <div className="sg-premium-modal" style={{ position: "relative", width: "100%", maxWidth: 440, margin: "0 auto" }}>
-      {renderPaywall()}
-    </div>
+    <>
+      {/* Backdrop sombre — click pour fermer */}
+      <div
+        className="backdrop"
+        onClick={(e)=>{
+          const ts=Math.round((Date.now()-modalOpenedAt.current)/1000)
+          try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts})}catch(_){}
+          // Pass-through : si le clic tombe sur un pin de la carte sous le backdrop, l'ouvrir
+          const x=e.clientX,y=e.clientY
+          onClose()
+          requestAnimationFrame(()=>{try{
+            const el=document.elementFromPoint(x,y)
+            const pin=el&&el.closest&&el.closest(".leaflet-marker-icon")
+            if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))
+          }catch(_){}})
+        }}
+      />
+
+      {/* Panel modale — positionné en bas, scrollable, z-index 1100 */}
+      <div
+        className="sg-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")}
+        style={{
+          position:"fixed", bottom:0, left:0, right:0, zIndex:1100,
+          background:"linear-gradient(145deg,#190c2c,#120821)",
+          borderRadius:"24px 24px 0 0", padding:"28px 24px 20px",
+          color:"#e6edf3", maxHeight:"85vh", overflowX:"hidden", overflowY:"auto",
+        }}
+      >
+        {/* Handle drag indicator */}
+        <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
+        {/* Close X top-right */}
+        <button
+          aria-label={_t(lang,"Fermer","Close","Cerrar")}
+          onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"})}catch(_e){};onClose()}}
+          style={{position:"absolute",top:14,right:14,width:44,height:44,
+            borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"none",
+            color:"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,
+            forcedColorAdjust:"none",zIndex:6,fontFamily:"inherit",
+            display:"flex",alignItems:"center",justifyContent:"center"}}
+        >×</button>
+
+        {/* Contenu du paywall */}
+        {renderPaywall()}
+      </div>
+    </>
   )
 }
 
