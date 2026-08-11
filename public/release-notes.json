@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v218",
+  "current": "v219",
   "releases": [
+    {
+      "v": "v219",
+      "date": "2026-08-11",
+      "title": {
+        "fr": "Paywall restauré + paiements réparés",
+        "en": "Paywall restored + payments fixed",
+        "es": "Paywall restaurado + pagos reparados"
+      },
+      "items": [
+        {
+          "emoji": "💳",
+          "fr": "Bouton Pass 30j réparé — déclenche bien le paiement one-time (create_payment) au lieu de l'abonnement.",
+          "en": "Pass 30-day button fixed — now triggers one-time payment (create_payment) instead of subscription.",
+          "es": "Botón Pass 30 días reparado — activa pago único (create_payment) en lugar de suscripción."
+        },
+        {
+          "emoji": "🖥️",
+          "fr": "Le paywall s'affiche en modal sombre (overlay) au lieu d'être en ligne dans la page.",
+          "en": "Paywall now shows as a dark modal overlay instead of rendering inline on the page.",
+          "es": "El paywall ahora se muestra como modal oscuro superpuesto en vez de en línea en la página."
+        }
+      ]
+    },
     {
       "v": "v218",
       "date": "2026-07-29",
