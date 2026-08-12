@@ -8,7 +8,6 @@
 import React, { useState, useEffect, useMemo } from "react"
 import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
-import { compareRow } from "../Sargasses_PROD.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
 
 const REGION_LABELS = {
