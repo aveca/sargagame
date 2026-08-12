@@ -86,6 +86,22 @@
     <meta property="og:image" content="https://sargasses-martinique.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <!-- A/B test og:image — fallback régional si pas de flag -->
+    <script>
+      (function(){
+        var u = location.search; var og = u.match(/[?&]og=([01])/);
+        if (!og) return; // garde l'image existante
+        var isOn = og[1] === '1';
+        var el = document.querySelector('meta[property="og:image"]');
+        if (!el) return;
+        if (isOn) {
+          // endpoint serverless (à déployer séparément) — ici on pointe vers le fallback pour le demo
+          el.setAttribute('content', 'https://sargasses-martinique.com/og-image-pilote.png');
+        } else {
+          el.setAttribute('content', 'https://sargasses-martinique.com/og-image.png');
+        }
+      })();
+    </script>
     <meta property="og:image:alt" content="Score 0-100 par plage en Martinique - sargasses, houle, vent, soleil, eau" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Plages Martinique aujourd'hui — Score 0-100 par plage (2026)" />
