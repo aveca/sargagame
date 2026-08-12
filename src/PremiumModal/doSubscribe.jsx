@@ -3,6 +3,7 @@
 import {useCallback,useRef} from "react"
 import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "../ga4-ecommerce.js"
 import * as SG from "../Sargasses_PROD.jsx"
+import relHref from "../lib/relHref.js"
 
 const {
   C, COMIC, IS_NEW_REGION, REGION, REGION_PAY,
@@ -17,9 +18,6 @@ const {
   miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy,
   sgToast, sgVerifySub, submitLead, track, walletAvail
 } = SG
-
-// Route de la page « fiabilité » selon région/langue
-const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
 
 /**
  * Hook principal de paiement — encapsule toute la logique doSubscribe
@@ -348,4 +346,4 @@ export function usePaymentLogic({
   return { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput }
 }
 
-export { _relHref }
+export { relHref as _relHref }

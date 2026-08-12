@@ -116,18 +116,16 @@ try {
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
         if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
 
-        // ── Redirect 3DS : retour sur la page principale avec ?mollie_return=1 ──
-        // On n'inclut pas le paymentId ici car il est généré par Mollie
-        // (payment->id n'existe pas encore). Le handler utilise le sessionStorage
-        // ou localStorage (sg_email) pour retrouver le contexte. Sur iOS Safari
-        // où sessionStorage est effacé, le fallback email vérifie via sgVerifySub.
+        // ── Redirect : page statique /payment/good.html avec params ──────────
+        // Le paymentId n'existe pas encore à ce stade. Le webhook confirme.
+        $kind = $pass ? 'pass' : 'pro'; // p30/trip7/season → pass, B2B annual → pro
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         // Validate HTTP_HOST against known domains to prevent Host header injection
         $allowedHosts = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
         $rawHost = $_SERVER['HTTP_HOST'] ?? '';
         $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
         $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
-        $redirectUrl = $userRedirect ?? "$scheme://$host/?mollie_return=1";
+        $redirectUrl = $userRedirect ?? "$scheme://$host/payment/good.html?kind=$kind&email=" . urlencode($email) . "&plan=" . urlencode($pass ?: 'annual');
         $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php"; // Always server-controlled
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────

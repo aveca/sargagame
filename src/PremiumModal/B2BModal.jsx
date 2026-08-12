@@ -2,6 +2,8 @@ import React,{useState,useEffect,useRef,useCallback} from "react"
 import {SeqDots} from "../SeqPrimitives.jsx"
 import * as SG from "../Sargasses_PROD.jsx"
 import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "../ga4-ecommerce.js"
+import useModalA11y from "../hooks/useModalA11y.js"
+import relHref from "../lib/relHref.js"
 
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, IS_NEW_REGION, REGION,
@@ -9,32 +11,6 @@ const {
   sgToast, submitLead, miVeil, moodFromStatus
 } = SG
 
-// Route de la page « fiabilité » selon région/langue
-const _relHref=(l)=>IS_NEW_REGION?(l==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"
-
-// useModalA11y — plancher a11y des modales du chemin de l'argent
-function useModalA11y(panelRef,onClose,escClose=true){
-  useEffect(()=>{
-    const panel=panelRef.current
-    const prevFocus=(typeof document!=="undefined"&&document.activeElement)||null
-    const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-    const focusables=()=>panel?Array.prototype.filter.call(panel.querySelectorAll(SEL),el=>el.offsetParent!==null||el===document.activeElement):[]
-    try{if(panel&&!panel.contains(document.activeElement)){const f=focusables();(f[0]||panel).focus&&(f[0]||panel).focus()}}catch(_){}
-    const onKey=e=>{
-      const inOther=(()=>{try{const t=e.target;const d=t&&t.closest&&t.closest('[role="dialog"][aria-modal="true"]');return d&&panel&&d!==panel&&!panel.contains(d)}catch(_){return false}})()
-      if(e.key==="Escape"){if(escClose&&!inOther){e.stopPropagation();onClose&&onClose()}return}
-      if(e.key!=="Tab"||!panel||inOther)return
-      const f=focusables();if(!f.length){e.preventDefault();return}
-      const first=f[0],last=f[f.length-1],a=document.activeElement
-      if(e.shiftKey&&(a===first||!panel.contains(a))){e.preventDefault();last.focus()}
-      else if(!e.shiftKey&&a===last){e.preventDefault();first.focus()}
-    }
-    document.addEventListener("keydown",onKey,true)
-    return()=>{document.removeEventListener("keydown",onKey,true)
-      try{prevFocus&&prevFocus.focus&&prevFocus.focus()}catch(_){}}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
-}
 
 // TerritoireMeeting — demande de devis B2B (mairies/offices/groupes hôteliers)
 function TerritoireMeeting({lang,email,org}){

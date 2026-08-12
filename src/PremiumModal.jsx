@@ -15,11 +15,12 @@ import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "./ga4-ecomme
 
 // Import des modules extraits
 import { usePaymentLogic, _relHref } from "./PremiumModal/doSubscribe.jsx"
-import { usePayGateway, WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
+import { WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
 import { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 import { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
 import { WorldPaywall } from "./PremiumModal/WorldPaywall.jsx"
 import { ComicPaywall } from "./PremiumModal/ComicPaywall.jsx"
+import useMediaQuery from "./hooks/useMediaQuery.js"
 
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -31,19 +32,6 @@ const {
   track, walletAvail
 } = SG
 
-// Simple media query hook (no deps)
-function useMediaQuery(query){
-  const [matches, setMatches] = useState(false)
-  useEffect(()=>{
-    if(typeof window==="undefined") return
-    const mq = window.matchMedia(query)
-    setMatches(mq.matches)
-    const handler = (e)=>setMatches(e.matches)
-    mq.addEventListener?.("change", handler)
-    return ()=>mq.removeEventListener?.("change", handler)
-  },[query])
-  return matches
-}
 
 // CompareRow for Gratuit vs Premium table
 const CompareRow=({label,free,pro})=>(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",alignItems:"center",borderTop:"1px solid rgba(255,255,255,.04)",padding:"7px 4px",gap:4}}>
@@ -98,14 +86,6 @@ export default function PremiumModal({
     PAY_PROVIDER, PAY_CAPTURE_ONLY, PAY_CUR,
     _t, track, submitLead, sgReferredBy, sgMyReferralCode,
     walletAvail, purchase, getPlanMeta
-  })
-
-  const { walletRedirect: gwWalletRedirect, payWithWallet: gwPayWithWallet } = usePayGateway({
-    lang, source, onActivated, onClose,
-    passCtxRef, payPlanRef, payEmailRef,
-    setPayError, setPayBusy, setPaySuccess, setPayRedirecting,
-    _t, track, submitLead, sgReferredBy, sgMyReferralCode,
-    purchase, getPlanMeta
   })
 
   // Bridge PassOffer → doSubscribe : PassOffer.appelle onBuy({c,pass,days,segment})
@@ -221,5 +201,5 @@ export default function PremiumModal({
 export { PassOffer, SeqDots, PremiumModalSkeleton, CompareRow }
 export { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 export { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
-export { usePayGateway, WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
+export { WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
 export { usePaymentLogic, _relHref } from "./PremiumModal/doSubscribe.jsx"
