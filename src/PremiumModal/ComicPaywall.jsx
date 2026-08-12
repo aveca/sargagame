@@ -460,6 +460,16 @@ export function ComicPaywall({
           {t("Plus tard","Later","Más tarde")}
         </button>
       </div>}
+      {/* Signature B2C « Le Veilleur » — moat identitaire en pied absolu du paywall comic.
+          Toujours visible (panneau carousel ET offer), jamais un CTA, pose le moat seulement.
+          Bricolage 600 italic 12px opacity .5 (discret, lisible sur #0d1117). */}
+      <p style={{
+        margin: "0 0 12px", textAlign: "center", padding: "0 20px",
+        font: "italic 600 12px/1.4 'Bricolage Grotesque', system-ui, sans-serif",
+        color: "rgba(255,255,255,.5)", letterSpacing: ".01em"
+      }}>
+        {t("Le Veilleur regarde ta plage, pas la peur.", "The Watcher watches your beach — not the fear.", "El Vigía mira tu playa, no el miedo.")}
+      </p>
     </div>
   )
 }
