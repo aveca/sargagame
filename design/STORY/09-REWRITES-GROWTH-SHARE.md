@@ -126,3 +126,88 @@ _⚙️ Changements code/structure :_
   - CARD OVERFLOW CHECK: verify the line-151 verdict tspan ('mesuré au satellite, pas deviné') does not overflow 1080px at font-size 30 via the existing --preview=avoid render; if it clips, use the shorter fallback in that rewrite. Caption strings (FB text) have no width constraint and need no check.
   - DAILY-RITUAL WIRING: to make this an actual daily ritual post (surface role), schedule gen-verdict-veilleur.cjs in the daily-copernicus workflow alongside the other share-card generators so a verdict is queued every morning (it already writes verdict-queue.json + anti-spam verdict-sent.json). Scheduling/wiring only, no copy — and stays behind DEPLOY_LOCKED until referral ships.
 
+---
+
+## Spec — OpenGraph card par plage ( Artefact 2, Prompt 07 Univers & Motion )
+
+> Source : Prompt 07 — Univers & Motion, Artefact 2. Axe **display + SEO** (rétention
+> secondaire). Cette section documente l'**intention design** + l'**architecture de
+> génération** à build-time. Est **additif** au moteur SEO existant (vite + regions),
+> **jamais** touché au runtime bundle.
+
+### Pourquoi
+
+136 pages plages existent en SEO mais partagent actuellement une seule OG card régionale.
+Problème : snippets WhatsApp / FB / iMessage affichent une image générique, pas « ta plage ».
+CTR de partage en conséquence = faible. Une OG card **par plage** = diffusion qui parle
+vraiment au destinataire (« Les Salines — alerte ce matin »), pas une approximation.
+
+###quoi changer
+
+- **CTR+++ sur share** : WhatsApp preview avec ta plage + ton verdict = pattern-break,
+  « c'est pour moi » en 0.5s
+- **CTR+++ sur SERP** : snippet Google enrichi `og:image` pertinent = attention sur la
+  page de résultats (les pages concurrentes affichent une photo stock)
+- **moat réaffirmé** : « ta plage, ta date » (B2C narrative principle) réalisé **dans l'image
+  elle-même**, pas seulement dans le copy
+
+### Spec design (langage, pas code)
+
+- **Ratio** 1200×630 (OG standard), safe-area centrale 1000×500 (texte protégé des
+  rounded WhatsApp/FB)
+- **Fond** : radial golden-hour (`SCENE_TOKENS` `#0B2230`→`#155A5A`→`#C97E3A`→`#F2B05E`)
+- **Composants** :
+  - **Haut gauche** : silhouette compacte satellite (Le Veilleur), faisceau vers la **mer**
+    en bas droite (jamais vers le spectateur) — 16% surface max, opacité 0.85
+  - **Centre** : nom plage en Anton MAJ `clamp(56→72px)` blanc, letter-spacing -0.02em,
+    1 seul accent or/écran = aucun autre élément or sauf hilights minimaux
+  - **Sous le titre** : statut dot trio **couleur + forme SVG + mot** (vert ✓ / ambre ◐ /
+    corail ✕) en Bricolage Grotesque 800 32px (Bible v1 R3 : jamais or sur statut)
+  - **Bas gauche** : `<territoire> · saison` (ex. `Martinique · saison calme`) en
+    Bricolage 600 22px mid `#5A5A5A`
+  - **Bas droit** : datage en JetBrains Mono 22px : `verdict mar. 12 août · 06h`
+    (fenêtre datée → claim hedgé bible)
+  - **Pied CTA** : `sargasses-{{territoire}}.com/{{slug}}` en Bricolage 600 20px
+    `#EAF7F4`, watermark icône Le Veilleur à gauche
+- **Interdits** : zéro image IA, zéro ref Disney/HP/Marvel, zéro photo hors repo, pas
+  plus de 4 couleurs à l'écran (golden-hour compte comme 4), pas de schéma « trop plein »
+  (le tableau est lisible à 1200×630, toujours)
+- **i18n** : 1 OG card par (slug × langue) si url `/es/plages/...` ou `/en/plages/...`.
+  FR → exact, EN/ES → traductions structurelles du territoire + verdict + saison.
+
+### Architecture de génération (build-time, pas de runtime)
+
+- **Pas de `og-image.png` par plage dans `dist/`** : 136 × 3 langues = 408 images
+  statiques = +5–8 Mo de déploiement (too heavy). À la place, **1 endpoint serverless**
+  `/api/og/beach/{{slug}}.png?lang={{fr|en|es}}` qui génère à la volée via
+  `satori` + `resvg` (Node), cache Cloudflare/CDN 30 jours
+- **Fallback** : si l'endpoint timeout, `og-image.png` régional existant (déjà en place
+  dans `index.html`)
+- **Schema.org** : ajouter `ImageObject` sur chaque fiche plage (pageShell déjà générative)
+  avec `url`, `caption` (« Verdict du {{date}} pour {{plage}} — {{status}} »),
+  `contentUrl` = endpoint
+- **A/B** : flag `?og=1/0` sur l'index.html pour router `og:image` vers le nouveau endpoint
+  ou vers le fallback régional. **Control intact**, additif.
+
+### Risques & rollback
+
+- **Endpoint serverless** : si down = fallback régional automatique (meta `og:image` par
+  défaut). Risk zéro production.
+- **Budget bundle** : 0 Ko ajouté au eager (la card est server-side, l'index.html porte
+  juste 1 tag meta). Valider via `check-bundle-budget.cjs` après implémentation.
+- **Bot crawler render** : OG endpoint doit répondre en < 1s (sinon FB/WhatsApp timeout).
+  Cloudflare cache + warmup aux 5 domaines = solution. Mesurer avant referral.
+
+### Programmation (prochaine session dédiée)
+
+1. Spec pure (ce document) — fait
+2. Proto endpoint `/api/og/beach/{{slug}}.png` via `satori` + `resvg` sur branche
+   `agent/coding/TASK-P2-005b-og-cards`
+3. Test 3 plages pilotes (Les Salines MQ, Sainte-Anne GP, Miami Beach FL)
+4. Si OK (3 cards générées < 1s chacune), brancher `og:image` dans pageShell + flag `?og=1/0`
+5. Gate de ship complet (build + bundle + smoke) : à la quirorie, **aucun JS eager touché**,
+  l'OG card n'impacte que le build-time méta + le serverless
+6. Déploiement : CF cache + surveillance 1 semaine (taux de share FB/WhatsApp via referrer
+   GA4 `clarity_share`)
+
+
