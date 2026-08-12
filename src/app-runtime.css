@@ -16,15 +16,18 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 
 /* ═══ Z-INDEX REGISTRY (P1-2) — source de vérité unique.
    TOUT nouvel overlay DOIT utiliser une de ces variables.
-   Valeurs intermédiaires = espaces réservés (10 unités entre chaque). */
+   Valeurs intermédiaires = espaces réservés (10 unités entre chaque).
+   Maj 2026-08-12 (D2 fix funnel stability) : aligné sur la réalité du code
+   (BeachSheet/BeachSheetComic hardcodaient 1050/1049 = collision silencieuse
+   avec --z-hero). Désormais var(--z-sheet) vaut 1050, var(--z-backdrop) 1049. */
 :root{
-  --z-sheet:1010;
-  --z-backdrop:1005;
+  --z-sheet:1050;
+  --z-backdrop:1049;
   --z-map:1020;
   --z-map-intro:1019;
   --z-header:700;
   --z-fab:960;
-  --z-hero:1050;
+  --z-hero:1060;
   --z-premium:1100;
   --z-comic:1200;
   --z-chat:1090;

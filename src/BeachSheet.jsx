@@ -270,12 +270,12 @@ export default function BeachSheet({
 
       {/* Backdrop */}
       <div onClick={requestClose}
-        style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bsFade .25s ease both"}}/>
+        style={{position:"fixed",inset:0,zIndex:"var(--z-backdrop)",background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bsFade .25s ease both"}}/>
 
       {/* Sheet */}
       <div ref={swipe.ref} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
         className={"bs-sheet"+(v2Enabled?" sg-v2-beach-sheet":"")}
-        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
+        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:"var(--z-sheet)",maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
           WebkitOverflowScrolling:"touch",animation:"bsUp .42s cubic-bezier(.16,1,.3,1) both",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
