@@ -386,8 +386,9 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   }
 
   /* Ambient radial backdrop on wide screens — the map fades into a soft halo
-     at the edges so the app chrome reads as a floating card, not a browser frame */
-  html,body,#root{background:radial-gradient(ellipse at center, #FDFCF7 0%, #F0ECE0 100%)}
+     at the edges so the app chrome reads as a floating card, not a browser frame.
+     FIX: fond sombre (#0d1117) pour éviter les "trous blancs" visibles entre composants. */
+  html,body,#root{background:#0d1117}
 }
 
 /* Larger desktops — same behaviour, just a touch more breathing room */
