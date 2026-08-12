@@ -262,6 +262,33 @@ export function ComicPaywall({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               {t("Retour à l'histoire", "Back to story", "Volver a la historia")}
             </button>
+            {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef, mirror WorldPaywall.jsx:207) ═══ */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{
+                display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
+                marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
+              }}>
+                {t("Email pour recevoir ton accès", "Email to receive your access", "Email para recibir tu acceso")}
+              </label>
+              <input
+                ref={payEmailRef}
+                type="email"
+                required
+                autoComplete="email"
+                placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
+                onChange={onPayEmailInput}
+                style={{
+                  width: "100%", padding: "13px 14px",
+                  background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
+                  borderRadius: 12, color: "#fff", fontSize: 15,
+                  fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+                  fontWeight: 600, outline: "none", boxSizing: "border-box",
+                  transition: "border-color .15s ease"
+                }}
+                onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
+                onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
+              />
+            </div>
             <PassOffer
               lang={lang}
               onBuy={onPassBuy}
