@@ -2860,7 +2860,8 @@
     "daily_count": 7,
     "j3": "2026-08-08T01:37:37.939Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-08"
+    "install_nudge_last": "2026-08-08",
+    "j7": "2026-08-12T01:06:23.544Z"
   },
   "3f232414869c2f43ae8ea94af9f16c4a": {
     "daily_last": "2026-08-11",
@@ -2868,7 +2869,8 @@
     "daily_count": 7,
     "j3": "2026-08-08T01:37:39.625Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-08"
+    "install_nudge_last": "2026-08-08",
+    "j7": "2026-08-12T01:06:26.411Z"
   },
   "94c35534f45ab6f02bf4a052c5e67d4c": {
     "daily_last": "2026-08-11",
@@ -2963,5 +2965,9 @@
     "daily_sig": "Plage de Grande Anse|clean|88|clean|1|mercredi",
     "daily_count": 1
   },
-  "b1404ecc05cae5ab3f3aa0996ba95b8a": {}
+  "b1404ecc05cae5ab3f3aa0996ba95b8a": {},
+  "f692ac119411b05f2ca0020424b1043d": {},
+  "9f414f7fe98c1f8db289893c8a758824": {},
+  "c7a4409998e22c9d566c995929e4d966": {},
+  "ba054767283149d6fa3bce60f682cc1f": {}
 }
