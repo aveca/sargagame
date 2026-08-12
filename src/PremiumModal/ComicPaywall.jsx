@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
+import { VeilleurMark } from "./VeilleurMark.jsx"
 
 const PANELS = [
   {
@@ -298,6 +299,12 @@ export function ComicPaywall({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               {t("Retour à l'histoire", "Back to story", "Volver a la historia")}
             </button>
+            {/* Le Veilleur SVG — mascotte de marque en tête de l'offer (axe commercial + rétention).
+                Cohérence A/B : meme mascotte que WorldPaywall. Regard vers la mer, jamais l'utilisateur.
+                Source : design/wow-candidates/paywall-golden-pass.html (proto Bible v1). */}
+            <div style={{ textAlign: "center", marginBottom: 4 }}>
+              <VeilleurMark size={80} />
+            </div>
             {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef, mirror WorldPaywall.jsx:207) ═══ */}
             <div style={{ marginBottom: 14 }}>
               <label style={{
