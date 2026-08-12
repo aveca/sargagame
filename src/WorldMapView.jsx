@@ -1126,10 +1126,18 @@ export default function WorldMapView({
       setTimeout(()=> setMapHintPhase(null), 320)
     }
     if(tagTimerRef.current) clearTimeout(tagTimerRef.current)
+    // C2 fix (funnel stability 2026-08-12) — was 750ms latency between tap and
+    // tag appearance (flyTo was 3s, so 750ms was meant to let the pan start).
+    // User saw "nothing happens" for 750ms while the map zoomed. Shortened to
+    // 250ms: the wmTapCore ping (line 2206) fires instantly on selected pin
+    // as immediate visual feedback, and the tag appears at 250ms with the
+    // camera still in motion (close enough to the final spot to be readable).
+    // The 750ms calculation was overkill — worldToScreen is stable enough at
+    // 250ms when flyTo is just 3s (camera at ~85% of final position).
     tagTimerRef.current=setTimeout(()=>{
       const[sx,sy]=worldToScreen(b.vx,b.vy)
       setTagPos({x:sx,y:sy})
-    },750)
+    },250)
     try{ track&&track("sg_archipel_tap",{beach_id:b.id,status:b.status,source:"map_world"}) }catch(_){}
   },[flyTo,worldToScreen,track])
 
