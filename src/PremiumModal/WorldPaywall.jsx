@@ -327,6 +327,17 @@ export function WorldPaywall({
           ))}
         </div>
         
+        {/* Signature B2C « Le Veilleur » — moat identitaire en pied du paywall.
+            Pas un CTA, ne vend rien : pose l'honnêteté de marque juste avant le choix.
+            i18n via t(), Bricolage 600 12px italic opacity .5 (discret, pas distractant). */}
+        <p style={{
+          marginTop: 14, marginBottom: 0, textAlign: "center",
+          font: "italic 600 12px/1.4 'Bricolage Grotesque', system-ui, sans-serif",
+          color: "rgba(255,255,255,.5)", letterSpacing: ".01em"
+        }}>
+          {t("Le Veilleur regarde ta plage, pas la peur.", "The Watcher watches your beach — not the fear.", "El Vigía mira tu playa, no el miedo.")}
+        </p>
+        
         {/* Close button */}
         <button
           onClick={onClose}
