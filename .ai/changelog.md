@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-08-12 (7) — ui_ux_agent (OpenCode glm) — Funnel-stability Commit 5 (D2+E2) + Dépôt prompt 07
+
+### Changement
+- **fix(z-index+motion) D2** : 5 occurrences hardcoded `zIndex:1049/1050/1055` dans `src/Sargasses_PROD.jsx` (lignes 3378, 4481, 4486, 7705, 9512, 9982) migrants vers les vars CSS du registre `src/app-runtime.css` (`--z-backdrop`, `--z-sheet`, `--z-premium`). Cohérence totale de la stack overlay.
+- **fix(motion) E2** : `src/DiveTransition.jsx` passé 950ms → 600ms (overlay `sgDiveOut` + 5 layers internals : `sgDiveRays`, `sgDiveDots`, `sgDiveSat`, `sgDiveBeach`, `sgDiveCap`) + `setTimeout(finish, 600)` aligné. JSDoc nettoyé (doublon phrase supprimé). Toujours 1×/session, SKIPPABLE, `prefers-reduced-motion` = onDone immédiat (plancher dur préservé).
+- **feat(agents) prompt 07** : Dépôt de `.ai/prompts/07-univers-motion-agent.md` — Agent Univers & Motion (« Le Veilleur, en grand »). Mission créative, interdictions spécifiques (IP tierces, palette, lib lourde), terrain de jeu réel (carte SVG, lane comic, Remotion, paywall, emails), mode opératoire (panel pour copy à enjeu), DoD, format de rapport imposé. Ajout d'un **préambule exécutif** pour mode agent glm local autonome (tous accès, tous outils) + orientation **marketing / display / commercial / rétention** (4 axes) exigée dans tout livrable (au moins 1 annoncé). MàJ tables de prompts et de rôles dans `AGENTS.md` (lignes 105 et 158) et `.ai/README.md`.
+
+### Pourquoi
+- D2 ferme la dette "registre posé mais pas consommé" — les vars existaient depuis Commit 4 mais 5 sites hardcoded survivaient. Maintenant la stack overlay est uniforme, plus de deltas mystère.
+- E2 — la dive 950ms était ressentie comme une tape de trop ; 600ms reste "délice d'ouverture" sans friction (le Le Veilleur s'efface plus vite).
+- Prompt 07 — le fondateur a mandat explicite : monter l'univers "Le Veilleur" d'un cran (Disney × HP × Matrix × Marvel en AMBIANCE seulement, jamais en IP reconnaissable) et l'orienter marketing/display/commercial pour véritables leviers acquisition/rétention.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` (5 occurrences zIndex → var)
+- `src/DiveTransition.jsx` (950→600ms + JSDoc)
+- `src/BeachSheet.jsx` (inclus Commit 4, dans le commit pour cohérence du patch z-index)
+- `src/app-runtime.css` (registre, inclus pour cohérence)
+- `.ai/prompts/07-univers-motion-agent.md` (**nouveau**)
+- `AGENTS.md` (2 lignes ajoutées)
+- `.ai/README.md` (2 lignes ajoutées)
+- `.ai/current_state.md` (handoff)
+- `.ai/changelog.md` (cette entrée)
+
+### Gate de ship LOCAL
+- [x] `npm run build` → exit 0 en 4.05s
+- [x] `check-bundle-budget.cjs` → 181.6 Ko ≤ 210 Ko gzip OK
+- [x] `ux-smoke.mjs` → 4/4 tokens (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- [x] `esbuild src/DiveTransition.jsx` → parse OK
+
+### Merge
+- PR #567 squash-merged → `d3e981e7` sur `main`
+- Workflows déclenchés : CI Tests + Perf Budget + Daily Copernicus + Deploy (FTP auto sur 5 domaines < 15 min)
+
+### Rollback
+```bash
+git revert d3e981e7 --no-edit && git push origin main
+# re-déploiement auto < 15 min, revient sur commit 4 (1a8a2af6) état D1+D2partiel+E3 skipped
+```
+
+
 ## 2026-08-12 (6) — coding_agent (OpenCode) — Fix funnel-daily-report.cjs sg_ prefix bug
 
 ### Changement

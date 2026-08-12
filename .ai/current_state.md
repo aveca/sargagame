@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-08-12 18:05 UTC · Agent: ui_ux_agent (OpenCode glm) — Funnel-stability Commit 5 (D2+E2) + Prompt 07 déposé
+
+### Travail effectué
+- **Résumé 1 ligne** : Dernier commit de la branche `agent/ui/funnel-stability` — D2 (registre z-index CSS vars appliqué partout) + E2 (DiveTransition 950ms→600ms). Dépôt du prompt `.ai/prompts/07-univers-motion-agent.md` (agent Univers & Motion officiel) + màj tables AGENTS.md et .ai/README.md.
+
+### Détails
+- **D2 z-index registry adhesion** : 5 occurrences hardcoded `zIndex:1049/1050/1055` dans `Sargasses_PROD.jsx` (lignes 3378, 4481, 4486, 7705, 9512, 9982) migrants vers les vars CSS du registre posé dans `src/app-runtime.css` (`--z-backdrop`, `--z-sheet`, `--z-premium`). Toute la stack overlay parle maintenant le même langage — fini les deltas mystères.
+- **E2 DiveTransition 950ms → 600ms** : overlay + 5 layers internes (rays, dots, sat, beach, cap) + `setTimeout(finish, 600)` aligné. JSDoc nettoyé (doublon phrase supprimé). Toujours 1×/session, SKIPPABLE, `prefers-reduced-motion` = onDone immédiat (plancher dur préservé).
+- **Prompt 07 déposé** : `.ai/prompts/07-univers-motion-agent.md` — Agent Univers & Motion (« Le Veilleur, en grand »). Mission, interdictions, terrain de jeu, mode opératoire, DoD, format de rapport imposé. Ajout d'un **préambule exécutif** pour le mode agent glm local autonome + orientation **marketing/display/commercial/rétention** (4 axes) exigée dans tout livrable. Tables de prompts/roles màj dans `AGENTS.md` et `.ai/README.md`.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — 5 occurrences zIndex → var(--z-*)
+- `src/DiveTransition.jsx` — 950ms → 600ms (overlay + 5 layers + setTimeout + JSDoc)
+- `src/BeachSheet.jsx` — déjà en var(--z-*) (Commit 4), rien touché ce tour mais fait partie du commit
+- `src/app-runtime.css` — registre (déjà posé Commit 4), inclus dans le commit pour cohérence
+- `.ai/prompts/07-univers-motion-agent.md` — **nouveau fichier**
+- `AGENTS.md` — 2 lignes ajoutées (table prompts + table rôles) pour `07-univers-motion-agent`
+- `.ai/README.md` — 2 lignes ajoutées (arbo + table) pour `07-univers-motion-agent`
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 en 4.05s
+- [x] `check-bundle-budget.cjs` → 181.6 Ko ≤ 210 Ko gzip OK
+- [x] `php -l` → non applicable (aucun `.php` touché)
+- [x] `ux-smoke.mjs` → 4 tokens OK : FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[]
+- [x] esbuild parse `DiveTransition.jsx` → exit 0
+
+### Branche / PR / Merge
+- Branche : `agent/ui/funnel-stability`
+- PR : #567 — https://github.com/aveca/sargagame/pull/567
+- Merge : squash-merge `d3e981e7` sur `main`, branche supprimée
+- Workflows déclenchés : `CI Tests` + `Perf Budget + Lighthouse` + `Daily Copernicus + Deploy` (les 3 en `in_progress` au moment du handoff — déploiement FTP auto < 15 min sur les 5 domaines)
+
+### Problèmes restants
+- [ ] TASK-P1-005 : Dashboard fraîcheur pipeline homepage — non démarré
+- [ ] TASK-P1-006 : Monitoring conversion 7j — démarre au prochain run 06:00 UTC
+- [ ] TASK-P2-001 : Spliter PremiumModal.jsx — pending
+- [ ] **Nouveau** TASK-P2-005 : Activer prompt 07 — produire le 1er livrable Univers & Motion orienté marketing/display/commercial (voir ci-dessous)
+
+### Prochaine action recommandée
+1. **Lancer une session prompt 07** — produire le 1er artefact Univers & Motion (script clip Remotion OU copy paywall B2B OU direction illustrative carte SVG) avec axe marketing/display/commercial annoncé. Rôle : univers_motion_agent.
+2. (Mitigation) Vérifier dans ~15 min le statut des 3 workflows `main` (`gh run list --branch main --limit 3`) + health-check sur sargasses-martinique.com.
+3. (Cash monitor) À J+3, comparer `funnel-daily-report.json` post-fix vs baseline 8.3% modal→CTA — tuer le variant Comic si underperforming (TASK-P1-006).
+
+=== précédent handoff conservé ci-dessous ===
+
+
 ## 2026-08-12 03:10 UTC · Agent: coding_agent (OpenCode) — Fix funnel-daily-report.cjs sg_ prefix bug
 
 ### Travail effectué

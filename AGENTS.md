@@ -102,6 +102,7 @@ Chaque prompt dans `.ai/prompts/` est un **point d'entrée spécialisé**.
 | Review sécurité | `04-security-review` | adversarial-reviewer |
 | Optimiser la croissance | `05-growth-agent` | product-manager |
 | Livrer en production | `06-release-agent` | senior-engineer + ux-critic |
+| Univers & Motion (Le Veilleur) | `07-univers-motion-agent` | design visuel + copywriter narratif + ux-critic |
 
 ## Panel d'agents (décisions ambiguës)
 
@@ -155,6 +156,7 @@ Chaque agent a une mission, des fichiers gérés, un processus, des interdiction
 | **Data Agent** | Pipeline ERDDAP, forecast, fiabilité, analytics | `scripts/fetch-sargassum-live.cjs`, `scripts/lib/*.cjs`, Supabase | `.ai/roles/data-agent.md` |
 | **Growth Agent** | SEO, CRO, B2B outreach, rétention, viralité | `scripts/automation/*.cjs`, `daily-metrics.json`, `GROWTH-SEO-STRATEGY.md` | `.ai/roles/growth-agent.md` |
 | **Release Agent** | Gate de ship, deploy, vérif prod | Gate de ship (CLAUDE.md), `npm run session` | `.ai/prompts/06-release-agent` |
+| **Univers & Motion Agent** | Storytelling, copy, SVG additive, clips Remotion, B2B outreach | `design/STORY/`, `video-remotion/`, `B2C_NARRATIVE.md`, `B2B_EMAIL_TEMPLATE.md` | `.ai/prompts/07-univers-motion-agent` |
 
 **Convention branches :** `agent/<rôle>/<task-id>`
 - Exemples : `agent/coding/TASK-P1-001`, `agent/qa/TASK-P1-002`, `agent/ui/mobile-redesign`

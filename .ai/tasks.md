@@ -133,6 +133,13 @@
 - **Estimation** : 3h
 - **Statut** : [x] done by ui_ux_agent (2026-08-08) — PanelWipe « case BD » implémenté au montage du paywall (verdict→paywall = maillon critique funnel). Keyframes sgPwBackdrop/sgPwPanel + état pwEntering (mount-time 420ms). Rollback ?sgpwenter=0 + reduced-motion plancher dur. Audit design system + copyright 5 régions OK (cf. .ai/changelog.md)
 
+### TASK-P2-005. Activer prompt 07 — 1er livrable Univers & Motion (marketing/display/commercial)
+- **Priorité** : P2
+- **Rôle** : univers_motion_agent
+- **Description** : Produire le 1er artefact via le prompt `.ai/prompts/07-univers-motion-agent.md`. Candidats : (a) script clip Remotion pour brief plage quotidien (9:16, sous-titré, coupe courte), (b) copy paywall/onboarding B2B selon colonne vertébrale 6 temps (FR+EN+ES), (c) direction illustrative additive pour carte SVG (easter eggs golden-hour par région), (d) storyboard BD relance B2B. Doit annoncer explicitement au moins 1 axe marketing/display/commercial/rétention dans son rapport (format imposé par le prompt). Univers Le Veilleur respecté, zéro IP tierce, claims hedgés, replis accessibilité.
+- **Estimation** : 90 min (timebox autonomie)
+- **Statut** : [ ] pending — claimable by univers_motion_agent
+
 ---
 
 ## P3 — Améliorations

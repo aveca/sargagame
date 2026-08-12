@@ -15,7 +15,8 @@ Ce dossier contient les prompts et personas pour les agents IA travaillant sur S
 │   ├── 03-bug-hunter     # Corriger un bug
 │   ├── 04-security-review # Review sécurité
 │   ├── 05-growth-agent   # Optimiser la croissance
-│   └── 06-release-agent  # Livrer en production
+│   ├── 06-release-agent  # Livrer en production
+│   └── 07-univers-motion-agent # Univers & Motion (Le Veilleur)
 │
 └── personas/             # Panel d'agents adverses
     ├── senior-engineer   # Faisabilité technique
@@ -37,6 +38,7 @@ Ce dossier contient les prompts et personas pour les agents IA travaillant sur S
 | Review sécurité | `04-security-review` | adversarial-reviewer |
 | Optimiser revenue | `05-growth-agent` | product-manager |
 | Déployer | `06-release-agent` | senior-engineer + ux-critic |
+| Univers & Motion (Le Veilleur) | `07-univers-motion-agent` | design visuel + copywriter narratif + ux-critic |
 
 ### Panel de review
 
