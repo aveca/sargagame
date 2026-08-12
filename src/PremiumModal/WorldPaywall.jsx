@@ -9,6 +9,11 @@ import React, { useState, useEffect, useMemo } from "react"
 import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
+import { VeilleurMark } from "./VeilleurMark.jsx"
+
+/**
+ * (Removed inline def — VeilleurMark now imported from ./VeilleurMark.jsx)
+ */
 
 const REGION_LABELS = {
   mq: { fr: "Martinique", en: "Martinique", es: "Martinica" },
@@ -169,6 +174,13 @@ export function WorldPaywall({
       <div style={{ position: "relative", zIndex: 1, padding: 24 }}>
         {/* Compact header */}
         <div style={{ textAlign: "center", marginBottom: 16 }}>
+          {/* Le Veilleur SVG — mascotte de marque (axe commercial + rétention).
+              Source : design/wow-candidates/paywall-golden-pass.html (proto Bible v1).
+              Œil-capteur mi-clos qui regarde la mer (bas-droite), JAMAIS l'utilisateur
+              (règle marque « Le Veilleur rassure, ne surveille pas »).
+              Micro-respiration 3s amplitude 1.5px (calme-doctrine, pas jank).
+              prefers-reduced-motion = plancher dur (pause). */}
+          <VeilleurMark />
           <h2 style={{
             fontFamily: "'Anton', system-ui, sans-serif",
             fontSize: "clamp(20px, 5vw, 26px)",
