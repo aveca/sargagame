@@ -20,6 +20,7 @@ import { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 import { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
 import { WorldPaywall } from "./PremiumModal/WorldPaywall.jsx"
 import { ComicPaywall } from "./PremiumModal/ComicPaywall.jsx"
+import { OnsiteCheckout } from "./PremiumModal/OnsiteCheckout.jsx"
 import useMediaQuery from "./hooks/useMediaQuery.js"
 
 const {
@@ -88,11 +89,14 @@ export default function PremiumModal({
     walletAvail, purchase, getPlanMeta
   })
 
-  // Bridge PassOffer → doSubscribe : PassOffer.appelle onBuy({c,pass,days,segment})
-  // mais ne connaît pas passCtxRef. On remplit passCtxRef.current ici (restore du
-  // comportement pré-split, ancien PremiumModal.jsx ligne ~2707), puis on appelle
-  // doSubscribe qui lit _pc=passCtxRef.current et déclenche le chemin pass one-time
-  // (action:create_payment) au lieu du chemin abonnement (action:create_subscription).
+  // Bridge PassOffer → OnsiteCheckout : PassOffer appelle onBuy({c,pass,days,segment})
+  // On remplit passCtxRef.current (restore du comportement pré-split), puis :
+  //  - wallet (Apple/Google Pay) → payWithWallet() direct (surf natif hors overlay)
+  //  - carte on-site → setPayStep(true) qui révèle <OnsiteCheckout> (overlay z 1300)
+  //    où l'utilisateur saisit email + 4 champs carte Mollie, puis clique "Payer" →
+  //    doSubscribe() lit mollieRef.current.createToken() — refs DÉSORMONT remplies.
+  // AVANT le fix : doSubscribe() était appelé direct → mollieRef.current=null → throw
+  // silencieux dans catch → bouton "Commencer maintenant" muet sur les 5 domaines.
   const onPassBuy = useCallback((item)=>{
     try{track("sg_pass_cta",{pass:item.pass, cents:item.c, source:source||"unknown", onsite:1, method:item.method||"card"})}catch(_){}
     passCtxRef.current = {
@@ -102,13 +106,11 @@ export default function PremiumModal({
       cur: PAY_CUR
     }
     if(item.method && item.method !== "card"){
-      // Wallet (Apple Pay / Google Pay)
       try{payWithWallet(item.method)}catch(_){}
       return
     }
-    // Carte on-site → déclenche doSubscribe ( lit passCtxRef.current automatiquement )
-    try{doSubscribe()}catch(_){}
-  },[source, track, payWithWallet, doSubscribe, PAY_CUR])
+    setPayStep(true)
+  },[source, track, payWithWallet, PAY_CUR])
 
   // Common props passed to all paywall variants
   const commonPaywallProps = {
@@ -121,6 +123,25 @@ export default function PremiumModal({
     pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
     doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
     onPassBuy
+  }
+
+  // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
+  const onsiteCheckoutProps = {
+    lang, source,
+    payStep, setPayStep,
+    passCtxRef, payPlanRef, payEmailRef,
+    payBusy, setPayBusy, payError, setPayError,
+    payReadyRef, payRedirecting, setPayRedirecting,
+    paySuccess, setPaySuccess,
+    consentFlag, consentOk, setConsentOk,
+    mollieRef,
+    doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
+    // constants
+    PAY_PROVIDER, PAY_CAPTURE_ONLY, PAY_CUR, PAY_LABEL,
+    NO_TRIAL, PRICE_MO, PRICE_YR, REGION_PAY, IS_NEW_REGION, REGION, __COMM,
+    // helpers
+    fmtPassPrice, _t, track, walletAvail,
+    MOL_FIELD, MOL_LABEL, MOLLIE_PROFILE, MOLLIE_TESTMODE, loadMollieJs
   }
 
   // Render the appropriate paywall variant
@@ -164,6 +185,7 @@ export default function PremiumModal({
           }}
         />
         {renderPaywall()}
+        <OnsiteCheckout {...onsiteCheckoutProps} />
       </>
     )
   }
@@ -222,6 +244,7 @@ export default function PremiumModal({
         {/* Contenu du paywall */}
         {renderPaywall()}
       </div>
+      <OnsiteCheckout {...onsiteCheckoutProps} />
     </>
   )
 }

@@ -4,6 +4,51 @@
 
 ---
 
+## 2026-08-12 21:30 UTC · Agent: coding_agent (OpenCode glm) — P0 FIX bouton muet Mollie : overlay OnsiteCheckout restauré
+
+### Travail effectué
+- **Résumé 1 ligne** : Le bouton « Commencer maintenant → » (Pass one-time Mollie) était MUET sur les 5 domaines. Cause racine : le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`) avait perdu l'overlay `payStep` qui monte les Mollie Components et initialise `mollieRef.current`. Sans lui, `onPassBuy() → doSubscribe() → mollieRef.current.createToken()` throw silencieux (catch avale) → bouton muet. Fix : nouveau module `src/PremiumModal/OnsiteCheckout.jsx` qui restaure (1) init `window.Mollie(profileId)` → `mollieRef.current`, (2) overlay z 1300 avec email + 4 champs carte + bouton Payer, (3) montage des 4 Mollie Components (cardHolder/cardNumber/expiryDate/verificationCode). `onPassBuy` ouvre l'overlay via `setPayStep(true)` au lieu d'appeler `doSubscribe()` direct.
+
+### Détails
+- **Diagnostic** : grep `mollieRef.current =` → 0 match dans `src/PremiumModal/`. Confirme que le composant qui_INITIALISAIT Mollie était NULL partout. Vérification via `git show 7dc83891:src/PremiumModal.jsx` (pré-split fonctionnel, 3742 lignes) → trouvait `mollieRef.current = window.Mollie(MOLLIE_PROFILE, {locale, testmode})` ligne 1815 + le bloc overlay payStep complet (lignes 3444+) avec 4 createComponent('cardHolder'/'cardNumber'/'expiryDate'/'verificationCode').
+- **Fix minimal ciblé** :
+  1. **`src/PremiumModal/OnsiteCheckout.jsx`** (NEW, ~520 lignes) : overlay z 1300 rendu TOUJOURS MOUNT (caché `translateX(-200vw)` quand `payStep=false` — les iframes Mollie ne bootent pas dans `display:none`). Effet 1 : préchauffage `loadMollieJs().then(() => mollieRef.current = window.Mollie(profileId, {locale, testmode}))`. Effet 2 : quand `payStep=true`, monte les 4 composants Mollie dans les refs `mol{Holder,Number,Expiry,Cvc}Ref`. Email input bindé à `payEmailRef`. Bouton « Payer X € → » déclenche `doSubscribe()` qui lit `mollieRef.current.createToken()` (désormais rempli). Wallets Apple/Google Pay en expressive si device compatible. Swipe-down pour retour au paywall. Consentement RGPD 14j si `consentFlag`. Bouton Réessayer sur `payError`.
+  2. **`src/PremiumModal.jsx`** : import `OnsiteCheckout`, ajoute `onsiteCheckoutProps` (refs + constants + helpers), rend `<OnsiteCheckout {...onsiteCheckoutProps} />` dans les 2 branches (pwVariant=“comic” + defaut World). `onPassBuy` modifié : `setPayStep(true)` au lieu de `doSubscribe()` direct (chemin carte). Wallets gardent `payWithWallet(method)` direct.
+- **Validation live** : script Playwright local (iPhone 12, vite preview :4173/?paywall=1) confirme : `Paywall open: true` → `Buy button visible: true` → **clique bouton → `OnsiteCheckout email visible: true`** + `Cardholder label count: 1` + `iframe count: 5` (4 Mollie Components montés + 1). Bouton n'est plus muet. ✅
+
+### Fichiers modifiés
+- `src/PremiumModal/OnsiteCheckout.jsx` — NEW — overlay Mollie on-site (restauration du panorama付款 perdu post-split)
+- `src/PremiumModal.jsx` — import `OnsiteCheckout`, `onsiteCheckoutProps`, rendu `<OnsiteCheckout>` dans branche comic + branche world, `onPassBuy` → `setPayStep(true)`
+
+### Tests réalisés (Gate de ship)
+- [x] `npm run build` → exit 0 en 4.01s
+- [x] `check-bundle-budget.cjs` → **181.9 Ko ≤ 210 Ko** (+2.5 Ko pour OnsiteCheckout, rentable : fix P0 paiement)
+- [x] `ux-smoke.mjs` → 4/4 tokens : FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[]
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → **12/13 pass** (1 fail = `carte → fiche → paywall` confirmé **fail aussi sur main HEAD pré-fix** — flaky test pré-existant race maplabel, pas une régression)
+- [x] **Test manuel Playwright iPhone 12** (vite preview :4173/?paywall=1) → clic bouton « Commencer maintenant » ouvre bien l'overlay Mollie on-site avec email + 4 champs carte + 5 iframes. **Bouton n'est plus muet.**
+
+### Problèmes restants
+- [ ] TASK-P1-005 : Dashboard fraîcheur pipeline homepage — non démarré
+- [ ] TASK-P1-006 : Monitoring conversion 7j — démarre au prochain run 06:00 UTC (données réelles enfin disponibles post-fix bouton muet)
+- [ ] TASK-P2-001 : Spliter PremiumModal.jsx — pending (patch partiel : on a restore payStep mais la dette reste)
+- [ ] TASK-P2-005b : Finaliser OG card par plage (serverless) — proto `functions/api/og/og-beach.fn.js` et flag A/B `?og=1/0` dans index.html déjà merged. Branche `agent/coding/TASK-P2-005b-og-cards` a été utilisé mais **pas poussée** — à recréer sur main frais.
+- [ ] TASK-P2-005c : Easter egg yole Martinique
+- [ ] TASK-P2-005d : Clip Remotion additionnel
+- [ ] **Flaky test** `tests/e2e/funnel-payment.spec.ts:82` “carte → fiche → paywall” — race maplabel vs fiche visible. Pré-existant. À corriger dans une tâche QA dédiée.
+
+### Prochaine action recommandée
+1. **MERGER cette PR en prod ASAP** : paiement cassé sur les 5 domaines depuis le split `5b87b8b4`. Chaque jour sans fix = perte MRR direct. Rôle : release_engineer
+2. Une fois merged, vérifier en prod (curl `/?paywall=1` + clic bouton) que l'overlay Mollie s'affiche avec les 4 champs carte. Rôle : release_engineer + coding
+3. **Ne pas toucher au paiement en attendant** —AGENTS.md interdiction non-négociable. Rôle : coding_agent
+4. Reprise du dev : TASK-P2-005b (finaliser OG card) ou TASK-P2-005c (yole Martinique). Rôle : coding/ui_ux
+
+### Branche / PR
+- Branche : `agent/coding/P0-onsite-mollie-broken`
+- PR : à créer (auto-merge si CI vert)
+- Commit head : <à jour après commit>
+
+---
+
 ## 2026-08-12 18:40 UTC · Agent: coding_agent (OpenCode glm) — Artefact 3 Signature B2C shipé en prod + specs artefacts 2 & 4
 
 ### Travail effectué

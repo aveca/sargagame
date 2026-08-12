@@ -8,6 +8,7 @@
 
 ## Récemment complété
 
+- [x] **P0 CRITICAL — Fix bouton muet Mollie : OnsiteCheckout restauré** (@coding_agent OpenCode glm, 2026-08-12 21:30 UTC) — Bouton « Commencer maintenant → » (Pass one-time Mollie) était MUET sur les 5 domaines. Cause racine : le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`) avait perdu l'overlay `payStep` + init `mollieRef.current = window.Mollie(profileId, …)`. Sans lui, `onPassBuy → doSubscribe → mollieRef.current.createToken()` throw silencieux (catch avale) → bouton muet. Fix : new module `src/PremiumModal/OnsiteCheckout.jsx` restore overlay z 1300 + 2 effets (init Mollie + mount des 4 Components cardHolder/cardNumber/expiryDate/verificationCode). `onPassBuy` → `setPayStep(true)` au lieu de `doSubscribe()` direct. Gate : build OK, bundle 181.9 Ko ≤ 210 Ko (+2.5 Ko), smoke 4/4, test live iPhone 12 confirme overlay s'ouvre avec 4 champs carte + 5 iframes Mollie. Playwright funnel-payment 12/13 (1 flaky pré-existant — race maplabel, fail aussi sur main HEAD pré-fix).
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
