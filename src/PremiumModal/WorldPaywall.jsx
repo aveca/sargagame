@@ -15,6 +15,80 @@ import { VeilleurMark } from "./VeilleurMark.jsx"
  * (Removed inline def — VeilleurMark now imported from ./VeilleurMark.jsx)
  */
 
+/**
+ * Pictos SVG line pour stats badges (Bible v1 : emojis OS font "cheap" -> glyphes SVG stroke ink).
+ * 12x12, 1.4 stroke, pas de fill (line-only = lisible sur backdrop sombre).
+ * stroke=currentColor = prend la couleur du badge parent.
+ */
+const BADGE_ICONS = {
+  regions: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18" />
+    </svg>
+  ),
+  beaches: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 18c3 0 3-2 6-2s3 2 6 2 3-2 6-2" />
+      <circle cx="6" cy="9" r="2.5" />
+      <path d="M16 11l1.5-2.5L20 11" />
+    </svg>
+  ),
+  freshness: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 14a8 8 0 0116 0" />
+      <path d="M8 14a4 4 0 018 0" />
+      <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none" />
+      <path d="M12 14V6" />
+    </svg>
+  ),
+  // Trust signals (♗ Bible v1 : emojis OS -> pictos SVG line stroke ink)
+  check: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12l3 3 5-6" />
+    </svg>
+  ),
+  satellite: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="6" y="6" width="12" height="4" rx="1" />
+      <rect x="9" y="14" width="6" height="4" rx="1" />
+      <path d="M10 10v4M14 10v4M10 14h4" />
+      <circle cx="18" cy="6" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M18 7.4v3M16 6h2" />
+    </svg>
+  ),
+  people: (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <circle cx="17" cy="10" r="2.4" />
+      <path d="M18 14c2.2 0 4 1.8 4 4M14.4 14h4" />
+    </svg>
+  )
+}
+
+
+/**
+ * StatBadge — pastille compact avec picto SVG line + texte.
+ * Plus fin que les emojis OS : trait 1.4px, stroke=currentColor, lisible everywhere.
+ */
+function StatBadge({ icon, color, children }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      background: "rgba(255,255,255,.10)",
+      border: "1px solid rgba(255,255,255,.15)",
+      borderRadius: 999, padding: "4px 10px",
+      fontSize: 10, fontWeight: 700, color,
+      whiteSpace: "nowrap",
+      fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
+    }}>
+      {icon}{children}
+    </span>
+  )
+}
+
 const REGION_LABELS = {
   mq: { fr: "Martinique", en: "Martinique", es: "Martinica" },
   gp: { fr: "Guadeloupe", en: "Guadeloupe", es: "Guadalupe" },
@@ -202,17 +276,17 @@ export function WorldPaywall({
           }}>
             {variantContent.subtitle}
           </p>
-          {/* Compact stats badges */}
+          {/* Compact stats badges — pictos SVG line (Bible v1 remplace emojis OS) */}
           <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-              🛰️ {stats.regions} {t("régions", "regions", "regiones")}
-            </span>
-            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-              🏖️ {stats.beaches} {t("plages", "beaches", "playas")}
-            </span>
-            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#5FD3C9", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-              📡 {stats.freshness}
-            </span>
+            <StatBadge icon={BADGE_ICONS.regions} color="#FFC72C">
+              {stats.regions} {t("régions", "regions", "regiones")}
+            </StatBadge>
+            <StatBadge icon={BADGE_ICONS.beaches} color="#22C55E">
+              {stats.beaches} {t("plages", "beaches", "playas")}
+            </StatBadge>
+            <StatBadge icon={BADGE_ICONS.freshness} color="#5FD3C9">
+              {stats.freshness}
+            </StatBadge>
           </div>
         </div>
         
@@ -305,15 +379,15 @@ export function WorldPaywall({
           borderTop: "1px solid rgba(255,255,255,.08)"
         }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(34,197,94,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-            <span aria-hidden="true">✅</span>
+            {BADGE_ICONS.check}
             <span>{t("97% vérifiées", "97% verified", "97% verificadas")}</span>
           </span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-            <span aria-hidden="true">🛰️</span>
+            {BADGE_ICONS.satellite}
             <span>Copernicus</span>
           </span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
-            <span aria-hidden="true">👥</span>
+            {BADGE_ICONS.people}
             <span>{t("12k+ voyageurs", "12k+ travelers", "12k+ viajeros")}</span>
           </span>
         </div>
