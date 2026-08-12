@@ -7,7 +7,7 @@ const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
  * DiveTransition — « La Marée du Veilleur » : plongée golden-hour carte → plage.
  *
  * Jouée 1× PAR SESSION au 1er ouverture de plage (cf onBeachClick + flag nav_dive),
- * pas à chaque fois → délice d'ouverture, zéro friction répétée. Rapide (~0.95s),
+ * pas à chaque fois → délice d'ouverture, zéro friction répétée. Rapide (~0.6s),
  * SKIPPABLE (tap n'importe où), `prefers-reduced-motion` = onDone immédiat (plancher
  * dur). CALME : une seule passe, pas d'idle. 100 % CSS keyframes (robuste, GPU).
  * La fiche plage est déjà montée dessous (selectedBeach) → l'overlay se fond pour la révéler.
@@ -19,7 +19,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
     try {
       if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return }
     } catch (_) {}
-    const t = setTimeout(finish, 950)
+    const t = setTimeout(finish, 600)
     return () => clearTimeout(t)
   }, [])
 
@@ -32,7 +32,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
 
   return (
     <div onClick={finish} aria-hidden="true"
-      style={{ position: "fixed", inset: 0, zIndex: 1090, overflow: "hidden", cursor: "pointer", animation: "sgDiveOut .95s ease-in forwards" }}>
+      style={{ position: "fixed", inset: 0, zIndex: 1090, overflow: "hidden", cursor: "pointer", animation: "sgDiveOut .6s ease-in forwards" }}>
       <style>{`
         @keyframes sgDiveOut{0%{opacity:0}9%{opacity:1}80%{opacity:1}100%{opacity:0}}
         @keyframes sgDiveDots{0%{opacity:1}52%{opacity:0}100%{opacity:0}}
@@ -53,19 +53,19 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
         <rect x="0" y="0" width="390" height="680" fill="url(#dtSky)" />
         <circle cx="110" cy="300" r="135" fill="url(#dtSun)" /><circle cx="110" cy="300" r="26" fill="#FFE6A8" />
         <rect x="0" y="330" width="390" height="350" fill="url(#dtSea)" />
-        <g className="sgDiveLayer" style={{ animation: "sgDiveRays .95s ease-in-out forwards" }}>
+        <g className="sgDiveLayer" style={{ animation: "sgDiveRays .6s ease-in-out forwards" }}>
           <path d="M120 120 L150 120 L120 360 L98 360 Z" fill="url(#dtRay)" />
           <path d="M210 120 L232 120 L222 360 L196 360 Z" fill="url(#dtRay)" />
           <path d="M290 120 L318 120 L308 360 L274 360 Z" fill="url(#dtRay)" />
         </g>
-        <g className="sgDiveLayer" style={{ animation: "sgDiveDots .95s ease-in forwards" }}>
+        <g className="sgDiveLayer" style={{ animation: "sgDiveDots .6s ease-in forwards" }}>
           <g><circle cx="70" cy="392" r="13" fill="#22C55E" opacity=".25" /><circle cx="70" cy="392" r="5" fill="#22C55E" /></g>
           <g><circle cx="232" cy="404" r="12" fill="#E8A800" opacity=".25" /><circle cx="232" cy="404" r="5" fill="#E8A800" /></g>
           <g><circle cx="312" cy="446" r="12" fill="#22C55E" opacity=".25" /><circle cx="312" cy="446" r="5" fill="#22C55E" /></g>
           <g><circle cx="110" cy="476" r="12" fill="#E8522A" opacity=".25" /><circle cx="110" cy="476" r="5" fill="#E8522A" /></g>
           <g><circle cx="276" cy="492" r="12" fill="#22C55E" opacity=".25" /><circle cx="276" cy="492" r="5" fill="#22C55E" /></g>
         </g>
-        <g className="sgDiveLayer" style={{ animation: "sgDiveSat .95s ease-in forwards" }}>
+        <g className="sgDiveLayer" style={{ animation: "sgDiveSat .6s ease-in forwards" }}>
           <path d="M300 96 L322 96 L150 348 L120 338 Z" fill="#FFE6A8" opacity=".22" />
           <g transform="translate(300,90)">
             <rect x="-9" y="-7" width="18" height="14" rx="3" fill="#0E2A2E" stroke="#3fd07f" strokeWidth="1.4" />
@@ -74,7 +74,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
             <circle cx="0" cy="0" r="3.4" fill="#FFE6A8" />
           </g>
         </g>
-        <g className="sgDiveLayer" style={{ animation: "sgDiveBeach .95s ease-out forwards" }}>
+        <g className="sgDiveLayer" style={{ animation: "sgDiveBeach .6s ease-out forwards" }}>
           <path d="M0 520 Q150 496 390 528 L390 680 L0 680 Z" fill="url(#dtSand)" />
           <path d="M0 520 Q150 496 390 528" fill="none" stroke="#FFD884" strokeWidth="1.6" opacity=".30" />
           <path d="M0 540 Q160 520 390 548 L390 566 Q160 540 0 560 Z" fill="#FFB87A" opacity=".14" />
@@ -89,7 +89,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
         </g>
       </svg>
       {name && (
-        <div className="sgDiveCapBox" style={{ position: "absolute", left: 0, right: 0, bottom: "calc(48px + env(safe-area-inset-bottom))", textAlign: "center", animation: "sgDiveCap .95s ease-out forwards" }}>
+          <div className="sgDiveCapBox" style={{ position: "absolute", left: 0, right: 0, bottom: "calc(48px + env(safe-area-inset-bottom))", textAlign: "center", animation: "sgDiveCap .6s ease-out forwards" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, font: "800 17px 'Bricolage Grotesque',system-ui,sans-serif", color: "#EAF7F4", textShadow: "0 2px 14px rgba(0,0,0,.6)" }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: stCol, boxShadow: `0 0 0 3px ${stCol}33` }} />
             {name}<span style={{ fontSize: 12.5, fontWeight: 600, opacity: .72 }}>· {lbl}</span>

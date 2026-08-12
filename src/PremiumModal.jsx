@@ -145,6 +145,29 @@ export default function PremiumModal({
   const modalOpenedAt = useRef(Date.now())
   useEffect(()=>{ modalOpenedAt.current = Date.now() }, [])
 
+  if (pwVariant === "comic") {
+    // C3 fix (funnel stability 2026-08-12) — ComicPaywall is a full-screen
+    // takeover (z 1200, inset:0) wrapping itself. Skip the bottom-sheet shell
+    // (.sg-modal-panel z 1100 + handle + close X) and the backdrop pin
+    // pass-through that was needed for sheet-type paywalls. ComicPaywall has
+    // its own "Plus tard" button that calls onClose. The shell underneath
+    // was invisible but sticky handlers (close X) remained — confusing.
+    return (
+      <>
+        {/* Minimal backdrop just to dim the map behind — no pin pass-through */}
+        <div
+          className="backdrop"
+          onClick={(e)=>{
+            const ts=Math.round((Date.now()-modalOpenedAt.current)/1000)
+            try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts})}catch(_){}
+            onClose()
+          }}
+        />
+        {renderPaywall()}
+      </>
+    )
+  }
+
   return (
     <>
       {/* Backdrop sombre — click pour fermer */}
@@ -153,7 +176,13 @@ export default function PremiumModal({
         onClick={(e)=>{
           const ts=Math.round((Date.now()-modalOpenedAt.current)/1000)
           try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts})}catch(_){}
-          // Pass-through : si le clic tombe sur un pin de la carte sous le backdrop, l'ouvrir
+          // C1 fix (funnel stability 2026-08-12) — pin pass-through ONLY if the
+          // paywall was opened < 300ms ago: that means the user tapped a pin
+          // just as the paywall appeared (race we want to forgive). Past 300ms,
+          // a backdrop click is a deliberate "close" — opening a random beach
+          // the user didn't see creates the "boomerang fiche opened" confusion.
+          const elapsed = Date.now() - modalOpenedAt.current
+          if (elapsed > 300) { onClose(); return }
           const x=e.clientX,y=e.clientY
           onClose()
           requestAnimationFrame(()=>{try{

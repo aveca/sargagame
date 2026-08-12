@@ -204,6 +204,46 @@ export function WorldPaywall({
           </div>
         </div>
         
+        {/* ═══ B1 fix — Beach context mini-cart (funnel stability 2026-08-12) ═══ */}
+        {/* Si le paywall est ouvert depuis une fiche plage, rappeler LA plage observée
+            au lieu d'un pitch générique "monde à portée de main". Relevance = conversion. */}
+        {beach && beach.name && (() => {
+          const verdictByStatus = {
+            clean: { color: "#22C55E", label: t("Propre aujourd'hui", "Clean today", "Limpia hoy") },
+            moderate: { color: "#F59E0B", label: t("Modérée — prudence", "Moderate — caution", "Moderada — cuidado") },
+            avoid: { color: "#E8522A", label: t("À éviter aujourd'hui", "Avoid today", "Evitar hoy") }
+          }
+          const v = verdictByStatus[beach.status] || verdictByStatus.moderate
+          return (
+            <div style={{
+              marginBottom: 14, padding: "12px 14px",
+              background: "rgba(13,17,23,.6)", border: `1.5px solid ${v.color}55`,
+              borderRadius: 12, display: "flex", alignItems: "center", gap: 10
+            }}>
+              <span aria-hidden="true" style={{
+                width: 8, height: 8, borderRadius: "50%", background: v.color,
+                boxShadow: `0 0 8px ${v.color}`, flexShrink: 0
+              }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+                  fontSize: 14, fontWeight: 800, color: "#fff",
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+                }}>
+                  {beach.name}
+                </div>
+                <div style={{
+                  fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+                  fontSize: 11, fontWeight: 600, color: v.color,
+                  textTransform: "uppercase", letterSpacing: ".04em"
+                }}>
+                  {v.label}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+        
         {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef) ═══ */}
         <div style={{ marginBottom: 14 }}>
           <label style={{

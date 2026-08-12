@@ -3375,7 +3375,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
   },[beach?.id,beach?.status,trackFn])
   const vm=verdictMeta(beach?.status,lang)
   return(
-    <div style={{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",
+    <div style={{position:"fixed",inset:0,zIndex:"var(--z-sheet)",overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",
       background:"var(--sg-bg,#FDFCF7)",opacity:exiting?0:1,transform:exiting?"scale(.98)":"scale(1)",
       transition:"opacity .3s ease,transform .3s ease",pointerEvents:exiting?"none":"auto"}}>
       {/* Hero golden-hour */}
@@ -4478,12 +4478,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       `}</style>
       {/* Backdrop — assombrit la carte (élévation z, recherche Mobbin/LogRocket) */}
       <div ref={backdropRef} onClick={requestClose}
-        style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
+        style={{position:"fixed",inset:0,zIndex:"var(--z-backdrop)",background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
       {/* Sheet */}
       {/* bsc-fiche = cible EXCLUSIVE de la media query desktop ci-dessus (bsc-sheet est
           aussi la classe de l'overlay B2BModal — ne pas le clamp par ricochet) */}
       <div ref={sheetRef} className="bsc-sheet bsc-fiche" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
+        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:"var(--z-sheet)",maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
           padding:"10px 16px calc(20px + env(safe-area-inset-bottom))",WebkitOverflowScrolling:"touch",
@@ -7702,7 +7702,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   const hasBeach=!!(beach?.name)
   
   return(
-    <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.85)",
+    <div style={{position:"fixed",inset:0,zIndex:"var(--z-premium)",background:"rgba(2,9,7,.85)",
       display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)"}}
       role="dialog" aria-modal="true"
       aria-label={hasBeach?_t(lang,`Débloque ${beach.name}`,`Unlock ${beach.name}`,`Desbloquea ${beach.name}`):_t(lang,"Reçois le brief sargasses","Get the sargassum brief","Recibe el informe de sargazo")}
@@ -9509,7 +9509,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const dayName=j2info?(()=>{try{return new Date(j2info.date+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return""}})():""
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
-    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"fixed",inset:0,zIndex:1050,
+    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"fixed",inset:0,zIndex:"var(--z-sheet)",
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
@@ -9979,7 +9979,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
   const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
   return(
-    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"fixed",inset:0,zIndex:1050,
+    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"fixed",inset:0,zIndex:"var(--z-sheet)",
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
       /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
          opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
@@ -13199,11 +13199,13 @@ useEffect(()=>{
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
   },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
-  // « scroll satellite » (PRODUCT.md §8). Default ON ; rollback instantané ?mapdetail=0.
+  // « scroll satellite » (PRODUCT.md §8). Default OFF (fix funnel stability 2026-08-12 :
+  // deux fiches plage concurrentes = "trous" ressentis. BeachSheetComic devient la fiche
+  // unique, ChasseDetail reste accessible en démo via ?mapdetail=1). rollback: ?mapdetail=1.
   // PAS un nouveau flag A/B (récolte : 51 flags conversion déjà dilués) — feature flag
   // réversible. Le détail comic réutilise openPremium (porte conversion unique intacte),
   // "Fiche complète" (onFull) reste un pont vers la fiche data pour qui veut la profondeur.
-  const mapDetail=useMemo(()=>{try{return !/[?&]mapdetail=0/.test(window.location.search)}catch(_){return true}},[])
+  const mapDetail=useMemo(()=>{try{return /[?&]mapdetail=1/.test(window.location.search)}catch(_){return false}},[])
   const [comicBeach,setComicBeach]=useState(null)
   const openComicBeach=useCallback(b=>{
     if(!b||!b.id)return
@@ -14491,13 +14493,13 @@ useEffect(()=>{
             (onBeachClick). onFull = pont explicite vers la fiche data. */}
         {comicBeach&&(
           <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
-            <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#2e1a5e",zIndex:1200}}/>}>
+            <Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,background:"#FDF6E3",zIndex:1200,pointerEvents:"none"}}/>}>
               <LazyComicDetail
                 beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
                 sargData={sargData}
                 onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
-                onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
-                onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
+                onPremium={(src)=>{const b=comicBeach;openPremium(src||"comic_map");/* defer unmount: let paywall's PanelWipe cover the transition */ setTimeout(()=>setComicBeach(null),300)}}
+                onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
                 onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
                 communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
             </Suspense>

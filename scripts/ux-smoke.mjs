@@ -118,17 +118,18 @@ whiteButtons.push(...await p.evaluate(scanGhost));
 
 // ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
 //       car le pan de la carte peut voler le clic physique en émulation). Route
-//       par défaut = ComicDetail (.lc-detail, flag mapdetail) ; fallback fiche
-//       data (.sheet) si le flag change — les deux comptent comme « fiche ».
+//       par défaut = BeachSheetComic (.bsc-sheet, fix funnel stability 2026-08-12) ;
+//       ComicDetail (.lc-detail) en mode démo ?mapdetail=1 ; legacy .sheet en fallback.
+//       Les trois comptent comme « fiche ».
 await p.evaluate(() => {
   const l = [...document.querySelectorAll('.sg-maplabel')]
     .find(el => getComputedStyle(el).visibility !== 'hidden');
   if (l) l.click();
 });
-await p.waitForSelector('.lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
+await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j2-fiche.png' });
-const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
+const ficheOk = !!(await p.$('.bsc-sheet')) || !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
