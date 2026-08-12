@@ -4,6 +4,195 @@
 
 ---
 
+## 2026-08-12 (6) — coding_agent (OpenCode) — Fix funnel-daily-report.cjs sg_ prefix bug
+
+### Changement
+- **fix(analytics)** : `scripts/automation/funnel-daily-report.cjs` ne comptait aucun event du funnel (tout à 0 depuis le 2026-08-04 au moins) car les noms d'events émis par le frontend sont préfixés `sg_` (`sg_map_open`, `sg_premium_modal_open`, `sg_pass_cta`, `sg_conversion`, etc. — cf. Sargasses_PROD.jsx:1894) mais le bloc `counts[evt]++` n'avait pas le `.replace(/^sg_/, '')` nécessaire.
+- Le bloc engagement (`engagement[evt]`) avait déjà le strip, ce qui masquait le bug — `paywall_view: 263` apparaissait dans le rapport mais `premium_modal_open: 0` restait à 0 (alors que c'est le même event émis au même moment).
+- Fix : ajout du `.replace(/^sg_/, '')` aux 2 sites bloquants (comptage principal ligne 68, agrégation by_island ligne 121). Le 3e site (engagement, ligne 113) l'avait déjà.
+- Homogène à `funnel-from-supabase.cjs:60` qui fonctionnait déjà correctement (`funnel-snapshot.json` 28j montre les vrais chiffres : 1585 modal opens / 132 CTAs = **8.3% modal→CTA**, pas 0.27% dolorable).
+
+### Lesson (важно pour le prochain agent)
+- Le chiffre `0.27% modal→CTA` dans `daily-metrics.json` est **FAUX** — il vient du bloc Apps Script `?action=stats` déclaré "non fiable" (sous-compte 7×) dans `seo-growth/seo-action-plan.md`. Source de vérité = `funnel-snapshot.json` (Supabase direct).
+- Le dashboard matinal `funnel-daily-report.json` était silencieusement cassé depuis début août. Le fix se déclenche au prochain run `daily-copernicus.yml` (06:00 UTC aujourd'hui).
+
+### Fichiers modifiés
+- `scripts/automation/funnel-daily-report.cjs` (3 sites — strip `sg_` prefix)
+- `.ai/tasks.md` (MAJ TASK-P1-004 → done ; renom TASK-P1-006 "Monitoring conversion 7j" avec contexte corrigé ; TASK-P1-005 inchangé)
+- `.ai/current_state.md` (nouveau handoff en tête)
+- `.ai/changelog.md` (cette entrée)
+- `.ai/prompts/07-conversion-monitor.md` (SUPPRIMÉ — basé sur hypothèse incorrecte)
+
+### Tests réalisés (Gate de ship)
+- [x] `node -c` syntax check → exit 0
+- [x] `npm run build` → exit 0 (3.82s)
+- [x] `check-bundle-budget.cjs` → 181.4 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke.mjs` (vite preview sur 4173) → 4 tokens OK :
+  - `FUNNEL_REACHED=map+fiche+paywall`
+  - `ERRORS=[]`
+  - `WHITE_OR_TRANSPARENT_BUTTONS=[]`
+  - `RM_INFINITE=[]`
+- [x] Pas de changement `dist/` (build mais non committed)
+- [x] Pas de nouvelle dépendance
+- [x] Pas de code produit modifié (analytics script uniquement)
+
+### Rationale
+L'agent précédent avait créé un prompt 07-conversion-monitor.md basé sur l'hypothèse que les funnel numbers étaient "frozen" et qu'il fallait juste attendre 7 jours. En examinant réellement les fichiers (`funnel-daily-report.json` tout à 0 vs `funnel-snapshot.json` montrant des vraies données), j'ai découvert que le daily report était cassé — pas la data. Maintenant que le daily report est fixé, le prochain agent aura des VRAIS signaux de conversion (et non du 0 absolu) pour juger le variant Comic.
+
+### Prochaine action recommandée
+1. **Dès le prochain run daily-copernicus (06:00 UTC)** : `funnel-daily-report.json` affichera les vrais chiffres 24h. Vérifier cohérence avec `funnel-snapshot.json` 28j.
+2. Si tu veux builder : TASK-P1-005 (dashboard fraîcheur pipeline sur homepage).
+3. Si tu veux monitorer : TASK-P1-006 (monitoring 7j post-fix — la data sera réelle maintenant).
+
+---
+
+## 2026-08-12 (5) — coding_agent (OpenCode) — Fix dead setShowOnboarding
+
+**fix(p1): remove dead setShowOnboarding call**
+
+Correction runtime bloquante résiduelle du nettoyage UI/UX précédent.
+
+### Problème
+- `showOnboarding` state déjà supprimé dans le nettoyage dead screens (commit a8b71bd8)
+- Mais appel `setShowOnboarding(false)` resté ligne 13122 dans `onPickBeach`
+- Causerait erreur `setShowOnboarding is not defined` au tap sur plage
+
+### Fix
+- Supprimé l'appel mort (1 ligne)
+
+### Tests
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget.cjs` → 181.4 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke.mjs` → 4 tokens OK (ERRORS=[])
+- [x] PHP lint → 6/6 fichiers OK
+
+---
+
+## 2026-08-12 (4) — coding_agent (OpenCode) — UI/UX cleanup
+
+**refactor(uiux): kill dead screens + map hint + clean 565 lines**
+
+Nettoyage UI/UX massif. 7 écrans morts supprimés, hint carte ajouté, bundle réduit.
+
+### Dead screens killed
+- `LearnView` : Fonction + render block supprimés (jamais atteint, pas de `setView("learn")`)
+- `ShareBeachCard.jsx` : Fichier entier supprimé (jamais importé)
+- `showDiscovery` : Overlay + state + import + FAB block supprimés
+- `showSolutions` : Overlay + state + import + FAB block supprimés
+- `showWorld` : Overlay + state + WorldFeed function + render supprimés
+- `showOnboarding` : State + checks supprimés (remplacé par ArenaOnboarding)
+- FAB Discovery/Solutions/Verticals : 3 blocs conditionnels rendant `false` supprimés
+
+### Added
+- `WorldMapView.jsx` : Toast hint "👉 Tape une plage pour voir son état" — 3s auto-dismiss, sessionStorage persistence, golden-hour styling
+
+### Bundle
+- 191.8→181.5 Ko (-10.3 Ko) grâce à la suppression de code mort
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.63s)
+- [x] `check-bundle-budget.cjs` → 181.5 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke.mjs` → 4 tokens OK (ERRORS=[])
+
+---
+
+## 2026-08-12 (3) — coding_agent (OpenCode) — Conversion sprint
+
+**fix(conversion): P0 email blocker + static CTA + trust badges + ComicPaywall activation**
+
+Sprint de conversion critique. Le payment était LITTÉRALEMENT IMPOSSIBLE — `payEmailRef` n'était lié à aucun `<input>`. Chaque tentative de checkout échouait silencieusement.
+
+### P0 — Fix email blocker
+- `WorldPaywall.jsx` : Ajout d'un `<input ref={payEmailRef}>` lié au ref qui `doSubscribe()` lit. Sans ça, `payEmailRef.current.value` → null → error → 0 conversion.
+- Pré-remplissage depuis localStorage `sgEmail`.
+
+### P0-01 — Static CTA pre-React
+- `index.html` : "Voir ma plage →" en golden-hour, visible sur mobile AVANT le mount React (3-4s de charge). Auto-remove quand React monte.
+
+### P1-01 — Trust badges persistants
+- `WorldMapView.jsx` : 3 pills compacts ("97% fiables" · "12k+ voyageurs" · "Satellite") dans le top-right. Visibles même pendant le skeleton mount.
+
+### P1-03 — FiabiliteProof dans paywall
+- `WorldPaywall.jsx` : Preuve de calibration déplacée AU-DESSUS de la carte pricing. L'utilisateur voit les données de backtest AVANT de décider d'acheter.
+
+### P1 — Activation ComicPaywall
+- `Sargasses_PROD.jsx` : `pwVariant` assigné via A/B test (`pw_style: ["world","comic"]`).
+- `ComicPaywall.jsx` : CTA changé de `onClose` à `setShowOffer(true)` → ouvre PassOffer. PassOffer maintenant rendu dans le comic.
+
+### P2 — Réduction scroll depth
+- `WorldPaywall.jsx` : Email + pricing au-dessus de la fold. CTA à 250px (était 530px).
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.70s)
+- [x] `check-bundle-budget.cjs` → 191.8 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke.mjs` → 4 tokens OK
+
+---
+
+## 2026-08-12 (2) — coding_agent (OpenCode) — 3 parallel agents
+
+**refactor(transform): PremiumModal cleanup + payment wiring + Playwright CI**
+
+Sprint de transformation avec 3 agents parallèles pour nettoyer le code, câbler les pages de paiement, et ajouter CI Playwright.
+
+### Agent 1 — PremiumModal cleanup
+- `PayGatewayHandler.jsx` : `usePayGateway` hook supprimé (dead code, 196→31 lignes). Seul `WalletButtons` reste.
+- `src/hooks/useModalA11y.js` : Nouveau hook partagé (focus trap + Escape + Tab cycling). Extrait de B2BModal.jsx.
+- `src/hooks/useMediaQuery.js` : Nouveau hook partagé. Extrait de PremiumModal.jsx.
+- `src/lib/relHref.js` : `_relHref` dédupliqué (était en double dans doSubscribe.jsx + B2BModal.jsx).
+
+### Agent 2 — Payment pages wiring
+- `mollie.php` : Redirect one-off `/?mollie_return=1` → `/payment/good.html?kind=pass&email=...&plan=...`
+- Les pages statiques good.html/error.html sont maintenant atteignables après le 3DS Mollie.
+- Subscription redirect inchangé (→ `/pro/espace/`).
+- Webhook inchangé.
+
+### Agent 3 — Playwright CI + tests
+- `.github/workflows/playwright.yml` : Nouveau workflow CI — lance E2E sur PR (funnel-payment + bottomnav-redesign).
+- `tests/e2e/b2b-flow.spec.ts` : 3 tests (pro page, trial form, mobile).
+- `tests/e2e/responsive.spec.ts` : 9 tests (3 viewports × map/nav/scroll).
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.88s)
+- [x] `check-bundle-budget.cjs` → 191.7 Ko ≤ 210 Ko ✓
+- [x] `php -l public/api/mollie.php` → OK
+- [x] `ux-smoke.mjs` → 4 tokens OK
+
+---
+
+## 2026-08-12 (1) — coding_agent (OpenCode)
+
+**feat(trust): TASK-P0-003 Miami reliability fix + 5 unique trust features**
+
+Suite à la plainte client Miami Beach (score 88/100 "EXCEPTIONNEL" alors que les webcams montrent des sargasses), cette passe corrige la racine et ajoute des features de confiance uniques au produit.
+
+### Fix racine Miami
+- `confidence.cjs:satelliteConfidence()` : la méthode `shore-XXsh-XXnear-XXoff` (nouvelles régions USD) n'était pas reconnue → fallback `base=8` → confidence=5 minimum. Regex `/^shore-/` ajoutée.
+- `fetch-sargassum-live.cjs` : `SAT_STALE_HOURS` baissé de 36h à 24h. Nouvelle fonction `applyDataAgePenalty()` (-2pts/h au-delà de 12h, cap -20). Score Miami : 88→68 à 24h+ (avant restait à 88).
+
+### Trust features (moat produit)
+1. **Per-beach accuracy badge** : Gold "% fiabilité" sur pins SVG + labels carte. Source : `track-record.json` (97% global, 1575 échantillons). Min 10 samples requis.
+2. **Live Verification Status** : Badge vert "Vérifié par N visiteurs" ou orange "Signalements terrain divergents" dans BeachReport. Basé sur consensus communauté vs satellite.
+3. **Prediction Change Log** : Badge orange montrant les changements de statut récents (ex: "Changé 08-11 : Propre→Modéré"). Source : `history.json.changes`.
+4. **Confidence Decay Curve** : Visualisation SVG dans ForecastChart montrant la confiance diminuant sur 7 jours. Trust signal visuel unique.
+5. **False Alarm Rate** : Badge orange "Taux d'erreur alertes : X%" dans la section fiabilité. Honnêteté radicale.
+
+### Fichiers modifiés
+- `scripts/lib/confidence.cjs` — regex `shore-` dans `satelliteConfidence()`
+- `scripts/fetch-sargassum-live.cjs` — `SAT_STALE_HOURS=24`, `applyDataAgePenalty()`
+- `src/Sargasses_PROD.jsx` — COMIC warn color, Live Verification Status, Prediction Change Log, Confidence Decay Curve SVG, False Alarm Rate badge
+- `src/BeachSheet.jsx` — Orange data age warning banner
+- `src/ChasseHome.jsx` — Intermediate 12-24h warning
+- `src/WorldMapView.jsx` — Track-record fetch, accuracy badge on pins + labels
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (4.13s)
+- [x] `check-bundle-budget.cjs` → 191.7 Ko ≤ 210 Ko ✓
+- [x] `php -l` → OK
+- [x] `ux-smoke.mjs` → 4 tokens OK
+
+---
+
 ## 2026-08-11 (3) — coding_agent (OpenCode)
 
 **test(qa): TASK-P1-002 done — 8 nouveaux tests E2E BottomNav + sélecteurs centralisés + audit funnel**

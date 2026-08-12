@@ -61,11 +61,11 @@ async function fetchAll(cutoffIso) {
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 1000) / 10 : 0 }
 
 function computeReport(rows) {
-  // Comptage par step
+  // Comptage par step — strip sg_ prefix (frontend emits sg_map_open, sg_premium_modal_open, etc.)
   const counts = {}
   for (const s of FUNNEL_STEPS) counts[s.key] = 0
   for (const r of rows) {
-    const evt = String(r.event || '')
+    const evt = String(r.event || '').replace(/^sg_/, '')
     if (counts[evt] !== undefined) counts[evt]++
     // pass_cta + premium_modal_cta = CTA total
   }
@@ -114,11 +114,11 @@ function computeReport(rows) {
     if (engagement[evt] !== undefined) engagement[evt]++
   }
 
-  // Par île
+  // Par île — strip sg_ prefix (homogène au comptage principal)
   const byIsland = {}
   for (const r of rows) {
     const isl = (r.island || 'MQ').toUpperCase()
-    const evt = String(r.event || '')
+    const evt = String(r.event || '').replace(/^sg_/, '')
     if (counts[evt] !== undefined) {
       byIsland[isl] = byIsland[isl] || {}
       byIsland[isl][evt] = (byIsland[isl][evt] || 0) + 1

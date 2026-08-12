@@ -16,6 +16,18 @@
 - [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
 - [x] P0 - Redesign funnel UX — BottomNav restaurée, FABs allégés, CTA clarifié (@coding_agent, 2026-08-11)
 - [x] P1 - TASK-P1-002 Tests E2E Playwright funnel payant (@coding_agent, 2026-08-11) — 8 nouveaux tests BottomNav/FABs/CTA + 13 tests existants ré-actualisés (21/21 pass). Sélecteurs centralisés dans tests/utils/selectors.ts.
+- [x] P0 - TASK-P0-003 Miami reliability fix + unique trust features (@coding_agent, 2026-08-12) — Fix satelliteConfidence() for shore- method, SAT_STALE_HOURS 36h→24h, applyDataAgePenalty, per-beach accuracy badge, Live Verification Status, Prediction Change Log, Confidence Decay Curve, False Alarm Rate display. Gate de ship OK: build, smoke 4/4, bundle 191.7 Ko.
+- [x] P2 - TASK-P2-001 PremiumModal cleanup (@coding_agent, 2026-08-12) — Deleted dead usePayGateway (196→31 lines), extracted useModalA11y + useMediaQuery to shared hooks, deduplicated _relHref. Gate de ship OK.
+- [x] P2 - TASK-P2-003 Payment pages wiring (@coding_agent, 2026-08-12) — mollie.php one-off redirect → /payment/good.html. Static good.html/error.html now reachable. Gate de ship OK.
+- [x] P1 - Playwright CI workflow + missing tests (@qa_agent, 2026-08-12) — Created playwright.yml, b2b-flow.spec.ts (3 tests), responsive.spec.ts (9 tests). Gate de ship OK.
+- [x] P0 - CRITICAL: Fix email input blocker — payEmailRef never bound (@coding_agent, 2026-08-12) — Added email input to WorldPaywall bound to payEmailRef. Payment was literally impossible. Gate de ship OK.
+- [x] P0-01 - Static CTA 'Voir ma plage →' pre-React mount (@coding_agent, 2026-08-12) — Added in index.html, golden-hour styling, auto-removes on React mount. Gate de ship OK.
+- [x] P1-01 - Trust badges persistent on map (@ux_agent, 2026-08-12) — 3 compact pills (97%, 12k+, Satellite) in top-right, visible during skeleton mount. Gate de ship OK.
+- [x] P1-03 - FiabiliteProof in paywall (@ux_agent, 2026-08-12) — Calibration proof moved above pricing card. Gate de ship OK.
+- [x] P1 - ComicPaywall activation (@coding_agent, 2026-08-12) — pwVariant via A/B test, CTA fixed (onClose→setShowOffer), PassOffer added. Gate de ship OK.
+- [x] P2 - Scroll depth reduction WorldPaywall (@coding_agent, 2026-08-12) — Email + pricing above fold, CTA within 250px (was 530px). Gate de ship OK.
+- [x] P1 - Kill dead screens + map hint (@coding_agent, 2026-08-12) — Killed LearnView, ShareBeachCard, Discovery/Solutions/World overlays, showOnboarding, dead FAB blocks. Added map hint toast. -565 lines, -10.3 Ko bundle. Gate de ship OK.
+- [x] P1 - Fix dead setShowOnboarding call (@coding_agent, 2026-08-12) — Removed stray setShowOnboarding(false) call that would crash on beach tap. Gate de ship OK.
 
 ---
 
@@ -31,6 +43,41 @@
 ---
 
 ## P1 — Haute priorité
+
+### TASK-P1-004 Fix funnel-daily-report.cjs sg_ prefix bug
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Description** : `funnel-daily-report.cjs` comptait les events SANS stripper le préfixe `sg_` (frontend émet `sg_map_open`, `sg_premium_modal_open`, etc., mais les FUNNEL_STEPS keys n'ont pas le préfixe). Résultat : `funnel-daily-report.json` était vide (0 partout) depuis le 2026-08-04 alors que `funnel-snapshot.json` (28j, script correct) montrait 1585 modal opens / 132 CTAs (= 8.3% modal→CTA, pas 0.27%).
+- **Statut** : [x] done by coding_agent (2026-08-12) — strip `sg_` ajouté aux 3 sites (comptage, engagement, by_island). Build OK, smoke 4/4 OK, bundle 181.4 Ko. Le prochain run daily-copernicus (06:00 UTC) produira des chiffres réels.
+
+### TASK-P1-005 Tableau de bord fraîcheur pipeline visible sur homepage
+- **Priorité** : P1
+- **Rôle** : coding_agent + UX_agent
+- **Description** : Actuellement, "Données satellite: Xh" est visible uniquement dans le boot skeleton (index.html). L'exposer à TOUS les visiteurs sur la homepage (après mount React) pour trust immédiat.
+- **Impact** : Différenciateur trust vs concurrents opaques. Moat = "honnêteté".
+- **Comment** : Lire `public/api/copernicus/sargassum.json` (`updatedAt`, `erddapTimestamp`, `stale`). Si `stale=true` (>24h), afficher alerte. Sinon, badge compact "Satellite · 13h" dans le header ou hero section.
+- **Fichiers** : `src/Sargasses_PROD.jsx` (hero section, trust badges), `index.html` (boot skeleton déjà fait — dupliquer l'affichage post-mount).
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
+### TASK-P1-006 Monitoring conversion 7j post-fix paiement (données réelles maintenant disponibles)
+- **Priorité** : P1
+- **Rôle** : coding_agent / growth_agent
+- **Description** : Le paiement était 100% cassé (`payEmailRef` non bindé) jusqu'au 2026-08-12. Maintenant fonctionnel. Le monitoring daily (`funnel-daily-report.cjs`) était AUSSI cassé (bug sg_ prefix), mais est désormais fixé. Donc à partir du prochain run daily-copernicus (06:00 UTC, 2026-08-12), les vrais chiffres de conversion apparaîtront dans `funnel-daily-report.json`. Mission : monitorer 7 jours pour : (a) mesurer le lift de conversion post-fix, (b) décider si Comic variant est gardé ou tué.
+- **Gate de succès** : Conversion > 2% sur 7 jours = SUCCESS. Sinon = investigate funnel/gate de paiement.
+- **Kill switch Comic** : `src/Sargasses_PROD.jsx:14280` → `abVariant("pw_style",["world","comic"])`. Pour forcer World : hardcoder `"world"`.
+- **Sources à surveiller** (NAVETTE traversante des 3 vérités) :
+  - `scripts/automation/data/funnel-daily-report.json` (24h glissantes, maintenant CORRECT)
+  - `scripts/automation/data/funnel-snapshot.json` (28j glissantes, déjà correct — référence)
+  - `scripts/automation/data/daily-metrics.json` (bloc `mollie.paid` — paiements réels, source API Mollie)
+  - `public/api/mollie.php` (nouveaux paiements one-off)
+- **Plan semaine** :
+  - **Jour 1-3** : Check funnel quotidien (les 2 fichiers ci-dessus). Compter nouveaux paiements Mollie (était 2/30j pré-fix).
+  - **Jour 3** : Si Comic < World variant → désactiver Comic (hardcoder `"world"` au lieu de `abVariant`).
+  - **Jour 7** : Documenter verdict final dans `.ai/changelog.md` + `.ai/decisions.md`.
+- **Rollback si régression** : `git revert HEAD && git push origin main`
+- **Estimation** : 7 jours calendar (1-2 actions/agent par jour, ~30 min/action)
+- **Statut** : [ ] pending — claim by coding_agent ou growth_agent (2026-08-12)
 
 ### TASK-P1-001 Purger les A/B tests morts
 - **Priorité** : P1
