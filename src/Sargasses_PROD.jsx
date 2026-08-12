@@ -13199,11 +13199,13 @@ useEffect(()=>{
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
   },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
-  // « scroll satellite » (PRODUCT.md §8). Default ON ; rollback instantané ?mapdetail=0.
+  // « scroll satellite » (PRODUCT.md §8). Default OFF (fix funnel stability 2026-08-12 :
+  // deux fiches plage concurrentes = "trous" ressentis. BeachSheetComic devient la fiche
+  // unique, ChasseDetail reste accessible en démo via ?mapdetail=1). rollback: ?mapdetail=1.
   // PAS un nouveau flag A/B (récolte : 51 flags conversion déjà dilués) — feature flag
   // réversible. Le détail comic réutilise openPremium (porte conversion unique intacte),
   // "Fiche complète" (onFull) reste un pont vers la fiche data pour qui veut la profondeur.
-  const mapDetail=useMemo(()=>{try{return !/[?&]mapdetail=0/.test(window.location.search)}catch(_){return true}},[])
+  const mapDetail=useMemo(()=>{try{return /[?&]mapdetail=1/.test(window.location.search)}catch(_){return false}},[])
   const [comicBeach,setComicBeach]=useState(null)
   const openComicBeach=useCallback(b=>{
     if(!b||!b.id)return
@@ -14491,13 +14493,13 @@ useEffect(()=>{
             (onBeachClick). onFull = pont explicite vers la fiche data. */}
         {comicBeach&&(
           <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
-            <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#2e1a5e",zIndex:1200}}/>}>
+            <Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,background:"#FDF6E3",zIndex:1200,pointerEvents:"none"}}/>}>
               <LazyComicDetail
                 beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
                 sargData={sargData}
                 onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
-                onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
-                onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
+                onPremium={(src)=>{const b=comicBeach;openPremium(src||"comic_map");/* defer unmount: let paywall's PanelWipe cover the transition */ setTimeout(()=>setComicBeach(null),300)}}
+                onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
                 onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
                 communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
             </Suspense>
