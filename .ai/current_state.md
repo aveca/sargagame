@@ -4,6 +4,58 @@
 
 ---
 
+## 2026-08-12 18:40 UTC · Agent: coding_agent (OpenCode glm) — Artefact 3 Signature B2C shipé en prod + specs artefacts 2 & 4
+
+### Travail effectué
+- **Résumé 1 ligne** : 1er livrable du Prompt 07 Univers & Motion — Artefact 3 « Le Veilleur regarde ta plage, pas la peur » déployé sur 5 domaines (PR #568 merged). Spécifications des artefacts 2 (OG cards par plage) et 4 (easter eggs golden-hour carte SVG) déposées dans `design/STORY/`.
+
+### Détails
+- **Artefact 3 — Signature B2C multi-surfaces SHIPÉ EN PROD** (PR #568 squash-merged `fe862edf`) :
+  - **3 surfaces touchées** : `index.html` (boot skeleton, 100% visiteurs, disparaît avec mount React), `src/PremiumModal/WorldPaywall.jsx` (variant `world`, pied avant bouton « Plus tard »), `src/PremiumModal/ComicPaywall.jsx` (variant `comic`, pied absolu hors offer panel)
+  - **i18n FR + EN + ES** via `t()` sur les paywalls. Le boot skeleton garde FR dur (neutre 5 domaines / disparaît avec montant React).
+  - **Cohérence A/B** : les 2 variants `pw_style=['world','comic']` portent la même signature → pas de biais de signature introduit dans l'A/B test
+  - **Moat posé, jamais vendu** : la signature n'est jamais un CTA, aucun lien, juste l'identité. Commercial + rétention.
+- **Artefact 2 — Spec OG card par plage** déposée dans `design/STORY/09-REWRITES-GROWTH-SHARE.md` (commit `873bc2b5`) : axe **display + SEO**. Spec design 1200×630 + architecture serverless (`/api/og/beach/{slug}.png` via satori + resvg, fallback `og-image.png` régional, schema.org ImageObject dans pageShell, A/B `?og=1/0`).
+- **Artefact 4 — Spec easter eggs golden-hour carte SVG** déposée dans `design/STORY/03-MOTIF-KIT.md` (commit `e733766c`) : axe **rétention + display**. 5 easter eggs région-spécifiques (yole MQ, maison Sainte-Anne GP, building Art Deco Miami, cenote Riviera Maya, palmier-tente Punta Cana). Doctrine calme 80–150s ambient, plancher reduced-motion, additif sur layer NEAR ArchipelView, A/B `?eg=1/0` optionnel.
+
+### Fichiers modifiés
+- `index.html` — ligne ~379 (signature B2C en pied du boot skeleton)
+- `src/PremiumModal/WorldPaywall.jsx` — ligne ~329 (signature B2C avant bouton « Plus tard »)
+- `src/PremiumModal/ComicPaywall.jsx` — ligne ~463 (signature B2C en pied absolu du paywall comic)
+- `design/STORY/03-MOTIF-KIT.md` — section « Easter eggs golden-hour par région » appended (71 lignes)
+- `design/STORY/09-REWRITES-GROWTH-SHARE.md` — section « Spec — OpenGraph card par plage » appended (85 lignes)
+- `.ai/current_state.md` (handoff — cette entrée)
+- `.ai/changelog.md` (entrée)
+
+### Tests réalisés (Artefact 3, gate de ship)
+- [x] `esbuild` parse OK sur `WorldPaywall.jsx` + `ComicPaywall.jsx`
+- [x] `npm run build` → exit 0 en 4.16s
+- [x] `check-bundle-budget.cjs` → 181.6 Ko ≤ 210 Ko gzip (texte inline = 0 impact bundle)
+- [x] `ux-smoke.mjs` → 4 tokens : FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[]
+
+### Branche / PR / Merge (Artefact 3)
+- Branche : `agent/coding/TASK-P2-005a-signature-b2c`
+- PR : #568 — https://github.com/aveca/sargagame/pull/568
+- Merge : squash-merge `fe862edf` sur main, branche supprimée
+- Workflows main (`fe862edf`) : **CI Tests success** (50s) + **Perf Budget success** (3m30s) + **Daily Copernicus + Deploy success** (2m16s) — **déployé sur 5 domaines** ✅
+
+### Problèmes restants
+- [ ] TASK-P1-005 : Dashboard fraîcheur pipeline homepage — non démarré
+- [ ] TASK-P1-006 : Monitoring conversion 7j — démarre au prochain run 06:00 UTC
+- [ ] TASK-P2-001 : Spliter PremiumModal.jsx — pending
+- [ ] **Nouveau** TASK-P2-005b : Implémenter artefact 2 (OG card par plage) — branches futures. Spec en place.
+- [ ] **Nouveau** TASK-P2-005c : Implémenter artefact 4 (easter eggs carte SVG) — 1 région pilote (Martinique yole). Spec en place.
+- [ ] **Nouveau** TASK-P2-005d : Artefact 1 (clip Remotion « Le jour qui bascule ») — pipeline local via skill video-brief.
+
+### Prochaine action recommandée
+1. **(Rôle coding_agent)** TASK-P2-005b : proto endpoint `/api/og/beach/_pilot-slug_.png` via satori + resvg, 3 plages pilotes (Les Salines MQ, Sainte-Anne GP, Miami Beach FL). Branche `agent/coding/TASK-P2-005b-og-cards`. ~3h.
+2. **(Rôle ui_ux_agent)** TASK-P2-005c : implémenter le 1er easter egg (yole Martinique) sur la carte SVG. Branche `agent/ui/TASK-P2-005c-easter-eggs-mq`. ~2h + cross-device test Playwright iPhone 12.
+3. **(Rôle univers_motion_agent)** TASK-P2-005d : script clip Remotion « Le jour qui bascule » via skill `video-brief` (pipeline local gratuit, ffmpeg + edge-tts). Timebox 90 min.
+4. (Mitigation) Vérifier post-deploy : `curl https://sargasses-martinique.com/` confirmer nouvelle signature B2C dans le boot skeleton HTML.
+
+=== précédent handoff (18:05 UTC) conservé ci-dessous ===
+
+
 ## 2026-08-12 18:05 UTC · Agent: ui_ux_agent (OpenCode glm) — Funnel-stability Commit 5 (D2+E2) + Prompt 07 déposé
 
 ### Travail effectué

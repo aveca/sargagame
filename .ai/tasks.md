@@ -138,7 +138,32 @@
 - **Rôle** : univers_motion_agent
 - **Description** : Produire le 1er artefact via le prompt `.ai/prompts/07-univers-motion-agent.md`. Candidats : (a) script clip Remotion pour brief plage quotidien (9:16, sous-titré, coupe courte), (b) copy paywall/onboarding B2B selon colonne vertébrale 6 temps (FR+EN+ES), (c) direction illustrative additive pour carte SVG (easter eggs golden-hour par région), (d) storyboard BD relance B2B. Doit annoncer explicitement au moins 1 axe marketing/display/commercial/rétention dans son rapport (format imposé par le prompt). Univers Le Veilleur respecté, zéro IP tierce, claims hedgés, replis accessibilité.
 - **Estimation** : 90 min (timebox autonomie)
+- **Statut** : [x] done by coding_agent (2026-08-12 18:40 UTC) — Package 4 artefacts livrés : Artefact 3 (Signature B2C) **shipé en prod** PR #568 (5 domaines via 3 surfaces : index.html + WorldPaywall + ComicPaywall, i18n FR+EN+ES, cohérence A/B préservée). Artefacts 2 (OG cards) + 4 (easter eggs SVG) spec'd dans `design/STORY/` canon, 3 sous-tasks créés (b/c/d) pour implémentation. Gate de ship 4/4 OK.
+
+### TASK-P2-005b. Implémenter artefact 2 — OG card par plage (serverless)
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : Proto endpoint `/api/og/beach/{{slug}}.png?lang={{fr|en|es}}` via `satori` + `resvg` (build-time, pas de .png statiques en dist). Spec design dans `design/STORY/09-REWRITES-GROWTH-SHARE.md`. 3 plages pilotes : Les Salines MQ, Sainte-Anne GP, Miami Beach FL. Schema.org ImageObject dans pageShell. A/B `?og=1/0` (control intact).
+- **Fichiers** : `serverless/og-beach.{js,ts}` (nouveau), `vite.config.js` (pageShell meta), `index.html` (A/B flag).
+- **Estimation** : 3h
+- **Statut** : [ ] pending — claimable by coding_agent
+
+### TASK-P2-005c. Implémenter artefact 4 — 1er easter egg carte SVG (yole Martinique)
+- **Priorité** : P2
+- **Rôle** : ui_ux_agent
+- **Description** : Implémenter le 1er easter egg golden-hour = **yole ronde colorée** (rouge + blanc, voiles traditionnelles rondes) dérive en silhouette sur la mer au large de Martinique. Spec dans `design/STORY/03-MOTIF-KIT.md`. Additif sur layer NEAR `ArchipelView` (l.~9474 Sargasses_PROD.jsx), 1 seul rAF hub existant, prefers-reduced-motion = tableau figé. 80–150s ambient, jamais traverser, micro-respiration. A/B `?eg=1/0` optionnel. Cross-device OK Playwright iPhone 12 obligatoire.
+- **Fichiers** : `src/Sargasses_PROD.jsx` (ArchipelView, layer NEAR additif), `src/Themes.css` (keyframes ambient si besoin).
+- **Estimation** : 2h + cross-device test
+- **Statut** : [ ] pending — claimable by ui_ux_agent
+
+### TASK-P2-005d. Artefact 1 — Clip Remotion « Le jour qui bascule »
+- **Priorité** : P2
+- **Rôle** : univers_motion_agent
+- **Description** : Script clip Remotion 25 s, 9:16, sous-titré, coupe courte, 7 scènes selon spec livrée (cf. rapport prompt 07). Pipeline local gratuit via skill `video-brief` (ffmpeg + edge-tts + Playwright shoote calques SVG). Pas de code shipped (asset externe) — le clip tourne 1×/semaine par région, sans impact bundle.
+- **Fichiers** : `video-remotion/scenes/le-jour-qui-bascule/` (nouveau), composables Remotion existantes réutilisées.
+- **Estimation** : 90 min timebox autonomie
 - **Statut** : [ ] pending — claimable by univers_motion_agent
+
 
 ---
 

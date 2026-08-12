@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-08-12 (8+) — coding_agent (OpenCode glm) — Artefact 3 Signature B2C shipé + specs artefacts 2 & 4
+
+### Changement
+- **feat(signature-b2c) ARTEFACT 3** : signature de marque B2C multi-surfaces « Le Veilleur regarde ta plage, pas la peur. » déployée sur **5 domaines** (PR #568 squash-merged `fe862edf`). Trace l'identité sans vendre (aucun CTA, aucun lien). 3 surfaces :
+  - `index.html` (boot skeleton, 1er paint, 100% visiteurs, disparaît avec mount React)
+  - `src/PremiumModal/WorldPaywall.jsx` (variant `world`, pied avant « Plus tard »)
+  - `src/PremiumModal/ComicPaywall.jsx` (variant `comic`, pied absolu hors offer panel)
+  - i18n FR+EN+ES via `t()` sur les paywalls (FR dur sur boot — neutre 5 domaines / disparaît au mount). Cohérence A/B `pw_style` préservée (pas de biais introduit).
+- **feat(story) ARTEFACT 4 spec** : `design/STORY/03-MOTIF-KIT.md` — section « Easter eggs golden-hour par région » appended (71 lignes). Direction illustrative additive pour `WorldMapView`/`ArchipelView`. 5 easter eggs région-spécifiques (yole martiniquaise, maison Sainte-Anne Guadeloupe, building Art Deco Miami, cenote Riviera Maya, palmier-tente Punta Cana). Doctrine calme 80–150s, plancher reduced-motion, additif sur NEAR, A/B `?eg=1/0` optionnel. Commit `e733766c`.
+- **feat(story) ARTEFACT 2 spec** : `design/STORY/09-REWRITES-GROWTH-SHARE.md` — section « Spec — OpenGraph card par plage » appended (85 lignes). Spec design 1200×630 + architecture serverless `/api/og/beach/{slug}.png` via satori+resvg, fallback `og-image.png` régional, schema.org ImageObject, A/B `?og=1/0`. Commit `873bc2b5`.
+
+### Pourquoi
+- Artefact 3 est le 1er livrable réel du Prompt 07. Maximise l'impact (moat identitaire sur 100% visiteurs + 50% paywall users), lowest risk (3 blocs `<p>` additifs), fastest ship (45 min effectif).
+- Artefacts 2 & 4 docs assurent que le prochain agent reprend sans le contexte — les specs sont en canon `design/STORY/` (sources de vérité existantes), pas dans des `.ai/` opaques.
+- Pose le socle créatif complet 4-axes (marketing/display/commercial/rétention) du Prompt 07 en 1 session : 1 shipped en prod + 3 spec'd pour les prochaines branches.
+
+### Fichiers modifiés
+- `index.html` (signature B2C en pied du boot skeleton)
+- `src/PremiumModal/WorldPaywall.jsx` (signature B2C avant bouton « Plus tard »)
+- `src/PremiumModal/ComicPaywall.jsx` (signature B2C en pied absolu)
+- `design/STORY/03-MOTIF-KIT.md` (easter eggs spec appended)
+- `design/STORY/09-REWRITES-GROWTH-SHARE.md` (OG card spec appended)
+- `.ai/current_state.md` (handoff — cette session)
+- `.ai/changelog.md` (cette entrée)
+- `.ai/tasks.md` (TASK-P2-005 [x] done + 3 sous-tasks créés)
+
+### Gate de ship LOCAL (Artefact 3)
+- [x] `esbuild` parse `WorldPaywall.jsx` + `ComicPaywall.jsx` → OK
+- [x] `npm run build` → exit 0 en 4.16s
+- [x] `check-bundle-budget.cjs` → 181.6 Ko ≤ 210 Ko gzip (texte inline = 0 impact)
+- [x] `ux-smoke.mjs` → 4/4 tokens (FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[])
+
+### Merge & déploiement (Artefact 3)
+- PR #567 (Commit 5 funnel-stability D2+E2) — squash-mergeé `d3e981e7` — `CI Tests success` + `Perf Budget success` + `Daily Copernicus + Deploy success` ✅
+- PR #568 (Artefact 3 Signature B2C) — squash-mergeé `fe862edf` — `CI Tests success` (50s) + `Perf Budget success` (3m30s) + `Daily Copernicus + Deploy success` (2m16s) — **déployé sur 5 domaines** ✅
+- PRs docs (`e733766c` + `873bc2b5`) — pushés sur main, déploiement auto déclenché (docs canon, zéro impact runtime)
+
+### Rollback
+- Artefact 3 (prod live) : `git revert fe862edf --no-edit && git push origin main` (3 blocs `<p>` suppressibles en 1 revert, aucune perte fonctionnelle)
+- Artefacts 2 & 4 (specs doc) : `git revert e733766c 873bc2b5 --no-edit && git push origin main` (specs retirées du canon, aucun impact runtime)
+
+### Suite pour le prochain agent
+- **TASK-P2-005b** (coding) Implémenter OG card serverless → branche dédiée
+- **TASK-P2-005c** (ui_ux) Implémenter yole Martinique pilote → branche + cross-device Playwright
+- **TASK-P2-005d** (univers_motion) Clip Remotion « Le jour qui bascule » via skill `video-brief`
+- **TASK-P1-006** surveille conversion 7j au prochain run 06:00 UTC
+
+
 ## 2026-08-12 (7) — ui_ux_agent (OpenCode glm) — Funnel-stability Commit 5 (D2+E2) + Dépôt prompt 07
 
 ### Changement
