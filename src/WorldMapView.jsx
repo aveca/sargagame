@@ -389,6 +389,13 @@ export default function WorldMapView({
   const tapFxIdRef = useRef(0)
   const [trackRec, setTrackRec] = useState(null)  // track-record.json for per-beach accuracy
 
+  // Map interaction hint — "👉 Tape une plage pour voir son état"
+  // Shows once per session (sessionStorage), auto-dismiss after 3s or on first pin tap.
+  const [mapHintPhase, setMapHintPhase] = useState(()=>{
+    try{ return sessionStorage.getItem("sg_map_hint_seen") ? null : "show" }catch{ return "show" }
+  })
+  const mapHintTimerRef = useRef(null)
+
   // Capture email SUR LA CARTE — la carte SVG est la vue d'accueil validée en prod, donc
   // la surface PAR DÉFAUT (décision fondateur 21/06 : capture = surface par défaut). Mêmes
   // clés que le hero (sg_email / sg_hero_email_dismiss) → capter/rejeter ici vaut partout.
@@ -410,6 +417,16 @@ export default function WorldMapView({
   useEffect(()=>{
     try{ reduceRef.current=window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){}
   },[])
+
+  // Map hint: auto-dismiss after 3s
+  useEffect(()=>{
+    if(mapHintPhase!=="show") return
+    mapHintTimerRef.current = setTimeout(()=>{
+      setMapHintPhase("hiding")
+      setTimeout(()=> setMapHintPhase(null), 320)
+    }, 3000)
+    return ()=> clearTimeout(mapHintTimerRef.current)
+  },[mapHintPhase])
 
   // Charge le contour côtier régional
   useEffect(()=>{
@@ -1102,6 +1119,12 @@ export default function WorldMapView({
   const selectBeach=useCallback(b=>{
     setSelected(b)
     flyTo(b.vx,b.vy,3.0)
+    if(mapHintPhase){
+      setMapHintPhase("hiding")
+      try{ clearTimeout(mapHintTimerRef.current) }catch(_){}
+      try{ sessionStorage.setItem("sg_map_hint_seen","1") }catch(_){}
+      setTimeout(()=> setMapHintPhase(null), 320)
+    }
     if(tagTimerRef.current) clearTimeout(tagTimerRef.current)
     tagTimerRef.current=setTimeout(()=>{
       const[sx,sy]=worldToScreen(b.vx,b.vy)
@@ -1429,6 +1452,8 @@ export default function WorldMapView({
         @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
         @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
         @keyframes wmTapPingStatic{0%{opacity:.75}100%{opacity:0}}
+        @keyframes wmHintIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes wmHintOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(8px)}}
         @keyframes driftL{0%{transform:translateX(0)}100%{transform:translateX(-200px)}}
         @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
         @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
@@ -2280,6 +2305,22 @@ export default function WorldMapView({
           }}>
             {_t(lang,"Voir la plage","Open beach","Ver la playa")} <span style={{fontWeight:800}}>→</span>
           </button>
+        )}
+
+        {/* Map interaction hint — "Tape une plage" one-shot per session */}
+        {mapHintPhase&&(
+          <div aria-hidden="true" style={{
+            position:"fixed",bottom:"calc(140px + env(safe-area-inset-bottom,0px))",
+            left:"50%",transform:"translateX(-50%)",
+            zIndex:100,pointerEvents:"none",
+            background:"rgba(17,70,62,0.9)",color:"#FFC72C",
+            borderRadius:20,padding:"8px 16px",
+            font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
+            whiteSpace:"nowrap",
+            animation:mapHintPhase==="hiding"?"wmHintOut .3s ease-in both":"wmHintIn .3s ease-out both",
+          }}>
+            👉 Tape une plage pour voir son état
+          </div>
         )}
 
       </div>

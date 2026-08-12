@@ -108,9 +108,7 @@ const ScrollStory=lazyWithRetry(()=>import("./ScrollStory.jsx"))
 // éligible (jamais dans le bundle eager → budget JS critique intact). Rollback ?rmenu=0.
 const LazyContextVeilleur=lazyWithRetry(()=>import("./ContextVeilleur.jsx"))
 // Overlays narratifs SVG hors first-paint — extraits vers StoryScenes.jsx (bundle eager allégé).
-const DiscoveryStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.DiscoveryStory})))
 const StationStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.StationStory})))
-const SolutionsStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.SolutionsStory})))
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
@@ -2892,139 +2890,7 @@ function SciFooter({lang}){
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   LEARN VIEW — Educational section with wow design
-   ═══════════════════════════════════════════════════════════════════════════ */
-function LearnCard({icon,title,children,delay=0,accent=C.teal}){
-  return(
-    <SectionReveal delay={delay}>
-      <div style={{background:"var(--sg-card,#fff)",borderRadius:20,
-        border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-        boxShadow:"0 4px 24px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)",
-        padding:"22px 20px",marginBottom:14,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,height:3,
-          background:`linear-gradient(90deg,${accent},${accent}00)`}}/>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <div style={{width:44,height:44,borderRadius:14,
-            background:`linear-gradient(135deg,${accent}20,${accent}08)`,
-            display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
-            border:`1px solid ${accent}20`}}>{icon}</div>
-          <h3 style={{margin:0,fontSize:17,fontWeight:800,color:"var(--sg-ink,#0D0D0D)",fontFamily:"inherit",letterSpacing:"-.01em"}}>{title}</h3>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:11}}>
-          {children}
-        </div>
-      </div>
-    </SectionReveal>
-  )
-}
 
-function LearnParagraph({text,accent}){
-  const dashIdx=text.indexOf(" — ")
-  if(dashIdx>0&&dashIdx<40){
-    const label=text.slice(0,dashIdx)
-    const rest=text.slice(dashIdx+3)
-    return(
-      <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#5A5A5A)"}}>
-        <span style={{fontWeight:800,color:accent||"var(--sg-ink,#0D0D0D)"}}>{label}</span>
-        <span style={{opacity:.4,margin:"0 4px"}}>·</span>
-        {rest}
-      </p>
-    )
-  }
-  return <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#5A5A5A)"}}>{text}</p>
-}
-
-function LearnView({lang,onBack,onGoMap}){
-  const LL=T[lang]||T.fr
-  return(
-    <div className="view-enter" style={{position:"absolute",inset:0,zIndex:750,
-      background:"var(--sg-bg,#FDFCF7)",overflowY:"auto",overflowX:"hidden",
-      WebkitOverflowScrolling:"touch"}}>
-      {/* Ambient gradient glow */}
-      <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",
-        width:420,height:420,borderRadius:"50%",
-        background:`radial-gradient(circle,${C.teal}18 0%,${C.teal}00 60%)`,
-        pointerEvents:"none",filter:"blur(20px)"}}/>
-      {/* Floating particles */}
-      <div style={{position:"absolute",top:60,left:"20%",fontSize:20,opacity:.15,
-        animation:"floatParticle 8s ease-in-out 1 both",pointerEvents:"none"}}>🌊</div>
-      <div style={{position:"absolute",top:120,right:"15%",fontSize:16,opacity:.12,
-        animation:"floatParticle 10s ease-in-out 1 both .5s",pointerEvents:"none"}}>🌿</div>
-
-      <div style={{maxWidth:600,margin:"0 auto",position:"relative",
-        padding:"max(16px,env(safe-area-inset-top)) 16px 110px"}}>
-
-        {/* Header bar */}
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
-          <button aria-label={LL.learnBack} onClick={onBack} style={{
-            width:44,height:44,borderRadius:14,border:"1px solid var(--sg-border,rgba(0,0,0,.08))",
-            background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:20,
-            display:"flex",alignItems:"center",justifyContent:"center",
-            boxShadow:"0 2px 12px rgba(0,0,0,.06)",color:"var(--sg-ink,#0D0D0D)",fontFamily:"inherit",
-          }}>←</button>
-        </div>
-
-        {/* Hero headline */}
-        <SectionReveal>
-          <div style={{marginBottom:28,position:"relative"}}>
-            <div style={{display:"inline-block",fontSize:10,fontWeight:800,
-              color:C.teal,letterSpacing:".12em",textTransform:"uppercase",
-              padding:"4px 10px",borderRadius:100,
-              background:`${C.teal}12`,border:`1px solid ${C.teal}22`,marginBottom:12}}>
-              🔬 {LL.learnHeroSub}
-            </div>
-            <h1 className="anton" style={{margin:0,fontSize:"clamp(28px,7vw,38px)",
-              fontWeight:900,color:"var(--sg-ink,#0D0D0D)",lineHeight:1.05,letterSpacing:"-.02em"}}>
-              {LL.learnHero}
-            </h1>
-          </div>
-        </SectionReveal>
-
-        {/* Section 1 */}
-        <LearnCard icon="🌿" title={LL.learnS1Title} delay={0} accent={C.teal}>
-          <LearnParagraph text={LL.learnS1P1}/>
-          <LearnParagraph text={LL.learnS1P2}/>
-          <LearnParagraph text={LL.learnS1P3}/>
-        </LearnCard>
-
-        {/* Section 2 */}
-        <LearnCard icon="🌊" title={LL.learnS2Title} delay={.05} accent={C.ocean}>
-          <LearnParagraph text={LL.learnS2P1} accent={C.sargL}/>
-          <LearnParagraph text={LL.learnS2P2} accent={C.red}/>
-          <LearnParagraph text={LL.learnS2P3} accent={C.ocean}/>
-          <LearnParagraph text={LL.learnS2P4} accent={C.amber}/>
-        </LearnCard>
-
-        {/* Section 3 */}
-        <LearnCard icon="⚠️" title={LL.learnS3Title} delay={.1} accent={C.red}>
-          <LearnParagraph text={LL.learnS3Eco} accent={C.green}/>
-          <LearnParagraph text={LL.learnS3Health} accent={C.red}/>
-          <LearnParagraph text={LL.learnS3Econ} accent={C.amber}/>
-        </LearnCard>
-
-        {/* Section 4 — the credibility moment */}
-        <LearnCard icon="🛰️" title={LL.learnS4Title} delay={.15} accent={C.gold}>
-          <LearnParagraph text={LL.learnS4P1}/>
-          <LearnParagraph text={LL.learnS4P2}/>
-          <LearnParagraph text={LL.learnS4P3}/>
-          <p style={{margin:0,fontSize:11,lineHeight:1.6,color:"var(--sg-mute,#999)",
-            fontStyle:"italic",paddingTop:10,borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
-            {LL.learnS4Sources}
-          </p>
-        </LearnCard>
-
-        {/* CTA back to map — the tunnel moment */}
-        <SectionReveal delay={.2}>
-          <button onClick={onGoMap} className="gbtn" style={{width:"100%",marginTop:8,padding:"18px 28px",fontSize:15}}>
-            🗺️ {LL.learnCta} →
-          </button>
-        </SectionReveal>
-
-      </div>
-    </div>
-  )
-}
 
 function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=false}){
   const LL=T[lang]||T.fr
@@ -10974,66 +10840,6 @@ function WorldPremiumCard({lang,onPremium,onRestart}){
     </section>
   )
 }
-function WorldFeed({beaches,lang,onPremium,onClose,island}){
-  const scrollRef=useRef(null)
-  const[active,setActive]=useState(0)
-  const[carnet,setCarnet]=useState(null)
-  // Série 🔥 — passe-temps + raison de revenir (persistée, easter egg returning).
-  const[streak,setStreak]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_streak")||"0")||0}catch(_){return 0}})
-  const[best,setBest]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_best")||"0")||0}catch(_){return 0}})
-  const[bonus,setBonus]=useState(null) // palier de série atteint -> bonus débloqué (jeu -> conversion)
-  const onGuess=correct=>{const ns=correct?streak+1:0;setStreak(ns);try{localStorage.setItem("sg_world_streak",String(ns))}catch(_){};if(ns>best){setBest(ns);try{localStorage.setItem("sg_world_best",String(ns))}catch(_){}};if(correct&&(ns===3||ns===7||ns===14||ns===30))setBonus(ns);try{track("sg_world_guess_result",{correct,streak:ns})}catch(_){}}
-  const phaseGrad=useMemo(()=>{
-    let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
-    const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
-    return "linear-gradient(180deg,"+t.sky[0]+","+t.sky[2]+" 60%,"+t.seaB+")"
-  },[])
-  const list=useMemo(()=>(beaches||[]).filter(b=>b&&b.id&&b.name&&(!island||b.island===island)).slice(0,16),[beaches,island])
-  // La meilleure plage maintenant (data réelle) = la reco premium offerte par le bonus.
-  const topBeach=useMemo(()=>{const c=list.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,b)=>b.score-a.score);return c[0]||list.slice().sort((a,b)=>(b.score||0)-(a.score||0))[0]||null},[list])
-  // Items intercalés : 1 carte science toutes les 4 plages (info entre les plages).
-  const items=useMemo(()=>{
-    const out=[];let fi=0
-    list.forEach((b,i)=>{out.push({type:"beach",beach:b,bi:i})
-      if((i+1)%4===0&&i<list.length-1){out.push({type:"info",fact:WORLD_FACTS[fi%WORLD_FACTS.length]});fi++}
-      if((i+1)%5===0&&list.length>3){out.push({type:"challenge",beach:list[(i+3)%list.length]})}
-    })
-    out.push({type:"premium"})
-    return out
-  },[list])
-  useEffect(()=>{
-    const root=scrollRef.current;if(!root)return
-    const io=new IntersectionObserver(es=>{
-      es.forEach(e=>{if(e.isIntersecting){const i=parseInt(e.target.getAttribute("data-wf-card"));if(!isNaN(i))setActive(i)}})
-    },{root,threshold:0.55})
-    root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
-    return()=>io.disconnect()
-  },[items.length])
-  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot analytics: deps intentionally empty
-  const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
-  return(
-    <div role="region" aria-label={_t(lang,"Monde Sargasses","Sargassum World","Mundo Sargazo")} style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
-      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out 1 both}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out 1 both}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out 1 both}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes wfBonusIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
-        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
-      {streak>0&&<div aria-label={_t(lang,"Série","Streak","Racha")} style={{position:"absolute",top:"calc(15px + env(safe-area-inset-top))",left:14,zIndex:30,padding:"6px 12px",borderRadius:999,
-        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,216,132,.45)",color:"#FFD884",fontSize:12.5,fontWeight:800,backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>🔥 {streak}{best>streak?" · ⭐"+best:""}</div>}
-      <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",overflowX:"hidden",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
-        {items.map((it,idx)=>(
-          <div key={idx} data-wf-card={idx}>
-            {it.type==="beach"&&<WorldCard beach={it.beach} index={it.bi} active={Math.abs(idx-active)<=1} lang={lang} onCarnet={setCarnet} phaseGrad={phaseGrad}/>}
-            {it.type==="info"&&<WorldInfoCard fact={it.fact} lang={lang}/>}
-            {it.type==="challenge"&&<WorldChallengeCard beach={it.beach} active={Math.abs(idx-active)<=1} lang={lang} phaseGrad={phaseGrad} onGuess={onGuess} streak={streak}/>}
-            {it.type==="premium"&&<WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/>}
-          </div>
-        ))}
-      </div>
-      {carnet&&<WorldCarnet beach={carnet} lang={lang} onClose={()=>setCarnet(null)} onPremium={onPremium}/>}
-      {bonus&&<WorldBonus level={bonus} topBeach={topBeach} lang={lang} onPremium={onPremium} onClose={()=>setBonus(null)}/>}
-    </div>
-  )
-}
 
 // ── L'ARCHIPEL DU VEILLEUR — le monde SVG LIBRE pan/zoom (tournoi gagnant 14/06).
 // Plan unique : chaque plage placee a sa VRAIE lat/lng, camera translate+scale en
@@ -11481,8 +11287,6 @@ export default function App(){
     return null
   })
   const[showPicker,setShowPicker]=useState(false)
-  // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
-  const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
@@ -12266,8 +12070,6 @@ export default function App(){
       return false
     }catch(_){return false}
   })
-  // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
-  const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
   // A/B stations : sur une URL de station, le variant ouvre le StoryEngine golden-hour.
   const stationSlug = (()=>{try{
     const seg = window.location.pathname.replace(/^\/|\/$/g,"")   // "detection-satellite-sargasses" ou "en/satellite-sargassum-detection"
@@ -12282,12 +12084,6 @@ export default function App(){
     return false
   }catch(_){return false}})()
   const [showStation,setShowStation] = useState(()=>stationOn)
-  // MONDE SVG — feed vertical infini des plages (fondation, direction 14/06). Zéro
-  // photo : chaque plage = un plein-écran SVG qui met NOTRE data en scène, cliquable,
-  // snap, loopé, jamais bloqué. Additif derrière ?world=1 ; A-B nav à venir.
-  const[showWorld,setShowWorld]=useState(()=>{try{return /[?&]world=1/.test(window.location.search)}catch(_){return false}})
-  // Solutions sargasses (SVG scrollytelling éducatif, escapable). ?solutions=1 QA + entrée chip.
-  const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
   // L'Archipel du Veilleur (monde SVG libre pan/zoom, tournoi gagnant). QA ?archipel=1.
   const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&](archipel|view3d)=1/.test(window.location.search)}catch(_){return false}})
   // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
@@ -12426,18 +12222,18 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
   // landings (hero/prev/clean/alertes/station : early-return comme avant).
   useLayoutEffect(()=>{
     if(!navWorld||archAutoRef.current)return
-    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showSolutions||showWorld||showArchipel||showStation)return
+    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showArchipel||showStation)return
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
     archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
-  },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,showAlertHub,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel,showStation])
+  },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,showAlertHub,view,allBeaches,selectedBeach,showPremium,showArchipel,showStation])
   // ENGAGEMENT CONTINU : à chaque changement d'écran, on clôt la mesure du précédent
   // (temps/actions/inactivité/scroll/ennui) → GA4. C'est la donnée qui fait "réfléchir" le produit
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
     engInit();sgCollectInit()
-    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showConditions?"conditions":showAlertHub?"alertes":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
+    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showConditions?"conditions":showAlertHub?"alertes":showHero?"hero":("map_"+(view||"map"))
     engScreen(screen)
-  },[showStation,stationSlug,showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showConditions,showAlertHub,showHero,showWorld,view])
+  },[showStation,stationSlug,showPremium,selectedBeach,showArchipel,showMapIntro,showPrevLanding,showCleanList,showConditions,showAlertHub,showHero,view])
 // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
 // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
 // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -13398,13 +13194,11 @@ useEffect(()=>{
     if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
     // Signal to push auto-loader that user reached a value moment
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
-    // Auto-dismiss onboarding coachmark on first beach interaction
-    if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     // Track beach views for PWA install prompt timing
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
-  },[showOnboarding])
+  },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
   // « scroll satellite » (PRODUCT.md §8). Default ON ; rollback instantané ?mapdetail=0.
   // PAS un nouveau flag A/B (récolte : 51 flags conversion déjà dilués) — feature flag
@@ -13419,9 +13213,8 @@ useEffect(()=>{
     // Wow Effect 3: celebration when finding a clean beach
     if(b.status==="clean")triggerCelebration("clean_beach")
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
-    if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
-  },[showOnboarding])
+  },[])
   // Map tooltip state — « Tape une plage » hint, shown once per session
   const [mapTipDismissed,setMapTipDismissed]=useState(()=>{try{return sessionStorage.getItem("sg_map_tip")==="1"}catch(_){return true}})
   // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
@@ -13434,7 +13227,6 @@ useEffect(()=>{
     lastMapClickRef.current=now
     if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
     setShowHero(false);setHeroExiting(false)
-    setShowDiscovery(false);setShowSolutions(false);setShowWorld(false)
     setShowArchipel(false);setShowChat(false);setShowVeille(false)
     if(mapDetail)openComicBeach(b); else onBeachClick(b)
   },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
@@ -13911,7 +13703,7 @@ useEffect(()=>{
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
               la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
               hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
-          {showMapIntro&&view==="map"&&!showHero&&!showPrevLanding&&!showCleanList&&!showDiscovery&&!selectedBeach&&!showPremium&&!showWorld&&filtered.length>=3&&(
+          {showMapIntro&&view==="map"&&!showHero&&!showPrevLanding&&!showCleanList&&!selectedBeach&&!showPremium&&filtered.length>=3&&(
             <ErrBound><Suspense fallback={null}><MapIntroStory lang={lang}
               counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
               onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/></Suspense></ErrBound>
@@ -14373,9 +14165,6 @@ useEffect(()=>{
           </div>
         )}
 
-        {/* LEARN VIEW — educational tunnel */}
-        {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
-
         {/* BOTTOM NAV RESTAURÉE (redesign funnel 2026-08-11) — la barre Carte/Plages/Premium
             est le seul moyen persistant pour l'utilisateur de savoir où il est et où aller.
             Sans elle, l'utilisateur était perdu après la carte (plainte fondateur : « je
@@ -14383,16 +14172,16 @@ useEffect(()=>{
             existant (BottomNav) + un handler onChangeView qui route les 3 vues proprement.
             Rollback ?sgnav=0. La vue Liste est remontée (économie de rendu levée — la
             clarté du funnel prime sur ~5 Ko de bundle lazy). */}
-        {!SGNAV_OFF&&view!=="learn"&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&!showOnboarding&&(
+        {!SGNAV_OFF&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&(
           <BottomNav view={view==="list"?"list":"map"} lang={lang} premiumOpen={showPremium}
             isPremium={isPremium} onChangeView={(id)=>{
               if(id==="map"){setSelectedBeach(null);setComicBeach(null);setView("map");
-                setShowArchipel(true);setShowDiscovery(false);setShowSolutions(false);
-                setShowWorld(false);setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                setShowArchipel(true);
+                setShowVerticals(false);setShowChat(false);setShowVeille(false);
                 track("sg_nav_tab",{tab:"map"})}
               else if(id==="list"){setSelectedBeach(null);setComicBeach(null);setView("list");
-                setShowArchipel(false);setShowDiscovery(false);setShowSolutions(false);
-                setShowWorld(false);setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                setShowArchipel(false);
+                setShowVerticals(false);setShowChat(false);setShowVeille(false);
                 track("sg_nav_tab",{tab:"list"})}
               else if(id==="premium"){openPremium("bottom_nav");track("sg_nav_tab",{tab:"premium"})}
             }}/>
@@ -14507,8 +14296,8 @@ useEffect(()=>{
           supportEmail={SUPPORT_EMAIL} track={track}/></Suspense></ErrBound>}
 
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
-            Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}
-        {whatsNew&&!showHero&&!showPrevLanding&&!showOnboarding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
+            Garde-fous : jamais par-dessus le hero/paywall/fiche ouverte. */}
+        {whatsNew&&!showHero&&!showPrevLanding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
           <ErrBound><Suspense fallback={null}><WhatsNewJournal lang={lang} title={whatsNew.title} items={whatsNew.items}
             releaseV={whatsNew.v} releaseDate={whatsNew.date} allowDeepLinks={!IS_NEW_REGION} isPremium={isPremium}
             mood={(()=>{const[,clean,,avoid]=filterCounts;return avoid>0?(avoid>=2?"alerte":"vigilant"):clean>0?"serein":"scan"})()}
@@ -14532,7 +14321,7 @@ useEffect(()=>{
             montrée/refusée (sg_pwa_prompt=1) — c'est exactement la population du re-nudge
             (fix panel adverse 2026-07-02). L'auto-show organique reste gaté par canAutoShow
             (jamais en même temps que FeedbackWidget, jamais si déjà montré). */}
-        {!showOnboarding&&(()=>{
+        {(()=>{
           const feedbackDone=g("sg_feedback_done",false)
           const visits=g("sg_visits",0)
           const pwaShown=g("sg_pwa_prompt",0)
@@ -14576,12 +14365,7 @@ useEffect(()=>{
             desktop et le chat SargaChat sur mobile. La carte restait encombrée
             par 6 FABs empilés → source de confusion (« je comprends pas ce qu'il
             faut faire »). Maintenant : BottomNav (3 onglets clairs) + 2 FABs
-            seulement (Assistant + Archipel). L'overlay Discovery reste montable
-            via ?discover=1 ou setView("learn") ultérieur. */}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          false
-        )}
-        {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
+            seulement (Assistant + Archipel). */}
 
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
@@ -14591,23 +14375,12 @@ useEffect(()=>{
               setShowStation(false)
               // TODO map_world: flyTo(nearestCleanBeach)
               if(stationSlug.includes("h2s")){ openPremium("station_h2s") }
-              else if(stationSlug.includes("nettoyer")){ setShowSolutions(true) }
               else { setView("map") }
             }}/></Suspense></ErrBound>
         )}
 
-        {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable.
-            FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : entrée passe par le menu
-            clic-droit « Le Veilleur » sur desktop, et le chat SargaChat sur mobile.
-            Overlay reste montable via ?solutions=1. */}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
-          false
-        )}
-        {showSolutions&&<ErrBound><Suspense fallback={null}><SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
-          onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/></Suspense></ErrBound>}
-
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
+        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(150px + env(safe-area-inset-bottom))",zIndex:960,
@@ -14622,14 +14395,6 @@ useEffect(()=>{
           </button>
         )}
 
-        {/* LES 10 POSTES — « Jusqu'où on descend » (10 verticales/marchés, 3 registres
-            d'honnêteté). FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : entrée passe
-            par le menu clic-droit « Le Veilleur » sur desktop, le chat SargaChat sur
-            mobile, et le lien /pro/ sur B2B. Overlay reste montable via ?verticals=1.
-            Rollback ?verticals=0 → VERTICALES_OFF cache l'overlay. */}
-        {!VERTICALES_OFF&&!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showVerticals&&!selectedBeach&&view==="map"&&(
-          false
-        )}
         {showVerticals&&<ErrBound><Suspense fallback={null}><LazyVerticalesMap lang={lang} track={track}
           onClose={()=>setShowVerticals(false)}
           onSeeMyBeach={()=>{setShowVerticals(false);setView("map");if(myBeach)onBeachClick(myBeach)}}
@@ -14662,7 +14427,7 @@ useEffect(()=>{
             → carte. Prédicat = miroir de l'auto-open (moins allBeaches). ?premapcover=0. */}
         {!premapCoverOff&&!premapDone&&navWorld&&view==="map"&&!showArchipel
           &&!showHero&&!showMapIntro&&!showPrevLanding&&!showCleanList&&!showAlertHub
-          &&!selectedBeach&&!showPremium&&!showSolutions&&!showWorld&&!showStation&&(
+          &&!selectedBeach&&!showPremium&&!showStation&&(
           homeVidOff
             ?<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1019,background:"#0d1117",pointerEvents:"none"}}/>
             :<MapIntroVideo/>
@@ -14702,10 +14467,10 @@ useEffect(()=>{
                   onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
                   previewBeach={previewBeachObj}
                   onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
-                  onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+                   onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
               </>
             </Suspense></ErrBound>
-          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setView("map")}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo} dataReady={dataReady}/>
 
         )}
 
@@ -14739,13 +14504,6 @@ useEffect(()=>{
             </Suspense>
           </ErrBound>
         )}
-
-        {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
-            scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
-        {showWorld&&<WorldFeed beaches={allBeaches} island={island} lang={lang}
-          onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
-        {/* FAB 🌊 World-feed RETIRÉ (IA unifiée 14/06) : l'Archipel 🧭 le supersède
-            (carte + visite scroll). WorldFeed reste accessible en QA via ?world=1. */}
 
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
