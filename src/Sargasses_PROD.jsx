@@ -13119,7 +13119,6 @@ useEffect(()=>{
     setFavorites(f=>f.includes(id)?f:[...f,id])
     // Mark old onboarding as done
     s("sg_onb",1)
-    setShowOnboarding(false)
   },[])
 
   const toggleFav=useCallback(id=>{
