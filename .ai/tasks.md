@@ -15,6 +15,7 @@
 - [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
 - [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
 - [x] P0 - Redesign funnel UX — BottomNav restaurée, FABs allégés, CTA clarifié (@coding_agent, 2026-08-11)
+- [x] P1 - TASK-P1-002 Tests E2E Playwright funnel payant (@coding_agent, 2026-08-11) — 8 nouveaux tests BottomNav/FABs/CTA + 13 tests existants ré-actualisés (21/21 pass). Sélecteurs centralisés dans tests/utils/selectors.ts.
 
 ---
 
@@ -44,7 +45,7 @@
 - **Rôle** : QA_agent
 - **Description** : Créer des scénarios Playwright couvrant le parcours critique : carte → verdict → paywall → paiement → premium.
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-11) — 8 nouveaux tests (bottomnav-redesign.spec.ts) pour le redesign UX + 13 tests existants (funnel-payment.spec.ts) ré-actualisés et passants (les 5 anciens failing ont été restaurés par le fix adde0af1 du shell modal). Sélecteurs centralisés dans tests/utils/selectors.ts (75 lignes). Helpers dismissCookieBanner + dismissSargaChat pour bypass les overlays incontrôlables. Gate de ship OK : 21/21 pass, bundle 190.3 Ko, smoke 4 tokens OK.
 
 ### TASK-P1-003 Paywall comic compléter (header variants)
 - **Priorité** : P1

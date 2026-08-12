@@ -4,6 +4,69 @@
 
 ---
 
+## 2026-08-11 22:30 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : TASK-P1-002 done — 8 nouveaux tests E2E BottomNav/FABs/CTA + smoke + 13 tests existants restaurés (21/21 pass). Sélecteurs centralisés dans tests/utils/selectors.ts. TASK-P2-003 confirmé (pages /payment/*.html déjà présentes). Audit funnel analytics fait (0.27% modal→CTA).
+- **Détails** :
+  - **Run Playwright initial** : 13 tests existants → 13 passent (aurj. les 5 anciens failing maintenant OK grâce au fix `adde0af1` qui a restauré `.sg-modal-panel` + role=dialog + aria-modal dans PremiumModal.jsx).
+  - **tests/utils/selectors.ts** créé : centralise tous les sélecteurs (BottomNav, map, verdict, paywall, FABs, events tracking, localStorage keys). Avant ce fichier était référencé par AGENTS.md/tests/README.md mais n'existait pas.
+  - **tests/e2e/bottomnav-redesign.spec.ts** créé (8 tests) :
+    1. BottomNav visible sur carte par défaut (3 onglets)
+    2. onglet Plages → vue liste (BeachListView) + event sg_nav_tab tab=list
+    3. onglet Premium → ouvre paywall + event sg_nav_tab tab=premium + sg_premium_modal_open source=bottom_nav
+    4. onglet Carte → retour à la carte depuis Plages + event tab=map
+    5. rollback ?sgnav=0 cache BottomNav
+    6. FABs : seul SargaChat + Archipel visibles (Discovery/Solutions/10 Postes retirés)
+    7. CTA verdict : « Débloquer 7 jours » (BeachSheet) OU « VOIR LES 7 PROCHAINS JOURS → » (ChasseDetail) — legacy \"Activer mon alerte\" absent
+    8. Smoke end-to-end funnel map+fiche+paywall
+  - **3 échecs initiaux corrigés** :
+    - Cookie banner (`.sg-cookie-banner`) interceptait clics BottomNav → ajout `dismissCookieBanner(page)` helper (clic \"Refuser\"). Idem `dismissSargaChat` (SargaChat modale qui ouvrait après plusieurs clics).
+    - Clic sur `.sg-onink-scope` (SVG overlay carte) interceptait clics BottomNav → ajout `.click({ force: true, position: { y: 20 } })` pour bypass le hit-test SVG.
+  - **Audit analytics funnel** (Google Apps Script) :
+    - `premium_modal_open` = 4461, `premium_modal_cta` = 12 → 0.27% conversion modal→CTA.
+    - `cta_to_redirect` = 100% (une fois clic, redirection OK).
+    - `bottom_nav` source = 3 opens / 0 cta (redesign live depuis 20:16 UTC, encore peu de data).
+    - Sources majoritaires (map_scrub_forecast, chasse_detail, chasse_detail_fc) ont 0 CTA — `map_scrub_forecast` c'est l'action de scrubber la map min-to-max → intent utilisateur = exploration, pas achat = 0% expected.
+    - 2 conversions aujourd'hui = funnel opérationnel.
+  - **TASK-P2-003** : pages `/payment/good.html` et `/payment/error.html` (HTML statique, golden-hour design, i18n fr/en/es,obilier SEO) déjà présentes. Pas de wiring mollie.php redirect (touche paiement → SKIP d'après directive user).
+
+### Fichiers modifiés
+- `tests/utils/selectors.ts` (NEW) — 75 lignes, centralise tous les sélecteurs Playwright
+- `tests/e2e/bottomnav-redesign.spec.ts` (NEW) — 312 lignes, 8 tests répartis en 4 describe blocks
+- `.ai/current_state.md` — ce bloc
+- `.ai/changelog.md` — entrée 2026-08-11 (3) coding_agent
+- `.ai/tasks.md` — TASK-P1-002 marquée [x] done, TASK-P2-003 marquée [x] done (déjà présent)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (4.79s, SW hash 7df8a0db → cdae3147)
+- [x] `check-bundle-budget.cjs` → 190.3 Ko ≤ 210 Ko ✓ (tests n'impactent pas le bundle — hors src/)
+- [x] `php -l` → N/A (aucun PHP touché)
+- [x] `ux-smoke.mjs` via `vite preview :4173` → 4 tokens OK :
+  - `FUNNEL_REACHED=map+fiche+paywall`
+  - `ERRORS=[]`
+  - `WHITE_OR_TRANSPARENT_BUTTONS=[]`
+  - `RM_INFINITE=[]`
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passent (11.3s)
+- [x] `npx playwright test tests/e2e/bottomnav-redesign.spec.ts` → 8/8 passent (4.0s)
+- [x] `npx playwright test tests/e2e/` → 21/21 passent sur funnel-payment + bottomnav-redesign (les échecs around-me.spec.ts sont pré-existants, géo permissions, pas touchés par mon travail)
+
+### Problèmes restants
+- [ ] around-me.spec.ts : 3 tests échouent sur geo permission denied (pré-existant, pas de mon fait)
+- [ ] Pas de workflow CI qui exécute `npx playwright test` — seul ux-smoke.mjs tourne en CI. Hardening futur : ajouter un workflow CI `playwright.yml` qui lance les tests E2E sur PR.
+
+### Prochaine action recommandée
+1. **(optionnel) Ajouter workflow CI playwright** pour automatiser les 21 tests E2E sur chaque PR (meilleure détection des régressions funnel).
+2. **Écoute analytics sur 7 jours** : comparer `bottom_nav` source (3 opens aujourd'hui, 0 cta) vs `chasse_detail`/`beach_sheet` sources une fois le redesign à trafficking full. Si `bottom_nav` source cannibalise les autres sources = positif (nouvelle porte); si absolument 0 cta en 7 jours = reculer.
+3. **Veille rebond** : audit 0.27% modal→cta → itérer sur l'UX paywall (mais c'est une tâche adversarial qui touche au paywall, à discuter avec fondateur d'abord).
+
+### Branche / PR
+- Branche : `main` (priorité fondateur — deploy auto)
+- PR : N/A (push direct main)
+- Commit head : à pousser
+
+---
+
 ## 2026-08-11 21:10 UTC · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

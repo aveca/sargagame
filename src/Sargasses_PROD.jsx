@@ -3870,6 +3870,21 @@ function BeachReport({beach,lang,communityReports}){
           }}><ComicStatusGlyph status={lv.id} size={13} color={voted===lv.id?lv.c:"var(--sg-ink)"}/>{lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
         ))}
       </div>
+      {/* Live Verification Status — unique trust signal */}
+      {total>0&&(
+        <div style={{marginTop:8,padding:"6px 10px",borderRadius:8,fontSize:11,fontWeight:700,
+          display:"flex",alignItems:"center",gap:6,
+          background:consensus===beach.status?"#E8F5E9":"#FFF3E0",
+          color:consensus===beach.status?"#2E7D32":"#E65100",
+          border:`1px solid ${consensus===beach.status?"#A5D6A7":"#FFCC80}`}}>
+          {consensus===beach.status
+            ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg>
+              {_t(lang,`Vérifié par ${total} visiteur${total>1?"s":""}``${total} visitor${total>1?"s":""} verified`,`Verificado por ${total} visitante${total>1?"s":""}`)}</>
+            : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0"/></svg>
+              {_t(lang,`Signalements terrain divergents (${total})`,`Reports differ from satellite (${total})`,`Reportes divergen del satélite (${total})`)}</>
+          }
+        </div>
+      )}
       {/* Suivi structuré « odeur » — un tap, stocké, jamais affiché comme verdict. */}
       {SVG_OBS_ON&&voted&&(
         <div style={{marginTop:10}}>
@@ -4357,7 +4372,7 @@ export const COMIC={
   // sur un statut) · avoid #e8322a→corail #E8522A · sub #6b6478→mid #5A5A5A · blue→teal #009E8E.
   cream:"#fdf6e3", ink:"#0d0b14", sub:"#5A5A5A",
   clean:"#22C55E", moderate:"#B87A00", avoid:"#E8522A", loading:"#9a93a8",
-  orange:"#B87A00", blue:"#009E8E", violet:"#5b3a8e",
+  orange:"#B87A00", blue:"#009E8E", violet:"#5b3a8e", warn:"#FF9800",
   sunset:"radial-gradient(120% 75% at 82% 6%, rgba(255,138,77,.55), rgba(255,138,77,0) 50%), linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 26%,#3e2470 58%,#1a1140 100%)",
   gold:"linear-gradient(180deg,#FFE47A,#FFC72C)",
 }

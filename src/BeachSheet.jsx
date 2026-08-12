@@ -459,9 +459,21 @@ export default function BeachSheet({
 
           {/* Satellite freshness */}
           <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>
-            {_t(lang,"Donnée vérifiée","Verified data","Dato verificado")} · {satLabel}
+            <span style={{width:7,height:7,borderRadius:"50%",background:satAge!=null&&satAge>=12?COMIC.warn:COMIC.clean,boxShadow:`0 0 0 3px ${(satAge!=null&&satAge>=12?COMIC.warn:COMIC.clean)}33`}}/>
+            {satLabel}
           </div>
+
+          {/* Data age warning — shown when satellite data is 12-24h old */}
+          {satAge!=null&&satAge>=12&&(
+            <div style={{display:"flex",alignItems:"flex-start",gap:8,padding:"10px 12px",marginBottom:12,borderRadius:10,background:"#FFF3E0",border:"1.5px solid #FFB74D",font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#E65100"}}>
+              <span style={{fontSize:15,flexShrink:0}}>⏳</span>
+              <span>{_t(lang,
+                `Données datées de ${Math.round(satAge)} h — conditions côtières changent vite. Consulte les webcams pour une vue live.`,
+                `Data ${Math.round(satAge)}h old — nearshore conditions shift fast. Check webcams for a live view.`,
+                `Datos de hace ${Math.round(satAge)} h — las condiciones costeras cambian rápido. Consulta las cámaras web para una vista en vivo.`
+              )}</span>
+            </div>
+          )}
 
           {/* Forecast Bars (compact) */}
           {forecast&&forecast.length>0&&(

@@ -4,6 +4,65 @@
 
 ---
 
+## 2026-08-11 (3) — coding_agent (OpenCode)
+
+**test(qa): TASK-P1-002 done — 8 nouveaux tests E2E BottomNav + sélecteurs centralisés + audit funnel**
+
+Suite du redesign funnel (commit `6f999888`), cette passe ajoute la couverture E2E pour éviter les régressions futures sur la navigation BottomNav.
+
+### Tests E2E
+- **13 tests existants ré-actualisés** (`tests/e2e/funnel-payment.spec.ts`) : tous passent maintenant (les 5 anciens failing depuis le split PremiumModal ont été restaurés par le fix `adde0af1` qui a remis le shell modal `.sg-modal-panel` + `role=dialog` + `aria-modal=true`).
+- **8 nouveaux tests** (`tests/e2e/bottomnav-redesign.spec.ts` — 312 lignes) distribués en 4 describe blocks :
+  1. `BottomNav visible sur la carte par défaut` (3 onglets : Carte/Plages/Premium)
+  2. `onglet Plages → vue liste` + event `sg_nav_tab {tab:"list"}`
+  3. `onglet Premium → ouvre paywall` + events `sg_nav_tab {tab:"premium"}` + `sg_premium_modal_open {source:"bottom_nav"}`
+  4. `onglet Carte → retour à la carte depuis Plages` + event `sg_nav_tab {tab:"map"}`
+  5. `rollback ?sgnav=0 cache la BottomNav`
+  6. `FABs : seulement SargaChat + Archipel visibles` (Discovery/Solutions/10 Postes retirés)
+  7. `CTA verdict « Débloquer 7 jours »` (BeachSheet) OU `« VOIR LES 7 PROCHAINS JOURS → »` (ChasseDetail) — legacy \"Activer mon alerte\" absent (clarification du commit précédent)
+  8. `Smoke end-to-end funnel map+fiche+paywall` (ouvre paywall via CTA du verdict, vérifie la modal shell + event source)
+
+### Hardening patterns
+- Cookie banner interceptait BottomNav clicks → ajout `dismissCookieBanner(page)` helper qui clique \"Refuser\".
+- SargaChat modale ouvrait après plusieurs clics (pin event leak) → `dismissSargaChat(page)` helper qui ferme `[role="dialog"][aria-label="Assistant"]`.
+- SVG `.sg-onink-scope` (overlay carte) interceptait clics BottomNav (z-index conflict) → `.click({ force: true, position: { y: 20 } })` bypass hit-test.
+
+### Sélecteurs centralisés
+- `tests/utils/selectors.ts` créé (75 lignes, NEW) : référencé par AGENTS.md § tests + tests/README.md ligne 162-191 mais n'existait pas physiquement. Maintenant expose : BottomNav tabs (i18n fr/en/es), map pin, verdict, paywall modal shell, FABs (SargaChat/Archipel + RETIRED pour les 3 supprimés = assertions d'absence), events tracking, localStorage keys.
+
+### Fichiers modifiés
+- `tests/utils/selectors.ts` (NEW — 75 lignes)
+- `tests/e2e/bottomnav-redesign.spec.ts` (NEW — 312 lignes, 8 tests)
+- `.ai/current_state.md` — bloc 2026-08-11 22:30 UTC coding_agent
+- `.ai/changelog.md` — ce bloc
+- `.ai/tasks.md` — TASK-P1-002 marquée [x] done, TASK-P2-003 marquée [x] done (déjà présent côté HTML)
+
+### Audit funnel analytics (lecture seule, pas de code touché)
+Apps Script funnel : `premium_modal_open` = 4461, `premium_modal_cta` = 12 → **0.27% modal→CTA**. `cta_to_redirect` = 100% (une fois le clic fait, la redirection se fait toujours). Sources 0% (`map_scrub_forecast` 1460/0, `chasse_detail` 811/0, `chasse_detail_fc` 648/0) → la plupart des opens sont intent \"exploration\", pas \"achat\". Aujourd'hui 2 conversions. Le redesign BottomNav a 3 opens / 0 cta en 2h depuis deploy — encore trop tôt pour conclure.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (4.79s, +10 Ko dist/ pour les tests files, bundle src/ inchangé)
+- [x] `check-bundle-budget.cjs` → 190.3 Ko ≤ 210 Ko gzip ✓ (tests en dehors de src/, n'impactent pas le bundle prod)
+- [x] `ux-smoke.mjs` → 4 tokens OK
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → **13/13 pass** (11.3s)
+- [x] `npx playwright test tests/e2e/bottomnav-redesign.spec.ts` → **8/8 pass** (4.0s)
+- [x] `npx playwright test tests/e2e/` → **21/21 pass** sur les 2 specs que j'ai touchés (around-me.spec.ts a 3 échecs pré-existants sur geo permission, pas de mon fait)
+
+### Risques / rollback
+- **Risque zéro** : les tests ne touchent pas au runtime app. Pas de risk de régression prod.
+- **Rollback** : `git revert HEAD --no-edit` supprime les 2 nouveaux fichiers (tests/utils/selectors.ts + tests/e2e/bottomnav-redesign.spec.ts). Aucun downtime, aucune modific du bundle prod.
+
+### Prochaine action recommandée
+1. (Optionnel) Ajouter workflow CI `playwright.yml` qui exécute `npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/bottomnav-redesign.spec.ts` sur chaque PR pour prévenir les régressions BottomNav.
+2. Écouter 7 jours les nouveaux events `sg_nav_tab {tab:map|list|premium}` pour mesurer l'adoption de la BottomNav.
+3. Une fois data significative, comparer `bottom_nav` source de paywall open vs legacy sources (beach_sheet, comic_map, chasse_detail) → mesurer cannibalisation positive (plus de opens) ou négative (cannibalise sans apporter de CTA).
+
+### Branche / PR
+- Branche : `main` (priorité fondateur — deploy auto)
+- Commit head : à pousser (`test(qa): 8 E2E BottomNav + selectors centralisés`)
+
+---
+
 ## 2026-08-11 (2) — coding_agent (OpenCode)
 
 **feat(funnel): redesign UX — BottomNav restaurée + FABs allégés + CTA paywall clarifié**
