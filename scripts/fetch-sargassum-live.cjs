@@ -51,6 +51,15 @@ const { computeScore } = require('./lib/score.cjs')
 const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
 
+// Penalty when satellite data is old: -2 points per hour beyond 12h, capped at -20.
+// Ensures "EXCEPTIONNEL" score is never shown when data is >24h old.
+function applyDataAgePenalty(score, dataAgeMinutes) {
+  if (dataAgeMinutes == null || dataAgeMinutes <= 720) return score // <=12h = no penalty
+  const hoursBeyond = (dataAgeMinutes - 720) / 60
+  const penalty = Math.min(20, Math.round(hoursBeyond * 2))
+  return Math.max(0, score - penalty)
+}
+
 // Repère de SAISON (orientation moyen terme, B2C fiche plage). Phase climatologique
 // régionale SOURCÉE (season-climatology.cjs) — PAS une prévision, jamais datée, jamais
 // notée sur /fiabilite/. Le front la combine au statut MESURÉ de la plage. Champ additif :
@@ -118,11 +127,11 @@ const FETCH_TIMEOUT_MS = 60000 // Wider bounding boxes = more data, need more ti
 const FETCH_1D_TIMEOUT_MS = 15000 // 1D is a bonus — don't block on it
 const NO_DATA_AFAI = 0.05 // If null / no detection = clean ocean
 // Fraicheur satellite : le composite ERDDAP 7D se rafraichit ~1×/jour, donc un
-// erddapTimestamp de 12-30h est NORMAL. Au-dela de ce seuil, c'est que la source
-// (satellite ou serveur ERDDAP) ne se met plus a jour — le pipeline republie
-// pourtant updatedAt=now a chaque run, donc SEUL ce flag derive du vrai timestamp
-// satellite peut detecter le composite perime. 36h = 1.5 cycle manque.
-const SAT_STALE_HOURS = 36
+// erddapTimestamp de 12-20h est NORMAL. Au-dela de 24h, c'est qu'un cycle entier
+// a ete manque — conditions marines peuvent changer (Gulf Stream, vent overnight).
+// 24h au lieu de 36h pour eviter d'afficher un score "EXCEPTIONNEL" alors que
+// les webcams montrent sargasse lourde (client Raul Carmenate, 11 aout 2026).
+const SAT_STALE_HOURS = 24
 
 // Wide bounding boxes: sargassum is detected OFFSHORE (10-100km from coast),
 // not at coastal coordinates. Cover the Atlantic approach zones.
@@ -1544,6 +1553,23 @@ async function runRegionPipeline(region, shared) {
     ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
     : null
   const stale = dataAgeMinutes != null && dataAgeMinutes > SAT_STALE_HOURS * 60
+
+  // Apply data age penalty to scores: old satellite data must not show "EXCEPTIONNEL"
+  if (dataAgeMinutes != null && dataAgeMinutes > 720) {
+    for (const beach of beaches) {
+      const level = levels.find(l => l.id === beach.id)
+      if (!level || level.score == null) continue
+      const penalizedScore = applyDataAgePenalty(level.score, dataAgeMinutes)
+      if (penalizedScore !== level.score) {
+        const { label, color } = require('./lib/score.cjs').labelFor(penalizedScore, level.afai)
+        console.log(`  ⚠️  ${beach.id}: score ${level.score}→${penalizedScore} (data ${(dataAgeMinutes / 60).toFixed(1)}h old)`)
+        level.score = penalizedScore
+        level.label = label
+        level.color = color
+        scores[beach.id] = { ...scores[beach.id], score: penalizedScore, label, color }
+      }
+    }
+  }
   if (stale) {
     console.warn(`  ⚠️  [${region.id}] STALE: composite satellite ${Math.round(dataAgeMinutes / 60)}h (> ${SAT_STALE_HOURS}h)`)
   }
@@ -1786,6 +1812,24 @@ async function main() {
     level.breakdown = result.breakdown
     scores[beach.id] = result
     console.log(`  ${beach.id}: ${result.score}/100 · ${result.label} — ${result.reason}`)
+  }
+
+  // Apply data age penalty to scores: old satellite data must not show "EXCEPTIONNEL"
+  if (dataAgeMinutes != null && dataAgeMinutes > 720) {
+    const { labelFor } = require('./lib/score.cjs')
+    for (const beach of BEACHES) {
+      const level = levels.find(l => l.id === beach.id)
+      if (!level || level.score == null) continue
+      const penalizedScore = applyDataAgePenalty(level.score, dataAgeMinutes)
+      if (penalizedScore !== level.score) {
+        const { label, color } = labelFor(penalizedScore, level.afai)
+        console.log(`  ⚠️  ${beach.id}: score ${level.score}→${penalizedScore} (data ${(dataAgeMinutes / 60).toFixed(1)}h old)`)
+        level.score = penalizedScore
+        level.label = label
+        level.color = color
+        scores[beach.id] = { ...scores[beach.id], score: penalizedScore, label, color }
+      }
+    }
   }
 
   // Fraicheur reelle = age du composite satellite, PAS de updatedAt (=now a chaque run).

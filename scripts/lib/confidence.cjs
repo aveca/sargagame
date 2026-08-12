@@ -47,7 +47,13 @@ function satelliteConfidence(method, nearbyPts, offshorePts, dataAgeHours) {
   let base
   const totalPts = nearbyPts + offshorePts
 
-  if (method.startsWith('combined')) {
+  // shore-XXsh-XXnear-XXoff : multi-band (coastal + nearby + offshore)
+  // Treated as combined — best quality when shore band present.
+  if (method.startsWith('shore')) {
+    if (nearbyPts >= 10) base = 90
+    else if (nearbyPts >= 5) base = 82
+    else base = 72
+  } else if (method.startsWith('combined')) {
     if (nearbyPts >= 10) base = 90
     else if (nearbyPts >= 5) base = 82
     else base = 72

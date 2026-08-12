@@ -3329,6 +3329,58 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           )
         })}
       </div>}
+      {/* Confidence Decay Curve — visual trust signal: confidence decreasing over horizon */}
+      {visible.some(d=>d.confidence!=null)&&(
+        <div style={{margin:"6px 0 2px",padding:"6px 8px",borderRadius:8,background:"rgba(0,0,0,.03)"}}>
+          <div style={{fontSize:8,fontWeight:700,color:"var(--sg-mid,#999)",textTransform:"uppercase",letterSpacing:".06em",marginBottom:4}}>
+            {_t(lang,"Fiabilité par jour","Confidence by day","Confianza por día")}
+          </div>
+          <svg viewBox="0 0 200 40" style={{width:"100%",height:40,display:"block"}}>
+            {/* Grid lines */}
+            {[0,25,50,75,100].map(y=>(
+              <line key={y} x1="0" y1={40-y*0.4} x2="200" y2={40-y*0.4} stroke="rgba(0,0,0,.06)" strokeWidth="0.5"/>
+            ))}
+            {/* Confidence line */}
+            <polyline
+              points={visible.map((d,i)=>{
+                const x=(i/(Math.max(1,visible.length-1)))*190+5
+                const conf=d.confidence||0
+                const y=40-conf*0.4
+                return`${x},${y}`
+              }).join(" ")}
+              fill="none"
+              stroke="#16A34A"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* Confidence dots */}
+            {visible.map((d,i)=>{
+              if(d.confidence==null)return null
+              const x=(i/(Math.max(1,visible.length-1)))*190+5
+              const conf=d.confidence
+              const y=40-conf*0.4
+              return(
+                <g key={i}>
+                  <circle cx={x} cy={y} r="3" fill="#16A34A" stroke="#fff" strokeWidth="1"/>
+                  <text x={x} y={y-6} textAnchor="middle" fontSize="7" fontWeight="700" fill="#16A34A">
+                    {conf}%
+                  </text>
+                </g>
+              )
+            })}
+            {/* Day labels */}
+            {visible.map((d,i)=>{
+              const x=(i/(Math.max(1,visible.length-1)))*190+5
+              return(
+                <text key={i} x={x} y={38} textAnchor="middle" fontSize="6" fill="#999">
+                  {fcDay(d,lang)}
+                </text>
+              )
+            })}
+          </svg>
+        </div>
+      )}
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"4px 0 0",lineHeight:1.3}}>
         {_t(lang,
           `Fiable jusqu'à 4 jours. Fiabilité ${Math.round(firstConf)} % demain.`,
@@ -3876,12 +3928,12 @@ function BeachReport({beach,lang,communityReports}){
           display:"flex",alignItems:"center",gap:6,
           background:consensus===beach.status?"#E8F5E9":"#FFF3E0",
           color:consensus===beach.status?"#2E7D32":"#E65100",
-          border:`1px solid ${consensus===beach.status?"#A5D6A7":"#FFCC80}`}}>
+          border:"1px solid "+(consensus===beach.status?"#A5D6A7":"#FFCC80")}}>
           {consensus===beach.status
             ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg>
-              {_t(lang,`Vérifié par ${total} visiteur${total>1?"s":""}``${total} visitor${total>1?"s":""} verified`,`Verificado por ${total} visitante${total>1?"s":""}`)}</>
+              {_t(lang,"Vérifié par "+total+" visiteur"+(total>1?"s":""),"Verified by "+total+" visitor"+(total>1?"s":""),"Verificado por "+total+" visitante"+(total>1?"s":""))}</>
             : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0"/></svg>
-              {_t(lang,`Signalements terrain divergents (${total})`,`Reports differ from satellite (${total})`,`Reportes divergen del satélite (${total})`)}</>
+              {_t(lang,"Signalements terrain divergents ("+total+")","Reports differ from satellite ("+total+")","Reportes divergen del satélite ("+total+")")}</>
           }
         </div>
       )}
@@ -5079,6 +5131,8 @@ const fcUp = false
           })()}
           {/* Freshness chip — satellite timestamp sous le verdict */}
           {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
+          {/* Prediction Change Log — honnêteté radicale : montre quand le statut a changé hier */}
+          {(()=>{try{if(!historyData?.changes||!beach?.id)return null;const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];if(!sargId)return null;const today=new Date().toISOString().slice(0,10);const recent=historyData.changes.filter(c=>c.beach===sargId&&c.date>=today.slice(0,7)).sort((a,b)=>b.date.localeCompare(a.date))[0];if(!recent)return null;const STATUS_EMOJI={clean:"🟢",moderate:"🟡",avoid:"🔴"};const STATUS_LBL_FR={clean:"Propre",moderate:"Modéré",avoid:"Éviter"};const STATUS_LBL_EN={clean:"Clean",moderate:"Moderate",avoid:"Avoid"};const STATUS_LBL_ES={clean:"Limpio",moderate:"Moderado",avoid:"Evitar"};const lbl=lang==="en"?STATUS_LBL_EN:lang==="es"?STATUS_LBL_ES:STATUS_LBL_FR;const isRecent=(Date.now()-new Date(recent.date+"T12:00:00Z").getTime())<7*864e5;if(!isRecent)return null;return(<div style={{display:"flex",alignItems:"center",gap:8,margin:"-8px 0 12px",padding:"8px 10px",borderRadius:10,background:"rgba(255,152,0,.08)",border:"1px solid rgba(255,152,0,.25)",fontSize:11,fontWeight:600,color:"#E65100"}}><span style={{fontSize:14}}>📊</span><span>{_t(lang,`Changé ${recent.date.slice(5)} : ${STATUS_LBL_FR[recent.from]}→${STATUS_LBL_FR[recent.to]}`,`Changed ${recent.date.slice(5)}: ${STATUS_LBL_EN[recent.from]}→${STATUS_LBL_EN[recent.to]}`,`Cambio ${recent.date.slice(5)}: ${STATUS_LBL_ES[recent.from]}→${STATUS_LBL_ES[recent.to]}`)}</span></div>)}catch(_){return null}})()}
           {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
               dans LES DEUX bras (additif) quand le vrai statut est connu. */}
           {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
@@ -5118,8 +5172,8 @@ const fcUp = false
                   const n=(__REL.cleanN||0).toLocaleString(lang==="fr"?"fr-FR":lang==="es"?"es-ES":"en-US")
                   return _t(lang,
                     `${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg} (${n})`,
-                    `${__REL.cleanPct}% of our “clean water” forecasts proved correct · ${reg} (${n})`,
-                    `${__REL.cleanPct}% de pronósticos “agua limpia” verificados · ${reg} (${n})`)
+                    `${__REL.cleanPct}% of our "clean water" forecasts proved correct · ${reg} (${n})`,
+                    `${__REL.cleanPct}% de pronósticos "agua limpia" verificados · ${reg} (${n})`)
                 }
                 if(__REL&&typeof __REL.global==="number"){
                   return _t(lang,
@@ -5132,6 +5186,13 @@ const fcUp = false
             </span>
             <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
           </button>}
+          {/* False Alarm Rate — honnêteté radicale : montre le taux d'erreur quand c'est pertinent */}
+          {__REL&&typeof __REL.falseAlarmPct==="number"&&__REL.falseAlarmPct>0&&(
+            <div style={{display:"flex",alignItems:"center",gap:6,margin:"4px 0 10px",padding:"6px 10px",borderRadius:8,background:"rgba(255,152,0,.06)",border:"1px solid rgba(255,152,0,.18)",fontSize:11,fontWeight:600,color:"#E65100"}}>
+              <span style={{fontSize:12}}>⚠️</span>
+              <span>{_t(lang,`Taux d'erreur alertes : ${__REL.falseAlarmPct}% (saison ${__REL.regime==="high"?"haute":"calme"})`,`Alert false alarm rate: ${__REL.falseAlarmPct}% (${__REL.regime==="high"?"high":"calm"} season)`,`Tasa de falsas alarmas: ${__REL.falseAlarmPct}% (temporada ${__REL.regime==="high"?"alta":"baja"})`)}</span>
+            </div>
+          )}
 
           {/* Photo externe retirée (juraient avec le design) — la scène vectorielle
               golden-hour du hero porte déjà l'identité de la plage. */}

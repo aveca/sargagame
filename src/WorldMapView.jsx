@@ -387,6 +387,7 @@ export default function WorldMapView({
   const [query,   setQuery]     = useState("")    // P7 — recherche plage par nom
   const [tapFx,   setTapFx]     = useState([])    // pings tap fond de carte {id,x,y,hit}
   const tapFxIdRef = useRef(0)
+  const [trackRec, setTrackRec] = useState(null)  // track-record.json for per-beach accuracy
 
   // Capture email SUR LA CARTE — la carte SVG est la vue d'accueil validée en prod, donc
   // la surface PAR DÉFAUT (décision fondateur 21/06 : capture = surface par défaut). Mêmes
@@ -425,6 +426,14 @@ export default function WorldMapView({
       .then(d=>{if(d&&d.points&&d.points.length)setAfaiGrid(d)}).catch(()=>{})
   },[])
 
+  // Track-record: per-beach accuracy for trust badges
+  useEffect(()=>{
+    let ok=true
+    fetch("/api/copernicus/track-record.json").then(r=>r.json())
+      .then(d=>{if(ok&&d)setTrackRec(d)}).catch(()=>{})
+    return()=>{ok=false}
+  },[])
+
   // toVB(lat,lng) → [vx,vy] dans l'espace viewBox 800×600
   const toVB = useMemo(()=>{
     if(!outline) return null
@@ -444,6 +453,9 @@ export default function WorldMapView({
   const beachList = useMemo(()=>{
     if(!toVB) return []
     const isEUR = island==="mq"||island==="gp"
+    // Build accuracy lookup from track-record
+    const accByBeach = {}
+    if(trackRec&&trackRec.byBeach) trackRec.byBeach.forEach(b=>{ accByBeach[b.id]=b })
     return(beaches||[])
       .filter(b=>b&&b.lat!=null&&b.lng!=null&&(isEUR?b.island===island:true))
       .map(b=>{
@@ -471,9 +483,12 @@ export default function WorldMapView({
         let firstHit=null
         for(let d=0;d<days.length;d++){ if(days[d]==="avoid"){ firstHit=d; break } }
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
-        return{...b,vx,vy,days,conf,fc:fc||null,drift:(entry&&entry.drift)||null,firstHit}
+        // Per-beach accuracy from track-record
+        const acc=accByBeach[b.id]||null
+        return{...b,vx,vy,days,conf,fc:fc||null,drift:(entry&&entry.drift)||null,firstHit,
+          accuracyPct:acc?acc.hitRatePct:null, accuracySamples:acc?acc.samples:null}
       })
-  },[beaches,island,toVB,forecastByBeach])
+  },[beaches,island,toVB,forecastByBeach,trackRec])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -1619,6 +1634,14 @@ export default function WorldMapView({
                         fontFamily="'AntonLC','Anton',sans-serif">{Math.round(b.score)}</text>
                     : <circle cx="0" cy="-14.4" r="3" fill="#fff" stroke={INK} strokeWidth=".7"/>}
                 </g>
+                {/* Per-beach accuracy badge — trust signal on selected pin */}
+                {isSel&&b.accuracyPct!=null&&b.accuracySamples>=10&&(
+                  <g transform="translate(0 14)" pointerEvents="none">
+                    <rect x="-16" y="0" width="32" height="11" rx="5.5" fill="#0d0b14" opacity=".85"/>
+                    <text x="0" y="8" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#FFC72C"
+                      fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{b.accuracyPct}%</text>
+                  </g>
+                )}
               </g>
             )
           })}
@@ -1696,6 +1719,15 @@ export default function WorldMapView({
                 marginTop:2,
                 textShadow:`1px 1px 0 ${INK},0 0 4px ${INK}`,
               }}>{STATUS_LBL[st]?.[li]}</div>
+              {b.accuracyPct!=null&&b.accuracySamples>=10&&(
+                <div style={{
+                  font:"700 8px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                  letterSpacing:".03em",
+                  color:"#FFC72C",
+                  marginTop:2,
+                  textShadow:`1px 1px 0 ${INK},0 0 4px ${INK}`,
+                }}>{b.accuracyPct}% {lang==="en"?"accurate":lang==="es"?"precisa":"fiabilité"}</div>
+              )}
               </div>
             </div>
           )
