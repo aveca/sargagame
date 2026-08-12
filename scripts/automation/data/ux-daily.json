@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-12T12:52:59.899Z",
+  "generated": "2026-08-12T19:01:06.791Z",
   "date": "2026-08-12",
   "days": 1,
   "regions": [
@@ -10,6 +10,26 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "fe862edf",
+      "subject": "feat(signature-b2c): 'Le Veilleur regarde ta plage, pas la peur' (axe commercial + retention) (#568)"
+    },
+    {
+      "h": "d3e981e7",
+      "subject": "fix funnel-stability: D2 z-index registry var + E2 DiveTransition 600ms (#567)"
+    },
+    {
+      "h": "75b2b6c9",
+      "subject": "fix(payment): bind payEmailRef in ComicPaywall (variant Comic couldn't accept payments)"
+    },
+    {
+      "h": "08efe3d9",
+      "subject": "chore: update Copernicus data 2026-08-12 12:53 UTC"
+    },
+    {
+      "h": "67eca090",
+      "subject": "chore: email state 2026-08-12 12:53 UTC"
+    },
     {
       "h": "026f6f5e",
       "subject": "chore: update Copernicus data 2026-08-12 07:31 UTC"
@@ -69,52 +89,28 @@
     {
       "h": "99856796",
       "subject": "fix(payment): restore passCtxRef plumbing lost in PremiumModal split (BUG-2026-016) (#566)"
-    },
-    {
-      "h": "12c04f64",
-      "subject": "chore: email state 2026-08-11 18:55 UTC"
-    },
-    {
-      "h": "3da3e1b3",
-      "subject": "ci: force full build"
-    },
-    {
-      "h": "e36dd549",
-      "subject": "chore: update Copernicus data 2026-08-11 18:35 UTC"
-    },
-    {
-      "h": "fe421055",
-      "subject": "fix(payment): PassOffer onBuy prop was doSubscribe in WorldPaywall (BUG-2026-016)"
-    },
-    {
-      "h": "aadc76d3",
-      "subject": "diag(payment): add _diag.php to investigate php://input on mollie.php (BUG-2026-016)"
-    },
-    {
-      "h": "953e1936",
-      "subject": "chore: update Copernicus data 2026-08-11 15:14 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "mq",
-      "sessions": 160,
-      "friction": 9,
-      "dead_rate": 0.144,
+      "sessions": 224,
+      "friction": 10,
+      "dead_rate": 0.16,
       "dead_worst": {
-        "screen": "map_list",
-        "rate": 0.25,
-        "n": 32
+        "screen": "beach",
+        "rate": 0.364,
+        "n": 44
       },
       "top_dead_els": [
         {
           "el": "div",
-          "count": 17
+          "count": 30
         }
       ],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.14
+        "rate": 0.15
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -123,29 +119,35 @@
       "session_to_email": 0,
       "prev_date": "2026-08-11",
       "changes": [
-        "rage-clicks 5→9 ⚠️",
-        "🆕 dead-click : div (17)"
+        "sessions 155→224 (+45%)",
+        "dead-rate 0.107→0.16 (+0.1) ⚠️",
+        "rage-clicks 5→10 ⚠️",
+        "🆕 dead-click : div (30)"
       ]
     },
     {
       "region": "gp",
-      "sessions": 159,
+      "sessions": 289,
       "friction": 1,
-      "dead_rate": 0.089,
+      "dead_rate": 0.097,
       "dead_worst": {
         "screen": "beach",
-        "rate": 0.14,
-        "n": 50
+        "rate": 0.22,
+        "n": 123
       },
       "top_dead_els": [
         {
           "el": "div",
-          "count": 17
+          "count": 28
+        },
+        {
+          "el": "div#bc0",
+          "count": 12
         }
       ],
       "bored_worst": {
-        "screen": "beach",
-        "rate": 0.11
+        "screen": "map_list",
+        "rate": 0.23
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -154,24 +156,30 @@
       "session_to_email": 0,
       "prev_date": "2026-08-11",
       "changes": [
-        "sessions 125→159 (+27%)",
-        "🆕 dead-click : div (17)"
+        "sessions 125→289 (+131%)",
+        "🆕 dead-click : div (28)",
+        "🆕 dead-click : div#bc0 (12)"
       ]
     },
     {
       "region": "florida",
-      "sessions": 98,
-      "friction": 1,
-      "dead_rate": 0.062,
+      "sessions": 249,
+      "friction": 3,
+      "dead_rate": 0.083,
       "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.159,
-        "n": 44
+        "screen": "beach",
+        "rate": 0.227,
+        "n": 22
       },
-      "top_dead_els": [],
+      "top_dead_els": [
+        {
+          "el": "div",
+          "count": 14
+        }
+      ],
       "bored_worst": {
         "screen": "map_map",
-        "rate": 0.14
+        "rate": 0.15
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -180,23 +188,25 @@
       "session_to_email": 0,
       "prev_date": "2026-08-11",
       "changes": [
-        "sessions 115→98 (-15%)"
+        "sessions 115→249 (+117%)",
+        "rage-clicks 0→3 ⚠️",
+        "🆕 dead-click : div (14)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 44,
+      "sessions": 118,
       "friction": 0,
-      "dead_rate": 0.056,
+      "dead_rate": 0.057,
       "dead_worst": {
         "screen": "world",
-        "rate": 0.024,
-        "n": 41
+        "rate": 0.053,
+        "n": 113
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.42
+        "rate": 0.31
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -205,18 +215,25 @@
       "session_to_email": 0,
       "prev_date": "2026-08-11",
       "changes": [
-        "sessions 80→44 (-45%)",
-        "dead-rate 0.162→0.056 (-0.1) ✅"
+        "sessions 80→118 (+48%)",
+        "dead-rate 0.162→0.057 (-0.1) ✅"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 10,
+      "sessions": 44,
       "friction": 0,
-      "dead_rate": 0,
-      "dead_worst": null,
+      "dead_rate": 0.213,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.214,
+        "n": 56
+      },
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.29
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -224,7 +241,8 @@
       "session_to_email": 0,
       "prev_date": "2026-08-11",
       "changes": [
-        "sessions 30→10 (-67%)"
+        "sessions 30→44 (+47%)",
+        "dead-rate 0→0.213 (+0.2) ⚠️"
       ]
     }
   ]
