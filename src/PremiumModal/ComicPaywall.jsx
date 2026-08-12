@@ -5,7 +5,7 @@
  * 
  * Props: { lang, onClose, onActivated, source, pwVariant, ...paywallContext }
  */
-import React, { useState, useEffect, useMemo, useRef } from "react"
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
@@ -176,17 +176,53 @@ export function ComicPaywall({
   const [animating, setAnimating] = useState(false)
   const [showOffer, setShowOffer] = useState(false)
   const panelRefs = useRef([])
+  const containerRef = useRef(null)
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
   
-  // Auto-advance with user control — paused when PassOffer is showing
+  // Auto-advance with user control — paused when PassOffer is showing,
+  // paused on user interaction (pointer/scroll/keydown) for 6s, paused when tab hidden.
+  // Fix A4 (funnel stability 2026-08-12) : était setInterval brut qui swapait pendant
+  // la lecture = sensation de fuite. Maintenant respecte l'utilisateur.
+  const autoTimerRef = useRef(null)
+  const resumeAuto = useCallback(() => {
+    if (showOffer) return
+    clearTimeout(autoTimerRef.current)
+    autoTimerRef.current = setTimeout(() => {
+      if (typeof document !== "undefined" && document.hasFocus && !document.hasFocus()) {
+        resumeAuto()
+        return
+      }
+      setAnimating(true)
+      setTimeout(() => {
+        setPanel(p => (p + 1) % PANELS.length)
+        setAnimating(false)
+      }, 400)
+      resumeAuto()
+    }, 6000)
+  }, [showOffer])
+  useEffect(() => {
+    resumeAuto()
+    return () => clearTimeout(autoTimerRef.current)
+  }, [resumeAuto])
+  // Reset du timer à chaque interaction user (l'utilisateur reprend la main)
   useEffect(() => {
     if (showOffer) return
-    const timer = setInterval(() => {
-      setPanel(p => (p + 1) % PANELS.length)
-    }, 6000)
-    return () => clearInterval(timer)
-  }, [showOffer])
+    const onInteract = () => resumeAuto()
+    const root = containerRef.current
+    if (root) {
+      root.addEventListener("pointerdown", onInteract)
+      root.addEventListener("scroll", onInteract, { passive: true })
+      root.addEventListener("keydown", onInteract)
+    }
+    return () => {
+      if (root) {
+        root.removeEventListener("pointerdown", onInteract)
+        root.removeEventListener("scroll", onInteract)
+        root.removeEventListener("keydown", onInteract)
+      }
+    }
+  }, [showOffer, resumeAuto])
   
   const goNext = () => {
     if (animating) return
@@ -211,7 +247,7 @@ export function ComicPaywall({
   const currentArt = PANEL_ART[panel]
   
   return (
-    <div className="sg-paywall-comic" style={{
+    <div ref={containerRef} className="sg-paywall-comic" style={{
       position: "fixed", inset: 0, zIndex: 1200,
       background: "#0d1117", overflow: "hidden",
       display: "flex", flexDirection: "column"
@@ -295,11 +331,11 @@ export function ComicPaywall({
             />
           </div>
         ) : (<>
-          <div style={{
+          <div key={panel} style={{
             width: "100%", maxWidth: 340, aspectRatio: "3/2",
             marginBottom: 24, borderRadius: 16, overflow: "hidden",
             boxShadow: "0 8px 32px rgba(0,0,0,.5)",
-            animation: animating ? "panelSlide .4s cubic-bezier(.34,1.56,.64,1)" : "none"
+            animation: "panelSlide .4s cubic-bezier(.34,1.56,.64,1) both"
           }}>
             <style>{`
               @keyframes panelSlide {
@@ -407,7 +443,7 @@ export function ComicPaywall({
           onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
           onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
         >
-          Commencer l'aventure →
+          {t("Commencer l'aventure →","Start the adventure →","Comenzar la aventura →")}
         </button>
         
         <button
@@ -421,7 +457,7 @@ export function ComicPaywall({
             fontSize: 13, fontWeight: 600, cursor: "pointer"
           }}
         >
-          Plus tard
+          {t("Plus tard","Later","Más tarde")}
         </button>
       </div>}
     </div>
