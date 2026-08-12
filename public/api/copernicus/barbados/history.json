@@ -1,71 +1,6 @@
 {
   "history": [
     {
-      "date": "2026-07-12",
-      "levels": [
-        {
-          "id": "bb001",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb002",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb003",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb004",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb005",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb006",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb007",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "bb008",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb009",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb010",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb011",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "bb012",
-          "afai": 0.05,
-          "status": "clean"
-        }
-      ]
-    },
-    {
       "date": "2026-07-13",
       "levels": [
         {
@@ -1876,6 +1811,71 @@
         {
           "id": "bb011",
           "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "bb012",
+          "afai": 0.16,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-12",
+      "levels": [
+        {
+          "id": "bb001",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb002",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb003",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb004",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb005",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb006",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "bb007",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "bb008",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "bb009",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "bb010",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "bb011",
+          "afai": 0.12,
           "status": "clean"
         },
         {
