@@ -14488,7 +14488,7 @@ useEffect(()=>{
               })
             },450)
           }catch(_){}
-        }} lang={lang} source={premiumSource}
+        }} lang={lang} source={premiumSource} pwVariant={abVariant("pw_style",["world","comic"])}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/></Suspense></ErrBound></div>}
 

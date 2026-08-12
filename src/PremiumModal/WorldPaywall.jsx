@@ -77,6 +77,15 @@ export function WorldPaywall({
   const regions = REGION_LABELS
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
+
+  // Restore email from localStorage
+  const [emailValue, setEmailValue] = useState(() => {
+    try { return localStorage.getItem("sgEmail") || "" } catch (_) { return "" }
+  })
+  const handleEmailChange = (e) => {
+    setEmailValue(e.target.value)
+    if (onPayEmailInput) onPayEmailInput()
+  }
   
   // Variant-specific content
   const variantContent = useMemo(() => {
@@ -159,120 +168,117 @@ export function WorldPaywall({
       }} />
       
       <div style={{ position: "relative", zIndex: 1, padding: 24 }}>
-        {/* Header with world context */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{
-            width: 60, height: 60, margin: "0 auto 16",
-            borderRadius: "50%",
-            background: `radial-gradient(circle at 30% 30%, ${variantContent.accent}40, transparent 70%)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 28
-          }}>
-            🌍
-          </div>
-          
+        {/* Compact header */}
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
           <h2 style={{
             fontFamily: "'Anton', system-ui, sans-serif",
-            fontSize: "clamp(22px, 5vw, 28px)",
+            fontSize: "clamp(20px, 5vw, 26px)",
             fontWeight: 400,
             textTransform: "uppercase",
             letterSpacing: ".02em",
             color: "#fff",
-            margin: "0 0 8",
+            margin: "0 0 6",
             textShadow: "0 2px 12px rgba(0,0,0,.4)"
           }}>
             {variantContent.headline}
           </h2>
-          
           <p style={{
             color: "rgba(255,255,255,.85)",
-            fontSize: 14,
-            lineHeight: 1.5,
-            margin: "0 0 20",
+            fontSize: 13,
+            lineHeight: 1.4,
+            margin: "0 0 14",
             fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
           }}>
             {variantContent.subtitle}
           </p>
-          
-          {/* World stats badges */}
-          <div style={{
-            display: "flex", justifyContent: "center", gap: 12,
-            flexWrap: "wrap", marginBottom: 24
-          }}>
-            <span style={{
-              background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)",
-              borderRadius: 999, padding: "6px 12px", fontSize: 11,
-              fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap",
-              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-            }}>
+          {/* Compact stats badges */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
               🛰️ {stats.regions} {t("régions", "regions", "regiones")}
             </span>
-            <span style={{
-              background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)",
-              borderRadius: 999, padding: "6px 12px", fontSize: 11,
-              fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap",
-              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-            }}>
+            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
               🏖️ {stats.beaches} {t("plages", "beaches", "playas")}
             </span>
-            <span style={{
-              background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)",
-              borderRadius: 999, padding: "6px 12px", fontSize: 11,
-              fontWeight: 700, color: "#5FD3C9", whiteSpace: "nowrap",
-              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-            }}>
+            <span style={{ background: "rgba(255,255,255,.10)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#5FD3C9", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
               📡 {stats.freshness}
             </span>
           </div>
         </div>
         
-        {/* Region selector (if multiple regions) */}
-        <div style={{ marginBottom: 20 }}>
+        {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef) ═══ */}
+        <div style={{ marginBottom: 14 }}>
           <label style={{
             display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
-            marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
+            marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
           }}>
-            {t("Votre région", "Your region", "Su región")}
+            {t("Email pour recevoir ton accès", "Email to receive your access", "Email para recibir tu acceso")}
           </label>
-          <select
-            defaultValue={island || "mq"}
-            onChange={e => { /* track region change */ }}
+          <input
+            ref={payEmailRef}
+            type="email"
+            required
+            autoComplete="email"
+            placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
+            defaultValue={emailValue}
+            onChange={handleEmailChange}
             style={{
-              width: "100%", padding: "12px 14px",
-              background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,255,255,.18)",
-              borderRadius: 12, color: "#fff", fontSize: 14,
+              width: "100%", padding: "13px 14px",
+              background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
+              borderRadius: 12, color: "#fff", fontSize: 15,
               fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
-              fontWeight: 600, appearance: "none",
-              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFC72C' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-              backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
-              backgroundSize: 20, paddingRight: 40
+              fontWeight: 600, outline: "none", boxSizing: "border-box",
+              transition: "border-color .15s ease"
             }}
-          >
-            {regionNames.map(r => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
+            onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
+            onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
+          />
         </div>
         
-        {/* Feature highlights */}
-        <div style={{ marginBottom: 24 }}>
+        {/* Pricing card (PassOffer) — immediately after email */}
+        <div style={{ marginBottom: 14 }}>
+          <PassOffer
+            lang={lang}
+            onBuy={onPassBuy}
+          />
+        </div>
+        
+        {/* ═══ BELOW THE FOLD — trust + features ═══ */}
+        
+        {/* FiabiliteProof */}
+        <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
+        
+        {/* Trust signals */}
+        <div style={{
+          display: "flex", justifyContent: "center", gap: 12,
+          flexWrap: "wrap", marginTop: 12, paddingTop: 12,
+          borderTop: "1px solid rgba(255,255,255,.08)"
+        }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(34,197,94,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span aria-hidden="true">✅</span>
+            <span>{t("97% vérifiées", "97% verified", "97% verificadas")}</span>
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span aria-hidden="true">🛰️</span>
+            <span>Copernicus</span>
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span aria-hidden="true">👥</span>
+            <span>{t("12k+ voyageurs", "12k+ travelers", "12k+ viajeros")}</span>
+          </span>
+        </div>
+        
+        {/* Feature highlights — collapsed below fold */}
+        <div style={{ marginTop: 14 }}>
           {variantContent.features.map((feat, i) => (
             <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "12px 16px", marginBottom: 10,
-              background: "rgba(255,255,255,.04)",
-              border: "1px solid rgba(255,255,255,.08)",
-              borderRadius: 12
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 12px", marginBottom: 6,
+              background: "rgba(255,255,255,.03)",
+              border: "1px solid rgba(255,255,255,.06)",
+              borderRadius: 10
             }}>
-              <div style={{
-                width: 24, height: 24, flexShrink: 0,
-                borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-                background: `linear-gradient(135deg, ${variantContent.accent}20, ${variantContent.accent}40)`
-              }}>
-                ✓
-              </div>
               <span style={{
-                color: "rgba(255,255,255,.9)", fontSize: 13,
+                color: "rgba(255,255,255,.8)", fontSize: 12,
                 fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
                 fontWeight: 500
               }}>
@@ -282,89 +288,19 @@ export function WorldPaywall({
           ))}
         </div>
         
-        {/* Pricing cards (delegate to PassOffer) */}
-        <div style={{ marginBottom: 20 }}>
-          <PassOffer
-            lang={lang}
-            variant="world"
-            payPlanRef={payPlanRef}
-            payEmailRef={payEmailRef}
-            payBusy={payBusy}
-            setPayBusy={setPayBusy}
-            payError={payError}
-            setPayError={setPayError}
-            payReadyRef={payReadyRef}
-            payRedirecting={payRedirecting}
-            setPayRedirecting={setPayRedirecting}
-            paySuccess={paySuccess}
-            setPaySuccess={setPaySuccess}
-            consentFlag={consentFlag}
-            consentOk={consentOk}
-            elementsRef={elementsRef}
-            stripeRef={stripeRef}
-            setupSecretRef={setupSecretRef}
-            mollieRef={mollieRef}
-            onBuy={onPassBuy}
-            payWithWallet={payWithWallet}
-            walletRedirect={walletRedirect}
-            onPayEmailInput={onPayEmailInput}
-          />
-        </div>
-        
-        {/* FiabiliteProof — Preuve de calibration inline au moment de la décision */}
-        <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
-        
-        {/* Trust signals */}
-        <div style={{
-          display: "flex", justifyContent: "center", gap: 16,
-          flexWrap: "wrap", marginTop: 16, paddingTop: 16,
-          borderTop: "1px solid rgba(255,255,255,.08)"
-        }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: "rgba(255,255,255,.08)", border: "1px solid rgba(34,197,94,.4)",
-            borderRadius: 999, padding: "4px 10px", fontSize: 10,
-            fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap",
-            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-          }}>
-            <span aria-hidden="true">✅</span>
-            <span>{t("97% vérifiées", "97% verified", "97% verificadas")}</span>
-          </span>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)",
-            borderRadius: 999, padding: "4px 10px", fontSize: 10,
-            fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap",
-            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-          }}>
-            <span aria-hidden="true">🛰️</span>
-            <span>{t("Copernicus", "Copernicus", "Copernicus")}</span>
-          </span>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)",
-            borderRadius: 999, padding: "4px 10px", fontSize: 10,
-            fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap",
-            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif"
-          }}>
-            <span aria-hidden="true">👥</span>
-            <span>{t("12k+ voyageurs", "12k+ travelers", "12k+ viajeros")}</span>
-          </span>
-        </div>
-        
         {/* Close button */}
         <button
           onClick={onClose}
           style={{
-            width: "100%", marginTop: 20, padding: "12px",
-            background: "transparent", border: "1.5px solid rgba(255,255,255,.2)",
-            borderRadius: 12, color: "rgba(255,255,255,.7)",
+            width: "100%", marginTop: 14, padding: "10px",
+            background: "transparent", border: "1.5px solid rgba(255,255,255,.15)",
+            borderRadius: 12, color: "rgba(255,255,255,.6)",
             fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
-            fontSize: 13, fontWeight: 600, cursor: "pointer",
+            fontSize: 12, fontWeight: 600, cursor: "pointer",
             transition: "all .15s ease"
           }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,255,255,.4)"}
-          onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,.2)"}
+          onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,255,255,.35)"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,.15)"}
         >
           {t("Plus tard", "Later", "Más tarde")}
         </button>

@@ -6,7 +6,7 @@
  * Props: { lang, onClose, onActivated, source, pwVariant, ...paywallContext }
  */
 import React, { useState, useEffect, useMemo, useRef } from "react"
-import { PassOffer } from "../PassOffer.jsx"
+import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
 
@@ -174,17 +174,19 @@ export function ComicPaywall({
 }) {
   const [panel, setPanel] = useState(0)
   const [animating, setAnimating] = useState(false)
+  const [showOffer, setShowOffer] = useState(false)
   const panelRefs = useRef([])
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
   
-  // Auto-advance with user control
+  // Auto-advance with user control — paused when PassOffer is showing
   useEffect(() => {
+    if (showOffer) return
     const timer = setInterval(() => {
       setPanel(p => (p + 1) % PANELS.length)
     }, 6000)
     return () => clearInterval(timer)
-  }, [])
+  }, [showOffer])
   
   const goNext = () => {
     if (animating) return
@@ -214,18 +216,18 @@ export function ComicPaywall({
       background: "#0d1117", overflow: "hidden",
       display: "flex", flexDirection: "column"
     }}>
-      {/* Progress indicator */}
-      <div style={{
+      {/* Progress indicator — hidden when PassOffer is showing */}
+      {!showOffer && <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: 3, zIndex: 10,
         background: "linear-gradient(90deg, #FFC72C, #FF8A4D, #FFC72C)",
         backgroundSize: "200% 100%",
         animation: "progressFlow 8s linear infinite"
       }}>
         <style>{`@keyframes progressFlow { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-      </div>
+      </div>}
       
-      {/* Panel indicator dots */}
-      <div style={{
+      {/* Panel indicator dots — hidden when PassOffer is showing */}
+      {!showOffer && <div style={{
         position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
         display: "flex", gap: 8, zIndex: 10
       }}>
@@ -236,7 +238,7 @@ export function ComicPaywall({
             transition: "all .3s cubic-bezier(.34,1.56,.64,1)"
           }}/>
         ))}
-      </div>
+      </div>}
       
       {/* Panel content */}
       <div style={{
@@ -244,88 +246,103 @@ export function ComicPaywall({
         alignItems: "center", justifyContent: "center",
         padding: "20px 16px", position: "relative", zIndex: 5
       }}>
-        {/* Art panel */}
-        <div style={{
-          width: "100%", maxWidth: 340, aspectRatio: "3/2",
-          marginBottom: 24, borderRadius: 16, overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0,0,0,.5)",
-          animation: animating ? "panelSlide .4s cubic-bezier(.34,1.56,.64,1)" : "none"
-        }}>
-          <style>{`
-            @keyframes panelSlide {
-              from { opacity: 0; transform: translateX(30px) scale(.95); }
-              to { opacity: 1; transform: translateX(0) scale(1); }
-            }
-          `}</style>
-          {currentArt}
-        </div>
-        
-        {/* Text content */}
-        <div style={{ textAlign: "center", maxWidth: 320 }}>
-          <h2 style={{
-            fontFamily: "'Anton', system-ui, sans-serif",
-            fontSize: "clamp(22px, 5vw, 28px)",
-            fontWeight: 400, textTransform: "uppercase",
-            letterSpacing: ".01em", color: "#fff",
-            margin: "0 0 12", lineHeight: 1.1,
-            textShadow: "0 2px 16px rgba(0,0,0,.5)"
-          }}>
-            {currentText.title}
-          </h2>
-          
-          <p style={{
-            color: "rgba(255,255,255,.85)",
-            fontSize: 15, lineHeight: 1.6,
-            fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
-            margin: "0 0 24"
-          }}>
-            {currentText.text}
-          </p>
-        </div>
-        
-        {/* Navigation */}
-        <div style={{
-          display: "flex", justifyContent: "center", gap: 16,
-          marginTop: "auto", paddingBottom: 24
-        }}>
-          <button
-            onClick={goPrev}
-            disabled={animating}
-            aria-label="Panel précédent"
-            style={{
-              width: 48, height: 48, borderRadius: "50%",
-              background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: animating ? "not-allowed" : "pointer",
-              opacity: animating ? 0.5 : 1, color: "#fff"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.6)", fontSize: 12, fontWeight: 600 }}>
-            {panel + 1} / {PANELS.length}
+        {showOffer ? (
+          <div style={{ width: "100%", maxWidth: 400, overflowY: "auto", maxHeight: "100%" }}>
+            <button
+              onClick={() => setShowOffer(false)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
+                borderRadius: 999, padding: "6px 14px", marginBottom: 16,
+                color: "rgba(255,255,255,.7)", fontSize: 12, fontWeight: 600,
+                fontFamily: "'Bricolage Grotesque',system-ui,sans-serif",
+                cursor: "pointer"
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              {t("Retour à l'histoire", "Back to story", "Volver a la historia")}
+            </button>
+            <PassOffer
+              lang={lang}
+              onBuy={onPassBuy}
+            />
           </div>
-          
-          <button
-            onClick={goNext}
-            disabled={animating}
-            aria-label="Panel suivant"
-            style={{
-              width: 48, height: 48, borderRadius: "50%",
-              background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: animating ? "not-allowed" : "pointer",
-              opacity: animating ? 0.5 : 1, color: "#fff"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
+        ) : (<>
+          <div style={{
+            width: "100%", maxWidth: 340, aspectRatio: "3/2",
+            marginBottom: 24, borderRadius: 16, overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0,0,0,.5)",
+            animation: animating ? "panelSlide .4s cubic-bezier(.34,1.56,.64,1)" : "none"
+          }}>
+            <style>{`
+              @keyframes panelSlide {
+                from { opacity: 0; transform: translateX(30px) scale(.95); }
+                to { opacity: 1; transform: translateX(0) scale(1); }
+              }
+            `}</style>
+            {currentArt}
+          </div>
+          <div style={{ textAlign: "center", maxWidth: 320 }}>
+            <h2 style={{
+              fontFamily: "'Anton', system-ui, sans-serif",
+              fontSize: "clamp(22px, 5vw, 28px)",
+              fontWeight: 400, textTransform: "uppercase",
+              letterSpacing: ".01em", color: "#fff",
+              margin: "0 0 12", lineHeight: 1.1,
+              textShadow: "0 2px 16px rgba(0,0,0,.5)"
+            }}>
+              {currentText.title}
+            </h2>
+            <p style={{
+              color: "rgba(255,255,255,.85)",
+              fontSize: 15, lineHeight: 1.6,
+              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+              margin: "0 0 24"
+            }}>
+              {currentText.text}
+            </p>
+          </div>
+          <div style={{
+            display: "flex", justifyContent: "center", gap: 16,
+            marginTop: "auto", paddingBottom: 24
+          }}>
+            <button
+              onClick={goPrev}
+              disabled={animating}
+              aria-label="Panel précédent"
+              style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: animating ? "not-allowed" : "pointer",
+                opacity: animating ? 0.5 : 1, color: "#fff"
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,.6)", fontSize: 12, fontWeight: 600 }}>
+              {panel + 1} / {PANELS.length}
+            </div>
+            <button
+              onClick={goNext}
+              disabled={animating}
+              aria-label="Panel suivant"
+              style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: animating ? "not-allowed" : "pointer",
+                opacity: animating ? 0.5 : 1, color: "#fff"
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </>)}
       </div>
       
-      {/* CTA at bottom */}
-      <div style={{
+      {/* CTA at bottom — hidden when PassOffer is showing */}
+      {!showOffer && <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
         padding: "16px 20px 24px",
         background: "linear-gradient(180deg, transparent 0%, #0d1117 60%)",
@@ -347,7 +364,7 @@ export function ComicPaywall({
         </div>
         
         <button
-          onClick={onClose}
+          onClick={() => setShowOffer(true)}
           style={{
             width: "100%", maxWidth: 320, margin: "0 auto",
             padding: "14px 28px",
@@ -379,7 +396,7 @@ export function ComicPaywall({
         >
           Plus tard
         </button>
-      </div>
+      </div>}
     </div>
   )
 }

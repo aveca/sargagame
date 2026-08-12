@@ -312,6 +312,31 @@
     // Clear crash flag on successful load
     window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
     </script>
+    <!-- Static CTA : visible DÈS le 1er paint (zéro JS), fixed au-dessus du fold mobile.
+         Disparaît quand React monte (createRoot remplace #root) ou après 8s (garde-fou).
+         z-index:999 = au-dessus du contenu mais sous les modales (z-index:1000+). -->
+    <div id="static-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#11463E,#1a5c4f);text-align:center;font-family:'Anton','Impact',sans-serif">
+      <a href="/track-click.php?url=/carte-sargasses/&ref=static_cta_floating" style="display:inline-block;width:100%;max-width:400px;padding:14px 0;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-size:17px;font-weight:700;letter-spacing:.02em;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(232,168,0,.45),0 2px 0 rgba(0,0,0,.18)">Voir ma plage &rarr;</a>
+    </div>
+    <script>
+    (function(){
+      /* Show static CTA only on mobile (≤768px). Uses matchMedia for accuracy. */
+      var mql=window.matchMedia&&window.matchMedia('(max-width:768px)');
+      if(!mql||!mql.matches)return;
+      var cta=document.getElementById('static-cta');
+      if(!cta)return;
+      cta.style.display='block';
+      /* Hide when React mounts (root gets children) or after 8s (timeout safety). */
+      function hide(){if(cta&&cta.parentNode){cta.parentNode.removeChild(cta)}}
+      var timer=setTimeout(hide,8000);
+      /* Poll every 200ms for React mount (lightweight, stops after 10s). */
+      var poll=setInterval(function(){
+        var r=document.getElementById('root');
+        if(r&&r.children.length>1){clearInterval(poll);clearTimeout(timer);hide();}
+      },200);
+      setTimeout(function(){clearInterval(poll)},10000);
+    })();
+    </script>
     <div id="root">
       <!-- Boot skeleton : peint INSTANTAN├ëMENT (HTML/CSS inline, zèro JS, zèro requ├¬te)
            pendant le download+parse du bundle (~221 Ko gzip). Sans lui, #root est vide ÔåÆ

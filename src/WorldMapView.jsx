@@ -1380,41 +1380,43 @@ export default function WorldMapView({
         ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
-      {/* Trust signals bar — persistent after skeleton, before map SVG */}
+      {/* Trust signals bar — persistent after skeleton, below EN DIRECT pill, top-right */}
       <div style={{
-        position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",
-        display:"flex",alignItems:"center",gap:8,zIndex:20,
+        position:"absolute",
+        top:`calc(52px + env(safe-area-inset-top,0px))`,
+        right:16,
+        display:"flex",alignItems:"center",gap:4,zIndex:20,
         pointerEvents:"none",
       }}>
         <span style={{
-          display:"inline-flex",alignItems:"center",gap:4,
-          background:"rgba(13,11,20,.78)",border:"1px solid rgba(255,199,44,.45)",
-          boxShadow:"0 2px 8px rgba(13,11,20,.4)",borderRadius:999,
-          padding:"4px 10px",font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
-          color:"#FFC72C",letterSpacing:".02em",whiteSpace:"nowrap",
+          display:"inline-flex",alignItems:"center",gap:3,
+          background:"rgba(255,255,255,.9)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+          border:"1px solid rgba(255,255,255,.3)",borderRadius:999,
+          padding:"3px 8px",font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
+          color:"#16A34A",whiteSpace:"nowrap",
         }}>
-          <span aria-hidden="true">🛰️</span>
-          <span>Copernicus</span>
+          <span aria-hidden="true" style={{fontSize:9}}>✓</span>
+          <span>97% fiables</span>
         </span>
         <span style={{
-          display:"inline-flex",alignItems:"center",gap:4,
-          background:"rgba(13,11,20,.78)",border:"1px solid rgba(34,197,94,.45)",
-          boxShadow:"0 2px 8px rgba(13,11,20,.4)",borderRadius:999,
-          padding:"4px 10px",font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
-          color:"#22C55E",letterSpacing:".02em",whiteSpace:"nowrap",
+          display:"inline-flex",alignItems:"center",gap:3,
+          background:"rgba(255,255,255,.9)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+          border:"1px solid rgba(255,255,255,.3)",borderRadius:999,
+          padding:"3px 8px",font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
+          color:"#5A5A5A",whiteSpace:"nowrap",
         }}>
-          <span aria-hidden="true">✅</span>
-          <span>97% vérifiées</span>
-        </span>
-        <span style={{
-          display:"inline-flex",alignItems:"center",gap:4,
-          background:"rgba(13,11,20,.78)",border:"1px solid rgba(255,210,140,.45)",
-          boxShadow:"0 2px 8px rgba(13,11,20,.4)",borderRadius:999,
-          padding:"4px 10px",font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
-          color:"#FFC72C",letterSpacing:".02em",whiteSpace:"nowrap",
-        }}>
-          <span aria-hidden="true">👥</span>
+          <span aria-hidden="true" style={{fontSize:9}}>👥</span>
           <span>12k+ voyageurs</span>
+        </span>
+        <span style={{
+          display:"inline-flex",alignItems:"center",gap:3,
+          background:"rgba(255,255,255,.9)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+          border:"1px solid rgba(255,255,255,.3)",borderRadius:999,
+          padding:"3px 8px",font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
+          color:"#5A5A5A",whiteSpace:"nowrap",
+        }}>
+          <span aria-hidden="true" style={{fontSize:9}}>🛰</span>
+          <span>Satellite</span>
         </span>
       </div>
 
