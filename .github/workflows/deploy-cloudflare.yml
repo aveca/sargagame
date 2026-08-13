@@ -13,6 +13,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Skip if Cloudflare secrets not configured (preview deploy is optional)
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,3 +40,26 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=sargagame --branch=main
+
+  # Always run build check even if deploy skipped
+  build-check:
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' || secrets.CLOUDFLARE_ACCOUNT_ID == '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build for Cloudflare Pages (verify build works)
+        run: npm run build
+        env:
+          DEPLOY_TARGET: cloudflare
+          NODE_ENV: production
+      - name: Notice
+        run: echo "Cloudflare Pages deploy skipped — secrets not configured. Build verification passed."
