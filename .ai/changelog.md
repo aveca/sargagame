@@ -4,6 +4,48 @@
 
 ---
 
+## 2026-08-12 21:30 UTC — coding_agent (OpenCode glm) — P0 FIX bouton muet Mollie : OnsiteCheckout restauré
+
+### Changement
+- **fix(payment) P0 CRITIQUE** : bouton « Commencer maintenant → » (Pass one-time, Mollie) était **MUET sur les 5 domaines**. Cause racine = le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`) avait perdu l'overlay `payStep` qui monte les Mollie Components et initialise `mollieRef.current`. Sans lui, `onPassBuy() → doSubscribe() → await mollieRef.current.createToken()` throw silencieusement (catch avale) → bouton muet.
+- Nouveau module **`src/PremiumModal/OnsiteCheckout.jsx`** (~520 lignes) restaure :
+  1. Préchauffage `loadMollieJs()` puis `mollieRef.current = window.Mollie(MOLLIE_PROFILE, {locale, testmode})` (effet 1)
+  2. Mount des 4 Mollie Components (cardHolder/cardNumber/expiryDate/verificationCode) dans `mol{Holder,Number,Expiry,Cvc}Ref` quand `payStep=true` (effet 2)
+  3. Overlay z 1300 avec email input bindé à `payEmailRef`, wallets Apple/Google Pay (si device compatible), consentement RGPD 14j, bouton Réessayer sur `payError`, swipe-down back
+  4. Rendu TOUJOURS MOUNT (`translateX(-200vw)` au repos — les iframes Mollie ne bootent pas dans `display:none`)
+- **`src/PremiumModal.jsx`** :
+  - Import `OnsiteCheckout`
+  - Ajoute `onsiteCheckoutProps` (refs + constants + helpers)
+  - Rend `<OnsiteCheckout {...onsiteCheckoutProps} />` dans les 2 branches (`pwVariant==="comic"` + défaut world)
+  - `onPassBuy` modifié : `setPayStep(true)` au lieu de `doSubscribe()` direct (chemin carte) — les wallets gardent `payWithWallet(method)` direct
+
+### Pourquoi
+- **P0 money-path cassé** (AGENTS.md interdiction non-négociable « Casser le pipeline paiement »). Diagnostiqué via grep `mollieRef.current\s*=` → 0 match dans `src/PremiumModal/`. Confirmé par `git show 7dc83891:src/PremiumModal.jsx` (pré-split fonctionnel, 3742 lignes) qui avait `mollieRef.current = window.Mollie(...)` ligne 1815 + bloc overlay payStep complet.
+- Le panel user : « bouton muet, Pass one-time, Mollie, sur tous [les 5 domaines] » = exact match du symptôme causé par `mollieRef.current` null.
+- Fix minimal additif : pas de nouvelle dépendance, pas de rewrite du funnel, juste restauration de la pièce perdue dans le split.
+
+### Fichiers modifiés
+- `src/PremiumModal/OnsiteCheckout.jsx` — NEW (overlay Mollie on-site + init mollieRef + mount Components)
+- `src/PremiumModal.jsx` — import OnsiteCheckout + onsiteCheckoutProps + rendu dans 2 branches + onPassBuy → setPayStep(true)
+- `.ai/current_state.md` (handoff cette session)
+- `.ai/changelog.md` (cette entrée)
+
+### Tests réalisés (Gate de ship)
+- [x] `npm run build` → exit 0 en 4.01s
+- [x] `check-bundle-budget.cjs` → **181.9 Ko ≤ 210 Ko** (+2.5 Ko pour OnsiteCheckout — rentable pour un fix P0 paiement)
+- [x] `ux-smoke.mjs` → 4/4 tokens : FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[]
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 12/13 pass (1 fail confirmé aussi sur main HEAD pré-fix — flaky test `carte → fiche → paywall` race maplabel, pas une régression)
+- [x] **Test manuel live** : script Playwright iPhone 12 + vite preview :4173/?paywall=1 → clic bouton « Commencer maintenant » ouvre bien l'overlay Mollie on-site : email visible + 4 champs carte (Cardholder label count: 1) + 5 iframes (4 Mollie Components + 1). **Bouton n'est plus muet.** ✅
+
+### Risque
+- Le fix touche uniquement le chemin de paiement (overlay payStep) qui était **invisible et cassé** depuis le split. Aucun risque de régression sur le reste du funnel (carte, fiche, paywall mount — non touchés).
+- Rollback : `git revert HEAD --no-edit && git push origin main` (le fix ne touche que 2 fichiers source frontend, ni `dist/`, ni `mollie*.php`).
+
+### Rollback
+- `?flag=0` non applicable (c'est un fix bug, pas un A/B). Pour rollback : `git revert <hash> --no-edit && git push origin main` → re-deploy auto < 15 min.
+
+---
+
 ## 2026-08-12 (8+) — coding_agent (OpenCode glm) — Artefact 3 Signature B2C shipé + specs artefacts 2 & 4
 
 ### Changement
