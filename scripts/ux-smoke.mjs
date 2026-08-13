@@ -114,11 +114,11 @@ await p.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
 await p.waitForFunction(
   () => document.querySelectorAll('.sg-maplabel').length >= 3,
   { timeout: 30000 }
-).catch(() => {});
+);
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
-const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3).catch(() => false);
-whiteButtons.push(...await p.evaluate(scanGhost).catch(() => []));
+const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
+whiteButtons.push(...await p.evaluate(scanGhost));
 
 // ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
 //       car le pan de la carte peut voler le clic physique en émulation). Route
@@ -129,12 +129,12 @@ await p.evaluate(() => {
   const l = [...document.querySelectorAll('.sg-maplabel')]
     .find(el => getComputedStyle(el).visibility !== 'hidden');
   if (l) l.click();
-}).catch(() => {});
-await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
+});
+await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet', { timeout: 12000 });
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j2-fiche.png' });
-const ficheOk = !!(await p.$('.bsc-sheet').catch(() => null)) || !!(await p.$('.lc-detail').catch(() => null)) || !!(await p.$('.sheet').catch(() => null));
-whiteButtons.push(...await p.evaluate(scanGhost).catch(() => []));
+const ficheOk = !!(await p.$('.bsc-sheet')) || !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
+whiteButtons.push(...await p.evaluate(scanGhost));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
 // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
@@ -147,11 +147,11 @@ await p.waitForFunction(
   () => !window.location.search.includes('paywall=1'),
   {},
   { timeout: 15000 }
-).catch(() => {});
+);
 await p.waitForTimeout(500);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
 // Paywall considéré comme "atteint" si le handler deep-link a nettoyé l'URL
-const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')).catch(() => true));
+const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
