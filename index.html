@@ -465,9 +465,12 @@
     // dètecte le nouveau SW en minutes au lieu de 24 h. + reg.update() 15 min + au retour d'onglet.
     // Pas de reload rèflexe sur controllerchange (fermait le paywall en saisie) ; le reload est
     // pilotè par le SW (activate, garde hadOldCache ÔåÆ jamais à la 1re visite).
+    // GitHub Pages: use sw-ghpages.js for SPA routing (intercepts navigation → index.html)
     if('serviceWorker' in navigator){
       window.addEventListener('load',function(){
-        navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(reg){
+        var isGH = location.hostname === 'aveca.github.io';
+        var swPath = isGH ? '/sargagame/sw-ghpages.js' : '/sw.js';
+        navigator.serviceWorker.register(swPath,{updateViaCache:'none'}).then(function(reg){
           var upd=function(){try{reg.update()}catch(e){}}
           setInterval(upd,15*60*1000)
           document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
