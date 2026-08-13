@@ -2521,6 +2521,6 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
       },
     },
   },
-  // Si le site est dans un sous-dossier (ex. example.com/sargasses/), décommenter et adapter :
-  // base: '/sargasses/',
+  // GitHub Pages deploy: /sargagame/ subpath. Production domains use root /
+  base: process.env.DEPLOY_TARGET === 'gh-pages' ? '/sargagame/' : '/',
 })
