@@ -110,7 +110,7 @@ async function connect(t) {
 
 async function uploadChunk(t, chunkName, localPath, remotePath, isFile) {
   const isUSD = isUsdHost(t)
-  const MAX_ATTEMPTS = isUSD ? 8 : 5
+  const MAX_ATTEMPTS = isUSD ? 12 : 5
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const client = await connect(t)
     let count = 0
@@ -169,12 +169,14 @@ async function deployOne(t) {
   // ECONNRESET/timeout; other errors bubble up.
   // Shared hosts (MQ/GP cPanel) drop control sockets after ~660 STORs — add
   // inter-chunk cooldown to let the server clean up between sessions.
-  // USD host (florida/puntacana/rivieramaya) is more unstable — more retries, longer backoff.
+  // USD host (florida/puntacana/rivieramaya) is VERY unstable — many more retries, much longer backoff.
   const isUSD = isUsdHost(t)
   const isMQGP = isSharedHost(t)
-  const MAX_ATTEMPTS = isUSD ? 8 : 5
-  const BASE_COOLDOWN = isUSD ? 2000 : 500   // 2s vs 500ms
-  const RETRY_COOLDOWN = isUSD ? 5000 : 1000 // 5s vs 1s
+  // USD: 12 attempts (vs 8) with longer cooldowns
+  // MQ/GP: 6 attempts (vs 5)
+  const MAX_ATTEMPTS = isUSD ? 12 : 6
+  const BASE_COOLDOWN = isUSD ? 3000 : 1000   // 3s vs 1s
+  const RETRY_COOLDOWN = isUSD ? 8000 : 2000  // 8s vs 2s
 
   async function withFreshClient(label, work) {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -335,9 +337,9 @@ async function deployRegionOnce(t, { token, noFast }) {
 
 // Wrapper avec retry + backoff exponentiel pour les erreurs FTP transientes.
 // Le serveur cPanel MQ/GP abandonne parfois la connexion TLS lors de runs
-// consécutives (runner US → hosting Caraïbes). Un simple retry avec délai
+// consécutifs (runner US → hosting Caraïbes). Un simple retry avec délai
 // croissant résout la majorité des cas sans intervention manuelle.
-// L'hôte USD (florida/puntacana/rivieramaya) est plus instable — plus de retries, backoff plus agressif.
+// L'hôte USD (florida/puntacana/rivieramaya) est TRÈS instable — beaucoup plus de retries, backoff très agressif.
 async function deployRegion(t, { token, noFast }) {
   if (!t.host || !t.user || !t.pass) {
     const ID = t.key.toUpperCase()
@@ -350,8 +352,10 @@ async function deployRegion(t, { token, noFast }) {
   }
 
   const isUSD = isUsdHost(t)
-  const MAX_RETRIES = isUSD ? 4 : 2
-  const BASE_DELAY = isUSD ? 10000 : 5000  // 10s vs 5s
+  // USD: 7 retries (8 attempts total) avec backoff 15s, 30s, 60s, 120s, 240s, 480s, 960s
+  // MQ/GP: 3 retries (4 attempts total) avec backoff 10s, 20s, 40s
+  const MAX_RETRIES = isUSD ? 7 : 3
+  const BASE_DELAY = isUSD ? 15000 : 10000  // 15s vs 10s
   let lastErr
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -373,7 +377,7 @@ async function deployRegion(t, { token, noFast }) {
     } catch (err) {
       lastErr = err
       if (attempt < MAX_RETRIES && TRANSIENT_FTP_RE.test(err.message)) {
-        const delay = BASE_DELAY * Math.pow(2, attempt) // USD: 10s, 20s, 40s, 80s | MQ/GP: 5s, 10s
+        const delay = BASE_DELAY * Math.pow(2, attempt)
         console.log(`  [${t.label}] deploy failed (${err.message}) — retry ${attempt + 1}/${MAX_RETRIES} in ${delay / 1000}s…`)
         await new Promise(r => setTimeout(r, delay))
       } else {
@@ -406,8 +410,8 @@ async function deployFilesToRegion(t, mapped) {
     return "skipped"
   }
   const isUSD = isUsdHost(t)
-  const MAX = isUSD ? 6 : 4
-  const BASE_DELAY = isUSD ? 5000 : 2000
+  const MAX = isUSD ? 10 : 4
+  const BASE_DELAY = isUSD ? 8000 : 2000
   for (let attempt = 1; attempt <= MAX; attempt++) {
     const client = await connect(t)
     try {
