@@ -1,0 +1,188 @@
+/**
+ * Coordonnées et images plages — source: C:\Users\user\Desktop\Backup
+ * - Sargav1/copernicus/beaches.json (Martinique)
+ * - Sargav1/copernicus/data/guadeloupe/beaches.json (Guadeloupe)
+ * Pour afficher les images .webp des plages GP : copier les fichiers .webp du dossier
+ * Backup (guadeloupe ou assets) vers public/beaches/.
+ * Appliqué dans sarg_carte_satellite.html pour COORD_FIX et PHOTOS.
+ */
+(function(global){
+  var BASE_IMG = '/beaches/';
+  // Backup MQ: id → { lat, lon, image }; lon = longitude (WGS84)
+  var MQ_BACKUP = {
+    mq001:{lat:14.3958521,lng:-60.8689802,img:'Plage_Des_Grandes_Salines_Sainte_Anne_1399453.jpg'},
+    mq002:{lat:14.4260922,lng:-60.8876691,img:'Plage_De_Lanse_Caritan_1_Sainte_Anne_1399442.jpg'},
+    mq003:{lat:14.4144971,lng:-60.8872148,img:'Plage_De_Lanse_Meunier_Sainte_Anne_1399448.jpg'},
+    mq004:{lat:14.4304809,lng:-60.8849519,img:''},
+    mq005:{lat:14.4101296,lng:-60.8482068,img:'Plage_De_Lanse_Trabaud_Sainte_Anne_1399470.jpg'},
+    mq006:{lat:14.505925,lng:-60.8235499,img:''},
+    mq007:{lat:14.437773,lng:-60.8258012,img:'Plage_De_Cap_Chevalier_Anse_Michel_Sainte_Anne_1399473.jpg'},
+    mq008:{lat:14.4511181,lng:-60.8835717,img:''},
+    mq009:{lat:14.4605782,lng:-60.9104676,img:'Plage_De_Lanse_Figuier_Riviere_Pilote_1399422.jpg'},
+    mq010:{lat:14.5410671,lng:-61.0657633,img:'Plage_De_Lanse_A_Lane_Les_Trois_Ilets_1398625.jpg'},
+    mq011:{lat:14.5522593,lng:-61.0552056,img:'Plage_De_Lanse_Mitan_Les_Trois_Ilets_1398619.jpg'},
+    mq012:{lat:14.5277232,lng:-61.0873771,img:'Plage_De_Lanse_Noire_Les_Anses_Darlet_1398633.jpg'},
+    mq013:{lat:14.5256583,lng:-61.08949844,img:'Plage_De_Lanse_Dufour_Les_Anses_Darlet_1398636.jpg'},
+    mq014:{lat:14.5027854,lng:-61.0856311,img:'Plage_De_Grande_Anse_Les_Anses_Darlet_1398639.jpg'},
+    mq015:{lat:14.5027854,lng:-61.0856311,img:'Plage_De_Petite_Anse_Les_Anses_Darlet_1398641.jpg'},
+    mq016:{lat:14.4758027,lng:-61.0314046,img:'Plage_De_Dizac_Le_Diamant_1398654.jpg'},
+    mq017:{lat:14.46926902,lng:-61.04569643,img:'Plage_De_Lanse_Caffard_Le_Diamant_1398649.jpg'},
+    mq018:{lat:14.4758027,lng:-61.0314046,img:'Plage_De_La_Chery_Le_Diamant_1398655.jpg'},
+    mq019:{lat:14.4658147,lng:-60.9260982,img:'Plage_De_Gros_Raisin_Sainte_Luce_1399420.jpg'},
+    mq020:{lat:14.46469668,lng:-60.93956904,img:'Plage_De_Pont_Cafe_Sainte_Luce_1399419.jpg'},
+    mq021:{lat:14.4656037,lng:-60.9423696,img:'Plage_De_Corps_De_Garde_Sainte_Luce_1399416.jpg'},
+    mq022:{lat:14.4533661,lng:-60.90242566,img:'Plage_De_La_Pointe_Borgnese_Le_Marin_1399425.jpg'},
+    mq023:{lat:14.6011133,lng:-61.0674743,img:'Plage_La_Francaise_Fort_De_France_1398608.jpg'},
+    mq024:{lat:14.6177983,lng:-61.1036302,img:'Plage_De_Lanse_Madame_Schoelcher_1398598.jpg'},
+    mq025:{lat:14.6147915,lng:-61.1010321,img:'Plage_De_Case_Navire_Schoelcher_1398600.jpg'},
+    mq026:{lat:14.62183945,lng:-61.10756925,img:'Plage_Du_Lido_Anse_Collat_Schoelcher_1398596.jpg'},
+    mq027:{lat:14.7126886,lng:-61.1840442,img:'Plage_De_Grande_Anse_Le_Coin_Nord_Le_Carbet_1398565.jpg'},
+    mq028:{lat:14.7278647,lng:-61.1803843,img:'Plage_De_Lanse_Turin_Le_Carbet_1398560.jpg'},
+    mq029:{lat:14.7404792,lng:-61.1768484,img:'Plage_De_La_Paillote_Saint_Pierre_1398557.jpg'},
+    mq030:{lat:14.8333961,lng:-61.224677,img:'Plage_De_Lanse_Belleville_Le_Precheur_1398550.jpg'},
+    mq031:{lat:14.8333961,lng:-61.224677,img:'Plage_De_Lanse_Tamarinier_Le_Precheur_1398546.jpg'},
+    mq032:{lat:14.8418367,lng:-61.2198551,img:'Plage_De_Lanse_Couleuvre_Le_Precheur_1398529.jpg'},
+    mq033:{lat:14.83325984,lng:-61.22447763,img:'Plage_De_Lanse_Ceron_Le_Precheur_1398540.jpg'},
+    mq034:{lat:14.7507215,lng:-60.9256857,img:'Plage_Du_Bourg_De_Tartane_La_Trinite_1399519.jpg'},
+    mq035:{lat:14.7542793,lng:-60.9462446,img:'Plage_De_Lanse_Bonneville_La_Trinite_1399511.jpg'},
+    mq036:{lat:14.765875,lng:-60.9058586,img:'Plage_De_Lanse_Letang_La_Trinite_1399514.jpg'},
+    mq037:{lat:14.7424251,lng:-60.9429967,img:'Plage_Des_Raisiniers_La_Trinite_1399523.jpg'},
+    mq038:{lat:14.7704908,lng:-60.9796444,img:'Plage_De_Lautre_Bord_La_Trinite_1399521.jpg'},
+    mq039:{lat:14.7609594,lng:-60.9336012,img:''},
+    mq040:{lat:14.7609594,lng:-60.9336012,img:''},
+    mq041:{lat:14.7638007,lng:-60.9116108,img:''},
+    mq042:{lat:14.6619988,lng:-60.8834495,img:'Plage_De_La_Pointe_La_Rose_Baie_Coco_Le_Robert_1399497.jpg'},
+    mq043:{lat:14.682,lng:-60.928,img:''},
+    mq044:{lat:14.5413754,lng:-60.8291578,img:'Plage_De_La_Pointe_Faula_Le_Vauclin_1399491.jpg'},
+    mq045:{lat:14.4101296,lng:-60.8482068,img:''},
+    mq046:{lat:14.5480552,lng:-60.837672,img:''},
+    mq047:{lat:14.4840623,lng:-60.8129297,img:'Plage_De_Lanse_Grosse_Roche_Le_Vauclin_1399485.jpg'},
+    mq048:{lat:14.5413754,lng:-60.8291578,img:'Plage_De_La_Pointe_Faula_Le_Vauclin_1399491.jpg'},
+    mq049:{lat:14.8711392,lng:-61.1833745,img:'Plage_De_Sinai_Grandriviere_1399532.jpg'},
+    mq050:{lat:14.8741957,lng:-61.1773891,img:''},
+    mq051:{lat:14.8086385,lng:-61.0172223,img:'Plage_De_Lanse_Charpentier_Sainte_Marie_1399530.jpg'},
+    mq052:{lat:14.8275,lng:-61.0775,img:''},
+    mq053:{lat:14.7856693,lng:-60.9931755,img:'Plage_Du_Bourg_Sainte_Marie_Sainte_Marie_1399529.jpg'},
+    mq054:{lat:14.7704908,lng:-60.9796444,img:'Plage_De_Lanse_Azerot_Sainte_Marie_1399527.jpg'},
+    mq055:{lat:14.46801066,lng:-60.95755056,img:'Plage_De_Lanse_Mabouya_Sainte_Luce_1399409.jpg'},
+    mq056:{lat:14.4511181,lng:-60.8835717,img:'Plage_De_La_Pointe_Marin_Sainte_Anne_2791813.jpg'},
+    mq057:{lat:14.4341256,lng:-60.8821104,img:''},
+    mq058:{lat:14.4840623,lng:-60.8129297,img:'Plage_De_Cap_Macre_Le_Marin_1399476.jpg'},
+    mq059:{lat:14.5175,lng:-60.953,img:''},
+    mq060:{lat:14.55983072,lng:-61.05279031,img:'Plage_De_La_Pointe_Du_Bout_Les_Trois_Ilets_1398610.jpg'},
+    mq062:{lat:14.64192241,lng:-61.13879442,img:'Plage_Du_Bourg_Case_Pilote_Case_Pilote_1398579.jpg'},
+    mq063:{lat:14.6334662,lng:-61.1309528,img:'Plage_Du_Vetiver_Case_Pilote_1398587.jpg'},
+    mq064:{lat:14.67320445,lng:-61.16511236,img:'Plage_Du_Bourg_Bellefontaine_Bellefontaine_1398568.jpg'},
+    mq065:{lat:14.8711392,lng:-61.1833745,img:''},
+    mq066:{lat:14.8011963,lng:-61.2260898,img:''},
+    mq067:{lat:14.8195,lng:-61.229,img:''},
+    mq068:{lat:14.4341256,lng:-60.8821104,img:''},
+    mq069:{lat:14.4658147,lng:-60.9260982,img:''},
+    mq070:{lat:14.4915,lng:-60.916,img:''}
+  };
+  // GP: coordonnées alignées sur l'ordre et les noms du tableau BEACHES (sarg_carte_satellite.html)
+  // pour que chaque id corresponde à la bonne plage (évite décalage backup vs HTML).
+  var GP_BACKUP = {
+    gp001:{lat:16.2521,lng:-61.2644,img:'plage-du-haut-du-bourg-saint-francois.webp'},
+    gp002:{lat:16.2469172,lng:-61.2864305,img:'plage-des-raisins-clairs-saint-francois.webp'},
+    gp003:{lat:16.2048,lng:-61.4947,img:''},
+    gp004:{lat:16.2597,lng:-61.214,img:'anse-a-la-gourde-saint-francois.webp'},
+    gp005:{lat:16.2531027,lng:-61.2306694,img:'anse-de-saint-francois-pointe-des-chateaux-la-desirade.webp'},
+    gp006:{lat:16.2564,lng:-61.1986,img:'plage-d-anse-tarare-saint-francois.webp'},
+    gp007:{lat:16.229,lng:-61.205,img:''},
+    gp008:{lat:16.2373343,lng:-61.3491006,img:'plage-de-bois-jolan-sainte-anne.webp'},
+    gp009:{lat:16.2181,lng:-61.3965,img:'la-caravelle-sainte-anne.webp'},
+    gp010:{lat:16.2226,lng:-61.3828,img:'plage-du-bourg-sainte-anne.webp'},
+    gp011:{lat:16.2528628,lng:-61.2298825,img:''},
+    gp012:{lat:16.2048,lng:-61.4948,img:'gosier-plage-le-gosier.webp'},
+    gp013:{lat:16.2047339,lng:-61.4947073,img:''},
+    gp014:{lat:16.2140114,lng:-61.5237064,img:'plage-de-bas-du-fort-le-gosier.webp'},
+    gp015:{lat:16.4861861,lng:-61.4416828,img:''},
+    gp016:{lat:16.4840401,lng:-61.5014268,img:'plage-de-l-anse-laborde-anse-bertrand.webp'},
+    gp017:{lat:16.4222,lng:-61.5337,img:'plage-du-souffleur-port-louis.webp'},
+    gp018:{lat:16.1649476,lng:-61.5842398,img:''},
+    gp019:{lat:16.2938849,lng:-61.0937489,img:''},
+    gp020:{lat:16.4856804,lng:-61.4973785,img:'plage-d-anse-bertrand-nord-anse-bertrand.webp'},
+    gp021:{lat:15.9589717,lng:-61.6719389,img:'anse-de-trois-rivieres-sous-le-vent-trois-rivieres.webp'},
+    gp022:{lat:16.01,lng:-61.726,img:''},
+    gp023:{lat:16.2438293,lng:-61.3243047,img:''},
+    gp024:{lat:16.3053509,lng:-61.7950711,img:'plage-de-deshaies-sous-le-vent-deshaies.webp'},
+    gp025:{lat:15.863176,lng:-61.5777867,img:'plage-de-grande-anse-trois-rivieres.webp'},
+    gp026:{lat:16.2054591,lng:-61.5000744,img:''},
+    gp027:{lat:16.3544093,lng:-61.7529087,img:'plage-de-clugny-ouest-sainte-rose.webp'},
+    gp028:{lat:16.3450735,lng:-61.7173643,img:''},
+    gp029:{lat:16.2354834,lng:-61.7923244,img:''},
+    gp030:{lat:16.2354834,lng:-61.7923244,img:''},
+    gp031:{lat:16.1721,lng:-61.7767,img:''},
+    gp032:{lat:16.1483668,lng:-61.7751493,img:''},
+    gp033:{lat:16.1720515,lng:-61.7767401,img:'plage-de-malendure-bouillante.webp'},
+    gp034:{lat:16.1649476,lng:-61.5842398,img:''},
+    gp035:{lat:16.038,lng:-61.705,img:''},
+    gp036:{lat:16.3515936,lng:-61.723192,img:'plage-des-amandiers-bouillante.webp'},
+    gp037:{lat:15.863176,lng:-61.5777867,img:''},
+    gp038:{lat:16.0931635,lng:-61.559275,img:''},
+    gp039:{lat:16.058,lng:-61.58,img:''},
+    gp040:{lat:15.8858408,lng:-61.2261838,img:'plage-de-marie-galante-capesterre-capesterre-de-marie-galant.webp'},
+    gp041:{lat:15.8789306,lng:-61.3089004,img:'plage-de-marie-galante-grand-bourg-grand-bourg.webp'},
+    gp042:{lat:16.3552287,lng:-61.7591678,img:'plage-du-vieux-fort-sainte-rose.webp'},
+    gp043:{lat:15.9526203,lng:-61.320184,img:''},
+    gp044:{lat:15.8721723,lng:-61.5708634,img:'plage-de-pompierre-terre-de-haut.webp'},
+    gp045:{lat:15.8635,lng:-61.5988,img:'plage-du-pain-de-sucre-terre-de-haut.webp'},
+    gp046:{lat:15.8761973,lng:-61.5796963,img:''},
+    gp047:{lat:15.86462,lng:-61.5848797,img:''},
+    gp048:{lat:16.3029048,lng:-61.0697215,img:''},
+    gp049:{lat:16.3103402,lng:-61.0450143,img:'plage-du-souffleur-la-desirade-la-desirade.webp'},
+    gp050:{lat:16.329701,lng:-61.3409379,img:'plage-de-l-autre-bord-port-louis.webp'},
+    gp051:{lat:16.3356823,lng:-61.3586839,img:'saint-felix-gosier-le-gosier.webp'},
+    gp052:{lat:16.2414427,lng:-61.3387307,img:''},
+    gp053:{lat:16.2373343,lng:-61.3491006,img:''},
+    gp054:{lat:16.2501895,lng:-61.2802841,img:''},
+    gp055:{lat:16.1649476,lng:-61.5842398,img:''},
+    gp056:{lat:15.863176,lng:-61.5777867,img:''},
+    gp057:{lat:16.275477,lng:-61.8045317,img:''},
+    gp058:{lat:16.2,lng:-61.568,img:''},
+    gp059:{lat:16.2420878,lng:-61.3059386,img:''},
+    gp060:{lat:16.3578828,lng:-61.7358953,img:''},
+    gp061:{lat:16.1997493,lng:-61.4915724,img:'pointe-de-la-verdure-plage-centre-gosier-le-gosier.webp'},
+    gp062:{lat:15.9819535,lng:-61.3057874,img:'anse-canot-marie-galante.webp'},
+    gp063:{lat:16.2047339,lng:-61.4947073,img:''},
+    gp064:{lat:16.1993365,lng:-61.4698434,img:'saint-felix-gosier-le-gosier.webp'},
+    gp065:{lat:16.2420878,lng:-61.3059386,img:'plage-de-l-anse-des-rochers-le-gosier.webp'},
+    gp066:{lat:16.2186526,lng:-61.5430846,img:''},
+    gp067:{lat:16.265,lng:-61.504,img:''},
+    gp068:{lat:16.2290921,lng:-61.3721018,img:''},
+    gp069:{lat:15.9780289,lng:-61.3113527,img:''},
+    gp070:{lat:16.2290921,lng:-61.3721018,img:''},
+    gp071:{lat:16.2512974,lng:-61.1862385,img:''},
+    gp072:{lat:16.205254,lng:-61.4430474,img:'les-salines-saint-francois.webp'},
+    gp073:{lat:16.2506377,lng:-61.2675518,img:''}
+  };
+  // Étendre avec gp074–gp120 : coords alignées sur BEACHES (sarg_carte_satellite.html)
+  var GP_EXTRA = {
+    gp074:{lat:15.8577736,lng:-61.6030399,img:''}, gp075:{lat:16.3356823,lng:-61.3586839,img:''}, gp076:{lat:16.3356823,lng:-61.3586839,img:''}, gp077:{lat:16.2938849,lng:-61.0937489,img:''}, gp078:{lat:16.4721758,lng:-61.5109255,img:''},
+    gp079:{lat:16.3515936,lng:-61.723192,img:''}, gp080:{lat:16.4125789,lng:-61.5329735,img:''}, gp081:{lat:15.8555027,lng:-61.6204834,img:''}, gp082:{lat:16.009,lng:-61.7,img:''}, gp083:{lat:16.0272932,lng:-61.7483834,img:''},
+    gp084:{lat:15.9809237,lng:-61.7158019,img:''}, gp085:{lat:15.9809237,lng:-61.7158019,img:''}, gp086:{lat:16.048,lng:-61.588,img:''}, gp087:{lat:16.0402721,lng:-61.7549166,img:''}, gp088:{lat:15.8732946,lng:-61.5786862,img:''},
+    gp089:{lat:16.3450735,lng:-61.7173643,img:''}, gp090:{lat:16.3450735,lng:-61.7173643,img:''}, gp091:{lat:16.2354834,lng:-61.7923244,img:''}, gp092:{lat:16.2354834,lng:-61.7923244,img:''}, gp093:{lat:16.2956554,lng:-61.8023301,img:''},
+    gp094:{lat:16.3212415,lng:-61.7918821,img:''}, gp095:{lat:16.3212415,lng:-61.7918821,img:''}, gp096:{lat:16.2122767,lng:-61.5075236,img:'plage-de-grand-baie-terre-de-haut.webp'}, gp097:{lat:16.2058352,lng:-61.5042124,img:'grand-baie-gosier-le-gosier.webp'},
+    gp098:{lat:16.2438293,lng:-61.3243047,img:'plage-de-l-anse-a-la-barque-terre-de-bas.webp'}, gp099:{lat:16.2163816,lng:-61.5274862,img:''}, gp100:{lat:16.2225738,lng:-61.3828372,img:'plage-de-moustique-terre-de-haut.webp'},
+    gp101:{lat:15.85904,lng:-61.5883611,img:'vieux-fort-sainte-rose.webp'}, gp102:{lat:15.8577736,lng:-61.6030399,img:'plage-de-clugny-trois-rivieres.webp'}, gp103:{lat:16.353999,lng:-61.7633517,img:'plage-de-gros-cap-trois-rivieres.webp'},
+    gp104:{lat:15.8579651,lng:-61.579543,img:'plage-de-la-feuillere-terre-de-bas.webp'}, gp105:{lat:15.9589717,lng:-61.6719389,img:'plage-du-loquet-terre-de-bas.webp'}, gp106:{lat:16.2225738,lng:-61.3828372,img:'anse-a-la-baie-saint-francois.webp'},
+    gp107:{lat:16.2956554,lng:-61.8023301,img:''}, gp108:{lat:16.2444357,lng:-61.2931382,img:'plage-du-manganao-sainte-anne.webp'}, gp109:{lat:16.3552287,lng:-61.7591678,img:''},
+    gp110:{lat:16.2418431,lng:-61.3276049,img:'pointe-de-la-verdure-plage-sud-gosier-le-gosier.webp'}, gp111:{lat:15.9780289,lng:-61.3113527,img:'plage-de-petit-havre-le-gosier.webp'}, gp112:{lat:15.9819535,lng:-61.3057874,img:'les-deux-oursins-le-gosier.webp'},
+    gp113:{lat:16.2679105,lng:-61.8058351,img:'plage-de-sainte-claire-le-gosier.webp'}, gp114:{lat:16.1997493,lng:-61.4915724,img:'plage-de-l-ilet-du-gosier-le-gosier.webp'}, gp115:{lat:15.9493507,lng:-61.3233611,img:''},
+    gp116:{lat:16.3410517,lng:-61.5265237,img:'plage-de-babin-le-gosier.webp'}, gp117:{lat:16.2225738,lng:-61.3828372,img:'anse-de-marie-galante-capesterre-capesterre-de-marie-galante.webp'}, gp118:{lat:15.9111055,lng:-61.1998476,img:'plage-de-la-desirade-sud-la-desirade.webp'},
+    gp119:{lat:15.9323909,lng:-61.1964738,img:'grande-anse-la-desirade-la-desirade.webp'}, gp120:{lat:16.1649476,lng:-61.5842398,img:'plage-de-viard-sainte-anne.webp'}
+  };
+  Object.keys(GP_EXTRA).forEach(function(k){ GP_BACKUP[k] = GP_EXTRA[k]; });
+  var COORD_FIX = {};
+  var PHOTOS_BACKUP = {};
+  [MQ_BACKUP, GP_BACKUP].forEach(function(obj){
+    for (var id in obj) {
+      var o = obj[id];
+      COORD_FIX[id] = { lat: o.lat, lng: o.lng };
+      // N'ajouter aux photos que les GP (fichiers copiés dans public/beaches/) ; MQ sans fichiers locaux → pas d'entrée, la carte utilisera Wikimedia / fallback
+      if (o.img && id.indexOf('gp') === 0) PHOTOS_BACKUP[id] = BASE_IMG + o.img;
+    }
+  });
+  global.BEACHES_BACKUP = { COORD_FIX: COORD_FIX, PHOTOS: PHOTOS_BACKUP, BASE_IMG: BASE_IMG };
+})(typeof window !== 'undefined' ? window : this);

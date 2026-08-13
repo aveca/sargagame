@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://script.google.com https://script.googleusercontent.com https://www.clarity.ms https://k.clarity.ms https://rswdmjtdzrucqzzukfmd.supabase.co https://apple.com https://www.apple.com https://google.com https://www.google.com; frame-src 'self' https://js.stripe.com https://www.paypal.com https://js.mollie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com;">
+    <!-- theme-color pilotè en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein ÔåÆ on l'a
+         d'abord RETIR├ë. Mais sans theme-color, Safari iOS (ÔëÑ15, surtout la barre flottante
+         ┬½ Liquid Glass ┬╗ d'iOS 26) ├ëCHANTILLONNE la couleur du contenu derriïre sa barre basse :
+         elle re-virait à l'or en captant le CTA dorè, et changeait de teinte selon l'ècran
+         (┬½ bande ┬╗ mouvante en bas, signalèe en navigateur ÔÇö pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = m├¬me fond que html (cadre sombre dèjà utilisè
+         pour combler le standalone) ÔåÆ barre basse Safari constante, fond avec l'app, jamais dorèe.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<script>
+      /* iOS standalone (ècran d'accueil) : position:fixed/100vh/100dvh ne descendent
+          PAS jusqu'au bord bas rèel (bug viewport standalone) ÔåÆ bande vide en bas, tous
+          ècrans. Les 3 fixes CSS prècèdents (couleur, position:fixed, longhand) ont
+          èchouè car tous purement CSS. Ici on MESURE la vraie hauteur visible
+          (window.innerHeight = plein ècran sous viewport-fit=cover) ÔåÆ --sg-vh, et #root
+          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+      (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) ÔåÆ barre basse Safari iOS constante
+           (sinon elle èchantillonne le contenu dorè = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
+           ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
+           (dèjà correct : inset:0 atteint le vrai bas au-dessus de la toolbar ; --sg-vh
+           = innerHeight y est instable et crèait une bande). */
+        if(isSA())d.classList.add('sg-standalone')
+        function vh(){var h=window.innerHeight;
+          /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
+             l'ècran rèel (screen.height 896) ÔåÆ le contenu s'arr├¬te à 852 = bande vide.
+             L'app est portrait-locked (manifest) donc screen.height = la vraie hauteur
+             portrait fiable. On la prend SEULEMENT en standalone (en Safari screen.height
+             dèpasse la zone visible ÔåÆ cacherait le bas derriïre la toolbar). */
+          if(isSA()&&window.screen&&screen.height>h)h=screen.height;
+          d.style.setProperty('--sg-vh',h+'px')}
+        vh();
+        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+        addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
+        addEventListener('load',function(){vh();setTimeout(vh,300)});
+        if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script>
+    <script>
+      /* Apple Pay domain validation check ÔÇö sets __SG_APPLEPAY_DOMAIN_READY when
+         the domain verification file exists at /.well-known/apple-developer-merchantid-domain-association
+         This enables Apple Pay ON-SITE (direct) instead of fallback redirect. */
+      (function(){
+        var checkUrl = '/.well-known/apple-developer-merchantid-domain-association';
+        fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
+          .catch(function(){});
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>Plages Nord et Est Grande-Terre — sargasses en temps réel</title>
+    <meta name="description" content="8 plages surveillées par satellite en Guadeloupe (Nord et Est Grande-Terre) : 6 propres aujourd'hui. État en temps réel et prévisions 7 jours." />
+    <link rel="canonical" href="https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/" />
+    <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/" />
+    
+    
+    <link rel="alternate" hreflang="x-default" href="https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/" />
+    <meta name="geo.region" content="MQ" />
+    <meta name="geo.placename" content="Martinique" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Plages Nord et Est Grande-Terre — sargasses en temps réel" />
+    <meta property="og:description" content="8 plages surveillées par satellite en Guadeloupe (Nord et Est Grande-Terre) : 6 propres aujourd'hui. État en temps réel et prévisions 7 jours." />
+    <meta property="og:url" content="https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="es_MX" />
+    <meta property="og:site_name" content="Sargasses Martinique" />
+    <meta property="og:image" content="https://sargasses-martinique.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <!-- A/B test og:image — fallback régional si pas de flag -->
+    <script>
+      (function(){
+        var u = location.search; var og = u.match(/[?&]og=([01])/);
+        if (!og) return; // garde l'image existante
+        var isOn = og[1] === '1';
+        var el = document.querySelector('meta[property="og:image"]');
+        if (!el) return;
+        if (isOn) {
+          // endpoint serverless /api/og/beach/{slug}.png?lang=fr|en|es
+          //slug home page: on utilise le premier slug disponible ou "accueil"
+          const defaultSlug = 'les-salines'; // plage pilote par défaut
+          el.setAttribute('content', `https://sargasses-martinique.com/api/og/beach/${defaultSlug}.png?lang=fr`);
+        } else {
+          el.setAttribute('content', 'https://sargasses-martinique.com/og-image.png');
+        }
+      })();
+    </script>
+    <meta property="og:image:alt" content="Score 0-100 par plage en Martinique - sargasses, houle, vent, soleil, eau" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Plages Nord et Est Grande-Terre — sargasses en temps réel" />
+    <meta name="twitter:description" content="8 plages surveillées par satellite en Guadeloupe (Nord et Est Grande-Terre) : 6 propres aujourd'hui. État en temps réel et prévisions 7 jours." />
+    <meta name="twitter:image" content="https://sargasses-martinique.com/og-image.png" />
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Martinique — Score 0-100","description":"Score 0-100 par plage en Martinique : sargasses, houle, vent, soleil, température de l'eau. 53 plages notées en direct, toute l'annèe.","url":"https://sargasses-martinique.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"2026-08-13","datePublished":"2026-02-18","publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":"https://sargasses-martinique.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-martinique.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Martinique aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Martinique ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. Les pics sont observés entre avril et septembre mais l'application fonctionne toute l'année et intègre les sargasses dans le score 0-100 de chaque plage."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite NOAA. En dessous de 0,15 la plage est propre, au-dessus de 0,40 il vaut mieux éviter. L'AFAI pèse 30% dans le score 0-100."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S est un gaz libéré quand les sargasses pourrissent. En forte concentration il irrite les yeux et la gorge. Les plages au score bas (moins de 40) signalent ce risque."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses viennent de NOAA ERDDAP (satellite). Les données mer, vent, soleil et température viennent d'Open-Meteo. Tout est rafraîchi plusieurs fois par jour pour la Martinique et la Guadeloupe."}}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com","logo":"https://sargasses-martinique.com/icon-512.png","description":"Compagnon plage Antilles — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau","areaServed":["Martinique","Guadeloupe"],"knowsAbout":["plages","sargasses","baignade","Martinique","Guadeloupe","Antilles","météo marine"],"sameAs":["https://www.data.gouv.fr/datasets/palmares-auditable-des-previsions-sargasses-antilles-francaises"]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"SiteNavigationElement","name":["Carte","Plages","Prèvisions","Alertes"],"url":["https://sargasses-martinique.com/carte-sargasses/","https://sargasses-martinique.com/plages/","https://sargasses-martinique.com/previsions/","https://sargasses-martinique.com/alertes/"]}
+    </script>
+  <style>
+    :root{--sg-header-offset:108px}
+    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
+    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
+    /* SCENE_TOKENS golden-hour (dèfaut) èmis en --sg-* : l'app + les 136 pages SEO (pageShell rèutilise cet index.html) partagent la source ; REGION.sceneTheme surcharge par marchè via vite.config.js. Aucun consommateur par dèfaut ÔåÆ 0 changement visuel. */
+    :root{--sg-sky-0:#0B2230;--sg-sky-1:#155A5A;--sg-sky-2:#C97E3A;--sg-sky-3:#F2B05E;--sg-sea-top:#1A5852;--sg-sea-bot:#08251F;--sg-sand:#1C1712;--sg-rim:#FFD884;--sg-glit:#FFD884;--sg-sarg:#7a5c14;--sg-sarg-d:#5d400e;--sg-sarg-l:#8a6c1c;--sg-sarg-glint:#a8862a;--sg-sarg-strand:#6b4a12;--sg-sat-body:#C9971F;--sg-sat-top:#FFC72C;--sg-sat-lens:#07201E;}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    /* GLOBAL : l'app garde SES couleurs (golden-hour, dorès, statuts) m├¬me si le systïme
+       force les couleurs (thïme contraste Windows / filtre couleur / forced-colors). Hèritè
+       ÔåÆ couvre TOUTE l'app (nav, modales, boutons), pas juste les surfaces SVG. Sinon les
+       fonds inline ètaient remappés en gris/blanc systïme (rapport fondateur : ┬½ cases grises
+       ècritures grises sur les boutons ┬╗). Justifiè : couleur = sens (statuts vert/ambre/corail). */
+    /* ÔÜá´©Å forced-color-adjust N'EST PAS hèritè (spec CSS) ÔåÆ `html{}` seul n'exemptait QUE
+       l'èlèment html, pas les boutons descendants : en forced-colors, les <button> (prïs de
+       moi, ┬½ h├┤tel ? ┬╗) voyaient leur fond crïme inline remappé en transparent + texte noir
+       systïme ÔåÆ illisibles (rapport fondateur, plusieurs fois). On applique à TOUS les
+       èlèments. Justifiè : couleur = sens (statuts vert/ambre/corail, golden-hour). */
+    html,html *{forced-color-adjust:none}
+    /* BULLETPROOF lisibilitè sous mode contraste èlevè (forced-colors actif, ex. iOS
+       ┬½ Augmenter le contraste ┬╗/┬½ Inverser ┬╗ ou Windows high-contrast) : si l'opt-out
+       ci-dessus ne suffit pas, on FORCE des couleurs SYSTêME garanties lisibles sur les
+       chips de carte (┬½ prïs de moi ┬╗, ┬½ h├┤tel ? ┬╗) ÔÇö fond/texte/bordure systïme qui
+       contrastent toujours. Mèthode W3C standard. Ne touche que ces 2 boutons. */
+    @media (forced-colors: active){
+      .sg-mapchip{forced-color-adjust:auto !important;background:ButtonFace !important;color:ButtonText !important;border:2px solid ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip *{color:ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip svg{stroke:ButtonText !important;fill:none !important}
+    }
+    /* PWA standalone : la zone derriïre l'app (safe-area home-indicator + tout gap
+       sous 100dvh sur iOS) montrait le BLANC du body (thïme clair) ÔåÆ bande blanche en
+       bas (┬½ crop ┬╗ ècran d'accueil). On peint le <html> en sombre (= manifest
+       background_color/chrome de l'app) : aucun blanc ne transpara├«t ; le body garde sa
+       couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
+    html{background:#0d1117}
+    /* Fond = cadre sombre de l'app (#0d1117, = html + #sg-chin + manifest background_color +
+       meta theme-color posè en JS). !important : bat le body{background:var(--sg-bg)} du bundle
+       CSS (chargè APRêS ce <style>) ÔåÆ aucun sous-frame blanc ni colorè avant le squelette. Body
+       est de toute fa├ºon masquè par #root fixe aprïs le mount. Neutre : ni blanc, ni teal, ni
+       orange ÔÇö un cadre sombre discret, comme un splash d'app. */
+    body{background:#0d1117 !important}
+    /* Safari/par dèfaut : position:fixed;inset:0 atteint le vrai bas (au-dessus de la
+       toolbar) ÔÇö NE PAS y toucher. iOS standalone UNIQUEMENT (html.sg-standalone) :
+       le layout viewport (innerHeight ~852) est ~44px plus court que l'ècran rèel
+       (screen.height 896, mesurè IMG_2846/2847) ÔåÆ bande vide en bas. On ètend #root à
+       la hauteur MESUR├ëE --sg-vh (= screen.height en standalone, cf. <script> head). */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
+    /* iOS 26+ Safari NAVIGATEUR : la barre basse ┬½ Liquid Glass ┬╗ IGNORE theme-color et se
+       teinte en èchantillonnant le background-color d'un èlèment position:fixed prïs du bord
+       bas (sinon fallback body) ÔåÆ elle captait le contenu dorè = bande dorèe qui ┬½ change
+       selon l'ècran ┬╗ (mècanisme confirmè : shadcn#8471, MUI#46953, WebKit/Safari 26 notes).
+       #sg-chin = ancre fixe sombre pleine largeur collèe au bord bas ÔåÆ devient la cible
+       d'èchantillonnage ÔåÆ barre basse Safari constante #0d1117 (= cadre app, m├¬me couleur
+       que html + theme-color legacy), jamais dorèe. NAVIGATEUR SEULEMENT : cachè en standalone
+       (pas de barre Safari, et un liserè sombre y serait visible). pointer-events:none ;
+       ~6px rèels, cachès sous la barre Safari. */
+    #sg-chin{display:none;position:fixed;left:0;right:0;bottom:-8px;height:14px;width:100%;background:linear-gradient(175deg,#0B2230 0%,#155A5A 45%,#C97E3A 85%,#F2B05E 100%);z-index:0;pointer-events:none}
+    /* iOS WebKit UNIQUEMENT (-webkit-touch-callout faux sur desktop Safari/Chrome/Firefox)
+       ÔåÆ pas de liserè sombre parasite en bas sur desktop/Android, o├╣ le bug n'existe pas. */
+    @supports (-webkit-touch-callout:none){#sg-chin{display:block}}
+    html.sg-standalone #sg-chin{display:none}
+    *,*::before,*::after{box-sizing:border-box}
+    img,svg{max-width:100%;display:block}
+    @media (max-width:500px){
+      :root{--sg-header-offset:108px}
+      .sg-carib-btn{padding:8px 10px !important;gap:0 !important}
+      .sg-carib-label{display:none !important}
+      .sg-header-row{padding-right:52px}
+    }
+  </style>
+  <!-- Data du premier ècran : sans preload, ces fetches partaient APRêS l'exècution
+       du bundle (mesurè t+4,8s sur sargassumcancun.com, TTFB hèbergeur 0,5-2,6s) ÔÇö
+       la carte mettait 8-12s à montrer ses pins (audit map-loading 2026-06-11). -->
+  <!-- Mètèo par plage : alimente le score du verdict (vent/houle/SST/UV/nuages/marèe) ÔåÆ
+       m├¬me vague critique que sargassum. Sans preload, ce fetch (41 Ko statique) ne
+       partait qu'APRêS le boot JS ÔåÆ rallongeait la cascade du 1er verdict. -->
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin />
+  <!-- Polices AUTO-H├ëBERG├ëES (same-origin) ÔÇö Google Fonts est bloquè par les navigateurs
+       anti-suivi (Edge ┬½ Prèvention du suivi ┬╗, Brave Shields) ÔåÆ rendu en police de secours
+       (┬½ gris/cheap ┬╗). En les servant depuis notre domaine, plus rien à bloquer + chargement
+       plus rapide. cf. public/fonts/. -->
+  <!-- fonts.css = QUE des @font-face (display:swap) ÔåÆ non render-blocking : le navigateur peint
+       en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
+       4G avant le 1er paint. (Pattern media=printÔåÆonload ; noscript fallback.) -->
+  <!-- Preload des 2 sous-ensembles LATIN above-the-fold (corps Bricolage + titres Anton) :
+       lance le download de la police DêS le parse HTML, sans attendre que fonts.css soit chargè
+       puis parsè ÔåÆ rèduit la durèe de FOUT et le dècalage (CLS) du swap tardif. `crossorigin`
+       OBLIGATOIRE m├¬me same-origin (les polices sont fetchèes en mode CORS). Seuls les subsets
+       latin sont prèchargès (les FR/EN/ES n'utilisent que U+0000ÔÇô00FF). -->
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
+  <link rel="preconnect" href="https://www.clarity.ms" />
+  <!-- Stripe : TLS cold-start mesurè à 9-22s sur rèseau Cara├»be ÔÇö prèchauffer les
+       connexions pendant le chargement de l'app rend le checkout on-site instantanè. -->
+  <link rel="preconnect" href="https://js.stripe.com" />
+  <link rel="preconnect" href="https://m.stripe.network" />
+  <link rel="preconnect" href="https://api.stripe.com" />
+  <link rel="dns-prefetch" href="https://api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
+  <!-- (polices servies via /fonts/fonts.css ci-dessus ÔÇö plus de dèpendance Google Fonts) -->
+  <!-- OneSignal Push ÔÇö SDK chargè à la demande (pas au dèmarrage) -->
+  <script>
+    window.ONESIGNAL_APP_ID="4280dcab-fc43-415d-a9cd-a3da8cf601f1";
+    window.loadOneSignal=function(){
+      if(window.__osLoaded)return;window.__osLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload=function(){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        OneSignalDeferred.push(function(O){O.init({appId:window.ONESIGNAL_APP_ID,allowLocalhostAsSecureOrigin:true,autoPrompt:false});O.Notifications.requestPermission()});
+      };document.head.appendChild(s);
+    };
+  </script>
+  <!-- Google Analytics 4 ÔÇö gtag.js (159 Ko !) DIFF├ëR├ë à l'idle (injectè dans boot() ci-dessous)
+       pour le sortir du chemin critique de chargement. Le stub gtag() + dataLayer queue les events
+       en attendant ÔåÆ ils partent quand gtag.js arrive (zèro perte). GA4 reste branchè pour le funnel.
+       GDPR : consent par dèfaut DENIED ÔÇö le banner cookie (sg_cookie_consent) grant analytics. -->
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+  gtag('js',new Date());gtag('config','G-V8JGMDZZ2Y',{transport_url:'https://www.google-analytics.com'});</script>
+  <!-- Stripe.js ÔÇö chargè à la demande (seulement si l'utilisateur ouvre Premium) -->
+  <script>
+    window.loadStripe=function(){
+      if(window.Stripe)return Promise.resolve(window.Stripe);
+      return new Promise(function(ok){
+        var s=document.createElement('script');s.src='https://js.stripe.com/v3/';
+        s.onload=function(){ok(window.Stripe)};document.head.appendChild(s);
+      });
+    };
+  </script>
+  <!-- Microsoft Clarity + bridge ÔÇö deferred after first paint -->
+  <script>
+  (function(){
+    function boot(){
+      // GA4 gtag.js ÔÇö injectè ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
+      var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-V8JGMDZZ2Y';document.head.appendChild(_ga);
+      // Clarity
+      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4o6w9aenv");
+      // Clarity ÔåÆ GA4 bridge
+      if(!window.gtag)return;
+      var sent={};
+      function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
+      var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
+      document.addEventListener('click',function(e){
+        var now=Date.now(),t=e.target;
+        if(t.closest('.leaflet-container'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||'');
+        clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
+        var same=clicks.filter(function(c){return c.tag===tag});
+        if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
+      },true);
+      document.addEventListener('click',function(e){
+        var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
+        // SPA-aware : un tap qui ouvre une feuille/modale/tooltip via l'ètat React ne change PAS
+        // l'URL ÔåÆ sans le garde de mutation DOM ci-dessous ces taps utiles ètaient comptès ┬½ morts ┬╗
+        // (bruit : ~7923 dead-clicks sur / en juillet). On aligne sur le dètecteur durci du template
+        // GP (prepare-ftp.cjs) : allowlist èlargie + delta de n┼ôuds DOM. [data-sg-live] = surface
+        // non-bouton dont le tap EST gèrè (carte, backdrops) ÔÇö m├¬me convention que la heatmap first-party.
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click,.leaflet-container,[data-sg-live]'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||''),url=location.href;
+        var preCount=document.getElementsByTagName('*').length;
+        setTimeout(function(){
+          var postCount=document.getElementsByTagName('*').length;
+          if(location.href===url&&Math.abs(postCount-preCount)<5)send('clarity_dead_click',{target:tag,page:location.pathname});
+        },2000);
+      },true);
+      var loaded=Date.now();
+      window.addEventListener('beforeunload',function(){
+        if(Date.now()-loaded<10000){
+          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
+            'G-V8JGMDZZ2Y'+
+            '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+        }
+      });
+    }
+    if('requestIdleCallback' in window)requestIdleCallback(boot,{timeout:3000});
+    else setTimeout(boot,2000);
+  })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-C7A0uGfg.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-CLzekduW.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-CWlqD9pT.css">
+  <link rel="modulepreload" crossorigin href="/assets/WorldMapView-BtQwMrc9.js" />
+  <link rel="preload" href="/data/region-outlines/mq.json" as="fetch" crossorigin />
+
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"CollectionPage","name":"Plages Nord et Est Grande-Terre — sargasses en temps réel","description":"8 plages surveillées par satellite en Guadeloupe (Nord et Est Grande-Terre) : 6 propres aujourd'hui. État en temps réel et prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/","isPartOf":{"@type":"WebApplication","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com/"},"dateModified":"2026-08-13"}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://sargasses-guadeloupe.com/"},{"@type":"ListItem","position":2,"name":"Plages","item":"https://sargasses-guadeloupe.com/plages/"},{"@type":"ListItem","position":3,"name":"Nord et Est Grande-Terre","item":"https://sargasses-guadeloupe.com/plages/plages-nord-grande-terre/"}]}
+    </script>
+</head>
+  <body>
+    <script>
+      (function(){
+        try {
+          var v = localStorage.getItem("sg_theme");
+          if (v === '"dark"') document.documentElement.classList.add("theme-dark");
+          else if (v !== '"light"' && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
+        } catch (e) {}
+      })();
+    </script>
+    <script>
+    // Crash recovery ÔÇö if React dies, auto-reload once instead of blank page
+    window.onerror=function(msg,src,line){
+      if(sessionStorage.getItem('sg_crash'))return;
+      sessionStorage.setItem('sg_crash','1');
+      setTimeout(function(){location.reload()},500);
+    };
+    // Clear crash flag on successful load
+    window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
+    </script>
+    <!-- Static CTA : visible DÈS le 1er paint (zéro JS), fixed au-dessus du fold mobile.
+         Disparaît quand React monte (createRoot remplace #root) ou après 8s (garde-fou).
+         z-index:999 = au-dessus du contenu mais sous les modales (z-index:1000+). -->
+    <div id="static-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#11463E,#1a5c4f);text-align:center;font-family:'Anton','Impact',sans-serif">
+      <a href="/track-click.php?url=/carte-sargasses/&ref=static_cta_floating" style="display:inline-block;width:100%;max-width:400px;padding:14px 0;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-size:17px;font-weight:700;letter-spacing:.02em;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(232,168,0,.45),0 2px 0 rgba(0,0,0,.18)">Voir ma plage &rarr;</a>
+    </div>
+    <script>
+    (function(){
+      /* Show static CTA only on mobile (≤768px). Uses matchMedia for accuracy. */
+      var mql=window.matchMedia&&window.matchMedia('(max-width:768px)');
+      if(!mql||!mql.matches)return;
+      var cta=document.getElementById('static-cta');
+      if(!cta)return;
+      cta.style.display='block';
+      /* Hide when React mounts (root gets children) or after 8s (timeout safety). */
+      function hide(){if(cta&&cta.parentNode){cta.parentNode.removeChild(cta)}}
+      var timer=setTimeout(hide,8000);
+      /* Poll every 200ms for React mount (lightweight, stops after 10s). */
+      var poll=setInterval(function(){
+        var r=document.getElementById('root');
+        if(r&&r.children.length>1){clearInterval(poll);clearTimeout(timer);hide();}
+      },200);
+      setTimeout(function(){clearInterval(poll)},10000);
+    })();
+    </script>
+    <div id="root">
+      <!-- Boot skeleton : peint INSTANTAN├ëMENT (HTML/CSS inline, zèro JS, zèro requ├¬te)
+           pendant le download+parse du bundle (~221 Ko gzip). Sans lui, #root est vide ÔåÆ
+           ècran noir plusieurs secondes sur rèseau mobile Cara├»be = abandons avant le paywall.
+           createRoot(#root).render() REMPLACE ces enfants au montage React ÔåÆ dispara├«t seul.
+           Visuel-only (pas de texte) ÔåÆ neutre pour les 5 domaines/langues. -->
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Plages Martinique aujourd&rsquo;hui &mdash; Score 0-100 sargasses en direct (satellite)</h1>
+    <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:linear-gradient(175deg,#0B2230 0%,#155A5A 45%,#C97E3A 85%,#F2B05E 100%);z-index:0;padding-top:env(safe-area-inset-top,0)">
+        <style>
+          @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
+          @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
+          #sg-boot .sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.05) 70%);background-size:200% 100%;animation:sgSkSweep 1.5s ease-in-out infinite}
+          #sg-boot .dot{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,#E89400);box-shadow:0 0 0 0 rgba(255,199,44,.45);animation:sgBootPulse 1.5s ease-in-out infinite;flex:0 0 auto}
+          @media (prefers-reduced-motion:reduce){#sg-boot .dot,#sg-boot .sk{animation:none}#sg-boot .headline,#sg-boot .trust{animation:none;opacity:1}}
+          @keyframes sgBootFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+          #sg-boot .headline{animation:sgBootFadeIn .5s ease-out both;font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+          #sg-boot .trust{animation:sgBootFadeIn .5s ease-out .15s both;font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif}
+        </style>
+        <!-- Squelette de l'above-the-fold (barre + carte hero + chips + lignes) : un VRAI
+             bloc dimensionnè = èlèment LCP peint dïs la 1re rèponse HTTP, zèro JS/fetch,
+             visuel-only (neutre 5 domaines/langues). React (createRoot) remplace #root. -->
+        <div style="display:flex;align-items:center;gap:11px;padding:14px 16px">
+          <div class="dot"></div>
+          <div class="sk" style="height:15px;width:150px;border-radius:8px"></div>
+          <div class="sk" style="height:30px;width:30px;border-radius:50%;margin-left:auto"></div>
+        </div>
+        <!-- HEADLINE : le visiteur comprend le produit en <1s, avant React -->
+        <div style="padding:18px 20px 4px;text-align:center">
+          <p class="headline" style="font-size:17px;font-weight:800;line-height:1.18;letter-spacing:-.01em;color:#FFF;margin:0">Votre plage, v&eacute;rifi&eacute;e au satellite avant de partir</p>
+          <p class="headline" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.75);margin:6px 0 0;line-height:1.3">Score 0&#8239;&ndash;&#8239;100 &middot; 53 plages &middot; 4&times;/jour</p>
+       </div>
+        <!-- Badges confiance : preuve sociale immediate -->
+        <div class="trust" style="display:flex;justify-content:center;gap:8px;padding:12px 16px 0;flex-wrap:wrap">
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">97&#8239;% de v&eacute;rifi&eacute;es</span>
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">12&#8239;000+ voyageurs</span>
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">Copernicus</span>
+       </div>
+       <!-- Signature B2C « Le Veilleur » — moat identitaire (axe commercial + rétention).
+            Pied du bloc above-the-fold du boot : visible 1er paint, disparaît avec le boot.
+            Jamais un CTA (la signature ne vend pas, elle pose l'honnêteté de marque).
+            Bricolage 600 12.5px micro (Bible v1), opacity .65 (pas distractant). -->
+       <p class="headline" style="margin:14px 0 0;text-align:center;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);font-style:italic;letter-spacing:.01em">Le Veilleur regarde ta plage, pas la peur.</p>
+<!-- CTA statique : actionnable sans JS, survit au no-JS / crawlers / 3G lent -->
+        <div style="padding:16px 20px 4px;text-align:center">
+          <a href="/track-click.php?url=/carte-sargasses/&ref=static_cta_boot" class="sg-boot-cta" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-family:'Bricolage Grotesque','Inter',system-ui,sans-serif;font-size:14px;font-weight:800;border-radius:999px;text-decoration:none;letter-spacing:-.01em;box-shadow:0 4px 14px rgba(232,168,0,.4),0 2px 0 rgba(0,0,0,.18);animation:sgBootFadeIn .5s ease-out .25s both">Voir ma plage &rarr</a>
+        </div>
+        <div style="padding:0 16px 0">
+          <div class="sk" style="height:24vh;min-height:140px;border-radius:22px"></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:16px 16px 0">
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+        </div>
+        <div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:12px">
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+        </div>
+      </div>
+      <!-- Rèvèlè par JS uniquement ÔåÆ les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage ÔåÆ le boot dispara├«t seul. -->
+      <script>(function(){var b=document.getElementById('sg-boot');if(b)b.style.display='flex'})()</script>
+      
+    </div>
+    <!-- Ancre de teinte barre basse Safari iOS 26+ (navigateur). Cf. <style> #sg-chin :
+         Safari èchantillonne le background d'un èlèment fixed prïs du bord bas ÔåÆ cet
+         èlèment sombre force une barre constante #0d1117 au lieu d'une bande dorèe
+         mouvante. Cachè en standalone (PWA). aria-hidden : invisible pour l'a11y/SEO. -->
+    <div id="sg-chin" aria-hidden="true"></div>
+    <script>
+    // Version check ÔÇö purge caches + reload auto sur changement de version (zèro action user).
+    // Compare v (release user-facing) ET b (hash de build posè par stamp-sw-hash.cjs ÔåÆ change à
+    // CHAQUE deploy de CODE, pas seulement sur une release). C'est ce qui faisait que la garde ne
+    // reloadait JAMAIS sur un deploy de code (cause ┬½ version grise coincèe ┬╗ 18/06). Garde
+    // anti-boucle : localStorage ècrit AVANT le reload + verrou sessionStorage par version.
+    (function(){
+      var LOCAL_KEY='sg_v';
+      fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+        if(!d||!d.v)return;
+        var cur=d.v+'|'+(d.b||'');
+        var prev=localStorage.getItem(LOCAL_KEY);
+        localStorage.setItem(LOCAL_KEY,cur);
+        if(prev&&prev!==cur&&'caches' in window&&sessionStorage.getItem('sg_vreload')!==cur){
+          sessionStorage.setItem('sg_vreload',cur);
+          caches.keys().then(function(ks){
+            return Promise.all(ks.map(function(k){return caches.delete(k)}));
+          }).then(function(){location.reload()});
+        }
+      }).catch(function(){});
+    })();
+    // Service Worker registration ÔÇö updateViaCache:'none' force le navigateur à RE-FETCH sw.js
+    // HORS de son cache HTTP (garantie c├┤tè code, indèpendante des headers LiteSpeed) ÔåÆ reg.update()
+    // dètecte le nouveau SW en minutes au lieu de 24 h. + reg.update() 15 min + au retour d'onglet.
+    // Pas de reload rèflexe sur controllerchange (fermait le paywall en saisie) ; le reload est
+    // pilotè par le SW (activate, garde hadOldCache ÔåÆ jamais à la 1re visite).
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',function(){
+        navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(reg){
+          var upd=function(){try{reg.update()}catch(e){}}
+          setInterval(upd,15*60*1000)
+          document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
+        }).catch(function(){})
+      })
+    }
+    </script>
+  
+    <noscript><article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — Nord et Est Grande-Terre</h1><p style="color:#686868;margin-bottom:12px">8 plages surveillées · 6 propres aujourd'hui (satellite Copernicus, 2026-08-13)</p><p style="color:#333;line-height:1.6;margin-bottom:20px">Du Moule à Anse-Bertrand : façade au vent au sud-est (Le Moule, première ligne), plages du nord-ouest plus épargnées (Souffleur, Anse Laborde).</p><ul style="list-style:none;padding:0"><li style="padding:6px 0"><a href="/plages/anse-laborde/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Anse Laborde</a> — Anse-Bertrand <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li><li style="padding:6px 0"><a href="/plages/anse-bertrand-nord/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Anse-Bertrand Nord</a> — Anse-Bertrand <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li><li style="padding:6px 0"><a href="/plages/porte-d-enfer/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Porte d'Enfer</a> — Anse-Bertrand <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">À éviter</span></li><li style="padding:6px 0"><a href="/plages/plage-de-babin/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Plage de Babin</a> — Le Moule <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li><li style="padding:6px 0"><a href="/plages/plage-du-moule/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Plage du Moule</a> — Le Moule <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li><li style="padding:6px 0"><a href="/plages/plage-du-souffleur/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Plage du Souffleur</a> — Le Moule <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fef3c7;color:#b87a00;font-size:12px;font-weight:600">Modéré</span></li><li style="padding:6px 0"><a href="/plages/anse-de-galet/" style="color:#0D0D0D;text-decoration:none;font-weight:500">Anse de Galet</a> — Petit-Canal <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li><li style="padding:6px 0"><a href="/plages/l-autre-bord/" style="color:#0D0D0D;text-decoration:none;font-weight:500">L’Autre Bord</a> — Port-Louis <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span></li></ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div><a href="/plages/plages-sud-grande-terre/" style="color:#E8A800;font-weight:600;margin-right:14px">Sud Grande-Terre</a><a href="/plages/plages-basse-terre-cote-caraibe/" style="color:#E8A800;font-weight:600;margin-right:14px">Basse-Terre — côte sous-le-vent</a><a href="/plages/plages-iles-guadeloupe/" style="color:#E8A800;font-weight:600;margin-right:14px">Les îles — Marie-Galante, Les Saintes, La Désirade</a><div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte en temps réel</a></div></nav></article></noscript>
+</body>
+</html>

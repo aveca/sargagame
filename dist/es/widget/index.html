@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget sargasses gratuit — l'état des plages en direct sur votre site</title>
+  <meta name="description" content="Widget gratuit sargasses Martinique et Guadeloupe. Affichez l'état des plages en temps réel sur votre site d'hôtel, location ou blog voyage. Données satellite Copernicus, prévision 7 jours.">
+  <link rel="canonical" href="https://sargasses-martinique.com/es/widget/" />
+  <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/widget/" />
+  <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/widget/" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Anton&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;forced-color-adjust:none}
+    body{font-family:'Bricolage Grotesque',sans-serif;background:#0a1620;color:#fff;font-size:17px;line-height:1.65}
+    header{background:linear-gradient(135deg,#0B2230 0%,#124C4F 100%);padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    header a.brand{color:#fff;text-decoration:none;font-family:Anton,sans-serif;font-size:20px;letter-spacing:-.02em}
+    header .brand span{color:#FFC72C}
+    .back{color:rgba(255,255,255,.6);font-size:13px;text-decoration:none;margin-left:auto;transition:color .15s}
+    .back:hover{color:#fff}
+    main{max-width:820px;margin:0 auto;padding:48px 20px 80px}
+    h1{font-family:Anton,sans-serif;font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.08;margin-bottom:14px}
+    .sub{color:rgba(255,255,255,.74);font-size:16px;margin-bottom:36px;max-width:62ch}
+    h2{font-family:Anton,sans-serif;font-size:21px;text-transform:uppercase;letter-spacing:-.01em;margin:44px 0 14px}
+    p{margin-bottom:14px;color:rgba(255,255,255,.86)}
+    .builder{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+    label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.55);margin-bottom:6px}
+    select,input[type=color]{width:100%;font:inherit;font-size:15px;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0d1c27;color:#fff}
+    input[type=color]{height:42px;padding:4px;cursor:pointer}
+    .prev{background:repeating-conic-gradient(#e9eef2 0 25%,#f6f9fb 0 50%) 0 0/22px 22px;border-radius:14px;padding:22px;min-height:120px;display:flex;align-items:center;justify-content:center}
+    .prev iframe{width:100%;max-width:520px;border:0;background:transparent}
+    .credit{margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right}
+    .credit a{color:#009E8E;text-decoration:none}
+    pre{background:#070f16;color:#e6edf2;padding:18px;border-radius:12px;overflow-x:auto;font-size:13.5px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.06)}
+    code{font-family:'JetBrains Mono',ui-monospace,monospace}
+    .copy{background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);color:#0a1620;border:none;padding:11px 26px;border-radius:100px;font-weight:700;cursor:pointer;font-size:14px;margin-top:14px;transition:opacity .15s;font-family:inherit}
+    .copy:hover{opacity:.94}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+    @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+    .benefit{display:flex;gap:12px;align-items:flex-start;padding:15px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    .benefit .ic{font-size:22px;flex-shrink:0;line-height:1.2}
+    .benefit strong{display:block;margin-bottom:2px}
+    .benefit p{margin:0;font-size:13.5px;color:rgba(255,255,255,.6)}
+    .pro{margin-top:44px;background:linear-gradient(135deg,rgba(255,199,44,.10),rgba(0,158,142,.10));border:1px solid rgba(255,199,44,.28);border-radius:18px;padding:24px}
+    .pro h2{margin-top:0}
+    .pro .cta{display:inline-block;margin-top:10px;background:#FFC72C;color:#0a1620;font-weight:700;text-decoration:none;padding:11px 24px;border-radius:100px;font-size:15px}
+    footer{text-align:center;padding:24px;color:rgba(255,255,255,.5);font-size:13px;border-top:1px solid rgba(255,255,255,.08)}
+    footer a{color:#FFC72C;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">Sargasses <span>Martinique</span></a>
+    <a class="back" href="/">← Retour à la carte</a>
+  </header>
+  <main>
+    <h1>Le widget « plages en direct » pour votre site</h1>
+    <p class="sub">Hôtel, location, restaurant de plage, blog voyage — affichez l'état réel des sargasses et la prévision 7 jours, mis à jour 4× par jour à partir des données satellite Copernicus. Gratuit, sans inscription, à vos couleurs.</p>
+
+    <h2>Configurez le vôtre</h2>
+    <div class="builder">
+      <div class="controls">
+        <div>
+          <label for="b">Plage</label>
+          <select id="b">
+            <optgroup label="Martinique">
+              <option value="plage-des-salines">Plage des Salines</option>
+              <option value="plage-du-diamant" selected>Plage du Diamant</option>
+              <option value="pointe-faula">Pointe Faula</option>
+              <option value="grande-anse-d-arlet">Grande Anse d'Arlet</option>
+              <option value="anse-mitan">Anse Mitan</option>
+              <option value="bourg-de-tartane">Bourg de Tartane</option>
+              <option value="anse-noire">Anse Noire</option>
+              <option value="anse-madame">Anse Madame</option>
+              <option value="plage-du-marin">Plage du Marin</option>
+              <option value="plage-du-bourg-sainte-anne">Plage du Bourg (Sainte-Anne)</option>
+            </optgroup>
+            <optgroup label="Guadeloupe">
+              <option value="plage-de-grande-anse" data-gp>Plage de Grande Anse</option>
+              <option value="plage-de-malendure" data-gp>Plage de Malendure</option>
+              <option value="plage-de-sainte-anne" data-gp>Plage de Sainte-Anne</option>
+              <option value="pointe-des-chateaux" data-gp>Pointe des Châteaux</option>
+              <option value="plage-du-gosier" data-gp>Plage du Gosier</option>
+              <option value="plage-de-la-caravelle" data-gp>Plage de la Caravelle</option>
+              <option value="plage-de-bas-du-fort" data-gp>Plage de Bas-du-Fort</option>
+              <option value="plage-de-deshaies" data-gp>Plage de Deshaies</option>
+              <option value="plage-du-moule" data-gp>Plage du Moule</option>
+              <option value="plage-du-vieux-fort" data-gp>Plage du Vieux-Fort</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label for="f">Format</label>
+          <select id="f"><option value="full" selected>Complet · prévision 7 jours</option><option value="compact">Compact · statut du jour</option></select>
+        </div>
+        <div>
+          <label for="l">Langue</label>
+          <select id="l"><option value="fr" selected>Français</option><option value="en">English</option><option value="es">Español</option></select>
+        </div>
+        <div>
+          <label for="t">Thème</label>
+          <select id="t"><option value="light" selected>Clair</option><option value="dark">Sombre</option><option value="auto">Auto</option></select>
+        </div>
+        <div>
+          <label for="a">Couleur d'accent</label>
+          <input type="color" id="a" value="#009E8E">
+        </div>
+      </div>
+      <div class="prev"><div style="width:100%;max-width:520px"><iframe id="prev" title="Aperçu du widget" height="168" style="width:100%;border:0"></iframe><p class="credit" id="prevcredit">Conditions en direct par <a id="prevcreditlink" href="https://sargasses-martinique.com/">Sargasses Martinique</a></p></div></div>
+      <pre><code id="code"></code></pre>
+      <button class="copy" id="copy">Copier le code</button>
+    </div>
+
+    <h2>Pourquoi l'installer</h2>
+    <div class="grid2">
+      <div class="benefit"><span class="ic">📡</span><div><strong>Données satellite réelles</strong><p>Indice AFAI Copernicus Marine, pas du déclaratif. Mis à jour 4× par jour, automatiquement.</p></div></div>
+      <div class="benefit"><span class="ic">🗓️</span><div><strong>Prévision 7 jours</strong><p>Vos clients voient l'état du jour <em>et</em> la tendance de la semaine avant de réserver.</p></div></div>
+      <div class="benefit"><span class="ic">🎨</span><div><strong>À vos couleurs</strong><p>Couleur d'accent, thème clair ou sombre, 3 langues. S'intègre à votre charte.</p></div></div>
+      <div class="benefit"><span class="ic">⚡</span><div><strong>Zéro maintenance</strong><p>Une simple iframe, aucun script à charger. Se met à jour tout seul, pour toujours.</p></div></div>
+    </div>
+
+    <div class="pro">
+      <h2>Vous gérez un hôtel ou une location ?</h2>
+      <p>Le widget est gratuit. Pour aller plus loin — <strong>alerte automatique par email dès que votre plage bascule</strong> (votre équipe et vos prestataires prévenus avant les clients), widget à votre logo, et prévision détaillée plage par plage — découvrez l'offre Pro.</p>
+      <a class="cta" href="/pro/hotels/">Découvrir Sargasses Pro →</a>
+    </div>
+
+    <h2>Questions fréquentes</h2>
+    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est gratuit et le restera. En retour, un discret crédit « Conditions par Sargasses » sous le widget renvoie à notre carte — c'est ce lien qui nous permet de le garder gratuit. Vous restez libre de le retirer.</p>
+    <p><strong>Ça ralentit mon site ?</strong> Non. C'est une iframe légère, isolée, sans script tiers sur votre page.</p>
+    <p><strong>Ma plage n'est pas dans la liste ?</strong> Nous suivons les 20 plages les plus fréquentées des Antilles. Écrivez-nous à <strong>alerte@sargasses-martinique.com</strong> pour en ajouter une.</p>
+  </main>
+  <footer>
+    <p>Source : données satellite Copernicus Marine — <a href="/">sargasses-martinique.com</a></p>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var b=document.getElementById('b'),f=document.getElementById('f'),l=document.getElementById('l'),t=document.getElementById('t'),
+        a=document.getElementById('a'),prev=document.getElementById('prev'),code=document.getElementById('code'),copy=document.getElementById('copy'),
+        prevlink=document.getElementById('prevcreditlink');
+    function opt(){return b.options[b.selectedIndex]}
+    function domain(){return opt().hasAttribute('data-gp')?'sargasses-guadeloupe.com':'sargasses-martinique.com'}
+    function brand(){return opt().hasAttribute('data-gp')?'Guadeloupe':'Martinique'}
+    function vh(){return f.value==='compact'?116:168;} // hauteur réelle mesurée (compact = sans la semaine)
+    function qs(){
+      var p=new URLSearchParams();
+      p.set('beach',b.value);
+      if(f.value==='compact')p.set('compact','1');
+      if(l.value!=='fr')p.set('lang',l.value);
+      if(t.value!=='light')p.set('theme',t.value);
+      var hex=a.value.replace('#','').toUpperCase();
+      if(hex && hex!=='009E8E')p.set('accent',hex);
+      return p.toString();
+    }
+    function snippet(){
+      var d=domain();
+      // Le crédit sous l'iframe = un VRAI lien depuis le site de l'hôtel vers le nôtre
+      // (un lien dans l'iframe ne compte pas comme backlink). Chaque install = un backlink.
+      return '<div style="max-width:520px">\n'
+        +'  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="'+vh()+'" frameborder="0"\n    title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n    style="border:0;width:100%"\n  ></iframe>\n'
+        +'  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">Conditions en direct par <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses '+brand()+'</a></p>\n'
+        +'</div>';
+    }
+    function update(){
+      // aperçu : iframe relative (même origine que cette page → fonctionne sur MQ et GP)
+      prev.src='/widget/embed/?'+qs();
+      prev.height=vh();
+      prevlink.href='https://'+domain()+'/';
+      prevlink.textContent='Sargasses '+brand();
+      code.textContent=snippet();
+    }
+    // préremplissage depuis ?beach=<slug> (deep-link discret des pages plage SEO)
+    var preBeach=new URLSearchParams(location.search).get('beach');
+    if(preBeach){for(var i=0;i<b.options.length;i++){if(b.options[i].value===preBeach){b.selectedIndex=i;break;}}}
+    [b,f,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
+    copy.addEventListener('click',function(){
+      navigator.clipboard.writeText(code.textContent).then(function(){
+        copy.textContent='Copié ✓';setTimeout(function(){copy.textContent='Copier le code'},1800);
+      });
+    });
+    update();
+  })();
+  </script>
+</body>
+</html>

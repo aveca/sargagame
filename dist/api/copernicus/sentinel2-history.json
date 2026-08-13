@@ -1,0 +1,173 @@
+{
+  "observations": [
+    {
+      "id": "les-salines",
+      "obsDate": "2026-07-26",
+      "fai": -0.00224,
+      "afaiLike": 0.05,
+      "coverage": 0.93
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-07-26",
+      "fai": -0.00543,
+      "afaiLike": 0.05,
+      "coverage": 0.41
+    },
+    {
+      "id": "pt-marin",
+      "obsDate": "2026-07-26",
+      "fai": -0.00461,
+      "afaiLike": 0.05,
+      "coverage": 0.29
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-07-26",
+      "fai": -0.00318,
+      "afaiLike": 0.05,
+      "coverage": 0.65
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-07-26",
+      "fai": -0.00232,
+      "afaiLike": 0.05,
+      "coverage": 0.36
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-07-31",
+      "fai": -0.00491,
+      "afaiLike": 0.05,
+      "coverage": 0.87
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-07-31",
+      "fai": -0.00963,
+      "afaiLike": 0.05,
+      "coverage": 0.43
+    },
+    {
+      "id": "pt-marin",
+      "obsDate": "2026-07-31",
+      "fai": -0.00799,
+      "afaiLike": 0.05,
+      "coverage": 0.33
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-07-31",
+      "fai": -0.00359,
+      "afaiLike": 0.05,
+      "coverage": 0.48
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-07-31",
+      "fai": 0.00911,
+      "afaiLike": 0.28,
+      "coverage": 0.15
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-08-02",
+      "fai": -0.00007,
+      "afaiLike": 0.05,
+      "coverage": 0.94
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-08-02",
+      "fai": -0.0006,
+      "afaiLike": 0.05,
+      "coverage": 0.49
+    },
+    {
+      "id": "pt-marin",
+      "obsDate": "2026-08-02",
+      "fai": 0.00457,
+      "afaiLike": 0.12,
+      "coverage": 0.28
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-08-02",
+      "fai": -0.00005,
+      "afaiLike": 0.05,
+      "coverage": 0.48
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-02",
+      "fai": 0.01574,
+      "afaiLike": 0.55,
+      "coverage": 0.25
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-08-05",
+      "fai": -0.00134,
+      "afaiLike": 0.05,
+      "coverage": 0.56
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-08-05",
+      "fai": -0.00267,
+      "afaiLike": 0.05,
+      "coverage": 0.1
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-08-05",
+      "fai": -0.00061,
+      "afaiLike": 0.05,
+      "coverage": 0.65
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-05",
+      "fai": 0.00034,
+      "afaiLike": 0.12,
+      "coverage": 0.4
+    },
+    {
+      "id": "les-salines",
+      "obsDate": "2026-08-10",
+      "fai": -0.00138,
+      "afaiLike": 0.05,
+      "coverage": 0.89
+    },
+    {
+      "id": "sainte-anne",
+      "obsDate": "2026-08-10",
+      "fai": 0.00609,
+      "afaiLike": 0.12,
+      "coverage": 0.24
+    },
+    {
+      "id": "diamant",
+      "obsDate": "2026-08-10",
+      "fai": 0.00169,
+      "afaiLike": 0.12,
+      "coverage": 0.36
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-10",
+      "fai": 0.00745,
+      "afaiLike": 0.12,
+      "coverage": 0.14
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-12",
+      "fai": 0.00705,
+      "afaiLike": 0.12,
+      "coverage": 0.14
+    }
+  ],
+  "updatedAt": "2026-08-13T07:11:36.816Z"
+}

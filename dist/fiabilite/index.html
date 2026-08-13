@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<script>
+(function(){
+  var q = window.location.search;
+  var variant = "";
+  if (/[?&]rel_v2=1/.test(q)) {
+    variant = "v2";
+  } else if (/[?&]rel_v2=0/.test(q)) {
+    variant = "control";
+  } else {
+    try {
+      var ab = JSON.parse(localStorage.getItem("sg_ab") || "{}");
+      if (ab.rel_v2 != null) {
+        variant = (ab.rel_v2 === 1 || ab.rel_v2 === "v2") ? "v2" : "control";
+      } else {
+        var isV2 = Math.random() < 0.7;
+        variant = isV2 ? "v2" : "control";
+        ab.rel_v2 = isV2 ? 1 : 0;
+        localStorage.setItem("sg_ab", JSON.stringify(ab));
+      }
+    } catch(e) {
+      variant = "v2";
+    }
+  }
+  document.documentElement.className = "rel-" + variant;
+})();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>96 % de prévisions sargasses justes, vérifié — Martinique</title>
+<meta name="description" content="Prévision vs observation satellite : 96 % de réussite à J+1, 96 % global sur 1 827 comparaisons (18 jours). Méthode et chiffres réels, jamais retouchés."/>
+<link rel="canonical" href="https://sargasses-martinique.com/fiabilite/"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<meta property="og:title" content="96 % de prévisions sargasses justes, vérifié — Martinique"/>
+<meta property="og:description" content="Prévision vs observation satellite : 96 % de réussite à J+1, 96 % global sur 1 827 comparaisons (18 jours). Méthode et chiffres réels, jamais retouchés."/>
+<meta property="og:url" content="https://sargasses-martinique.com/fiabilite/"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2026-03-01"/>
+<meta property="article:modified_time" content="2026-08-13T07:11:52.233Z"/>
+<meta property="og:site_name" content="Sargasses Martinique"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"96 % de prévisions sargasses justes, vérifié — Martinique","description":"Prévision vs observation satellite : 96 % de réussite à J+1, 96 % global sur 1 827 comparaisons (18 jours). Méthode et chiffres réels, jamais retouchés.","url":"https://sargasses-martinique.com/fiabilite/","inLanguage":"fr","dateModified":"2026-08-13T07:11:52.233Z","isPartOf":{"@type":"WebSite","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses Martinique","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"96 % de prévisions sargasses justes, vérifié — Martinique","item":"https://sargasses-martinique.com/fiabilite/"}]}</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
+  :root{--bg:#FDFCF7;--ink:#0D0D0D;--card:#FFFFFF;--night:#10231E;--night-2:#0D1E1C;--gold:#FFC72C;--gold-d:#E8A800;--teal:#009E8E;--green:#22C55E;--mut:#5E5E5E;--line:rgba(0,0,0,.08);--font-display:'Anton','Bricolage Grotesque',system-ui,sans-serif;--font-body:'Bricolage Grotesque',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.65}
+  .page{max-width:560px;margin:0 auto;padding:0 22px calc(40px + env(safe-area-inset-bottom))}
+  .tb{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 0 14px}
+  .tb a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;opacity:.85}
+  .wordmark{font-weight:800;font-size:11px;letter-spacing:.16em;color:var(--mut)}
+  h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
+  h1 em{font-style:normal;color:var(--gold-d)}
+  .lead{color:var(--mut);font-size:15.5px;line-height:1.55;max-width:460px}
+  section{margin-top:42px;padding-top:32px;border-top:1px solid var(--line)}
+  .lbl{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
+  h2{font-family:var(--font-display);font-size:27px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:8px;font-weight:400;color:var(--ink)}
+  p{color:var(--mut);font-size:14.5px;margin-bottom:10px}
+  .rows{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+  .row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .row b{color:var(--ink);font-size:14.5px;display:block;margin-bottom:2px}
+  .row span{color:var(--mut);font-size:13.5px}
+  .row .ic{font-size:19px;line-height:1.3}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+  .stat{background:linear-gradient(158deg,var(--night) 0%,var(--night-2) 100%);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 10px;text-align:center}
+  .stat .n{font-family:var(--font-display);font-size:clamp(26px,6.5vw,34px);font-weight:400;color:var(--gold);line-height:1.05;white-space:nowrap}
+  .stat .l{font-size:11px;color:rgba(255,255,255,.75);margin-top:5px;line-height:1.35}
+  .stat .l strong{color:#fff;font-weight:700}
+  .tablecard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 8px;margin-top:16px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:800;text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  td{padding:9px 8px;border-bottom:1px solid var(--line);color:var(--ink)}
+  td.mut{color:var(--mut)}
+  tr:last-child td{border-bottom:none}
+  .note{font-size:13px;color:var(--mut);margin-top:12px;line-height:1.55}
+  .miss{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold-d);border-radius:16px;padding:14px 16px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .miss b{display:block;font-size:13.5px;color:var(--ink);margin-bottom:6px}
+  .miss ul{list-style:none;display:flex;flex-direction:column;gap:5px;margin:8px 0}
+  .miss li{font-size:13.5px;color:var(--mut)}
+  .miss li strong{color:var(--ink);font-weight:700}
+  .fresh{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .fresh b{color:var(--ink);font-size:14.5px;display:block;margin-bottom:2px}
+  .fresh span{color:var(--mut);font-size:13.5px}
+  .dot{width:9px;height:9px;border-radius:50%;background:#22C55E;margin-top:7px;flex:none;box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+  .foot{margin-top:54px;margin-left:-22px;margin-right:-22px;padding:30px 22px calc(34px + env(safe-area-inset-bottom));background:radial-gradient(120% 160% at 12% -30%,rgba(255,199,44,.12),transparent 58%),linear-gradient(158deg,var(--night) 0%,var(--night-2) 100%);text-align:center;font-size:11.5px;color:rgba(255,255,255,.5)}
+  .foot-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 14px;margin-top:14px;font-size:12.5px}
+  .foot-nav a{color:rgba(255,255,255,.78);text-decoration:none;font-weight:600}
+  .foot-nav a:hover{color:var(--gold)}
+  .foot-nav.legal a{color:rgba(255,255,255,.52);font-weight:500;font-size:12px}
+  .foot-co{margin-top:12px;font-size:11px;color:rgba(255,255,255,.45);line-height:1.7}
+  .foot-co a{color:rgba(255,255,255,.6);text-decoration:none}
+  .foot-sig{font-style:italic;color:var(--gold);font-size:13px;margin-bottom:12px;letter-spacing:.01em}
+  .capture-consent{margin-top:10px;font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;position:relative;z-index:1}
+  .cta{display:inline-block;margin-top:18px;background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#0D1E1C;font-weight:800;font-size:14.5px;padding:14px 24px;border-radius:14px;text-decoration:none;box-shadow:0 8px 22px rgba(232,168,0,.3)}
+
+  /* A/B Test classes */
+  .rel-control .v2 { display: none !important; }
+  .rel-v2 .control-only { display: none !important; }
+
+  /* V2 styles */
+  .hero{position:relative;margin:0 -22px 20px;padding:calc(20px + env(safe-area-inset-top)) 22px 26px;overflow:hidden;
+    background:radial-gradient(130% 70% at 76% 4%,rgba(255,224,160,.16),transparent 48%),
+               linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)}
+  .hero .sun{position:absolute;top:-30%;right:-12%;width:80%;height:80%;pointer-events:none;
+    background:radial-gradient(closest-side,rgba(255,243,214,.42),rgba(255,216,132,.18) 46%,transparent 72%);
+    animation:sunBreath 11s ease-in-out infinite}
+  @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+  @media (prefers-reduced-motion:reduce){.hero .sun{animation:none}}
+  
+  .hero-header { position: relative; z-index: 2; padding-right: 70px; }
+  .hero h1{color:#fff;margin-top:0}
+  .hero h1 em{color:var(--gold)}
+  .hero .lead{color:rgba(255,255,255,.82)}
+  .veil-satellite { position: absolute; top: -10px; right: 0; width: 80px; height: 80px; z-index: 2; }
+  .veilleur-svg { width: 100%; height: 100%; }
+
+  .gauge{margin-top:16px;display:inline-flex;align-items:center;gap:9px;
+    background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 13px;position:relative;z-index:2;width:100%;}
+  .gauge .bar{width:80px;height:7px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;flex-shrink:0;}
+  .gauge .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:4px}
+  .gauge .txt{font-size:12.5px;color:#fff;line-height:1.2;}
+  .gauge .txt b{color:var(--gold)}
+
+  .regime-headline{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold-d);border-radius:14px;padding:14px 16px;color:var(--ink);font-size:15px;font-weight:600;line-height:1.5;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+
+  .capture-card {
+    background: radial-gradient(120% 160% at 88% -30%, rgba(255,199,44,.14), transparent 58%),
+                linear-gradient(158deg, var(--night) 0%, var(--night-2) 100%);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .capture-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(34,197,94,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .capture-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .capture-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+    line-height: 1.4;
+  }
+  .capture-form {
+    display: flex;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .capture-input {
+    flex: 1;
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+  }
+  .capture-input:focus {
+    border-color: var(--teal);
+  }
+  .capture-btn {
+    background: var(--gold);
+    color: var(--ink);
+    border: 0;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity .15s ease;
+  }
+  .capture-btn:hover {
+    opacity: 0.9;
+  }
+  .capture-success {
+    display: none;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--green);
+    position: relative;
+    z-index: 1;
+    padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="tb"><a href="/">←&nbsp;Retour à la carte</a><span class="wordmark">SARGASSES MARTINIQUE</span></div>
+
+  <div class="control-only">
+    <h1>Nos prévisions, <em>vérifiées</em></h1>
+    <p class="lead">Aucune promesse, des mesures : chaque jour, la prévision de la veille est comparée à ce que le satellite observe réellement. Voici la méthode — et les chiffres, y compris ceux qu'on rate.</p>
+  </div>
+
+  <div class="v2">
+    <div class="hero">
+      <div class="sun"></div>
+      <div class="hero-header">
+        <div class="veil-satellite">
+          <svg viewBox="0 0 120 120" class="veilleur-svg">
+            <g id="veilleur" transform="translate(60 60) scale(1.1)" opacity=".96" aria-hidden="true">
+              <circle cx="0" cy="0" r="42" fill="url(#phalo)"/>
+              <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
+              <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
+              <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
+              <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
+              <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
+              <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
+              <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
+              <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
+            </g>
+          </svg>
+        </div>
+        <h1>Nos prévisions, <em>vérifiées</em></h1>
+        <p class="lead">Aucune promesse, des mesures : chaque jour, la prévision de la veille est comparée à ce que le satellite observe réellement. Voici la méthode — et les chiffres, y compris ceux qu'on rate.</p>
+      </div>
+      
+    <div class="gauge">
+      <span class="bar"><i style="width: 100%"></i></span>
+      <span class="txt"><b>100 %</b> des prévisions « mer propre » vérifiées · 1 742 comparaisons · saison calme · 96 % toutes saisons confondues · alertes rares signalées à faible confiance</span>
+    </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="lbl">La méthode</div>
+    <h2>Comment naît une prévision</h2>
+    <div class="rows">
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1E1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><style>.acc{stroke:#FFC72C}.accfill{fill:#FFC72C}</style><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.2"/><path d="M7.5 9.5L5 7M16.5 14.5l2.5 2.5"/><rect x="1.6" y="2.6" width="5.2" height="3.6" rx="0.8" transform="rotate(45 4.2 4.4)"/><rect x="17.2" y="17.2" width="5.2" height="3.6" rx="0.8" transform="rotate(45 19.8 19)"/><path d="M14.5 7.5c1.6-1.6 4.6-1.4 6 0" class="acc"/><path d="M16 5.5c2.4-2.2 6-2 7.6 0" class="acc" opacity=".55" transform="translate(-3 1)"/></svg></span><div><b>Satellite Copernicus / NOAA, 4 passages par jour</b><span>L'indice AFAI (algues flottantes) est échantillonné au large de chaque plage, pixel par pixel — jamais une moyenne régionale.</span></div></div>
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1E1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><style>.acc{stroke:#FFC72C}.accfill{fill:#FFC72C}</style><path d="M3 14.5c2.4 0 2.4-2.2 4.8-2.2s2.4 2.2 4.8 2.2 2.4-2.2 4.8-2.2 2.4 2.2 4.6 2.2"/><path d="M3 18.8c2.4 0 2.4-2.2 4.8-2.2s2.4 2.2 4.8 2.2 2.4-2.2 4.8-2.2 2.4 2.2 4.6 2.2" class="acc" opacity=".6"/><circle cx="17.6" cy="6.6" r="2.6" class="accfill" stroke="none"/></svg></span><div><b>Un modèle de dérive, pas une boule de cristal</b><span>Persistance des échouages (demi-vie 5 jours), vent et bancs détectés au large : la prévision 7 jours est recalculée à chaque passage satellite.</span></div></div>
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1E1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><style>.acc{stroke:#FFC72C}.accfill{fill:#FFC72C}</style><rect x="2.6" y="13.2" width="18.8" height="6" rx="1.3" transform="rotate(-24 12 16.2)"/><path d="M8.2 14.6l1.1 1.9M11.8 13l1.1 1.9M15.4 11.4l1.1 1.9" class="acc"/></svg></span><div><b>Un backtest automatique, tous les jours</b><span>Chaque prévision est archivée puis confrontée à l'observation satellite du jour J. Le calcul est automatique — personne ne retouche les chiffres.</span></div></div>
+      <div class="row"><span class="ic">∅</span><div><b>Quand la donnée manque, on n'affiche rien</b><span>Pas de chiffre inventé : si une mesure n'existe pas, la section disparaît plutôt que de deviner.</span></div></div>
+    </div>
+  </section>
+
+  
+    <div class="v2 regime-hero" style="margin-top: 30px;">
+      <p class="regime-headline">100% de nos prévisions « mer propre » (saison calme, 2026-07-27 → 2026-08-13) se sont vérifiées (sur 1742) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.</p>
+      <div class="stats" style="margin-top: 10px;">
+        <div class="stat clean-card">
+          <div class="n" style="color: #22C55E">100 %</div>
+          <div class="l"><strong>Prévisions « Propre »</strong><br>Vérifiées à 100 % (1 742 échantillons) · 96 % toutes saisons</div>
+        </div>
+        
+      <div class="stat alert-card">
+        <div class="n" style="color: #FFC72C">4 %</div>
+        <div class="l"><strong>Taux Fausses Alertes</strong><br>4 % en saison calme</div>
+      </div>
+      </div>
+      <p class="note">Période : 2026-07-27 → 2026-08-13</p>
+      <p class="note">En saison calme, presque aucun échouage réel à confirmer : ce taux compte des pixels propres faussement signalés, ce n’est pas une fiabilité d’alerte de 76 %.</p>
+    </div>
+
+  <section class="precision-section">
+    <div class="lbl">La précision, mesurée</div>
+    <h2>Ce que valent nos prévisions</h2>
+    <div class="control-only"><p style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold-d);border-radius:14px;padding:14px 16px;color:var(--ink);font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.04)">100% de nos prévisions « mer propre » (saison calme, 2026-07-27 → 2026-08-13) se sont vérifiées (sur 1742) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.</p></div>
+    <p>Du 27 juillet au 13 août 2026, 1 827 prévisions ont été confrontées à l'observation satellite sur 21 plages.</p>
+    <div class="stats"><div class="stat"><div class="n">96 %</div><div class="l">statut correct à J+1</div></div><div class="stat"><div class="n">95 %</div><div class="l">statut correct à J+3</div></div><div class="stat"><div class="n">96 %</div><div class="l">toutes échéances confondues</div></div></div>
+    <p class="note">Une prévision est « réussie » quand le statut annoncé (propre, modéré, à éviter) correspond au statut observé par satellite le jour venu. Erreur moyenne sur l'indice AFAI : 0,021.</p>
+    <div class="tablecard"><table>
+<thead><tr><th>Échéance</th><th>Réussite</th><th>Comparaisons</th><th>Confiance affichée</th></tr></thead>
+<tbody><tr><td>J+1</td><td><strong>96 %</strong></td><td class="mut">357</td><td class="mut">59 %</td></tr><tr><td>J+2</td><td><strong>95 %</strong></td><td class="mut">336</td><td class="mut">58 %</td></tr><tr><td>J+3</td><td><strong>95 %</strong></td><td class="mut">315</td><td class="mut">54 %</td></tr><tr><td>J+4</td><td><strong>97 %</strong></td><td class="mut">294</td><td class="mut">48 %</td></tr><tr><td>J+5</td><td><strong>97 %</strong></td><td class="mut">273</td><td class="mut">43 %</td></tr><tr><td>J+6</td><td><strong>98 %</strong></td><td class="mut">252</td><td class="mut">39 %</td></tr></tbody></table></div>
+<p class="note">Le modèle publie aussi sa propre confiance : élevée à J+1, faible à J+6. Quand elle est basse, lisez la prévision comme une tendance, pas une certitude.</p>
+<p class="note">Quand une plage est déjà chargée, nous la gardons « rouge » tant qu'aucune donnée (satellite en nette baisse ou signalement terrain) ne confirme qu'elle s'est vidée : les sargasses échouées ne partent pas sans ramassage. C'est un choix conservateur — il peut nous faire sur-alerter sur une plage nettoyée entre-temps.</p>
+    <div class="miss"><b>Ce qu'on rate</b>
+<p class="note" style="margin-top:0">18 plages sur 21 dépassent 90 % de réussite. Les plus difficiles à prévoir — publiées quand même :</p>
+<ul><li><strong>Le Diamant (Martinique)</strong> — 69 %</li><li><strong>Les Salines (Martinique)</strong> — 82 %</li><li><strong>Le Gosier (Guadeloupe)</strong> — 89 %</li></ul>
+<p class="note">Les plages exposées dont l'état oscille autour d'un seuil (propre / modéré) restent les plus dures à prévoir.</p></div>
+  </section>
+
+  <section>
+    <div class="lbl">Fraîcheur</div>
+    <h2>La donnée que vous regardez</h2>
+    <div class="fresh"><span class="dot"></span><div>
+      <b>Dernière mesure satellite</b>
+      <span><span id="f-ts" data-iso="2026-08-13T07:11:52.233Z">13 août à 07:11 UTC</span> · <span id="f-rel"></span></span><br/>
+      <span>21 points de mesure suivis · donnée revalidée 4 fois par jour · cette page est régénérée à chaque mise à jour.</span>
+    </div></div>
+    <a class="cta" href="/?utm_source=fiabilite">Voir la carte en direct →</a>
+  </section>
+
+  <div class="v2 capture-card">
+    <div class="capture-title">Recevez le verdict du matin</div>
+    <div class="capture-desc">La même mesure satellite, chaque jour dans votre boîte email. Gratuit.</div>
+    <div id="cap-success" class="capture-success">
+      <span>✅</span> C'est fait ! Premier email dans 3 jours.
+    </div>
+    <form id="cap-form" class="capture-form">
+      <div id="cap-inputs" style="display: flex; width: 100%; gap: 8px;">
+        <input type="email" id="cap-email" class="capture-input" placeholder="Votre adresse email..." required />
+        <button type="submit" class="capture-btn">Recevoir</button>
+      </div>
+    </form>
+    <div class="capture-consent">1 email/jour max · désinscription en 1 clic · voir Confidentialité</div>
+  </div>
+
+  <div class="foot"><div class="foot-sig">On regarde la mer pour vous.</div>SARGASSES MARTINIQUE · Données : Copernicus Marine &amp; NOAA ERDDAP · backtest recalculé automatiquement
+    <nav class="foot-nav"><a href="/">Carte en temps réel</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
+    <nav class="foot-nav legal"><a href="/cgv.html">CGV</a><a href="/remboursement.html">Remboursement</a><a href="/confidentialite.html">Confidentialité</a><a href="/mentions-legales.html">Mentions légales</a></nav>
+    <div class="foot-co">97TECH — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a> · © 2026 97TECH</div></div>
+</div>
+<script>(function(){
+var ts=document.getElementById('f-ts'),rel=document.getElementById('f-rel');
+if(ts){
+  var L="fr-FR",LT1="il y a moins d'1 h",TPL="il y a {h} h";
+  function show(iso){var d=new Date(iso);if(isNaN(d))return;
+  ts.textContent=d.toLocaleString(L,{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  var h=Math.floor((Date.now()-d.getTime())/36e5);
+  rel.textContent=h<1?LT1:TPL.replace('{h}',h)}
+  show(ts.getAttribute('data-iso'));
+  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).catch(function(){})
+}
+
+var VARIANT = document.documentElement.className.indexOf("rel-v2") !== -1 ? "v2" : "control";
+var ISLAND_CODE = "MQ";
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec";
+
+function track(event, params) {
+  var p = params || {};
+  try {
+    var ab = JSON.parse(localStorage.getItem("sg_ab") || "{}");
+    for (var k in ab) { p["ab_" + k] = ab[k]; }
+  } catch(e){}
+  p["ab_rel_v2"] = VARIANT === "v2" ? 1 : 0;
+  
+  if (ISLAND_CODE === "MQ" || ISLAND_CODE === "GP") {
+    try {
+      var mid = ISLAND_CODE === "GP" ? "G-Q31VV3LLM9" : "G-V8JGMDZZ2Y";
+      var sec = ISLAND_CODE === "GP" ? "eWAv3vACT6uVzcrAi7JgYQ" : "eFHMRr4tQ-2B-JYidixOSA";
+      var cid = document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);
+      cid = cid ? cid[1] : "a." + Date.now();
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
+          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
+        );
+      }
+    } catch(e){}
+  }
+  
+  if (event === "sg_email_submit" || event === "sg_rel_view") {
+    try {
+      var entry = { e: event, p: p, t: Date.now(), island: ISLAND_CODE };
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(APPS_SCRIPT_URL, JSON.stringify({ type: "analytics_event", ...entry }));
+      }
+    } catch(e){}
+  }
+}
+
+track("sg_rel_view", { variant: VARIANT });
+
+var capForm = document.getElementById("cap-form");
+if (capForm) {
+  capForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    var emailInput = document.getElementById("cap-email");
+    if (!emailInput) return;
+    var email = emailInput.value.trim();
+    if (!email || email.indexOf("@") === -1) return;
+    
+    try {
+      localStorage.setItem("sg_email", JSON.stringify(email));
+      localStorage.setItem("sg_email_prompt", "true");
+    } catch(err){}
+    
+    track("sg_email_submit", { source: "fiabilite_capture", variant: VARIANT });
+    
+    try {
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ email: email, island: ISLAND_CODE, source: "fiabilite", date: new Date().toISOString() })
+      }).catch(function(){});
+    } catch(err){}
+    
+    document.getElementById("cap-inputs").style.display = "none";
+    document.getElementById("cap-success").style.display = "block";
+  });
+}
+})();</script>
+</body>
+</html>

@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://script.google.com https://script.googleusercontent.com https://www.clarity.ms https://k.clarity.ms https://rswdmjtdzrucqzzukfmd.supabase.co https://apple.com https://www.apple.com https://google.com https://www.google.com; frame-src 'self' https://js.stripe.com https://www.paypal.com https://js.mollie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com;">
+    <!-- theme-color pilotè en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein ÔåÆ on l'a
+         d'abord RETIR├ë. Mais sans theme-color, Safari iOS (ÔëÑ15, surtout la barre flottante
+         ┬½ Liquid Glass ┬╗ d'iOS 26) ├ëCHANTILLONNE la couleur du contenu derriïre sa barre basse :
+         elle re-virait à l'or en captant le CTA dorè, et changeait de teinte selon l'ècran
+         (┬½ bande ┬╗ mouvante en bas, signalèe en navigateur ÔÇö pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = m├¬me fond que html (cadre sombre dèjà utilisè
+         pour combler le standalone) ÔåÆ barre basse Safari constante, fond avec l'app, jamais dorèe.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<script>
+      /* iOS standalone (ècran d'accueil) : position:fixed/100vh/100dvh ne descendent
+          PAS jusqu'au bord bas rèel (bug viewport standalone) ÔåÆ bande vide en bas, tous
+          ècrans. Les 3 fixes CSS prècèdents (couleur, position:fixed, longhand) ont
+          èchouè car tous purement CSS. Ici on MESURE la vraie hauteur visible
+          (window.innerHeight = plein ècran sous viewport-fit=cover) ÔåÆ --sg-vh, et #root
+          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+      (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) ÔåÆ barre basse Safari iOS constante
+           (sinon elle èchantillonne le contenu dorè = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
+           ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
+           (dèjà correct : inset:0 atteint le vrai bas au-dessus de la toolbar ; --sg-vh
+           = innerHeight y est instable et crèait une bande). */
+        if(isSA())d.classList.add('sg-standalone')
+        function vh(){var h=window.innerHeight;
+          /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
+             l'ècran rèel (screen.height 896) ÔåÆ le contenu s'arr├¬te à 852 = bande vide.
+             L'app est portrait-locked (manifest) donc screen.height = la vraie hauteur
+             portrait fiable. On la prend SEULEMENT en standalone (en Safari screen.height
+             dèpasse la zone visible ÔåÆ cacherait le bas derriïre la toolbar). */
+          if(isSA()&&window.screen&&screen.height>h)h=screen.height;
+          d.style.setProperty('--sg-vh',h+'px')}
+        vh();
+        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+        addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
+        addEventListener('load',function(){vh();setTimeout(vh,300)});
+        if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script>
+    <script>
+      /* Apple Pay domain validation check ÔÇö sets __SG_APPLEPAY_DOMAIN_READY when
+         the domain verification file exists at /.well-known/apple-developer-merchantid-domain-association
+         This enables Apple Pay ON-SITE (direct) instead of fallback redirect. */
+      (function(){
+        var checkUrl = '/.well-known/apple-developer-merchantid-domain-association';
+        fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
+          .catch(function(){});
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>Sargasses Grande Anse du Carbet aujourd'hui (Martinique) — état en temps réel</title>
+    <meta name="description" content="Grande Anse du Carbet (Martinique) — plage propre en temps réel. Longue plage de sable de la côte Caraïbe, snorkeling, idéal familles." />
+    <link rel="canonical" href="https://sargasses-martinique.com/plages/grande-anse-du-carbet/" />
+    <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/plages/grande-anse-du-carbet/" />
+    
+    
+    <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/plages/grande-anse-du-carbet/" />
+    <meta name="geo.region" content="MQ" />
+    <meta name="geo.placename" content="Martinique" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sargasses Grande Anse du Carbet aujourd'hui (Martinique) — état en temps réel" />
+    <meta property="og:description" content="Grande Anse du Carbet (Martinique) — plage propre en temps réel. Longue plage de sable de la côte Caraïbe, snorkeling, idéal familles." />
+    <meta property="og:url" content="https://sargasses-martinique.com/plages/grande-anse-du-carbet/" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="es_MX" />
+    <meta property="og:site_name" content="Sargasses Martinique" />
+    <meta property="og:image" content="https://sargasses-martinique.com/images/og/grande-anse-du-carbet.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <!-- A/B test og:image — fallback régional si pas de flag -->
+    <script>
+      (function(){
+        var u = location.search; var og = u.match(/[?&]og=([01])/);
+        if (!og) return; // garde l'image existante
+        var isOn = og[1] === '1';
+        var el = document.querySelector('meta[property="og:image"]');
+        if (!el) return;
+        if (isOn) {
+          // endpoint serverless /api/og/beach/{slug}.png?lang=fr|en|es
+          //slug home page: on utilise le premier slug disponible ou "accueil"
+          const defaultSlug = 'les-salines'; // plage pilote par défaut
+          el.setAttribute('content', `https://sargasses-martinique.com/api/og/beach/${defaultSlug}.png?lang=fr`);
+        } else {
+          el.setAttribute('content', 'https://sargasses-martinique.com/og-image.png');
+        }
+      })();
+    </script>
+    <meta property="og:image:alt" content="Score 0-100 par plage en Martinique - sargasses, houle, vent, soleil, eau" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sargasses Grande Anse du Carbet aujourd'hui (Martinique) — état en temps réel" />
+    <meta name="twitter:description" content="Grande Anse du Carbet (Martinique) — plage propre en temps réel. Longue plage de sable de la côte Caraïbe, snorkeling, idéal familles." />
+    <meta name="twitter:image" content="https://sargasses-martinique.com/images/og/grande-anse-du-carbet.png" />
+    
+    
+    
+    
+  <style>
+    :root{--sg-header-offset:108px}
+    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
+    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
+    /* SCENE_TOKENS golden-hour (dèfaut) èmis en --sg-* : l'app + les 136 pages SEO (pageShell rèutilise cet index.html) partagent la source ; REGION.sceneTheme surcharge par marchè via vite.config.js. Aucun consommateur par dèfaut ÔåÆ 0 changement visuel. */
+    :root{--sg-sky-0:#0B2230;--sg-sky-1:#155A5A;--sg-sky-2:#C97E3A;--sg-sky-3:#F2B05E;--sg-sea-top:#1A5852;--sg-sea-bot:#08251F;--sg-sand:#1C1712;--sg-rim:#FFD884;--sg-glit:#FFD884;--sg-sarg:#7a5c14;--sg-sarg-d:#5d400e;--sg-sarg-l:#8a6c1c;--sg-sarg-glint:#a8862a;--sg-sarg-strand:#6b4a12;--sg-sat-body:#C9971F;--sg-sat-top:#FFC72C;--sg-sat-lens:#07201E;}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    /* GLOBAL : l'app garde SES couleurs (golden-hour, dorès, statuts) m├¬me si le systïme
+       force les couleurs (thïme contraste Windows / filtre couleur / forced-colors). Hèritè
+       ÔåÆ couvre TOUTE l'app (nav, modales, boutons), pas juste les surfaces SVG. Sinon les
+       fonds inline ètaient remappés en gris/blanc systïme (rapport fondateur : ┬½ cases grises
+       ècritures grises sur les boutons ┬╗). Justifiè : couleur = sens (statuts vert/ambre/corail). */
+    /* ÔÜá´©Å forced-color-adjust N'EST PAS hèritè (spec CSS) ÔåÆ `html{}` seul n'exemptait QUE
+       l'èlèment html, pas les boutons descendants : en forced-colors, les <button> (prïs de
+       moi, ┬½ h├┤tel ? ┬╗) voyaient leur fond crïme inline remappé en transparent + texte noir
+       systïme ÔåÆ illisibles (rapport fondateur, plusieurs fois). On applique à TOUS les
+       èlèments. Justifiè : couleur = sens (statuts vert/ambre/corail, golden-hour). */
+    html,html *{forced-color-adjust:none}
+    /* BULLETPROOF lisibilitè sous mode contraste èlevè (forced-colors actif, ex. iOS
+       ┬½ Augmenter le contraste ┬╗/┬½ Inverser ┬╗ ou Windows high-contrast) : si l'opt-out
+       ci-dessus ne suffit pas, on FORCE des couleurs SYSTêME garanties lisibles sur les
+       chips de carte (┬½ prïs de moi ┬╗, ┬½ h├┤tel ? ┬╗) ÔÇö fond/texte/bordure systïme qui
+       contrastent toujours. Mèthode W3C standard. Ne touche que ces 2 boutons. */
+    @media (forced-colors: active){
+      .sg-mapchip{forced-color-adjust:auto !important;background:ButtonFace !important;color:ButtonText !important;border:2px solid ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip *{color:ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip svg{stroke:ButtonText !important;fill:none !important}
+    }
+    /* PWA standalone : la zone derriïre l'app (safe-area home-indicator + tout gap
+       sous 100dvh sur iOS) montrait le BLANC du body (thïme clair) ÔåÆ bande blanche en
+       bas (┬½ crop ┬╗ ècran d'accueil). On peint le <html> en sombre (= manifest
+       background_color/chrome de l'app) : aucun blanc ne transpara├«t ; le body garde sa
+       couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
+    html{background:#0d1117}
+    /* Fond = cadre sombre de l'app (#0d1117, = html + #sg-chin + manifest background_color +
+       meta theme-color posè en JS). !important : bat le body{background:var(--sg-bg)} du bundle
+       CSS (chargè APRêS ce <style>) ÔåÆ aucun sous-frame blanc ni colorè avant le squelette. Body
+       est de toute fa├ºon masquè par #root fixe aprïs le mount. Neutre : ni blanc, ni teal, ni
+       orange ÔÇö un cadre sombre discret, comme un splash d'app. */
+    body{background:#0d1117 !important}
+    /* Safari/par dèfaut : position:fixed;inset:0 atteint le vrai bas (au-dessus de la
+       toolbar) ÔÇö NE PAS y toucher. iOS standalone UNIQUEMENT (html.sg-standalone) :
+       le layout viewport (innerHeight ~852) est ~44px plus court que l'ècran rèel
+       (screen.height 896, mesurè IMG_2846/2847) ÔåÆ bande vide en bas. On ètend #root à
+       la hauteur MESUR├ëE --sg-vh (= screen.height en standalone, cf. <script> head). */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
+    /* iOS 26+ Safari NAVIGATEUR : la barre basse ┬½ Liquid Glass ┬╗ IGNORE theme-color et se
+       teinte en èchantillonnant le background-color d'un èlèment position:fixed prïs du bord
+       bas (sinon fallback body) ÔåÆ elle captait le contenu dorè = bande dorèe qui ┬½ change
+       selon l'ècran ┬╗ (mècanisme confirmè : shadcn#8471, MUI#46953, WebKit/Safari 26 notes).
+       #sg-chin = ancre fixe sombre pleine largeur collèe au bord bas ÔåÆ devient la cible
+       d'èchantillonnage ÔåÆ barre basse Safari constante #0d1117 (= cadre app, m├¬me couleur
+       que html + theme-color legacy), jamais dorèe. NAVIGATEUR SEULEMENT : cachè en standalone
+       (pas de barre Safari, et un liserè sombre y serait visible). pointer-events:none ;
+       ~6px rèels, cachès sous la barre Safari. */
+    #sg-chin{display:none;position:fixed;left:0;right:0;bottom:-8px;height:14px;width:100%;background:linear-gradient(175deg,#0B2230 0%,#155A5A 45%,#C97E3A 85%,#F2B05E 100%);z-index:0;pointer-events:none}
+    /* iOS WebKit UNIQUEMENT (-webkit-touch-callout faux sur desktop Safari/Chrome/Firefox)
+       ÔåÆ pas de liserè sombre parasite en bas sur desktop/Android, o├╣ le bug n'existe pas. */
+    @supports (-webkit-touch-callout:none){#sg-chin{display:block}}
+    html.sg-standalone #sg-chin{display:none}
+    *,*::before,*::after{box-sizing:border-box}
+    img,svg{max-width:100%;display:block}
+    @media (max-width:500px){
+      :root{--sg-header-offset:108px}
+      .sg-carib-btn{padding:8px 10px !important;gap:0 !important}
+      .sg-carib-label{display:none !important}
+      .sg-header-row{padding-right:52px}
+    }
+  </style>
+  <!-- Data du premier ècran : sans preload, ces fetches partaient APRêS l'exècution
+       du bundle (mesurè t+4,8s sur sargassumcancun.com, TTFB hèbergeur 0,5-2,6s) ÔÇö
+       la carte mettait 8-12s à montrer ses pins (audit map-loading 2026-06-11). -->
+  <!-- Mètèo par plage : alimente le score du verdict (vent/houle/SST/UV/nuages/marèe) ÔåÆ
+       m├¬me vague critique que sargassum. Sans preload, ce fetch (41 Ko statique) ne
+       partait qu'APRêS le boot JS ÔåÆ rallongeait la cascade du 1er verdict. -->
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin />
+  <!-- Polices AUTO-H├ëBERG├ëES (same-origin) ÔÇö Google Fonts est bloquè par les navigateurs
+       anti-suivi (Edge ┬½ Prèvention du suivi ┬╗, Brave Shields) ÔåÆ rendu en police de secours
+       (┬½ gris/cheap ┬╗). En les servant depuis notre domaine, plus rien à bloquer + chargement
+       plus rapide. cf. public/fonts/. -->
+  <!-- fonts.css = QUE des @font-face (display:swap) ÔåÆ non render-blocking : le navigateur peint
+       en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
+       4G avant le 1er paint. (Pattern media=printÔåÆonload ; noscript fallback.) -->
+  <!-- Preload des 2 sous-ensembles LATIN above-the-fold (corps Bricolage + titres Anton) :
+       lance le download de la police DêS le parse HTML, sans attendre que fonts.css soit chargè
+       puis parsè ÔåÆ rèduit la durèe de FOUT et le dècalage (CLS) du swap tardif. `crossorigin`
+       OBLIGATOIRE m├¬me same-origin (les polices sont fetchèes en mode CORS). Seuls les subsets
+       latin sont prèchargès (les FR/EN/ES n'utilisent que U+0000ÔÇô00FF). -->
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
+  <link rel="preconnect" href="https://www.clarity.ms" />
+  <!-- Stripe : TLS cold-start mesurè à 9-22s sur rèseau Cara├»be ÔÇö prèchauffer les
+       connexions pendant le chargement de l'app rend le checkout on-site instantanè. -->
+  <link rel="preconnect" href="https://js.stripe.com" />
+  <link rel="preconnect" href="https://m.stripe.network" />
+  <link rel="preconnect" href="https://api.stripe.com" />
+  <link rel="dns-prefetch" href="https://api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
+  <!-- (polices servies via /fonts/fonts.css ci-dessus ÔÇö plus de dèpendance Google Fonts) -->
+  <!-- OneSignal Push ÔÇö SDK chargè à la demande (pas au dèmarrage) -->
+  <script>
+    window.ONESIGNAL_APP_ID="4280dcab-fc43-415d-a9cd-a3da8cf601f1";
+    window.loadOneSignal=function(){
+      if(window.__osLoaded)return;window.__osLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload=function(){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        OneSignalDeferred.push(function(O){O.init({appId:window.ONESIGNAL_APP_ID,allowLocalhostAsSecureOrigin:true,autoPrompt:false});O.Notifications.requestPermission()});
+      };document.head.appendChild(s);
+    };
+  </script>
+  <!-- Google Analytics 4 ÔÇö gtag.js (159 Ko !) DIFF├ëR├ë à l'idle (injectè dans boot() ci-dessous)
+       pour le sortir du chemin critique de chargement. Le stub gtag() + dataLayer queue les events
+       en attendant ÔåÆ ils partent quand gtag.js arrive (zèro perte). GA4 reste branchè pour le funnel.
+       GDPR : consent par dèfaut DENIED ÔÇö le banner cookie (sg_cookie_consent) grant analytics. -->
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+  gtag('js',new Date());gtag('config','G-V8JGMDZZ2Y',{transport_url:'https://www.google-analytics.com'});</script>
+  <!-- Stripe.js ÔÇö chargè à la demande (seulement si l'utilisateur ouvre Premium) -->
+  <script>
+    window.loadStripe=function(){
+      if(window.Stripe)return Promise.resolve(window.Stripe);
+      return new Promise(function(ok){
+        var s=document.createElement('script');s.src='https://js.stripe.com/v3/';
+        s.onload=function(){ok(window.Stripe)};document.head.appendChild(s);
+      });
+    };
+  </script>
+  <!-- Microsoft Clarity + bridge ÔÇö deferred after first paint -->
+  <script>
+  (function(){
+    function boot(){
+      // GA4 gtag.js ÔÇö injectè ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
+      var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-V8JGMDZZ2Y';document.head.appendChild(_ga);
+      // Clarity
+      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4o6w9aenv");
+      // Clarity ÔåÆ GA4 bridge
+      if(!window.gtag)return;
+      var sent={};
+      function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
+      var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
+      document.addEventListener('click',function(e){
+        var now=Date.now(),t=e.target;
+        if(t.closest('.leaflet-container'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||'');
+        clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
+        var same=clicks.filter(function(c){return c.tag===tag});
+        if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
+      },true);
+      document.addEventListener('click',function(e){
+        var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
+        // SPA-aware : un tap qui ouvre une feuille/modale/tooltip via l'ètat React ne change PAS
+        // l'URL ÔåÆ sans le garde de mutation DOM ci-dessous ces taps utiles ètaient comptès ┬½ morts ┬╗
+        // (bruit : ~7923 dead-clicks sur / en juillet). On aligne sur le dètecteur durci du template
+        // GP (prepare-ftp.cjs) : allowlist èlargie + delta de n┼ôuds DOM. [data-sg-live] = surface
+        // non-bouton dont le tap EST gèrè (carte, backdrops) ÔÇö m├¬me convention que la heatmap first-party.
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click,.leaflet-container,[data-sg-live]'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||''),url=location.href;
+        var preCount=document.getElementsByTagName('*').length;
+        setTimeout(function(){
+          var postCount=document.getElementsByTagName('*').length;
+          if(location.href===url&&Math.abs(postCount-preCount)<5)send('clarity_dead_click',{target:tag,page:location.pathname});
+        },2000);
+      },true);
+      var loaded=Date.now();
+      window.addEventListener('beforeunload',function(){
+        if(Date.now()-loaded<10000){
+          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
+            'G-V8JGMDZZ2Y'+
+            '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+        }
+      });
+    }
+    if('requestIdleCallback' in window)requestIdleCallback(boot,{timeout:3000});
+    else setTimeout(boot,2000);
+  })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-C7A0uGfg.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/react-vendor-CLzekduW.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-CWlqD9pT.css">
+  <link rel="modulepreload" crossorigin href="/assets/WorldMapView-BtQwMrc9.js" />
+  <link rel="preload" href="/data/region-outlines/mq.json" as="fetch" crossorigin />
+
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Beach","name":"Grande Anse du Carbet","description":"Fiche sargasses Grande Anse du Carbet, Le Carbet (Martinique). État en temps réel et prévisions.","url":"https://sargasses-martinique.com/plages/grande-anse-du-carbet/","address":{"@type":"PostalAddress","addressLocality":"Le Carbet","addressRegion":"Martinique","addressCountry":"MQ"},"geo":{"@type":"GeoCoordinates","latitude":14.7126886,"longitude":-61.1840442},"isPartOf":{"@type":"WebApplication","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"},"amenityFeature":[{"@type":"LocationFeatureSpecification","name":"Parking","value":true},{"@type":"LocationFeatureSpecification","name":"Snorkeling","value":true},{"@type":"LocationFeatureSpecification","name":"Famille","value":true}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Plages","item":"https://sargasses-martinique.com/plages/"},{"@type":"ListItem","position":3,"name":"Grande Anse du Carbet","item":"https://sargasses-martinique.com/plages/grande-anse-du-carbet/"}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Grande Anse du Carbet est-elle une plage sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Actuellement, Grande Anse du Carbet à Le Carbet présente peu ou pas de sargasses. Cette plage de la côte Caraïbe est protégée des courants atlantiques. L'état peut changer rapidement — consultez notre carte mise à jour quotidiennement par satellite Copernicus."}},{"@type":"Question","name":"Grande Anse du Carbet est-elle adaptée aux enfants ?","acceptedAnswer":{"@type":"Answer","text":"Oui, Grande Anse du Carbet à Le Carbet est adaptée aux familles et dispose d'un parking. En période de sargasses (avril-septembre), vérifiez l'état de la plage sur notre carte avant de vous y rendre avec des enfants, le H₂S pouvant être irritant."}},{"@type":"Question","name":"Grande Anse du Carbet est-elle touchée par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Grande Anse du Carbet, située sur la côte Caraïbe, est protégée des courants atlantiques. Elle est généralement moins touchée que les plages de la côte est. La saison des sargasses aux Antilles va d'avril à septembre, avec des pics entre juin et août."}}]}
+    </script>
+</head>
+  <body>
+    <script>
+      (function(){
+        try {
+          var v = localStorage.getItem("sg_theme");
+          if (v === '"dark"') document.documentElement.classList.add("theme-dark");
+          else if (v !== '"light"' && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
+        } catch (e) {}
+      })();
+    </script>
+    <script>
+    // Crash recovery ÔÇö if React dies, auto-reload once instead of blank page
+    window.onerror=function(msg,src,line){
+      if(sessionStorage.getItem('sg_crash'))return;
+      sessionStorage.setItem('sg_crash','1');
+      setTimeout(function(){location.reload()},500);
+    };
+    // Clear crash flag on successful load
+    window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
+    </script>
+    <!-- Static CTA : visible DÈS le 1er paint (zéro JS), fixed au-dessus du fold mobile.
+         Disparaît quand React monte (createRoot remplace #root) ou après 8s (garde-fou).
+         z-index:999 = au-dessus du contenu mais sous les modales (z-index:1000+). -->
+    <div id="static-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#11463E,#1a5c4f);text-align:center;font-family:'Anton','Impact',sans-serif">
+      <a href="/track-click.php?url=/carte-sargasses/&ref=static_cta_floating" style="display:inline-block;width:100%;max-width:400px;padding:14px 0;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-size:17px;font-weight:700;letter-spacing:.02em;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(232,168,0,.45),0 2px 0 rgba(0,0,0,.18)">Voir ma plage &rarr;</a>
+    </div>
+    <script>
+    (function(){
+      /* Show static CTA only on mobile (≤768px). Uses matchMedia for accuracy. */
+      var mql=window.matchMedia&&window.matchMedia('(max-width:768px)');
+      if(!mql||!mql.matches)return;
+      var cta=document.getElementById('static-cta');
+      if(!cta)return;
+      cta.style.display='block';
+      /* Hide when React mounts (root gets children) or after 8s (timeout safety). */
+      function hide(){if(cta&&cta.parentNode){cta.parentNode.removeChild(cta)}}
+      var timer=setTimeout(hide,8000);
+      /* Poll every 200ms for React mount (lightweight, stops after 10s). */
+      var poll=setInterval(function(){
+        var r=document.getElementById('root');
+        if(r&&r.children.length>1){clearInterval(poll);clearTimeout(timer);hide();}
+      },200);
+      setTimeout(function(){clearInterval(poll)},10000);
+    })();
+    </script>
+    <div id="root">
+      <!-- Boot skeleton : peint INSTANTAN├ëMENT (HTML/CSS inline, zèro JS, zèro requ├¬te)
+           pendant le download+parse du bundle (~221 Ko gzip). Sans lui, #root est vide ÔåÆ
+           ècran noir plusieurs secondes sur rèseau mobile Cara├»be = abandons avant le paywall.
+           createRoot(#root).render() REMPLACE ces enfants au montage React ÔåÆ dispara├«t seul.
+           Visuel-only (pas de texte) ÔåÆ neutre pour les 5 domaines/langues. -->
+      <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Plages Martinique aujourd&rsquo;hui &mdash; Score 0-100 sargasses en direct (satellite)</h1>
+    <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:linear-gradient(175deg,#0B2230 0%,#155A5A 45%,#C97E3A 85%,#F2B05E 100%);z-index:0;padding-top:env(safe-area-inset-top,0)">
+        <style>
+          @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
+          @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
+          #sg-boot .sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.05) 70%);background-size:200% 100%;animation:sgSkSweep 1.5s ease-in-out infinite}
+          #sg-boot .dot{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,#E89400);box-shadow:0 0 0 0 rgba(255,199,44,.45);animation:sgBootPulse 1.5s ease-in-out infinite;flex:0 0 auto}
+          @media (prefers-reduced-motion:reduce){#sg-boot .dot,#sg-boot .sk{animation:none}#sg-boot .headline,#sg-boot .trust{animation:none;opacity:1}}
+          @keyframes sgBootFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+          #sg-boot .headline{animation:sgBootFadeIn .5s ease-out both;font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+          #sg-boot .trust{animation:sgBootFadeIn .5s ease-out .15s both;font-family:"Bricolage Grotesque","Inter",system-ui,sans-serif}
+        </style>
+        <!-- Squelette de l'above-the-fold (barre + carte hero + chips + lignes) : un VRAI
+             bloc dimensionnè = èlèment LCP peint dïs la 1re rèponse HTTP, zèro JS/fetch,
+             visuel-only (neutre 5 domaines/langues). React (createRoot) remplace #root. -->
+        <div style="display:flex;align-items:center;gap:11px;padding:14px 16px">
+          <div class="dot"></div>
+          <div class="sk" style="height:15px;width:150px;border-radius:8px"></div>
+          <div class="sk" style="height:30px;width:30px;border-radius:50%;margin-left:auto"></div>
+        </div>
+        <!-- HEADLINE : le visiteur comprend le produit en <1s, avant React -->
+        <div style="padding:18px 20px 4px;text-align:center">
+          <p class="headline" style="font-size:17px;font-weight:800;line-height:1.18;letter-spacing:-.01em;color:#FFF;margin:0">Votre plage, v&eacute;rifi&eacute;e au satellite avant de partir</p>
+          <p class="headline" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.75);margin:6px 0 0;line-height:1.3">Score 0&#8239;&ndash;&#8239;100 &middot; 53 plages &middot; 4&times;/jour</p>
+       </div>
+        <!-- Badges confiance : preuve sociale immediate -->
+        <div class="trust" style="display:flex;justify-content:center;gap:8px;padding:12px 16px 0;flex-wrap:wrap">
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">97&#8239;% de v&eacute;rifi&eacute;es</span>
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">12&#8239;000+ voyageurs</span>
+          <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap">Copernicus</span>
+       </div>
+       <!-- Signature B2C « Le Veilleur » — moat identitaire (axe commercial + rétention).
+            Pied du bloc above-the-fold du boot : visible 1er paint, disparaît avec le boot.
+            Jamais un CTA (la signature ne vend pas, elle pose l'honnêteté de marque).
+            Bricolage 600 12.5px micro (Bible v1), opacity .65 (pas distractant). -->
+       <p class="headline" style="margin:14px 0 0;text-align:center;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);font-style:italic;letter-spacing:.01em">Le Veilleur regarde ta plage, pas la peur.</p>
+<!-- CTA statique : actionnable sans JS, survit au no-JS / crawlers / 3G lent -->
+        <div style="padding:16px 20px 4px;text-align:center">
+          <a href="/track-click.php?url=/carte-sargasses/&ref=static_cta_boot" class="sg-boot-cta" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-family:'Bricolage Grotesque','Inter',system-ui,sans-serif;font-size:14px;font-weight:800;border-radius:999px;text-decoration:none;letter-spacing:-.01em;box-shadow:0 4px 14px rgba(232,168,0,.4),0 2px 0 rgba(0,0,0,.18);animation:sgBootFadeIn .5s ease-out .25s both">Voir ma plage &rarr</a>
+        </div>
+        <div style="padding:0 16px 0">
+          <div class="sk" style="height:24vh;min-height:140px;border-radius:22px"></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:16px 16px 0">
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+        </div>
+        <div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:12px">
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+        </div>
+      </div>
+      <!-- Rèvèlè par JS uniquement ÔåÆ les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage ÔåÆ le boot dispara├«t seul. -->
+      <script>(function(){var b=document.getElementById('sg-boot');if(b)b.style.display='flex'})()</script>
+      
+    </div>
+    <!-- Ancre de teinte barre basse Safari iOS 26+ (navigateur). Cf. <style> #sg-chin :
+         Safari èchantillonne le background d'un èlèment fixed prïs du bord bas ÔåÆ cet
+         èlèment sombre force une barre constante #0d1117 au lieu d'une bande dorèe
+         mouvante. Cachè en standalone (PWA). aria-hidden : invisible pour l'a11y/SEO. -->
+    <div id="sg-chin" aria-hidden="true"></div>
+    <script>
+    // Version check ÔÇö purge caches + reload auto sur changement de version (zèro action user).
+    // Compare v (release user-facing) ET b (hash de build posè par stamp-sw-hash.cjs ÔåÆ change à
+    // CHAQUE deploy de CODE, pas seulement sur une release). C'est ce qui faisait que la garde ne
+    // reloadait JAMAIS sur un deploy de code (cause ┬½ version grise coincèe ┬╗ 18/06). Garde
+    // anti-boucle : localStorage ècrit AVANT le reload + verrou sessionStorage par version.
+    (function(){
+      var LOCAL_KEY='sg_v';
+      fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+        if(!d||!d.v)return;
+        var cur=d.v+'|'+(d.b||'');
+        var prev=localStorage.getItem(LOCAL_KEY);
+        localStorage.setItem(LOCAL_KEY,cur);
+        if(prev&&prev!==cur&&'caches' in window&&sessionStorage.getItem('sg_vreload')!==cur){
+          sessionStorage.setItem('sg_vreload',cur);
+          caches.keys().then(function(ks){
+            return Promise.all(ks.map(function(k){return caches.delete(k)}));
+          }).then(function(){location.reload()});
+        }
+      }).catch(function(){});
+    })();
+    // Service Worker registration ÔÇö updateViaCache:'none' force le navigateur à RE-FETCH sw.js
+    // HORS de son cache HTTP (garantie c├┤tè code, indèpendante des headers LiteSpeed) ÔåÆ reg.update()
+    // dètecte le nouveau SW en minutes au lieu de 24 h. + reg.update() 15 min + au retour d'onglet.
+    // Pas de reload rèflexe sur controllerchange (fermait le paywall en saisie) ; le reload est
+    // pilotè par le SW (activate, garde hadOldCache ÔåÆ jamais à la 1re visite).
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',function(){
+        navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(reg){
+          var upd=function(){try{reg.update()}catch(e){}}
+          setInterval(upd,15*60*1000)
+          document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
+        }).catch(function(){})
+      })
+    }
+    </script>
+  
+    <noscript><style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap');
+.sg-page{--sg-glit:#FFD884;--sg-rim:#FFD884;background:#0A1714;margin:0;color:#fff;font-family:'Bricolage Grotesque',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.sg-hero{position:relative;width:100%;max-width:760px;margin:0 auto;aspect-ratio:4/3;max-height:72vh;overflow:hidden;background:linear-gradient(180deg,#0B2230,#155A5A 52%,#C97E3A 84%,#F2B05E)}
+.sg-hero>svg{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+.sg-hero>.sg-verdict{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:64px 22px 20px;background:linear-gradient(180deg,rgba(6,16,14,0),rgba(6,16,14,.72) 70%,rgba(6,16,14,.88));text-align:left}
+.sg-hero .sg-verdict h1{font-family:'Anton',system-ui,sans-serif;font-weight:400;letter-spacing:.01em;text-transform:uppercase;font-size:clamp(26px,6.4vw,42px);line-height:1;margin:0 0 6px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.45)}
+.sg-hero .sg-verdict .sg-stat{font-family:ui-monospace,SFMono-Regular,'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--sg-glit,#FFD884);letter-spacing:.02em}
+.sg-hero .sg-verdict .sg-line{font-size:13.5px;color:rgba(255,255,255,.8);margin:6px 0 0;line-height:1.5}
+.sg-hero .sg-verdict .sg-live{display:inline-block;font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.78);margin-top:9px;padding:3px 10px;border:1px solid rgba(255,255,255,.24);border-radius:999px}
+.sg-page article{max-width:680px;margin:0 auto;padding:26px 22px calc(44px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.9);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.6}
+.sg-page article h1{font-family:'Anton',system-ui,sans-serif;font-weight:400;letter-spacing:.01em;text-transform:uppercase;font-size:clamp(24px,5.4vw,36px);line-height:1.08;margin:0 0 12px;color:#fff}
+.sg-page article h2,.sg-page article h3{font-family:'Anton',system-ui,sans-serif;font-weight:400;letter-spacing:.01em;text-transform:uppercase;color:var(--sg-glit,#FFD884);margin:26px 0 8px;font-size:clamp(17px,3.6vw,22px)}
+.sg-page article p{margin:0 0 12px;color:rgba(255,255,255,.84)}
+.sg-page article p em{color:rgba(255,255,255,.72);font-style:normal;font-family:ui-monospace,monospace;font-size:13px}
+.sg-page article strong{color:#fff;font-weight:800}
+.sg-page article ul{margin:0 0 14px;padding:0;list-style:none}
+.sg-page article li{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
+.sg-page article a{color:var(--sg-glit,#FFD884);text-decoration:none;font-weight:600;border-bottom:1px solid rgba(255,216,132,.32)}
+.sg-page article a:hover{border-bottom-color:var(--sg-glit,#FFD884)}
+.sg-page article img{max-width:100%;height:auto;border-radius:16px;display:block;margin:0 0 16px}
+@media(prefers-reduced-motion:reduce){.sg-page *{animation:none!important}}
+</style><div class="sg-page"><div class="sg-hero"><svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grande Anse du Carbet — vue golden-hour" style="position:absolute;inset:0;width:100%;height:100%;display:block"><defs><linearGradient id="sgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".52" stop-color="#155A5A"/><stop offset=".84" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient><linearGradient id="sgSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15706A"/><stop offset="1" stop-color="#0B3A34"/></linearGradient><linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient><linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient></defs><rect width="800" height="360" fill="url(#sgSky)"/><circle cx="300" cy="98" r="52" fill="#FDFCF7" opacity=".2"/><circle cx="300" cy="98" r="30" fill="#FFF4D6"/><g><path d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform="rotate(-46 300 98)"/><path d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform="rotate(-22 300 98)"/><path d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform="rotate(2 300 98)"/><path d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform="rotate(26 300 98)"/><path d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform="rotate(50 300 98)"/></g><g><path d="M120 128 q14 -26 48 -26 q18 -18 46 -12 q30 -8 44 12 q26 2 30 26 Z" fill="#10333E" opacity=".9"/><path d="M122 129 h162" stroke="#FFD884" stroke-width="2" opacity=".32"/></g><g><path d="M512 92 q12 -22 42 -22 q16 -13 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill="#10333E" opacity=".78"/><path d="M514 93 h140" stroke="#FFD884" stroke-width="1.7" opacity=".26"/></g><g opacity=".55" stroke="#FFD884" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M712 138 q5.5 -6.5 11 0 q5.5 -6.5 11 0"/><path d="M754 124 q4.5 -5 9 0 q4.5 -5 9 0"/><path d="M648 156 q5 -6 10 0 q5 -6 10 0"/><path d="M576 128 q4 -5 8 0 q4 -5 8 0"/><path d="M620 122 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/></g><rect x="-40" y="330" width="880" height="200" fill="url(#sgSea)"/><g><path d="M-40 340 Q150 320 340 338 L340 340 Z" fill="#16242A" opacity=".72"/><path d="M-40 340 Q150 320 340 338 L340 340 Z" fill="none" stroke="#FFD884" stroke-width="2.4" opacity=".2"/></g><line x1="-40" y1="356" x2="840" y2="356" stroke="#FFD884" stroke-width="2.2" stroke-dasharray="3 13" opacity=".5"/><line x1="-40" y1="386" x2="840" y2="386" stroke="#FFD884" stroke-width="1.8" stroke-dasharray="2 17" opacity=".3"/><line x1="-40" y1="420" x2="840" y2="420" stroke="#FFD884" stroke-width="1.6" stroke-dasharray="2 23" opacity=".18"/><g fill="#FFD884"><circle cx="372" cy="372" r="1.9" opacity=".5"/><circle cx="392" cy="398" r="1.5" opacity=".5"/><circle cx="356" cy="410" r="1.6" opacity=".5"/><circle cx="412" cy="384" r="1.4" opacity=".5"/></g><g><g transform="translate(180, 360) scale(0.35) scale(-1, 1)" opacity="0.95"><ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/><g><line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" stroke-width="3"/><path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/><path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/><path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1EC8B0" opacity=".94"/></g><path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/><path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" stroke-width="1.6" stroke-opacity=".6"/></g><g><circle cx="372" cy="392" r="6" fill="#0D2B26"/><path d="M360 398 q12 -8 24 0" stroke="#0D2B26" stroke-width="3.4" fill="none" stroke-linecap="round"/></g><g><circle cx="452" cy="404" r="5" fill="#0D2B26"/><path d="M442 409 q10 -7 20 0" stroke="#0D2B26" stroke-width="3" fill="none" stroke-linecap="round"/></g><path d="M348 396 h8 M396 398 h7 M462 410 h8" stroke="#FFD884" stroke-width="1.6" opacity=".5" stroke-linecap="round"/></g><path d="M-40 472 Q200 434 430 448 Q640 460 840 502 L840 620 L-40 620 Z" fill="#1C1712"/><path d="M-40 472 Q200 434 430 448 Q640 460 840 502" fill="none" stroke="#FFD884" stroke-width="2.4" opacity=".3"/><g><path d="M137 556 Q143 496 151 446" stroke="#120F0A" stroke-width="11.16" fill="none" stroke-linecap="round"/><g fill="none" stroke="#16120C" stroke-width="7.44" stroke-linecap="round"><path d="M151 446 Q130 431 113 427"/><path d="M151 446 Q143 422 136 410"/><path d="M151 446 Q160 422 167 410"/><path d="M151 446 Q172 431 190 427"/></g></g><g><path d="M160 556 Q164 505 170 464" stroke="#120F0A" stroke-width="9.36" fill="none" stroke-linecap="round"/><g fill="none" stroke="#16120C" stroke-width="6.24" stroke-linecap="round"><path d="M170 464 Q152 450 137 448"/><path d="M170 464 Q158 445 148 437"/><path d="M170 464 Q165 442 162 432"/><path d="M170 464 Q174 442 177 432"/><path d="M170 464 Q182 445 192 437"/><path d="M170 464 Q187 450 202 448"/></g></g><g><path d="M601 556 Q598 493 594 442" stroke="#120F0A" stroke-width="11.64" fill="none" stroke-linecap="round"/><g fill="none" stroke="#16120C" stroke-width="7.76" stroke-linecap="round"><path d="M594 442 Q572 426 553 421"/><path d="M594 442 Q579 419 566 409"/><path d="M594 442 Q588 416 584 402"/><path d="M594 442 Q599 416 603 402"/><path d="M594 442 Q608 419 621 409"/><path d="M594 442 Q615 426 634 421"/></g></g><g><path d="M490 556 Q499 508 511 469" stroke="#120F0A" stroke-width="8.879999999999999" fill="none" stroke-linecap="round"/><g fill="none" stroke="#16120C" stroke-width="5.92" stroke-linecap="round"><path d="M511 469 Q494 456 480 453"/><path d="M511 469 Q499 451 490 444"/><path d="M511 469 Q507 448 503 438"/><path d="M511 469 Q515 448 518 438"/><path d="M511 469 Q522 451 532 444"/><path d="M511 469 Q527 456 542 453"/></g></g><g transform="translate(482,92) scale(1.5)"><g transform="rotate(0)"><circle r="22" fill="#3BA7A0" opacity=".15"/><circle r="14" fill="#5FD3C9" opacity=".12"/><rect x="-27" y="-5" width="13" height="11" rx="2.5" fill="#3BA7A0"/><rect x="14" y="-5" width="13" height="11" rx="2.5" fill="#3BA7A0"/><rect x="-11" y="-11" width="22" height="22" rx="6" fill="#C9971F"/><rect x="-11" y="-11" width="22" height="7" rx="6" fill="#FFC72C"/><line x1="0" y1="-11" x2="0" y2="-19" stroke="#5FD3C9" stroke-width="1.6" stroke-linecap="round"/><circle cx="0" cy="-20" r="1.9" fill="#5FD3C9"/><circle cx="0" cy="2" r="5.4" fill="#07201E"/><circle cx="0" cy="2" r="4" fill="#5FD3C9"/><circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/></g></g><g transform="translate(28,30)" font-family="ui-monospace,SFMono-Regular,'JetBrains Mono',monospace"><circle cx="8" cy="-4" r="4" fill="#22C55E"/><text x="20" y="0" font-size="15" font-weight="700" fill="#fff">LIVE 07:11 UTC</text></g></svg><div class="sg-verdict"><h1>Grande Anse du Carbet</h1><div class="sg-stat">Sargasses aujourd'hui : Propre</div><p class="sg-line">Prévision 7 j — Auj. Propre · Dem. Modéré · Sam Propre · Dim Propre · Lun Propre · Mar Propre · Mer Propre</p><div class="sg-live">LIVE · satellite 07:11 UTC</div></div></div>
+      <article><img src="/beaches/gplace-mq027.jpg" alt="Grande Anse du Carbet — plage Le Carbet, Martinique" width="800" height="450" loading="lazy" />
+        <header>
+          <h1>Sargasses à Grande Anse du Carbet — état en temps réel (Martinique)</h1>
+          <p><em>Prévisions sargasses pour Grande Anse du Carbet, Le Carbet, Martinique. Données satellite Sentinel-3 mises à jour quotidiennement.</em></p>
+        </header>
+
+        <section>
+          <h2>État actuel et surveillance satellite</h2>
+          <p>La plage de <strong>Grande Anse du Carbet</strong>, située à Le Carbet en Martinique, fait l'objet d'une surveillance satellite continue dans le cadre de notre service de prévisions sargasses. L'indice AFAI (Alternative Floating Algae Index), dérivé des images Sentinel-3 du programme Copernicus Marine, permet de détecter la présence et la densité des radeaux de sargasses flottantes jusqu'à 40 km au large de la côte. Cette plage de Le Carbet est adaptée aux enfants, propice au snorkeling et palmes-masque-tuba, parking accessible à proximité. Elle se situe à environ <strong>28 minutes</strong> en voiture du chef-lieu, ce qui en fait une destination accessible pour une sortie à la journée.</p>
+          <p>Les données sont mises à jour toutes les 3 heures via notre pipeline automatisé, ce qui permet aux visiteurs de Grande Anse du Carbet de consulter l'état le plus récent avant de se déplacer. La carte interactive affiche les plages propres, modérément touchées et en alerte, avec un code couleur conforme aux seuils NOAA/AOML (Wang & Hu 2016).</p>
+        </section>
+
+        <section>
+          <h2>Historique récent des sargasses à Grande Anse du Carbet</h2>
+          <p>La plage de <strong>Grande Anse du Carbet</strong> est surveillée en continu par les satellites Sentinel-3 du programme européen Copernicus. L'historique des observations est actualisé chaque jour, ce qui permet de repérer rapidement les fenêtres de baignade favorables et d'anticiper l'arrivée éventuelle de sargasses sur la côte.</p>
+          <p>Les sargasses suivent des cycles saisonniers marqués par les courants du Gulf Stream et les vents d'alizé. En Martinique, la saison principale s'étend typiquement d'avril à septembre, avec des pics d'échouage souvent observés entre mai et juillet. Toutefois, l'évolution du climat et la variabilité des courants peuvent décaler ces fenêtres : c'est précisément pour cette raison que nous proposons une surveillance 365 jours par an plutôt qu'une information saisonnière figée.</p>
+        </section>
+
+        <section>
+          <h2>Comment lire les prévisions de Grande Anse du Carbet</h2>
+          <p>Pour chaque plage surveillée, trois états sont possibles selon l'indice AFAI observé :</p>
+          <ul>
+            <li><strong>Propre (vert)</strong> — AFAI inférieur à 0,15. Pas de sargasses détectées ou présence très faible. Baignade recommandée.</li>
+            <li><strong>Modéré (orange)</strong> — AFAI entre 0,15 et 0,40. Présence variable, vigilance recommandée surtout pour les enfants et les personnes sensibles aux émanations de sulfure d'hydrogène.</li>
+            <li><strong>Alerte (rouge)</strong> — AFAI supérieur à 0,40. Échouage significatif probable ou en cours. Baignade déconseillée tant que la situation n'est pas revenue à la normale.</li>
+          </ul>
+          <p>Notre système combine plusieurs signaux pour chaque prévision : observation satellite du jour, indice AFAI continu (qui différencie 0,05 de 0,14, tous deux classés « propre »), prévision à J+1 et J+3, détection de bancs en approche dans un rayon de 40 km, et mémoire des plages régulièrement impactées. Le Beach Score 0-100 synthétise ces facteurs pour permettre une comparaison rapide entre plages voisines.</p>
+        </section>
+
+        <section>
+          <h2>Plages proches de Grande Anse du Carbet</h2>
+          <p>Si Grande Anse du Carbet n'est pas accessible pour une raison ou une autre — échouage en cours, marée défavorable, fréquentation — vous pouvez vous rabattre sur Anse Turin (2 km), Plage de Saint-Pierre (3 km), Bourg de Case-Pilote (9 km). Ces plages proches partagent souvent des conditions similaires mais peuvent présenter un état sargasses différent selon l'orientation de la côte et les courants locaux.</p>
+          <ul>
+          <li><a href="https://sargasses-martinique.com/plages/anse-turin/">Sargasses à Anse Turin</a> — 2 km de Grande Anse du Carbet</li>
+          <li><a href="https://sargasses-martinique.com/plages/plage-de-saint-pierre/">Sargasses à Plage de Saint-Pierre</a> — 3 km de Grande Anse du Carbet</li>
+          <li><a href="https://sargasses-martinique.com/plages/bourg-de-case-pilote/">Sargasses à Bourg de Case-Pilote</a> — 9 km de Grande Anse du Carbet</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Sources et méthodologie</h2>
+          <p>Les prévisions sargasses pour Grande Anse du Carbet s'appuient sur les données publiques du programme Copernicus Marine Service (Union Européenne), via l'API ERDDAP de la NOAA/AOML (Atlantic Oceanographic and Meteorological Laboratory). Les seuils d'interprétation de l'indice AFAI suivent les recommandations de la publication scientifique de Wang & Hu (2016, Geophysical Research Letters) ainsi que le Sargassum Inundation Report v1.4 du NOAA. Notre application ne remplace pas l'observation terrain : en cas de doute, nous recommandons de consulter les bulletins locaux des communes et les signalements citoyens.</p>
+          <p>Pour explorer l'ensemble des plages de Martinique, consultez notre <a href="https://sargasses-martinique.com/carte-sargasses/">carte interactive des sargasses</a>, nos <a href="https://sargasses-martinique.com/previsions/">prévisions 7 jours</a>, ou notre <a href="https://sargasses-martinique.com/alertes/">système d'alertes instantanées</a>. Pour ne plus avoir à vérifier manuellement chaque matin, le service premium envoie un brief quotidien à 7h avec la meilleure plage du jour.</p>
+        </section>
+
+        <footer>
+          <p><a href="https://sargasses-martinique.com/">Retour à l'accueil — Sargasses Martinique</a> · <a href="https://sargasses-martinique.com/plages/">Toutes les plages</a> · <a href="https://sargasses-martinique.com/carte-sargasses/">Carte</a> · <a href="https://sargasses-martinique.com/previsions/">Prévisions</a></p>
+        </footer>
+      <h2>Conditions du jour à Grande Anse du Carbet (2026-08-13)</h2><p>vagues 0.7m, période 5.6s, vent NE 8km/h, eau 29.2°C, air 25°C, indice UV 9. mer calme, conditions idéales pour la baignade. Données Open-Meteo Marine rafraîchies quotidiennement, complémentaires à la surveillance sargasses Sentinel-3.</p><h2>Comment s'y rendre</h2><p>Grande Anse du Carbet se trouve à Le Carbet, Martinique. Accessible en 28 minutes en voiture depuis Fort-de-France.</p><p>À 28 minutes de Fort-de-France, idéale pour une excursion à la journée.</p><h2>Orientation</h2><p>Située sur la côte Caraïbe, Grande Anse du Carbet est généralement plus protégée des échouages de sargasses.</p><h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite (Copernicus AFAI) au large de Grande Anse du Carbet — mesuré, pas deviné. La côte est complexe baie par baie et l'état peut basculer en quelques heures avec le vent : vérifiez toujours sur place avant de vous baigner.</p><h2>Activités</h2><p>Plage familiale adaptée aux enfants, avec parking, snorkeling possible.</p><h2>Saison des sargasses</h2><p>La saison des sargasses aux Antilles s'étend généralement d'avril à septembre, avec des pics entre juin et août. Le reste de l'année, les échouages sont rares : sur cette période calme nos alertes sont affichées en faible confiance, et on le dit franchement plutôt que de faire semblant. Consultez les prévisions 7 jours (J+1 à J+7) avant votre visite.</p><p><strong>Équipements :</strong> Adaptée aux enfants · Snorkeling possible · Parking disponible</p><p>Toutes les plages de la côte Caraïbe : <a href="/plages/plages-cote-caraibe-martinique/">Côte Caraïbe (ouest)</a>.</p><p>Même méthode satellite sur nos autres destinations : <a href="https://sargassumcancun.com/" rel="noopener">sargazo à Cancún</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">sargassum Punta Cana</a> · <a href="https://sargassummiami.com/" rel="noopener">sargassum Floride</a>.</p></article>
+    </div></noscript>
+<div id="sg-fiche-dive" hidden>
+<style id="sg-fiche-dive-css">
+/* scope fiche-dive CSS under wrapper to avoid collision with SPA */
+#sg-fiche-dive{all:initial;forced-color-adjust:none;position:fixed;inset:0;z-index:1200;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#02060A;color:#EAF7F4;font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+#sg-fiche-dive[hidden]{display:none!important}
+#sg-fiche-dive *{box-sizing:border-box}
+</style>
+<style id="sg-fiche-dive-proto-css">
+/* ============================================================
+   FICHE PLAGE EN PLONGÉE — proto standalone validé.
+   Reprend le moteur de design/proto-home-az.html (Veilleur v2,
+   scroll sticky→opacités de beats, dolly spring, toVB cover-math,
+   plancher reduced-motion) et la scène BeachScene de Sargasses_PROD.jsx
+   (archétypes PRNG par beach.id, états clean/moderate/avoid, waterTint).
+   Palette golden-hour = source de vérité du repo.
+   ============================================================ */
+#sg-fiche-dive{
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --sand:#1C1712;
+  --ink:#EAF7F4; --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --teal:#009E8E; --tealL:#5FD3C9; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --mid:#9DB4B0; --rim:#FFD884;
+  /* moteur scroll (comme home-az) */
+  --gp:0; --p0:0; --p1:0; --p2:0; --p3:0; --p4:0; --p5:0;
+  --e0:1; --e1:0; --e2:0; --e3:0; --e4:0; --e5:0;
+  --camS:1; --camY:0; --hs:0; --alert:0;
+  /* humeur du Veilleur (mutée par JS pour crossfade) */
+  --mood:#1FB6A6; --moodHalo:#1FB6A6; --moodDot:#22C55E;
+  /* teinte mer pilotée par le SCRUB de prévision (status réel, jamais cleanFloor) */
+  --seaTint:#1A5852;
+  /* micro-tween d'ouverture de la fiche (spring) */
+  --camOpenS:1; --camOpenY:0;
+}
+#sg-fiche-dive *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+#sg-fiche-dive{scroll-behavior:auto}
+#sg-fiche-dive{background:#02060A;color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden}
+#sg-fiche-dive .anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase}
+#sg-fiche-dive .mono{font-family:'JetBrains Mono',monospace}
+
+/* ===================== STRUCTURE SCROLL ===================== */
+#sg-fiche-dive .scroller{position:relative;width:100%}
+#sg-fiche-dive .spans{position:absolute;inset:0;z-index:0;pointer-events:none}
+#sg-fiche-dive .span{width:100%}
+#sg-fiche-dive #sp0{height:120vh}  /* ARRIVÉE */
+#sg-fiche-dive #sp1{height:128vh}  /* VERDICT (preuve gratuite) */
+#sg-fiche-dive #sp2{height:178vh}  /* PREUVE-MESURE = le plus long (3 sous-beats) */
+#sg-fiche-dive #sp3{height:158vh}  /* PRÉVISION (timeline 7j scrub) */
+#sg-fiche-dive #sp4{height:140vh}  /* PLAN-B + SANTÉ */
+#sg-fiche-dive #sp5{height:118vh}  /* PREUVE SOCIALE + nearby + footer */
+
+#sg-fiche-dive .viewport{position:sticky;top:0;height:100svh;width:100%;overflow:hidden;z-index:1;background:var(--sky0)}
+
+/* caméra dolly (spring) + micro-tween d'ouverture combinés */
+#sg-fiche-dive .cam{position:absolute;inset:0;will-change:transform;
+  transform:translateY(calc(var(--camY) + var(--camOpenY))) scale(calc(var(--camS) * var(--camOpenS)));
+  transform-origin:50% 64%;
+  transition:transform .5s cubic-bezier(.34,1.4,.64,1)}
+
+#sg-fiche-dive svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+
+/* parallaxe (pilotée par --hs au scroll de l'arrivée) */
+#sg-fiche-dive .lyr-sky{transform:translateY(calc(var(--hs) * -24px))}
+#sg-fiche-dive .lyr-sea{transform:translateY(calc(var(--hs) * 8px)) scale(calc(1 + var(--hs)*0.08));transform-origin:50% 52%}
+#sg-fiche-dive .lyr-sand{transform:translateY(calc(var(--hs) * 16px)) scale(calc(1 + var(--hs)*0.18));transform-origin:50% 100%}
+
+/* voile de lisibilité bas d'écran + lavage alerte */
+#sg-fiche-dive .veil{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(7,18,15,0) 0%,
+    rgba(7,18,15,calc(.10 + var(--gp)*.08)) 42%,
+    rgba(7,18,15,calc(.44 + var(--p1)*.14 + var(--p4)*.10)) 70%,
+    rgba(7,18,15,calc(.80 + var(--gp)*.10)) 100%)}
+#sg-fiche-dive .alertwash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:var(--alert);
+  background:linear-gradient(180deg,rgba(232,82,42,.15) 0%,rgba(232,82,42,0) 34%)}
+
+/* ===================== CHROME persistant (fraîcheur + retour + langue) ===================== */
+#sg-fiche-dive .chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:center;padding:12px 14px;max-width:560px;margin:0 auto;pointer-events:none;gap:8px}
+#sg-fiche-dive .backbtn{display:inline-flex;align-items:center;gap:6px;pointer-events:auto;cursor:pointer;
+  padding:7px 12px 7px 9px;border-radius:999px;background:rgba(8,18,16,.5);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);
+  font:800 12px/1 "Bricolage Grotesque";letter-spacing:.01em}
+#sg-fiche-dive .backbtn .ar{color:var(--goldS);font-weight:800}
+#sg-fiche-dive .freshpill{display:inline-flex;align-items:center;gap:7px;pointer-events:auto;cursor:pointer;
+  padding:6px 12px 6px 10px;border-radius:999px;background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14)}
+#sg-fiche-dive .freshpill .dot{width:8px;height:8px;border-radius:50%;background:var(--moodDot);
+  box-shadow:0 0 0 0 rgba(95,211,201,.5);animation:sgfd-freshpulse 2.6s ease-out infinite}
+@keyframes sgfd-freshpulse{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5)}70%{box-shadow:0 0 0 8px rgba(95,211,201,0)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0)}}
+#sg-fiche-dive .freshpill .t{font:700 11px/1 'JetBrains Mono';color:var(--tealL);white-space:nowrap}
+#sg-fiche-dive .langs{display:flex;gap:4px;pointer-events:auto}
+#sg-fiche-dive .langs button{border:1px solid rgba(255,255,255,.14);background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:7px 8px;border-radius:9px;cursor:pointer}
+#sg-fiche-dive .langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ===================== OVERLAY DE COPY (6 beats, ancrée bas) ===================== */
+#sg-fiche-dive .copylayer{position:absolute;inset:0;z-index:6;pointer-events:none}
+#sg-fiche-dive .beatcopy{position:absolute;left:0;right:0;bottom:0;padding:0 20px 38px;
+  max-width:560px;margin:0 auto;will-change:opacity,transform;
+  opacity:0;transform:translateY(14px);transition:opacity .25s linear}
+#sg-fiche-dive #bc0{opacity:var(--e0)} #sg-fiche-dive #bc1{opacity:var(--e1)} #sg-fiche-dive #bc2{opacity:var(--e2)}
+#sg-fiche-dive #bc3{opacity:var(--e3)} #sg-fiche-dive #bc4{opacity:var(--e4)} #sg-fiche-dive #bc5{opacity:var(--e5)}
+#sg-fiche-dive .beatcopy.on{pointer-events:auto;transform:translateY(0)}
+
+#sg-fiche-dive .eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:9px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#sg-fiche-dive .eyebrow .dt{color:var(--goldS)}
+/* VERDICT VERBAL géant Anton (stage ARRIVÉE) */
+#sg-fiche-dive .verdictverbal{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.015em;text-transform:uppercase;
+  font-size:clamp(34px,9.6vw,58px);line-height:.92;color:#fff;margin:0 0 12px;
+  text-shadow:0 2px 24px rgba(0,0,0,.55);max-width:13ch}
+#sg-fiche-dive .verdictverbal .hl{color:var(--green)}
+#sg-fiche-dive h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase;
+  font-size:clamp(29px,7.6vw,46px);line-height:.98;color:#fff;margin:0 0 11px;
+  text-shadow:0 2px 22px rgba(0,0,0,.55);max-width:14ch}
+#sg-fiche-dive .head .b{color:var(--goldL)} #sg-fiche-dive .head .pl{color:var(--goldS)}
+#sg-fiche-dive .sub{font:600 14px/1.5 "Bricolage Grotesque";color:rgba(255,255,255,.82);
+  margin:0 0 16px;max-width:39ch;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+
+/* CTA doré */
+#sg-fiche-dive .cta{display:block;width:100%;border:none;cursor:pointer;font-family:inherit;text-align:center;
+  border-radius:15px;padding:15px 18px;color:#1A2B26;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 40%,var(--gold));
+  box-shadow:0 12px 34px rgba(232,168,0,.32),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .12s ease}
+#sg-fiche-dive .cta:active{transform:scale(.985)}
+#sg-fiche-dive .cta.pulseonce{animation:sgfd-ctapulse 1.15s ease-out 2}
+@keyframes sgfd-ctapulse{0%,100%{box-shadow:0 12px 34px rgba(232,168,0,.32),inset 0 1px 0 rgba(255,255,255,.5)}50%{box-shadow:0 12px 48px rgba(232,168,0,.72),inset 0 1px 0 rgba(255,255,255,.5)}}
+#sg-fiche-dive .cta .t{display:block;font:800 16px/1.15 "Bricolage Grotesque";letter-spacing:.005em}
+#sg-fiche-dive .cta .s{display:block;font:600 12px/1.3 "Bricolage Grotesque";opacity:.78;margin-top:3px}
+#sg-fiche-dive .linkcta{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:none;border:none;
+  cursor:pointer;font:800 13px/1 "Bricolage Grotesque";color:var(--ink);opacity:.78;padding:6px 0;text-decoration:none}
+#sg-fiche-dive .linkcta:hover{opacity:1}
+#sg-fiche-dive .linkcta .ar{color:var(--goldS)}
+#sg-fiche-dive .reassure{text-align:center;margin-top:11px;font:600 11px/1.4 "Bricolage Grotesque";
+  color:rgba(234,247,244,.55);letter-spacing:.015em}
+
+/* STATUS PILL (arrivée) */
+#sg-fiche-dive .statuspill{display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;cursor:pointer;
+  padding:8px 14px 8px 11px;border-radius:13px;background:rgba(8,18,16,.42);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.13)}
+#sg-fiche-dive .statuspill .pd{width:9px;height:9px;border-radius:50%;background:var(--green)}
+#sg-fiche-dive .statuspill .pt{font:800 12px/1 "Bricolage Grotesque";letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+#sg-fiche-dive .statuspill .pf{font:700 11px/1 'JetBrains Mono';color:#fff;opacity:.9}
+
+/* SCOREBLOB (verdict / preuve gratuite) */
+#sg-fiche-dive .scorewrap{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+#sg-fiche-dive .scoreblob{position:relative;flex:0 0 92px;width:92px;height:92px}
+#sg-fiche-dive .scoreblob svg{width:100%;height:100%;transform:rotate(-90deg)}
+#sg-fiche-dive .scoreblob .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#sg-fiche-dive .scoreblob .num b{font-family:'Anton',sans-serif;font-size:31px;line-height:1;color:#fff}
+#sg-fiche-dive .scoreblob .num span{font:700 9px/1 'JetBrains Mono';color:var(--mid);margin-top:2px;letter-spacing:.04em}
+#sg-fiche-dive .chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+#sg-fiche-dive .chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;
+  font:700 11.5px/1 "Bricolage Grotesque";border:1px solid rgba(255,255,255,.12);background:rgba(8,18,16,.42);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#sg-fiche-dive .chip.good{color:#A8F0C8;border-color:rgba(34,197,94,.4)} #sg-fiche-dive .chip.good .i{color:var(--green)}
+#sg-fiche-dive .chip.bad{color:#FFC9B6;border-color:rgba(232,82,42,.4)} #sg-fiche-dive .chip.bad .i{color:var(--coral)}
+
+/* PREUVE-MESURE : 3 sous-beats sobres, switch par --p2 */
+#sg-fiche-dive .measureblock{margin-bottom:16px}
+#sg-fiche-dive .subdots{display:flex;gap:6px;margin-bottom:12px}
+#sg-fiche-dive .subdots i{width:22px;height:3px;border-radius:2px;background:rgba(255,255,255,.18);transition:background .3s,width .3s}
+#sg-fiche-dive .subdots i.on{background:var(--goldL);width:30px}
+#sg-fiche-dive .subpanel{display:none}
+#sg-fiche-dive .subpanel.show{display:block;animation:sgfd-subin .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes sgfd-subin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* facteurs en barres */
+#sg-fiche-dive .factors{display:flex;flex-direction:column;gap:7px;margin:4px 0 4px}
+#sg-fiche-dive .fct{display:flex;align-items:center;gap:9px}
+#sg-fiche-dive .fct .fl{flex:0 0 88px;font:700 11px/1.2 "Bricolage Grotesque";color:rgba(234,247,244,.8)}
+#sg-fiche-dive .fct .ftrack{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+#sg-fiche-dive .fct .ffill{height:100%;border-radius:5px;transform-origin:left;transform:scaleX(0);transition:transform .6s cubic-bezier(.34,1.3,.64,1)}
+#sg-fiche-dive .fct .fv{flex:0 0 30px;text-align:right;font:700 11px/1 'JetBrains Mono';color:#fff;opacity:.9}
+/* anneau régime + fiabilité par régime */
+#sg-fiche-dive .regimebox{display:flex;align-items:center;gap:14px;cursor:pointer;
+  padding:12px 14px;border-radius:14px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#sg-fiche-dive .regimering{flex:0 0 70px;width:70px;height:70px;position:relative}
+#sg-fiche-dive .regimering svg{width:100%;height:100%;transform:rotate(-90deg)}
+#sg-fiche-dive .regimering .rn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#sg-fiche-dive .regimering .rn b{font-family:'Anton',sans-serif;font-size:21px;color:#fff;line-height:1}
+#sg-fiche-dive .regimering .rn span{font:700 8px/1 'JetBrains Mono';color:var(--tealL)}
+#sg-fiche-dive .regimebox .rtxt b{display:block;font:800 13px/1.2 "Bricolage Grotesque";color:#fff;margin-bottom:3px}
+#sg-fiche-dive .regimebox .rtxt span{font:600 12px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.74)}
+#sg-fiche-dive .regimebox .rtxt .more{display:inline-block;margin-top:5px;font:800 11px/1 "Bricolage Grotesque";color:var(--goldS)}
+
+/* PRÉVISION : timeline 7j + scrub */
+#sg-fiche-dive .fcstrip{display:flex;gap:6px;align-items:flex-end;margin:2px 0 14px;height:96px}
+#sg-fiche-dive .fcday{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;position:relative}
+#sg-fiche-dive .fcday .fcbarbox{width:100%;display:flex;align-items:flex-end;justify-content:center;height:70px}
+#sg-fiche-dive .fcday .fbar{width:64%;max-width:30px;height:100%;border-radius:5px 5px 0 0;transform-origin:bottom;transform:scaleY(.05);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+#sg-fiche-dive .fcday .fcl{font:700 9.5px/1 "Bricolage Grotesque";color:rgba(234,247,244,.7);letter-spacing:.02em}
+#sg-fiche-dive .fcday.locked .fbar{opacity:.42;filter:blur(1.2px)}
+#sg-fiche-dive .fcday.locked .fcl{opacity:.5}
+#sg-fiche-dive .fcday.cursor::after{content:"";position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+  width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--goldS)}
+#sg-fiche-dive .fclockhint{display:flex;align-items:center;gap:7px;margin:-4px 0 14px;font:700 11px/1.3 "Bricolage Grotesque";color:var(--goldS)}
+#sg-fiche-dive .fclockhint .lk{font-size:13px}
+
+/* PLAN-B + nearby */
+#sg-fiche-dive .planbrow{display:flex;gap:9px;overflow-x:auto;margin:0 -20px 14px;padding:2px 20px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#sg-fiche-dive .planbrow::-webkit-scrollbar{display:none}
+#sg-fiche-dive .pbcard{scroll-snap-align:start;flex:0 0 150px;border-radius:14px;padding:11px 13px;cursor:pointer;
+  background:rgba(8,18,16,.5);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:transform .14s ease,border-color .14s}
+#sg-fiche-dive .pbcard:active{transform:scale(.97)}
+#sg-fiche-dive .pbthumb{height:54px;border-radius:9px;overflow:hidden;margin-bottom:8px;position:relative;background:#08251F}
+#sg-fiche-dive .pbthumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#sg-fiche-dive .pbcard .pn{font:800 13px/1.15 "Bricolage Grotesque";color:#fff;margin-bottom:4px}
+#sg-fiche-dive .pbcard .ps{display:inline-flex;align-items:center;gap:5px;font:800 10.5px/1 "Bricolage Grotesque";letter-spacing:.03em;text-transform:uppercase}
+#sg-fiche-dive .pbcard .ps .d{width:7px;height:7px;border-radius:50%}
+#sg-fiche-dive .pbcard .pf{font:700 10px/1 'JetBrains Mono';color:var(--mid);margin-top:5px}
+#sg-fiche-dive .st-clean{color:var(--green)} #sg-fiche-dive .st-clean .d{background:var(--green)}
+#sg-fiche-dive .st-mod{color:#E8B23A} #sg-fiche-dive .st-mod .d{background:#E8B23A}
+#sg-fiche-dive .st-avoid{color:var(--coral)} #sg-fiche-dive .st-avoid .d{background:var(--coral)}
+#sg-fiche-dive .h2sbadge{display:inline-flex;align-items:center;gap:8px;margin-bottom:13px;
+  padding:9px 13px;border-radius:12px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#sg-fiche-dive .h2sbadge .lvl{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;text-transform:uppercase}
+#sg-fiche-dive .h2sbadge .lvltxt{font:600 11.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.78)}
+#sg-fiche-dive .h2sdisc{font:600 11px/1.45 "Bricolage Grotesque";color:rgba(234,247,244,.6);
+  border-left:3px solid rgba(232,168,0,.45);padding:1px 0 1px 10px;margin:-5px 0 13px}
+#sg-fiche-dive .h2scta{margin:2px 0 14px}
+
+#sg-fiche-dive .safebadge{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;
+  padding:11px 13px;border-radius:12px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#sg-fiche-dive .safebadge .icon{font-size:18px;line-height:1}
+#sg-fiche-dive .safebadge .txt{font:600 12.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.85)}
+#sg-fiche-dive .safebadge .txt b{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+
+/* PREUVE SOCIALE + footer */
+#sg-fiche-dive .social{display:flex;align-items:center;gap:11px;margin-bottom:14px;
+  padding:12px 14px;border-radius:14px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#sg-fiche-dive .social .stars{font-size:14px;color:var(--goldL);letter-spacing:1px}
+#sg-fiche-dive .social b{font:800 13px/1.2 "Bricolage Grotesque";color:#fff;display:block;margin-bottom:2px}
+#sg-fiche-dive .social span{font:600 11.5px/1.35 "Bricolage Grotesque";color:rgba(234,247,244,.72)}
+#sg-fiche-dive .zonelinks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+#sg-fiche-dive .zonelinks a{font:800 11.5px/1 "Bricolage Grotesque";color:var(--ink);opacity:.82;text-decoration:none;
+  padding:7px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(8,18,16,.4)}
+#sg-fiche-dive .zonelinks a .ar{color:var(--goldS)}
+#sg-fiche-dive .breadcrumb{font:600 11px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.5);margin-bottom:14px}
+#sg-fiche-dive .breadcrumb a{color:rgba(234,247,244,.7);text-decoration:none}
+#sg-fiche-dive .breadcrumb .sep{opacity:.4;margin:0 5px}
+#sg-fiche-dive .footwrap{padding-top:4px}
+#sg-fiche-dive .wordmark{font-family:'Anton',sans-serif;font-size:34px;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:9px}
+#sg-fiche-dive .foot-credit{font:600 12px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.7);margin-bottom:12px}
+
+/* indicateur scroll */
+#sg-fiche-dive .scrollhint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:7;
+  display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;
+  opacity:calc(1 - var(--gp)*9);transition:opacity .2s}
+#sg-fiche-dive .scrollhint .lab{font:800 9.5px/1 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+#sg-fiche-dive .scrollhint .chev{width:20px;height:20px;border-right:2px solid rgba(255,255,255,.8);border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg);animation:sgfd-bob 1.8s ease-in-out infinite}
+@keyframes sgfd-bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}
+#sg-fiche-dive .touchhint{position:absolute;left:16px;bottom:16px;z-index:7;display:flex;align-items:center;gap:7px;pointer-events:none;opacity:0;transition:opacity .5s}
+#sg-fiche-dive .touchhint.on{opacity:.62}
+#sg-fiche-dive .touchhint .ring{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--tealL);animation:sgfd-tap 2.6s ease-out infinite}
+@keyframes sgfd-tap{0%{transform:scale(.6);opacity:1}60%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+#sg-fiche-dive .touchhint span{font:700 10.5px/1 "Bricolage Grotesque";letter-spacing:.04em;color:var(--tealL);text-shadow:0 1px 4px #000}
+
+/* whisper in-scene (ancré, pas un popup flottant) */
+#sg-fiche-dive .whisper{position:absolute;z-index:8;max-width:240px;padding:11px 13px;border-radius:13px;cursor:pointer;
+  background:rgba(8,18,16,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,216,132,.32);color:#fff;font:700 12px/1.4 "Bricolage Grotesque";
+  opacity:0;transform:translateY(8px) scale(.97);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+#sg-fiche-dive .whisper.on{opacity:1;transform:none;pointer-events:auto}
+#sg-fiche-dive .whisper .ar{color:var(--goldS);font-weight:800}
+#sg-fiche-dive .whisper small{display:block;margin-top:5px;font:700 11px/1.2 "Bricolage Grotesque";color:var(--goldS)}
+
+/* ===================== ELEMENTS SVG (doctrine calme : tableau au repos) ===================== */
+#sg-fiche-dive .sgh-cloud1{animation:sgfd-cloud1 132s ease-in-out infinite alternate}
+#sg-fiche-dive .sgh-cloud2{animation:sgfd-cloud2 168s ease-in-out infinite alternate}
+@keyframes sgfd-cloud1{from{transform:translateX(0)}to{transform:translateX(56px)}}
+@keyframes sgfd-cloud2{from{transform:translateX(0)}to{transform:translateX(-42px)}}
+#sg-fiche-dive #sunGlow{animation:sgfd-sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sgfd-sunBreath{0%,100%{opacity:.86;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
+#sg-fiche-dive #yoleSails{animation:sgfd-yoleLuff 9s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left bottom}
+@keyframes sgfd-yoleLuff{0%{transform:skewX(0deg)}100%{transform:skewX(-2deg)}}
+#sg-fiche-dive .ring{opacity:0}
+#sg-fiche-dive .ring.go{animation:sgfd-ringgo 1.1s ease-out forwards}
+@keyframes sgfd-ringgo{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(1.8)}}
+#sg-fiche-dive #nearbyHalos{transition:opacity .4s ease}
+#sg-fiche-dive .nearbyhalo .nh{opacity:0;transition:opacity .5s ease}
+#sg-fiche-dive .nearbyhalo.on .nh{opacity:1}
+#sg-fiche-dive .nearbyhalo .nhpulse{transform-origin:center}
+
+/* ===================== DESKTOP full-bleed ===================== */
+@media(min-width:680px){
+  #sg-fiche-dive .beatcopy{padding-bottom:52px}
+  #sg-fiche-dive h2.head{font-size:clamp(38px,4.8vw,54px)}
+  #sg-fiche-dive .verdictverbal{font-size:clamp(46px,5.6vw,66px)}
+  #sg-fiche-dive .sub{font-size:15.5px}
+}
+
+/* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
+@media(prefers-reduced-motion:reduce){
+  #sg-fiche-dive .sgh-cloud1,#sg-fiche-dive .sgh-cloud2,#sg-fiche-dive .freshpill .dot,#sg-fiche-dive .scrollhint .chev,#sg-fiche-dive .touchhint .ring,#sg-fiche-dive #sunGlow,#sg-fiche-dive #yoleSails{animation:none!important}
+  #sg-fiche-dive .ring{animation:none!important}
+  #sg-fiche-dive .scroller{position:static}
+  #sg-fiche-dive .spans{display:none}
+  #sg-fiche-dive .viewport{position:relative;height:auto;min-height:auto}
+  #sg-fiche-dive .cam{position:relative;transform:none!important;transition:none!important}
+  #sg-fiche-dive svg.scene{position:relative;height:80vh}
+  #sg-fiche-dive .veil,#sg-fiche-dive .alertwash{position:absolute}
+  #sg-fiche-dive .copylayer{position:static;pointer-events:auto}
+  #sg-fiche-dive .beatcopy{position:static;opacity:1!important;transform:none!important;max-width:620px;margin:0 auto;
+    padding:32px 20px;border-top:1px solid rgba(255,255,255,.08);pointer-events:auto}
+  #sg-fiche-dive .subpanel{display:block!important;animation:none!important;border-top:1px dashed rgba(255,255,255,.1);padding-top:12px;margin-top:12px}
+  #sg-fiche-dive .subpanel:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  #sg-fiche-dive .fct .ffill{transform:scaleX(var(--rmw,1))!important;transition:none!important}
+  #sg-fiche-dive .fcday .fbar{transform:scaleY(var(--rmh,1))!important;transition:none!important}
+  #sg-fiche-dive .fcday.locked .fbar{filter:none}
+  #sg-fiche-dive .scrollhint,#sg-fiche-dive .touchhint{display:none}
+  #sg-fiche-dive .lyr-sky,#sg-fiche-dive .lyr-sea,#sg-fiche-dive .lyr-sand{transform:none!important}
+}
+#sg-fiche-dive .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+<!-- ============================ CHROME persistant ============================ -->
+<div class="chrome">
+  <div class="backbtn" id="backBtn" role="button" tabindex="0">
+    <span class="ar">←</span><span id="backTxt">Carte</span>
+  </div>
+  <div class="freshpill" id="freshPill" role="button" tabindex="0" aria-label="Fraîcheur de la donnée">
+    <span class="dot"></span><span class="t" id="freshTxt"></span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ SCROLLER ============================ -->
+<div class="scroller" id="scroller">
+
+  <div class="spans" id="spans">
+    <div class="span" id="sp0"></div>
+    <div class="span" id="sp1"></div>
+    <div class="span" id="sp2"></div>
+    <div class="span" id="sp3"></div>
+    <div class="span" id="sp4"></div>
+    <div class="span" id="sp5"></div>
+  </div>
+
+  <!-- VIEWPORT STICKY -->
+  <div class="viewport" id="viewport">
+    <div class="cam" id="cam">
+
+      <!-- ===================== SCÈNE BEACHSCENE PLEIN ÉCRAN (viewBox 800x600) ===================== -->
+      <svg class="scene" id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+           xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Scène de la plage golden-hour mesurée au satellite : ciel, mer, sable, relief de la plage, une yole et Le Veilleur satellite qui veille la mer.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
+            <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
+            <stop offset=".6" stop-color="#C97E3A" stop-opacity=".20"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity=".42"/>
+          </linearGradient>
+          <!-- mer : teinte du SOMMET pilotée par --seaTint (scrub prévision = status réel) -->
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--seaTint)"/><stop offset=".55" stop-color="#0f3b34"/>
+            <stop offset="1" stop-color="#08251F"/>
+          </linearGradient>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFF6E0"/>
+            <stop offset=".46" stop-color="#FFD884" stop-opacity=".62"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#241A12"/><stop offset="1" stop-color="#120D08"/>
+          </linearGradient>
+          <linearGradient id="rockG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1d2f33"/><stop offset="1" stop-color="#12222A"/>
+          </linearGradient>
+          <radialGradient id="anchorGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/>
+            <stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+          </radialGradient>
+          <!-- halo "plan-B" pour plages proches (repris de map-grounding #shore) -->
+          <radialGradient id="shore" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".40"/>
+            <stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/>
+            <stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/>
+          </radialGradient>
+          <!-- voile yole -->
+          <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient>
+          <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient>
+          <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13776B"/><stop offset="1" stop-color="#0A463F"/></linearGradient>
+          <!-- œil Veilleur -->
+          <radialGradient id="lens" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/></radialGradient>
+          <radialGradient id="irisG" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/></radialGradient>
+          <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/></linearGradient>
+          <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/><stop offset="1" stop-color="#0A1714"/></linearGradient>
+          <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".55"/>
+            <stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".18"/>
+            <stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+            <stop offset="0" stop-color="var(--glint)" stop-opacity=".5"/>
+            <stop offset=".7" stop-color="var(--glint)" stop-opacity=".12"/>
+            <stop offset="1" stop-color="var(--glint)" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+          <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+
+        <!-- ===== CIEL ===== -->
+        <g class="lyr-sky">
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <!-- soleil : glisse J0→J6 au scrub (translateX via #sunGroup) + monte au scroll -->
+          <g id="sunGroup">
+            <circle id="sunGlow" cx="540" cy="300" r="150" fill="url(#sun)"/>
+            <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
+          </g>
+          <g class="sgh-cloud1" opacity=".46">
+            <ellipse cx="180" cy="118" rx="120" ry="13" fill="#10333E"/>
+            <ellipse cx="250" cy="128" rx="64" ry="8" fill="#10333E" opacity=".7"/>
+          </g>
+          <g class="sgh-cloud2" opacity=".34">
+            <ellipse cx="610" cy="92" rx="86" ry="9" fill="#0d2c36"/>
+            <ellipse cx="556" cy="100" rx="44" ry="7" fill="#0d2c36" opacity=".7"/>
+          </g>
+          <path d="M700 132 q7 -6 14 0 q7 -6 14 0" fill="none" stroke="#0B2230" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+          <path d="M120 150 q5 -4 10 0 q5 -4 10 0" fill="none" stroke="#0B2230" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+        </g>
+
+        <!-- ===== MER ===== -->
+        <g class="lyr-sea">
+          <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
+          <!-- grain raster satellite (révélé au sous-beat "satellite scanne") -->
+          <g id="rasterGrain" opacity="0">
+            <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="344" x2="800" y2="344" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="368" x2="800" y2="368" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="392" x2="800" y2="392" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="416" x2="800" y2="416" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="440" x2="800" y2="440" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="464" x2="800" y2="464" stroke="#5FD3C9" stroke-width="1"/>
+          </g>
+          <!-- allée scintillante du soleil -->
+          <g id="sunPath" opacity=".92">
+            <ellipse cx="540" cy="330" rx="80" ry="6" fill="#FFD884" opacity=".42"/>
+            <ellipse cx="538" cy="350" rx="62" ry="5" fill="#FFD884" opacity=".34"/>
+            <ellipse cx="535" cy="372" rx="48" ry="5" fill="#FFD884" opacity=".26"/>
+            <ellipse cx="532" cy="396" rx="34" ry="4.5" fill="#FFD884" opacity=".19"/>
+          </g>
+          <!-- houle douce -->
+          <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" opacity=".5">
+            <line x1="70" y1="392" x2="160" y2="392"/>
+            <line x1="232" y1="430" x2="320" y2="430"/>
+            <line x1="430" y1="468" x2="540" y2="468"/>
+            <line x1="110" y1="500" x2="220" y2="500"/>
+          </g>
+
+          <!-- RELIEF de plage (archétype PRNG injecté par JS dans #reliefG, repris de BeachScene) -->
+          <g id="reliefG"></g>
+
+          <!-- ÉTAT MER (clean/moderate/avoid) injecté par JS dans #seaStateG (baigneurs / filet / nappes) -->
+          <g id="seaStateG"></g>
+
+          <!-- YOLE RONDE Martinique (asset #yole de proto-home-az) -->
+          <g id="yole" transform="translate(642,352) scale(.62)" style="cursor:pointer">
+            <ellipse cx="0" cy="30" rx="60" ry="8" fill="#06201c" opacity=".55"/>
+            <ellipse cx="2" cy="40" rx="30" ry="4" fill="#FFD884" opacity=".18"/>
+            <g id="yoleSails">
+              <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#241608" stroke-width="3.4" stroke-linecap="round"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="url(#sailR)"/>
+              <path d="M-2 -58 L-2 -6 L38 -6 Z" fill="url(#sailY)"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#7a2a16" stroke-width="1.3" stroke-opacity=".55"/>
+              <path d="M-2 -78 Q12 -42 30 -8" fill="none" stroke="#9c2f17" stroke-width="1" stroke-opacity=".4"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1EC8B0" opacity=".94"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0b5147" stroke-width="1.1" stroke-opacity=".5"/>
+            </g>
+            <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="url(#hullG)"/>
+            <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#FFD884" stroke-width="2" stroke-opacity=".62"/>
+            <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#08332e"/>
+            <circle cx="14" cy="-2" r="4.2" fill="#1a120b"/>
+            <rect x="11" y="2" width="7" height="13" rx="3" fill="#1a120b"/>
+          </g>
+
+          <!-- ===== PLAN-B : 3 plages propres proches en halo (stage 4) ===== -->
+          <g id="nearbyHalos"></g>
+        </g>
+
+        <!-- ===== SABLE ===== -->
+        <g class="lyr-sand">
+          <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".24"/>
+          <!-- amas échoués sur le sable (state avoid/moderate) injecté par JS dans #shoreStateG -->
+          <g id="shoreStateG"></g>
+          <!-- badge H2S gradué ancré sur l'amas (stage 4) -->
+          <g id="h2sAnchor" opacity="0">
+            <g id="h2sMark" transform="translate(360,512)">
+              <circle cx="0" cy="0" r="15" fill="#08120E" fill-opacity=".88" stroke="#E8522A" stroke-width="1.6"/>
+              <text x="0" y="4.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#E8522A">H₂S</text>
+            </g>
+          </g>
+        </g>
+
+        <!-- ===== LE VEILLEUR (satellite-mascotte v2) ===== -->
+        <circle id="halo" cx="400" cy="200" r="120" fill="url(#haloG)" filter="url(#soft)" opacity=".5"/>
+        <g id="beamG"><polygon id="beam" points="0,0 -70,210 70,210" fill="url(#beamGrad)" opacity="0"/></g>
+        <ellipse id="scanRing" cx="400" cy="362" rx="40" ry="8" fill="none" stroke="var(--glint)" stroke-width="2" opacity="0"/>
+
+        <g id="gPose" transform="translate(400 200)" style="cursor:pointer">
+         <g id="gLife">
+          <g id="gBody" transform="scale(1.30)">
+            <g>
+              <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+              <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+              <g stroke="#2f7390" stroke-width="1" opacity=".65">
+                <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+                <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+              </g>
+            </g>
+            <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+            <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
+                  fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+            <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
+            <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
+            <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".42"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="#06201f" stroke-width="1" stroke-opacity=".8"/>
+            <circle cx="0" cy="4" r="16.5" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-opacity=".5"/>
+            <g id="gIris">
+              <circle id="iris" cx="0" cy="0" r="8" fill="url(#irisG)"/>
+              <circle id="irisTint" cx="0" cy="0" r="8" fill="var(--mood)" opacity=".55"/>
+              <circle id="pupil" cx="0" cy="0" r="3.4" fill="#02100f"/>
+              <circle id="catchA" cx="-3" cy="-3.4" r="2.8" fill="#fff7e2"/>
+              <circle id="catchB" cx="3.4" cy="2.6" r="1.3" fill="#dff6ff" opacity=".85"/>
+            </g>
+            <path id="lidTop" d="M-22 4 Q0 -20 22 4 L22 -20 L-22 -20 Z" fill="url(#bodyG)"/>
+            <path id="lidBot" d="M-22 4 Q0 28 22 4 L22 28 L-22 28 Z" fill="url(#bodyG)"/>
+            <circle cx="0" cy="4" r="22.2" fill="none" stroke="url(#bodyG)" stroke-width="6" opacity="1"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
+            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+            <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+            <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
+            <circle class="ring ringV" cx="0" cy="4" r="30" fill="none" stroke="var(--moodHalo)" stroke-width="2" style="transform-origin:0px 4px"/>
+          </g>
+         </g>
+        </g>
+      </svg>
+
+    </div><!-- /.cam -->
+
+    <div class="veil"></div>
+    <div class="alertwash"></div>
+
+    <!-- ===================== OVERLAY DE COPY (6 stages) ===================== -->
+    <div class="copylayer" id="copylayer">
+
+      <!-- STAGE 0 — ARRIVÉE : verdict verbal géant + status pill -->
+      <div class="beatcopy" id="bc0">
+        <div class="statuspill" id="statusPill" role="button" tabindex="0">
+          <span class="pd"></span><span class="pt" id="spStatus"></span><span class="pf" id="spFresh"></span>
+        </div>
+        <div class="eyebrow" id="eb0"></div>
+        <div class="verdictverbal anton" id="verdictVerbal"></div>
+        <p class="sub" id="s0"></p>
+        <button class="cta" id="ctaArrive" data-src="arrive">
+          <span class="t" id="ctaArriveT"></span>
+          <span class="s" id="ctaArriveS"></span>
+        </button>
+      </div>
+
+      <!-- STAGE 1 — VERDICT / preuve gratuite : ScoreBlob + chips -->
+      <div class="beatcopy" id="bc1">
+        <div class="eyebrow" id="eb1"></div>
+        <div class="scorewrap">
+          <div class="scoreblob" id="scoreBlob" role="button" tabindex="0">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/>
+              <circle id="scoreArc" cx="50" cy="50" r="42" fill="none" stroke="var(--green)" stroke-width="9"
+                      stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/>
+            </svg>
+            <div class="num"><b id="scoreNum">0</b><span id="scoreLab"></span></div>
+          </div>
+          <div>
+            <h2 class="head anton" id="h1" style="margin-bottom:6px"></h2>
+            <p class="sub" id="s1" style="margin-bottom:0"></p>
+          </div>
+        </div>
+        <div class="chiprow" id="chipRow"></div>
+        <button class="cta" id="ctaVerdict" data-src="verdict"><span class="t" id="ctaVerdictT"></span></button>
+      </div>
+
+      <!-- STAGE 2 — PREUVE-MESURE : 3 sous-beats -->
+      <div class="beatcopy" id="bc2">
+        <div class="eyebrow" id="eb2"></div>
+        <div class="subdots" id="subDots"><i class="on"></i><i></i><i></i></div>
+        <div class="measureblock">
+          <!-- sous-beat A : satellite scanne -> AFAI -->
+          <div class="subpanel show" id="sub0">
+            <h2 class="head anton" id="m2aH"></h2>
+            <p class="sub" id="m2aS"></p>
+          </div>
+          <!-- sous-beat B : score = 7 facteurs en barres -->
+          <div class="subpanel" id="sub1">
+            <h2 class="head anton" id="m2bH"></h2>
+            <div class="factors" id="factors"></div>
+          </div>
+          <!-- sous-beat C : anneau régime + fiabilité PAR RÉGIME -->
+          <div class="subpanel" id="sub2">
+            <h2 class="head anton" id="m2cH"></h2>
+            <div class="regimebox" id="regimeBox" role="button" tabindex="0">
+              <div class="regimering">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+                  <circle id="regimeArc" cx="50" cy="50" r="40" fill="none" stroke="var(--tealL)" stroke-width="8"
+                          stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+                </svg>
+                <div class="rn"><b id="regimePct">79%</b><span id="regimePctL"></span></div>
+              </div>
+              <div class="rtxt">
+                <b id="regimeT"></b><span id="regimeS"></span>
+                <span class="more" id="regimeMore"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="cta" id="ctaMethode" data-src="methode"><span class="t" id="ctaMethodeT"></span></button>
+      </div>
+
+      <!-- STAGE 3 — PRÉVISION : timeline 7 jours barres SVG + scrub -->
+      <div class="beatcopy" id="bc3">
+        <div class="eyebrow" id="eb3"></div>
+        <h2 class="head anton" id="h3"></h2>
+        <p class="sub" id="s3"></p>
+        <div class="fcstrip" id="fcStrip"></div>
+        <div class="fclockhint" id="fcLockHint"><span class="lk">🔒</span><span id="fcLockTxt"></span></div>
+        <button class="cta" id="ctaForecast" data-src="forecast"><span class="t" id="ctaForecastT"></span></button>
+      </div>
+
+      <!-- STAGE 4 — PLAN-B + SANTÉ -->
+      <div class="beatcopy" id="bc4">
+        <div class="eyebrow" id="eb4"></div>
+        <h2 class="head anton" id="h4"></h2>
+        <p class="sub" id="s4"></p>
+        <div class="h2sbadge" id="h2sBadge"><span class="lvl" id="h2sLvl"></span><span class="lvltxt" id="h2sTxt"></span></div>
+        <p class="h2sdisc" id="h2sDisc"></p>
+        <button class="cta h2scta" id="ctaH2S" data-src="h2s_health_alert"><span class="t" id="ctaH2ST"></span><span class="s" id="ctaH2SS"></span></button>
+        <div class="safebadge" id="safeBadge"><span class="icon" id="safeIcon"></span><span class="txt" id="safeTxt"></span></div>
+        <div class="planbrow" id="planbRow"></div>
+      </div>
+
+      <!-- STAGE 5 — PREUVE SOCIALE + nearby rail + liens + breadcrumb + footer -->
+      <div class="beatcopy" id="bc5">
+        <div class="eyebrow" id="eb5"></div>
+        <h2 class="head anton" id="h5"></h2>
+        <div class="social" id="socialBox" role="button" tabindex="0">
+          <div class="stars">★★★★★</div>
+          <div><b id="socialB"></b><span id="socialS"></span></div>
+        </div>
+        <div class="zonelinks" id="zoneLinks"></div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="footwrap">
+          <div class="wordmark">SARGASSES</div>
+          <div class="foot-credit" id="footCredit"></div>
+          <button class="cta" id="ctaFooter" data-src="footer"><span class="t" id="ctaFooterT"></span></button>
+          <div class="reassure" id="reassure"></div>
+        </div>
+      </div>
+    </div><!-- /.copylayer -->
+
+    <div class="scrollhint" id="scrollHint">
+      <span class="lab" id="scrollLab">DÉFILE</span><span class="chev"></span>
+    </div>
+    <div class="touchhint" id="touchHint"><span class="ring"></span><span id="touchHintTxt"></span></div>
+    <div class="whisper" id="whGeneric"></div>
+
+  </div><!-- /.viewport -->
+</div><!-- /.scroller -->
+
+<!-- toast de tracking (debug visuel du proto : prouve que la porte est câblée) -->
+
+</div>
+<script>
+window.__SG_BEACH__={"beach":{"id":"mq027","island":"mq","name":"Grande Anse du Carbet","commune":"Le Carbet","lat":14.7126886,"lng":-61.1840442,"drive":28,"status":"clean"},"score":null,"forecast":[{"day":"Auj.","date":"2026-08-13","afai":0.15,"status":"clean"},{"day":"Dem.","date":"2026-08-14","afai":0.15,"status":"moderate"},{"day":"Sam","date":"2026-08-15","afai":0.09,"status":"clean"},{"day":"Dim","date":"2026-08-16","afai":0.01,"status":"clean"},{"day":"Lun","date":"2026-08-17","afai":0,"status":"clean"},{"day":"Mar","date":"2026-08-18","afai":0.03,"status":"clean"},{"day":"Mer","date":"2026-08-19","afai":0.05,"status":"clean"}],"nearby":[{"id":"mq028","name":"Anse Turin","commune":"Le Carbet","slug":"anse-turin","status":"clean","score":null,"drive":5,"lat":14.7278647,"lng":-61.1803843},{"id":"mq029","name":"Plage de Saint-Pierre","commune":"Saint-Pierre","slug":"plage-de-saint-pierre","status":"clean","score":null,"drive":5,"lat":14.7404792,"lng":-61.1768484},{"id":"mq062","name":"Bourg de Case-Pilote","commune":"Case-Pilote","slug":"bourg-de-case-pilote","status":"clean","score":null,"drive":14,"lat":14.64192241,"lng":-61.13879442}],"reliability":{"overall":96,"calm":100,"peak":null,"sample":1827},"updatedAt":"2026-08-13T07:11:52.233Z"};
+window.__sgTrack=function(ev,params){
+  try{var mid="G-V8JGMDZZ2Y",sec="eFHMRr4tQ-2B-JYidixOSA";
+  var cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);cid=cid?cid[1]:"a."+Date.now();
+  if(navigator.sendBeacon)navigator.sendBeacon("https://www.google-analytics.com/mp/collect?measurement_id="+mid+"&api_secret="+sec,JSON.stringify({client_id:cid,events:[{name:ev,params:params||{}}]}));
+  }catch(e){}
+};
+(function(){
+  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var SGFD_ELIGIBLE=false;
+  function pick(){
+    try{var q=location.search;
+    if(/[?&]fichedive=1/.test(q))return true;
+    if(/[?&]fichedive=0/.test(q))return false;
+    if(RM)return false;
+    if(!SGFD_ELIGIBLE)return false;
+    return true;
+    }catch(e){return false;}
+  }
+  var active=pick();
+  if(active){var d=document.getElementById('sg-fiche-dive');if(d)d.hidden=false;}
+  try{window.__sgTrack('sg_fiche_view',{variant:active?'dive':'control',beach:'mq027',island:'mq'});}catch(e){}
+})();
+</script>
+<script>
+(function(){var active=!document.getElementById('sg-fiche-dive')||!document.getElementById('sg-fiche-dive').hidden;if(!active)return;
+(function(){
+  "use strict";
+
+  /* ====================================================================
+     SCROLL HOST — standalone: la fenêtre scrolle (window). Injecté dans la
+     fiche SEO: le shell verrouille html/body (overflow:hidden) et la plongée
+     vit dans un wrapper #sg-fiche-dive position:fixed;overflow-y:auto. Le
+     moteur doit donc lire/écouter le SCROLL de ce wrapper, et y poser les
+     variables CSS (sinon elles sont shadowées par le :root scopé au wrapper).
+     SG_HOST=null en standalone → fallback documentElement/window à l'identique.
+     ==================================================================== */
+  var SG_HOST = document.getElementById('sg-fiche-dive');      // null en standalone
+  var SG_VAR_EL = SG_HOST || document.documentElement;          // hôte des variables CSS
+  var SG_SCROLL_EL = SG_HOST || window;                         // ce qui scrolle
+  function sgScrollTop(){
+    return SG_SCROLL_EL === window
+      ? (window.pageYOffset || document.documentElement.scrollTop || 0)
+      : SG_SCROLL_EL.scrollTop;
+  }
+  function sgScrollBase(){
+    var sc = document.getElementById('scroller'); if(!sc) return 0;
+    var top = sc.getBoundingClientRect().top, st = sgScrollTop();
+    return SG_SCROLL_EL === window ? top + st
+      : top - SG_SCROLL_EL.getBoundingClientRect().top + st;
+  }
+  function sgScrollBy(dy){
+    var tgt = SG_SCROLL_EL === window ? window : SG_SCROLL_EL;
+    try { tgt.scrollBy({ top: dy, behavior: 'smooth' }); }
+    catch(e){ if(tgt===window){ window.scrollBy(0, dy); } else { tgt.scrollTop += dy; } }
+  }
+
+  /* ====================================================================
+     DONNÉES MOCKÉES — MIME la vraie structure du repo.
+     EN PROD : viennent de public/api/copernicus/sargassum.json
+       (scores[id], weekly[id].forecast[].{afai,status,confidence,type,regime,sources},
+        updatedAt) + public/data/beaches-list.json {id,name,commune,lat,lng,status,score,afai}.
+     Ici on injecte l'objet __SG_BEACH__ exactement comme l'app le ferait, +
+     un fallback deep-link ?beach=...&status=...&score=... pour tester à froid.
+     ==================================================================== */
+
+  // EN PROD : sargassum.json.scores["mq016"] (Plage du Diamant)
+  var MOCK_SCORE = {
+    score: 69,
+    label: "MOYEN",
+    breakdown: { sargassum:30, wave:12, wind:9, sst:10, cloud:0, uv:5, tide:3 },
+    strengths: ["zéro sargasses","eau chaude","peu de vent"],
+    weaknesses: ["ciel couvert"]
+  };
+  // EN PROD : sargassum.json.weekly["mq016"].forecast (7 jours réels)
+  var MOCK_FORECAST = [
+    {day:"Auj.", date:"2026-06-16", afai:0.15, status:"moderate", confidence:60, type:"observation", regime:"calm", sources:["satellite","community"]},
+    {day:"Dem.", date:"2026-06-17", afai:0.12, status:"clean",    confidence:60, type:"tendance",    regime:"calm", sources:["satellite"]},
+    {day:"Jeu",  date:"2026-06-18", afai:0.10, status:"clean",    confidence:60, type:"tendance",    regime:"calm", sources:["satellite"]},
+    {day:"Ven",  date:"2026-06-19", afai:0.09, status:"clean",    confidence:56, type:"tendance",    regime:"calm", sources:["modèle"]},
+    {day:"Sam",  date:"2026-06-20", afai:0.08, status:"clean",    confidence:50, type:"horizon",     regime:"calm", sources:["modèle"]},
+    {day:"Dim",  date:"2026-06-21", afai:0.07, status:"clean",    confidence:44, type:"horizon",     regime:"calm", sources:["modèle"]},
+    {day:"Lun",  date:"2026-06-22", afai:0.06, status:"clean",    confidence:40, type:"horizon",     regime:"calm", sources:["modèle"]}
+  ];
+  // EN PROD : beaches-list.json — la plage courante + voisines réelles
+  var MOCK_BEACH = { id:"mq016", island:"mq", name:"Plage du Diamant", commune:"Le Diamant",
+                     lat:14.4758027, lng:-61.0314046, status:"moderate", score:69, afai:0.15, drive:32 };
+  var MOCK_NEARBY = [
+    { id:"mq012", name:"Anse Dufour",  commune:"Les Anses-d'Arlet", status:"clean",    score:84, afai:0.04, drive:18, lat:14.515, lng:-61.085 },
+    { id:"mq013", name:"Grande Anse",  commune:"Les Anses-d'Arlet", status:"clean",    score:80, afai:0.06, drive:22, lat:14.493, lng:-61.083 },
+    { id:"mq001", name:"Les Salines",  commune:"Sainte-Anne",       status:"moderate", score:58, afai:0.30, drive:46, lat:14.396, lng:-60.869 }
+  ];
+  // fiabilité PAR RÉGIME (source UNIQUE reliability-data.cjs : ne PAS inventer)
+  var MOCK_RELIABILITY = { calm:79, peak:76, sample:412 };
+
+  /* deep-link / injection app (test à froid) */
+  function qp(k){ try{ return new URLSearchParams(location.search).get(k); }catch(e){ return null; } }
+  var INJ = (window.__SG_BEACH__ && typeof window.__SG_BEACH__==="object") ? window.__SG_BEACH__ : {};
+
+  var DATA = {
+    beach:   INJ.beach   || MOCK_BEACH,
+    // Honnêteté : en prod (INJ présent) on n'invente JAMAIS de score. Si pas de
+    // score réel → objet vide (score null, pas de breakdown/forces) → les beats
+    // verdict/mesure se dégradent, JAMAIS le MOCK 69. (La plongée est en plus
+    // gatée aux plages avec score réel côté picker — ceci = ceinture+bretelles.)
+    score:   (window.__SG_BEACH__ ? (INJ.score || {score:null,label:"",breakdown:{},strengths:[],weaknesses:[]}) : MOCK_SCORE),
+    // Honnêteté : en prod (INJ présent) on n'invente JAMAIS de prévision —
+    // si la donnée manque, tableau vide (le beat prévision se dégrade), pas de MOCK.
+    forecast:(Array.isArray(INJ.forecast) && INJ.forecast.length) ? INJ.forecast
+             : (window.__SG_BEACH__ ? [] : MOCK_FORECAST),
+    nearby:  INJ.nearby  || MOCK_NEARBY,
+    reliability: INJ.reliability || MOCK_RELIABILITY,
+    updatedAt: INJ.updatedAt || "2026-06-16T09:24:01.239Z"
+  };
+  // overrides deep-link sur la plage courante
+  if(qp("beach")) DATA.beach = Object.assign({}, DATA.beach, {name:qp("beach")});
+  if(qp("status")) DATA.beach.status = qp("status");
+  if(qp("score")!=null){ DATA.score.score = +qp("score"); DATA.beach.score = +qp("score"); }
+
+  var SCORE = (DATA.score.score!=null) ? DATA.score.score : (DATA.beach.score||0);
+
+  /* statut canonique : clean | moderate | avoid (mappe vers classes courtes) */
+  function stKey(s){ s=(s||"").toLowerCase(); if(s==="avoid"||s==="bad") return "avoid"; if(s==="moderate"||s==="mod") return "moderate"; return "clean"; }
+  var STATUS = stKey(DATA.beach.status);
+  // Cohérence « aujourd'hui » : le verdict d'arrivée (statut MESURÉ live) et la
+  // 1re barre de prévision (« Auj. ») doivent dire la MÊME chose. Le statut mesuré
+  // du jour prime sur la prévision-du-jour du modèle → on aligne forecast[0] dessus
+  // (évite « BAIGNADE OK » + barre « À éviter » le même jour). Jours 1-6 inchangés.
+  if(DATA.forecast && DATA.forecast[0] && DATA.forecast[0].status!==DATA.beach.status){ DATA.forecast[0].status = DATA.beach.status; }
+  var STCOL  = STATUS==="avoid" ? "var(--coral)" : STATUS==="moderate" ? "#E8B23A" : "var(--green)";
+  var STCLS  = STATUS==="avoid" ? "st-avoid" : STATUS==="moderate" ? "st-mod" : "st-clean";
+
+  /* ====================================================================
+     i18n
+     ==================================================================== */
+  var LANG = "fr";
+  function _t(fr,en,es){ return LANG==="en"?en : LANG==="es"?es : fr; }
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* verdict VERBAL dérivé du STATUT réel (jamais inventé) */
+  function verbalVerdict(){
+    if(STATUS==="clean") return _t(["BAIGNADE OK","CE MATIN"],["GOOD TO SWIM","THIS MORNING"],["BAÑO OK","ESTA MAÑANA"]);
+    if(STATUS==="moderate") return _t(["ÇA SE TIENT,","SURVEILLE"],["IT HOLDS,","KEEP AN EYE"],["AGUANTA,","VIGILA"]);
+    return _t(["MER CHARGÉE,","ÉVITE"],["SEA LOADED,","SKIP IT"],["MAR CARGADO,","EVITA"]);
+  }
+  var STATUS_WORD = {
+    clean:    {fr:"Propre", en:"Clean", es:"Limpia"},
+    moderate: {fr:"Modéré", en:"Moderate", es:"Moderado"},
+    avoid:    {fr:"À éviter", en:"Avoid", es:"Evitar"}
+  };
+
+  /* beach name sans article pour EN/ES */
+  function beachNoArticle(n){ return (n||"").replace(/^l['’]\s*/i,"").replace(/^(le|la|les|plage du|plage de la|plage des|plage d['’])\s*/i,""); }
+  function beachName(){ return LANG==="fr" ? DATA.beach.name : beachNoArticle(DATA.beach.name); }
+
+  /* fraîcheur HONNÊTE : <12h => "il y a Xh", sinon "vérification en cours" (jamais faux chrono) */
+  function freshLabel(){
+    var age = (Date.now() - new Date(DATA.updatedAt).getTime())/60000;
+    if(isFinite(age) && age>=0 && age < 12*60){
+      if(age < 60) return _t("il y a "+Math.max(1,Math.round(age))+" min","· "+Math.max(1,Math.round(age))+" min ago","hace "+Math.max(1,Math.round(age))+" min");
+      var h=Math.round(age/60); return _t("il y a "+h+" h","· "+h+"h ago","hace "+h+" h");
+    }
+    return _t("vérification en cours","checking…","verificación en curso");
+  }
+
+  /* date du jour */
+  function dateLabel(){
+    var d=new Date();
+    var moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."];
+    var moEN=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    var moES=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    var mo=LANG==="en"?moEN:LANG==="es"?moES:moFR;
+    return d.getDate()+" "+mo[d.getMonth()];
+  }
+
+  /* labels FR/EN/ES des 7 facteurs (clé = breakdown) */
+  var FACTOR_LABELS = {
+    sargassum:{fr:"Sargasses",en:"Sargassum",es:"Sargazo", max:35},
+    wave:{fr:"Houle",en:"Waves",es:"Oleaje", max:15},
+    wind:{fr:"Vent",en:"Wind",es:"Viento", max:12},
+    sst:{fr:"Eau",en:"Water",es:"Agua", max:12},
+    cloud:{fr:"Ciel",en:"Sky",es:"Cielo", max:10},
+    uv:{fr:"UV",en:"UV",es:"UV", max:8},
+    tide:{fr:"Marée",en:"Tide",es:"Tide", max:8}
+  };
+
+  var T = {
+    back:   {fr:"Carte", en:"Map", es:"Mapa"},
+    touchHint:{fr:"Touche la mer", en:"Touch the sea", es:"Toca el mar"},
+    scrollLab:{fr:"DÉFILE", en:"SCROLL", es:"DESLIZA"},
+
+    eb0:    {fr:["MESURÉ AU SATELLITE · "," · "], en:["SATELLITE-MEASURED · "," · "], es:["MEDIDO POR SATÉLITE · "," · "]},
+    s0:     {fr:"L'état réel de l'eau ce matin — mesuré au satellite, pas deviné.", en:"The real state of the water this morning — measured by satellite, not guessed.", es:"El estado real del agua esta mañana — medido por satélite, no adivinado."},
+    ctaArriveT:{fr:"Voir la preuve", en:"See the proof", es:"Ver la prueba"},
+    ctaArriveS:{fr:"score · 7 facteurs · prévision 7 jours", en:"score · 7 factors · 7-day forecast", es:"puntaje · 7 factores · pronóstico 7 días"},
+
+    eb1:    {fr:"LE VERDICT, EN CLAIR", en:"THE VERDICT, PLAINLY", es:"EL VEREDICTO, CLARO"},
+    h1:     {fr:[["SON SCORE"],["DU MATIN"]], en:[["ITS MORNING"],["SCORE"]], es:[["SU PUNTAJE"],["DE HOY"]]},
+    s1:     {fr:"Sur 100, recalculé à chaque passage satellite.", en:"Out of 100, recomputed on every satellite pass.", es:"Sobre 100, recalculado en cada pasada."},
+    ctaVerdictT:{fr:"D'où vient ce chiffre ?", en:"Where's this number from?", es:"¿De dónde sale?"},
+
+    eb2:    {fr:"LA PREUVE, MESURE PAR MESURE", en:"THE PROOF, STEP BY STEP", es:"LA PRUEBA, PASO A PASO"},
+    m2aH:   {fr:[["LE SATELLITE"],["SCANNE LA MER"]], en:[["THE SATELLITE"],["SCANS THE SEA"]], es:[["EL SATÉLITE"],["ESCANEA EL MAR"]]},
+    m2bH:   {fr:[["7 FACTEURS,"],["UN SEUL SCORE"]], en:[["7 FACTORS,"],["ONE SCORE"]], es:[["7 FACTORES,"],["UN PUNTAJE"]]},
+    m2cH:   {fr:[["ET ON SAIT"],["QUAND ON SE TROMPE"]], en:[["AND WE KNOW"],["WHEN WE'RE WRONG"]], es:[["Y SABEMOS"],["CUÁNDO FALLAMOS"]]},
+    regimeT:{fr:"Saison calme", en:"Calm season", es:"Temporada calma"},
+    regimeMore:{fr:"Voir notre fiabilité →", en:"See our reliability →", es:"Ver nuestra fiabilidad →"},
+    regimePctL:{fr:"justes", en:"right", es:"acierto"},
+    ctaMethodeT:{fr:"Et la semaine qui vient ?", en:"And the week ahead?", es:"¿Y la semana que viene?"},
+
+    eb3:    {fr:"7 JOURS DEVANT", en:"7 DAYS AHEAD", es:"7 DÍAS POR DELANTE"},
+    h3:     {fr:[["LA SEMAINE,"],["JOUR PAR JOUR"]], en:[["THE WEEK,"],["DAY BY DAY"]], es:[["LA SEMANA,"],["DÍA A DÍA"]]},
+    s3:     {fr:"Aujourd'hui et demain sont nets. Au-delà, c'est flouté — c'est l'honnêteté de la donnée.", en:"Today and tomorrow are sharp. Beyond that it's blurred — that's data honesty.", es:"Hoy y mañana son nítidos. Más allá, borroso — es honestidad de datos."},
+    fcLockTxt:{fr:"Au-delà de demain = réservé au Veilleur", en:"Beyond tomorrow = Veilleur only", es:"Más allá de mañana = solo Veilleur"},
+    ctaForecastT:{fr:"Débloquer les 7 jours", en:"Unlock the 7 days", es:"Desbloquear los 7 días"},
+
+    eb4:    {fr:"PLAN B, À CÔTÉ", en:"PLAN B, NEARBY", es:"PLAN B, CERCA"},
+    h4:     {fr:[["DES PLAGES PROPRES"],["TOUT PRÈS"]], en:[["CLEAN BEACHES"],["RIGHT NEAR"]], es:[["PLAYAS LIMPIAS"],["MUY CERCA"]]},
+    s4:     {fr:"Si ça ne le sent pas ici, voilà où aller — à quelques minutes.", en:"If it's not it here, here's where to go — minutes away.", es:"Si aquí no, aquí es dónde ir — a minutos."},
+    h2sDisc:{fr:"Indice dérivé de la sargasse accumulée et de sa décomposition — pas une mesure de gaz, aucun capteur sur place. Suis les consignes ARS/HCSP.", en:"Index derived from accumulated seaweed and its decomposition — not a gas measurement, no on-site sensor. Always follow public-health guidance.", es:"Índice derivado del sargazo acumulado y su descomposición — no es una medición de gas, sin sensor en sitio. Sigue las indicaciones sanitarias."},
+    ctaH2ST:{fr:"Préviens-moi avant le prochain pic d'odeur", en:"Warn me before the next odour peak", es:"Avísame antes del próximo pico de olor"},
+    ctaH2SS:{fr:"Alerte santé Premium — la veille, sur TA plage", en:"Premium health alert — the day before, on YOUR beach", es:"Alerta de salud Premium — la víspera, en TU playa"},
+
+    eb5:    {fr:"CE QU'ILS EN DISENT", en:"WHAT THEY SAY", es:"LO QUE DICEN"},
+    h5:     {fr:[["ON VEILLE"],["DÉJÀ POUR EUX"]], en:[["WE WATCH"],["FOR THEM ALREADY"]], es:[["YA VIGILAMOS"],["PARA ELLOS"]]},
+    socialB:{fr:"« Plus jamais une route pour rien. »", en:"“Never a wasted drive again.”", es:"“Nunca más un viaje en vano.”"},
+    socialS:{fr:"Des voisins consultent leurs plages chaque matin.", en:"Locals check their beaches every morning.", es:"Vecinos consultan sus playas cada mañana."},
+    footCredit:{fr:"Données : Copernicus Marine · mesuré, pas deviné", en:"Data: Copernicus Marine · measured, not guessed", es:"Datos: Copernicus Marine · medido, no adivinado"},
+    ctaFooterT:{fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
+    reassure:{fr:"Sans engagement — annulable en 1 clic.", en:"No commitment — cancel in one click.", es:"Sin compromiso — cancela en un clic."},
+
+    whYole: {fr:["Cette mer, on la lit chaque matin — pour cette plage.","Voir la fiabilité"],
+             en:["We read this sea every morning — for this beach.","See reliability"],
+             es:["Leemos este mar cada mañana — para esta playa.","Ver fiabilidad"]},
+    whVeil: {fr:["Je veille l'eau, pas toi. Calme = ≥70, vigilance = 40-69, alerte = <40.","Activer mon veilleur"],
+             en:["I watch the water, so you don't. Calm = ≥70, watch = 40-69, alert = <40.","Turn on my watcher"],
+             es:["Vigilo el agua por ti. Calma = ≥70, atención = 40-69, alerta = <40.","Activar mi vigía"]}
+  };
+
+  /* ====================================================================
+     TRACKING — porte de conversion unique (toast + console.log).
+     ==================================================================== */
+  var toast=$("trackToast"), toastTimer=null;
+  function track(ev, params) {
+    try { if (typeof window.__sgTrack === 'function') window.__sgTrack(ev, params); } catch(e) {}
+  }
+  /* PORTE DE CONVERSION UNIQUE */
+  function openPremium(src) {
+    track('sg_premium_modal_open', { source: 'fiche_' + (src||''), beach: DATA.beach && DATA.beach.id });
+    window.location.href = '/?paywall=1&utm_source=' + encodeURIComponent('fiche_' + (src||''));
+  }
+  function onOpenBeach(id, name, slug) {
+    try { track('sg_open_beach', { beach: id, name: name, src: 'fiche_nearby' }); } catch(e) {}
+    window.location.href = slug ? ('/plages/' + slug + '/') : '/carte-sargasses/';
+  }
+  function onShowMap() { window.location.href = '/carte-sargasses/'; }
+
+  var REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* ====================================================================
+     PRNG seedé (par beach.id) — reprend buildBeachScene de Sargasses_PROD.
+     ==================================================================== */
+  function seedFrom(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
+  function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  var rng = mulberry(seedFrom(DATA.beach.id||"mq016"));
+  function rr(a,b){ return a+(b-a)*rng(); }
+
+  /* archétype de relief (reprend beachLandmark) */
+  function archetype(){
+    var k=((DATA.beach.id||"")+" "+(DATA.beach.name||"")+" "+(DATA.beach.commune||"")).toLowerCase();
+    if(/diamant/.test(k)) return "diamondRock";
+    if(/caravelle|tartane|presqu|tombolo|chateaux|château|trinité/.test(k)) return "cliff";
+    if(/salines|saline|grande anse|bourg|sainte-anne/.test(k)) return "open";
+    return "morne";
+  }
+
+  function svgEl(tag,attrs){ var e=document.createElementNS("http://www.w3.org/2000/svg",tag); for(var k in attrs){ e.setAttribute(k,attrs[k]); } return e; }
+
+  /* injecte le RELIEF (archétype PRNG) dans #reliefG */
+  function buildRelief(){
+    var g=$("reliefG"); while(g.firstChild) g.removeChild(g.firstChild);
+    var a=archetype();
+    if(a==="diamondRock"){
+      g.appendChild(svgEl("path",{d:"M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z", fill:"url(#rockG)"}));
+      g.appendChild(svgEl("path",{d:"M509 252 Q525 234 534 253 Q560 292 570 340 L534 340 Z", fill:"#000", "fill-opacity":".22"}));
+      g.appendChild(svgEl("path",{d:"M509 252 Q481 284 468 340 L509 340 Z", fill:"#FFD884", "fill-opacity":".22"}));
+    } else if(a==="cliff"){
+      var cut=rr(238,268)|0;
+      g.appendChild(svgEl("path",{d:"M-40 340 L-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8)+" L266 340 Z", fill:"url(#rockG)"}));
+      g.appendChild(svgEl("path",{d:"M-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8), fill:"none", stroke:"#FFD884", "stroke-width":"3", "stroke-opacity":".22"}));
+    } else if(a==="open"){
+      // longue plage ouverte : îlot lointain + liseré de côte
+      g.appendChild(svgEl("path",{d:"M-40 366 Q400 358 840 368", fill:"none", stroke:"#FFD884", "stroke-width":"2", "stroke-dasharray":"5 9", "stroke-opacity":".34"}));
+      var ix=rr(150,260)|0;
+      g.appendChild(svgEl("path",{d:"M"+(ix-44)+" 340 Q"+ix+" 304 "+(ix+44)+" 340 Z", fill:"url(#rockG)", opacity:".85"}));
+    } else { // morne (baie + morne vert)
+      var mx=rr(560,640)|0;
+      g.appendChild(svgEl("path",{d:"M"+(mx-90)+" 340 Q"+mx+" 250 "+(mx+90)+" 340 Z", fill:"url(#rockG)", opacity:".92"}));
+      g.appendChild(svgEl("path",{d:"M"+(mx-90)+" 340 Q"+mx+" 250 "+(mx+90)+" 340", fill:"none", stroke:"#FFD884", "stroke-width":"2.2", "stroke-opacity":".2"}));
+    }
+  }
+
+  /* injecte l'ÉTAT (clean/moderate/avoid) en mer + sur le sable (reprend BeachScene states) */
+  function buildState(){
+    var sea=$("seaStateG"), shore=$("shoreStateG");
+    while(sea.firstChild) sea.removeChild(sea.firstChild);
+    while(shore.firstChild) shore.removeChild(shore.firstChild);
+    if(STATUS==="clean"){
+      // baigneurs dans une eau claire
+      [["372","392","6"],["452","404","5"]].forEach(function(s){
+        var grp=svgEl("g",{});
+        grp.appendChild(svgEl("circle",{cx:s[0],cy:s[1],r:s[2],fill:"#0D2B26"}));
+        grp.appendChild(svgEl("path",{d:"M"+(+s[0]-12)+" "+(+s[1]+6)+" q12 -8 24 0", stroke:"#0D2B26","stroke-width":"3.2",fill:"none","stroke-linecap":"round"}));
+        sea.appendChild(grp);
+      });
+      sea.appendChild(svgEl("path",{d:"M348 396 h8 M396 398 h7 M462 410 h8", stroke:"#FFD884","stroke-width":"1.6",opacity:".5","stroke-linecap":"round"}));
+    } else if(STATUS==="moderate"){
+      // filet posé (bouées dorées) + ramasseur (en collecte)
+      var net=svgEl("g",{});
+      net.appendChild(svgEl("path",{d:"M286 372 Q360 382 434 374", fill:"none", stroke:"#CDEBE6","stroke-width":"1.2","stroke-dasharray":"1.5 4",opacity:".6"}));
+      [[300,374,3],[344,378,2.6],[388,375,2.6],[432,374,3]].forEach(function(b){ net.appendChild(svgEl("circle",{cx:b[0],cy:b[1],r:b[2],fill:"#FFC72C"})); });
+      sea.appendChild(net);
+      sea.appendChild(svgEl("g",{transform:"translate(330,388) scale(.62)",opacity:".8",
+        html:""})); // raft placeholder filled below
+      var raft=svgEl("g",{transform:"translate(330,388) scale(.62)",opacity:".8"});
+      raft.appendChild(svgEl("ellipse",{rx:"22",ry:"7",fill:"#7a5c14"}));
+      raft.appendChild(svgEl("ellipse",{cx:"-10",cy:"-3",rx:"9",ry:"4",fill:"#8a6c1c"}));
+      sea.appendChild(raft);
+      // ramasseur sur le sable
+      var man=svgEl("g",{transform:"translate(458,508)"});
+      var fig=svgEl("g",{fill:"#0E1F1A"});
+      fig.appendChild(svgEl("circle",{cx:"0",cy:"-27",r:"5"}));
+      fig.appendChild(svgEl("path",{d:"M-5 -22 q5 -4 10 0 l-1.5 19 h-7 Z"}));
+      fig.appendChild(svgEl("path",{d:"M-4 -4 l-3 12 M4 -4 l3 12", stroke:"#0E1F1A","stroke-width":"2.4","stroke-linecap":"round",fill:"none"}));
+      man.appendChild(fig);
+      man.appendChild(svgEl("path",{d:"M2 -19 L20 8 M13 6 h13 M15 3 v7 M19 2 v8.5 M23 2 v8", stroke:"#3A2A14","stroke-width":"2.2",fill:"none","stroke-linecap":"round"}));
+      shore.appendChild(man);
+    } else { // avoid : nappes en mer + amas échoués sur le sable
+      var rafts=svgEl("g",{});
+      var r1=svgEl("g",{transform:"translate(300,372)"});
+      r1.appendChild(svgEl("ellipse",{rx:"24",ry:"8",fill:"#7a5c14"}));
+      r1.appendChild(svgEl("ellipse",{cx:"-12",cy:"-4",rx:"10",ry:"5",fill:"#8a6c1c"}));
+      r1.appendChild(svgEl("ellipse",{cx:"12",cy:"-3",rx:"11",ry:"5",fill:"#5d400e"}));
+      var r2=svgEl("g",{transform:"translate(470,390) scale(.9)"});
+      r2.appendChild(svgEl("ellipse",{rx:"22",ry:"7",fill:"#7a5c14"}));
+      r2.appendChild(svgEl("ellipse",{cx:"8",cy:"-3",rx:"9",ry:"4",fill:"#8a6c1c"}));
+      rafts.appendChild(r1); rafts.appendChild(r2);
+      sea.appendChild(rafts);
+      var amas=svgEl("g",{});
+      amas.appendChild(svgEl("ellipse",{cx:"318",cy:"512",rx:"72",ry:"14",fill:"#5d400e"}));
+      amas.appendChild(svgEl("ellipse",{cx:"288",cy:"506",rx:"34",ry:"10",fill:"#7a5c14"}));
+      amas.appendChild(svgEl("ellipse",{cx:"472",cy:"524",rx:"60",ry:"12",fill:"#6b4a12"}));
+      amas.appendChild(svgEl("ellipse",{cx:"492",cy:"518",rx:"28",ry:"8",fill:"#8a6c1c"}));
+      shore.appendChild(amas);
+    }
+  }
+
+  /* ====================================================================
+     PLAN-B : 3 plages propres proches en halo (stage 4), tap = flyTo
+     ==================================================================== */
+  var NEARBY_POS = [ {x:230,y:420}, {x:150,y:460}, {x:330,y:448} ]; // positions en mer (viewBox)
+  function buildNearbyHalos(){
+    var g=$("nearbyHalos"); while(g.firstChild) g.removeChild(g.firstChild);
+    g.setAttribute("class","nearbyhalo");
+    DATA.nearby.slice(0,3).forEach(function(b,i){
+      var p=NEARBY_POS[i]; var col = stKey(b.status)==="clean" ? "#22C55E" : stKey(b.status)==="moderate" ? "#E8A800" : "#E8522A";
+      var grp=svgEl("g",{class:"nh", "data-idx":i, style:"cursor:pointer"});
+      grp.appendChild(svgEl("circle",{cx:p.x,cy:p.y,r:"40",fill:"url(#shore)"}));
+      grp.appendChild(svgEl("circle",{cx:p.x,cy:p.y,r:"6.5",fill:col,stroke:"#06121A","stroke-width":"1.3"}));
+      var ring=svgEl("circle",{class:"ring nhpulse",cx:p.x,cy:p.y,r:"12",fill:"none",stroke:"#FFE6A8","stroke-width":"1.4",style:"transform-origin:"+p.x+"px "+p.y+"px"});
+      grp.appendChild(ring);
+      // PAS de libellé sur l'eau : le nom est déjà dans la carte plan-B en dessous
+      // (doublon + fantôme derrière les cartes). On garde le point lumineux = repère
+      // spatial « des spots propres au large », les cartes portent les noms.
+      g.appendChild(grp);
+    });
+  }
+
+  /* ====================================================================
+     APPLY COPY (i18n + données réelles)
+     ==================================================================== */
+  function setHeading(el, lines){
+    while(el.firstChild) el.removeChild(el.firstChild);
+    for(var i=0;i<lines.length;i++){
+      if(i>0) el.appendChild(document.createElement("br"));
+      el.appendChild(document.createTextNode(lines[i][0]!==undefined?lines[i][0]:lines[i]));
+    }
+  }
+  function setEyebrow0(){
+    var el=$("eb0"), parts=T.eb0[LANG];
+    while(el.firstChild) el.removeChild(el.firstChild);
+    el.appendChild(document.createTextNode(parts[0]));
+    var dt=document.createElement("span"); dt.className="dt"; dt.textContent=dateLabel(); el.appendChild(dt);
+    el.appendChild(document.createTextNode(parts[1]));
+    var bn=document.createElement("span"); bn.className="dt"; bn.textContent=beachName().toUpperCase(); el.appendChild(bn);
+  }
+  function setVerbalVerdict(){
+    var el=$("verdictVerbal"), v=verbalVerdict();
+    while(el.firstChild) el.removeChild(el.firstChild);
+    var hl=document.createElement("span"); hl.className="hl"; hl.style.color=STCOL;
+    hl.textContent=v[0]; el.appendChild(hl);
+    el.appendChild(document.createElement("br"));
+    el.appendChild(document.createTextNode(v[1]));
+  }
+  /* i18n des chips forces/faiblesses : le pipeline ne fournit QUE le FR (MQ/GP).
+     Forces = vocabulaire fixe (lookup) ; faiblesses = templates avec valeurs (re-template). */
+  var STR_I18N = {
+    "zéro sargasses":{en:"zero sargassum",es:"cero sargazo"},
+    "mer plate":{en:"flat sea",es:"mar plano"},
+    "vent calme":{en:"calm wind",es:"viento en calma"},
+    "eau chaude":{en:"warm water",es:"agua cálida"},
+    "ciel dégagé":{en:"clear sky",es:"cielo despejado"},
+    "soleil parfait":{en:"perfect sun",es:"sol perfecto"},
+    "marée idéale":{en:"ideal tide",es:"marea ideal"}
+  };
+  function trChip(s){
+    if(LANG==="fr"||!s) return s;
+    if(STR_I18N[s]) return STR_I18N[s][LANG]||s;
+    var m, en=LANG==="en";
+    if((m=s.match(/^alerte sargasses \(AFAI (.+)\)$/))) return en?"sargassum alert (AFAI "+m[1]+")":"alerta de sargazo (AFAI "+m[1]+")";
+    if((m=s.match(/^sargasses présentes \(AFAI (.+)\)$/))) return en?"sargassum present (AFAI "+m[1]+")":"sargazo presente (AFAI "+m[1]+")";
+    if((m=s.match(/^trace de sargasses \(AFAI (.+)\)$/))) return en?"trace of sargassum (AFAI "+m[1]+")":"rastro de sargazo (AFAI "+m[1]+")";
+    if((m=s.match(/^houle (.+) m$/))) return en?m[1]+" m swell":"oleaje de "+m[1]+" m";
+    if((m=s.match(/^vent (.+) km\/h$/))) return en?m[1]+" km/h wind":"viento de "+m[1]+" km/h";
+    if((m=s.match(/^eau fraîche (.+) °C$/))) return en?"cool water "+m[1]+" °C":"agua fresca "+m[1]+" °C";
+    if(s==="ciel couvert") return en?"overcast sky":"cielo nublado";
+    if(s==="UV extrême") return en?"extreme UV":"UV extremo";
+    if(s==="UV faible") return en?"low UV":"UV bajo";
+    return s;
+  }
+  /* libellés de jours forecast i18n : FR vient du pipeline (intact) ; EN/ES dérivés de f.date */
+  var WDAY_I18N={en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],es:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"]};
+  function fcLabel(f,i){
+    if(LANG==="fr") return f.day;
+    if(i===0) return LANG==="es"?"Hoy":"Today";
+    if(i===1) return LANG==="es"?"Mañ.":"Tom.";
+    if(f.date){ var d=new Date(f.date+"T12:00:00"); if(!isNaN(d.getTime())) return (WDAY_I18N[LANG]||WDAY_I18N.en)[d.getDay()]; }
+    return f.day;
+  }
+  function buildChips(){
+    var row=$("chipRow"); while(row.firstChild) row.removeChild(row.firstChild);
+    (DATA.score.strengths||[]).slice(0,2).forEach(function(s){
+      var c=document.createElement("span"); c.className="chip good";
+      var i=document.createElement("span"); i.className="i"; i.textContent="✓"; c.appendChild(i);
+      c.appendChild(document.createTextNode(trChip(s))); row.appendChild(c);
+    });
+    (DATA.score.weaknesses||[]).slice(0,2).forEach(function(s){
+      var c=document.createElement("span"); c.className="chip bad";
+      var i=document.createElement("span"); i.className="i"; i.textContent="!"; c.appendChild(i);
+      c.appendChild(document.createTextNode(trChip(s))); row.appendChild(c);
+    });
+  }
+  function buildFactors(){
+    var box=$("factors"); while(box.firstChild) box.removeChild(box.firstChild);
+    var bd=DATA.score.breakdown||{};
+    Object.keys(FACTOR_LABELS).forEach(function(k){
+      var meta=FACTOR_LABELS[k]; var v=bd[k]!=null?bd[k]:0; var w=Math.max(0,Math.min(1,v/meta.max));
+      var row=document.createElement("div"); row.className="fct";
+      var l=document.createElement("div"); l.className="fl"; l.textContent=meta[LANG]; row.appendChild(l);
+      var tr=document.createElement("div"); tr.className="ftrack";
+      var fl=document.createElement("div"); fl.className="ffill";
+      // teinte facteur : sargasses = vert si faible apport négatif, sinon dégradé doré
+      fl.style.background = k==="sargassum" ? "linear-gradient(90deg,#22C55E,#5FD3C9)" : "linear-gradient(90deg,#FFC72C,#E8A800)";
+      fl.setAttribute("data-w", w.toFixed(3));
+      if(REDUCE) fl.style.setProperty("--rmw", w.toFixed(3));
+      tr.appendChild(fl); row.appendChild(tr);
+      var vv=document.createElement("div"); vv.className="fv"; vv.textContent="+"+v; row.appendChild(vv);
+      box.appendChild(row);
+    });
+  }
+  function buildForecast(){
+    var strip=$("fcStrip"); while(strip.firstChild) strip.removeChild(strip.firstChild);
+    var maxA = Math.max.apply(null, DATA.forecast.map(function(f){ return f.afai; }).concat([0.2]));
+    DATA.forecast.forEach(function(f,i){
+      var col = stKey(f.status)==="avoid" ? "#E8522A" : stKey(f.status)==="moderate" ? "#E8B23A" : "#22C55E";
+      var h = Math.max(0.08, Math.min(1, (f.afai/maxA)*0.6 + (stKey(f.status)==="clean"?0.18:stKey(f.status)==="moderate"?0.5:0.85)*0.4));
+      var day=document.createElement("div"); day.className="fcday"+(i>=2?" locked":"")+(i===0?" cursor":"");
+      day.setAttribute("data-idx",i);
+      var bb=document.createElement("div"); bb.className="fcbarbox";
+      var bar=document.createElement("div"); bar.className="fbar"; bar.style.background=col;
+      bar.setAttribute("data-h",h.toFixed(3));
+      if(REDUCE) bar.style.setProperty("--rmh", h.toFixed(3));
+      bb.appendChild(bar); day.appendChild(bb);
+      var lab=document.createElement("div"); lab.className="fcl"; lab.textContent=fcLabel(f,i); day.appendChild(lab);
+      strip.appendChild(day);
+    });
+  }
+  function buildPlanB(){
+    var row=$("planbRow"); while(row.firstChild) row.removeChild(row.firstChild);
+    DATA.nearby.slice(0,3).forEach(function(b,i){
+      var sk=stKey(b.status);
+      var card=document.createElement("div"); card.className="pbcard"; card.setAttribute("data-idx",i);
+      var th=document.createElement("div"); th.className="pbthumb";
+      th.appendChild(miniBeachScene(b)); card.appendChild(th);
+      var pn=document.createElement("div"); pn.className="pn"; pn.textContent=(LANG==="fr"?b.name:beachNoArticle(b.name)); card.appendChild(pn);
+      var ps=document.createElement("div"); ps.className="ps "+(sk==="avoid"?"st-avoid":sk==="moderate"?"st-mod":"st-clean");
+      var d=document.createElement("span"); d.className="d"; ps.appendChild(d);
+      ps.appendChild(document.createTextNode(STATUS_WORD[sk][LANG])); card.appendChild(ps);
+      var pf=document.createElement("div"); pf.className="pf";
+      // n'affiche le score que s'il existe (sinon « score null » sur les plages non couvertes)
+      pf.textContent=(b.score!=null ? _t("score","score","puntaje")+" "+b.score+" · " : "")+b.drive+" min";
+      card.appendChild(pf);
+      row.appendChild(card);
+    });
+  }
+  /* mini-BeachScene seedée (pas de photo) pour le rail nearby */
+  function miniBeachScene(b){
+    var s=mulberry(seedFrom(b.id||b.name||"x"));
+    var sk=stKey(b.status);
+    var sea = sk==="avoid"?"#2c3b1a" : sk==="moderate"?"#19453d" : "#1A5852";
+    var svg=svgEl("svg",{viewBox:"0 0 200 64",preserveAspectRatio:"xMidYMid slice"});
+    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"#155A5A"}));
+    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"url(#warmG)"}));
+    svg.appendChild(svgEl("circle",{cx:130+ (s()*30)|0,cy:14,r:9,fill:"#FFD884",opacity:".7"}));
+    svg.appendChild(svgEl("rect",{x:0,y:28,width:200,height:24,fill:sea}));
+    // mini relief
+    var rx=(40+s()*120)|0;
+    svg.appendChild(svgEl("path",{d:"M"+(rx-22)+" 30 Q"+rx+" 14 "+(rx+22)+" 30 Z",fill:"#16242A",opacity:".8"}));
+    // état mer mini
+    if(sk==="clean"){ svg.appendChild(svgEl("circle",{cx:90,cy:40,r:3,fill:"#0D2B26"})); svg.appendChild(svgEl("circle",{cx:120,cy:44,r:2.4,fill:"#0D2B26"})); }
+    else if(sk==="moderate"){ svg.appendChild(svgEl("ellipse",{cx:96,cy:42,rx:12,ry:3.4,fill:"#7a5c14",opacity:".8"})); }
+    else { svg.appendChild(svgEl("ellipse",{cx:80,cy:42,rx:16,ry:4,fill:"#5d400e"})); svg.appendChild(svgEl("ellipse",{cx:130,cy:46,rx:13,ry:3.4,fill:"#6b4a12"})); }
+    svg.appendChild(svgEl("path",{d:"M0 50 Q100 44 200 52 L200 64 L0 64 Z",fill:"#1C1712"}));
+    return svg;
+  }
+  function buildZoneLinks(){
+    var z=$("zoneLinks"); while(z.firstChild) z.removeChild(z.firstChild);
+    var items=[
+      {fr:"Toute la commune : "+DATA.beach.commune, en:DATA.beach.commune+" beaches", es:"Playas de "+DATA.beach.commune},
+      {fr:"Toutes les plages du Sud", en:"All South beaches", es:"Todas las playas del Sur"}
+    ];
+    items.forEach(function(it){
+      var a=document.createElement("a"); a.href="#"; a.setAttribute("data-zone","1");
+      a.appendChild(document.createTextNode(it[LANG]+" "));
+      var ar=document.createElement("span"); ar.className="ar"; ar.textContent="→"; a.appendChild(ar);
+      z.appendChild(a);
+    });
+  }
+  function buildBreadcrumb(){
+    var b=$("breadcrumb"); while(b.firstChild) b.removeChild(b.firstChild);
+    var parts=[
+      {t:_t("Martinique","Martinique","Martinica"), href:"#"},
+      {t:DATA.beach.commune, href:"#"},
+      {t:beachName(), href:null}
+    ];
+    parts.forEach(function(p,i){
+      if(i>0){ var sep=document.createElement("span"); sep.className="sep"; sep.textContent="›"; b.appendChild(sep); }
+      if(p.href){ var a=document.createElement("a"); a.href=p.href; a.textContent=p.t; b.appendChild(a); }
+      else b.appendChild(document.createTextNode(p.t));
+    });
+  }
+
+  function applyCopy(){
+    $("backTxt").textContent=T.back[LANG];
+    $("freshTxt").textContent=freshLabel();
+    $("scrollLab").textContent=T.scrollLab[LANG];
+    $("touchHintTxt").textContent=T.touchHint[LANG];
+
+    // STAGE 0
+    setEyebrow0(); setVerbalVerdict();
+    $("s0").textContent=T.s0[LANG];
+    $("ctaArriveT").textContent=T.ctaArriveT[LANG]; $("ctaArriveS").textContent=T.ctaArriveS[LANG];
+    $("spStatus").textContent=STATUS_WORD[STATUS][LANG]; $("spStatus").style.color=STCOL;
+    $("statusPill").querySelector(".pd").style.background=STCOL;
+    $("spFresh").textContent="· "+freshLabel();
+
+    // STAGE 1
+    $("eb1").textContent=T.eb1[LANG]; setHeading($("h1"),T.h1[LANG]); $("s1").textContent=T.s1[LANG];
+    $("scoreLab").textContent="/100";
+    $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
+    buildChips();
+    // couleur de l'arc de score = humeur
+    $("scoreArc").style.stroke = SCORE>=70?"var(--green)":SCORE>=40?"var(--goldL)":"var(--coral)";
+
+    // STAGE 2
+    $("eb2").textContent=T.eb2[LANG];
+    setHeading($("m2aH"),T.m2aH[LANG]);
+    // AFAI : guard contre prévision absente — on n'affiche jamais un chiffre inventé.
+    var _afai0 = (DATA.forecast && DATA.forecast[0] && DATA.forecast[0].afai!=null) ? DATA.forecast[0].afai : null;
+    var _afaiFr = _afai0!=null ? "l'indice AFAI ("+_afai0+")" : "l'indice AFAI";
+    var _afaiEn = _afai0!=null ? "the AFAI index ("+_afai0+")" : "the AFAI index";
+    var _afaiEs = _afai0!=null ? "el índice AFAI ("+_afai0+")" : "el índice AFAI";
+    $("m2aS").textContent=_t(
+      "Copernicus passe 4 fois par jour. On lit "+_afaiFr+" au large de "+beachName()+".",
+      "Copernicus passes 4 times a day. We read "+_afaiEn+" off "+beachName()+".",
+      "Copernicus pasa 4 veces al día. Leemos "+_afaiEs+" frente a "+beachName()+".");
+    setHeading($("m2bH"),T.m2bH[LANG]);
+    buildFactors();
+    setHeading($("m2cH"),T.m2cH[LANG]);
+    $("regimeT").textContent=T.regimeT[LANG];
+    // Honnêteté : on affiche le hit-rate GLOBAL (tous régimes, ~77%) — chiffre réel
+    // et crédible — pas le « 100% justes » du clean-en-saison-calme (vrai mais
+    // trompeur : il masque les alertes 0%-fiables / 23% de fausses). Détail par
+    // régime renvoyé sur /fiabilite/. Garde-fou si pas de chiffre crédible.
+    var _ro=DATA.reliability && DATA.reliability.overall;
+    if(_ro!=null && _ro>0 && _ro<98){
+      $("regimePct").textContent=_ro+"%"; $("regimePctL").textContent=_t("tous régimes","all regimes","todos los regímenes");
+      $("regimeS").textContent=_t(
+        "Nos verdicts se vérifient "+_ro+"% du temps, tous régimes confondus ("+DATA.reliability.sample+" mesures). Détail par régime sur notre page fiabilité.",
+        "Our verdicts hold "+_ro+"% of the time across all regimes ("+DATA.reliability.sample+" readings). Per-regime detail on our reliability page.",
+        "Nuestros veredictos aciertan el "+_ro+"% en todos los regímenes ("+DATA.reliability.sample+" mediciones). Detalle por régimen en nuestra página de fiabilidad.");
+    } else {
+      $("regimePct").textContent="—"; $("regimePctL").textContent="";
+      $("regimeS").textContent=_t(
+        "Fiabilité en cours de calibration — détail honnête sur notre page fiabilité.",
+        "Reliability is being calibrated — full honest detail on our reliability page.",
+        "Fiabilidad en calibración — detalle honesto en nuestra página de fiabilidad.");
+    }
+    $("regimeMore").textContent=T.regimeMore[LANG];
+    $("ctaMethodeT").textContent=T.ctaMethodeT[LANG];
+
+    // STAGE 3
+    $("eb3").textContent=T.eb3[LANG]; setHeading($("h3"),T.h3[LANG]); $("s3").textContent=T.s3[LANG];
+    buildForecast();
+    $("fcLockTxt").textContent=T.fcLockTxt[LANG];
+    $("ctaForecastT").textContent=T.ctaForecastT[LANG];
+
+    // STAGE 4
+    $("eb4").textContent=T.eb4[LANG]; setHeading($("h4"),T.h4[LANG]); $("s4").textContent=T.s4[LANG];
+    buildPlanB();
+    // H2S gradué dérivé du statut (honnête : lié à la charge sargasses)
+    var h2s = STATUS==="avoid" ? {lvl:_t("H₂S MODÉRÉ","H₂S MODERATE","H₂S MODERADO"),col:"#E8522A",txt:_t("Amas en décomposition : évite si tu es sensible (asthme, nourrisson).","Decomposing piles: avoid if sensitive (asthma, infants).","Montones en descomposición: evita si eres sensible.")}
+              : STATUS==="moderate" ? {lvl:_t("H₂S FAIBLE","H₂S LOW","H₂S BAJO"),col:"#E8A800",txt:_t("Odeur possible en bord d'eau l'après-midi.","Possible smell at the shoreline in the afternoon.","Posible olor en la orilla por la tarde.")}
+              : {lvl:_t("H₂S NUL","H₂S NONE","H₂S NULO"),col:"#22C55E",txt:_t("Aucun amas en décomposition détecté.","No decomposing piles detected.","Ningún montón en descomposición.")};
+    $("h2sLvl").textContent=h2s.lvl; $("h2sLvl").style.color=h2s.col;
+    $("h2sBadge").style.borderColor=h2s.col.replace("#","rgba(")+""; // keep subtle
+    $("h2sBadge").style.borderColor="rgba(255,255,255,.12)";
+    $("h2sTxt").textContent=h2s.txt;
+    $("h2sMark").querySelector("circle").setAttribute("stroke",h2s.col);
+    $("h2sMark").querySelector("text").setAttribute("fill",h2s.col);
+    $("h2sDisc").textContent=T.h2sDisc[LANG];
+    $("ctaH2ST").textContent=T.ctaH2ST[LANG];
+    $("ctaH2SS").textContent=T.ctaH2SS[LANG];
+
+    // Baignade / kids-safe
+    var safe = STATUS==="avoid" ? {icon:"⛔", b:_t("BAIGNADE DÉCONSEILLÉE","SWIMMING NOT RECOMMENDED","BAÑO NO RECOMENDADO"), txt:_t("Fortes nuisances olfactives (H₂S) et algues épaisses. Chiens interdits.","Strong odors (H₂S) and thick algae. Dogs restricted.","Fuertes olores (H₂S) y algas espesas. Perros restringidos.")}
+             : STATUS==="moderate" ? {icon:"⚠️", b:_t("PRUDENCE (ENFANTS & CHIENS)","CAUTION (KIDS & DOGS)","PRECAUCIÓN (NIÑOS Y PERROS)"), txt:_t("Baignade possible mais bancs isolés. Gardez un oeil sur vos animaux.","Swimming possible but isolated patches. Keep an eye on pets.","Baño posible pero parches aislados. Vigila a tus mascotas.")}
+             : {icon:"🏊", b:_t("BAIGNADE IDÉALE","IDEAL SWIMMING","BAÑO IDEAL"), txt:_t("Eau claire, aucun danger. Parfait pour les enfants et les chiens.","Clear water, no danger. Perfect for kids and dogs.","Agua clara, sin peligro. Perfecto para niños y perros.")};
+    $("safeIcon").textContent=safe.icon;
+    $("safeTxt").innerHTML="<b>"+safe.b+"</b>"+safe.txt;
+
+    // STAGE 5
+    $("eb5").textContent=T.eb5[LANG]; setHeading($("h5"),T.h5[LANG]);
+    $("socialB").textContent=T.socialB[LANG]; $("socialS").textContent=T.socialS[LANG];
+    buildZoneLinks(); buildBreadcrumb();
+    $("footCredit").textContent=T.footCredit[LANG];
+    $("ctaFooterT").textContent=T.ctaFooterT[LANG]; $("reassure").textContent=T.reassure[LANG];
+
+    buildNearbyHalos();
+  }
+
+  /* ====================================================================
+     LE VEILLEUR v2 — moteur porté de proto-home-az / proto-veilleur-clip-v2.
+     ==================================================================== */
+  var gPose=$("gPose"), gLife=$("gLife"), gIris=$("gIris"),
+      iris=$("iris"), irisTint=$("irisTint"), pupil=$("pupil"),
+      catchB=$("catchB"), lidTop=$("lidTop"), lidBot=$("lidBot"),
+      brow=$("brow"), halo=$("halo"), beamG=$("beamG"), beam=$("beam"),
+      scanRing=$("scanRing"), ant=$("ant"), rootStyle=SG_VAR_EL.style;
+  var WIDE = window.matchMedia && window.matchMedia("(min-width:680px)").matches;
+  var EYE_BASE = WIDE ? 172 : 198;
+  var EYE = {x:400, y:EYE_BASE+5.2};
+
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function clamp(v,a,b){ return v<a?a : v>b?b : v; }
+  function easeInOut(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function smooth(t){ return t*t*(3-2*t); }
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function hx(c){ c=c.replace('#',''); return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)]; }
+  function mix(a,b,t){ var A=hx(a),B=hx(b); return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')'; }
+  function toVB(clientX,clientY){
+    var r=scene.getBoundingClientRect(), sc=Math.max(r.width/800,r.height/600);
+    var dw=800*sc,dh=600*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
+    return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
+  }
+  function getCss(name){ var v=getComputedStyle(SG_VAR_EL).getPropertyValue(name).trim(); return v||'#1FB6A6'; }
+  function toHex(c){ c=c.trim(); if(c[0]==='#') return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;
+    var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/); if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); } return '#1FB6A6'; }
+  function mixCss(curr,target,t){ return mix(toHex(curr), toHex(target), t); }
+
+  var MOODS = {
+    calm:  { mood:'#1FB6A6', halo:'#1FB6A6', dot:'#22C55E', irisR:7.2,  pose:0,    lift:0,  browLift:-1, lidTop:0.08, lidBot:0.24, beam:0   },
+    scan:  { mood:'#FFC72C', halo:'#E8A800', dot:'#FFC72C', irisR:9.3,  pose:4.5,  lift:0,  browLift:1.5,  lidTop:.28, lidBot:0,   beam:1   },
+    alert: { mood:'#E8522A', halo:'#E8522A', dot:'#E8522A', irisR:10.2, pose:-3.5, lift:-6, browLift:3.2,  lidTop:-.18,lidBot:-.18,beam:.2  }
+  };
+  function clone(o){ var n={}; for(var k in o) n[k]=o[k]; return n; }
+  var M=clone(MOODS.calm), MT=clone(MOODS.calm), curMoodName='calm';
+  function setMoodTarget(name){ if(MOODS[name]){ MT=clone(MOODS[name]); curMoodName=name; } }
+  function setMoodFromScore(score){ if(score>=70) setMoodTarget('calm'); else if(score>=40) setMoodTarget('scan'); else setMoodTarget('alert'); }
+
+  function setLids(blink){
+    var cy=4;
+    var kT=clamp(M.lidTop+blink,-0.4,1), kB=clamp(M.lidBot+blink,-0.4,1);
+    var cpTop=lerp(-20,cy+1,kT), cpBot=lerp(28,cy-1,kB);
+    lidTop.setAttribute('d','M-22 '+cy+' Q0 '+cpTop+' 22 '+cy+' L22 -22 L-22 -22 Z');
+    lidBot.setAttribute('d','M-22 '+cy+' Q0 '+cpBot+' 22 '+cy+' L22 30 L-22 30 Z');
+  }
+
+  /* regard : défaut = la MER devant ; cible = pointeur ou élément tapé */
+  var SEA={x:EYE.x, y:430};
+  var gtx=EYE.x, gty=SEA.y, gcx=EYE.x, gcy=SEA.y;
+  var pointerActive=false, lastInput=-1, lookUntil=0, lastTap=-1e9;
+  var blinkStart=-1, blinkDur=180, nextBlink=performance.now()+rand(2600,4200);
+  function blinkNow(dur){ blinkStart=performance.now(); blinkDur=dur||180; wake(); }
+  function lookAtVB(x,y){ gtx=clamp(x,40,760); gty=clamp(y,330,560); lookUntil=performance.now()+1400; lastInput=performance.now(); wake(); }
+  function lookAt(el){ var rb=el.getBoundingClientRect(); var c=toVB(rb.left+rb.width/2, rb.top+rb.height/2); lookAtVB(c.x,c.y); }
+
+  /* ====================================================================
+     MOTEUR SCROLL — --gp, --p{i}, --e{i}, dolly, humeur du stage.
+     ==================================================================== */
+  var root=SG_VAR_EL;
+  var spans=[$("sp0"),$("sp1"),$("sp2"),$("sp3"),$("sp4"),$("sp5")];
+  var copies=[$("bc0"),$("bc1"),$("bc2"),$("bc3"),$("bc4"),$("bc5")];
+  var cam=$("cam"), vp=$("viewport"), scene=$("scene");
+  var fired={}; var revealed={};
+
+  /* DOLLY par stage : PLONGÉE near = on entre dans la scène (pas dézoom). */
+  var DOLLY=[
+    {s:1.00, y:0,   oy:"60%"},  /* arrivée */
+    {s:1.10, y:-2,  oy:"58%"},  /* verdict : cadre le Veilleur perché */
+    {s:1.06, y:0,   oy:"50%"},  /* preuve-mesure : la mer scannée */
+    {s:1.04, y:0,   oy:"54%"},  /* prévision */
+    {s:1.12, y:-2,  oy:"62%"},  /* plan-B : la mer + halos voisins */
+    {s:1.00, y:0,   oy:"56%"}   /* social/footer : repos */
+  ];
+
+  function stageMood(active){
+    if(active===0) return STATUS==="avoid"?"alert" : STATUS==="moderate"?"scan" : "calm";
+    if(active===1) return SCORE>=70?"calm":SCORE>=40?"scan":"alert";
+    if(active===2) return "scan";   /* il scanne */
+    if(active===3) return "scan";   /* il regarde l'horizon prévision */
+    if(active===4) return STATUS==="avoid"?"alert":"calm"; /* plan-B */
+    return "calm";
+  }
+
+  /* SCRUB de prévision : index de jour visé par le scroll du stage 3 (0..6),
+     teinte la mer (status réel du jour) + glisse le soleil J0->J6.
+     Franchir J0->J+1 = porte premium. */
+  var fcCursor=0, fcCrossedFired=false;
+  var SEA_TINT = {clean:"#1A5852", moderate:"#19453d", avoid:"#2c3b1a"};
+  function applyForecastScrub(p){ /* p = progression du stage 3 (0..1) */
+    if(!DATA.forecast || !DATA.forecast.length) return; // prévision indisponible : pas de scrub
+    // on autorise le scrub J0..J1 librement ; au-delà = locked (premium)
+    var cont = p*2; // 0..2 sur la 1re moitié -> J0..J1
+    var idx = clamp(Math.round(cont),0,6);
+    // visuellement on laisse le scrub aller jusqu'à J6 mais on marque la barrière à J1
+    var visIdx = clamp(Math.floor(p*6+0.001),0,6);
+    if(visIdx!==fcCursor){
+      fcCursor=visIdx;
+      var days=document.querySelectorAll("#fcStrip .fcday");
+      for(var i=0;i<days.length;i++) days[i].classList.toggle("cursor", i===visIdx);
+      var f=DATA.forecast[visIdx];
+      // re-teinte la mer UNIQUEMENT sur status/regime réels (jamais cleanFloor atlantique)
+      rootStyle.setProperty("--seaTint", SEA_TINT[stKey(f.status)]);
+      // humeur du Veilleur suit le jour scruté
+      if(performance.now()-lastTap>2500) setMoodFromScore(stKey(f.status)==="avoid"?20:stKey(f.status)==="moderate"?55:85);
+      // glisse le soleil J0(droite haut)->J6(gauche bas) : "le temps qui passe"
+      var sunX = 540 - visIdx*64; // viewBox units
+      $("sunGroup").setAttribute("transform","translate("+(sunX-540).toFixed(1)+","+(-prog0*26).toFixed(1)+")");
+    }
+    // franchir au-delà de J1 = la prévision se VERROUILLE (visuel + CTA Débloquer).
+    // PAS de redirect involontaire : la conversion vient d'un CLIC, et le scroll
+    // continue vers le plan-B (alertes) + la preuve sociale — sinon ces 2 beats à
+    // forte valeur sont injoignables. On signale juste le CTA (pulse 1 fois).
+    if(p>0.30 && !fcCrossedFired){
+      fcCrossedFired=true;
+      track("sg_forecast_locked", {beach:DATA.beach.id});
+      var _fcb=$("ctaForecast"); if(_fcb) _fcb.classList.add("pulseonce");
+    }
+  }
+
+  var prog0=0;
+  function sizeScroller(){
+    var total=0; for(var i=0;i<spans.length;i++){ total+=spans[i].offsetHeight; }
+    $("scroller").style.height=(total+window.innerHeight)+"px";
+  }
+
+  function computeScroll(){
+    var scrollY=sgScrollTop();
+    var scroller=$("scroller");
+    var base=sgScrollBase();
+    var prog=[0,0,0,0,0,0], acc=base;
+    for(var i=0;i<spans.length;i++){ var h=spans[i].offsetHeight; prog[i]=clamp((scrollY-acc)/h,0,1); acc+=h; }
+    for(var j=0;j<6;j++){ root.style.setProperty("--p"+j, smooth(prog[j]).toFixed(4)); }
+    prog0=prog[0];
+
+    var active=0;
+    for(var k=0;k<6;k++){ if(prog[k]>0.001 && prog[k]<0.999){ active=k; } }
+    for(var m=0;m<5;m++){ if(prog[m]>=0.999 && prog[m+1]<=0.001){ active=m+1; } }
+    if(prog[5]>=0.999) active=5;
+
+    var pa=prog[active];
+    var hoStart=0.86;
+    var handoff=(active<5 && pa>hoStart)? smooth((pa-hoStart)/(1-hoStart)) : 0;
+    for(var n=0;n<6;n++){
+      var e=0; if(n===active){ e=1-handoff; } else if(n===active+1){ e=handoff; }
+      root.style.setProperty("--e"+n, e.toFixed(3));
+      copies[n].classList.toggle("on", e>0.15);
+    }
+
+    var gp=(active+prog[active])/5;
+    root.style.setProperty("--gp", clamp(gp,0,1).toFixed(4));
+    root.style.setProperty("--hs", prog[0].toFixed(4));
+
+    /* DOLLY */
+    var a=DOLLY[active], b=DOLLY[Math.min(active+1,5)], t=smooth(prog[active]);
+    var cs=a.s+(b.s-a.s)*t, cy2=a.y+(b.y-a.y)*t;
+    cam.style.transformOrigin="50% "+(t<0.5?a.oy:b.oy);
+    cam.style.transform="translateY(calc("+cy2.toFixed(3)+"% + var(--camOpenY))) scale(calc("+cs.toFixed(4)+" * var(--camOpenS)))";
+
+    /* soleil monte au scroll de l'arrivée (sauf si scrub stage 3 le pilote) */
+    if(active!==3) $("sunGroup").setAttribute("transform","translate(0,"+(-prog[0]*26).toFixed(1)+")");
+
+    /* stage 2 : raster satellite + barres facteurs + arc régime, par sous-beat */
+    handleMeasure(active, prog[2]);
+
+    /* stage 1 : ScoreBlob anim */
+    if(active===1 && prog[1]>0.12 && !revealed.score){ revealed.score=true; animScore(); }
+
+    /* stage 3 : barres prévision montent + SCRUB */
+    if(active===3){
+      if(!revealed.fc){ revealed.fc=true; raiseForecastBars(); }
+      applyForecastScrub(prog[3]);
+    }
+
+    /* stage 4 SEULEMENT : halos nearby + badge H2S ancrés sur l'eau.
+       Gate active===4 (pas >=4) : sinon les labels restent allumés sur la mer
+       en stage 5 (preuve sociale) et fantômisent derrière la copy. On pilote
+       l'opacité du groupe en direct (les labels ne sont pas régis par .on). */
+    var nh=$("nearbyHalos"), showNearby=(active===4 && prog[4]>0.12);
+    if(showNearby){ nh.classList.add("on"); } else { nh.classList.remove("on"); }
+    nh.style.opacity = showNearby ? "1" : "0";
+    // marqueur H2S sur l'eau : SEULEMENT si H2S est un vrai risque (modéré/avoid).
+    // Sur une plage propre, le journal dit « H2S NUL » → un anneau H2S corail au
+    // large serait contradictoire + fantôme derrière les cartes. Donc 0 si clean.
+    $("h2sAnchor").style.opacity = (showNearby && STATUS!=="clean") ? (STATUS==="avoid"?"0.85":"0.6") : "0";
+    if(active===4 && prog[4]>0.3 && !revealed.nhpulse){ revealed.nhpulse=true; pulseNearby(); }
+
+    /* alerte wash si la plage/forecast scruté est avoid */
+    root.style.setProperty("--alert", (STATUS==="avoid" && active===0)? clamp((prog[0]-0.1),0,0.6).toFixed(3) : "0");
+
+    $("touchHint").classList.toggle("on", active===0 && prog[0]>0.25 && prog[0]<0.85 && !pointerActive);
+
+    /* analytics par stage (1×) */
+    [["verdict",1],["measure",2],["forecast",3],["planb",4],["social",5]].forEach(function(s){
+      if(active===s[1] && prog[s[1]]>0.2 && !fired[s[0]]){ fired[s[0]]=true; track("sg_page_view",{s:s[0],beach:DATA.beach.id}); }
+    });
+
+    /* HUMEUR du Veilleur pilotée par le stage (sauf tap récent) */
+    var want=stageMood(active);
+    if(active!==3 && want!==curMoodName && (performance.now()-lastTap>2500)){ setMoodTarget(want); }
+  }
+
+  /* ---- STAGE 2 : 3 sous-beats sobres ---- */
+  function handleMeasure(active, p2){
+    if(active!==2){ return; }
+    var sub = p2<0.34?0 : p2<0.68?1 : 2;
+    var panels=[$("sub0"),$("sub1"),$("sub2")], dots=$("subDots").children;
+    for(var i=0;i<3;i++){ panels[i].classList.toggle("show", i===sub); dots[i].classList.toggle("on", i===sub); }
+    // sous-beat A : raster satellite scanne
+    $("rasterGrain").style.opacity = sub===0 ? (0.06+0.06*Math.min(1,(p2/0.34))).toFixed(3) : "0";
+    if(sub===0 && !revealed.scan){ revealed.scan=true; setMoodTarget("scan"); }
+    // sous-beat B : barres facteurs
+    if(sub===1 && !revealed.factors){ revealed.factors=true; raiseFactors(); }
+    // sous-beat C : arc régime
+    if(sub===2 && !revealed.regime){ revealed.regime=true; animRegime(); }
+  }
+  function raiseFactors(){
+    var fills=document.querySelectorAll("#factors .ffill");
+    for(var i=0;i<fills.length;i++){ (function(el,d){ setTimeout(function(){ el.style.transform="scaleX("+(el.getAttribute("data-w"))+")"; }, d); })(fills[i], i*70); }
+  }
+  function animRegime(){
+    var arc=$("regimeArc"), C=251, pct=DATA.reliability.calm/100;
+    var t0=performance.now();
+    (function step(){
+      var k=clamp((performance.now()-t0)/700,0,1), e=easeInOut(k);
+      arc.setAttribute("stroke-dashoffset", (C*(1-pct*e)).toFixed(1));
+      if(k<1) requestAnimationFrame(step);
+    })();
+  }
+  function animScore(){
+    var arc=$("scoreArc"), num=$("scoreNum"), C=264, pct=clamp(SCORE/100,0,1);
+    var t0=performance.now();
+    (function step(){
+      var k=clamp((performance.now()-t0)/800,0,1), e=easeInOut(k);
+      arc.setAttribute("stroke-dashoffset",(C*(1-pct*e)).toFixed(1));
+      num.textContent=Math.round(SCORE*e);
+      if(k<1) requestAnimationFrame(step);
+    })();
+  }
+  function raiseForecastBars(){
+    var bars=document.querySelectorAll("#fcStrip .fbar");
+    for(var i=0;i<bars.length;i++){ (function(el,d){ setTimeout(function(){ el.style.transform="scaleY("+(el.getAttribute("data-h"))+")"; }, d); })(bars[i], i*60); }
+  }
+  function pulseNearby(){
+    var rings=document.querySelectorAll("#nearbyHalos .nhpulse");
+    for(var i=0;i<rings.length;i++){ (function(el,d){ setTimeout(function(){ el.classList.remove("go"); void el.offsetWidth; el.classList.add("go"); }, d); })(rings[i], i*180); }
+  }
+
+  /* ====================================================================
+     INTERACTIONS — clics scène (PAS de setPointerCapture)
+     ==================================================================== */
+  function hit(target,sel){ return target.closest && target.closest(sel); }
+  function pulseRing(cls){ var els=document.querySelectorAll("."+cls); for(var i=0;i<els.length;i++){ (function(el){ el.classList.remove("go"); void el.offsetWidth; el.classList.add("go"); })(els[i]); } }
+
+  function tapVeilleur(){
+    pulseRing("ringV"); blinkNow(150);
+    var order=['calm','scan','alert']; var idx=(order.indexOf(curMoodName)+1)%3; setMoodTarget(order[idx]);
+    lastInput=performance.now(); lastTap=performance.now();
+    track("sg_scene_tap",{el:"veilleur"});
+    var bb=$("gPose").getBoundingClientRect();
+    showWhisper(T.whVeil[LANG], bb.left+bb.width/2, bb.top, function(){ openPremium("scene_veilleur"); });
+  }
+  function tapYole(){
+    track("sg_scene_tap",{el:"yole"}); lookAt($("yole"));
+    var bb=$("yole").getBoundingClientRect();
+    showWhisper(T.whYole[LANG], bb.left+bb.width/2, bb.top, function(){ openPremium("scene_yole"); });
+  }
+  function tapNearby(idx){
+    var b=DATA.nearby[idx]; if(!b) return;
+    var rings=document.querySelectorAll("#nearbyHalos .nhpulse");
+    if(rings[idx]){ rings[idx].classList.remove("go"); void rings[idx].offsetWidth; rings[idx].classList.add("go"); }
+    var p=NEARBY_POS[idx]; lookAtVB(p.x,p.y);
+    flyTo(b,idx);
+  }
+  /* flyTo : reprend le squelette de proto-planb-clean-nearby — ici on log + onOpenBeach
+     (EN PROD : recadre la caméra vers la plage voisine puis charge sa fiche). */
+  function flyTo(b,idx){
+    track("sg_fly_to",{from:DATA.beach.id, to:b.id});
+    onOpenBeach(b.id, b.name, b.slug); /* slug = nav réelle vers /plages/<slug>/ (patché par build-fiche-dive) */
+  }
+
+  var scene=$("scene");
+  scene.addEventListener("click", function(evt){
+    if(hit(evt.target,"#gPose")){ tapVeilleur(); return; }
+    if(hit(evt.target,"#yole")){ tapYole(); return; }
+    var nh=hit(evt.target,".nh");
+    if(nh){ tapNearby(parseInt(nh.getAttribute("data-idx"),10)); return; }
+    // tap sur la mer = le Veilleur regarde l'endroit (calme, pas de barrage ici)
+    var c=toVB(evt.clientX, evt.clientY);
+    if(c.y>=320 && c.y<=476){ lookAtVB(c.x,c.y); blinkNow(150); }
+  }, {passive:true});
+
+  /* whisper in-scene */
+  function showWhisper(pair, px, py, onTap){
+    var w=$("whGeneric");
+    while(w.firstChild) w.removeChild(w.firstChild);
+    w.appendChild(document.createTextNode(pair[0]+" "));
+    if(pair[1]){ var ar=document.createElement("span"); ar.className="ar"; ar.textContent="→"; w.appendChild(ar);
+      var sm=document.createElement("small"); sm.textContent=pair[1]; w.appendChild(sm); }
+    var vpr=vp.getBoundingClientRect();
+    w.style.left=clamp(px-vpr.left-120,12,vpr.width-252)+"px";
+    w.style.top =clamp(py-vpr.top-90,70,vpr.height-130)+"px";
+    w.classList.add("on");
+    w.onclick=function(){ w.classList.remove("on"); if(onTap) onTap(); };
+    clearTimeout(w._t); w._t=setTimeout(function(){ w.classList.remove("on"); },5200);
+  }
+
+  /* ====================================================================
+     WIRING conversion (CTA + chrome + cards)
+     ==================================================================== */
+  function wire(){
+    // a11y : les role="button" focusables (tabindex=0) doivent répondre au clavier.
+    // Enter/Espace → déclenche le click. Sinon morts pour clavier/lecteur d'écran.
+    var _kbRoot = (typeof SG_VAR_EL!=="undefined" && SG_VAR_EL.querySelectorAll) ? SG_VAR_EL : document;
+    var _kbBtns = _kbRoot.querySelectorAll('[role="button"][tabindex]');
+    for(var _kb=0; _kb<_kbBtns.length; _kb++){
+      _kbBtns[_kb].addEventListener("keydown", function(e){
+        if(e.key==="Enter" || e.key===" " || e.key==="Spacebar"){ e.preventDefault(); this.click(); }
+      });
+    }
+    $("backBtn").addEventListener("click", function(){ onShowMap(); });
+    $("freshPill").addEventListener("click", function(){ track("sg_scene_tap",{el:"fresh"}); });
+    $("statusPill").addEventListener("click", function(){ onOpenBeach(DATA.beach.id, DATA.beach.name); });
+    $("ctaArrive").addEventListener("click", function(){ track("sg_cta",{src:"arrive"}); /* scroll vers la preuve */ sgScrollBy(window.innerHeight*1.05); });
+    $("scoreBlob").addEventListener("click", function(){ track("sg_scene_tap",{el:"scoreblob"}); });
+    $("ctaVerdict").addEventListener("click", function(){ sgScrollBy(window.innerHeight*1.1); });
+    $("regimeBox").addEventListener("click", function(){ track("sg_nav",{to:"/fiabilite/"}); /* EN PROD : /fiabilite/ */ });
+    $("ctaMethode").addEventListener("click", function(){ sgScrollBy(window.innerHeight*1.1); });
+    $("ctaForecast").addEventListener("click", function(){ openPremium("forecast_cta"); });
+    $("ctaH2S").addEventListener("click", function(){ openPremium("h2s_health_alert"); });
+    $("ctaFooter").addEventListener("click", function(){ openPremium("footer"); });
+    $("socialBox").addEventListener("click", function(){ openPremium("social_proof"); });
+    // plan-B cards
+    var cards=document.querySelectorAll("#planbRow .pbcard");
+    for(var i=0;i<cards.length;i++){ (function(c){
+      c.addEventListener("click", function(){ tapNearby(parseInt(c.getAttribute("data-idx"),10)); });
+    })(cards[i]); }
+    // zone links + breadcrumb
+    var zl=$("zoneLinks").querySelectorAll("a");
+    for(var z=0;z<zl.length;z++){ zl[z].addEventListener("click", function(e){ e.preventDefault(); track("sg_nav",{to:"zone"}); }); }
+    $("breadcrumb").addEventListener("click", function(e){ if(e.target.tagName==="A"){ e.preventDefault(); track("sg_nav",{to:"breadcrumb"}); } });
+  }
+
+  var langBtns=document.querySelectorAll(".langs button");
+  for(var li=0;li<langBtns.length;li++){ (function(btn){
+    btn.addEventListener("click", function(){
+      LANG=btn.getAttribute("data-lang");
+      for(var k=0;k<langBtns.length;k++){ langBtns[k].setAttribute("aria-pressed", langBtns[k]===btn?"true":"false"); }
+      applyCopy(); wire();
+      // ré-armer les reveals visibles
+      if(revealed.score){ $("scoreNum").textContent=SCORE; $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1)); }
+      if(revealed.factors) raiseFactors();
+      if(revealed.fc) raiseForecastBars();
+    });
+  })(langBtns[li]); }
+
+  /* ====================================================================
+     POINTEUR — le Veilleur suit le regard (amplitude faible), retour MER.
+     ==================================================================== */
+  window.addEventListener("pointermove", function(e){
+    if(e.pointerType==="touch") return;
+    var p=toVB(e.clientX, e.clientY);
+    gtx=p.x; gty=p.y; pointerActive=true; lastInput=performance.now(); lookUntil=0; wake();
+  }, {passive:true});
+
+  /* ====================================================================
+     SETUP scène (relief + état + chips + factors + forecast + nearby)
+     ==================================================================== */
+  buildRelief(); buildState();
+  applyCopy(); wire();
+
+  /* ====================================================================
+     REDUCED-MOTION = PLANCHER DUR : tableau calme figé, tout cliquable.
+     ==================================================================== */
+  if(REDUCE){
+    root.style.setProperty("--p0","1");
+    $("sunGroup").setAttribute("transform","translate(0,-26)");
+    rootStyle.setProperty("--seaTint", SEA_TINT[STATUS]);
+    M=clone(MOODS.calm); MT=clone(MOODS.calm); curMoodName='calm';
+    setMoodFromScore(SCORE); M=clone(MOODS[curMoodName]);
+    rootStyle.setProperty('--mood',M.mood); rootStyle.setProperty('--moodHalo',M.halo); rootStyle.setProperty('--moodDot',M.dot);
+    iris.setAttribute('r',M.irisR); irisTint.setAttribute('r',M.irisR); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+    setLids(0);
+    brow.setAttribute('d','M-15 -19 Q0 '+(-25+M.browLift)+' 15 -19');
+    halo.setAttribute('opacity','.5'); beam.setAttribute('opacity','0'); scanRing.setAttribute('opacity','0');
+    gIris.setAttribute('transform','translate(0 1.5)');
+    gPose.setAttribute('transform','translate('+EYE.x+' '+(EYE_BASE+M.lift)+') rotate('+M.pose+')');
+    // reveals visibles d'emblée (le CSS RM fige scaleX/scaleY via --rmw/--rmh)
+    $("scoreNum").textContent=SCORE; $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1));
+    $("regimeArc").setAttribute("stroke-dashoffset",(251*(1-DATA.reliability.calm/100)).toFixed(1));
+    $("rasterGrain").style.opacity=".08";
+    $("nearbyHalos").classList.add("on"); $("h2sAnchor").style.opacity=(STATUS!=="clean")?(STATUS==="avoid"?"0.85":"0.6"):"0";
+    return; /* pas de rAF */
+  }
+
+  /* ====================================================================
+     rAF UNIQUE — demand-driven, pause visibilitychange (batterie).
+     ==================================================================== */
+  var running=false, paused=false, needScroll=true;
+  var IDLE_MS=2600, t0=performance.now(), introDone=false;
+  function nowt(){ return performance.now(); }
+  function introProgress(){ return clamp((nowt()-t0)/3400,0,1); }
+  function wake(){ if(!running && !paused){ running=true; requestAnimationFrame(loop); } }
+
+  SG_SCROLL_EL.addEventListener("scroll", function(){ needScroll=true; lastInput=nowt(); wake(); }, {passive:true});
+  window.addEventListener("resize", function(){ sizeScroller(); needScroll=true; wake(); }, {passive:true});
+  document.addEventListener("visibilitychange", function(){ paused=document.hidden; if(!paused){ needScroll=true; lastInput=nowt(); wake(); } });
+
+  function loop(){
+    if(paused){ running=false; return; }
+    var t=nowt(), work=false;
+    var active=(t-lastInput<IDLE_MS) || !introDone;
+
+    if(needScroll){ computeScroll(); needScroll=false; work=true; }
+
+    /* humeur crossfade */
+    var ms=.045, moodConverged=Math.abs(M.irisR-MT.irisR)<0.06;
+    if(!moodConverged){
+      M.irisR=lerp(M.irisR,MT.irisR,ms); M.pose=lerp(M.pose,MT.pose,ms); M.lift=lerp(M.lift,MT.lift,ms);
+      M.browLift=lerp(M.browLift,MT.browLift,ms); M.lidTop=lerp(M.lidTop,MT.lidTop,ms);
+      M.lidBot=lerp(M.lidBot,MT.lidBot,ms); M.beam=lerp(M.beam,MT.beam,ms);
+      rootStyle.setProperty('--mood', mixCss(getCss('--mood'),MT.mood,ms));
+      rootStyle.setProperty('--moodHalo', mixCss(getCss('--moodHalo'),MT.halo,ms));
+      rootStyle.setProperty('--moodDot', mixCss(getCss('--moodDot'),MT.dot,ms));
+      work=true;
+    } else {
+      M.irisR=MT.irisR; M.pose=MT.pose; M.lift=MT.lift; M.browLift=MT.browLift;
+      M.lidTop=MT.lidTop; M.lidBot=MT.lidBot; M.beam=MT.beam;
+      rootStyle.setProperty('--mood',MT.mood); rootStyle.setProperty('--moodHalo',MT.halo); rootStyle.setProperty('--moodDot',MT.dot);
+    }
+    iris.setAttribute('r',M.irisR.toFixed(2)); irisTint.setAttribute('r',M.irisR.toFixed(2)); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+
+    /* regard */
+    if(pointerActive && t-lastInput<1100){ /* suit le curseur */ }
+    else if(t>lookUntil){ gtx=lerp(gtx,SEA.x,.02); gty=lerp(gty,SEA.y,.02); if(Math.abs(gtx-SEA.x)>0.4||Math.abs(gty-SEA.y)>0.4) work=true; }
+    else { work=true; }
+    gcx=lerp(gcx,gtx,.08); gcy=lerp(gcy,gty,.08);
+    if(Math.abs(gcx-gtx)>0.15||Math.abs(gcy-gty)>0.15) work=true;
+    var ex=clamp((gcx-EYE.x)/44,-4,4), ey=clamp((gcy-EYE.y)/58,-3,4);
+    gIris.setAttribute('transform','translate('+ex.toFixed(2)+' '+ey.toFixed(2)+')');
+    catchB.setAttribute('cx',(3.4+ex*.7).toFixed(2)); catchB.setAttribute('cy',(2.6+ey*.7).toFixed(2));
+
+    /* micro-vie SEULEMENT si actif (sinon tableau figé) */
+    var breathe, floatR;
+    if(active){ breathe=Math.sin(t/3300)*2.0; floatR=Math.sin(t/5500)*0.6; work=true; }
+    else { breathe=0; floatR=0; }
+    gLife.setAttribute('transform','translate(0 '+breathe.toFixed(2)+') rotate('+floatR.toFixed(3)+')');
+
+    /* posture (pivot correct : translate AVANT rotate) */
+    var poseAng=M.pose+floatR*0.3;
+    gPose.setAttribute('transform','translate('+EYE.x.toFixed(1)+' '+(EYE_BASE+M.lift).toFixed(1)+') rotate('+poseAng.toFixed(2)+')');
+
+    /* blink */
+    var blinkK=0;
+    if(blinkStart>0){ var bt=(t-blinkStart)/blinkDur; if(bt>=1){ blinkStart=-1; } else { blinkK=bt<.5?easeInOut(bt*2):easeInOut((1-bt)*2); } work=true; }
+    if(active && t>nextBlink && blinkStart<0){ blinkNow(180); nextBlink=t+rand(3200,6500); }
+    setLids(blinkK);
+
+    /* sourcil + halo */
+    var bl=M.browLift;
+    brow.setAttribute('d','M-15 '+(-19+bl*0.2).toFixed(2)+' Q0 '+(-25+bl).toFixed(2)+' 15 '+(-19+bl*0.2).toFixed(2));
+    halo.setAttribute('opacity', active?(0.42+0.12*Math.sin(t/3300)+0.05).toFixed(3):'0.50');
+
+    /* faisceau de scan (émis du VRAI œil, vers la cible/mer) + intro sweep */
+    var introT=introProgress(), beamOn=M.beam, sweep=0, sweepOp=0;
+    if(introT<1 && !introDone){ if(introT>0.32){ var s=clamp((introT-0.32)/0.68,0,1); sweep=(-14+26*easeInOut(s)); sweepOp=Math.sin(s*Math.PI)*0.9; } work=true; }
+    else { introDone=true; }
+    var ang=Math.atan2(gcy-EYE.y,gcx-EYE.x)*180/Math.PI-90; ang=clamp(ang,-26,26);
+    if(!introDone) ang=sweep;
+    beamG.setAttribute('transform','translate('+EYE.x+' '+EYE.y+') rotate('+ang.toFixed(2)+')');
+    var bOp=introDone?beamOn*0.85:Math.max(sweepOp,beamOn*0.85);
+    beam.setAttribute('opacity',bOp.toFixed(3));
+    var hitX=EYE.x+Math.tan(clamp(ang,-26,26)*Math.PI/180)*(362-EYE.y);
+    scanRing.setAttribute('cx',clamp(hitX,40,760));
+    scanRing.setAttribute('opacity',(bOp*0.6).toFixed(3));
+    scanRing.setAttribute('ry',(8+2*Math.abs(Math.sin(t/1700))*beamOn).toFixed(2));
+    if(beamOn>0.05 && active) work=true;
+    ant.setAttribute('opacity', beamOn>0.4?(0.8+0.2*Math.abs(Math.sin(t/1700))).toFixed(2):'1');
+
+    if(work && !paused){ requestAnimationFrame(loop); } else { running=false; }
+  }
+
+  /* ====================================================================
+     PREMIER PAINT + micro-tween d'ouverture de la fiche (spring --camOpen)
+     ==================================================================== */
+  setMoodFromScore(SCORE); M=clone(MOODS[curMoodName]);
+  rootStyle.setProperty('--mood',M.mood); rootStyle.setProperty('--moodHalo',M.halo); rootStyle.setProperty('--moodDot',M.dot);
+  iris.setAttribute('r',M.irisR); irisTint.setAttribute('r',M.irisR); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+  setLids(0);
+  rootStyle.setProperty("--seaTint", SEA_TINT[STATUS]);
+  gPose.setAttribute('transform','translate('+EYE.x+' '+EYE_BASE+') rotate(0)');
+  sizeScroller(); computeScroll(); needScroll=false; lastInput=nowt();
+
+  /* micro-tween d'ouverture : la fiche "plonge" (scale 1.06->1, slide léger) en 1s */
+  (function openTween(){
+    rootStyle.setProperty("--camOpenS","1.06");
+    rootStyle.setProperty("--camOpenY","-1.4%");
+    cam.style.transition="none";
+    requestAnimationFrame(function(){
+      cam.style.transition="transform 1.0s cubic-bezier(.34,1.4,.64,1)";
+      rootStyle.setProperty("--camOpenS","1");
+      rootStyle.setProperty("--camOpenY","0");
+      setTimeout(function(){ cam.style.transition="transform .5s cubic-bezier(.34,1.4,.64,1)"; }, 1050);
+    });
+  })();
+
+  track("sg_page_shown", {beach:DATA.beach.id, name:DATA.beach.name, score:SCORE, status:STATUS});
+  wake();
+
+})();
+})();
+</script>
+</body>
+</html>
