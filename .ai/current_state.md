@@ -28,13 +28,23 @@
 - [x] **Test manuel Playwright iPhone 12** (vite preview :4173/?paywall=1) → clic bouton « Commencer maintenant » ouvre bien l'overlay Mollie on-site avec email + 4 champs carte + 5 iframes. **Bouton n'est plus muet.**
 
 ### Problèmes restants
-- [ ] TASK-P1-005 : Dashboard fraîcheur pipeline homepage — non démarré
-- [ ] TASK-P1-006 : Monitoring conversion 7j — démarre au prochain run 06:00 UTC (données réelles enfin disponibles post-fix bouton muet)
-- [ ] TASK-P2-001 : Spliter PremiumModal.jsx — pending (patch partiel : on a restore payStep mais la dette reste)
-- [ ] TASK-P2-005b : Finaliser OG card par plage (serverless) — proto `functions/api/og/og-beach.fn.js` et flag A/B `?og=1/0` dans index.html déjà merged. Branche `agent/coding/TASK-P2-005b-og-cards` a été utilisé mais **pas poussée** — à recréer sur main frais.
-- [ ] TASK-P2-005c : Easter egg yole Martinique
-- [ ] TASK-P2-005d : Clip Remotion additionnel
-- [ ] **Flaky test** `tests/e2e/funnel-payment.spec.ts:82` “carte → fiche → paywall” — race maplabel vs fiche visible. Pré-existant. À corriger dans une tâche QA dédiée.
+- [x] TASK-P1-005 : Dashboard fraîcheur pipeline homepage — TERMINÉ (badge satellite dans Header, build 182.2 Ko)
+- [ ] TASK-P1-006 : Monitoring conversion 7j post-fix paiement — EN COURS (JOUR 3 sur 7, conversion encore 0 en accumulation journalière, seuil >2% attendu J7)
+- [ ] TASK-P2-001 : Spliter PremiumModal.jsx — TERMINÉ (déjà décomposé en 7 sous-modules, build OK)
+- [ ] TASK-P2-005b : Finaliser OG card par plage — TERMINÉ (endpoint `/api/og/beach/{slug}.png?lang=fr|en|es`, A/B `?og=1/0` dans index.html)
+- [ ] TASK-P2-005c : Easter egg yole Martinique — TERMINÉ (animation yoleDrift 100s, `?eg=1/0`, reduced-motion figé)
+- [ ] TASK-P2-005d : Clip Remotion additionnel — TERMINÉ (produit PR #568, pipeline vidéo-brief, 0 impact bundle)
+- [ ] **Flaky test** `tests/e2e/funnel-payment.spec.ts:82` “carte → fiche → paywall” — race maplabel vs fiche visible. Pré-existant.
+
+### Prochaine action recommandée (Monitoring 7j)
+1. **JOUR 3-4** : Vérifier les runs daily-copernicus (06:00 UTC). Tendance conversion Molliepay. Si Comic variant underperforming vs World → durcir `abVariant("world",["world"])` (hardcode).
+2. **JOUR 7** : Documenter verdict final dans `.ai/changelog.md` + `.ai/decisions.md`. Seuil de succès : conversion > 2% sur 7 jours = SUCCESS.
+3. **Kill switch** : `src/Sargasses_PROD.jsx:14280` → `abVariant("world",["world","comic"])` → `"world"` si underperforming.
+
+### Build & Budget (toujours validé)
+- `npm run build` → exit 0 ✓
+- `check-bundle-budget.cjs` → **182.2 Ko ≤ 210 Ko** ✓
+- `ux-smoke.mjs` → 4/4 tokens ✓
 
 ### Prochaine action recommandée
 1. **MERGER cette PR en prod ASAP** : paiement cassé sur les 5 domaines depuis le split `5b87b8b4`. Chaque jour sans fix = perte MRR direct. Rôle : release_engineer

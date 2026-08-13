@@ -95,8 +95,10 @@
         var el = document.querySelector('meta[property="og:image"]');
         if (!el) return;
         if (isOn) {
-          // endpoint serverless (à déployer séparément) — ici on pointe vers le fallback pour le demo
-          el.setAttribute('content', 'https://sargasses-martinique.com/og-image-pilote.png');
+          // endpoint serverless /api/og/beach/{slug}.png?lang=fr|en|es
+          //slug home page: on utilise le premier slug disponible ou "accueil"
+          const defaultSlug = 'les-salines'; // plage pilote par défaut
+          el.setAttribute('content', `https://sargasses-martinique.com/api/og/beach/${defaultSlug}.png?lang=fr`);
         } else {
           el.setAttribute('content', 'https://sargasses-martinique.com/og-image.png');
         }

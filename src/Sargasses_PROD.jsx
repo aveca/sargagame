@@ -2789,6 +2789,12 @@ function CadranVeilleur({weeklyData,lang,sargData}){
   const stale=!!(sargData&&sargData.stale)
   const freshOk=!stale&&ageH!=null&&ageH<12
   const freshLbl=formatFreshness(updatedAt,lang)
+  // Satellite freshness badge (TASK-P1-005) — affiché dans le header après mount React
+  const satLbl=!stale&&fresh
+    ?_t(lang,"Satellite · il y a "+Math.round(ageH)+" h","Satellite · "+Math.round(ageH)+" h ago","Satélite · hace "+Math.round(ageH)+" h")
+    :!stale
+      ?null
+      :_t(lang,"Données satellite en retard — de plus de 24 h"," Satellite data delayed — over 24 h","Datos satellite con retraso — más de 24 h")
   // Géométrie : demi-cercle supérieur (180°→0° au-dessus de la baseline CY).
   const CX=120,CY=104,R_CONF=60,R_FRESH=78
   const rad=d=>d*Math.PI/180
@@ -4964,7 +4970,8 @@ const fcUp = false
                         </span>
                       ))}
                     </div>
-                  )}
+)}
+        {/* Easter egg yole Martinique — TASK-P2-005c */}
                 </div>
               </div>
             </div>
@@ -7314,7 +7321,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,stale,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
   // paywall). Répond au « aucun tracking de mon paiement sur le site ». Flag rollback
@@ -7327,6 +7334,15 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
   const liveLbl=isLive
     ?_t(lang,"EN DIRECT","LIVE","EN DIRECTO")
     :_t(lang,"vérification en cours","verification in progress","verificación en curso")
+  // Fraîcheur satellite honnête — badge header post‑mount (TASK-P1-005)
+  // Affiche « Satellite · Xh » quand frais, alerte quand stale >24h
+  // Lit sargData.stale du JSON + âge computed depuis updatedAt/erddapTimestamp
+  const ageH=(()=>{try{if(!updatedAt)return null;const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6;return(isFinite(h)&&h>=0)?h:null}catch(_){return null}})()
+  const satLbl=stale
+    ?_t(lang,"Données satellite en retard — de plus de 24 h"," Satellite data delayed — over 24 h","Datos satellite con retraso — más de 24 h")
+    :ageH!=null&&ageH>=0
+      ?_t(lang,"Satellite · il y a "+Math.round(ageH)+" h","Satellite · "+Math.round(ageH)+" h ago","Satélite · hace "+Math.round(ageH)+" h")
+      :null
   // Recette comic : segments via classes scopées .sg-seg/.sg-live/.sg-iso/.sg-util
   // (contour ink 2.5px + pop-1 dure, 0 blur) — bat le thème comic !important.
   return(
@@ -7364,6 +7380,8 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           </span>
           <span className="sg-live-lbl">{liveLbl}</span>
           {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
+          {/* Satellite freshness badge — TASK-P1-005: visible after React mount, not just boot skeleton */}
+          {satLbl?<span className="sg-seg sg-freshness" aria-label={_t(lang,"Fraîcheur satellite","Satellite freshness","Freshness satellite")}><span>{satLbl}</span></span>:null}
         </a>
 
       {/* Cloche alertes = INTERRUPTEUR ON/OFF (fonction distincte de l'icône compte → zéro
@@ -13184,6 +13202,18 @@ useEffect(()=>{
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
     setComicBeach(null) // FIX : fermer le comic detail si ouvert — mutual exclusion
+    
+    // Validate beach data exists in sargassum.json
+    const _sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id]
+    const beachData=(_sid&&sargData?.weekly?.[_sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`]||null
+    if(!beachData&&sargData?.stale){
+      showToast({
+        title:_t(lang,"Données non rafraîchies","Data not refreshed","Datos no actualizados"),
+        msg:_t(lang,"Les prévisions sont basées sur des tendances.","Forecasts are based on trends.","Los pronósticos se basan en tendencias."),
+        mood:"warn"
+      })
+    }
+    
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
     // Wow Effect 3: celebration when finding a clean beach
     if(b.status==="clean")triggerCelebration("clean_beach")
@@ -13197,7 +13227,7 @@ useEffect(()=>{
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
-  },[])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
+  },[sargData, lang])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
   // « scroll satellite » (PRODUCT.md §8). Default OFF (fix funnel stability 2026-08-12 :
   // deux fiches plage concurrentes = "trous" ressentis. BeachSheetComic devient la fiche
@@ -14017,6 +14047,7 @@ useEffect(()=>{
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}
+              stale={sargData?.stale}
               onHome={()=>{
                 // Le hero/arène n'est PLUS monté depuis onHome (jeu retiré, note ~L12138 :
                 // réintroduction = ?hero=1 uniquement). Avant, onHome montait du DOM mort
@@ -14203,7 +14234,7 @@ useEffect(()=>{
               onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
               historyData={historyData} sargData={sargData}
               dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}
-              onRequestGeo={requestGeo}/>
+              onRequestGeo={requestGeo} forecast={_fc}/>
           )
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>

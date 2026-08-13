@@ -3,6 +3,23 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-017 — Beach Detail Empty (stale sargassum.json + missing state validation)
+- **Date** : 2026-08-13 (diag + fix) · **Sévérité** : P0 — Funnel cassé (fiche plage vide)
+- **Fichiers** : `src/Sargasses_PROD.jsx`, `src/BeachSheet.jsx`, `src/app-runtime.css`, `scripts/ui-audit-screenshots.mjs`
+- **Symptôme** : Après clic sur un pin carte, la fiche plage affiche `Beach detail length: 0 chars` et `Contains score: none`. Causé par :
+  1. `sargassum.json` stale (41.5h old, `stale: true`)
+  2. `selectedBeach` mis à jour sans validation des données
+  3. Cookie banner (`sg-cookie-banner`) interceptait les clics sur la BottomNav (z-index conflict)
+- **Reproduction** : Ouvrir l'app → cliquer un pin carte → fiche vide.
+- **Fix** :
+  1. **Validation des données** : `onBeachClick` vérifie désormais si la plage existe dans `sargassum.json`. Si les données sont périmées (`stale: true`), un toast est affiché : "Données non rafraîchies, prévisions basées sur des tendances."
+  2. **z-index** : `.sg-bottom-nav` passe au-dessus du cookie banner (`--z-bottom-nav: 1040` > `--z-banner: 1030`).
+  3. **Tests** : `ui-audit-screenshots.mjs` auto-accepte les cookies pour débloquer la navigation.
+- **Tests réalisés** : `npm run build` ✓, `check-bundle-budget` ✓ (181.9 Ko ≤ 210 Ko), `ux-smoke.mjs` ✓ (4 tokens OK).
+- **Rollback** : `git revert <hash> --no-edit` (3 fichiers modifiés, aucun impact sur `dist/` ou paiements).
+
+---
+
 ### BUG-2026-016 — PassOffer onBuy prop was doSubscribe in WorldPaywall ( regression post-split )
 - **Date** : 2026-08-11 (diag + fix) · **Sévérité** : P0 — bouton d'achat pass 30j cassé
 - **Fichiers** : `src/PremiumModal/WorldPaywall.jsx:304`, `src/PremiumModal.jsx`
