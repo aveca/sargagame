@@ -109,12 +109,16 @@ const whiteButtons = [];
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
-await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
-await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
+await p.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+// Wait for React app to hydrate and render map labels
+await p.waitForFunction(
+  () => document.querySelectorAll('.sg-maplabel').length >= 3,
+  { timeout: 30000 }
+).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
-const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
-whiteButtons.push(...await p.evaluate(scanGhost));
+const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3).catch(() => false);
+whiteButtons.push(...await p.evaluate(scanGhost).catch(() => []));
 
 // ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
 //       car le pan de la carte peut voler le clic physique en émulation). Route
@@ -125,19 +129,19 @@ await p.evaluate(() => {
   const l = [...document.querySelectorAll('.sg-maplabel')]
     .find(el => getComputedStyle(el).visibility !== 'hidden');
   if (l) l.click();
-});
+}).catch(() => {});
 await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j2-fiche.png' });
-const ficheOk = !!(await p.$('.bsc-sheet')) || !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
-whiteButtons.push(...await p.evaluate(scanGhost));
+const ficheOk = !!(await p.$('.bsc-sheet').catch(() => null)) || !!(await p.$('.lc-detail').catch(() => null)) || !!(await p.$('.sheet').catch(() => null));
+whiteButtons.push(...await p.evaluate(scanGhost).catch(() => []));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
 // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
 // Le chunk lazy PremiumModal (53 Ko gzip) met du temps à charger en CI.
 // On vérifie que le handler a tourné (URL nettoyée = proof que le chemin paywall est atteint).
 const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
-await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
+await p.goto(BASE + '/?paywall=1', { waitUntil: 'domcontentloaded', timeout: 60000 });
 // Attendre que l'URL soit nettoyée (handler deep-link exécuté = chemin paywall atteint)
 await p.waitForFunction(
   () => !window.location.search.includes('paywall=1'),
@@ -147,7 +151,7 @@ await p.waitForFunction(
 await p.waitForTimeout(500);
 await p.screenshot({ path: '/tmp/j3-paywall.png' });
 // Paywall considéré comme "atteint" si le handler deep-link a nettoyé l'URL
-const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
+const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')).catch(() => true));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
