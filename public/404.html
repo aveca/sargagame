@@ -2,55 +2,50 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0;url=/sargagame/" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Le Veilleur a perdu celle-ci · Sargasses Martinique & Guadeloupe</title>
-  <meta name="robots" content="noindex, follow" />
+  <title>Redirection… · Sargasses</title>
+  <meta name="robots" content="noindex, nofollow" />
   <link rel="preload" href="/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/sargagame/fonts/fonts.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="/sargagame/fonts/fonts.css" /></noscript>
   <style>
-    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
-    .theme-dark{--sg-bg:#0d1117;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-link:#009688;--sg-link-hover:#00adb3;}
+    :root,.theme-light{--sg-bg:#FFFFFF;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-link:#009688;}
+    .theme-dark{--sg-bg:#0d1117;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-link:#009688;}
     *{margin:0;padding:0;box-sizing:border-box}
-    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--sg-bg);color:var(--sg-ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px 40px;text-align:center;line-height:1.6;-webkit-font-smoothing:antialiased}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--sg-bg);color:var(--sg-ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px 40px;text-align:center;line-height:1.6}
     .code{font-family:'Anton','Impact',sans-serif;font-size:4rem;line-height:1;color:var(--sg-link);margin-bottom:12px}
     h1{font-family:'Anton','Impact',sans-serif;font-size:1.5rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px;color:var(--sg-ink)}
     p{max-width:360px;margin-bottom:24px;color:var(--sg-mid)}
-    .cta{display:inline-block;padding:12px 24px;background:var(--sg-link);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;font-size:14px}
-    .cta:hover{background:var(--sg-link-hover);color:#fff;text-decoration:none}
-    .links{margin-top:20px;font-size:13px;color:var(--sg-mute)}
-    .links a{color:var(--sg-link);text-decoration:none;padding:4px 10px;font-weight:600}
-    .links a:hover{color:var(--sg-link-hover);text-decoration:underline}
-    @media (prefers-reduced-motion:reduce){*{animation:none !important}}
+    .spinner{width:30px;height:30px;border:3px solid var(--sg-mute);border-top-color:var(--sg-link);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
   </style>
   <script>
     (function(){ try { var v = localStorage.getItem("sg_theme"); if (v === "dark") document.documentElement.classList.add("theme-dark"); else if (v !== "light" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark"); } catch (e) {} })();
   </script>
-  <!-- GitHub Pages SPA redirect: redirect ALL 404s to the main app -->
+  <!-- Instant JS redirect (faster than meta refresh) -->
   <script>
     (function(){
-      var isGH = location.hostname === 'aveca.github.io';
-      if (!isGH) return;
-      var base = '/sargagame';
-      var path = location.pathname;
-      // Strip base path if present
-      if (path.indexOf(base) === 0) path = path.slice(base.length) || '/';
-      // Skip actual 404.html requests
-      if (path === '/404.html') return;
-      // Redirect to main app (index.html handles all routing)
-      window.location.replace(base + '/');
+      try {
+        var isGH = location.hostname === 'aveca.github.io';
+        if (!isGH) return;
+        var base = '/sargagame';
+        var path = location.pathname;
+        // If already at a real file (like 404.html itself), skip
+        if (path === '/404.html' || path === '/') return;
+        // Redirect to root — SPA will handle routing via getPathname()
+        window.location.replace(base + '/');
+      } catch(e) {}
     })();
   </script>
 </head>
 <body>
+  <div class="spinner"></div>
   <div class="code">404</div>
-  <h1>Même le satellite a perdu celle-ci</h1>
-  <p>Cette page n'existe pas (ou a glissé au large). Pas grave — la mer, elle, est toujours là. Le Veilleur la regarde 4×/jour, baie par baie. Choisis une plage propre vérifiée ce matin, ou ouvre la carte.</p>
-  <a href="/sargagame/" class="cta">Voir la carte des sargasses</a>
-  <div class="links">
-    Le Plan B : <a href="/sargagame/">la carte du jour</a> · <a href="/sargagame/previsions/">Prévisions 7 jours</a> · <a href="/sargagame/mentions-legales.html">Mentions légales</a> · <a href="/sargagame/confidentialite.html">Confidentialité</a>
-  </div>
+  <h1>Le Veilleur redirige…</h1>
+  <p>Cette page n'existe pas sur l'hébergement de secours. Tu es redirigé vers la carte.</p>
+  <p><a href="/sargagame/" style="color:var(--sg-link)">→ Aller à la carte maintenant</a></p>
 </body>
 </html>
