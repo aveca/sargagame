@@ -3,12 +3,13 @@
  * Test GitHub Pages Backup Email
  * 
  * Sends a test email to validate the GitHub Pages backup workflow.
+ * Uses Resend API (fallback if SMTP is down).
  * Usage: node scripts/automation/test-github-pages-email.cjs --to=email@example.com
  */
 
 const fs = require('fs')
 const path = require('path')
-const nodemailer = require('nodemailer')
+const https = require('https')
 
 // Load .env
 function envVal(name) {
@@ -20,9 +21,7 @@ function envVal(name) {
   } catch { return null }
 }
 
-const SMTP_HOST = envVal('SMTP_HOST') || 'premium115.web-hosting.com'
-const SMTP_PORT = +(envVal('SMTP_PORT') || 465)
-const SMTP_USER = envVal('SMTP_USER') || 'alerte@sargasses-martinique.com'
+const RESEND_API_KEY = envVal('RESEND_API_KEY')
 const SMTP_PASS = envVal('SMTP_PASS')
 
 // Parse --to flag
@@ -34,8 +33,8 @@ if (!TO_EMAIL) {
   process.exit(1)
 }
 
-if (!SMTP_PASS) {
-  console.error('SMTP_PASS not found in .env')
+if (!RESEND_API_KEY && !SMTP_PASS) {
+  console.error('Neither RESEND_API_KEY nor SMTP_PASS found in .env')
   process.exit(1)
 }
 
@@ -100,17 +99,10 @@ const htmlContent = `
 </html>
 `
 
-async function sendTestEmail() {
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  })
-
-  const info = await transporter.sendMail({
-    from: `"Le Veilleur 🌊" <${SMTP_USER}>`,
-    to: TO_EMAIL,
+async function sendViaResend() {
+  const payload = JSON.stringify({
+    from: 'onboarding@resend.dev',
+    to: [TO_EMAIL],
     subject: 'Test GitHub Pages Backup — Sargasses Emergency Deploy',
     html: htmlContent,
     text: `Test GitHub Pages Backup\n\nLe Veilleur a déployé une version de secours sur GitHub Pages :\n\n${GITHUB_PAGES_URL}\n\nStatut : ✅ Déployé et accessible\nDonnées : ✅ Temps réel\nPaiements : ⚠ Désactivés\n\nLe Veilleur regarde ta plage, pas la peur.`,
@@ -119,9 +111,59 @@ async function sendTestEmail() {
     },
   })
 
-  console.log(`✅ Email sent to ${TO_EMAIL}`)
-  console.log(`   Message ID: ${info.messageId}`)
-  console.log(`   Preview URL: ${nodemailer.getTestMessageUrl(info) || 'N/A'}`)
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.resend.com',
+      port: 443,
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    }, (res) => {
+      let data = ''
+      res.on('data', chunk => data += chunk)
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          const result = JSON.parse(data)
+          resolve(result)
+        } else {
+          reject(new Error(`Resend API error ${res.statusCode}: ${data}`))
+        }
+      })
+    })
+    req.on('error', reject)
+    req.write(payload)
+    req.end()
+  })
+}
+
+async function sendTestEmail() {
+  if (RESEND_API_KEY) {
+    console.log('📧 Sending via Resend API...')
+    const result = await sendViaResend()
+    console.log(`✅ Email sent to ${TO_EMAIL}`)
+    console.log(`   Message ID: ${result.id}`)
+  } else {
+    // Fallback to SMTP
+    const nodemailer = require('nodemailer')
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_PORT === 465,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    })
+    const info = await transporter.sendMail({
+      from: `"Le Veilleur" <${SMTP_USER}>`,
+      to: TO_EMAIL,
+      subject: 'Test GitHub Pages Backup — Sargasses Emergency Deploy',
+      html: htmlContent,
+    })
+    console.log(`✅ Email sent to ${TO_EMAIL}`)
+    console.log(`   Message ID: ${info.messageId}`)
+  }
 }
 
 sendTestEmail().catch(err => {
