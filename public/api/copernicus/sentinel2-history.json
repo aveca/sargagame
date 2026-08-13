@@ -160,7 +160,14 @@
       "fai": 0.00745,
       "afaiLike": 0.12,
       "coverage": 0.14
+    },
+    {
+      "id": "tartane",
+      "obsDate": "2026-08-12",
+      "fai": 0.00705,
+      "afaiLike": 0.12,
+      "coverage": 0.14
     }
   ],
-  "updatedAt": "2026-08-12T20:01:13.244Z"
+  "updatedAt": "2026-08-13T01:03:38.513Z"
 }
