@@ -62,8 +62,23 @@ const targets = getAllRegions().map((r) => {
   }
 })
 
+// Détection hôte USD (partagé par florida/puntacana/rivieramaya) vs hôte MQ/GP (cPanel partagé)
+function isUsdHost(t) {
+  return t.key === 'florida' || t.key === 'puntacana' || t.key === 'rivieramaya'
+}
+
+function isSharedHost(t) {
+  return t.key === 'mq' || t.key === 'gp'
+}
+
 async function connect(t) {
-  const client = new Client(undefined, 120000)
+  const isUSD = isUsdHost(t)
+  // Timeouts plus longs pour l'hôte USD instable
+  const connTimeout = isUSD ? 180000 : 120000  // 3 min vs 2 min
+  const xferTimeout = isUSD ? 120000 : 60000   // 2 min vs 1 min
+  const keepAliveInterval = isUSD ? 5000 : 10000
+
+  const client = new Client(undefined, connTimeout)
   client.ftp.verbose = false
   await client.access({
     host: t.host,
@@ -73,14 +88,15 @@ async function connect(t) {
     secureOptions: { rejectUnauthorized: false },
   })
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
-    client.ftp.socket.setKeepAlive(true, 10000)
-    client.ftp.socket.setTimeout(60000) // 60s per-transfer timeout (shared hosts drop idle sockets)
+    client.ftp.socket.setKeepAlive(true, keepAliveInterval)
+    client.ftp.socket.setTimeout(xferTimeout)
   }
   return client
 }
 
 async function uploadChunk(t, chunkName, localPath, remotePath, isFile) {
-  const MAX_ATTEMPTS = 5
+  const isUSD = isUsdHost(t)
+  const MAX_ATTEMPTS = isUSD ? 8 : 5
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const client = await connect(t)
     let count = 0
@@ -102,7 +118,9 @@ async function uploadChunk(t, chunkName, localPath, remotePath, isFile) {
       client.trackProgress()
       try { client.close() } catch {}
       if (attempt === MAX_ATTEMPTS) throw err
-      console.log(`  [${t.label}] ${chunkName} reset @ ${count}, retry ${attempt + 1}/${MAX_ATTEMPTS}…`)
+      const delay = isUSD ? 2000 * attempt : 1000
+      console.log(`  [${t.label}] ${chunkName} reset @ ${count}, retry ${attempt + 1}/${MAX_ATTEMPTS} in ${delay / 1000}s…`)
+      await new Promise(r => setTimeout(r, delay))
     }
   }
 }
@@ -137,10 +155,15 @@ async function deployOne(t) {
   // ECONNRESET/timeout; other errors bubble up.
   // Shared hosts (MQ/GP cPanel) drop control sockets after ~660 STORs — add
   // inter-chunk cooldown to let the server clean up between sessions.
-  const isSharedHost = t.key === 'mq' || t.key === 'gp'
+  // USD host (florida/puntacana/rivieramaya) is more unstable — more retries, longer backoff.
+  const isUSD = isUsdHost(t)
+  const isMQGP = isSharedHost(t)
+  const MAX_ATTEMPTS = isUSD ? 8 : 5
+  const BASE_COOLDOWN = isUSD ? 2000 : 500   // 2s vs 500ms
+  const RETRY_COOLDOWN = isUSD ? 5000 : 1000 // 5s vs 1s
+
   async function withFreshClient(label, work) {
-    const MAX = 5
-    for (let attempt = 1; attempt <= MAX; attempt++) {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const client = await connect(t)
       let count = 0
       client.trackProgress(info => { if (info.type === "upload") count++ })
@@ -148,14 +171,15 @@ async function deployOne(t) {
         await work(client)
         client.trackProgress()
         client.close()
-        if (isSharedHost && attempt < MAX) await new Promise(r => setTimeout(r, 500)) // 500ms cooldown
+        if ((isMQGP || isUSD) && attempt < MAX_ATTEMPTS) await new Promise(r => setTimeout(r, BASE_COOLDOWN))
         return count
       } catch (err) {
         client.trackProgress()
         try { client.close() } catch {}
-        if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
-        console.log(`  [${t.label}] ${label} reset @ ${count}, retry ${attempt + 1}/${MAX}…`)
-        if (isSharedHost) await new Promise(r => setTimeout(r, 1000)) // 1s cooldown on retry
+        const isTransient = /ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)
+        if (attempt === MAX_ATTEMPTS || !isTransient) throw err
+        console.log(`  [${t.label}] ${label} reset @ ${count}, retry ${attempt + 1}/${MAX_ATTEMPTS}…`)
+        if (isMQGP || isUSD) await new Promise(r => setTimeout(r, RETRY_COOLDOWN))
       }
     }
   }
@@ -291,6 +315,7 @@ async function deployRegionOnce(t, { token, noFast }) {
 // Le serveur cPanel MQ/GP abandonne parfois la connexion TLS lors de runs
 // consécutives (runner US → hosting Caraïbes). Un simple retry avec délai
 // croissant résout la majorité des cas sans intervention manuelle.
+// L'hôte USD (florida/puntacana/rivieramaya) est plus instable — plus de retries, backoff plus agressif.
 async function deployRegion(t, { token, noFast }) {
   if (!t.host || !t.user || !t.pass) {
     const ID = t.key.toUpperCase()
@@ -302,7 +327,9 @@ async function deployRegion(t, { token, noFast }) {
     return "skipped"
   }
 
-  const MAX_RETRIES = 2
+  const isUSD = isUsdHost(t)
+  const MAX_RETRIES = isUSD ? 4 : 2
+  const BASE_DELAY = isUSD ? 10000 : 5000  // 10s vs 5s
   let lastErr
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -324,7 +351,7 @@ async function deployRegion(t, { token, noFast }) {
     } catch (err) {
       lastErr = err
       if (attempt < MAX_RETRIES && TRANSIENT_FTP_RE.test(err.message)) {
-        const delay = 5000 * Math.pow(2, attempt) // 5s, 10s
+        const delay = BASE_DELAY * Math.pow(2, attempt) // USD: 10s, 20s, 40s, 80s | MQ/GP: 5s, 10s
         console.log(`  [${t.label}] deploy failed (${err.message}) — retry ${attempt + 1}/${MAX_RETRIES} in ${delay / 1000}s…`)
         await new Promise(r => setTimeout(r, delay))
       } else {
@@ -356,7 +383,9 @@ async function deployFilesToRegion(t, mapped) {
     console.warn(`[${t.key}] Identifiants FTP manquants — région ignorée.`)
     return "skipped"
   }
-  const MAX = 4
+  const isUSD = isUsdHost(t)
+  const MAX = isUSD ? 6 : 4
+  const BASE_DELAY = isUSD ? 5000 : 2000
   for (let attempt = 1; attempt <= MAX; attempt++) {
     const client = await connect(t)
     try {
@@ -370,8 +399,11 @@ async function deployFilesToRegion(t, mapped) {
       return true
     } catch (err) {
       try { client.close() } catch {}
-      if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
-      console.log(`  [${t.label}] reset, retry ${attempt + 1}/${MAX}…`)
+      const isTransient = /ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)
+      if (attempt === MAX || !isTransient) throw err
+      const delay = BASE_DELAY * Math.pow(2, attempt - 1)
+      console.log(`  [${t.label}] reset, retry ${attempt + 1}/${MAX} in ${delay / 1000}s…`)
+      await new Promise(r => setTimeout(r, delay))
     }
   }
 }

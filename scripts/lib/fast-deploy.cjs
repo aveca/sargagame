@@ -69,8 +69,10 @@ function authHeader(token) {
 }
 
 // Vérifie que l'endpoint répond et que ZipArchive est dispo côté serveur.
-async function pingDeploy(domain, token) {
-  const r = await httpJson(endpoint(domain, "ping"), 30000, authHeader(token))
+async function pingDeploy(domain, token, t) {
+  const isUSD = t && isUsdHost(t)
+  const timeout = isUSD ? 45000 : 30000
+  const r = await httpJson(endpoint(domain, "ping"), timeout, authHeader(token))
   if (!r.ok) throw new Error(`ping refusé: ${JSON.stringify(r)}`)
   if (!r.zip) throw new Error("ZipArchive absent côté serveur")
   return r
@@ -98,8 +100,17 @@ function buildZip(localDir) {
   return tmp
 }
 
+function isUsdHost(t) {
+  return t.key === 'florida' || t.key === 'puntacana' || t.key === 'rivieramaya'
+}
+
 async function connect(t) {
-  const client = new Client(undefined, 120000)
+  const isUSD = isUsdHost(t)
+  const connTimeout = isUSD ? 180000 : 120000
+  const xferTimeout = isUSD ? 120000 : 60000
+  const keepAliveInterval = isUSD ? 5000 : 10000
+
+  const client = new Client(undefined, connTimeout)
   client.ftp.verbose = false
   await client.access({
     host: t.host,
@@ -109,8 +120,8 @@ async function connect(t) {
     secureOptions: { rejectUnauthorized: false },
   })
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
-    client.ftp.socket.setKeepAlive(true, 10000)
-    client.ftp.socket.setTimeout(60000) // 60s per-transfer timeout
+    client.ftp.socket.setKeepAlive(true, keepAliveInterval)
+    client.ftp.socket.setTimeout(xferTimeout)
   }
   return client
 }
@@ -126,14 +137,16 @@ async function fastDeploy(t, opts) {
 
   // 1. Sanity : l'endpoint existe et sait dézipper (sinon fallback direct, sans
   //    avoir uploadé un zip pour rien).
-  await pingDeploy(t.domain, token)
+  await pingDeploy(t.domain, token, t)
 
   // 2. Construire le zip (hors secrets).
   const zipPath = buildZip(t.local)
   const zipKB = Math.round(fs.statSync(zipPath).size / 1024)
   try {
     // 3. Upload du zip à la racine web (1 STOR), avec retries sur reset socket.
-    const MAX = 3
+    // USD host plus instable : plus de retries, backoff plus long.
+    const isUSD = isUsdHost(t)
+    const MAX = isUSD ? 6 : 3
     for (let attempt = 1; attempt <= MAX; attempt++) {
       const client = await connect(t)
       try {
@@ -144,11 +157,16 @@ async function fastDeploy(t, opts) {
       } catch (err) {
         try { client.close() } catch {}
         if (attempt === MAX) throw err
+        const delay = isUSD ? 3000 * attempt : 1000
+        console.log(`  [${t.label}] zip upload reset, retry ${attempt + 1}/${MAX} in ${delay / 1000}s…`)
+        await new Promise(r => setTimeout(r, delay))
       }
     }
 
     // 4. Extraction serveur + cleanup du zip distant.
-    const r = await httpJson(endpoint(t.domain, "unzip"), 120000, authHeader(token))
+    // USD host : timeout plus long pour l'extraction (plus de fichiers, serveur plus lent).
+    const unzipTimeout = isUSD ? 180000 : 120000
+    const r = await httpJson(endpoint(t.domain, "unzip"), unzipTimeout, authHeader(token))
     if (!r.ok) throw new Error(`unzip refusé: ${JSON.stringify(r)}`)
     return { files: r.files, ms: r.ms, zipKB }
   } finally {
