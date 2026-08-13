@@ -1034,6 +1034,32 @@ jobs:
       # sautés) → verify_data lit la donnée committée (potentiellement vieille). On ne
       # veut PAS qu'une donnée dégradée déjà committée gèle les deploys de CODE → sur
       # push on déploie toujours (le code/site change, pas la donnée).
+      # Provision fast path (_deploy.php + _deploy-secret.php) sur chaque serveur.
+      # Doit tourner AVANT le deploy pour que le fast path soit disponible.
+      # continue-on-error: si déjà provisionné, le step réussira quand même (idempotent).
+      - name: Provision fast path (zip deploy endpoint)
+        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+        run: node scripts/manual-ftp-deploy.cjs --provision
+
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
         if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
