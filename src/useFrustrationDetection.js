@@ -5,6 +5,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+// GitHub Pages base path helper
+function getPathname() {
+  if (typeof window === 'undefined') return '/'
+  let p = getPathname()
+  if (location.hostname === 'aveca.github.io' && p.indexOf('/sargagame') === 0) p = p.slice('/sargagame'.length) || '/'
+  return p
+}
+
 // Configurable thresholds
 const CONFIG = {
   rageClick: { threshold: 3, window: 5000 }, // 3 clics en 5s = rage
@@ -82,7 +90,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
           const context = {
             type: 'rage-click',
             element: describeElement(target),
-            page: window.location.pathname,
+            page: getPathname(),
             timestamp: now,
             count: recentClicks.length,
           }
@@ -122,7 +130,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
           if (shouldTrigger()) {
             const context = {
               type: 'scroll-frenzy',
-              page: window.location.pathname,
+              page: getPathname(),
               timestamp: now,
               scrollCount: scrollHistory.current.length,
             }
@@ -180,7 +188,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
           if (shouldTrigger()) {
             const context = {
               type: 'mouse-shake',
-              page: window.location.pathname,
+              page: getPathname(),
               timestamp: now,
               directionChanges,
             }
@@ -217,7 +225,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
         if (shouldTrigger()) {
           const context = {
             type: 'hesitation',
-            page: window.location.pathname,
+            page: getPathname(),
             timestamp: now,
             idleTime: idle,
           }

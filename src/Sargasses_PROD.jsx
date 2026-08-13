@@ -155,12 +155,22 @@ const fmtWind=k=>US_UNITS?`${Math.round(k*0.621371)} mph`:`${k} km/h`
 const fmtHeight=m=>US_UNITS?`${(m*3.28084).toFixed(1)} ft`:`${m}m`
 const fmtRain=mm=>US_UNITS?`${(mm/25.4).toFixed(2)} in`:`${mm}mm`
 
+// GitHub Pages base path: strip /sargagame/ prefix from pathname for SPA routing
+const _isGHPages = typeof window !== 'undefined' && location.hostname === 'aveca.github.io'
+const _ghBase = '/sargagame'
+function getPathname() {
+  if (typeof window === 'undefined') return '/'
+  let p = getPathname()
+  if (_isGHPages && p.indexOf(_ghBase) === 0) p = p.slice(_ghBase.length) || '/'
+  return p
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
    ═══════════════════════════════════════════════════════════════════════════ */
 const LangCtx=createContext("fr")
 export function useLang(){return useContext(LangCtx)||"fr"}
-function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
+function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=getPathname();if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 export function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
 /* Prix d'un pass one-time formaté selon la DEVISE du pass (pas la langue) :
@@ -11365,7 +11375,7 @@ export default function App(){
         // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
         // sur les autres replaceState (manage/premium_email).
         params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
+        {const qs=params.toString();window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))}
         return true
       }
       if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
@@ -11383,7 +11393,7 @@ export default function App(){
           }).catch(()=>{})}catch(ex){}
         }
         params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
+        {const qs=params.toString();window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))}
         return true
       }
     }catch(e){}
@@ -11449,7 +11459,7 @@ export default function App(){
           const storedEmail=localStorage.getItem("sg_email")||""
           if(storedEmail){ctx={paymentId:null,email:storedEmail}}
         }
-        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(getPathname())}catch(_){}}
         if(!ctx||!ctx.paymentId){
           if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
           clean();return
@@ -11501,7 +11511,7 @@ export default function App(){
         sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,ts:Date.now()}))
       }catch(_){}
       // Nettoie l'URL puis ouvre le paywall
-      const cleanUrl=window.location.pathname+(window.location.hash||"")
+      const cleanUrl=getPathname()+(window.location.hash||"")
       window.history.replaceState({},document.title,cleanUrl)
       // Déclenche l'ouverture du paywall après un court délai (laisse le state s'initialiser)
       setTimeout(()=>{try{document.dispatchEvent(new CustomEvent("sg_open_paywall",{detail:{retry:true,email:failedEmail,plan:failedPlan}}))}catch(_){}},300)
@@ -11572,7 +11582,7 @@ export default function App(){
       params.delete("manage")
       params.delete("email")
       const qs=params.toString()
-      window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+      window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
     }catch{}
   },[])
 
@@ -11607,7 +11617,7 @@ export default function App(){
       }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
       params.delete("premium_email")
       const qs=params.toString()
-      window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+      window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
     }catch{}
   },[])
 
@@ -11672,7 +11682,7 @@ export default function App(){
       if(!/[?&]restore=1/.test(q)||/[?&]restore=0/.test(q))return
       openAccessCheck("restore_link")
       const params=new URLSearchParams(q);params.delete("restore")
-      const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+      const qs=params.toString();window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
     }catch{}
   },[])
 
@@ -11922,7 +11932,7 @@ export default function App(){
         // Clean URL but keep other params
         params.delete("ref")
         const qs=params.toString()
-        window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+        window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
       }
     }catch{}
   },[])
@@ -12090,7 +12100,7 @@ export default function App(){
   })
   // A/B stations : sur une URL de station, le variant ouvre le StoryEngine golden-hour.
   const stationSlug = (()=>{try{
-    const seg = window.location.pathname.replace(/^\/|\/$/g,"")   // "detection-satellite-sargasses" ou "en/satellite-sargassum-detection"
+    const seg = getPathname().replace(/^\/|\/$/g,"")   // "detection-satellite-sargasses" ou "en/satellite-sargassum-detection"
     return STATION_SLUGS.has(seg) ? seg : null
   }catch(_){return null}})()
   const stationOn = (()=>{try{
@@ -12194,7 +12204,7 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
   })
   const[showAlertHub,setShowAlertHub]=useState(()=>{
     try{
-      if(!ALERT_PATHS.test(window.location.pathname))return false
+      if(!ALERT_PATHS.test(getPathname()))return false
       if(window.location.search.includes("premium"))return false // deeplink paywall direct
       return alertHubVariant==="hub"
     }catch(_){return false}
@@ -12202,7 +12212,7 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
   // A/B `pw_conditions` : /conditions/<slug>/ (et /conditions/) scene golden-hour + filter logic.
   const isConditionsPath = (() => {
     try {
-      return /^\/conditions(?:\/.*)?\/?$/.test(window.location.pathname)
+      return /^\/conditions(?:\/.*)?\/?$/.test(getPathname())
     } catch (_) {
       return false
     }
@@ -12465,7 +12475,7 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
       if(/[?&]demo=1/.test(q))return false           // kiosk = early-return dédié
       if(/[?&](beach|paywall|pro|premium|premium_email|nav|alertes|manage|restore|preview_beach|preview_partner)=/.test(q))return false
       if(/[?&]utm_/.test(q))return false             // trafic campagne = intention → pas froid
-      const p=(window.location.pathname||"/").replace(/\/+$/,"")||"/"
+      const p=(getPathname()||"/").replace(/\/+$/,"")||"/"
       return p==="/"||p==="/index.html"              // home uniquement (jamais plage/commune/SEO)
     }catch(_){return false}
   },[])
@@ -12566,7 +12576,7 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
   // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
   useEffect(()=>{
     if(!allBeaches.length)return
-    const p=window.location.pathname
+    const p=getPathname()
     
     // 1) Handle explicit FAR routes (carte, pres-de-moi, aujourdhui, clean-list fallback)
     const isFarRoute = /^\/(?:carte|carte-sargasses|map|mapa|sargasses-pres-de-moi|sargasses-aujourdhui|en\/sargassum-near-me|es\/sargazo-cerca-de-mi|en\/sargassum-today|es\/sargazo-hoy)\/?$/.test(p)
@@ -13456,13 +13466,13 @@ useEffect(()=>{
       if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
         const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
         const canceled=p.get("paywall")==="cancel"
-        const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+        const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",getPathname())}
       else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
         try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
         try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
         try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
-        window.history.replaceState({},"",window.location.pathname)}
-      else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
+        window.history.replaceState({},"",getPathname())}
+      else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(getPathname())){openPremium("alertes_landing")}
     }catch(e){
       console.error("[DEEPLINK ERROR]", e)
     }
@@ -13514,7 +13524,7 @@ useEffect(()=>{
       // (?splash=1 pour le revoir.) La marque est déjà sur la carte elle-même.
       return false;
       // eslint-disable-next-line no-unreachable -- dead code after return: kept for reference
-      const path=window.location.pathname;
+      const path=getPathname();
       if(!(path==="/"||path===""||path==="/index.html")) return false;
       if(sessionStorage.getItem("sg_splash_seen")) return false;
       sessionStorage.setItem("sg_splash_seen","1");

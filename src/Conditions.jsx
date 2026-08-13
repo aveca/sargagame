@@ -426,10 +426,12 @@ export default function Conditions(props) {
   const cbRef=useRef({});
   cbRef.current={onOpenBeach,onShowMap,onPremium,track};
 
-  // Retrieve conditionsSlug from path name
+  // Retrieve conditionsSlug from path name (strip GitHub Pages base path)
   const [slug, setSlug] = useState(() => {
     try {
-      const match = window.location.pathname.match(/^\/conditions\/(.+)\/?$/);
+      let p = window.location.pathname;
+      if (location.hostname === 'aveca.github.io' && p.indexOf('/sargagame') === 0) p = p.slice('/sargagame'.length) || '/';
+      const match = p.match(/^\/conditions\/(.+)\/?$/);
       return match ? match[1].replace(/\/$/, '') : "hub";
     } catch (_) {
       return "hub";
