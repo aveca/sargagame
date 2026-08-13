@@ -430,15 +430,18 @@ export function OnsiteCheckout({
           </label>
         )}
 
-        {/* Bouton PAIEMENT PRINCIPAL — déclenche doSubscribe() (qui lit mollieRef.current.createToken()) */}
+        {/* Bouton PAIEMENT PRINCIPAL — déclenche doSubscribe() (qui lit mollieRef.current.createToken()).
+            NOTE : on ne désactive PAS le bouton sur consentOk (sinon clic = muet → user ne comprend pas pourquoi).
+            Si la case n'est pas cochée, doSubscribe() affiche le message d'erreur (ligne 209 doSubscribe.jsx)
+            et trace sg_payment_failed — l'utilisateur voit le message et coche. */}
         <button
           onClick={() => { try { doSubscribe() } catch (_) {} }}
-          disabled={payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)}
+          disabled={payBusy}
           style={{
             width: "100%", padding: 15, borderRadius: 14, border: "none", marginTop: 16,
-            cursor: payBusy ? "wait" : ((consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk) ? "not-allowed" : "pointer"),
-            fontFamily: "inherit", fontWeight: 800, fontSize: 15.5,
-            opacity: (payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)) ? .7 : 1,
+          cursor: payBusy ? "wait" : "pointer",
+          fontFamily: "inherit", fontWeight: 800, fontSize: 15.5,
+          opacity: payBusy ? .7 : 1,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
             color: "#190c2c",
