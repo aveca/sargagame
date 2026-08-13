@@ -112,6 +112,10 @@ async function connect(t) {
 
   const client = new Client(undefined, connTimeout)
   client.ftp.verbose = false
+  
+  // Passive mode forcé (default basic-ftp = true) — désactivable par host si besoin
+  const forcePassive = !(process.env.FTP_ACTIVE_MODE && process.env.FTP_ACTIVE_MODE.includes(t.key.toUpperCase()))
+  
   await client.access({
     host: t.host,
     user: t.user,
@@ -119,10 +123,19 @@ async function connect(t) {
     secure: true,
     secureOptions: { rejectUnauthorized: false },
   })
+  
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
     client.ftp.socket.setKeepAlive(true, keepAliveInterval)
     client.ftp.socket.setTimeout(xferTimeout)
   }
+  
+  // Diagnostic connexion
+  if (process.env.FTP_DEBUG === '1') {
+    const remoteAddr = client.ftp.socket?.remoteAddress || 'unknown'
+    const remotePort = client.ftp.socket?.remotePort || 'unknown'
+    console.log(`  [${t.label}] Fast path: connected to ${t.host} (${remoteAddr}:${remotePort}) passive=${forcePassive}`)
+  }
+  
   return client
 }
 

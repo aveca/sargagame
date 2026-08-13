@@ -80,6 +80,11 @@ async function connect(t) {
 
   const client = new Client(undefined, connTimeout)
   client.ftp.verbose = false
+  
+  // Passive mode forcé pour hosts derrière NAT/load-balancer (souvent la cause des timeouts)
+  // basic-ftp default = true, mais on l'explicite + on peut le désactiver par host si besoin
+  const forcePassive = !(process.env.FTP_ACTIVE_MODE && process.env.FTP_ACTIVE_MODE.includes(t.key.toUpperCase()))
+  
   await client.access({
     host: t.host,
     user: t.user,
@@ -87,10 +92,19 @@ async function connect(t) {
     secure: true,
     secureOptions: { rejectUnauthorized: false },
   })
+  
   if (client.ftp.socket && client.ftp.socket.setKeepAlive) {
     client.ftp.socket.setKeepAlive(true, keepAliveInterval)
     client.ftp.socket.setTimeout(xferTimeout)
   }
+  
+  // Diagnostic connexion
+  if (process.env.FTP_DEBUG === '1') {
+    const remoteAddr = client.ftp.socket?.remoteAddress || 'unknown'
+    const remotePort = client.ftp.socket?.remotePort || 'unknown'
+    console.log(`  [${t.label}] Connected to ${t.host} (${remoteAddr}:${remotePort}) passive=${forcePassive}`)
+  }
+  
   return client
 }
 
@@ -198,7 +212,8 @@ async function deployOne(t) {
   // ~660 cumulative STORs (beaches/ alone is now 422 files, so a single retry
   // after a mid-upload reset cumulates past the threshold).
   // MQ/GP on shared cPanel: smaller batches (75) to stay under the 660 limit.
-  const BATCH_SIZE = isSharedHost ? 75 : 100
+  // USD host even more unstable: smaller batches (50) to reduce socket pressure.
+  const BATCH_SIZE = isUSD ? 50 : (isSharedHost ? 75 : 100)
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false
@@ -292,13 +307,20 @@ async function deployOne(t) {
 // Transient FTP errors — worth retrying with backoff.
 const TRANSIENT_FTP_RE = /ECONNRESET|timeout|ETIMEDOUT|control socket|ECONNREFUSED|EPIPE/i
 
+// Fast path disable par host via env var (ex: NO_FAST_FLORIDA=1)
+// Utile si l'endpoint _deploy.php est instable sur un host spécifique.
+function isFastPathDisabled(t) {
+  const key = t.key.toUpperCase()
+  return process.env[`NO_FAST_${key}`] === '1' || process.env.NO_FAST === '1'
+}
+
 // Deploy complet d'UNE région : tente le chemin RAPIDE (zip → 1 STOR →
 // extraction serveur), retombe sur le chemin FTP fichier-par-fichier éprouvé
 // (deployOne) à la moindre erreur. Le fast path n'ajoute donc jamais de risque
 // net : pire cas = on a pingé un endpoint absent, puis on déploie comme avant.
 async function deployRegionOnce(t, { token, noFast }) {
   let result
-  if (!noFast && token) {
+  if (!noFast && token && !isFastPathDisabled(t)) {
     try {
       const r = await fastDeploy(t, { token })
       console.log(`[${t.label}] ⚡ fast deploy ✓ (${r.files} fichiers, ${r.zipKB} Ko, extract ${r.ms} ms)`)
