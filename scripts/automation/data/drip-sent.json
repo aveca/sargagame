@@ -2888,10 +2888,12 @@
     "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-08-09",
-    "j3": "2026-08-09T12:29:35.512Z"
+    "j3": "2026-08-09T12:29:35.512Z",
+    "j7": "2026-08-14T07:43:13.664Z"
   },
   "444b7de9afc8a5cc098379f02c92c1e8": {
-    "j3": "2026-08-09T12:29:36.984Z"
+    "j3": "2026-08-09T12:29:36.984Z",
+    "j7": "2026-08-14T07:43:15.985Z"
   },
   "a1d5914c50cf65f84a03d6713ebeabfe": {
     "daily_last": "2026-08-07",
@@ -2904,10 +2906,12 @@
     "daily_count": 7,
     "j3": "2026-08-10T00:59:18.161Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-10"
+    "install_nudge_last": "2026-08-10",
+    "j7": "2026-08-14T07:43:17.779Z"
   },
   "149d8bcefeaaa509257e5f81ddf64142": {
-    "j3": "2026-08-10T00:59:19.758Z"
+    "j3": "2026-08-10T00:59:19.758Z",
+    "j7": "2026-08-14T07:43:19.119Z"
   },
   "1ee52ed0184a1432a763c31638cce991": {
     "daily_last": "2026-08-13",
@@ -2967,7 +2971,8 @@
     "daily_sig": "Miami Beach|clean|69|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-13"
+    "install_nudge_last": "2026-08-13",
+    "j3": "2026-08-14T07:43:21.548Z"
   },
   "5cc3422c7da1ce603fabfe040b05e55b": {
     "daily_last": "2026-08-13",
@@ -3006,5 +3011,7 @@
     "daily_last": "2026-08-13",
     "daily_sig": "Miami Beach|clean|69|clean|0|",
     "daily_count": 1
-  }
+  },
+  "205e868b051ecf152972ce0d39aa91f5": {},
+  "82d7ed484a63fb4c37f572b49e50b726": {}
 }
