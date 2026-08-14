@@ -1081,11 +1081,11 @@ jobs:
         if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
         continue-on-error: true
 # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
-          # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
-          # déjà continue-on-error à un timeout n'échoue PAS le build, il laisse tourner
-          # le health-check (sites up = warning, down = error). Borne le blocage de queue.
-          # USD host (FL/PC/RM) is VERY unstable — extended timeout to 120min
-          timeout-minutes: 120
+        # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
+        # déjà continue-on-error à un timeout n'échoue PAS le build, il laisse tourner
+        # le health-check (sites up = warning, down = error). Borne le blocage de queue.
+        # USD host (FL/PC/RM) is VERY unstable - extended timeout to 120min
+        timeout-minutes: 120
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
