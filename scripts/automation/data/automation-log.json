@@ -1,114 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-07-13T13:48:21.849Z",
-      "dryRun": false,
-      "script": "seo-submit-urls",
-      "action": "urls-submitted",
-      "urlsSubmitted": 0,
-      "errors": 200,
-      "urls": [
-        "https://sargasses-martinique.com/alertes/",
-        "https://sargasses-martinique.com/saison-sargasses-martinique/",
-        "https://sargasses-martinique.com/comprendre-sargasses/",
-        "https://sargasses-martinique.com/previsions-methode/",
-        "https://sargasses-martinique.com/nettoyer-sargasses/",
-        "https://sargasses-martinique.com/lexique/",
-        "https://sargasses-martinique.com/plages/plage-des-salines/",
-        "https://sargasses-martinique.com/plages/anse-caritan/",
-        "https://sargasses-martinique.com/plages/anse-meunier/",
-        "https://sargasses-martinique.com/plages/anse-macabou/",
-        "https://sargasses-martinique.com/plages/plage-du-marin/",
-        "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
-        "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
-        "https://sargasses-martinique.com/plages/anse-cafard/",
-        "https://sargasses-martinique.com/plages/anse-gros-raisins/",
-        "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
-        "https://sargasses-martinique.com/plages/grande-anse-du-carbet/",
-        "https://sargasses-martinique.com/plages/anse-turin/",
-        "https://sargasses-martinique.com/plages/anse-belleville/",
-        "https://sargasses-martinique.com/plages/bourg-de-tartane/",
-        "https://sargasses-martinique.com/plages/anse-l-etang/",
-        "https://sargasses-martinique.com/plages/baie-coco/",
-        "https://sargasses-martinique.com/plages/macabou-nord/",
-        "https://sargasses-martinique.com/plages/anse-grosse-roche/",
-        "https://sargasses-martinique.com/plages/plage-de-sinai/",
-        "https://sargasses-martinique.com/plages/plage-des-boucaniers/",
-        "https://sargasses-martinique.com/plages/bourg-de-case-pilote/",
-        "https://sargasses-guadeloupe.com/detection-satellite-sargasses/",
-        "https://sargasses-guadeloupe.com/faq/",
-        "https://sargasses-guadeloupe.com/lexique/",
-        "https://sargasses-guadeloupe.com/methode-carte/",
-        "https://sargasses-guadeloupe.com/plages/anse-tarare/",
-        "https://sargasses-guadeloupe.com/plages/plage-de-cluny-nord/",
-        "https://sargasses-guadeloupe.com/plages/plage-de-tillet/",
-        "https://sargasses-martinique.com/carte-sargasses/",
-        "https://sargasses-martinique.com/previsions/",
-        "https://sargasses-martinique.com/en/satellite-sargassum-detection/",
-        "https://sargasses-martinique.com/en/understanding-sargassum/",
-        "https://sargasses-martinique.com/plages-sans-sargasses/",
-        "https://sargasses-martinique.com/danger-sargasses-h2s/",
-        "https://sargasses-martinique.com/bilan-sargasses-2025/",
-        "https://sargasses-martinique.com/detection-satellite-sargasses/",
-        "https://sargasses-martinique.com/sargasses-record-2026/",
-        "https://sargasses-guadeloupe.com/carte-sargasses/",
-        "https://sargasses-guadeloupe.com/previsions/",
-        "https://sargasses-guadeloupe.com/alertes/",
-        "https://sargasses-guadeloupe.com/en/satellite-sargassum-detection/",
-        "https://sargasses-guadeloupe.com/en/understanding-sargassum/",
-        "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
-        "https://sargasses-guadeloupe.com/plages-sans-sargasses/"
-      ]
-    },
-    {
-      "timestamp": "2026-07-17T12:35:29.098Z",
-      "dryRun": false,
-      "script": "seo-audit",
-      "action": "data-collection",
-      "results": {
-        "mq": {
-          "indexed": 51,
-          "total": 74,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 1,
-          "cwvIssues": 2
-        },
-        "gp": {
-          "indexed": 87,
-          "total": 100,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 2
-        },
-        "florida": {
-          "indexed": 13,
-          "total": 24,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 0,
-          "cwvIssues": 2
-        },
-        "puntacana": {
-          "indexed": 6,
-          "total": 16,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 0,
-          "cwvIssues": 0
-        },
-        "rivieramaya": {
-          "indexed": 22,
-          "total": 24,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 0
-        }
-      }
-    },
-    {
       "timestamp": "2026-07-17T12:35:33.579Z",
       "dryRun": false,
       "script": "ux-audit",
@@ -1616,6 +1508,65 @@
         "https://sargasses-martinique.com/pro/en/collectivites/",
         "https://sargasses-martinique.com/pro/en/cost-of-sargassum-hotels/"
       ]
+    },
+    {
+      "timestamp": "2026-08-14T12:09:27.866Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 67,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "gp": {
+          "indexed": 92,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "florida": {
+          "indexed": 14,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "puntacana": {
+          "indexed": 8,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        },
+        "rivieramaya": {
+          "indexed": 23,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 2
+        }
+      }
+    },
+    {
+      "timestamp": "2026-08-14T12:09:32.457Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 94,
+        "critical": 6,
+        "warnings": 88
+      }
     }
   ]
 }
