@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-08-07T07:56:38.232Z",
-  "total_rows": 48447,
+  "since": "2026-08-07T13:31:45.541Z",
+  "total_rows": 59078,
   "counts": {
-    "session_start": 23165,
+    "session_start": 34640,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1187,
+    "premium_modal_open": 1186,
     "premium_modal_cta": 0,
     "pass_cta": 230,
     "conversion": 4,
     "email_submit": 1,
     "checkout_redirect": 0,
-    "b2b_offer_view": 41,
+    "b2b_offer_view": 43,
     "b2b_step": 3,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -25,35 +25,35 @@
     "cta_to_conversion": 1.7
   },
   "by_island": {
-    "GP": {
-      "session_start": 7642,
-      "premium_modal_open": 290,
-      "b2b_offer_view": 7,
-      "pass_cta": 2
-    },
     "MQ": {
-      "session_start": 11567,
-      "premium_modal_open": 474,
+      "session_start": 13013,
+      "premium_modal_open": 470,
       "pass_cta": 193,
       "b2b_offer_view": 4,
       "conversion": 4,
       "email_submit": 1
     },
-    "PUNTACANA": {
-      "session_start": 956,
-      "premium_modal_open": 161,
-      "b2b_offer_view": 16,
-      "b2b_step": 3,
-      "pass_cta": 1
+    "GP": {
+      "session_start": 10555,
+      "premium_modal_open": 291,
+      "b2b_offer_view": 8,
+      "pass_cta": 2
     },
     "FLORIDA": {
-      "session_start": 2688,
-      "premium_modal_open": 247,
+      "session_start": 7074,
+      "premium_modal_open": 249,
       "pass_cta": 30,
       "b2b_offer_view": 7
     },
+    "PUNTACANA": {
+      "session_start": 3581,
+      "premium_modal_open": 161,
+      "b2b_offer_view": 17,
+      "b2b_step": 3,
+      "pass_cta": 1
+    },
     "RIVIERAMAYA": {
-      "session_start": 312,
+      "session_start": 417,
       "premium_modal_open": 15,
       "b2b_offer_view": 7,
       "pass_cta": 4
