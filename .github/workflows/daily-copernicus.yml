@@ -1037,6 +1037,22 @@ jobs:
       # Provision fast path (_deploy.php + _deploy-secret.php) sur chaque serveur.
       # Doit tourner AVANT le deploy pour que le fast path soit disponible.
       # continue-on-error: si déjà provisionné, le step réussira quand même (idempotent).
+      # Génère _deploy-secret.php depuis le secret DEPLOY_TOKEN (gitignored, pas dans le repo).
+      - name: Generate _deploy-secret.php for fast path
+        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        run: |
+          mkdir -p public/api
+          cat > public/api/_deploy-secret.php <<'EOF'
+          <?php
+          // _deploy-secret.php — token du deploy rapide. GITIGNORÉ, ne JAMAIS committer.
+          // Bloqué par .htaccess + jamais servi en texte (return PHP). Doit être identique
+          // au secret GH DEPLOY_TOKEN et au DEPLOY_TOKEN du .env local.
+          // Provisionné sur chaque serveur via : npm run deploy-provision
+          return [
+              'token' => '${{ secrets.DEPLOY_TOKEN }}',
+          ];
+          EOF
+
       - name: Provision fast path (zip deploy endpoint)
         if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
         continue-on-error: true
