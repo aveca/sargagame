@@ -1969,7 +1969,7 @@
   },
   {
     "date": "2026-08-15",
-    "time": "2026-08-15T06:51:58.629Z",
+    "time": "2026-08-15T12:51:56.939Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 554,
@@ -1998,13 +1998,13 @@
       }
     },
     "email": {
-      "sent": 4420,
+      "sent": 4449,
       "delivered": null,
-      "opened": 151,
-      "clicked": 26,
+      "opened": 144,
+      "clicked": 25,
       "bounced": null,
-      "openRate": 3.42,
-      "clickRate": 17.22,
+      "openRate": 3.24,
+      "clickRate": 17.36,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -2067,11 +2067,11 @@
       "date": "2026-08-14",
       "mq": {
         "sessions": 60,
-        "users": 13892
+        "users": 15390
       },
       "gp": {
         "sessions": 1,
-        "users": 13579
+        "users": 15169
       }
     }
   }
