@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-08-08T06:52:31.158Z",
-  "total_rows": 98523,
+  "since": "2026-08-08T12:52:31.048Z",
+  "total_rows": 99949,
   "counts": {
-    "session_start": 75814,
+    "session_start": 77755,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1179,
+    "premium_modal_open": 1165,
     "premium_modal_cta": 0,
     "pass_cta": 232,
     "conversion": 4,
     "email_submit": 1,
     "checkout_redirect": 0,
-    "b2b_offer_view": 45,
+    "b2b_offer_view": 44,
     "b2b_step": 2,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -20,40 +20,40 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 19.7,
+    "modal_to_cta": 19.9,
     "cta_to_redirect": 0,
     "cta_to_conversion": 1.7
   },
   "by_island": {
-    "GP": {
-      "premium_modal_open": 279,
-      "session_start": 18728,
-      "b2b_offer_view": 6,
-      "pass_cta": 2
-    },
-    "PUNTACANA": {
-      "session_start": 14835,
-      "premium_modal_open": 150,
-      "b2b_offer_view": 16,
-      "b2b_step": 2,
-      "pass_cta": 1
-    },
     "MQ": {
-      "session_start": 17987,
-      "premium_modal_open": 468,
+      "session_start": 18278,
+      "premium_modal_open": 464,
       "pass_cta": 191,
       "b2b_offer_view": 3,
       "conversion": 4,
       "email_submit": 1
     },
+    "GP": {
+      "session_start": 19137,
+      "premium_modal_open": 271,
+      "b2b_offer_view": 6,
+      "pass_cta": 2
+    },
+    "PUNTACANA": {
+      "session_start": 15226,
+      "premium_modal_open": 149,
+      "b2b_offer_view": 16,
+      "b2b_step": 2,
+      "pass_cta": 1
+    },
     "FLORIDA": {
-      "session_start": 22199,
-      "premium_modal_open": 264,
-      "b2b_offer_view": 12,
+      "session_start": 23037,
+      "premium_modal_open": 263,
+      "b2b_offer_view": 11,
       "pass_cta": 34
     },
     "RIVIERAMAYA": {
-      "session_start": 2065,
+      "session_start": 2077,
       "b2b_offer_view": 8,
       "premium_modal_open": 18,
       "pass_cta": 4
