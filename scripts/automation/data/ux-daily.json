@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-15T01:41:25.819Z",
+  "generated": "2026-08-15T06:52:54.763Z",
   "date": "2026-08-15",
   "days": 1,
   "regions": [
@@ -8,6 +8,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "b042c085",
+      "subject": "chore: update Copernicus data 2026-08-15 01:44 UTC"
+    },
+    {
+      "h": "b4d617c7",
+      "subject": "chore: email state 2026-08-15 01:44 UTC"
+    },
     {
       "h": "ec705772",
       "subject": "chore: update Copernicus data 2026-08-14 19:36 UTC"
@@ -52,10 +60,14 @@
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 42,
+      "sessions": 77,
       "friction": 0,
-      "dead_rate": 0.047,
-      "dead_worst": null,
+      "dead_rate": 0.078,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.238,
+        "n": 21
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
@@ -68,12 +80,12 @@
       "session_to_email": 0,
       "prev_date": "2026-08-14",
       "changes": [
-        "sessions 284→42 (-85%)"
+        "sessions 284→77 (-73%)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 5,
+      "sessions": 17,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -86,12 +98,12 @@
       "session_to_email": 0,
       "prev_date": "2026-08-14",
       "changes": [
-        "sessions 99→5 (-95%)"
+        "sessions 99→17 (-83%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 7,
+      "sessions": 9,
       "friction": 0,
       "dead_rate": 0.238,
       "dead_worst": null,
@@ -104,7 +116,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-14",
       "changes": [
-        "sessions 54→7 (-87%)",
+        "sessions 54→9 (-83%)",
         "dead-rate 0.111→0.238 (+0.1) ⚠️"
       ]
     }

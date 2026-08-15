@@ -5922,10 +5922,14 @@
   {
     "date": "2026-08-15",
     "region": "florida",
-    "sessions": 42,
+    "sessions": 77,
     "friction": 0,
-    "dead_rate": 0.047,
-    "dead_worst": null,
+    "dead_rate": 0.078,
+    "dead_worst": {
+      "screen": "map_map",
+      "rate": 0.238,
+      "n": 21
+    },
     "top_dead_els": [],
     "bored_worst": {
       "screen": "world",
@@ -5940,7 +5944,7 @@
   {
     "date": "2026-08-15",
     "region": "puntacana",
-    "sessions": 5,
+    "sessions": 17,
     "friction": 0,
     "dead_rate": 0,
     "dead_worst": null,
@@ -5955,7 +5959,7 @@
   {
     "date": "2026-08-15",
     "region": "rivieramaya",
-    "sessions": 7,
+    "sessions": 9,
     "friction": 0,
     "dead_rate": 0.238,
     "dead_worst": null,
