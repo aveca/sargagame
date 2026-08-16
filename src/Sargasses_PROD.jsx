@@ -9046,16 +9046,8 @@ function SatelliteFilm({lang}){
 function BeachHeroVideo({ beachId }) {
   const boxRef = useRef(null), vRef = useRef(null), seenRef = useRef(false)
   const [src, setSrc] = useState(null), [on, setOn] = useState(false)
-  const allowed = (() => { try { const q = window.location.search; if (/[?&]heropv=0/.test(q)) return false; if (/[?&]heropv=1/.test(q)) return true;
-    // gating persona×récurrence : l'intensité média MONTE avec la familiarité — un NOUVEAU
-    // visiteur (non-USD) voit la scène SVG calme (pas de clip, on ne noie pas le sceptique) ;
-    // un RÉCURRENT (≥2 visites) OU un marché USD (visite souvent unique → traité récurrent dès
-    // V1) voit le clip. sg_visit_count est déjà incrémenté au boot (~L12440).
-    if (!(IS_NEW_REGION || g("sg_visit_count", 0) >= 2)) return false;
-    // GELÉ → control (false)
-    return false } catch (_) { return false } })()
+  // Always allowed on beach sheet - autoplay when visible
   useEffect(() => {
-    if (!allowed) return
     const el = boxRef.current; if (!el) return
     let allow = true
     try {
@@ -9069,8 +9061,8 @@ function BeachHeroVideo({ beachId }) {
       else if (v && !v.paused) v.pause() } }, { rootMargin: "200px 0px" })
     io.observe(el)
     return () => io.disconnect()
-  }, [allowed, beachId])
-  if (!allowed) return null
+  }, [beachId])
+  if (!boxRef.current) return null
   return (
     <div ref={boxRef} aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
       {src && <video ref={vRef} src={src} autoPlay muted loop playsInline preload="none"
@@ -13255,6 +13247,8 @@ useEffect(()=>{
     if(b.status==="clean")triggerCelebration("clean_beach")
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v));sessionStorage.setItem("sg_seen_beach","1")}catch(_){}
+    // Always show comic first (Le Veilleur narrates the beach)
+    track("sg_comic_open",{beach_id:b.id,status:b.status})
   },[])
   // Map tooltip state — « Tape une plage » hint, shown once per session
   const [mapTipDismissed,setMapTipDismissed]=useState(()=>{try{return sessionStorage.getItem("sg_map_tip")==="1"}catch(_){return true}})
@@ -13269,8 +13263,8 @@ useEffect(()=>{
     if(!mapTipDismissed){setMapTipDismissed(true);try{sessionStorage.setItem("sg_map_tip","1")}catch(_){}}
     setShowHero(false);setHeroExiting(false)
     setShowArchipel(false);setShowChat(false);setShowVeille(false)
-    if(mapDetail)openComicBeach(b); else onBeachClick(b)
-  },[mapDetail,openComicBeach,onBeachClick,mapTipDismissed])
+    openComicBeach(b)
+  },[openComicBeach,mapTipDismissed])
   // ⭐ Aperçu vendeur B2B ANCRÉ (grief fondateur 2026-07-02 : la démo ne s'affichait ni
   // au bon endroit sur la carte, ni sur la fiche). Depuis /pro/espace/, le lien « Voir
   // l'aperçu dans l'app » porte ?preview_beach=<id data|app> → on résout LA plage de

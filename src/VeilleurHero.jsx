@@ -5,8 +5,10 @@
  * Animable, 100% SVG/CSS. Montré au 1er atterrissage (1×/session), skippable.
  * onEnter() : ferme le hero et révèle la carte (l'utilitaire qui répond à l'intention).
  */
-import React, { useEffect } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
+
+const eyeClass = `vh-eye vh-wake-${wakePhase === 3 ? 'awake' : 'sleep'} ${wakePhase === 1 ? 'vh-eye-blink' : ''} ${wakePhase === 2 ? 'vh-eye-scan' : ''}`
 
 const SCENE = `
 <svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;display:block">
@@ -30,13 +32,13 @@ const SCENE = `
   <g opacity=".18" filter="url(#vhbM)"><g fill="#fff7d8" transform="translate(200 452)">
     <path d="M0 0 L-180 -380 L-120 -390Z"/><path d="M0 0 L-60 -420 L-20 -424Z"/><path d="M0 0 L60 -420 L20 -424Z"/><path d="M0 0 L180 -380 L120 -390Z"/></g></g>
   <g filter="url(#vhbS)"><ellipse cx="80" cy="105" rx="140" ry="18" fill="#8c3580" opacity=".55"/><ellipse cx="320" cy="150" rx="130" ry="16" fill="#d75986" opacity=".5"/><ellipse cx="60" cy="205" rx="130" ry="14" fill="#ff8466" opacity=".45"/></g>
-  <circle cx="200" cy="452" r="210" fill="url(#vhSun)" class="vh-sun"/><circle cx="200" cy="452" r="60" fill="#fff6d8"/><circle cx="200" cy="452" r="60" fill="#ffe89a" opacity=".4"/>
-  <g fill="#3a1c52" opacity=".55"><rect x="6" y="430" width="9" height="42"/><rect x="20" y="416" width="7" height="56"/><rect x="32" y="438" width="11" height="34"/><rect x="350" y="424" width="9" height="48"/><rect x="364" y="436" width="11" height="36"/><rect x="378" y="416" width="8" height="56"/></g>
+  <circle cx="200" cy="452" r="210" fill="url(#vhSun)" className="vh-sun"/><circle cx="200" cy="452" r="60" fill="#fff6d8"/><circle cx="200" cy="452" r="60" fill="#ffe89a" opacity=".4"/>
+  <g fill="#3a1c52" opacity=".55"><rect x="6" y="430" width="9" height="42"/><rect x="20" y="416" width="7" height="56"/><rect x="32" y="438" width="11" height="34"/><rect x="350" y="424" width="9" height="48"/><rect x="364" y="416" width="11" height="36"/><rect x="378" y="416" width="8" height="56"/></g>
   <rect y="470" width="390" height="374" fill="url(#vhSea)"/>
   <path d="M186 470 q16 100 -12 374 l52 0 q24 -286 0 -374Z" fill="#ffd27a" filter="url(#vhbM)" opacity=".5"/>
   <g stroke="#ffe6b0" stroke-width="1.4" opacity=".3"><line x1="44" y1="500" x2="120" y2="500"/><line x1="252" y1="512" x2="346" y2="512"/><line x1="120" y1="544" x2="240" y2="544"/></g>
   <g fill="#2a1240" opacity=".9"><path d="M298 522 l0 -34 l22 30Z"/><path d="M296 522 l26 0 l-5 9 l-16 0Z"/></g>
-  <g transform="translate(266 196)" class="vh-eye">
+  <g transform="translate(266 196)" className="${eyeClass}">
     <circle r="86" fill="url(#vhHalo)"/>
     <g stroke="#120821" stroke-width="6.5" stroke-linejoin="round">
       <rect x="-78" y="-14" width="26" height="34" rx="5" fill="#1c5a78" transform="rotate(-10 -65 3)"/>
@@ -46,7 +48,10 @@ const SCENE = `
       <path d="M-50 2 a50 48 0 0 1 34 -44 q26 -6 44 14 q-30 -16 -78 30Z" fill="url(#vhLit)" stroke="none"/>
       <path d="M-50 2 a50 48 0 0 1 30 -42" fill="none" stroke="#ffb24d" stroke-width="4"/>
     </g>
-    <g filter="url(#vhGlow)"><circle cx="0" cy="2" r="33" fill="#0d0b14"/><circle cx="2" cy="2" r="22" fill="url(#vhIris)"/><circle cx="9" cy="9" r="10" fill="#08121f"/><circle cx="13" cy="-4" r="4.5" fill="#eafff8"/></g>
+    <g filter="url(#vhGlow)"><circle cx="0" cy="2" r="33" fill="#0d0b14"/><circle cx="2" cy="2" r="22" fill="url(#vhIris)" className="vh-iris"/><circle cx="9" cy="9" r="10" fill="#08121f"/><circle cx="13" cy="-4" r="4.5" fill="#eafff8"/></g>
+    <path d="M0 -46 q8 -22 -3 -36" stroke="#120821" stroke-width="6" fill="none"/><circle cx="-3" cy="-86" r="11" fill="#ffd23f" stroke="#120821" stroke-width="4"/>
+  </g>
+    <g filter="url(#vhGlow)"><circle cx="0" cy="2" r="33" fill="#0d0b14"/><circle cx="2" cy="2" r="22" fill="url(#vhIris)" className="vh-iris"/><circle cx="9" cy="9" r="10" fill="#08121f"/><circle cx="13" cy="-4" r="4.5" fill="#eafff8"/></g>
     <path d="M0 -46 q8 -22 -3 -36" stroke="#120821" stroke-width="6" fill="none"/><circle cx="-3" cy="-86" r="11" fill="#ffd23f" stroke="#120821" stroke-width="4"/>
   </g>
   <path d="M0 720 q110 -64 226 -34 q92 24 164 4 L390 844 L0 844Z" fill="#190c2c"/>
@@ -73,7 +78,19 @@ export default function VeilleurHero({ onEnter, lang }){
   const t=(fr,en,es)=> lang==="es"?es: lang==="en"?en: fr
   // Swipe down pour entrer dans la carte (= le dismiss du hero). Pas de champ → guardInput off.
   const sw=useSwipeClose(()=>onEnter&&onEnter(),{threshold:80})
-  useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
+  
+  // Wake animation state
+  const [wakePhase, setWakePhase] = useState(0) // 0=sleep, 1=blink, 2=scan, 3=awake
+  const wakeRef = useRef(null)
+  
+  useEffect(()=>{
+    try{ document.body.style.overflow="hidden" }catch(_){}
+    // Wake sequence: sleep → blink → scan → awake
+    const t1 = setTimeout(()=>setWakePhase(1), 300)   // first blink
+    const t2 = setTimeout(()=>setWakePhase(2), 1200)  // horizon scan
+    const t3 = setTimeout(()=>setWakePhase(3), 2500)  // fully awake
+    return ()=>{ try{ document.body.style.overflow="" }catch(_){} clearTimeout(t1);clearTimeout(t2);clearTimeout(t3) }
+  },[])
   return (
     <div role="dialog" aria-label="Le Veilleur" ref={sw.ref} onTouchStart={sw.onTouchStart} onTouchMove={sw.onTouchMove} onTouchEnd={sw.onTouchEnd} style={{
       position:"fixed",inset:0,zIndex:3000,overflow:"hidden",background:"#0b0716",
@@ -82,8 +99,15 @@ export default function VeilleurHero({ onEnter, lang }){
         @keyframes vhSunP{0%,100%{opacity:.95}50%{opacity:1;transform:scale(1.02)}}
         @keyframes vhBob{0%,100%{transform:translate(266px,196px)}50%{transform:translate(266px,186px)}}
         @keyframes vhUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+        @keyframes vhBlink{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.08)}}
+        @keyframes vhScan{0%{transform:translateX(0)}50%{transform:translateX(-12px)}100%{transform:translateX(0)}}
+        @keyframes vhUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
         .vh-eye{transform-box:view-box;transform-origin:266px 196px;animation:vhBob 5s ease-in-out infinite}
         .vh-sun{transform-box:fill-box;transform-origin:center;animation:vhSunP 7s ease-in-out infinite}
+        .vh-eye-blink{animation:vhBlink 0.15s ease-in-out}
+        .vh-eye-scan{animation:vhScan 1.2s ease-in-out}
+        .vh-wake-sleep .vh-iris{opacity:0.3}
+        .vh-wake-awake .vh-iris{opacity:1}
         .vh-skip{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;z-index:6;
           background:rgba(13,7,22,.4);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;
           padding:8px 14px;font:800 11px/1 ui-monospace,monospace;letter-spacing:1px;cursor:pointer;backdrop-filter:blur(6px)}
