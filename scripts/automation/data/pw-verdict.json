@@ -1,0 +1,26 @@
+{
+  "verdict": "INCONCLUSIVE",
+  "reason": "pw_style tracking not active (0 events tracked). pw_style is not in AB_FREEZE_MAP — defaults to \"world\" always. Need to add pw_style to analytics events.",
+  "data": {
+    "timestamp": "2026-08-16T03:44:19.165Z",
+    "funnel": {
+      "paywall_seen": 145,
+      "cta_clicked": 2,
+      "conversions": 0,
+      "modal_to_cta_pct": 1.4,
+      "cta_to_paid_pct": 0
+    },
+    "revenue": {
+      "mollie_paid_total": 2,
+      "mollie_revenue_eur": 0,
+      "mollie_revenue_usd": 17.98,
+      "stripe_mrr_eur": 69.86,
+      "stripe_active": 14
+    },
+    "ab_test": {
+      "pw_style_tracking": false,
+      "pw_style_events": 0,
+      "current_variant": "world (default, not in AB_FREEZE_MAP)"
+    }
+  }
+}

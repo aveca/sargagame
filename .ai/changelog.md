@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-08-15 01:00 UTC — coding_agent (OpenCode) — Contract test: Mollie pass one-time (P0 #1)
+
+### Changement
+- **Nouveau test E2E contractuel** : `tests/e2e/contract-pass-one-time.spec.ts` (2/2 green)
+  - `contract`: audit statique de `src/PremiumModal/doSubscribe.jsx` — `create_payment` pour branche `_pc` (passCtx), `create_subscription` réservé au non-passCtx
+  - `DOM`: vérifie que le paywall affiche un bouton de paiement avec montant (pas « gratuit » / essai)
+- **Pas d'appel API live** (pas de `fetch` réel vers Mollie en prod, intercept + audit source)
+- **Garde-fous** : `create_subscription` jamais dans branche `passCtx` ; `cardToken`, `pass`, `cents`, `cur` présents
+
+### Résultat
+- Playwright 2/2 pass (`contract-pass-one-time.spec.ts`)
+- Build non touché ; bundle inchangé
+
+### Fichiers impactés
+- `tests/e2e/contract-pass-one-time.spec.ts` (nouveau)
+
+---
+
 ## 2026-08-15 00:30 UTC — coding_agent (OpenCode) — E2E Test Suite: 34/34 Green
 
 ### Changement

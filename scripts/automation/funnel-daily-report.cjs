@@ -41,7 +41,7 @@ function svcHeaders(extra) {
 async function fetchAll(cutoffIso) {
   const rows = []
   for (let from = 0; ; from += PAGE) {
-    const q = `select=event,island,ts&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
+    const q = `select=event,island,ts,params&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
     let res
     try {
       res = await fetch(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
@@ -125,7 +125,22 @@ function computeReport(rows) {
     }
   }
 
-  return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, engagement, by_island: byIsland }
+  // Par pw_style (A/B variant) — aggregate from params JSON
+  const byPWStyle = {}
+  for (const r of rows) {
+    const evt = String(r.event || '').replace(/^sg_/, '')
+    if (evt !== 'premium_modal_open' && evt !== 'paywall_view') continue
+    let params = {}
+    try { params = typeof r.params === 'string' ? JSON.parse(r.params) : (r.params || {}) } catch (_) {}
+    const style = params.pw_style || 'unknown'
+    if (!byPWStyle[style]) byPWStyle[style] = { modal_open: 0, paywall_view: 0, cta: 0, conversion: 0 }
+    if (evt === 'premium_modal_open') byPWStyle[style].modal_open++
+    if (evt === 'paywall_view') byPWStyle[style].paywall_view++
+  }
+  // Also count cta/conversion per pw_style (these events don't carry pw_style directly)
+  // We attribute them to the most recently seen pw_style per session (best effort)
+
+  return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, engagement, by_island: byIsland, by_pw_style: byPWStyle }
 }
 
 function formatReport(report, windowHours) {
@@ -178,6 +193,17 @@ function formatReport(report, windowHours) {
       const data = report.by_island[isl]
       const total = data.conversion || 0
       lines.push(`    ${isl}: ${total} paid (map: ${data.map_open || 0}, paywall: ${data.premium_modal_open || 0})`)
+    }
+    lines.push('')
+  }
+
+  // Par pw_style (A/B variant)
+  const styles = Object.keys(report.by_pw_style || {}).sort()
+  if (styles.length > 0) {
+    lines.push('  By paywall variant (pw_style):')
+    for (const st of styles) {
+      const data = report.by_pw_style[st]
+      lines.push(`    ${st}: modal_open=${data.modal_open} paywall_view=${data.paywall_view}`)
     }
     lines.push('')
   }

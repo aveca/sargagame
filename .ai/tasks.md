@@ -15,6 +15,7 @@
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
 - [x] P1 - B2B recurring Mollie (#210, @coding_agent)
 - [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
+- [x] P0 - TASK-P0-001 Contract test Mollie pass one-time (@coding_agent, 2026-08-15) — E2E Playwright `tests/e2e/contract-pass-one-time.spec.ts` (2/2 green). Vérifie : DOM paywall = pass (pas essai gratuit), code source `doSubscribe.jsx` = `create_payment` pour `_pc`. Commit `8a2e9937`.
 - [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
 - [x] P0 - Redesign funnel UX — BottomNav restaurée, FABs allégés, CTA clarifié (@coding_agent, 2026-08-11)
 - [x] P1 - TASK-P1-002 Tests E2E Playwright funnel payant (@coding_agent, 2026-08-11) — 8 nouveaux tests BottomNav/FABs/CTA + 13 tests existants ré-actualisés (21/21 pass). Sélecteurs centralisés dans tests/utils/selectors.ts.

@@ -13345,7 +13345,7 @@ useEffect(()=>{
       let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
-    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
+    setPremiumSource(s);setShowPremium(true);const _pwV=abVariant("pw_style",["world","comic"]);track("sg_premium_modal_open",{source:s,pw_style:_pwV});track("sg_paywall_view",{source:s,pw_style:_pwV,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
     // GA4 Ecommerce: view_promotion (paywall shown) + begin_checkout (intent)
     try{
       if(hasAnnual){
@@ -14283,7 +14283,7 @@ useEffect(()=>{
           onPay={PAY_CAPTURE_ONLY?undefined:()=>{
             setShowCaptureGate(false)
             track("sg_capture_gate_pay",{src:captureGateSrc})
-            setPremiumSource("gate_cb");setShowPremium(true);track("sg_premium_modal_open",{source:"gate_cb"})
+            setPremiumSource("gate_cb");setShowPremium(true);track("sg_premium_modal_open",{source:"gate_cb",pw_style:abVariant("pw_style",["world","comic"])})
           }}
           onClose={()=>{
             setShowCaptureGate(false)

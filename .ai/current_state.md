@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-08-15 01:00 UTC · Agent: coding_agent (OpenCode) — P0 #1 Contract test Mollie pass one-time
+
+### Travail effectué
+- **Résumé 1 ligne** : Test E2E contractuel `tests/e2e/contract-pass-one-time.spec.ts` (2/2 green). Vérifie le contrat : `doSubscribe.jsx` envoie `create_payment` (jamais `create_subscription`) pour `passCtx`, et le DOM du paywall affiche un bouton de paiement (pas essai gratuit).
+- **Détails** : Audit statique du code source + DOM Playwright. Intercept réseau `page.route` mis en place (non déclenché dans le test statique, mais présent pour tests futurs). Garde-fous : `action: "create_payment"` avec `pass`/`cents`/`cur`/`cardToken` dans branche `_pc` ; `create_subscription` réservé au non-passCtx.
+- **Branche** : `agent/coding/TASK-P0-001-contract-test-mollie`
+- **Commit** : `8a2e9937`
+
+### Fichiers modifiés
+- `tests/e2e/contract-pass-one-time.spec.ts` — nouveau (71 lignes)
+
+### Tests réalisés
+- [x] `npx playwright test tests/e2e/contract-pass-one-time.spec.ts` → 2/2 pass
+- [x] `npm run build` → non touché (pas de modification src/)
+- [x] `node scripts/check-bundle-budget.cjs` → inchangé (~182 Ko)
+
+### Problèmes restants
+- [ ] TASK-P1-006 : Monitoring conversion 7j (JOUR 3 sur 7)
+- [ ] Flaky test `funnel-payment.spec.ts:82` pré-existant
+
+### Prochaine action recommandée
+- **P0 #2** : Dashboard conversion paywall auto (Comic vs World depuis `funnel-daily-report.json` + `daily-metrics.json`)
+
+---
+
 ## 2026-08-15 00:30 UTC · Agent: coding_agent (OpenCode) — E2E Test Suite: 34/34 Green
 
 ### Travail effectué
