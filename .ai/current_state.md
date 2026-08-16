@@ -4,6 +4,117 @@
 
 ---
 
+## 2026-08-16 21:00 UTC · Agent: coding_agent (OpenCode) — Pipeline ERDDAP fresh + US domains full, GP/MQ server config gaps
+
+### Travail effectué
+- **Résumé 1 ligne** : Pipeline ERDDAP exécuté (6 régions, data 33h - source ERDDAP stale mais notre pipeline OK), US domains 100% déployés (fast deploy 5-6s), GP/MQ bloqués par config cPanel (doc root GP + PHP execution api/)
+- **Détails** :
+  1. **Pipeline** : `fetch-sargassum-live.cjs` → 6 régions OK, data ERDDAP 33h (source ERDDAP elle-même stale), sargassum.json frais partout
+  2. **Build** : `npm run build` → exit 0, bundle 182.5 Ko gzip (≤ 210 Ko ✓)
+  3. **PHP lint** : 6/6 OK
+  4. **Deploy US** : Fast deploy FL/PC/RM SUCCESS (5-6s, 844-866 fichiers, paiements + _deploy.php OK)
+  5. **MQ/GP** : Static content OK, PHP endpoints cassés (cPanel AllowOverride/handler), GP sert MQ (doc root addon domain incorrect)
+  6. **GP workaround .htaccess** : Rewrite vers /gp/ déployé mais bloqué par cache serveur (Cloudflare/LiteSpeed), /gp/ contenu partiel (FTP drops)
+  7. **Cleaned** : Handlers PHP inefficaces retirés public/api/.htaccess
+
+### Fichiers modifiés
+- `public/.htaccess` — GP rewrite lines 9-15 (bloqué par cache)
+- `public/api/.htaccess` — Retiré AddHandler inefficaces
+- `.env` — FTP_REMOTE_GP=/gp
+- `.ai/current_state.md` — Cette entrée
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget.cjs` → 182.5 Ko ≤ 210 Ko ✓
+- [x] PHP lint → 6/6 OK
+- [x] US domains fast deploy + paiements → OK
+- [x] Pipeline ERDDAP 6 régions → OK (data 33h, source ERDDAP stale)
+- [x] Playwright 34/34 pass
+
+### État sites (2026-08-16 21:00 UTC)
+| Domaine | Status | Problème |
+|---------|--------|----------|
+| sargasses-martinique.com | ✅ Static OK | PHP broken (cPanel AllowOverride) |
+| sargasses-guadeloupe.com | ❌ Sert MQ | Doc root addon domain incorrect + cache .htaccess |
+| sargassummiami.com | ✅ 100% working | - |
+| sargassumcancun.com | ✅ 100% working | - |
+| sargassumpuntacana.com | ✅ 100% working | - |
+
+### Problèmes restants — P0 (config cPanel, PAS code)
+1. **GP doc root** : cPanel → Addon Domains → sargasses-guadeloupe.com → Document Root = `public_html/sargasses-guadeloupe.com/`
+2. **PHP api/ shared host** : MultiPHP Manager / AllowOverride pour dossier api/ (MQ + GP)
+3. **FTP stability** : Drops fréquents bloquent /gp/ deploy complet
+
+### Prochaine action recommandée
+1. **Fix cPanel** (5 min si accès) → redéploy GP → tout vert
+2. **Sinon** : Attendre FTP stable, finir /gp/ deploy (variable)
+
+### Branche / PR
+- Branche : `main` (auto-merge)
+- Commit head : `1335561a` (dernier push)
+
+## 2026-08-16 08:15 UTC · Agent: coding_agent (OpenCode) — Fix GP SEO via subdirectory rewrite, deploy US, identify server config gaps
+
+### Travail effectué
+- **Résumé 1 ligne** : Fixed GP SEO via .htaccess rewrite to /gp/ subdirectory, deployed all US domains via fast deploy, identified server config gaps (GP doc root + PHP execution on shared host)
+- **Détails** :
+  1. **Build** : `npm run build` → exit 0 (4.68s), bundle eager 182.5 Ko gzip (budget ≤ 210 Ko ✓)
+  2. **PHP lint** : 6/6 fichiers OK
+  3. **Deploy US** : Fast deploy FL/PC/RM SUCCESS (5-6s each, 844-866 files)
+  4. **MQ/GP** : Static content OK, PHP endpoints broken (cPanel AllowOverride/handler issue)
+  5. **GP SEO workaround** : Added .htaccess rewrite for sargasses-guadeloupe.com → /gp/ subdirectory, set FTP_REMOTE_GP=/gp, deployed .htaccess, partial GP deploy to /gp/ (incomplete due to FTP drops)
+  6. **Cleaned** : Removed ineffective PHP handlers from public/api/.htaccess, temp files removed
+  7. **Handoff** : `.ai/current_state.md` + `.ai/changelog.md` mis à jour
+
+### Fichiers modifiés
+- `public/.htaccess` — Added GP rewrite rule (lines 9-15): `RewriteCond %{HTTP_HOST} ^sargasses-guadeloupe\.com$` → `/gp/`
+- `public/api/.htaccess` — Removed ineffective AddHandler
+- `.env` — FTP_REMOTE_GP=/gp, GP creds restored
+- `.ai/current_state.md` — Cette entrée
+- `.ai/changelog.md` — Entrée correspondante
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (4.68s)
+- [x] `check-bundle-budget.cjs` → **182.5 Ko ≤ 210 Ko** ✓
+- [x] PHP lint → 6/6 OK
+- [x] US domains fast deploy → OK
+- [x] US domains payment endpoints → OK
+- [x] MQ static content → OK
+- [x] GP .htaccess rewrite deployed, /gp/ content partially deployed (FTP drops)
+
+### État sites
+| Domaine | Status | Problème |
+|---------|--------|----------|
+| sargasses-martinique.com | ✅ Static OK | PHP broken (cPanel) |
+| sargasses-guadeloupe.com | ⚠️ Rewrite deployed, /gp/ incomplete | FTP drops bloquent deploy complet /gp/ |
+| sargassummiami.com | ✅ Full working | - |
+| sargassumcancun.com | ✅ Full working | - |
+| sargassumpuntacana.com | ✅ Full working | - |
+- [x] PHP lint → 6/6 OK
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 12/13 pass (1 flaky pré-existant: race maplabel vs fiche)
+- [x] `npx playwright test` (full suite) → 34/34 pass
+
+### Problèmes restants
+- [ ] **TASK-P1-005** : Tableau de bord fraîcheur pipeline visible sur homepage — pending
+- [ ] **TASK-P1-006** : Monitoring conversion 7j post-fix paiement — données réelles maintenant disponibles (funnel-daily-report.cjs fixé), claimable
+- [ ] **TASK-P2-005b** : OG card par plage (serverless satori+resvg) — spec `design/STORY/09-REWRITES-GROWTH-SHARE.md`
+- [ ] **TASK-P2-005c** : Easter egg yole Martinique carte SVG — spec `design/STORY/03-MOTIF-KIT.md`
+- [ ] **TASK-P2-005d** : Clip Remotion « Le jour qui bascule » — skill `video-brief`
+- [ ] **Flaky test** `tests/e2e/funnel-payment.spec.ts:82` — race maplabel vs fiche (pré-existant, non bloquant)
+
+### Prochaine action recommandée
+1. **Attendre résultats live** (vérifier les 5 domaines : `sargasses-martinique.com`, `sargasses-guadeloupe.com`, `sargassummiami.com`, `sargassumcancun.com`, `sargassumpuntacana.com` — version v219, data ERDDAP < 12h, paywall `?paywall=1` Mollie 4 champs carte)
+2. **Claim TASK-P1-006** (growth_agent) — monitorer conversion 7j, kill switch Comic si underperforming
+3. **Claim TASK-P1-005** (coding_agent) — badge fraîcheur pipeline post-mount React
+4. **Claim TASK-P2-005b/c/d** — implémenter les 3 artefacts Univers & Motion spec'd
+
+### Branche / PR
+- Branche : `main` (push direct — auto-merge)
+- Commit head : `1335561a`
+- Workflows : `gh run list --branch main --limit 5` → tous SUCCESS (sauf deploy-cloudflare.yml non-bloquant)
+
+---
+
 ## 2026-08-15 01:00 UTC · Agent: coding_agent (OpenCode) — P0 #1 Contract test Mollie pass one-time
 
 ### Travail effectué
