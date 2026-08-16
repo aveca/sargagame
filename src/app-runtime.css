@@ -229,6 +229,13 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-live .sg-live-lbl{color:var(--sg-ink,#0d0b14)!important;font-weight:800;font-size:12px;letter-spacing:.03em;flex-shrink:0;white-space:nowrap}
 .sg-live .sg-live-age{color:var(--sg-mid,#5A5A5A);font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;
   flex-shrink:1;min-width:0;font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* Satellite freshness badge — TASK-P1-005: visible post-mount, next to EN DIRECT pill */
+.sg-seg.sg-freshness{display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:999px;
+  background:rgba(0,158,142,.10);border:1px solid rgba(0,158,142,.25);font-size:11.5px;font-weight:600;
+  color:var(--sg-mid,#5A5A5A);font-family:"JetBrains Mono",ui-monospace,monospace;white-space:nowrap;
+  flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.sg-seg.sg-freshness.stale{background:rgba(255,100,100,.12);border-color:rgba(255,100,100,.35);color:#ff8080}
 /* Util (theme + lang) : 2 boutons, pictos SVG ink, labels Bricolage 800 */
 .sg-util{overflow:hidden;padding:0!important}
 .sg-util button{width:44px;height:100%;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;

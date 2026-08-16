@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-08-16 21:15 UTC · Agent: coding_agent (OpenCode) — Claim TASK-P1-005 + document blocage P0 cPanel
+
+### Travail effectué
+- **Résumé 1 ligne** : Claim TASK-P1-005 (dashboard fraîcheur pipeline homepage) — code prêt, démarré en parallèle du blocage P0 serveur. P0 cPanel (doc root GP + PHP api/) impossible sans accès fondateur, documenté comme blocage externe.
+- **Détails** : `.ai/tasks.md` mis à jour — `[~] in_progress by coding_agent`. Blocage P0 : GP doc root (`Addon Domains → Document Root`) + PHP `api/` (`MultiPHP Manager / AllowOverride`) — nécessite accès cPanel (non disponible agent).
+
+### Problèmes restants (P0 — serveur, PAS code)
+1. **GP doc root** : cPanel → `public_html/sargasses-guadeloupe.com/`
+2. **PHP api/** : MultiPHP / AllowOverride MQ + GP
+3. **TASK-P1-005** : démarré — badge fraîcheur `public/api/copernicus/sargassum.json` (`updatedAt`/`stale`) dans hero/header post-mount React.
+
+### Prochaine action recommandée
+- **Si accès cPanel** : fix doc root GP → redéployer (`ONLY=gp node scripts/manual-ftp-deploy.cjs --no-fast`).
+- **Sinon** : continuer TASK-P1-005 (badge fraîcheur) → commit → push.
+- **Rollback** : `git revert` sur `.ai/tasks.md` + `.ai/current_state.md` si besoin.
+
+---
+
 ## 2026-08-16 21:00 UTC · Agent: coding_agent (OpenCode) — Pipeline ERDDAP fresh + US domains full, GP/MQ server config gaps
 
 ### Travail effectué
@@ -30,12 +48,13 @@
 - [x] US domains fast deploy + paiements → OK
 - [x] Pipeline ERDDAP 6 régions → OK (data 33h, source ERDDAP stale)
 - [x] Playwright 34/34 pass
+- [x] TASK-P1-005 dashboard fraîcheur → done (badge Header `.sg-seg.sg-freshness`)
 
-### État sites (2026-08-16 21:00 UTC)
+### État sites (2026-08-16 22:00 UTC)
 | Domaine | Status | Problème |
 |---------|--------|----------|
 | sargasses-martinique.com | ✅ Static OK | PHP broken (cPanel AllowOverride) |
-| sargasses-guadeloupe.com | ❌ Sert MQ | Doc root addon domain incorrect + cache .htaccess |
+| sargasses-guadeloupe.com | ❌ Sert MQ | Doc root addon domain incorrect + cache |
 | sargassummiami.com | ✅ 100% working | - |
 | sargassumcancun.com | ✅ 100% working | - |
 | sargassumpuntacana.com | ✅ 100% working | - |

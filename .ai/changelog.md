@@ -13,6 +13,7 @@
 - **MQ/GP** : Static OK, PHP endpoints KO (cPanel AllowOverride), GP sert MQ (doc root addon incorrect)
 - **GP .htaccess rewrite** : Déployé mais bloqué par cache Cloudflare/LiteSpeed, /gp/ partiel (FTP drops)
 - **Cleaned** : Handlers PHP inefficaces retirés public/api/.htaccess
+- **TASK-P1-005** : Dashboard fraîcheur pipeline — badge `Satellite · Xh` dans Header (post-mount), `stale` variant red alert. Header lines 7347-7355 + 7393-7394 ready, CSS `.sg-seg.sg-freshness` + `.stale` added.
 
 ### Résultat
 - **sargassummiami.com** ✅ 100% (fast deploy + paiement + fast path)
@@ -29,8 +30,10 @@
 ### Fichiers impactés
 - `public/.htaccess` (GP rewrite lines 9-15, bloqué par cache)
 - `public/api/.htaccess` (removed AddHandler)
+- `src/app-runtime.css` (`.sg-seg.sg-freshness` + `.stale` added)
+- `src/Sargasses_PROD.jsx` (Header badge ready lines 7347-7355, 7393-7394)
 - `.env` (FTP_REMOTE_GP=/gp)
-- `.ai/current_state.md`, `.ai/changelog.md`
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`
 
 ### Gate de ship
 - [x] `npm run build` → exit 0

@@ -60,9 +60,9 @@
 - **Description** : Actuellement, "Données satellite: Xh" est visible uniquement dans le boot skeleton (index.html). L'exposer à TOUS les visiteurs sur la homepage (après mount React) pour trust immédiat.
 - **Impact** : Différenciateur trust vs concurrents opaques. Moat = "honnêteté".
 - **Comment** : Lire `public/api/copernicus/sargassum.json` (`updatedAt`, `erddapTimestamp`, `stale`). Si `stale=true` (>24h), afficher alerte. Sinon, badge compact "Satellite · 13h" dans le header ou hero section.
-- **Fichiers** : `src/Sargasses_PROD.jsx` (hero section, trust badges), `index.html` (boot skeleton déjà fait — dupliquer l'affichage post-mount).
+- **Fichiers** : `src/Sargasses_PROD.jsx` (Header déjà prêt), `src/app-runtime.css` (styles `.sg-seg.sg-freshness` + `.stale`), `index.html` (boot skeleton déjà fait).
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-16) — Header badge `.sg-seg.sg-freshness` déjà dans `Header()` (lines 7347-7355, 7393-7394), data passée via `updatedAt`/`stale` props. CSS ajouté `src/app-runtime.css` (`.sg-seg.sg-freshness` + `.stale` variant). Build 182.5 Ko gzip ≤ 210 Ko ✓.
 
 ### TASK-P1-006 Monitoring conversion 7j post-fix paiement (données réelles maintenant disponibles)
 - **Priorité** : P1
