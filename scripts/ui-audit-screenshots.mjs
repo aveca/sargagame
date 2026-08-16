@@ -90,10 +90,10 @@ async function main() {
       if (clicked) {
         await page.waitForTimeout(2000)
         all.push(await shot(page, `BEACH_CLICKED_${label}`))
-        await page.waitForSelector('.lc-detail, .sheet', { timeout: 10000 }).catch(() => {})
+        await page.waitForSelector('.lc-detail, .sheet, .bsc-sheet', { timeout: 10000 }).catch(() => {})
         await page.waitForTimeout(1500)
         all.push(await shot(page, `BEACH_DETAIL_${label}`))
-        const txt = await page.locator('.lc-detail, .sheet').first().textContent().catch(() => '')
+        const txt = await page.locator('.lc-detail, .sheet, .bsc-sheet').first().textContent().catch(() => '')
         console.log(`    detail length: ${txt.length} chars, has score: ${/\d+\/100|\d+%/.test(txt)}`)
       }
       await ctx.close()

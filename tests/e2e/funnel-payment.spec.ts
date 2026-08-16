@@ -90,31 +90,14 @@ test.describe("Funnel Principal B2C", () => {
     const mapLabels = await page.locator(".sg-maplabel").count()
     expect(mapLabels).toBeGreaterThanOrEqual(3)
 
-    // 2. Clic sur une plage → fiche détail
-    await page.evaluate(() => {
-      const label = [...document.querySelectorAll(".sg-maplabel")].find(
-        (el) => getComputedStyle(el).visibility !== "hidden"
-      )
-      if (label) (label as HTMLElement).click()
-    })
-    // Attendre que la fiche soit visible (avec retry si nécessaire)
-    await page.waitForSelector(".lc-detail, .sheet", { timeout: 15000 }).catch(() => {})
-    await page.waitForTimeout(2000)
+    // 2. Clic sur une plage → fiche détail (use Playwright click for actionability check)
+    const visibleLabel = page.locator(".sg-maplabel[role='button']").first()
+    await visibleLabel.click({ timeout: 10000 })
 
-    // Vérifier la visibilité avec retry
-    let ficheVisible = await page.locator(".lc-detail, .sheet").first().isVisible().catch(() => false)
-    if (!ficheVisible) {
-      // Retry: cliquer à nouveau sur un autre label
-      await page.evaluate(() => {
-        const labels = [...document.querySelectorAll(".sg-maplabel")].filter(
-          (el) => getComputedStyle(el).visibility !== "hidden"
-        )
-        if (labels.length > 1) (labels[1] as HTMLElement).click()
-        else if (labels.length > 0) (labels[0] as HTMLElement).click()
-      })
-      await page.waitForTimeout(3000)
-      ficheVisible = await page.locator(".lc-detail, .sheet").first().isVisible().catch(() => false)
-    }
+    // Attendre que la fiche soit visible (BeachSheetComic = .bsc-sheet, fallback BeachSheet = .sheet, legacy = .lc-detail)
+    const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
+    await fiche.waitFor({ state: "visible", timeout: 15000 })
+    const ficheVisible = await fiche.isVisible()
     expect(ficheVisible).toBe(true)
 
     // 3. Paywall — deep link ?paywall=1

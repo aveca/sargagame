@@ -33,7 +33,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
    --z-chat:1090;
    --z-toast:1480;
    --z-banner:1030; /* Cookie banner below bottom-nav */
-   --z-bottom-nav:1040; /* Above cookie banner */
+   --z-bottom-nav:1040; /* Above cookie banner (1025) */
    --z-celebration:9999;
  }
 
@@ -96,7 +96,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 @keyframes sgFadeOut{to{opacity:0}}
 .backdrop-exit{animation:sgFadeOut .25s ease forwards}
 @media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
-.sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab;min-height:44px;padding:19px 0;margin-top:0;margin-bottom:0}
+.sheet-handle{width:40px;height:4px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.15));margin:8px auto 4px;cursor:grab;min-height:4px;padding:0;margin-top:0;margin-bottom:0}
 
 /* ═══ TRANSITION « CASE BD » — TASK-P2-004 ═══
    PanelWipe entrée paywall : à l'apparition du .sg-modal-panel sous .sg-pwenter,

@@ -480,7 +480,7 @@ export function OnsiteCheckout({
         {/* Bouton Réessayer (visible seulement si erreur) */}
         {payError && (
           <button
-            onClick={() => { try { window.location.reload() } catch (_) {} }}
+            onClick={() => { try { setPayError(""); setPayStep(false) } catch (_) {} }}
             style={{
               background: "none", border: "1px solid rgba(255,255,255,.25)", borderRadius: 12,
               color: "rgba(255,255,255,.8)", fontSize: 12.5, fontWeight: 600, padding: "11px 14px",

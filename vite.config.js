@@ -171,6 +171,25 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // ── Copy _deploy.php to build root for fast FTP deploy ──
+    // _deploy.php doit être à la racine web (ex: https://sargasses-martinique.com/_deploy.php)
+    // pour que le fast deploy fonctionne (upload zip + extraction côté serveur).
+    {
+      name: 'copy-deploy-php',
+      writeBundle: {
+        sequential: true,
+        async handler() {
+          const { copyFileSync, existsSync } = await import('fs')
+          const { resolve } = await import('path')
+          const src = resolve(__dirname, 'public/api/_deploy.php')
+          const dest = resolve(__dirname, 'dist/_deploy.php')
+          if (existsSync(src)) {
+            copyFileSync(src, dest)
+            console.log('[copy-deploy-php] copied to dist/_deploy.php')
+          }
+        }
+      }
+    },
     // ── Preload de la carte du first paint (WorldMapView) ──
     // WorldMapView est la carte rendue au premier paint par défaut (bras A/B map_world="world",
     // cf. Sargasses_PROD.jsx). Mais c'est un import LAZY → son chunk ne se télécharge qu'APRÈS

@@ -22,7 +22,7 @@ export const selectors = {
   mapPin: '.sg-maplabel',
 
   // ── Verdict (fiche plage) ─────────────────────────────────────────
-  verdict: '.lc-detail, .sheet',  // comic detail OR fallback BeachSheet
+  verdict: '.bsc-sheet, .lc-detail, .sheet',  // comic detail (default) OR legacy ChasseDetail OR fallback BeachSheet
   verdictCloseBtn: '[aria-label="Fermer"], [aria-label="Close"], [aria-label="Cerrar"]',
   verdictForecastUnlockCta:
     'button:has-text("Débloquer 7 jours"), button:has-text("Unlock 7 days"), button:has-text("Desbloquear 7 días")',

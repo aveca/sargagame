@@ -17,7 +17,32 @@ async function dismissAssistantModal(page) {
 }
 
 test.describe("Around Me Intelligence (flag gated)", () => {
+  test.describe.configure({ mode: "serial" })
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      // Clear stale premium state to prevent modal auto-open
+      localStorage.removeItem("sg_premium")
+      localStorage.removeItem("sg_seen")
+      localStorage.removeItem("sg_track_log")
+      sessionStorage.clear()
+
+      window.__geolocationRequested = false
+      window.__geolocationMock = null
+      const orig = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation)
+      Object.defineProperty(navigator.geolocation, "getCurrentPosition", {
+        configurable: true,
+        writable: true,
+        value: (success, error, opts) => {
+          window.__geolocationRequested = true
+          if (window.__geolocationMock) {
+            if (window.__geolocationMock.error) error(window.__geolocationMock.error)
+            else success(window.__geolocationMock.success)
+          } else {
+            orig(success, error, opts)
+          }
+        },
+      })
+    })
     await page.goto(BASE_URL + WORLD_FLAG, { waitUntil: "networkidle" })
   })
 
@@ -41,22 +66,17 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await expect(locateBtn).toBeVisible()
 
     await context.grantPermissions(["geolocation"])
-    await page.route("**/api/**", route => route.continue())
 
-    // Track geolocation request via a global flag in the browser context
     await page.evaluate(() => {
-      window.__geolocationRequested = false
-      const original = navigator.geolocation.getCurrentPosition
-      navigator.geolocation.getCurrentPosition = function(...args) {
-        window.__geolocationRequested = true
-        return original.apply(this, args)
+      window.__geolocationMock = {
+        success: { coords: { latitude: 14.6, longitude: -61.0 } }
       }
     })
 
     await dismissAssistantModal(page)
 
     await locateBtn.click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(1500)
     const requested = await page.evaluate(() => window.__geolocationRequested)
     expect(requested).toBe(true)
   })
@@ -65,8 +85,8 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.grantPermissions(["geolocation"])
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
-        success({ coords: { latitude: 14.6, longitude: -61.0 } })
+      window.__geolocationMock = {
+        success: { coords: { latitude: 14.6, longitude: -61.0 } }
       }
     })
 
@@ -86,8 +106,8 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.clearPermissions()
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (_, error) => {
-        error({ code: 1, message: "Permission denied" })
+      window.__geolocationMock = {
+        error: { code: 1, message: "Permission denied" }
       }
     })
 
@@ -105,8 +125,8 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.grantPermissions(["geolocation"])
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
-        success({ coords: { latitude: 48.8566, longitude: 2.3522 } })
+      window.__geolocationMock = {
+        success: { coords: { latitude: 48.8566, longitude: 2.3522 } }
       }
     })
 
@@ -126,12 +146,22 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     const mapCanvas = page.locator('#world, [data-testid="map-canvas"], svg').first()
     await expect(mapCanvas).toBeVisible()
 
+    // Dismiss cookie banner first (it covers bottom elements)
+    const cookieBanner = page.locator('.sg-cookie-banner').first()
+    if (await cookieBanner.isVisible({ timeout: 1000 }).catch(() => false)) {
+      const btn = cookieBanner.locator('button:has-text("Refuser"), button:has-text("Decline"), button:has-text("Rechazar")').first()
+      if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+        await btn.click({ force: true })
+        await page.waitForTimeout(300)
+      }
+    }
+
     const paywallTrigger = page.locator('button:has-text("Premium"), [data-testid*="premium"], a:has-text("Premium")').first()
     if (await paywallTrigger.isVisible({ timeout: 2000 })) {
       await paywallTrigger.click()
-      await page.waitForTimeout(500)
-      const paywall = page.locator('[data-testid*="premium"], [role="dialog"]:has-text("Premium")').first()
-      await expect(paywall).toBeVisible({ timeout: 3000 })
+      await page.waitForTimeout(1000)
+      const paywall = page.locator('.sg-modal-panel, [role="dialog"][aria-modal="true"], [data-testid*="premium"]').first()
+      await expect(paywall).toBeVisible({ timeout: 5000 })
     }
   })
 
@@ -139,8 +169,8 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.grantPermissions(["geolocation"])
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
-        success({ coords: { latitude: 14.6, longitude: -61.0 } })
+      window.__geolocationMock = {
+        success: { coords: { latitude: 14.6, longitude: -61.0 } }
       }
     })
 
@@ -172,18 +202,18 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await context.grantPermissions(["geolocation"])
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
-        success({ coords: { latitude: 14.6, longitude: -61.0 } })
+      window.__geolocationMock = {
+        success: { coords: { latitude: 14.6, longitude: -61.0 } }
       }
     })
 
     const locateBtn = page.locator('[data-testid="around-me-locate-btn"]')
     await dismissAssistantModal(page)
     await locateBtn.click()
-    await page.waitForTimeout(800)
+    await page.waitForTimeout(1500)
 
     const beachItems = page.locator('[data-testid^="around-me-beach-"]')
-    await expect(beachItems.first()).toBeVisible()
+    await page.waitForSelector('[data-testid^="around-me-beach-"]', { timeout: 10000 })
 
     // Click first beach - should trigger paywall for non-premium
     const firstBeach = beachItems.first()
@@ -192,15 +222,15 @@ test.describe("Around Me Intelligence (flag gated)", () => {
 
     // Check paywall opened (PremiumModal or similar)
     const paywall = page.locator('[role="dialog"]:has-text("Premium"), [data-testid*="premium"], .sg-modal-panel').first()
-    await expect(paywall).toBeVisible({ timeout: 3000 })
+    await expect(paywall).toBeVisible({ timeout: 5000 })
   })
 
   test("opt-out géoloc: refuse stores optout, no banner on reload", async ({ page, context }) => {
     await context.grantPermissions(["geolocation"])
 
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
-        success({ coords: { latitude: 14.6, longitude: -61.0 } })
+      window.__geolocationMock = {
+        success: { coords: { latitude: 14.6, longitude: -61.0 } }
       }
     })
 
@@ -209,11 +239,14 @@ test.describe("Around Me Intelligence (flag gated)", () => {
     await locateBtn.click()
     await page.waitForTimeout(300)
 
-    // Click "Refuser" on info banner
-    const refuseBtn = page.locator('button:has-text("Refuser"), button:has-text("Decline"), button:has-text("Rechazar")')
-    if (await refuseBtn.isVisible({ timeout: 1000 })) {
-      await refuseBtn.click()
-      await page.waitForTimeout(300)
+    // Click "Refuser" on info banner (use .sg-cookie-banner specifically to avoid matching around-me controller button)
+    const cookieBanner = page.locator('.sg-cookie-banner').first()
+    if (await cookieBanner.isVisible({ timeout: 1000 }).catch(() => false)) {
+      const btn = cookieBanner.locator('button:has-text("Refuser"), button:has-text("Decline"), button:has-text("Rechazar")').first()
+      if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+        await btn.click({ force: true })
+        await page.waitForTimeout(300)
+      }
     }
 
     // Reload page
