@@ -15,7 +15,8 @@
     "deploy-files": "node scripts/manual-ftp-deploy.cjs --files",
     "deploy-provision": "node scripts/manual-ftp-deploy.cjs --provision",
     "verify-ftp": "node scripts/verify-ftp-ready.cjs",
-    "session": "node scripts/cursor-session-startup.cjs"
+    "session": "node scripts/cursor-session-startup.cjs",
+    "gate": "node scripts/gate.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
