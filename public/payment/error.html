@@ -142,8 +142,27 @@
   if (reason) reasonText += ' (' + reason + ')';
   var detail = document.getElementById('errorDetail');
   detail.style.display = 'block';
-  detail.innerHTML = '<div style="font-family:ui-monospace,monospace;font-size:12px;opacity:.9">Code : ' + code + '</div><div style="margin-top:8px">' + reasonText + '</div>';
-  if (email) detail.innerHTML += '<div style="margin-top:8px;font-size:13px;opacity:.8">📧 ' + email + '</div>';
+  // Les paramètres d'URL sont non fiables : ne jamais les interpoler dans innerHTML.
+  var codeLine = document.createElement('div');
+  codeLine.style.fontFamily = 'ui-monospace,monospace';
+  codeLine.style.fontSize = '12px';
+  codeLine.style.opacity = '.9';
+  codeLine.textContent = 'Code : ' + code;
+  detail.appendChild(codeLine);
+
+  var reasonLine = document.createElement('div');
+  reasonLine.style.marginTop = '8px';
+  reasonLine.textContent = reasonText;
+  detail.appendChild(reasonLine);
+
+  if (email) {
+    var emailLine = document.createElement('div');
+    emailLine.style.marginTop = '8px';
+    emailLine.style.fontSize = '13px';
+    emailLine.style.opacity = '.8';
+    emailLine.textContent = '📧 ' + email;
+    detail.appendChild(emailLine);
+  }
 
   window.retry = function() {
     var returnUrl = '/paywall?' + new URLSearchParams({retry: '1', code: code}).toString();

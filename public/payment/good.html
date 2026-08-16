@@ -109,10 +109,28 @@
   document.querySelector('h1').textContent = info.title;
   document.querySelector('.q').textContent = info.desc;
 
-  var accessHtml = '';
-  if (email) accessHtml += '<div style="margin-bottom:8px">📧 ' + email + '</div>';
-  if (plan) accessHtml += '<div style="font-size:13px;opacity:.8">Plan : ' + plan + '</div>';
-  document.getElementById('accessInfo').innerHTML = accessHtml || '<div style="opacity:.7">Détails envoyés par email</div>';
+  // Les paramètres d'URL sont non fiables : ne jamais les interpoler dans innerHTML.
+  var accessInfo = document.getElementById('accessInfo');
+  if (email || plan) {
+    if (email) {
+      var emailLine = document.createElement('div');
+      emailLine.style.marginBottom = '8px';
+      emailLine.textContent = '📧 ' + email;
+      accessInfo.appendChild(emailLine);
+    }
+    if (plan) {
+      var planLine = document.createElement('div');
+      planLine.style.fontSize = '13px';
+      planLine.style.opacity = '.8';
+      planLine.textContent = 'Plan : ' + plan;
+      accessInfo.appendChild(planLine);
+    }
+  } else {
+    var fallback = document.createElement('div');
+    fallback.style.opacity = '.7';
+    fallback.textContent = 'Détails envoyés par email';
+    accessInfo.appendChild(fallback);
+  }
 
   // i18n buttons
   var btns = {
