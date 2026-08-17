@@ -20,7 +20,12 @@ if (!$pid || strpos($pid, 'tr_') !== 0) {
     exit;
 }
 
-$cfg = require __DIR__ . '/mollie-config.php';
+$cfg = [];
+$localPath = __DIR__ . '/mollie-config.php';
+if (file_exists($localPath)) {
+    $local = @include $localPath;
+    if (is_array($local)) $cfg = $local;
+}
 require_once __DIR__ . '/mollie-lib.php';
 
 // Fetch le paiement depuis l'API Mollie
