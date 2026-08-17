@@ -21,6 +21,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react"
 export function OnsiteCheckout({
   lang,
   source,
+  pwVariant,
   payStep,
   setPayStep,
   passCtxRef,
@@ -151,6 +152,7 @@ export function OnsiteCheckout({
   if (PAY_PROVIDER !== "mollie" && !PAY_CAPTURE_ONLY) return null
 
   const passCtx = passCtxRef.current
+  const isComic = pwVariant === "comic"
 
   return (
     <div
@@ -160,7 +162,9 @@ export function OnsiteCheckout({
       onTouchEnd={onTouchEndPay}
       style={{
         position: "fixed", inset: 0, zIndex: 1300,
-        background: PAY_CAPTURE_ONLY
+        background: isComic
+          ? "linear-gradient(168deg,#FDF6E3 0%,#F5EDDA 58%,#EDE4CF 100%)"
+          : PAY_CAPTURE_ONLY
           ? "linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)"
           : "linear-gradient(145deg,#190c2c,#120821)",
         display: "flex", flexDirection: "column",
@@ -185,14 +189,20 @@ export function OnsiteCheckout({
               setPayStep(false)
             }}
             style={{
-              background: "none", border: "none", color: "rgba(255,255,255,.65)", fontSize: 14,
+              background: "none", border: "none",
+              color: isComic ? "#0D0B14" : "rgba(255,255,255,.65)",
+              fontSize: 14,
               cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center",
               gap: 6, padding: "8px 0"
             }}
           >
             ← {_t(lang, "Retour", "Back", "Atrás")}
           </button>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            fontSize: 11,
+            color: isComic ? "rgba(13,11,20,.45)" : "rgba(255,255,255,.45)",
+            display: "flex", alignItems: "center", gap: 8
+          }}>
             {IS_NEW_REGION && (
               <span style={{ fontFamily: "'Anton',sans-serif", fontSize: 10.5, letterSpacing: ".12em", color: "rgba(255,255,255,.8)" }}>
                 {((lang === "es" ? "SARGAZO " : "SARGASSUM ") + String(REGION?.name || "")).toUpperCase()}
@@ -204,7 +214,8 @@ export function OnsiteCheckout({
 
         {/* Titre */}
         <h3 style={{
-          fontFamily: "'Anton',system-ui,sans-serif", fontSize: 22, color: "#fff",
+          fontFamily: "'Anton',system-ui,sans-serif", fontSize: 22,
+          color: isComic ? "#0D0B14" : "#fff",
           margin: "0 0 4px", letterSpacing: "-.01em"
         }}>
           {PAY_CAPTURE_ONLY
@@ -217,7 +228,11 @@ export function OnsiteCheckout({
         </h3>
 
         {/* Sous-titre + price detail */}
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", marginBottom: 18 }}>
+        <div style={{
+          fontSize: 13,
+          color: isComic ? "rgba(13,11,20,.6)" : "rgba(255,255,255,.6)",
+          marginBottom: 18
+        }}>
           {PAY_CAPTURE_ONLY
             ? _t(lang,
                 "Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.",
@@ -235,7 +250,8 @@ export function OnsiteCheckout({
         {__COMM > 0 && (
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            marginBottom: 14, fontSize: 12, fontWeight: 600, color: "rgba(255,199,44,.75)"
+            marginBottom: 14, fontSize: 12, fontWeight: 600,
+            color: isComic ? "#B87A00" : "rgba(255,199,44,.75)"
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
             {_t(lang, `Déjà ${__COMM}+ qui suivent leurs plages`, `${__COMM}+ people track their beaches`, `${__COMM}+ personas rastrean sus playas`)}
@@ -245,7 +261,10 @@ export function OnsiteCheckout({
         {/* Email EN PREMIER (avant wallets et carte) — l'accès est lié à l'email */}
         {!PAY_CAPTURE_ONLY && (
           <div style={{ marginBottom: 14 }}>
-            <label style={MOL_LABEL}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
+            <label style={{
+              ...MOL_FIELD,
+              color: isComic ? "#0D0B14" : MOL_FIELD.color
+            }}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
             <input
               ref={payEmailRef}
               type="email"
@@ -257,14 +276,20 @@ export function OnsiteCheckout({
               style={{
                 width: "100%", boxSizing: "border-box", padding: "13px 14px", borderRadius: 12,
                 fontSize: 16, fontFamily: "inherit", outline: "none",
-                border: "1px solid rgba(255,255,255,.14)", background: "rgba(255,255,255,.05)", color: "#eef2f7"
+                border: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,255,255,.14)",
+                background: isComic ? "#FDF6E3" : "rgba(255,255,255,.05)",
+                color: isComic ? "#0D0B14" : "#eef2f7",
+                boxShadow: isComic ? "2px 2px 0 #0D0B14" : "none"
               }}
             />
           </div>
         )}
         {PAY_CAPTURE_ONLY && (
           <div style={{ marginBottom: 14 }}>
-            <label style={MOL_LABEL}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
+            <label style={{
+              ...MOL_FIELD,
+              color: isComic ? "#0D0B14" : MOL_FIELD.color
+            }}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
             <input
               ref={payEmailRef}
               type="email"
@@ -276,10 +301,17 @@ export function OnsiteCheckout({
               style={{
                 width: "100%", boxSizing: "border-box", padding: "13px 14px", borderRadius: 12,
                 fontSize: 16, fontFamily: "inherit", outline: "none",
-                border: "1px solid rgba(255,255,255,.14)", background: "rgba(255,255,255,.05)", color: "#eef2f7"
+                border: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,255,255,.14)",
+                background: isComic ? "#FDF6E3" : "rgba(255,255,255,.05)",
+                color: isComic ? "#0D0B14" : "#eef2f7",
+                boxShadow: isComic ? "2px 2px 0 #0D0B14" : "none"
               }}
             />
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginTop: 6 }}>
+            <div style={{
+              fontSize: 11,
+              color: isComic ? "rgba(13,11,20,.4)" : "rgba(255,255,255,.4)",
+              marginTop: 6
+            }}>
               {_t(lang, "Pour t'envoyer ton reçu et ton accès premium.", "To send your receipt and premium access.", "Para enviarte tu recibo y acceso premium.")}
             </div>
           </div>
@@ -337,9 +369,9 @@ export function OnsiteCheckout({
                 </button>
               )}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.14)" }} />
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,.45)" }}>{_t(lang, "ou par carte", "or by card", "o con tarjeta")}</span>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.14)" }} />
+                <div style={{ flex: 1, height: 1, background: isComic ? "rgba(13,11,20,.14)" : "rgba(255,255,255,.14)" }} />
+                <span style={{ fontSize: 11, color: isComic ? "rgba(13,11,20,.45)" : "rgba(255,255,255,.45)" }}>{_t(lang, "ou par carte", "or by card", "o con tarjeta")}</span>
+                <div style={{ flex: 1, height: 1, background: isComic ? "rgba(13,11,20,.14)" : "rgba(255,255,255,.14)" }} />
               </div>
             </div>
           )
@@ -348,15 +380,19 @@ export function OnsiteCheckout({
         {/* Panneau carte Mollie — 4 composants individuels (thème sombre premium, zéro blanc) */}
         {!PAY_CAPTURE_ONLY && PAY_PROVIDER === "mollie" && (
           <div style={{
-            background: "linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
-            borderRadius: 16, border: "1px solid rgba(255,255,255,.10)",
-            padding: "14px 14px 4px", boxShadow: "0 8px 30px rgba(0,0,0,.30)"
+            background: isComic
+              ? "#FDF6E3"
+              : "linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
+            borderRadius: 16,
+            border: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,255,255,.10)",
+            padding: "14px 14px 4px",
+            boxShadow: isComic ? "3px 3px 0 #0D0B14" : "0 8px 30px rgba(0,0,0,.30)"
           }}>
-            <label style={MOL_LABEL}>{_t(lang, "Nom du titulaire", "Cardholder name", "Nombre del titular")}</label>
-            <div ref={molHolderRef} style={MOL_FIELD} />
-            <label style={MOL_LABEL}>{_t(lang, "Numéro de carte", "Card number", "Número de tarjeta")}</label>
+            <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Nom du titulaire", "Cardholder name", "Nombre del titular")}</label>
+            <div ref={molHolderRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
+            <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Numéro de carte", "Card number", "Número de tarjeta")}</label>
             <div style={{ position: "relative" }}>
-              <div ref={molNumberRef} style={{ ...MOL_FIELD, paddingRight: 74 }} />
+              <div ref={molNumberRef} style={{ ...MOL_FIELD, paddingRight: 74, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color }} />
               <span aria-hidden="true" style={{
                 position: "absolute", right: 11, top: 15, display: "flex",
                 gap: 5, alignItems: "center", pointerEvents: "none"
@@ -367,21 +403,22 @@ export function OnsiteCheckout({
             </div>
             <div style={{ display: "flex", gap: 11 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <label style={MOL_LABEL}>{_t(lang, "Expiration", "Expiry", "Caducidad")}</label>
-                <div ref={molExpiryRef} style={MOL_FIELD} />
+                <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Expiration", "Expiry", "Caducidad")}</label>
+                <div ref={molExpiryRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <label style={MOL_LABEL}>CVC</label>
-                <div ref={molCvcRef} style={MOL_FIELD} />
+                <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>CVC</label>
+                <div ref={molCvcRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
               </div>
             </div>
             <div style={{
               display: "flex", alignItems: "center", gap: 7, marginTop: 12,
-              fontSize: 11.5, color: "rgba(255,255,255,.5)", lineHeight: 1.35
+              fontSize: 11.5, lineHeight: 1.35,
+              color: isComic ? "rgba(13,11,20,.5)" : "rgba(255,255,255,.5)"
             }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2" />
-                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2" />
+                <rect x="4" y="10" width="16" height="10" rx="2" stroke={isComic ? "#22C55E" : "rgba(124,224,176,.85)"} strokeWidth="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke={isComic ? "#22C55E" : "rgba(124,224,176,.85)"} strokeWidth="2" />
               </svg>
               {_t(lang,
                 "Paiement chiffré · tes données carte ne sont jamais stockées chez nous",
@@ -395,13 +432,14 @@ export function OnsiteCheckout({
         {payError && (
           <div role="alert" style={{
             display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12,
-            padding: "11px 13px", borderRadius: 12, background: "rgba(232,82,42,.12)",
-            borderLeft: "4px solid #E8522A"
+            padding: "11px 13px", borderRadius: 12,
+            background: isComic ? "rgba(232,82,42,.08)" : "rgba(232,82,42,.12)",
+            borderLeft: `4px solid #E8522A`
           }}>
             <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{ flexShrink: 0, marginTop: 1, color: "#F4845F" }}>
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
-            <div style={{ color: "#FFD9CC", fontSize: 15, lineHeight: 1.4, fontWeight: 600 }}>{payError}</div>
+            <div style={{ color: isComic ? "#E8522A" : "#FFD9CC", fontSize: 15, lineHeight: 1.4, fontWeight: 600 }}>{payError}</div>
           </div>
         )}
 
@@ -409,8 +447,10 @@ export function OnsiteCheckout({
         {consentFlag && !PAY_CAPTURE_ONLY && passCtx && (
           <label style={{
             display: "flex", alignItems: "flex-start", gap: 9, marginTop: 16,
-            padding: "11px 13px", borderRadius: 12, background: "#13261F",
-            border: "1px solid rgba(255,255,255,.14)", cursor: "pointer"
+            padding: "11px 13px", borderRadius: 12,
+            background: isComic ? "#F5EDDA" : "#13261F",
+            border: isComic ? "2px solid #0D0B14" : "1px solid rgba(255,255,255,.14)",
+            cursor: "pointer"
           }}>
             <input
               type="checkbox"
@@ -421,7 +461,7 @@ export function OnsiteCheckout({
               }}
               style={{ flexShrink: 0, marginTop: 2, width: 18, height: 18, accentColor: "#FFC72C", cursor: "pointer" }}
             />
-            <span style={{ fontSize: 11.5, lineHeight: 1.45, color: "rgba(255,255,255,.72)" }}>
+            <span style={{ fontSize: 11.5, lineHeight: 1.45, color: isComic ? "#0D0B14" : "rgba(255,255,255,.72)" }}>
               {_t(lang,
                 "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation). En cas de problème, contactez-nous.",
                 "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU). If anything goes wrong, just email us.",
@@ -435,14 +475,21 @@ export function OnsiteCheckout({
           onClick={() => { try { doSubscribe() } catch (_) {} }}
           disabled={payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)}
           style={{
-            width: "100%", padding: 15, borderRadius: 14, border: "none", marginTop: 16,
+            width: "100%", padding: 15, borderRadius: 14, marginTop: 16,
+            border: isComic ? "2.5px solid #0D0B14" : "none",
             cursor: payBusy ? "wait" : ((consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk) ? "not-allowed" : "pointer"),
-            fontFamily: "inherit", fontWeight: 800, fontSize: 15.5,
+            fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit",
+            fontWeight: 800, fontSize: 15.5, letterSpacing: isComic ? ".02em" : "normal",
+            textTransform: isComic ? "uppercase" : "none",
             opacity: (payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)) ? .7 : 1,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
-            color: "#190c2c",
-            boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)"
+            background: isComic
+              ? "#FFC72C"
+              : "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
+            color: isComic ? "#0D0B14" : "#190c2c",
+            boxShadow: isComic
+              ? "3px 3px 0 #0D0B14"
+              : "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)"
           }}
         >
           {payBusy
@@ -458,7 +505,10 @@ export function OnsiteCheckout({
             : _t(lang, "Démarrer l'essai — 0 € aujourd'hui", "Start trial — $0 today", "Empezar prueba — $0 hoy")}
         </button>
 
-        <div style={{ textAlign: "center", marginTop: 12, fontSize: 10.5, color: "rgba(255,255,255,.4)" }}>
+        <div style={{
+          textAlign: "center", marginTop: 12, fontSize: 10.5,
+          color: isComic ? "rgba(13,11,20,.4)" : "rgba(255,255,255,.4)"
+        }}>
           {PAY_CAPTURE_ONLY
             ? _t(lang, "Offert le temps qu'on rouvre · sans carte · juste ton email", "On us while we reopen · no card · just your email", "Gratis mientras reabrimos · sin tarjeta · solo tu email")
             : NO_TRIAL
@@ -468,12 +518,15 @@ export function OnsiteCheckout({
 
         {/* Consentement implicite (l'acte de paiement vaut renonciation) */}
         {!consentFlag && !PAY_CAPTURE_ONLY && (
-          <div style={{ textAlign: "center", marginTop: 8, fontSize: 10, lineHeight: 1.45, color: "rgba(255,255,255,.34)" }}>
+          <div style={{
+            textAlign: "center", marginTop: 8, fontSize: 10, lineHeight: 1.45,
+            color: isComic ? "rgba(13,11,20,.34)" : "rgba(255,255,255,.34)"
+          }}>
             {_t(lang,
               "Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert. En cas de problème, écrivez-nous.",
               "Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open. If anything goes wrong, just email us.",
               "Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso. Si hay algún problema, escríbenos.")}{" "}
-            <a href="/cgv.html" target="_blank" rel="noopener" style={{ color: "rgba(255,255,255,.5)", textDecoration: "underline" }}>{_t(lang, "CGV", "Terms", "Términos")}</a>
+            <a href="/cgv.html" target="_blank" rel="noopener" style={{ color: isComic ? "#B87A00" : "rgba(255,255,255,.5)", textDecoration: "underline" }}>{_t(lang, "CGV", "Terms", "Términos")}</a>
           </div>
         )}
 
@@ -482,8 +535,11 @@ export function OnsiteCheckout({
           <button
             onClick={() => { try { setPayError(""); setPayStep(false) } catch (_) {} }}
             style={{
-              background: "none", border: "1px solid rgba(255,255,255,.25)", borderRadius: 12,
-              color: "rgba(255,255,255,.8)", fontSize: 12.5, fontWeight: 600, padding: "11px 14px",
+              background: "none",
+              border: isComic ? "2px solid #0D0B14" : "1px solid rgba(255,255,255,.25)",
+              borderRadius: 12,
+              color: isComic ? "#0D0B14" : "rgba(255,255,255,.8)",
+              fontSize: 12.5, fontWeight: 600, padding: "11px 14px",
               width: "100%", cursor: "pointer", fontFamily: "inherit", marginTop: 14
             }}
           >
