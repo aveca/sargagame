@@ -12,7 +12,7 @@ test('mollie-payment-flow-smoke', async ({ page }) => {
 
   // 2. Verify Mollie script is present in DOM (after CSP disable + injection)
   const mollieScript = await page.locator('script[src*="js.mollie.com"]').first();
-  await expect(mollieScript).toBeVisible();
+  await expect(mollieScript).toBeAttached();
 
   // 3. Trigger the paywall (click a beach then premium, or go directly to premium view)
   // Let's navigate to a beach page that shows the verdict/paywall

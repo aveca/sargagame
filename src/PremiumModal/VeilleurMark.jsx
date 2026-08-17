@@ -29,9 +29,9 @@ export function VeilleurMark({ size = 72 }) {
       style={{
         display: "block", margin: "0 auto 8px",
         filter: "drop-shadow(0 6px 0 rgba(0,0,0,.18))",
-        animation: "sgVeilBreathe 3s ease-in-out infinite",
         pointerEvents: "none"
       }}>
+      <rect x="0" y="0" width="72" height="76" fill="#FBF4DF" rx="12" />
       <defs>
         <radialGradient id="sgIris" cx="40%" cy="34%" r="74%">
           <stop offset="0" stopColor="#9af7d6" /><stop offset="1" stopColor="#0c7d72" />
