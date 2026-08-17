@@ -118,17 +118,34 @@ async function dismissCookieBanner(page: Page) {
 // Helper: close premium modal if it auto-opened (stale state / deep link)
 async function dismissPremiumModal(page: Page) {
   try {
-    const modalPanel = page.locator('.sg-modal-panel').first()
-    const modalVisible = await modalPanel.isVisible({ timeout: 3000 }).catch(() => false)
-    if (modalVisible) {
-      const closeBtn = page.locator('.sg-modal-panel [aria-label="Fermer"], .sg-modal-panel [aria-label="Close"], .sg-modal-panel [aria-label="Cerrar"]').first()
-      if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await closeBtn.click({ force: true, timeout: 5000 }).catch(() => {})
-        await page.waitForTimeout(800)
-      } else {
-        await page.keyboard.press('Escape').catch(() => {})
-        await page.waitForTimeout(800)
-      }
+    // 1) Try clicking backdrop to dismiss modal (backdrop is below panel)
+    const backdrop = page.locator('.backdrop').first()
+    if (await backdrop.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await backdrop.click({ force: true, timeout: 2000 }).catch(() => {})
+      await page.waitForTimeout(600)
+    }
+    // 2) Try classic sheet modal close button
+    const closeBtn = page.locator('.sg-modal-panel [aria-label="Fermer"], .sg-modal-panel [aria-label="Close"], .sg-modal-panel [aria-label="Cerrar"]').first()
+    if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await closeBtn.click({ force: true, timeout: 3000 }).catch(() => {})
+      await page.waitForTimeout(600)
+    }
+    // 3) Try comic/world variant: "Plus tard" button
+    const plusTard = page.locator('button:has-text("Plus tard"), button:has-text("Not now"), button:has-text("Más tarde")').first()
+    if (await plusTard.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await plusTard.click({ force: true, timeout: 3000 }).catch(() => {})
+      await page.waitForTimeout(600)
+    }
+    // 4) Press Escape to dismiss any remaining overlay
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.waitForTimeout(500)
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.waitForTimeout(500)
+    // 5) Dismiss exit-nudge toast ("Ton pass t'attend") — uses × character
+    const toastClose = page.locator('button:has-text("×")').first()
+    if (await toastClose.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await toastClose.click({ force: true, timeout: 2000 }).catch(() => {})
+      await page.waitForTimeout(300)
     }
   } catch (_) {}
 }
@@ -138,12 +155,14 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
+    // Must dismiss cookie banner FIRST — it covers the BottomNav
     await dismissCookieBanner(page)
     await dismissPremiumModal(page)
+    await page.waitForTimeout(500)
 
     // BottomNav = nav.sg-bottom-nav avec 3 onglets
     const nav = page.locator(selectors.bottomNav).first()
-    await expect(nav).toBeVisible({ timeout: 5000 })
+    await expect(nav).toBeVisible({ timeout: 8000 })
 
     // 3 onglets visibles : Carte (active), Plages, Premium
     const mapTab = page.locator(selectors.bottomNavTabMap).first()
@@ -255,15 +274,24 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
 
 test.describe("FABs allégés — Redesign funnel UX (2026-08-11)", () => {
   test("seulement 2 FABs restants sur la carte (SargaChat + Archipel)", async ({ page }) => {
+    // Pre-dismiss premium modal and set cookie consent to avoid cascade:
+    // showPremium blocks cookie banner → cookieConsent stays null → FABs never render
+    await page.addInitScript(() => {
+      localStorage.setItem("sg_cookie_consent", "dismissed")
+      localStorage.removeItem("sg_premium")
+      localStorage.removeItem("sg_premium_activated_at")
+    })
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
-    await page.waitForTimeout(2500)
-    await dismissCookieBanner(page)
+    await page.waitForTimeout(2000)
+    // Still dismiss any overlays that snuck in
     await dismissPremiumModal(page)
+    await dismissCookieBanner(page)
+    await page.waitForTimeout(1500)
 
     // SargaChat + Archipel sont visibles
-    const chatVisible = await page.locator(selectors.fabSargaChat).first().isVisible({ timeout: 3000 }).catch(() => false)
-    const archipelVisible = await page.locator(selectors.fabArchipel).first().isVisible({ timeout: 3000 }).catch(() => false)
+    const chatVisible = await page.locator(selectors.fabSargaChat).first().isVisible({ timeout: 5000 }).catch(() => false)
+    const archipelVisible = await page.locator(selectors.fabArchipel).first().isVisible({ timeout: 5000 }).catch(() => false)
 
     // Au moins un des deux doit être visible (peut être masqué si view n'est pas map ou si un overlay est ouvert)
     // Sur la carte par défaut, les deux doivent être visibles

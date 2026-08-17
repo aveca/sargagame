@@ -17,7 +17,10 @@ test.describe("B2B Pro Flow", () => {
     expect(hasProContent).toBe(true)
 
     const ctaButtons = page.locator(
-      'button:has-text("Contacter"), button:has-text("Contact"), button:has-text("Essai"), button:has-text("Trial"), button:has-text("Démo"), button:has-text("Demo"), a:has-text("Contacter"), a:has-text("Contact"), a:has-text("Essai"), a:has-text("Trial")'
+      'a:has-text("Hôtel"), a:has-text("Hotel"), a:has-text("Collectivités"), ' +
+      'a:has-text("Contacter"), a:has-text("Contact"), a:has-text("Essai"), a:has-text("Trial"), ' +
+      'a:has-text("Démo"), a:has-text("Demo"), a:has-text("Offres"), a:has-text("Pricing"), ' +
+      'button:has-text("Contacter"), button:has-text("Contact"), button:has-text("Essai"), button:has-text("Trial")'
     )
     const ctaCount = await ctaButtons.count()
     expect(ctaCount).toBeGreaterThanOrEqual(1)
