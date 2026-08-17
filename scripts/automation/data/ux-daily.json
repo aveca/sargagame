@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-16T01:49:43.302Z",
-  "date": "2026-08-16",
+  "generated": "2026-08-17T01:57:46.189Z",
+  "date": "2026-08-17",
   "days": 1,
   "regions": [
     "florida",
@@ -9,61 +9,59 @@
   ],
   "shipped": [
     {
-      "h": "f78ee49f",
-      "subject": "chore: update Copernicus data 2026-08-16 00:52 UTC"
+      "h": "da89d455",
+      "subject": "feat: experience layer — Le Veilleur wake animation, comic trigger on every beach tap, video autoplay on beach sheet"
     },
     {
-      "h": "9efe7fce",
-      "subject": "chore: update Copernicus data 2026-08-15 19:03 UTC"
+      "h": "d1ee9c48",
+      "subject": "feat: add Cloudflare Pages Function for GP domain rewrite"
     },
     {
-      "h": "03084775",
-      "subject": "chore: email state 2026-08-15 18:45 UTC"
+      "h": "886ad930",
+      "subject": "feat: TASK-P1-005 dashboard fraicheur pipeline - badge Satellite in Header"
     },
     {
-      "h": "e4f788f3",
-      "subject": "chore: update Copernicus data 2026-08-15 12:53 UTC"
+      "h": "7e052066",
+      "subject": "fix: pipeline ERDDAP fresh + US deploy full, GP/MQ server config gaps documented"
     },
     {
-      "h": "957c1c54",
-      "subject": "chore: email state 2026-08-15 12:52 UTC"
+      "h": "3950b0c4",
+      "subject": "feat(analytics): pw_style A/B tracking + paywall verdict script"
     },
     {
-      "h": "f1e16ef5",
-      "subject": "chore: update Copernicus data 2026-08-15 07:10 UTC"
+      "h": "c469c2d0",
+      "subject": "fix(ui): sheet-handle, onsitecheckout retry, audit selectors, test stability"
     },
     {
-      "h": "952c8b14",
-      "subject": "chore: email state 2026-08-15 06:52 UTC"
+      "h": "422c4fee",
+      "subject": "fix(payment): prevent XSS in return pages"
     }
   ],
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 31,
+      "sessions": 27,
       "friction": 0,
-      "dead_rate": 0.214,
+      "dead_rate": 0.067,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.43
+        "rate": 0.31
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-15",
+      "prev_date": "2026-08-16",
       "changes": [
-        "sessions 350→31 (-91%)",
-        "dead-rate 0.077→0.214 (+0.1) ⚠️",
-        "✔︎ dead-click résolu : div"
+        "dead-rate 0.214→0.067 (-0.1) ✅"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 2,
+      "sessions": 7,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -74,28 +72,27 @@
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-15",
+      "prev_date": "2026-08-16",
       "changes": [
-        "sessions 65→2 (-97%)",
-        "dead-rate 0.125→0 (-0.1) ✅"
+        "sessions 2→7 (+250%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 0,
+      "sessions": 4,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": null,
-      "modal_to_cta": null,
-      "cta_to_redirect": null,
-      "redirect_to_conversion": null,
-      "session_to_conversion": null,
-      "session_to_email": null,
-      "prev_date": "2026-08-15",
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-16",
       "changes": [
-        "dead-rate 0.273→0 (-0.3) ✅"
+        "stable (aucun mouvement notable)"
       ]
     }
   ]
