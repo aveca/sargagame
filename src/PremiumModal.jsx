@@ -127,7 +127,7 @@ export default function PremiumModal({
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
   const onsiteCheckoutProps = {
-    lang, source,
+    lang, source, pwVariant,
     payStep, setPayStep,
     passCtxRef, payPlanRef, payEmailRef,
     payBusy, setPayBusy, payError, setPayError,

@@ -33,7 +33,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 07 CARTE PLAGE DU JOUR (= booster vedette, fait) → 08/12
 - [x] 08 DÉTAIL PLAGE + 7 JOURS (= ChasseDetail, fait) → 09/12/voisines
 - [x] 09 PRÉVISION 7 JOURS — aperçu honnête de la prévision RÉELLE dans ChasseDetail (J0 réel + J+1.. teinte statut/cadenas/confiance décroissante, horizon estompé, headline allClean «propre toute la semaine» / sinon «alerte le jour où ça bascule»). Frontière calquée ForecastChart, 0 fabrication (plage non-couverte→cadenas), réversible `?fc7=0`. Commit 301073e6 / PR #90, déployé. → 12
-- [ ] 11 PLAGE — PRÉVISIONS (fiche data en comic, remplace le « scroll satellite ») → 12
+- [x] 11 PLAGE — PRÉVISIONS (fiche data en comic, remplace le « scroll satellite ») → 12
 ### Bloc 3 — Carte
 - [x] 10 CARTE monde golden-hour (fait) — ⚠️ pins → doivent ouvrir le **détail comic** (item ⭐, cf PRODUCT §8)
 ### Bloc 4 — Jeu / rétention (le « plein de jeux » demandé)
@@ -46,8 +46,8 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [ ] 18 DÉFI DU THÈME / contest → 14
 - [x] 28 SÉRIE « 7 jours d'affilée » — section comic `.lc-week` (ruban 7 cases BD) dans ChasseHome, dérivée de la série **RÉELLE** (`sg_chasse` streak/best/last), états vivante/froide/vide honnêtes, célébration « SEPTAINE BOUCLÉE » + CTA premium **one-shot persistant** (`sg_chasse_seal`, fix re-fire de la revue), i18n+a11y+reduced-motion, réversible `?streak7=0`. → 05
 ### Bloc 5 — Conversion
-- [~] 12 PAYWALL « Réveil du Veilleur » / Pass (partiel comic — finir variants) → paiement
-- [ ] 06b PAIEMENT on-site (PayStep) en comic → succès → 29
+- [x] 12 PAYWALL « Réveil du Veilleur » / Pass (partiel comic — finir variants) → paiement
+- [x] 06b PAIEMENT on-site (PayStep) en comic → succès → 29
 - [x] 29 BIENVENUE PREMIUM (PaidOnboarding) en comic — skin design-system (paper/ink/yel, Anton, ombres dures, halftone, halo doré) appliqué aux 3 temps (plages à surveiller → notifs → brief), fin de la rupture dusk violet entre le splash « Premium activé » et l'arène. **Logique/contenu/i18n/props INCHANGÉS** (favoris→notif→brief). `?onboard=0` re-force le toast. → 05
 ### Bloc 6 — Système & utilitaires
 - [x] 19 CENTRE D'ALERTES « MES ALERTES » — cloche 🔔 (pastille count) dans le header arène → modale `AlertsModal`, alertes dérivées du **forecast RÉEL** (`computeAlerts` via resolveForecast : 1re transition de statut J+N + repère H₂S si `avoid`), filtre horizon/confiance<50, état vide honnête « tout est calme », **0 fabrication** (preview `?alerts=preview` clairement badgé « données d'exemple »). Réversible `?alerts=0`. → 13

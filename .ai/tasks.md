@@ -114,7 +114,7 @@
 - **Rôle** : coding_agent
 - **Description** : Extraire en sous-composants : doSubscribe (logique Silver), ErrorModal, PayGatewayHandler (Apple/Google)
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [x] done — PremiumModal.jsx est maintenant 240 lignes, 9 sous-composants extraits (WorldPaywall 438L, ComicPaywall 481L, OnsiteCheckout 534L, doSubscribe 341L, B2BModal 181L, FiabiliteProof 209L, ErrorModal 103L, VeilleurMark 96L, PayGatewayHandler 31L). Architecture clean, diminishing returns sur further split.
 
 ### TASK-P2-002 BCD reccurring → expose entièrement
 - **Priorité** : P2
@@ -128,7 +128,7 @@
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Aujourd'hui via query params; les pages dédiées `/payement/good` et `/payment/error` seraient plus propres.
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] done — `public/payment/good.html` (147L) + `public/payment/error.html` (177L) existent, i18n FR/EN/ES, comic design system, mollie.php redirige vers `/payment/good.html`. Error page gère code/reason/email via URL params.
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2
