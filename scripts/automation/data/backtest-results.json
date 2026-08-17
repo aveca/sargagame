@@ -70,7 +70,7 @@
     },
     "tartane": {
       "statusHitRate": 95,
-      "afaiMAE": 0.038,
+      "afaiMAE": 0.037,
       "pairs": 111
     },
     "anse-madame": {
@@ -105,12 +105,12 @@
     },
     "precheur": {
       "statusHitRate": 100,
-      "afaiMAE": 0.016,
+      "afaiMAE": 0.015,
       "pairs": 111
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.022,
+      "afaiMAE": 0.023,
       "pairs": 111
     },
     "gp-malendure": {
@@ -145,7 +145,7 @@
     },
     "gp-deshaies": {
       "statusHitRate": 100,
-      "afaiMAE": 0.012,
+      "afaiMAE": 0.013,
       "pairs": 111
     },
     "gp-moule": {
@@ -219,7 +219,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-27 → 2026-08-17) resultaron correctos (sobre 2223); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-08-17T01:50:00.644Z",
+  "computed": "2026-08-17T07:05:47.399Z",
   "pairs": [
     {
       "snapshotDate": "2026-08-14",
@@ -341,11 +341,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.03,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-08-14",
@@ -395,11 +395,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-14",
@@ -449,11 +449,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-14",
@@ -611,11 +611,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-08-14",
@@ -719,11 +719,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-08-14",
@@ -773,11 +773,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-14",
@@ -1025,11 +1025,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.03,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1277,11 +1277,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.03,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1313,11 +1313,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1349,11 +1349,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1457,11 +1457,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1529,11 +1529,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1565,11 +1565,11 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-15",
@@ -1709,11 +1709,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.03,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1835,11 +1835,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.03,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1853,11 +1853,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1871,11 +1871,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1925,11 +1925,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1961,11 +1961,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
@@ -1979,11 +1979,11 @@
         "confidence": 68
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-08-16",
