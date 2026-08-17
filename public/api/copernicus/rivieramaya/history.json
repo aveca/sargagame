@@ -3170,7 +3170,7 @@
         },
         {
           "id": "rm004",
-          "afai": 0.17,
+          "afai": 0.18,
           "status": "moderate"
         },
         {
@@ -3180,7 +3180,7 @@
         },
         {
           "id": "rm006",
-          "afai": 0.11,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -3190,8 +3190,8 @@
         },
         {
           "id": "rm008",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "rm009",
@@ -3200,7 +3200,7 @@
         },
         {
           "id": "rm010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3210,7 +3210,7 @@
         },
         {
           "id": "rm012",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -3245,12 +3245,12 @@
         },
         {
           "id": "rm019",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "rm020",
-          "afai": 0.17,
+          "afai": 0.18,
           "status": "moderate"
         }
       ]
