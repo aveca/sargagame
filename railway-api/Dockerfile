@@ -1,8 +1,17 @@
 # Railway API - PHP 8.3 with Apache
 FROM php:8.3-apache
 
-# Install required PHP extensions
+# Install required PHP extensions via apt (more reliable than compiling)
 RUN apt-get update && apt-get install -y \
+    php8.3-pdo-mysql \
+    php8.3-mbstring \
+    php8.3-json \
+    php8.3-xml \
+    php8.3-zip \
+    php8.3-gd \
+    php8.3-opcache \
+    php8.3-curl \
+    php8.3-redis \
     libzip-dev \
     libpng-dev \
     libjpeg-dev \
@@ -12,16 +21,7 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     zip \
     unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
-        mbstring \
-        json \
-        xml \
-        zip \
-        gd \
-        opcache \
-    && apt-get install -y php-redis
+    && docker-php-ext-configure gd --with-freetype --with-jpeg
 
 # Enable Apache modules
 RUN a2enmod rewrite headers ssl
