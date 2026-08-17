@@ -22,7 +22,7 @@ RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/custom.ini \
     && echo "opcache.memory_consumption = 128" >> /usr/local/etc/php/conf.d/custom.ini
 
 # Copy API files
-COPY api/ /var/www/html/
+COPY api/ /var/www/html/api/
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html \
