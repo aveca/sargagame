@@ -16,9 +16,14 @@ $raw = file_get_contents('php://input');
 // mollie-config.php. Le 2e appel retournait `true` (fichier déjà inclus) au lieu
 // du tableau retourné par `return [...]`. Conséquence : $cfg = true,
 // is_array(true) = false → $webhookSecret = '' → HTTP 503 éternel.
-// Fix : un seul require (sans _once) qui récupère la valeur du return.
-$cfg = require __DIR__ . '/mollie-config.php';
-$webhookSecret = is_array($cfg) ? ($cfg['webhook_secret'] ?? '') : (defined('MOLLIE_WEBHOOK_SECRET') ? MOLLIE_WEBHOOK_SECRET : '');
+// Load webhook_secret from env vars (Render) + local file fallback
+$cfg = ['webhook_secret' => getenv('MOLLIE_WEBHOOK_SECRET') ?: ''];
+$localPath = __DIR__ . '/mollie-config.php';
+if (file_exists($localPath) && !getenv('MOLLIE_WEBHOOK_SECRET')) {
+    $local = @include $localPath;
+    if (is_array($local)) $cfg = array_merge($cfg, $local);
+}
+$webhookSecret = $cfg['webhook_secret'] ?? '';
 if (!$webhookSecret) {
     error_log('[mollie-webhook] webhook_secret missing');
     http_response_code(503);

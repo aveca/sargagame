@@ -131,10 +131,14 @@ class SgMollieClient {
 }
 
 function getMollieClient(): SgMollieClient {
-    // Use require (not require_once) because mollie.php already did require_once
-    // and require_once would return true (boolean) on subsequent calls
-    $cfg = require __DIR__ . '/mollie-config.php';
-    $apiKey = is_array($cfg) ? ($cfg['api_key'] ?? '') : (defined('MOLLIE_API_KEY') ? MOLLIE_API_KEY : '');
+    $apiKey = getenv('MOLLIE_API_KEY') ?: '';
+    if (!$apiKey) {
+        $cfgPath = __DIR__ . '/mollie-config.php';
+        if (file_exists($cfgPath)) {
+            $cfg = @include $cfgPath;
+            $apiKey = is_array($cfg) ? ($cfg['api_key'] ?? '') : '';
+        }
+    }
     return new SgMollieClient($apiKey);
 }
 
