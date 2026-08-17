@@ -10,7 +10,10 @@ require_once __DIR__ . '/_ratelimit.php';
 // Use require (not require_once) so the anonymous return array is captured.
 // Subsequent calls to require_once mollie-config.php elsewhere (e.g. mollie-lib.php:136
 // uses plain require) will re-execute harmlessly and return the same array.
-$cfg = require __DIR__ . '/mollie-config.php';
+// Check for secret file at Render's secret mount path first
+$secretPath = '/etc/secrets/mollie-config.php';
+$localPath = __DIR__ . '/mollie-config.php';
+$cfg = require file_exists($secretPath) ? $secretPath : $localPath;
 if (!is_array($cfg)) $cfg = [];  // garde-fou si mollie-config.php absent/corrompu
 
 header('Content-Type: application/json; charset=utf-8');
