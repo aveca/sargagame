@@ -273,7 +273,7 @@ const FC_DAY_MAP={
   en:{"Auj.":"Today","Dem.":"Tmrw",Dim:"Sun",Lun:"Mon",Mar:"Tue",Mer:"Wed",Jeu:"Thu",Ven:"Fri",Sam:"Sat"},
   es:{"Auj.":"Hoy","Dem.":"Mañ.",Dim:"Dom",Lun:"Lun",Mar:"Mar",Mer:"Mié",Jeu:"Jue",Ven:"Vie",Sam:"Sáb"},
 }
-const fcDay=(d,lang)=>lang==="fr"?d.day:((FC_DAY_MAP[lang]||{})[d.day]||d.day)
+export const fcDay=(d,lang)=>lang==="fr"?d.day:((FC_DAY_MAP[lang]||{})[d.day]||d.day)
 /* Beach Score labels arrive in FRENCH from src/lib/score.js — map to en/es at render */
 const SCORE_LABEL_I18N={EXCEPTIONNEL:{en:"EXCEPTIONAL",es:"EXCEPCIONAL"},SUPER:{en:"GREAT",es:"GENIAL"},BON:{en:"GOOD",es:"BUENO"},MOYEN:{en:"AVERAGE",es:"REGULAR"},PASSABLE:{en:"FAIR",es:"PASABLE"},"ÉVITER":{en:"AVOID",es:"EVITAR"},NON:{en:"NO",es:"NO"}}
 const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[lang==="es"?"es":"en"]||label)
@@ -4604,7 +4604,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
                   animationDelay:(.32+i*.05)+"s",
                   boxShadow: i===0?`0 4px 12px ${comicStatusColor(d.status)}66`:"none",
                 }}/>
-                <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
+                <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
             {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>

@@ -15,7 +15,7 @@
  */
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
-import { _t, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
+import { _t, fcDay, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
@@ -354,7 +354,7 @@ export default function BeachSheet({
               {fcDays.length>0
                 ? <div style={{display:"flex",flexDirection:"column",gap:10}}>
                     {fcDays.map((d,i)=>{
-                      const dayLabel=i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)||"·"
+                      const dayLabel=i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)
                       return <ForecastBar key={i} day={dayLabel} status={d.status||"_loading"} index={i} lang={lang}/>
                     })}
                   </div>
@@ -489,7 +489,7 @@ export default function BeachSheet({
                 {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
                   <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
                     <div style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animation:"bsPop .5s cubic-bezier(.16,1,.3,1) both",animationDelay:(.15+i*.05)+"s"}}/>
-                    <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
+                    <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
                   </div>)}).slice(0,7)}
               </div>
             </div>
