@@ -430,7 +430,7 @@ export function ComicPaywall({
           color: "#FFC72C", letterSpacing: ".03em", textTransform: "uppercase"
         }}>
           <span aria-hidden="true">📖</span>
-          <span>Histoire vraie — Données Copernicus</span>
+          <span>{t("Histoire vraie — Données Copernicus","True story — Copernicus data","Historia real — Datos Copernicus")}</span>
         </div>
         
         <button
