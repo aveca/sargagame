@@ -13240,6 +13240,7 @@ useEffect(()=>{
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
     setComicBeach(null) // FIX : fermer le comic detail si ouvert — mutual exclusion
+    setSelectedBeach(null) // FIX : fermer la fiche data si ouverte — mutual exclusion
     
     // Validate beach data exists in sargassum.json
     const _sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id]
@@ -13252,7 +13253,15 @@ useEffect(()=>{
       })
     }
     
-    setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
+    if (mapDetail) {
+      // Si ?mapdetail=1 → utiliser la fiche comic (ChasseDetail)
+      openComicBeach(b);
+      track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_detail"});
+    } else {
+      // Par défaut → utiliser BeachSheetComic (fiche unique depuis 2026-08-12)
+      setSelectedBeach(b);
+      track("sg_beach_open",{beach_id:b.id,status:b.status,via:"beach_sheet_comic"});
+    }
     // Wow Effect 3: celebration when finding a clean beach
     if(b.status==="clean")triggerCelebration("clean_beach")
     // Marée du Veilleur : plongée carte→plage 1×/session au 1er ouverture (skippable, reduced-motion off).
@@ -14564,16 +14573,16 @@ useEffect(()=>{
             (onBeachClick). onFull = pont explicite vers la fiche data. */}
         {comicBeach&&(
           <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
-            <Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,background:"#FDF6E3",zIndex:1200,pointerEvents:"none"}}/>}>
-              <LazyComicDetail
-                beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
-                sargData={sargData}
-                onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
-                onPremium={(src)=>{const b=comicBeach;openPremium(src||"comic_map");/* defer unmount: let paywall's PanelWipe cover the transition */ setTimeout(()=>setComicBeach(null),300)}}
-                onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
-                onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
-                communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
-            </Suspense>
+<Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,background:"#FDF6E3",zIndex:1200,pointerEvents:"none"}}/>}>
+                <LazyComicDetail
+                  beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
+                  sargData={sargData}
+                  onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
+                  onPremium={undefined}
+                  onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
+                  onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
+                  communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
+                </Suspense>
           </ErrBound>
         )}
 
