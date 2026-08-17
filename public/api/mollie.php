@@ -10,11 +10,29 @@ require_once __DIR__ . '/_ratelimit.php';
 // Use require (not require_once) so the anonymous return array is captured.
 // Subsequent calls to require_once mollie-config.php elsewhere (e.g. mollie-lib.php:136
 // uses plain require) will re-execute harmlessly and return the same array.
-// Check for secret file at Render's secret mount path first
-$secretPath = '/etc/secrets/mollie-config.php';
+// Load config from environment variables (Render) or local file fallback
+$cfg = [
+    'api_key'    => getenv('MOLLIE_API_KEY')    ?: '',
+    'profile_id' => getenv('MOLLIE_PROFILE_ID') ?: 'pfl_t8KCk4Cm2C',
+    'resend_key' => getenv('RESEND_KEY')        ?: '',
+    'webhook_secret' => getenv('MOLLIE_WEBHOOK_SECRET') ?: 'test_secret_for_local_only',
+    'subscription' => [
+        'monthly' => ['amount' => '4.99',  'currency' => 'EUR', 'interval' => '1 month'],
+        'annual'  => ['amount' => '49.00', 'currency' => 'EUR', 'interval' => '12 months'],
+    ],
+    'passes' => [
+        'trip7'  => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'],
+        'season' => ['cents' => 1999, 'days' => 210, 'label' => 'Pass saison'],
+        'p30'    => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],
+    ],
+];
+// Local file fallback for local development
 $localPath = __DIR__ . '/mollie-config.php';
-$cfg = require file_exists($secretPath) ? $secretPath : $localPath;
-if (!is_array($cfg)) $cfg = [];  // garde-fou si mollie-config.php absent/corrompu
+if (file_exists($localPath)) {
+    $localCfg = require $localPath;
+    if (is_array($localCfg)) $cfg = array_merge($cfg, $localCfg);
+}
+if (!is_array($cfg)) $cfg = [];
 
 header('Content-Type: application/json; charset=utf-8');
 // CORS whitelist — SYNC avec create-checkout.php / paypal.php
