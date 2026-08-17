@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-10T12:10:01.358Z",
+  "generatedAt": "2026-08-17T11:50:51.336Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "uniqueTitles": 208,
-      "uniqueDescs": 189,
+      "pageCount": 365,
+      "uniqueTitles": 207,
+      "uniqueDescs": 188,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,13 +31,13 @@
           ]
         }
       ],
-      "issueCount": 554,
+      "issueCount": 550,
       "issues": [
         {
           "file": "404.html",
           "kind": "title-length-warn",
-          "length": 64,
-          "value": "Le Veilleur a perdu celle-ci · Sargasses Martinique & Guadeloupe"
+          "length": 24,
+          "value": "Redirection… · Sargasses"
         },
         {
           "file": "404.html",
@@ -121,14 +121,9 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 106
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -193,13 +188,19 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
+        },
+        {
+          "file": "en/sargassum-health/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
         }
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "uniqueTitles": 247,
-      "uniqueDescs": 229,
+      "pageCount": 404,
+      "uniqueTitles": 246,
+      "uniqueDescs": 228,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -225,13 +226,13 @@
           ]
         }
       ],
-      "issueCount": 605,
+      "issueCount": 602,
       "issues": [
         {
           "file": "404.html",
           "kind": "title-length-warn",
-          "length": 64,
-          "value": "Le Veilleur a perdu celle-ci · Sargasses Guadeloupe & Martinique"
+          "length": 24,
+          "value": "Redirection… · Sargasses"
         },
         {
           "file": "404.html",
@@ -326,14 +327,9 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 106
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -387,6 +383,12 @@
           "file": "en/index.html",
           "kind": "desc-length-warn",
           "length": 119
+        },
+        {
+          "file": "en/sargassum-alerts/index.html",
+          "kind": "title-length-warn",
+          "length": 66,
+          "value": "Sargassum alerts Guadeloupe & Martinique — Real-time notifications"
         }
       ]
     }

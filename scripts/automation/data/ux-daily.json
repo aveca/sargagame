@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-17T01:57:46.189Z",
+  "generated": "2026-08-17T13:04:47.846Z",
   "date": "2026-08-17",
   "days": 1,
   "regions": [
@@ -8,6 +8,70 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "1aad63fd",
+      "subject": "chore: update Copernicus data 2026-08-17 07:28 UTC"
+    },
+    {
+      "h": "dd4f5e0b",
+      "subject": "chore: email state 2026-08-17 07:10 UTC"
+    },
+    {
+      "h": "96ad7174",
+      "subject": "chore: remove leaked render-env.txt with Mollie live key"
+    },
+    {
+      "h": "dd5aaeae",
+      "subject": "chore: bump version to v220 (2026-08-17 fresh data deploy)"
+    },
+    {
+      "h": "948c9025",
+      "subject": "chore(data): ERDDAP live data refresh 2026-08-17 04:59 UTC — all 7 regions"
+    },
+    {
+      "h": "920359a6",
+      "subject": "feat(easter-egg): yole Martinique ambient drift in ArchipelView — TASK-P2-005c"
+    },
+    {
+      "h": "3f07490c",
+      "subject": "chore: trigger render redeploy for mollie.php fix"
+    },
+    {
+      "h": "f87e4482",
+      "subject": "fix(api): kill all remaining require mollie-config.php in public/api/"
+    },
+    {
+      "h": "156930b2",
+      "subject": "fix: use env vars for mollie config on Render, local file fallback"
+    },
+    {
+      "h": "9cd1203a",
+      "subject": "fix: load mollie-config.php from /etc/secrets/ on Render"
+    },
+    {
+      "h": "241a2e29",
+      "subject": "feat(paywall): PassOffer comic theme variant"
+    },
+    {
+      "h": "9c1546ef",
+      "subject": "feat(paywall): OnsiteCheckout comic theme variant"
+    },
+    {
+      "h": "4411d692",
+      "subject": "fix(ux): prevent overlay stacking — chat/pushprimer hidden until cookie consent (#574)"
+    },
+    {
+      "h": "b0eab548",
+      "subject": "fix(i18n): translate forecast day labels in BeachSheet + ComicPaywall badge (#573)"
+    },
+    {
+      "h": "09a0e9c7",
+      "subject": "chore: update Copernicus data 2026-08-17 02:01 UTC"
+    },
+    {
+      "h": "a24a2883",
+      "subject": "chore: email state 2026-08-17 02:00 UTC"
+    },
     {
       "h": "da89d455",
       "subject": "feat: experience layer — Le Veilleur wake animation, comic trigger on every beach tap, video autoplay on beach sheet"
@@ -23,31 +87,23 @@
     {
       "h": "7e052066",
       "subject": "fix: pipeline ERDDAP fresh + US deploy full, GP/MQ server config gaps documented"
-    },
-    {
-      "h": "3950b0c4",
-      "subject": "feat(analytics): pw_style A/B tracking + paywall verdict script"
-    },
-    {
-      "h": "c469c2d0",
-      "subject": "fix(ui): sheet-handle, onsitecheckout retry, audit selectors, test stability"
-    },
-    {
-      "h": "422c4fee",
-      "subject": "fix(payment): prevent XSS in return pages"
     }
   ],
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 27,
+      "sessions": 89,
       "friction": 0,
-      "dead_rate": 0.067,
-      "dead_worst": null,
+      "dead_rate": 0.16,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.3,
+        "n": 20
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.31
+        "rate": 0.25
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -56,17 +112,21 @@
       "session_to_email": 0,
       "prev_date": "2026-08-16",
       "changes": [
-        "dead-rate 0.214→0.067 (-0.1) ✅"
+        "sessions 31→89 (+187%)",
+        "dead-rate 0.214→0.16 (-0.1) ✅"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 7,
+      "sessions": 53,
       "friction": 0,
-      "dead_rate": 0,
+      "dead_rate": 0.038,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.19
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -74,17 +134,20 @@
       "session_to_email": 0,
       "prev_date": "2026-08-16",
       "changes": [
-        "sessions 2→7 (+250%)"
+        "sessions 2→53 (+2550%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 4,
+      "sessions": 16,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.25
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,

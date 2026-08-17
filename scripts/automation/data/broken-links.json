@@ -1,12 +1,48 @@
 {
-  "generatedAt": "2026-08-10T12:10:00.779Z",
+  "generatedAt": "2026-08-17T11:50:50.726Z",
   "sites": {
     "mq": {
-      "pageCount": 367,
-      "totalLinks": 6320,
-      "checkedLinks": 4975,
-      "brokenCount": 142,
+      "pageCount": 366,
+      "totalLinks": 6415,
+      "checkedLinks": 5071,
+      "brokenCount": 268,
       "broken": [
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
+          "target": "martinique-ftp/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
+          "target": "martinique-ftp/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/fonts.css",
+          "target": "martinique-ftp/sargagame/fonts/fonts.css",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/fonts.css",
+          "target": "martinique-ftp/sargagame/fonts/fonts.css",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/",
+          "target": "martinique-ftp/sargagame/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/alertes/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
         {
           "from": "/alertes/",
           "href": "/track-click.php",
@@ -20,7 +56,25 @@
           "kind": "internal"
         },
         {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/bulletin-sargasses-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/bulletin-sargasses-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -51,12 +105,30 @@
         },
         {
           "from": "/comprendre-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/comprendre-sargasses/",
           "href": "/saison-sargasses-guadeloupe/",
           "target": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
           "kind": "internal"
         },
         {
           "from": "/conditions/baignade-ideale/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -74,6 +146,18 @@
           "kind": "internal"
         },
         {
+          "from": "/conditions/mer-agitee/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/conditions/mer-calme/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -86,7 +170,25 @@
           "kind": "internal"
         },
         {
+          "from": "/conditions/plages-enfants/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/conditions/snorkeling/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -158,7 +260,25 @@
           "kind": "internal"
         },
         {
+          "from": "/danger-sargasses-h2s/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/detection-satellite-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/detection-satellite-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/best-beaches-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -176,7 +296,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/best-beaches-no-sargassum/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-alerts/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -194,7 +332,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/sargassum-health/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/sargassum-map/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-map/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-season/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -212,7 +368,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/satellite-sargassum-detection/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/understanding-sargassum/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/understanding-sargassum/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/what-to-do-sargassum-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -230,7 +404,25 @@
           "kind": "internal"
         },
         {
+          "from": "/es/alertas-sargazo/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/es/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/mapa-sargazo/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -248,7 +440,25 @@
           "kind": "internal"
         },
         {
+          "from": "/es/mejores-playas-sin-sargazo/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/es/temporada-sargazo/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/temporada-sargazo/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/faq/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -266,6 +476,18 @@
           "kind": "internal"
         },
         {
+          "from": "/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/lexique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/lexique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -273,6 +495,18 @@
         },
         {
           "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/meteo-sargasses-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -296,6 +530,18 @@
           "kind": "internal"
         },
         {
+          "from": "/methode-carte/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/nettoyer-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/nettoyer-sargasses/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -314,7 +560,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-a-l-ane/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-belleville/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-belleville/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-bonneville/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -332,7 +596,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-cafard/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-caritan/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-caritan/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-ceron/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -350,7 +632,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-charpentier/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-collat/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-collat/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-corps-de-garde/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -368,7 +668,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-cosmy/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-couleuvre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-couleuvre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-des-galets/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -386,7 +704,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-dufour/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-figuier/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-figuier/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-gros-raisins/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -404,7 +740,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-grosse-roche/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-l-etang/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-l-etang/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-mabouya/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -422,7 +776,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-macabou/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-madame/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-madame/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-meunier/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -440,7 +812,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-michel/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-mitan/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-mitan/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-noire/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -458,7 +848,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-riviere-trinite/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-trabaud/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-trabaud/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-turin/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -476,7 +884,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/baie-coco/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/bourg-de-case-pilote/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/bourg-de-case-pilote/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/bourg-de-tartane/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -494,7 +920,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/bourg-sainte-marie/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/grande-anse-d-arlet/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/grande-anse-d-arlet/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/grande-anse-du-carbet/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -512,7 +956,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/l-autre-bord-trinite/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/l-autre-bord-trinite/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/les-raisiniers/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -530,7 +992,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/macabou-nord/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/petite-anse-d-arlet/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/petite-anse-d-arlet/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-grand-riviere/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -548,7 +1028,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-la-francaise/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-saint-pierre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-saint-pierre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-sainte-luce/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -566,7 +1064,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-sch-lcher/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-sinai/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-sinai/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-des-boucaniers/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -584,7 +1100,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-des-salines/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-du-bourg-sainte-anne/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-bourg-sainte-anne/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-diamant/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -602,7 +1136,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-du-marin/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-du-vetiver/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-vetiver/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plages-cote-atlantique-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -620,7 +1172,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plages-cote-caraibe-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plages-sud-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plages-sud-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/pointe-borgnesse/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -638,6 +1208,18 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/pointe-du-bout/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/pointe-faula/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/pointe-faula/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -650,7 +1232,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/pointe-fort-caravelle/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages-sans-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/previsions/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -674,7 +1274,25 @@
           "kind": "internal"
         },
         {
+          "from": "/previsions-methode/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/que-faire-sargasses-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -704,7 +1322,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-case-pilote/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-case-pilote/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-fort-de-france/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -722,7 +1358,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-grand-riviere/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-la-trinite/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-carbet/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -740,7 +1394,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-le-diamant/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-le-marin/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-marin/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-precheur/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -758,6 +1430,18 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-le-robert/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-vauclin/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-le-vauclin/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -770,7 +1454,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-les-anses-d-arlet/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-les-trois-ilets/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-trois-ilets/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -806,6 +1508,18 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-record-2026/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-record-2026/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
@@ -824,7 +1538,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-riviere-pilote/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-saint-pierre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-pierre/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -842,7 +1574,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-sainte-marie/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-marie/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sante-symptomes/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
@@ -858,17 +1608,65 @@
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
           "kind": "internal"
+        },
+        {
+          "from": "/sargasses-schoelcher/",
+          "href": "/track-click.php",
+          "target": "martinique-ftp/track-click.php",
+          "kind": "internal"
         }
       ]
     },
     "gp": {
-      "pageCount": 406,
-      "totalLinks": 7950,
-      "checkedLinks": 6242,
-      "brokenCount": 187,
+      "pageCount": 405,
+      "totalLinks": 8116,
+      "checkedLinks": 6409,
+      "brokenCount": 351,
       "broken": [
         {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
+          "target": "guadeloupe-ftp/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
+          "target": "guadeloupe-ftp/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/fonts.css",
+          "target": "guadeloupe-ftp/sargagame/fonts/fonts.css",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/fonts/fonts.css",
+          "target": "guadeloupe-ftp/sargagame/fonts/fonts.css",
+          "kind": "internal"
+        },
+        {
+          "from": "/404.html",
+          "href": "/sargagame/",
+          "target": "guadeloupe-ftp/sargagame/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/alertes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/alertes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/algues-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -886,7 +1684,25 @@
           "kind": "internal"
         },
         {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/bulletin-sargasses-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/bulletin-sargasses-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -917,12 +1733,30 @@
         },
         {
           "from": "/comprendre-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/comprendre-sargasses/",
           "href": "/saison-sargasses-martinique/",
           "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
           "kind": "internal"
         },
         {
           "from": "/conditions/baignade-ideale/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -940,6 +1774,18 @@
           "kind": "internal"
         },
         {
+          "from": "/conditions/mer-agitee/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/conditions/mer-calme/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
@@ -952,7 +1798,25 @@
           "kind": "internal"
         },
         {
+          "from": "/conditions/plages-enfants/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/conditions/snorkeling/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1024,7 +1888,25 @@
           "kind": "internal"
         },
         {
+          "from": "/danger-sargasses-h2s/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/detection-satellite-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/detection-satellite-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/best-beaches-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1042,7 +1924,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/best-beaches-no-sargassum/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-alerts/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1060,7 +1960,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/sargassum-health/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/sargassum-map/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-map/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/sargassum-season/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1078,7 +1996,25 @@
           "kind": "internal"
         },
         {
+          "from": "/en/satellite-sargassum-detection/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/en/understanding-sargassum/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/understanding-sargassum/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/en/what-to-do-sargassum-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1096,7 +2032,25 @@
           "kind": "internal"
         },
         {
+          "from": "/es/alertas-sargazo/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/es/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/mapa-sargazo/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1114,7 +2068,25 @@
           "kind": "internal"
         },
         {
+          "from": "/es/mejores-playas-sin-sargazo/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/es/temporada-sargazo/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/es/temporada-sargazo/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/faq/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1138,7 +2110,25 @@
           "kind": "internal"
         },
         {
+          "from": "/lexique/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/meteo-sargasses-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1162,6 +2152,18 @@
           "kind": "internal"
         },
         {
+          "from": "/methode-carte/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/nettoyer-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/nettoyer-sargasses/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
@@ -1180,7 +2182,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-a-l-eau/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-a-la-barque-ste-anne/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-a-la-barque-ste-anne/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-a-la-barque-vh/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1198,7 +2218,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-a-la-gourde/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-a-sable/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-a-sable/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-bertrand-nord/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1216,7 +2254,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-canot-marie-galante/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-champagne/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-champagne/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-crawen/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1234,7 +2290,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-de-galet/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-de-la-baie-olive/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-de-la-baie-olive/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-de-pigeon/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1252,7 +2326,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-de-vieux-fort-mg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-du-bourg-saintes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-du-bourg-saintes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-du-figuier-saintes/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1270,7 +2362,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-du-mancenillier/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-gros-sable/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-gros-sable/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-kahouanne/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1288,7 +2398,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-laborde/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-mire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-mire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-piton/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1306,7 +2434,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-rodrigue/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/anse-sainte-marguerite/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-sainte-marguerite/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/anse-tarare/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1324,7 +2470,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/anse-turlet/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/grand-baie/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/grand-baie/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/grand-baie-sud/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1342,7 +2506,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/grande-anse-desirade/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/gros-cap/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/gros-cap/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/ile-de-la-petite-terre/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1360,7 +2542,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/l-autre-bord/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/l-autre-bord/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/la-datcha/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1378,7 +2578,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/la-feuillere/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/la-grande-anse-deshaies/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/la-grande-anse-deshaies/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/le-souffleur-desirade/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1396,7 +2614,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/les-salines-saint-francois/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/petit-havre-gosier/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/petit-havre-gosier/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/petit-havre-sud/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1414,7 +2650,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/petite-plage-malendure/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-bois-jolan/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-bois-jolan/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-babin/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1432,7 +2686,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-baie-mahault-desirade/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-baille-argent/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-baille-argent/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-bananier/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1450,7 +2722,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-bas-du-fort/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-bas-du-fort-sud/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-bas-du-fort-sud/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-capesterre-belle-eau/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1468,7 +2758,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-capesterre-mg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-clugny/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-clugny/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-cluny-nord/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1486,7 +2794,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-deshaies/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-fouillole/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-fouillole/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-grand-bourg/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1504,7 +2830,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-grande-anse/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-la-caravelle/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-la-caravelle/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-la-desirade/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1522,7 +2866,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-la-desirade-sud/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-la-perle/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-la-perle/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-la-verdure/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1540,7 +2902,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-malendure/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-moustique/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-moustique/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-nogent/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1558,7 +2938,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-petit-bourg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-pompierre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-pompierre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-saint-francois/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1576,7 +2974,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-de-sainte-anne/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-de-sainte-claire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-sainte-claire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-de-tillet/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1594,7 +3010,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-des-amandiers/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-des-raisins-clairs/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-des-raisins-clairs/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-gosier/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1612,7 +3046,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-du-manganao/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-du-moule/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-moule/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-du-souffleur/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1630,7 +3082,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plage-du-vieux-fort/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plage-pain-de-sucre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plage-pain-de-sucre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plages-basse-terre-cote-caraibe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1648,7 +3118,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/plages-iles-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/plages-nord-grande-terre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plages-nord-grande-terre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/plages-sud-grande-terre/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1666,7 +3154,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/pointe-de-la-verdure/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/pointe-de-la-verdure-sud/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/pointe-de-la-verdure-sud/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/pointe-des-chateaux/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1684,7 +3190,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/porte-d-enfer/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages/saint-felix/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/saint-felix/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages/saint-felix-sud/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1702,7 +3226,25 @@
           "kind": "internal"
         },
         {
+          "from": "/plages/vieux-fort-sainte-rose/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/plages-sans-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/previsions/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1726,6 +3268,18 @@
           "kind": "internal"
         },
         {
+          "from": "/previsions-methode/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/que-faire-sargasses-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
@@ -1733,6 +3287,18 @@
         },
         {
           "from": "/saison-sargasses-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-anse-bertrand/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1762,7 +3328,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-basse-terre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-basse-terre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1780,7 +3364,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-capesterre-belle-eau/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-capesterre-de-marie-galante/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-capesterre-de-marie-galante/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-deshaies/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1798,7 +3400,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-gosier/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-grand-bourg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-grand-bourg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1822,7 +3442,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-la-desirade/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-le-moule/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-moule/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1840,7 +3478,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-marie-galante/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-petit-bourg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-petit-bourg/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-petit-canal/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1858,7 +3514,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-pointe-a-pitre/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-pointe-noire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pointe-noire/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-port-louis/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1888,6 +3562,18 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-record-2026/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-record-2026/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
@@ -1912,7 +3598,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-saint-francois/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-saint-louis/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-louis/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1930,7 +3634,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-sante-symptomes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sante-symptomes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-bas-les-saintes/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
@@ -1948,7 +3670,25 @@
           "kind": "internal"
         },
         {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-trois-rivieres/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-trois-rivieres/",
+          "href": "/track-click.php",
+          "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-vieux-habitants/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
           "kind": "internal"
