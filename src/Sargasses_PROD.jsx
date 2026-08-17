@@ -4981,7 +4981,6 @@ const fcUp = false
                       ))}
                     </div>
 )}
-        {/* Easter egg yole Martinique — TASK-P2-005c */}
                 </div>
               </div>
             </div>
@@ -10877,7 +10876,8 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const[satGrab,setSatGrab]=useState(false)
   const[satSay,setSatSay]=useState(null) // bulle de dialogue du Veilleur quand on l'attrape
   const sayIdxRef=useRef(0),sayTimerRef=useRef(0)
-  const skyRef=useRef(null),camBaseRef=useRef(null) // parallaxe douce du fond au pan
+  const skyRef=useRef(null),camBaseRef=useRef(null)
+  const yoleRef=useRef(null),yoleRafRef=useRef(0) // parallaxe douce du fond au pan
   const SAT_SAY={fr:["Hé ! Je bosse, là 🛰️","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu 😄","Eh, je travaille, moi !"],en:["Hey! I'm working 🛰️","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me 😄","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando 🛰️","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste 😄","¡Eh, que trabajo!"]}
   const veilleurSpeak=()=>{const arr=SAT_SAY[lang]||SAT_SAY.fr;setSatSay(arr[sayIdxRef.current%arr.length]);sayIdxRef.current++;if(sayTimerRef.current)clearTimeout(sayTimerRef.current)}
   const[ready,setReady]=useState(false)
@@ -10910,6 +10910,28 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   // P6 : la géoloc demandée au clic « Près de moi » arrive de façon asynchrone → quand
   // userPos est posé, myIdx recalcule la plage la plus proche et on recentre dessus.
   useEffect(()=>{if(userPos&&pendingCenterRef.current){pendingCenterRef.current=false;try{centerOn(myIdx,MID)}catch(_){}}},[userPos,myIdx])
+  // ── Easter egg : yole Martinique (additive, ambient lent 80–150s) ──
+  // TASK-P2-005c — 1 seul rAF partagé, pas de nouveau. prefers-reduced-motion = figé.
+  useEffect(()=>{
+    if(island!=="martinique")return
+    const el=yoleRef.current;if(!el)return
+    let reduce=false
+    try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){}
+    if(reduce){el.style.opacity=".85";return}
+    let alive=true,start=performance.now()
+    const loop=()=>{
+      if(!alive)return
+      const t=(performance.now()-start)/1000
+      if(t>150){alive=false;el.style.opacity=".85";return}
+      const dx=(Math.sin(t*0.04)*1.8).toFixed(2)
+      const dy=(Math.cos(t*0.025)*0.9).toFixed(2)
+      const rot=(Math.sin(t*0.02)*1.5).toFixed(2)
+      el.setAttribute("transform","translate(355 398) translate("+dx+" "+dy+") rotate("+rot+")")
+      yoleRafRef.current=requestAnimationFrame(loop)
+    }
+    yoleRafRef.current=requestAnimationFrame(loop)
+    return()=>{alive=false;if(yoleRafRef.current)cancelAnimationFrame(yoleRafRef.current)}
+  },[island])
   const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
   // ── PAN INERTIE + BORDS ÉLASTIQUES (#49) ──────────────────────────────────
   // Le pan libre coast après le relâché (déccélération = continuation du geste,
@@ -11168,6 +11190,20 @@ const pv = false
       <svg width="100%" height="100%" style={{position:"absolute",inset:0,display:"block"}} aria-hidden="true">
         <style>{`.aw-pvb{animation:awPvb .14s ease-out both}@keyframes awPvb{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.aw-pvb{animation:none}}`}</style>
         <g ref={gRef}>
+          {/* Easter egg : yole Martinique — additive layer, ambient drift. TASK-P2-005c */}
+          {island==="martinique"&&<g ref={yoleRef} style={{opacity:.85}} pointerEvents="none" aria-hidden="true">
+            <g transform="translate(355 398)">
+              {/* Coque — pont coloré traditionnel (rouge + jaune + bleu) */}
+              <rect x="-28" y="-4" width="56" height="5" rx="2.5" fill="#E8522A" stroke="#0d0b14" strokeWidth="1.2"/>
+              <rect x="-26" y="-9" width="52" height="5" rx="2" fill="#FFC72C" stroke="#0d0b14" strokeWidth="1"/>
+              <rect x="-24" y="-13" width="48" height="4" rx="2" fill="#156a96" stroke="#0d0b14" strokeWidth=".8"/>
+              {/* Voile ronde blanche (signature yole) */}
+              <path d="M0,-12 L16,-42 L0,-38 Z" fill="#FBF3DC" opacity=".92" stroke="#0d0b14" strokeWidth=".8"/>
+              <path d="M0,-12 L-14,-38 L0,-34 Z" fill="#FBF3DC" opacity=".82" stroke="#0d0b14" strokeWidth=".8"/>
+              {/* Reflet mer sous la coque */}
+              <ellipse cx="0" cy="6" rx="30" ry="3" fill="#1a5852" opacity=".25"/>
+            </g>
+          </g>}
           {groundOn&&<g aria-hidden="true">
             <defs>
               <radialGradient id="awGround" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#16383A" stopOpacity=".82"/><stop offset=".6" stopColor="#123031" stopOpacity=".46"/><stop offset="1" stopColor="#123031" stopOpacity="0"/></radialGradient>
