@@ -1,28 +1,14 @@
-# Railway API - PHP 8.3 with Apache (minimal, guaranteed build)
+# Railway API - PHP 8.3 with Apache (ultra-minimal, guaranteed build)
 FROM php:8.3-apache
 
-# Install only absolutely essential system deps
+# Install only system deps for gd (PHP extensions already in base image)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libzip-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
-    libcurl4-openssl-dev \
-    zip \
-    unzip \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo_mysql \
-        mbstring \
-        json \
-        xml \
-        zip \
-        gd \
-        opcache \
-        curl
+    && docker-php-ext-install -j$(nproc) gd
 
 # Enable Apache modules
 RUN a2enmod rewrite headers
