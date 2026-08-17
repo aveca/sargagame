@@ -1,60 +1,60 @@
 {
   "window_days": 7,
-  "since": "2026-08-09T01:49:27.236Z",
-  "total_rows": 115794,
+  "since": "2026-08-10T01:57:23.292Z",
+  "total_rows": 134306,
   "counts": {
-    "session_start": 94774,
+    "session_start": 103665,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1219,
+    "premium_modal_open": 1287,
     "premium_modal_cta": 0,
-    "pass_cta": 232,
+    "pass_cta": 238,
     "conversion": 4,
     "email_submit": 1,
     "checkout_redirect": 0,
-    "b2b_offer_view": 41,
+    "b2b_offer_view": 42,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 232,
+  "cta_total": 238,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 19,
+    "modal_to_cta": 18.5,
     "cta_to_redirect": 0,
     "cta_to_conversion": 1.7
   },
   "by_island": {
-    "FLORIDA": {
-      "session_start": 23963,
-      "premium_modal_open": 254,
-      "b2b_offer_view": 10,
-      "pass_cta": 36
-    },
     "MQ": {
-      "session_start": 29749,
-      "premium_modal_open": 550,
-      "pass_cta": 191,
+      "session_start": 33446,
       "b2b_offer_view": 3,
+      "premium_modal_open": 718,
+      "pass_cta": 197,
       "conversion": 4,
       "email_submit": 1
     },
     "GP": {
-      "session_start": 23010,
-      "premium_modal_open": 255,
+      "session_start": 24969,
+      "premium_modal_open": 202,
       "b2b_offer_view": 5
     },
-    "RIVIERAMAYA": {
-      "session_start": 2068,
-      "premium_modal_open": 18,
-      "b2b_offer_view": 7,
-      "pass_cta": 4
+    "FLORIDA": {
+      "session_start": 25396,
+      "premium_modal_open": 214,
+      "b2b_offer_view": 9,
+      "pass_cta": 36
     },
     "PUNTACANA": {
-      "session_start": 15984,
-      "premium_modal_open": 142,
-      "b2b_offer_view": 16,
+      "session_start": 17831,
+      "b2b_offer_view": 19,
+      "premium_modal_open": 134,
       "pass_cta": 1
+    },
+    "RIVIERAMAYA": {
+      "session_start": 2023,
+      "premium_modal_open": 19,
+      "b2b_offer_view": 6,
+      "pass_cta": 4
     }
   }
 }
