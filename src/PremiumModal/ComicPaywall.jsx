@@ -335,6 +335,7 @@ export function ComicPaywall({
             <PassOffer
               lang={lang}
               onBuy={onPassBuy}
+              pwVariant="comic"
             />
           </div>
         ) : (<>

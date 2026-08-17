@@ -13,7 +13,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -28,69 +28,71 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
   const pd = perDay(cents, PASS.days, cur, lang)
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
+  const isComic = pwVariant === "comic"
 
   return (
-    <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+    <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: isComic ? "#0D0B14" : "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif", background: isComic ? "#FDF6E3" : "transparent", borderRadius: isComic ? 18 : 0, padding: isComic ? "20px 16px 8px" : 0 }}>
 
       <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: isComic ? "#B87A00" : "#FFC72C" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
           {_t(lang, "Le Veilleur", "The Watchman", "El Vigía")}
         </div>
-        <h2 className="anton" style={{ fontSize: "clamp(24px,7vw,34px)", lineHeight: 1.0, color: "#fff", margin: "12px 0 0", letterSpacing: "-.01em", maxWidth: "90%" }}>
-          {_t(lang, <>Sache où sera la mer <span style={{ color: "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: "#FFC72C" }}>mañana</span>.</>)}
+        <h2 className="anton" style={{ fontSize: "clamp(24px,7vw,34px)", lineHeight: 1.0, color: isComic ? "#0D0B14" : "#fff", margin: "12px 0 0", letterSpacing: "-.01em", maxWidth: "90%" }}>
+          {_t(lang, <>Sache où sera la mer <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>mañana</span>.</>)}
         </h2>
-        <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
+        <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.65)" : "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
           {_t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
         </p>
 
         <div style={{ margin: "18px 0 0" }}>
           <button onClick={buy} className="sg-passcard-hero" style={{
             position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "inherit",
-            border: "2px solid rgba(255,199,44,.5)", borderRadius: 18, padding: "18px 17px 16px",
-            background: "linear-gradient(165deg,rgba(255,199,44,.20),rgba(255,199,44,.04) 55%,transparent)",
-            boxShadow: "0 4px 0 0 rgba(0,0,0,.35),0 14px 40px rgba(232,168,0,.18),inset 0 0 0 1px rgba(255,228,122,.15)",
+            border: isComic ? "2.5px solid #0D0B14" : "2px solid rgba(255,199,44,.5)", borderRadius: 18, padding: "18px 17px 16px",
+            background: isComic ? "#FDF6E3" : "linear-gradient(165deg,rgba(255,199,44,.20),rgba(255,199,44,.04) 55%,transparent)",
+            boxShadow: isComic ? "4px 4px 0 #0D0B14" : "0 4px 0 0 rgba(0,0,0,.35),0 14px 40px rgba(232,168,0,.18),inset 0 0 0 1px rgba(255,228,122,.15)",
           }}>
             <span style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>
+                <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: isComic ? "#0D0B14" : "#fff", lineHeight: 1.05 }}>
                   {_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}
                 </span>
-                <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "rgba(234,247,244,.6)", marginTop: 4 }}>
+                <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.6)", marginTop: 4 }}>
                   {_t(lang, "Toutes les plages · Prévision 7 j", "All beaches · 7-day forecast", "Todas las playas · Pronóstico 7 d")}
                 </span>
               </span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                <span className="anton" style={{ fontSize: 36, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(cents, cur, lang)}</span>
-                <span style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 800, color: "#190c2c", background: "linear-gradient(135deg,#FFE47A,#FFC72C)", padding: "4px 11px", borderRadius: 999, boxShadow: "0 2px 0 0 rgba(0,0,0,.20)" }}>{pd}</span>
+                <span className="anton" style={{ fontSize: 36, color: isComic ? "#B87A00" : "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(cents, cur, lang)}</span>
+                <span style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 800, color: isComic ? "#0D0B14" : "#190c2c", background: "#FFC72C", padding: "4px 11px", borderRadius: 999, boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>{pd}</span>
               </span>
             </span>
             <span style={{ display: "flex", flexDirection: "column", gap: 7, margin: "14px 0 0" }}>
               {[
-                _t(lang, <><b style={{ color: "#fff", fontWeight: 800 }}>LA plage propre</b> chaque matin, 7h</>, <><b style={{ color: "#fff", fontWeight: 800 }}>THE clean beach</b> every morning, 7am</>, <><b style={{ color: "#fff", fontWeight: 800 }}>LA playa limpia</b> cada mañana, 7h</>),
-                _t(lang, <>Prévision <b style={{ color: "#fff", fontWeight: 800 }}>7 jours</b> · toutes les plages</>, <><b style={{ color: "#fff", fontWeight: 800 }}>7-day</b> forecast · all beaches</>, <>Pronóstico <b style={{ color: "#fff", fontWeight: 800 }}>7 días</b> · todas las playas</>),
-                _t(lang, <>Alerte le jour où <b style={{ color: "#fff", fontWeight: 800 }}>ça bascule</b></>, <>Alert the day <b style={{ color: "#fff", fontWeight: 800 }}>it flips</b></>, <>Alerta el día que <b style={{ color: "#fff", fontWeight: 800 }}>cambia</b></>),
+                _t(lang, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>LA plage propre</b> chaque matin, 7h</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>THE clean beach</b> every morning, 7am</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>LA playa limpia</b> cada mañana, 7h</>),
+                _t(lang, <>Prévision <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7 jours</b> · toutes les plages</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7-day</b> forecast · all beaches</>, <>Pronóstico <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7 días</b> · todas las playas</>),
+                _t(lang, <>Alerte le jour où <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>ça bascule</b></>, <>Alert the day <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>it flips</b></>, <>Alerta el día que <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>cambia</b></>),
               ].map((t, i) => (
-                <span key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, fontWeight: 600, color: "rgba(234,247,244,.82)" }}>
-                  <span style={{ flex: "0 0 auto", width: 17, height: 17, borderRadius: "50%", background: "rgba(255,199,44,.18)", display: "grid", placeItems: "center" }}><Ck /></span>
+                <span key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.75)" : "rgba(234,247,244,.82)" }}>
+                  <span style={{ flex: "0 0 auto", width: 17, height: 17, borderRadius: "50%", background: isComic ? "rgba(184,122,0,.12)" : "rgba(255,199,44,.18)", display: "grid", placeItems: "center" }}><Ck /></span>
                   <span>{t}</span>
                 </span>
               ))}
             </span>
             <span style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 16, borderRadius: 14, padding: "16px",
-              fontFamily: "inherit", fontSize: 16, fontWeight: 800,
-              background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
-              color: "#190c2c",
-              boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
-              border: "none",
+              fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", fontSize: 16, fontWeight: 800,
+              letterSpacing: isComic ? ".02em" : "normal", textTransform: isComic ? "uppercase" : "none",
+              background: "#FFC72C",
+              color: "#0D0B14",
+              boxShadow: isComic ? "3px 3px 0 #0D0B14" : "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
+              border: isComic ? "2px solid #0D0B14" : "none",
             }}>
               {_t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
             </span>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
-                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
+                <rect x="4" y="10" width="16" height="10" rx="2" stroke={isComic ? "#22C55E" : "rgba(124,224,176,.85)"} strokeWidth="2"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke={isComic ? "#22C55E" : "rgba(124,224,176,.85)"} strokeWidth="2"/>
               </svg>
               {_t(lang, "Paiement sécurisé · Accès immédiat", "Secure payment · Instant access", "Pago seguro · Acceso inmediato")}
             </div>
@@ -98,10 +100,10 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         </div>
 
         {(community > 0 || freshTs) && (
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 14px", margin: "14px 0 0", fontSize: 11.5, fontWeight: 600, color: "rgba(234,247,244,.62)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 14px", margin: "14px 0 0", fontSize: 11.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.55)" : "rgba(234,247,244,.62)" }}>
             {community > 0 && (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <span style={{ color: "#FFC72C", fontWeight: 800 }}>★</span>
+                <span style={{ color: isComic ? "#B87A00" : "#FFC72C", fontWeight: 800 }}>★</span>
                 {_t(lang, `Déjà ${community}+ suivent leurs plages`, `${community}+ already track their beaches`, `${community}+ ya siguen sus playas`)}
               </span>
             )}
@@ -115,18 +117,18 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         )}
 
         <a href={lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/"} target="_blank" rel="noopener"
-          style={{ display: "block", textAlign: "center", margin: "10px 0 0", fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
+          style={{ display: "block", textAlign: "center", margin: "10px 0 0", fontSize: 12, fontWeight: 800, color: isComic ? "#B87A00" : "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
           {_t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
 
         {/* Transparence prix USD haute saison (juin-nov) */}
         {cur === "usd" && (() => { const m = new Date().getMonth() + 1; return (m >= 6 && m <= 11) ? (
-          <div style={{ textAlign: "center", marginTop: 8, fontSize: 10.5, color: "rgba(234,247,244,.45)", letterSpacing: ".01em" }}>
+          <div style={{ textAlign: "center", marginTop: 8, fontSize: 10.5, color: isComic ? "rgba(13,11,20,.4)" : "rgba(234,247,244,.45)", letterSpacing: ".01em" }}>
             {_t(lang, "Tarif haute saison · +15 % sur les passes 30 j et saison", "High-season rate · +15 % on 30-day & season passes", "Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
           </div>
         ) : null })()}
 
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: isComic ? "rgba(13,11,20,.38)" : "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Pas d'abonnement", "No subscription", "Sin suscripción")}</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "30 jours", "30 days", "30 días")}</span><span aria-hidden="true">·</span>
@@ -135,14 +137,14 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
       </div>
 
       {!noSticky && (
-        <div className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, background: "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: "1px solid rgba(255,199,44,.25)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both" }}>
-          <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: "#EAF7F4", lineHeight: 1.3 }}>
+        <div className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both" }}>
+          <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
-          <button onClick={buy} style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)", color: "#190c2c", fontWeight: 800, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 0 0 rgba(0,0,0,.20)" }}>
+          <button onClick={buy} style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, border: isComic ? "2px solid #0D0B14" : "none", background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: 12.5, cursor: "pointer", fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {_t(lang, "Voir le prix →", "See price →", "Ver precio →")}
           </button>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span>🔒 Mollie</span><span aria-hidden="true">·</span>
             <span>💳 {_t(lang,"Sans carte","No card","Sin tarjeta")}</span><span aria-hidden="true">·</span>
             <span>⚡ 2 {_t(lang,"clics","clicks","clics")}</span>
