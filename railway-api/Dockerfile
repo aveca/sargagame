@@ -1,8 +1,8 @@
-# Railway API - PHP 8.3 with Apache
+# Railway API - PHP 8.3 with Apache (minimal, fast build)
 FROM php:8.3-apache
 
-# Install system dependencies only
-RUN apt-get update && apt-get install -y \
+# Install only essential system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     libpng-dev \
     libjpeg-dev \
@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpq-dev \
+    && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
@@ -23,11 +24,10 @@ RUN apt-get update && apt-get install -y \
         gd \
         opcache \
         curl \
-    && pecl install -o -f redis \
-    && docker-php-ext-enable redis
+        pdo_pgsql
 
 # Enable Apache modules
-RUN a2enmod rewrite headers ssl
+RUN a2enmod rewrite headers
 
 # PHP Configuration
 RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/custom.ini \
