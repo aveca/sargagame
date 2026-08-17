@@ -78,7 +78,13 @@ async function main() {
     if (existsSync(srcShots)) {
       for (const f of readdirSync(srcShots)) {
         if (f.endsWith('.png')) {
-          execSync(`cp "${join(srcShots, f)}" "${join(SCREENSHOTS_DIR, f)}"`);
+          const src = join(srcShots, f);
+          const dest = join(SCREENSHOTS_DIR, f);
+          if (process.platform === 'win32') {
+            execSync(`copy /Y "${src}" "${dest}"`);
+          } else {
+            execSync(`cp "${src}" "${dest}"`);
+          }
         }
       }
     }
