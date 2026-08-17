@@ -5,34 +5,8 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  deployments: write
-
 jobs:
-  build-check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Build for Cloudflare Pages (verify build works)
-        run: npm run build
-        env:
-          DEPLOY_TARGET: cloudflare
-          NODE_ENV: production
-      - name: Notice
-        run: echo "Cloudflare Pages deploy skipped — secrets not configured. Build verification passed."
-
   build-and-deploy:
-    needs: build-check
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -55,13 +29,17 @@ jobs:
           NODE_ENV: production
 
       - name: Deploy to Cloudflare Pages
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        if: env.CF_TOKEN != ''
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=sargagame --branch=main
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - name: Skip deploy notice
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN == '' }}
-        run: echo "CLOUDFLARE_API_TOKEN not set — deploy skipped. Build OK."
+      - name: Skip notice
+        if: env.CF_TOKEN == ''
+        run: echo "CLOUDFLARE_API_TOKEN not set — deploy skipped."
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
