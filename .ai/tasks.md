@@ -158,7 +158,7 @@
 - **Description** : Implémenter le 1er easter egg golden-hour = **yole ronde colorée** (rouge + blanc, voiles traditionnelles rondes) dérive en silhouette sur la mer au large de Martinique. Spec dans `design/STORY/03-MOTIF-KIT.md`. Additif sur layer NEAR `ArchipelView` (l.~9474 Sargasses_PROD.jsx), 1 seul rAF hub existant, prefers-reduced-motion = tableau figé. 80–150s ambient, jamais traverser, micro-respiration. A/B `?eg=1/0` optionnel. Cross-device OK Playwright iPhone 12 obligatoire.
 - **Fichiers** : `src/Sargasses_PROD.jsx` (ArchipelView, layer NEAR additif), `src/Themes.css` (keyframes ambient si besoin).
 - **Estimation** : 2h + cross-device test
-- **Statut** : [ ] pending — claimable by ui_ux_agent
+- **Statut** : [x] done by coding_agent (2026-08-17) — SVG inline <g> in ArchipelView camera-tracked layer, visible only for island=martinique. Slow ambient drift 150s + micro-rotation. Prefers-reduced-motion = frozen pose. 0 Ko bundle. Removed broken EasterEggs/yole-martinique.jsx. Gate: build OK, bundle 182.8 Ko, smoke 4/4. Commit 920359a6.
 
 ### TASK-P2-005d. Artefact 1 — Clip Remotion « Le jour qui bascule »
 - **Priorité** : P2
