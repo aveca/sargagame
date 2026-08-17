@@ -2185,10 +2185,10 @@
   },
   {
     "date": "2026-08-17",
-    "time": "2026-08-17T13:04:00.720Z",
+    "time": "2026-08-17T18:57:43.360Z",
     "payments": 20,
     "revenue": 132.8,
-    "emails": 557,
+    "emails": 559,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -2214,13 +2214,13 @@
       }
     },
     "email": {
-      "sent": 4533,
+      "sent": 4539,
       "delivered": null,
-      "opened": 103,
-      "clicked": 19,
+      "opened": 97,
+      "clicked": 18,
       "bounced": null,
-      "openRate": 2.27,
-      "clickRate": 18.45,
+      "openRate": 2.14,
+      "clickRate": 18.56,
       "tracking": "pixel_first_party"
     },
     "stripe": {

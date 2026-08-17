@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-17T13:04:47.846Z",
+  "generated": "2026-08-17T18:58:47.940Z",
   "date": "2026-08-17",
   "days": 1,
   "regions": [
@@ -8,6 +8,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "c49d344f",
+      "subject": "chore: update Copernicus data 2026-08-17 13:05 UTC"
+    },
+    {
+      "h": "8b405b0e",
+      "subject": "chore: email state 2026-08-17 13:04 UTC"
+    },
     {
       "h": "1aad63fd",
       "subject": "chore: update Copernicus data 2026-08-17 07:28 UTC"
@@ -92,18 +100,18 @@
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 89,
+      "sessions": 206,
       "friction": 0,
-      "dead_rate": 0.16,
+      "dead_rate": 0.113,
       "dead_worst": {
         "screen": "map_map",
-        "rate": 0.3,
-        "n": 20
+        "rate": 0.195,
+        "n": 41
       },
       "top_dead_els": [],
       "bored_worst": {
-        "screen": "world",
-        "rate": 0.25
+        "screen": "beach",
+        "rate": 0.27
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -112,20 +120,20 @@
       "session_to_email": 0,
       "prev_date": "2026-08-16",
       "changes": [
-        "sessions 31→89 (+187%)",
-        "dead-rate 0.214→0.16 (-0.1) ✅"
+        "sessions 31→206 (+565%)",
+        "dead-rate 0.214→0.113 (-0.1) ✅"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 53,
+      "sessions": 91,
       "friction": 0,
-      "dead_rate": 0.038,
+      "dead_rate": 0.027,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.19
+        "rate": 0.16
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -134,19 +142,19 @@
       "session_to_email": 0,
       "prev_date": "2026-08-16",
       "changes": [
-        "sessions 2→53 (+2550%)"
+        "sessions 2→91 (+4450%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 16,
+      "sessions": 33,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.25
+        "rate": 0.24
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
