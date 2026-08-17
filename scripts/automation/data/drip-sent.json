@@ -2991,7 +2991,8 @@
     "daily_count": 7,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-08-13",
-    "j3": "2026-08-14T07:43:21.548Z"
+    "j3": "2026-08-14T07:43:21.548Z",
+    "j7": "2026-08-17T18:50:24.354Z"
   },
   "5cc3422c7da1ce603fabfe040b05e55b": {
     "daily_last": "2026-08-14",
@@ -3045,13 +3046,25 @@
     "daily_sig": "Plage de Malendure|clean|68|clean|0|",
     "daily_count": 1
   },
-  "745a851bf739933ffa118370b4add754": {},
+  "745a851bf739933ffa118370b4add754": {
+    "j3": "2026-08-17T18:50:26.806Z"
+  },
   "7130b871a559fb9830791bbf5cb6c523": {},
   "4e7f43b0b84f976eccbcf8bb25227e91": {},
   "a9d999789d842461d1505288d16e4a31": {},
   "f807dd30143ab3a414bc82910be9d119": {
     "daily_last": "2026-08-17",
     "daily_sig": "Plage de Grande Anse|clean|60|clean|0|",
+    "daily_count": 1
+  },
+  "8129dbf0095320eb67bd3ded1a5e6fe4": {
+    "daily_last": "2026-08-17",
+    "daily_sig": "Bavaro Beach|clean|54|clean|0|",
+    "daily_count": 1
+  },
+  "2b63f22ec81e942658112e870698c0b0": {
+    "daily_last": "2026-08-17",
+    "daily_sig": "Plage de Grande Anse|clean|68|clean|0|",
     "daily_count": 1
   }
 }
