@@ -14142,7 +14142,7 @@ useEffect(()=>{
 
         {/* PUSH PRIMER — contextual soft prompt before native OneSignal dialog.
             Triggered 1.5s after first beach_open. Dismissable. 7-day cooldown. */}
-        {showPushPrimer&&(
+        {showPushPrimer&&cookieConsent!==null&&(
           <PushPrimer lang={lang} onAccept={onPushPrimerAccept} onDismiss={onPushPrimerDismiss}/>
         )}
 
@@ -14373,7 +14373,7 @@ useEffect(()=>{
         {diveBeach&&<ErrBound fallback={null}><Suspense fallback={null}><DiveTransition beach={diveBeach} lang={lang} onDone={()=>setDiveBeach(null)}/></Suspense></ErrBound>}
 
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
+        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&cookieConsent!==null&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(96px + env(safe-area-inset-bottom))",zIndex:960,
@@ -14392,7 +14392,7 @@ useEffect(()=>{
             </svg>
           </button>
         )}
-        {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
+        {showChat&&cookieConsent!==null&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay.
