@@ -173,7 +173,7 @@
 - **Description** : Script clip Remotion 25 s, 9:16, sous-titré, coupe courte, 7 scènes selon spec livrée (cf. rapport prompt 07). Pipeline local gratuit via skill `video-brief` (ffmpeg + edge-tts + Playwright shoote calques SVG). Pas de code shipped (asset externe) — le clip tourne 1×/semaine par région, sans impact bundle.
 - **Fichiers** : `video-remotion/scenes/le-jour-qui-bascule/` (nouveau), composables Remotion existantes réutilisées.
 - **Estimation** : 90 min timebox autonomie
-- **Statut** : [ ] pending — claimable by univers_motion_agent
+- **Statut** : [~] in_progress by coding_agent
 
 
 ---
