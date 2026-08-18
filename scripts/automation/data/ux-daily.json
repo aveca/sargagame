@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T13:01:17.409Z",
+  "generated": "2026-08-18T18:57:19.014Z",
   "date": "2026-08-18",
   "days": 1,
   "regions": [
@@ -8,6 +8,34 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "2cfb85b2",
+      "subject": "chore: update Copernicus data 2026-08-18 16:47 UTC"
+    },
+    {
+      "h": "84b701a6",
+      "subject": "fix(ui): dark background on map/list view containers — prevents white flash in light theme"
+    },
+    {
+      "h": "2adc4075",
+      "subject": "chore: bump version to v220 (agent fixes + deploy)"
+    },
+    {
+      "h": "fbf1a66a",
+      "subject": "Merge branch 'main' of https://github.com/aveca/sargagame"
+    },
+    {
+      "h": "bac64733",
+      "subject": "feat(b2b): vertical slice concierge 7 jours — DB + endpoints + chat + webhook"
+    },
+    {
+      "h": "4dd14eed",
+      "subject": "chore: update Copernicus data 2026-08-18 13:01 UTC"
+    },
+    {
+      "h": "4acacdc6",
+      "subject": "chore: email state 2026-08-18 13:01 UTC"
+    },
     {
       "h": "f86b7550",
       "subject": "chore: update Copernicus data 2026-08-18 07:56 UTC"
@@ -43,35 +71,23 @@
     {
       "h": "4013a5c0",
       "subject": "chore: email state 2026-08-17 18:58 UTC"
-    },
-    {
-      "h": "48f86e9f",
-      "subject": "Merge branch 'main' of https://github.com/aveca/sargagame"
-    },
-    {
-      "h": "ac9272bf",
-      "subject": "feat(ui): fix VeilleurMark black block + bump v220"
-    },
-    {
-      "h": "c49d344f",
-      "subject": "chore: update Copernicus data 2026-08-17 13:05 UTC"
-    },
-    {
-      "h": "8b405b0e",
-      "subject": "chore: email state 2026-08-17 13:04 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 78,
+      "sessions": 172,
       "friction": 0,
-      "dead_rate": 0.046,
-      "dead_worst": null,
+      "dead_rate": 0.081,
+      "dead_worst": {
+        "screen": "map_map",
+        "rate": 0.214,
+        "n": 42
+      },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.15
+        "rate": 0.21
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -80,24 +96,23 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 206→78 (-62%)",
-        "dead-rate 0.113→0.046 (-0.1) ✅"
+        "sessions 206→172 (-17%)"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 45,
-      "friction": 0,
-      "dead_rate": 0.065,
+      "sessions": 92,
+      "friction": 1,
+      "dead_rate": 0.091,
       "dead_worst": {
-        "screen": "world",
-        "rate": 0.032,
-        "n": 31
+        "screen": "map_map",
+        "rate": 0.154,
+        "n": 26
       },
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.13
+        "rate": 0.2
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -106,19 +121,19 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 91→45 (-51%)"
+        "dead-rate 0.027→0.091 (+0.1) ⚠️"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 24,
+      "sessions": 61,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.17
+        "rate": 0.26
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -127,7 +142,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 33→24 (-27%)"
+        "sessions 33→61 (+85%)"
       ]
     }
   ]
