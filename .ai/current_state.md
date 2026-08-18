@@ -1,5 +1,42 @@
 ﻿---
 
+## 2026-08-18 20:00 UTC · Agent: coding_agent (OpenCode) · Funnel reconciliation — replace frozen Apps Script with Supabase
+
+### Travail effectué
+- **Résumé 1 ligne** : Reconciled all 3 funnel sources. Replaced frozen Apps Script endpoint with direct Supabase query. Removed 2 dead events. Added automated reconciliation test. PR #575 merged.
+- **Détails** :
+  1. **Root cause** : `daily-stats-check.cjs` fetched funnel from Apps Script `?action=funnel` **frozen since 2026-08-03** (3518 modals, 13 CTA for 16+ days). Supabase scripts had fresh data all along.
+  2. **Dead events** : `sg_premium_modal_cta` + `sg_checkout_redirect` removed from allowlist (never emitted, always 0). Real CTA = `sg_pass_cta`.
+  3. **Fix** : `daily-stats-check.cjs` now queries Supabase `analytics_events` directly (24h). Apps Script = fallback.
+  4. **Reconciliation test** : `funnel-reconcile.cjs` verifies all sources agree.
+  5. **Real data** (Supabase 7d): 1212 modals → 224 CTAs (18.5%) → 4 conversions (1.8%).
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — Removed dead events from `SG_FUNNEL_EVENTS`
+- `scripts/automation/daily-stats-check.cjs` — Supabase funnel fetch replaces Apps Script
+- `scripts/automation/funnel-daily-report.cjs` — Removed dead `premium_modal_cta`
+- `scripts/automation/funnel-from-supabase.cjs` — Removed dead keys
+- `scripts/automation/funnel-reconcile.cjs` — NEW: reconciliation test
+
+### Tests réalisés
+- [x] `npm run build` → exit 0, 183.1 Ko ≤ 210 Ko
+- [x] `ux-smoke.mjs` → 4/4 tokens OK
+- [x] `esbuild` → all files syntax OK
+- [x] `funnel-reconcile.cjs` → PASS
+
+### Problèmes restants
+- daily-metrics.json frozen locally (updates on next CI run)
+- TASK-P1-006: real rates modal→CTA 18.5%, CTA→conversion 1.8%
+- Email open rate decline (5.02%→1.51%)
+- cPanel GP/MQ PHP broken (founder access needed)
+
+### Branche / PR
+- Branche: `agent/coding/funnel-reconciliation`
+- PR: #575 merged
+- Commit: `8899f71b`
+
+---
+
 ## 2026-08-17 12:00 UTC · Agent: coding_agent (OpenCode) · UI fixes + version bump v220
 
 ### Travail effectué
