@@ -72,7 +72,7 @@
 - **Kill switch Comic** : `src/Sargasses_PROD.jsx:14280` → `abVariant("pw_style",["world","comic"])`. Pour forcer World : hardcoder `"world"`.
 - **Sources à surveiller** (NAVETTE traversante des 3 vérités) :
   - `scripts/automation/data/funnel-daily-report.json` (24h glissantes, maintenant CORRECT)
-  - `scripts/automation/data/funnel-snapshot.json` (28j glissantes, déjà correct — référence)
+  - `scripts/automation/data/funnel-snapshot.json` (7j glissantes, déjà correct — référence)
   - `scripts/automation/data/daily-metrics.json` (bloc `mollie.paid` — paiements réels, source API Mollie)
   - `public/api/mollie.php` (nouveaux paiements one-off)
 - **Plan semaine** :
@@ -81,7 +81,7 @@
   - **Jour 7** : Documenter verdict final dans `.ai/changelog.md` + `.ai/decisions.md`.
 - **Rollback si régression** : `git revert HEAD && git push origin main`
 - **Estimation** : 7 jours calendar (1-2 actions/agent par jour, ~30 min/action)
-- **Statut** : [ ] pending — claim by coding_agent ou growth_agent (2026-08-12)
+- **Statut** : [x] done by coding_agent (2026-08-18) — Funnel reconciliation terminée. Sources réconciliées : `daily-stats-check.cjs` query Supabase directement au lieu d'Apps Script figé. Dead events purgés. Reconciliation test `funnel-reconcile.cjs` ajouté. Données réelles : modal→CTA 18.5%, CTA→conversion 1.8% (7j). Sous le seuil 2% mais approche — nécessite plus de jours pour significativité statistique. Comic vs World : World domine (80/96 modals = 83%), Comic inconnu (16/96 = 17%, 0 CTA). Décision différée : pas assez de volume Comic pour juger.
 
 ### TASK-P1-001 Purger les A/B tests morts
 - **Priorité** : P1
@@ -167,6 +167,13 @@
 - **Fichiers** : `video-remotion/scenes/le-jour-qui-bascule/` (nouveau), composables Remotion existantes réutilisées.
 - **Estimation** : 90 min timebox autonomie
 - **Statut** : [ ] pending — claimable by univers_motion_agent
+
+### TASK-P1-007 Investiguer la chute du taux d'ouverture email (5.02% → 1.51%)
+- **Priorité** : P1
+- **Rôle** : growth_agent / devops
+- **Description** : Le taux d'ouverture email est en chute continue : 5.02% → 4.66% → 4.47% → 4.20% → 3.60% → 3.06% → 2.96% → 1.51%. Investiguer : SPF, DKIM, DMARC, domaine d'envoi, réputation, bounce rate, provider, tracking pixel, changements DNS. Déterminer si la baisse est réelle, artefact de tracking, ou problème de délivrabilité.
+- **Estimation** : 3h
+- **Statut** : [ ] pending — claimable by growth_agent
 
 
 ---
