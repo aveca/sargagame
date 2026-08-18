@@ -122,7 +122,10 @@ function applyBrand(html) {
 // Tracking first-party via endpoints PHP (track-open.php / track-click.php).
 // Usage : passer trackingId dans sendEmail() pour activer pixel + link wrapping.
 // trackingId doit être UNIQUE par envoi (UUID ou campaign_id — chaque email = 1 id).
-const TRACKING_URL = 'https://sargasses-martinique.com/api'
+// ⚠️ 2026-08-18 : sargasses-martinique.com PHP broken (cPanel handler missing on api/).
+// Workaround: use sargassummiami.com (US domain, PHP working) for tracking.
+// TODO: fix cPanel MultiPHP Manager / AllowOverride for api/ on MQ + GP.
+const TRACKING_URL = 'https://sargassummiami.com/api'
 
 // trackingId canonique : "<campaign>:<YYYYMMDD>[:<hash8 email>]" — unique par
 // (campagne, jour, destinataire), zéro PII (hash8 corrélable aux fichiers d'état).
