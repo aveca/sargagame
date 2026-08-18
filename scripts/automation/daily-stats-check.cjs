@@ -225,6 +225,38 @@ async function ga4Yesterday() {
   } catch (e) { console.log('GA4 series skip:', String(e.message).slice(0, 80)); return null }
 }
 
+// Vérité funnel depuis Supabase (24h glissantes) — remplace l'endpoint Apps Script
+// figé. Même logique que funnel-daily-report.cjs : strip sg_ prefix, pass_cta = vrai CTA.
+async function fetchFunnelFromSupabase() {
+  const key = (process.env.SUPABASE_SERVICE_KEY || '').trim()
+  if (!key) return null
+  const url = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
+  const cutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'checkout_redirect']
+  const counts = {}
+  for (const k of FUNNEL_KEYS) counts[k] = 0
+  const PAGE = 1000
+  for (let from = 0; ; from += PAGE) {
+    const q = `select=event,island,ts&ts=gte.${encodeURIComponent(cutoff)}&order=ts.asc`
+    let res
+    try {
+      res = await fetch(`${url}/rest/v1/analytics_events?${q}`, {
+        headers: { apikey: key, Authorization: 'Bearer ' + key, Range: `${from}-${from + PAGE - 1}` },
+        signal: AbortSignal.timeout(30000),
+      })
+    } catch (e) { console.error('[funnel-supabase] fetch error:', e.message); break }
+    if (!res.ok) { console.error(`[funnel-supabase] HTTP ${res.status}`); break }
+    const batch = await res.json().catch(() => [])
+    if (!Array.isArray(batch) || !batch.length) break
+    for (const r of batch) {
+      const evt = String(r.event || '').replace(/^sg_/, '')
+      if (counts[evt] !== undefined) counts[evt]++
+    }
+    if (batch.length < PAGE) break
+  }
+  return counts
+}
+
 async function main() {
   console.log('=== Daily Stats Check ===')
   const now = new Date()
@@ -243,14 +275,28 @@ async function main() {
     console.log(`Emails sent: ${stats.emailsSent}`)
   }
 
-  // 1b. Série funnel complète (KPI « en série » — user 2026-06-11). Source :
-  // endpoint funnel (mêmes compteurs que la session-startup). ⚠️ payments_real
-  // est connu TROMPEUR (réconciliation Stripe 2026-06-10 : 15 réels vs 1 affiché)
-  // — stocké pour l'historique, la vérité paiements reste Stripe (clé locale).
-  console.log('Fetching funnel from Apps Script...')
-  const funnel = await fetchJSON(FUNNEL_URL)
-  if (funnel && !funnel.error) {
-    console.log(`Funnel: ${funnel.session_start} sessions | ${funnel.premium_modal_open} modals | ${funnel.premium_modal_cta} CTA | ${funnel.checkout_redirect} redirects | ${funnel.email_submit} emails`)
+  // 1b. Série funnel — SOURCE CANONIQUE = Supabase analytics_events (24h).
+  // L'ancien endpoint Apps Script ?action=funnel est FIGÉ depuis le 2026-08-03
+  // (ne se met plus à jour, compteur 3518 modalOpens identique 16+ jours).
+  // On query Supabase directement, même logique que funnel-daily-report.cjs
+  // (sg_ prefix stripped, pass_cta = vrai CTA).
+  let funnel = null
+  try {
+    funnel = await fetchFunnelFromSupabase()
+    if (funnel) {
+      const ctaTotal = (funnel.premium_modal_cta || 0) + (funnel.pass_cta || 0)
+      console.log(`Funnel (Supabase 24h): ${funnel.session_start || 0} sessions | ${funnel.premium_modal_open || 0} modals | ${ctaTotal} CTA | ${funnel.conversion || 0} conversions`)
+    }
+  } catch (e) {
+    console.log('Funnel Supabase fetch failed, trying Apps Script fallback:', e.message)
+  }
+  // Fallback : endpoint Apps Script (legacy, probablement stale)
+  if (!funnel) {
+    console.log('Fetching funnel from Apps Script (fallback)...')
+    funnel = await fetchJSON(FUNNEL_URL)
+    if (funnel && !funnel.error) {
+      console.log(`Funnel (Apps Script fallback — may be stale): ${funnel.session_start} sessions | ${funnel.premium_modal_open} modals | ${funnel.premium_modal_cta} CTA`)
+    }
   }
 
   // 1c. Engagement email (opens/clicks/bounces) — cumuls Resend via Apps Script.
@@ -332,20 +378,33 @@ async function main() {
     feedbacks: statsOk ? (stats.feedbacks ?? null) : lastKnown('feedbacks'),
     avgRating: statsOk ? (stats.avgRating ?? null) : lastKnown('avgRating'),
     pipelineOk,
-    // Série funnel (cumuls Apps Script — les DELTAS jour-à-jour font la série)
-    funnel: funnel && !funnel.error ? {
-      sessions: funnel.session_start ?? null,
-      lockClicks: funnel.forecast_lock_click ?? null,
-      modalOpens: funnel.premium_modal_open ?? null,
-      modalCta: funnel.premium_modal_cta ?? null,
-      sampleStarts: funnel.sample_start ?? null,
-      emailSubmits: funnel.email_submit ?? null,
-      checkoutRedirects: funnel.checkout_redirect ?? null,
-      conversions: funnel.conversion ?? null,
-      paymentsReal: funnel.payments_real ?? null, // ⚠️ trompeur, cf. memory
-      revenueReal: funnel.revenue_real ?? null,
-      rates: funnel.rates || null,
-    } : lastKnown('funnel'),
+    // Série funnel — Supabase 24h (canonical) ou Apps Script fallback.
+    // ⚠️ L'ancien bloc Apps Script était FIGÉ (3518 modals, 13 CTA pendant 16+ j).
+    // Les nouveaux chiffres viennent de Supabase avec prefix sg_ strippé.
+    funnel: funnel ? (() => {
+      const ctaTotal = (funnel.premium_modal_cta || 0) + (funnel.pass_cta || 0)
+      const modalOpens = funnel.premium_modal_open || 0
+      const pct = (n, d) => d > 0 ? Math.round((n / d) * 1000) / 10 : 0
+      return {
+        sessions: funnel.session_start ?? null,
+        lockClicks: funnel.forecast_lock_click ?? null,
+        modalOpens,
+        modalCta: ctaTotal,   // unified CTA = pass_cta (+ premium_modal_cta if ever emitted)
+        sampleStarts: null,
+        emailSubmits: funnel.email_submit ?? null,
+        checkoutRedirects: funnel.checkout_redirect ?? null,
+        conversions: funnel.conversion ?? null,
+        paymentsReal: null, // ⚠️ trompeur — Mollie truth is in mollie block
+        revenueReal: null,
+        rates: {
+          session_to_lock: pct(funnel.forecast_lock_click || 0, funnel.session_start || 0),
+          lock_to_modal: pct(modalOpens, funnel.forecast_lock_click || 0),
+          modal_to_cta: pct(ctaTotal, modalOpens),
+          cta_to_redirect: pct(funnel.checkout_redirect || 0, ctaTotal),
+          cta_to_conversion: pct(funnel.conversion || 0, ctaTotal),
+        },
+      }
+    })() : lastKnown('funnel'),
     // Engagement email — pixel first-party (track-open.php / track-click.php) via
     // Supabase analytics_events. Les uniques (opens/clicks) sont agrégés par
     // email-events-from-supabase.cjs. Fallback : volume envoyé depuis Apps Script.
