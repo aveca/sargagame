@@ -2292,7 +2292,7 @@
   },
   {
     "date": "2026-08-18",
-    "time": "2026-08-18T07:54:51.412Z",
+    "time": "2026-08-18T13:00:18.213Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 560,
@@ -2321,13 +2321,13 @@
       }
     },
     "email": {
-      "sent": 4541,
+      "sent": 4575,
       "delivered": null,
-      "opened": 81,
-      "clicked": 17,
+      "opened": 75,
+      "clicked": 15,
       "bounced": null,
-      "openRate": 1.78,
-      "clickRate": 20.99,
+      "openRate": 1.64,
+      "clickRate": 20,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -2386,7 +2386,7 @@
       },
       "gp": {
         "sessions": 129,
-        "users": 506
+        "users": 563
       }
     }
   }
