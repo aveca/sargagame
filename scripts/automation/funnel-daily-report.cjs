@@ -28,7 +28,8 @@ const FUNNEL_STEPS = [
   { key: 'beach_open',        label: 'Beach selected',   icon: '🏖️' },
   { key: 'verdict_scan_view', label: 'Verdict viewed',   icon: '📊' },
   { key: 'premium_modal_open',label: 'Paywall seen',     icon: '🔒' },
-  { key: 'premium_modal_cta', label: 'CTA (modal)',      icon: '👆' },
+  // premium_modal_cta RETIRÉ (2026-08-18) : jamais émis par le frontend, compteur toujours 0.
+  // Le CTA réel = pass_cta (émis par PremiumModal.jsx + PassOffer.jsx).
   { key: 'pass_cta',          label: 'CTA (pass)',       icon: '👆' },
   { key: 'checkout_redirect', label: 'Checkout clicked', icon: '💳' },
   { key: 'conversion',        label: 'Paid',             icon: '✅' },
@@ -70,8 +71,8 @@ function computeReport(rows) {
     // pass_cta + premium_modal_cta = CTA total
   }
 
-  // Agrégation CTA = pass_cta + premium_modal_cta
-  const ctaTotal = counts.premium_modal_cta + counts.pass_cta
+  // Agrégation CTA = pass_cta (premium_modal_cta removed 2026-08-18 — never emitted)
+  const ctaTotal = counts.pass_cta
 
   // Taux de conversion entre étapes consécutives
   const steps = FUNNEL_STEPS.map((s, i) => {
