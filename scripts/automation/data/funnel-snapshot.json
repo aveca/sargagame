@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-08-11T06:58:08.876Z",
-  "total_rows": 138911,
+  "since": "2026-08-11T13:00:54.281Z",
+  "total_rows": 139849,
   "counts": {
-    "session_start": 108252,
+    "session_start": 109411,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1289,
+    "premium_modal_open": 1281,
     "premium_modal_cta": 0,
     "pass_cta": 223,
     "conversion": 4,
     "email_submit": 1,
     "checkout_redirect": 0,
-    "b2b_offer_view": 43,
+    "b2b_offer_view": 45,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -20,41 +20,41 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 17.3,
+    "modal_to_cta": 17.4,
     "cta_to_redirect": 0,
     "cta_to_conversion": 1.8
   },
   "by_island": {
-    "MQ": {
-      "session_start": 35175,
-      "premium_modal_open": 880,
-      "b2b_offer_view": 4,
-      "pass_cta": 181,
-      "conversion": 4,
-      "email_submit": 1
-    },
-    "FLORIDA": {
-      "session_start": 26532,
-      "premium_modal_open": 170,
-      "pass_cta": 36,
-      "b2b_offer_view": 8
-    },
-    "RIVIERAMAYA": {
-      "session_start": 2125,
-      "premium_modal_open": 19,
-      "b2b_offer_view": 7,
-      "pass_cta": 4
-    },
     "GP": {
-      "session_start": 25329,
-      "premium_modal_open": 140,
-      "b2b_offer_view": 3,
+      "session_start": 25418,
+      "premium_modal_open": 131,
+      "b2b_offer_view": 2,
       "pass_cta": 2
     },
+    "RIVIERAMAYA": {
+      "session_start": 2134,
+      "premium_modal_open": 20,
+      "b2b_offer_view": 8,
+      "pass_cta": 4
+    },
     "PUNTACANA": {
-      "session_start": 19091,
-      "b2b_offer_view": 21,
-      "premium_modal_open": 80
+      "session_start": 19097,
+      "premium_modal_open": 80,
+      "b2b_offer_view": 24
+    },
+    "MQ": {
+      "session_start": 35196,
+      "premium_modal_open": 878,
+      "pass_cta": 181,
+      "conversion": 4,
+      "email_submit": 1,
+      "b2b_offer_view": 3
+    },
+    "FLORIDA": {
+      "session_start": 27566,
+      "premium_modal_open": 172,
+      "pass_cta": 36,
+      "b2b_offer_view": 8
     }
   }
 }
