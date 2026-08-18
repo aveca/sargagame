@@ -1,13 +1,13 @@
 {
   "window_days": 7,
-  "since": "2026-08-11T13:00:54.281Z",
-  "total_rows": 139849,
+  "since": "2026-08-11T18:57:05.928Z",
+  "total_rows": 141052,
   "counts": {
-    "session_start": 109411,
+    "session_start": 111108,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1281,
+    "premium_modal_open": 1212,
     "premium_modal_cta": 0,
-    "pass_cta": 223,
+    "pass_cta": 224,
     "conversion": 4,
     "email_submit": 1,
     "checkout_redirect": 0,
@@ -16,45 +16,46 @@
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 223,
+  "cta_total": 224,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 17.4,
+    "modal_to_cta": 18.5,
     "cta_to_redirect": 0,
     "cta_to_conversion": 1.8
   },
   "by_island": {
+    "FLORIDA": {
+      "session_start": 27692,
+      "premium_modal_open": 164,
+      "pass_cta": 36,
+      "b2b_offer_view": 8
+    },
     "GP": {
-      "session_start": 25418,
-      "premium_modal_open": 131,
+      "session_start": 25410,
+      "premium_modal_open": 113,
       "b2b_offer_view": 2,
       "pass_cta": 2
     },
-    "RIVIERAMAYA": {
-      "session_start": 2134,
-      "premium_modal_open": 20,
-      "b2b_offer_view": 8,
-      "pass_cta": 4
-    },
-    "PUNTACANA": {
-      "session_start": 19097,
-      "premium_modal_open": 80,
-      "b2b_offer_view": 24
-    },
     "MQ": {
-      "session_start": 35196,
-      "premium_modal_open": 878,
-      "pass_cta": 181,
+      "session_start": 35838,
+      "premium_modal_open": 848,
+      "pass_cta": 180,
       "conversion": 4,
       "email_submit": 1,
-      "b2b_offer_view": 3
+      "b2b_offer_view": 5
     },
-    "FLORIDA": {
-      "session_start": 27566,
-      "premium_modal_open": 172,
-      "pass_cta": 36,
-      "b2b_offer_view": 8
+    "PUNTACANA": {
+      "session_start": 19981,
+      "premium_modal_open": 69,
+      "b2b_offer_view": 22,
+      "pass_cta": 2
+    },
+    "RIVIERAMAYA": {
+      "session_start": 2187,
+      "b2b_offer_view": 8,
+      "premium_modal_open": 18,
+      "pass_cta": 4
     }
   }
 }
