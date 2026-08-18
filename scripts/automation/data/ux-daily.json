@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-17T18:58:47.940Z",
-  "date": "2026-08-17",
+  "generated": "2026-08-18T13:01:17.409Z",
+  "date": "2026-08-18",
   "days": 1,
   "regions": [
     "florida",
@@ -9,161 +9,125 @@
   ],
   "shipped": [
     {
+      "h": "f86b7550",
+      "subject": "chore: update Copernicus data 2026-08-18 07:56 UTC"
+    },
+    {
+      "h": "015f7ab9",
+      "subject": "chore: update Copernicus data 2026-08-18 07:13 UTC"
+    },
+    {
+      "h": "bb56eba7",
+      "subject": "chore: email state 2026-08-18 06:58 UTC"
+    },
+    {
+      "h": "d0dde763",
+      "subject": "chore: update Copernicus data 2026-08-18 01:45 UTC"
+    },
+    {
+      "h": "28cd242f",
+      "subject": "chore: email state 2026-08-18 01:45 UTC"
+    },
+    {
+      "h": "dcddfbc3",
+      "subject": "fix(funnel): beach click no longer auto-opens paywall"
+    },
+    {
+      "h": "a72b0fea",
+      "subject": "chore: update Copernicus data 2026-08-17 19:58 UTC"
+    },
+    {
+      "h": "bfd3716a",
+      "subject": "chore: update Copernicus data 2026-08-17 19:16 UTC"
+    },
+    {
+      "h": "4013a5c0",
+      "subject": "chore: email state 2026-08-17 18:58 UTC"
+    },
+    {
+      "h": "48f86e9f",
+      "subject": "Merge branch 'main' of https://github.com/aveca/sargagame"
+    },
+    {
+      "h": "ac9272bf",
+      "subject": "feat(ui): fix VeilleurMark black block + bump v220"
+    },
+    {
       "h": "c49d344f",
       "subject": "chore: update Copernicus data 2026-08-17 13:05 UTC"
     },
     {
       "h": "8b405b0e",
       "subject": "chore: email state 2026-08-17 13:04 UTC"
-    },
-    {
-      "h": "1aad63fd",
-      "subject": "chore: update Copernicus data 2026-08-17 07:28 UTC"
-    },
-    {
-      "h": "dd4f5e0b",
-      "subject": "chore: email state 2026-08-17 07:10 UTC"
-    },
-    {
-      "h": "96ad7174",
-      "subject": "chore: remove leaked render-env.txt with Mollie live key"
-    },
-    {
-      "h": "dd5aaeae",
-      "subject": "chore: bump version to v220 (2026-08-17 fresh data deploy)"
-    },
-    {
-      "h": "948c9025",
-      "subject": "chore(data): ERDDAP live data refresh 2026-08-17 04:59 UTC — all 7 regions"
-    },
-    {
-      "h": "920359a6",
-      "subject": "feat(easter-egg): yole Martinique ambient drift in ArchipelView — TASK-P2-005c"
-    },
-    {
-      "h": "3f07490c",
-      "subject": "chore: trigger render redeploy for mollie.php fix"
-    },
-    {
-      "h": "f87e4482",
-      "subject": "fix(api): kill all remaining require mollie-config.php in public/api/"
-    },
-    {
-      "h": "156930b2",
-      "subject": "fix: use env vars for mollie config on Render, local file fallback"
-    },
-    {
-      "h": "9cd1203a",
-      "subject": "fix: load mollie-config.php from /etc/secrets/ on Render"
-    },
-    {
-      "h": "241a2e29",
-      "subject": "feat(paywall): PassOffer comic theme variant"
-    },
-    {
-      "h": "9c1546ef",
-      "subject": "feat(paywall): OnsiteCheckout comic theme variant"
-    },
-    {
-      "h": "4411d692",
-      "subject": "fix(ux): prevent overlay stacking — chat/pushprimer hidden until cookie consent (#574)"
-    },
-    {
-      "h": "b0eab548",
-      "subject": "fix(i18n): translate forecast day labels in BeachSheet + ComicPaywall badge (#573)"
-    },
-    {
-      "h": "09a0e9c7",
-      "subject": "chore: update Copernicus data 2026-08-17 02:01 UTC"
-    },
-    {
-      "h": "a24a2883",
-      "subject": "chore: email state 2026-08-17 02:00 UTC"
-    },
-    {
-      "h": "da89d455",
-      "subject": "feat: experience layer — Le Veilleur wake animation, comic trigger on every beach tap, video autoplay on beach sheet"
-    },
-    {
-      "h": "d1ee9c48",
-      "subject": "feat: add Cloudflare Pages Function for GP domain rewrite"
-    },
-    {
-      "h": "886ad930",
-      "subject": "feat: TASK-P1-005 dashboard fraicheur pipeline - badge Satellite in Header"
-    },
-    {
-      "h": "7e052066",
-      "subject": "fix: pipeline ERDDAP fresh + US deploy full, GP/MQ server config gaps documented"
     }
   ],
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 206,
+      "sessions": 78,
       "friction": 0,
-      "dead_rate": 0.113,
-      "dead_worst": {
-        "screen": "map_map",
-        "rate": 0.195,
-        "n": 41
-      },
-      "top_dead_els": [],
-      "bored_worst": {
-        "screen": "beach",
-        "rate": 0.27
-      },
-      "modal_to_cta": 0,
-      "cta_to_redirect": 0,
-      "redirect_to_conversion": 0,
-      "session_to_conversion": 0,
-      "session_to_email": 0,
-      "prev_date": "2026-08-16",
-      "changes": [
-        "sessions 31→206 (+565%)",
-        "dead-rate 0.214→0.113 (-0.1) ✅"
-      ]
-    },
-    {
-      "region": "puntacana",
-      "sessions": 91,
-      "friction": 0,
-      "dead_rate": 0.027,
+      "dead_rate": 0.046,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.16
+        "rate": 0.15
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-16",
+      "prev_date": "2026-08-17",
       "changes": [
-        "sessions 2→91 (+4450%)"
+        "sessions 206→78 (-62%)",
+        "dead-rate 0.113→0.046 (-0.1) ✅"
+      ]
+    },
+    {
+      "region": "puntacana",
+      "sessions": 45,
+      "friction": 0,
+      "dead_rate": 0.065,
+      "dead_worst": {
+        "screen": "world",
+        "rate": 0.032,
+        "n": 31
+      },
+      "top_dead_els": [],
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.13
+      },
+      "modal_to_cta": 0,
+      "cta_to_redirect": 0,
+      "redirect_to_conversion": 0,
+      "session_to_conversion": 0,
+      "session_to_email": 0,
+      "prev_date": "2026-08-17",
+      "changes": [
+        "sessions 91→45 (-51%)"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 33,
+      "sessions": 24,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.24
+        "rate": 0.17
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
       "session_to_conversion": 0,
       "session_to_email": 0,
-      "prev_date": "2026-08-16",
+      "prev_date": "2026-08-17",
       "changes": [
-        "stable (aucun mouvement notable)"
+        "sessions 33→24 (-27%)"
       ]
     }
   ]
