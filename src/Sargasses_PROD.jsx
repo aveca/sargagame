@@ -111,6 +111,7 @@ const LazyContextVeilleur=lazyWithRetry(()=>import("./ContextVeilleur.jsx"))
 const StationStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.StationStory})))
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
+const SargaChatB2B=lazyWithRetry(()=>import("./SargaChatB2B.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
 // Slugs stations (validation légère côté App ; STATION_BEATS vit dans StoryScenes.jsx).
 const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargasses","danger-sargasses-h2s","nettoyer-sargasses","methode-carte","en/understanding-sargassum","en/satellite-sargassum-detection"])
@@ -9836,8 +9837,18 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
                   <span style={{display:"block",fontWeight:800,fontSize:13.5,color:"#F4845F"}}>{T(`Sargasses prévues ${dayName}`,`Sargassum forecast ${dayName}`,`Sargazo previsto ${dayName}`)}</span>
                   <span style={{display:"block",fontSize:12,color:"rgba(255,255,255,.6)"}}>{T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}</span>
                 </span>
-              </button>
-            )}
+          </button>
+        )}
+        {/* B2B Concierge chat — founder only, small button below main chat */}
+        {!showHero&&!showPrevLanding&&!showPremium&&!showB2BChat&&cookieConsent!==null&&(
+          <button onClick={()=>{setShowB2BChat(true)}} aria-label="Concierge B2B"
+            style={{position:"fixed",right:14,bottom:"calc(152px + env(safe-area-inset-bottom))",zIndex:960,
+              width:36,height:36,borderRadius:"50%",background:"#FFC72C",border:"2px solid #120821",
+              cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:14,color:"#120821",fontWeight:800}}>
+            B2B
+          </button>
+        )}
             <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
               cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
@@ -11347,6 +11358,7 @@ export default function App(){
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
+  const[showB2BChat,setShowB2BChat]=useState(false) // concierge B2B (SargaChatB2B)
   const[frustrationContext,setFrustrationContext]=useState(null) // contexte frustration (auto-open chat)
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
@@ -14439,6 +14451,7 @@ useEffect(()=>{
         )}
         {showChat&&cookieConsent!==null&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
+        {showB2BChat&&<ErrBound><Suspense fallback={null}><SargaChatB2B onClose={()=>setShowB2BChat(false)}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay.
             FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : le droit d'entrée aux

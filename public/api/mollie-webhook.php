@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/mollie-lib.php';
+require_once __DIR__ . '/b2b-db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -141,7 +142,7 @@ try {
 
         error_log("[mollie-webhook] subscription.$event id=$id status=$status plan=$planKey customer=$customerId");
 
-        // Grant Pro token for B2B monthly subscriptions (active/pending)
+         // Grant Pro token for B2B monthly subscriptions (active/pending)
          if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
                  if (in_array($status, ['active', 'pending'], true)) {
@@ -152,6 +153,17 @@ try {
                          exit;
                      }
                  }
+             }
+             // B2B Concierge: mark payment confirmed on first subscription.created
+             if ($event === 'subscription.created' && isset($metadata['concierge_id']) && isset($metadata['prospect_id'])) {
+                 b2b_mark_payment_confirmed($metadata['concierge_id']);
+                 b2b_update_prospect($metadata['prospect_id'], ['status' => 'paid']);
+                 b2b_log_event('PAYMENT_CONFIRMED', $metadata['prospect_id'], 'webhook', [
+                     'subscription_id' => $id,
+                     'plan' => $planKey,
+                     'event' => $event,
+                 ]);
+                 error_log("[mollie-webhook] B2B concierge first payment confirmed prospect={$metadata['prospect_id']}");
              }
          }
 
@@ -164,6 +176,16 @@ try {
                      exit;
                  }
                  error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId");
+             }
+             // B2B Concierge: mark payment confirmed if concierge_id in metadata
+             if (isset($metadata['concierge_id']) && isset($metadata['prospect_id'])) {
+                 b2b_mark_payment_confirmed($metadata['concierge_id']);
+                 b2b_update_prospect($metadata['prospect_id'], ['status' => 'paid']);
+                 b2b_log_event('PAYMENT_CONFIRMED', $metadata['prospect_id'], 'webhook', [
+                     'subscription_id' => $id,
+                     'plan' => $planKey,
+                 ]);
+                 error_log("[mollie-webhook] B2B concierge payment confirmed prospect={$metadata['prospect_id']} concierge={$metadata['concierge_id']}");
              }
          }
 
