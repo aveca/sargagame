@@ -13791,7 +13791,8 @@ useEffect(()=>{
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           transform:view==="map"?"scale(1)":"scale(1.03)",transformOrigin:"50% 42%",
-          pointerEvents:view==="map"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
+          pointerEvents:view==="map"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)",
+          background:"#0B2230"}}>
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
               la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
               hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
@@ -13806,7 +13807,8 @@ useEffect(()=>{
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           transform:view==="list"?"translateY(0)":"translateY(14px)",
-          pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
+          pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)",
+          background:"#0B2230"}}>
           {view==="list"&&<BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
             sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}
