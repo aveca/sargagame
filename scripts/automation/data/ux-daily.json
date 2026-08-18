@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T01:42:41.798Z",
+  "generated": "2026-08-18T06:58:27.469Z",
   "date": "2026-08-18",
   "days": 1,
   "regions": [
@@ -8,6 +8,14 @@
     "rivieramaya"
   ],
   "shipped": [
+    {
+      "h": "d0dde763",
+      "subject": "chore: update Copernicus data 2026-08-18 01:45 UTC"
+    },
+    {
+      "h": "28cd242f",
+      "subject": "chore: email state 2026-08-18 01:45 UTC"
+    },
     {
       "h": "dcddfbc3",
       "subject": "fix(funnel): beach click no longer auto-opens paywall"
@@ -47,75 +55,19 @@
     {
       "h": "dd4f5e0b",
       "subject": "chore: email state 2026-08-17 07:10 UTC"
-    },
-    {
-      "h": "96ad7174",
-      "subject": "chore: remove leaked render-env.txt with Mollie live key"
-    },
-    {
-      "h": "dd5aaeae",
-      "subject": "chore: bump version to v220 (2026-08-17 fresh data deploy)"
-    },
-    {
-      "h": "948c9025",
-      "subject": "chore(data): ERDDAP live data refresh 2026-08-17 04:59 UTC — all 7 regions"
-    },
-    {
-      "h": "920359a6",
-      "subject": "feat(easter-egg): yole Martinique ambient drift in ArchipelView — TASK-P2-005c"
-    },
-    {
-      "h": "3f07490c",
-      "subject": "chore: trigger render redeploy for mollie.php fix"
-    },
-    {
-      "h": "f87e4482",
-      "subject": "fix(api): kill all remaining require mollie-config.php in public/api/"
-    },
-    {
-      "h": "156930b2",
-      "subject": "fix: use env vars for mollie config on Render, local file fallback"
-    },
-    {
-      "h": "9cd1203a",
-      "subject": "fix: load mollie-config.php from /etc/secrets/ on Render"
-    },
-    {
-      "h": "241a2e29",
-      "subject": "feat(paywall): PassOffer comic theme variant"
-    },
-    {
-      "h": "9c1546ef",
-      "subject": "feat(paywall): OnsiteCheckout comic theme variant"
-    },
-    {
-      "h": "4411d692",
-      "subject": "fix(ux): prevent overlay stacking — chat/pushprimer hidden until cookie consent (#574)"
-    },
-    {
-      "h": "b0eab548",
-      "subject": "fix(i18n): translate forecast day labels in BeachSheet + ComicPaywall badge (#573)"
-    },
-    {
-      "h": "09a0e9c7",
-      "subject": "chore: update Copernicus data 2026-08-17 02:01 UTC"
-    },
-    {
-      "h": "a24a2883",
-      "subject": "chore: email state 2026-08-17 02:00 UTC"
     }
   ],
   "perRegion": [
     {
       "region": "florida",
-      "sessions": 16,
+      "sessions": 42,
       "friction": 0,
-      "dead_rate": 0,
+      "dead_rate": 0.061,
       "dead_worst": null,
       "top_dead_els": [],
       "bored_worst": {
         "screen": "world",
-        "rate": 0.12
+        "rate": 0.19
       },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
@@ -124,18 +76,21 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 206→16 (-92%)",
-        "dead-rate 0.113→0 (-0.1) ✅"
+        "sessions 206→42 (-80%)",
+        "dead-rate 0.113→0.061 (-0.1) ✅"
       ]
     },
     {
       "region": "puntacana",
-      "sessions": 5,
+      "sessions": 15,
       "friction": 0,
-      "dead_rate": 0.1,
+      "dead_rate": 0.077,
       "dead_worst": null,
       "top_dead_els": [],
-      "bored_worst": null,
+      "bored_worst": {
+        "screen": "world",
+        "rate": 0.07
+      },
       "modal_to_cta": 0,
       "cta_to_redirect": 0,
       "redirect_to_conversion": 0,
@@ -143,13 +98,13 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 91→5 (-95%)",
-        "dead-rate 0.027→0.1 (+0.1) ⚠️"
+        "sessions 91→15 (-84%)",
+        "dead-rate 0.027→0.077 (+0.1) ⚠️"
       ]
     },
     {
       "region": "rivieramaya",
-      "sessions": 5,
+      "sessions": 8,
       "friction": 0,
       "dead_rate": 0,
       "dead_worst": null,
@@ -162,7 +117,7 @@
       "session_to_email": 0,
       "prev_date": "2026-08-17",
       "changes": [
-        "sessions 33→5 (-85%)"
+        "sessions 33→8 (-76%)"
       ]
     }
   ]

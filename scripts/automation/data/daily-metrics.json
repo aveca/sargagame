@@ -2292,7 +2292,7 @@
   },
   {
     "date": "2026-08-18",
-    "time": "2026-08-18T01:38:57.141Z",
+    "time": "2026-08-18T06:57:33.887Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 560,
@@ -2323,11 +2323,11 @@
     "email": {
       "sent": 4541,
       "delivered": null,
-      "opened": 92,
+      "opened": 82,
       "clicked": 17,
       "bounced": null,
-      "openRate": 2.03,
-      "clickRate": 18.48,
+      "openRate": 1.81,
+      "clickRate": 20.73,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -2366,12 +2366,7 @@
     },
     "mollie": {
       "windowDays": 30,
-      "paid": {
-        "USD": {
-          "count": 1,
-          "total": 5.99
-        }
-      },
+      "paid": {},
       "refunds": {
         "count": 0,
         "total": {}
@@ -2381,15 +2376,13 @@
         "total": {}
       },
       "b2b": 0,
-      "payers": [
-        "847abc3b"
-      ]
+      "payers": []
     },
     "ga4": {
       "date": "2026-08-17",
       "mq": {
         "sessions": 8,
-        "users": 9593
+        "users": 9606
       },
       "gp": {
         "sessions": 129,
