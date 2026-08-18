@@ -97,8 +97,22 @@
       "emailHash": "2ac931607bc8885d0a7ca3eeae674881",
       "authority": "high",
       "market": "mx"
+    },
+    "karibea.com": {
+      "date": "2026-08-18T10:37:38.451Z",
+      "status": "sent",
+      "emailHash": "a618257a7fa208d64b6d7521d125f5fd",
+      "authority": "medium",
+      "market": "fr"
+    },
+    "toubana.com": {
+      "date": "2026-08-18T10:37:40.735Z",
+      "status": "sent",
+      "emailHash": "7c8394c00c89be4b2566b1a6727e48ae",
+      "authority": "medium",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-08-11T10:59:03.606Z",
-  "totalSent": 14
+  "lastRun": "2026-08-18T10:37:40.736Z",
+  "totalSent": 16
 }

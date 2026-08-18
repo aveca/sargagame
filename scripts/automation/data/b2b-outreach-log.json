@@ -307,8 +307,40 @@
     "cocoyer-beach.com": {
       "date": "2026-08-11T11:02:58.004Z",
       "status": "no-email"
+    },
+    "villagestpierre.fr": {
+      "date": "2026-08-18T10:39:50.602Z",
+      "status": "no-email"
+    },
+    "ville-saintefrancois.fr": {
+      "date": "2026-08-18T10:39:51.064Z",
+      "status": "no-email"
+    },
+    "saint-anne-guadeloupe.fr": {
+      "date": "2026-08-18T10:39:51.451Z",
+      "status": "no-email"
+    },
+    "ville-legosier.fr": {
+      "date": "2026-08-18T10:39:51.862Z",
+      "status": "no-email"
+    },
+    "ville-deshaies.fr": {
+      "date": "2026-08-18T10:39:52.232Z",
+      "status": "no-email"
+    },
+    "mairie-bouillante.fr": {
+      "date": "2026-08-18T10:39:52.553Z",
+      "status": "no-email"
+    },
+    "terre-de-haut.fr": {
+      "date": "2026-08-18T10:39:53.869Z",
+      "status": "no-email"
+    },
+    "mariegalante.fr": {
+      "date": "2026-08-18T10:39:58.313Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-08-11T11:02:58.004Z",
+  "lastRun": "2026-08-18T10:39:58.313Z",
   "totalSent": 14
 }

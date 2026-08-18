@@ -520,8 +520,53 @@
       "error": null,
       "url": "https://www.everythingplayadelcarmen.com/sargassum-forecast/",
       "market": "mx"
+    },
+    "govisitcancun.com": {
+      "date": "2026-08-18T10:26:33.895Z",
+      "emailHash": "3729758b8de9d07db6e59b411cf04c30",
+      "emailDomain": "govisitcancun.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.govisitcancun.com/blog/how-to-avoid-sargassum-in-cancun-in-2026/",
+      "market": "mx"
+    },
+    "playadelcarmen.com": {
+      "date": "2026-08-18T10:26:34.914Z",
+      "emailHash": "9bcfac08b28c2669666a1c2f2ee761fe",
+      "emailDomain": "yahoo.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.playadelcarmen.com/blog/seaweed-playa-del-carmen/",
+      "market": "mx"
+    },
+    "playadelcarmenvacation.com": {
+      "date": "2026-08-18T10:26:45.802Z",
+      "emailHash": "7e23b8c33aa5602dcff811c515c2f276",
+      "emailDomain": "playadelcarmenvacation.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.playadelcarmenvacation.com/daily-sargassum-sargasso-seaweed-report/",
+      "market": "mx"
+    },
+    "stingrayvilla.com": {
+      "date": "2026-08-18T10:26:51.037Z",
+      "emailHash": "63200346a603f69f0ce67def34b9d54b",
+      "emailDomain": "stingrayvilla.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.stingrayvilla.com/sargassum-seaweed-in-cozumel/",
+      "market": "mx"
+    },
+    "topmexicorealestate.com": {
+      "date": "2026-08-18T10:26:52.275Z",
+      "emailHash": "cc058778118fd8d596246f599a074484",
+      "emailDomain": "topmexicorealestate.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.topmexicorealestate.com/blog/tag/sargassum-riviera-maya/",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-08-11T10:49:12.123Z",
-  "totalSent": 59
+  "lastRun": "2026-08-18T10:26:52.275Z",
+  "totalSent": 64
 }
