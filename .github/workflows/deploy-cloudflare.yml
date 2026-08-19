@@ -23,7 +23,7 @@ jobs:
         run: npm ci
 
       - name: Install wrangler
-        run: npm install -g wrangler
+        run: npm install -g wrangler && echo "$(npm bin -g)" >> $GITHUB_PATH
 
       - name: Build and deploy all regions to Pages
         if: env.CF_TOKEN != ''
