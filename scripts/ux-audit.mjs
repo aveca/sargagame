@@ -113,6 +113,17 @@ async function auditRegion(region, liveUrl) {
     }
   });
 
+  // Capture 404 response bodies
+  page.on('response', res => {
+    if (res.status() >= 400) {
+      const url = res.url();
+      const isExpected = url.includes('apple-developer-merchantid') || url.includes('analytics_events') || url.includes('google-analytics');
+      if (!isExpected) {
+        networkErrors.push({ url, error: `HTTP ${res.status()}`, ts: Date.now() });
+      }
+    }
+  });
+
   page.on('pageerror', err => {
     issue('CRITICAL', 'Uncaught page error', { error: err.message, stack: err.stack?.slice(0, 500) });
   });
@@ -246,9 +257,12 @@ async function auditRegion(region, liveUrl) {
           const btn = await page.$(sel);
           if (btn) {
             await btn.click();
-            await page.waitForTimeout(1000);
-            const listItems = await page.$$('[data-beach]');
-            log(`List view items: ${listItems.length}`);
+            await page.waitForTimeout(2000); // Wait for list to render
+            // Try multiple selectors for list items
+            const listItems = await page.$$('[data-beach], .sg-beach-card, [role="listitem"], .sg-list-item');
+            const listText = await page.textContent('body');
+            const hasListContent = listText.includes('plages') || listText.includes('beaches') || listText.includes('Propres');
+            log(`List view items: ${listItems.length}, has content: ${hasListContent}`);
             return;
           }
         }

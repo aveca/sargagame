@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- CSP disabled for Mollie testing -->
-  <script src="https://js.mollie.com/v1/mollie.js"></script>
-  <script>
-    window.Mollie && window.Mollie.setProfileId("pfl_t8KCk4Cm2C");
-  </script>
+  <script src="https://js.mollie.com/v1/mollie.js" onload="window.Mollie && window.Mollie.setProfileId('pfl_t8KCk4Cm2C')"></script>
     <!-- theme-color pilotè en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
          theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein ÔåÆ on l'a
          d'abord RETIR├ë. Mais sans theme-color, Safari iOS (ÔëÑ15, surtout la barre flottante
