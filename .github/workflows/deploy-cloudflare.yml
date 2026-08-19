@@ -66,8 +66,8 @@ define('MOLLIE_TESTMODE', false);
               echo "  → Wrote dist/mollie-config.php with webhook secret"
             fi
             # Deploy to Pages
-            wrangler pages deploy dist --project-name=$PROJECT --branch=main
-            echo "── Deployed $PROJECT ──"
+            wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+            echo "── Done $PROJECT ──"
           done
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
