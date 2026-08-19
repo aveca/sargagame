@@ -1,0 +1,102 @@
+{
+  "region": "mq",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-08-19T15:30:12.937Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "window.Mollie.setProfileId is not a function",
+        "stack": "TypeError: window.Mollie.setProfileId is not a function\n    at http://localhost:8799/:16:36"
+      },
+      "ts": 1787153333695
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "Cookie banner overlaps bottom nav by 86px",
+      "details": {
+        "banner": {
+          "x": 0,
+          "y": 743.8125,
+          "width": 390,
+          "height": 100.1875
+        },
+        "nav": {
+          "x": 0,
+          "y": 758,
+          "width": 390,
+          "height": 86
+        }
+      },
+      "ts": 1787153379268
+    },
+    {
+      "severity": "ERROR",
+      "msg": "Step \"check_cookie_banner\" failed",
+      "details": {
+        "error": "elementHandle.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n"
+      },
+      "ts": 1787153409280
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "1 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+            "ts": 1787153353218
+          }
+        ]
+      },
+      "ts": 1787153412197
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 14364.299999952316,
+    "load": 18764.200000047684,
+    "lcp": null,
+    "resourceCount": 75
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+      "ts": 1787153353218
+    }
+  ],
+  "networkErrors": [],
+  "summary": {
+    "total": 4,
+    "critical": 1,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 1
+  }
+}

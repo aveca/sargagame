@@ -1,0 +1,66 @@
+{
+  "region": "mq",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-08-19T16:22:15.936Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "1 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+            "ts": 1787156499603
+          }
+        ]
+      },
+      "ts": 1787156535058
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 20369.5,
+    "load": 20612.399999976158,
+    "lcp": null,
+    "resourceCount": 76
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+      "ts": 1787156499603
+    }
+  ],
+  "networkErrors": [],
+  "summary": {
+    "total": 1,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 1,
+    "errors": 0
+  }
+}

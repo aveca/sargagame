@@ -157,14 +157,7 @@ const fmtHeight=m=>US_UNITS?`${(m*3.28084).toFixed(1)} ft`:`${m}m`
 const fmtRain=mm=>US_UNITS?`${(mm/25.4).toFixed(2)} in`:`${mm}mm`
 
 // GitHub Pages base path: strip /sargagame/ prefix from pathname for SPA routing
-const _isGHPages = typeof window !== 'undefined' && location.hostname === 'aveca.github.io'
-const _ghBase = '/sargagame'
-function getPathname() {
-  if (typeof window === 'undefined') return '/'
-  let p = window.location.pathname
-  if (_isGHPages && p.indexOf(_ghBase) === 0) p = p.slice(_ghBase.length) || '/'
-  return p
-}
+import { getPathname } from "./utils/getPathname.js"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
@@ -5879,7 +5872,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
           const colFc=s=>stColor(s)
           const hFc=s=>s==="clean"?20:s==="moderate"?28:36
           return(
-            <button key={b.id} onClick={()=>onBeachClick(b)} style={{
+            <button key={b.id} onClick={()=>onBeachClick(b)} data-beach={b.id} style={{
               position:"relative",
               display:"flex",flexDirection:fcDays?"column":"row",alignItems:fcDays?"stretch":"center",
               gap:fcDays?0:13,padding:0,
@@ -11995,7 +11988,11 @@ export default function App(){
       const t=setTimeout(()=>{
         try{localStorage.setItem("sg_refclaim_ts",String(Date.now()))}catch(_){}
         fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"claim_referral_credit",code})})
-          .then(r=>r.json()).then(d=>{
+          .then(r=>{
+            const ct=r.headers.get("content-type")||"";
+            if(!ct.includes("application/json")){console.warn("[sg] referral_claim: réponse non-JSON (dev mode?)");return Promise.reject(new Error("non-json"))}
+            return r.json()
+          }).then(d=>{
             const days=Math.max(0,Math.min(30,parseInt(d&&d.days)||0))
             if(days<=0)return
             const cur=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
@@ -14455,7 +14452,7 @@ useEffect(()=>{
         )}
         {showChat&&cookieConsent!==null&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
-        {showB2BChat&&<ErrBound><Suspense fallback={null}><SargaChatB2B onClose={()=>setShowB2BChat(false)}/></Suspense></ErrBound>}
+        {showB2BChat&&<ErrBound><Suspense fallback={null}><SargaChatB2B onClose={()=>setShowB2BChat(false)} lang={lang}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay.
             FAB CARTE RETIRÉ (redesign funnel 2026-08-11) : le droit d'entrée aux
@@ -14699,7 +14696,7 @@ useEffect(()=>{
             Refuser → analytics reste denied (comportement par défaut index.html).
             Rollback ?cookiebanner=0. */}
         {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
-          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:"calc(86px + env(safe-area-inset-bottom,0px))",left:0,right:0,zIndex:1025,
+          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:"calc(100px + max(16px, env(safe-area-inset-bottom)))",left:0,right:0,zIndex:1025,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
             borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) 16px",
             display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>

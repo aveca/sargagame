@@ -33,7 +33,7 @@ async function api(method, path, body = null) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────
-export default function SargaChatB2B({ onClose }) {
+export default function SargaChatB2B({ onClose, lang = "fr" }) {
   const [msgs, setMsgs] = useState([
     {
       who: 'bot',
@@ -425,7 +425,7 @@ export default function SargaChatB2B({ onClose }) {
               </span>
             </div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={{
+          <button onClick={onClose} aria-label={lang==="es"?"Cerrar":lang==="en"?"Close":"Fermer"} style={{
             background: 'none', border: 'none', color: 'rgba(255,255,255,.6)',
             fontSize: 18, cursor: 'pointer', padding: 12, minWidth: 44, minHeight: 44,
           }}>✕</button>

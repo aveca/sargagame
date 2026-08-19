@@ -1,0 +1,47 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1787152908403
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1787152913390
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+    "ts": 1787152922167
+  },
+  {
+    "type": "error",
+    "text": "[sg] window_error Maximum call stack size exceeded",
+    "ts": 1787152922167
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1787152928107
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1787152935431
+  },
+  {
+    "type": "error",
+    "text": "[sg] window_error Maximum call stack size exceeded",
+    "ts": 1787152954048
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1787152955353
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1787152955664
+  }
+]

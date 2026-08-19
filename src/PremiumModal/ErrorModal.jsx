@@ -6,7 +6,7 @@ import * as SG from "../Sargasses_PROD.jsx"
 const { COMIC, _t } = SG
 
 // ErrorModal — Modal d'erreur standardisé (design comic, cohérent)
-export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="⚠️"}){
+export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="⚠️",lang="fr"}){
   if(!isOpen) return null
   const I=COMIC
   const handleKeyDown=(e)=>{
@@ -97,7 +97,7 @@ export function ToastError({message,onDismiss,autoDismiss=5000}){
       `}</style>
       <span style={{fontSize:20}}>⚠️</span>
       <span style={{font:"600 15px/1.4 'Bricolage Grotesque'"}}>{message}</span>
-      <button onClick={onDismiss} aria-label="Fermer" style={{
+      <button onClick={onDismiss} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
         background:"none",border:"none",color:"#fff",fontSize:20,lineHeight:1,
         cursor:"pointer",padding:0,marginLeft:8
       }}>×</button>

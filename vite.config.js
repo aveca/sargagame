@@ -2551,6 +2551,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
       },
     },
   },
+  // Production: drop console/debugger from bundle (dev keeps them)
+  esbuild: {
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+  },
   // GitHub Pages deploy: /sargagame/ subpath. Production domains use root /
   base: process.env.DEPLOY_TARGET === 'gh-pages' ? '/sargagame/' : '/',
 })

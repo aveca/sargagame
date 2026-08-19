@@ -1,0 +1,66 @@
+{
+  "region": "mq",
+  "url": "http://localhost:4173",
+  "timestamp": "2026-08-19T17:02:45.922Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "1 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim non-json",
+            "ts": 1787158951522
+          }
+        ]
+      },
+      "ts": 1787158965047
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 29.899999976158142,
+    "load": 41.89999997615814,
+    "lcp": null,
+    "resourceCount": 43
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim non-json",
+      "ts": 1787158951522
+    }
+  ],
+  "networkErrors": [],
+  "summary": {
+    "total": 1,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 1,
+    "errors": 0
+  }
+}

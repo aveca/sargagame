@@ -1,0 +1,32 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1787156955234
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1787156962507
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+    "ts": 1787156973512
+  },
+  {
+    "type": "log",
+    "text": "[vite] server connection lost. Polling for restart...",
+    "ts": 1787157001515
+  },
+  {
+    "type": "error",
+    "text": "Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of \"text/html\". Strict MIME type checking is enforced for module scripts per HTML spec.",
+    "ts": 1787157003838
+  },
+  {
+    "type": "error",
+    "text": "Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of \"text/html\". Strict MIME type checking is enforced for module scripts per HTML spec.",
+    "ts": 1787157006165
+  }
+]

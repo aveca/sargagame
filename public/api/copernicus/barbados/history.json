@@ -1855,17 +1855,17 @@
         },
         {
           "id": "bb007",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "bb008",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "bb009",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -1875,12 +1875,12 @@
         },
         {
           "id": "bb011",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "bb012",
-          "afai": 0.09,
+          "afai": 0.05,
           "status": "clean"
         }
       ]

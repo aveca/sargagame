@@ -151,9 +151,12 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
     badge=_e("g",{opacity:"0"})
     // taille FIXE (pas ×S) : c'est un LABEL, il doit rester lisible même à la vue régionale où le
     // splat est petit. Léger fond-ombre encre derrière (2e text décalé) pour décoller du fond.
-    const sh=_e("text",{x:0,y:2,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"34",fill:INK,opacity:".35"}); sh.textContent=label; badge.appendChild(sh)
-    const txt=_e("text",{x:0,y:0,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"34",fill:col,stroke:INK,"stroke-width":"4.5","paint-order":"stroke","stroke-linejoin":"round"})
+    const sh=_e("text",{x:0,y:2,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"26",fill:INK,opacity:".35"}); sh.textContent=label; badge.appendChild(sh)
+    const txt=_e("text",{x:0,y:0,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"26",fill:col,stroke:INK,"stroke-width":"3.5","paint-order":"stroke","stroke-linejoin":"round"})
     txt.textContent=label
+    // Fond semi-transparent pour éviter le chevauchement et garantir la lisibilité
+    const bg=_e("rect",{x:-22,y:-14,width:44,height:28,rx:6,ry:6,fill:"rgba(13,11,20,0.65)",stroke:INK,"stroke-width":"0.5",opacity:0.9})
+    badge.insertBefore(bg,badge.firstChild)
     badge.appendChild(txt)
     layer.appendChild(badge)
   }
@@ -1814,7 +1817,7 @@ export default function WorldMapView({
                    plein écran (ChasseDetail, position:fixed) s'ouvre au clic d'un résultat →
                    fiche « zoomée »/décalée, interface cassée. Garder ≥16px. */
                 style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 16px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
-              {query&&<button type="button" onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
+              {query&&<button type="button" onClick={()=>setQuery("")} aria-label={_t(lang,"Effacer la recherche","Clear search","Borrar búsqueda")} style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
             </div>
             {matches.length>0&&(
               <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 4px 0 ${INK}`,borderRadius:12,overflow:"hidden",zIndex:20}}>
@@ -1830,7 +1833,7 @@ export default function WorldMapView({
             )}
           </div>
           {/* Fermer (hors rootMode) */}
-          {!rootMode&&<button type="button" onClick={onClose} style={{
+          {!rootMode&&<button type="button" onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
             background:"#fdf6e3",
             color:INK,font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",

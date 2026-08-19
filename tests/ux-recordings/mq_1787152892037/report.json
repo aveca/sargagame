@@ -1,0 +1,289 @@
+{
+  "region": "mq",
+  "timestamp": "2026-08-19T15:22:36.371Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "map_pan_zoom",
+    "check_beach_labels_visible",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav_visibility",
+    "check_cookie_banner",
+    "check_console_errors",
+    "check_network_failures",
+    "check_scores_rendered",
+    "scroll_map_down"
+  ],
+  "issues": [
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "window.Mollie.setProfileId is not a function",
+        "stack": "TypeError: window.Mollie.setProfileId is not a function\n    at http://localhost:8799/:16:36"
+      },
+      "ts": 1787152903687
+    },
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "Maximum call stack size exceeded",
+        "stack": "RangeError: Maximum call stack size exceeded\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:9:21)\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:11:11)\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:11:11)\n    at getPathna"
+      },
+      "ts": 1787152922167
+    },
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "window.Mollie.setProfileId is not a function",
+        "stack": "TypeError: window.Mollie.setProfileId is not a function\n    at http://localhost:8799/:16:36"
+      },
+      "ts": 1787152925169
+    },
+    {
+      "severity": "WARN",
+      "msg": "Could not find clean beach count",
+      "details": {},
+      "ts": 1787152934265
+    },
+    {
+      "severity": "WARN",
+      "msg": "No clickable beach pins found",
+      "details": {},
+      "ts": 1787152942390
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "Cookie banner may overlap bottom nav",
+      "details": {
+        "banner": {
+          "x": 0,
+          "y": 743.8125,
+          "width": 390,
+          "height": 100.1875
+        },
+        "nav": {
+          "x": 0,
+          "y": 758,
+          "width": 390,
+          "height": 86
+        }
+      },
+      "ts": 1787152945120
+    },
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "Maximum call stack size exceeded",
+        "stack": "RangeError: Maximum call stack size exceeded\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:9:21)\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:11:11)\n    at getPathname (http://localhost:8799/src/useFrustrationDetection.js:11:11)\n    at getPathna"
+      },
+      "ts": 1787152954049
+    },
+    {
+      "severity": "ERROR",
+      "msg": "Step \"check_cookie_banner\" failed",
+      "details": {
+        "error": "elementHandle.click: Element is not attached to the DOM\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"sg-bottom-nav\">…</nav> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"sg-bottom-nav\">…</nav> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    17 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <nav class=\"sg-bottom-nav\">…</nav> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for \"http://localhost:8799/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:8799/\"\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n"
+      },
+      "ts": 1787152954909
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "3 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+            "ts": 1787152922167
+          },
+          {
+            "type": "error",
+            "text": "[sg] window_error Maximum call stack size exceeded",
+            "ts": 1787152922167
+          },
+          {
+            "type": "error",
+            "text": "[sg] window_error Maximum call stack size exceeded",
+            "ts": 1787152954048
+          }
+        ]
+      },
+      "ts": 1787152954909
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "14 network failures",
+      "details": {
+        "errors": [
+          {
+            "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=1&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=7769",
+            "error": "net::ERR_ABORTED",
+            "ts": 1787152908309
+          },
+          {
+            "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=2&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=scroll&epn.percent_scrolled=90&_et=2&tfd=12779",
+            "error": "net::ERR_ABORTED",
+            "ts": 1787152908402
+          },
+          {
+            "url": "http://localhost:8799/.well-known/apple-developer-merchantid-domain-association",
+            "error": "net::ERR_ABORTED",
+            "ts": 1787152908492
+          },
+          {
+            "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+            "error": "net::ERR_ABORTED",
+            "ts": 1787152913289
+          },
+          {
+            "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=3&tfd=19251",
+            "error": "net::ERR_ABORTED",
+            "ts": 1787152921518
+          }
+        ]
+      },
+      "ts": 1787152954909
+    },
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "window.Mollie.setProfileId is not a function",
+        "stack": "TypeError: window.Mollie.setProfileId is not a function\n    at http://localhost:8799/:16:36"
+      },
+      "ts": 1787152955340
+    }
+  ],
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+      "ts": 1787152922167
+    },
+    {
+      "type": "error",
+      "text": "[sg] window_error Maximum call stack size exceeded",
+      "ts": 1787152922167
+    },
+    {
+      "type": "error",
+      "text": "[sg] window_error Maximum call stack size exceeded",
+      "ts": 1787152954048
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=1&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=7769",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152908309
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=2&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=scroll&epn.percent_scrolled=90&_et=2&tfd=12779",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152908402
+    },
+    {
+      "url": "http://localhost:8799/.well-known/apple-developer-merchantid-domain-association",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152908492
+    },
+    {
+      "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152913289
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152901182&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1464266830.1787152902&frm=0&ngs=1&pscdl=denied&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115616985~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152901&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=3&tfd=19251",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152921518
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=1&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&sid=1787152922&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=3080",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152925256
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&cid=1908716545.1787152923&frm=0&ngs=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=2&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&sid=1787152922&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=scroll&epn.percent_scrolled=90&_et=1&tfd=8090",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152935431
+    },
+    {
+      "url": "http://localhost:8799/.well-known/apple-developer-merchantid-domain-association",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152935453
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&sid=1787152922&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=3&tfd=15575",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152936190
+    },
+    {
+      "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152936196
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&ni=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&dp=%2F&sid=1787152922&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=4&tfd=16297",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152938788
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&sid=1787152922&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=5&tfd=20834",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152940831
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&ni=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=6&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&dp=%2F&sid=1787152922&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=web_vitals&_ee=1&ep.metric_name=LCP&epn.metric_value=15620&ep.metric_rating=poor&ep.metric_id=v5-1787152935514-8057376252615&ep.sg_region=other&ep.effective_type=4g&_et=13&tfd=23008",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152943009
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152922494&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1908716545.1787152923&frm=0&ngs=1&pscdl=denied&rcb=3&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115938466~115938469~118897920~118897930~119367802~119367810~120385422&sid=1787152922&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=7&tfd=28015",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152948017
+    },
+    {
+      "url": "http://localhost:8799/.well-known/apple-developer-merchantid-domain-association",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152955354
+    },
+    {
+      "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152955521
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152955341&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1106753667.1787152956&frm=0&ngs=1&pscdl=denied&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=1&tag_exp=115616986~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152955&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1355",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152955958
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152955341&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&cid=1106753667.1787152956&frm=0&ngs=1&pscdl=denied&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&_s=2&tag_exp=115616986~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152955&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&en=scroll&epn.percent_scrolled=90&tfd=1359",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152955963
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je68i0h2v9248042081za200zd9248042081&_p=1787152955341&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1106753667.1787152956&frm=0&ngs=1&pscdl=denied&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=1&uap=iOS&uapv=17_0&uaw=0&ul=fr&tag_exp=115616986~115938465~115938469~118897920~118897930~119367802~119367810~120385423&sid=1787152955&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2F&dr=http%3A%2F%2Flocalhost%3A8799%2F&dt=Plages%20Martinique%20aujourd%27hui%20%E2%80%94%20Score%200-100%20(sargasses%2C%20mer%2C%20soleil)%202026&_tu=BA&_s=3&tfd=1366",
+      "error": "net::ERR_ABORTED",
+      "ts": 1787152955974
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "critical": 5,
+    "warnings": 2,
+    "medium": 3
+  }
+}

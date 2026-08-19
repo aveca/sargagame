@@ -6,12 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 // GitHub Pages base path helper
-function getPathname() {
-  if (typeof window === 'undefined') return '/'
-  let p = window.location.pathname
-  if (location.hostname === 'aveca.github.io' && p.indexOf('/sargagame') === 0) p = p.slice('/sargagame'.length) || '/'
-  return p
-}
+import { getPathname } from "./utils/getPathname.js"
 
 // Configurable thresholds
 const CONFIG = {

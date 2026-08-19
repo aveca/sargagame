@@ -1,0 +1,125 @@
+{
+  "region": "mq",
+  "url": "https://sargasses-martinique.com",
+  "timestamp": "2026-08-19T16:26:10.942Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "window.Mollie.setProfileId is not a function",
+        "stack": "TypeError: window.Mollie.setProfileId is not a function\n    at HTMLScriptElement.onload (https://sargasses-martinique.com/:7:154)"
+      },
+      "ts": 1787156753908
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "3 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1787156754065
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1787156756495
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1787156760876
+          }
+        ]
+      },
+      "ts": 1787156770075
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "2 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "https://sargasses-martinique.com/api/mollie.php",
+            "error": "HTTP 404",
+            "ts": 1787156756495
+          },
+          {
+            "url": "https://sargasses-martinique.com/api/b2b-partners.json",
+            "error": "HTTP 404",
+            "ts": 1787156760876
+          }
+        ]
+      },
+      "ts": 1787156770075
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 842.6999999284744,
+    "load": 1390.1999999284744,
+    "lcp": null,
+    "resourceCount": 47
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787156754065
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787156756495
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787156760876
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://sargasses-martinique.com/api/mollie.php",
+      "error": "HTTP 404",
+      "ts": 1787156756495
+    },
+    {
+      "url": "https://sargasses-martinique.com/api/b2b-partners.json",
+      "error": "HTTP 404",
+      "ts": 1787156760876
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "critical": 1,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

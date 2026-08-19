@@ -1,0 +1,87 @@
+{
+  "region": "mq",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-08-19T16:30:06.315Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "WARN",
+      "msg": "Bottom nav not found",
+      "details": {},
+      "ts": 1787157005036
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "2 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+            "ts": 1787156973512
+          },
+          {
+            "type": "error",
+            "text": "Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of \"text/html\". Strict MIME type checking is enforced for module scripts per HTML spec.",
+            "ts": 1787157003838
+          }
+        ]
+      },
+      "ts": 1787157005626
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 24752.399999976158,
+    "load": 24939.299999952316,
+    "lcp": null,
+    "resourceCount": 75
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+      "ts": 1787156973512
+    },
+    {
+      "type": "error",
+      "text": "Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of \"text/html\". Strict MIME type checking is enforced for module scripts per HTML spec.",
+      "ts": 1787157003838
+    },
+    {
+      "type": "error",
+      "text": "Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of \"text/html\". Strict MIME type checking is enforced for module scripts per HTML spec.",
+      "ts": 1787157006165
+    }
+  ],
+  "networkErrors": [],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 1,
+    "medium": 1,
+    "errors": 0
+  }
+}

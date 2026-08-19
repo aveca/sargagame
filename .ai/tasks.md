@@ -157,7 +157,15 @@
 - **Description** : Proto endpoint `/api/og/beach/{{slug}}.png?lang={{fr|en|es}}` via `satori` + `resvg` (build-time, pas de .png statiques en dist). Spec design dans `design/STORY/09-REWRITES-GROWTH-SHARE.md`. 3 plages pilotes : Les Salines MQ, Sainte-Anne GP, Miami Beach FL. Schema.org ImageObject dans pageShell. A/B `?og=1/0` (control intact).
 - **Fichiers** : `serverless/og-beach.js` (nouveau), `scripts/automation/generate-og-pilot.mjs` (build script), `vite.config.js` (pageShell meta), `index.html` (A/B flag).
 - **Estimation** : 3h
-- **Statut** : [x] done by coding_agent (2026-08-19) — Complete: satori+resvg endpoint, build script, pageShell og:image A/B flag (`VITE_OG_AB=1` + `?og=1/0`), Schema.org ImageObject in beachSchemaObj. 2 pilot beaches × 3 langs generated. Next: extend to all 136 beaches.
+- **Statut** : [x] done by coding_agent (2026-08-19) — Complete: satori+resvg endpoint, build script, pageShell og:image A/B flag (`VITE_OG_AB=1` + `?og=1/0`), Schema.org ImageObject in beachSchemaObj. 2 pilot beaches × 3 langs generated.
+
+### TASK-P2-005b-extend. Étendre OG cards à toutes les 136 plages
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : Étendre la génération OG cards aux 136 plages (53 MQ + 83 GP) × 3 langues = 408 cartes. Générer les assets statiques dans `public/assets/og/` pour éviter la dépendance serverless en production.
+- **Fichiers** : `scripts/automation/generate-og-all.mjs` (nouveau), `scripts/automation/generate-og-pilot.mjs` (existant), `public/assets/og/` (output).
+- **Estimation** : 2h
+- **Statut** : [x] done by coding_agent (2026-08-19) — 408 OG cards generated (136 beaches × 3 langs) at 1200×630. Stored in `public/assets/og/`. PageShell already wired with A/B flag. Ready for production.
 
 ### TASK-P2-005c. Implémenter artefact 4 — 1er easter egg carte SVG (yole Martinique)
 - **Priorité** : P2

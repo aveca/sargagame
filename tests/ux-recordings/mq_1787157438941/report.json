@@ -1,0 +1,106 @@
+{
+  "region": "mq",
+  "url": "http://localhost:4173",
+  "timestamp": "2026-08-19T16:37:36.055Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "3 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "Access to XMLHttpRequest at 'https://b.clarity.ms/collect' from origin 'http://localhost:4173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+            "ts": 1787157440181
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: net::ERR_FAILED",
+            "ts": 1787157440187
+          },
+          {
+            "type": "error",
+            "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+            "ts": 1787157441616
+          }
+        ]
+      },
+      "ts": 1787157455233
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "1 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "https://b.clarity.ms/collect",
+            "error": "net::ERR_FAILED",
+            "ts": 1787157440187
+          }
+        ]
+      },
+      "ts": 1787157455233
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 76.70000004768372,
+    "load": 78.89999997615814,
+    "lcp": null,
+    "resourceCount": 43
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Access to XMLHttpRequest at 'https://b.clarity.ms/collect' from origin 'http://localhost:4173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+      "ts": 1787157440181
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED",
+      "ts": 1787157440187
+    },
+    {
+      "type": "error",
+      "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+      "ts": 1787157441616
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://b.clarity.ms/collect",
+      "error": "net::ERR_FAILED",
+      "ts": 1787157440187
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

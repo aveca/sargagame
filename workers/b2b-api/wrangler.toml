@@ -1,0 +1,21 @@
+name = "b2b-api"
+main = "index.js"
+compatibility_date = "2024-01-01"
+routes = [
+  { pattern = "sargasses-martinique.com/api/b2b*", zone_name = "sargasses-martinique.com" },
+  { pattern = "sargasses-martinique.com/api/mollie*", zone_name = "sargasses-martinique.com" },
+  { pattern = "sargasses-guadeloupe.com/api/b2b*", zone_name = "sargasses-guadeloupe.com" },
+  { pattern = "sargasses-guadeloupe.com/api/mollie*", zone_name = "sargasses-guadeloupe.com" },
+  { pattern = "sargassummiami.com/api/b2b*", zone_name = "sargassummiami.com" },
+  { pattern = "sargassummiami.com/api/mollie*", zone_name = "sargassummiami.com" },
+  { pattern = "sargassumcancun.com/api/b2b*", zone_name = "sargassumcancun.com" },
+  { pattern = "sargassumcancun.com/api/mollie*", zone_name = "sargassumcancun.com" },
+  { pattern = "sargassumpuntacana.com/api/b2b*", zone_name = "sargassumpuntacana.com" },
+  { pattern = "sargassumpuntacana.com/api/mollie*", zone_name = "sargassumpuntacana.com" }
+]
+
+[vars]
+SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
+
+# Secret SUPABASE_SERVICE_KEY → wrangler secret put SUPABASE_SERVICE_KEY
+# Secret MOLLIE_API_KEY → wrangler secret put MOLLIE_API_KEY

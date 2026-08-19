@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './Sargasses_PROD.jsx'
+import MapSkeleton from './components/MapSkeleton.jsx'
+
+const App = lazy(() => import('./Sargasses_PROD.jsx'))
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <Suspense fallback={<MapSkeleton />}>
+      <App />
+    </Suspense>
   </React.StrictMode>
 )
 

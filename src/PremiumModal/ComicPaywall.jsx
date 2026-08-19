@@ -380,7 +380,7 @@ export function ComicPaywall({
             <button
               onClick={goPrev}
               disabled={animating}
-              aria-label="Panel précédent"
+              aria-label={t("Panel précédent","Previous panel","Panel anterior")}
               style={{
                 width: 48, height: 48, borderRadius: "50%",
                 background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",
@@ -397,7 +397,7 @@ export function ComicPaywall({
             <button
               onClick={goNext}
               disabled={animating}
-              aria-label="Panel suivant"
+              aria-label={t("Panel suivant","Next panel","Panel siguiente")}
               style={{
                 width: 48, height: 48, borderRadius: "50%",
                 background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.18)",

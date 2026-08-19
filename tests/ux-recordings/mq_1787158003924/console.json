@@ -1,0 +1,7 @@
+[
+  {
+    "type": "error",
+    "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+    "ts": 1787158006618
+  }
+]

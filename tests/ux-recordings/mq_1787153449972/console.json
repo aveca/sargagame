@@ -1,0 +1,27 @@
+[
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "ts": 1787153451194
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "ts": 1787153453691
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "ts": 1787153458088
+  },
+  {
+    "type": "error",
+    "text": "[sg] window_error Maximum call stack size exceeded",
+    "ts": 1787153470871
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "ts": 1787153471756
+  }
+]

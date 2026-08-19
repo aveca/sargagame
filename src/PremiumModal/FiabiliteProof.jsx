@@ -22,6 +22,10 @@ const CLEAN_LABELS = {
   fr: "mer propre", en: "clean sea", es: "mar limpio"
 }
 
+const CLOSE_LABELS = {
+  fr: "Fermer", en: "Close", es: "Cerrar"
+}
+
 export function FiabiliteProof({ 
   lang = "fr", 
   REL, 
@@ -108,7 +112,7 @@ export function FiabiliteProof({
           }}
           onMouseEnter={e => e.currentTarget.style.background = "rgba(13,17,23,.15)"}
           onMouseLeave={e => e.currentTarget.style.background = "rgba(13,17,23,.08)"}
-          aria-label="Fermer">
+          aria-label={CLOSE_LABELS[lang] || CLOSE_LABELS.fr}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         )}

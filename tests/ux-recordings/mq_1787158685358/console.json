@@ -1,0 +1,12 @@
+[
+  {
+    "type": "warning",
+    "text": "[sg] referral_claim: réponse non-JSON (dev mode?)",
+    "ts": 1787158688034
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim non-json",
+    "ts": 1787158688034
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1787157096825
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1787157099631
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON",
+    "ts": 1787157111443
+  }
+]
