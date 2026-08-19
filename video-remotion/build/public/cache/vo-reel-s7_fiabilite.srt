@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:05,195
+Et on publie nos erreurs : entre soixante-seize et soixante-dix-neuf pour cent de fiabilité selon la saison.
+
+2
+00:00:05,145 --> 00:00:07,734
+Mesuré au satellite, pas deviné.
+

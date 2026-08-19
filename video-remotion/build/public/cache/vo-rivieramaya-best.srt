@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:03,312
+Tu mejor playa hoy: Playa Holbox.
+
+2
+00:00:03,262 --> 00:00:06,287
+Limpia, 89 sobre 100.
+
+3
+00:00:06,287 --> 00:00:08,650
+Verificada por satélite.
+

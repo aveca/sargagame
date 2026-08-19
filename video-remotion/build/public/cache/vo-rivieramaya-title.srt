@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,787
+Tu brief de playa del lunes, 27 de julio.
+
+2
+00:00:03,737 --> 00:00:07,025
+7 de 20 playas limpias en Cancún.
+

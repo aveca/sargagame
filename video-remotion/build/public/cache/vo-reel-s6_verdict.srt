@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,286
+Chaque matin, plage par plage : propre ou pas.
+
+2
+00:00:03,236 --> 00:00:05,625
+Aujourd'hui, et sept jours devant.
+

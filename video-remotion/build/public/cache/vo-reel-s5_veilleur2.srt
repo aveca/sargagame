@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,275
+Le Veilleur, lui, ne touche jamais la plage.
+
+2
+00:00:03,225 --> 00:00:05,022
+Il regarde la mer.
+

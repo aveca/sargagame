@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,175
+Chaque matin, quelqu'un regarde la mer avant vous.
+
+2
+00:00:03,125 --> 00:00:05,636
+Pas pour vous surveiller — pour vous prévenir.
+

@@ -1,0 +1,22 @@
+{
+  "id": "tulum",
+  "name": "Tulum",
+  "country": "Mexico",
+  "domain": "sargazotulum.com",
+  "ftpDir": "tulum-ftp",
+  "primaryLang": "es",
+  "secondaryLangs": [
+    "en"
+  ],
+  "currency": "USD",
+  "pricing": {
+    "monthly": "$9.99",
+    "yearly": "$79",
+    "tripPass": "$5.99"
+  },
+  "stripeProducts": {
+    "monthly": "price_1Tgc8UP9RK8Orx51RYjh5Qpy",
+    "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4",
+    "tripPass": "price_1TiiGbP9RK8Orx51ceTbpwpM"
+  }
+}

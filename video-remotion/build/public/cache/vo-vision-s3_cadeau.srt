@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:05,909
+Ce qu'il voit, il vous le donne : le verdict du jour, gratuit, avant qu'on vous demande quoi que ce soit.
+

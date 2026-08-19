@@ -1,0 +1,12 @@
+1
+00:00:00,050 --> 00:00:02,687
+Your best beach today: Cabeza de Toro.
+
+2
+00:00:02,687 --> 00:00:05,062
+Clean, 83 out of 100.
+
+3
+00:00:05,062 --> 00:00:06,487
+Checked by satellite.
+

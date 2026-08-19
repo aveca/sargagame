@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:04,350
+Ta meilleure plage aujourd'hui : Grande Anse d'Arlet, à Les Anses-d'Arlet.
+
+2
+00:00:04,300 --> 00:00:07,025
+Propre, 79 sur 100.
+
+3
+00:00:07,025 --> 00:00:09,212
+Vérifié au satellite.
+

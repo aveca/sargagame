@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:04,487
+Ta meilleure plage aujourd'hui : Plage de Grande Anse, à Trois-Rivières.
+
+2
+00:00:04,437 --> 00:00:06,900
+Propre, 80 sur 100.
+
+3
+00:00:06,900 --> 00:00:09,087
+Vérifié au satellite.
+

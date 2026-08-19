@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,525
+Attention : le satellite voit des bancs en approche.
+
+2
+00:00:03,475 --> 00:00:07,350
+6 plages touchées d'ici jeudi, dont Plage de Sainte-Anne.
+

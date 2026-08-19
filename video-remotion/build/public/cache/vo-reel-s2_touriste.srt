@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:05,697
+Une touriste résume tout : chaque jour, elle regarde quelle plage est chargée, et adapte son programme.
+

@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:02,349
+Vous regardez Les Salines pour demain.
+
+2
+00:00:02,299 --> 00:00:05,904
+Le vent est en train de tourner, et vous ne le savez pas encore.
+

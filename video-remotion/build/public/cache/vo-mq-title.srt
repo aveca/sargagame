@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,012
+Le brief plage du lundi 27 juillet.
+
+2
+00:00:02,962 --> 00:00:05,837
+11 plages propres sur 11 en Martinique.
+

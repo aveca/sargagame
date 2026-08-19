@@ -36,8 +36,9 @@ jobs:
             [florida]="sargagame-florida"
             [puntacana]="sargagame-puntacana"
             [rivieramaya]="sargagame-rivieramaya"
+            [tulum]="sargagame-tulum"
           )
-          for RID in mq gp florida puntacana rivieramaya; do
+          for RID in mq gp florida puntacana rivieramaya tulum; do
             PROJECT="${PROJECTS[$RID]}"
             echo "── Building region $RID → $PROJECT ──"
             if [ "$RID" = "mq" ]; then
@@ -54,6 +55,16 @@ jobs:
                 echo "  → Copied $RID/$F"
               fi
             done
+            # Write Mollie config with webhook secret (if provided)
+            if [ -n "${{ secrets.MOLLIE_WEBHOOK_SECRET }}" ]; then
+              echo "<?php
+define('MOLLIE_API_KEY', getenv('MOLLIE_API_KEY'));
+define('MOLLIE_WEBHOOK_SECRET', '${{ secrets.MOLLIE_WEBHOOK_SECRET }}');
+define('MOLLIE_PROFILE_ID', 'pfl_t8KCk4Cm2C');
+define('MOLLIE_TESTMODE', false);
+" > dist/mollie-config.php
+              echo "  → Wrote dist/mollie-config.php with webhook secret"
+            fi
             # Deploy to Pages
             wrangler pages deploy dist --project-name=$PROJECT --branch=main
             echo "── Deployed $PROJECT ──"
@@ -62,6 +73,7 @@ jobs:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
 
       - name: Skip notice
         if: env.CF_TOKEN == ''

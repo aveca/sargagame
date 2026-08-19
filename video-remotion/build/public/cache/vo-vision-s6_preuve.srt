@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,152
+Rien n'est deviné : tout est mesuré au satellite.
+
+2
+00:00:03,102 --> 00:00:08,604
+On publie nos propres erreurs, prévision par prévision, pour que vous puissiez vérifier avant de nous croire.
+

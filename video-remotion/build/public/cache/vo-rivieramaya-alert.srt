@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:03,775
+Atención: el satélite ve bancos en camino.
+
+2
+00:00:03,725 --> 00:00:08,575
+6 playas afectadas para el martes, incluida Playa Tortugas.
+

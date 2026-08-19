@@ -1,0 +1,12 @@
+1
+00:00:00,050 --> 00:00:03,362
+Your best beach today: Marathon (Sombrero).
+
+2
+00:00:03,362 --> 00:00:05,725
+Clean, 96 out of 100.
+
+3
+00:00:05,725 --> 00:00:07,150
+Checked by satellite.
+

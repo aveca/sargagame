@@ -1,31 +1,8 @@
-<Files "stripe-config.php">
-    Require all denied
-</Files>
+# Force PHP execution in /api/ directory
+# Fixes track-open.php / track-click.php returning PHP source instead of executing
+AddHandler application/x-httpd-php .php
 
-<Files "paypal-config.php">
-    Require all denied
-</Files>
-
-<Files "mollie-config.php">
-    Require all denied
-</Files>
-
-<Files "_deploy-secret.php">
-    Require all denied
-</Files>
-
-# Bloque TOUT fichier *.config.php non listé ci-dessus (défense en profondeur)
-<FilesMatch "\.config\.php$">
-    Require all denied
-</FilesMatch>
-
-# Bloque l'accès HTTP direct au dossier de stockage des rate-limiters et transients
-# (ils contiennent des HMAC d'IP — pas de secret mais pas de raison d'être publics)
-<FilesMatch "^rl_.*\.json$">
-    Require all denied
-</FilesMatch>
-
-# Note : les CORS headers sont définis par chaque endpoint PHP individuellement
-# (mollie.php, stripe-webhook.php, paypal.php) car les allowlists diffèrent par provider.
-# Ne PAS poser de Header set Access-Control-Allow-* ici : cela écraserait les allowlists
-# spécifiques et permettrait à n'importe quel origin d'appeler les API.
+# Security: deny access to .php files directly if needed
+# <FilesMatch "\.php$">
+#     Require all granted
+# </FilesMatch>

@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,313
+Pas de rendez-vous, pas de complication : juste un coup d'oeil, et vous savez.
+
+2
+00:00:04,263 --> 00:00:06,261
+C'est aussi simple que ça.
+

@@ -1,0 +1,8 @@
+1
+00:00:00,050 --> 00:00:03,225
+Your beach brief for Monday, July 27.
+
+2
+00:00:03,225 --> 00:00:05,850
+20 of 20 beaches are clean in Miami.
+
