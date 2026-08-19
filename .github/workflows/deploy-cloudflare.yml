@@ -28,7 +28,7 @@ jobs:
       - name: Build and deploy all regions to Pages
         if: env.CF_TOKEN != ''
         run: |
-          set -e
+          # Build and deploy all regions to Pages (continue on error for each region)
           # Region → Pages project mapping (skip barbados: not live yet)
           declare -A PROJECTS=(
             [mq]="sargagame"
@@ -65,13 +65,16 @@ define('MOLLIE_TESTMODE', false);
 " > dist/mollie-config.php
               echo "  → Wrote dist/mollie-config.php with webhook secret"
             fi
-            # Deploy to Pages (skip if project doesn't exist, continue on error)
-            if wrangler pages project list --json 2>/dev/null | grep -q "\"name\":\"$PROJECT\""; then
-              wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+            # Deploy to Pages (continue on error so one region failure doesn't block others)
+            set +e
+            wrangler pages deploy dist --project-name=$PROJECT --branch=main
+            DEPLOY_EXIT=$?
+            set -e
+            if [ $DEPLOY_EXIT -eq 0 ]; then
+              echo "── Deployed $PROJECT ──"
             else
-              echo "⚠️ Project $PROJECT doesn't exist in Cloudflare Pages (skipping...)"
+              echo "⚠️ Deploy failed for $PROJECT (continuing...)"
             fi
-            echo "── Done $PROJECT ──"
           done
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
