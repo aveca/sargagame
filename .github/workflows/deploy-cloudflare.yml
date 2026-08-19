@@ -65,8 +65,12 @@ define('MOLLIE_TESTMODE', false);
 " > dist/mollie-config.php
               echo "  → Wrote dist/mollie-config.php with webhook secret"
             fi
-            # Deploy to Pages
-            wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+            # Deploy to Pages (skip if project doesn't exist, continue on error)
+            if wrangler pages project list --json 2>/dev/null | grep -q "\"name\":\"$PROJECT\""; then
+              wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+            else
+              echo "⚠️ Project $PROJECT doesn't exist in Cloudflare Pages (skipping...)"
+            fi
             echo "── Done $PROJECT ──"
           done
         env:
