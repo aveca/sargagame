@@ -10,6 +10,7 @@
   ],
   "currency": "USD",
   "countryCode": "DO",
+  "live": false,
   "pricing": {
     "monthly": "$9.99",
     "yearly": "$79",

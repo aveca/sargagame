@@ -9,6 +9,7 @@
     "es"
   ],
   "currency": "USD",
+  "live": false,
   "pricing": {
     "monthly": "$9.99",
     "yearly": "$79",
