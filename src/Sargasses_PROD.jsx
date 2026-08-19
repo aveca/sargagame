@@ -2948,11 +2948,11 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:3,
           background:"none",border:"none",cursor:"pointer",
-          color:active?"var(--sg-ink,#0d0b14)":"var(--sg-mid,#5A5A5A)",
+          color:active?"var(--sg-ink,#0d0b14)":"var(--sg-ink,#0d0b14)",
           fontFamily:"'Bricolage Grotesque',sans-serif",
-          fontSize:12,fontWeight:active?800:600,letterSpacing:0,
+          fontSize:13,fontWeight:active?800:700,letterSpacing:0,
           transition:"color .2s",padding:"4px 16px",position:"relative",
-          minHeight:44,justifyContent:"center",
+          minHeight:44,justifyContent:"center",opacity:active?1:.75,
         }}>
           {active&&<div style={{position:"absolute",top:-2,width:24,height:3,
             borderRadius:2,background:C.gold}}/>}
@@ -2962,12 +2962,12 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
             background:active?"linear-gradient(135deg,#FFC72C,#E8A800)":"#FFE47A",
             border:"2px solid var(--sg-ink,#0d0b14)",boxShadow:"2px 2px 0 var(--sg-ink,#0d0b14)",
           }:{
-            width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",
+            width:24,height:24,display:"flex",alignItems:"center",justifyContent:"center",
             transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",transform:active?"scale(1.12)":"scale(1)",
           }}>
-            <span style={isPrem?{width:18,height:18,display:"flex"}:{width:22,height:22,display:"flex"}}>{t.icon}</span>
+            <span style={isPrem?{width:18,height:18,display:"flex"}:{width:24,height:24,display:"flex"}}>{t.icon}</span>
           </span>
-          <span>{t.label}</span>
+          <span style={{fontSize:13,fontWeight:active?800:700}}>{t.label}</span>
         </button>
       )})}
     </nav>
@@ -2985,14 +2985,14 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
           display:"flex",flexDirection:"row",alignItems:"center",gap:6,
           background:active?"rgba(255,199,44,.18)":"none",
           border:"none",cursor:"pointer",
-          color:active?"#FFC72C":"rgba(255,255,255,.7)",
-          fontSize:12,fontWeight:active?700:500,fontFamily:"inherit",
+          color:active?"#FFC72C":"rgba(255,255,255,.85)",
+          fontSize:13,fontWeight:active?700:600,fontFamily:"inherit",
           transition:"all .2s",padding:"9px 15px",
           borderRadius:999,minHeight:44,justifyContent:"center",
         }}>
-          <span style={{fontSize:18,transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",
+          <span style={{fontSize:20,transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",
             transform:active?"scale(1.18)":"scale(1)"}}>{t.icon}</span>
-          <span>{t.label}</span>
+          <span style={{fontSize:13,fontWeight:active?800:700}}>{t.label}</span>
         </button>
       )})}
     </nav>
@@ -14702,6 +14702,7 @@ useEffect(()=>{
           <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1025,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
             borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
+            paddingBottom:"calc(70px + max(16px,env(safe-area-inset-bottom)))",
             display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
             <div style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,.72)"}}>
               {_t(lang,

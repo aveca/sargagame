@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     # 25 → 60 : les full builds enchaînent désormais 4 builds Vite (3 nouvelles
     # régions + build partagé MQ/GP) + 5 deploys FTPS. Repo public = minutes illimitées.
-    timeout-minutes: 75  # loops vidéo ×2 résolutions (~+10 min ffmpeg) + FTP 5 domaines
+    timeout-minutes: 120  # 5 regions × (build + FTP) + Pages deploys + health checks
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -1104,6 +1104,40 @@ jobs:
           FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
           FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
         run: node scripts/manual-ftp-deploy.cjs
+
+      # ── 5b. Deploy to Cloudflare Pages (all regions) ──
+      # Pages projects need region-specific builds + data copy. This runs after
+      # FTP so both hosting paths get fresh data. Wrangler auth via CLOUDFLARE_API_TOKEN.
+      - name: Deploy to Cloudflare Pages (all regions)
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: |
+          npm install -g wrangler
+          declare -A PROJECTS=(
+            [mq]="sargagame"
+            [gp]="sargagame-gp"
+            [florida]="sargagame-florida"
+            [puntacana]="sargagame-puntacana"
+            [rivieramaya]="sargagame-rivieramaya"
+          )
+          for RID in mq gp florida puntacana rivieramaya; do
+            PROJECT="${PROJECTS[$RID]}"
+            echo "── Pages deploy $RID → $PROJECT ──"
+            if [ "$RID" = "mq" ]; then
+              npm run build
+            else
+              VITE_REGION=$RID npm run build
+            fi
+            mkdir -p dist/api/copernicus
+            for F in sargassum.json history.json; do
+              SRC="public/api/copernicus/$RID/$F"
+              if [ -f "$SRC" ]; then cp "$SRC" "dist/api/copernicus/$F"; fi
+            done
+            wrangler pages deploy dist --project-name=$PROJECT --branch=main
+          done
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       # ── 6. Final health check — fail workflow only if sites actually down ──
       # FTP can be flaky; data is already committed to git so next run redeploys.
