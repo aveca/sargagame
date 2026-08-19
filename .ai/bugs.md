@@ -3,7 +3,26 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-017 — Beach Detail Empty (stale sargassum.json + missing state validation)
+### BUG-2026-018 — Email tracking pixels return PHP source code on MQ+GP (cPanel PHP handler broken)
+- **Date** : 2026-08-18 · **Sévérité** : P0 — all email open/click tracking broken since ~Aug 13
+- **Fichiers** : `public/api/track-open.php`, `public/api/track-click.php` (live endpoints)
+- **Symptôme** : `curl https://sargasses-martinique.com/api/track-open.php?id=test123` returns raw PHP source (1648 bytes, `Content-Type: application/x-httpd-php`) instead of executing → 1×1 transparent GIF (200 bytes). Same for `track-click.php`. `mollie.php` executes correctly (returns JSON) — different handler config.
+- **Reproduction** :
+  1. `curl -I https://sargasses-martinique.com/api/track-open.php?id=test123` → `Content-Type: application/x-httpd-php`
+  2. `curl https://sargasses-martinique.com/api/track-open.php?id=test123` → raw PHP source code
+  3. Compare with US domain: `curl https://sargassummiami.com/api/track-open.php?id=test123` → returns GIF, 200 OK
+- **Timeline match** : Open rate was ~4.5% on Aug 12-13, dropped to 3.06% on Aug 14, then 1.51% on Aug 17. PHP handler broke ~Aug 13-14.
+- **Root cause** : cPanel MultiPHP / AllowOverride not configured for `/api/` directory on MQ+GP shared hosting. Requires founder cPanel access (same blocker as GP doc root).
+- **Impact** : First-party pixel tracking completely broken since ~Aug 13. No opens/clicks logged to Supabase `analytics_events` → daily-metrics.json "pixel_first_party" data is stale/frozen. Email metrics unreliable until fixed.
+- **Workaround** : TRACKING_URL changed to `sargassummiami.com` (PR #576) — US domains work.
+- **Fix required** : Founder action: cPanel → MultiPHP Manager / AllowOverride for `public_html/api/` on sargasses-martinique.com and sargasses-guadeloupe.com.
+- **Verification** : After fix, `track-open.php` returns GIF, `track-click.php` redirects 302.
+- **Rollback** : None needed — workaround deployed, proper fix is server config.
+- **Statut** : [ ] Bloqué sur accès cPanel fondateur
+
+---
+
+### BUG-2026-017
 - **Date** : 2026-08-13 (diag + fix) · **Sévérité** : P0 — Funnel cassé (fiche plage vide)
 - **Fichiers** : `src/Sargasses_PROD.jsx`, `src/BeachSheet.jsx`, `src/app-runtime.css`, `scripts/ui-audit-screenshots.mjs`
 - **Symptôme** : Après clic sur un pin carte, la fiche plage affiche `Beach detail length: 0 chars` et `Contains score: none`. Causé par :

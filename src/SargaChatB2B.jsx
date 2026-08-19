@@ -2,6 +2,7 @@
 // Commandes regex, pas de NLP. Importé dans Sargasses_PROD.jsx (lazy).
 // Phase 3 du vertical slice B2B_CONCIERGE_PLAN.md.
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { track } from "./Sargasses_PROD.jsx"
 
 const API = '/api'
 
@@ -68,6 +69,7 @@ export default function SargaChatB2B({ onClose }) {
       setTyping(true)
       try {
         const prospect = await api('POST', 'b2b-prospects.php', { name, status: 'new' })
+        try { track("sg_b2b_prospect_created", { prospect_id: prospect.id, name, island: "unknown" }) } catch (_) {}
         addBotMsg(`Prospect créé : ${prospect.name} (${prospect.id.slice(0, 8)}…)`, [
           { k: `contact:${prospect.id}`, label: `Contactez ${name}` },
           { k: 'help', label: 'Autre commande' },
@@ -119,6 +121,7 @@ export default function SargaChatB2B({ onClose }) {
           return
         }
         const concierge = await api('POST', 'b2b-concierge.php', { prospect_id: prospect.id })
+        try { track("sg_b2b_concierge_started", { prospect_id: prospect.id, concierge_id: concierge.id, end_date: concierge.end_date }) } catch (_) {}
         addBotMsg(`Concierge démarré pour ${prospect.name} ! Fin le ${concierge.end_date}. Jour 1 prêt à être préparé.`, [
           { k: `prepare:1:${prospect.id}`, label: 'Prépare J1' },
           { k: 'help', label: 'Autre commande' },
@@ -196,6 +199,8 @@ export default function SargaChatB2B({ onClose }) {
         await api('PATCH', `b2b-forecast-delivery.php?id=${delivery.id}`, { action: 'sent' })
         await api('PATCH', `b2b-concierge.php?id=${concierge.id}`, { action: 'advance_day', day })
 
+        try { track("sg_b2b_day_sent", { prospect_id: prospect.id, concierge_id: concierge.id, day }) } catch (_) {}
+
         if (day === 7) {
           addBotMsg(`J${day} envoyé. Dernier jour du concierge. Tu peux demander le paiement.`, [
             { k: `pay:${prospect.id}`, label: `Demande paiement` },
@@ -226,12 +231,16 @@ export default function SargaChatB2B({ onClose }) {
 
         await api('PATCH', `b2b-concierge.php?id=${concierge.id}`, { action: 'payment_requested' })
 
+        try { track("sg_b2b_payment_requested", { prospect_id: prospect.id, concierge_id: concierge.id }) } catch (_) {}
+
         const checkout = await api('POST', 'b2b-create-checkout.php', {
           prospect_id: prospect.id,
           concierge_id: concierge.id,
           email: prospect.email || `${prospect.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
           name: prospect.name,
         })
+
+        try { track("sg_b2b_checkout_created", { prospect_id: prospect.id, concierge_id: concierge.id, subscription_id: checkout.subscriptionId, checkout_url: checkout.checkoutUrl }) } catch (_) {}
 
         addBotMsg(`Lien de paiement créé : ${checkout.checkoutUrl || 'URL non disponible'}. Envoie-le au client.`, [
           { k: 'help', label: 'Autre commande' },

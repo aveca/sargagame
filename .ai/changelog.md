@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-08-19 01:30 UTC — growth_agent (OpenCode) — Checkout funnel instrumentation + B2B concierge tracking + email pixel bug documented
+
+### Changement
+- **Checkout funnel visibility (P0)**: Added 6 tracking events to find where 220/224 CTA clicks drop before conversion:
+  - `sg_onsite_checkout_opened` — Mollie Components mounted in OnsiteCheckout overlay
+  - `sg_card_tokenize_attempt` / `sg_card_tokenize_success` — `createToken()` call + result
+  - `sg_create_payment_request` / `sg_create_payment_response` — `/api/mollie.php?action=create_payment` call + response
+  - `sg_mollie_checkout_redirect` — redirect to Mollie hosted checkout page (card + wallet paths)
+- **B2B concierge funnel tracking (P1)**: Added 5 events in `SargaChatB2B.jsx`:
+  - `sg_b2b_prospect_created`, `sg_b2b_concierge_started`, `sg_b2b_day_sent`, `sg_b2b_payment_requested`, `sg_b2b_checkout_created`
+- **Email tracking bug documented (P0 blocker)**: BUG-2026-018 added to `.ai/bugs.md` — `track-open.php`/`track-click.php` return raw PHP on MQ+GP (cPanel MultiPHP/AllowOverride broken on `/api/` since ~Aug 13). Workaround: TRACKING_URL → `sargassummiami.com` (PR #576). No email decisions until pixel verified.
+
+### Fichiers impactés
+- `src/PremiumModal/OnsiteCheckout.jsx` — track import + `sg_onsite_checkout_opened` on Components mount
+- `src/PremiumModal/doSubscribe.jsx` — `sg_card_tokenize_*`, `sg_create_payment_*`, `sg_mollie_checkout_redirect`
+- `src/SargaChatB2B.jsx` — track import + 5 B2B concierge funnel events
+- `.ai/bugs.md` — BUG-2026-018 added
+
+### Gate de ship
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget.cjs` → 183.1 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke.mjs` → 4/4 tokens OK
+- [x] `npx playwright test funnel-payment + contract-pass-one-time` → 15/15 passed
+- [x] `funnel-reconcile.cjs` → PASS
+
+### Prochaine action
+1. Deploy → wait 24h → run `funnel-daily-report.cjs` to see new events
+2. Identify exact checkout drop-off point
+3. Fix that specific step
+
+---
+
 ## 2026-08-16 21:00 UTC — coding_agent (OpenCode) — Pipeline ERDDAP fresh + US full, GP/MQ server config gaps
 
 ### Changement

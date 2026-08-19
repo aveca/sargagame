@@ -102,8 +102,9 @@ export function usePaymentLogic({
       }
       throw new Error(userMsg)
     }
-    if(d.checkoutUrl){
+if(d.checkoutUrl){
       try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan:payPlanRef.current,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan:payPlanRef.current,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+      try { track("sg_mollie_checkout_redirect", { plan: payPlanRef.current, paymentId: d.paymentId, pass: _pc?.pass, walletMethod: method }) } catch (_) {}
       setPayRedirecting(true)
       setTimeout(()=>window.location.href=d.checkoutUrl,50)
       return
@@ -222,6 +223,7 @@ export function usePaymentLogic({
       setPayBusy(true);setPayError("")
       try{
         let token=null,tErr=null
+        try { track("sg_card_tokenize_attempt", { plan, pass: passCtxRef.current?.pass }) } catch (_) {}
         for(let i=0;i<3;i++){
           const res=await mollieRef.current.createToken()
           if(res.token){token=res.token;break}
@@ -230,14 +232,17 @@ export function usePaymentLogic({
           await new Promise(r=>setTimeout(r,700))
         }
         if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
+        try { track("sg_card_tokenize_success", { plan, pass: passCtxRef.current?.pass }) } catch (_) {}
         const _pc=passCtxRef.current
         const _pcCur=_pc?_pc.cur:undefined
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
           ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
           :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+        try { track("sg_create_payment_request", { plan, pass: _pc?.pass, cents: _pc?.cents, cur: _pc?.cur, isSubscription: !_pc }) } catch (_) {}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
+        try { track("sg_create_payment_response", { plan, hasCheckoutUrl: !!d.checkoutUrl, paymentId: d.paymentId, subscriptionId: d.subscriptionId, error: d.error }) } catch (_) {}
         if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
           const errMsg=d.error||""
           let userMsg
@@ -254,6 +259,7 @@ export function usePaymentLogic({
         }
         if(d.checkoutUrl){
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          try { track("sg_mollie_checkout_redirect", { plan, paymentId: d.paymentId, pass: _pc?.pass }) } catch (_) {}
           setPayRedirecting(true)
           setTimeout(()=>window.location.href=d.checkoutUrl,50);return
         }

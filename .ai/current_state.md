@@ -1,4 +1,48 @@
 ---
+## 2026-08-19 01:30 UTC · Agent: growth_agent (OpenCode) · Checkout funnel instrumentation + B2B concierge tracking + email pixel bug documented
+
+### Travail effectué
+- **Résumé 1 ligne** : Added tracking events at every checkout step (sg_onsite_checkout_opened, sg_card_tokenize_*, sg_create_payment_*, sg_mollie_checkout_redirect) + B2B concierge funnel events (sg_b2b_prospect_created, sg_b2b_concierge_started, sg_b2b_day_sent, sg_b2b_payment_requested, sg_b2b_checkout_created) + documented email tracking pixel bug in .ai/bugs.md
+- **Détails** :
+  1. **Checkout funnel visibility** (P0): Added 6 new tracking events in `OnsiteCheckout.jsx` and `doSubscribe.jsx` to find where 220/224 CTA clicks drop before conversion:
+     - `sg_onsite_checkout_opened` (Mollie Components mounted)
+     - `sg_card_tokenize_attempt` / `sg_card_tokenize_success` (createToken)
+     - `sg_create_payment_request` / `sg_create_payment_response` (API call)
+     - `sg_mollie_checkout_redirect` (redirect to Mollie hosted page)
+  2. **B2B concierge tracking** (P1): Added 5 events in `SargaChatB2B.jsx` for full concierge funnel visibility:
+     - `sg_b2b_prospect_created`, `sg_b2b_concierge_started`, `sg_b2b_day_sent`, `sg_b2b_payment_requested`, `sg_b2b_checkout_created`
+  3. **Email tracking bug documented** (P0 blocker): Added BUG-2026-018 to .ai/bugs.md — track-open.php/track-click.php return raw PHP on MQ+GP (cPanel MultiPHP/AllowOverride broken on /api/ since ~Aug 13). Workaround: TRACKING_URL → sargassummiami.com (PR #576). No email decisions until pixel verified.
+
+### Fichiers modifiés
+- `src/PremiumModal/OnsiteCheckout.jsx` — track import + sg_onsite_checkout_opened on Components mount
+- `src/PremiumModal/doSubscribe.jsx` — sg_card_tokenize_*, sg_create_payment_*, sg_mollie_checkout_redirect (card + wallet paths)
+- `src/SargaChatB2B.jsx` — track import + 5 B2B concierge funnel events
+- `.ai/bugs.md` — BUG-2026-018 added (email pixel returns PHP source)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0, 183.1 Ko ≤ 210 Ko
+- [x] `node scripts/check-bundle-budget.cjs` → OK
+- [x] `node scripts/ux-smoke.mjs` → 4/4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/contract-pass-one-time.spec.ts` → 15/15 passed
+- [x] `node scripts/automation/funnel-reconcile.cjs` → PASS (2 warnings — frozen daily-metrics)
+
+### Problèmes restants
+- [ ] Wait 24h for new tracking events to appear in Supabase → analyze checkout drop-off point
+- [ ] BUG-2026-018: Founder cPanel access required to fix PHP handler on MQ+GP /api/
+- [ ] B2B concierge: needs real prospect ingestion (not test data), connect to existing lead sources (b2b_hotel_request, etc.)
+
+### Prochaine action recommandée
+1. **Deploy** → wait 24h → run `node scripts/automation/funnel-daily-report.cjs` to see new events
+2. **Identify exact checkout drop-off** (onsite checkout opened? card tokenize? create_payment? redirect? 3DS? webhook?)
+3. **Fix that specific step** (UX, error handling, payment method availability)
+4. **B2B concierge**: feed real prospects, add founder notification on new b2b_hotel_request
+
+### Branche / PR
+- Branche: `main` (push direct — auto-merge)
+- Commit: pending (these changes)
+
+---
+
 ## 2026-08-19 00:45 UTC · Agent: coding_agent (OpenCode) · OG card par plage — satori+resvg serverless endpoint + build script
 
 ### Travail effectué
