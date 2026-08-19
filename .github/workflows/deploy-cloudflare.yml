@@ -26,10 +26,9 @@ jobs:
         run: npm install -g wrangler && echo "$(npm bin -g)" >> $GITHUB_PATH
 
       - name: Build and deploy all regions to Pages
-        if: env.CF_TOKEN != ''
         run: |
-          # Build and deploy all regions to Pages (continue on error for each region)
-          # Region → Pages project mapping (skip barbados: not live yet)
+          echo "Starting deploy for all regions..."
+          # Region → Pages project mapping
           declare -A PROJECTS=(
             [mq]="sargagame"
             [gp]="sargagame-gp"
@@ -40,13 +39,12 @@ jobs:
           )
           for RID in mq gp florida puntacana rivieramaya tulum; do
             PROJECT="${PROJECTS[$RID]}"
-            echo "── Building region $RID → $PROJECT ──"
+            echo "Building region $RID → $PROJECT"
             if [ "$RID" = "mq" ]; then
               DEPLOY_TARGET=cloudflare NODE_ENV=production npm run build
             else
               DEPLOY_TARGET=cloudflare NODE_ENV=production VITE_REGION=$RID npm run build
             fi
-            # Copy region-specific data to root paths the SPA expects
             mkdir -p dist/api/copernicus
             for F in sargassum.json history.json; do
               SRC="public/api/copernicus/$RID/$F"
@@ -55,7 +53,6 @@ jobs:
                 echo "  → Copied $RID/$F"
               fi
             done
-            # Write Mollie config with webhook secret (if provided)
             if [ -n "${{ secrets.MOLLIE_WEBHOOK_SECRET }}" ]; then
               echo "<?php
 define('MOLLIE_API_KEY', getenv('MOLLIE_API_KEY'));
@@ -65,16 +62,8 @@ define('MOLLIE_TESTMODE', false);
 " > dist/mollie-config.php
               echo "  → Wrote dist/mollie-config.php with webhook secret"
             fi
-            # Deploy to Pages (continue on error so one region failure doesn't block others)
-            set +e
-            wrangler pages deploy dist --project-name=$PROJECT --branch=main
-            DEPLOY_EXIT=$?
-            set -e
-            if [ $DEPLOY_EXIT -eq 0 ]; then
-              echo "── Deployed $PROJECT ──"
-            else
-              echo "⚠️ Deploy failed for $PROJECT (continuing...)"
-            fi
+            npx wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+            echo "── Done $PROJECT ──"
           done
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
