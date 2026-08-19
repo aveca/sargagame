@@ -70,9 +70,3 @@ define('MOLLIE_TESTMODE', false);
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
-
-      - name: Skip notice
-        if: env.CF_TOKEN == ''
-        run: echo "CLOUDFLARE_API_TOKEN not set — deploy skipped."
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
