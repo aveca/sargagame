@@ -1700,7 +1700,8 @@ if(IS_NEW_REGION&&REGION.center)ISLAND_CENTER[REGION.id]=[REGION.center.lat,REGI
 
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 export const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","precheur":"mq033","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
-export const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))
+// BEACH_TO_SARG: reverse map (numeric → slug). Fallback: identity (new numeric IDs match directly).
+export const BEACH_TO_SARG=new Proxy(Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k])),{get:(t,p)=>typeof p==="string"?(p in t?t[p]:p):undefined})
 
 function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
   if(!banks||!banks.length||!beaches||!beaches.length)return null
@@ -1712,7 +1713,7 @@ function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
     for(const tk of["now","6h","12h","24h"]){
       const threats=bank.threatens[tk];if(!threats)continue
       for(const t of threats){
-        const beachId=SARG_TO_BEACH[t.id]
+        const beachId=SARG_TO_BEACH[t.id]||t.id
         const beach=beachId?beaches.find(b=>b.id===beachId):null
         if(!beach)continue
         let score=0
@@ -12803,18 +12804,17 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
         setDataSource(sargResult?.source||"reference")
         if(sargResult?.levels){
           // Build sentinel lookup: beachId → {lat, lng, afai, sargId}
+          // Supports both legacy slug IDs (via SARG_TO_BEACH) and direct numeric IDs (mq001, gp005).
           const sentinelMap={}
           for(const lvl of sargResult.levels){
-            const beachId=SARG_TO_BEACH[lvl.id]
-            if(!beachId)continue
+            const beachId=SARG_TO_BEACH[lvl.id]||lvl.id
             const bch=beaches.find(b=>b.id===beachId)
             if(bch)sentinelMap[beachId]={lat:bch.lat,lng:bch.lng,afai:lvl.afai,sargId:lvl.id}
           }
           const sentinels=Object.values(sentinelMap)
           // Update sentinels with live data
           for(const lvl of sargResult.levels){
-            const beachId=SARG_TO_BEACH[lvl.id]
-            if(!beachId)continue
+            const beachId=SARG_TO_BEACH[lvl.id]||lvl.id
             const idx=beaches.findIndex(b=>b.id===beachId)
             if(idx>=0){
               beaches[idx]={...beaches[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live",beachMemory:lvl.beachMemory||false,afaiSat:lvl.afaiSat}
