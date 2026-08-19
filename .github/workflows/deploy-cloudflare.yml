@@ -9,6 +9,16 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        region:
+          - mq
+          - gp
+          - florida
+          - puntacana
+          - rivieramaya
+          - tulum
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,46 +35,47 @@ jobs:
       - name: Install wrangler
         run: npm install -g wrangler && echo "$(npm bin -g)" >> $GITHUB_PATH
 
-      - name: Build and deploy all regions to Pages
+      - name: Build and deploy region
         run: |
-          echo "Starting deploy for all regions..."
-          # Region → Pages project mapping
-          declare -A PROJECTS=(
-            [mq]="sargagame"
-            [gp]="sargagame-gp"
-            [florida]="sargagame-florida"
-            [puntacana]="sargagame-puntacana"
-            [rivieramaya]="sargagame-rivieramaya"
-            [tulum]="sargagame-tulum"
-          )
-          for RID in mq gp florida puntacana rivieramaya tulum; do
-            PROJECT="${PROJECTS[$RID]}"
-            echo "Building region $RID → $PROJECT"
-            if [ "$RID" = "mq" ]; then
-              DEPLOY_TARGET=cloudflare NODE_ENV=production npm run build
-            else
-              DEPLOY_TARGET=cloudflare NODE_ENV=production VITE_REGION=$RID npm run build
+          echo "Building region ${{ matrix.region }}..."
+          # Map region to project name
+          case "${{ matrix.region }}" in
+            mq) PROJECT="sargagame" ;;
+            gp) PROJECT="sargagame-gp" ;;
+            florida) PROJECT="sargagame-florida" ;;
+            puntacana) PROJECT="sargagame-puntacana" ;;
+            rivieramaya) PROJECT="sargagame-rivieramaya" ;;
+            tulum) PROJECT="sargagame-tulum" ;;
+          esac
+          echo "Building region ${{ matrix.region }} → $PROJECT"
+          
+          if [ "${{ matrix.region }}" = "mq" ]; then
+            DEPLOY_TARGET=cloudflare NODE_ENV=production npm run build
+          else
+            DEPLOY_TARGET=cloudflare NODE_ENV=production VITE_REGION=${{ matrix.region }} npm run build
+          fi
+          
+          mkdir -p dist/api/copernicus
+          for F in sargassum.json history.json; do
+            SRC="public/api/copernicus/${{ matrix.region }}/$F"
+            if [ -f "$SRC" ]; then
+              cp "$SRC" "dist/api/copernicus/$F"
+              echo "  → Copied ${{ matrix.region }}/$F"
             fi
-            mkdir -p dist/api/copernicus
-            for F in sargassum.json history.json; do
-              SRC="public/api/copernicus/$RID/$F"
-              if [ -f "$SRC" ]; then
-                cp "$SRC" "dist/api/copernicus/$F"
-                echo "  → Copied $RID/$F"
-              fi
-            done
-            if [ -n "${{ secrets.MOLLIE_WEBHOOK_SECRET }}" ]; then
-              echo "<?php
+          done
+          
+          if [ -n "${{ secrets.MOLLIE_WEBHOOK_SECRET }}" ]; then
+            echo "<?php
 define('MOLLIE_API_KEY', getenv('MOLLIE_API_KEY'));
 define('MOLLIE_WEBHOOK_SECRET', '${{ secrets.MOLLIE_WEBHOOK_SECRET }}');
 define('MOLLIE_PROFILE_ID', 'pfl_t8KCk4Cm2C');
 define('MOLLIE_TESTMODE', false);
 " > dist/mollie-config.php
-              echo "  → Wrote dist/mollie-config.php with webhook secret"
-            fi
-            npx wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
-            echo "── Done $PROJECT ──"
-          done
+            echo "  → Wrote dist/mollie-config.php with webhook secret"
+          fi
+          
+          npx wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "⚠️ Deploy failed for $PROJECT (continuing...)"
+          echo "── Done ${{ matrix.region }} ──"
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
