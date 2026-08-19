@@ -1809,7 +1809,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // PAS d'aggregateRating : une note dérivée du statut sargasses (sans avis réel) =
             // données de revue fabriquées = violation règles Google (risque d'action manuelle
             // domain-wide) + viole la doctrine no-MOCK. Le schema Beach reste valide sans rating.
-            const beachSchemaObj = {"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`}}
+            const beachSchemaObj = {"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"image":{"@type":"ImageObject","url":`https://${domain}/api/og/beach/${b.slug}.png?lang=${REGION.primaryLang || 'fr'}`, "width":1200,"height":630,"caption":`Verdict sargasses pour ${b.name} — ${b.commune}, ${island}`}}
             if (amenities.length > 0) beachSchemaObj.amenityFeature = amenities
             const beachSchema = JSON.stringify(beachSchemaObj)
             const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
@@ -1878,8 +1878,19 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${beachUrl}" />`)
               .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${beachTitle}" />`)
               .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
-              .replace(/<meta property="og:image" [^>]*>/, `<meta property="og:image" content="https://${domain}/images/og/${b.slug}.png" />`)
-              .replace(/<meta name="twitter:image" [^>]*>/, `<meta name="twitter:image" content="https://${domain}/images/og/${b.slug}.png" />`)
+              // og:image — A/B flag ?og=1/0 : nouveau endpoint serverless vs fallback régional
+              .replace(/<meta property="og:image" [^>]*>/, (match) => {
+                const useNewOg = process.env.VITE_OG_AB === '1'; // build-time override
+                const ogUrl = `https://${domain}/api/og/beach/${b.slug}.png?lang=${REGION.primaryLang || 'fr'}`;
+                const fallbackUrl = `https://${domain}/images/og/${b.slug}.png`;
+                return `<meta property="og:image" content="${useNewOg ? ogUrl : fallbackUrl}" />`;
+              })
+              .replace(/<meta name="twitter:image" [^>]*>/, (match) => {
+                const useNewOg = process.env.VITE_OG_AB === '1';
+                const ogUrl = `https://${domain}/api/og/beach/${b.slug}.png?lang=${REGION.primaryLang || 'fr'}`;
+                const fallbackUrl = `https://${domain}/images/og/${b.slug}.png`;
+                return `<meta name="twitter:image" content="${useNewOg ? ogUrl : fallbackUrl}" />`;
+              })
               // Strip homepage schemas (WebApplication, FAQPage, Organization, SiteNavigationElement) — beach pages get their own
               .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
               .replace('</head>', `${videoHead}\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
