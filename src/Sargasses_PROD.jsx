@@ -14699,10 +14699,9 @@ useEffect(()=>{
             Refuser → analytics reste denied (comportement par défaut index.html).
             Rollback ?cookiebanner=0. */}
         {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
-          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1025,
+          <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:"calc(86px + env(safe-area-inset-bottom,0px))",left:0,right:0,zIndex:1025,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
-            borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
-            paddingBottom:"calc(96px + max(16px,env(safe-area-inset-bottom)))",
+            borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) 16px",
             display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
             <div style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,.72)"}}>
               {_t(lang,
