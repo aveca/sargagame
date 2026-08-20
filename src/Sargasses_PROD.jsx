@@ -1741,7 +1741,7 @@ export const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5
 // ?pay=paypal. Une fois le test OK : passer ce défaut à 'paypal' = abo live pour TOUS.
 // 'mollie'/'stripe' en fallback. ⚠️ fulfillment serveur (confirm_subscription/webhook)
 // = paypal-config.php live à déployer (FTP/secret) avant le go-live général.
-export const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
+export const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"mollie";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
 // Libellé processeur affiché dans les badges « paiement sécurisé ». Source unique
 // pour ne plus jamais hardcoder « Stripe » (mort) — bascule auto au go-live Mollie.
 export const PAY_LABEL=PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"

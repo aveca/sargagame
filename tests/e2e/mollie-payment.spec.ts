@@ -1,42 +1,50 @@
 import { test, expect } from '@playwright/test';
 
 /*
-  Test Mollie payment flow on sargagame.pages.dev
-  Verifies: Mollie script load → paywall trigger → payment modal open → iframe presence
-  Does NOT complete a real payment (stops before submit).
+  Test Mollie payment flow — smoke (no real payment).
+  Verifies: paywall open → checkout overlay → Mollie iframes present.
+  Mollie script is lazy-loaded on checkout open, not at page load.
 */
 
 test('mollie-payment-flow-smoke', async ({ page }) => {
-  // 1. Load the page
+  // 1. Load the map page
   await page.goto('https://sargagame.pages.dev/', { waitUntil: 'networkidle' });
 
-  // 2. Verify Mollie script is present in DOM (after CSP disable + injection)
-  const mollieScript = await page.locator('script[src*="js.mollie.com"]').first();
-  await expect(mollieScript).toBeAttached();
-
-  // 3. Trigger the paywall (click a beach then premium, or go directly to premium view)
-  // Let's navigate to a beach page that shows the verdict/paywall
-  await page.goto('https://sargagame.pages.dev/previsions/anse-mitan/', { waitUntil: 'networkidle' });
-
-  // 4. Click the golden CTA (Premium / Unlock)
-  // The site uses .btn-comic or .gbtn for premium actions
-  const cta = page.locator('a.btn-comic, button.gbtn, [data-testid*="premium"]').first();
-  if (await cta.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await cta.click();
+  // 2. Accept cookie consent if banner present
+  const consentBtn = page.locator('button:has-text("Accepter"), button:has-text("OK")').first();
+  if (await consentBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await consentBtn.click();
+    await page.waitForTimeout(500);
   }
 
-  // 5. Verify Mollie iframe loads (indicates Mollie is initialized and domain is whitelisted)
-  const mollieFrame = page.locator('iframe[src*="mollie.com"]');
-  await expect(mollieFrame).toBeVisible({ timeout: 8000 });
+  // 3. Open paywall via Premium tab in BottomNav
+  const premiumTab = page.locator('.sg-bottom-nav').getByText('Premium');
+  await expect(premiumTab).toBeVisible({ timeout: 5000 });
+  await premiumTab.click();
+  await page.waitForTimeout(1500);
 
-  // 6. Verify payment methods are present inside the Mollie component
-  const paymentMethod = page.locator('.mollie-component, .mollie-component-card').first();
-  await expect(paymentMethod).toBeVisible({ timeout: 5000 }).catch(() => {
-    console.warn('Payment method not found — Mollie domain may not be whitelisted yet.');
-  });
+  // 4. Verify paywall modal appeared (dialog, paywall panel, or pass card)
+  const paywall = page.locator('[role="dialog"], .sg-modal-panel, .sg-paywall-world, .sg-paywall-comic, button:has-text("Pass 30 jours")').first();
+  await expect(paywall).toBeVisible({ timeout: 5000 });
 
-  // 7. Take screenshot for visual verification (no real payment submitted)
+  // 5. Click the CTA to open checkout overlay
+  const cta = page.locator('button:has-text("Payer"), button:has-text("Commencer"), button:has-text("Activer")').first();
+  if (await cta.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await cta.click();
+    await page.waitForTimeout(2000);
+  }
+
+  // 6. Verify Mollie script is loaded (lazy, after checkout opens)
+  const mollieScript = page.locator('script[src*="js.mollie.com"]');
+  await expect(mollieScript).toBeAttached({ timeout: 8000 });
+
+  // 7. Verify Mollie card iframes present (4 card fields + 1 controller)
+  const mollieFrames = page.locator('iframe[src*="mollie"]');
+  const frameCount = await mollieFrames.count();
+  expect(frameCount).toBeGreaterThanOrEqual(4);
+
+  // 8. Screenshot for visual verification (no real payment submitted)
   await page.screenshot({ path: 'tests/e2e/screenshots/mollie-payment-smoke.png', fullPage: true });
 
-  console.log('Smoke test complete: Mollie script loaded, paywall triggered, iframe present.');
+  console.log(`Smoke test complete: Mollie loaded, ${frameCount} iframes present.`);
 });

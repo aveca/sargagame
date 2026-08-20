@@ -301,8 +301,10 @@ if(d.checkoutUrl){
         return
       }
     }
+    // DEAD CODE: Stripe legacy path. PAY_PROVIDER is always "mollie" (?pay=stripe is blocked).
+    // Kept for reference only. Stripe.js never loads, stripeRef is null.
+    return
     setPayBusy(true);setPayError("")
-    // GA4 Ecommerce: begin_checkout — Stripe legacy path (read-only, but consistent).
     try {
       const _bcPlan = passCtxRef.current ? passCtxRef.current.pass : plan
       const _bcValue = passCtxRef.current ? passCtxRef.current.cents / 100 : (PAY_CUR === 'usd' ? 11.99 : 14.99)

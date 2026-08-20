@@ -4,7 +4,26 @@
 
 ---
 
-## 2026-08-20 00:45 UTC — opencode (OpenCode) — Cookie consent GDPR fix: analytics gated behind consent
+## 2026-08-20 07:15 UTC — opencode (OpenCode) — Stripe ?pay=stripe blocked + Mollie audit + Playwright 40/40
+
+### Changement
+- **Stripe URL param blocked**: `?pay=stripe` now falls back to Mollie (`PAY_PROVIDER` returns `"mollie"` always). Stripe.js never loads. Dead code in `doSubscribe.jsx` guarded.
+- **Mollie iframe audit**: 5 frames verified (1 controller + 4 card fields). LIVE mode. Profile `pfl_t8KCk4Cm2C`.
+- **mollie-payment.spec.ts fixed**: Updated paywall selector to match actual DOM. Test verifies lazy Mollie load + iframe count.
+- **P0 verification**: BottomNav ✓, pins ✓ (83 GP + 53 MQ), Premium tab ✓, paywall CTA ✓, consent ✓, begin_checkout ✓, Playwright 40/40.
+
+### Fichiers
+- `src/Sargasses_PROD.jsx` — `?pay=stripe` → `"mollie"` (line 1744)
+- `src/PremiumModal/doSubscribe.jsx` — Dead code guard (line 304)
+- `tests/e2e/mollie-payment.spec.ts` — Fixed selectors + lazy Mollie verification
+
+### Tests
+- Build ✓, bundle 35.4 Ko ✓, smoke 4/4 ✓
+- Playwright 40/40 ✓
+- Stripe block verified on local build ✓
+- Mollie 5 iframes ✓
+
+---
 
 ### Changement
 - **GDPR: analytics gated behind cookie consent** — All analytics (GA4 MP, Clarity, Supabase funnel, session collection) now respect user consent choice. Commercial flow (Mollie) unaffected.
