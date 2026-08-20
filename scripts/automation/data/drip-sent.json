@@ -2903,11 +2903,13 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-08-19",
     "j3": "2026-08-09T12:29:35.512Z",
-    "j7": "2026-08-14T07:43:13.664Z"
+    "j7": "2026-08-14T07:43:13.664Z",
+    "j14": "2026-08-20T13:01:50.440Z"
   },
   "444b7de9afc8a5cc098379f02c92c1e8": {
     "j3": "2026-08-09T12:29:36.984Z",
-    "j7": "2026-08-14T07:43:15.985Z"
+    "j7": "2026-08-14T07:43:15.985Z",
+    "j14": "2026-08-20T13:01:52.485Z"
   },
   "a1d5914c50cf65f84a03d6713ebeabfe": {
     "daily_last": "2026-08-07",
@@ -3066,12 +3068,15 @@
     "daily_sig": "Plage de Grande Anse|clean|72|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-20"
+    "install_nudge_last": "2026-08-20",
+    "j3": "2026-08-20T13:01:55.958Z"
   },
   "8129dbf0095320eb67bd3ded1a5e6fe4": {
-    "daily_last": "2026-08-19",
-    "daily_sig": "Bavaro Beach|clean|64|clean|0|",
-    "daily_count": 3
+    "daily_last": "2026-08-20",
+    "daily_sig": "Bavaro Beach|clean|63|clean|0|",
+    "daily_count": 4,
+    "install_nudge_count": 1,
+    "install_nudge_last": "2026-08-20"
   },
   "2b63f22ec81e942658112e870698c0b0": {
     "daily_last": "2026-08-20",
@@ -3121,5 +3126,6 @@
     "daily_last": "2026-08-20",
     "daily_sig": "Jupiter Beach|clean|82|clean|0|",
     "daily_count": 1
-  }
+  },
+  "3588bf0faa7be73fa824b482ffb0db72": {}
 }
