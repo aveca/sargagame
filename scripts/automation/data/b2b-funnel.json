@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-19T12:58:22.353Z",
+  "updatedAt": "2026-08-20T01:39:10.143Z",
   "signals": {
     "paidSignal": "mollie",
     "leadsSignal": "subscribers",
@@ -8,7 +8,7 @@
   "counts": {
     "discovered": 3,
     "contacted": 152,
-    "lead": 4,
+    "lead": 10,
     "paid": 0
   },
   "funnel": {
@@ -1435,6 +1435,60 @@
       "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
     },
     "97c7c018dd71f2b08d294859533f5aa2": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "8628584a4c2c9382de9bf5c3a55a6aa5": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "3242bcf917688c3119a4e021c0aab197": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "5c03d708ed3f28537038bbbdd341fa81": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "631ea8647bc25d147a461747f3be078d": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "480d123deba4355817c8f644b24bb28e": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "2f90860b5fc8930faed80c4dc66b6dbf": {
       "stage": "lead",
       "name": null,
       "island": null,

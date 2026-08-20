@@ -1,58 +1,66 @@
 {
   "window_days": 7,
-  "since": "2026-08-12T13:05:56.927Z",
-  "total_rows": 142348,
+  "since": "2026-08-13T01:46:37.023Z",
+  "total_rows": 144670,
   "counts": {
-    "session_start": 113076,
+    "session_start": 115091,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1221,
-    "pass_cta": 102,
+    "premium_modal_open": 1236,
+    "pass_cta": 64,
     "conversion": 4,
-    "email_submit": 1,
+    "email_submit": 2,
     "b2b_offer_view": 45,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 102,
+  "cta_total": 64,
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 8.4,
-    "cta_to_conversion": 3.9
+    "modal_to_cta": 5.2,
+    "cta_to_conversion": 6.3
   },
   "by_island": {
-    "PUNTACANA": {
-      "session_start": 20099,
-      "premium_modal_open": 67,
-      "b2b_offer_view": 24,
-      "pass_cta": 2
-    },
-    "GP": {
-      "session_start": 26492,
-      "premium_modal_open": 104,
-      "b2b_offer_view": 1,
-      "pass_cta": 2
-    },
     "FLORIDA": {
-      "session_start": 27935,
-      "b2b_offer_view": 8,
-      "premium_modal_open": 149,
-      "pass_cta": 28
-    },
-    "MQ": {
-      "session_start": 36328,
-      "premium_modal_open": 884,
-      "pass_cta": 66,
-      "conversion": 4,
-      "email_submit": 1,
+      "session_start": 27967,
+      "premium_modal_open": 141,
+      "pass_cta": 18,
       "b2b_offer_view": 5
     },
-    "RIVIERAMAYA": {
-      "session_start": 2222,
-      "premium_modal_open": 17,
-      "b2b_offer_view": 7,
+    "GP": {
+      "session_start": 27349,
+      "premium_modal_open": 93,
+      "b2b_offer_view": 1,
       "pass_cta": 4
+    },
+    "MQ": {
+      "session_start": 36997,
+      "premium_modal_open": 912,
+      "conversion": 4,
+      "email_submit": 2,
+      "pass_cta": 36,
+      "b2b_offer_view": 10
+    },
+    "PUNTACANA": {
+      "session_start": 20136,
+      "premium_modal_open": 66,
+      "b2b_offer_view": 23,
+      "pass_cta": 2
+    },
+    "RIVIERAMAYA": {
+      "session_start": 2602,
+      "b2b_offer_view": 6,
+      "premium_modal_open": 20,
+      "pass_cta": 4
+    },
+    "TULUM": {
+      "session_start": 20,
+      "premium_modal_open": 2
+    },
+    "BARBADOS": {
+      "session_start": 20,
+      "premium_modal_open": 2
     }
   }
 }
