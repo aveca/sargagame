@@ -1899,6 +1899,7 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // ⚠️ sg_premium_modal_cta et sg_checkout_redirect RETIRÉS (2026-08-18) :
   // jamais émis par le frontend → compteur toujours 0. Le CTA réel = sg_pass_cta.
   "sg_premium_modal_open","sg_pass_cta","sg_conversion","sg_email_submit",
+  "sg_mollie_checkout_redirect",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.

@@ -29,7 +29,7 @@ function svcHeaders(extra) {
 
 // Étapes comptées (clé = nom event sans le préfixe sg_, comme Code.js).
 // premium_modal_cta et checkout_redirect RETIRÉS (2026-08-18) : jamais émis par le frontend.
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'pass_cta', 'conversion', 'email_submit',
+const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated']
 
@@ -71,9 +71,11 @@ function computeFunnel(rows) {
   const ctaTotal = f.pass_cta
   const rates = {
     session_to_lock: pct(f.forecast_lock_click, f.session_start),
-    lock_to_modal: pct(f.premium_modal_open, f.forecast_lock_click),
+    lock_to_beach: pct(f.beach_open, f.forecast_lock_click),
+    beach_to_modal: pct(f.premium_modal_open, f.beach_open),
     modal_to_cta: pct(ctaTotal, f.premium_modal_open),
-    cta_to_conversion: pct(f.conversion, ctaTotal),
+    cta_to_mollie: pct(f.mollie_checkout_redirect, ctaTotal),
+    mollie_to_conversion: pct(f.conversion, f.mollie_checkout_redirect),
   }
   return { counts: f, cta_total: ctaTotal, rates, by_island: byIsland }
 }

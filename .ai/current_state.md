@@ -1,4 +1,33 @@
 ---
+## 2026-08-20 07:35 UTC · Agent: opencode (OpenCode) · DEPLOYED — commit 606d2c3c pushed, CI green, post-deploy smoke
+
+### Déploiement
+- **Commit**: `606d2c3c` (main)
+- **CI Tests**: ✅ all green (1m5s)
+- **Perf Budget**: ✅ all green (1m16s)
+- **GitHub Pages**: ✅ deployed (57s build + 28s deploy)
+- **Daily Copernicus (FTP)**: pending (pipeline running, ~30-75 min)
+- **Custom domains (GP+MQ)**: waiting for FTP deploy
+
+### Post-deploy smoke (GP+MQ)
+| Check | GP | MQ |
+|-------|----|----|
+| Homepage loaded | ✅ | ✅ |
+| BottomNav visible | ✅ | ✅ |
+| Premium tab visible | ✅ | ✅ |
+| Pins count | ✅ 83 | ✅ 53 |
+| Paywall dialog visible | ✅ | ✅ |
+| CTA button visible | ✅ | ✅ |
+| Paywall closed | ✅ | ✅ |
+| Stripe block | ⏳ (waiting FTP) | ⏳ (waiting FTP) |
+
+### Notes
+- Stripe block will take effect after FTP deploy completes
+- Font MIME errors are pre-existing (server config, not our changes)
+- Deep link content rendering needs longer wait (SPA, not a regression)
+
+---
+
 ## 2026-08-20 07:15 UTC · Agent: opencode (OpenCode) · P0 Stripe block + Mollie iframe audit + Playwright 40/40
 
 ### Travail effectué
