@@ -1,37 +1,37 @@
 {
   "window_hours": 24,
-  "since": "2026-08-19T01:46:59.001Z",
-  "total_events": 8930,
+  "since": "2026-08-19T07:00:12.874Z",
+  "total_events": 8946,
   "funnel": [
     {
       "key": "map_open",
       "label": "Map opened",
       "icon": "🗺️",
-      "count": 716
+      "count": 722
     },
     {
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 1600
+      "count": 1621
     },
     {
       "key": "verdict_scan_view",
       "label": "Verdict viewed",
       "icon": "📊",
-      "count": 897
+      "count": 904
     },
     {
       "key": "premium_modal_open",
       "label": "Paywall seen",
       "icon": "🔒",
-      "count": 182
+      "count": 200
     },
     {
       "key": "cta",
       "label": "CTA clicked",
       "icon": "👆",
-      "count": 8
+      "count": 22
     },
     {
       "key": "checkout_redirect",
@@ -50,22 +50,22 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 223.5
+      "rate": 224.5
     },
     {
       "from": "Beach selected",
       "to": "Verdict viewed",
-      "rate": 56.1
+      "rate": 55.8
     },
     {
       "from": "Verdict viewed",
       "to": "Paywall seen",
-      "rate": 20.3
+      "rate": 22.1
     },
     {
       "from": "Paywall seen",
       "to": "CTA clicked",
-      "rate": 4.4
+      "rate": 11
     },
     {
       "from": "CTA clicked",
@@ -80,51 +80,51 @@
   ],
   "global_rate": 0,
   "counts": {
-    "map_open": 716,
-    "beach_open": 1600,
-    "verdict_scan_view": 897,
-    "premium_modal_open": 182,
-    "pass_cta": 8,
+    "map_open": 722,
+    "beach_open": 1621,
+    "verdict_scan_view": 904,
+    "premium_modal_open": 200,
+    "pass_cta": 22,
     "checkout_redirect": 0,
     "conversion": 0
   },
-  "cta_total": 8,
+  "cta_total": 22,
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 182,
+    "paywall_view": 200,
     "payment_failed": 0,
     "premium_feature_click": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "beach_open": 306,
-      "verdict_scan_view": 175,
-      "premium_modal_open": 27
-    },
-    "MQ": {
-      "beach_open": 601,
-      "verdict_scan_view": 328,
-      "premium_modal_open": 118,
-      "map_open": 506,
-      "pass_cta": 6
-    },
-    "RIVIERAMAYA": {
-      "beach_open": 67,
-      "verdict_scan_view": 38,
-      "premium_modal_open": 5
-    },
     "PUNTACANA": {
-      "premium_modal_open": 17,
-      "beach_open": 133,
-      "verdict_scan_view": 73
+      "beach_open": 142,
+      "verdict_scan_view": 78,
+      "premium_modal_open": 14
     },
     "GP": {
-      "verdict_scan_view": 283,
-      "beach_open": 493,
-      "premium_modal_open": 11,
-      "map_open": 210,
-      "pass_cta": 2
+      "beach_open": 489,
+      "verdict_scan_view": 280,
+      "premium_modal_open": 23,
+      "map_open": 214,
+      "pass_cta": 12
+    },
+    "MQ": {
+      "beach_open": 597,
+      "verdict_scan_view": 325,
+      "map_open": 508,
+      "premium_modal_open": 129,
+      "pass_cta": 10
+    },
+    "FLORIDA": {
+      "verdict_scan_view": 187,
+      "beach_open": 331,
+      "premium_modal_open": 25
+    },
+    "RIVIERAMAYA": {
+      "beach_open": 62,
+      "verdict_scan_view": 34,
+      "premium_modal_open": 5
     },
     "TULUM": {
       "premium_modal_open": 2
@@ -135,14 +135,14 @@
   },
   "by_pw_style": {
     "world": {
-      "modal_open": 156,
-      "paywall_view": 156,
+      "modal_open": 175,
+      "paywall_view": 175,
       "cta": 0,
       "conversion": 0
     },
     "unknown": {
-      "modal_open": 26,
-      "paywall_view": 26,
+      "modal_open": 25,
+      "paywall_view": 25,
       "cta": 0,
       "conversion": 0
     }
