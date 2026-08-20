@@ -1108,6 +1108,8 @@ jobs:
       # ── 5b. Deploy to Cloudflare Pages (all regions) ──
       # Pages projects need region-specific builds + data copy. This runs after
       # FTP so both hosting paths get fresh data. Wrangler auth via CLOUDFLARE_API_TOKEN.
+      # GP requires prepare-ftp.cjs patching (GA4, Clarity, OneSignal, OG, geo, domain swap)
+      # so we deploy guadeloupe-ftp/ for GP, not raw dist/.
       - name: Deploy to Cloudflare Pages (all regions)
         if: steps.check_build.outputs.full == 'true'
         continue-on-error: true
@@ -1133,7 +1135,15 @@ jobs:
               SRC="public/api/copernicus/$RID/$F"
               if [ -f "$SRC" ]; then cp "$SRC" "dist/api/copernicus/$F"; fi
             done
-            wrangler pages deploy dist --project-name=$PROJECT --branch=main
+            # GP: run prepare-ftp to get patched artifact, deploy guadeloupe-ftp/
+            if [ "$RID" = "gp" ]; then
+              echo "Running prepare-ftp.cjs for GP patch..."
+              node scripts/prepare-ftp.cjs
+              DEPLOY_DIR="guadeloupe-ftp"
+            else
+              DEPLOY_DIR="dist"
+            fi
+            wrangler pages deploy $DEPLOY_DIR --project-name=$PROJECT --branch=main
           done
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
