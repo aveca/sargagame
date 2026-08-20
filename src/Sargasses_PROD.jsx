@@ -12173,10 +12173,18 @@ export default function App(){
   // interceptait les clics → dock bloqué). La CARTE = le cœur produit (« carte sargasses »)
   // → taper Carte ouvre la carte DIRECT. Opt-in debug ?mapintro=1.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)}catch(_){return false}})
+// Path helpers (pathname-gated features)
+  const isPreviewsPath = (() => {
+    try { return /^\/(?:en\/)?previsions(?:\/)?$/.test(getPathname()) } catch { return false }
+  })()
+  const isCleanListPath = (() => {
+    try { return /^\/(?:en\/)?plages-sans-sargasses(?:\/)?$/.test(getPathname()) } catch { return false }
+  })()
+
 // A/B `prev_az` : landing golden-hour sur /previsions/ (ForecastChart + meilleur jour)
 // vs control (carte brute actuelle). 50/50. Override ?prev_az=1/0. Pathname-gated.
 // GELÉ → control (false)
-const[prevAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]prev_az=1/.test(q))return true;if(/[?&]prev_az=0/.test(q))return false;return isPrevisions&&false}catch(_){return false}})
+const[prevAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]prev_az=1/.test(q))return true;if(/[?&]prev_az=0/.test(q))return false;return false}catch(_){return false}})
   const[showPrevLanding,setShowPrevLanding]=useState(prevAZ)
   const[prevExiting,setPrevExiting]=useState(false)
   const dismissPrevLanding=useCallback(action=>{

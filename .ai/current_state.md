@@ -1,5 +1,46 @@
 ---
-## 2026-08-20 07:35 UTC · Agent: opencode (OpenCode) · DEPLOYED — commit 606d2c3c pushed, CI green, post-deploy smoke
+## 2026-08-20 10:00 UTC · Agent: coding_agent (OpenCode) · INSTRUMENTATION — funnel baseline with beach_open + mollie_checkout_redirect
+
+### Travail effectué
+- **Résumé 1 ligne** : Added `sg_beach_open` and `sg_mollie_checkout_redirect` to funnel instrumentation (Supabase + funnel keys). Updated funnel computation with new rates: `lock_to_beach`, `beach_to_modal`, `cta_to_mollie`, `mollie_to_conversion`.
+- **Détails** :
+  1. **Added `sg_beach_open` to SG_FUNNEL_EVENTS** — sent to Supabase when user opens beach detail (pin click, deep link, navigation, refresh) on GP/MQ.
+  2. **Added `mollie_checkout_redirect` to funnel keys** — tracks CTA → Mollie redirect step.
+  3. **Updated funnel computation** with new rates:
+     - `lock_to_beach`: forecast_lock_click → beach_open
+     - `beach_to_modal`: beach_open → premium_modal_open
+     - `cta_to_mollie`: pass_cta → mollie_checkout_redirect
+     - `mollie_to_conversion`: mollie_checkout_redirect → conversion
+  4. **Added `mollie_checkout_redirect` to SG_FUNNEL_EVENTS** for Supabase ingestion.
+  5. **Gate tests**: All 26/26 pass (Build ✅, Bundle 35.4 Ko ✅, PHP ✅, Regions ✅, Playwright 26/26 ✅).
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — Added `sg_beach_open`, `sg_mollie_checkout_redirect` to `SG_FUNNEL_EVENTS`
+- `scripts/automation/funnel-from-supabase.cjs` — Added `beach_open`, `mollie_checkout_redirect` to `FUNNEL_KEYS`; updated `computeFunnel` with new rates: `lock_to_beach`, `beach_to_modal`, `cta_to_mollie`, `mollie_to_conversion`
+
+### Tests réalisés
+- [x] `npm run build` → exit 0, bundle 35.4 Ko ≤ 210 Ko
+- [x] `npm run gate` → ALL GREEN (26/26 Playwright)
+- [x] `ux-smoke` on production → `FUNNEL_REACHED=map+fiche+paywall` ✅
+- [x] `npm run gate` → ALL GREEN (26/26 Playwright)
+
+### Problèmes restants (Instrumentation)
+1. **`forecast_lock_click` = 0** — `openLock` handlers exist but not firing/recorded; need to verify Supabase ingestion
+2. **`forecast_lock_click` handlers** — exist at lines 3275, 3296 but may not fire due to overlay/interaction issues
+3. **Checkout flow gaps** — `sg_mollie_checkout_redirect` added, but no events for: Mollie page load, payment status check, payment success/failure intermediate states
+4. **Non-live regions** — funnel shows activity but 0 payments (expected, not live)
+
+### Prochaine action recommandée
+1. **Debug `forecast_lock_click`** — verify `openLock` handlers fire and events reach Supabase
+2. **Add checkout intermediate events** — `sg_mollie_checkout_loaded`, `sg_payment_status_check`, `sg_payment_completed`
+3. **Validate GP vs MQ divergence** — understand 10x paywall open difference (MQ: 2.46% vs GP: 0.34%)
+4. **Validate GP funnel** — 0 payments despite CTA clicks
+
+### Branche / PR
+- Branche: `main` (push direct — auto-merge)
+- Commit: `f2304fc5`
+
+---
 
 ### Déploiement
 - **Commit**: `606d2c3c` (main)
