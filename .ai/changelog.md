@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-08-20 00:45 UTC — opencode (OpenCode) — Cookie consent GDPR fix: analytics gated behind consent
+
+### Changement
+- **GDPR: analytics gated behind cookie consent** — All analytics (GA4 MP, Clarity, Supabase funnel, session collection) now respect user consent choice. Commercial flow (Mollie) unaffected.
+- **5 consent gates added**:
+  1. `track()` MP beacon: `if(_consent!=='accepted') skip` (Sargasses_PROD.jsx)
+  2. `sendGA4()` MP beacon: early return if no consent (ga4-ecommerce.js)
+  3. Clarity: conditional load with localStorage polling (index.html)
+  4. Supabase funnel sink: gated behind consent (Sargasses_PROD.jsx)
+  5. Session collection: gated behind consent (Sargasses_PROD.jsx)
+- **GP template aligned**: `analytics_storage:'denied'` (was `'granted'`, bypassing consent)
+- **quick_bounce beacon**: gated behind consent (index.html + prepare-ftp.cjs)
+
+### Fichiers
+- `src/Sargasses_PROD.jsx` — consent check in track(), stale prop, begin_checkout fix
+- `src/PremiumModal/doSubscribe.jsx` — begin_checkout in payment paths
+- `src/WorldMapView.jsx` — stale prop, removed dead isStale()
+- `src/ga4-ecommerce.js` — consent gate in sendGA4()
+- `index.html` — Clarity gated, quick_bounce gated
+- `scripts/prepare-ftp.cjs` — GP consent aligned, Clarity gated, quick_bounce gated
+
+### Tests
+- Build ✓, bundle 35.4 Ko ✓, smoke 4/4 ✓
+- Clarity blocked before consent ✓, loads after accept ✓
+- Clarity stays blocked after reject ✓
+- Banner visible/gone/refresh ✓
+- Screenshots captured
+
+---
+
 ## 2026-08-19 01:30 UTC — growth_agent (OpenCode) — Checkout funnel instrumentation + B2B concierge tracking + email pixel bug documented
 
 ### Changement

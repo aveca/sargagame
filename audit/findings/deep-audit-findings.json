@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "P1",
+    "screen": "beach-deeplink",
+    "desc": "Deep link /plages/les-salines-martinique/ did NOT open beach detail",
+    "details": "heading=\"Martinique aujourd'hui\"",
+    "time": "2026-08-20T01:02:03.083Z"
+  }
+]

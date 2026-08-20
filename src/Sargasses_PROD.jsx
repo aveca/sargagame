@@ -1927,15 +1927,20 @@ export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // GDPR: read consent state once — gates MP beacon, Supabase funnel sink, session collection.
+  // gtag.js is already gated via consent mode (analytics_storage:'denied' default).
+  const _consent=(()=>{try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})()
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
-  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  // GDPR: gated behind cookie consent — only send if user accepted analytics.
+  if(_consent==="accepted"&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
-  //  et beaconner ici polluerait les stats MQ/GP)
-  if(!IS_NEW_REGION)try{
+  // GDPR: gate behind cookie consent. Only send if user accepted analytics.
+  // gtag.js itself is gated via consent mode (analytics_storage:'denied' default),
+  // but Measurement Protocol bypasses gtag consent — we must check explicitly.
+  if(!IS_NEW_REGION&&_consent==="accepted")try{
     const isGP=window.location.hostname.includes("guadeloupe")
     const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
     const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
@@ -1962,7 +1967,8 @@ export function track(event,params={}){
       JSON.stringify({type:"analytics_event",...entry}))}catch{}
   }
   // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
-  try{sgCollectEvent(event,p)}catch(e){}
+  // GDPR: gated behind cookie consent.
+  if(_consent==="accepted")try{sgCollectEvent(event,p)}catch(e){}
 }
 // Expose track globally for E2E test interception (non-prod: no-op in production if window undefined)
 try{if(typeof window!=="undefined")window.track=track}catch{}
@@ -13396,14 +13402,13 @@ useEffect(()=>{
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
     setPremiumSource(s);setShowPremium(true);const _pwV=abVariant("pw_style",["world","comic"]);track("sg_premium_modal_open",{source:s,pw_style:_pwV});track("sg_paywall_view",{source:s,pw_style:_pwV,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
-    // GA4 Ecommerce: view_promotion (paywall shown) + begin_checkout (intent)
+    // GA4 Ecommerce: view_promotion (paywall shown) — begin_checkout moved to doSubscribe/walletRedirect
+    // (fires on actual payment attempt, not paywall open — see doSubscribe.jsx)
     try{
       if(hasAnnual){
         viewPromotion('pro_annual', 'paywall_annual');
-        beginCheckout('pro_annual', s, PRICE_YR ? parseFloat(PRICE_YR.replace(/[^0-9.]/g,'')) : 690, 'EUR');
       }else{
         viewPromotion('pro_monthly', 'paywall_monthly');
-        beginCheckout('pro_monthly', s, PRICE_MO ? parseFloat(PRICE_MO.replace(/[^0-9.]/g,'')) : 79, 'EUR');
       }
     }catch(_){}
   },[captureGate])
@@ -14550,7 +14555,7 @@ useEffect(()=>{
                   openPremium={openPremium}
                 />
                 <LazyWorldMapView
-                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} stale={sargData?.stale||false}
                   lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
                   rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
                   arrivals={mapArrivals}

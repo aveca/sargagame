@@ -265,15 +265,34 @@
       });
     };
   </script>
-  <!-- Microsoft Clarity + bridge ÔÇö deferred after first paint -->
+  <!-- Microsoft Clarity + bridge ÔÇö deferred after first paint, gated behind cookie consent.
+       GDPR: Clarity only loads after user accepts analytics. Bridge listeners are installed
+       immediately (they just queue to gtag, no Clarity dependency). -->
   <script>
   (function(){
     function boot(){
       // GA4 gtag.js ÔÇö injectè ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
       var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-V8JGMDZZ2Y';document.head.appendChild(_ga);
-      // Clarity
-      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4o6w9aenv");
-      // Clarity ÔåÆ GA4 bridge
+      // Clarity â€" gated behind cookie consent (GDPR). Load now if already accepted,
+      // otherwise wait for consent change via localStorage polling.
+      var CLARITY_ID="w4o6w9aenv";
+      function loadClarity(){
+        if(window.__clarityLoaded)return;window.__clarityLoaded=true;
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",CLARITY_ID);
+      }
+      var _cc=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+      if(_cc==="accepted"){loadClarity();}
+      else{
+        // Poll for consent change (max 5 min, then give up)
+        var _start=Date.now();
+        var _poll=setInterval(function(){
+          if(Date.now()-_start>300000){clearInterval(_poll);return;}
+          var v=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(v==="accepted"){clearInterval(_poll);loadClarity();}
+          else if(v==="denied"){clearInterval(_poll);}
+        },1000);
+      }
+      // Clarity â†' GA4 bridge (queues events to gtag, no Clarity dependency)
       if(!window.gtag)return;
       var sent={};
       function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
@@ -304,7 +323,9 @@
       var loaded=Date.now();
       window.addEventListener('beforeunload',function(){
         if(Date.now()-loaded<10000){
-          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
+          // GDPR: gate quick_bounce behind consent (MP beacon bypasses gtag consent)
+          var _c=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(_c==="accepted")navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
             'G-V8JGMDZZ2Y'+
             '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
         }

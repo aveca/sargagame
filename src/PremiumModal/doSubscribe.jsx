@@ -86,6 +86,12 @@ export function usePaymentLogic({
     const body=_pc
       ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang}}
       :{action:"create_subscription",plan:payPlanRef.current,email,cur:_pcCur,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+    // GA4 Ecommerce: begin_checkout fires HERE — on actual wallet payment attempt, not paywall open.
+    try {
+      const _bcPlan = _pc ? _pc.pass : payPlanRef.current
+      const _bcValue = _pc ? _pc.cents / 100 : (PAY_CUR === 'usd' ? 11.99 : 14.99)
+      beginCheckout(_bcPlan, source || 'unknown', _bcValue, PAY_CUR === 'usd' ? 'USD' : 'EUR')
+    } catch (_) {}
     const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
     const d=await r.json().catch(()=>({}))
     if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
@@ -240,6 +246,13 @@ if(d.checkoutUrl){
           ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
           :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         try { track("sg_create_payment_request", { plan, pass: _pc?.pass, cents: _pc?.cents, cur: _pc?.cur, isSubscription: !_pc }) } catch (_) {}
+        // GA4 Ecommerce: begin_checkout fires HERE — on actual payment attempt, not paywall open.
+        // Invariant: 1 real Mollie checkout = 1 begin_checkout.
+        try {
+          const _bcPlan = _pc ? _pc.pass : plan
+          const _bcValue = _pc ? _pc.cents / 100 : (PAY_CUR === 'usd' ? 11.99 : 14.99)
+          beginCheckout(_bcPlan, source || 'unknown', _bcValue, PAY_CUR === 'usd' ? 'USD' : 'EUR')
+        } catch (_) {}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
         try { track("sg_create_payment_response", { plan, hasCheckoutUrl: !!d.checkoutUrl, paymentId: d.paymentId, subscriptionId: d.subscriptionId, error: d.error }) } catch (_) {}
@@ -289,6 +302,12 @@ if(d.checkoutUrl){
       }
     }
     setPayBusy(true);setPayError("")
+    // GA4 Ecommerce: begin_checkout — Stripe legacy path (read-only, but consistent).
+    try {
+      const _bcPlan = passCtxRef.current ? passCtxRef.current.pass : plan
+      const _bcValue = passCtxRef.current ? passCtxRef.current.cents / 100 : (PAY_CUR === 'usd' ? 11.99 : 14.99)
+      beginCheckout(_bcPlan, source || 'unknown', _bcValue, PAY_CUR === 'usd' ? 'USD' : 'EUR')
+    } catch (_) {}
     try{
       const{error:subErr}=await elementsRef.current.submit()
       if(subErr)throw subErr

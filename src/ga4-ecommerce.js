@@ -36,7 +36,11 @@ function getClientId() {
 }
 
 // Envoie via gtag (si dispo) + Measurement Protocol (fallback DMA)
+// GDPR: MP beacon gated behind cookie consent — only sends if user accepted analytics.
 function sendGA4(eventName, params) {
+  const _consent = (() => { try { return localStorage.getItem('sg_cookie_consent'); } catch (_) { return null; } })();
+  if (_consent !== 'accepted') return; // no consent → skip MP beacon
+
   const payload = {
     client_id: getClientId(),
     session_id: getSessionId(),

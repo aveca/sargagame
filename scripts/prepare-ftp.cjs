@@ -631,7 +631,7 @@ function writeRegionIndex(region, out) {
        sorti du chemin critique. Le stub gtag() + dataLayer mettent les events en file → ils
        partent quand gtag.js arrive (zéro perte). Aligné sur l'index racine. -->
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-  gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
   gtag('js',new Date());gtag('config','G-Q31VV3LLM9',{transport_url:'https://www.google-analytics.com'});</script>
   <!-- Stripe.js — chargé à la demande -->
   <script>
@@ -643,13 +643,29 @@ function writeRegionIndex(region, out) {
       });
     };
   </script>
-  <!-- Microsoft Clarity + bridge — deferred after first paint -->
+  <!-- Microsoft Clarity + bridge — deferred after first paint, gated behind cookie consent (GDPR) -->
   <script>
   (function(){
     function boot(){
       // GA4 gtag.js — injecté ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
       var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9';document.head.appendChild(_ga);
-      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");
+      // Clarity — gated behind cookie consent (GDPR)
+      var CLARITY_ID="w4oect7ph3";
+      function loadClarity(){
+        if(window.__clarityLoaded)return;window.__clarityLoaded=true;
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",CLARITY_ID);
+      }
+      var _cc=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+      if(_cc==="accepted"){loadClarity();}
+      else{
+        var _start=Date.now();
+        var _poll=setInterval(function(){
+          if(Date.now()-_start>300000){clearInterval(_poll);return;}
+          var v=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(v==="accepted"){clearInterval(_poll);loadClarity();}
+          else if(v==="denied"){clearInterval(_poll);}
+        },1000);
+      }
       if(!window.gtag)return;
       var sent={};
       function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
@@ -673,7 +689,9 @@ function writeRegionIndex(region, out) {
       var loaded=Date.now();
       window.addEventListener('beforeunload',function(){
         if(Date.now()-loaded<10000){
-          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+          // GDPR: gate quick_bounce behind consent
+          var _c=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(_c==="accepted")navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
         }
       });
     }

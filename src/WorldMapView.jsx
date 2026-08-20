@@ -43,11 +43,6 @@ function fmtFresh(updatedAt){
     return `${Math.round(h/24)} j`
   }catch(_){ return "···" }
 }
-// Honnêteté fraîcheur : si l'image satellite a >36h, Le Veilleur l'avoue (flag STALE)
-// au lieu de faire semblant de tout voir en direct (Story Bible : « quand le Veilleur ne voit pas »).
-function isStale(updatedAt){
-  try{ return (Date.now()-new Date(updatedAt).getTime())/3.6e6 >= 36 }catch(_){ return false }
-}
 
 // Distance grand-cercle (km) entre 2 plages {lat,lng} — pour « où aller plutôt » (plan B).
 function haversineKm(a, b){
@@ -207,7 +202,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  beaches, island, updatedAt, stale=false, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
 }){
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
@@ -1799,8 +1794,8 @@ export default function WorldMapView({
               width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&isStale(updatedAt)?_t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"):_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&isStale(updatedAt)?"#B87A00":"#00786C",marginLeft:2}}>
+            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&stale?"DONNÉE EN RETARD":_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&stale?"#B87A00":"#00786C",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
             {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
