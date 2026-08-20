@@ -2490,7 +2490,7 @@
   },
   {
     "date": "2026-08-20",
-    "time": "2026-08-20T13:09:10.147Z",
+    "time": "2026-08-20T16:39:56.010Z",
     "payments": 20,
     "revenue": 132.8,
     "emails": 574,
@@ -2498,10 +2498,10 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 3395,
+      "sessions": 1206,
       "lockClicks": 0,
-      "modalOpens": 182,
-      "modalCta": 22,
+      "modalOpens": 152,
+      "modalCta": 20,
       "sampleStarts": null,
       "emailSubmits": 1,
       "checkoutRedirects": 0,
@@ -2511,7 +2511,7 @@
       "rates": {
         "session_to_lock": 0,
         "lock_to_modal": 0,
-        "modal_to_cta": 12.1,
+        "modal_to_cta": 13.2,
         "cta_to_redirect": 0,
         "cta_to_conversion": 0
       }
@@ -2519,11 +2519,11 @@
     "email": {
       "sent": 4668,
       "delivered": null,
-      "opened": 37,
-      "clicked": 19,
+      "opened": 42,
+      "clicked": 23,
       "bounced": null,
-      "openRate": 0.79,
-      "clickRate": 51.35,
+      "openRate": 0.9,
+      "clickRate": 54.76,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -2582,7 +2582,7 @@
       },
       "gp": {
         "sessions": 63,
-        "users": 2375
+        "users": 2376
       }
     }
   }
