@@ -137,12 +137,31 @@ try {
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
         if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
 
-        // ── Redirect : page statique /payment/good.html avec params ──────────
-        // Le paymentId n'existe pas encore à ce stade. Le webhook confirme.
-        $kind = $pass ? 'pass' : 'pro'; // p30/trip7/season → pass, B2B annual → pro
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        // ── Determine island from HOSTNAME (server-side, NOT client) ───────────
+        $hostToIsland = [
+            'sargasses-martinique.com' => 'MQ',
+            'sargasses-guadeloupe.com' => 'GP',
+            'sargassummiami.com' => 'FLORIDA',
+            'sargassumpuntacana.com' => 'PUNTA_CANA',
+            'sargassumcancun.com' => 'RIVIERA_MAYA',
+        ];
         // Validate HTTP_HOST against known domains to prevent Host header injection
         $allowedHosts = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
+        $rawHost = $_SERVER['HTTP_HOST'] ?? '';
+        $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
+        $serverIsland = $hostToIsland[$host] ?? 'MQ';
+        
+        // Client island must match server island (anti-spoofing)
+        $clientIsland = strtoupper($data['island'] ?? '');
+        if ($clientIsland !== '' && $clientIsland !== $serverIsland) {
+            error_log("[mollie.php] island spoofing attempt: client=$clientIsland server=$serverIsland host=$host");
+            throw new Exception('Invalid island');
+        }
+        $island = $serverIsland;
+
+        // ── Redirect : page statique /payment/good.html avec params ──────────
+        $kind = $pass ? 'pass' : 'pro'; // p30/trip7/season → pass, B2B annual → pro
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $rawHost = $_SERVER['HTTP_HOST'] ?? '';
         $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
         $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
@@ -200,6 +219,7 @@ try {
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
         $metadata['plan'] = $planKey;
+        $metadata['island'] = $island; // SERVER-SIDE island
 
         $plans = mol_b2b_plans();
         if (!isset($plans[$planKey])) {

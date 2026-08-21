@@ -158,8 +158,9 @@ async function testStripeBlocked(page, domain) {
     log(`  iframe: src=${d.src} name=${d.name} id=${d.id} [${d.isStripe ? 'STRIPE' : d.isMollie ? 'MOLLIE' : 'other'}]`);
   }
 
-  const pass = stripeCount === 0 && mollieCount >= 4;
-  const verdict = pass ? '✅ PASS' : (stripeCount > 0 ? '❌ FAIL — Stripe iframe detected!' : '⚠️ WARN — expected 4-5 Mollie iframes');
+  // CRITICAL: zero Stripe iframes = PASS. Mollie count varies by checkout state (1 controller = minimal, 4-5 = full overlay).
+  const pass = stripeCount === 0;
+  const verdict = pass ? '✅ PASS — zero Stripe iframes' : '❌ FAIL — Stripe iframe detected!';
 
   log(`RESULT: ${verdict}`);
 

@@ -1,0 +1,451 @@
+{
+  "timestamp": "2026-08-21T00:14:30.533Z",
+  "domains": [
+    {
+      "domain": "sargasses-martinique.com",
+      "region": "Martinique",
+      "code": "MQ",
+      "live": true,
+      "currency": "EUR",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "104.21.9.55",
+          "172.67.159.31"
+        ],
+        "latencyMs": 9
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 13 18:35:16 2026 GMT",
+        "validTo": "Nov 11 19:35:10 2026 GMT",
+        "expired": false,
+        "latencyMs": 89
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56fe0ac645e2a-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": "DYNAMIC"
+      },
+      "content": {
+        "reactRoot": true,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026",
+        "regionFound": true,
+        "bodyLength": 44016,
+        "ga4Found": "g-standalone",
+        "indexFound": true,
+        "reducedMotion": true
+      },
+      "api": {
+        "validJson": true,
+        "updatedAt": "2026-08-20T16:33:51.125Z",
+        "stale": true,
+        "region": null,
+        "hasForecast": false,
+        "hasConfidence": false,
+        "ageHours": 7.7,
+        "isFresh": true,
+        "status": 200
+      },
+      "mollie": {
+        "status": 404,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": "https://sargasses-martinique.com/sitemap.xml",
+        "bodyLength": 2198
+      },
+      "sw": {
+        "accessible": true,
+        "status": 200,
+        "size": 8679
+      },
+      "errors": [],
+      "homeStatus": 200,
+      "homeLatencyMs": 178
+    },
+    {
+      "domain": "sargasses-guadeloupe.com",
+      "region": "Guadeloupe",
+      "code": "GP",
+      "live": true,
+      "currency": "EUR",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "172.67.199.242",
+          "104.21.52.139"
+        ],
+        "latencyMs": 6
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 19 04:36:15 2026 GMT",
+        "validTo": "Nov 17 05:36:12 2026 GMT",
+        "expired": false,
+        "latencyMs": 91
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56fe43a06f372-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": "DYNAMIC"
+      },
+      "content": {
+        "reactRoot": true,
+        "title": "Plages Guadeloupe aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026",
+        "regionFound": true,
+        "bodyLength": 30430,
+        "ga4Found": "g-standalone",
+        "indexFound": true,
+        "reducedMotion": true
+      },
+      "api": {
+        "validJson": true,
+        "updatedAt": "2026-08-20T16:33:50.954Z",
+        "stale": true,
+        "region": null,
+        "hasForecast": false,
+        "hasConfidence": false,
+        "ageHours": 7.7,
+        "isFresh": true,
+        "status": 200
+      },
+      "mollie": {
+        "status": 404,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": "https://sargasses-guadeloupe.com/sitemap.xml",
+        "bodyLength": 1944
+      },
+      "sw": {
+        "accessible": true,
+        "status": 200,
+        "size": 8679
+      },
+      "errors": [],
+      "homeStatus": 200,
+      "homeLatencyMs": 182
+    },
+    {
+      "domain": "sargassummiami.com",
+      "region": "Florida",
+      "code": "FL",
+      "live": false,
+      "currency": "USD",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "104.21.94.88",
+          "172.67.221.148"
+        ],
+        "latencyMs": 7
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 19 04:35:04 2026 GMT",
+        "validTo": "Nov 17 05:34:58 2026 GMT",
+        "expired": false,
+        "latencyMs": 87
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56fe7fa64e0d6-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": "DYNAMIC"
+      },
+      "content": {
+        "reactRoot": true,
+        "title": "Sargassum in Florida Today — Live Beach Map &amp; 7-Day Forecast",
+        "regionFound": true,
+        "bodyLength": 49443,
+        "ga4Found": "g-standalone",
+        "indexFound": true,
+        "reducedMotion": true
+      },
+      "api": {
+        "validJson": true,
+        "updatedAt": "2026-08-20T16:33:50.643Z",
+        "stale": true,
+        "region": null,
+        "hasForecast": false,
+        "hasConfidence": false,
+        "ageHours": 7.7,
+        "isFresh": true,
+        "status": 200
+      },
+      "mollie": {
+        "status": 404,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": "https://sargasses-martinique.com/sitemap.xml",
+        "bodyLength": 362
+      },
+      "sw": {
+        "accessible": true,
+        "status": 200,
+        "size": 8679
+      },
+      "errors": [],
+      "homeStatus": 200,
+      "homeLatencyMs": 183
+    },
+    {
+      "domain": "sargassumpuntacana.com",
+      "region": "Punta Cana",
+      "code": "PC",
+      "live": false,
+      "currency": "USD",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "172.67.205.139",
+          "104.21.90.218"
+        ],
+        "latencyMs": 6
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 19 04:35:04 2026 GMT",
+        "validTo": "Nov 17 05:35:01 2026 GMT",
+        "expired": false,
+        "latencyMs": 98
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56febbebed955-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": "DYNAMIC"
+      },
+      "content": {
+        "reactRoot": true,
+        "title": "Punta Cana Sargassum Today — Live Beach Map &amp; 7-Day Forecast",
+        "regionFound": true,
+        "bodyLength": 48818,
+        "ga4Found": "g-standalone",
+        "indexFound": true,
+        "reducedMotion": true
+      },
+      "api": {
+        "validJson": true,
+        "updatedAt": "2026-08-20T16:33:51.757Z",
+        "stale": true,
+        "region": null,
+        "hasForecast": false,
+        "hasConfidence": false,
+        "ageHours": 7.7,
+        "isFresh": true,
+        "status": 200
+      },
+      "mollie": {
+        "status": 404,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": "https://sargasses-martinique.com/sitemap.xml",
+        "bodyLength": 362
+      },
+      "sw": {
+        "accessible": true,
+        "status": 200,
+        "size": 8679
+      },
+      "errors": [],
+      "homeStatus": 200,
+      "homeLatencyMs": 184
+    },
+    {
+      "domain": "sargassumcancun.com",
+      "region": "Riviera Maya",
+      "code": "RM",
+      "live": false,
+      "currency": "USD",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "172.67.187.200",
+          "104.21.84.67"
+        ],
+        "latencyMs": 6
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 19 04:35:04 2026 GMT",
+        "validTo": "Nov 17 05:35:01 2026 GMT",
+        "expired": false,
+        "latencyMs": 92
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56fef6eeb5c6f-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": "DYNAMIC"
+      },
+      "content": {
+        "reactRoot": true,
+        "title": "Sargazo en Cancún HOY — Mapa Satelital en Vivo y Pronóstico 7 Días 2026",
+        "regionFound": true,
+        "bodyLength": 49339,
+        "ga4Found": "g-standalone",
+        "indexFound": true,
+        "reducedMotion": true
+      },
+      "api": {
+        "validJson": true,
+        "updatedAt": "2026-08-20T16:33:52.612Z",
+        "stale": true,
+        "region": null,
+        "hasForecast": false,
+        "hasConfidence": false,
+        "ageHours": 7.7,
+        "isFresh": true,
+        "status": 200
+      },
+      "mollie": {
+        "status": 404,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": "https://sargasses-martinique.com/sitemap.xml",
+        "bodyLength": 362
+      },
+      "sw": {
+        "accessible": true,
+        "status": 200,
+        "size": 8679
+      },
+      "errors": [],
+      "homeStatus": 200,
+      "homeLatencyMs": 205
+    },
+    {
+      "domain": "sargassumbarbados.com",
+      "region": "Barbados",
+      "code": "BB",
+      "live": false,
+      "currency": "USD",
+      "dns": {
+        "resolved": false,
+        "ips": [],
+        "latencyMs": 6,
+        "error": "getaddrinfo ENOTFOUND sargassumbarbados.com"
+      },
+      "https": {
+        "ok": false,
+        "latencyMs": 6,
+        "error": "getaddrinfo ENOTFOUND sargassumbarbados.com"
+      },
+      "cloudflare": {},
+      "content": {},
+      "api": {},
+      "mollie": {},
+      "robots": {},
+      "sw": {},
+      "errors": [
+        "DNS failed: getaddrinfo ENOTFOUND sargassumbarbados.com"
+      ]
+    },
+    {
+      "domain": "sargazotulum.com",
+      "region": "Tulum",
+      "code": "TU",
+      "live": false,
+      "currency": "USD",
+      "dns": {
+        "resolved": true,
+        "ips": [
+          "104.21.59.16",
+          "172.67.167.148"
+        ],
+        "latencyMs": 7
+      },
+      "https": {
+        "ok": true,
+        "issuer": "Google Trust Services",
+        "validFrom": "Aug 18 16:50:56 2026 GMT",
+        "validTo": "Nov 16 17:49:30 2026 GMT",
+        "expired": false,
+        "latencyMs": 92
+      },
+      "cloudflare": {
+        "behindCloudflare": true,
+        "cfRay": "a2e56ff38d33c14d-MIA",
+        "server": "cloudflare",
+        "cfCacheStatus": null
+      },
+      "content": {
+        "reactRoot": false,
+        "title": null,
+        "regionFound": false,
+        "bodyLength": 16,
+        "ga4Found": null,
+        "indexFound": false,
+        "reducedMotion": false
+      },
+      "api": {
+        "status": 522,
+        "error": "HTTP 522"
+      },
+      "mollie": {
+        "status": 522,
+        "reachable": true
+      },
+      "robots": {
+        "found": true,
+        "sitemap": null,
+        "bodyLength": 1836
+      },
+      "sw": {
+        "accessible": false,
+        "status": 522,
+        "size": 16
+      },
+      "errors": [],
+      "homeStatus": 522,
+      "homeLatencyMs": 151
+    }
+  ],
+  "summary": [
+    {
+      "domain": "sargasses-martinique.com",
+      "ok": true
+    },
+    {
+      "domain": "sargasses-guadeloupe.com",
+      "ok": true
+    },
+    {
+      "domain": "sargassummiami.com",
+      "ok": true
+    },
+    {
+      "domain": "sargassumpuntacana.com",
+      "ok": true
+    },
+    {
+      "domain": "sargassumcancun.com",
+      "ok": true
+    },
+    {
+      "domain": "sargassumbarbados.com",
+      "ok": false
+    },
+    {
+      "domain": "sargazotulum.com",
+      "ok": false
+    }
+  ]
+}

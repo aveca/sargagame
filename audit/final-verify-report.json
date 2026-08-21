@@ -1,0 +1,207 @@
+{
+  "test1_stripe": [
+    {
+      "domain": "GP",
+      "pass": true,
+      "stripeCount": 0,
+      "mollieCount": 5,
+      "iframeDetails": [
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=cardHolder&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "cardHolder-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=cardNumber&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "cardNumber-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=expiryDate&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "expiryDate-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=verificationCode&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22b",
+          "name": "verificationCode-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/controller/?profileId=pfl_t8KCk4Cm2C&locale=fr_FR&testMode=false&hostname=sargasses-guadeloupe.com&isCoBrandedCardSupported=f",
+          "name": "mollie-components-controller-iframe",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        }
+      ],
+      "verdict": "✅ PASS — zero Stripe iframes"
+    },
+    {
+      "domain": "MQ",
+      "pass": true,
+      "stripeCount": 0,
+      "mollieCount": 5,
+      "iframeDetails": [
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=cardHolder&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "cardHolder-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=cardNumber&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "cardNumber-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=expiryDate&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22base%22",
+          "name": "expiryDate-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/component/?profileId=pfl_t8KCk4Cm2C&componentType=verificationCode&locale=fr_FR&isCoBrandedCardSupported=false&styles=%7B%22b",
+          "name": "verificationCode-input",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        },
+        {
+          "src": "https://js.mollie.com/v1/controller/?profileId=pfl_t8KCk4Cm2C&locale=fr_FR&testMode=false&hostname=sargasses-martinique.com&isCoBrandedCardSupported=f",
+          "name": "mollie-components-controller-iframe",
+          "id": "",
+          "isStripe": false,
+          "isMollie": true
+        }
+      ],
+      "verdict": "✅ PASS — zero Stripe iframes"
+    }
+  ],
+  "test2_forecast": [
+    {
+      "domain": "GP",
+      "foundButtons": [
+        {
+          "label": "Auj",
+          "text": "Auj",
+          "visible": true
+        },
+        {
+          "label": "+1j",
+          "text": "+1j",
+          "visible": true
+        },
+        {
+          "label": "+2j",
+          "text": "+2j",
+          "visible": true
+        },
+        {
+          "label": "+3j",
+          "text": "+3j",
+          "visible": true
+        },
+        {
+          "label": "+4j",
+          "text": "+4j",
+          "visible": true
+        },
+        {
+          "label": "+5j",
+          "text": "+5j",
+          "visible": true
+        }
+      ],
+      "hasLockEmoji": false,
+      "clicked": true,
+      "outcome": "paywall_shown",
+      "forecastLockEvents": 0,
+      "allTrackedEvents": []
+    },
+    {
+      "domain": "MQ",
+      "foundButtons": [
+        {
+          "label": "Auj",
+          "text": "Auj",
+          "visible": true
+        },
+        {
+          "label": "+1j",
+          "text": "+1j",
+          "visible": true
+        },
+        {
+          "label": "+2j",
+          "text": "+2j",
+          "visible": true
+        },
+        {
+          "label": "+3j",
+          "text": "+3j",
+          "visible": true
+        },
+        {
+          "label": "+4j",
+          "text": "+4j",
+          "visible": true
+        },
+        {
+          "label": "+5j",
+          "text": "+5j",
+          "visible": true
+        }
+      ],
+      "hasLockEmoji": false,
+      "clicked": true,
+      "outcome": "paywall_shown",
+      "forecastLockEvents": 0,
+      "allTrackedEvents": []
+    }
+  ],
+  "consoleEvents": [
+    {
+      "domain": "GP",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()",
+      "ts": 1787270868809
+    },
+    {
+      "domain": "GP",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787270881909
+    },
+    {
+      "domain": "MQ",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787270891755
+    },
+    {
+      "domain": "MQ",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()",
+      "ts": 1787270894367
+    },
+    {
+      "domain": "MQ",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1787270907580
+    }
+  ],
+  "errors": []
+}
