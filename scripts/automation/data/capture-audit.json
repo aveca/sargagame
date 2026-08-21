@@ -1,45 +1,104 @@
 {
- "date": "2026-08-14T12:10:41.640Z",
+ "date": "2026-08-21T11:55:22.213Z",
  "domains": {
   "https://sargasses-martinique.com": {
-   "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-   "checks": {},
-   "note": {}
-  },
-  "https://sargasses-guadeloupe.com": {
-   "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-   "checks": {},
-   "note": {}
-  },
-  "https://sargassumpuntacana.com": {
-   "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-   "checks": {},
-   "note": {}
-  },
-  "https://sargassummiami.com": {
-   "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-   "checks": {},
-   "note": {}
-  },
-  "https://sargassumcancun.com": {
    "checks": {
     "lcp_under_2_5s": true,
-    "hero_verdict_visible": false,
-    "data_freshness_shown": false,
-    "source_attribution": false,
-    "promise_one_sentence": false,
+    "hero_verdict_visible": true,
+    "data_freshness_shown": true,
+    "source_attribution": true,
+    "promise_one_sentence": true,
     "cta_count_above_fold": false,
     "no_fake_scarcity": true,
     "no_capture_on_load": true,
     "form_fields_max2": true,
-    "price_transparent": false,
-    "cancel_path_stated": false,
-    "no_blank_checkout": false
+    "price_transparent": true,
+    "cancel_path_stated": true,
+    "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "336ms",
-    "cta_count_above_fold": "12 visibles",
-    "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
+    "lcp_under_2_5s": "612ms",
+    "cta_count_above_fold": "16 visibles"
+   }
+  },
+  "https://sargasses-guadeloupe.com": {
+   "checks": {
+    "lcp_under_2_5s": true,
+    "hero_verdict_visible": true,
+    "data_freshness_shown": true,
+    "source_attribution": true,
+    "promise_one_sentence": true,
+    "cta_count_above_fold": false,
+    "no_fake_scarcity": true,
+    "no_capture_on_load": true,
+    "form_fields_max2": true,
+    "price_transparent": true,
+    "cancel_path_stated": true,
+    "no_blank_checkout": true
+   },
+   "note": {
+    "lcp_under_2_5s": "564ms",
+    "cta_count_above_fold": "16 visibles"
+   }
+  },
+  "https://sargassumpuntacana.com": {
+   "checks": {
+    "lcp_under_2_5s": true,
+    "hero_verdict_visible": true,
+    "data_freshness_shown": true,
+    "source_attribution": true,
+    "promise_one_sentence": true,
+    "cta_count_above_fold": false,
+    "no_fake_scarcity": true,
+    "no_capture_on_load": true,
+    "form_fields_max2": true,
+    "price_transparent": true,
+    "cancel_path_stated": true,
+    "no_blank_checkout": true
+   },
+   "note": {
+    "lcp_under_2_5s": "376ms",
+    "cta_count_above_fold": "14 visibles"
+   }
+  },
+  "https://sargassummiami.com": {
+   "checks": {
+    "lcp_under_2_5s": true,
+    "hero_verdict_visible": true,
+    "data_freshness_shown": true,
+    "source_attribution": true,
+    "promise_one_sentence": true,
+    "cta_count_above_fold": false,
+    "no_fake_scarcity": true,
+    "no_capture_on_load": true,
+    "form_fields_max2": true,
+    "price_transparent": true,
+    "cancel_path_stated": true,
+    "no_blank_checkout": true
+   },
+   "note": {
+    "lcp_under_2_5s": "368ms",
+    "cta_count_above_fold": "14 visibles"
+   }
+  },
+  "https://sargassumcancun.com": {
+   "checks": {
+    "lcp_under_2_5s": true,
+    "hero_verdict_visible": true,
+    "data_freshness_shown": true,
+    "source_attribution": true,
+    "promise_one_sentence": true,
+    "cta_count_above_fold": false,
+    "no_fake_scarcity": true,
+    "no_capture_on_load": true,
+    "form_fields_max2": true,
+    "price_transparent": true,
+    "cancel_path_stated": true,
+    "no_blank_checkout": true
+   },
+   "note": {
+    "lcp_under_2_5s": "392ms",
+    "cta_count_above_fold": "14 visibles"
    }
   }
  }
