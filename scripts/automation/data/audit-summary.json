@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T11:20:31.297Z",
+  "generatedAt": "2026-08-21T11:26:21.182Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -13,7 +13,7 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 426,
+            "value": 411,
             "threshold": 200
           }
         ],
@@ -22,19 +22,13 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 62
+            "count": 58
           },
           {
             "event": "clarity_rage_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 16
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/anse-riviere-trinite/",
-            "target": "",
-            "count": 3
+            "count": 7
           },
           {
             "event": "clarity_rage_click",
@@ -44,13 +38,7 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/en/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages-sans-sargasses/",
+            "page": "/plages/l-autre-bord/",
             "target": "",
             "count": 1
           },
@@ -74,19 +62,7 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/sargasses-le-diamant/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
             "page": "/sargasses-record-2026/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/sargasses-terre-de-haut-les-saintes/",
             "target": "",
             "count": 1
           }
@@ -96,49 +72,19 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 207
+            "count": 128
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 112
+            "count": 71
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/anse-michel/",
             "target": "",
-            "count": 12
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/",
-            "target": "",
-            "count": 11
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages-sans-sargasses/",
-            "target": "",
-            "count": 6
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-le-diamant/",
-            "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/conditions/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-couleuvre/",
-            "target": "",
-            "count": 4
+            "count": 10
           },
           {
             "event": "clarity_dead_click",
@@ -148,13 +94,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargasses-le-vauclin/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/meilleures-plages-guadeloupe-sargasses/",
+            "page": "/en/",
             "target": "",
             "count": 3
           },
@@ -166,19 +106,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-du-diamant/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/pointe-fort-caravelle/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-record-2026/",
+            "page": "/plages/plage-bois-jolan/",
             "target": "",
             "count": 3
           },
@@ -190,37 +118,31 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/detection-satellite-sargasses/",
+            "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/meilleures-plages-martinique-sargasses/",
+            "page": "/plages-sans-sargasses/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/anse-riviere-trinite/",
+            "page": "/plages/anse-couleuvre/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/anse-trabaud/",
+            "page": "/sargasses-le-diamant/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/pointe-faula/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/saison-sargasses-martinique/",
+            "page": "/sargasses-record-2026/",
             "target": "",
             "count": 2
           },
@@ -232,19 +154,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/conditions/baignade-ideale/",
+            "page": "/conditions/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/",
+            "page": "/meilleures-plages-martinique-sargasses/",
             "target": "",
             "count": 1
           },
@@ -256,7 +172,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/anse-cosmy/",
+            "page": "/plages/anse-trabaud/",
             "target": "",
             "count": 1
           },
@@ -268,19 +184,31 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-bois-jolan/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/plage-de-saint-pierre/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/plage-du-diamant/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/plages-sud-martinique/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/pointe-fort-caravelle/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/saison-sargasses-martinique/",
             "target": "",
             "count": 1
           },
@@ -298,31 +226,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargasses-les-trois-ilets/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/sargasses-saint-francois/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargasses-sainte-anne-martinique/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/sargasses-sainte-rose/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-terre-de-haut-les-saintes/",
             "target": "",
             "count": 1
           },
@@ -337,10 +247,10 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2382,
-        "inp": 426,
+        "lcp": 2044,
+        "inp": 411,
         "cls": 0,
-        "ttfb": 810
+        "ttfb": 722
       },
       "sitemapStatus": [
         {
@@ -355,7 +265,7 @@
     },
     "gp": {
       "domain": "sargasses-guadeloupe.com",
-      "indexedCount": 92,
+      "indexedCount": 90,
       "totalUrls": 100,
       "findings": {
         "notIndexed": [],
@@ -397,28 +307,22 @@
           {
             "page": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
             "avgPosition": 4,
-            "actualCtr": 4.94,
+            "actualCtr": 5.26,
             "expectedCtr": 8,
-            "impressions": 81,
-            "clicks": 4,
+            "impressions": 57,
+            "clicks": 3,
             "topQueries": [
               {
                 "query": "période sargasse guadeloupe",
                 "impressions": 35,
                 "clicks": 1,
-                "position": 6.571428571428571
-              },
-              {
-                "query": "saison sargasse guadeloupe",
-                "impressions": 21,
-                "clicks": 1,
-                "position": 6.904761904761905
+                "position": 6.885714285714286
               },
               {
                 "query": "saison des sargasses guadeloupe",
-                "impressions": 16,
+                "impressions": 13,
                 "clicks": 1,
-                "position": 7.6875
+                "position": 7.615384615384615
               },
               {
                 "query": "algues guadeloupe",
@@ -431,6 +335,12 @@
                 "impressions": 1,
                 "clicks": 1,
                 "position": 1
+              },
+              {
+                "query": "algue guadeloupe",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 3
               }
             ]
           },
@@ -439,14 +349,14 @@
             "avgPosition": 10,
             "actualCtr": 0,
             "expectedCtr": 2,
-            "impressions": 50,
+            "impressions": 59,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse à la gourde",
-                "impressions": 11,
+                "impressions": 15,
                 "clicks": 0,
-                "position": 11.818181818181818
+                "position": 11.933333333333334
               },
               {
                 "query": "anse a la gourde",
@@ -455,22 +365,22 @@
                 "position": 9.5
               },
               {
-                "query": "anse a la gourde",
-                "impressions": 4,
+                "query": "anse à la gourde",
+                "impressions": 7,
                 "clicks": 0,
-                "position": 13.25
+                "position": 11.142857142857142
+              },
+              {
+                "query": "anse a la gourde",
+                "impressions": 5,
+                "clicks": 0,
+                "position": 14.6
               },
               {
                 "query": "anse de la gourde",
                 "impressions": 3,
                 "clicks": 0,
                 "position": 8.333333333333332
-              },
-              {
-                "query": "anse à la gourde",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 7.666666666666667
               }
             ]
           }
@@ -478,13 +388,8 @@
         "highBouncePages": [],
         "cwvIssues": [
           {
-            "metric": "LCP",
-            "value": 2575,
-            "threshold": 2500
-          },
-          {
             "metric": "INP",
-            "value": 586,
+            "value": 537,
             "threshold": 200
           }
         ],
@@ -493,13 +398,31 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 70
+            "count": 61
           },
           {
             "event": "clarity_rage_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
             "count": 5
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/confidentialite/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/sargagame/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/carte-sargasses/",
+            "target": "",
+            "count": 1
           },
           {
             "event": "clarity_rage_click",
@@ -516,18 +439,6 @@
           {
             "event": "clarity_rage_click",
             "page": "/plages/ile-de-la-petite-terre/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/petite-plage-malendure/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/plage-de-la-caravelle/",
             "target": "",
             "count": 1
           },
@@ -543,67 +454,67 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 375
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-du-gosier/",
-            "target": "",
-            "count": 32
+            "count": 317
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 26
+            "count": 23
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-du-gosier/",
+            "target": "",
+            "count": 17
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-sainte-anne/",
             "target": "",
-            "count": 23
+            "count": 16
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-la-caravelle/",
-            "target": "",
-            "count": 19
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-des-raisins-clairs/",
+            "page": "/sargagame/",
             "target": "",
             "count": 13
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/ile-de-la-petite-terre/",
+            "page": "/plages/plage-de-la-caravelle/",
             "target": "",
-            "count": 8
+            "count": 11
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/la-datcha/",
+            "page": "/plages/plage-des-raisins-clairs/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/ile-de-la-petite-terre/",
             "target": "",
             "count": 7
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/",
+            "page": "/carte-sargasses/",
             "target": "",
-            "count": 3
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
+            "page": "/confidentialite/",
             "target": "",
-            "count": 3
+            "count": 5
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-malendure/",
+            "page": "/plages/la-datcha/",
             "target": "",
-            "count": 3
+            "count": 4
           },
           {
             "event": "clarity_dead_click",
@@ -613,19 +524,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/confidentialite/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-a-la-gourde/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/petit-havre-gosier/",
+            "page": "/en/",
             "target": "",
             "count": 2
           },
@@ -637,45 +536,15 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/petite-plage-malendure/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-bananier/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/plage-de-capesterre-belle-eau/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-grande-anse/",
+            "page": "/sarg_carte_satellite_app",
             "target": "",
             "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-la-desirade/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/saison-sargasses-martinique/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/carte-sargasses/",
-            "target": "",
-            "count": 1
           },
           {
             "event": "clarity_dead_click",
@@ -691,7 +560,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/best-beaches-no-sargassum/",
+            "page": "/plages/anse-a-la-gourde/",
             "target": "",
             "count": 1
           },
@@ -703,13 +572,25 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/petit-havre-gosier/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-bananier/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/plage-de-bas-du-fort-sud/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-grand-bourg/",
+            "page": "/plages/plage-de-malendure/",
             "target": "",
             "count": 1
           },
@@ -739,13 +620,19 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/pointe-de-la-verdure/",
+            "page": "/recherche/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargagame/",
+            "page": "/saison-sargasses-guadeloupe/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/saison-sargasses-martinique/",
             "target": "",
             "count": 1
           }
@@ -754,10 +641,10 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2575,
-        "inp": 586,
+        "lcp": 2301,
+        "inp": 537,
         "cls": 0.01,
-        "ttfb": 807
+        "ttfb": 745
       },
       "sitemapStatus": [
         {
@@ -783,14 +670,14 @@
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 25,
+            "impressions": 24,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "key west sargassum today live",
-                "impressions": 10,
+                "impressions": 9,
                 "clicks": 0,
-                "position": 6.9
+                "position": 6.666666666666667
               },
               {
                 "query": "key west sargassum today map",
@@ -823,7 +710,7 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 392,
+            "value": 475,
             "threshold": 200
           }
         ],
@@ -832,25 +719,19 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 26
+            "count": 22
           },
           {
             "event": "clarity_rage_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 25
+            "count": 16
           },
           {
             "event": "clarity_rage_click",
             "page": "/es/",
             "target": "",
-            "count": 14
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/beaches-without-sargassum-today/",
-            "target": "",
-            "count": 6
+            "count": 10
           },
           {
             "event": "clarity_rage_click",
@@ -860,21 +741,21 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/fort-lauderdale-sargassum-today/",
+            "page": "/beaches-without-sargassum-today/",
             "target": "",
-            "count": 1
+            "count": 5
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/es/playas/key-largo/",
+            "target": "",
+            "count": 2
           },
           {
             "event": "clarity_rage_click",
             "page": "/naples-sargassum-today/",
             "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/sunny-isles-beach-sargassum-today/",
-            "target": "",
-            "count": 1
+            "count": 2
           }
         ],
         "deadClicks": [
@@ -882,37 +763,31 @@
             "event": "clarity_dead_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 303
+            "count": 152
           },
           {
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 115
+            "count": 75
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 52
+            "count": 28
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/mapa-sargazo/",
             "target": "",
-            "count": 38
+            "count": 22
           },
           {
             "event": "clarity_dead_click",
             "page": "/beaches-without-sargassum-today/",
             "target": "",
-            "count": 20
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/beaches/miami-beach/",
-            "target": "",
-            "count": 8
+            "count": 15
           },
           {
             "event": "clarity_dead_click",
@@ -922,19 +797,19 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/beaches/sunny-isles-beach/",
+            "page": "/beaches/miami-beach/",
             "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargassum-season-florida/",
-            "target": "",
-            "count": 4
+            "count": 3
           },
           {
             "event": "clarity_dead_click",
             "page": "/beaches/jupiter-beach/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/es/playas-sin-sargazo-hoy/",
             "target": "",
             "count": 2
           },
@@ -946,13 +821,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/fort-lauderdale-sargassum-today/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargassum-forecast/",
+            "page": "/sunny-isles-beach-sargassum-today/",
             "target": "",
             "count": 2
           },
@@ -970,30 +839,6 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/beaches/haulover-beach/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/beaches/marathon-sombrero/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/delray-beach-sargassum-today/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/playas-sin-sargazo-hoy/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/es/playas/cocoa-beach/",
             "target": "",
             "count": 1
@@ -1006,13 +851,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/fort-myers-sargassum-today/",
+            "page": "/es/playas/key-largo/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/hollywood-beach-sargassum-today/",
+            "page": "/fort-myers-sargassum-today/",
             "target": "",
             "count": 1
           },
@@ -1024,7 +869,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sunny-isles-beach-sargassum-today/",
+            "page": "/sargassum-forecast/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargassum-season-florida/",
             "target": "",
             "count": 1
           }
@@ -1033,16 +884,16 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 1665,
-        "inp": 392,
+        "lcp": 1604,
+        "inp": 475,
         "cls": 0,
-        "ttfb": 583
+        "ttfb": 577
       },
       "sitemapStatus": [
         {
           "path": "https://sargassummiami.com/sitemap.xml",
           "lastSubmitted": "2026-07-01T12:24:23.660Z",
-          "lastDownloaded": "2026-08-17T00:17:04.412Z",
+          "lastDownloaded": "2026-08-21T06:03:31.010Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"
@@ -1059,23 +910,17 @@
         "lowCtrPages": [
           {
             "page": "https://sargassumpuntacana.com/es/playas/uvero-alto/",
-            "avgPosition": 5,
-            "actualCtr": 3.7,
-            "expectedCtr": 6,
-            "impressions": 27,
+            "avgPosition": 4,
+            "actualCtr": 4,
+            "expectedCtr": 8,
+            "impressions": 25,
             "clicks": 1,
             "topQueries": [
               {
                 "query": "uvero alto sargazo",
-                "impressions": 3,
+                "impressions": 4,
                 "clicks": 0,
-                "position": 7.333333333333333
-              },
-              {
-                "query": "uvero alto sargazo",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 5.666666666666667
+                "position": 7
               },
               {
                 "query": "uvero alto sargazo",
@@ -1084,27 +929,28 @@
                 "position": 1
               },
               {
-                "query": "playas uvero alto",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 34
-              },
-              {
                 "query": "sargazo en uvero alto",
                 "impressions": 2,
                 "clicks": 0,
                 "position": 7
+              },
+              {
+                "query": "uvero alto sargazo",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 5.5
+              },
+              {
+                "query": "uvero alto sargazo",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 6
               }
             ]
           }
         ],
         "highBouncePages": [],
         "cwvIssues": [
-          {
-            "metric": "LCP",
-            "value": 2795,
-            "threshold": 2500
-          },
           {
             "metric": "INP",
             "value": 306,
@@ -1116,7 +962,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 22
+            "count": 16
           },
           {
             "event": "clarity_rage_click",
@@ -1126,21 +972,9 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/es/playas/playa-cortecito-sur/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_rage_click",
             "page": "/es/semaforo-del-sargazo/",
             "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/es/mapa-sargazo/",
-            "target": "",
-            "count": 2
+            "count": 4
           },
           {
             "event": "clarity_rage_click",
@@ -1150,19 +984,25 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/sargassum-forecast/",
+            "page": "/es/mapa-sargazo/",
             "target": "",
-            "count": 2
+            "count": 1
           },
           {
             "event": "clarity_rage_click",
-            "page": "/seaweed-map/",
+            "page": "/es/playas/playa-cortecito-sur/",
             "target": "",
-            "count": 2
+            "count": 1
           },
           {
             "event": "clarity_rage_click",
             "page": "/sargassum-cap-cana-today/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/seaweed-map/",
             "target": "",
             "count": 1
           }
@@ -1172,25 +1012,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 122
+            "count": 81
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 59
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/seaweed-map/",
-            "target": "",
-            "count": 19
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/playas/uvero-alto/",
-            "target": "",
-            "count": 13
+            "count": 21
           },
           {
             "event": "clarity_dead_click",
@@ -1206,7 +1034,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/playas/playa-cortecito-sur/",
+            "page": "/es/playas-sin-sargazo-en-punta-cana/",
             "target": "",
             "count": 9
           },
@@ -1218,31 +1046,25 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/playas/uvero-alto/",
+            "target": "",
+            "count": 8
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/beaches/juanillo-beach-cap-cana/",
             "target": "",
             "count": 7
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/playas-sin-sargazo-en-punta-cana/",
+            "page": "/seaweed-map/",
             "target": "",
-            "count": 7
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/cuando-hay-menos-sargazo-en-punta-cana/",
-            "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/playas/cabeza-de-toro/",
-            "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/pronostico-sargazo/",
             "target": "",
             "count": 5
           },
@@ -1254,7 +1076,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargassum-bavaro-beach-today/",
+            "page": "/es/pronostico-sargazo/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/es/playas/cabeza-de-toro/",
             "target": "",
             "count": 3
           },
@@ -1266,13 +1094,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/3",
+            "page": "/does-bavaro-beach-have-sargassum/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/mapa-sargazo/",
+            "page": "/es/playas/macao-beach/",
             "target": "",
             "count": 2
           },
@@ -1284,7 +1112,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/beaches/bavaro-beach/",
+            "page": "/3",
             "target": "",
             "count": 1
           },
@@ -1302,6 +1130,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/mapa-sargazo/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/es/temporada-sargazo-punta-cana/",
             "target": "",
             "count": 1
@@ -1311,28 +1145,22 @@
             "page": "/sargassum-punta-cana-this-week/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargassum-season-punta-cana/",
-            "target": "",
-            "count": 1
           }
         ],
         "quickBounces": []
       },
       "crux": {
         "formFactor": "ALL",
-        "lcp": 2795,
+        "lcp": 2428,
         "inp": 306,
         "cls": 0,
-        "ttfb": 892
+        "ttfb": 850
       },
       "sitemapStatus": [
         {
           "path": "https://sargassumpuntacana.com/sitemap.xml",
           "lastSubmitted": "2026-07-01T12:24:20.671Z",
-          "lastDownloaded": "2026-08-13T09:01:03.368Z",
+          "lastDownloaded": "2026-08-17T12:35:46.813Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"
@@ -1350,16 +1178,22 @@
           {
             "page": "https://sargassumcancun.com/temporada-sargazo-rivieramaya/",
             "avgPosition": 10,
-            "actualCtr": 0.21,
+            "actualCtr": 0.36,
             "expectedCtr": 2,
-            "impressions": 469,
-            "clicks": 1,
+            "impressions": 554,
+            "clicks": 2,
             "topQueries": [
               {
                 "query": "temporada de sargazo en cancún 2026",
-                "impressions": 22,
+                "impressions": 28,
                 "clicks": 0,
-                "position": 10.636363636363637
+                "position": 10.535714285714286
+              },
+              {
+                "query": "temporada de sargazo cancun",
+                "impressions": 15,
+                "clicks": 0,
+                "position": 16.4
               },
               {
                 "query": "sargazo riviera maya 2026",
@@ -1368,22 +1202,16 @@
                 "position": 8.142857142857142
               },
               {
+                "query": "temporada de sargazo en riviera maya",
+                "impressions": 14,
+                "clicks": 0,
+                "position": 5.785714285714286
+              },
+              {
                 "query": "temporada de sargazo en playa del carmen",
                 "impressions": 13,
                 "clicks": 0,
                 "position": 8.692307692307693
-              },
-              {
-                "query": "temporada de sargazo cancun",
-                "impressions": 10,
-                "clicks": 0,
-                "position": 16.6
-              },
-              {
-                "query": "epoca de sargazo en riviera maya",
-                "impressions": 9,
-                "clicks": 0,
-                "position": 8.11111111111111
               }
             ]
           }
@@ -1411,7 +1239,7 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/en/resorts/royalton-riviera-cancun/",
+            "page": "/mapa-sargazo-riviera-maya-hoy/",
             "target": "",
             "count": 1
           },
@@ -1457,25 +1285,19 @@
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 31
+            "count": 26
           },
           {
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 25
+            "count": 17
           },
           {
             "event": "clarity_dead_click",
             "page": "/semaforo-del-sargazo/",
             "target": "",
-            "count": 9
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/resorts/royalton-riviera-cancun/",
-            "target": "",
-            "count": 4
+            "count": 7
           },
           {
             "event": "clarity_dead_click",
@@ -1485,31 +1307,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargazo-playa-del-carmen-hoy/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargazo-riviera-maya/",
-            "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/beaches/playa-maroma/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/playas/playa-holbox/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/playas/playa-maroma/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargazo-playa-del-carmen-hoy/",
             "target": "",
             "count": 3
           },
@@ -1545,31 +1349,31 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargazo-cozumel-hoy/",
+            "page": "/sargazo-riviera-maya/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/temporada-sargazo-rivieramaya/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/resorts/iberostar-selection-cancun/",
+            "page": "/en/beaches/playa-maroma/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/playas/akumal-bay/",
+            "page": "/playas/playa-holbox/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
             "page": "/sargazo-akumal-hoy/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargazo-cozumel-hoy/",
             "target": "",
             "count": 1
           },
@@ -1584,6 +1388,12 @@
             "page": "/sargazo-tulum-hoy/",
             "target": "",
             "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/temporada-sargazo-rivieramaya/",
+            "target": "",
+            "count": 1
           }
         ],
         "quickBounces": []
@@ -1593,7 +1403,7 @@
         {
           "path": "https://sargassumcancun.com/sitemap.xml",
           "lastSubmitted": "2026-07-01T12:24:26.285Z",
-          "lastDownloaded": "2026-08-16T13:36:41.194Z",
+          "lastDownloaded": "2026-08-19T21:59:41.981Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"

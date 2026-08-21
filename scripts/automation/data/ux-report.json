@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T12:09:27.925Z",
+  "generatedAt": "2026-08-21T11:52:32.106Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -7,16 +7,8 @@
         {
           "type": "cwv",
           "severity": "warning",
-          "metric": "LCP",
-          "value": 3070,
-          "threshold": 2500,
-          "recommendation": "Optimize largest image (compress, use WebP, add loading=\"lazy\"), preload critical fonts, reduce server response time"
-        },
-        {
-          "type": "cwv",
-          "severity": "warning",
           "metric": "INP",
-          "value": 455,
+          "value": 411,
           "threshold": 200,
           "recommendation": "Reduce JavaScript execution time, defer non-critical scripts, use requestIdleCallback for analytics"
         },
@@ -26,8 +18,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 78,
-          "metric": "78 rage clicks (page hotspot, element unknown) — /",
+          "count": 58,
+          "metric": "58 rage clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -36,18 +28,8 @@
           "page": "/carte-sargasses/",
           "target": "",
           "locatable": false,
-          "count": 15,
-          "metric": "15 rage clicks (page hotspot, element unknown) — /carte-sargasses/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "rage-click",
-          "severity": "warning",
-          "page": "/plages/anse-riviere-trinite/",
-          "target": "",
-          "locatable": false,
-          "count": 3,
-          "metric": "3 rage clicks (page hotspot, element unknown) — /plages/anse-riviere-trinite/",
+          "count": 7,
+          "metric": "7 rage clicks (page hotspot, element unknown) — /carte-sargasses/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -56,8 +38,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 282,
-          "metric": "282 dead clicks (page hotspot, element unknown) — /",
+          "count": 128,
+          "metric": "128 dead clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -66,18 +48,8 @@
           "page": "/carte-sargasses/",
           "target": "",
           "locatable": false,
-          "count": 139,
-          "metric": "139 dead clicks (page hotspot, element unknown) — /carte-sargasses/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/en/",
-          "target": "",
-          "locatable": false,
-          "count": 17,
-          "metric": "17 dead clicks (page hotspot, element unknown) — /en/",
+          "count": 71,
+          "metric": "71 dead clicks (page hotspot, element unknown) — /carte-sargasses/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -86,82 +58,22 @@
           "page": "/plages/anse-michel/",
           "target": "",
           "locatable": false,
-          "count": 12,
-          "metric": "12 dead clicks (page hotspot, element unknown) — /plages/anse-michel/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/plage-du-diamant/",
-          "target": "",
-          "locatable": false,
-          "count": 7,
-          "metric": "7 dead clicks (page hotspot, element unknown) — /plages/plage-du-diamant/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/sargasses-le-diamant/",
-          "target": "",
-          "locatable": false,
-          "count": 7,
-          "metric": "7 dead clicks (page hotspot, element unknown) — /sargasses-le-diamant/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages-sans-sargasses/",
-          "target": "",
-          "locatable": false,
-          "count": 6,
-          "metric": "6 dead clicks (page hotspot, element unknown) — /plages-sans-sargasses/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/anse-a-l-ane/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /plages/anse-a-l-ane/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/anse-couleuvre/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /plages/anse-couleuvre/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/plage-des-salines/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /plages/plage-des-salines/",
+          "count": 10,
+          "metric": "10 dead clicks (page hotspot, element unknown) — /plages/anse-michel/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         }
       ],
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 3070,
-        "inp": 455,
-        "cls": 0.01,
-        "ttfb": 997
+        "lcp": 2044,
+        "inp": 411,
+        "cls": 0,
+        "ttfb": 722
       },
       "stats": {
-        "total": 15,
+        "total": 6,
         "critical": 0,
-        "warnings": 15
+        "warnings": 6
       }
     },
     "gp": {
@@ -170,16 +82,8 @@
         {
           "type": "cwv",
           "severity": "warning",
-          "metric": "LCP",
-          "value": 3065,
-          "threshold": 2500,
-          "recommendation": "Optimize largest image (compress, use WebP, add loading=\"lazy\"), preload critical fonts, reduce server response time"
-        },
-        {
-          "type": "cwv",
-          "severity": "warning",
           "metric": "INP",
-          "value": 615,
+          "value": 537,
           "threshold": 200,
           "recommendation": "Reduce JavaScript execution time, defer non-critical scripts, use requestIdleCallback for analytics"
         },
@@ -189,8 +93,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 73,
-          "metric": "73 rage clicks (page hotspot, element unknown) — /",
+          "count": 61,
+          "metric": "61 rage clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -209,18 +113,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 450,
-          "metric": "450 dead clicks (page hotspot, element unknown) — /",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/plage-du-gosier/",
-          "target": "",
-          "locatable": false,
-          "count": 41,
-          "metric": "41 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/",
+          "count": 317,
+          "metric": "317 dead clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -229,18 +123,18 @@
           "page": "/plages/plage-bois-jolan/",
           "target": "",
           "locatable": false,
-          "count": 38,
-          "metric": "38 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/",
+          "count": 23,
+          "metric": "23 dead clicks (page hotspot, element unknown) — /plages/plage-bois-jolan/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/plages/plage-de-la-caravelle/",
+          "page": "/plages/plage-du-gosier/",
           "target": "",
           "locatable": false,
-          "count": 29,
-          "metric": "29 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/",
+          "count": 17,
+          "metric": "17 dead clicks (page hotspot, element unknown) — /plages/plage-du-gosier/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -249,8 +143,28 @@
           "page": "/plages/plage-de-sainte-anne/",
           "target": "",
           "locatable": false,
-          "count": 28,
-          "metric": "28 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/",
+          "count": 16,
+          "metric": "16 dead clicks (page hotspot, element unknown) — /plages/plage-de-sainte-anne/",
+          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
+          "page": "/sargagame/",
+          "target": "",
+          "locatable": false,
+          "count": 13,
+          "metric": "13 dead clicks (page hotspot, element unknown) — /sargagame/",
+          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
+          "page": "/plages/plage-de-la-caravelle/",
+          "target": "",
+          "locatable": false,
+          "count": 11,
+          "metric": "11 dead clicks (page hotspot, element unknown) — /plages/plage-de-la-caravelle/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -259,8 +173,8 @@
           "page": "/plages/plage-des-raisins-clairs/",
           "target": "",
           "locatable": false,
-          "count": 13,
-          "metric": "13 dead clicks (page hotspot, element unknown) — /plages/plage-des-raisins-clairs/",
+          "count": 10,
+          "metric": "10 dead clicks (page hotspot, element unknown) — /plages/plage-des-raisins-clairs/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -269,37 +183,37 @@
           "page": "/plages/ile-de-la-petite-terre/",
           "target": "",
           "locatable": false,
-          "count": 8,
-          "metric": "8 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/",
+          "count": 7,
+          "metric": "7 dead clicks (page hotspot, element unknown) — /plages/ile-de-la-petite-terre/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/plages/la-datcha/",
+          "page": "/carte-sargasses/",
           "target": "",
           "locatable": false,
-          "count": 7,
-          "metric": "7 dead clicks (page hotspot, element unknown) — /plages/la-datcha/",
+          "count": 6,
+          "metric": "6 dead clicks (page hotspot, element unknown) — /carte-sargasses/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/plages/plage-de-malendure/",
+          "page": "/confidentialite/",
           "target": "",
           "locatable": false,
-          "count": 7,
-          "metric": "7 dead clicks (page hotspot, element unknown) — /plages/plage-de-malendure/",
+          "count": 5,
+          "metric": "5 dead clicks (page hotspot, element unknown) — /confidentialite/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         }
       ],
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 3065,
-        "inp": 615,
+        "lcp": 2301,
+        "inp": 537,
         "cls": 0.01,
-        "ttfb": 953
+        "ttfb": 745
       },
       "stats": {
         "total": 13,
@@ -314,7 +228,7 @@
           "type": "cwv",
           "severity": "warning",
           "metric": "INP",
-          "value": 396,
+          "value": 475,
           "threshold": 200,
           "recommendation": "Reduce JavaScript execution time, defer non-critical scripts, use requestIdleCallback for analytics"
         },
@@ -324,8 +238,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 36,
-          "metric": "36 rage clicks (page hotspot, element unknown) — /",
+          "count": 22,
+          "metric": "22 rage clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -334,8 +248,8 @@
           "page": "/seaweed-map/",
           "target": "",
           "locatable": false,
-          "count": 27,
-          "metric": "27 rage clicks (page hotspot, element unknown) — /seaweed-map/",
+          "count": 16,
+          "metric": "16 rage clicks (page hotspot, element unknown) — /seaweed-map/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -344,18 +258,8 @@
           "page": "/es/",
           "target": "",
           "locatable": false,
-          "count": 14,
-          "metric": "14 rage clicks (page hotspot, element unknown) — /es/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "rage-click",
-          "severity": "warning",
-          "page": "/beaches-without-sargassum-today/",
-          "target": "",
-          "locatable": false,
-          "count": 8,
-          "metric": "8 rage clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
+          "count": 10,
+          "metric": "10 rage clicks (page hotspot, element unknown) — /es/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -364,8 +268,18 @@
           "page": "/es/mapa-sargazo/",
           "target": "",
           "locatable": false,
-          "count": 7,
-          "metric": "7 rage clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
+          "count": 6,
+          "metric": "6 rage clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
+          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
+        },
+        {
+          "type": "rage-click",
+          "severity": "warning",
+          "page": "/beaches-without-sargassum-today/",
+          "target": "",
+          "locatable": false,
+          "count": 5,
+          "metric": "5 rage clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -374,8 +288,8 @@
           "page": "/seaweed-map/",
           "target": "",
           "locatable": false,
-          "count": 378,
-          "metric": "378 dead clicks (page hotspot, element unknown) — /seaweed-map/",
+          "count": 152,
+          "metric": "152 dead clicks (page hotspot, element unknown) — /seaweed-map/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -384,8 +298,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 147,
-          "metric": "147 dead clicks (page hotspot, element unknown) — /",
+          "count": 75,
+          "metric": "75 dead clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -394,8 +308,8 @@
           "page": "/es/",
           "target": "",
           "locatable": false,
-          "count": 53,
-          "metric": "53 dead clicks (page hotspot, element unknown) — /es/",
+          "count": 28,
+          "metric": "28 dead clicks (page hotspot, element unknown) — /es/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -404,8 +318,8 @@
           "page": "/es/mapa-sargazo/",
           "target": "",
           "locatable": false,
-          "count": 44,
-          "metric": "44 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
+          "count": 22,
+          "metric": "22 dead clicks (page hotspot, element unknown) — /es/mapa-sargazo/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -414,18 +328,8 @@
           "page": "/beaches-without-sargassum-today/",
           "target": "",
           "locatable": false,
-          "count": 23,
-          "metric": "23 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/beaches/miami-beach/",
-          "target": "",
-          "locatable": false,
-          "count": 8,
-          "metric": "8 dead clicks (page hotspot, element unknown) — /beaches/miami-beach/",
+          "count": 15,
+          "metric": "15 dead clicks (page hotspot, element unknown) — /beaches-without-sargassum-today/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -437,149 +341,19 @@
           "count": 5,
           "metric": "5 dead clicks (page hotspot, element unknown) — /es/temporada-sargazo-florida/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/sargassum-season-florida/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /sargassum-season-florida/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "world",
-          "target": "div",
-          "locatable": true,
-          "count": 75,
-          "metric": "75 dead clicks on div (world)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "map_map",
-          "target": "div",
-          "locatable": true,
-          "count": 34,
-          "metric": "34 dead clicks on div (map_map)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "map_map",
-          "target": "div.lc-detail-facts",
-          "locatable": true,
-          "count": 26,
-          "metric": "26 dead clicks on div.lc-detail-facts (map_map)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "map_map",
-          "target": "body.theme-comic",
-          "locatable": true,
-          "count": 25,
-          "metric": "25 dead clicks on body.theme-comic (map_map)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "world",
-          "target": "span",
-          "locatable": true,
-          "count": 21,
-          "metric": "21 dead clicks on span (world)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "div.sg-maplabel[role=button]",
-          "locatable": true,
-          "count": 299,
-          "metric": "299 hovers ≥600ms without click on div.sg-maplabel[role=button] (world, avg 1462ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "button",
-          "locatable": true,
-          "count": 66,
-          "metric": "66 hovers ≥600ms without click on button (world, avg 1950ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "beach",
-          "target": "button",
-          "locatable": true,
-          "count": 39,
-          "metric": "39 hovers ≥600ms without click on button (beach, avg 2478ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button",
-          "locatable": true,
-          "count": 34,
-          "metric": "34 hovers ≥600ms without click on button (map_map, avg 1776ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button.lc-card",
-          "locatable": true,
-          "count": 32,
-          "metric": "32 hovers ≥600ms without click on button.lc-card (map_map, avg 2318ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "input",
-          "locatable": true,
-          "count": 28,
-          "metric": "28 hovers ≥600ms without click on input (world, avg 3682ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button.lc-cta",
-          "locatable": true,
-          "count": 27,
-          "metric": "27 hovers ≥600ms without click on button.lc-cta (map_map, avg 2951ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
         }
       ],
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2286,
-        "inp": 396,
-        "cls": 0.01,
-        "ttfb": 674
+        "lcp": 1604,
+        "inp": 475,
+        "cls": 0,
+        "ttfb": 577
       },
       "stats": {
-        "total": 26,
-        "critical": 5,
-        "warnings": 21
+        "total": 12,
+        "critical": 0,
+        "warnings": 12
       }
     },
     "puntacana": {
@@ -588,16 +362,8 @@
         {
           "type": "cwv",
           "severity": "warning",
-          "metric": "LCP",
-          "value": 3007,
-          "threshold": 2500,
-          "recommendation": "Optimize largest image (compress, use WebP, add loading=\"lazy\"), preload critical fonts, reduce server response time"
-        },
-        {
-          "type": "cwv",
-          "severity": "warning",
           "metric": "INP",
-          "value": 307,
+          "value": 306,
           "threshold": 200,
           "recommendation": "Reduce JavaScript execution time, defer non-critical scripts, use requestIdleCallback for analytics"
         },
@@ -607,8 +373,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 23,
-          "metric": "23 rage clicks (page hotspot, element unknown) — /",
+          "count": 16,
+          "metric": "16 rage clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -624,21 +390,11 @@
         {
           "type": "rage-click",
           "severity": "warning",
-          "page": "/es/playas/playa-cortecito-sur/",
-          "target": "",
-          "locatable": false,
-          "count": 4,
-          "metric": "4 rage clicks (page hotspot, element unknown) — /es/playas/playa-cortecito-sur/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "rage-click",
-          "severity": "warning",
           "page": "/es/semaforo-del-sargazo/",
           "target": "",
           "locatable": false,
-          "count": 3,
-          "metric": "3 rage clicks (page hotspot, element unknown) — /es/semaforo-del-sargazo/",
+          "count": 4,
+          "metric": "4 rage clicks (page hotspot, element unknown) — /es/semaforo-del-sargazo/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -647,8 +403,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 133,
-          "metric": "133 dead clicks (page hotspot, element unknown) — /",
+          "count": 81,
+          "metric": "81 dead clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -657,28 +413,8 @@
           "page": "/es/",
           "target": "",
           "locatable": false,
-          "count": 64,
-          "metric": "64 dead clicks (page hotspot, element unknown) — /es/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/seaweed-map/",
-          "target": "",
-          "locatable": false,
-          "count": 23,
-          "metric": "23 dead clicks (page hotspot, element unknown) — /seaweed-map/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/es/playas/uvero-alto/",
-          "target": "",
-          "locatable": false,
-          "count": 15,
-          "metric": "15 dead clicks (page hotspot, element unknown) — /es/playas/uvero-alto/",
+          "count": 21,
+          "metric": "21 dead clicks (page hotspot, element unknown) — /es/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -704,11 +440,11 @@
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/es/playas/playa-cortecito-sur/",
+          "page": "/es/playas-sin-sargazo-en-punta-cana/",
           "target": "",
           "locatable": false,
-          "count": 11,
-          "metric": "11 dead clicks (page hotspot, element unknown) — /es/playas/playa-cortecito-sur/",
+          "count": 9,
+          "metric": "9 dead clicks (page hotspot, element unknown) — /es/playas-sin-sargazo-en-punta-cana/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -724,6 +460,16 @@
         {
           "type": "dead-click",
           "severity": "warning",
+          "page": "/es/playas/uvero-alto/",
+          "target": "",
+          "locatable": false,
+          "count": 8,
+          "metric": "8 dead clicks (page hotspot, element unknown) — /es/playas/uvero-alto/",
+          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
           "page": "/beaches/juanillo-beach-cap-cana/",
           "target": "",
           "locatable": false,
@@ -734,11 +480,11 @@
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/es/playas-sin-sargazo-en-punta-cana/",
+          "page": "/seaweed-map/",
           "target": "",
           "locatable": false,
-          "count": 7,
-          "metric": "7 dead clicks (page hotspot, element unknown) — /es/playas-sin-sargazo-en-punta-cana/",
+          "count": 6,
+          "metric": "6 dead clicks (page hotspot, element unknown) — /seaweed-map/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -750,168 +496,32 @@
           "count": 5,
           "metric": "5 dead clicks (page hotspot, element unknown) — /es/cuando-hay-menos-sargazo-en-punta-cana/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/es/playas/cabeza-de-toro/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /es/playas/cabeza-de-toro/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/es/pronostico-sargazo/",
-          "target": "",
-          "locatable": false,
-          "count": 5,
-          "metric": "5 dead clicks (page hotspot, element unknown) — /es/pronostico-sargazo/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "critical",
-          "page": "world",
-          "target": "div",
-          "locatable": true,
-          "count": 33,
-          "metric": "33 dead clicks on div (world)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "warning",
-          "page": "premium",
-          "target": "div",
-          "locatable": true,
-          "count": 13,
-          "metric": "13 dead clicks on div (premium)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "div.sg-maplabel[role=button]",
-          "locatable": true,
-          "count": 186,
-          "metric": "186 hovers ≥600ms without click on div.sg-maplabel[role=button] (world, avg 1372ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "button",
-          "locatable": true,
-          "count": 43,
-          "metric": "43 hovers ≥600ms without click on button (world, avg 9391ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "div[role=button]",
-          "locatable": true,
-          "count": 32,
-          "metric": "32 hovers ≥600ms without click on div[role=button] (world, avg 1826ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button",
-          "locatable": true,
-          "count": 24,
-          "metric": "24 hovers ≥600ms without click on button (map_map, avg 1849ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button.lc-cta",
-          "locatable": true,
-          "count": 19,
-          "metric": "19 hovers ≥600ms without click on button.lc-cta (map_map, avg 2534ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "button.lc-card",
-          "locatable": true,
-          "count": 12,
-          "metric": "12 hovers ≥600ms without click on button.lc-card (map_map, avg 1288ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "beach",
-          "target": "button",
-          "locatable": true,
-          "count": 12,
-          "metric": "12 hovers ≥600ms without click on button (beach, avg 1629ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "input",
-          "locatable": true,
-          "count": 11,
-          "metric": "11 hovers ≥600ms without click on input (world, avg 1303ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
         }
       ],
       "crux": {
         "formFactor": "ALL",
-        "lcp": 3007,
-        "inp": 307,
-        "cls": 0.01,
-        "ttfb": 892
+        "lcp": 2428,
+        "inp": 306,
+        "cls": 0,
+        "ttfb": 850
       },
       "stats": {
-        "total": 29,
-        "critical": 1,
-        "warnings": 28
+        "total": 14,
+        "critical": 0,
+        "warnings": 14
       }
     },
     "rivieramaya": {
       "domain": "sargassumcancun.com",
       "issues": [
         {
-          "type": "cwv",
-          "severity": "warning",
-          "metric": "LCP",
-          "value": 3217,
-          "threshold": 2500,
-          "recommendation": "Optimize largest image (compress, use WebP, add loading=\"lazy\"), preload critical fonts, reduce server response time"
-        },
-        {
-          "type": "cwv",
-          "severity": "warning",
-          "metric": "INP",
-          "value": 344,
-          "threshold": 200,
-          "recommendation": "Reduce JavaScript execution time, defer non-critical scripts, use requestIdleCallback for analytics"
-        },
-        {
           "type": "rage-click",
           "severity": "warning",
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 10,
-          "metric": "10 rage clicks (page hotspot, element unknown) — /",
+          "count": 9,
+          "metric": "9 rage clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -930,8 +540,8 @@
           "page": "/en/",
           "target": "",
           "locatable": false,
-          "count": 31,
-          "metric": "31 dead clicks (page hotspot, element unknown) — /en/",
+          "count": 26,
+          "metric": "26 dead clicks (page hotspot, element unknown) — /en/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -940,8 +550,8 @@
           "page": "/",
           "target": "",
           "locatable": false,
-          "count": 28,
-          "metric": "28 dead clicks (page hotspot, element unknown) — /",
+          "count": 17,
+          "metric": "17 dead clicks (page hotspot, element unknown) — /",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
         },
         {
@@ -950,68 +560,22 @@
           "page": "/semaforo-del-sargazo/",
           "target": "",
           "locatable": false,
-          "count": 9,
-          "metric": "9 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/",
+          "count": 7,
+          "metric": "7 dead clicks (page hotspot, element unknown) — /semaforo-del-sargazo/",
           "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/sargazo-playa-del-carmen-hoy/",
-          "target": "",
-          "locatable": false,
-          "count": 6,
-          "metric": "6 dead clicks (page hotspot, element unknown) — /sargazo-playa-del-carmen-hoy/",
-          "recommendation": "Page-level hotspot; GA4 cannot name the element. See the first-party NAMED list (dead-click-el) for the actual culprit, or enable named tracking."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "warning",
-          "page": "world",
-          "target": "div",
-          "locatable": true,
-          "count": 14,
-          "metric": "14 dead clicks on div (world)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "dead-click-el",
-          "severity": "warning",
-          "page": "map_map",
-          "target": "div.lc-detail-facts",
-          "locatable": true,
-          "count": 11,
-          "metric": "11 dead clicks on div.lc-detail-facts (map_map)",
-          "recommendation": "First-party heatmap named this element. Make it interactive (tap → action) or remove its interactive look. Rollback flag advised."
-        },
-        {
-          "type": "hover-hesitation",
-          "severity": "warning",
-          "page": "world",
-          "target": "div.sg-maplabel[role=button]",
-          "locatable": true,
-          "count": 18,
-          "metric": "18 hovers ≥600ms without click on div.sg-maplabel[role=button] (world, avg 1153ms)",
-          "recommendation": "The eye lands but the finger does not: this control attracts attention yet gets abandoned. Test clearer affordance, copy, or price framing on it."
         }
       ],
-      "crux": {
-        "formFactor": "ALL",
-        "lcp": 3217,
-        "inp": 344,
-        "cls": 0.01,
-        "ttfb": 936
-      },
+      "crux": null,
       "stats": {
-        "total": 11,
+        "total": 5,
         "critical": 0,
-        "warnings": 11
+        "warnings": 5
       }
     }
   },
   "summary": {
-    "totalIssues": 94,
-    "critical": 6,
-    "warnings": 88
+    "totalIssues": 50,
+    "critical": 0,
+    "warnings": 50
   }
 }
