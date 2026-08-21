@@ -1,64 +1,64 @@
 {
   "window_days": 7,
-  "since": "2026-08-14T13:12:09.543Z",
-  "total_rows": 123888,
+  "since": "2026-08-14T19:11:54.872Z",
+  "total_rows": 84144,
   "counts": {
-    "session_start": 94669,
+    "session_start": 54817,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1196,
-    "beach_open": 13273,
-    "pass_cta": 58,
+    "premium_modal_open": 1169,
+    "beach_open": 13373,
+    "pass_cta": 44,
     "conversion": 0,
     "email_submit": 1,
     "mollie_checkout_redirect": 0,
-    "b2b_offer_view": 44,
+    "b2b_offer_view": 39,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 58,
+  "cta_total": 44,
   "rates": {
     "session_to_lock": 0,
     "lock_to_beach": 0,
-    "beach_to_modal": 9,
-    "modal_to_cta": 4.8,
+    "beach_to_modal": 8.7,
+    "modal_to_cta": 3.8,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "session_start": 26642,
-      "premium_modal_open": 136,
-      "b2b_offer_view": 5,
-      "pass_cta": 16,
-      "beach_open": 2485
-    },
     "GP": {
-      "session_start": 20717,
-      "premium_modal_open": 101,
-      "beach_open": 2650,
+      "session_start": 15194,
+      "beach_open": 2653,
+      "premium_modal_open": 100,
       "pass_cta": 16
     },
     "MQ": {
-      "session_start": 27281,
-      "beach_open": 7238,
-      "premium_modal_open": 878,
+      "session_start": 23797,
+      "premium_modal_open": 870,
+      "beach_open": 7226,
       "pass_cta": 24,
       "b2b_offer_view": 10,
       "email_submit": 1
     },
-    "PUNTACANA": {
-      "session_start": 17488,
-      "b2b_offer_view": 24,
-      "premium_modal_open": 60,
-      "beach_open": 717,
+    "FLORIDA": {
+      "session_start": 8565,
+      "b2b_offer_view": 1,
+      "beach_open": 2553,
+      "premium_modal_open": 120,
       "pass_cta": 2
     },
     "RIVIERAMAYA": {
-      "session_start": 2498,
-      "premium_modal_open": 17,
-      "beach_open": 183,
+      "session_start": 893,
+      "beach_open": 192,
+      "premium_modal_open": 15,
       "b2b_offer_view": 5
+    },
+    "PUNTACANA": {
+      "session_start": 6325,
+      "beach_open": 749,
+      "premium_modal_open": 60,
+      "b2b_offer_view": 23,
+      "pass_cta": 2
     },
     "TULUM": {
       "session_start": 21,
