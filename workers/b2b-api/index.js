@@ -354,7 +354,8 @@ async function handleMollieWebhook(request) {
   if (expected !== signature) return err('invalid_signature', 403);
 
   const data = JSON.parse(raw);
-  const { id, type, event } = data;
+  const { id, resource, event } = data;
+  const type = resource || 'payment'; // Mollie sends 'resource' (payment|subscription|...)
   if (!id || !type) return err('id + type requis');
 
   try {
@@ -367,32 +368,50 @@ async function handleMollieWebhook(request) {
 }
 
 async function molliePaymentEvent(id, event) {
+  // Idempotency: check if already granted
+  try {
+    const existing = await sb('payment_grants', 'GET', null, `?payment_id=eq.${encodeURIComponent(id)}&limit=1`);
+    if (existing && existing.length > 0) {
+      return json({ received: true, type: 'payment', status: 'paid', duplicate: true });
+    }
+  } catch (_) {}
+
   const payment = await mollieGet(`v2/payments/${id}`);
   const status = payment.status;
   const metadata = payment.metadata || {};
 
   if (event === 'payment.failed' || status === 'failed') {
-    const pass = metadata.pass;
-    if (pass && ['p30', 'trip7', 'season'].includes(pass)) {
-      try { await sb('payment_grants', 'PATCH', { status: 'revoked' }, `?mollie_payment_id=eq.${id}&select=*`); } catch (_) {}
-    }
+    // No grant on failed; just acknowledge
     return json({ received: true, type: 'payment', status, event });
   }
 
   if (status === 'paid') {
     const source = metadata.source || 'unknown';
     const pass = metadata.pass;
+    const island = (metadata.island || 'MQ').toUpperCase();
+    const allowedIslands = ['MQ', 'GP', 'FLORIDA', 'PUNTA_CANA', 'RIVIERA_MAYA'];
+    if (!allowedIslands.includes(island)) {
+      return json({ received: true, type: 'payment', status, note: 'island_missing_grant_skipped' });
+    }
 
     if (source === 'b2b_annual') {
       await grantB2BToken(metadata, 'pro_monthly', id, 365);
     }
     if (pass && ['p30', 'trip7', 'season'].includes(pass)) {
       const days = pass === 'trip7' ? 7 : pass === 'p30' ? 30 : 210;
-      await sb('payment_grants', 'POST', {
-        mollie_payment_id: id, type: 'b2c_pass', plan: pass, email: metadata.email,
-        expires_at: new Date(Date.now() + days * 86400000).toISOString(),
-        granted_at: new Date().toISOString(),
-      });
+      try {
+        await sb('payment_grants', 'POST', {
+          payment_id: id, type: 'b2c_pass', pass, email: metadata.email || null,
+          island,
+          currency: (payment.amount && payment.amount.currency) || 'EUR',
+          expires_at: new Date(Date.now() + days * 86400000).toISOString(),
+          granted_at: new Date().toISOString(),
+          metadata,
+        });
+      } catch (e) {
+        // If duplicate insert race, treat as success (idempotent)
+        if (!String(e.message).includes('duplicate') && !String(e.message).includes('23505')) throw e;
+      }
     }
   }
 
@@ -420,22 +439,24 @@ async function mollieSubscriptionEvent(id, event) {
   }
 
   if (['subscription.canceled', 'subscription.expired'].includes(event)) {
-    try { await sb('payment_grants', 'PATCH', { status: 'revoked' }, `?subscription_id=eq.${id}&type=eq.b2b_pro&select=*`); } catch (_) {}
+    try { await sb('payment_grants', 'DELETE', null, `?subscription_id=eq.${encodeURIComponent(id)}&type=eq.b2b_pro`); } catch (_) {}
   }
 
   return json({ received: true, type: 'subscription', status, event });
 }
 
 async function grantB2BToken(metadata, planKey, subscriptionId, durationDays = 30) {
+  const island = (metadata.island || 'MQ').toUpperCase();
   try {
-    const existing = await sb('payment_grants', 'GET', null, `?subscription_id=eq.${subscriptionId}&type=eq.b2b_pro&status=eq.active&limit=1`);
-    if (existing.length > 0) return;
+    const existing = await sb('payment_grants', 'GET', null, `?subscription_id=eq.${encodeURIComponent(subscriptionId)}&type=eq.b2b_pro&limit=1`);
+    if (existing && existing.length > 0) return;
   } catch (_) {}
   await sb('payment_grants', 'POST', {
     subscription_id: subscriptionId, type: 'b2b_pro', plan: planKey,
-    customer_id: metadata.customer_id || '',
+    customer_id: metadata.customer_id || metadata.customerId || '',
+    island,
     expires_at: new Date(Date.now() + durationDays * 86400000).toISOString(),
-    granted_at: new Date().toISOString(), status: 'active',
+    granted_at: new Date().toISOString(),
   });
 }
 
@@ -448,8 +469,17 @@ async function handleMollieCheckout(request) {
   const { action } = data;
 
   if (action === 'create_payment') {
-    const { pass, email, cents, cur, source, description, method: payMethod, redirectUrl } = data;
+    const { pass, email, cents, cur, source, description, method: payMethod, redirectUrl, metadata: userMeta } = data;
     if (!pass || !cents) return err('pass and cents required');
+
+    // Anti-spoofing: validate island metadata matches request domain
+    const host = request.headers.get('Host') || '';
+    const serverIsland = host.includes('guadeloupe') ? 'GP' : host.includes('martinique') ? 'MQ' : host.includes('miami') ? 'FLORIDA' : host.includes('puntacana') ? 'PUNTA_CANA' : host.includes('cancun') ? 'RIVIERA_MAYA' : 'MQ';
+    const clientIsland = (userMeta?.island || '').toUpperCase();
+    if (clientIsland && clientIsland !== serverIsland) {
+      return err('island_mismatch', 400);
+    }
+    const island = serverIsland;
 
     const res = await fetch('https://api.mollie.com/v2/payments', {
       method: 'POST',
@@ -458,9 +488,9 @@ async function handleMollieCheckout(request) {
         amount: { value: (cents / 100).toFixed(2), currency: (cur || 'EUR').toUpperCase() },
         description: description || `Sargasses Pass ${pass}`,
         method: payMethod || null,
-        metadata: { source: source || 'unknown', pass, email },
+        metadata: { source: source || 'unknown', pass, email, island },
         webhookUrl: 'https://sargasses-martinique.com/api/mollie-webhook.php',
-        redirectUrl: redirectUrl || 'https://sargasses-martinique.com/',
+        redirectUrl: redirectUrl || `https://${host || 'sargasses-martinique.com'}/payment/good.html?kind=pass&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || '')}`,
       }),
     });
     if (!res.ok) return err(`Mollie error: ${await res.text()}`, 500);

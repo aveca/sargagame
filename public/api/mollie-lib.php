@@ -168,7 +168,7 @@ function mol_b2b_plans(): array {
  * Grant Pro token once per subscription (idempotent via subscriptionId)
  * Gère mensuel (renouvelable 30j) vs annuel (365j)
  */
-function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId, ?int $durationDaysOverride = null): array {
+function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId, ?int $durationDaysOverride = null, string $island = 'MQ'): array {
     require_once __DIR__ . '/widget-token.php';
 
     $grantKey = 'mollie_grant_' . $subscriptionId;
@@ -197,11 +197,12 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
         'type' => 'b2b_pro',
         'plan' => $planKey,
         'customer_id' => $customerId,
+        'island' => $island,
         'expires_at' => date('c', $expiresAt),
         'granted_at' => date('c', time()),
     ]);
 
-    error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
+    error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId island=$island expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
 
     return ['granted' => true, 'token' => $token, 'expires_at' => $expiresAt, 'plan' => $planKey, 'mirror_ok' => $mirrorOk];
 }
@@ -414,7 +415,7 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
  * Idempotent : même paymentId = pas de double grant.
  * Durées : p30=30j, trip7=7j, season=210j
  */
-function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, array $metadata = []): array {
+function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, array $metadata = [], string $island = 'MQ'): array {
     $grantKey = 'mol_b2c_pass_' . $paymentId;
     $existing = get_transient($grantKey);
     if ($existing) {
@@ -444,12 +445,13 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
         'pass' => $pass,
         'email' => $email,
         'currency' => $currency,
+        'island' => $island,
         'expires_at' => date('c', $expiresAt),
         'granted_at' => date('c', time()),
         'metadata' => $metadata,
     ]);
 
-    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
+    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days island=$island expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
 
     return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days, 'mirror_ok' => $mirrorOk];
 }

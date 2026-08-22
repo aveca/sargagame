@@ -17,25 +17,27 @@ $raw = file_get_contents('php://input');
 // mollie-config.php. Le 2e appel retournait `true` (fichier déjà inclus) au lieu
 // du tableau retourné par `return [...]`. Conséquence : $cfg = true,
 // is_array(true) = false → $webhookSecret = '' → HTTP 503 éternel.
-// Load webhook_secret from env vars (Render) + local file fallback
-$cfg = ['webhook_secret' => getenv('MOLLIE_WEBHOOK_SECRET') ?: ''];
+// Config file is SOLE source of truth — env var is stale on cPanel, never trusted.
 $localPath = __DIR__ . '/mollie-config.php';
-if (file_exists($localPath) && !getenv('MOLLIE_WEBHOOK_SECRET')) {
+$webhookSecret = '';
+if (file_exists($localPath)) {
     $local = @include $localPath;
-    if (is_array($local)) $cfg = array_merge($cfg, $local);
+    if (is_array($local) && !empty($local['webhook_secret'])) {
+        $webhookSecret = $local['webhook_secret'];
+    }
 }
-$webhookSecret = $cfg['webhook_secret'] ?? '';
 if (!$webhookSecret) {
-    error_log('[mollie-webhook] webhook_secret missing');
+    error_log('[mollie-webhook] webhook_secret missing — config file: ' . $localPath . ' exists=' . (file_exists($localPath) ? 'yes' : 'no'));
     http_response_code(503);
     echo json_encode(['error' => 'webhook_unavailable']);
     exit;
 }
 $expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
-if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'] ?? '')) {
+$sentSig = $_SERVER['HTTP_X_MOLLIE_SIGNATURE'] ?? '';
+if (!hash_equals($expectedSig, $sentSig)) {
     error_log('[mollie-webhook] INVALID SIGNATURE — possible forgery');
     http_response_code(403);
-    echo json_encode(['error' => 'invalid_signature']);
+    echo json_encode(['error' => 'invalid_signature', 'debug' => ['raw_len' => strlen($raw), 'secret_len' => strlen($webhookSecret), 'secret_prefix' => substr($webhookSecret, 0, 5), 'expected' => $expectedSig, 'sent' => $sentSig, 'match' => hash_equals($expectedSig, $sentSig)]]);
     exit;
 }
 
@@ -70,6 +72,19 @@ try {
         $status = $payment->status ?? '';
         $metadata = (array)($payment->metadata ?? []);
 
+        // Island from metadata (server-side, set by mollie.php at checkout creation)
+        $allowedIslands = ['MQ', 'GP', 'FLORIDA', 'PUNTA_CANA', 'RIVIERA_MAYA'];
+        $island = strtoupper($metadata['island'] ?? '');
+        if (!in_array($island, $allowedIslands, true)) {
+            error_log("[mollie-webhook] REJECT payment — missing/invalid metadata.island paymentId=$id island=" . ($metadata['island'] ?? 'EMPTY'));
+            // Do NOT grant — missing island means data integrity issue
+            // Still mark event as processed to avoid infinite retry
+            @file_put_contents($marker, '');
+            http_response_code(200);
+            echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status, 'note' => 'island_missing_grant_skipped']);
+            exit;
+        }
+
         // Handle payment.failed in payment branch (BUG-2026-011)
         if ($event === 'payment.failed' || $status === 'failed') {
             $source = $metadata['source'] ?? 'unknown';
@@ -99,17 +114,17 @@ try {
             $mirrorOk = true;
             
             if (in_array($source, ['b2b_annual'], true)) {
-                $result = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
+                $result = mol_b2b_grant_once($email, 'pro_monthly', $id, 365, $island);
                 $mirrorOk = $result['mirror_ok'] ?? true;
-                error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
+                error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id island=$island mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
             } elseif (in_array($source, ['b2b_monthly'], true)) {
                 // B2B monthly - grant handled by subscription webhook
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
             } elseif ($pass && in_array($pass, ['p30', 'trip7', 'season'], true)) {
                 // B2C pass — grant côté serveur (backup du localStorage frontend)
-                $result = mol_b2c_pass_grant($id, $pass, $email, $metadata);
+                $result = mol_b2c_pass_grant($id, $pass, $email, $metadata, $island);
                 $mirrorOk = $result['mirror_ok'] ?? true;
-                error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
+                error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id island=$island mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
             }
             
             if (!$mirrorOk) {
@@ -140,13 +155,24 @@ try {
         $planKey = $metadata['plan'] ?? '';
         $customerId = $subscription->customerId ?? '';
 
-        error_log("[mollie-webhook] subscription.$event id=$id status=$status plan=$planKey customer=$customerId");
+        // Island from metadata (server-side, set by mollie.php at checkout creation)
+        $allowedIslands = ['MQ', 'GP', 'FLORIDA', 'PUNTA_CANA', 'RIVIERA_MAYA'];
+        $island = strtoupper($metadata['island'] ?? '');
+        if (!in_array($island, $allowedIslands, true)) {
+            error_log("[mollie-webhook] REJECT subscription — missing/invalid metadata.island id=$id island=" . ($metadata['island'] ?? 'EMPTY'));
+            @file_put_contents($marker, '');
+            http_response_code(200);
+            echo json_encode(['received' => true, 'type' => 'subscription', 'status' => $status, 'note' => 'island_missing_grant_skipped']);
+            exit;
+        }
+
+        error_log("[mollie-webhook] subscription.$event id=$id status=$status plan=$planKey customer=$customerId island=$island");
 
          // Grant Pro token for B2B monthly subscriptions (active/pending)
          if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
                  if (in_array($status, ['active', 'pending'], true)) {
-                     $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                     $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $island);
                      if (!($result['mirror_ok'] ?? true)) {
                          http_response_code(500);
                          echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
@@ -169,7 +195,7 @@ try {
 
          if ($event === 'subscription.paid') {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                 $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $island);
                  if (!($result['mirror_ok'] ?? true)) {
                      http_response_code(500);
                      echo json_encode(['error' => 'mirror_failed', 'retry' => true]);

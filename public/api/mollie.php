@@ -158,6 +158,7 @@ try {
             throw new Exception('Invalid island');
         }
         $island = $serverIsland;
+        $metadata['island'] = $island; // SERVER-SIDE island — used by webhook for payment_grants
 
         // ── Redirect : page statique /payment/good.html avec params ──────────
         $kind = $pass ? 'pass' : 'pro'; // p30/trip7/season → pass, B2B annual → pro
@@ -166,7 +167,7 @@ try {
         $host = in_array($rawHost, $allowedHosts, true) ? $rawHost : 'sargasses-martinique.com';
         $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
         $redirectUrl = $userRedirect ?? "$scheme://$host/payment/good.html?kind=$kind&email=" . urlencode($email) . "&plan=" . urlencode($pass ?: 'annual');
-        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php"; // Always server-controlled
+        $webhookUrl = 'https://sargasses-martinique.com/api/mollie-webhook.php'; // Centralized webhook — single secret for all islands
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -214,7 +215,7 @@ try {
         $subHost = in_array(($_SERVER['HTTP_HOST'] ?? ''), $allowedHosts, true) ? $_SERVER['HTTP_HOST'] : 'sargasses-martinique.com';
         $userRedirect = isset($data['redirectUrl']) && function_exists('mollie_validate_url') && mollie_validate_url($data['redirectUrl'], $allowed) ? $data['redirectUrl'] : null;
         $redirectUrl = $userRedirect ?? "{$subScheme}://{$subHost}/pro/espace/";
-        $webhookUrl = "{$subScheme}://{$subHost}/public/api/mollie-webhook.php"; // Always server-controlled
+        $webhookUrl = 'https://sargasses-martinique.com/api/mollie-webhook.php'; // Centralized webhook — single secret for all islands
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';

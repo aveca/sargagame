@@ -82,7 +82,8 @@ async function handleWebhook(request) {
   }
 
   const data = JSON.parse(raw);
-  const { id, type, event } = data;
+  const { id, resource, event } = data;
+  const type = resource || 'payment'; // Mollie sends 'resource' (payment|subscription|...)
   if (!id || !type) return err('id + type requis');
 
   try {
