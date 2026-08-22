@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-08-15T12:57:38.873Z",
-  "total_rows": 75550,
+  "since": "2026-08-15T18:42:55.998Z",
+  "total_rows": 62817,
   "counts": {
-    "session_start": 46541,
+    "session_start": 34030,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1121,
-    "beach_open": 13228,
+    "premium_modal_open": 1114,
+    "beach_open": 13079,
     "pass_cta": 44,
     "conversion": 0,
     "email_submit": 1,
     "mollie_checkout_redirect": 0,
-    "b2b_offer_view": 37,
+    "b2b_offer_view": 36,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -26,38 +26,39 @@
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "session_start": 7228,
-      "beach_open": 2363,
-      "premium_modal_open": 113,
-      "pass_cta": 2
-    },
     "PUNTACANA": {
-      "session_start": 5659,
-      "beach_open": 751,
-      "b2b_offer_view": 23,
-      "premium_modal_open": 60,
+      "session_start": 5050,
+      "beach_open": 772,
+      "premium_modal_open": 63,
+      "b2b_offer_view": 21,
       "pass_cta": 2
-    },
-    "GP": {
-      "session_start": 11345,
-      "beach_open": 2734,
-      "premium_modal_open": 92,
-      "pass_cta": 16
     },
     "MQ": {
-      "session_start": 21526,
-      "beach_open": 7222,
-      "premium_modal_open": 839,
+      "session_start": 12410,
+      "premium_modal_open": 837,
+      "beach_open": 7227,
       "pass_cta": 24,
       "b2b_offer_view": 10,
       "email_submit": 1
     },
+    "GP": {
+      "session_start": 9340,
+      "premium_modal_open": 91,
+      "beach_open": 2768,
+      "pass_cta": 16,
+      "b2b_offer_view": 1
+    },
     "RIVIERAMAYA": {
-      "session_start": 740,
-      "beach_open": 158,
+      "session_start": 732,
+      "beach_open": 166,
       "premium_modal_open": 13,
       "b2b_offer_view": 4
+    },
+    "FLORIDA": {
+      "session_start": 6455,
+      "beach_open": 2146,
+      "premium_modal_open": 106,
+      "pass_cta": 2
     },
     "TULUM": {
       "session_start": 21,
