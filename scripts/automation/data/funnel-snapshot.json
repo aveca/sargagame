@@ -1,17 +1,17 @@
 {
   "window_days": 7,
-  "since": "2026-08-14T19:11:54.872Z",
-  "total_rows": 84144,
+  "since": "2026-08-15T01:36:29.388Z",
+  "total_rows": 78654,
   "counts": {
-    "session_start": 54817,
+    "session_start": 49593,
     "forecast_lock_click": 0,
-    "premium_modal_open": 1169,
-    "beach_open": 13373,
+    "premium_modal_open": 1120,
+    "beach_open": 13286,
     "pass_cta": 44,
     "conversion": 0,
     "email_submit": 1,
     "mollie_checkout_redirect": 0,
-    "b2b_offer_view": 39,
+    "b2b_offer_view": 37,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -20,45 +20,44 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_beach": 0,
-    "beach_to_modal": 8.7,
-    "modal_to_cta": 3.8,
+    "beach_to_modal": 8.4,
+    "modal_to_cta": 3.9,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
+    "FLORIDA": {
+      "session_start": 8274,
+      "beach_open": 2475,
+      "premium_modal_open": 113,
+      "pass_cta": 2
+    },
     "GP": {
-      "session_start": 15194,
-      "beach_open": 2653,
-      "premium_modal_open": 100,
+      "session_start": 12120,
+      "beach_open": 2683,
+      "premium_modal_open": 92,
       "pass_cta": 16
     },
     "MQ": {
-      "session_start": 23797,
-      "premium_modal_open": 870,
-      "beach_open": 7226,
+      "session_start": 22193,
+      "beach_open": 7224,
+      "premium_modal_open": 839,
       "pass_cta": 24,
       "b2b_offer_view": 10,
       "email_submit": 1
     },
-    "FLORIDA": {
-      "session_start": 8565,
-      "b2b_offer_view": 1,
-      "beach_open": 2553,
-      "premium_modal_open": 120,
-      "pass_cta": 2
-    },
-    "RIVIERAMAYA": {
-      "session_start": 893,
-      "beach_open": 192,
-      "premium_modal_open": 15,
-      "b2b_offer_view": 5
-    },
     "PUNTACANA": {
-      "session_start": 6325,
-      "beach_open": 749,
+      "session_start": 6141,
+      "beach_open": 748,
       "premium_modal_open": 60,
       "b2b_offer_view": 23,
       "pass_cta": 2
+    },
+    "RIVIERAMAYA": {
+      "session_start": 822,
+      "beach_open": 156,
+      "premium_modal_open": 12,
+      "b2b_offer_view": 4
     },
     "TULUM": {
       "session_start": 21,
