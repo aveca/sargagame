@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-08-23 ~17:20 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : toutes les creds fuies sont mortes
+
+### Vérification finale (probes API read-only)
+| Credential | Verdict |
+|---|---|
+| Stripe `sk_live_...gbxhN6` | MORTE ✅ |
+| Resend `re_...HvUqwF` | MORTE ✅ |
+| Mollie `live_...uerNPs` | MORTE ✅ (+ nouvelle clé en prod) |
+| PayPal client `...yFukSI` | **MORTE ✅** (401 oauth2/token après rotation fondateur) |
+| Token deploy `_deploy-secret.php` | **ROTÉ ✅** — agent : nouveau 64-hex → secret GH `DEPLOY_TOKEN` MAJ 17:08Z + `.env` local synchronisé + deploy dispatché (run 32653827713) pour reprovisionner les serveurs |
+
+### Reste (housekeeping, non urgent)
+- Secrets GH `STRIPE_SECRET_KEY` (nouvelle clé roller) et `RESEND_API_KEY` à rafraîchir
+- Configs locales/serveur Stripe à mettre à jour au prochain passage FTP
+- Un vrai paiement test Mollie
+
+---
+
+## 2026-08-23 ~17:15 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : vérification des rotations
+
+### Résultats (tests API read-only, valeurs masquées)
+| Credential | Verdict |
+|---|---|
+| Stripe `sk_live_...gbxhN6` (fuie) | **MORTE ✅** (401 sur /v1/balance) |
+| Resend `re_...HvUqwF` (fui) | **MORTE ✅** ("API key is invalid") |
+| Mollie `live_...uerNPs` (fui) | **MORTE ✅** (401) ; NOUVELLE clé déployée en prod par le run Daily Copernicus 12:49Z (secrets `MOLLIE_API_KEY`+`MOLLIE_WEBHOOK_SECRET` MAJ 01:06Z) ✅ |
+| PayPal client `...yFukSI` (fui) | **ENCORE VALIDE ❌ URGENT** — token OAuth acquis avec les creds fuies → app PayPal pas (ou mal) rotée |
+| Token deploy `_deploy-secret.php` | **PAS ROTÉ ❌** — secret GH `DEPLOY_TOKEN` date du 2026-06-17, la fuite est du snapshot 2026-08-13 → valeur courante = valeur fuie ; reprovisionnée ce jour sur les serveurs |
+
+### Suivi fondateur requis
+1. Rotater l'app PayPal LIVE dont le client_id finit par `yFukSI` (Dashboard → Apps & Credentials) puis mettre à jour les configs serveur (pas de secret CI PAYPAL existant)
+2. MAJ secret GH `DEPLOY_TOKEN` (le prochain daily reprovisionne les serveurs automatiquement)
+3. MAJ secret GH `STRIPE_SECRET_KEY` avec la NOUVELLE clé roller (sinon dunning/cart-recovery/daily-stats échouent en 401)
+4. MAJ secret GH `RESEND_API_KEY` si rotation faite côté Resend (secret encore daté 2026-04-06)
+5. Configs locales/serveur Stripe (`public/api/stripe-config.php` + copies dist) tiennent encore l'ancienne clé morte → MAJ + redeploy au prochain passage
+
+---
+
 ## 2026-08-23 ~07:30 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : purge credentials gh-pages
 
 ### Travail effectué

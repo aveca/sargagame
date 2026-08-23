@@ -261,6 +261,7 @@
 - `e8be7c04` — fix: undefined $status, dead PassOffer import, Google Fonts self-hosted
 
 ### Remaining — Ranked by Business Impact
+- [ ] **P1-SEC**: Purge Stripe/Resend legacy du CI + scripts (issue #578 follow-up) — produit confirmé : paiements = Mollie uniquement, email = SMTP Namecheap (`SMTP_PASS`, `premium115.web-hosting.com`). Retirer les steps `STRIPE_SECRET_KEY` de `daily-copernicus.yml` (352-538) + scripts legacy stripe (dunning/cart-recovery/welcome-paid/daily-stats-check passent en skip propre), supprimer configs locales mortes (`public/api/stripe-config.php`, copies dist-*). Secrets GH `STRIPE_SECRET_KEY`/`RESEND_API_KEY` déjà SUPPRIMÉS le 2026-08-23 → steps concernées afficheront une erreur claire d'ici la purge. Attendre levée du HOLD pour push.
 - [ ] **P0-01**: Add static CTA in HTML source (before React mount) — "Voir ma plage →" button
 - [ ] **P0-02**: Mollie webhook secret → ensure deployed on all 5 FTP domains
 - [ ] **P1-01**: Add trust signal (97%, 12k+, satellite) in map UI AFTER React mount (persists after skeleton)
