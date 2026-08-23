@@ -1,4 +1,47 @@
 ---
+## 2026-08-23 ~07:30 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : credentials purgés de gh-pages
+
+### Travail effectué
+- **Résumé 1 ligne** : fuite de clés paiement LIVE signalée publiquement (issue #578) sur `gh-pages` → branche réécrite orpheline sans les 4 fichiers secrets, force-push effectué, garde-fou CI ajouté.
+- Clés concernées : Stripe sk_live + webhook secret + Resend, PayPal client secret, Mollie live key (déjà révoquée), token deploy.
+- Périmètre : **seule `gh-pages`** touchée (scan des ~100 refs remote). `main` clean, site live clean (404).
+- ⚠️ Les clés Stripe/PayPal/Resend restent VALIDES jusqu'à rotation par le fondateur dans les dashboards (checklist postée sur l'issue #578).
+
+### Fichiers modifiés
+- `gh-pages` (remote, rewritten, root `d1843258`) — purge dist/api/{stripe,paypal,mollie}-config.php + _deploy-secret.php
+- `.github/workflows/secret-scan.yml` — NEW scan CI anti-secrets
+- `.ai/changelog.md` + ce fichier — documentation
+
+### Tests réalisés
+- [x] Scan refs remote : zéro autre ref avec ces fichiers
+- [x] origin/gh-pages post-push : arbre sans credential
+- [x] https://aveca.github.io/sargagame/api/*.php → 404 ×4
+
+### Problèmes restants
+- [x] ISSUE-578 : **RÉSOLU ET CLOSE** — toutes les creds fuies mortes et vérifiées (Stripe, Resend, Mollie, PayPal, deploy token) ; gh-pages purgé ; garde-fou CI ajouté ; secrets legacy supprimés
+- [x] Paiement test réel : **reporté par décision fondateur** — la première vente client validera le pipeline bout-en-bout (webhook→payment_grants déjà prouvé par e2e du 2026-08-22)
+- [ ] Run 32653827713 (dispatch 17:07Z) : vérifier à terme que le nouveau DEPLOY_TOKEN est provisionné sur les 5 serveurs (steps fast-deploy vertes)
+
+### Prochaine action recommandée
+1. Fondateur : roll Stripe live key + webhook secret MAINTENANT — Rôle : fondateur
+2. Fondateur : rotate PayPal/Resend/Mollie + sort des 11 passlinks — Rôle : fondateur
+
+### Branche / PR
+- Force-push direct `gh-pages-clean:gh-pages` (sécurité) ; `.github/workflows/secret-scan.yml` commité en local sur main (HOLD respecté : pas de push main)
+
+---
+## 2026-08-23 · HOLD DECISION (fondateur) — P1-03 GREEN mais GELÉ, ne pas pousser
+
+- **Commit `61d8b409` = LOCAL uniquement. Aucun push, aucun deploy, aucun cherry-pick/rebase sans décision explicite.**
+- Mollie LIVE inchangé · 0 secret / route paiement / Worker touché.
+- **P1-04 = aucun code tant qu'aucun signal terrain ne le justifie** (B2B Concierge = terrain uniquement).
+- Séparation : P1-03 (UX/prévisions, en attente de go push) ≠ P1-04 (B2B Concierge FIELD TEST READY, code figé).
+- Prochaine action pilote : DKIM Resend → WhatsApp Business → contacter Anoli **par message écrit** (pilote 100 % en ligne, zéro appel téléphonique).
+- ⚠️ Tout agent : NE PAS push main tant que ce hold n'est pas levé par le fondateur.
+- Chantier UX/UI global 6 domaines + QA + déploiement contrôlé : **gelés aussi** jusqu'au signal terrain.
+
+---
+
 ## 2026-08-23 06:45 UTC · Agent: coding_agent (OpenCode) · P1-03 GREEN — forecast lock réparé & instrumenté
 
 ### Travail effectué
@@ -34,23 +77,24 @@
 - **GO terrain** : Pilote Concierge B2B 90 jours, 0 €, + LOI, max 3 hôtels concurrents.
 - Ambiguïté 29 €/mo B2B vs 14,99 € B2C **levée par code** : deux endpoints séparés (`b2b-create-checkout.php` → Mollie Customer+Subscription `brief_monthly` 29,00 € · vs `mollie.php` `create_payment` one-shot `p30`). Aucun changement requis.
 
-### Décision fondatrice MAJEURE (DEC-2026-08-23 dans `.ai/decisions.md`)
-- **B2C Pass 30j = 14,99 €, inchangé.** Pas de 20 €/mo ni 49 €/an à ce stade.
-- **Mollie = unique payment provider.** Stripe abandonné (legacy read-only, jamais payment path).
-- **GO terrain** : Pilote Concierge B2B 90 jours, 0 €, + LOI, max 3 hôtels concurrents.
-- Ambiguïté 29 €/mo B2B vs 14,99 € B2C **levée par code** : deux endpoints séparés (`b2b-create-checkout.php` → Mollie Customer+Subscription `brief_monthly` 29,00 € · vs `mollie.php` `create_payment` one-shot `p30`). Aucun changement requis.
-
 ### Verrous actifs pendant tout le pilote
 ❌ Code · events · instrumentation · Mollie · B2C · Stripe · Worker · déploiement · outreach automation — GELÉS.
 ✅ Instrumentation manuelle : verbatims WhatsApp + `.ai/problem-journal.md`.
 
-### Séquence terrain (ordre strict)
+### Séquence terrain (ordre strict — 100 % en ligne, ZÉRO appel téléphonique ; fondateur 2026-08-23)
 1. DNS outreach + SPF/DKIM/DMARC (fondateur, ~20 min, bloquant deliverability)
-2. Resend sender `alerte@` validé
+2. Resend sender `alerte@` validé (**DKIM à terminer = prochaine action**)
 3. WhatsApp Business opérationnel
-4. Appel **Anoli Lodges** (lead chaud) — avant tout cold
+4. Contacter **Anoli Lodges** par message écrit (WhatsApp Business / email) — lead chaud, avant tout cold
 5. Si P×F×C×V ≥ 9 → concierge J0 → briefs J1–J6 à 7h → **J7 : 3 questions → "Je vous l'active à 29 €/mois ?"** → si oui → `Demande le paiement à <Hôtel>` dans SargaChatB2B → webhook Mollie → `PAYMENT_CONFIRMED`
-6. Puis : Bakoua → Courbaril → Carayou → Bambou → Hauts de Caritan ; Diamant Les Bains en requalification
+6. Puis mêmes 100 % écrit : Bakoua → Courbaril → Carayou → Bambou → Hauts de Caritan ; Diamant Les Bains en requalification
+
+### Chemin email pilote VERROUILLÉ (audit read-only 2026-08-23)
+- PRIMARY = **WhatsApp Business** (zéro infra)
+- FALLBACK = **`alerte@sargasses-martinique.com`** (SMTP + IMAP Namecheap — existe, envoie ET reçoit)
+- Resend = hors chemin pilote · `pro.sargasses-martinique.com` (DNS prêt, DKIM/SPF/DMARC/MX ✅) = **inerte, réservé au futur ramping** · `B2B_FROM` = sans effet
+- Règle : **AUCUNE modification DNS / Resend / SMTP / code pour lancer le pilote.**
+- DNS `pro.` déjà en place (P1-04, vérifié propagé) — reste intact, pas de dépendance au pilote.
 
 ### Critères du pilote
 - **Décisif** : 1 paiement Mollie 29 €/mo avant J+60
@@ -59,7 +103,7 @@
 - Open rate >45 % = informative, jamais Go/No-Go
 
 ### Prochaine action
-**DNS outreach SPF/DKIM/DMARC (fondateur).** Rien d'autre côté code.
+**WhatsApp Business → message écrit à Anoli Lodges.** Zéro DNS, zéro Resend, zéro code, zéro secret requis.
 
 ### Branche / PR
 Aucune. Local, pas de commit, pas de push. Décision dans `.ai/decisions.md`.
