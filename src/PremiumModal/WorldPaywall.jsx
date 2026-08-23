@@ -149,19 +149,23 @@ export function WorldPaywall({
   payWithWallet,
   walletRedirect,
   onPayEmailInput,
-  onPassBuy
+  onPassBuy,
+  PAY_CUR
 }) {
   const stats = WORLD_STATS[lang] || WORLD_STATS.fr
   const regions = REGION_LABELS
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
 
-  // Restore email from localStorage
+  // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
-    try { return localStorage.getItem("sgEmail") || "" } catch (_) { return "" }
+    try { return localStorage.getItem("sg_email") || "" } catch (_) { return "" }
   })
   const handleEmailChange = (e) => {
     setEmailValue(e.target.value)
+    // Écriture immédiate : l'overlay OnsiteCheckout (seul détenteur de payEmailRef)
+    // pré-remplit son champ depuis sg_email à l'ouverture de payStep.
+    try { localStorage.setItem("sg_email", e.target.value.trim()) } catch (_) {}
     if (onPayEmailInput) onPayEmailInput()
   }
   
@@ -339,7 +343,6 @@ export function WorldPaywall({
             {t("Email pour recevoir ton accès", "Email to receive your access", "Email para recibir tu acceso")}
           </label>
           <input
-            ref={payEmailRef}
             type="email"
             required
             autoComplete="email"
@@ -363,6 +366,7 @@ export function WorldPaywall({
         <div style={{ marginBottom: 14 }}>
           <PassOffer
             lang={lang}
+            currency={PAY_CUR}
             onBuy={onPassBuy}
           />
         </div>

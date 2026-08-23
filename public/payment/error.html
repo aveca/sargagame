@@ -165,11 +165,15 @@
   }
 
   window.retry = function() {
-    var returnUrl = '/paywall?' + new URLSearchParams({retry: '1', code: code}).toString();
-    location.href = returnUrl;
+    // /?payment_failed=1 = handler existant de l'app (paywall + email pré-rempli).
+    // (avant : /paywall?retry=1 → route inexistante, cul-de-sac)
+    var q = { payment_failed: '1', code: code };
+    if (email) q.email = email;
+    location.href = '/?' + new URLSearchParams(q).toString();
   };
   window.contact = function() {
-    location.href = '/contact?subject=payment-error&code=' + encodeURIComponent(code);
+    // Pas de page /contact sur les domaines (301 → /) → mailto direct.
+    location.href = 'mailto:alerte@sargasses-martinique.com?subject=' + encodeURIComponent('Paiement échoué (' + code + ')');
   };
 })();
 </script>

@@ -18,6 +18,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { track } from "../Sargasses_PROD.jsx"
+import { seasonalCents } from "../lib/pass-price.js"
 
 export function OnsiteCheckout({
   lang,
@@ -74,10 +75,52 @@ export function OnsiteCheckout({
   const molExpiryRef = useRef(null)
   const molCvcRef = useRef(null)
   const payMountedRef = useRef(false)
+  // molReady = state miroir de payReadyRef → re-déclenche l'effet de montage des
+  // Components si payStep devient true AVANT la fin de l'init Mollie (race 2026-08-23).
+  const [molReady, setMolReady] = useState(false)
+  // Ref miroir de payBusy pour les closures clavier (Échap) sans re-bind.
+  const payBusyRef = useRef(payBusy)
+  payBusyRef.current = payBusy
   // Refs swipe-down (pour retour au paywall depuis l'étape paiement — même geste que le paywall)
   const payScrollRef = useRef(null)
   const payContentRef = useRef(null)
   const payStartYRef = useRef(0)
+
+  // Email : l'overlay est le SEUL détenteur de payEmailRef. À l'ouverture de
+  // payStep, on pré-remplit depuis sg_email (écrit par les inputs des paywalls).
+  useEffect(() => {
+    if (!payStep) return
+    try {
+      const el = payEmailRef.current
+      if (el && !el.value) {
+        const em = localStorage.getItem("sg_email") || ""
+        if (em) { el.value = em; try { onPayEmailInput && onPayEmailInput() } catch (_) {} }
+      }
+    } catch (_) {}
+  }, [payStep])
+
+  // Échap = 3e voie de sortie (avec « ← Retour » + swipe-down). Interdit pendant
+  // un paiement en cours (payBusy) pour ne pas interrompre le tokenize en vol.
+  useEffect(() => {
+    if (!payStep) return
+    const onKey = (e) => {
+      if (e.key === "Escape" && !payBusyRef.current) {
+        e.stopPropagation()
+        try { track("sg_pay_onsite_back", { via: "esc" }) } catch (_) {}
+        setPayStep(false)
+      }
+    }
+    document.addEventListener("keydown", onKey, true)
+    return () => document.removeEventListener("keydown", onKey, true)
+  }, [payStep])
+
+  // bfcache : retour arrière depuis le checkout hébergé Mollie → déverrouille le
+  // bouton (sinon état figé « Activation… » = paiement impossible sans reload).
+  useEffect(() => {
+    const onPageShow = (e) => { try { if (e.persisted) { setPayBusy(false); setPayRedirecting(false) } } catch (_) {} }
+    window.addEventListener("pageshow", onPageShow)
+    return () => window.removeEventListener("pageshow", onPageShow)
+  }, [])
 
   const onTouchStartPay = e => { payStartYRef.current = e.touches[0].clientY }
   const onTouchMovePay = e => {
@@ -115,6 +158,7 @@ export function OnsiteCheckout({
       try {
         mollieRef.current = window.Mollie(MOLLIE_PROFILE, { locale, testmode: MOLLIE_TESTMODE })
         payReadyRef.current = true
+        setMolReady(true)
       } catch (e) {
         try { console.error("sg_mollie_init_failed", e) } catch (_) {}
       }
@@ -149,7 +193,7 @@ export function OnsiteCheckout({
     } catch (e) {
       try { console.error("sg_mollie_mount_failed", e) } catch (_) {}
     }
-  }, [payStep, lang, PAY_PROVIDER, PAY_CAPTURE_ONLY])
+  }, [payStep, lang, PAY_PROVIDER, PAY_CAPTURE_ONLY, molReady])
 
   if (PAY_PROVIDER !== "mollie" && !PAY_CAPTURE_ONLY) return null
 
@@ -159,6 +203,11 @@ export function OnsiteCheckout({
   return (
     <div
       ref={payScrollRef}
+      role={payStep ? "dialog" : undefined}
+      aria-modal={payStep ? "true" : undefined}
+      aria-label={payStep ? _t(lang, "Paiement sécurisé", "Secure checkout", "Pago seguro") : undefined}
+      aria-hidden={payStep ? undefined : "true"}
+      inert={payStep ? undefined : ""}
       onTouchStart={onTouchStartPay}
       onTouchMove={onTouchMovePay}
       onTouchEnd={onTouchEndPay}
@@ -242,9 +291,9 @@ export function OnsiteCheckout({
                 "Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo.")
             : passCtx
             ? _t(lang,
-                `${fmtPassPrice(passCtx.cents, passCtx.cur, "fr")} · ${passCtx.days} jours d'accès complet · paiement unique`,
-                `${fmtPassPrice(passCtx.cents, passCtx.cur, "en")} · ${passCtx.days} days full access · one-time`,
-                `${fmtPassPrice(passCtx.cents, passCtx.cur, "es")} · ${passCtx.days} días · pago único`)
+                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")} · ${passCtx.days} jours d'accès complet · paiement unique`,
+                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")} · ${passCtx.days} days full access · one-time`,
+                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")} · ${passCtx.days} días · pago único`)
             : null}
         </div>
 
@@ -327,24 +376,26 @@ export function OnsiteCheckout({
           // (les wallets seront affichés au prochain render via re-mount).
           if (w && typeof w.then === "function") return null
           if (!w.apple && !w.google) return null
-          const cents = passCtx?.cents ?? (PAY_CUR === "usd" ? 499 : 499)
+          const cents = seasonalCents(passCtx?.cents ?? 499, passCtx?.cur || PAY_CUR)
           const amountStr2 = (cents / 100).toFixed(2) + (PAY_CUR === "usd" ? " $" : " €")
           const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
           const isAndroid = /Android/.test(navigator.userAgent)
           const order = isIOS ? ["apple", "google"] : isAndroid ? ["google", "apple"] : ["apple", "google"]
+          // Consentement rétractation requis (même règle que le bouton carte) → wallets visuellement bloqués
+          const walletBlocked = !!(consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)
           return (
             <div style={{ marginBottom: 14 }}>
               {order.includes("apple") && w.apple && (
                 <button
                   type="button"
                   aria-label="Apple Pay"
-                  disabled={payBusy}
+                  disabled={payBusy || walletBlocked}
                   onClick={() => payWithWallet("applepay")}
                   style={{
                     width: "100%", padding: "14px", borderRadius: 12, border: "none",
                     background: "#000", color: "#fff", fontFamily: "inherit",
-                    fontWeight: 600, fontSize: 17, cursor: payBusy ? "wait" : "pointer",
-                    opacity: payBusy ? .6 : 1, display: "flex", alignItems: "center",
+                    fontWeight: 600, fontSize: 17, cursor: payBusy ? "wait" : (walletBlocked ? "not-allowed" : "pointer"),
+                    opacity: (payBusy || walletBlocked) ? .6 : 1, display: "flex", alignItems: "center",
                     justifyContent: "center", gap: 6, marginBottom: w.google ? 8 : 0
                   }}
                 >
@@ -356,13 +407,13 @@ export function OnsiteCheckout({
                 <button
                   type="button"
                   aria-label="Google Pay"
-                  disabled={payBusy}
+                  disabled={payBusy || walletBlocked}
                   onClick={() => walletRedirect("googlepay")}
                   style={{
                     width: "100%", padding: "13px", borderRadius: 12, border: "none",
                     background: "#fff", color: "#3c4043", fontFamily: "inherit",
-                    fontWeight: 600, fontSize: 15.5, cursor: payBusy ? "wait" : "pointer",
-                    opacity: payBusy ? .6 : 1, display: "flex", alignItems: "center",
+                    fontWeight: 600, fontSize: 15.5, cursor: payBusy ? "wait" : (walletBlocked ? "not-allowed" : "pointer"),
+                    opacity: (payBusy || walletBlocked) ? .6 : 1, display: "flex", alignItems: "center",
                     justifyContent: "center", gap: 7
                   }}
                 >
@@ -499,7 +550,7 @@ export function OnsiteCheckout({
             : PAY_CAPTURE_ONLY
             ? _t(lang, "Débloquer gratuitement →", "Unlock free →", "Desbloquear gratis →")
             : passCtx
-            ? _t(lang, `Payer ${fmtPassPrice(passCtx.cents, passCtx.cur, "fr")}`, `Pay ${fmtPassPrice(passCtx.cents, passCtx.cur, "en")}`, `Pagar ${fmtPassPrice(passCtx.cents, passCtx.cur, "es")}`)
+            ? _t(lang, `Payer ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")}`, `Pay ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")}`, `Pagar ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")}`)
             : NO_TRIAL
             ? (payPlanRef.current === "annual"
               ? _t(lang, `Payer ${PRICE_YR} — activer maintenant`, `Pay ${PRICE_YR} — activate now`, `Pagar ${PRICE_YR} — activar ya`)

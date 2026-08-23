@@ -1,12 +1,15 @@
 import React,{useEffect,memo,useRef,useState}from"react"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
+import{PASS_CENTS,seasonalCents}from"./lib/pass-price.js"
+
+// Ré-export pour les consommateurs existants (OnsiteCheckout) — source = lib/pass-price.js
+export{seasonalCents}
+export const PASS = { key: "p30", cents: PASS_CENTS, days: 30 }
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
-
-const PASS = { key: "p30", cents: { eur: 1499, usd: 1199 }, days: 30 }
 
 const money = (c, cur, lang) => (cur === "usd" ? "$" + (c / 100).toFixed(2) : lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
 const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
@@ -17,16 +20,17 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
-  const cents = PASS.cents[cur]
+  const cents = PASS.cents[cur] // prix de BASE envoyé au serveur (validation anti-tamper)
+  const displayCents = seasonalCents(cents, cur) // prix réellement débité (surcharge saison USD)
   useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
-    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg})}catch(_){}
+    // NB : sg_pass_cta est tracké UNE seule fois par PremiumModal.onPassBuy (payload plus riche).
     localStorage.setItem('sg_checkout_started_at', Date.now())
     if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
-  const pd = perDay(cents, PASS.days, cur, lang)
+  const pd = perDay(displayCents, PASS.days, cur, lang)
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
   const isComic = pwVariant === "comic"
 
@@ -62,7 +66,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
                 </span>
               </span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                <span className="anton" style={{ fontSize: 36, color: isComic ? "#B87A00" : "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(cents, cur, lang)}</span>
+                <span className="anton" style={{ fontSize: 36, color: isComic ? "#B87A00" : "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(displayCents, cur, lang)}</span>
                 <span style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 800, color: isComic ? "#0D0B14" : "#190c2c", background: "#FFC72C", padding: "4px 11px", borderRadius: 999, boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>{pd}</span>
               </span>
             </span>
@@ -146,8 +150,8 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           </button>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span>🔒 Mollie</span><span aria-hidden="true">·</span>
-            <span>💳 {_t(lang,"Sans carte","No card","Sin tarjeta")}</span><span aria-hidden="true">·</span>
-            <span>⚡ 2 {_t(lang,"clics","clicks","clics")}</span>
+            <span>💳 {_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
+            <span>⚡ {_t(lang,"Sans engagement","No commitment","Sin compromiso")}</span>
           </div>
         </div>
       )}
