@@ -22,7 +22,7 @@ function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"s
 function verdictMeta(status,lang){
   const M={
     clean:{color:"#22C55E",emoji:"😎",verb:_t(lang,"Vas-y","Go","Adelante")},
-    moderate:{color:"#F59E0B",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
+    moderate:{color:"#B87A00",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
     avoid:{color:"#E8522A",emoji:"🚫",verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
   }
   return M[status]||{color:"#1c7fb0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
@@ -285,8 +285,8 @@ export default function BeachSheet({
 
         {/* Close */}
         <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          style={{position:"absolute",top:12,right:12,width:44,height:44,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
 
         {/* ── HERO: golden-hour scene + beach name ── */}
@@ -331,8 +331,13 @@ export default function BeachSheet({
             }}>
               <div style={{position:"absolute",top:"-50%",left:"-20%",width:"140%",height:"200%",
                 background:`radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.18) 0%, transparent 60%)`,pointerEvents:"none"}}/>
-              <div style={{fontSize:48,lineHeight:1,marginBottom:8}}>{vmeta.emoji}</div>
-              <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(32px,7vw,44px)",lineHeight:.95,color:status==="avoid"?"#fff":COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px"}}>{vmeta.verb}</div>
+              <div style={{marginBottom:10,display:"flex",justifyContent:"center"}}>
+                {status==="clean" ? <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={status==="avoid"?"#fff":COMIC.ink} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M5 13l4 4L19 7"/></svg>
+                : status==="avoid" ? <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true" style={{flexShrink:0}}><path d="M6 6l12 12M18 6 6 18"/></svg>
+                : status==="moderate" ? <svg width="48" height="48" viewBox="0 0 24 24" aria-hidden="true" style={{flexShrink:0}}><circle cx="12" cy="12" r="9" fill="none" stroke={COMIC.ink} strokeWidth="2.6"/><path d="M12 3a9 9 0 0 0 0 18z" fill={COMIC.ink}/></svg>
+                : <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={COMIC.ink} strokeWidth="2.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>}
+              </div>
+              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:"clamp(28px,7vw,40px)",lineHeight:.95,color:status==="avoid"?"#fff":COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px"}}>{vmeta.verb}</div>
               <div style={{font:"700 14px/1.2 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,.82)":COMIC.ink,opacity:.85,marginTop:8,textTransform:"uppercase",letterSpacing:".4px"}}>{stLabelLong(status,lang)}</div>
               <div style={{font:"700 11px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,.65)":COMIC.ink,opacity:.7,marginTop:6}}>
                 <span style={{display:"inline-flex",alignItems:"center",gap:5}}>
@@ -384,7 +389,9 @@ export default function BeachSheet({
                   {planB.slice(0,3).map((b,i)=>(
                     <button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
                       style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%"}}>
-                      <div style={{width:48,height:48,borderRadius:10,background:`linear-gradient(135deg,#155A5A,#1A5852)`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>🌊</div>
+                      <div style={{width:48,height:48,borderRadius:10,background:`linear-gradient(135deg,#155A5A,#1A5852)`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12c2-2 4-3 6-3s4 1 6 3c2 2 4 3 6 3"/><path d="M2 17c2-1.5 4-2 6-2s4 .5 6 2c2 1.5 4 2 6 2"/><path d="M2 7c2 1 4 1.5 6 1.5S12 7 14 6c2-1 4-1 6 0"/></svg>
+                      </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{font:"800 14px/1.2 'Bricolage Grotesque'",color:COMIC.ink}}>{b.name}</div>
                         <div style={{font:"600 11px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:3}}>
@@ -513,7 +520,7 @@ export default function BeachSheet({
           )}
 
           {/* CTA collant */}
-          <div style={{position:"sticky",bottom:0,paddingTop:8,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
+          <div style={{position:"sticky",bottom:0,paddingTop:8,paddingBottom:"env(safe-area-inset-bottom,0px)",background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
             <button className="bs-gobtn" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>
               {ctaLabel} →
