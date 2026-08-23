@@ -1,6 +1,18 @@
 ---
-## 2026-08-23 ~07:30 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : credentials purgés de gh-pages
 
+## 2026-08-23 ~18:35 UTC · Agent: ux_qa_autonomous (OpenCode) — Session d'audit autonome terminée
+
+### Résumé (5 lignes max, conforme `AGENTS.md` §9)
+- Pipeline : STALE 22.9h au démarrage → `npm run session` a lancé `daily-copernicus.yml` (OK).
+- MRR : €69,86 / 14 actifs (Stripe read-only, source vérité, inchangé).
+- Audit B2C/UX/QA : build 35.5 Ko ≤210, smoke 4/4, Playwright 23/23, 0 erreurs console, 0 boutons fantômes, 0 animations infinies.
+- P0/P1 B2C : aucun bloquant découvert. Fiche `.lc-detail` (ComicDetail) et `.bsc-sheet` (BeachSheetComic) fonctionnent ; `useModalA11y` focus trap + Escape OK.
+- WIP a11y local non poussé (`+321` lignes `src/`) analysé, cohérent, non cassant. 3 `<h1>` statiques `/plages/*` = P2 SEO, non corrigé.
+- **AUCUN PUSH**. **AUCUN DEPLOY**. **B2B P1-04 GELÉ**. `P1-03` (`61d8b409`) reste local, non intégré.
+
+---
+
+## 2026-08-23 ~07:30 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : credentials purgés de gh-pages
 ### Travail effectué
 - **Résumé 1 ligne** : fuite de clés paiement LIVE signalée publiquement (issue #578) sur `gh-pages` → branche réécrite orpheline sans les 4 fichiers secrets, force-push effectué, garde-fou CI ajouté.
 - Clés concernées : Stripe sk_live + webhook secret + Resend, PayPal client secret, Mollie live key (déjà révoquée), token deploy.

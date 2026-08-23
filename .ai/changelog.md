@@ -1195,3 +1195,15 @@ Fix :
   Impact: First-time visitor now knows what the app does BEFORE React mounts (was zero text).
 - **Pipeline**: Relaunched daily-copernicus.yml → success, fresh sediment data.
 - **Audit**: Complete funnel/analytics/Mollie/payment audit documented (150+ events, 8 analytics layers, Mollie fail-closed webhook).
+
+---
+
+## 2026-08-23 ~18:30 UTC · Agent: ux_qa_autonomous (OpenCode) — Audit UX/UI/B2C/QA/perf/a11y (autonome, NO PUSH, NO DEPLOY)
+
+- **Périmètre respecté**: B2B P1-04 gelé (zéro code concierge, Mollie LIVE intact, secrets non touchés, DNS/Resend/Worker gelés, aucun deploy).
+- **P1-03**: commit `61d8b409` = LOCAL SEULEMENT, non poussé, non intégré (analyse uniquement, aucune fusion sans décision fondateur).
+- **Gate de ship local**: build exit 0, bundle 35.5 Ko gzip ≤ 210 Ko, smoke 4/4 (`FUNNEL_REACHED`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`), PHP lint 6/6, Playwright 23/23 pass (`funnel-payment`, `bottomnav-redesign`, `contract-pass-one-time`).
+- **Audit parcours mobile/desktop**: `scripts/audit-session-mobile-desktop.mjs` (12 checks) + `dbf-fiche.mjs` (cookie non bloquant, fiche ComicDetail `.lc-detail` OK, BeachSheetComic `.bsc-sheet` intact) + `repro-funnel-full.mjs` (focus trap `useModalA11y`, Escape ferme paywall, CTA « 7 prochains jours » ouvre paywall normalement).
+- **Résultats**: 0 erreur console (`ERRORS=[]`), 0 boutons fantômes (`WHITE_OR_TRANSPARENT_BUTTONS=[]`), 0 animation infinie (`RM_INFINITE=[]`). Aucune régression B2C détectée.
+- **Problèmes connus (non bloquants)**: (a) WIP a11y local uncommitted (`+321 lignes` sur `src/` — roles, aria, keyboard, 44px touch targets, Escape handlers) cohérent, non destructif ; (b) 3 `<h1>` statiques dans `/plages/*` (SEO P2, non bloquant, non corrigé pour éviter régression SEO) ; (c) pipeline `public/api/copernicus/sargassum.json` STALE 22.9h au début (re-run `daily-copernicus.yml` lancé par `npm run session`).
+- **Fichiers audit (temporaire)**: `scripts/audit-session-mobile-desktop.mjs`, `scripts/dbg-fiche.mjs`, `scripts/repro-fiche-paywall.mjs`, `scripts/repro-funnel-full.mjs` — non push.
