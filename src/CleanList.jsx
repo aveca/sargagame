@@ -224,7 +224,7 @@ export function initCleanList(SR, HOST, opts){
       var em=document.createElement("em");em.textContent=_t(LANG,CLEAN.length+" plages propres",CLEAN.length+" clean beaches",CLEAN.length+" playas limpias");title.appendChild(em);}
     CLEAN.forEach(function(b,i){rail.appendChild(buildCard(b,i,LANG,GEO,onOpenBeach));});
     var more=el("button","card more");
-    var mi=el("div","mi","🗺");more.appendChild(mi);
+    var mi=el("div","mi");mi.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V6l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>';more.appendChild(mi);
     more.appendChild(el("span",null,_t(LANG,"Voir toute la côte","See the whole coast","Ver toda la costa")));
     more.addEventListener("click",function(){onShowMap()});rail.appendChild(more);
   }

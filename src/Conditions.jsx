@@ -48,8 +48,8 @@ const COND_CSS = `
 .thumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .badge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;letter-spacing:.04em;
   padding:3px 8px;border-radius:999px;color:#06231d;background:#22C55E}
-.badge.avoid{color:#ffffff;background:#e8522a}
-.badge.mod{color:#06231d;background:#FFC72C}
+.badge.avoid{color:#ffffff;background:#E8522A}
+.badge.mod{color:#06231d;background:#B87A00}
 .ribbon{position:absolute;top:0;right:0;background:#E8A800;color:#2a1c00;font-size:9.5px;font-weight:800;
   letter-spacing:.08em;padding:3px 9px;border-bottom-left-radius:10px;text-transform:uppercase}
 
@@ -251,9 +251,9 @@ function buildCard(b, i, lang, geo, onOpen, weather) {
   // Weather details for context
   var w = weather || {};
   var wParts = [];
-  if (w.waveHeight != null) wParts.push(`🌊 ${w.waveHeight}m`);
-  if (w.sst != null) wParts.push(`🌡️ ${w.sst}°C`);
-  if (w.uvMax != null) wParts.push(`☀️ UV ${w.uvMax}`);
+  if (w.waveHeight != null) wParts.push(`${w.waveHeight}m houle`);
+  if (w.sst != null) wParts.push(`${w.sst}°C eau`);
+  if (w.uvMax != null) wParts.push(`UV ${w.uvMax}`);
   
   var wxText = wParts.join(" · ") || _t(lang, "météo agréable", "pleasant weather", "clima agradable");
   body.appendChild(el("div", "bweather", wxText));
@@ -345,7 +345,7 @@ export function initConditions(SR, HOST, opts) {
     
     // Add "All on map" or "Back to map" CTA
     var more = el("button", "card more");
-    var mi = el("div", "mi", "🗺️");
+    var mi = el("div", "mi"); mi.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V6l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>';
     more.appendChild(mi);
     more.appendChild(el("span", null, _t(LANG, "Toutes sur la carte", "All on the map", "Todas en el mapa")));
     more.addEventListener("click", function() { H.onShowMap() });
