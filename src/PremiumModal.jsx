@@ -166,8 +166,12 @@ export default function PremiumModal({
   // A11y : Échap + focus trap + restauration focus sur le shell bottom-sheet.
   // (variante "comic" = takeover auto-géré par ComicPaywall ; escClose=false ici
   // pour ne pas doubler le handler — le hook reste null-safe sur panelRef vide.)
+  // Garde : quand l'overlay checkout carte est ouvert (payStep), Échap ne ferme
+  // QUE l'overlay (géré par OnsiteCheckout) — pas le paywall derrière.
   const panelRef = useRef(null)
-  useModalA11y(panelRef, onClose, pwVariant !== "comic")
+  const payStepRef = useRef(payStep)
+  payStepRef.current = payStep
+  useModalA11y(panelRef, () => { if (!payStepRef.current) onClose() }, pwVariant !== "comic")
 
   // Tracking durée d'ouverture du modal (pour analytics close)
   const modalOpenedAt = useRef(Date.now())

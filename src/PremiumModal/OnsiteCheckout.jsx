@@ -101,6 +101,8 @@ export function OnsiteCheckout({
 
   // Échap = 3e voie de sortie (avec « ← Retour » + swipe-down). Interdit pendant
   // un paiement en cours (payBusy) pour ne pas interrompre le tokenize en vol.
+  // NB : window+capture (et pas document) → court AVANT le handler du shell
+  // paywall (useModalA11y), qui fait stopPropagation et masquerait l'event.
   useEffect(() => {
     if (!payStep) return
     const onKey = (e) => {
@@ -110,8 +112,8 @@ export function OnsiteCheckout({
         setPayStep(false)
       }
     }
-    document.addEventListener("keydown", onKey, true)
-    return () => document.removeEventListener("keydown", onKey, true)
+    window.addEventListener("keydown", onKey, true)
+    return () => window.removeEventListener("keydown", onKey, true)
   }, [payStep])
 
   // bfcache : retour arrière depuis le checkout hébergé Mollie → déverrouille le
