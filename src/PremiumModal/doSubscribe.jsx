@@ -204,10 +204,6 @@ if(d.checkoutUrl){
   const doSubscribe=useCallback(async()=>{
     const plan=payPlanRef.current
     if(payBusy)return
-    if(PAY_PROVIDER!=="paypal"&&!PAY_CAPTURE_ONLY&&!payReadyRef.current){
-      setPayError(_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento."))
-      return
-    }
     const email=(payEmailRef.current?.value||"").trim()
     if(!email||!email.includes("@")||!email.includes(".")){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
@@ -216,6 +212,25 @@ if(d.checkoutUrl){
     if(consentFlag&&!PAY_CAPTURE_ONLY&&passCtxRef.current&&!consentOk){
       setPayError(_t(lang,"Coche la case pour activer ton accès immédiat.","Tick the box to activate your immediate access.","Marca la casilla para activar tu acceso inmediato."))
       return
+    }
+    // Robustness: si Mollie pas encore prêt, attendre au lieu de perdre le clic
+    if(PAY_PROVIDER!=="paypal"&&!PAY_CAPTURE_ONLY&&!payReadyRef.current){
+      setPayBusy(true)
+      setPayError(_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento."))
+      let waited=0
+      while(!payReadyRef.current && waited<5000){
+        await new Promise(r=>setTimeout(r,120))
+        waited+=120
+      }
+      if(!payReadyRef.current){
+        setPayBusy(false)
+        setPayError(_t(lang,"Le paiement sécurisé met du temps à charger. Réessaie.","Secure checkout is taking a while. Please retry.","El pago seguro tarda en cargar. Reintenta."))
+        try{track("sg_mollie_not_ready_timeout",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
+        return
+      }
+      setPayError("")
+      try{track("sg_mollie_ready_after_wait",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
+      // on garde payBusy true et on continue vers le flux Mollie ci-dessous
     }
     if(PAY_CAPTURE_ONLY){
       setPayBusy(true);setPayError("")
