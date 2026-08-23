@@ -20,7 +20,8 @@ export default defineConfig({
       name: 'mobile-chromium',
       use: {
         ...devices['iPhone 12'],
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
+        browserName: 'chromium',
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
     },
   ],
