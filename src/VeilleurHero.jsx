@@ -114,11 +114,11 @@ export default function VeilleurHero({ onEnter, lang }){
         .vh-grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
         .vh-scan{position:absolute;inset:0;pointer-events:none;opacity:.05;background:repeating-linear-gradient(0deg,#000 0 1px,transparent 1px 3px)}
         .vh-wm{position:absolute;left:0;right:0;bottom:122px;text-align:center;z-index:6;padding:0 16px;animation:vhUp .7s .25s both}
-        .vh-wm h1{margin:0;font-size:62px;line-height:.82;letter-spacing:-2px;color:#fff;text-transform:uppercase;
+        .vh-wm h1{margin:0;font-size:clamp(32px,12vw,42px);line-height:.82;letter-spacing:-2px;color:#fff;text-transform:uppercase;
           text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 36px rgba(255,140,90,.7),0 0 70px rgba(255,60,160,.4)}
         .vh-wm h1 b{color:#ffd27a}
         .vh-wm p{margin:14px 0 0;font:800 12px/1 ui-monospace,monospace;letter-spacing:5px;color:#ffe0bf}
-        .vh-cta{position:absolute;left:22px;right:22px;bottom:50px;z-index:6;text-align:center;cursor:pointer;
+        .vh-cta{position:absolute;left:22px;right:22px;bottom:calc(50px + env(safe-area-inset-bottom));z-index:6;text-align:center;cursor:pointer;
           background:linear-gradient(180deg,#ffe07a,#ffb338);color:#2a1230;border:0;border-radius:18px;padding:17px;
           font:900 17px/1 system-ui;letter-spacing:.3px;box-shadow:0 14px 36px rgba(255,140,60,.5),0 0 0 1px rgba(255,255,255,.3) inset;animation:vhUp .7s .4s both}
         @media (prefers-reduced-motion:reduce){.vh-eye,.vh-sun,.vh-wm,.vh-cta{animation:none}}
