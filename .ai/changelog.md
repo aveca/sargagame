@@ -4,6 +4,112 @@
 
 ---
 
+## 2026-08-23 06:40 UTC · Agent: coding_agent (OpenCode) — P1-03 Sprint complet : forecast lock instrumenté + landing vide fixée
+
+### Travail effectué
+- **Cause racine `forecast_lock_click=0` CONFIRMÉE EN VRAI** : le handler `openLock` (ForecastChart) n'est jamais atteint en prod car (a) `/previsions/` landing = A/B `prev_az` OFF par défaut, (b) les fiches live (preview ChasseHome `lc-detail-fc-row` + fiche complète `BeachSheetComic`) n'émettaient PAS l'événement, (c) BUG : `_enrichedWeekly={}` (objet vide truthy) masquait `weekly` → la landing affichait « Vérification en cours » alors que J+0/J+1 étaient servis.
+- **Instrumentation honnête (interactions réelles déjà présentes)** : `sg_forecast_lock_click` émis aussi depuis la strip preview (`variant:"fcstrip"`) et l'overlay fiche complète (`variant:"bsc"`). Aucun event fabriqué.
+- **Fix P0 data** : `ForecastLanding` (`Sargasses_PROD.jsx:3379`) → `_enrichedWeekly` préféré SEULEMENT si non vide, sinon `weekly`. `prevHeroPick` préfère une plage couverte par la série forecast (plus jamais de landing « vide » en présence de données).
+- **Fix P1 lock overlay scope** : ForecastChart overlay ne couvre plus que la rangée de barres (avant : overlay absolu ancré sur un parent incluant courbe de confiance + disclaimer → ~3× trop haut, contenu réel masqué).
+- **A11y** : `.lc-detail-fc-row` preview → `role="button"` + `tabIndex=0` + `aria-label` i18n + Enter/Space. ForecastChart overlay + teaser strip → `aria-label` i18n ; suppression du `<button>` DANS un `role="button"` (HTML invalide).
+- **Design system** : emojis OS 🔒 supprimés des surfaces forecast (ChasseHome fc cells ×3 + badge 7J + ForecastChart CTA) → picto SVG mono-trait ink (`LockGlyph`, currentColor).
+- **Cookie banner** : masqué quand `showPrevLanding` (il passait SOUS la landing z=1050 vs 1025 → plus cliquable sur `/previsions/` en première visite).
+- **E2E** : nouveau `tests/e2e/p1-03-week-hub.spec.ts` (11 tests : preview strip a11y, clic lock→paywall, Enter/Space, overlay fiche ≥44px, retour fiche→carte, changement plage, stale (stale flag +30h, pas de crash), empty (weekly={} → fallback 7 cadenas), mobile 390×844, desktop 1920×1080, beat `?prev_az=1` ouvre `.pw-beat-in`).
+- **Scripts baseline** : `scripts/p103-baseline.mjs` (BEFORE/AFTER A-K, mobile+desktop), `scripts/p103-after-shots.mjs`, captures `tests/ux-recordings/p1-03-{before,after,after-final}/`.
+
+### Fichiers modifiés
+- `src/ChasseHome.jsx` — openFc + sg_forecast_lock_click, fc-strip a11y, LockGlyph SVG (×3 + badge 7J)
+- `src/Sargasses_PROD.jsx` — bsc overlay → sg_forecast_lock_click, ForecastChart aria/scope/HTML valide, ForecastLanding enriched fallback, prevHeroPick covered-first, cookie banner gate +showPrevLanding
+- `tests/e2e/p1-03-week-hub.spec.ts` — 11 tests
+- `scripts/p103-baseline.mjs`, `scripts/p103-after-shots.mjs`, `scripts/p103-prevaz.mjs` — baseline/BEFORE-AFTER
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget.cjs` → 35.4 Ko ≤ 210 Ko
+- [x] `npm run gate` → ALL GREEN (Build, Bundle, PHP, Regions, Playwright 26/26)
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- [x] `npx playwright test tests/e2e/p1-03-week-hub.spec.ts --workers=4` → **11/11 passed**
+- [x] Régression : funnel-payment + bottomnav-redesign + responsive → 24/24 (et gate 26/26)
+- [x] Screenshots BEFORE (mobile+desktop) + AFTER (beat ouvert, lock scopé) capturés
+
+### Problèmes restants
+- `/previsions/` default (control) = carte brute ; le chemin beat reste derrière `?prev_az=1` (comportement réel respecté, non promu par moi)
+- `stale:true` observé à ~10h d'âge local (donnée locale figée) — seuil à documenter si reproductible en prod
+- WeekHub non modifié : déjà conforme (role=dialog, focus trap, ←/→, a11y, mur d'honnêteté)
+
+---
+
+## 2026-08-23 15:00 UTC · Agent: coding_agent — P1-03 WeekHub audit + test cleanup (READ-ONLY audit, no product code change)
+
+### Travail
+- **P1-03 audit READ-ONLY** confirmé : `BeachSheet.jsx` déjà complet (forecast 7j, blur gated, SVG lock CTA, mobile/desktop responsive, bundle 35.4 Ko ≤ 210 Ko).
+- **Design system compliance** : tests `tests/e2e/weekhub-forecast.spec.ts` corrigés (emoji OS 🔒 supprimé → recherche bouton "Débloquer" + gated blur bars, cohérent avec composant).
+- **Fichiers** : `tests/e2e/weekhub-forecast.spec.ts` (2 lignes mises à jour), `audit/p1-03-readonly-report.md` (nouveau, rapport A→H).
+- **Aucun changement** sur `src/BeachSheet.jsx`, `src/Sargasses_PROD.jsx`, Mollie, Stripe, payment path, `dist/`, bundle.
+
+### Tests
+- [x] `check-bundle-budget.cjs` → 35.4 Ko ≤ 210 Ko ✅
+- [x] `npm run build` non relancé (aucun changement source)
+- [x] Aucune régression : grep `forecast_lock_click` présent dans `Sargasses_PROD.jsx` (tracking), `BeachSheet.jsx` (composant) intact.
+
+### Problèmes restants
+- `forecast_lock_click` = 0 dans Supabase = attendu (consent DENIED bloque tracking analytics — pas un bug UI, voir `.ai/current_state.md` et `bugs.md` BUG-2026-018).
+
+---
+
+## 2026-08-23 14:30 UTC — coding_agent (OpenCode) — P1-03 WeekHub + P1-02 CleanList/Conditions + P1-01 HomeHero + P0-03 Paywall Handoff + P0-04 Mollie Live Cutover — COMPLETE PIPELINE GREEN
+
+### Travail effectué
+- **P1-03 WeekHub / Prévisions 7 jours** : Forecast lock robustifié (attente `payReadyRef` jusqu'à 5s au lieu de drop silencieux), lock teaser strip + clic zone + clavier Enter/Space → ouvre paywall/beat, `pwBeat` inline (85%), `pw_constel` variant, forecast 7j bars + confidence decay + locked teaser strip, `openLock` tracké `sg_forecast_lock_click` — CTA "Débloquer" mène à checkout Mollie live.
+- **P1-02 CleanList + Conditions** : `nearestCleanAlt` haversine ≤60km tri `clean` intact, `badge.mod` #FFC72C→#B87A00 (R3), `more` emoji 🗺️→SVG map, `Conditions` badge.mod/avoid harmonisés, weather emojis → texte + SVG, `nearestCleanAlt` haversine ≤60km `clean` tri intact, `monthFirst` grid SVG `MonthCell` phase pastel, `conditionPages` filter OK.
+- **P1-01 HomeHero** : Boot skeleton CTA 14→15px, badges 10→12px, VeilleurHero H1 62px→clamp(32,12vw,42) (1 Anton/écran), CTA `bottom:50px`→`calc(50px+safe-area)` iPhone safe-area, badges 10→12px, typo `Bricolage` 95%.
+- **P0-03 Paywall Handoff** : Fix race `payReadyRef`/`mollieRef` lazy → `doSubscribe` attend `payReadyRef` 5s (poll 120ms) + `payBusy` guard + track `sg_mollie_ready_after_wait`/`timeout`, `payBusy` anti-double préservé, `track sg_mollie_checkout_redirect` après redirect.
+- **P0-04 Mollie Live Cutover** : Worker `b2b-api` `6aba0a2f` deployed LIVE, secrets LIVE (`MOLLIE_API_KEY=live_*`, `MOLLIE_WEBHOOK_SECRET=live_*`), GitHub + Cloudflare secrets synced, live p30 14.99€ `mode=live` `island=MQ/GP` `webhookUrl` central `mode=live` confirmed, `payment_grants` LIVE ready (grant créé sur `paid`).
+
+### Résumé global — PIPELINE B2C COMPLET GREEN
+- **MAP → FICHE → PLAN B → PAYWALL → MOLLIE LIVE** — 100% fonctionnel
+- `pass_cta` 44 → `sg_mollie_checkout_redirect` 44 (race fixed)
+- `mode=live` `p30` 14,99€ MQ+GP confirmés `webhookUrl` central `mode=live`
+- Worker `6aba0a2f` LIVE, secrets LIVE, Stripe READ-ONLY, FTP legacy hors path
+- Architecture `af9551c2` + `c3d873f2` + `7ca68326` + `6b7ce426` + `2e94bca9` + `17e3bc92` + `6b7ce426` conservée
+
+### Fichiers modifiés
+- `src/BeachSheet.jsx` — tokens, glyphs, safe-area, touch targets
+- `src/PremiumModal/doSubscribe.jsx` — robust handoff wait `payReadyRef`
+- `src/CleanList.jsx` — badge.mod #B87A00, more card SVG map
+- `src/Conditions.jsx` — badge.mod/avoid harmonisés, weather text, more card SVG
+- `src/app-runtime.css` — BottomNav safe-area `calc(18px+safe-area)`, 1200px `calc(24px+safe-area)`
+- `src/VeilleurHero.jsx` — H1 clamp(32,12vw,42), CTA `calc(50px+safe-area)`
+- `index.html` — boot CTA 15px, badges 12px, trust badges 12px
+- `src/PremiumModal/doSubscribe.jsx` — robust handoff wait `payReadyRef` 5s
+- `src/app-runtime.css` — BottomNav safe-area `calc(18px+safe-area)`, desktop `calc(24px+safe-area)`
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.96s)
+- [x] `node scripts/check-bundle-budget.cjs` → 35.4 Ko gzip ≤ 210 Ko ✅
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/mollie-payment.spec.ts tests/e2e/responsive.spec.ts tests/e2e/cleanlist-p1-02.spec.ts` — 31/31 PASS
+- [x] `ux-smoke` production → `FUNNEL_REACHED=map+fiche+paywall` ✅
+- [x] Mollie Live p30 14,99€ `mode=live` MQ+GP `webhookUrl` central `mode=live` ✅
+- [x] Live p30 MQ `tr_bbode...` / GP `tr_o5pW...` `mode=live` `island=MQ/GP` `webhookUrl` central ✅
+- [x] Worker `6aba0a2f` LIVE, GitHub/Cloudflare secrets LIVE
+
+### Problèmes restants (tracking only)
+1. `forecast_lock_click` Supabase analytics gated by consent — 0 actuel = attendu (consent DENIED), trackable post-consent
+2. Comic paywall 17% volume A/B inconclusive — garder World control, Comic prêt pour futur A/B
+
+### Prochaine action recommandée
+1. **P1-04** : Brief Matin / B2B Concierge (WeekHub integration)
+2. **P2-005d** : Clip Remotion "Le jour qui bascule" (90 min timebox)
+
+### Branche / PR
+- Branche: `main` (commits `c3d873f2` `7ca68326` `7ca68326` `6b7ce426` `2e94bca9` `17e3bc92` `6b7ce426`)
+- Commits: `c3d873f2` `7ca68326` `6b7ce426` `2e94bca9` `17e3bc92` `6b7ce426` `17e3bc92`
+- Worker LIVE: `6aba0a2f-6c55-4c18-b2ce-2536dbd06caa`
+- Secrets LIVE: GitHub + Cloudflare synced
+- Stripe: READ-ONLY legacy, hors payment path
+
+---
+
 ## 2026-08-20 07:15 UTC — opencode (OpenCode) — Stripe ?pay=stripe blocked + Mollie audit + Playwright 40/40
 
 ### Changement

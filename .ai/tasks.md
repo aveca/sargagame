@@ -8,6 +8,13 @@
 
 ## Récemment complété
 
+- [x] **P1-03 WeekHub / Prévisions 7 jours / Forecast lock — GREEN** (@coding_agent OpenCode, 2026-08-23 06:45 UTC) — Cause racine `forecast_lock_click=0` prouvée (landing prev_az OFF + fiches live non instrumentées + `_enrichedWeekly={}` truthy masquant `weekly`). Fixes : sg_forecast_lock_click sur fcstrip+bsc (interactions réelles), a11y role/clavier/aria, forecast lock scopé aux barres, emojis → SVG, cookie banner sous landing, prevHeroPick covered-first. E2E 11/11 + gate ALL GREEN (26/26) + smoke 4/4 + bundle 35.4 Ko. BEFORE/AFTER dans `tests/ux-recordings/p1-03-*`. Mollie LIVE inchangé.
+
+- [x] **P0-04 Mollie Live Cutover — PAYMENT HANDOFF GREEN** (@coding_agent OpenCode, 2026-08-23) — Worker `6aba0a2f` LIVE, secrets LIVE, `p30 14,99€` `mode=live` MQ+GP, `sg_mollie_checkout_redirect` 44/44, `pass_cta→checkout` race fixed, handoff robust `payReadyRef` wait 5s. Commit `6b7ce426`.
+- [x] **P0-03 Paywall Handoff — Robuste handoff Mollie** (@coding_agent OpenCode, 2026-08-23) — Fix race `payReadyRef`/`mollieRef` lazy → `doSubscribe` attend `payReadyRef` 5s (poll 120ms) + `payBusy` guard + track `sg_mollie_ready_after_wait`/`timeout`, `payBusy` anti-double, `sg_mollie_checkout_redirect` tracké. Commit `6b7ce426`.
+- [x] **P1-03 WeekHub / Prévisions 7 jours** (@coding_agent OpenCode, 2026-08-23) — Forecast lock robustifié (attente `payReadyRef` 5s), lock teaser strip + clic zone + clavier Enter/Space → paywall/beat, `pwBeat` inline (85%), `pw_constel` variant, forecast 7j + confidence decay + locked teaser strip, `openLock` `sg_forecast_lock_click`. Commit `17e3bc92`.
+- [x] **P1-02 CleanList + Conditions — Plan B + Conditions polish** (@coding_agent OpenCode, 2026-08-23) — `nearestCleanAlt` haversine ≤60km `clean` tri intact, `badge.mod` #FFC72C→#B87A00 (R3), `more` emoji→SVG map, `Conditions` badge.mod/avoid harmonisés, weather emojis→texte+SVG, `nearestCleanAlt` haversine ≤60km `clean` tri intact. Commit `17e3bc92`.
+- [x] **P1-01 HomeHero / Première impression** (@coding_agent OpenCode, 2026-08-23) — Boot CTA 14→15px, badges 10→12px, VeilleurHero H1 62px→clamp(32,12vw,42) (1 Anton/écran), CTA `bottom:50px`→`calc(50px+safe-area)` iPhone safe-area, badges 10→12px, typo `Bricolage` 95%. Commit `2e94bca9`.
 - [x] **Full UX Audit + Build + Tests + Deploy + Handoff Ready** (@coding_agent OpenCode, 2026-08-16 16:00 UTC) — Audit UX complet (12 écrans, 400+ assets vidéo, 100+ OG images, scènes SVG), build 182.5 Ko gzip ≤ 210 Ko, 34/34 Playwright green, ux-smoke 4/4, PHP lint 6/6, push main → Daily Copernicus + Deploy SUCCESS 14m15s sur 5 domaines. Projet prêt pour prochain agent IA — handoff complet dans `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`. Commit 1335561a.
 - [x] **Full Experience Verification + Test Fixes + Deploy** (@coding_agent OpenCode, 2026-08-14 19:45 UTC) — Vérification complète parcours utilisateur sur 5 domaines live (MQ, GP, Miami, Cancun, Punta Cana) : homepages 200 OK, version v219 sync, data API ERDDAP-live 4.4h, beach fiches 200 OK, paywall Mollie+Stripe+React, payment pages 200 OK, funnel Apps Script 103K sessions/5 conv/€5.99 MRR. Corrections tests : filtré erreur Mollie non-critique `setProfileId`, retry fiche visibility pour race condition map label. Gate de ship : build OK 3.70s, bundle 182.5 Ko ≤ 210 Ko, ux-smoke 4/4 tokens, PHP lint 6/6 OK, Playwright 12/13 pass (1 flaky pré-existant). Push main → auto-deploy Daily Copernicus + Deploy sur 5 domaines. Commit 1335561a.
 - [x] **P0 CRITICAL — Fix bouton muet Mollie : OnsiteCheckout restauré** (@coding_agent OpenCode glm, 2026-08-12 21:30 UTC) — Bouton « Commencer maintenant → » (Pass one-time Mollie) était MUET sur les 5 domaines. Cause racine : le split `PremiumModal` (commits `5b87b8b4` + `6020ae78`) avait perdu l'overlay `payStep` + init `mollieRef.current = window.Mollie(profileId, …)`. Sans lui, `onPassBuy → doSubscribe → mollieRef.current.createToken()` throw silencieux (catch avale) → bouton muet. Fix : new module `src/PremiumModal/OnsiteCheckout.jsx` restore overlay z 1300 + 2 effets (init Mollie + mount des 4 Components cardHolder/cardNumber/expiryDate/verificationCode). `onPassBuy` → `setPayStep(true)` au lieu de `doSubscribe()` direct. Gate : build OK, bundle 181.9 Ko ≤ 210 Ko (+2.5 Ko), smoke 4/4, test live iPhone 12 confirme overlay s'ouvre avec 4 champs carte + 5 iframes Mollie. Playwright funnel-payment 12/13 (1 flaky pré-existant — race maplabel, fail aussi sur main HEAD pré-fix).
@@ -183,7 +190,6 @@
 - **Estimation** : 90 min timebox autonomie
 - **Statut** : [~] in_progress by coding_agent
 
-
 ---
 
 ## P3 — Améliorations
@@ -238,6 +244,18 @@
 - [x] **BUG-FIX-012**: P1 — paypal.php annual amount 3999 → 4990 (data corruption)
 - [x] **BUG-FIX-013**: P1 — create-checkout.php missing null guard on payment_method
 - [x] **BUG-FIX-014**: P2 — mollie.php REQUEST_METHOD ?? 'POST' + error sanitization
+- [x] **BUG-FIX-009**: retry-failed-payment.php undefined $status variable fix
+- [x] **IMPROVE-001**: Sargasses_PROD.jsx dead PassOffer import removed (-3.2 Ko bundle)
+- [x] **IMPROVE-002**: Google Fonts @import → self-hosted in colors_and_type.css + legal.css
+- [x] **IMPROVE-003**: 3 missing email functions (mol_b2b_trial_email, mol_payment_failed_retry_email, mol_b2b_meeting_notify)
+- [x] **IMPROVE-004**: Stripe PRO token embeds subscription_id for revocation
+- [x] **IMPROVE-005**: track-click.php str_ends_with → substr (PHP 7.x compat)
+- [x] **IMPROVE-006**: write-mollie-config.cjs exit(1) on missing API key
+- [x] **BUG-FIX-010**: P0 — PremiumModal.jsx _ctxStatus undefined in ComicPaywall (paywall copy)
+- [x] **BUG-FIX-011**: P1 — mollie-lib.php mol_b2b_is_revoked() file transients → Supabase
+- [x] **BUG-FIX-012**: P1 — paypal.php annual amount 3999 → 4990 (data corruption)
+- [x] **BUG-FIX-013**: P1 — create-checkout.php missing null guard on payment_method
+- [x] **BUG-FIX-014**: P2 — mollie.php REQUEST_METHOD ?? 'POST' + error sanitization
 
 ### Commit
 - `e8be7c04` — fix: undefined $status, dead PassOffer import, Google Fonts self-hosted
@@ -250,4 +268,3 @@
 - [ ] **P1-03**: Show calibration proof at paywall decision point (movement /fiabilite/ into modal)
 - [ ] **P2-01**: 78 Google Fonts @import → migrate to self-hosted fonts (entire /public/)
 - [ ] **P2-02**: "Tableau de bord" for pipeline freshness visible on homepage (the "updated X hours ago" to all visitors too)
-

@@ -1,0 +1,59 @@
+{
+  "tag": "after",
+  "t": "2026-08-23T06:23:01.851Z",
+  "cases": {
+    "mobile": {
+      "errs": [],
+      "forecastSection": false,
+      "barCount": 0,
+      "bscBarCount": 7,
+      "ficheLockVisible": true,
+      "ficheLockBox": {
+        "x": 69.6875,
+        "y": 455.796875,
+        "width": 304.3125,
+        "height": 48.5
+      },
+      "ficheLockOpacity": "1",
+      "fichePaywallOpen": true,
+      "lockCount": 0,
+      "lockVisible": false,
+      "stripVisible": false,
+      "freshness": {
+        "updatedAt": "2026-08-22T18:37:41.425Z",
+        "stale": true,
+        "ageH": 11.8
+      },
+      "secondBeachBars": 0,
+      "prevBars": 0,
+      "hScroll": false
+    },
+    "desktop": {
+      "errs": [],
+      "forecastSection": false,
+      "barCount": 0,
+      "bscBarCount": 7,
+      "ficheLockVisible": true,
+      "ficheLockBox": {
+        "x": 778,
+        "y": 523.421875,
+        "width": 442,
+        "height": 48.5
+      },
+      "ficheLockOpacity": "1",
+      "fichePaywallOpen": true,
+      "lockCount": 0,
+      "lockVisible": false,
+      "stripVisible": false,
+      "freshness": {
+        "updatedAt": "2026-08-22T18:37:41.425Z",
+        "stale": true,
+        "ageH": 11.8
+      },
+      "secondBeachBars": 0,
+      "prevBars": 0,
+      "hScroll": false
+    }
+  },
+  "consoleErrors": []
+}

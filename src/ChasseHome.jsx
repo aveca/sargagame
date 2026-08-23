@@ -279,6 +279,14 @@ function cleanNearby(beach,pool){
    cf. circuit-breaker fiche-dive). Additif, in-world, ZÉRO logique paiement (tap →
    onPremium, inchangé). Réversible : ?fc7=0 → ancien strip plat. */
 function fc7On(){ try{ return !/[?&]fc7=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+// Cadenas SVG mono-trait ink (bible brand : emojis OS bannis → picto SVG). 14px, hérite
+// la couleur courante (currentColor) pour se fondre dans la cellule teaser/lock.
+function LockGlyph(){ return (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{verticalAlign:"-1px"}}>
+    <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+  </svg>
+) }
 /* Inverse de SARG_TO_BEACH (SOURCE DE VÉRITÉ = src/Sargasses_PROD.jsx) : beach.id →
    id de zone sentinelle dans weekly{}. Carte stable (20 zones MQ/GP) — garder synchro. */
 const SARG_BY_BEACH={mq014:"grande-anse",mq011:"anse-mitan",mq012:"anse-noire",mq034:"tartane",mq024:"anse-madame",mq016:"diamant",mq008:"pt-marin",mq004:"sainte-anne",mq001:"les-salines",mq044:"vauclin",mq033:"precheur",gp021:"gp-grande-anse",gp031:"gp-malendure",gp010:"gp-sainte-anne",gp005:"gp-pt-chateaux",gp012:"gp-gosier",gp009:"gp-caravelle",gp014:"gp-bas-du-fort",gp024:"gp-deshaies",gp080:"gp-moule",gp042:"gp-vieux-fort"}
@@ -518,7 +526,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
     if(n&&track)try{track("sg_detail_verdict_why",{beach_id:beach.id,stale:why&&why.stale?1:0,interp:why&&why.interp?1:0})}catch(_){}}
   const v=vof(beach.status), r=rarity(beach.score)
   const sc=beach.score!=null?Math.round(beach.score):null
-  const openFc=()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
+  const openFc=()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; if(track)try{track("sg_forecast_lock_click",{variant:"fcstrip",beat:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
   const pw=powers(beach,lang)
   const head = beach.status==="avoid" ? {fr:"ÉVITE CE MATIN",en:"AVOID THIS MORNING",es:"EVITA HOY"}
     : beach.status==="moderate" ? {fr:"À SURVEILLER",en:"KEEP AN EYE",es:"A VIGILAR"}
@@ -621,7 +629,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             <div className="lc-fc-cap">{fcConfJ1!=null
               ? _t({fr:`7 jours, sans trou. Plus on s'éloigne, moins on est sûr — on te le dit. ${fcConfJ1}% pour demain.`,en:`7 days, no blanks. The further out, the less sure — and we tell you. ${fcConfJ1}% for tomorrow.`,es:`7 días, sin huecos. Cuanto más lejos, menos seguros — y te lo decimos. ${fcConfJ1}% para mañana.`})
               : _t({fr:"7 jours, sans trou — estimés jour par jour.",en:"7 days, no blanks — estimated day by day.",es:"7 días, sin huecos — estimados día a día."})}</div>
-            <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
+            <div className="lc-detail-fc-row" role={isPremium?undefined:"button"} tabIndex={isPremium?undefined:0}
+              aria-label={isPremium?undefined:_t({fr:"Débloquer les prévisions 7 jours",en:"Unlock the 7-day forecast",es:"Desbloquear el pronóstico de 7 días"})}
+              onClick={isPremium?undefined:openFc}
+              onKeyDown={isPremium?undefined:((e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openFc()}})}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=fc7[i]
                 if(i===0) return (
@@ -632,7 +643,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
                 if(!d) return (
                   <div key={i} className="lc-fc-cell lock">
-                    <span className="lc-fc-day">·</span><span className="lc-fc-dot">🔒</span>
+                    <span className="lc-fc-day">·</span><span className="lc-fc-dot"><LockGlyph/></span>
                   </div>
                 )
                 const dv=vof(d.status), far=d.type==="horizon"
@@ -647,7 +658,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 return (
                   <div key={i} className={`lc-fc-cell teaser s-${dv.st}${far?" far":""}`}>
                     <span className="lc-fc-day">{fcLetter(d,lang)}</span>
-                    <span className="lc-fc-dot">🔒</span>
+                    <span className="lc-fc-dot"><LockGlyph/></span>
                     {conf!=null&&<span className="lc-fc-conf">{conf}%</span>}
                   </div>
                 )
@@ -670,7 +681,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         ) : (
           <div className="lc-detail-fc">
             <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
-            <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
+            <div className="lc-detail-fc-row" role={isPremium?undefined:"button"} tabIndex={isPremium?undefined:0}
+              aria-label={isPremium?undefined:_t({fr:"Débloquer les prévisions 7 jours",en:"Unlock the 7-day forecast",es:"Desbloquear el pronóstico de 7 días"})}
+              onClick={isPremium?undefined:openFc}
+              onKeyDown={isPremium?undefined:((e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openFc()}})}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=new Date(Date.now()+i*864e5)
                 const dayMap={fr:["D","L","M","M","J","V","S"],en:["S","M","T","W","T","F","S"],es:["D","L","M","X","J","V","S"]}
@@ -689,7 +703,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 return (
                   <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
                     <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
-                    <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):(isPremium?"·":"🔒")}</span>
+                    <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):(isPremium?"·":<LockGlyph/>)}</span>
                   </div>
                 )
               })}
@@ -1904,7 +1918,7 @@ export default function ChasseHome(props){
       {/* ---- PRÉVISION 7J = premium ---- */}
       <section className="lc-lock">
         <div className="lc-lock-card">
-          <div className="lc-lock-badge">🔒 7J</div>
+          <div className="lc-lock-badge"><LockGlyph/> 7J</div>
           <div className="lc-eyebrow">{_t(I18N.lockTitle)}</div>
           <p className="lc-sub lc-center">{_t(I18N.lockSub)}</p>
           <button type="button" className="lc-cta" onClick={()=>onPremium&&onPremium("chasse_lock")}>{_t(I18N.lockCta)}</button>

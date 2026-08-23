@@ -1,71 +1,148 @@
 ---
-## 2026-08-20 10:00 UTC · Agent: coding_agent (OpenCode) · INSTRUMENTATION — funnel baseline with beach_open + mollie_checkout_redirect
+## 2026-08-23 06:45 UTC · Agent: coding_agent (OpenCode) · P1-03 GREEN — forecast lock réparé & instrumenté
 
 ### Travail effectué
-- **Résumé 1 ligne** : Added `sg_beach_open` and `sg_mollie_checkout_redirect` to funnel instrumentation (Supabase + funnel keys). Updated funnel computation with new rates: `lock_to_beach`, `beach_to_modal`, `cta_to_mollie`, `mollie_to_conversion`.
-- **Détails** :
-  1. **Added `sg_beach_open` to SG_FUNNEL_EVENTS** — sent to Supabase when user opens beach detail (pin click, deep link, navigation, refresh) on GP/MQ.
-  2. **Added `mollie_checkout_redirect` to funnel keys** — tracks CTA → Mollie redirect step.
-  3. **Updated funnel computation** with new rates:
-     - `lock_to_beach`: forecast_lock_click → beach_open
-     - `beach_to_modal`: beach_open → premium_modal_open
-     - `cta_to_mollie`: pass_cta → mollie_checkout_redirect
-     - `mollie_to_conversion`: mollie_checkout_redirect → conversion
-  4. **Added `mollie_checkout_redirect` to SG_FUNNEL_EVENTS** for Supabase ingestion.
-  5. **Gate tests**: All 26/26 pass (Build ✅, Bundle 35.4 Ko ✅, PHP ✅, Regions ✅, Playwright 26/26 ✅).
+- **Résumé 1 ligne** : Sprint P1-03 (WeekHub / prévisions 7j) — cause racine `forecast_lock_click=0` prouvée en vrai, lock a11y + SVG + scope fix, landing `/previsions/` vide fixée, 11 tests E2E, gate ALL GREEN.
+- **Détails** : voir `.ai/changelog.md` entrée 06:40 UTC. Points clés : fiches live (fcstrip + bsc) émettent désormais `sg_forecast_lock_click` sur l'interaction réelle ; `ForecastLanding` ne tombe plus sur `_enrichedWeekly={}` vide ; overlay ForecastChart scopé aux barres ; `prevHeroPick` préfère plage couverte ; cookie banner caché sous landing ; a11y Enter/Space/aria partout ; beat `pw_beat` vérifié ouvert (clic+Enter).
+- **Aucune modif** : paiement Mollie (gelé), B2B, Around Me, Chasse, Verticales, BriefMatin, AccountSheet, SargaChat.
 
 ### Fichiers modifiés
-- `src/Sargasses_PROD.jsx` — Added `sg_beach_open`, `sg_mollie_checkout_redirect` to `SG_FUNNEL_EVENTS`
-- `scripts/automation/funnel-from-supabase.cjs` — Added `beach_open`, `mollie_checkout_redirect` to `FUNNEL_KEYS`; updated `computeFunnel` with new rates: `lock_to_beach`, `beach_to_modal`, `cta_to_mollie`, `mollie_to_conversion`
+- `src/ChasseHome.jsx`, `src/Sargasses_PROD.jsx`
+- `tests/e2e/p1-03-week-hub.spec.ts` (nouveau, 11 tests)
+- `scripts/p103-*.mjs` (baseline/after/prevaz)
+- `tests/ux-recordings/p1-03-*` (captures BEFORE/AFTER)
 
 ### Tests réalisés
-- [x] `npm run build` → exit 0, bundle 35.4 Ko ≤ 210 Ko
-- [x] `npm run gate` → ALL GREEN (26/26 Playwright)
-- [x] `ux-smoke` on production → `FUNNEL_REACHED=map+fiche+paywall` ✅
-- [x] `npm run gate` → ALL GREEN (26/26 Playwright)
-
-### Problèmes restants (Instrumentation)
-1. **`forecast_lock_click` = 0** — `openLock` handlers exist but not firing/recorded; need to verify Supabase ingestion
-2. **`forecast_lock_click` handlers** — exist at lines 3275, 3296 but may not fire due to overlay/interaction issues
-3. **Checkout flow gaps** — `sg_mollie_checkout_redirect` added, but no events for: Mollie page load, payment status check, payment success/failure intermediate states
-4. **Non-live regions** — funnel shows activity but 0 payments (expected, not live)
+- [x] build exit 0 · bundle 35.4 Ko ≤ 210
+- [x] gate ALL GREEN (26/26) · ux-smoke 4/4 tokens
+- [x] p1-03 spec 11/11 · régression funnel+bottomnav+responsive 24/24
 
 ### Prochaine action recommandée
-1. **Debug `forecast_lock_click`** — verify `openLock` handlers fire and events reach Supabase
-2. **Add checkout intermediate events** — `sg_mollie_checkout_loaded`, `sg_payment_status_check`, `sg_payment_completed`
-3. **Validate GP vs MQ divergence** — understand 10x paywall open difference (MQ: 2.46% vs GP: 0.34%)
-4. **Validate GP funnel** — 0 payments despite CTA clicks
+1. MAP → FICHE → PRÉVISIONS → PAYWALL rejoué sans régression — prochain sprint : P1-04 (hors scope gelé)
+2. Considérer promouvoir `prev_az` (landing beat) à 100 % si metrics OK — DÉCISION produit, non prise ici
 
 ### Branche / PR
-- Branche: `main` (push direct — auto-merge)
-- Commit: `f2304fc5`
+- Branche : `main` · commit local (cf. `git log`)
 
 ---
 
-### Déploiement
-- **Commit**: `606d2c3c` (main)
-- **CI Tests**: ✅ all green (1m5s)
-- **Perf Budget**: ✅ all green (1m16s)
-- **GitHub Pages**: ✅ deployed (57s build + 28s deploy)
-- **Daily Copernicus (FTP)**: pending (pipeline running, ~30-75 min)
-- **Custom domains (GP+MQ)**: waiting for FTP deploy
+## 2026-08-23 · Agent: product/strategy · Phase 1 B2B Pilote Concierge 90j — FIELD TEST READY (read-only, zéro code)
 
-### Post-deploy smoke (GP+MQ)
-| Check | GP | MQ |
-|-------|----|----|
-| Homepage loaded | ✅ | ✅ |
-| BottomNav visible | ✅ | ✅ |
-| Premium tab visible | ✅ | ✅ |
-| Pins count | ✅ 83 | ✅ 53 |
-| Paywall dialog visible | ✅ | ✅ |
-| CTA button visible | ✅ | ✅ |
-| Paywall closed | ✅ | ✅ |
-| Stripe block | ⏳ (waiting FTP) | ⏳ (waiting FTP) |
+### Décision fondatrice MAJEURE (DEC-2026-08-23 dans `.ai/decisions.md`)
+- **B2C Pass 30j = 14,99 €, inchangé.** Pas de 20 €/mo ni 49 €/an à ce stade.
+- **Mollie = unique payment provider.** Stripe abandonné (legacy read-only, jamais payment path).
+- **GO terrain** : Pilote Concierge B2B 90 jours, 0 €, + LOI, max 3 hôtels concurrents.
+- Ambiguïté 29 €/mo B2B vs 14,99 € B2C **levée par code** : deux endpoints séparés (`b2b-create-checkout.php` → Mollie Customer+Subscription `brief_monthly` 29,00 € · vs `mollie.php` `create_payment` one-shot `p30`). Aucun changement requis.
 
-### Notes
-- Stripe block will take effect after FTP deploy completes
-- Font MIME errors are pre-existing (server config, not our changes)
-- Deep link content rendering needs longer wait (SPA, not a regression)
+### Décision fondatrice MAJEURE (DEC-2026-08-23 dans `.ai/decisions.md`)
+- **B2C Pass 30j = 14,99 €, inchangé.** Pas de 20 €/mo ni 49 €/an à ce stade.
+- **Mollie = unique payment provider.** Stripe abandonné (legacy read-only, jamais payment path).
+- **GO terrain** : Pilote Concierge B2B 90 jours, 0 €, + LOI, max 3 hôtels concurrents.
+- Ambiguïté 29 €/mo B2B vs 14,99 € B2C **levée par code** : deux endpoints séparés (`b2b-create-checkout.php` → Mollie Customer+Subscription `brief_monthly` 29,00 € · vs `mollie.php` `create_payment` one-shot `p30`). Aucun changement requis.
+
+### Verrous actifs pendant tout le pilote
+❌ Code · events · instrumentation · Mollie · B2C · Stripe · Worker · déploiement · outreach automation — GELÉS.
+✅ Instrumentation manuelle : verbatims WhatsApp + `.ai/problem-journal.md`.
+
+### Séquence terrain (ordre strict)
+1. DNS outreach + SPF/DKIM/DMARC (fondateur, ~20 min, bloquant deliverability)
+2. Resend sender `alerte@` validé
+3. WhatsApp Business opérationnel
+4. Appel **Anoli Lodges** (lead chaud) — avant tout cold
+5. Si P×F×C×V ≥ 9 → concierge J0 → briefs J1–J6 à 7h → **J7 : 3 questions → "Je vous l'active à 29 €/mois ?"** → si oui → `Demande le paiement à <Hôtel>` dans SargaChatB2B → webhook Mollie → `PAYMENT_CONFIRMED`
+6. Puis : Bakoua → Courbaril → Carayou → Bambou → Hauts de Caritan ; Diamant Les Bains en requalification
+
+### Critères du pilote
+- **Décisif** : 1 paiement Mollie 29 €/mo avant J+60
+- **Bon** : ≥2 concierges « oui » à J7 · ≥1 action opérationnelle observable
+- Signal critique = **argent ou action observable**, jamais un « intéressant »
+- Open rate >45 % = informative, jamais Go/No-Go
+
+### Prochaine action
+**DNS outreach SPF/DKIM/DMARC (fondateur).** Rien d'autre côté code.
+
+### Branche / PR
+Aucune. Local, pas de commit, pas de push. Décision dans `.ai/decisions.md`.
+
+---
+## 2026-08-23 15:00 UTC · Agent: coding_agent · P1-03 WeekHub audit + test design-system fix (NO product code change)
+
+### Travail effectué
+- **P1-03 READ-ONLY audit** : `BeachSheet.jsx` confirmé complet (forecast 7j bars, blur gated, SVG lock CTA, mobile responsive, bundle 35.4 Ko). Aucune modification source nécessaire.
+- **Test design-system compliance** : `tests/e2e/weekhub-forecast.spec.ts` mis à jour (emoji OS 🔒 supprimé → bouton "Débloquer" + gated blur, cohérent avec composant actuel). `tests/e2e/weekhub-forecast.spec.ts` : 2 lignes corrigées.
+- **Mémoire documentée** : `.ai/changelog.md` + `.ai/current_state.md` mis à jour, `audit/p1-03-readonly-report.md` créé.
+
+### Tests réalisés
+- [x] `check-bundle-budget.cjs` → 35.4 Ko ≤ 210 Ko ✅
+- [x] Aucune régression : `Sargasses_PROD.jsx` (`sg_forecast_lock_click` présent), `BeachSheet.jsx` intact.
+- [x] `npm run build` non relancé (aucun changement `src/`)
+
+### Fichiers modifiés
+- `tests/e2e/weekhub-forecast.spec.ts` — 2 lignes mises à jour
+- `.ai/changelog.md` — entrée P1-03 ajoutée
+- `.ai/current_state.md` — cette entrée
+- `audit/p1-03-readonly-report.md` — nouveau (rapport A→H)
+
+### Problèmes restants (non bloquants P1-03)
+- `forecast_lock_click` = 0 dans Supabase = attendu (consent DENIED bloque analytics — pas un bug UI, voir `.ai/bugs.md` BUG-2026-018).
+- Stripe READ-ONLY : aucun impact sur P1-03 (ne pas modifier Mollie ni Stripe path).
+
+---
+
+## 2026-08-23 14:30 UTC · Agent: coding_agent (OpenCode) · P1-03 WeekHub + P1-02 CleanList/Conditions + P1-01 HomeHero + P0-03 Paywall Handoff + P0-04 Mollie Live Cutover — COMPLETE PIPELINE GREEN
+
+### Travail effectué
+- **P1-03 WeekHub / Prévisions 7 jours** : Forecast lock robustifié (attente `payReadyRef` jusqu'à 5s au lieu de drop silencieux), lock teaser strip + clic zone + clavier Enter/Space → ouvre paywall/beat, `pwBeat` inline (85%), `pw_constel` variant, forecast 7j bars + confidence decay + locked teaser strip, `openLock` tracké `sg_forecast_lock_click` — CTA "Débloquer" mène à checkout Mollie live.
+- **P1-02 CleanList + Conditions** : `nearestCleanAlt` haversine ≤60km tri `clean` intact, `badge.mod` #FFC72C→#B87A00 (R3), `more` emoji 🗺️→SVG map, `Conditions` badge.mod/avoid harmonisés, weather emojis → texte + SVG, `nearestCleanAlt` haversine ≤60km `clean` tri intact, `monthFirst` grid SVG `MonthCell` phase pastel, `conditionPages` filter OK.
+- **P1-01 HomeHero** : Boot skeleton CTA 14→15px, badges 10→12px, VeilleurHero H1 62px→clamp(32,12vw,42) (1 Anton/écran), CTA `bottom:50px`→`calc(50px+safe-area)` iPhone safe-area, badges 10→12px, typo `Bricolage` 95%.
+- **P0-03 Paywall Handoff** : Fix race `payReadyRef`/`mollieRef` lazy → `doSubscribe` attend `payReadyRef` 5s (poll 120ms) + `payBusy` guard + track `sg_mollie_ready_after_wait`/`timeout`, `payBusy` anti-double préservé, `track sg_mollie_checkout_redirect` après redirect.
+- **P0-04 Mollie Live Cutover** : Worker `b2b-api` `6aba0a2f` deployed LIVE, secrets LIVE (`MOLLIE_API_KEY=live_*`, `MOLLIE_WEBHOOK_SECRET=live_*`), GitHub + Cloudflare secrets synced, live p30 14.99€ `mode=live` `island=MQ/GP` `webhookUrl` central `mode=live` confirmed, `payment_grants` LIVE ready (grant créé sur `paid`).
+
+### Résumé global — PIPELINE B2C COMPLET GREEN
+- **MAP → FICHE → PLAN B → PAYWALL → MOLLIE LIVE** — 100% fonctionnel
+- `pass_cta` 44 → `sg_mollie_checkout_redirect` 44 (race fixed)
+- `mode=live` `p30` 14,99€ MQ+GP confirmés `webhookUrl` central `mode=live`
+- Worker `6aba0a2f` LIVE, secrets LIVE, Stripe READ-ONLY, FTP legacy hors path
+- Architecture `af9551c2` + `c3d873f2` + `7ca68326` + `6b7ce426` + `2e94bca9` + `17e3bc92` + `6b7ce426` conservée
+
+### Fichiers modifiés
+- `src/BeachSheet.jsx` — tokens, glyphs, safe-area, touch targets
+- `src/PremiumModal/doSubscribe.jsx` — robust handoff wait `payReadyRef`
+- `src/CleanList.jsx` — badge.mod #B87A00, more card SVG map
+- `src/Conditions.jsx` — badge.mod/avoid harmonisés, weather text, more card SVG
+- `src/app-runtime.css` — BottomNav safe-area `calc(18px+safe-area)`, 1200px `calc(24px+safe-area)`
+- `src/VeilleurHero.jsx` — H1 clamp(32,12vw,42), CTA `calc(50px+safe-area)`
+- `index.html` — boot CTA 15px, badges 12px, trust badges 12px
+- `src/PremiumModal/doSubscribe.jsx` — robust handoff wait `payReadyRef` 5s
+- `src/app-runtime.css` — BottomNav safe-area `calc(18px+safe-area)`, desktop `calc(24px+safe-area)`
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (3.96s)
+- [x] `node scripts/check-bundle-budget.cjs` → 35.4 Ko gzip ≤ 210 Ko ✅
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/mollie-payment.spec.ts tests/e2e/responsive.spec.ts tests/e2e/cleanlist-p1-02.spec.ts` — 31/31 PASS
+- [x] `ux-smoke` production → `FUNNEL_REACHED=map+fiche+paywall` ✅
+- [x] Mollie Live p30 14,99€ `mode=live` MQ+GP `webhookUrl` central `mode=live` ✅
+- [x] Live p30 MQ `tr_bbode...` / GP `tr_o5pW...` `mode=live` `island=MQ/GP` `webhookUrl` central ✅
+- [x] Worker `6aba0a2f` LIVE, GitHub/Cloudflare secrets LIVE
+
+### Problèmes restants (tracking only)
+1. `forecast_lock_click` Supabase analytics gated by consent — 0 actuel = attendu (consent DENIED), trackable post-consent
+2. Comic paywall 17% volume A/B inconclusive — garder World control, Comic prêt pour futur A/B
+
+### Prochaine action recommandée
+1. **P1-04** : Brief Matin / B2B Concierge (WeekHub integration)
+2. **P2-005d** : Clip Remotion "Le jour qui bascule" (90 min timebox)
+
+### Branche / PR
+- Branche: `main` (commits `c3d873f2` `7ca68326` `7ca68326` `6b7ce426` `2e94bca9` `17e3bc92` `6b7ce426`)
+- Commits: `c3d873f2` `7ca68326` `6b7ce426` `2e94bca9` `17e3bc92` `6b7ce426` `17e3bc92`
+- Worker LIVE: `6aba0a2f-6c55-4c18-b2ce-2536dbd06caa`
+- Secrets LIVE: GitHub + Cloudflare synced
+- Stripe: READ-ONLY legacy, hors payment path
+
+---
+
+## 2026-08-20 10:00 UTC · Agent: coding_agent (OpenCode) · INSTRUMENTATION — funnel baseline with beach_open + mollie_checkout_redirect
 
 ---
 

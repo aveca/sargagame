@@ -3168,7 +3168,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
   return(
     <>
-    <div style={{position:"relative"}}>
+    <div>
+      <div style={{position:"relative"}}>
       {timeline3D?<ForecastTimeline3D forecast={forecast} isPremium={isPremium} weatherDaily={weatherDaily} lang={lang}/>:
       arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
@@ -3215,6 +3216,28 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           )
         })}
       </div>}
+      {/* Lock overlay — scopé aux BARRES SEULEMENT (P1-03 : avant, la zone couvrait aussi
+          la courbe de confiance + le disclaimer — ~3× trop haute, contenu réel masqué). */}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
+        role="button" tabIndex={0} aria-label={_t(lang,"Débloquer la prévision 7 jours","Unlock the 7-day forecast","Desbloquear el pronóstico de 7 días")}
+        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
+        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+        background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
+        borderRadius:8}}>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+          <span className="gbtn" role="presentation" style={{
+            display:"inline-flex",alignItems:"center",gap:6,
+            padding:"10px 20px",fontSize:13,fontWeight:700,
+            fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> {lockCTA}
+          </span>
+          <span style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",fontWeight:500,textAlign:"center",maxWidth:160}}>
+            {lockSub}
+          </span>
+        </div>
+      </div>}
+      </div>
       {/* Confidence Decay Curve — visual trust signal: confidence decreasing over horizon */}
       {visible.some(d=>d.confidence!=null)&&(
         <div style={{margin:"6px 0 2px",padding:"6px 8px",borderRadius:8,background:"rgba(0,0,0,.03)"}}>
@@ -3273,29 +3296,11 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
           `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
-        role="button" tabIndex={0}
-        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
-        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-        background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
-        borderRadius:8}}>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-          <button className="gbtn" style={{
-            padding:"10px 20px",fontSize:13,fontWeight:700,
-            fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
-          }}>
-            🔒 {lockCTA}
-          </button>
-          <span style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",fontWeight:500,textAlign:"center",maxWidth:160}}>
-            {lockSub}
-          </span>
-        </div>
-      </div>}
     </div>
     {/* Locked-days teaser strip — outside the chart overlay so always visible */}
     {lockedDays.length>0&&(
       <div onClick={()=>openLock("strip")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("strip")}}}
-        role="button" tabIndex={0}
+        role="button" tabIndex={0} aria-label={_t(lang,"Voir les jours suivants · débloquer","See the next days · unlock","Ver los próximos días · desbloquear")}
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
@@ -3375,7 +3380,11 @@ function computeBestForecastDay(forecast,weeklyData){
 function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenBeach,onShowMap,trackFn,exiting}){
   const weather=useWeather(beach)
   const sargId=IS_NEW_REGION?beach?.id:BEACH_TO_SARG[beach?.id]
-  const enriched=sargData?._enrichedWeekly||sargData?.weekly
+  // P1-03 fix : `_enrichedWeekly` peut exister VIDE ({}) selon la région/pipeline — un {}
+  // truthy masquait alors `weekly` → la landing affichait « Vérification en cours » alors
+  // que J+0/J+1 étaient servis. Ne préférer l'enrichi que s'il porte des entrées.
+  const _ew=sargData?._enrichedWeekly
+  const enriched=(_ew&&Object.keys(_ew).length)?_ew:sargData?.weekly
   const activeWeekly=sargId&&enriched?enriched[sargId]:null
   const forecast=activeWeekly?.forecast||null
   const mood=moodFromStatus(beach?.status||"clean")
@@ -3462,7 +3471,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
               </div>
             :<div style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",lineHeight:1.45}}>
                 {_t(lang,"Vérification en cours, reviens demain.","Verification in progress, check back tomorrow.","Verificación en curso, vuelve mañana.")}
-              </div>}
+      </div>}
         </div>
         <button onClick={onShowMap} style={{display:"block",width:"100%",marginTop:18,padding:"14px 18px",borderRadius:14,
           border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",background:"var(--sg-card,#fff)",cursor:"pointer",
@@ -4610,7 +4619,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
                 }}/>
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
-            {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+            {!isPremium&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
         </div>
 
@@ -12458,7 +12467,11 @@ const[landingFunnel]=useState(()=>LF_OVERRIDE||"control")
       pick=cleans.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)})).sort((a,b)=>a._d-b._d)[0]
     }else{
       const pool=cleans.length?cleans:cands
-      pick=[...pool].sort((a,b)=>(b.score||0)-(a.score||0))[0]
+      // P1-03 : préférer une plage COUVERTE par la série forecast (jamais montrer
+      // « Vérification en cours » alors que 20 sentinelles portent la prévision).
+      const covered=pool.filter(b=>{try{const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];return !!(sid&&sargData.weekly[sid]?.forecast?.length)}catch(_){return false}})
+      const draw=covered.length?covered:pool
+      pick=[...draw].sort((a,b)=>(b.score||0)-(a.score||0))[0]
     }
     return pick||null
   },[showPrevLanding,allBeaches,sargData,island,userPos])
@@ -14709,7 +14722,7 @@ useEffect(()=>{
             Accepter → grant analytics_storage via gtag consent update.
             Refuser → analytics reste denied (comportement par défaut index.html).
             Rollback ?cookiebanner=0. */}
-        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
+        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&!showPrevLanding&&(
           <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:"calc(100px + max(16px, env(safe-area-inset-bottom)))",left:0,right:0,zIndex:1025,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
             borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) 16px",
