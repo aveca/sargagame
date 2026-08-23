@@ -63,7 +63,7 @@
   </div>
 
   <div class="btns">
-    <button class="b-clean" onclick="location.href='/'">
+    <button class="b-clean" onclick="go()">
       <span class="em">🗺️</span><span>Voir la carte</span>
     </button>
     <button class="b-mod" onclick="location.href='/pro/espace/'">
@@ -142,6 +142,17 @@
   document.querySelector('.b-clean span:last-child').textContent = b.map;
   document.querySelector('.b-mod span:last-child').textContent = b.pro;
 })();
+
+// Retour à l'app : si l'email est connu, on passe par le deep-link de restauration
+// /?premium_email= (sgVerifySub → droits posés côté app + toast). Ceinture+bretelles :
+// le redirectUrl primaire (/?mollie_return=1) est demandé au serveur à create_payment ;
+// ce fallback couvre les anciens paiements encore en vol.
+function go(){
+  var P = new URLSearchParams(location.search);
+  var email = P.get('email') || '';
+  if (email.indexOf('@') > 0) location.href = '/?premium_email=' + encodeURIComponent(email);
+  else location.href = '/';
+}
 </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: [['html', { outputFolder: 'test-results/report' }], ['line']],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['line']],
 
   use: {
     baseURL: process.env.PREVIEW_URL || 'http://localhost:4173',
@@ -20,7 +20,8 @@ export default defineConfig({
       name: 'mobile-chromium',
       use: {
         ...devices['iPhone 12'],
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
+        browserName: 'chromium',
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
       },
     },
   ],
@@ -28,7 +29,7 @@ export default defineConfig({
   webServer: {
     command: 'npx vite preview --port 4173',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 30000,
   },
 });

@@ -801,7 +801,11 @@ function ScoreBlobInteractive({score,color,size=84,onMorph,children}){
     },400)
   }
   return(
-    <div 
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Score ${score}/100`}
+      onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();handleClick()}}}
       onClick={handleClick}
       style={{
         cursor:"pointer",
@@ -3168,7 +3172,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
   return(
     <>
-    <div style={{position:"relative"}}>
+    <div>
+      <div style={{position:"relative"}}>
       {timeline3D?<ForecastTimeline3D forecast={forecast} isPremium={isPremium} weatherDaily={weatherDaily} lang={lang}/>:
       arcOn?<MareeVeilleur visible={visible} lang={lang} freeThreshold={freeThreshold}/>:
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
@@ -3215,6 +3220,28 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           )
         })}
       </div>}
+      {/* Lock overlay — scopé aux BARRES SEULEMENT (P1-03 : avant, la zone couvrait aussi
+          la courbe de confiance + le disclaimer — ~3× trop haute, contenu réel masqué). */}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
+        role="button" tabIndex={0} aria-label={_t(lang,"Débloquer la prévision 7 jours","Unlock the 7-day forecast","Desbloquear el pronóstico de 7 días")}
+        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
+        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+        background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
+        borderRadius:8}}>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+          <span className="gbtn" role="presentation" style={{
+            display:"inline-flex",alignItems:"center",gap:6,
+            padding:"10px 20px",fontSize:13,fontWeight:700,
+            fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> {lockCTA}
+          </span>
+          <span style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",fontWeight:500,textAlign:"center",maxWidth:160}}>
+            {lockSub}
+          </span>
+        </div>
+      </div>}
+      </div>
       {/* Confidence Decay Curve — visual trust signal: confidence decreasing over horizon */}
       {visible.some(d=>d.confidence!=null)&&(
         <div style={{margin:"6px 0 2px",padding:"6px 8px",borderRadius:8,background:"rgba(0,0,0,.03)"}}>
@@ -3273,29 +3300,11 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
           `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("control")}}}
-        role="button" tabIndex={0}
-        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
-        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-        background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
-        borderRadius:8}}>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-          <button className="gbtn" style={{
-            padding:"10px 20px",fontSize:13,fontWeight:700,
-            fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
-          }}>
-            🔒 {lockCTA}
-          </button>
-          <span style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",fontWeight:500,textAlign:"center",maxWidth:160}}>
-            {lockSub}
-          </span>
-        </div>
-      </div>}
     </div>
     {/* Locked-days teaser strip — outside the chart overlay so always visible */}
     {lockedDays.length>0&&(
       <div onClick={()=>openLock("strip")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLock("strip")}}}
-        role="button" tabIndex={0}
+        role="button" tabIndex={0} aria-label={_t(lang,"Voir les jours suivants · débloquer","See the next days · unlock","Ver los próximos días · desbloquear")}
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
@@ -3375,7 +3384,11 @@ function computeBestForecastDay(forecast,weeklyData){
 function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenBeach,onShowMap,trackFn,exiting}){
   const weather=useWeather(beach)
   const sargId=IS_NEW_REGION?beach?.id:BEACH_TO_SARG[beach?.id]
-  const enriched=sargData?._enrichedWeekly||sargData?.weekly
+  // P1-03 fix : `_enrichedWeekly` peut exister VIDE ({}) selon la région/pipeline — un {}
+  // truthy masquait alors `weekly` → la landing affichait « Vérification en cours » alors
+  // que J+0/J+1 étaient servis. Ne préférer l'enrichi que s'il porte des entrées.
+  const _ew=sargData?._enrichedWeekly
+  const enriched=(_ew&&Object.keys(_ew).length)?_ew:sargData?.weekly
   const activeWeekly=sargId&&enriched?enriched[sargId]:null
   const forecast=activeWeekly?.forecast||null
   const mood=moodFromStatus(beach?.status||"clean")
@@ -3462,7 +3475,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
               </div>
             :<div style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",lineHeight:1.45}}>
                 {_t(lang,"Vérification en cours, reviens demain.","Verification in progress, check back tomorrow.","Verificación en curso, vuelve mañana.")}
-              </div>}
+      </div>}
         </div>
         <button onClick={onShowMap} style={{display:"block",width:"100%",marginTop:18,padding:"14px 18px",borderRadius:14,
           border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",background:"var(--sg-card,#fff)",cursor:"pointer",
@@ -4502,7 +4515,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       {/* Sheet */}
       {/* bsc-fiche = cible EXCLUSIVE de la media query desktop ci-dessus (bsc-sheet est
           aussi la classe de l'overlay B2BModal — ne pas le clamp par ricochet) */}
-      <div ref={sheetRef} className="bsc-sheet bsc-fiche" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+      <div ref={sheetRef} className="bsc-sheet bsc-fiche" role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Fiche plage","Beach sheet","Ficha de playa")} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:"var(--z-sheet)",maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
@@ -4511,7 +4524,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {/* Grip + X visible (NN/g : jamais handle seul) */}
         <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
         <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+          style={{position:"absolute",top:10,right:10,width:44,height:44,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 
         {/* En-tête : nom + badge statut */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,paddingRight:34}}>
@@ -4610,7 +4623,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
                 }}/>
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
-            {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+            {!isPremium&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
         </div>
 
@@ -4825,13 +4838,15 @@ const fcUp = false
         }
         requestClose()
       }}/>
-      <div className="sheet" ref={sheetRef}
+      <div className="sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Fiche plage","Beach sheet","Ficha de playa")}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
-        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}} style={{height:"min(600px, 70svh)",background:"#0B2230",
+        <div role="button" tabIndex={0} aria-label={_t(lang,"Voir la scène de la plage en grand","View the beach scene fullscreen","Ver la escena de la playa en grande")}
+          onKeyDown={e=>{if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button")){e.preventDefault();setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",via:"keyboard"})}}}
+          onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}} style={{height:"min(600px, 70svh)",background:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
           {/* SVG D'ABORD (directive 14/06 : « les images dépendent du jour,
               remplace par du svg perso par heure/lieu, pas ce qu'on voit en
@@ -7140,8 +7155,10 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
       overflow:"hidden",
       animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",
     }}>
-      {/* Main row — tap opens beach sheet */}
-      <div onClick={handleMainClick} style={{
+      {/* Main row — tap opens beach sheet (role=button : unique point d'entrée clavier vers la fiche) */}
+      <div role="button" tabIndex={0} aria-label={_t(lang,`Ouvrir la fiche ${top.name}`,`Open ${top.name}`, `Abrir ${top.name}`)}
+        onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();handleMainClick()}}}
+        onClick={handleMainClick} style={{
         padding:"11px 14px",cursor:"pointer",
         display:"flex",alignItems:"center",gap:12,
       }}>
@@ -7731,7 +7748,14 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   }
 
   const hasBeach=!!(beach?.name)
-  
+
+  // A11y : Échap ferme la modale (3e voie avec tap backdrop)
+  useEffect(()=>{
+    const h=e=>{if(e.key==="Escape"){e.stopPropagation();onClose&&onClose()}}
+    document.addEventListener("keydown",h)
+    return()=>document.removeEventListener("keydown",h)
+  },[onClose])
+
   return(
     <div style={{position:"fixed",inset:0,zIndex:"var(--z-premium)",background:"rgba(2,9,7,.85)",
       display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)"}}
@@ -7783,7 +7807,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
                 border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
                 fontSize:16,fontFamily:"inherit",background:PAY_CAPTURE_ONLY?"#fff":"rgba(255,255,255,.05)",
                 outline:"none",color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",transition:"border 0.2s ease"}}/>
-            <button type="submit" disabled={busy} className="sg-paygold" style={{
+            <button type="submit" disabled={busy} className="sg-paygold" aria-label={_t(lang,"Recevoir le brief par email","Get the brief by email","Recibir el informe por email")} style={{
               position:"absolute",right:6,top:6,bottom:6,
               width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:busy?"wait":"pointer",
               background:PAY_CAPTURE_ONLY?"#ffd23f":"linear-gradient(135deg,#3fd07f,#5b3a8e)",
@@ -7938,6 +7962,12 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
   const[done,setDone]=useState(false)
   // Swipe down pour fermer (guardInput : ne ferme pas si le champ email est focus).
   const sw=useSwipeClose(()=>onClose&&onClose("dismiss"),{guardInput:true,threshold:70})
+  // A11y : Échap ferme aussi (4e voie avec ✕ + backdrop + swipe)
+  useEffect(()=>{
+    const h=e=>{if(e.key==="Escape"){e.stopPropagation();onClose&&onClose("dismiss")}}
+    document.addEventListener("keydown",h)
+    return()=>document.removeEventListener("keydown",h)
+  },[onClose])
   const INK="#0D0D0D"
   // BIBLE : purge pirates — clean #22C55E, modéré #B87A00 (jamais l'or), avoid #E8522A.
   const STC={clean:"#22C55E",moderate:"#B87A00",avoid:"#E8522A"}
@@ -7958,6 +7988,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
   const hl={background:"#FFC72C",borderRadius:6,padding:"0 .12em"}
   return(
     <div onClick={e=>{if(e.target===e.currentTarget)onClose&&onClose("dismiss")}}
+      role="dialog" aria-modal="true" aria-label={_t(lang,"Recevoir le brief plage par email","Get the beach brief by email","Recibir el brief de playa por email")}
       style={{position:"fixed",inset:0,zIndex:1098,display:"flex",alignItems:"center",justifyContent:"center",padding:16,
         background:"radial-gradient(135% 105% at 50% 12%, rgba(13,30,28,.42), rgba(13,30,28,.62) 70%)",
         animation:"fadeIn .2s ease both"}}>
@@ -7972,7 +8003,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
           <div aria-hidden="true" style={{position:"absolute",top:0,left:0,right:0,height:12,background:"linear-gradient(90deg,#155A5A,#C97E3A 55%,#F2B05E)"}}/>
           <div aria-hidden="true" style={{position:"absolute",top:20,left:"50%",transform:"translateX(-50%)",width:42,height:5,borderRadius:3,background:"rgba(13,13,13,.18)"}}/>
           <button onClick={()=>onClose&&onClose("dismiss")} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-            style={{position:"absolute",top:14,right:14,width:26,height:26,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,cursor:"pointer",fontSize:15,lineHeight:1,padding:0}}>×</button>
+            style={{position:"absolute",top:10,right:10,width:44,height:44,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,cursor:"pointer",fontSize:17,lineHeight:1,padding:0}}>×</button>
           {done?(
             <div style={{textAlign:"center",padding:"6px 0"}}>
               <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:13}}>
@@ -10427,7 +10458,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
     <div style={{minHeight:"100svh",background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)",color:"#fff",position:"relative",padding:"40px 16px 60px",fontFamily:"inherit"}}>
       {/* Croix de fermeture */}
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top, 0px))",right:16,zIndex:10,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.85)",width:34,height:34,borderRadius:"50%",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>
+        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top, 0px))",right:16,zIndex:10,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.85)",width:44,height:44,borderRadius:"50%",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>
         &times;
       </button>
 
@@ -11375,7 +11406,7 @@ export default function App(){
     // early-returns ci-dessous — sg_premium / sg_premium_pass_end actifs — sautaient le bloc qui
     // pose sg_premium_welcome → l'onboarding « ne faisait rien » au 2e chargement du lien). Bug
     // fondateur. Le flag est consommé par le useState showWelcome plus bas.
-    try{ const pp=new URLSearchParams(window.location.search).get("pass"); if(pp&&(pp==="trip"||/^p\d{1,3}$/.test(pp))) s("sg_premium_welcome",true) }catch(_){}
+    try{ const q=new URLSearchParams(window.location.search); const pp=q.get("pass"); if(pp&&(pp==="trip"||/^p\d{1,3}$/.test(pp))&&q.get("session_id")) s("sg_premium_welcome",true) }catch(_){}
     if(g("sg_premium",false))return true
     // Zero-friction 24h sample: local trial, no card required. Used at most once per device.
     try{
@@ -11399,10 +11430,19 @@ export default function App(){
       // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
       // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
       const passParam=params.get("pass")
-      if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
+      // Preuve de paiement OBLIGATOIRE : session_id Stripe présent dans TOUS les liens
+      // legacy générés (scripts/create-region-payment-links.cjs, create-pass-links.cjs).
+      // Avant 2026-08-23 : ?pass=p30 seul accordait 30 j premium à tout visiteur (trou revenu).
+      // Idempotence : une même session ne grant qu'une fois (anti double track/celebration au refresh).
+      const grantProof=(sessionId&&sessionId.length>8)?sessionId:null
+      const grantKey=grantProof?("sg_grant_done_"+grantProof):null
+      const grantConsumed=(()=>{try{return !!(grantKey&&localStorage.getItem(grantKey))}catch(_){return false}})()
+      const markGrant=()=>{if(grantKey){try{localStorage.setItem(grantKey,"1")}catch(_){}}}
+      if(passParam&&grantProof&&!grantConsumed&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
         const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
         const end=Date.now()+days*86400000
         try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
+        markGrant()
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
         // Wow Effect 3: celebration on premium conversion
@@ -11421,7 +11461,8 @@ export default function App(){
         {const qs=params.toString();window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))}
         return true
       }
-      if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
+      if(!grantConsumed&&grantProof&&(params.get("premium")==="1"||params.get("success")==="1"||sessionId)){
+        markGrant()
         s("sg_premium",true)
         s("sg_premium_welcome",true)
         track("sg_conversion",{session_id:sessionId||"direct"})
@@ -11502,35 +11543,42 @@ export default function App(){
           const storedEmail=localStorage.getItem("sg_email")||""
           if(storedEmail){ctx={paymentId:null,email:storedEmail}}
         }
-        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(getPathname())}catch(_){}}
+        // clean() purge sessionStorage ET localStorage : sg_mollie_pending survivait
+        // en localStorage → un vieux paymentId « paid » re-grantait un pass à chaque visite.
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{localStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(getPathname())}catch(_){}}
         if(!ctx||!ctx.paymentId){
           if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
           clean();return
         }
+        // Idempotence : un paymentId déjà consommé ne re-grante jamais (replay-safe).
+        const doneKey="sg_mollie_done_"+ctx.paymentId
+        try{if(localStorage.getItem(doneKey)){clean();return}}catch(_){}
         let paid=null
-        for(let attempt=0;attempt<3;attempt++){
+        // 6 × 2,5 s ≈ 15 s : couvre les confirmations lentes (avant : 3×2 s → faux
+        // « échec » alors que le paiement se finalisait = risque de double tentative).
+        for(let attempt=0;attempt<6;attempt++){
           if(signal.aborted)break
           try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
             if(d&&d.terminal&&d.status){
               // Handle terminal failure status immediately (canceled, expired, failed)
-              const terminalMsg={canceled:_t("Paiement annulé","Payment canceled","Pago cancelado"),expired:_t("Paiement expiré","Payment expired","Pago expirado"),failed:_t("Paiement échoué","Payment failed","Pago fallido")}
-              const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")+(d.status?"&status="+encodeURIComponent(d.status):"")+(terminalMsg[d.status]||"")
+              const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")+(d.status?"&status="+encodeURIComponent(d.status):"")
               try{window.location.replace(failUrl);return}catch(_){}
             }
             if(d&&d.paid){paid=true;break}
             if(d&&d.status==="paid"){paid=true;break}
-            paid=false;if(attempt<2)await new Promise(r=>setTimeout(r,2000))
+            paid=false;if(attempt<5)await new Promise(r=>setTimeout(r,2500))
           }catch(_){paid=false}
         }
         if(signal.aborted)return
         if(paid===true){
+          try{localStorage.setItem(doneKey,"1")}catch(_){}
           try{localStorage.setItem("sg_email",ctx.email||"")
             if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
             localStorage.setItem("sg_premium_welcome","1")}catch(_){}
           track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
         } else {
-          try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
+          try{sessionStorage.removeItem("sg_mollie_pending");localStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
         }
         clean()
       }catch(_){}
@@ -11549,9 +11597,11 @@ export default function App(){
       const params=new URLSearchParams(q)
       const failedEmail=params.get("email")||""
       const failedPlan=params.get("plan")||""
-      // Stocke le contexte d'échec pour le paywall (retry mode)
+      // Contexte d'échec : l'email est pré-rempli dans le paywall/overlay via sg_email
+      // (clé canonique lue par OnsiteCheckout à l'ouverture de payStep).
       try{
         sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,ts:Date.now()}))
+        if(failedEmail&&failedEmail.includes("@"))localStorage.setItem("sg_email",failedEmail)
       }catch(_){}
       // Nettoie l'URL puis ouvre le paywall
       const cleanUrl=getPathname()+(window.location.hash||"")
@@ -11656,8 +11706,13 @@ export default function App(){
           track("sg_premium_unlock_from_email",{status:d.status||"unknown"})
         }else{
           track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive"})
+          // Jamais d'échec silencieux : le payeur qui revient avec son lien doit savoir quoi faire.
+          try{sgToast({tone:"info",title:_t(lang,"Accès introuvable","Access not found","Acceso no encontrado"),msg:_t(lang,"Aucun accès actif pour cet e-mail (ou paiement en cours de confirmation — réessaie dans 1 min). Sinon écris à "+SUPPORT_EMAIL+".","No active access for this email (or payment still confirming — retry in 1 min). Otherwise email "+SUPPORT_EMAIL+".","Sin acceso activo para este email (o pago confirmándose — reintenta en 1 min). Si no, escribe a "+SUPPORT_EMAIL+".")})}catch(_){}
         }
-      }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
+      }).catch(e=>{
+        track("sg_premium_unlock_failed",{reason:e?.message||"network"})
+        try{sgToast({tone:"info",title:_t(lang,"Vérification impossible","Check failed","Verificación fallida"),msg:_t(lang,"Connexion ou serveur indisponible. Réessaie dans un instant.","Connection or server unavailable. Try again in a moment.","Conexión o servidor no disponible. Reintenta en un momento.")})}catch(_){}
+      })
       params.delete("premium_email")
       const qs=params.toString()
       window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
@@ -12059,7 +12114,10 @@ export default function App(){
   // Éligibilité SYNCHRONE (initialiseur) → connu au 1er render, plus de saut de header.
   const[showPassExpired,setShowPassExpired]=useState(()=>{
     try{
-      if(!PAY_CAPTURE_ONLY||isPremium)return false
+      // Rollback ?passexpired=0. Le gate PAY_CAPTURE_ONLY datait de l'ère « paiements
+      // fermés » : en live, un pass ACHETÉ expiré doit recevoir la relance.
+      if(typeof location!=="undefined"&&/[?&]passexpired=0/.test(location.search||""))return false
+      if(isPremium)return false
       if(localStorage.getItem("sg_pass_expired_seen"))return false
       const passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
       if(passEnd>0&&passEnd<=Date.now())return true
@@ -12458,7 +12516,11 @@ const[landingFunnel]=useState(()=>LF_OVERRIDE||"control")
       pick=cleans.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)})).sort((a,b)=>a._d-b._d)[0]
     }else{
       const pool=cleans.length?cleans:cands
-      pick=[...pool].sort((a,b)=>(b.score||0)-(a.score||0))[0]
+      // P1-03 : préférer une plage COUVERTE par la série forecast (jamais montrer
+      // « Vérification en cours » alors que 20 sentinelles portent la prévision).
+      const covered=pool.filter(b=>{try{const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];return !!(sid&&sargData.weekly[sid]?.forecast?.length)}catch(_){return false}})
+      const draw=covered.length?covered:pool
+      pick=[...draw].sort((a,b)=>(b.score||0)-(a.score||0))[0]
     }
     return pick||null
   },[showPrevLanding,allBeaches,sargData,island,userPos])
@@ -13751,7 +13813,7 @@ useEffect(()=>{
             display:"flex",alignItems:"center",justifyContent:"center",gap:10,
             flexWrap:"wrap",fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
             <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>
-              {_t(lang,"Ton accès 7 jours est terminé — reprends-le, juste ton email.","Your 7-day access has ended — get it back, just your email.","Tu acceso de 7 días terminó — recupéralo, solo tu email.")}</span>
+              {_t(lang,"Ton accès est terminé — le Veilleur peut reprendre sa veille.","Your access has ended — the Watchman can resume his watch.","Tu acceso terminó — el Vigía puede retomar su guardia.")}</span>
             <button onClick={()=>{
               track("sg_pass_expired_click",{island})
               try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
@@ -13759,8 +13821,8 @@ useEffect(()=>{
               openPremium("pass_expired")
             }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
-              whiteSpace:"nowrap",flexShrink:0}}>
-              {_t(lang,"Reprendre 7 jours","Get 7 days back","Recuperar 7 días")}</button>
+              whiteSpace:"nowrap",flexShrink:0,minHeight:36}}>
+              {_t(lang,"Renouveler →","Renew →","Renovar →")}</button>
             <button onClick={()=>{
               track("sg_pass_expired_dismiss",{island})
               try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
@@ -14616,7 +14678,9 @@ useEffect(()=>{
 
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
-          <div onClick={()=>{openPremium("referral_banner");setShowReferralBanner(false)}} style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+          <div role="button" tabIndex={0} aria-label={_t(lang,"Un ami t'a passé le relais — ouvrir l'offre","A friend passed you the watch — open the offer","Un amigo te pasó el relevo — abrir la oferta")}
+            onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openPremium("referral_banner");setShowReferralBanner(false)}}}
+            onClick={()=>{openPremium("referral_banner");setShowReferralBanner(false)}} style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
             zIndex:1300,background:"linear-gradient(135deg,#7C3AED,#A855F7)",color:"#fff",
             padding:"12px 20px",borderRadius:14,fontSize:13,fontWeight:600,
             boxShadow:"0 8px 24px rgba(124,58,237,.35)",cursor:"pointer",
@@ -14709,7 +14773,7 @@ useEffect(()=>{
             Accepter → grant analytics_storage via gtag consent update.
             Refuser → analytics reste denied (comportement par défaut index.html).
             Rollback ?cookiebanner=0. */}
-        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
+        {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&!showPrevLanding&&(
           <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:"calc(100px + max(16px, env(safe-area-inset-bottom)))",left:0,right:0,zIndex:1025,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
             borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) 16px",

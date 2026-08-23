@@ -10,6 +10,7 @@ import PassOffer from "../PassOffer.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
 import { VeilleurMark } from "./VeilleurMark.jsx"
+import useModalA11y from "../hooks/useModalA11y.js"
 
 const PANELS = [
   {
@@ -171,13 +172,17 @@ export function ComicPaywall({
   payWithWallet,
   walletRedirect,
   onPayEmailInput,
-  onPassBuy
+  onPassBuy,
+  PAY_CUR
 }) {
   const [panel, setPanel] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [showOffer, setShowOffer] = useState(false)
   const panelRefs = useRef([])
   const containerRef = useRef(null)
+
+  // A11y : takeover plein écran = vraie modale (Échap, focus trap, focus restauré)
+  useModalA11y(containerRef, onClose)
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
   
@@ -248,7 +253,9 @@ export function ComicPaywall({
   const currentArt = PANEL_ART[panel]
   
   return (
-    <div ref={containerRef} className="sg-paywall-comic" style={{
+    <div ref={containerRef} className="sg-paywall-comic" role="dialog" aria-modal="true"
+      aria-label={t("Pass prévisions plages", "Beach forecast pass", "Pase pronóstico playas")}
+      style={{
       position: "fixed", inset: 0, zIndex: 1200,
       background: "#0d1117", overflow: "hidden",
       display: "flex", flexDirection: "column"
@@ -314,12 +321,17 @@ export function ComicPaywall({
                 {t("Email pour recevoir ton accès", "Email to receive your access", "Email para recibir tu acceso")}
               </label>
               <input
-                ref={payEmailRef}
                 type="email"
                 required
                 autoComplete="email"
                 placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
-                onChange={onPayEmailInput}
+                defaultValue={(() => { try { return localStorage.getItem("sg_email") || "" } catch (_) { return "" } })()}
+                onChange={(e) => {
+                  // Écriture immédiate : l'overlay OnsiteCheckout (seul détenteur de
+                  // payEmailRef) pré-remplit son champ depuis sg_email à l'ouverture.
+                  try { localStorage.setItem("sg_email", e.target.value.trim()) } catch (_) {}
+                  if (onPayEmailInput) onPayEmailInput()
+                }}
                 style={{
                   width: "100%", padding: "13px 14px",
                   background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
@@ -334,6 +346,7 @@ export function ComicPaywall({
             </div>
             <PassOffer
               lang={lang}
+              currency={PAY_CUR}
               onBuy={onPassBuy}
               pwVariant="comic"
             />

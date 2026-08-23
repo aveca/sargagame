@@ -22,6 +22,7 @@ import { WorldPaywall } from "./PremiumModal/WorldPaywall.jsx"
 import { ComicPaywall } from "./PremiumModal/ComicPaywall.jsx"
 import { OnsiteCheckout } from "./PremiumModal/OnsiteCheckout.jsx"
 import useMediaQuery from "./hooks/useMediaQuery.js"
+import useModalA11y from "./hooks/useModalA11y.js"
 
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -162,6 +163,16 @@ export default function PremiumModal({
     }
   }
 
+  // A11y : Échap + focus trap + restauration focus sur le shell bottom-sheet.
+  // (variante "comic" = takeover auto-géré par ComicPaywall ; escClose=false ici
+  // pour ne pas doubler le handler — le hook reste null-safe sur panelRef vide.)
+  // Garde : quand l'overlay checkout carte est ouvert (payStep), Échap ne ferme
+  // QUE l'overlay (géré par OnsiteCheckout) — pas le paywall derrière.
+  const panelRef = useRef(null)
+  const payStepRef = useRef(payStep)
+  payStepRef.current = payStep
+  useModalA11y(panelRef, () => { if (!payStepRef.current) onClose() }, pwVariant !== "comic")
+
   // Tracking durée d'ouverture du modal (pour analytics close)
   const modalOpenedAt = useRef(Date.now())
   useEffect(()=>{ modalOpenedAt.current = Date.now() }, [])
@@ -218,6 +229,7 @@ export default function PremiumModal({
       {/* Panel modale — positionné en bas, scrollable, z-index 1100 */}
       <div
         className="sg-modal-panel"
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")}

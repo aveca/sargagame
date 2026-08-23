@@ -26,14 +26,14 @@ export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="�
         boxShadow:"0 20px 40px rgba(0,0,0,0.3)",border:`2px solid ${COMIC.ink}`,
         position:"relative",transform:"scale(1)",animation:"sg-modal-pop 0.3s cubic-bezier(.34,1.4,.5,1)"
       }}>
-        <style jsx>{`
+        <style>{`
           @keyframes sg-modal-pop {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
           }
         `}</style>
         <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
-          position:"absolute",top:8,right:8,width:32,height:32,borderRadius:8,
+          position:"absolute",top:8,right:8,width:44,height:44,borderRadius:10,
           border:"none",background:"rgba(0,0,0,0.05)",fontSize:20,lineHeight:1,
           cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"
         }}>×</button>
@@ -76,7 +76,7 @@ export function ErrorInline({message,icon="⚠️",className=""}){
 /**
  * ToastError — Toast d'erreur non-bloquant (style snackbar)
  */
-export function ToastError({message,onDismiss,autoDismiss=5000}){
+export function ToastError({message,onDismiss,autoDismiss=5000,lang="fr"}){
   const I=COMIC
   useEffect(()=>{
     if(autoDismiss){const t=setTimeout(onDismiss,autoDismiss);return()=>clearTimeout(t)}
@@ -89,7 +89,7 @@ export function ToastError({message,onDismiss,autoDismiss=5000}){
       boxShadow:"0 8px 24px rgba(0,0,0,0.3)",zIndex:9999,
       animation:"sg-toast-in 0.3s cubic-bezier(.34,1.4,.5,1)"
     }}>
-      <style jsx>{`
+      <style>{`
         @keyframes sg-toast-in {
           from { opacity: 0; transform: translateX(-50%) translateY(20px); }
           to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -99,7 +99,7 @@ export function ToastError({message,onDismiss,autoDismiss=5000}){
       <span style={{font:"600 15px/1.4 'Bricolage Grotesque'"}}>{message}</span>
       <button onClick={onDismiss} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
         background:"none",border:"none",color:"#fff",fontSize:20,lineHeight:1,
-        cursor:"pointer",padding:0,marginLeft:8
+        cursor:"pointer",padding:"10px",marginLeft:4,minWidth:44,minHeight:44
       }}>×</button>
     </div>
   )

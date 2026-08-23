@@ -10,6 +10,8 @@ export default function WhatsNewJournal({lang,title,items,releaseV,releaseDate,a
   // first-party cesse de compter ces taps comme morts — même convention que WeekHub, 2026-07-01).
   const swipe=useSwipeClose(onClose)
   useEffect(()=>{try{track("sg_whatsnew_view",{v:releaseV,items:items.length})}catch(_){}},[])// eslint-disable-line
+  // A11y : Échap = 4e voie de sortie (✕ + swipe + bouton explorer)
+  useEffect(()=>{const h=e=>{if(e.key==="Escape"){e.stopPropagation();onClose&&onClose()}};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[onClose])
   const L=(it)=>it[lang]||it.fr
   const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
   const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
@@ -22,7 +24,7 @@ export default function WhatsNewJournal({lang,title,items,releaseV,releaseDate,a
       <div aria-hidden style={{position:"absolute",left:"50%",bottom:"-22%",width:"140%",height:"62%",transform:"translateX(-50%)",
         background:"radial-gradient(closest-side,rgba(255,216,132,.5),rgba(255,216,132,0))",pointerEvents:"none"}}/>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:6,width:42,height:42,borderRadius:21,
+        style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:6,width:44,height:44,borderRadius:22,
           background:"rgba(7,32,30,.5)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
           border:"1px solid rgba(255,255,255,.2)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
 
@@ -47,6 +49,8 @@ export default function WhatsNewJournal({lang,title,items,releaseV,releaseDate,a
             const clickable=allowDeepLinks&&it.href&&it.href.startsWith("/")
             return(
             <div key={i} onClick={clickable?()=>go(it.href):undefined}
+              role={clickable?"button":undefined} tabIndex={clickable?0:undefined}
+              onKeyDown={clickable?(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go(it.href)}}:undefined}
               style={{display:"flex",alignItems:"center",gap:13,padding:"13px 15px",borderRadius:16,
                 background:"rgba(255,252,247,.95)",border:"1px solid rgba(255,255,255,.5)",
                 boxShadow:"0 8px 26px rgba(7,32,30,.22)",cursor:clickable?"pointer":"default",

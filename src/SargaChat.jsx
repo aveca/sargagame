@@ -212,6 +212,13 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
     }, 650)
   }
   
+  // A11y : Échap ferme la modale chat (4e voie avec ✕ + clic-dehors + backdrop)
+  useEffect(()=>{
+    const h=(e)=>{if(e.key==="Escape"){e.stopPropagation();onClose&&onClose()}}
+    document.addEventListener("keydown",h)
+    return()=>document.removeEventListener("keydown",h)
+  },[onClose])
+
   const last=msgs[msgs.length-1]
   return(
     <div role="dialog" aria-modal="true" aria-label={t("Assistant","Assistant","Asistente")} style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
