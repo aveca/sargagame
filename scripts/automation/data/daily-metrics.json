@@ -2784,10 +2784,10 @@
   },
   {
     "date": "2026-08-23",
-    "time": "2026-08-23T17:13:00.138Z",
+    "time": "2026-08-23T18:29:42.770Z",
     "payments": 21,
     "revenue": 137.79,
-    "emails": 579,
+    "emails": 580,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -2872,7 +2872,7 @@
       "date": "2026-08-22",
       "mq": {
         "sessions": 28,
-        "users": 172
+        "users": 179
       },
       "gp": {
         "sessions": 27,
