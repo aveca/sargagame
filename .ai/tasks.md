@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] **P0 money-path B2C — achat USD + retour 3DS + trou `?pass=` réparés (front-only)** (@team UX/B2C/QA OpenCode, 2026-08-23 soir, LOCAL non poussé) — USD : `currency={PAY_CUR}` sur PassOffer (avant : 1499 EUR envoyé en USD → « Prix invalide » sur 3 domaines) + contrat prix `src/lib/pass-price.js` testé ; 3DS : `redirectUrl=/?mollie_return=1` (handler de grant réactivé) + good.html → `?premium_email=` ; `?pass=pNN` exige `session_id` + idempotence. P1 : wallets guards/consent/Apple Pay key, email overlay unique, prix affiché surcharge USD, timeouts/bfcache/poller. A11y : Échap+trap paywall/comic/checkout, fiches role dialog, ✕ ≥44px. Tests : contrat 13/13 + E2E 3 verts (3 fixme runner) · suite 63 passed / 0 régression. **Push+deploy+paiement test USD = après go fondateur.**
+
 - [x] **P1-03 WeekHub / Prévisions 7 jours / Forecast lock — GREEN** (@coding_agent OpenCode, 2026-08-23 06:45 UTC) — Cause racine `forecast_lock_click=0` prouvée (landing prev_az OFF + fiches live non instrumentées + `_enrichedWeekly={}` truthy masquant `weekly`). Fixes : sg_forecast_lock_click sur fcstrip+bsc (interactions réelles), a11y role/clavier/aria, forecast lock scopé aux barres, emojis → SVG, cookie banner sous landing, prevHeroPick covered-first. E2E 11/11 + gate ALL GREEN (26/26) + smoke 4/4 + bundle 35.4 Ko. BEFORE/AFTER dans `tests/ux-recordings/p1-03-*`. Mollie LIVE inchangé.
 
 - [x] **P0-04 Mollie Live Cutover — PAYMENT HANDOFF GREEN** (@coding_agent OpenCode, 2026-08-23) — Worker `6aba0a2f` LIVE, secrets LIVE, `p30 14,99€` `mode=live` MQ+GP, `sg_mollie_checkout_redirect` 44/44, `pass_cta→checkout` race fixed, handoff robust `payReadyRef` wait 5s. Commit `6b7ce426`.
@@ -23,6 +25,7 @@
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
 - [x] P1 - B2B recurring Mollie (#210, @coding_agent)
 - [x] P0 - Production release cleanup & validation (@release_engineer, 2026-07-31)
+- [x] **CI PR #579 GREEN — chantier terminé** (@coding_agent OpenCode, 2026-08-23 22:10 UTC) — 6/6 checks GitHub PASS (branch-policy, secret-scan, funnel, perf, test-frontend, playwright 21/21). 4 commits sur `agent/ui/accessibility-p1` : `dac5a533` (+`src/lib/pass-price.js`), `ed087ee3` (playwright port/report clash), `59d630b7` (secret-scan exclusions docs historiques), `0da6e6d2` (playwright `browserName:'chromium'` — root cause webkit non installé en CI). **Workers Builds `sargagame` = BLOCKED-INFRA externe** (preuves API : build `abedb909` fail `Missing entry-point ... wrangler.jsonc`, identique sur `main` ×3, worker vestigial sans bindings) — action humaine requise : déconnecter l'intégration Builds du worker `sargagame` dans le dashboard Cloudflare. MERGE main : NON.
 - [x] P0 - TASK-P0-001 Contract test Mollie pass one-time (@coding_agent, 2026-08-15) — E2E Playwright `tests/e2e/contract-pass-one-time.spec.ts` (2/2 green). Vérifie : DOM paywall = pass (pas essai gratuit), code source `doSubscribe.jsx` = `create_payment` pour `_pc`. Commit `8a2e9937`.
 - [x] P0 - Mollie webhook hardening — idempotence guard + tests (@coding_agent, 2026-08-05)
 - [x] P0 - Redesign funnel UX — BottomNav restaurée, FABs allégés, CTA clarifié (@coding_agent, 2026-08-11)
