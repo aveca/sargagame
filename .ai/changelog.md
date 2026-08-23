@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-23 ~07:30 UTC · Agent: security_agent (OpenCode) — ISSUE #578 : purge credentials gh-pages
+
+### Travail effectué
+- **Incident** : issue #578 (chercheur externe) — clés de paiement LIVE committées sur la branche `gh-pages` (`dist/api/stripe-config.php`, `paypal-config.php`, `mollie-config.php`, `_deploy-secret.php`), vérifiées encore valides par le reporter en lecture seule.
+- **Périmètre confirmé** : scan de TOUS les refs remote (~100 branches) pour ces noms de fichiers → **seule `gh-pages` touchée**. `main` n'a jamais tracké ces fichiers (gitignore `**/*-config.php` / `**/_deploy-secret.php`). Site live (artifact Pages depuis main) → 404 sur les 4 chemins.
+- **Purge** : réécriture orpheline de `gh-pages` (commit racine unique `d1843258`, arbre identique moins les 4 fichiers) + force-push. Ancien historique inaccessible depuis toute branche remote.
+- **Garde-fou** : nouveau workflow `.github/workflows/secret-scan.yml` (push main/gh-pages + PR) qui bloque tout fichier credential tracké et tout pattern `sk_live_*` / mollie `live_*` dans les fichiers trackés (hors exemples).
+- **Non fait côté repo (impossible)** : rotation des clés elles-mêmes → dashboard Stripe/PayPal/Resend/Mollie, checklist postée sur l'issue #578.
+
+### Fichiers modifiés
+- branche `gh-pages` (remote, réécrite) — purge secrets
+- `.github/workflows/secret-scan.yml` — NEW garde-fou CI
+- `.ai/changelog.md`, `.ai/current_state.md` — documentation
+
+### Tests réalisés
+- [x] Scan refs remote : zéro autre branche avec les fichiers
+- [x] Arbre `origin/gh-pages` post-push : 0 fichier credential
+- [x] Site live aveca.github.io : 404 sur les 4 chemins
+- [ ] Rotation clés : **EN ATTENTE FONDATEUR** (clés Stripe/PayPal/Resend toujours valides)
+
+### Prochaine action recommandée
+1. Fondateur : roller clé Stripe live + webhook secret (URGENT) — Rôle : fondateur
+2. Fondateur : rotater PayPal secret, Resend key, Mollie live key ; décider sort des 11 payment links ouverts — Rôle : fondateur
+
+---
+
 ## 2026-08-23 06:40 UTC · Agent: coding_agent (OpenCode) — P1-03 Sprint complet : forecast lock instrumenté + landing vide fixée
 
 ### Travail effectué
