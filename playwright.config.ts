@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: [['html', { outputFolder: 'test-results/report' }], ['line']],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['line']],
 
   use: {
     baseURL: process.env.PREVIEW_URL || 'http://localhost:4173',
@@ -28,7 +28,7 @@ export default defineConfig({
   webServer: {
     command: 'npx vite preview --port 4173',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 30000,
   },
 });
