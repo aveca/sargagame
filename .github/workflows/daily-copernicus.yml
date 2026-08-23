@@ -1,0 +1,1223 @@
+name: Daily Copernicus + Deploy
+
+on:
+  schedule:
+    # 4x/jour toutes les 6h — Copernicus publie 1x/jour, 6h freshness largement
+    # sous le seuil "< 12h OK" de CLAUDE.md. Heures MQ (UTC-4): 20h, 2h, 8h, 14h
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+# Gating par événement (2026-06-17) — un push de code doit être RAPIDE :
+#   • push            → build des 5 régions + deploy FTP + health-check UNIQUEMENT.
+#                       Pas de vidéo ffmpeg (~10 min), pas d'emails, pas de fetch
+#                       data, pas de submit SEO, pas de commit. (if: != 'push')
+#   • schedule        → tout (data + emails + vidéo + SEO + build + deploy).
+#   • workflow_dispatch → comme schedule MAIS sans les envois email (== 'schedule')
+#                       ni la vidéo : refresh data + rebuild + deploy à la demande.
+# Le deploy FTP utilise le chemin RAPIDE (zip → _deploy.php) si DEPLOY_TOKEN est
+# présent, fallback fichier-par-fichier sinon (scripts/manual-ftp-deploy.cjs).
+
+permissions:
+  contents: write
+
+# S\u00e9rialise les runs sur main pour \u00e9liminer les conflits rebase entre 2 runs
+# concurrents qui se battent pour committer les JSONs Copernicus.
+concurrency:
+  group: daily-copernicus-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    # 25 → 60 : les full builds enchaînent désormais 4 builds Vite (3 nouvelles
+    # régions + build partagé MQ/GP) + 5 deploys FTPS. Repo public = minutes illimitées.
+    timeout-minutes: 75  # loops vidéo ×2 résolutions (~+10 min ffmpeg) + FTP 5 domaines
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Parité regions/*.json ↔ $KNOWN_REGIONS du webhook PHP : une région N+1
+      # absente de la liste perdrait ses PAIEMENTS en silence (filtre → 200 ignore).
+      # Le test existait (scripts/test-stripe-webhook.cjs) mais ne tournait nulle
+      # part — branché en CI 2026-06-12, échoue le build en cas de divergence.
+      - name: Webhook ↔ régions (parité paiements)
+        run: node scripts/test-stripe-webhook.cjs
+
+      - name: Determine day of week and hour
+        id: check_day
+        run: |
+          echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
+          echo "hour=$(date -u +%H)" >> $GITHUB_OUTPUT
+
+      # Year-round beach weather (Open-Meteo) — AVANT le pipeline sargasses :
+      # fetch-sargassum-live lit beaches-weather.json pour les Beach Scores.
+      # (Bug 2 mois : le step tournait APRÈS le pipeline ET le fichier n'était
+      # jamais commité → scores calculés avec la houle/UV du 12 avril.)
+      - name: Fetch beach weather (Open-Meteo)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/fetch-beach-weather.cjs
+
+      # ── 0a. Sentinel-2 AUTO-CALIBRATION (avant la collecte, lit l'historique persisté)
+      # Apparie l'historique S2 au réalisé, ré-estime les seuils, et écrit
+      # sentinel2-calibration.json {active, thresholds}. AUTO-ACTIVE le S2 le jour où
+      # l'accord dépasse la barre — sans main humaine. Kill-switch : secret SG_SENTINEL2=0.
+      # Non-bloquant. --send = email au fondateur sur transition OFF→ON.
+      - name: Sentinel-2 auto-calibration
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SG_SENTINEL2: ${{ secrets.SG_SENTINEL2 }}
+        run: node scripts/automation/sentinel2-calibrate.cjs --send
+
+      # ── 0b. Sentinel-2 near-shore : collecte CDSE (FAI eau-only near-shore) ──
+      # Produit sentinel2-nearshore.json (input) + accumule sentinel2-history.json.
+      # No-op propre sans credentials CDSE → n'échoue jamais (continue-on-error).
+      # Le pipeline ne CONSOMME ce signal que si sentinel2-calibration.json a active=true
+      # (piloté par la donnée, cf. 0a) OU SG_SENTINEL2=1. Voir scripts/fetch-sentinel2.cjs.
+      - name: Fetch Sentinel-2 near-shore (prototype)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SENTINEL_HUB_CLIENT_ID: ${{ secrets.SENTINEL_HUB_CLIENT_ID }}
+          SENTINEL_HUB_CLIENT_SECRET: ${{ secrets.SENTINEL_HUB_CLIENT_SECRET }}
+          CDSE_USERNAME: ${{ secrets.CDSE_USERNAME }}
+          CDSE_PASSWORD: ${{ secrets.CDSE_PASSWORD }}
+          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+        run: node scripts/fetch-sentinel2.cjs
+
+      # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
+      - name: Fetch LIVE sargassum data from ERDDAP
+        id: erddap
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SG_SENTINEL2: ${{ secrets.SG_SENTINEL2 }} # kill-switch : =0 force OFF le S2
+        run: node scripts/fetch-sargassum-live.cjs
+
+      - name: Check if ERDDAP produced live data
+        id: check_live
+        run: |
+          if [ -f public/api/copernicus/sargassum.json ]; then
+            SOURCE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).source)")
+            echo "source=$SOURCE" >> $GITHUB_OUTPUT
+            echo "ERDDAP result: source=$SOURCE"
+          else
+            echo "source=none" >> $GITHUB_OUTPUT
+            echo "No sargassum.json found"
+          fi
+
+      - name: Fallback to Node.js scraper (only if ERDDAP failed)
+        if: steps.check_live.outputs.source != 'erddap-live' && github.event_name != 'push'
+        run: |
+          echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
+          echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
+          node scripts/scrape-copernicus.cjs
+          rm -f copernicustxt.txt
+
+      - name: Send notifications (push + email)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+          ONESIGNAL_API_KEY_PUNTACANA: ${{ secrets.ONESIGNAL_API_KEY_PUNTACANA }}
+          ONESIGNAL_API_KEY_FLORIDA: ${{ secrets.ONESIGNAL_API_KEY_FLORIDA }}
+          ONESIGNAL_API_KEY_RIVIERAMAYA: ${{ secrets.ONESIGNAL_API_KEY_RIVIERAMAYA }}
+        run: node scripts/automation/send-notifications.cjs
+
+      - name: Push win-back dormant users
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/push-winback.cjs --send
+
+      # ── Email pipeline: clean bounces → fetch → send ──
+      - name: Clean bounced emails from Sheet
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          echo "Calling clean_bounces on Apps Script..."
+          RESULT=$(curl -sL --max-time 30 "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=clean_bounces")
+          echo "Result: $RESULT"
+
+      - name: Fetch subscriber list
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-subscribers.cjs
+
+      # Segment « clients payants » (payments × subscription_events, moins désabos/bounces)
+      # → data/payers.json, consommé par relance-payers.cjs (envoi MANUEL, jamais auto).
+      - name: Build payers segment
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-payers.cjs
+
+      # Weekend email « Bulletin du Veilleur » : DÉPLACÉ vers son propre workflow
+      # .github/workflows/weekend-email.yml (cron 0 12 * * 5, SANS gate horaire).
+      # Raison : l'ancienne gate `hour==12||13` ici sautait de façon FIABLE — les
+      # crons à :00 dérivent ~3h sous la charge de queue (le run 12:00 UTC atterrit
+      # à 14:58–15:16), donc hour valait 14/15 et le bulletin n'est plus parti
+      # pendant ~2 mois (figé au 2026-04-17). Le workflow dédié ne se déclenche QUE
+      # le vendredi → la dérive n'a plus d'effet. Anti-doublon : dedup Apps Script
+      # + marqueur weekend-sent.json. NE PAS ré-ajouter d'envoi weekend ici.
+
+      - name: Send welcome emails (SMTP alerte@)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/welcome-email.cjs
+
+      - name: Send drip emails (J+3, J+7, J+14)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/drip-email.cjs
+
+      # Cart recovery — abandons de paiement relancés automatiquement.
+      # 3 touches automatiques : J+1 (doux), J+3 (ferme), J+5 (promo -2€).
+      # Idempotent : marqueurs sent_markers/cart-recovery-j{day}-sent.json.
+      # Dédup par hash(email)+jour, une seule relance par séquence.
+      # Mode --send dans le cron, dry-run par défaut.
+      - name: Cart recovery — J+1
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=1 --send --cap=30
+
+      - name: Cart recovery — J+3
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=3 --send --cap=30
+
+      - name: Cart recovery — J+5 (promo -2€)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/cart-recovery-unified.cjs --day=5 --send --cap=30
+
+      # Brief QUOTIDIEN « tes plages aujourd'hui » (MQ/GP) — moteur d'habitude.
+      # DRY-RUN (pas de --send) : le fondateur bascule en --send après une dry-run
+      # propre (même prudence que dunning, le domaine porte aussi welcome/drip).
+      # Gaté au tick du MATIN (12 UTC ≈ 8h Martinique) — 1 brief/jour ; la dédup
+      # hash(email|jour) du script garantit l'unicité même si le tick varie.
+      - name: Daily brief email (DRY-RUN — passer en --send après vérif)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          H=$(date -u +%H)
+          if [ "$H" = "11" ] || [ "$H" = "12" ] || [ "$H" = "13" ]; then
+            node scripts/automation/daily-brief.cjs
+          else
+            echo "skip daily-brief (matin uniquement, h=$H UTC)"
+          fi
+
+      # Liens de paiement Mollie B2B (prépaiement annuel) — créés une fois (idempotent),
+      # publiés dans public/api/b2b-paylinks.json. DOIT tourner AVANT les emails B2B pour
+      # qu'ils embarquent le vrai lien de paiement. No-op si MOLLIE_API_KEY absent.
+      - name: Ensure B2B Mollie payment links
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-paylinks.cjs
+
+      # Mollie Payment Links TOUS PRODUITS (B2C passes + B2B annual + USD) :
+      # crée les liens de paiement direct pour tous les tiers (p7/p30/saison EUR+USD,
+      # brief_annual/pro_annual/territory EUR+USD). Idempotent, auto-réparation.
+      - name: Mollie all-product payment links
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-passlinks.cjs --send
+
+      # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
+      # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
+      - name: Send B2B drip emails (Sargasses Pro)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/drip-b2b-email.cjs
+
+      # Follow-ups B2B PERSONNALISÉS (outbox b2b-followups.json) — touches manuelles,
+      # chaudes, sur un prospect précis (fix widget, relance lead, pitch partenaire).
+      # Chaque entrée part UNE fois (anti-doublon b2b-followup-sent.json, committé plus bas).
+      - name: Send B2B personal follow-ups
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/send-b2b-followup.cjs --send
+
+      # Adoption widget B2B : un site tiers affiche-t-il le widget ? (ping install
+      # first-party → stats.php). Prévient le fondateur par email au 1er domaine détecté.
+      # Dédoublonné via widget-hosts-seen.json (committé plus bas). schedule-only.
+      - name: Watch widget installs (B2B adoption)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+        run: node scripts/automation/widget-install-watch.cjs --send
+
+      # Conversion widget → Pro : les hôtels qui ont installé le widget (lead le plus
+      # chaud) sont contactés AUTOMATIQUEMENT pour passer au payant (essai 14j → 79€).
+      # Source data/widget-contacts.json (host→contact enrichi), dédup widget-converted-sent.json.
+      - name: Convert widget installers to Pro (B2B)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/widget-convert.cjs --send
+
+      # US B2B enrichment + merge : seed les hôtels US (florida/puntacana/rivieramaya)
+      # dans la base de contacts B2B, puis fusionne MQ/GP + US → b2b-contacts-unified.json
+      # (lu par b2b-cold-outreach.cjs ci-dessous). Skip si la clé Google Places absente
+      # (seed statique de 58 hôtels utilisée). Idempotent, continue-on-error.
+      - name: B2B US enrich + merge
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          node scripts/automation/b2b-us-enrich.cjs --send
+          node scripts/automation/merge-b2b-contacts.cjs --send
+
+      # Prospection B2B FROIDE — cap HAUT (pas de warmup, on scale). 58 US hôtels +
+      # MQ/GP hotels = ~150 contacts. Envoi agressif : CAP_NEW=30, séquence c0+c4.
+      # La délivrabilité est protégée par SPF/DKIM et le List-Unsubscribe.
+      - name: B2B cold outreach (scale)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          CAP_NEW: '30'
+        run: node scripts/automation/b2b-cold-outreach.cjs --send
+
+      # Funnel B2B : agrège chaque prospect (découvert→contacté→lead→payé) + prochaine
+      # action. Source de vérité (b2b-funnel.json) pour piloter/guider. Read-only.
+      - name: B2B funnel tracker
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/b2b-funnel.cjs
+
+      # Relance panier abandonné : carte refusée / 3DS non confirmé / abandon.
+      # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
+      # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
+      # dans le repo ; idempotent par hash (cart-recovery-sent.json committé plus bas).
+      - name: Send cart recovery emails (SMTP alerte@)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_CART_RECOVERY: '1'
+        run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=4
+
+      # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
+      # Stripe (active+trialing créés <14j), SANS CTA paywall (déjà payé). schedule-only
+      # (jamais workflow_dispatch — règle retry-spam) ; idempotent par hash
+      # (welcome-paid-sent.json committé plus bas) ; lit Stripe au runtime.
+      - name: Send paid-subscriber welcome emails (SMTP alerte@)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: node scripts/automation/welcome-paid.cjs --recover --send
+
+      # Dunning past_due (churn involontaire) : relance 1× les abonnés Stripe dont
+      # le renouvellement a échoué → email factuel vers le Customer Portal (MàJ carte).
+      # LIVE (--send) : 1 email/abonné max, idempotent par hash (dunning-sent.json
+      # committé plus bas), garde-fou MAX 25, copy FR/EN/ES. Stripe Smart Retries gère
+      # le re-débit en parallèle ; ceci récupère le churn involontaire (~+6% MRR sur
+      # le past_due courant). SMTP requis (SMTP_PASS).
+      - name: Dunning past_due (SEND)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/dunning-past-due.cjs --send
+
+      # Pass-expiry WIN-BACK (RACHAT — levier N°1 du modèle pass-only) : relance les
+      # acheteurs de pass Mollie dont l'accès a EXPIRÉ (dernier pass, fenêtre 21j) pour
+      # qu'ils reprennent un pass. Source = API Mollie (MOLLIE_API_KEY, déjà secret).
+      # Idempotent par paymentId (pass-expiry-winback-sent.json committé plus bas),
+      # garde-fou MAX 50, copy FR/EN/ES, CTA ?paywall=1.
+      # ⚠️ DRY-RUN volontaire : nouveau mail vers des CLIENTS payants → le fondateur
+      # relit la copy + les volumes (logs) puis ajoute « --send » pour activer (comme
+      # dunning/welcome-paid l'ont été). No-op tant que MOLLIE_API_KEY absent.
+      - name: Pass-expiry win-back (LIVE --send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/pass-expiry-winback.cjs --send
+
+      # Weather-reengage (SWING MÉTÉO) : recontacte les leads froids NON-acheteurs quand la
+      # donnée propre de LEUR région CHUTE d'un coup (un épisode de sargasses arrive) —
+      # value-first « voici les criques qui restent propres ». Source = subscribers.json
+      # (fetché plus haut) + public/api/copernicus/<region>/sargassum.json. EUR/FR, cadence
+      # 21j, cap 4/lead, exclut acheteurs/bounced/désabo/B2B/test. Baseline + idempotence :
+      # weather-reengage-state.json / -sent.json (committés plus bas → le baseline persiste).
+      # ⚠️ DRY-RUN volontaire (pas de « --send ») : le fondateur relit copy + volumes (logs)
+      # puis ajoute « --send » pour activer (même trajectoire que cold-lead-reengage). Le
+      # baseline se construit dès maintenant (1er run = baseline-init, zéro envoi).
+      - name: Weather-reengage swing (DRY-RUN — passer en --send après vérif)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/weather-reengage.cjs
+
+      # Rappel J-7 « planner » par email : RETIRÉ (décision fondateur) — le planner du hub
+      # « La Vigie » donne l'estimation OBSERVÉE DIRECTEMENT à l'écran, sans demander d'email
+      # ni promettre de ping. Le script scripts/automation/planner-alerts.cjs + la table
+      # supabase/planner_alerts restent DORMANTS dans le repo (réversibles) mais ne sont plus
+      # planifiés : plus aucune wiring front n'écrit dans la table, donc rien à envoyer.
+
+      # Cold-lead RÉ-ENGAGE (nurture long-traîne) : recontacte à cadence BASSE les leads
+      # devenus FROIDS (60-365j, jamais convertis, welcome/drip/relance finis) pour les
+      # ramener au Pass. Source = subscribers.json (déjà fetché plus haut). EUR/FR only,
+      # cadence 90j, cap 3 touches/lead à vie, exclut bounced/désabo/B2B/test, désabo
+      # one-click. Idempotent (cold-reengage-sent.json committé plus bas).
+      # ⚠️ DRY-RUN volontaire : ré-emailer des leads froids touche la réputation du
+      # domaine partagé → le fondateur relit la copy + les volumes (logs) puis ajoute
+      # « --send » pour activer (comme dunning/pass-expiry l'ont été).
+      - name: Cold-lead reengage (LIVE --send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/cold-lead-reengage.cjs --send
+
+      # Blast MOLLIE OFFRE à TOUS les leads (B2C + B2B) : envoie un email unique
+      # avec lien de paiement direct à tous les leads jamais convertis (246 + 58 US).
+      # Idempotent (blast-mollie-offer-sent.json), cap 500/jour. schedule-only.
+      # Exclut les déjà-payants (vérifié via API Mollie) et les bounced.
+      - name: Blast Mollie offer to ALL leads
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/blast-mollie-offer.cjs --send
+
+      # Welcome PASS Mollie : onboarde les acheteurs de pass Mollie (la base client qui
+      # croît — welcome-paid.cjs ne couvre QUE les abos Stripe legacy). En pass-only,
+      # satisfaction → rachat = le revenu ; un onboarding propre + nudge partage (boucle
+      # parrainage) au pic de satisfaction. Source = API Mollie (MOLLIE_API_KEY, déjà
+      # secret). Dédup emailHash (welcome-paid-mollie-sent.json committé plus bas).
+      # ⚠️ DRY-RUN : nouveau mail vers des CLIENTS payants → fondateur relit puis --send.
+      - name: Welcome PASS Mollie (LIVE --send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/welcome-paid-mollie.cjs --recover --send
+
+      # Support automatisé : excuses d'incident depuis data/incidents.json
+      # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
+      # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
+      # ajouter une entrée à incidents.json, le prochain run en fenêtre envoie.
+      - name: Send incident apologies (if any pending)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/incident-apology.cjs
+
+      - name: Health check (uptime monitoring + staleness alerts)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/health-check.cjs
+
+      - name: Backtest forecast accuracy (archive vs observations)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      # Climatologie OBSERVÉE par côte/mois (tendance saison HONNÊTE pour le planner) — pur
+      # agrégat de history.json, gate N>=60 jours-plage, AUCUN secret. Tant que l'historique
+      # est court peu de cellules passent (voulu : on préfère le vide à un faux). S'enrichit
+      # mois après mois ; le bloc planner du hub « s'allumera » quand la donnée sera là.
+      - name: Aggregate observed climatology (honest season trend)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/automation/aggregate-climatology.cjs
+
+      # Track record PUBLIC auditable (preuve B2B « X% justes par plage ») — pur
+      # transform de backtest-results.json → /api/copernicus/track-record.json.
+      # DOIT tourner APRÈS le backtest (sa source unique). Consommé par les pages
+      # de vente B2B (/pro/*) et auditable par un prospect hôtel/collectivité.
+      - name: Build public track record (B2B proof artifact)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/automation/build-track-record.cjs
+
+      - name: Check email delivery stats (opens, clicks, bounces)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node scripts/automation/check-email-status.cjs
+
+      - name: Daily stats check (metrics + trend detection)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          # GA4 veille dans la série KPI (#27) — lecture seule, préservé si absent
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+          GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+          # Vérité revenu EN CI (2026-07-02) : sans ces clés le bloc stripe restait
+          # un carry-forward FIGÉ (revenue-watch aveugle depuis le 23/06) et Mollie
+          # (caisse active) n'avait AUCUNE métrique repo. Lecture seule ; les deux
+          # secrets sont déjà exposés à d'autres steps de ce même workflow.
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          # Email pixel tracking (track-open.php / track-click.php) — aggregation
+          # des ouvertures/clics uniques depuis Supabase analytics_events.
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/daily-stats-check.cjs
+
+      # Veille revenu proactive : diff les blocs stripe ET mollie de daily-metrics (que
+      # daily-stats-check vient d'écrire) → alerte le fondateur sur churn/annulation/
+      # nouveau payeur/past_due (Stripe) + nouvelle vente/refund/chargeback/1er abo B2B
+      # (Mollie). Lecture seule (zéro appel API), dédup revenue-watch-seen.json, schedule-only.
+      - name: Revenue watch (alerte mouvements Stripe)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/revenue-watch.cjs --send
+
+      # MRR Mollie EXCLUSIF : track la croissance Mollie (MRR, passes, B2B, nombre
+      # de clients). Source = API Mollie (MOLLIE_API_KEY). Remplace Stripe comme
+      # indicateur de revenu principal. Rapport dans data/mollie-mrr.json + historique 90j.
+      - name: Mollie MRR tracker
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-mrr.cjs --send
+
+      # Veille UX proactive : lit ux-report.json (audit hebdo) → alerte le fondateur
+      # sur les problèmes CRITIQUES (rage/dead-clicks) qui sinon dorment dans le JSON.
+      # Lecture seule, dédup ux-watch-seen.json (1 alerte/rapport). Ferme la boucle
+      # track→détecte→agit. schedule-only.
+      - name: UX watch (alerte criticals rage/dead-click)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/ux-watch.cjs --send
+
+      # Veille délivrabilité : alerte le fondateur sur un PIC de rebonds réels
+      # (croissance de bounced-emails.json, alimentée par les DSN SMTP parsés par
+      # support-inbox). Renvoie vers Google Postmaster Tools. Dédup deliverability-
+      # watch-seen.json, schedule-only. (Le taux provider est gelé post-SMTP → non utilisé.)
+      - name: Deliverability watch (alerte pic de rebonds)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/deliverability-watch.cjs --send
+
+      # Veille « usine locale silencieuse » : l'usine locale (Couche C, PC allumé
+      # seulement) poste un heartbeat à chaque run quotidien (analytics_events, clé
+      # anon publique). Si aucun signal depuis >48h (Planificateur Windows désenregistré,
+      # PC jamais rallumé…), alerte le fondateur. Non-money-critical (revenu = cloud
+      # pur). Dédup factory-heartbeat-watch-seen.json (1 alerte/jour), schedule-only.
+      - name: Factory heartbeat watch (alerte usine locale silencieuse)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/factory-heartbeat-watch.cjs --send
+
+      # Purge analytics_events > 90j (Supabase) — keep funnel table lean, RGPD.
+      # Schedule-only, non-bloquant. Utilise SUPABASE_SERVICE_KEY secret.
+      - name: Purge analytics_events (> 90j)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/purge-analytics.cjs
+
+      # Funnel aggregation from Supabase analytics_events → funnel-snapshot.json.
+      # Complementary data source to first-party stats.php (ux-daily.json).
+      # Reads public.analytics_events (written by frontend logAnalyticsEvent),
+      # counts funnel steps, calculates rates. continue-on-error: non-blocking.
+      # Schedule-only (1 snapshot/day). Uses SUPABASE_SERVICE_KEY (service_role read).
+      - name: Funnel from Supabase (complementary)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-from-supabase.cjs --days=7
+
+      # Rapport matinal funnel : 24h glissantes, funnel complet (map→beach→verdict→paywall→cta→checkout→paid)
+      # + taux étape→étape + diagnostic automatique + JSON structuré.
+      # Schedule-only. continue-on-error: non-blocking. Uses SUPABASE_SERVICE_KEY.
+      - name: Daily funnel report
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-daily-report.cjs
+
+      # Tracking UX JOURNALIER + diff jour-à-jour (first-party stats.php, inclut les
+      # dead-clicks NOMMÉS via top_dead_els). Voit l'IMPACT comportemental des
+      # changements shippés la veille (funnel, rage, dead-clicks, ennui) → boucle
+      # « ship → mesure → améliore ». Écrit ux-daily.json + ux-daily-history.json
+      # (committés plus bas). --send = digest email (dédup 1×/jour, HOLD si SMTP absent).
+      # schedule-only (1 cliché/jour ; les runs push servent au deploy, pas à la mesure).
+      - name: UX daily tracking (diff jour-à-jour first-party)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+          SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
+          SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
+          SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/ux-daily.cjs --send
+
+      # ── 1b. Commit IMMÉDIAT des états email (anti-doublon). Leçon 2026-06-11 :
+      # le commit de fin de workflow arrive APRÈS build/deploy — un step qui
+      # plante entre les envois et ce commit = drip-sent.json jamais persisté
+      # → chaque retry renvoyait les mêmes emails (17× le même J+3 à 1 abonnée).
+      # Un side-effect doit committer son état AVANT tout step faillible.
+      # 2026-07-01 : push direct d'abord (l'arbre porte les JSONs Copernicus non
+      # commités à ce stade — un rebase à froid REFUSERAIT sur arbre sale), puis
+      # retry ×5 fetch + rebase --autostash -X theirs. L'ancien `push || (pull
+      # && push)` échouait en silence sur race ET sur arbre sale → markers non
+      # persistés → re-envoi garanti.
+      - name: Commit email state (immédiat, anti-doublon)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
+          git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            delay=$(( (i - 1) * 10 + 5 ))  # 5s, 15s, 25s, 35s, 45s
+            # Push direct d'abord (fast path, aucun prérequis d'arbre propre).
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "git push OK (tentative $i)"
+              break
+            fi
+            echo "::warning::git push échoué (tentative $i/5) — fetch + rebase --autostash puis retry dans ${delay}s"
+            sleep $delay
+            git fetch origin "$BRANCH" || { continue; }
+            # --autostash : met de côté PUIS RÉAPPLIQUE les fichiers non commités
+            # (les JSONs data sont commités par un step ULTÉRIEUR — un stash simple
+            # les perdrait). -X theirs : sur conflit, garde NOTRE commit (markers).
+            git rebase --autostash -X theirs "origin/$BRANCH" || { git rebase --abort || true; }
+          done
+          # continue-on-error garde le deploy data vivant ; l'annotation rend l'échec visible.
+          [ "$push_ok" = "1" ] || echo "::error title=Email state non persisté::markers anti-doublon non poussés après 5 tentatives — risque de re-envoi d'emails au prochain run (leçon 2026-06-11)"
+
+      # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual, or on human push) ──
+      - name: Check if full build needed
+        id: check_build
+        run: |
+          HOUR=$(date -u +%H)
+          FULL=false
+          # Heures alignées sur le cron réel (0/6/12/18 UTC) : l'ancien gate 09/21
+          # ne matchait JAMAIS une run schedulée → les nouvelles régions n'étaient
+          # jamais rebuildées automatiquement (full build sur push humain seulement).
+          # Tolérance +1h (07/19) pour les délais de queue GitHub à :00.
+          if [ "$HOUR" = "06" ] || [ "$HOUR" = "07" ] || [ "$HOUR" = "18" ] || [ "$HOUR" = "19" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FULL=true
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            # Push events from GITHUB_TOKEN (chore bot commits) don't re-trigger this
+            # workflow by default, so reaching this branch means a human/PAT push.
+            # Full build ensures asset changes (photos, JSX, SEO pages) ship immediately
+            # instead of waiting up to 12h for the next 09/21 UTC slot.
+            FULL=true
+          fi
+          echo "full=$FULL" >> $GITHUB_OUTPUT
+          echo "Hour: $HOUR, event: ${{ github.event_name }}, Full build: $FULL"
+
+      # ── 2-pre-0. Snapshot des signalements IN-APP (anti-flash carte) : bake l'endpoint
+      # Apps Script /beach_reports (~2,5 s, trop lent pour le chemin critique) dans
+      # public/api/community/app-reports.json AVANT le build → l'app applique le bon statut
+      # signalé dès le 1er rendu (plus de flash vert→rouge/jaune). continue-on-error : si
+      # Apps Script est down, on garde le snapshot existant committé.
+      - name: Snapshot in-app reports (anti-flash carte)
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: node scripts/automation/aggregate-app-reports.cjs
+
+      # ── 2-pre-0b. Accuracy VALIDÉE CITOYEN (sprint #3) : aggregate-app-reports vient de
+      # journaliser les signalements frais du jour (reports-log.json, append-only) ; on les
+      # confronte aux prévisions figées (forecast-archive.json) → citizen-accuracy.json. La
+      # vérité-terrain citoyenne (méthode NOAA/Epicollect) = 2e validation de notre track-record,
+      # qui voit aussi le sargasse échoué. Tant que N<30 : statut "validating" (rien de faux publié).
+      # S'accumule chaque jour → chiffre crédible après ~3-4 semaines. continue-on-error (additif).
+      - name: Build citizen-validated accuracy (report-vs-prédiction)
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: node scripts/automation/build-citizen-accuracy.cjs
+
+      # ── 2-pre. Builds des nouvelles régions (puntacana, florida, rivieramaya…)
+      # Séquentiels : chaque build VITE_REGION=<id> écrase dist/. Le build
+      # partagé MQ/GP (étapes suivantes, sans VITE_REGION) reste le DERNIER pour
+      # que martinique-ftp/ et guadeloupe-ftp/ soient générés depuis un dist/ MQ
+      # propre, jamais pollué par une autre région.
+      # Une région sans secrets FTP est quand même construite, puis ignorée
+      # silencieusement par manual-ftp-deploy.cjs (skip sans creds, pas d'échec).
+      # ── 2-pre-a. Boucles vidéo hero (photos ≥85 → mp4 palindrome). ffmpeg
+      # n'est PAS présent sur ubuntu-latest (jamais — postulat « préinstallé »
+      # faux, 18 runs ENOENT le 2026-06-11) → install apt explicite si absent.
+      # continue-on-error OBLIGATOIRE : les loops sont du progressive enhancement
+      # (fallback photo-poster côté client) — leur échec ne doit jamais bloquer
+      # le deploy data. Générées ici plutôt que commitées : ~80MB régénérables.
+      # public/videos/hero/ est gitignoré ; Vite les copie dans dist/.
+      - name: Hero loops vidéo (ffmpeg)
+        if: steps.check_build.outputs.full == 'true' && github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v ffmpeg >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          # Clips DepthFlow (parallaxe 2.5D, rendus locaux GPU) : distribués via
+          # GitHub Release — ~200 Mo, trop lourds pour le repo. Best-effort : sans
+          # release, le zoompan couvre tout. make-hero-loops les copie par-dessus
+          # le zoompan via l'overlay assets/hero-depthflow/ (scan avant manifest).
+          mkdir -p assets/hero-depthflow
+          gh release download depthflow-heroes -p "*.mp4" -D assets/hero-depthflow --clobber \
+            && echo "DepthFlow release: $(ls assets/hero-depthflow/*.mp4 | wc -l) clips" \
+            || echo "release depthflow-heroes absente — zoompan seul"
+          node scripts/make-hero-loops.cjs
+
+      - name: Build new regions (séquentiel, avant le build MQ/GP)
+        if: steps.check_build.outputs.full == 'true'
+        run: |
+          set -e
+          NEW_REGIONS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.id).filter(id => !['mq','gp'].includes(id)).join(' '))")
+          for RID in $NEW_REGIONS; do
+            echo "── Build région $RID ──"
+            VITE_REGION=$RID npm run build
+            VITE_REGION=$RID node scripts/prepare-ftp.cjs
+          done
+
+      - name: Build site (Vite)
+        if: steps.check_build.outputs.full == 'true'
+        run: npm run build
+
+      - name: Prepare FTP folders
+        if: steps.check_build.outputs.full == 'true'
+        run: node scripts/prepare-ftp.cjs
+
+      # Injecte api/mollie-config.php (clé live + webhook_secret) dans les dossiers de staging EUR à
+      # partir des secrets MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET. Les secrets ne sont lus que via env:
+      # (jamais dans une ligne shell → pas dans les logs). Échoue explicitement si webhook_secret absent.
+      - name: Inject Mollie config into staging api/ dirs
+        if: steps.check_build.outputs.full == 'true'
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
+        run: node scripts/write-mollie-config.cjs
+
+      - name: Submit URLs to Google Indexing
+        if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/seo-submit-urls.cjs
+        continue-on-error: true
+
+      # IndexNow (Bing/Yandex/Seznam) — lit les sitemaps des <region>-ftp/ générés
+      # juste avant. Gratuit, clé publique servie par chaque domaine.
+      - name: Submit URLs to IndexNow (Bing)
+        if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
+        run: node scripts/automation/submit-indexnow.cjs
+        continue-on-error: true
+
+      # ── 2b. Data-only deploy (3x/day — just copy fresh JSON to FTP folders) ──
+      - name: Quick data deploy (no full build)
+        if: steps.check_build.outputs.full == 'false'
+        run: |
+          for DIR in martinique-ftp guadeloupe-ftp; do
+            if [ -d "$DIR" ]; then
+              mkdir -p "$DIR/api/copernicus"
+              cp public/api/copernicus/sargassum.json "$DIR/api/copernicus/"
+              cp public/api/copernicus/sargassum-grid.json "$DIR/api/copernicus/"
+              cp public/api/copernicus/history.json "$DIR/api/copernicus/"
+              cp public/api/copernicus/sargassum-banks.json "$DIR/api/copernicus/" 2>/dev/null || true
+              cp public/api/copernicus/forecast-archive.json "$DIR/api/copernicus/" 2>/dev/null || true
+              cp public/api/copernicus/track-record.json "$DIR/api/copernicus/" 2>/dev/null || true
+              # Gating J+2→J+7 : rafraîchir la prévision PRIVÉE complète (sinon premium
+              # verrait des J+2-6 périmés après un refresh data-only) + son .htaccess Deny.
+              mkdir -p "$DIR/api/copernicus/_private"
+              cp public/api/copernicus/_private/forecast-full.json "$DIR/api/copernicus/_private/" 2>/dev/null || true
+              cp public/api/copernicus/_private/.htaccess "$DIR/api/copernicus/_private/" 2>/dev/null || true
+              echo "Updated data in $DIR"
+            fi
+          done
+          # If FTP dirs don't exist yet (first run), do full build
+          if [ ! -d "martinique-ftp" ]; then
+            npm run build
+            node scripts/prepare-ftp.cjs
+            echo "First run — did full build"
+          fi
+
+      # Inject Mollie config (api_key + webhook_secret) into staging api/ dirs on EVERY deploy
+      # (not just full builds) so config stays in sync with GitHub secrets.
+      - name: Inject Mollie config into staging api/ dirs (data-only path)
+        if: steps.check_build.outputs.full == 'false'
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
+        run: node scripts/write-mollie-config.cjs
+
+      # ── 2c. Data-only nouvelles régions : copie les JSON frais de chaque
+      # région (public/api/copernicus/<id>/) vers <ftpDir>/api/copernicus/ —
+      # mêmes fichiers que prepareNewRegion() dans scripts/prepare-ftp.cjs
+      # (sargassum.json + history.json, servis à la racine du domaine).
+      # Pas de grid/banks/forecast-archive : ces overlays MQ/GP sont purgés des
+      # nouvelles régions. Le deploy FTPS plus bas n'upload que ce mini-dossier
+      # (manual-ftp-deploy.cjs upload le contenu de <ftpDir>/ tel quel).
+      # Quick data deploy nouvelles régions : copie les JSONs Copernicus frais dans
+      # chaque <ftpDir>/api/copernicus/. Si le dossier FTP n'existe pas ou est incomplet
+      # (pas d'index.html = aucune page HTML), on fait un build complet pour cette
+      # région AVANT de copier les données — sinon on déploierait un site vide (BUG-2026-002).
+      - name: Quick data deploy nouvelles régions (full build si incomplet)
+        if: steps.check_build.outputs.full == 'false'
+        run: |
+          node -e "
+            const fs = require('fs'), path = require('path');
+            const { execSync } = require('child_process');
+            const { getAllRegions } = require('./regions/index.cjs');
+            const usRegions = getAllRegions().filter(r => !['mq', 'gp'].includes(r.id));
+            // Étape 1 : build complet pour les régions sans index.html
+            for (const r of usRegions) {
+              const indexHtml = path.join(r.ftpDir, 'index.html');
+              if (fs.existsSync(indexHtml)) {
+                console.log(r.id + ': FTP dir complet (index.html existe)');
+                continue;
+              }
+              console.log(r.id + ': FTP dir incomplet → build complet');
+              execSync('VITE_REGION=' + r.id + ' npm run build', { stdio: 'inherit', cwd: '.' });
+              execSync('VITE_REGION=' + r.id + ' node scripts/prepare-ftp.cjs', { stdio: 'inherit', cwd: '.' });
+            }
+            // Étape 2 : copier les données fraîches dans toutes les régions US
+            for (const r of usRegions) {
+              const src = path.join('public', 'api', 'copernicus', r.id);
+              if (!fs.existsSync(path.join(src, 'sargassum.json'))) { console.log('skip ' + r.id + ' (pas de data fraiche)'); continue; }
+              const dest = path.join(r.ftpDir, 'api', 'copernicus');
+              fs.mkdirSync(dest, { recursive: true });
+              for (const f of ['sargassum.json', 'history.json']) {
+                const s = path.join(src, f);
+                if (fs.existsSync(s)) fs.copyFileSync(s, path.join(dest, f));
+              }
+              const priv = path.join(src, '_private', 'forecast-full.json');
+              if (fs.existsSync(priv)) {
+                const pdest = path.join(dest, '_private');
+                fs.mkdirSync(pdest, { recursive: true });
+                fs.copyFileSync(priv, path.join(pdest, 'forecast-full.json'));
+                const ht = path.join(src, '_private', '.htaccess');
+                if (fs.existsSync(ht)) fs.copyFileSync(ht, path.join(pdest, '.htaccess'));
+                else fs.writeFileSync(path.join(pdest, '.htaccess'), 'Require all denied\n');
+              }
+              console.log('Updated data in ' + dest);
+            }
+          "
+
+      # Referral REPORT (read-only, decision-support) : lit la Google Sheet directement
+      # (bypass Apps Script clasp push bloqué) et agrège share→landing→convert.
+      # Sortie : data/referral-report.json (committé plus bas).
+      - name: Referral report (read-only)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: node scripts/automation/referral-from-sheet.cjs
+
+      # ── 3. Commit updated data to repo ────────────────────
+      - name: Commit updated sargassum.json
+        if: github.event_name != 'push'
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
+          [ -f public/api/copernicus/climatology.json ] && git add public/api/copernicus/climatology.json
+          # Prévision privée J+2-7 (servie par forecast.php) : DOIT être committée à
+          # chaque run live, sinon le repo garde un privé périmé qu'un push-deploy
+          # ultérieur redéploie tel quel (FTP) → régression « pins gris premium » quand
+          # une sentinelle vient d'être ajoutée (cas 'precheur' 2026-06-30). Root + régions.
+          git add public/api/copernicus/_private/forecast-full.json 2>/dev/null || true
+          git add public/api/copernicus/*/_private/forecast-full.json 2>/dev/null || true
+          # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
+          # banks/grid régionaux inclus : persistance inter-runs = signal d'arrivée forecast
+          # Chaque pathspec ajouté SÉPARÉMENT — `git add a b c` est ATOMIQUE : si UN
+          # seul pathspec ne matche AUCUN fichier, git add sort en 128 et ne stage
+          # RIEN (les autres compris). C'est le bug qui a GELÉ toute la donnée
+          # régionale (mq/gp ET les 3 USD) du 2026-06-15 au 17 : forecast-archive.json
+          # par-région n'est jamais écrit par runRegionPipeline → ce pathspec matchait
+          # zéro fichier → git add 128 → 0 région committée (root frais, sous-dossiers
+          # figés, invisible sur MQ/GP qui servent aussi le root). La boucle + `|| true`
+          # isole chaque pathspec : un glob vide n'empêche plus les autres de stager.
+          for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
+            git add "public/api/copernicus/*/$pat" 2>/dev/null || true
+          done
+          [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
+          # Tracking UX journalier (rapport + série temporelle) — append-only inter-runs.
+          [ -f scripts/automation/data/ux-daily.json ] && git add scripts/automation/data/ux-daily.json
+          [ -f scripts/automation/data/ux-daily-history.json ] && git add scripts/automation/data/ux-daily-history.json
+          [ -f scripts/automation/data/funnel-snapshot.json ] && git add scripts/automation/data/funnel-snapshot.json
+          [ -f scripts/automation/data/funnel-daily-report.json ] && git add scripts/automation/data/funnel-daily-report.json
+          [ -f scripts/automation/data/referral-report.json ] && git add scripts/automation/data/referral-report.json
+          # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
+          # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
+          # welcome-sent/drip-sent/bounced sont désormais des hashes SHA-256.
+          [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
+          [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
+          [ -f scripts/automation/data/daily-brief-sent.json ] && git add scripts/automation/data/daily-brief-sent.json
+          [ -f scripts/automation/data/drip-b2b-sent.json ] && git add scripts/automation/data/drip-b2b-sent.json
+          [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
+          [ -f scripts/automation/data/incidents.json ] && git add scripts/automation/data/incidents.json
+          [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
+          [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
+          # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
+          [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
+          [ -f scripts/automation/data/push-winback-sent.json ] && git add scripts/automation/data/push-winback-sent.json
+          [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
+          [ -f public/api/copernicus/track-record.json ] && git add public/api/copernicus/track-record.json
+          # Sprint #3 — track-record validé citoyen : le journal des signalements DOIT être commité
+          # (append-only inter-runs, sinon l'accumulation est perdue) + la métrique calculée.
+          [ -f public/api/community/reports-log.json ] && git add public/api/community/reports-log.json
+          [ -f public/api/copernicus/citizen-accuracy.json ] && git add public/api/copernicus/citizen-accuracy.json
+          # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
+          # chaque run — leur absence du commit gelait les scores (bug 2 mois).
+          [ -f public/api/weather/beaches-weather.json ] && git add public/api/weather/beaches-weather.json
+          [ -f public/api/copernicus/sargassum-banks.json ] && git add public/api/copernicus/sargassum-banks.json
+          # Sentinel-2 near-shore (prototype flaggé OFF) : layer courant + historique
+          # append-only. L'historique DOIT être commité, sinon l'accumulation s'évapore
+          # à chaque run et le backtest (gate d'activation du flag) reste impossible.
+          [ -f public/api/copernicus/sentinel2-nearshore.json ] && git add public/api/copernicus/sentinel2-nearshore.json
+          [ -f public/api/copernicus/sentinel2-history.json ] && git add public/api/copernicus/sentinel2-history.json
+          # calibration.json = état d'activation auto-calculé (thresholds + active) — DOIT
+          # persister (c'est lui qui allume/éteint le S2 d'un run à l'autre).
+          [ -f public/api/copernicus/sentinel2-calibration.json ] && git add public/api/copernicus/sentinel2-calibration.json
+          if git diff --cached --quiet; then
+            echo "No data file changes to commit"
+          else
+            git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          fi
+          # git rebase refuse un arbre sale : le job modifie d'autres fichiers (build, JSON annexes…)
+          git stash push -u -m "actions-pre-rebase" || true
+          BRANCH="${GITHUB_REF_NAME:-main}"
+           push_ok=0
+          for i in 1 2 3 4 5; do
+            delay=$(( (i - 1) * 10 + 5 ))  # 5s, 15s, 25s, 35s, 45s
+            git fetch origin "$BRANCH"
+            # -X theirs : sur conflit, garde NOTRE version (les JSONs Copernicus frais
+            # qu'on vient de générer). "theirs" en rebase = commit appliqué = notre commit.
+            # Sans ça, un push humain concurrent sur les mêmes JSONs échouait le rebase.
+            if ! git rebase -X theirs "origin/$BRANCH"; then
+              echo "::warning::git rebase -X theirs a échoué (tentative $i/5), retry dans ${delay}s"
+              git rebase --abort || true
+              sleep $delay
+              continue
+            fi
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "git push OK (tentative $i)"
+              break
+            fi
+            echo "::warning::git push échoué (tentative $i/5), retry dans ${delay}s"
+            sleep $delay
+          done
+          if [ "$push_ok" != "1" ]; then
+            echo "::error::git push a échoué après 5 tentatives"
+            exit 1
+          fi
+
+      # ── Garde MOAT : intégrité des données AVANT publication FTP ────────────
+      # verify-ftp-ready.cjs refuse (exit 1) une carte issue d'une source dégradée
+      # / de référence OU un pic "tout vert" suspect (>40 pts de plages propres en
+      # <24h = grille corrompue / no-data masqué). « Jamais publier une fausse
+      # carte verte ». continue-on-error → n'échoue PAS le job (emails / SEO / vidéo
+      # en aval continuent) ; on saute UNIQUEMENT le deploy FTP (le « if » ci-dessous).
+      # Les données restent archivées en repo, le prochain run (4×/j) re-tentera.
+      - name: Vérifier l'intégrité des données avant publication FTP
+        id: verify_data
+        continue-on-error: true
+        run: node scripts/verify-ftp-ready.cjs
+
+      - name: Alerte si publication bloquée (intégrité données)
+        if: steps.verify_data.outcome == 'failure'
+        run: echo "::error title=Publication FTP bloquée::verify-ftp-ready a refusé la publication (source dégradée/référence ou pic tout-vert suspect). Deploy FTP sauté pour ne pas diffuser une fausse carte verte. Données archivées en repo ; prochain run re-tentera la source live."
+
+      # ── 4–5. FTPS déployé en sessions fragmentées (basic-ftp) — évite
+      # "Timeout (control socket)" de l'hébergeur (~660 STOR / session).
+      # manual-ftp-deploy.cjs itère TOUTES les régions (regions/index.cjs) :
+      # une région sans secrets FTP ou sans dossier <ftpDir>/ local = skip
+      # silencieux (le workflow n'échoue pas).
+      # Gated : ne publie QUE si verify_data a réussi (intégrité OK). EXCEPTION
+      # push : un push de code/asset ne re-scrape pas la donnée (steps ERDDAP/scraper
+      # sautés) → verify_data lit la donnée committée (potentiellement vieille). On ne
+      # veut PAS qu'une donnée dégradée déjà committée gèle les deploys de CODE → sur
+      # push on déploie toujours (le code/site change, pas la donnée).
+      - name: Deploy FTPS toutes régions (sessions fragmentées)
+        id: ftp_deploy
+        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        continue-on-error: true
+        # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
+        # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
+        # déjà continue-on-error → un timeout n'échoue PAS le build, il laisse tourner
+        # le health-check (sites up = warning, down = error). Borne le blocage de queue.
+        timeout-minutes: 60
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+        run: node scripts/manual-ftp-deploy.cjs
+
+      # ── 6. Final health check — fail workflow only if sites actually down ──
+      # FTP can be flaky; data is already committed to git so next run redeploys.
+      # We only want to fail the workflow (and alert) when the live sites are
+      # actually broken, not when FTP had a transient hiccup.
+      - name: Health check after deploy
+        run: |
+          sleep 10
+          # Toutes les régions (MQ/GP + nouvelles) : un site down/stale doit
+          # faire échouer le workflow — plus de monitoring MQ/GP-only.
+          # live:false = région préparée mais domaine pas encore servi (DNS/FTP) —
+          # ex. barbados : ne pas la health-checker (HTTP 000 → faux "site down" qui
+          # faisait échouer tout le deploy). La passer à live:true (ou retirer le flag) au lancement.
+          DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().filter(r => r.live !== false).map(r => r.domain).join(' '))")
+          DOWN=""
+          TS=$(date +%s)
+          for D in $DOMAINS; do
+            # Retry 3× avec backoff (2s,4s) : "HTTP 000" = pas de connexion du
+            # tout (DNS/timeout/blip réseau runner↔hébergeur), pas une vraie
+            # panne serveur. Un seul curl raté faisait échouer le run à tort
+            # (run 28087792051, 2026-06-24 : guadeloupe 000000 puis 200 derrière).
+            STATUS=000
+            for ATTEMPT in 1 2 3; do
+              TS=$(date +%s)
+              # UA + Accept explicites : Cloudflare WAF renvoie 415 sur le curl
+              # par défaut du runner GH (UA "curl/7.x" + Accept "*/*" minimal).
+              # On imite un user-agent standard pour passer le WAF.
+              # (run 30669647829, 2026-07-31 : tous les domaines en 415 alors qu'ils servent du 200 côté navigateur)
+              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" "https://$D/?t=$TS" || echo 000)
+              [ "$STATUS" = "200" ] && break
+              [ "$ATTEMPT" -lt 3 ] && { echo "$D: HTTP $STATUS (tentative $ATTEMPT/3) — retry…"; sleep $((ATTEMPT * 2)); }
+            done
+            AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json?t=$TS" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+            echo "$D: HTTP $STATUS | data age ${AGE}h"
+            if [ "$STATUS" != "200" ]; then DOWN="$DOWN $D"; fi
+          done
+          if [ -n "$DOWN" ]; then
+            echo "::error::Sites down:$DOWN — FTP deploys failed and sites not serving"
+            exit 1
+          fi
+          # If FTP attempt 2 also failed AND data is stale (>6h), alert
+          if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
+            echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
+          fi
+          # Deploy FTP SAUTÉ par le gate d'intégrité (verify_data KO) : les sites
+          # restent up sur l'ancienne donnée (cache/CDN) → pas de "site down", mais
+          # publication volontairement bloquée. On le rend visible (sinon skip muet).
+          if [ "${{ steps.ftp_deploy.outcome }}" = "skipped" ]; then
+            echo "::warning::Deploy FTP SAUTÉ — intégrité des données refusée (source dégradée ou pic tout-vert). Sites servent l'ancienne donnée (réelle). Prochain run re-tentera la source live."
+          fi
+          # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
+          # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
+          # Référence = le sw.js du dossier FTP réellement uploadé, JAMAIS
+          # public/sw.js : les git pull mid-run (commits data/email) peuvent y
+          # amener le SW d'un push POSTÉRIEUR au build → faux positif (run
+          # 27388423022 : déployé v59, tree pullé v60, alerte à tort 2026-06-12).
+          if [ "${{ steps.check_build.outputs.full }}" = "true" ]; then
+            WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
+            [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
+            # Vérif TOLÉRANTE : la propagation FTP/CDN a parfois un léger retard (faux
+            # positif, surtout domaines USD type puntacana). On re-vérifie UNIQUEMENT les
+            # domaines encore en écart, jusqu'à 4× × 20 s, avant de déclarer un VRAI échec
+            # → fini les fausses alertes « deploy failed » alors que le site se déploie bien.
+            check_sw() {
+              local out=""
+              for D in $1; do
+                # UA explicite pour passer Cloudflare WAF (cf. health check principal)
+                GOT=$(curl -sL --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: */*" "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
+                [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
+              done
+              echo "$out"
+            }
+            MISMATCH=$(check_sw "$DOMAINS")
+            TRIES=0
+            while [ -n "$MISMATCH" ] && [ "$TRIES" -lt 4 ]; do
+              TRIES=$((TRIES+1))
+              echo "::notice::SW pas encore propagé (essai $TRIES/4) :$MISMATCH — nouvelle vérif dans 20s"
+              sleep 20
+              PENDING=$(echo "$MISMATCH" | sed 's/([^)]*)//g')
+              MISMATCH=$(check_sw "$PENDING")
+            done
+            if [ -n "$MISMATCH" ]; then
+              echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris (après $TRIES re-essai(s))"
+              exit 1
+            fi
+            if [ "$TRIES" -gt 0 ]; then echo "SW version OK après $TRIES re-essai(s): $WANT"; else echo "SW version OK sur toutes les régions: $WANT"; fi
+          fi
+          # ── Gardes email : incident d'excuses bloqué >24h + plafond Resend ──
+          node -e "try{const i=require('./scripts/automation/data/incidents.json');const stuck=i.filter(x=>(x.recipients||[]).some(h=>!(x.sent||{})[h])&&Date.now()-new Date(x.created)>864e5);if(stuck.length)console.log('::warning::Incident(s) excuse en attente >24h: '+stuck.map(x=>x.id).join(','))}catch(e){}"
+          node -e "try{const s=require('./scripts/automation/data/subscribers.json');const n=s.filter(x=>['sargacatch','beach_alert'].includes(x.source||'')).length;if(n>85)console.log('::warning::Audience daily_verdict '+n+' — proche du plafond Resend 100/jour (tache 37: upgrade ou throttle)')}catch(e){}"
+
+      # ── ADR-B ops bus event: pipeline_success ──
+      # Writes event to ops-events.jsonl, uploaded as artifact; drained locally
+      # by `ops/drain_gh_events.py` via `gh run download` (Étape 5).
+      - name: Record pipeline_success event
+        if: success()
+        run: |
+          mkdir -p scripts/automation/data
+          node -e "require('fs').appendFileSync('scripts/automation/data/ops-events.jsonl', JSON.stringify({ts:Date.now(),source:'sargagame/daily_copernicus',kind:'pipeline_success',ok:1,payload:{run_id:process.env.GITHUB_RUN_ID,sha:process.env.GITHUB_SHA,event_name:process.env.GITHUB_EVENT_NAME}}) + '\n')"
+
+      - name: Upload ops events artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-events-${{ github.run_id }}-main
+          path: scripts/automation/data/ops-events.jsonl
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ── Notify on failure ──────────────────────────────────
+  notify-failure:
+    needs: update-and-deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send failure alert email
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          WORKFLOW_NAME: 'Daily Copernicus + Deploy'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs
+
+      # ADR-B: upload the pipeline_fail event written by notify-failure.cjs as
+      # an artifact; local drain cron fetches it via `gh run download`.
+      - name: Upload ops events artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-events-${{ github.run_id }}-fail
+          path: scripts/automation/data/ops-events.jsonl
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ── Auto-retry on failure (once, after 5 min) ─────────
+  # schedule-only : un retry dispatché est un NOUVEAU run (run_attempt repart à 1),
+  # donc sans ce gate un échec PERSISTANT boucle à l'infini — vécu 2026-06-11 :
+  # ffmpeg ENOENT → 6 runs/h pendant 1h, et les steps email (avant le commit
+  # d'état) ont renvoyé 6× le même drip J+3. schedule-only = exactement 1 retry
+  # par échec de cron, jamais de chaîne dispatch→fail→dispatch.
+  retry-on-failure:
+    needs: update-and-deploy
+    if: failure() && github.run_attempt == '1' && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Wait 5 minutes before retry
+        run: sleep 300
+      - name: Retry workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run daily-copernicus.yml --repo ${{ github.repository }} --ref ${{ github.ref }}

@@ -1,0 +1,103 @@
+name: Daily Brief (Verdict du matin)
+
+# Le « verdict quotidien » (meilleure plage du jour + tendance J+1) aux leads qui
+# l'ont demandé — sources exit_intent / beach_alert / sargacatch (DAILY_SOURCES dans
+# drip-email.cjs). La carte « Ta semaine est prête » et le 🔔 promettent « le bon plan
+# chaque matin à 7h » : ce workflow EST cette promesse, calé à ~7h MQ.
+#
+# POURQUOI UN WORKFLOW DÉDIÉ (2026-06-22, même logique que weekend-email.yml) :
+# Le verdict partait déjà via le step drip de daily-copernicus, mais ses crons :00
+# DÉRIVENT de +2-3h sous la charge (mesuré : 12:00 UTC → ~14-15 UTC = 10-11h MQ).
+# Résultat : un « brief du matin à 7h » qui arrivait en fin de matinée. Un cron dédié
+# `0 11 * * *` (11 UTC = 7h MQ) landé tôt, sans gate horaire fragile, rapproche la
+# livraison de 7h. `--daily-only` n'exécute QUE le verdict (pas les étapes drip J3/7/14/21,
+# qui restent dans daily-copernicus). La dérive ne peut que retarder, jamais avancer →
+# jamais avant 7h. Le run daily-copernicus (fenêtre 10-20 UTC) reste un FILET de secours
+# si ce workflow rate : la dédup `record.daily_last` garantit 1 verdict/jour/lead.
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 11:00 UTC = 7h Martinique ; dérive tolérée (retarde seulement)
+  workflow_dispatch:        # envoi manuel de secours (dédup daily_last empêche le doublon)
+
+permissions:
+  contents: write
+
+# Deux déclenchements le même jour (double-fire cron rare, ou dispatch manuel pendant
+# que le cron tourne) se sérialisent ; la dédup daily_last du script saute le 2e.
+concurrency:
+  group: daily-brief
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - name: Install deps
+        run: npm ci
+
+      # Liste d'abonnés (Sheet via service account) → data/subscribers.json (gitignored,
+      # RGPD, déjà filtrée désabonnés + bounces). Requis avant l'envoi.
+      - name: Fetch subscriber list
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-subscribers.cjs
+
+      # Verdict quotidien UNIQUEMENT (--daily-only). Lit la donnée commitée
+      # (public/api/copernicus/.../sargassum.json, ≤6h fraîche via daily-copernicus).
+      # Envoi SMTP depuis alerte@ ; dédup daily_last (drip-sent.json) ; anti-spam
+      # content-signature (renvoie quand l'état change OU heartbeat 7j).
+      - name: Send daily verdict (SMTP alerte@)
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/drip-email.cjs --daily-only
+
+      # Persiste la dédup. Push via GITHUB_TOKEN → ne re-déclenche pas les workflows
+      # (règle no-recursion). rebase -X theirs : co-existe avec les commits data
+      # concurrents de daily-copernicus.
+      - name: Commit drip state (drip-sent.json)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json || true
+          if git diff --cached --quiet; then echo "Aucun envoi (rien à committer)."; exit 0; fi
+          git commit -m "chore: daily verdict sent $(date -u +'%Y-%m-%d')"
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git rebase -X theirs "origin/$BRANCH" || { echo "::warning::rebase échoué ($i/5)"; git rebase --abort || true; sleep 10; continue; }
+            if git push origin "HEAD:$BRANCH"; then echo "push état OK ($i)"; exit 0; fi
+            echo "::warning::push échoué ($i/5), pause 15s"; sleep 15
+          done
+          echo "::warning::push de drip-sent.json échoué — la dédup re-tournera au prochain run"
+
+  # ── Alerte en cas d'échec (parité avec weekend-email) ──
+  notify-failure:
+    needs: send
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send failure alert email
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          WORKFLOW_NAME: 'Daily Brief (Verdict du matin)'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs

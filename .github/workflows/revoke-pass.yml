@@ -1,0 +1,84 @@
+name: Revoke pass (refund/chargeback)
+
+# Révocation d'un accès pass après remboursement/chargeback (déclenchée par l'alerte
+# de mollie-webhook.php). MANUEL uniquement (workflow_dispatch) — action admin one-shot,
+# idempotente (supprimer un fichier déjà absent = no-op) : pas un step email/notif,
+# la règle « jamais de dispatch sur side-effect email » ne s'applique pas ici.
+#
+# ⚠️ REPO PUBLIC : l'input est le HASH sha1 de l'email, JAMAIS l'email en clair
+# (les inputs de dispatch sont visibles). Calcul local du hash :
+#   node -e "console.log(require('crypto').createHash('sha1').update('<email>'.trim().toLowerCase()).digest('hex'))"
+# Ce que fait le run : supprime api/data/mollie-subs/<hash>.json sur le(s) serveur(s)
+# FTP (coupe la restauration cross-device) + purge l'entrée comps.php si présente
+# (committée ici, déployée au prochain full build).
+
+on:
+  workflow_dispatch:
+    inputs:
+      hash:
+        description: 'sha1(email) du client remboursé (40 hex — JAMAIS l''email)'
+        required: true
+      island:
+        description: 'Région (mq|gp|florida|puntacana|rivieramaya|all)'
+        required: false
+        default: 'all'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: revoke-pass
+  cancel-in-progress: false
+
+jobs:
+  revoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Revoke pass (comps.php + record serveur mol_store)
+        env:
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+          # Inputs via env, JAMAIS interpolés dans le shell (anti-injection GH Actions) ;
+          # le script les valide strictement (40 hex / liste de régions).
+          REVOKE_HASH: ${{ inputs.hash }}
+          REVOKE_ISLAND: ${{ inputs.island }}
+        run: node scripts/automation/revoke-pass.cjs --hash="$REVOKE_HASH" --island="$REVOKE_ISLAND"
+
+      # comps.php modifié (entrée comp retirée) → commit + push (même pattern retry
+      # que le commit email-state de daily-copernicus). Sans entrée comp : no-op.
+      - name: Commit comps.php si modifié
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/api/comps.php
+          if git diff --cached --quiet; then echo "comps.php inchangé."; exit 0; fi
+          git commit -m "chore(revoke): purge entrée comp (refund) $(date -u +'%Y-%m-%d %H:%M UTC')"
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          for i in 1 2 3 4 5; do
+            if git push origin "HEAD:$BRANCH"; then echo "push OK"; exit 0; fi
+            git fetch origin "$BRANCH" || { sleep 10; continue; }
+            git rebase --autostash -X theirs "origin/$BRANCH" || { git rebase --abort || true; sleep 10; }
+          done
+          echo "::error title=comps.php non poussé::purge comp non persistée après 5 tentatives — relancer le workflow"
+          exit 1

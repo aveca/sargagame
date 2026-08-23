@@ -1,0 +1,127 @@
+name: Weekly UX Report
+
+on:
+  schedule:
+    # Cut 2026-04-13 (quota 100%): Tue+Fri -> Fri only. 8 runs/mo -> 4.
+    # Fri keeps the weekend-prep signal, Tue was redundant with Mon SEO.
+    - cron: '0 11 * * 5'
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-ux-report
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  ux-report:
+    runs-on: ubuntu-latest
+    # Budget job : 5 sites (MQ/GP + 3 USD depuis fin juin) → le SEO audit fait ~24 min
+    # de GSC URL Inspection (222 URLs séquentielles à ~6 s/call) PUIS la capture ~10 min.
+    # Chaque step lourd a son PROPRE timeout-minutes < ce plafond, pour qu'un hang d'un
+    # step ne coupe JAMAIS le suivant. Bug 2026-06-19→07-02 (runs 28240239424 /
+    # 28576401190…) : le SEO audit, SANS borne propre, mangeait les 25 min et c'est le
+    # timeout DU JOB qui annulait la capture innocente (son timeout-minutes:9 ne se
+    # déclenchait jamais). Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 50
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. Collect data ──────────────────────────────────
+      - name: SEO Audit (data collection)
+        id: seo-audit
+        continue-on-error: true
+        # ~24 min normal (222 GSC URL Inspections séquentielles à ~6 s, 5 sites).
+        # Guardrail AU-DESSUS du normal : il ne borne qu'un VRAI hang (call googleapis
+        # qui ne revient jamais), pas les runs lents légitimes. Avec continue-on-error,
+        # un timeout masque l'échec (le report de la run précédente reste committé) et
+        # laisse tourner la capture au lieu de tout annuler. C'est ce guardrail
+        # manquant qui causait le bug (cf. commentaire timeout-minutes du job).
+        timeout-minutes: 30
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+          GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+        run: node scripts/automation/seo-audit.cjs
+
+      # ── 2. Generate UX report (+ coupables dead-click NOMMÉS via stats.php
+      #       first-party top_dead_els, indépendant de GA4/Clarity) ──
+      - name: UX Audit (report)
+        if: steps.seo-audit.outcome == 'success'
+        env:
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+          SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
+          SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
+          SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
+        run: node scripts/automation/ux-audit.cjs
+
+      # ── 3. Commit report AVANT le capture audit ─────────────────────────
+      # Règle « jamais un step fragile entre une donnée et son commit » :
+      # les runs 27381454264 + 27382005088 (2026-06-11) ont perdu le rapport
+      # GA4 réussi parce qu'audit-capture pendait jusqu'au timeout du job.
+      - name: Commit UX report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json; do
+            [ -f "$f" ] && git add -f "$f"
+          done
+          git diff --cached --quiet || git commit -m "ux: weekly report $(date -u +'%Y-%m-%d')"
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)
+
+      # ── 4. Capture intelligence audit (checklist géants — Playwright live) ──
+      # 13 checks mesurables sur les 5 domaines (reference_capture_intelligence).
+      # timeout-minutes PROPRE au step : le script peut pendre si un domaine est
+      # en pleine fenêtre de deploy FTP — le job doit survivre et committer.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}
+      - name: Capture audit (5 domaines live)
+        continue-on-error: true
+        # ~10 min normal (install chromium à froid ~3 min + 5 domaines ; le run 06-12
+        # réussi prenait 553 s = 9,2 min, le cap de 9 min était donc lui-même trop
+        # serré). 15 = marge cache-miss + borne un domaine qui pend en fenêtre de
+        # deploy FTP. Reste < plafond job → n'affame pas les steps suivants.
+        timeout-minutes: 15
+        run: |
+          npx playwright install chromium --with-deps
+          node scripts/audit-capture.cjs
+
+      - name: Commit capture audit
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f scripts/automation/data/capture-audit.json ] && git add -f scripts/automation/data/capture-audit.json
+          git diff --cached --quiet || git commit -m "ux: capture audit $(date -u +'%Y-%m-%d')"
+          # Push racé par les crons concurrents → rebase+retry ; échec final = exit 1
+          # (le continue-on-error du step laisse le job vert mais l'::error reste visible).
+          git stash push -u -m "actions-pre-rebase" || true
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH" || { echo "::warning::git fetch failed ($i/5)"; sleep 10; continue; }
+            git rebase -X theirs "origin/$BRANCH" || { echo "::warning::rebase failed ($i/5)"; git rebase --abort || true; sleep 10; continue; }
+            if git push origin "HEAD:$BRANCH"; then push_ok=1; break; fi
+            echo "::warning::git push failed ($i/5), sleep 20s"; sleep 20
+          done
+          [ "$push_ok" = "1" ] || { echo "::error::git push failed after 5 attempts"; exit 1; }

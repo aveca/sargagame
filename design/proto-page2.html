@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>aw_hero_height — hero court vs hero 70svh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --land:#16242A; --ink:#EAF7F4;
+    --card:#FBFAF7; --mid:#686868;
+    --st-mod:#E0A800;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+  body{background:#070C10;font-family:system-ui,-apple-system,"Bricolage Grotesque",sans-serif;color:var(--ink)}
+  .anton{font-family:'Anton',system-ui,sans-serif;font-weight:400}
+
+  .bench{display:flex;gap:46px;padding:40px 38px 30px;align-items:flex-start;justify-content:center}
+  .col{width:390px}
+  .col-head{display:flex;align-items:flex-start;gap:10px;margin:0 4px 14px}
+  .col-head .tag{font:800 11px/1 "Bricolage Grotesque",system-ui;letter-spacing:.14em;text-transform:uppercase;
+    padding:5px 10px;border-radius:100px;flex-shrink:0;margin-top:2px}
+  .tag.ctrl{background:rgba(232,82,42,.16);color:#FF9E82;border:1px solid rgba(232,82,42,.3)}
+  .tag.short{background:rgba(43,182,115,.16);color:#7DE3B0;border:1px solid rgba(43,182,115,.34)}
+  .col-head h3{font:800 15px/1.2 "Bricolage Grotesque",system-ui;color:var(--ink)}
+  .col-head .sub{font:600 12px/1.3 system-ui;color:#8FA6A2;margin-top:3px}
+
+  /* la hauteur du phone = 1er viewport mobile : ce qui dépasse 780px est "sous le pli" */
+  .phone{position:relative;width:390px;height:780px;border-radius:30px;overflow:hidden;
+    background:var(--card);box-shadow:0 30px 70px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06)}
+  .phone .sheet{position:absolute;inset:0;overflow:hidden}
+  .sheet-handle{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:38px;height:4px;border-radius:3px;background:rgba(255,255,255,.55);z-index:20}
+  /* voile "sous le pli" : grise ce qui exigerait un scroll dans le control */
+  .belowfold{position:absolute;left:0;right:0;bottom:0;z-index:25;pointer-events:none;
+    background:repeating-linear-gradient(135deg,rgba(7,12,16,.74),rgba(7,12,16,.74) 9px,rgba(7,12,16,.66) 9px,rgba(7,12,16,.66) 18px);
+    border-top:2px dashed rgba(255,216,132,.85)}
+  .belowfold::before{content:"↓ SCROLL REQUIS";position:absolute;left:50%;top:9px;transform:translateX(-50%);
+    font:800 10px/1 "Bricolage Grotesque",system-ui;letter-spacing:.14em;color:var(--glint);
+    background:rgba(7,12,16,.9);padding:5px 11px;border-radius:100px;border:1px solid rgba(255,216,132,.4)}
+
+  .hero{position:relative;width:100%;overflow:hidden;background:var(--sky0)}
+  .hero.ctrl{height:546px}
+  .hero.short{height:328px}
+  .hero svg.scene{position:absolute;inset:0;width:100%;height:100%}
+  .veil{position:absolute;left:0;right:0;display:flex;justify-content:center;pointer-events:none}
+  .hero.ctrl .veil{top:43%}
+  .hero.short .veil{top:36%}
+  .hero .grad{position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,transparent 30%,transparent 52%,var(--card) 100%)}
+  .hero .statusglow{position:absolute;bottom:0;left:0;right:0;height:40%;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 100%, rgba(224,168,0,.13) 0%, transparent 70%)}
+  .pill{position:absolute;bottom:22px;left:18px;display:flex;align-items:center;gap:8px;
+    padding:6px 14px 6px 10px;border-radius:100px;background:rgba(0,0,0,.36);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12)}
+  .pill .dot{width:10px;height:10px;border-radius:5px;background:var(--st-mod);box-shadow:0 0 8px var(--st-mod)}
+  .pill .txt{font:700 13px/1 system-ui;color:#fff;letter-spacing:.01em}
+  .iconbtn{position:absolute;width:42px;height:42px;border-radius:21px;background:rgba(0,0,0,.32);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15);
+    color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .iconbtn.close{top:12px;right:12px}
+  .iconbtn.fav{top:12px;left:12px;font-size:18px}
+  .scanhint{position:absolute;bottom:13px;right:14px;display:flex;align-items:center;gap:4px;opacity:.55}
+  .scanhint span{font:700 9px/1 "Bricolage Grotesque",system-ui;color:#4ECDC4;letter-spacing:.08em}
+
+  .body{padding:0 20px 40px;color:#16242A}
+  .bname{font-size:29px;line-height:1.12;margin:14px 0 4px;color:#16242A}
+  .meta{font:600 13px/1.3 system-ui;color:var(--mid);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .meta .sep{width:3px;height:3px;border-radius:2px;background:#bbb}
+
+  .scorewrap{position:relative;margin:4px 0 14px}
+  .scoreglow{position:absolute;inset:-4px;border-radius:22px;filter:blur(8px);pointer-events:none;
+    background:radial-gradient(120% 100% at 0% 0%, rgba(224,168,0,.15) 0%, transparent 60%)}
+  .scorecard{position:relative;display:flex;align-items:center;gap:16px;padding:14px 16px;border-radius:18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.72));
+    border:1px solid rgba(224,168,0,.2);
+    box-shadow:0 14px 34px -16px rgba(224,168,0,.25), inset 0 1px 0 rgba(255,255,255,.6)}
+  .blobwrap{position:relative;width:84px;height:84px;flex-shrink:0}
+  .blobwrap .veilperch{position:absolute;top:-14px;left:-13px;pointer-events:none}
+  .blobwrap .qmark{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;
+    background:var(--st-mod);color:#fff;font:800 10px/18px system-ui;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .scorelabel{font-size:21px;line-height:1.05;letter-spacing:-.015em;text-transform:uppercase;color:var(--st-mod)}
+  .scorereason{font:500 12px/1.4 system-ui;color:var(--mid);margin-top:5px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .chip{font:700 10px/1 "Bricolage Grotesque",system-ui;padding:4px 9px;border-radius:100px;white-space:nowrap;letter-spacing:.01em}
+  .chip.good{background:rgba(34,197,94,.14);color:#16A34A}
+  .chip.warn{background:rgba(224,120,0,.14);color:#E07800}
+
+  .verdict{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .verdict .bar{width:4px;height:24px;border-radius:2px;flex-shrink:0;background:var(--st-mod)}
+  .verdict .vtxt{font-size:22px;line-height:1.1;letter-spacing:-.01em;text-transform:uppercase;color:var(--st-mod)}
+  .verdict .emoji{font-size:20px;line-height:1;flex-shrink:0}
+
+  .premium{margin-top:8px;padding:16px;border-radius:16px;background:#0B2230;color:var(--ink)}
+  .premium h4{font:800 14px/1.2 "Bricolage Grotesque";margin-bottom:6px}
+  .premium p{font:500 12.5px/1.5 system-ui;opacity:.8}
+
+  .caption{text-align:center;font:600 12px/1.5 system-ui;color:#7E9692;max-width:1000px;margin:6px auto 30px;padding:0 20px}
+  .caption b{color:var(--glint)}
+  .legend{display:flex;gap:22px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .legend .li{display:flex;align-items:center;gap:7px;font:600 12px/1 system-ui;color:#9DB4B0}
+  .legend .sw{width:22px;height:8px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- Reusable defs: BeachScene golden-hour (ICONIC_ROCK = Le Diamant), Veilleur (vigilant amber), ScoreBlob -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B2230"/><stop offset=".46" stop-color="#155A5A"/>
+      <stop offset=".78" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFE9B8" stop-opacity=".95"/>
+      <stop offset=".4" stop-color="#F2B05E" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26333A"/><stop offset="1" stop-color="#16242A"/>
+    </linearGradient>
+    <radialGradient id="bank" cx="50%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#E0A800" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#C97E3A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- BeachScene symbol (reused at 2 heights) -->
+    <symbol id="beachscene" viewBox="0 0 390 560" preserveAspectRatio="xMidYMid slice">
+      <rect x="0" y="0" width="390" height="340" fill="url(#sky)"/>
+      <circle cx="262" cy="296" r="120" fill="url(#sun)"/>
+      <circle cx="262" cy="296" r="26" fill="#FFEFC9"/>
+      <rect x="0" y="312" width="390" height="248" fill="url(#sea)"/>
+      <rect x="0" y="311" width="390" height="2.5" fill="#FFD884" opacity=".55"/>
+      <path d="M262 314 L286 560 L238 560 Z" fill="#FFD884" opacity=".10"/>
+      <ellipse cx="262" cy="332" rx="40" ry="4" fill="#FFD884" opacity=".30"/>
+      <ellipse cx="262" cy="352" rx="55" ry="4" fill="#FFD884" opacity=".18"/>
+      <path d="M60 312 C62 270 78 230 96 224 C112 219 120 248 124 286 C127 305 130 312 130 312 Z" fill="url(#rock)"/>
+      <path d="M60 312 C62 270 78 230 96 224 C100 246 96 286 92 312 Z" fill="#0E1A1E" opacity=".5"/>
+      <path d="M96 224 C112 219 120 248 124 286" fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".45"/>
+      <g opacity=".9">
+        <ellipse cx="180" cy="388" rx="70" ry="13" fill="url(#bank)"/>
+        <ellipse cx="300" cy="420" rx="54" ry="10" fill="url(#bank)"/>
+        <ellipse cx="120" cy="430" rx="40" ry="8" fill="url(#bank)"/>
+        <path d="M150 386 q12 -5 24 0 q12 5 24 0" fill="none" stroke="#E0A800" stroke-width="2.2" opacity=".5" stroke-linecap="round"/>
+        <path d="M278 419 q10 -4 20 0 q10 4 20 0" fill="none" stroke="#E0A800" stroke-width="2" opacity=".45" stroke-linecap="round"/>
+      </g>
+      <path d="M0 470 C90 452 230 458 390 442 L390 560 L0 560 Z" fill="#1d2b24"/>
+      <path d="M0 470 C90 452 230 458 390 442" fill="none" stroke="#C97E3A" stroke-width="1.6" opacity=".35"/>
+    </symbol>
+
+    <!-- Veilleur (vigilant amber, ring on) -->
+    <symbol id="veilleur" viewBox="0 0 64 64">
+      <g transform="translate(32,33)">
+        <circle r="22" fill="#FFD27A" opacity=".15"/>
+        <circle r="14" fill="#FFE0A0" opacity=".12"/>
+        <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill="#C9971F"/>
+        <rect x="14" y="-5" width="13" height="11" rx="2.5" fill="#C9971F"/>
+        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#C9971F"/>
+        <rect x="-11" y="-11" width="22" height="7" rx="6" fill="#FFC72C"/>
+        <line x1="0" y1="-11" x2="0" y2="-19" stroke="#FFD27A" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="0" cy="-20" r="1.9" fill="#FFE0A0"/>
+        <circle cx="0" cy="2" r="6.6" fill="none" stroke="#FFD884" stroke-width="1"/>
+        <circle cx="0" cy="2" r="5.4" fill="#07201E"/>
+        <circle cx="0" cy="2" r="4" fill="#FFE0A0"/>
+        <circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/>
+      </g>
+    </symbol>
+
+    <!-- ScoreBlob 71 -->
+    <symbol id="scoreblob" viewBox="0 0 100 100">
+      <path d="M50 7 C79 7 93 21 93 50 C93 79 79 93 50 93 C21 93 7 79 7 50 C7 21 21 7 50 7 Z" fill="#E0A800"/>
+      <ellipse cx="37" cy="29" rx="25" ry="15" fill="#fff" opacity=".16"/>
+      <text x="50" y="59" font-family="'Anton',sans-serif" font-size="40" fill="#fff" text-anchor="middle">68</text>
+      <text x="50" y="75" font-family="'Bricolage Grotesque',system-ui" font-size="11" font-weight="800" fill="#fff" text-anchor="middle" opacity=".82">/100</text>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="bench">
+  <!-- ===== CONTROL : 70svh ===== -->
+  <div class="col">
+    <div class="col-head">
+      <span class="tag ctrl">A · control</span>
+      <div>
+        <h3>Hero 70svh — actuel</h3>
+        <div class="sub">verdict + score TOMBENT sous le pli</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="hero ctrl">
+          <svg class="scene" viewBox="0 0 390 546" preserveAspectRatio="xMidYMid slice"><use href="#beachscene" width="390" height="546"/></svg>
+          <div class="grad"></div>
+          <div class="statusglow"></div>
+          <div class="veil"><svg width="82" height="82" viewBox="0 0 64 64"><use href="#veilleur"/></svg></div>
+          <button class="iconbtn fav">🤍</button>
+          <button class="iconbtn close">✕</button>
+          <div class="pill"><span class="dot"></span><span class="txt">Échouage modéré</span></div>
+          <div class="scanhint">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#4ECDC4" stroke-width="1"/><line x1="6" y1="1.5" x2="6" y2="3" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="6" y1="9" x2="6" y2="10.5" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="1.5" y1="6" x2="3" y2="6" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="9" y1="6" x2="10.5" y2="6" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/></svg>
+            <span>ANALYSER</span>
+          </div>
+        </div>
+        <div class="body">
+          <h2 class="bname anton">Le Diamant</h2>
+          <div class="meta"><span>Le Diamant</span><span class="sep"></span><span>42 min</span></div>
+          <div class="scorewrap">
+            <div class="scoreglow"></div>
+            <div class="scorecard">
+              <div class="blobwrap">
+                <svg width="84" height="84" viewBox="0 0 100 100"><use href="#scoreblob"/></svg>
+                <div class="veilperch"><svg width="36" height="36" viewBox="0 0 64 64"><use href="#veilleur"/></svg></div>
+                <div class="qmark">?</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div class="scorelabel anton">Correct sous réserve</div>
+                <div class="scorereason">Quelques bancs au large, plage praticable côté est ce matin. Vent d'est faiblissant.</div>
+                <div class="chips">
+                  <span class="chip good">✓ Eau dégagée à l'est</span>
+                  <span class="chip good">✓ Vent faible</span>
+                  <span class="chip good">✓ Accès facile</span>
+                  <span class="chip warn">⚠ Radeaux au large</span>
+                  <span class="chip warn">⚠ Odeur possible PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="bar"></span>
+            <span class="vtxt anton">Sargasses présentes</span>
+            <span class="emoji">🟡</span>
+          </div>
+          <div class="premium">
+            <h4>Votre veilleur personnel</h4>
+            <p>Recevez l'alerte la veille au soir si Le Diamant change d'état, + le brief du matin avant de partir.</p>
+          </div>
+        </div>
+        <!-- voile : dans le control, score+verdict tombent ici → invisibles sans scroll -->
+        <div class="belowfold" style="top:712px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SHORT : 42svh ===== -->
+  <div class="col">
+    <div class="col-head">
+      <span class="tag short">B · short</span>
+      <div>
+        <h3>Hero 42svh — proposé</h3>
+        <div class="sub">verdict + score DANS le 1er viewport</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="hero short">
+          <svg class="scene" viewBox="0 0 390 328" preserveAspectRatio="xMidYMid slice"><use href="#beachscene" width="390" height="328"/></svg>
+          <div class="grad"></div>
+          <div class="statusglow"></div>
+          <div class="veil"><svg width="74" height="74" viewBox="0 0 64 64"><use href="#veilleur"/></svg></div>
+          <button class="iconbtn fav">🤍</button>
+          <button class="iconbtn close">✕</button>
+          <div class="pill"><span class="dot"></span><span class="txt">Échouage modéré</span></div>
+          <div class="scanhint">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#4ECDC4" stroke-width="1"/><line x1="6" y1="1.5" x2="6" y2="3" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="6" y1="9" x2="6" y2="10.5" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="1.5" y1="6" x2="3" y2="6" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/><line x1="9" y1="6" x2="10.5" y2="6" stroke="#4ECDC4" stroke-width="1" stroke-linecap="round"/></svg>
+            <span>ANALYSER</span>
+          </div>
+        </div>
+        <div class="body">
+          <h2 class="bname anton">Le Diamant</h2>
+          <div class="meta"><span>Le Diamant</span><span class="sep"></span><span>42 min</span></div>
+          <div class="scorewrap">
+            <div class="scoreglow"></div>
+            <div class="scorecard">
+              <div class="blobwrap">
+                <svg width="84" height="84" viewBox="0 0 100 100"><use href="#scoreblob"/></svg>
+                <div class="veilperch"><svg width="36" height="36" viewBox="0 0 64 64"><use href="#veilleur"/></svg></div>
+                <div class="qmark">?</div>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div class="scorelabel anton">Correct sous réserve</div>
+                <div class="scorereason">Quelques bancs au large, plage praticable côté est ce matin. Vent d'est faiblissant.</div>
+                <div class="chips">
+                  <span class="chip good">✓ Eau dégagée à l'est</span>
+                  <span class="chip good">✓ Vent faible</span>
+                  <span class="chip good">✓ Accès facile</span>
+                  <span class="chip warn">⚠ Radeaux au large</span>
+                  <span class="chip warn">⚠ Odeur possible PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="bar"></span>
+            <span class="vtxt anton">Sargasses présentes</span>
+            <span class="emoji">🟡</span>
+          </div>
+          <div class="premium">
+            <h4>Votre veilleur personnel</h4>
+            <p>Recevez l'alerte la veille au soir si Le Diamant change d'état, + le brief du matin avant de partir.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="li"><span class="sw" style="background:linear-gradient(90deg,#0B2230,#155A5A,#C97E3A,#F2B05E)"></span>golden-hour</div>
+  <div class="li"><span class="sw" style="background:var(--st-mod)"></span>échouage modéré (data-true)</div>
+  <div class="li"><span class="sw" style="border:2px dashed var(--glint);background:transparent"></span>pli (1er viewport mobile)</div>
+</div>
+<div class="caption">
+  Même plage, mêmes données réelles. <b>À gauche</b> le hero occupe 70svh : sous le pli on ne voit que le nom — il faut scroller pour atteindre le score et le verdict.
+  <b>À droite</b> le hero est ramené à 42svh (BeachScene + Veilleur + pill conservés, l'espace mort coupé) :
+  le <b>Beach Score 68/100</b> et la ligne <b>« Sargasses présentes »</b> atterrissent au-dessus du pli, là où se prend la décision « j'y vais ? ».
+</div>
+
+</body>
+</html>

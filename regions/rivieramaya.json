@@ -1,0 +1,324 @@
+{
+  "id": "rivieramaya",
+  "name": "Riviera Maya",
+  "country": "Mexico",
+  "domain": "sargassumcancun.com",
+  "ftpDir": "rivieramaya-ftp",
+  "primaryLang": "es",
+  "secondaryLangs": [
+    "en"
+  ],
+  "currency": "USD",
+  "pricing": {
+    "monthly": "$9.99",
+    "yearly": "$79",
+    "tripPass": "$5.99"
+  },
+  "stripeProducts": {
+    "monthly": "price_1Tgc8UP9RK8Orx51RYjh5Qpy",
+    "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4",
+    "tripPass": "price_1TiiGbP9RK8Orx51ceTbpwpM"
+  },
+  "timezone": "America/Cancun",
+  "bbox": [
+    -87.85,
+    18.5,
+    -86.4,
+    21.7
+  ],
+  "center": {
+    "lat": 20.5,
+    "lng": -87
+  },
+  "zoom": 9,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "02cdb926-71a8-4f1a-8ccf-12ed292252d0",
+  "ga4Id": "G-YHCQGRPG8G",
+  "clarityProjectId": "x4ox737k79",
+  "emails": {
+    "alerts": "alerts@sargassumcancun.com",
+    "support": "support@sargassumcancun.com"
+  },
+  "beachFilter": {
+    "island": "rivieramaya"
+  },
+  "routes": {
+    "season": "temporada-sargazo-rivieramaya",
+    "best": "mejores-playas-sin-sargazo-rivieramaya",
+    "weekly": "sargazo-rivieramaya-esta-semana"
+  },
+  "geoDetect": {
+    "latMin": 18.5,
+    "latMax": 21.7,
+    "lngMin": -87.85,
+    "lngMax": -86.4
+  },
+  "competitors": [
+    "howisthesargassum.com",
+    "sargassummonitoring.com"
+  ],
+  "differentiators": [
+    "Community real-time reports",
+    "Personal beach alerts (premium)",
+    "Confidence-weighted forecast (3.5-day half-life)",
+    "Year-round Beach Score (not just sargassum)"
+  ],
+  "beaches": [
+    {
+      "id": "rm001",
+      "island": "rivieramaya",
+      "name": "Playa Delfines",
+      "commune": "Cancún",
+      "lat": 21.0622,
+      "lng": -86.7787,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm002",
+      "island": "rivieramaya",
+      "name": "Playa Tortugas",
+      "commune": "Cancún",
+      "lat": 21.1397,
+      "lng": -86.7693,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm003",
+      "island": "rivieramaya",
+      "name": "Playa del Carmen Centro",
+      "commune": "Playa del Carmen",
+      "lat": 20.6296,
+      "lng": -87.0739,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm004",
+      "island": "rivieramaya",
+      "name": "Playa Paraíso",
+      "commune": "Tulum",
+      "lat": 20.2038,
+      "lng": -87.4313,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm005",
+      "island": "rivieramaya",
+      "name": "Akumal Bay",
+      "commune": "Akumal",
+      "lat": 20.3957,
+      "lng": -87.3157,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm006",
+      "island": "rivieramaya",
+      "name": "Playa Palancar",
+      "commune": "Cozumel",
+      "lat": 20.3522,
+      "lng": -87.0224,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm007",
+      "island": "rivieramaya",
+      "name": "Playa Norte",
+      "commune": "Isla Mujeres",
+      "lat": 21.2522,
+      "lng": -86.7402,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm008",
+      "island": "rivieramaya",
+      "name": "Puerto Morelos",
+      "commune": "Puerto Morelos",
+      "lat": 20.8473,
+      "lng": -86.8754,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm009",
+      "island": "rivieramaya",
+      "name": "Playa Mahahual",
+      "commune": "Mahahual",
+      "lat": 18.7176,
+      "lng": -87.71,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm010",
+      "island": "rivieramaya",
+      "name": "Playa Holbox",
+      "commune": "Holbox",
+      "lat": 21.5269,
+      "lng": -87.3826,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm011",
+      "island": "rivieramaya",
+      "name": "Xpu-Ha",
+      "commune": "Xpu-Ha",
+      "lat": 20.473,
+      "lng": -87.257,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": false
+    },
+    {
+      "id": "rm012",
+      "island": "rivieramaya",
+      "name": "Playa Maroma",
+      "commune": "Punta Maroma",
+      "lat": 20.7381,
+      "lng": -86.966,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm013",
+      "island": "rivieramaya",
+      "name": "Playa Caracol",
+      "commune": "Cancún",
+      "lat": 21.1379,
+      "lng": -86.7478,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm014",
+      "island": "rivieramaya",
+      "name": "Playa Chac Mool",
+      "commune": "Cancún",
+      "lat": 21.1286,
+      "lng": -86.7494,
+      "status": "moderate",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm015",
+      "island": "rivieramaya",
+      "name": "Playa Gaviota Azul",
+      "commune": "Cancún",
+      "lat": 21.1323,
+      "lng": -86.7464,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm016",
+      "island": "rivieramaya",
+      "name": "Playa Langosta",
+      "commune": "Cancún",
+      "lat": 21.1451,
+      "lng": -86.7817,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm017",
+      "island": "rivieramaya",
+      "name": "Playa Marlín",
+      "commune": "Cancún",
+      "lat": 21.1039,
+      "lng": -86.7628,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm018",
+      "island": "rivieramaya",
+      "name": "Playa Ballenas",
+      "commune": "Cancún",
+      "lat": 21.0899,
+      "lng": -86.7686,
+      "status": "moderate",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm019",
+      "island": "rivieramaya",
+      "name": "Punta Esmeralda",
+      "commune": "Playa del Carmen",
+      "lat": 20.6483,
+      "lng": -87.0507,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm020",
+      "island": "rivieramaya",
+      "name": "Playa Pescadores",
+      "commune": "Tulum",
+      "lat": 20.2059,
+      "lng": -87.4319,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": false
+    }
+  ],
+  "paymentLinks": {
+    "monthly": "https://buy.stripe.com/eVq6oJd3R7N83ud8430co0L",
+    "yearly": "https://buy.stripe.com/fZu6oJ2pd0kGd4Nacb0co0M",
+    "tripPass": "https://buy.stripe.com/9B64gB2pd2sO4yhacb0co0O"
+  },
+  "countryCode": "MX",
+  "seo": {
+    "homeTitle": "Sargazo en Cancún HOY — Mapa Satelital en Vivo y Pronóstico 7 Días 2026",
+    "homeDesc": "¿Qué playa de Cancún y Riviera Maya está sin sargazo hoy? Mapa satelital en vivo playa por playa, semáforo y pronóstico de 7 días. Actualizado 4 veces al día.",
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
+  },
+  "noTrial": true
+}

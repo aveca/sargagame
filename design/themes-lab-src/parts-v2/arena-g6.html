@@ -1,0 +1,412 @@
+<!-- ===== #27 FIABILITÉ ===== -->
+<div class="scr">
+  <div class="cap">27 · Fiabilité</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>📶 4G &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-sky"></div>
+      <div class="pad">
+        <div class="eyebrow">🛰️ Bulletin du Veilleur</div>
+        <div class="h-xl" style="margin-top:8px">FIABILITÉ<br>DU VEILLEUR</div>
+
+        <!-- GAUGE SVG : demi-cercle gradué + aiguille à 79% + mascotte -->
+        <div class="panel" style="text-align:center;background:linear-gradient(180deg,#fffdf2,#f3e7c9);padding-top:14px">
+          <div style="position:relative;width:236px;margin:0 auto">
+            <svg viewBox="0 0 236 150" width="236" height="150" aria-hidden="true">
+              <defs>
+                <linearGradient id="g27arc" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#e8322a"/><stop offset=".45" stop-color="#ff8a3d"/>
+                  <stop offset=".62" stop-color="#ffd23f"/><stop offset="1" stop-color="#27c46b"/>
+                </linearGradient>
+              </defs>
+              <!-- piste de la jauge -->
+              <path d="M22 128 A96 96 0 0 1 214 128" fill="none" stroke="#0d0b14" stroke-width="22" stroke-linecap="round"/>
+              <path d="M22 128 A96 96 0 0 1 214 128" fill="none" stroke="url(#g27arc)" stroke-width="14" stroke-linecap="round"/>
+              <!-- ticks gradués -->
+              <g stroke="#0d0b14" stroke-width="2.4" stroke-linecap="round">
+                <line x1="22" y1="128" x2="32" y2="124"/><line x1="42" y1="74" x2="51" y2="80"/>
+                <line x1="118" y1="34" x2="118" y2="45"/><line x1="194" y1="74" x2="185" y2="80"/>
+                <line x1="214" y1="128" x2="204" y2="124"/>
+              </g>
+              <!-- aiguille à ~79% (≈ 142° depuis la gauche) -->
+              <g transform="rotate(52 118 128)">
+                <polygon points="118,128 113,123 118,46 123,123" fill="#e8322a" stroke="#0d0b14" stroke-width="2.5" stroke-linejoin="round"/>
+              </g>
+              <circle cx="118" cy="128" r="12" fill="#ffd23f" stroke="#0d0b14" stroke-width="3"/>
+              <circle cx="118" cy="128" r="4" fill="#0d0b14"/>
+              <!-- repères chiffrés -->
+              <text x="18" y="148" font-family="Anton,sans-serif" font-size="11" fill="#0d0b14">0</text>
+              <text x="200" y="148" font-family="Anton,sans-serif" font-size="11" fill="#0d0b14">100</text>
+            </svg>
+            <!-- gros % en surimpression -->
+            <div style="position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);font-family:'Anton';font-size:60px;line-height:.8;color:var(--grn);text-shadow:4px 4px 0 var(--ink)">79<span style="font-size:28px">%</span></div>
+          </div>
+          <div class="pow" style="margin-top:10px"><b style="background:var(--grn)">JUSTE!</b></div>
+          <div class="txt" style="font-weight:800;margin-top:8px;letter-spacing:.3px">verdict confirmé au sol sur <b style="font-size:15px">1 482</b> prévisions vérifiées</div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <!-- petit Veilleur calme, iris vert -->
+          <svg class="veil" viewBox="0 0 120 120" width="42" height="42" style="--iris:#27c46b" aria-hidden="true">
+            <g stroke="#0d0b14" stroke-width="3" stroke-linejoin="round">
+              <rect x="1" y="47" width="27" height="22" rx="3" fill="#27a9e3"/>
+              <rect x="92" y="47" width="27" height="22" rx="3" fill="#27a9e3"/>
+              <line x1="10" y1="47" x2="10" y2="69"/><line x1="19" y1="47" x2="19" y2="69"/>
+              <line x1="101" y1="47" x2="101" y2="69"/><line x1="110" y1="47" x2="110" y2="69"/>
+              <line x1="28" y1="58" x2="40" y2="58"/><line x1="80" y1="58" x2="92" y2="58"/>
+            </g>
+            <line x1="60" y1="34" x2="60" y2="18" stroke="#0d0b14" stroke-width="3"/>
+            <circle cx="60" cy="14" r="5" fill="#ffd23f" stroke="#0d0b14" stroke-width="3"/>
+            <rect x="36" y="32" width="48" height="56" rx="15" fill="#fdf6e3" stroke="#0d0b14" stroke-width="3.5"/>
+            <ellipse cx="60" cy="60" rx="21" ry="19" fill="#0d3a39" stroke="#0d0b14" stroke-width="3.5"/>
+            <circle cx="60" cy="60" r="12" fill="var(--iris,#23c4b8)"/>
+            <circle cx="64.5" cy="55.5" r="4.3" fill="#fff"/><circle cx="55" cy="64" r="2.2" fill="#bdfdff"/>
+          </svg>
+          <div style="flex:1"><div style="font-family:'Anton';font-size:16px">1 170 réussies</div><div class="txt">verdict = réalité observée</div></div>
+          <span class="pill"><span class="dot" style="background:var(--grn)"></span>79%</span>
+        </div>
+        <div class="row">
+          <span style="font-size:24px">⚠️</span>
+          <div style="flex:1"><div style="font-family:'Anton';font-size:16px">312 ratées</div><div class="txt">écart météo / houle surprise</div></div>
+          <span class="pill"><span class="dot" style="background:var(--red)"></span>21%</span>
+        </div>
+
+        <div class="panel" style="background:var(--ink);box-shadow:4px 4px 0 var(--blu);text-align:center">
+          <div class="txt-w" style="font-weight:800;font-size:13px">📡 mesuré au satellite Copernicus Marine</div>
+          <div class="txt-w" style="font-size:11px;opacity:.85;margin-top:3px">pas deviné. recalibré chaque jour.</div>
+        </div>
+      </div>
+      <div class="nav"><a>🏠<br>Accueil</a><a>🗺️<br>Carte</a><a>🎴<br>Collection</a><a style="background:var(--yel)">🛰️<br>Veilleur</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== #28 PARTAGE ===== -->
+<div class="scr">
+  <div class="cap">28 · Partage</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>📶 4G &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-sky"></div>
+      <div class="pad">
+        <div class="eyebrow">📣 Carte à partager</div>
+        <div class="h-lg" style="color:#fff;text-shadow:3px 3px 0 var(--ink);margin-top:6px;font-size:26px">J'AI TROUVÉ<br>LA PERLE !</div>
+
+        <!-- carte sociale = mini carte TCG holo avec SCÈNE SVG golden-hour PROPRE -->
+        <div class="tcard" style="margin-top:12px">
+          <div class="ti">
+            <div class="tbn" style="background:linear-gradient(90deg,#2bc46e,#0f7d3f)">
+              <span class="nm">Les Salines</span>
+              <span class="sc">92<small style="font-size:9px;opacity:.8"> PV</small></span>
+            </div>
+            <div style="position:relative;height:138px;overflow:hidden">
+              <svg class="scene" viewBox="0 0 320 170" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" style="display:block" aria-hidden="true">
+                <defs><linearGradient id="AR28sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1f6f9e"/><stop offset=".5" stop-color="#5fb6d6"/>
+                  <stop offset=".78" stop-color="#ffb267"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs>
+                <rect width="320" height="170" fill="url(#AR28sky)"/>
+                <circle cx="244" cy="104" r="44" fill="#ffe08a" opacity=".55"/><circle cx="244" cy="104" r="28" fill="#fff2c4" stroke="#0d0b14" stroke-width="2"/>
+                <g stroke="#fff" stroke-opacity=".32" stroke-width="2"><line x1="16" y1="34" x2="120" y2="30"/><line x1="8" y1="54" x2="96" y2="51"/></g>
+                <path d="M0 112 H320 V170 H0Z" fill="#1c8a86"/>
+                <path d="M0 112 q80 -10 160 0 t160 0 V126 H0Z" fill="#2bb6a6" opacity=".7"/>
+                <path d="M0 150 Q160 140 320 152 V170 H0Z" fill="#f3d9a3"/>
+                <path d="M0 150 Q160 140 320 152" fill="none" stroke="#0d0b14" stroke-width="2.5"/>
+                <g stroke="#0d0b14" stroke-width="4" fill="none" stroke-linecap="round"><path d="M58 168 Q52 130 64 104"/></g>
+                <g fill="#1c7a3a" stroke="#0d0b14" stroke-width="2.4">
+                  <path d="M64 104 Q40 95 30 100 Q52 98 64 108Z"/><path d="M64 104 Q92 94 102 99 Q78 98 64 108Z"/>
+                  <path d="M64 104 Q54 78 46 76 Q62 96 66 107Z"/><path d="M64 104 Q78 80 90 80 Q68 96 66 107Z"/></g>
+              </svg>
+              <div style="position:absolute;inset:0;background:radial-gradient(rgba(13,11,20,.12) 1.1px,transparent 1.2px) 0 0/7px 7px"></div>
+              <div style="position:absolute;top:8px;left:8px" class="pill"><span class="dot" style="background:var(--grn)"></span>PROPRE</div>
+              <div style="position:absolute;right:8px;bottom:8px;font-family:'Anton';color:#fff;text-shadow:2px 2px 0 var(--ink)">🌊🌴🐢 ★★★★★</div>
+              <div class="pow" style="position:absolute;left:50%;top:42px;transform:translateX(-50%) rotate(-7deg)"><b style="background:var(--grn);font-size:22px">PARFAIT!</b></div>
+            </div>
+            <div style="padding:7px 9px">
+              <div class="txt" style="font-weight:800">📍 Sainte-Anne · Martinique</div>
+              <div class="txt" style="margin-top:2px">Sargasses 0 · Eau 9/10 · vérifié au satellite aujourd'hui 🛰️</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;justify-content:space-around;text-align:center">
+          <div><div style="font-size:24px">📷</div><div class="txt" style="font-weight:800">Story</div></div>
+          <div><div style="font-size:24px">💬</div><div class="txt" style="font-weight:800">WhatsApp</div></div>
+          <div><div style="font-size:24px">🔗</div><div class="txt" style="font-weight:800">Lien</div></div>
+          <div><div style="font-size:24px">⬇️</div><div class="txt" style="font-weight:800">Image</div></div>
+        </div>
+
+        <a class="btn yel">PARTAGER LA CARTE<small>#SargassesMartinique · le Veilleur l'a validée</small></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== #29 ÉTAT VIDE ===== -->
+<div class="scr">
+  <div class="cap">29 · État vide</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>📶 4G &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-sky"></div>
+      <div class="pad" style="display:flex;flex-direction:column;height:100%;text-align:center">
+        <div class="eyebrow" style="align-self:flex-start">🔎 Résultats</div>
+
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:-6px">
+          <!-- VEILLEUR triste / en recherche : iris terni, paupières lourdes, larme, loupe -->
+          <div style="position:relative">
+            <svg class="veil" viewBox="0 0 120 130" width="138" height="150" style="--iris:#8794a0" aria-hidden="true">
+              <g stroke="#0d0b14" stroke-width="3" stroke-linejoin="round">
+                <rect x="1" y="50" width="27" height="22" rx="3" fill="#5d7383"/>
+                <rect x="92" y="50" width="27" height="22" rx="3" fill="#5d7383"/>
+                <line x1="10" y1="50" x2="10" y2="72"/><line x1="19" y1="50" x2="19" y2="72"/>
+                <line x1="101" y1="50" x2="101" y2="72"/><line x1="110" y1="50" x2="110" y2="72"/>
+                <line x1="28" y1="61" x2="40" y2="61"/><line x1="80" y1="61" x2="92" y2="61"/>
+              </g>
+              <!-- antenne penchée (abattu) -->
+              <line x1="60" y1="36" x2="52" y2="20" stroke="#0d0b14" stroke-width="3"/>
+              <circle cx="50" cy="16" r="5" fill="#ffd23f" stroke="#0d0b14" stroke-width="3"/>
+              <rect x="36" y="34" width="48" height="56" rx="15" fill="#e7eaee" stroke="#0d0b14" stroke-width="3.5"/>
+              <ellipse cx="60" cy="63" rx="21" ry="18" fill="#11343f" stroke="#0d0b14" stroke-width="3.5"/>
+              <circle cx="60" cy="65" r="11" fill="var(--iris,#8794a0)"/>
+              <circle cx="63.5" cy="61" r="3.4" fill="#fff" opacity=".7"/>
+              <!-- paupières lourdes -->
+              <path d="M39 56 q21 -8 42 0" fill="none" stroke="#0d0b14" stroke-width="3.5" stroke-linecap="round"/>
+              <!-- bouche triste -->
+              <path d="M48 95 q12 -7 24 0" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+              <!-- larme -->
+              <path d="M44 78 q-4 9 0 13 q4 -4 0 -13Z" fill="#5fb6d6" stroke="#0d0b14" stroke-width="2"/>
+            </svg>
+            <!-- loupe de recherche -->
+            <svg viewBox="0 0 60 60" width="50" height="50" style="position:absolute;right:-10px;bottom:6px;transform:rotate(12deg)" aria-hidden="true">
+              <circle cx="24" cy="24" r="16" fill="rgba(95,182,214,.35)" stroke="#0d0b14" stroke-width="4"/>
+              <line x1="36" y1="36" x2="52" y2="52" stroke="#0d0b14" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="20" cy="20" r="5" fill="#fff" opacity=".8"/>
+            </svg>
+          </div>
+          <div class="pow" style="margin-top:12px"><b style="background:var(--blu)">BLOUP…</b></div>
+
+          <div class="h-lg" style="color:#fff;text-shadow:3px 3px 0 var(--ink);margin-top:10px;font-size:24px">AUCUNE PLAGE<br>DANS CE FILTRE</div>
+          <div class="panel" style="margin-top:12px">
+            <div class="txt" style="font-weight:800">Le Veilleur a scanné les 136 plages…</div>
+            <div class="txt" style="margin-top:4px">rien ne colle à « PROPRE · &lt; 5 km · Le Carbet ». Élargis un peu ta zone ?</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+          <span class="pill" style="opacity:.6;text-decoration:line-through">&lt; 5 km</span>
+          <span class="pill">étendre à 20 km</span>
+          <span class="pill">toute la Martinique</span>
+        </div>
+        <a class="btn blu" style="margin-bottom:8px">RÉINITIALISER LES FILTRES<small>voir les 92 plages disponibles</small></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== #30 ERREUR / HORS-LIGNE ===== -->
+<div class="scr">
+  <div class="cap">30 · Erreur / hors-ligne</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>✈️ &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-night"></div>
+      <div class="pad" style="display:flex;flex-direction:column;height:100%;text-align:center">
+        <div class="eyebrow" style="align-self:flex-start;background:var(--red);color:#fff">⚡ Liaison perdue</div>
+
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <!-- VEILLEUR déconnecté : iris alerte rouge, X aux yeux, éclairs, ondes barrées -->
+          <div style="position:relative">
+            <!-- onde radio barrée derrière -->
+            <svg viewBox="0 0 200 120" width="190" height="116" style="position:absolute;left:50%;top:-6px;transform:translateX(-50%);opacity:.5" aria-hidden="true">
+              <g fill="none" stroke="#5fb6d6" stroke-width="3" stroke-linecap="round">
+                <path d="M40 90 q60 -70 120 0" opacity=".5"/>
+                <path d="M56 90 q44 -50 88 0" opacity=".7"/>
+              </g>
+              <line x1="46" y1="34" x2="154" y2="98" stroke="#e8322a" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+            <svg class="veil" viewBox="0 0 120 120" width="128" height="128" style="--iris:#e8322a;position:relative;filter:drop-shadow(5px 6px 0 #e8322a)" aria-hidden="true">
+              <g stroke="#0d0b14" stroke-width="3" stroke-linejoin="round">
+                <rect x="1" y="47" width="27" height="22" rx="3" fill="#3a3346"/>
+                <rect x="92" y="47" width="27" height="22" rx="3" fill="#3a3346"/>
+                <line x1="10" y1="47" x2="10" y2="69"/><line x1="19" y1="47" x2="19" y2="69"/>
+                <line x1="101" y1="47" x2="101" y2="69"/><line x1="110" y1="47" x2="110" y2="69"/>
+                <line x1="28" y1="58" x2="40" y2="58"/><line x1="80" y1="58" x2="92" y2="58"/>
+              </g>
+              <!-- antenne cassée -->
+              <line x1="60" y1="34" x2="63" y2="24" stroke="#0d0b14" stroke-width="3"/>
+              <line x1="63" y1="24" x2="56" y2="16" stroke="#0d0b14" stroke-width="3"/>
+              <circle cx="55" cy="13" r="5" fill="#5d5468" stroke="#0d0b14" stroke-width="3"/>
+              <rect x="36" y="32" width="48" height="56" rx="15" fill="#cdd2da" stroke="#0d0b14" stroke-width="3.5"/>
+              <ellipse cx="60" cy="60" rx="21" ry="19" fill="#2a1418" stroke="#0d0b14" stroke-width="3.5"/>
+              <circle cx="60" cy="60" r="12" fill="var(--iris,#e8322a)" opacity=".85"/>
+              <!-- yeux en X (KO) -->
+              <g stroke="#0d0b14" stroke-width="3.4" stroke-linecap="round">
+                <line x1="53" y1="53" x2="67" y2="67"/><line x1="67" y1="53" x2="53" y2="67"/>
+              </g>
+              <path d="M48 94 q12 7 24 0" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+            </svg>
+            <!-- éclairs de friture -->
+            <span style="position:absolute;right:-22px;top:8px;font-family:'Anton';color:var(--yel);transform:rotate(10deg);text-shadow:2px 2px 0 var(--ink);font-size:17px">⚡BZZT</span>
+            <span style="position:absolute;left:-22px;bottom:18px;font-family:'Anton';color:var(--yel);transform:rotate(-12deg);text-shadow:2px 2px 0 var(--ink);font-size:14px">ZZT!</span>
+          </div>
+          <div class="pow" style="margin-top:14px"><b>HORS-LIGNE!</b></div>
+
+          <div class="h-lg" style="color:#fff;text-shadow:3px 3px 0 var(--ink);margin-top:12px;font-size:24px">VEILLEUR<br>DÉCONNECTÉ</div>
+          <div class="panel" style="margin-top:12px;background:var(--ink);box-shadow:4px 4px 0 var(--red)">
+            <div class="txt-w" style="font-weight:800">📡 Impossible de joindre Copernicus Marine</div>
+            <div class="txt-w" style="font-size:11px;opacity:.85;margin-top:4px">Dernier scan fiable il y a <b>2 h 14</b>. Vérifie ta connexion.</div>
+          </div>
+        </div>
+
+        <a class="btn">↻ RÉESSAYER MAINTENANT<small>relancer la liaison satellite</small></a>
+        <a class="btn yel" style="margin-bottom:8px">VOIR LE DERNIER SCAN<small>données mises en cache hors-ligne</small></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== #31 STREAK / RÉCOMPENSE QUOTIDIENNE ===== -->
+<div class="scr">
+  <div class="cap">31 · Streak quotidien</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>📶 4G &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-night"></div>
+      <div class="pad" style="text-align:center">
+        <div class="eyebrow" style="background:var(--org)">🔥 Récompense du jour</div>
+
+        <!-- FLAMME SVG encrée + speed-lines + 7 en surimpression -->
+        <div style="position:relative;margin-top:8px;height:148px">
+          <svg viewBox="0 0 200 200" width="200" height="148" style="position:absolute;left:50%;top:-10px;transform:translateX(-50%);opacity:.45" aria-hidden="true">
+            <g stroke="#ff8a3d" stroke-width="3" stroke-linecap="round">
+              <line x1="100" y1="100" x2="100" y2="6"/><line x1="100" y1="100" x2="160" y2="22"/>
+              <line x1="100" y1="100" x2="194" y2="78"/><line x1="100" y1="100" x2="178" y2="150"/>
+              <line x1="100" y1="100" x2="118" y2="196"/><line x1="100" y1="100" x2="40" y2="186"/>
+              <line x1="100" y1="100" x2="8" y2="128"/><line x1="100" y1="100" x2="22" y2="44"/>
+              <line x1="100" y1="100" x2="64" y2="10"/><line x1="100" y1="100" x2="190" y2="118"/>
+            </g>
+          </svg>
+          <svg viewBox="0 0 120 150" width="118" height="148" style="position:absolute;left:50%;top:0;transform:translateX(-50%);filter:drop-shadow(4px 6px 0 #0d0b14)" aria-hidden="true">
+            <!-- flamme extérieure -->
+            <path d="M60 8 C84 40 96 56 96 92 a36 36 0 0 1 -72 0 C24 60 40 52 44 30 C50 46 58 44 56 30 C58 18 60 12 60 8Z"
+                  fill="#ff8a3d" stroke="#0d0b14" stroke-width="4" stroke-linejoin="round"/>
+            <!-- flamme moyenne -->
+            <path d="M60 36 C76 58 82 70 82 92 a22 22 0 0 1 -44 0 C38 72 50 64 52 50 C56 60 60 56 60 46 Z"
+                  fill="#ffd23f" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/>
+            <!-- cœur de flamme -->
+            <path d="M60 64 C70 78 70 88 70 96 a10 10 0 0 1 -20 0 C50 86 54 80 60 64Z" fill="#fff2c4"/>
+          </svg>
+          <div style="position:absolute;left:50%;top:62px;transform:translateX(-50%);font-family:'Anton';font-size:44px;color:#fff;text-shadow:3px 3px 0 var(--ink),0 0 12px rgba(255,138,61,.8)">7</div>
+        </div>
+
+        <div class="h-xl" style="margin-top:2px;font-size:28px">7 JOURS<br>D'AFFILÉE !</div>
+        <div class="pow" style="margin-top:6px"><b style="background:var(--org)">EN FEU!</b></div>
+
+        <!-- semaine de flammes SVG -->
+        <div class="panel" style="background:linear-gradient(180deg,#fffdf2,#f3e7c9)">
+          <div style="display:flex;justify-content:space-between;gap:4px">
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">L</div></div>
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">M</div></div>
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">M</div></div>
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">J</div></div>
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">V</div></div>
+            <div style="flex:1">
+              <svg viewBox="0 0 40 48" width="28" height="34" aria-hidden="true"><path d="M20 4 C28 16 32 22 32 30 a12 12 0 0 1 -24 0 C8 22 14 18 15 12 C18 18 22 16 20 4Z" fill="#ff8a3d" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/><path d="M20 20 C24 26 25 30 25 33 a5 5 0 0 1 -10 0 C15 29 18 26 20 20Z" fill="#ffd23f"/></svg>
+              <div class="txt" style="font-weight:800">S</div></div>
+            <div style="flex:1;border:2.5px dashed var(--org);border-radius:8px;padding-top:2px">
+              <svg viewBox="0 0 40 48" width="26" height="32" aria-hidden="true">
+                <rect x="8" y="20" width="24" height="20" rx="2" fill="#e8322a" stroke="#0d0b14" stroke-width="3"/>
+                <rect x="5" y="14" width="30" height="8" rx="2" fill="#ffd23f" stroke="#0d0b14" stroke-width="3"/>
+                <line x1="20" y1="14" x2="20" y2="40" stroke="#0d0b14" stroke-width="3"/>
+                <path d="M20 14 C14 6 6 8 10 14 Z M20 14 C26 6 34 8 30 14Z" fill="#27a9e3" stroke="#0d0b14" stroke-width="2.5" stroke-linejoin="round"/>
+              </svg>
+              <div class="txt" style="font-weight:800;color:var(--org)">AUJ.</div></div>
+          </div>
+        </div>
+
+        <div class="row" style="background:var(--yel)">
+          <span style="font-size:28px">🎴</span>
+          <div style="flex:1;text-align:left"><div style="font-family:'Anton';font-size:16px">CARTE BONUS DÉBLOQUÉE</div><div class="txt">+1 carte plage rare · +50 pts de collection</div></div>
+        </div>
+
+        <a class="btn">RÉCUPÉRER MA RÉCOMPENSE<small>reviens demain pour garder ta flamme</small></a>
+        <div class="txt-w" style="font-size:11px;margin-top:8px;font-weight:800">Prochain palier 🏆 14 jours → carte LÉGENDAIRE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== #32 ONBOARDING POST-ACHAT ===== -->
+<div class="scr">
+  <div class="cap">32 · Bienvenue Veilleur</div>
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>📶 4G &nbsp;🔋</span></div>
+    <div class="view">
+      <div class="bg-sky"></div>
+      <div class="pad" style="text-align:center">
+        <div class="eyebrow" style="background:var(--grn)">✅ Abonnement activé</div>
+        <div class="h-xl" style="margin-top:8px;font-size:27px">BIENVENUE,<br>VEILLEUR !</div>
+        <div class="pow" style="margin-top:6px"><b style="background:var(--grn)">ACTIVÉ!</b></div>
+
+        <!-- VEILLEUR heureux (iris vert, sourire, clin d'œil) + speed-lines de joie -->
+        <div style="position:relative;width:170px;height:160px;margin:10px auto 0">
+          <svg viewBox="0 0 200 200" width="170" height="160" style="position:absolute;left:0;top:0;opacity:.4" aria-hidden="true">
+            <g stroke="#fff" stroke-width="2.4" stroke-linecap="round">
+              <line x1="100" y1="100" x2="100" y2="8"/><line x1="100" y1="100" x2="158" y2="24"/>
+              <line x1="100" y1="100" x2="192" y2="80"/><line x1="100" y1="100" x2="176" y2="148"/>
+              <line x1="100" y1="100" x2="116" y2="194"/><line x1="100" y1="100" x2="42" y2="184"/>
+              <line x1="100" y1="100" x2="10" y2="126"/><line x1="100" y1="100" x2="24" y2="46"/>
+            </g>
+          </svg>
+          <svg class="veil" viewBox="0 0 120 120" width="120" height="120" style="--iris:#27c46b;position:absolute;left:50%;top:18px;transform:translateX(-50%);filter:drop-shadow(4px 5px 0 #0d0b14)" aria-hidden="true">
+            <g stroke="#0d0b14" stroke-width="3" stroke-linejoin="round">
+              <rect x="1" y="47" width="27" height="22" rx="3" fill="#27a9e3"/>
+              <rect x="92" y="47" width="27" height="22" rx="3" fill="#27a9e3"/>
+              <line x1="10" y1="47" x2="10" y2="69"/><line x1="19" y1="47" x2="19" y2="69"/>
+              <line x1="101" y1="47" x2="101" y2="69"/><line x1="110" y1="47" x2="110" y2="69"/>
+              <line x1="28" y1="58" x2="40" y2="58"/><line x1="80" y1="58" x2="92" y2="58"/>
+            </g>
+            <line x1="60" y1="34" x2="60" y2="18" stroke="#0d0b14" stroke-width="3"/>
+            <circle cx="60" cy="14" r="5" fill="#ffd23f" stroke="#0d0b14" stroke-width="3"/>
+            <rect x="36" y="32" width="48" height="56" rx="15" fill="#fdf6e3" stroke="#0d0b14" stroke-width="3.5"/>
+            <ellipse cx="60" cy="60" rx="21" ry="19" fill="#0d3a39" stroke="#0d0b14" stroke-width="3.5"/>
+            <circle cx="60" cy="60" r="12" fill="var(--iris,#27c46b)"/>
+            <circle cx="64.5" cy="55.5" r="4.3" fill="#fff"/><circle cx="55" cy="64" r="2.2" fill="#bdfdff"/>
+            <!-- clin d'œil + sourire -->
+            <path d="M40 51 q8 -6 16 0" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round"/>
+            <path d="M48 80 q12 9 24 0" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <!-- petites étoiles de joie -->
+          <span style="position:absolute;right:6px;top:14px;color:var(--yel);font-family:'Anton';font-size:20px;text-shadow:1.5px 1.5px 0 var(--ink)">✦</span>
+          <span style="position:absolute;left:8px;top:40px;color:#fff;font-family:'Anton';font-size:14px;text-shadow:1.5px 1.5px 0 var(--ink)">✦</span>
+        </div>
+
+        <div class="panel" style="text-align:left;margin-top:6px">
+          <div style="font-family:'Anton';font-size:15px;margin-bottom:4px">⚙️ DERNIÈRE ÉTAPE — configure ta plage</div>
+          <div class="row" style="margin-top:6px;background:#fff">
+            <span style="font-size:22px">🏖️</span>
+            <div style="flex:1"><div style="font-weight:800">Ta plage à surveiller</div><div class="txt">Anse Mitan · Les Trois-Îlets</div></div>
+            <span style="font-family:'Anton';color:var(--blu)">✎</span>
+          </div>
+          <div class="row" style="background:#fff">
+            <span style="font-size:22px">⏰</span>
+            <div style="flex:1"><div style="font-weight:800">Alerte la veille</div><div class="txt">chaque soir à 18 h 00</div></div>
+            <span class="pill"><span class="dot" style="background:var(--grn)"></span>ON</span>
+          </div>
+        </div>
+
+        <a class="btn">TERMINER MA CONFIG<small>1ère alerte dès ce soir · annulable en 1 clic</small></a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+{
+  "_note": "Liens de paiement Mollie — tous produits (généré par mollie-passlinks.cjs)",
+  "updatedAt": "2026-08-13T07:12:16.544Z",
+  "links": {
+    "pass_p7_eur": {
+      "id": "pl_6hjMENKg4kouhchhcUE5D",
+      "url": "https://payment-links.mollie.com/payment/6hjMENKg4kouhchhcUE5D",
+      "value": "7.99",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:01.357Z"
+    },
+    "pass_p30_eur": {
+      "id": "pl_ypT7zMK9ghZmv7hnfcWcZ",
+      "url": "https://payment-links.mollie.com/payment/ypT7zMK9ghZmv7hnfcWcZ",
+      "value": "14.99",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:02.623Z"
+    },
+    "pass_saison_eur": {
+      "id": "pl_qkigRjioyw7gSSa8cBQfn",
+      "url": "https://payment-links.mollie.com/payment/qkigRjioyw7gSSa8cBQfn",
+      "value": "19.99",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-08-04T05:36:17.029Z"
+    },
+    "pass_p7_usd": {
+      "id": "pl_6rbwkTPnrFv5zxnUE7eTH",
+      "url": "https://payment-links.mollie.com/payment/6rbwkTPnrFv5zxnUE7eTH",
+      "value": "5.99",
+      "currency": "USD",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:04.542Z"
+    },
+    "pass_p30_usd": {
+      "id": "pl_DRpZ5iXZDywsAfwpEZtcK",
+      "url": "https://payment-links.mollie.com/payment/DRpZ5iXZDywsAfwpEZtcK",
+      "value": "11.99",
+      "currency": "USD",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:05.219Z"
+    },
+    "pass_saison_usd": {
+      "id": "pl_UK4VzwifVtxbAKK5NMwjJ",
+      "url": "https://payment-links.mollie.com/payment/UK4VzwifVtxbAKK5NMwjJ",
+      "value": "19.99",
+      "currency": "USD",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:06.313Z"
+    },
+    "brief_annual": {
+      "id": "pl_bUkqqLkxuEvwcu9X4aUjn",
+      "url": "https://payment-links.mollie.com/payment/bUkqqLkxuEvwcu9X4aUjn",
+      "value": "290.00",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:06.966Z"
+    },
+    "pro_annual": {
+      "id": "pl_7waErZSavR4DiYzeBxL59",
+      "url": "https://payment-links.mollie.com/payment/7waErZSavR4DiYzeBxL59",
+      "value": "690.00",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:07.582Z"
+    },
+    "territory_annual": {
+      "id": "pl_ebQkirg92LaosxZqHcVhG",
+      "url": "https://payment-links.mollie.com/payment/ebQkirg92LaosxZqHcVhG",
+      "value": "1990.00",
+      "currency": "EUR",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:08.250Z"
+    },
+    "brief_annual_usd": {
+      "id": "pl_QdCS2jcLAryk4YXZY72ce",
+      "url": "https://payment-links.mollie.com/payment/QdCS2jcLAryk4YXZY72ce",
+      "value": "390.00",
+      "currency": "USD",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:09.766Z"
+    },
+    "pro_annual_usd": {
+      "id": "pl_zWUDSAxmEGtNMau9FewUz",
+      "url": "https://payment-links.mollie.com/payment/zWUDSAxmEGtNMau9FewUz",
+      "value": "790.00",
+      "currency": "USD",
+      "webhooked": true,
+      "createdAt": "2026-07-28T08:43:10.426Z"
+    }
+  },
+  "count": 11
+}

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Cand-6 — Editorial Comic</title>
+<style>
+@font-face {
+  font-family: 'Anton';
+  src: url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --ink: #1a1714;
+  --cream: #f7f2e7;
+  --cream-deep: #efe7d4;
+  --paper: #fffdf7;
+  --amber: #e8a800;
+  --amber-deep: #c98c00;
+  --propre: #27c46b;
+  --modere: #e8a800;
+  --eviter: #e8522a;
+  --line: 2.5px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--cream);
+  background-image:
+    radial-gradient(var(--cream-deep) 1px, transparent 1px);
+  background-size: 18px 18px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 64px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+/* ---- lab header ---- */
+.lab-head {
+  text-align: center;
+  border-bottom: var(--line) solid var(--ink);
+  padding-bottom: 14px;
+}
+.lab-kicker {
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 0.28em;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--amber-deep);
+}
+.lab-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-top: 4px;
+}
+.lab-sub {
+  font-style: italic;
+  font-size: 12px;
+  color: #6a6258;
+  margin-top: 8px;
+}
+
+/* ---- phone shell ---- */
+.phone {
+  width: 340px;
+  align-self: center;
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
+  border-radius: 30px;
+  box-shadow: 7px 7px 0 var(--ink);
+  overflow: hidden;
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 11px; left: 50%;
+  transform: translateX(-50%);
+  width: 92px; height: 6px;
+  background: var(--ink);
+  border-radius: 4px;
+  z-index: 5;
+}
+.screen { padding: 30px 20px 24px; }
+
+.frame-label {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 10px;
+  color: var(--amber-deep);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* halftone touch */
+.halftone {
+  background-image: radial-gradient(var(--ink) 1.1px, transparent 1.2px);
+  background-size: 7px 7px;
+  opacity: 0.10;
+}
+
+/* ---- shared app header ---- */
+.app-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: var(--line) solid var(--ink);
+}
+.eye {
+  width: 34px; height: 34px;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.app-name {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 14px;
+  line-height: 0.95;
+}
+.app-name small {
+  display: block;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-weight: normal;
+  letter-spacing: 0;
+  font-size: 10px;
+  color: #7a7165;
+  text-transform: none;
+}
+.app-bar .date {
+  margin-left: auto;
+  font-size: 10px;
+  font-style: italic;
+  color: #7a7165;
+  text-align: right;
+}
+
+/* ---- pills / status ---- */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: var(--paper);
+  padding: 5px 12px;
+  border: var(--line) solid var(--ink);
+  border-radius: 40px;
+}
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--paper); border: 1.5px solid rgba(0,0,0,.25); }
+.s-propre { background: var(--propre); }
+.s-modere { background: var(--modere); color: var(--ink); }
+.s-eviter { background: var(--eviter); }
+
+/* ---- CTA ---- */
+.cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--amber);
+  border: var(--line) solid var(--ink);
+  border-radius: 12px;
+  padding: 13px;
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+}
+.cta.ink { background: var(--ink); color: var(--paper); }
+
+/* ================= FRAME 1 : VERDICT ================= */
+.verdict-kicker {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 11px;
+  color: var(--amber-deep);
+}
+.verdict-place {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 34px;
+  line-height: 0.95;
+  margin: 4px 0 14px;
+}
+.score-block {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border: var(--line) solid var(--ink);
+  border-radius: 16px;
+  padding: 18px 20px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.score-block .halftone {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.score-num {
+  font-family: 'Anton', sans-serif;
+  font-size: 76px;
+  line-height: 0.8;
+  position: relative;
+}
+.score-100 {
+  font-family: 'Anton', sans-serif;
+  font-size: 22px;
+  color: #9a9081;
+  margin-bottom: 8px;
+  position: relative;
+}
+.score-side {
+  margin-left: auto;
+  text-align: right;
+  position: relative;
+}
+.verdict-line {
+  font-style: italic;
+  font-size: 12.5px;
+  color: #5a5247;
+  margin: 14px 0 16px;
+  border-left: var(--line) solid var(--amber);
+  padding-left: 10px;
+}
+
+/* ================= FRAME 2 : LIST ================= */
+.list-title {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+.beach-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  padding: 11px 13px;
+  margin-bottom: 11px;
+  background: var(--paper);
+}
+.beach-score {
+  font-family: 'Anton', sans-serif;
+  font-size: 30px;
+  line-height: 1;
+  width: 48px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.beach-info { flex: 1; min-width: 0; }
+.beach-name {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 14px;
+  line-height: 1;
+}
+.beach-info .mini {
+  font-style: italic;
+  font-size: 10.5px;
+  color: #7a7165;
+  margin-top: 3px;
+}
+.tag {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 30px;
+  border: 2px solid var(--ink);
+  color: var(--paper);
+  flex-shrink: 0;
+}
+
+/* ================= FRAME 3 : TCG ================= */
+.tcg {
+  border: 4px solid var(--ink);
+  border-radius: 18px;
+  background: var(--cream);
+  padding: 12px;
+  box-shadow: 5px 5px 0 var(--amber-deep);
+}
+.tcg-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.tcg-name {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+.tcg-pv {
+  margin-left: auto;
+  font-family: 'Anton', sans-serif;
+  font-size: 13px;
+}
+.tcg-pv b { font-size: 22px; }
+.tcg-type {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: #bfe6ef;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  margin-left: 8px;
+}
+.tcg-art {
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background: #f3d9a0;
+}
+.tcg-art svg { display: block; width: 100%; height: auto; }
+.tcg-rarity {
+  position: absolute;
+  top: 7px; right: 9px;
+  font-family: 'Anton', sans-serif;
+  font-size: 13px;
+  color: var(--amber);
+  text-shadow: 0 0 2px var(--ink), 1px 1px 0 var(--ink);
+  letter-spacing: 1px;
+}
+.tcg-foot {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 2.5px solid var(--ink);
+  padding-top: 8px;
+}
+.tcg-stat {
+  font-family: 'Georgia', serif;
+  font-size: 10.5px;
+  font-style: italic;
+  color: #5a5247;
+}
+.tcg-stat b { font-family: 'Anton', sans-serif; font-style: normal; }
+.tcg-foot .status-pill { margin-left: auto; font-size: 10px; padding: 4px 9px; }
+
+/* ================= FRAME 4 : PAYWALL ================= */
+.pw-eye {
+  width: 64px; height: 64px;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  margin: 4px auto 14px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.pw-title {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 28px;
+  text-align: center;
+  line-height: 0.95;
+}
+.pw-price {
+  text-align: center;
+  font-style: italic;
+  color: #6a6258;
+  font-size: 13px;
+  margin: 6px 0 20px;
+}
+.pw-price b {
+  font-family: 'Anton', sans-serif;
+  font-style: normal;
+  font-size: 18px;
+  color: var(--ink);
+}
+.benefit {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.b-num {
+  font-family: 'Anton', sans-serif;
+  font-size: 15px;
+  color: var(--paper);
+  background: var(--ink);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.benefit p { font-size: 12.5px; line-height: 1.35; padding-top: 3px; }
+.benefit p b { font-family: 'Anton', sans-serif; font-weight: normal; }
+.pw-note {
+  text-align: center;
+  font-style: italic;
+  font-size: 11px;
+  color: #8a8175;
+  margin-top: 12px;
+}
+.pw-note span { border-bottom: 1.5px dotted #8a8175; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="lab-head">
+    <div class="lab-kicker">Themes-Lab · Candidat 6</div>
+    <h1 class="lab-title">Editorial Comic</h1>
+    <p class="lab-sub">comic épuré façon magazine — encre, crème &amp; ambre</p>
+  </header>
+
+  <!-- ============ FRAME 1 : VERDICT DU JOUR ============ -->
+  <div>
+    <div class="frame-label">01 · Home — Verdict du jour</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="app-bar">
+          <div class="eye">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <ellipse cx="12" cy="12" rx="11" ry="7" stroke="#1a1714" stroke-width="2.4"/>
+              <circle cx="12" cy="12" r="3.4" fill="#1a1714"/>
+            </svg>
+          </div>
+          <div class="app-name">Sargasses<small>Le Veilleur · Martinique</small></div>
+          <div class="date">Jeu. 19 juin<br>09:40</div>
+        </div>
+
+        <div class="verdict-kicker">Verdict du jour</div>
+        <div class="verdict-place">Les Salines</div>
+
+        <div class="score-block">
+          <div class="halftone"></div>
+          <div class="score-num">92</div>
+          <div class="score-100">/100</div>
+          <div class="score-side">
+            <span class="status-pill s-propre"><span class="dot"></span>Propre</span>
+          </div>
+        </div>
+
+        <p class="verdict-line">Eau dégagée, aucun banc détecté en approche sur les dernières 48 h. Fenêtre idéale jusqu'à demain midi.</p>
+
+        <a class="cta">Voir la fiche →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FRAME 2 : LISTE CARTES PLAGE ============ -->
+  <div>
+    <div class="frame-label">02 · Liste des plages</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="app-bar">
+          <div class="eye">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <ellipse cx="12" cy="12" rx="11" ry="7" stroke="#1a1714" stroke-width="2.4"/>
+              <circle cx="12" cy="12" r="3.4" fill="#1a1714"/>
+            </svg>
+          </div>
+          <div class="app-name">Sargasses<small>Sud Caraïbe</small></div>
+          <div class="date">Aujourd'hui</div>
+        </div>
+
+        <div class="list-title">Vos plages</div>
+
+        <div class="beach-card">
+          <div class="beach-score" style="color:var(--propre)">88</div>
+          <div class="beach-info">
+            <div class="beach-name">Anse Dufour</div>
+            <div class="mini">Côte Caraïbe · eau claire</div>
+          </div>
+          <div class="tag s-propre">Propre</div>
+        </div>
+
+        <div class="beach-card">
+          <div class="beach-score" style="color:var(--propre)">77</div>
+          <div class="beach-info">
+            <div class="beach-name">Anse Mitan</div>
+            <div class="mini">Trois-Îlets · légère brise</div>
+          </div>
+          <div class="tag s-propre">Propre</div>
+        </div>
+
+        <div class="beach-card">
+          <div class="beach-score" style="color:var(--modere)">68</div>
+          <div class="beach-info">
+            <div class="beach-name">Le Diamant</div>
+            <div class="mini">Bancs épars au large</div>
+          </div>
+          <div class="tag s-modere" style="color:var(--ink)">Modéré</div>
+        </div>
+
+        <div class="beach-card">
+          <div class="beach-score" style="color:var(--eviter)">34</div>
+          <div class="beach-info">
+            <div class="beach-name">Anse Charpentier</div>
+            <div class="mini">Atlantique · échouage actif</div>
+          </div>
+          <div class="tag s-eviter">À éviter</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FRAME 3 : CARTE TCG ============ -->
+  <div>
+    <div class="frame-label">03 · Carte collection — Anse Mitan</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="tcg">
+          <div class="tcg-top">
+            <div class="tcg-name">Anse Mitan</div>
+            <div class="tcg-type" title="Type Mer">🌊</div>
+            <div class="tcg-pv">PV <b>77</b></div>
+          </div>
+
+          <div class="tcg-art">
+            <div class="tcg-rarity">★★★</div>
+            <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sky6" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#ffd98a"/>
+                  <stop offset="0.55" stop-color="#ffb65e"/>
+                  <stop offset="1" stop-color="#ff9b6b"/>
+                </linearGradient>
+                <linearGradient id="sea6" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#3fb4c9"/>
+                  <stop offset="1" stop-color="#1f7e98"/>
+                </linearGradient>
+              </defs>
+              <rect width="300" height="190" fill="url(#sky6)"/>
+              <circle cx="150" cy="78" r="34" fill="#fff3d6" opacity="0.95"/>
+              <circle cx="150" cy="78" r="34" fill="none" stroke="#1a1714" stroke-width="2.2"/>
+              <!-- sea -->
+              <path d="M0 118 H300 V190 H0 Z" fill="url(#sea6)"/>
+              <path d="M0 118 H300" stroke="#1a1714" stroke-width="2.4"/>
+              <!-- glints -->
+              <path d="M60 132 q12 -5 24 0" stroke="#cdeef5" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <path d="M150 144 q14 -5 28 0" stroke="#cdeef5" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <path d="M210 130 q12 -5 24 0" stroke="#cdeef5" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <!-- sand foreground -->
+              <path d="M0 168 Q150 152 300 170 V190 H0 Z" fill="#f3d9a0"/>
+              <path d="M0 168 Q150 152 300 170" stroke="#1a1714" stroke-width="2.4" fill="none"/>
+              <!-- palm -->
+              <path d="M44 170 C40 140 46 120 50 104" stroke="#1a1714" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M50 104 C32 96 20 100 12 110 C26 104 40 104 50 110" fill="#2f9e5a" stroke="#1a1714" stroke-width="1.8"/>
+              <path d="M50 104 C68 92 84 94 94 102 C78 98 62 100 50 110" fill="#2f9e5a" stroke="#1a1714" stroke-width="1.8"/>
+              <path d="M50 104 C42 86 44 72 52 62 C50 78 52 94 54 108" fill="#37b568" stroke="#1a1714" stroke-width="1.8"/>
+              <!-- birds -->
+              <path d="M232 50 q6 -6 12 0 q6 -6 12 0" stroke="#1a1714" stroke-width="2" fill="none"/>
+              <path d="M258 64 q5 -5 10 0 q5 -5 10 0" stroke="#1a1714" stroke-width="1.8" fill="none"/>
+            </svg>
+          </div>
+
+          <div class="tcg-foot">
+            <div class="tcg-stat">Houle <b>0,6 m</b> · Vent <b>12 km/h</b><br>Confiance données <b>94 %</b></div>
+            <span class="status-pill s-propre"><span class="dot"></span>Propre</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FRAME 4 : PAYWALL ============ -->
+  <div>
+    <div class="frame-label">04 · Paywall — Le Veilleur</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="pw-eye">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+            <ellipse cx="12" cy="12" rx="11" ry="7" stroke="#1a1714" stroke-width="2.4"/>
+            <circle cx="12" cy="12" r="3.6" fill="#1a1714"/>
+            <path d="M3 5 L1 3 M21 5 L23 3 M12 4 V1" stroke="#1a1714" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <h2 class="pw-title">Activez<br>Le Veilleur</h2>
+        <p class="pw-price">Alertes satellite Copernicus · <b>4,99 €</b> / mois</p>
+
+        <div class="benefit">
+          <div class="b-num">1</div>
+          <p><b>Alerte la veille.</b> Notification dès qu'un banc menace vos plages favorites, 24 h à l'avance.</p>
+        </div>
+        <div class="benefit">
+          <div class="b-num">2</div>
+          <p><b>Prévisions 5 jours.</b> Le verdict matin &amp; soir, dérive des bancs et fenêtres propres.</p>
+        </div>
+        <div class="benefit">
+          <div class="b-num">3</div>
+          <p><b>Toutes les plages.</b> Accès illimité aux fiches et au score temps réel de l'archipel.</p>
+        </div>
+
+        <a class="cta ink">Activer mon Veilleur</a>
+        <p class="pw-note">Sans engagement · <span>annulable en 1 clic</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

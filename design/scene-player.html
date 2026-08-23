@@ -1,0 +1,72 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scene Player — Le Veilleur</title>
+<!--
+  HARNESS générique : injecte N'IMPORTE QUELLE scène SVG 800×600 (ex. buildHeroSvg d'une plage)
+  et applique un mouvement de CAMÉRA documentaire (Ken Burns / pan / tilt / reveal). Le SUJET =
+  la scène injectée (chaque plage = un sujet distinct) ; la caméra = la couche mouvement.
+  Réutilisé par scripts/design/scene-clips-batch.mjs pour produire ~100 clips courts DIVERS.
+  100 % offline, zéro dépendance réseau. window.__setScene(svg) + window.__applyCam(move,t).
+-->
+<style>
+  html,body{margin:0;height:100%;background:#01060c;overflow:hidden}
+  #stage{position:fixed;inset:0;overflow:hidden;background:#01060c}
+  #world{position:absolute;inset:0;width:100%;height:100%;display:block;will-change:transform}
+  /* cartons cinéma (letterbox) — le batch les épaissit pendant la capture */
+  .lb{position:fixed;left:0;right:0;height:0;background:#0D0D0D;z-index:40;transition:none}
+  .lbT{top:0}.lbB{bottom:0}
+</style>
+<div id="stage"></div>
+<div class="lb lbT"></div>
+<div class="lb lbB"></div>
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var _world=null;
+
+  function _ease(t){t=t<0?0:t>1?1:t;return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+  function _sampleCam(kf,t){
+    t=t<0?0:t>1?1:t; var a=kf[0], b=kf[kf.length-1];
+    for(var i=0;i<kf.length-1;i++){ if(t>=kf[i].t && t<=kf[i+1].t){a=kf[i];b=kf[i+1];break;} }
+    var span=(b.t-a.t)||1, lt=_ease((t-a.t)/span);
+    function L(k,dv){var av=(a[k]==null?dv:a[k]), bv=(b[k]==null?dv:b[k]);return av+(bv-av)*lt;}
+    return {sc:L('sc',1),tx:L('tx',0),ty:L('ty',0),rot:L('rot',0),ox:L('ox',50),oy:L('oy',50)};
+  }
+  // mouvements DOCUMENTAIRES (calmes, adaptés à une scène de plage large). scale≥1 → slice couvre, zéro gap.
+  var MOVES={
+    kenburns_in : [{t:0,sc:1.06},{t:1,sc:1.20}],
+    kenburns_out: [{t:0,sc:1.20},{t:1,sc:1.06}],
+    pan_right   : [{t:0,sc:1.13,tx:6,ox:30},{t:1,sc:1.13,tx:-6,ox:70}],
+    pan_left    : [{t:0,sc:1.13,tx:-6,ox:70},{t:1,sc:1.13,tx:6,ox:30}],
+    tilt_down   : [{t:0,sc:1.13,ty:6,oy:22},{t:1,sc:1.13,ty:-6,oy:80}],
+    reveal      : [{t:0,sc:1.20,ty:-3,rot:-0.6},{t:1,sc:1.07,ty:2,rot:0.4}],
+    drift_right : [{t:0,sc:1.10,tx:3,rot:-0.4},{t:0.5,sc:1.12,tx:0,rot:0},{t:1,sc:1.10,tx:-3,rot:0.4}]
+  };
+  window.SCENE_MOVES=Object.keys(MOVES);
+  window.__STUDIO_WM={   // filigrane honnête : 0 chiffre / 0 date / 0 mot temporel
+    fr:'ILLUSTRATION — le verdict réel vit sur la page',
+    en:'ILLUSTRATION — the real verdict is on the page',
+    es:'ILUSTRACIÓN — el veredicto real vive en la página'
+  };
+
+  window.__setScene=function(svgString){
+    var doc;
+    try{ doc=new DOMParser().parseFromString(svgString,'image/svg+xml'); }catch(e){ return false; }
+    if(!doc || doc.getElementsByTagName('parsererror').length || doc.documentElement.nodeName.toLowerCase()!=='svg') return false;
+    var svg=document.importNode(doc.documentElement,true);
+    svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+    svg.setAttribute('id','world');
+    var old=document.getElementById('world'); if(old) old.parentNode.removeChild(old);
+    stage.appendChild(svg); _world=svg;
+    _world.style.transform=''; _world.style.transformOrigin='';
+    return true;
+  };
+  window.__applyCam=function(move,t){
+    if(!_world) return;
+    var kf=MOVES[move]||MOVES.kenburns_in, c=_sampleCam(kf,t);
+    _world.style.transformOrigin=c.ox.toFixed(2)+'% '+c.oy.toFixed(2)+'%';
+    _world.style.transform='translate('+c.tx.toFixed(3)+'%,'+c.ty.toFixed(3)+'%) scale('+c.sc.toFixed(4)+') rotate('+c.rot.toFixed(3)+'deg)';
+  };
+})();
+</script>

@@ -1,0 +1,104 @@
+{
+  "contacted": {
+    "meteofrance.mq": {
+      "date": "2026-07-07T12:30:03.303Z",
+      "status": "sent",
+      "emailHash": "c338b5c3f1c6093129c02cf3dc70883a",
+      "authority": "high",
+      "market": "fr"
+    },
+    "sargassummonitoring.com": {
+      "date": "2026-07-07T12:30:21.863Z",
+      "status": "sent",
+      "emailHash": "38cfda7f9b55b7f74b6d3d143cbb7661",
+      "authority": "high",
+      "market": "fr"
+    },
+    "sargassumhub.org": {
+      "date": "2026-07-14T11:29:05.431Z",
+      "status": "sent",
+      "emailHash": "238c6cefec95aa9999e0277c722a7db1",
+      "authority": "high",
+      "market": "fr"
+    },
+    "clubmed.fr": {
+      "date": "2026-07-14T11:29:43.695Z",
+      "status": "sent",
+      "emailHash": "f96b6bc3ac4300132ee7474aab018d99",
+      "authority": "high",
+      "market": "fr"
+    },
+    "rci.fm": {
+      "date": "2026-07-21T11:50:56.653Z",
+      "status": "sent",
+      "emailHash": "b69b61686b01008e76ce03779c8a367d",
+      "authority": "high",
+      "market": "fr"
+    },
+    "franceantilles.fr": {
+      "date": "2026-07-21T11:50:59.184Z",
+      "status": "sent",
+      "emailHash": "ace76024809d49a707e9f4812748d208",
+      "authority": "high",
+      "market": "fr"
+    },
+    "meteofrance.gp": {
+      "date": "2026-07-28T12:04:21.902Z",
+      "status": "sent",
+      "emailHash": "c338b5c3f1c6093129c02cf3dc70883a",
+      "authority": "high",
+      "market": "fr"
+    },
+    "riviera-maya-news.com": {
+      "date": "2026-07-28T12:08:48.649Z",
+      "status": "sent",
+      "emailHash": "f875eb74d3865be92c8b4e5fb9fa4ae5",
+      "authority": "high",
+      "market": "mx"
+    },
+    "aztecaquintanaroo.com": {
+      "date": "2026-08-04T12:13:14.251Z",
+      "status": "sent",
+      "emailHash": "afa9b60288f117673e971213519efb64",
+      "authority": "high",
+      "market": "mx"
+    },
+    "optics.marine.usf.edu": {
+      "date": "2026-08-04T12:13:17.806Z",
+      "status": "sent",
+      "emailHash": "409862627f033fd0095c893eb3773f89",
+      "authority": "high",
+      "market": "mx"
+    },
+    "caricoos.org": {
+      "date": "2026-08-07T17:14:01.077Z",
+      "status": "sent",
+      "emailHash": "0760292178c024ed5ad9c5508972e63e",
+      "authority": "high",
+      "market": "mx"
+    },
+    "cast.caribbeanhotelandtourism.com": {
+      "date": "2026-08-07T17:14:34.172Z",
+      "status": "sent",
+      "emailHash": "7466e590e2d7c56260397fd807e0afc2",
+      "authority": "high",
+      "market": "mx"
+    },
+    "lanot.unam.mx": {
+      "date": "2026-08-11T10:59:02.755Z",
+      "status": "sent",
+      "emailHash": "4ee9133f045aa1beb740f383d6ce10c4",
+      "authority": "high",
+      "market": "mx"
+    },
+    "gob.mx": {
+      "date": "2026-08-11T10:59:03.606Z",
+      "status": "sent",
+      "emailHash": "2ac931607bc8885d0a7ca3eeae674881",
+      "authority": "high",
+      "market": "mx"
+    }
+  },
+  "lastRun": "2026-08-11T10:59:03.606Z",
+  "totalSent": 14
+}

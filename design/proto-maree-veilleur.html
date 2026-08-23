@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La Marée du Veilleur — arc narratif 7 j</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@400;600;800&display=swap');
+  :root{--bg:#FDFCF7;--ink:#0D0D0D;--mid:#5A5A5A}
+  *{box-sizing:border-box}
+  body{margin:0;background:#efe9dc;font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 14px 60px}
+  h1{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;text-transform:uppercase;font-size:22px;margin:0}
+  .card{width:100%;max-width:420px;background:var(--bg);border-radius:16px;overflow:hidden;
+    border:1px solid rgba(0,0,0,.08);box-shadow:0 6px 24px -12px rgba(0,0,0,.4)}
+  .maree{position:relative}
+  /* height:auto → the SVG box keeps the viewBox aspect (400:150) → preserveAspectRatio
+     never crops the sides (the "MEILLEUR JOUR" tag & the AUJ dot stay fully visible on
+     narrow phones). This is the sizing the app port uses too. */
+  .maree svg.scene{width:100%;height:auto;display:block}
+  .caption{font-size:9px;color:var(--mid);text-align:center;padding:6px 8px 0;line-height:1.35}
+  .foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:center;
+    font-size:9.5px;color:var(--mid);padding:6px 8px 12px}
+  .foot b{color:var(--ink);font-weight:700}
+  .dot{opacity:.4}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:420px}
+  .controls button{font:inherit;font-size:12px;font-weight:700;padding:7px 12px;border-radius:9px;
+    border:1.5px solid var(--ink);background:#fff;cursor:pointer}
+  .tip{font-size:12px;color:var(--mid);max-width:420px;text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>La Marée du Veilleur</h1>
+  <div class="tip">Arc narratif 7 jours — l'AFAI de chaque jour soulève la houle. Jour propre = mer plate ; échouage = houle qui monte. Le meilleur jour de la semaine gagne le soleil. Survole un jour : le Veilleur regarde vers lui, puis revient à la mer.</div>
+
+  <div class="card">
+    <div class="maree" id="maree">
+      <svg class="scene" viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Prévision 7 jours en houle">
+        <defs>
+          <linearGradient id="mvSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/>
+            <stop offset=".84" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="mvSea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/>
+          </linearGradient>
+          <radialGradient id="mvSun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE9A8"/><stop offset=".55" stop-color="#FFD884"/><stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+          </radialGradient>
+          <clipPath id="mvClip"><rect x="0" y="0" width="400" height="150"/></clipPath>
+        </defs>
+        <g clip-path="url(#mvClip)">
+          <rect width="400" height="150" fill="url(#mvSky)"/>
+          <circle cx="330" cy="70" r="30" fill="#FFD884" opacity=".18"/>
+          <circle cx="330" cy="70" r="15" fill="#FFD884" opacity=".32"/>
+          <circle id="mvBestGlow" cx="-99" cy="0" r="26" fill="url(#mvSun)" opacity="0"/>
+          <path id="mvFill" d="" fill="url(#mvSea)"/>
+          <path id="mvRim"  d="" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".9"/>
+          <g id="mvGlit"></g>
+          <g id="mvDays"></g>
+          <g id="mvVeil"></g>
+          <g id="mvBestTag" opacity="0"></g>
+        </g>
+      </svg>
+    </div>
+    <div class="caption">Fiable jusqu'à 4 jours. Au-delà : tendance, pas prévision.</div>
+    <div class="foot">
+      <span><b>🛰️ Copernicus OLCI</b></span><span class="dot">·</span>
+      <span>mesuré il y a 3 h</span><span class="dot">·</span>
+      <span>Persistance + vent</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="setDays(SAMPLE.calm)">Semaine calme</button>
+    <button onclick="setDays(SAMPLE.surge)">Houle mi-semaine</button>
+    <button onclick="setDays(SAMPLE.rough)">Semaine chargée</button>
+    <button onclick="toggleRM()">reduced-motion: <span id="rmState">off</span></button>
+  </div>
+
+<script>
+var SAMPLE={
+  calm:[
+    {afai:.04,status:'clean',label:'AUJ',type:'observation'},
+    {afai:.06,status:'clean',label:'JEU',type:'tendance'},
+    {afai:.05,status:'clean',label:'VEN',type:'tendance'},
+    {afai:.09,status:'clean',label:'SAM',type:'tendance'},
+    {afai:.14,status:'moderate',label:'DIM',type:'horizon'},
+    {afai:.10,status:'clean',label:'LUN',type:'horizon'},
+    {afai:.07,status:'clean',label:'MAR',type:'horizon'},
+  ],
+  surge:[
+    {afai:.05,status:'clean',label:'AUJ',type:'observation'},
+    {afai:.08,status:'clean',label:'JEU',type:'tendance'},
+    {afai:.22,status:'moderate',label:'VEN',type:'tendance'},
+    {afai:.41,status:'avoid',label:'SAM',type:'tendance'},
+    {afai:.30,status:'avoid',label:'DIM',type:'horizon'},
+    {afai:.16,status:'moderate',label:'LUN',type:'horizon'},
+    {afai:.06,status:'clean',label:'MAR',type:'horizon'},
+  ],
+  rough:[
+    {afai:.28,status:'avoid',label:'AUJ',type:'observation'},
+    {afai:.34,status:'avoid',label:'JEU',type:'tendance'},
+    {afai:.30,status:'avoid',label:'VEN',type:'tendance'},
+    {afai:.19,status:'moderate',label:'SAM',type:'tendance'},
+    {afai:.12,status:'moderate',label:'DIM',type:'horizon'},
+    {afai:.08,status:'clean',label:'LUN',type:'horizon'},
+    {afai:.05,status:'clean',label:'MAR',type:'horizon'},
+  ],
+};
+
+var COL={clean:'#22C55E',moderate:'#B87A00',avoid:'#E8522A',_loading:'#8a8f93'};
+var MOOD={
+  serein:{wing:'#009E8E',lens:'#22C55E'}, vigilant:{wing:'#B87A00',lens:'#FFD27A'},
+  alerte:{wing:'#E8522A',lens:'#F4845F'}, scan:{wing:'#009E8E',lens:'#FFC72C'},
+};
+function moodFromStatus(s){return s==='clean'?'serein':s==='moderate'?'vigilant':s==='avoid'?'alerte':'scan'}
+
+var X0=44, X1=356, BASE=104, AMP=46;
+var SVGNS='http://www.w3.org/2000/svg';
+var DAYS=SAMPLE.surge.slice();
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var forceRM=false;
+function rm(){return reduce||forceRM}
+
+function el(tag,attrs){var e=document.createElementNS(SVGNS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e}
+function dayX(i,n){return X0+(X1-X0)*(n<=1?0:i/(n-1))}
+function dayY(d){var a=Math.max(0,Math.min(1,d.afai/0.45));return BASE - a*AMP}
+
+// Catmull-Rom → cubic bezier segments (no leading M), for a flowing curve through pts
+function segs(pts){
+  var s='';
+  for(var i=0;i<pts.length-1;i++){
+    var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||pts[i+1];
+    var c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6;
+    var c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
+    s+=' C '+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
+  }
+  return s;
+}
+function bestIndex(days){
+  var bi=-1,ba=Infinity;
+  for(var i=0;i<days.length;i++){if(days[i].status==='clean'&&days[i].afai<ba){ba=days[i].afai;bi=i}}
+  return bi;
+}
+
+var breath=0, gazeX=0, gazeTargetX=0;
+function render(){
+  var n=DAYS.length, i;
+  var pts=[];
+  for(i=0;i<n;i++)pts.push({x:dayX(i,n),y:dayY(DAYS[i])});
+  // subtle breathing (calm) — off under reduced-motion
+  var rimPts=pts.map(function(p,k){return {x:p.x,y:p.y+(rm()?0:Math.sin(breath+k*0.7)*0.9)}});
+  var seg=segs(rimPts), p0=rimPts[0], pn=rimPts[n-1];
+  document.getElementById('mvRim').setAttribute('d','M '+p0.x+' '+p0.y.toFixed(1)+seg);
+  document.getElementById('mvFill').setAttribute('d',
+    'M -20 '+p0.y.toFixed(1)+' L '+p0.x+' '+p0.y.toFixed(1)+seg+' L 420 '+pn.y.toFixed(1)+' L 420 150 L -20 150 Z');
+
+  var bi=bestIndex(DAYS);
+  var g=document.getElementById('mvDays'); g.textContent='';
+  for(i=0;i<n;i++){
+    var d=DAYS[i], x=pts[i].x, y=pts[i].y, c=COL[d.status]||COL._loading;
+    var far=(d.type==='horizon'||i>=4), op=far?0.55:1, r=(i===0?4.6:3.4);
+    g.appendChild(el('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:r,fill:c,stroke:'#fff','stroke-width':i===0?1.6:1.1,opacity:op}));
+    var t=el('text',{x:x.toFixed(1),y:'126','font-family':'ui-monospace,monospace','font-size':'8.5',
+      fill:'rgba(255,255,255,.62)','text-anchor':'middle',opacity:op});
+    t.textContent=d.label; g.appendChild(t);
+  }
+
+  var glow=document.getElementById('mvBestGlow'), tag=document.getElementById('mvBestTag');
+  if(bi>=0){
+    var bx=pts[bi].x, by=pts[bi].y;
+    glow.setAttribute('cx',bx.toFixed(1)); glow.setAttribute('cy',by.toFixed(1)); glow.setAttribute('opacity','0.9');
+    tag.textContent='';
+    var tw=64, tx=Math.max(4,Math.min(400-tw-4,bx-tw/2)), ty=14;
+    tag.appendChild(el('line',{x1:(tx+tw/2).toFixed(1),y1:(ty+16),x2:bx.toFixed(1),y2:(by-6).toFixed(1),stroke:'#FFD884','stroke-width':1,opacity:.5}));
+    tag.appendChild(el('rect',{x:tx,y:ty,width:tw,height:16,rx:8,fill:'#0B2230',opacity:.72}));
+    var txt=el('text',{x:(tx+tw/2).toFixed(1),y:(ty+11).toFixed(1),'font-family':"'Bricolage Grotesque',sans-serif",
+      'font-size':'8.5','font-weight':'800',fill:'#FFD884','text-anchor':'middle'});
+    txt.textContent='☀ MEILLEUR JOUR'; tag.appendChild(txt);
+    tag.setAttribute('opacity','1');
+  }else{glow.setAttribute('opacity','0');tag.setAttribute('opacity','0')}
+
+  renderVeil();
+  renderGlit();
+}
+
+function renderVeil(){
+  var m=MOOD[moodFromStatus(DAYS[0].status)]||MOOD.scan;
+  var g=document.getElementById('mvVeil'); g.textContent='';
+  var cx=86, cy=46, lookX=gazeX*4, lookY=6+Math.abs(gazeX)*-2;
+  var wrap=el('g',{transform:'translate('+cx+','+cy+')'});
+  wrap.appendChild(el('circle',{r:30,fill:m.wing,opacity:.14}));
+  wrap.appendChild(el('rect',{x:-30,y:-7,width:16,height:14,rx:3,fill:m.wing}));
+  wrap.appendChild(el('rect',{x:14,y:-7,width:16,height:14,rx:3,fill:m.wing}));
+  wrap.appendChild(el('line',{x1:0,y1:-14,x2:0,y2:-25,stroke:m.lens,'stroke-width':2,'stroke-linecap':'round'}));
+  wrap.appendChild(el('circle',{cx:0,cy:-27,r:2.4,fill:m.lens}));
+  wrap.appendChild(el('rect',{x:-14,y:-14,width:28,height:28,rx:8,fill:'#0A1714'}));
+  wrap.appendChild(el('rect',{x:-14,y:-14,width:28,height:9,rx:8,fill:'#FFC72C'}));
+  wrap.appendChild(el('circle',{cx:0,cy:3,r:8,fill:'#07201E'}));
+  wrap.appendChild(el('circle',{cx:lookX.toFixed(1),cy:(3+lookY*0.3).toFixed(1),r:5.5,fill:m.lens}));
+  wrap.appendChild(el('circle',{cx:(lookX-2).toFixed(1),cy:(1+lookY*0.3).toFixed(1),r:2,fill:'#EAFBF8'}));
+  g.appendChild(wrap);
+}
+
+function renderGlit(){
+  var g=document.getElementById('mvGlit'); g.textContent='';
+  var seed=DAYS.reduce(function(a,d,i){return a+Math.round(d.afai*97)+i*13},7);
+  for(var k=0;k<7;k++){
+    var rx=(Math.sin(seed*1.7+k*2.1)*0.5+0.5)*380+10;
+    var ry=BASE+8+((k*11)%34);
+    var drift=rm()?0:Math.sin(breath*0.5+k)*3;
+    g.appendChild(el('circle',{cx:(rx+drift).toFixed(1),cy:ry.toFixed(1),r:(k%3===0?1.1:0.7),
+      fill:'#FFD884',opacity:(0.12+0.10*((k%3)/2)).toFixed(2)}));
+  }
+}
+
+var svg=document.querySelector('svg.scene');
+function toVB(cx){var r=svg.getBoundingClientRect(),sc=Math.max(r.width/400,r.height/150);
+  var dw=400*sc,ox=(r.width-dw)/2;return (cx-r.left-ox)/sc}
+svg.addEventListener('pointermove',function(e){
+  var vx=toVB(e.clientX), n=DAYS.length, best=0,bd=1e9;
+  for(var i=0;i<n;i++){var dx=Math.abs(vx-dayX(i,n));if(dx<bd){bd=dx;best=i}}
+  gazeTargetX=(dayX(best,n)-200)/200; wake();
+});
+svg.addEventListener('pointerleave',function(){gazeTargetX=0;wake()});
+
+var running=false,lastActive=0;
+function wake(){lastActive=performance.now();if(!running&&!rm()){running=true;requestAnimationFrame(loop)}}
+function loop(t){
+  breath+=0.02;
+  gazeX+=(gazeTargetX-gazeX)*0.12;
+  if(Math.abs(gazeTargetX)<0.001&&Math.abs(gazeX)<0.01)gazeX=0;
+  render();
+  if(document.hidden||rm()){running=false;return}
+  requestAnimationFrame(loop);
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)wake()});
+
+function setDays(arr){DAYS=arr.slice();render();wake();
+  window.__mv={best:bestIndex(DAYS),mood:moodFromStatus(DAYS[0].status),days:DAYS.length}}
+function toggleRM(){forceRM=!forceRM;document.getElementById('rmState').textContent=forceRM?'on':'off';
+  render(); if(!forceRM)wake()}
+
+render();
+if(rm())document.getElementById('rmState').textContent='on'; else wake();
+window.setDays=setDays; window.toggleRM=toggleRM; window.SAMPLE=SAMPLE;
+window.__mv={best:bestIndex(DAYS),mood:moodFromStatus(DAYS[0].status),days:DAYS.length};
+window.__mvReady=true;
+</script>
+</body>
+</html>

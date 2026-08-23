@@ -1,0 +1,136 @@
+{
+  "faq": [
+    {
+      "q": "When is sargassum season in Barbados?",
+      "a": "Barbados's sargassum window runs roughly May through August, with stray pulses lingering into October. The east and south coasts — Bathsheba, Crane, Bottom Bay, Silver Sands, Oistins — face the open Atlantic and take the heaviest landings; the sheltered west (Caribbean) coast stays largely clear even in peak weeks. Volume swings hugely year to year with the Atlantic bloom, which is why we track conditions with satellite data updated four times a day instead of quoting seasonal averages."
+    },
+    {
+      "q": "Which Barbados beaches get the least sargassum?",
+      "a": "The west coast — the Caribbean (Platinum Coast) side — is the safe harbor: Carlisle Bay, Mullins, Paynes Bay, Brandons and Brownes sit on the leeward shore the Atlantic mats rarely reach, so they stay clean through most of the season. The east and southeast (Bathsheba, Crane, Bottom Bay) face the open Atlantic and collect the most. The south coast around Oistins is in between and can flip day to day. Check the live map: our satellite data, refreshed four times a day, shows exactly which beaches are clean right now."
+    },
+    {
+      "q": "How accurate is this sargassum tracker?",
+      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Reports from people on the sand fill the gaps. It is the difference between a measurement and a guess."
+    },
+    {
+      "q": "Can you really forecast sargassum a week out for Barbados?",
+      "a": "To a useful degree, yes. Once satellites detect mats offshore, their drift is largely set by the trade winds and the North Equatorial Current pushing west onto Barbados's windward shore, which we model daily for each beach. Days 1–3 are the most reliable; days 4–7 show the direction of travel. Seaweed already beached decays on a 3.5-day half-life unless resupplied. The forecast re-runs every day as fresh satellite passes arrive."
+    },
+    {
+      "q": "Do Barbados beaches get cleaned of sargassum?",
+      "a": "The busiest tourist beaches do. West-coast resort frontage and the main south-coast beaches around Rockley and Dover see regular crews, and the NCC clears popular stretches when landings are heavy. Wild east-coast beaches like Bathsheba and Bottom Bay are rarely cleaned. Cleaning resets the sand, but if satellites show fresh mats inbound, seaweed returns within hours — which is why pairing cleanup with our daily satellite forecast tells you more than either alone."
+    },
+    {
+      "q": "What should I do if my beach is covered in sargassum?",
+      "a": "Cross the island — Barbados is small and the answer is usually the west coast. If Silver Sands or Crane is buried, Carlisle Bay, Paynes Bay or Mullins on the leeward side is almost certainly clear, and our live map shows the nearest clean sand instantly. Small amounts are harmless to swimmers; large rotting piles smell of sulfur and are worth avoiding. Premium alerts notify you the moment a saved beach changes status, so you stop guessing and start rerouting."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Sargassum Forecast Barbados 2026 — 7-Day Beach Outlook",
+      "desc": "7-day sargassum forecast for Barbados beaches, updated daily from satellite data. Beach-level outlooks for the west coast (Carlisle Bay, Mullins) and the east/south coast.",
+      "h1": "Barbados Sargassum Forecast — Next 7 Days, Beach by Beach",
+      "intro": "Most sargassum information for Barbados comes as an island-wide bulletin — accurate in broad strokes, useless for deciding where to swim on Saturday. This forecast works at the level that actually matters: the individual beach. We track 12 of them, from sheltered Carlisle Bay and Mullins on the west coast to wave-battered Bathsheba and Crane on the Atlantic side, and run a separate 7-day projection for each, because their realities diverge wildly — the east coast can be knee-deep in seaweed while the west coast stays spotless. The model ingests fresh Copernicus satellite imagery daily, locates the mats drifting offshore, and projects what reaches which sand and when. You get a day-by-day outlook per beach, updated every morning. Check it before you commit to a beach day; the ocean does not read island bulletins.",
+      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; in Barbados, the easterly trade winds and the North Equatorial Current steer the bloom onto the windward east and south coasts while sparing the leeward west. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, corrected by community reports when clouds block the view. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Barbados Beaches Without Sargassum Today (Live List)",
+      "desc": "Live list of Barbados beaches with no sargassum right now. Satellite-checked daily — clean west-coast options like Carlisle Bay, Mullins and Paynes Bay.",
+      "h1": "Barbados Beaches Without Sargassum Today",
+      "intro": "Need a seaweed-free beach in Barbados today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed four times a day. The pattern usually favors the west coast (Carlisle Bay, Mullins and Paynes Bay are almost always clear), while the east coast (Bathsheba, Bottom Bay, Crane) and the open south (Silver Sands, Miami/Enterprise) swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Barbados Seaweed Map (Live) — Sargassum Beach Tracker",
+      "desc": "Interactive seaweed map of Barbados, updated 4 times a day from satellite imagery. Live sargassum status for the west, south and east coasts, beach by beach.",
+      "h1": "Live Sargassum Map of Barbados",
+      "intro": "An interactive, live seaweed map covering Barbados's whole coast — from the sheltered Caribbean west side (Carlisle Bay, Mullins, Paynes Bay) round to the exposed Atlantic east and south (Bathsheba, Crane, Bottom Bay, Silver Sands). Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, cross-checked against reports from people on the sand. Regional maps show you the big picture days late; this one shows your beach, today. A shift in the trade winds can rewrite the south coast overnight — check the map the morning you go."
+    },
+    "season": {
+      "intro": "Planning a Barbados beach trip and worried about sargassum? Here's the honest 2026 outlook — when the seaweed reaches the coast, when the sand stays clear, and how to time it. Short version: late autumn through early spring is the clean window; the Atlantic belt influences the east and south coasts from late spring through summer, with the heaviest weeks in May–August. The west coast stays largely sheltered year-round. Flexible dates? That single fact plans your trip.",
+      "slug": "sargassum-season-barbados",
+      "title": "Barbados Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When does sargassum hit Barbados? May through August, heaviest on the east and south coasts. The west coast stays mostly clear. Month-by-month 2026 guide with daily satellite tracking.",
+      "h1": "Sargassum Season in Barbados — 2026 Month-by-Month",
+      "months": [
+        {
+          "period": "November – February",
+          "text": "Effectively sargassum-free island-wide. The Atlantic bloom is at its annual minimum and what little exists stays far offshore. Every coast — west, south and even the windward east — runs clean, and winter visitors can largely ignore seaweed."
+        },
+        {
+          "period": "March – April",
+          "text": "First stirrings. The new bloom organizes in the tropical Atlantic and the earliest strands begin reaching the east coast — Bathsheba, Bottom Bay — usually light and patchy. The west and most of the south stay clear. A map check before an east-coast day starts being worthwhile."
+        },
+        {
+          "period": "May – June",
+          "text": "The season arrives in force. The trade winds drive the bloom onto the windward east and south coasts — Crane, Silver Sands, Miami/Enterprise take regular landings. The sheltered west coast (Carlisle Bay, Mullins, Paynes Bay) remains reliably clean. Per-beach forecasts start earning their keep."
+        },
+        {
+          "period": "July – August",
+          "text": "Peak of the season, with heavy but episodic landings: a south-coast beach can be buried on Tuesday and raked clean by Friday. The east and south carry the burden; the west coast stays the safe harbor. This is where the 7-day forecast matters most."
+        },
+        {
+          "period": "September",
+          "text": "The fade begins. Volumes drop noticeably as the Atlantic bloom dies back, though stragglers still land on the east coast after sustained easterlies. The south coast returns toward normal, and late-summer trips get dramatically easier to plan."
+        },
+        {
+          "period": "October",
+          "text": "Tail of the season. Landings become lighter and less frequent, and by month's end Barbados is mostly clear again. Stray pulses on the east coast after storms remain possible, so the cautious still glance at the map — but the odds are firmly in your favor."
+        }
+      ],
+      "tips": "Booking flexibility is everything. November through April is effectively seaweed-proof anywhere on the island. For summer trips, the west coast is the safe harbor — Carlisle Bay, Mullins and Paynes Bay rarely see sargassum even in peak weeks — while east- and south-coast plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the south coast in June or July, pick lodging near a regularly cleaned beach like Rockley or Dover and keep one west-coast day in reserve."
+    }
+  },
+  "beachBlurbs": {
+    "bb001": "Bridgetown's calm, swimmable horseshoe on the sheltered west coast — clear turquoise water, a famous turtle-and-shipwreck snorkel, and easy parking. Sitting on the leeward Caribbean side, it stays clean of sargassum through most of the season while the Atlantic coast struggles. One of the island's safest seaweed bets and a top family pick.",
+    "bb002": "A laid-back west-coast favorite with shallow, gin-clear water and a popular beach bar on the sand at Saint Peter. As a leeward Platinum Coast beach it rarely sees meaningful sargassum, even in peak summer weeks. Great for swimming, snorkeling and unhurried family days; arrive early on weekends for parking.",
+    "bb003": "Calm, photogenic west-coast sand in Saint James where turtles glide close to shore and the sunsets are postcard material. On the sheltered Caribbean side, it is largely spared the Atlantic seaweed, so conditions stay reliable through the season. A relaxed snorkeling-and-swimming pick on the Platinum Coast.",
+    "bb004": "The heart of the south-coast scene — lively bars and restaurants behind a busy stretch of sand in Christ Church. Facing the open Atlantic-influenced south, it sees moderate, wind-dependent sargassum in season, cleared regularly on the main tourist frontage. Good for nightlife and convenience; check the map in summer.",
+    "bb005": "Rockley's wide, energetic south-coast beach with body-surfable waves, food vendors and one of the island's most popular swimming strips. Its south-facing exposure brings moderate seasonal sargassum, balanced by regular cleaning on this high-traffic beach. A dependable family choice outside peak landings — glance at the forecast in June and July.",
+    "bb006": "A small, pretty cove near Oistins with shaded grounds and calm-ish water, a local weekend favorite. On the exposed south coast it catches moderate seasonal seaweed that can vary day to day with the trade winds. Nice for a relaxed swim and snorkel; pair a visit with the Friday fish fry and a quick map check in season.",
+    "bb007": "A dramatic pink-tinged cliff-backed beach in Saint Philip, famous for its setting more than easy swimming — strong Atlantic surf and a steep shore. Facing the open windward coast, it is among the most sargassum-prone beaches on the island in season, with heavy wrack lines May to August. Stunning to look at; check conditions before planning a swim.",
+    "bb008": "The wild, iconic east coast — giant boulders, pounding Atlantic surf and surfers at the Soup Bowl, not a swimming beach. Fully exposed to the windward bloom and rarely cleaned, it collects heavy sargassum through the season. Come for the scenery, the surf and the rugged drama rather than clear sand or a calm dip.",
+    "bb009": "A breathtaking, secluded southeast cove framed by cliffs and palms in Saint Philip — a photographer's beach with powerful waves and no facilities. Its open Atlantic exposure makes it highly sargassum-prone in season, and nobody rakes it. Worth the trip for the views; manage expectations on swimming and seaweed in summer.",
+    "bb010": "A sheltered west-coast beach just north of Bridgetown with calm water, watersports and an easygoing local feel. On the leeward Caribbean side, it stays largely clear of sargassum even in peak season. A convenient, reliable pick for families wanting clean, swimmable sand close to the capital.",
+    "bb011": "A long, calm ribbon of west-coast sand beside Carlisle Bay, popular with swimmers, walkers and the cruise crowd from Bridgetown. Its leeward position keeps it mostly free of sargassum through the season while the Atlantic coast takes the hits. Easy access, clear water and dependable conditions make it a safe everyday choice.",
+    "bb012": "A breezy south-coast spot in Christ Church beloved by windsurfers and kitesurfers for its steady Atlantic-driven wind. That same exposure means it collects heavy seasonal sargassum, with regular wrack lines from May through August. Brilliant for board sports; if you want clean swimming sand in season, the west coast is the better call."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Checking conditions before a stay at {resort}? This page monitors {beach} — the sand directly in front — with Copernicus satellite imagery refreshed four times a day. You will find the live sargassum status, a 0–100 Beach Score that also weighs surf and weather, and a 7-day forecast covering the days of your trip. In season, conditions can flip overnight, so check back the morning you pack the beach bag."
+  },
+  "press": {
+    "_doc": "Press/media page rendered at /press/ by region-seo-pages.cjs. Tokens resolved at build time from real data — never invented: {beachCount}=region.beaches.length, {cleanToday}=count of levels with status==='clean', {updatedDate}=fmtDate(lang), {accuracyJ1Pct}/{accuracyJ3Pct}=backtest J+1/J+3 statusHitRate, {contact}=this.contact, {citation}=this.citation. Mirror of regions/seo-content/florida.json press contract.",
+    "slug": "press",
+    "title": "Barbados Sargassum — Press Kit & Data for Media",
+    "desc": "Press resources for sargassum coverage in Barbados: live per-beach satellite status refreshed 4× daily, 7-day forecasts and published accuracy. Free to cite.",
+    "h1": "Press & media — Barbados sargassum data",
+    "intro": "The Atlantic is having a widely reported record sargassum season. What the headlines rarely answer is the question your readers actually ask: is my beach swimmable today? We publish that answer for Barbados, beach by beach, from satellite data — and it is free to cite with attribution.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "Live sargassum status for {beachCount} Barbados beaches — from the sheltered west coast (Carlisle Bay, Mullins, Paynes Bay, Brandons, Brownes) round to the exposed Atlantic east and south (Bathsheba, Crane, Bottom Bay, Silver Sands, Miami/Enterprise, Rockley) — each with a clean / moderate / avoid rating, a 0–100 Beach Score and a beach-specific 7-day forecast. Detection uses the AFAI (Alternative Floating Algae Index) from the Copernicus and NOAA satellite programs, sampled pixel by pixel directly offshore of each beach — not a regional average — and refreshed four times a day, with wind and swell data from Open-Meteo. As of {updatedDate}, {cleanToday} of {beachCount} tracked beaches read clean."
+      },
+      {
+        "h2": "Accuracy, published openly",
+        "text": "We backtest the forecast against what satellites later observed, and we publish the results: across our network, next-day beach status verifies {accuracyJ1Pct}% of the time, and 3-day status {accuracyJ3Pct}%. Days 1–3 are the most reliable; days 4–7 show the trend — and we say so on every page. The data is never hand-edited, never filtered for resorts, never deleted."
+      },
+      {
+        "h2": "Free to use, with attribution",
+        "text": "Journalists, bloggers and broadcasters may quote any beach status, score or forecast with a link to the source page. Suggested citation: {citation}. For an embed of the live map, beach-level data for a story, or comment on current conditions, write to {contact} — we answer quickly."
+      },
+      {
+        "h2": "Story angles ready today",
+        "text": "Which Barbados beach is clean this week (live ranked list, updated 4× daily) · Why the sheltered west coast stays clear while the windward east and south coasts get hit · What a record Atlantic bloom means at beach level for Barbados tourism · How satellite AFAI detection works, with measured forecast accuracy published on our methodology page."
+      },
+      {
+        "h2": "About the network",
+        "text": "SargassumBarbados.com is part of a multi-site monitoring network spanning Martinique and Guadeloupe (French), Punta Cana (English), Cancún & Riviera Maya (Spanish), Miami & Florida (English) and Barbados (English). Every site runs the same satellite pipeline and the same openly published methodology. The live map is free for everyone; a premium subscription adds daily beach recommendations, push alerts and a morning brief."
+      }
+    ],
+    "citation": "Source: sargassumbarbados.com — Copernicus/NOAA satellite data, refreshed 4× daily",
+    "contact": "support@sargassumbarbados.com"
+  }
+}

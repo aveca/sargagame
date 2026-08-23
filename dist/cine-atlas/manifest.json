@@ -1,0 +1,194 @@
+[
+  {
+    "skill": "arc_left",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Arc Left / Dolly Left",
+    "labels": {
+      "fr": "Arc gauche",
+      "en": "Arc Left",
+      "es": "Arco izq."
+    },
+    "mp4": "arc_left-9x16-mq.mp4",
+    "gif": "arc_left-9x16-mq.gif",
+    "poster": "arc_left-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "arc_right",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Arc Right / Dolly Right",
+    "labels": {
+      "fr": "Arc droit",
+      "en": "Arc Right",
+      "es": "Arco der."
+    },
+    "mp4": "arc_right-9x16-mq.mp4",
+    "gif": "arc_right-9x16-mq.gif",
+    "poster": "arc_right-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "crane_down",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Crane Down / Jib Down",
+    "labels": {
+      "fr": "Grue basse",
+      "en": "Crane Down",
+      "es": "Grúa abajo"
+    },
+    "mp4": "crane_down-9x16-mq.mp4",
+    "gif": "crane_down-9x16-mq.gif",
+    "poster": "crane_down-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "crane_up",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Crane Up / Jib Up",
+    "labels": {
+      "fr": "Grue haute",
+      "en": "Crane Up",
+      "es": "Grúa arriba"
+    },
+    "mp4": "crane_up-9x16-mq.mp4",
+    "gif": "crane_up-9x16-mq.gif",
+    "poster": "crane_up-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "descent",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 7.3,
+    "hf": "Earth Zoom Out / Space Hyperlapse",
+    "labels": {
+      "fr": "La Descente",
+      "en": "The Descent",
+      "es": "El Descenso"
+    },
+    "mp4": "descent-9x16-mq.mp4",
+    "gif": "descent-9x16-mq.gif",
+    "poster": "descent-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "fpv_glide",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "FPV Drone / Flying",
+    "labels": {
+      "fr": "Vol FPV",
+      "en": "FPV Glide",
+      "es": "Vuelo FPV"
+    },
+    "mp4": "fpv_glide-9x16-mq.mp4",
+    "gif": "fpv_glide-9x16-mq.gif",
+    "poster": "fpv_glide-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "golden_lapse",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Timelapse Landscape / Hyperlapse",
+    "labels": {
+      "fr": "Heure dorée",
+      "en": "Golden Lapse",
+      "es": "Hora dorada"
+    },
+    "mp4": "golden_lapse-9x16-mq.mp4",
+    "gif": "golden_lapse-9x16-mq.gif",
+    "poster": "golden_lapse-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "orbit",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "360 Orbit / Lazy Susan",
+    "labels": {
+      "fr": "Orbite douce",
+      "en": "Gentle Orbit",
+      "es": "Órbita suave"
+    },
+    "mp4": "orbit-9x16-mq.mp4",
+    "gif": "orbit-9x16-mq.gif",
+    "poster": "orbit-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "pull_out",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Crash Zoom Out / Dolly Out",
+    "labels": {
+      "fr": "Recul",
+      "en": "Pull-Out",
+      "es": "Alejamiento"
+    },
+    "mp4": "pull_out-9x16-mq.mp4",
+    "gif": "pull_out-9x16-mq.gif",
+    "poster": "pull_out-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "push_in",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Dolly / Super Dolly In",
+    "labels": {
+      "fr": "Fondu avant",
+      "en": "Push-In",
+      "es": "Acercamiento"
+    },
+    "mp4": "push_in-9x16-mq.mp4",
+    "gif": "push_in-9x16-mq.gif",
+    "poster": "push_in-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "rack_focus",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Focus Change / Rack Focus",
+    "labels": {
+      "fr": "Bascule de netteté",
+      "en": "Rack Focus",
+      "es": "Cambio de foco"
+    },
+    "mp4": "rack_focus-9x16-mq.mp4",
+    "gif": "rack_focus-9x16-mq.gif",
+    "poster": "rack_focus-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  },
+  {
+    "skill": "tilt_up",
+    "ratio": "9x16",
+    "region": "mq",
+    "sec": 6.3,
+    "hf": "Tilt Up",
+    "labels": {
+      "fr": "Panoramique haut",
+      "en": "Tilt Up",
+      "es": "Inclinación"
+    },
+    "mp4": "tilt_up-9x16-mq.mp4",
+    "gif": "tilt_up-9x16-mq.gif",
+    "poster": "tilt_up-9x16-mq.png",
+    "domain": "sargasses-martinique.com"
+  }
+]

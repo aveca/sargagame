@@ -1,0 +1,74 @@
+name: Support inbox (Niveau 1, déterministe)
+
+# Service client email "Niveau 1" — ZÉRO API LLM, 100 % règles mots-clés + gabarits.
+# Lit la boîte alerte@ en IMAP, classe les nouveaux messages (UNSEEN), envoie un
+# accusé de réception au client + un digest privé au fondateur (adresses réelles
+# pour qu'il réponde lui-même).
+#
+# Le CRON envoie POUR DE VRAI (SEND=1) : accusé client + digest fondateur + \Seen,
+# uniquement sur les NOUVEAUX messages (UNSEEN). Idempotent (\Seen = déjà traité).
+# Les messages déjà traités à la main ont été scellés \Seen via le dispatch
+# `mode: seal-existing` (marque \Seen sans rien envoyer) AVANT cette activation.
+#
+# Dispatch manuel (mode) : dry-run (défaut, valide IMAP sans rien faire) ·
+# send (force un envoi immédiat) · seal-existing (scelle les UNSEEN sans envoyer).
+#
+# PII : repo PUBLIC → logs PUBLICS. Le script ne logue que des compteurs/catégories,
+# jamais d'adresse ou de corps d'email.
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # toutes les 3 heures
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Mode d'exécution"
+        type: choice
+        options:
+          - "dry-run"       # valide la connexion IMAP, aucun envoi, aucun \Seen
+          - "send"          # envoie accusés + digest + marque \Seen
+          - "seal-existing" # marque \Seen les UNSEEN actuels SANS rien envoyer
+        default: "dry-run"
+
+permissions:
+  contents: write  # commit de la liste de suppression (bounces vus dans la boîte)
+
+# Sérialise les runs pour éviter tout conflit sur le commit de bounced-emails.json.
+concurrency:
+  group: support-inbox-main
+  cancel-in-progress: false
+
+jobs:
+  support-inbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Read inbox + classify + reply (Niveau 1)
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          IMAP_PASS: ${{ secrets.IMAP_PASS }}
+          FOUNDER_EMAIL: ${{ secrets.FOUNDER_EMAIL }}
+          # Schedule = envoi réel. Dispatch : send → envoi ; seal-existing → SEAL ;
+          # dry-run (défaut) → ni envoi ni \Seen.
+          SEND: ${{ (github.event_name == 'schedule' || inputs.mode == 'send') && '1' || '0' }}
+          SEAL: ${{ inputs.mode == 'seal-existing' && '1' || '0' }}
+        run: node scripts/automation/support-inbox.cjs
+
+      # Persiste la liste de suppression si un bounce a ajouté une adresse (hash).
+      # Uniquement en envoi réel (schedule/send). Push GITHUB_TOKEN → ne re-déclenche
+      # AUCUN workflow (pas de deploy) ; bounced-emails.json n'est pas un asset servi.
+      - name: Commit suppression list (if changed)
+        if: github.event_name == 'schedule' || inputs.mode == 'send'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/bounced-emails.json 2>/dev/null || true
+          git diff --staged --quiet || { \
+            git commit -m "chore(support): suppress bounced addresses $(date -u +'%Y-%m-%d %H:%M UTC')"; \
+            git push || (git pull --rebase -X theirs && git push); }

@@ -1,0 +1,6 @@
+Copyright 2022 The Anton Project Authors (https://github.com/googlefonts/anton),
+Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/vernnanova/bricolage-grotesque),
+Copyright 2021 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is available with a FAQ at: https://scripts.sil.org/OFL

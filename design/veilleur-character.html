@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LE VEILLEUR — personnage animé (proto 2D)</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#0d0b14;font-family:"Arial Black",Impact,system-ui,sans-serif}
+  #c{position:fixed;inset:0;display:block}
+  .foot{position:fixed;left:0;right:0;bottom:9vh;text-align:center;pointer-events:none}
+  .foot h1{font-weight:900;color:#0d0b14;font-size:11vw;line-height:.9;letter-spacing:-1px}
+  .foot h1 b{color:#e8322a}
+  .foot p{margin-top:8px;font:800 13px/1.2 ui-monospace,monospace;letter-spacing:2px;color:#0d0b14;opacity:.7}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="foot"><h1>LE <b>VEILLEUR</b></h1><p>TON GARDIEN DES PLAGES</p></div>
+<script>
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const DPR=Math.min(devicePixelRatio||1,2); let W,H;
+function size(){ W=innerWidth;H=innerHeight; cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);} size();
+addEventListener('resize',size);
+const INK='#0d0b14';
+// easing util
+const lerp=(a,b,k)=>a+(b-a)*k;
+let look={x:0,y:0}, lookT={x:0,y:0}, nextLook=0, blink=0, nextBlink=1.5, scan=0, nextScan=4, mood=0;
+function pickLook(t){ lookT={x:(Math.random()*2-1)*0.8, y:(Math.random()*2-1)*0.5}; nextLook=t+1.1+Math.random()*1.4; }
+function drawShadow(cx,cy,scale){ ctx.save(); ctx.translate(cx,cy); ctx.scale(1,0.32);
+  const g=ctx.createRadialGradient(0,0,0,0,0,90*scale); g.addColorStop(0,'rgba(13,11,20,.28)'); g.addColorStop(1,'rgba(13,11,20,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,90*scale,0,7); ctx.fill(); ctx.restore(); }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function veilleur(t){
+  const cx=W/2, baseY=H*0.42;
+  // respiration / flottement
+  const bob=Math.sin(t*1.4)*10;
+  const breathe=Math.sin(t*1.4);
+  const sx=1-breathe*0.05, sy=1+breathe*0.05;     // squash & stretch (volume préservé)
+  const cy=baseY+bob;
+  drawShadow(cx,baseY+150, 1-bob*0.0016);
+  // PANNEAUX SOLAIRES (oreilles) — légère oscillation décalée
+  const tilt=Math.sin(t*1.4-0.5)*0.06;
+  for(const sgn of [-1,1]){ ctx.save(); ctx.translate(cx+sgn*86,cy+6); ctx.rotate(sgn*(0.18+tilt));
+    ctx.lineWidth=6; ctx.strokeStyle=INK; ctx.fillStyle='#27a9e3';
+    roundRect(-22,-26,44,52,8); ctx.fill(); ctx.stroke();
+    ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-22,0);ctx.lineTo(22,0); ctx.moveTo(0,-26);ctx.lineTo(0,26); ctx.stroke();
+    ctx.restore();
+    // bras de liaison
+    ctx.lineWidth=6; ctx.strokeStyle=INK; ctx.beginPath(); ctx.moveTo(cx+sgn*60,cy+6); ctx.lineTo(cx+sgn*78,cy+6); ctx.stroke();
+  }
+  // CORPS (tête) crème, squash & stretch
+  ctx.save(); ctx.translate(cx,cy); ctx.scale(sx,sy);
+  ctx.lineWidth=7; ctx.strokeStyle=INK; ctx.fillStyle='#fdf6e3';
+  ctx.beginPath(); ctx.arc(0,0,72,0,7); ctx.fill(); ctx.stroke();
+  // joues (blush)
+  ctx.fillStyle='rgba(255,138,120,.5)'; ctx.beginPath(); ctx.arc(-44,20,11,0,7); ctx.arc(44,20,11,0,7); ctx.fill();
+  // GRAND ŒIL-ÉCRAN
+  ctx.save(); ctx.fillStyle=INK; ctx.beginPath(); ctx.arc(0,-4,42,0,7); ctx.fill();
+  // iris (clip rond pour le clignement)
+  const lid=1-blink; ctx.save(); ctx.beginPath(); ctx.ellipse(0,-4,40,40*lid,0,0,7); ctx.clip();
+  ctx.fillStyle='#27c46b'; ctx.beginPath(); ctx.arc(0,-4,40,0,7); ctx.fill();         // iris vert (mer propre)
+  // pupille qui suit le regard
+  const px=look.x*16, py=-4+look.y*12;
+  ctx.fillStyle=INK; ctx.beginPath(); ctx.arc(px,py,17,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px+6,py-6,6,0,7); ctx.fill();          // étincelle
+  ctx.fillStyle='rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(px-5,py+6,3,0,7); ctx.fill();
+  ctx.restore();
+  // reflet écran (balayage de scan)
+  if(scan>0){ ctx.save(); ctx.beginPath(); ctx.arc(0,-4,42,0,7); ctx.clip();
+    const sxp=-42+scan*84; const gg=ctx.createLinearGradient(sxp-14,0,sxp+14,0);
+    gg.addColorStop(0,'rgba(255,255,255,0)');gg.addColorStop(.5,'rgba(255,255,255,.5)');gg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=gg; ctx.fillRect(-42,-46,84,84); ctx.restore(); }
+  ctx.restore();
+  // petit sourire (grandit avec mood)
+  ctx.lineWidth=5; ctx.strokeStyle=INK; ctx.lineCap='round'; ctx.beginPath();
+  ctx.moveTo(-16,44); ctx.quadraticCurveTo(0,44+10+mood*8,16,44); ctx.stroke();
+  ctx.restore();
+  // ANTENNE + boule dorée (secondaire, suit avec retard)
+  const ax=cx+Math.sin(t*1.4-0.7)*6, atopY=cy-72*sy-26;
+  ctx.lineWidth=6; ctx.strokeStyle=INK; ctx.beginPath(); ctx.moveTo(cx,cy-72*sy+2); ctx.quadraticCurveTo(cx,atopY+12,ax,atopY); ctx.stroke();
+  ctx.fillStyle='#ffd23f'; ctx.beginPath(); ctx.arc(ax,atopY,11,0,7); ctx.fill(); ctx.lineWidth=4; ctx.stroke();
+  // halo de la boule quand scan
+  if(scan>0){ const g=ctx.createRadialGradient(ax,atopY,0,ax,atopY,40); g.addColorStop(0,'rgba(255,210,63,'+(0.5*Math.sin(scan*3.14))+')'); g.addColorStop(1,'rgba(255,210,63,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(ax,atopY,40,0,7); ctx.fill(); }
+  // étincelles "scan trouvé" autour
+  if(scan>0.2&&scan<0.9){ for(let i=0;i<5;i++){ const a=t*2+i*1.25,rr=70+Math.sin(scan*3.14)*16;
+    ctx.fillStyle='#ffd23f'; const sxk=cx+Math.cos(a)*rr, syk=cy+Math.sin(a)*rr*0.7;
+    ctx.save(); ctx.translate(sxk,syk); ctx.rotate(a); ctx.fillRect(-1.5,-5,3,10); ctx.fillRect(-5,-1.5,10,3); ctx.restore(); } }
+}
+let t0;
+function loop(ts){ if(!t0)t0=ts; const t=(ts-t0)/1000;
+  // fond heure dorée doux
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#ffd27a'); g.addColorStop(.5,'#ffb86b'); g.addColorStop(1,'#ff9f6b');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // pois (demi-teinte BD)
+  ctx.fillStyle='rgba(255,255,255,.10)'; for(let yy=0;yy<H;yy+=22) for(let xx=(yy/22%2?11:0);xx<W;xx+=22){ ctx.beginPath(); ctx.arc(xx,yy,2,0,7); ctx.fill(); }
+  // regard : nouvelle cible + lissage
+  if(t>nextLook) pickLook(t);
+  look.x=lerp(look.x,lookT.x,0.06); look.y=lerp(look.y,lookT.y,0.06);
+  // clignement
+  if(t>nextBlink){ blink=1; nextBlink=t+2+Math.random()*2.5; }
+  blink=Math.max(0, blink-0.18);                          // ferme vite, rouvre
+  if(blink<0.001) blink=0;
+  // scan périodique
+  if(t>nextScan){ scan=0.0001; nextScan=t+5+Math.random()*2; }
+  if(scan>0){ scan+=0.02; if(scan>=1){ scan=0; mood=1; } }
+  mood=lerp(mood, scan>0?1:0.35, 0.05);
+  veilleur(t); requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

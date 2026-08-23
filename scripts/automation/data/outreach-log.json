@@ -1,0 +1,527 @@
+{
+  "contacted": {
+    "jumbocar-martinique.com": {
+      "date": "2026-04-12T18:23:12.984Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-martinique.com/blog-voyage/informations-pratiques/sargasses-martinique",
+      "emailHash": "fcea962b6b34682ef0b723e547e16979",
+      "emailDomain": "gbh.fr"
+    },
+    "jumbocar-guadeloupe.com": {
+      "date": "2026-04-12T18:23:15.772Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-guadeloupe.com/visitez-la-guadeloupe/informations-pratiques/sargasses",
+      "emailHash": "8c5f20f917c49f4fc1374dd20c02b036",
+      "emailDomain": "gbh.fr"
+    },
+    "chrissandvoyage.com": {
+      "date": "2026-04-12T18:23:20.521Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.chrissandvoyage.com/sargasses",
+      "emailHash": "b716e666fa2c564f82cc0f9206755d0a",
+      "emailDomain": "chrissandvoyage.com"
+    },
+    "lagons-plages.com": {
+      "date": "2026-04-12T18:23:21.090Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lagons-plages.com/sargasses-caraibes.php",
+      "emailHash": "242e321a754d9b0eabcd5d0440d72451",
+      "emailDomain": "lagons-plages.com"
+    },
+    "chouetteworld.com": {
+      "date": "2026-04-12T18:23:34.240Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://chouetteworld.com/plus-belles-plages-de-martinique/",
+      "emailHash": "288b51ee439869c8865f733835097ab5",
+      "emailDomain": "chouetteworld.com"
+    },
+    "zotcar.com": {
+      "date": "2026-04-14T11:02:48.745Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.zotcar.com/blog/plus-belle-plage-martinique/",
+      "emailHash": "dc2eaf4f545134d2bbe8ebde4cbb8e5d",
+      "emailDomain": "zotcar.com"
+    },
+    "voyage-martinique.fr": {
+      "date": "2026-04-14T11:02:52.579Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.voyage-martinique.fr/sargasse.html",
+      "emailHash": "54bbf99d077d00fc8f25307e1d4c6be2",
+      "emailDomain": "voyage-martinique.fr"
+    },
+    "couleurvoyage.com": {
+      "date": "2026-04-14T11:03:02.249Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.couleurvoyage.com/martinique-avis-complet-dun-voyageur-ce-quil-faut-vraiment-savoir/",
+      "emailHash": "3a207bbe4b6d5c6f430a274ae90fb1db",
+      "emailDomain": "couleurvoyage.com"
+    },
+    "evazeo.com": {
+      "date": "2026-04-14T11:03:03.932Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.evazeo.com/blog/top-10-des-plus-belles-plages-de-martinique/",
+      "emailHash": "326f781974cc170533ea04572bf32793",
+      "emailDomain": "evazeo.com"
+    },
+    "generationvoyage.fr": {
+      "date": "2026-04-14T11:03:05.138Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://generationvoyage.fr/plus-belles-plages-guadeloupe/",
+      "emailHash": "4f7dcc5026f09caf86f52d238edc5e41",
+      "emailDomain": "generationvoyage.fr"
+    },
+    "toploc.com": {
+      "date": "2026-04-17T21:58:19.119Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://toploc.com/blog/amerique/plages-guadeloupe",
+      "emailHash": "34c98b88d81b978ede7a7078b5055f82",
+      "emailDomain": "email.com"
+    },
+    "antilleslocation.com": {
+      "date": "2026-04-17T21:58:25.000Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.antilleslocation.com/blog-voyage/les-plus-belles-plages-de-la-guadeloupe.html",
+      "emailHash": "6ed159a6a862e48b237ab35becbe49d7",
+      "emailDomain": "antilleslocation.com"
+    },
+    "espaces.ca": {
+      "date": "2026-04-17T21:58:27.843Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.espaces.ca/articles/destinations/25273-les-7-plus-belles-plages-de-la-martinique",
+      "emailHash": "fd912039505b3ba6e0fdb3a1326e8a2e",
+      "emailDomain": "espaces.ca"
+    },
+    "airvacances.fr": {
+      "date": "2026-04-17T21:58:37.395Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/",
+      "emailHash": "edabba51811db86d72c2a7f4a7053371",
+      "emailDomain": "airvacances.fr"
+    },
+    "lesilesdeguadeloupe.com": {
+      "date": "2026-04-17T21:58:39.116Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lesilesdeguadeloupe.com/",
+      "emailHash": "bff2321dbf484ccbb27a160ee19ad823",
+      "emailDomain": "lesilesdeguadeloupe.com"
+    },
+    "karukera-guadeloupe.com": {
+      "date": "2026-04-21T11:06:23.746Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.karukera-guadeloupe.com/guadeloupe/plages.html",
+      "emailHash": "d37f5c3e36b8a4ef5960eae0fa3900d7",
+      "emailDomain": "karukera-guadeloupe.com"
+    },
+    "guadeloupe-fr.com": {
+      "date": "2026-04-21T11:06:26.479Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guadeloupe-fr.com/plages-de-guadeloupe/",
+      "emailHash": "188d6b07c29dfc2e11145c55c2cbb6dd",
+      "emailDomain": "guadeloupe-fr.com"
+    },
+    "tourisme-guadeloupe.fr": {
+      "date": "2026-04-21T11:06:26.991Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.tourisme-guadeloupe.fr/",
+      "emailHash": "efaa21bdbbc8a4c528b6c1341c69d6f4",
+      "emailDomain": "tourisme-guadeloupe.fr"
+    },
+    "guideguadeloupe.com": {
+      "date": "2026-04-21T11:06:27.594Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guideguadeloupe.com/plages-guadeloupe.html",
+      "emailHash": "2c59305379dfa961d3d5c5a5dd170219",
+      "emailDomain": "guideguadeloupe.com"
+    },
+    "keysweekly.com": {
+      "date": "2026-06-23T12:31:50.551Z",
+      "emailHash": "fdc67398c5c8aa3ca10a9e2c7d3b72fd",
+      "emailDomain": "keysweekly.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keysweekly.com/",
+      "market": "us"
+    },
+    "floridatoday.com": {
+      "date": "2026-06-23T12:31:52.513Z",
+      "emailHash": "fc1cae3b9db39c624b31bbb220bfdfb0",
+      "emailDomain": "floridatoday.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.floridatoday.com/",
+      "market": "us"
+    },
+    "thecancunsun.com": {
+      "date": "2026-06-23T12:31:53.832Z",
+      "emailHash": "a9f56913639f12d989cb94d7e80a4842",
+      "emailDomain": "thecancunsun.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://thecancunsun.com/",
+      "market": "mx"
+    },
+    "riviera-maya-news.com": {
+      "date": "2026-06-23T12:31:55.113Z",
+      "emailHash": "f875eb74d3865be92c8b4e5fb9fa4ae5",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.riviera-maya-news.com/",
+      "market": "mx"
+    },
+    "theyucatantimes.com": {
+      "date": "2026-06-23T12:31:57.109Z",
+      "emailHash": "2f95d4cb296825ce94ad09d88ee229d6",
+      "emailDomain": "theyucatantimes.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.theyucatantimes.com/",
+      "market": "mx"
+    },
+    "sipse.com": {
+      "date": "2026-07-07T12:26:04.324Z",
+      "emailHash": "b3e35f3102bd2f69be90218fc60e4706",
+      "emailDomain": "sipse.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://sipse.com/",
+      "market": "mx"
+    },
+    "dominicantoday.com": {
+      "date": "2026-07-07T12:26:05.307Z",
+      "emailHash": "69a19d6c1dc6e697ffc233a05befae9c",
+      "emailDomain": "dominicantoday.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://dominicantoday.com/",
+      "market": "dr"
+    },
+    "wlaps.com": {
+      "date": "2026-07-07T12:26:14.291Z",
+      "emailHash": "e8cf9767deddf3981782e8481b50ad5f",
+      "emailDomain": "wlaps.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://wlaps.com/plages-sargasses-en-martinique/",
+      "market": "fr"
+    },
+    "ile-tropicale.fr": {
+      "date": "2026-07-07T12:26:21.177Z",
+      "emailHash": "db9731315ff6e9a69eaf9810f5f759a0",
+      "emailDomain": "ile-tropicale.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.ile-tropicale.fr/martinique-quelles-plages-sont-epargnees-par-les-sargasses/",
+      "market": "fr"
+    },
+    "beyondthebeach.fr": {
+      "date": "2026-07-07T12:26:40.990Z",
+      "emailHash": "10b68409f52f877cc0e25e54026c6ccd",
+      "emailDomain": "beyondthebeach.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.beyondthebeach.fr/366-sargasses-martinique-un-moyen-sur-pour-les-eviter/",
+      "market": "fr"
+    },
+    "lechotouristique.com": {
+      "date": "2026-07-14T11:24:42.938Z",
+      "emailHash": "5164d728dba1b99263d6ecbfc76f2a7b",
+      "emailDomain": "lechotouristique.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lechotouristique.com/article/martinique-les-plages-sans-sargasses-a-conseiller-a-vos-clients",
+      "market": "fr"
+    },
+    "fairmoove.fr": {
+      "date": "2026-07-14T11:24:45.114Z",
+      "emailHash": "cfee70ac2c0ea1fa934fc81398d35f1c",
+      "emailDomain": "fairmoove.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.fairmoove.fr/blog/iles-paradisiaques/plages-belles-martinique",
+      "market": "fr"
+    },
+    "carnetdetipiment.com": {
+      "date": "2026-07-14T11:24:55.041Z",
+      "emailHash": "4319d9282f9d61de8b74011640a0a6ae",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://carnetdetipiment.com/2018/11/17/guide-complet-des-plus-belles-plages-de-martinique/",
+      "market": "fr"
+    },
+    "bestjobersblog.com": {
+      "date": "2026-07-14T11:24:58.410Z",
+      "emailHash": "0e9838fcff1b18fe0cde9746fee395e7",
+      "emailDomain": "bestjobers.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.bestjobersblog.com/que-faire-en-martinique-itineraire-conseils/",
+      "market": "fr"
+    },
+    "leslovetrotteurs.com": {
+      "date": "2026-07-14T11:25:07.485Z",
+      "emailHash": "16463026797c439c6cac25358a716562",
+      "emailDomain": "leslovetrotteurs.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://leslovetrotteurs.com/martinique/",
+      "market": "fr"
+    },
+    "la-poze-travel.com": {
+      "date": "2026-07-21T11:45:45.970Z",
+      "emailHash": "20d71c50cbd9314477f640fd5a3be592",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.la-poze-travel.com/martinique-nos-incontournables/",
+      "market": "fr"
+    },
+    "rci.fm": {
+      "date": "2026-07-21T11:45:53.674Z",
+      "emailHash": "79c4d68f85800f9b93d21f462a7a1024",
+      "emailDomain": "rci.fm",
+      "status": "sent",
+      "error": null,
+      "url": "https://rci.fm/martinique/infos",
+      "market": "fr"
+    },
+    "outremers360.com": {
+      "date": "2026-07-21T11:45:56.577Z",
+      "emailHash": "b941ae5c373d43574ac478d96e39837c",
+      "emailDomain": "outremers360.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.outremers360.com/",
+      "market": "fr"
+    },
+    "madinin-art.net": {
+      "date": "2026-07-21T11:46:01.850Z",
+      "emailHash": "d85f9afd9e0319c23bee5f5be4d20307",
+      "emailDomain": "madinin-art.net",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.madinin-art.net/sargasses-des-echouements-records-en-2025-dans-les-antilles/",
+      "market": "fr"
+    },
+    "piedsdanslesable.fr": {
+      "date": "2026-07-21T11:46:16.388Z",
+      "emailHash": "932958a9ea154daa48734bba0ffb5f18",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.piedsdanslesable.fr/plage-guadeloupe/sans-sargasses/",
+      "market": "fr"
+    },
+    "1monde.net": {
+      "date": "2026-07-28T11:57:11.362Z",
+      "emailHash": "ecba152f824baf687480bc8d73894498",
+      "emailDomain": "1monde.net",
+      "status": "sent",
+      "error": null,
+      "url": "https://1monde.net/ou-se-baigner-en-guadeloupe-sans-sargasse/",
+      "market": "fr"
+    },
+    "vacances-aux-antilles.com": {
+      "date": "2026-07-28T11:57:13.830Z",
+      "emailHash": "360a6b67a503e6d133d5c1e2d6064999",
+      "emailDomain": "vacances-aux-antilles.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.vacances-aux-antilles.com/guadeloupe/sargasses/",
+      "market": "fr"
+    },
+    "karibinfo.com": {
+      "date": "2026-07-28T11:57:26.579Z",
+      "emailHash": "199cad5eb2a5a4ef993bd5f7d5ff91e7",
+      "emailDomain": "karibinfo.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.karibinfo.com/news/",
+      "market": "fr"
+    },
+    "we-love-guadeloupe.com": {
+      "date": "2026-07-28T11:57:30.142Z",
+      "emailHash": "e07112f14eab32eb828efd32c4fd225d",
+      "emailDomain": "we-love-guadeloupe.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.we-love-guadeloupe.com/",
+      "market": "fr"
+    },
+    "lagon-travel.com": {
+      "date": "2026-07-28T11:57:36.490Z",
+      "emailHash": "8a88c5eb6afaa0deb3509c84a72dd969",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lagon-travel.com/blog-voyage/",
+      "market": "fr"
+    },
+    "trotteurs-addict.com": {
+      "date": "2026-08-04T12:01:23.219Z",
+      "emailHash": "742293bb7fa0336ddb3cfcbae4650442",
+      "emailDomain": "trotteurs-addict.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://trotteurs-addict.com/guadeloupe/",
+      "market": "fr"
+    },
+    "noscoeursvoyageurs.fr": {
+      "date": "2026-08-04T12:02:09.519Z",
+      "emailHash": "eb1622c0514ed3486ea7c2bedc6eb99e",
+      "emailDomain": "2x-300x30-1.png.webp",
+      "status": "failed",
+      "error": "Can't send mail - all recipients were rejected: 550-The mail server could not deliver mail to ncvnew@2x-300x30-1.png.webp.  The\n550-account or domain may not exist, they may be blacklisted, or missing the\n550 proper dns entries.",
+      "url": "https://www.noscoeursvoyageurs.fr/les-plages-de-guadeloupe/",
+      "market": "fr"
+    },
+    "rentiles.fr": {
+      "date": "2026-08-04T12:02:12.891Z",
+      "emailHash": "ca5b6c7063e3d50af0aab05276bad3f4",
+      "emailDomain": "rentiles.fr",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.rentiles.fr/blog-voyage/idee-itineraire-10-jours-guadeloupe.html",
+      "market": "fr"
+    },
+    "heures-saines.com": {
+      "date": "2026-08-04T12:02:16.921Z",
+      "emailHash": "ef556a3b23faa88334496f23d1eb833b",
+      "emailDomain": "heures-saines.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.heures-saines.com/",
+      "market": "fr"
+    },
+    "pisquettes.com": {
+      "date": "2026-08-04T12:02:18.402Z",
+      "emailHash": "2720dd2d6b07a5e54b43e8590df4445f",
+      "emailDomain": "pisquettes.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.pisquettes.com/",
+      "market": "fr"
+    },
+    "floridarambler.com": {
+      "date": "2026-08-04T12:02:22.237Z",
+      "emailHash": "c3563f8eb25d5fc8a06e6bc16ef161a4",
+      "emailDomain": "floridarambler.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.floridarambler.com/beaches/sargassum-seaweed-florida-beaches/",
+      "market": "us"
+    },
+    "wlrn.org": {
+      "date": "2026-08-07T17:02:31.691Z",
+      "emailHash": "9d414558d9dcbac4cefc19681210c2dc",
+      "emailDomain": "wlrn.org",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.wlrn.org/environment",
+      "market": "us"
+    },
+    "local10.com": {
+      "date": "2026-08-07T17:02:33.634Z",
+      "emailHash": "5b9d60eae2e14c6b6c78188d22ca6a1d",
+      "emailDomain": "wplg.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.local10.com/news/local/",
+      "market": "us"
+    },
+    "nbcmiami.com": {
+      "date": "2026-08-07T17:02:39.565Z",
+      "emailHash": "d5fc0a90600f1d17f01765d70c9b9272",
+      "emailDomain": "nbcmiami.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.nbcmiami.com/news/local/",
+      "market": "us"
+    },
+    "cbs12.com": {
+      "date": "2026-08-07T17:02:43.186Z",
+      "emailHash": "51f1d14a587777ba84bcc57c27d89126",
+      "emailDomain": "cbs12.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://cbs12.com/news/local",
+      "market": "us"
+    },
+    "mynews13.com": {
+      "date": "2026-08-07T17:02:46.397Z",
+      "emailHash": "0782b17f2da449a93ceef71e0eb58806",
+      "emailDomain": "mynews13.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.mynews13.com/fl/orlando/news",
+      "market": "us"
+    },
+    "spacecoastdaily.com": {
+      "date": "2026-08-11T10:48:58.053Z",
+      "emailHash": "6c89f10db2bdb0be01fa7a2263826a8e",
+      "emailDomain": "spacecoastdaily.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://spacecoastdaily.com/",
+      "market": "us"
+    },
+    "keywestislandnews.com": {
+      "date": "2026-08-11T10:48:59.122Z",
+      "emailHash": "8e820273f6dabfaeccae5798c296857d",
+      "emailDomain": "keywestislandnews.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keywestislandnews.com/",
+      "market": "us"
+    },
+    "theinvadingsea.com": {
+      "date": "2026-08-11T10:49:08.901Z",
+      "emailHash": "8d16765f5714a833db5460b0145580aa",
+      "emailDomain": "fau.edu",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.theinvadingsea.com/",
+      "market": "us"
+    },
+    "keywestpaddle.com": {
+      "date": "2026-08-11T10:49:11.270Z",
+      "emailHash": "657989b16cf5fedc4642aeb2f7d74b0e",
+      "emailDomain": "keywestpaddle.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keywestpaddle.com/blog/",
+      "market": "us"
+    },
+    "everythingplayadelcarmen.com": {
+      "date": "2026-08-11T10:49:12.123Z",
+      "emailHash": "e9900bb33517a1d8147684530de0d5f9",
+      "emailDomain": "everythingplayadelcarmen.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.everythingplayadelcarmen.com/sargassum-forecast/",
+      "market": "mx"
+    }
+  },
+  "lastRun": "2026-08-11T10:49:12.123Z",
+  "totalSent": 59
+}

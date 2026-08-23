@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Candidat 4 — Tropical Carnaval</title>
+<style>
+@font-face {
+  font-family: 'Anton';
+  src: url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --lagon: #14b8c4;
+  --lagon-deep: #0a8c98;
+  --soleil: #ffce21;
+  --soleil-deep: #f5b400;
+  --corail: #ff6b4a;
+  --ink: #1a2b32;
+  --propre: #27c46b;
+  --modere: #e8a800;
+  --eviter: #e8522a;
+  --paper: #fff8ec;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(20,184,196,0.18), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(255,206,33,0.18), transparent 40%),
+    #0e3b42;
+  color: var(--ink);
+  padding: 28px 12px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.lab-head {
+  max-width: 380px;
+  text-align: center;
+  color: #fff;
+}
+.lab-head .kicker {
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 1px;
+  font-size: 13px;
+  color: var(--soleil);
+  text-transform: uppercase;
+}
+.lab-head h1 {
+  font-family: 'Anton', sans-serif;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1.5px var(--ink);
+  color: var(--lagon);
+  line-height: 1.05;
+  margin-top: 4px;
+}
+.lab-head p { font-size: 12px; opacity: 0.75; margin-top: 6px; }
+
+/* PHONE FRAME */
+.phone {
+  width: 340px;
+  max-width: 100%;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 30px;
+  box-shadow: 0 14px 0 rgba(0,0,0,0.25), 0 0 0 6px rgba(255,255,255,0.04);
+  overflow: hidden;
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 8px; left: 50%; transform: translateX(-50%);
+  width: 90px; height: 6px; border-radius: 4px;
+  background: var(--ink);
+  z-index: 5;
+}
+
+.screen { padding: 26px 16px 20px; position: relative; }
+
+/* madras subtle background pattern */
+.madras {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(20,184,196,0.06) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(90deg, rgba(255,206,33,0.06) 0 2px, transparent 2px 26px);
+  pointer-events: none;
+}
+
+/* TOP BAR */
+.topbar {
+  display: flex; align-items: center; gap: 8px;
+  position: relative; z-index: 2;
+  margin-bottom: 14px;
+}
+.veilleur-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--lagon);
+  border: 2.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.brand {
+  font-family: 'Anton', sans-serif;
+  font-size: 16px; letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.brand small { display:block; font-size:9px; letter-spacing:1.5px; color: var(--lagon-deep); }
+
+/* SECTION TITLE */
+.sect {
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  position: relative; z-index: 2;
+  -webkit-text-stroke: 0.4px var(--ink);
+}
+.sect .hl { color: var(--lagon-deep); }
+.sub {
+  font-size: 11px; color: #4a6a72; position: relative; z-index: 2;
+  margin: 2px 0 14px;
+}
+
+/* VERDICT HERO CARD */
+.verdict {
+  position: relative; z-index: 2;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, #2fd0db 0%, #14b8c4 55%, #ffd34d 55%, #ffce21 100%);
+  box-shadow: 5px 5px 0 var(--ink);
+  overflow: hidden;
+  text-align: center;
+  padding: 0 0 16px;
+}
+.verdict-scene { height: 92px; position: relative; }
+.verdict-scene svg { display:block; width:100%; height:100%; }
+.verdict-body { background: var(--paper); margin: 0 10px; border-radius: 16px; border:2.5px solid var(--ink); padding: 12px 10px 14px; margin-top:-22px; position:relative; }
+.spot { font-family:'Anton',sans-serif; font-size:24px; text-transform:uppercase; letter-spacing:0.5px; }
+.score-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  margin: 8px auto 2px;
+  background: var(--propre); color:#fff;
+  border:2.5px solid var(--ink);
+  border-radius: 30px;
+  padding: 6px 16px;
+  font-family:'Anton',sans-serif;
+  font-size: 18px; letter-spacing:1px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.score-pill .num { font-size:26px; }
+.verdict-note { font-size:11px; color:#4a6a72; margin-top:8px; }
+
+/* CTA BUTTONS */
+.cta {
+  display:block; width:100%;
+  font-family:'Anton',sans-serif;
+  text-transform:uppercase; letter-spacing:1px;
+  font-size:16px;
+  text-align:center;
+  border:3px solid var(--ink);
+  border-radius:16px;
+  padding:13px 10px;
+  margin-top:14px;
+  cursor:pointer;
+  box-shadow: 4px 4px 0 var(--ink);
+  text-decoration:none;
+  color: var(--ink);
+}
+.cta-soleil { background: var(--soleil); }
+.cta-lagon { background: var(--lagon); color:#fff; }
+.cta:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+
+/* BEACH LIST CARDS */
+.beach-list { position:relative; z-index:2; display:flex; flex-direction:column; gap:11px; }
+.beach {
+  display:flex; align-items:center; gap:11px;
+  background:#fff; border:2.5px solid var(--ink); border-radius:16px;
+  padding:10px 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.beach .thumb {
+  width:46px; height:46px; flex:0 0 46px;
+  border:2px solid var(--ink); border-radius:12px;
+  overflow:hidden; background:var(--lagon);
+}
+.beach .thumb svg { display:block; width:100%; height:100%; }
+.beach .info { flex:1; min-width:0; }
+.beach .name { font-family:'Anton',sans-serif; font-size:15px; text-transform:uppercase; line-height:1; }
+.beach .stat { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+.beach .badge {
+  flex:0 0 auto; text-align:center;
+  border:2px solid var(--ink); border-radius:12px;
+  padding:6px 9px; color:#fff;
+  font-family:'Anton',sans-serif;
+  box-shadow:2px 2px 0 var(--ink);
+}
+.beach .badge .b-num { font-size:18px; line-height:1; }
+.beach .badge .b-lbl { font-size:7px; letter-spacing:0.5px; display:block; margin-top:2px; }
+.bg-propre { background:var(--propre); }
+.bg-modere { background:var(--modere); }
+.bg-eviter { background:var(--eviter); }
+.txt-propre { color:var(--propre); }
+.txt-modere { color:var(--modere); }
+.txt-eviter { color:var(--eviter); }
+
+/* TCG CARD */
+.tcg-wrap { position:relative; z-index:2; display:flex; justify-content:center; }
+.tcg {
+  width:230px;
+  background: linear-gradient(160deg, var(--soleil) 0%, var(--corail) 100%);
+  border:3px solid var(--ink);
+  border-radius:18px;
+  padding:8px;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.tcg-top { display:flex; align-items:center; justify-content:space-between; padding:2px 4px 6px; }
+.tcg-name { font-family:'Anton',sans-serif; font-size:16px; text-transform:uppercase; color:var(--ink); }
+.tcg-pv { font-family:'Anton',sans-serif; font-size:13px; color:var(--ink); display:flex; align-items:baseline; gap:3px; }
+.tcg-pv .pv-num { font-size:22px; }
+.tcg-art { border:2.5px solid var(--ink); border-radius:12px; overflow:hidden; background:#bdeef2; }
+.tcg-art svg { display:block; width:100%; height:140px; }
+.tcg-typebar { display:flex; align-items:center; justify-content:space-between; padding:7px 6px 2px; }
+.tcg-type { background:var(--lagon); border:2px solid var(--ink); border-radius:20px; padding:3px 10px; font-size:11px; font-weight:800; color:#fff; display:flex; align-items:center; gap:4px; }
+.tcg-rare { font-size:13px; letter-spacing:1px; color:var(--ink); }
+.tcg-desc { background:var(--paper); border:2px solid var(--ink); border-radius:10px; margin:6px 2px 2px; padding:7px 9px; font-size:10px; line-height:1.35; color:#33474e; }
+.tcg-desc b { color:var(--lagon-deep); }
+
+/* PAYWALL */
+.pay {
+  position:relative; z-index:2;
+  border:3px solid var(--ink); border-radius:22px;
+  background:#fff; box-shadow:5px 5px 0 var(--ink);
+  overflow:hidden;
+}
+.pay-head {
+  background: linear-gradient(135deg, var(--lagon) 0%, var(--lagon-deep) 100%);
+  padding:16px 16px 18px; text-align:center; position:relative;
+  border-bottom:3px solid var(--ink);
+}
+.pay-eye {
+  width:52px;height:52px;border-radius:50%;
+  background:var(--soleil); border:3px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  margin:0 auto 8px; box-shadow:3px 3px 0 var(--ink);
+}
+.pay-title { font-family:'Anton',sans-serif; color:#fff; font-size:22px; text-transform:uppercase; letter-spacing:0.5px; -webkit-text-stroke:0.6px var(--ink); }
+.pay-tag { color:#eafcfd; font-size:11px; margin-top:2px; }
+.pay-body { padding:16px; }
+.pay-price { text-align:center; margin-bottom:14px; }
+.pay-price .amt { font-family:'Anton',sans-serif; font-size:40px; color:var(--ink); }
+.pay-price .per { font-size:13px; color:#4a6a72; }
+.benefits { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+.benefits li { display:flex; gap:10px; align-items:flex-start; font-size:12px; line-height:1.3; }
+.benefits .chk {
+  flex:0 0 24px; width:24px; height:24px; border-radius:8px;
+  background:var(--soleil); border:2px solid var(--ink);
+  display:flex; align-items:center; justify-content:center; font-size:13px;
+  box-shadow:2px 2px 0 var(--ink);
+}
+.benefits b { font-weight:800; }
+.pay-foot { text-align:center; font-size:10.5px; color:#7c919a; margin-top:10px; }
+.pay-foot span { color:var(--lagon-deep); font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="lab-head">
+  <div class="kicker">Themes Lab · Candidat 4</div>
+  <h1>Tropical Carnaval</h1>
+  <p>Comic antillais · lagon turquoise, soleil, accents corail · madras subtil</p>
+</div>
+
+<!-- ============ 1 · HOME VERDICT ============ -->
+<div class="phone">
+  <div class="screen">
+    <div class="madras"></div>
+    <div class="topbar">
+      <div class="veilleur-badge">🛰️</div>
+      <div class="brand">Sargasses<small>MARTINIQUE · Le Veilleur</small></div>
+    </div>
+
+    <div class="sect">Verdict <span class="hl">du jour</span></div>
+    <div class="sub">Aujourd'hui · données Copernicus · maj il y a 2h</div>
+
+    <div class="verdict">
+      <div class="verdict-scene">
+        <svg viewBox="0 0 300 92" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="300" height="92" fill="#2fd0db"/>
+          <circle cx="245" cy="30" r="20" fill="#ffce21" stroke="#1a2b32" stroke-width="2"/>
+          <g stroke="#ffce21" stroke-width="2.5" stroke-linecap="round">
+            <line x1="245" y1="2" x2="245" y2="-4"/><line x1="272" y1="16" x2="280" y2="11"/>
+            <line x1="218" y1="16" x2="210" y2="11"/>
+          </g>
+          <path d="M0 70 Q40 60 80 70 T160 70 T240 70 T320 70 V92 H0 Z" fill="#14b8c4"/>
+          <path d="M0 78 Q50 70 100 78 T200 78 T300 78 V92 H0 Z" fill="#0a8c98" opacity="0.6"/>
+          <!-- palmier -->
+          <path d="M58 92 Q54 60 60 42" stroke="#7a4a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <g fill="#1f9d4d" stroke="#1a2b32" stroke-width="1.2">
+            <path d="M60 42 Q40 30 24 38 Q42 38 60 46Z"/>
+            <path d="M60 42 Q80 30 96 38 Q78 38 60 46Z"/>
+            <path d="M60 42 Q44 22 34 22 Q50 30 60 46Z"/>
+            <path d="M60 42 Q76 22 86 22 Q70 30 60 46Z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="verdict-body">
+        <div class="spot">Les Salines</div>
+        <div class="score-pill bg-propre" style="background:var(--propre)">
+          <span class="num">92</span> PROPRE
+        </div>
+        <div class="verdict-note">Lagon clair, aucun radeau détecté à l'horizon. Belle journée plage. 🌴</div>
+      </div>
+      <a class="cta cta-soleil" style="margin:14px 14px 4px; width:auto;" href="#">Voir la fiche</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2 · LISTE CARTES PLAGE ============ -->
+<div class="phone">
+  <div class="screen">
+    <div class="madras"></div>
+    <div class="topbar">
+      <div class="veilleur-badge">🛰️</div>
+      <div class="brand">Sargasses<small>MARTINIQUE · Le Veilleur</small></div>
+    </div>
+
+    <div class="sect">Mes <span class="hl">plages</span></div>
+    <div class="sub">4 spots suivis · triés par état</div>
+
+    <div class="beach-list">
+      <!-- Anse Mitan -->
+      <div class="beach">
+        <div class="thumb">
+          <svg viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg"><rect width="46" height="46" fill="#2fd0db"/><circle cx="36" cy="11" r="6" fill="#ffce21"/><path d="M0 30 Q23 24 46 30 V46 H0Z" fill="#14b8c4"/><path d="M0 36 Q23 32 46 38 V46H0Z" fill="#ffd34d"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Anse Mitan</div>
+          <div class="stat txt-propre">● Eau claire · sûr</div>
+        </div>
+        <div class="badge bg-propre"><span class="b-num">77</span><span class="b-lbl">PROPRE</span></div>
+      </div>
+      <!-- Le Diamant -->
+      <div class="beach">
+        <div class="thumb">
+          <svg viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg"><rect width="46" height="46" fill="#7fd9b0"/><circle cx="36" cy="11" r="6" fill="#ffce21"/><path d="M0 28 Q23 22 46 28 V46 H0Z" fill="#3bb98a"/><path d="M10 30 q4 3 8 0 t8 0 t8 0" stroke="#b58c3a" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Le Diamant</div>
+          <div class="stat txt-modere">● Quelques bancs épars</div>
+        </div>
+        <div class="badge bg-modere"><span class="b-num">68</span><span class="b-lbl">MODÉRÉ</span></div>
+      </div>
+      <!-- Anse Charpentier -->
+      <div class="beach">
+        <div class="thumb">
+          <svg viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg"><rect width="46" height="46" fill="#d9a86b"/><circle cx="36" cy="11" r="6" fill="#ffce21"/><path d="M0 26 Q23 30 46 24 V46 H0Z" fill="#9c6b32"/><path d="M2 30 q5 3 10 0 t10 0 t10 0 t10 0" stroke="#5e3a14" stroke-width="2.4" fill="none"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Anse Charpentier</div>
+          <div class="stat txt-eviter">● Échouage massif</div>
+        </div>
+        <div class="badge bg-eviter"><span class="b-num">34</span><span class="b-lbl">À ÉVITER</span></div>
+      </div>
+      <!-- Anse Dufour -->
+      <div class="beach">
+        <div class="thumb">
+          <svg viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg"><rect width="46" height="46" fill="#2fd0db"/><circle cx="11" cy="11" r="6" fill="#ffce21"/><path d="M0 31 Q23 25 46 31 V46 H0Z" fill="#14b8c4"/><path d="M0 37 Q23 33 46 39 V46H0Z" fill="#ffd34d"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Anse Dufour</div>
+          <div class="stat txt-propre">● Tortues au rdv 🐢</div>
+        </div>
+        <div class="badge bg-propre"><span class="b-num">88</span><span class="b-lbl">PROPRE</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3 · CARTE TCG HERO ============ -->
+<div class="phone">
+  <div class="screen">
+    <div class="madras"></div>
+    <div class="topbar">
+      <div class="veilleur-badge">🛰️</div>
+      <div class="brand">Sargasses<small>MARTINIQUE · Le Veilleur</small></div>
+    </div>
+
+    <div class="sect">Carte <span class="hl">du spot</span></div>
+    <div class="sub">Collectionne tes plages · rareté du jour</div>
+
+    <div class="tcg-wrap">
+      <div class="tcg">
+        <div class="tcg-top">
+          <div class="tcg-name">Anse Mitan</div>
+          <div class="tcg-pv">PV <span class="pv-num">77</span></div>
+        </div>
+        <div class="tcg-art">
+          <svg viewBox="0 0 214 140" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd98a"/><stop offset="0.5" stop-color="#ff9e6b"/><stop offset="1" stop-color="#ff7a4d"/>
+              </linearGradient>
+            </defs>
+            <rect width="214" height="140" fill="url(#sky4)"/>
+            <!-- golden-hour sun -->
+            <circle cx="150" cy="58" r="26" fill="#fff2c2"/>
+            <circle cx="150" cy="58" r="18" fill="#ffce21"/>
+            <!-- lagon -->
+            <path d="M0 88 Q60 80 110 88 T214 86 V140 H0Z" fill="#14b8c4"/>
+            <path d="M0 100 Q70 92 140 100 T214 100 V140 H0Z" fill="#0a8c98" opacity="0.7"/>
+            <!-- sun reflection -->
+            <g fill="#ffe08a" opacity="0.6">
+              <ellipse cx="150" cy="96" rx="16" ry="2.5"/><ellipse cx="150" cy="106" rx="22" ry="2.5"/><ellipse cx="150" cy="116" rx="28" ry="2.5"/>
+            </g>
+            <!-- sand -->
+            <path d="M0 118 Q50 112 110 120 T214 120 V140 H0Z" fill="#ffe0a3"/>
+            <!-- palmier -->
+            <path d="M40 140 Q34 96 44 66" stroke="#7a4a22" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <g fill="#1f9d4d" stroke="#1a2b32" stroke-width="1.4">
+              <path d="M44 66 Q16 50 -2 60 Q26 56 46 72Z"/>
+              <path d="M44 66 Q74 48 96 56 Q66 54 46 72Z"/>
+              <path d="M44 66 Q22 38 8 36 Q34 50 46 72Z"/>
+              <path d="M44 66 Q70 38 86 36 Q58 48 46 72Z"/>
+              <path d="M44 66 Q44 36 50 24 Q50 50 48 72Z"/>
+            </g>
+            <circle cx="44" cy="68" r="3" fill="#8a5a2a"/>
+          </svg>
+        </div>
+        <div class="tcg-typebar">
+          <div class="tcg-type">🌊 Eau claire</div>
+          <div class="tcg-rare">★★★★☆</div>
+        </div>
+        <div class="tcg-desc">
+          <b>Lagon turquoise</b> protégé du large. Capacité d'auto-nettoyage élevée — l'une des plages les plus stables de la baie de Fort-de-France.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4 · PAYWALL VEILLEUR ============ -->
+<div class="phone">
+  <div class="screen">
+    <div class="madras"></div>
+    <div class="pay">
+      <div class="pay-head">
+        <div class="pay-eye">🛰️</div>
+        <div class="pay-title">Le Veilleur</div>
+        <div class="pay-tag">Ton satellite-œil personnel sur les sargasses</div>
+      </div>
+      <div class="pay-body">
+        <div class="pay-price">
+          <span class="amt">4,99€</span><span class="per"> /mois</span>
+        </div>
+        <ul class="benefits">
+          <li><span class="chk">🔔</span><span><b>Alerte la veille</b> si un échouage menace tes plages favorites.</span></li>
+          <li><span class="chk">🗺️</span><span><b>Prévisions 5 jours</b> par plage + carte live de l'archipel.</span></li>
+          <li><span class="chk">🌊</span><span><b>Toutes les plages</b> en illimité, sans pub, données Copernicus 4×/jour.</span></li>
+        </ul>
+        <a class="cta cta-lagon" href="#">Activer mon Veilleur</a>
+        <div class="pay-foot"><span>Annulable en 1 clic.</span> Sans engagement.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

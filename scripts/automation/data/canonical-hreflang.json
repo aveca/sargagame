@@ -1,0 +1,453 @@
+{
+  "generatedAt": "2026-08-10T12:10:01.585Z",
+  "sites": {
+    "mq": {
+      "pageCount": 366,
+      "pagesSkippedNoindex": 22,
+      "pagesWithCanonical": 173,
+      "pagesWithHreflang": 157,
+      "issueCount": 176,
+      "byKind": {
+        "missing-canonical": 171,
+        "canonical-mismatch": 1,
+        "hreflang-target-missing": 4
+      },
+      "issues": [
+        {
+          "file": "agir/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "googlead132357ff9b38c4.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "jeu/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "sarg_carte_satellite_app.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/carte-sargasses/",
+          "pageUrl": "/sarg_carte_satellite_app.html"
+        },
+        {
+          "file": "sargasses-aujourdhui/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-martinique.com/en/sargassum-today/"
+        },
+        {
+          "file": "sargasses-aujourdhui/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-martinique.com/es/sargazo-hoy/"
+        },
+        {
+          "file": "sargasses-pres-de-moi/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-martinique.com/en/sargassum-near-me/"
+        },
+        {
+          "file": "sargasses-pres-de-moi/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-martinique.com/es/sargazo-cerca-de-mi/"
+        },
+        {
+          "file": "veilleur/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/anse-mitan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/cancun/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/fort-lauderdale/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/grande-anse-arlet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/les-salines/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/miami-beach/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/pointe-faula/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/punta-cana/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/sainte-anne-gp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/tulum/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-studio/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-l-ane/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-l-eau/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-barque-vh/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-gourde/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-sable/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-belleville/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-bertrand-nord/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-bonneville/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-cafard/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-canot-marie-galante/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-caritan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-ceron/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-champagne/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-charpentier/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-collat/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-corps-de-garde/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-cosmy/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-couleuvre/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-crawen/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-galet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-la-baie-olive/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-pigeon/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-des-galets/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-bourg-saintes/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-figuier-saintes/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-mancenillier/index.html",
+          "kind": "missing-canonical"
+        }
+      ]
+    },
+    "gp": {
+      "pageCount": 405,
+      "pagesSkippedNoindex": 22,
+      "pagesWithCanonical": 212,
+      "pagesWithHreflang": 196,
+      "issueCount": 176,
+      "byKind": {
+        "missing-canonical": 171,
+        "canonical-mismatch": 1,
+        "hreflang-target-missing": 4
+      },
+      "issues": [
+        {
+          "file": "agir/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "googlead132357ff9b38c4.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "jeu/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "sarg_carte_satellite_app.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/carte-sargasses/",
+          "pageUrl": "/sarg_carte_satellite_app.html"
+        },
+        {
+          "file": "sargasses-aujourdhui/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-guadeloupe.com/en/sargassum-today/"
+        },
+        {
+          "file": "sargasses-aujourdhui/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-guadeloupe.com/es/sargazo-hoy/"
+        },
+        {
+          "file": "sargasses-pres-de-moi/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-guadeloupe.com/en/sargassum-near-me/"
+        },
+        {
+          "file": "sargasses-pres-de-moi/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-guadeloupe.com/es/sargazo-cerca-de-mi/"
+        },
+        {
+          "file": "veilleur/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/anse-mitan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/cancun/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/fort-lauderdale/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/grande-anse-arlet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/les-salines/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/miami-beach/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/pointe-faula/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/punta-cana/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/sainte-anne-gp/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-mvp/tulum/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "veilleur-studio/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-l-ane/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-l-eau/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-barque-vh/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-la-gourde/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-a-sable/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-belleville/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-bertrand-nord/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-bonneville/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-cafard/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-canot-marie-galante/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-caritan/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-ceron/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-champagne/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-charpentier/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-collat/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-corps-de-garde/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-cosmy/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-couleuvre/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-crawen/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-galet/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-la-baie-olive/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-pigeon/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-des-galets/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-bourg-saintes/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-figuier-saintes/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-du-mancenillier/index.html",
+          "kind": "missing-canonical"
+        }
+      ]
+    }
+  }
+}

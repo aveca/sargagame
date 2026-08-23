@@ -1,0 +1,798 @@
+{
+  "faq": [
+    {
+      "q": "When does sargassum season hit Florida?",
+      "a": "Florida's sargassum window runs roughly May through August, peaking in June and July. The Keys and the southeast Atlantic coast — Miami up to Jupiter — see the most; winter months are essentially seaweed-free statewide. The amount varies hugely year to year depending on the Atlantic bloom, which is why we track conditions with satellite data updated four times a day instead of quoting seasonal averages."
+    },
+    {
+      "q": "Which Florida beaches get the least sargassum?",
+      "a": "Gulf coast beaches like Clearwater almost never see meaningful sargassum — the currents rarely deliver it there. On the Atlantic side, Daytona and the central coast get far less than the Keys or Miami. Within South Florida, conditions can flip beach to beach in a single day, so check the live map: our satellite data, refreshed daily, shows exactly which beaches are clean right now."
+    },
+    {
+      "q": "How accurate is this sargassum tracker?",
+      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Beachgoer reports fill the gaps. It is the difference between a measurement and a guess."
+    },
+    {
+      "q": "Can you really forecast sargassum a week out?",
+      "a": "To a useful degree, yes. Once satellites detect mats offshore, their drift is largely set by wind and the Gulf Stream, which we model daily for each beach. Days 1–3 are the most reliable; days 4–7 show the direction of travel. Seaweed already beached decays on a 3.5-day half-life unless resupplied. The forecast re-runs every day as fresh satellite passes arrive."
+    },
+    {
+      "q": "Do Florida beaches get cleaned of sargassum?",
+      "a": "Most tourist beaches do. Miami Beach runs daily mechanical raking, and resort and municipal crews work the main Keys beaches each morning. Smaller and natural beaches are cleaned rarely or never. Cleaning resets the sand, but if satellites show fresh mats inbound, seaweed returns within hours — which is why pairing the cleaning schedule with our daily satellite forecast tells you more than either alone."
+    },
+    {
+      "q": "What should I do if my beach is covered in sargassum?",
+      "a": "Drive — Florida gives you options. If Miami Beach is buried, Daytona or the Gulf side at Clearwater almost certainly is not, and our live map shows the nearest clean sand instantly. Small amounts are harmless to swimmers; large rotting piles smell of sulfur and are worth avoiding. Premium alerts notify you the moment a saved beach changes status, so you stop guessing and start rerouting."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Sargassum Forecast Florida 2026 — 7-Day Beach Outlook",
+      "desc": "7-day sargassum forecast for Florida beaches, updated daily from satellite data. Beach-level outlooks for Miami, the Keys, Fort Lauderdale and Daytona.",
+      "h1": "Florida Sargassum Forecast — Next 7 Days, Beach by Beach",
+      "intro": "Most sargassum information for Florida comes as a statewide bulletin or a monthly outlook — accurate in broad strokes, useless for deciding where to swim on Saturday. This forecast works at the level that actually matters: the individual beach. We track 12 of them, from Key West up to Daytona and across to Clearwater, and run a separate 7-day projection for each, because their realities diverge wildly — the Keys can be knee-deep in seaweed while Clearwater stays spotless. The model ingests fresh Copernicus satellite imagery daily, locates the mats drifting offshore, and projects what reaches which sand and when. You get a day-by-day outlook per beach, updated every morning. Check it before you commit to a beach weekend; the ocean does not read monthly bulletins.",
+      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; in Florida, the Gulf Stream does most of the steering. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, corrected by community reports when clouds block the view. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Florida Beaches Without Sargassum Today (Live List)",
+      "desc": "Live list of Florida beaches with no sargassum right now. Satellite-checked daily — clean options from Miami and the Keys to Clearwater and Daytona Beach.",
+      "h1": "Florida Beaches Without Sargassum Today",
+      "intro": "Need a seaweed-free beach in Florida today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed four times a day. The pattern usually favors the Gulf coast (Clearwater is almost always clear) and the central Atlantic (Daytona, Cocoa Beach), while the Keys and the Miami–Palm Beach corridor swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Florida Seaweed Map (Live) — Sargassum Beach Tracker",
+      "desc": "Interactive seaweed map of Florida, updated 4 times a day from satellite imagery. Live sargassum status for Miami, the Keys, Palm Beach and the Gulf coast.",
+      "h1": "Live Sargassum Map of Florida",
+      "intro": "An interactive, live seaweed map covering Florida's sargassum-prone coast — from Key West through Miami and Palm Beach up to Daytona, plus Clearwater on the Gulf. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, cross-checked against reports from people on the sand. Government maps show you the regional picture days late; this one shows your beach, today. An east wind or a Gulf Stream wobble can rewrite the coast overnight — check the map the morning you go."
+    },
+    "season": {
+      "intro": "Planning a Florida beach trip and worried about sargassum? Here's the honest 2026 outlook — when the seaweed reaches the coast, when the sand stays clear, and how to time it. Short version: winter through early spring is the clean window; the Atlantic belt influences the coast from late spring through summer, with the heaviest weeks in June–August. Flexible dates? That single fact plans your trip.",
+      "slug": "sargassum-season-florida",
+      "title": "Florida Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When does sargassum hit Florida? May through August, heaviest in the Keys and Southeast Florida. Month-by-month 2026 guide with daily satellite tracking.",
+      "h1": "Sargassum Season in Florida — 2026 Month-by-Month",
+      "months": [
+        {
+          "period": "November – February",
+          "text": "Effectively sargassum-free statewide. The Atlantic bloom is at its annual minimum and what little exists stays far offshore. Every coast — the Keys, the southeast, Daytona, the Gulf — runs clean, and winter visitors can ignore seaweed entirely."
+        },
+        {
+          "period": "March – April",
+          "text": "First stirrings. The new bloom organizes in the tropical Atlantic and the earliest strands begin reaching the Keys, usually light and patchy. The mainland Atlantic coast stays mostly clear. A map check before a Keys trip starts being worthwhile."
+        },
+        {
+          "period": "May – June",
+          "text": "The season arrives in force. The Keys — Key West, Marathon, Islamorada — take the heaviest landings as currents deliver the bloom, and Miami through Jupiter sees regular pulses. June is often the peak month. Gulf beaches remain reliably clean."
+        },
+        {
+          "period": "July – August",
+          "text": "Peak continues, with heavy but episodic landings: a beach can be buried on Tuesday and raked clean by Friday. Southeast Florida and the Keys carry the burden; Cocoa and Daytona get occasional brushes. This is where the 7-day forecast earns its keep."
+        },
+        {
+          "period": "September",
+          "text": "The fade begins. Volumes drop noticeably as the Atlantic bloom dies back, though warm-water stragglers still land in the Keys after sustained east winds. Most mainland beaches return to normal, and late-summer trips get dramatically easier to plan."
+        },
+        {
+          "period": "October",
+          "text": "Tail of the season. Landings become rare and light everywhere, and by Halloween Florida is essentially clear again. Stray patches after storms are possible, so the cautious still glance at the map — but the odds are firmly in your favor."
+        }
+      ],
+      "tips": "Booking flexibility is everything. November through April is effectively seaweed-proof anywhere in the state. For summer trips, the Gulf coast is the safe harbor — Clearwater rarely sees sargassum even in peak weeks — while Keys and Miami plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the Atlantic in June or July, pick lodging near a beach with daily raking and keep one Gulf-side day in reserve."
+    }
+  },
+  "beachBlurbs": {
+    "fl001": "The full Miami experience — wide raked sand, pastel lifeguard towers, and an ocean that warms to bath temperature by June. East-facing, it takes sargassum pulses in summer, but the city's daily mechanical cleaning is among the best anywhere. Families do well at the quieter mid-beach sections.",
+    "fl002": "Art Deco backdrop, world-class people-watching, and the most famous sand in Florida. It shares the rest of Miami Beach's summer sargassum exposure, with intensive morning cleaning to match. Come for the scene; if seaweed is a dealbreaker, check the map first in June and July.",
+    "fl003": "A long, easygoing beach with a palm-lined promenade — calmer than Miami and friendlier to families. It faces the open Atlantic, so it follows the regional summer seaweed pattern: moderate, episodic, regularly raked. Restaurants within walking distance make a bad-beach morning easy to salvage.",
+    "fl004": "Quiet, manicured and uncrowded, fronting one of America's most exclusive towns. The Gulf Stream runs close here, which both delivers sargassum and sweeps it away quickly — conditions reset fast. A refined pick for couples; parking takes patience.",
+    "fl005": "Natural dunes, surfable peaks and a famously dog-friendly stretch make Jupiter the unpolished gem of the southeast coast. It sees moderate, wind-dependent seaweed in season and lighter crowds year-round. Best for active beachgoers who prefer nature over beach bars.",
+    "fl006": "Key West's biggest beach: imported sand, shallow water and a sociable crowd near the airport. Like all ocean-side Keys beaches it sits on the front line for sargassum, with wrack lines a regular feature May to August despite cleanup efforts. Winter visits are a different, cleaner world.",
+    "fl007": "The diving capital — John Pennekamp's reefs are the real draw, with small man-made beaches as a bonus rather than the main event. Ocean-side spots collect seaweed in season; the protected snorkeling lagoons matter more here than sand quality. Pair a map check with your dive booking.",
+    "fl008": "Sport-fishing royalty with a laid-back resort scene and the famous offshore sandbar. The beaches are small and intimate, with moderate seasonal sargassum that resorts clear each morning. Choose it for time on the water — boats, flats, snorkeling — more than for long beach walks.",
+    "fl009": "A palm-lined local favorite in the middle Keys, free to enter and genuinely pretty. Atlantic-facing, it catches seasonal seaweed, and the county rakes on a schedule rather than daily — so timing matters in summer. Off-season, it is one of the nicest free beaches in the Keys.",
+    "fl010": "The Space Coast classic — surf culture, the pier, and rocket launches over the water. Sargassum reaches this latitude only in occasional summer pulses, far lighter than South Florida. A dependable family pick most of the year, with a launch as a bonus if you time it right.",
+    "fl011": "Twenty-three miles of hard-packed sand famous enough to drive on, with a boardwalk and amusements behind it. It sits north of the main sargassum highway and stays mostly clear even in peak season. One of Florida's safest Atlantic bets for seaweed-averse travelers.",
+    "fl012": "Powder-white quartz sand, gentle Gulf water and postcard sunsets — routinely ranked among America's best beaches. Critically for readers of this site: sargassum almost never reaches the Gulf coast, making Clearwater the fallback when the Atlantic misbehaves. Busy in spring, gorgeous year-round."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Checking conditions before a stay at {resort}? This page monitors {beach} — the sand directly in front — with Copernicus satellite imagery refreshed four times a day. You will find the live sargassum status, a 0–100 Beach Score that also weighs surf and weather, and a 7-day forecast covering the days of your trip. In season, conditions can flip overnight, so check back the morning you pack the beach bag."
+  },
+  "press": {
+    "_doc": "Press/media page rendered at /press/ by region-seo-pages.cjs. Tokens resolved at build time from real data — never invented: {beachCount}=region.beaches.length, {cleanToday}=count of levels with status==='clean', {updatedDate}=fmtDate(lang), {accuracyJ1Pct}/{accuracyJ3Pct}=backtest J+1/J+3 statusHitRate, {contact}=this.contact, {citation}=this.citation. Mirror of regions/seo-content/puntacana.json press contract.",
+    "slug": "press",
+    "title": "Florida Sargassum — Press Kit & Data for Media",
+    "desc": "Press resources for sargassum coverage in Florida: live per-beach satellite status refreshed 4× daily, 7-day forecasts and published accuracy. Free to cite.",
+    "h1": "Press & media — Florida sargassum data",
+    "intro": "The Atlantic is having a widely reported record sargassum season. What the headlines rarely answer is the question your readers actually ask: is my beach swimmable today? We publish that answer for Florida, beach by beach, from satellite data — and it is free to cite with attribution.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "Live sargassum status for {beachCount} Florida beaches — from the Keys (Key West, Marathon, Islamorada, Key Largo) up the southeast Atlantic coast (Miami Beach, Fort Lauderdale, Palm Beach, Jupiter) and across to the Gulf at Clearwater — each with a clean / moderate / avoid rating, a 0–100 Beach Score and a beach-specific 7-day forecast. Detection uses the AFAI (Alternative Floating Algae Index) from the Copernicus and NOAA satellite programs, sampled pixel by pixel directly offshore of each beach — not a regional average — and refreshed four times a day, with wind and swell data from Open-Meteo. As of {updatedDate}, {cleanToday} of {beachCount} tracked beaches read clean."
+      },
+      {
+        "h2": "Accuracy, published openly",
+        "text": "We backtest the forecast against what satellites later observed, and we publish the results: across our network, next-day beach status verifies {accuracyJ1Pct}% of the time, and 3-day status {accuracyJ3Pct}%. Days 1–3 are the most reliable; days 4–7 show the trend — and we say so on every page. The data is never hand-edited, never filtered for resorts, never deleted."
+      },
+      {
+        "h2": "Free to use, with attribution",
+        "text": "Journalists, bloggers and broadcasters may quote any beach status, score or forecast with a link to the source page. Suggested citation: {citation}. For an embed of the live map, beach-level data for a story, or comment on current conditions, write to {contact} — we answer quickly."
+      },
+      {
+        "h2": "Story angles ready today",
+        "text": "Which Florida beach is clean this week (live ranked list, updated 4× daily) · Why the Keys and the southeast Atlantic coast get hit while the Gulf coast around Clearwater stays mostly clear · What a record Atlantic bloom means at beach level for Florida tourism · How satellite AFAI detection works, with measured forecast accuracy published on our methodology page."
+      },
+      {
+        "h2": "About the network",
+        "text": "SargassumMiami.com is part of a five-site monitoring network: Martinique and Guadeloupe (French), Punta Cana (English), Cancún & Riviera Maya (Spanish), and Miami & Florida (English). All five sites run the same satellite pipeline and the same openly published methodology. The live map is free for everyone; a premium subscription adds daily beach recommendations, push alerts and a morning brief."
+      }
+    ],
+    "citation": "Source: sargassummiami.com — Copernicus/NOAA satellite data, refreshed 4× daily",
+    "contact": "support@sargassummiami.com"
+  },
+  "extraPages": [
+    {
+      "lang": "en",
+      "slug": "clearwater-beach-sargassum-today",
+      "title": "Clearwater Beach Sargassum Today | Live Map",
+      "desc": "Clearwater Beach sargassum today: live Gulf-side satellite Beach Score, clean/moderate/avoid status, and a 7-day seaweed forecast updated 4x/day.",
+      "h1": "Clearwater Beach Sargassum Today",
+      "intro": "Is there seaweed at Clearwater Beach today? Check the live Beach Score above for the status today — clean, moderate, or avoid — updated today from satellite imagery. As a Gulf-side beach, Clearwater usually sees far less sargassum than Florida's Atlantic coast, but conditions shift with wind and current, so we measure rather than guess. Most realtime seaweed pages rehash last week's news; we don't. The Watcher reads Copernicus and NOAA AFAI satellite passes four times a day and turns each one into a per-beach number you can trust — for Clearwater and the resort stretch by Sandpearl and Opal Sands. We're honest about uncertainty: where the satellite can't resolve thin near-shore wrack, the forecast says so. Scroll for the 7-day Clearwater Beach seaweed forecast, where it clears first, and cleaner alternatives nearby when the Gulf does push a line ashore. No login, no guesswork — one glance before you load the car.",
+      "sections": [
+        {
+          "h2": "Which Clearwater spots are clean today?",
+          "text": "The Beach Score at the top reads the latest satellite pass for the Clearwater shoreline, including the resort stretch fronting Sandpearl and Opal Sands and down toward Pier 60. Tap any point for its own status today. Because Clearwater faces the Gulf of Mexico, sargassum landings are typically light and patchy rather than the continuous wrack lines seen on the Atlantic side — but a sustained southwest wind can still drift a band onshore. When that happens, the map shows which segments are affected and which stay clear, so you can pick a clean entry point instead of trusting yesterday's photo. The number is measured from imagery refreshed four times a day, not a seasonal average."
+        },
+        {
+          "h2": "Clearwater Beach seaweed forecast: when it clears",
+          "text": "The 7-day forecast projects each day's Beach Score from current offshore sargassum position, wind, and current — so you can see whether a patch is arriving, parking, or clearing. On the Gulf side, small landings often disperse within a day or two once the wind backs offshore, faster than the heavier Atlantic accumulations. The forecast is built from satellite tracks, not hope, and it flags low-confidence days honestly rather than printing a false certainty. Check it the night before: if Clearwater trends to avoid, you'll have time to shift to a cleaner nearby beach or pick the morning window when conditions look best. Forecasts tighten as your date approaches and fresh passes come in."
+        },
+        {
+          "h2": "Safety: seaweed smell and H2S",
+          "text": "Fresh sargassum on Clearwater Beach is a nuisance more than a hazard, but decomposing piles release hydrogen sulfide (H2S) — the rotten-egg smell — which can irritate eyes, throat, and lungs, especially for asthma, infants, and the elderly. Gulf-side landings are usually thin and clear quickly, so heavy buildup is uncommon here, but if you smell strong sulfur or see thick browning mats, keep distance and don't let kids dig in it. Avoid handling old wrack with bare hands. Use the status today to steer toward fresh, clean sand: a clean Beach Score means the satellite saw little to no surface sargassum on that stretch, lowering the odds of a smelly pile waiting at the dune line."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there seaweed at Clearwater Beach today?",
+          "a": "Check the live Beach Score and status today at the top of this page — clean, moderate, or avoid — refreshed from satellite imagery four times a day. Clearwater is Gulf-side, so seaweed is usually light, but the number reflects the latest pass, not a seasonal guess."
+        },
+        {
+          "q": "Does Clearwater Beach get sargassum like Miami?",
+          "a": "Generally much less. Clearwater faces the Gulf of Mexico, while heavy sargassum belts hit Florida's Atlantic coast first. Gulf landings tend to be thin, patchy, and short-lived. The live map confirms the actual status today rather than assuming the coast is always clear."
+        },
+        {
+          "q": "How accurate is the Clearwater seaweed forecast?",
+          "a": "The 7-day forecast is built from Copernicus and NOAA satellite tracks plus wind and current, and we publish backtest accuracy openly. Near-term days are most reliable; the forecast flags low-confidence days rather than inventing certainty. We measure conditions, we don't guess them."
+        },
+        {
+          "q": "What about Sandpearl and Opal Sands beach?",
+          "a": "That resort stretch shares Clearwater's Gulf-side shoreline, so its status today closely tracks the main Beach Score above. Tap the map near those points for the segment reading. Conditions there are usually clean, but wind shifts can still drift a thin sargassum line ashore."
+        },
+        {
+          "q": "How often is the Clearwater data updated?",
+          "a": "Four times a day. The Watcher reads each Copernicus and NOAA AFAI satellite pass and converts it into a per-beach Beach Score, so the status today reflects recent imagery — not last week's report. Forecasts refresh as new passes arrive."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "miami-beach-seaweed-map-today",
+      "title": "Miami Beach Seaweed Map Today — Live Sargassum",
+      "desc": "Miami Beach seaweed map today: live sargassum status for South Beach and the Miami coast, updated 4x/day from satellite. Beach Score, forecast, where to go.",
+      "h1": "Miami Beach Seaweed Map — Today's Sargassum, Live",
+      "intro": "Here's the Miami Beach seaweed map for today: each stretch of the Miami coast carries a live status (clean, moderate, or avoid), a 0-100 Beach Score, and a 7-day outlook, refreshed four times a day. South Beach, mid-Beach and the full Miami sand show their current status today right on the map above — check it the morning you go, because an east wind can land sargassum overnight. What makes this different from a government bulletin: we work at the level of your actual beach, not the region. The map reads Copernicus and NOAA satellite imagery (the same AFAI index NOAA uses), then cross-checks against people reporting from the sand. It's measured, not guessed. When clouds block the satellite, each beach shows its data age and a confidence level instead of pretending — and a published backtest tells you how often we've been right. No averages, no seasonal hand-waving: just where the water is clean on Miami Beach right now.",
+      "sections": [
+        {
+          "h2": "Which Miami beaches are clean today?",
+          "text": "The map sorts the Miami coast beach by beach because conditions split sharply over a few miles. South Beach and the Art Deco stretch share one east-facing exposure, so they tend to move together; mid-Beach and the wider raked sand to the north can read differently the same morning. The Gulf Stream runs close offshore here, which is exactly why Miami sees more sargassum than the central coast — it delivers mats straight to the sand. Tap any beach for its Beach Score and status today. The cleanest option this morning isn't always the most famous one, so don't assume South Beach is your best bet until the map confirms it — let the satellite pick for you."
+        },
+        {
+          "h2": "When does sargassum clear off Miami Beach?",
+          "text": "Beached sargassum doesn't vanish on a schedule — it decays once no new material lands, on roughly an exponential curve, while wind and Gulf Stream wobbles can push fresh mats in or pull the coast clean overnight. That's why the 7-day forecast on each Miami beach matters more than any seasonal average. Florida's window runs roughly May through August, peaking in June and July, but the day-to-day reality on Miami Beach swings hard inside that window. The forecast projects each detected offshore mat forward, so you can see whether tomorrow looks clearer than today before you commit. Days 1-3 carry the most confidence; the whole outlook recomputes every morning as new satellite passes arrive."
+        },
+        {
+          "h2": "Is the seaweed on Miami Beach dangerous?",
+          "text": "Fresh sargassum in the water is harmless — it's mostly a nuisance for swimming and an eyesore. The real issue comes as it piles up and rots on the sand: decomposing mats release hydrogen sulfide (H2S), the rotten-egg gas that can irritate eyes, throat and lungs, especially for people with asthma or respiratory conditions. A beach flagged avoid on the map usually means thick, decaying accumulation, not a thin line at the waterline. If you smell sulfur or see brown windrows baking in the sun, keep your distance and pick a beach showing a clean status today. The map's status reflects accumulation, so it's a practical proxy for whether the air will be pleasant where you're standing."
+        },
+        {
+          "h2": "Where to go instead when Miami is hit",
+          "text": "When the Miami coast reads moderate or avoid across the board, the map makes the alternative obvious. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day, so check it before assuming it's the same. For a near-certain escape, the Gulf coast — Clearwater and the west side — almost never sees meaningful sargassum, because the currents rarely deliver it there. It's a longer drive but a reliable clean day. Use the live Florida map to compare every tracked beach at once, then lock in your call the morning of, not the night before. The point is simple: don't waste a beach day guessing when the satellite already knows."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there seaweed on Miami Beach today?",
+          "a": "Check the live map above — each Miami beach shows its status today (clean, moderate, or avoid) and a 0-100 Beach Score, updated four times a day from Copernicus and NOAA satellite imagery. South Beach and the wider Miami sand can read differently the same morning, so tap your specific beach rather than relying on a single citywide answer."
+        },
+        {
+          "q": "Is the South Beach seaweed map live?",
+          "a": "Yes. South Beach carries its own live status and Beach Score on the map, refreshed four times a day and cross-checked against people reporting from the sand. East-facing South Beach shares the Art Deco stretch's exposure, so they often move together. When clouds block the satellite, the beach shows its data age and confidence level rather than guessing."
+        },
+        {
+          "q": "How accurate is the Miami sargassum forecast?",
+          "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA and refreshed four times a day, with a published backtest showing how often we've been right. Floating mats detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and confidence. Days 1-3 of the 7-day forecast carry the most confidence."
+        },
+        {
+          "q": "When is sargassum worst in Miami?",
+          "a": "Miami's sargassum window runs roughly May through August, peaking in June and July, driven by the Gulf Stream running close offshore. Winter is essentially seaweed-free. Within the season, day-to-day conditions swing hard with wind and current — which is why we track Miami Beach with live satellite data four times a day instead of quoting a seasonal average."
+        },
+        {
+          "q": "Where can I avoid seaweed near Miami?",
+          "a": "When the Miami coast is hit, the Gulf coast — Clearwater and Florida's west side — almost never sees meaningful sargassum, making it the most reliable clean-day escape. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day. Compare every tracked beach on the live Florida map, then decide the morning you go."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "key-west-sargassum-today",
+      "title": "Key West Sargassum Today — Live Satellite Map",
+      "desc": "Key West sargassum today, live from satellite. Per-beach Beach Score and status for Smathers Beach and Higgs Beach, refreshed 4x a day with a 7-day forecast.",
+      "h1": "Key West Sargassum Today — Live, Beach by Beach",
+      "intro": "Is there sargassum in Key West today? Check the live map above: it shows each tracked beach with its current Beach Score and a clean, moderate, or avoid status, pulled from the latest satellite pass and updated today. Smathers Beach and Higgs Beach can read differently from each other on the same morning, which is why a single citywide answer is never enough. Most sargassum reports for the Keys are seasonal bulletins or yesterday's photos. This page is different. We read the same AFAI satellite index NOAA uses, sourced from Copernicus and NOAA imagery four times a day, and translate it into a per-beach score plus a 7-day forecast for Key West. When clouds block the view, every beach shows its data age and a confidence level — we tell you what we measured and how sure we are, instead of guessing. The Watcher checks the sea while you sleep, so you wake up knowing where the water is clean.",
+      "sections": [
+        {
+          "h2": "Which Key West beaches have sargassum right now?",
+          "text": "Key West's swimming beaches sit on the Atlantic-facing south shore, where drifting mats tend to arrive first. Smathers Beach, the longest stretch, often catches the most because of its open exposure; Higgs Beach and the smaller Fort Zachary Taylor cove can read cleaner or dirtier depending on wind direction that day. The live map ranks each tracked beach by its current Beach Score, best to worst, so you see at a glance which sand is clear before you walk it. Conditions can flip beach to beach within a single morning during the bloom, so we refresh the satellite read four times a day rather than quoting an average. Tap any beach for its status today, the data age, and the confidence behind the reading."
+        },
+        {
+          "h2": "When will the sargassum clear, and the 7-day forecast",
+          "text": "Once satellites detect mats offshore, their drift toward Key West is largely steered by wind and the Gulf Stream, which we model daily for each beach. That gives a per-beach 7-day forecast: days 1–3 carry the most confidence, while days 4–7 show the direction of travel. Seaweed already on the sand decays on an exponential curve — roughly a 3.5-day half-life — unless fresh material lands and resupplies it. So a beach buried today can clear within a few days if nothing new arrives, or stay covered if the offshore signal persists. The forecast recomputes every morning as new satellite passes come in. Check the Key West forecast before you commit a beach day, not after."
+        },
+        {
+          "h2": "Is Key West sargassum a safety problem?",
+          "text": "Small amounts of floating sargassum are harmless to swimmers — it's the large rotting piles that matter. As beached mats decompose they release hydrogen sulfide (H2S), the rotten-egg smell, which can irritate eyes, throat, and lungs and bother people with asthma or respiratory conditions. The advice is simple: avoid thick, decaying windrows, especially in still air, and keep small children and sensitive people back from heavy accumulation. Fresh, lightly scattered weed in the water is not a health concern. If a Key West beach shows an avoid status today, it usually means accumulation heavy enough to smell, so the live map doubles as an air-quality heads-up — pick a clean-status beach instead and skip the sulfur."
+        },
+        {
+          "h2": "Where to go instead when Key West is covered",
+          "text": "If every Key West beach reads avoid today, you have options up the chain and across the state. Bahia Honda, farther up the Keys, sometimes catches a different drift than the city beaches. On the Florida mainland, the Gulf coast around Clearwater almost never sees meaningful sargassum, and the central Atlantic — Daytona, Cocoa Beach — typically runs far lighter than the Keys or Miami. The live map shows the nearest clean sand instantly, ranked by Beach Score, so you reroute on the first try instead of driving blind. A one-time PASS unlocks alerts that notify you the moment a saved Key West beach changes status — you stop refreshing the map and let The Watcher tell you when the water turns clean."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum in Key West today?",
+          "a": "Check the live map at the top of this page: it shows each tracked Key West beach with its current Beach Score and a clean, moderate, or avoid status, refreshed four times a day from satellite imagery. Smathers and Higgs can differ on the same morning, so the per-beach reading — not a citywide guess — tells you where the water is clean today."
+        },
+        {
+          "q": "Does Smathers Beach have sargassum right now?",
+          "a": "Smathers Beach has its own live Beach Score and status today on the map above, updated from the latest satellite pass. As Key West's longest, most exposed Atlantic beach, it often catches mats first during the bloom. Each reading shows its data age and confidence, so you know how fresh and how certain the measurement is before you go."
+        },
+        {
+          "q": "What is the Key West sargassum forecast for 2026?",
+          "a": "We publish a per-beach 7-day forecast for Key West, recomputed daily from fresh Copernicus and NOAA satellite passes. Days 1–3 are most reliable; days 4–7 show the direction of travel. The 2026 Atlantic bloom varies week to week, so we track live conditions rather than quote a seasonal average — check the forecast tab for each beach's outlook."
+        },
+        {
+          "q": "When is sargassum season in Key West?",
+          "a": "The Keys' sargassum window runs roughly May through August, peaking in June and July, with winter months essentially seaweed-free. The amount swings hugely year to year with the Atlantic bloom, which is why we track Key West with satellite data updated four times a day instead of relying on seasonal averages."
+        },
+        {
+          "q": "Is Key West sargassum dangerous to health?",
+          "a": "Floating weed is harmless to swimmers. The concern is large rotting piles, which release hydrogen sulfide (H2S) — a rotten-egg gas that can irritate eyes and airways and bother people with asthma. Avoid thick, decaying windrows in still air. A beach marked avoid today usually means accumulation heavy enough to smell, so pick a clean-status beach instead."
+        },
+        {
+          "q": "How accurate is this Key West sargassum tracker?",
+          "a": "We use the same AFAI satellite index NOAA relies on, from Copernicus and NOAA imagery refreshed four times a day. Mats have a distinct spectral signature satellites detect reliably in clear weather; clouds can delay a read, so every beach shows its data age and confidence level. It's the difference between a measurement and a guess."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "is-there-sargassum-in-miami-today",
+      "title": "Sargassum in Miami Today — Live Beach Map & Status",
+      "desc": "Sargassum in Miami today: check the live satellite map and per-beach status, refreshed 4x/day. See which Miami beaches are clean right now before you go.",
+      "h1": "Is There Sargassum in Miami Today?",
+      "intro": "Whether there's sargassum in Miami today depends on the specific beach — South Beach, Mid-Beach, Key Biscayne and Sunny Isles can each look completely different on the same morning. Open the live map for your beach to see its status today: clean, moderate, or avoid, with the current Beach Score updated today. Most \"Miami sargassum\" answers online quote a statewide bulletin or a photo from last week. We don't. The Watcher reads Copernicus and NOAA satellite imagery four times a day, locates the seaweed mats drifting offshore, and reports what's actually reaching each stretch of Miami sand right now — measured, not guessed. When clouds block the satellite, we say so instead of pretending. Below, find which Miami beaches are clearest today, when conditions usually shift, and what the rotting-seaweed smell means for your day. Check the Beach Score before you load the car, not after.",
+      "sections": [
+        {
+          "h2": "Which Miami beaches are clean today?",
+          "text": "Miami is not one beach, and sargassum rarely lands evenly across it. On any given morning South Beach can be carpeted while Key Biscayne stays open, or the reverse — it comes down to wind angle and how the Gulf Stream nudges the mats inshore. That's why we score each beach separately rather than issuing one Miami-wide verdict. Open the live map and look at the status today for the exact beach you have in mind: South Beach, Mid-Beach, Sunny Isles, Haulover, Key Biscayne or Bal Harbour. Each carries its own Beach Score, refreshed four times a day from satellite imagery and corrected by on-the-ground reports when clouds get in the way. If your first choice reads avoid this morning, the map shows you the nearest beach reading clean — so you adjust the plan instead of canceling it."
+        },
+        {
+          "h2": "When will the sargassum clear?",
+          "text": "Once a mat beaches, it doesn't vanish on a schedule — it decays gradually, on roughly an exponential curve, unless fresh seaweed lands on top of it. A beach reading avoid today can read moderate in two or three days if no new material arrives, or stay buried if the wind keeps pushing more ashore. That's exactly what the 7-day per-beach forecast is for: instead of guessing, it projects each Miami beach forward day by day, so you can see whether Saturday looks better than today. The nearest days carry the most confidence; the back half of the week is a working estimate that recomputes every morning as new satellite passes come in. Watch the trend line for your beach rather than fixating on one bad morning — Miami conditions can flip fast in either direction."
+        },
+        {
+          "h2": "Is Miami sargassum dangerous? The smell explained",
+          "text": "Sargassum itself is harmless to touch, but as it piles up and rots on the sand it releases hydrogen sulfide (H2S) — that rotten-egg smell. In the open air of a breezy Miami beach it's usually just unpleasant, but heavy accumulation in still conditions can irritate eyes, throat and lungs, and people with asthma or respiratory issues should keep their distance from thick, decaying mats. Decomposing piles can also hide marine life and harbor biting sandflies. The practical move is simple: if a beach reads avoid today, the seaweed is thick enough that the smell and irritation are likely real — so use the map to pick a beach reading clean or moderate instead. The Beach Score is built to keep you ahead of exactly this, every morning before you go."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum in Miami today?",
+          "a": "It depends on the beach — Miami's coastline varies street by street on the same day. Open the live map and check the status today for your specific beach (South Beach, Key Biscayne, Sunny Isles and others each have their own Beach Score), refreshed four times a day from satellite imagery so you see current conditions, not last week's."
+        },
+        {
+          "q": "Is there sargassum on South Beach right now?",
+          "a": "Check South Beach's live Beach Score on the map for its status today — clean, moderate, or avoid. We update it four times a day from Copernicus and NOAA satellite passes, and correct it with ground reports when clouds block the view, so the reading reflects conditions right now rather than a general Miami bulletin."
+        },
+        {
+          "q": "Which Miami beach has the least seaweed?",
+          "a": "It changes day to day with wind and current, so there's no permanent \"cleanest\" Miami beach. The live map ranks each beach by its current Beach Score, so you can instantly see which stretch — Key Biscayne, Bal Harbour, Haulover or elsewhere — reads clearest this morning and head there instead of guessing."
+        },
+        {
+          "q": "How accurate is the Miami sargassum map?",
+          "a": "The map runs on Copernicus and NOAA satellite imagery refreshed four times a day, with a published backtest accuracy you can review. The nearest forecast days are the most reliable; later days are estimates that recompute each morning. When clouds block a satellite pass, we flag the lower confidence instead of inventing a number."
+        },
+        {
+          "q": "When is sargassum season worst in Miami?",
+          "a": "Miami's sargassum window runs roughly May through August, typically peaking in June and July, with winter months nearly seaweed-free. But the amount swings hugely year to year with the Atlantic bloom — which is why we track live conditions four times a day rather than relying on seasonal averages to tell you about today."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "fort-lauderdale-sargassum-today",
+      "title": "Fort Lauderdale Sargassum Today — Live Beach Status",
+      "desc": "Sargassum in Fort Lauderdale and Sunny Isles today: live satellite Beach Score, clean/moderate/avoid status and a 7-day forecast, refreshed 4× daily.",
+      "h1": "Sargassum in Fort Lauderdale & Sunny Isles Today",
+      "intro": "Is there sargassum in Fort Lauderdale today? Check the live status panel above: Fort Lauderdale Beach shows its current status today — clean, moderate or avoid — read straight from the latest satellite pass and updated today. Sunny Isles, just south, almost always tracks the same southeast-Atlantic pattern, so the map gives you a same-day read for both before you load the car. Most seaweed pages quote a monthly average; this one measures your sand. We pull Copernicus and NOAA AFAI imagery four times a day, score each beach 0–100, and project a per-beach 7-day forecast — measured, never guessed. When clouds block a satellite pass, the page says so and shows the data age and a confidence level rather than pretending. Beachgoer reports fill the gaps. In peak summer the coast can flip overnight on an east wind, so the honest answer is always the live one: check the Beach Score the morning you go, not last week's bulletin.",
+      "sections": [
+        {
+          "h2": "Fort Lauderdale or Sunny Isles — which is cleaner today?",
+          "text": "Both sit on the open Atlantic in the Miami–Palm Beach corridor, so in season they take the same episodic sargassum pulses. They are not identical, though: a wind shift or a Gulf Stream wobble can leave one raked clean while the other holds a fresh wrack line. That is exactly why a regional bulletin fails you and a per-beach read wins. The panel above ranks Fort Lauderdale Beach by today's Beach Score; for Sunny Isles, the nearest tracked points on either side bracket its likely status. Fort Lauderdale runs regular municipal raking, which resets the sand fast — but if satellites show fresh mats inbound, seaweed can return within hours. Check both before you commit, and keep a backup in mind."
+        },
+        {
+          "h2": "When does it clear, and is the smell a safety issue?",
+          "text": "Beached sargassum decays on roughly a 3.5-day half-life unless new mats keep landing, so a buried morning can be clean sand within days — faster where crews rake daily. Our 7-day forecast shows whether fresh material is inbound or the coast is set to clear; days 1–3 carry the most confidence, days 4–7 show direction of travel. On safety: small amounts in the water are harmless to swimmers. Large rotting piles release hydrogen sulfide (H2S) — the rotten-egg smell — which can irritate eyes, throat and lungs, and bothers people with asthma most. Avoid sitting downwind of thick, decaying wrack lines, and keep kids and pets off big piles. When a beach reads avoid, the smell is usually the reason."
+        },
+        {
+          "h2": "Where to go instead when both are buried",
+          "text": "South Florida gives you options, and the live map shows the nearest clean sand instantly. If Fort Lauderdale and Sunny Isles both read avoid, the central Atlantic coast — Cocoa Beach, Daytona — sits north of the heaviest sargassum highway and is often far lighter. The reliable fallback is the Gulf coast: Clearwater almost never sees meaningful sargassum even in peak weeks. It is a longer drive but a near-certain win. Within easy reach, Palm Beach and Jupiter sometimes reset faster because the Gulf Stream runs close and sweeps mats away quickly. Pull up the full Florida list, sort by Beach Score, and pick the closest clean option rather than gambling on a single beach."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there seaweed in Sunny Isles Beach today?",
+          "a": "Check the live panel above for today's status. Sunny Isles sits on the open Atlantic between Miami Beach and Fort Lauderdale, so it tracks the same southeast-Florida pattern, read four times a day from satellite. In peak summer it can flip overnight on an east wind, so the only reliable answer is the same-day one — not a seasonal average."
+        },
+        {
+          "q": "Does Fort Lauderdale Beach get raked of sargassum?",
+          "a": "Yes. Fort Lauderdale runs regular municipal beach cleaning that resets the sand quickly, usually in the morning. But raking only clears what has already landed — if satellites show fresh mats drifting in, seaweed can return within hours. Pairing the cleaning schedule with today's satellite forecast tells you more than either alone."
+        },
+        {
+          "q": "Is sargassum dangerous to swim near in Fort Lauderdale?",
+          "a": "Small amounts floating in the water are harmless to swimmers. The real concern is large rotting piles on the sand, which release hydrogen sulfide (H2S) — a rotten-egg smell that can irritate eyes, throat and lungs, especially for people with asthma. Stay upwind of thick, decaying wrack lines and keep kids and pets off big piles."
+        },
+        {
+          "q": "How accurate is this Fort Lauderdale sargassum tracker?",
+          "a": "It uses the AFAI satellite index from Copernicus and NOAA — the same data NOAA relies on — refreshed four times a day. Floating mats have a distinct spectral signature satellites detect reliably in clear weather; clouds can delay a reading, so every beach shows its data age and a confidence level. It is a measurement, not a guess."
+        },
+        {
+          "q": "When is sargassum worst in Fort Lauderdale?",
+          "a": "Roughly May through August, peaking in June and July, in line with the broader Atlantic bloom. Winter through early spring is effectively seaweed-free. Even in peak season the landings are episodic — a beach can be buried one day and raked clean a few days later — which is why the daily satellite read matters more than the calendar."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "daytona-beach-sargassum-today",
+      "title": "Daytona Beach Sargassum Today: Live Satellite Map",
+      "desc": "Is there sargassum on Daytona Beach today? Check the live satellite Beach Score, status and 7-day seaweed forecast, refreshed 4x a day from Copernicus.",
+      "h1": "Daytona Beach Sargassum Today: Live Satellite Map",
+      "intro": "Daytona Beach's sargassum status today is shown live on the map above: open it to see the current Beach Score (0-100) and whether the strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so you check the water before you load the car, not after you arrive. Most seaweed reports for northeast Florida are statewide bulletins that lump Daytona in with Miami and the Keys, beaches with completely different realities. This page works at the level that matters: the 23-mile hard-packed stretch you actually drive onto. We measure what the satellite sees, we never guess, and when clouds hide the coast we say so and lean on the forecast and community reports instead. No invented numbers, just today's reading.",
+      "sections": [
+        {
+          "h2": "Is there sargassum on Daytona Beach right now?",
+          "text": "Open the live map for today's answer. The Beach Score and status (clean, moderate, or avoid) reflect the most recent satellite pass, updated today. Daytona sits well north of the main Atlantic sargassum belt, so it usually sees lighter loads than South Florida, but the Gulf Stream and onshore winds can still push mats onto the sand during a heavy bloom year, typically late spring through summer. Because Daytona's beach is unusually wide and hard-packed, even a moderate line of seaweed reads differently here than on a soft Miami strip. We don't post a fixed figure that goes stale by lunchtime: the score you see is the score the satellite measured on its last clear pass."
+        },
+        {
+          "h2": "When does Daytona sargassum clear?",
+          "text": "Once a mat lands, beached sargassum breaks down on a predictable decay curve unless fresh material keeps arriving, so a single landing often thins within a few days. The 7-day per-beach forecast on the map projects this for Daytona specifically, tracking offshore mats along wind and Gulf Stream vectors and estimating what reaches the sand and when. Days one to three carry the most confidence; later days are an outlook, not a promise, and we label them that way. Daytona's wide tidal zone also helps: high tides and the county's beach-cleaning operations can clear lighter lines quickly. Check the forecast tab before committing to a weekend, then re-check the morning of."
+        },
+        {
+          "h2": "Where to go near Daytona if it's bad",
+          "text": "If today's Daytona reading is avoid, the live map covers other northeast and central Florida beaches so you can compare scores side by side rather than driving blind. New Smyrna Beach, Ormond Beach, and Ponce Inlet sit close enough for a quick pivot, and conditions can differ over just a few miles because mats land in patches. The map shows each beach's own Beach Score and status from the same satellite pass, so you pick the cleanest sand within range instead of guessing. During a strong bloom the whole northeast coast can be affected at once; in that case the forecast helps you wait for the clearer day rather than waste the trip."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Does Daytona Beach have sargassum today?",
+          "a": "Check the live map above for today's Beach Score and status. It's updated today from satellite imagery refreshed four times a day, so it reflects the most recent clear pass rather than a generic seasonal estimate."
+        },
+        {
+          "q": "How often is the Daytona sargassum map updated?",
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, recompute the per-beach Beach Score, and refresh the forecast every morning. When clouds block the satellite view we flag it and rely on the forecast and community reports."
+        },
+        {
+          "q": "Is sargassum worse in Daytona or Miami?",
+          "a": "Usually Miami and the Keys see heavier loads because they sit closer to the Atlantic sargassum belt. Daytona is farther north and often lighter, but not immune. Compare both on the live map using each beach's own score rather than a statewide average."
+        },
+        {
+          "q": "When is sargassum season in Daytona Beach?",
+          "a": "Northeast Florida tends to see the most sargassum from late spring through summer, peaking in some years around June to August. Timing and severity vary year to year, so the live reading and 7-day forecast are more reliable than the calendar."
+        },
+        {
+          "q": "How accurate is the Daytona forecast?",
+          "a": "Days one to three carry the most confidence; later days are an outlook we label as such. We publish our backtest accuracy and never invent numbers, so you can judge the forecast on its measured record, not marketing claims."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "sunny-isles-beach-sargassum-today",
+      "title": "Sunny Isles Beach Sargassum Today: Live Map",
+      "desc": "Sargassum on Sunny Isles Beach today? See the live satellite Beach Score, clean/moderate/avoid status and 7-day seaweed forecast, refreshed 4x daily.",
+      "h1": "Sunny Isles Beach Sargassum Today: Live Map",
+      "intro": "Sunny Isles Beach's sargassum status today is on the live map above: open it to see the current Beach Score (0-100) and whether this North Miami-Dade strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so residents and visitors can check the sand before walking down to it. Sunny Isles sits on the Atlantic-facing barrier island between Haulover and Golden Beach, an area that can catch sargassum during peak bloom while a beach a few miles away stays clear. Statewide bulletins miss that. This page measures what the satellite actually sees over Sunny Isles, never guesses, and tells you plainly when clouds hide the coast so we lean on the forecast and community reports instead. No invented figures, just today's reading.",
+      "sections": [
+        {
+          "h2": "Is there seaweed on Sunny Isles Beach now?",
+          "text": "Open the live map for today's answer. The Beach Score and status reflect the most recent clear satellite pass over Sunny Isles, updated today. As an Atlantic-facing strip in northern Miami-Dade, Sunny Isles can receive sargassum carried by the Florida Current and onshore winds during a heavy bloom, typically spring into summer. Loads here often track with nearby Sunny Isles neighbors but can differ from beaches just to the south because mats arrive in patches and tides redistribute them along the shore. We don't publish a fixed number that's wrong by afternoon. The score you see is the value the satellite measured, and it changes as new imagery comes in four times a day."
+        },
+        {
+          "h2": "When will Sunny Isles clear up?",
+          "text": "Beached sargassum decays on a known curve once it lands, so an isolated landing often thins within a few days unless new mats keep arriving offshore. The 7-day forecast on the map runs specifically for Sunny Isles, projecting detected mats along wind and current vectors to estimate what reaches the sand and when. Days one to three are the most confident; later days are an outlook we label honestly. City and county cleaning crews work this stretch regularly, which can clear lighter lines fast, while a sustained bloom may keep refreshing the supply. Check the forecast tab the night before, then confirm the live score the morning of your beach day."
+        },
+        {
+          "h2": "Cleaner beaches near Sunny Isles today",
+          "text": "If today's Sunny Isles reading is avoid, the live map covers neighboring Miami-Dade and Broward beaches so you can compare real scores instead of driving on a hunch. Haulover, Bal Harbour, Hollywood Beach, and Hallandale sit within a short drive, and because sargassum lands in patches, one can be noticeably cleaner than another on the same morning. Each beach shows its own Beach Score and status from the same satellite pass, letting you pick the clearest sand nearby. During a strong belt arrival the whole stretch can be hit at once; then the forecast helps you choose the clearer day rather than waste the outing."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum on Sunny Isles Beach today?",
+          "a": "Check the live map above for today's Beach Score and clean/moderate/avoid status. It's updated today from satellite imagery refreshed four times a day, so it shows the most recent reading rather than a seasonal guess."
+        },
+        {
+          "q": "How often does the Sunny Isles sargassum map update?",
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, recompute the per-beach Beach Score, and refresh the 7-day forecast each morning. When clouds block the view we flag it and use the forecast and community reports."
+        },
+        {
+          "q": "Why does Sunny Isles get sargassum?",
+          "a": "It's an Atlantic-facing barrier-island beach in northern Miami-Dade. During heavy bloom years the Florida Current and onshore winds can push sargassum mats onto the sand, mainly from spring into summer. The live map shows whether any has arrived today."
+        },
+        {
+          "q": "Is Sunny Isles less seaweedy than South Beach?",
+          "a": "It varies by the day and the bloom. Mats land in patches, so Sunny Isles and South Beach can differ noticeably on the same morning. Compare both on the live map using each beach's own score instead of a citywide average."
+        },
+        {
+          "q": "How reliable is the Sunny Isles forecast?",
+          "a": "Days one to three carry the most confidence; later days are an outlook we label as such. We publish our backtest accuracy and never invent numbers, so you can judge the forecast on its measured record."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "is-sargassum-dangerous-in-florida",
+      "title": "Is Sargassum Dangerous in Florida? What to Know",
+      "desc": "Is sargassum dangerous in Florida? The seaweed itself is harmless, but rotting mats release hydrogen sulfide gas and can hide jellyfish. What to know today.",
+      "h1": "Is Sargassum Dangerous in Florida? What to Know Today",
+      "intro": "Sargassum itself is not dangerous to touch or swim near, but as it rots on Florida sand it releases hydrogen sulfide gas, the rotten-egg smell that can irritate eyes, throat, and lungs, especially for people with asthma. Fresh, floating sargassum is generally harmless; the health concerns come from large mats decaying in the heat and from the tiny creatures, including jellyfish larvae and sea lice, that can hide inside thick seaweed. For most beachgoers it's a nuisance, not an emergency. The safest move is simply to check conditions before you go, then keep your distance from big, smelly piles. Our live satellite map shows each Florida beach's sargassum status today, updated four times a day, so you can pick a clean stretch instead of arriving to a wall of rotting weed. We report what the satellite measures and never invent risk numbers.",
+      "sections": [
+        {
+          "h2": "Hydrogen sulfide: the rotten-egg smell",
+          "text": "The strongest health concern is the gas. As sargassum decomposes it releases hydrogen sulfide, which smells like rotten eggs and, at higher concentrations near large rotting piles, can irritate the eyes, nose, throat, and airways. Healthy people usually just find it unpleasant, but those with asthma or respiratory conditions may react more, and Florida health agencies advise sensitive groups to avoid heavy accumulations. The gas disperses in open air, so staying upwind and away from thick, days-old mats sharply reduces exposure. Fresh seaweed that just landed smells far less than weed that's been baking for days. The live map helps you skip beaches where big accumulations are reported today rather than discovering the smell on arrival."
+        },
+        {
+          "h2": "Skin irritation, jellyfish and sea lice",
+          "text": "The seaweed won't burn your skin, but its dense mats can shelter stinging organisms. Jellyfish fragments, sea lice (thimble jellyfish larvae), and small marine critters sometimes hide in floating sargassum and can cause itching or a stinging rash, particularly under swimwear. Sharp shell debris and the occasional creature can also lurk in beached piles. The practical advice: don't wade through thick floating mats, rinse off after swimming, and keep small children and pets from digging in rotting seaweed. None of this is dangerous for most people, just uncomfortable. Checking a beach's status today lets you choose clearer water where these mats aren't concentrated, which is the simplest way to avoid the irritation entirely."
+        },
+        {
+          "h2": "How to stay safe and where to go",
+          "text": "Safety here is mostly about avoidance, and avoidance is easier when you know the conditions before you leave. Check the live Beach Score and status for your beach: clean, moderate, or avoid, updated four times a day from satellite imagery. If your first choice reads avoid, compare nearby beaches on the same map and pick a cleaner one, since sargassum lands in patches and a beach a few miles away can be clear. Stay upwind of big piles, keep asthma medication handy if you're sensitive, and don't let kids play in decaying mats. We measure what the satellite sees and are honest about clouds and uncertainty, so you're working from data, not a guess."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is sargassum dangerous to swim in?",
+          "a": "Swimming near fresh sargassum is generally safe, but thick mats can hide jellyfish larvae and sea lice that cause itching or a rash. Avoid wading through dense floating weed and rinse off afterward. The bigger concern is the gas from rotting piles on shore."
+        },
+        {
+          "q": "Is the sargassum smell harmful?",
+          "a": "Rotting sargassum releases hydrogen sulfide, the rotten-egg smell. Near large decaying piles it can irritate eyes, throat, and airways, and people with asthma may react more. In open air it disperses, so staying upwind and away from big mats reduces exposure."
+        },
+        {
+          "q": "Can sargassum cause a skin rash?",
+          "a": "Not the seaweed itself, but mats can shelter sea lice (thimble jellyfish larvae) and jellyfish fragments that sting or itch, often under swimwear. Avoid thick floating clumps, rinse off after swimming, and keep kids and pets out of rotting piles."
+        },
+        {
+          "q": "Is sargassum safe for children and pets?",
+          "a": "Keep children and pets from playing in or eating decaying sargassum, which can harbor irritants, sharp debris, and bacteria, and produces the hydrogen sulfide smell. Fresh, lightly weeded beaches are fine; avoid large rotting accumulations."
+        },
+        {
+          "q": "How do I avoid sargassum at Florida beaches?",
+          "a": "Check the live satellite map before you go. It shows each beach's status today, clean, moderate, or avoid, updated four times a day, plus a 7-day forecast, so you can pick a clean stretch and stay upwind of any big piles."
+        },
+        {
+          "q": "When is sargassum worst in Florida?",
+          "a": "It's typically heaviest from spring through summer, with many years peaking around April to August, though severity varies. South Florida and the Keys usually see more than the northeast coast. The live reading and forecast are more reliable than the calendar."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "pompano-beach-sargassum-today",
+      "title": "Pompano Beach Sargassum Today: Live Beach Score",
+      "desc": "Is sargassum washing up at Pompano Beach today? Check the live satellite Beach Score and status, refreshed 4x a day from Copernicus and NOAA imagery.",
+      "h1": "Pompano Beach Sargassum Today",
+      "intro": "Wondering whether sargassum is washing up at Pompano Beach today? Open the live Beach Score above: it reads clean, moderate, or avoid for Pompano Beach right now, pulled from the latest satellite pass. We refresh that reading four times a day from Copernicus and NOAA AFAI imagery, the same index NOAA uses to spot floating seaweed mats offshore. This is not a monthly seasonal average or a regional bulletin written days ago. It is a per-beach measurement of what the satellite actually saw on its last clear pass over Pompano. When clouds block the view, we say so and show the data age and confidence rather than guessing. We never invent a number. The Watcher tracks the sea while you sleep and tells you each morning whether your sand is clean, so you check once and go instead of driving out to find out.",
+      "sections": [
+        {
+          "h2": "Where sargassum lands first along Pompano Beach",
+          "text": "Pompano sits on the Southeast Florida Atlantic corridor between Fort Lauderdale and Boca Raton, and in season this stretch gets episodic pulses rather than constant cover. An east or southeast wind pushes mats toward the main pier and the central beach, while the pattern can differ a few hundred yards up or down the sand. That is exactly why a county-wide report is too coarse to plan around. Our map carries a separate Beach Score for Pompano so you see this beach, not a regional guess. Check the live status today before you commit; an onshore wind can change the picture overnight, and the satellite catches it on the next pass."
+        },
+        {
+          "h2": "When the sargassum clears at Pompano",
+          "text": "Seaweed already on the sand decays once fresh material stops arriving, and crews work the main Pompano beach in season, so a buried beach on one morning can be raked and presentable a day or two later. The variable is resupply: if the satellite still sees mats drifting offshore, new seaweed lands within hours of a cleanup. That is why the 7-day per-beach forecast matters more than today's photo. It models wind and Gulf Stream drift for Pompano specifically and re-runs every day as new satellite passes arrive, so you can tell a one-day nuisance from a week-long pulse before you book."
+        },
+        {
+          "h2": "Is the sargassum at Pompano safe, and where to go instead",
+          "text": "Small amounts of sargassum are harmless to swimmers and just messy underfoot. Large rotting piles release a sulfur smell and are worth avoiding, especially for anyone with respiratory sensitivity. If the Pompano Beach Score reads avoid today, you have options nearby: the live map ranks the closest clean sand so you can reroute on the first try instead of beach-hopping blind. The Gulf coast almost always runs clear, and conditions can flip beach to beach along the southeast Atlantic in a single day, so the only reliable move is to check the current status rather than trust yesterday's luck."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum at Pompano Beach today?",
+          "a": "Check the live Beach Score at the top of this page. It shows Pompano Beach's status today as clean, moderate, or avoid, based on the latest satellite pass and refreshed four times a day. We never quote a number we did not measure, so if clouds blocked the view we show the data age and confidence instead of guessing."
+        },
+        {
+          "q": "How often is the Pompano Beach sargassum reading updated?",
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, the same index NOAA uses to detect floating sargassum, and recompute Pompano Beach's score on each pass. Beachgoer reports fill the gaps when clouds delay a clear satellite view."
+        },
+        {
+          "q": "When is sargassum season worst at Pompano Beach?",
+          "a": "Southeast Florida's window runs roughly May through August, with June and July typically heaviest. Landings are episodic, not constant, so a single week can swing from clear to covered. Winter is essentially seaweed-free. Check the live status for the actual reading on the day you visit rather than the seasonal average."
+        },
+        {
+          "q": "Where can I go if Pompano Beach has sargassum today?",
+          "a": "If the Pompano Beach Score reads avoid, the live map ranks the nearest clean beaches so you can reroute without guessing. The Gulf coast almost always runs clear, and conditions vary beach to beach along the southeast Atlantic, so always check the current status before driving."
+        },
+        {
+          "q": "Is sargassum at Pompano Beach dangerous?",
+          "a": "Small amounts are harmless to swimmers and just messy. Large rotting piles give off a sulfur smell that can bother people with respiratory sensitivity, so they are worth avoiding. The live status flags when accumulation reaches avoid levels."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "boca-raton-sargassum-today",
+      "title": "Boca Raton Sargassum Today: Live Satellite Map",
+      "desc": "Sargassum at Boca Raton today? See the live satellite map and Beach Score for South Inlet and Spanish River beaches, refreshed 4x a day from Copernicus.",
+      "h1": "Boca Raton Sargassum Today",
+      "intro": "Checking sargassum conditions at Boca Raton before you head to South Inlet or Spanish River? The live map and Beach Score above show Boca Raton's status right now, clean, moderate, or avoid, read from the latest satellite pass and refreshed four times a day. We source it from Copernicus and NOAA AFAI imagery, the same spectral index NOAA uses to detect floating seaweed mats out at sea, so what you see is a measurement of this beach today, not a regional bulletin or a seasonal average written days ago. When clouds block the satellite, we show the data age and confidence rather than inventing a reading; we never publish a number we did not measure. The Watcher tracks the sea while you sleep and tells you each morning whether the water off Boca is clean, so you make one check and go instead of arriving to find the sand buried.",
+      "sections": [
+        {
+          "h2": "South Inlet vs Spanish River: which Boca beach is cleaner today",
+          "text": "Boca Raton's main public beaches, South Inlet Park, South Beach Park, and Spanish River Park, sit along the same Atlantic stretch but do not always read the same on a given morning. An east or southeast wind can stack mats heavier near the inlet jetty while a beach a mile north stays lighter. The live satellite map carries a Beach Score for the Boca stretch so you are not relying on a county-wide guess. Look at the current status before you choose your access point today; an onshore wind shift can rewrite conditions overnight, and the satellite catches the change on its next clear pass."
+        },
+        {
+          "h2": "When sargassum clears at Boca Raton",
+          "text": "Once fresh mats stop arriving, beached sargassum decays and the sand recovers within a day or two, helped by seasonal cleanups on the main beaches. The catch is resupply: if the satellite still sees seaweed drifting offshore, new material lands within hours. That is why the 7-day per-beach forecast tells you more than a single snapshot. It models wind and Gulf Stream drift for the Boca Raton stretch and re-runs every day as fresh satellite passes arrive, so you can distinguish a one-day nuisance from a sustained pulse before you plan your week."
+        },
+        {
+          "h2": "Safety and clean alternatives near Boca Raton",
+          "text": "Light sargassum is harmless to swim around, just untidy. Large decaying piles smell of sulfur and are worth steering clear of, particularly for anyone sensitive to it. If Boca Raton reads avoid today, the live map ranks the nearest clean beaches, from Delray and Deerfield down toward Pompano, so you can reroute on the first try. The Gulf coast almost always runs clear in season, and conditions shift beach to beach along this coast in a single day, which is exactly why the live status beats trusting yesterday's report."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum at Boca Raton today?",
+          "a": "Check the live map and Beach Score above. They show Boca Raton's status today, clean, moderate, or avoid, from the latest satellite pass, refreshed four times a day. If clouds blocked the view we show the data age and confidence rather than guessing a number."
+        },
+        {
+          "q": "Does South Inlet or Spanish River beach have less sargassum?",
+          "a": "They can differ on the same day because wind stacks mats unevenly along the coast. The live map carries a Beach Score for the Boca Raton stretch, so check the current status before choosing your access point rather than assuming both read the same."
+        },
+        {
+          "q": "How is the Boca Raton sargassum map updated?",
+          "a": "From Copernicus and NOAA AFAI satellite imagery, refreshed four times a day. It is the same index NOAA uses to detect floating sargassum mats. Beachgoer reports fill the gaps when clouds delay a clear satellite reading."
+        },
+        {
+          "q": "When is sargassum worst at Boca Raton?",
+          "a": "Southeast Florida's season runs roughly May through August, heaviest in June and July, with episodic rather than constant landings. Winter is essentially seaweed-free. Check the live status for the actual reading on your visit day instead of the seasonal average."
+        },
+        {
+          "q": "Where should I go if Boca Raton has sargassum today?",
+          "a": "If Boca reads avoid, the live map ranks the nearest clean beaches so you can reroute without guessing. The Gulf coast almost always runs clear, and conditions vary beach to beach along the southeast Atlantic, so always check the current status first."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "delray-beach-sargassum-today",
+      "title": "Delray Beach Sargassum Today: Live Beach Score & Map",
+      "desc": "Is Delray Beach clean of sargassum today? Check the live Beach Score and satellite map, refreshed 4x a day from Copernicus and NOAA imagery.",
+      "h1": "Delray Beach Sargassum Today",
+      "intro": "Is Delray Beach clean of sargassum today? The live Beach Score and map above answer that for Delray right now, reading clean, moderate, or avoid from the latest satellite pass and refreshed four times a day. We source it from Copernicus and NOAA AFAI imagery, the same spectral index NOAA uses to spot floating seaweed mats offshore, so you get a measurement of this beach today rather than a regional bulletin or a seasonal average from days back. When clouds block the satellite, we show the data age and confidence instead of inventing a reading; we never publish a number we did not measure. The Watcher tracks the sea while you sleep and tells you each morning whether the water off Delray is clear, so you check once and go instead of driving down Ocean Boulevard hoping for clean sand.",
+      "sections": [
+        {
+          "h2": "Which part of Delray Beach is clean today",
+          "text": "Delray's main public beach runs along Ocean Boulevard, and while it reads as one stretch, an east or southeast wind can pile sargassum heavier at one end than the other on a given morning. A county-wide or regional report is too blunt to plan around, which is why the live map carries a Beach Score for Delray specifically. Look at the current status before you pick your spot today. Conditions here can flip overnight on an onshore wind, and the satellite catches the shift on its next clear pass, so yesterday's clean beach is no guarantee of today's."
+        },
+        {
+          "h2": "When Delray Beach clears after a landing",
+          "text": "Beached sargassum decays once fresh material stops arriving, and Delray's main beach is worked seasonally, so a buried morning often recovers within a day or two. The deciding factor is resupply: if the satellite still sees mats drifting offshore, new seaweed lands within hours of a cleanup. That is why the 7-day per-beach forecast beats a single snapshot. It models wind and Gulf Stream drift for the Delray stretch and re-runs daily as fresh satellite passes arrive, so you can tell a brief nuisance from a sustained pulse before you commit a beach day."
+        },
+        {
+          "h2": "Safety and where to go instead of Delray",
+          "text": "Light sargassum is harmless to swimmers, just messy underfoot. Large rotting piles release a sulfur smell worth avoiding, especially for anyone with respiratory sensitivity. If Delray Beach reads avoid today, the live map ranks the nearest clean alternatives, from Boca and Boynton to Lake Worth and Pompano, so you can reroute on the first try. The Gulf coast almost always runs clear in season, and conditions vary beach to beach along the southeast Atlantic in a single day, so the reliable move is checking the current status, not trusting yesterday."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is Delray Beach clean of sargassum today?",
+          "a": "Check the live Beach Score and map above. They show Delray Beach's status today, clean, moderate, or avoid, from the latest satellite pass, refreshed four times a day. If clouds blocked the view we show the data age and confidence rather than guessing a number."
+        },
+        {
+          "q": "How often is Delray Beach's sargassum reading updated?",
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, the same index NOAA uses to detect floating sargassum, and recompute Delray's Beach Score on each pass. Beachgoer reports fill the gaps when clouds delay a clear satellite view."
+        },
+        {
+          "q": "When is sargassum season worst at Delray Beach?",
+          "a": "Southeast Florida's window runs roughly May through August, heaviest in June and July, with episodic landings rather than constant cover. Winter is essentially seaweed-free. Check the live status for the actual reading on the day you visit instead of the seasonal average."
+        },
+        {
+          "q": "Where can I go if Delray Beach has sargassum today?",
+          "a": "If Delray reads avoid, the live map ranks the nearest clean beaches, from Boca and Boynton up to Lake Worth, so you can reroute without guessing. The Gulf coast almost always runs clear, and conditions vary beach to beach, so always check the current status first."
+        },
+        {
+          "q": "Is the sargassum at Delray Beach dangerous?",
+          "a": "Small amounts are harmless to swimmers and just messy. Large rotting piles give off a sulfur smell that can bother people with respiratory sensitivity, so they are worth avoiding. The live status flags when accumulation reaches avoid levels."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "fort-myers-sargassum-today",
+      "title": "Fort Myers Sargassum Today: Live Beach Score & Map",
+      "desc": "Check Fort Myers sargassum today on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, refreshed 4x daily, plus a 7-day forecast.",
+      "h1": "Fort Myers Sargassum Today: Live Beach Score & Map",
+      "intro": "Want to know if sargassum is on the Fort Myers beaches today before you head out? Open the live map and read the Beach Score for your spot: it shows a status of clean, moderate, or avoid, updated today from the latest satellite pass. We watch the southwest Gulf coast with Copernicus and NOAA AFAI imagery, refreshed four times a day, so the answer reflects current conditions rather than yesterday's guess. Most Fort Myers stretches and nearby barrier islands get their own per-beach reading, not one number for the whole region. We measure, we don't guess, and when clouds block the satellite we say so instead of inventing a result. The Watcher scans the sea while you sleep and reports each morning where the water looks clear, so you can pick your beach with a real signal instead of hoping.",
+      "sections": [
+        {
+          "h2": "Which Fort Myers beaches are clearest today?",
+          "text": "Conditions vary along the southwest Gulf coast, so check the per-beach Beach Score rather than assuming the whole area matches. Fort Myers Beach, the Estero Island stretch, and nearby barrier islands like Sanibel and Captiva can each read differently on the same morning, depending on wind and current. Open the live map, find your beach, and read its status today: clean means the satellite saw little to no sargassum, moderate means scattered mats, and avoid means a heavier signal near shore. Because the imagery refreshes four times a day, an early reading can shift by afternoon. If your first choice shows moderate or avoid, the map usually flags a clearer beach within reach so you can adjust before loading the car."
+        },
+        {
+          "h2": "When does sargassum clear off Fort Myers?",
+          "text": "Sargassum on the southwest Gulf coast moves with wind and current, so a beach that reads moderate today can clean up within a day or two once the breeze shifts offshore. There is no fixed schedule, which is exactly why a daily satellite read beats a guess. Use the 7-day per-beach forecast to see the trend: it projects how the Beach Score is likely to move for your specific stretch, not the region as a whole. Onshore winds tend to push more material toward the sand, while offshore or calmer days let beaches recover. We are honest about uncertainty here, the forecast is a probability, not a promise, and cloudy passes lower our confidence. Check the morning reading before you commit, and re-check if you are heading out later in the day."
+        },
+        {
+          "h2": "Where to go instead if your beach shows avoid",
+          "text": "If your preferred Fort Myers spot reads avoid today, the live map makes it easy to pivot. Scan the nearby Beach Scores along the coast and on the barrier islands, since sargassum often lands unevenly: one stretch can be clogged while another a few miles away stays clean. Sanibel, Captiva, Bonita Beach, and the Naples beaches to the south are all close enough to swap into a day trip. Look for the nearest beach holding a clean status, and check its 7-day forecast so you are not just trading one bad day for another. The PASS unlocks every per-beach score and forecast at once, so you can compare the whole region in a glance and drive to clear water instead of arriving to a wall of seaweed."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum on Fort Myers Beach today?",
+          "a": "Open the live map and read the Beach Score for Fort Myers Beach. It shows a status of clean, moderate, or avoid, updated today from the latest satellite pass and refreshed four times a day."
+        },
+        {
+          "q": "How often is the Fort Myers sargassum map updated?",
+          "a": "We refresh the satellite imagery four times a day using Copernicus and NOAA AFAI data. Each per-beach Beach Score reflects the most recent clear pass, and we flag when clouds limit the read."
+        },
+        {
+          "q": "Can you predict sargassum for the week ahead?",
+          "a": "Yes. Each beach has a 7-day forecast projecting how its Beach Score is likely to trend. It is a measured probability based on wind and current, not a guarantee, and confidence drops on cloudy days."
+        },
+        {
+          "q": "What do clean, moderate, and avoid mean?",
+          "a": "Clean means the satellite saw little to no sargassum near shore, moderate means scattered mats, and avoid means a heavier signal at the beach. The map shows which status applies to each beach today."
+        },
+        {
+          "q": "How much does the Fort Myers sargassum PASS cost?",
+          "a": "The PASS is a one-time payment, no subscription, starting at USD 5.99. It unlocks every per-beach Beach Score and the full 7-day forecast across the southwest Gulf coast."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "naples-sargassum-today",
+      "title": "Naples FL Sargassum Today: Live Satellite Beach Check",
+      "desc": "See Naples FL sargassum today on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status refreshed 4x daily, plus a 7-day forecast.",
+      "h1": "Naples FL Sargassum Today: Live Satellite Beach Check",
+      "intro": "Checking Naples FL seaweed conditions before the beach today? Open the live satellite map and read the Beach Score for your spot: it returns a status of clean, moderate, or avoid, updated today from the most recent pass. We watch the Naples Gulf coast with Copernicus and NOAA AFAI imagery, refreshed four times a day, so what you see reflects today's water and not last week's. Each Naples beach gets its own per-beach reading rather than a single number for the whole shoreline, because sargassum lands unevenly. We measure instead of guessing, and when clouds block a pass we tell you straight rather than inventing a result. The Watcher scans the Gulf while you sleep and reports each morning where the water looks clear, so you can decide your beach day with a real satellite signal instead of crossing your fingers.",
+      "sections": [
+        {
+          "h2": "Which Naples beaches are clear today?",
+          "text": "Naples conditions can differ beach to beach, so read the per-beach Beach Score instead of assuming the whole Gulf coast matches. Naples Pier, Lowdermilk Park, Vanderbilt Beach, and the Marco Island stretch to the south can each show a different status on the same morning, driven by wind and current. Open the live map, tap your beach, and read its status today: clean means the satellite saw little to no sargassum, moderate means scattered mats, and avoid means a heavier signal near the sand. Because the imagery refreshes four times a day, a morning reading can change by afternoon. If your first pick shows moderate or avoid, the map usually points to a clearer beach nearby so you can adjust your plan before you leave."
+        },
+        {
+          "h2": "When will the seaweed clear in Naples?",
+          "text": "Sargassum along the Naples Gulf coast drifts with wind and current, so a beach reading moderate today may clean up within a day or two once the breeze turns offshore. There is no fixed timetable, which is why a daily satellite check beats guessing from a webcam. The 7-day per-beach forecast shows the likely trend for your exact stretch, not the region as a whole, so you can see whether conditions are building or easing. Onshore winds push more material toward shore, while calmer or offshore days let beaches recover. We stay honest about the limits: the forecast is a probability, not a promise, and cloudy satellite passes reduce our confidence. Read the morning Beach Score before committing, and re-check later if your plans shift to the afternoon."
+        },
+        {
+          "h2": "Where to go instead near Naples",
+          "text": "If your Naples beach reads avoid today, the live map makes switching simple. Compare the Beach Scores up and down the Gulf coast, because sargassum often clogs one stretch while leaving another a short drive away clean. Vanderbilt Beach, Barefoot Beach, Marco Island, and the Bonita and Fort Myers beaches to the north are all close enough for a quick pivot. Find the nearest beach holding a clean status and glance at its 7-day forecast so you are not trading one bad day for another. The PASS unlocks every per-beach score and forecast together, so you can read the whole Naples region at once and head straight for clear water instead of discovering the seaweed on arrival."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum in Naples FL today?",
+          "a": "Open the live map and read the Beach Score for your Naples beach. It shows a status of clean, moderate, or avoid, updated today from the latest satellite pass and refreshed four times a day."
+        },
+        {
+          "q": "How current is the Naples sargassum data?",
+          "a": "We refresh Copernicus and NOAA AFAI satellite imagery four times a day. Each per-beach Beach Score reflects the most recent clear pass, and we flag when clouds limit what the satellite can see."
+        },
+        {
+          "q": "Does the map cover Marco Island and Vanderbilt Beach?",
+          "a": "Yes. Naples-area beaches including Naples Pier, Lowdermilk, Vanderbilt Beach, and Marco Island each get their own per-beach Beach Score and 7-day forecast, since conditions differ along the coast."
+        },
+        {
+          "q": "Can I see a sargassum forecast for Naples?",
+          "a": "Each beach has a 7-day forecast projecting how its Beach Score is likely to trend, based on wind and current. It is a measured probability, not a guarantee, and confidence falls on cloudy days."
+        },
+        {
+          "q": "What does the Naples sargassum PASS cost?",
+          "a": "The PASS is a one-time payment, no subscription, starting at USD 5.99. It unlocks every per-beach Beach Score and the full 7-day forecast across the Naples Gulf coast."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "en",
+      "slug": "hollywood-beach-sargassum-today",
+      "title": "Hollywood Beach Sargassum Today: Live Map & Forecast",
+      "desc": "Check Hollywood Beach sargassum today on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status refreshed 4x daily, plus a 7-day forecast.",
+      "h1": "Hollywood Beach Sargassum Today: Live Map & Forecast",
+      "intro": "Wondering if sargassum is on Hollywood Beach today before you hit the Broadwalk? Open the live map and read the Beach Score for your spot: it returns a status of clean, moderate, or avoid, updated today from the latest satellite pass. We watch the Broward Atlantic coast with Copernicus and NOAA AFAI imagery, refreshed four times a day, so the answer reflects today's water rather than an old photo. Hollywood Beach and its neighbors each get a per-beach reading, because sargassum lands unevenly along the shore. We measure instead of guessing, and when clouds block a satellite pass we say so plainly rather than inventing a number. The Watcher scans the Atlantic while you sleep and reports each morning where the water looks clear, so you can plan your boardwalk day with a real signal instead of guessing from yesterday's conditions.",
+      "sections": [
+        {
+          "h2": "Which Broward beaches are clearest today?",
+          "text": "Sargassum on the Broward Atlantic coast lands unevenly, so check the per-beach Beach Score rather than assuming Hollywood Beach matches its neighbors. The Hollywood Broadwalk stretch, Hollywood North Beach Park, Dania Beach, and Hallandale Beach can each read differently on the same morning, shaped by wind and the offshore current. Open the live map, select your beach, and read its status today: clean means the satellite saw little to no sargassum, moderate means scattered mats along the waterline, and avoid means a heavier signal near shore. Because the imagery refreshes four times a day, a morning reading can shift by afternoon. If your spot shows moderate or avoid, the map usually highlights a clearer beach nearby so you can adjust before walking out to the sand."
+        },
+        {
+          "h2": "When does sargassum clear off Hollywood Beach?",
+          "text": "Atlantic sargassum near Hollywood Beach moves with wind and current, so a beach reading moderate today can clear within a day or two once conditions shift. There is no set schedule on this coast, which is why a daily satellite read beats guessing from the boardwalk. The 7-day per-beach forecast shows the likely trend for your exact stretch, not all of Broward at once, so you can tell whether mats are building or easing. Onshore east winds tend to pile more material on the sand, while calmer or offshore days help beaches recover. We are honest about the limits: the forecast is a probability, not a promise, and cloudy satellite passes lower our confidence. Read the morning Beach Score before you commit, and re-check it if you are heading out later."
+        },
+        {
+          "h2": "Where to go instead along the Broward coast",
+          "text": "If Hollywood Beach reads avoid today, the live map makes it easy to pivot without driving blind. Compare Beach Scores up and down the Broward coast, since sargassum can bury one stretch while leaving another a few miles away clean. Hollywood North Beach Park, Dania Beach, Hallandale Beach, and the Fort Lauderdale beaches to the north are all within an easy swap. Find the nearest beach holding a clean status, then check its 7-day forecast so you are not trading one seaweed day for another. The PASS unlocks every per-beach score and forecast together, so you can scan the whole Broward shoreline at once and head straight for clear water instead of finding the sargassum waiting when you arrive."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Is there sargassum on Hollywood Beach today?",
+          "a": "Open the live map and read the Beach Score for Hollywood Beach. It shows a status of clean, moderate, or avoid, updated today from the latest satellite pass and refreshed four times a day."
+        },
+        {
+          "q": "How often does the Hollywood Beach sargassum map update?",
+          "a": "We refresh Copernicus and NOAA AFAI satellite imagery four times a day. Each per-beach Beach Score reflects the most recent clear pass, and we flag when clouds limit what the satellite can see."
+        },
+        {
+          "q": "Does the map cover Dania Beach and Hallandale Beach?",
+          "a": "Yes. Broward beaches including the Hollywood Broadwalk, Hollywood North Beach Park, Dania Beach, and Hallandale Beach each get their own per-beach Beach Score and 7-day forecast."
+        },
+        {
+          "q": "Is there a sargassum forecast for Hollywood Beach?",
+          "a": "Each beach has a 7-day forecast projecting how its Beach Score is likely to trend, based on wind and current. It is a measured probability, not a guarantee, and confidence drops on cloudy days."
+        },
+        {
+          "q": "How much is the Hollywood Beach sargassum PASS?",
+          "a": "The PASS is a one-time payment, no subscription, starting at USD 5.99. It unlocks every per-beach Beach Score and the full 7-day forecast across the Broward Atlantic coast."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    }
+  ]
+}

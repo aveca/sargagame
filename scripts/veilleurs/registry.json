@@ -1,0 +1,85 @@
+{
+  "_doc": "Source unique des 10 Veilleurs. cadence: daily|weekly. dow: jours (0=dim..6=sam) où un veilleur non-daily est dû. mode: script (jamais de LLM) | hybrid (LLM si ANTHROPIC_API_KEY) | agent (LLM requis, sinon recon déterministe). Le Veilleur REGARDE et PRODUIT de l'intelligence — il n'envoie jamais (les envois restent aux workflows dédiés: weekly-outreach, drip, dunning).",
+  "veilleurs": [
+    {
+      "id": "sable", "name": "Sable", "role": "L'éclaireur du rivage",
+      "market": "B2C voyageurs", "depth": 0, "status": "live",
+      "cadence": "daily", "mode": "script", "model": "claude-haiku-4-5-20251001",
+      "enabled": true,
+      "focus": "Convertir le trafic voyageur en pass one-time; surveiller la fraîcheur du verdict et le funnel modal→CTA→redirect.",
+      "levers": ["Verdict plage gratuit = hameçon", "Pass one-time 7,99/14,99/24,99€", "Capture email au checkout", "SEO 136+ pages plages", "PWA install + push"]
+    },
+    {
+      "id": "recif", "name": "Récif", "role": "Le concierge des côtes",
+      "market": "Hôtels & resorts (B2B)", "depth": 5, "status": "emerging",
+      "cadence": "weekly", "dow": [2, 5], "mode": "hybrid", "model": "claude-haiku-4-5-20251001",
+      "enabled": true,
+      "focus": "Signer des hôtels en self-serve (zéro appel); le widget marque blanche affiche le verdict de LEUR plage; la preuve = /fiabilite/.",
+      "levers": ["Widget marque blanche", "Essai Pro 30j sans carte", "Pro 79€/mo ou 690€/an", "Track-record /fiabilite/ = preuve", "Outreach self-serve zéro call"]
+    },
+    {
+      "id": "digue", "name": "Digue", "role": "Le gardien municipal",
+      "market": "Collectivités & offices de tourisme", "depth": 15, "status": "greenfield",
+      "cadence": "weekly", "dow": [1], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Proposer aux mairies/offices un outil de planification du ramassage (alerte échouage par commune); cartographier communes cibles MQ/GP + Floride/Cancún.",
+      "levers": ["Dashboard prévision ramassage", "Alerte échouage J+2-7 par commune", "Marché public / DSP", "Données neutres auditables"]
+    },
+    {
+      "id": "amarre", "name": "Amarre", "role": "Le notaire du littoral",
+      "market": "Immobilier côtier", "depth": 30, "status": "greenfield",
+      "cadence": "weekly", "dow": [2], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Transformer l'historique d'échouage par plage en indice d'exposition sargasses vendable aux agences, portails et notaires.",
+      "levers": ["Indice d'exposition par bien/quartier", "Diagnostic à l'acte", "API pour agences & portails"]
+    },
+    {
+      "id": "barometre", "name": "Baromètre", "role": "L'actuaire des marées",
+      "market": "Assurance & réassurance climat", "depth": 80, "status": "greenfield",
+      "cadence": "weekly", "dow": [3], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Packager la donnée risque côtier (historique daté + forecast) pour assureurs tourisme/hôtellerie; le track-record audité = crédibilité actuarielle.",
+      "levers": ["Flux de risque côtier daté", "Historique + forecast = tarification", "Data-feed sous contrat"]
+    },
+    {
+      "id": "sillage", "name": "Sillage", "role": "Le pilote de flotte",
+      "market": "Croisière, ports & maritime", "depth": 200, "status": "greenfield",
+      "cadence": "weekly", "dow": [4], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Vendre aux compagnies de croisière et aux ports des fenêtres d'escale « mer propre » et des alertes prises d'eau navires.",
+      "levers": ["Fenêtres d'escale mer propre", "Routage prises d'eau navires", "Alertes ports"]
+    },
+    {
+      "id": "filet", "name": "Filet", "role": "La vigie des pêcheries",
+      "market": "Pêche & aquaculture", "depth": 500, "status": "greenfield",
+      "cadence": "weekly", "dow": [5], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Protéger les élevages côtiers des arrivées massives (chute d'oxygène); alertes algues/O2 sur zones d'élevage.",
+      "levers": ["Alertes algues/oxygène zones d'élevage", "Protection d'actif", "Capteur + abo"]
+    },
+    {
+      "id": "courant", "name": "Courant", "role": "L'ingénieur des prises d'eau",
+      "market": "Énergie & dessalement côtiers", "depth": 1000, "status": "greenfield",
+      "cadence": "weekly", "dow": [6], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Alerter les usines côtières (dessalement, centrales) avant colmatage des prises d'eau par les algues (anti-biofouling).",
+      "levers": ["Anti-biofouling prises d'eau", "Alerte centrales/dessalement côtiers", "Ticket industriel"]
+    },
+    {
+      "id": "prisme", "name": "Prisme", "role": "Le cartographe des données",
+      "market": "Licence data / API", "depth": 2000, "status": "emerging",
+      "cadence": "weekly", "dow": [3, 6], "mode": "hybrid", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Productiser le pipeline (satellite brut + forecast) en API payante; définir tiers, doc et revenu par appel.",
+      "levers": ["API satellite brut + forecast", "Revenu par appel", "Licence B2B2B"]
+    },
+    {
+      "id": "abysse", "name": "Abysse", "role": "L'oracle planétaire",
+      "market": "Souverain, spatial & climat", "depth": 6000, "status": "greenfield",
+      "cadence": "weekly", "dow": [0], "mode": "agent", "model": "claude-sonnet-5",
+      "enabled": true,
+      "focus": "Vision plateforme « Coastal Hazard Intelligence » (jumeau numérique des côtes); cartographier programmes (ESA BIC, CASSINI) et interlocuteurs publics vers le contrat souverain.",
+      "levers": ["Jumeau numérique des côtes mondiales", "Contrats états/agences", "Financement ESA/Copernicus"]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+# Le Veilleur — Veille côtière (B2B) — pricing arrêté 2026-06-29
+
+> ✅ **Pricing arrêté** (panel pricing 2026-06-29) : Pro **79 €/mois** ou **690 €/an** (2 mois offerts), **essai 30 jours gratuit sans carte**. **Self-serve, ZÉRO call** (principe fondateur). État de câblage : **annuel = LIVE** (lien Mollie 690 € dans `b2b-paylinks.json`) ; **mensuel récurrent (79/29 €) = câblé en repo** (`mol_b2b_plans` dans `mollie-lib.php`, #210 : `pro_monthly` 79 € / `brief_monthly` 29 €, montants en repo → ZÉRO action fondateur, grant token Pro au paiement) ; **essai 30 j** = capture email aujourd'hui, émission auto du token à câbler. Destination self-serve : **`/pro/espace/`**.
+
+> Doc de référence pour la prospection B2B sortante (`b2b-outreach.cjs` + `data/b2b-targets.json`).
+> Cible : hôtels de bord de mer, clubs de plage, offices de tourisme, mairies littorales.
+> Zones : Martinique (mq), Guadeloupe (gp), Riviera Maya (rivieramaya), Punta Cana (puntacana), Miami / Floride (florida).
+> But : transformer le trafic B2B (1 hôtel installé spontanément le widget, anoli-lodges) en revenu récurrent.
+
+## Le réveil : pourquoi un veilleur côtier
+
+- **La douleur, en langage d'exploitant.** Une plage envahie un matin = des clients déçus, des avis négatifs, parfois des remboursements — et vous l'apprenez souvent en même temps qu'eux. Le déclic : avec Le Veilleur, vous devenez celui qui connaît la fin de l'histoire avant ses clients. L'alerte arrive AVANT les sargasses.
+- **Un projet né ici, pas un SaaS hors-sol.** Le Veilleur est indépendant, opéré depuis la Martinique, sur des données publiques et auditables (Copernicus Marine, NOAA). Le même satellite qui veille la mer pour le voyageur peut veiller votre rivage — et il regarde la mer, jamais vos visiteurs.
+- **La donnée existe déjà.** Indice AFAI par plage, croisé 4×/jour, prévision J+1→J+7, 136+ plages sur 5 régions, infra de diffusion en place. Le coût marginal d'un rivage de plus est proche de zéro.
+- **La demande s'est montrée seule.** Un hôtel a installé le widget public sans qu'on le lui demande — le besoin existe ; reste à le servir proprement, une fois le produit câblé.
+
+## Les 3 paliers (pricing arrêté 2026-06-29)
+
+### 1. Brief — la dépêche du matin pour votre rivage (entrée de gamme)
+Chaque matin, l'état réel des 3 à 5 plages les plus proches de votre établissement : indice AFAI mesuré au satellite, tendance, prévision J+1→J+7, et l'alerte « le matin où ça bascule » — avant l'échouage, pas après.
+- **Cible** : petits hôtels, gîtes, clubs de plage, restaurants de bord de mer.
+- **Valeur** : répondre à « y a-t-il des sargasses aujourd'hui ? » avec une donnée datée et auditable, et prévenir le client avant l'arrivée des algues — zéro surprise, zéro déception.
+- **Prix de référence** (direction, non câblé) :
+  - EUR (MQ/GP) : **29 €/mois** ou **290 €/an**.
+  - USD (Riviera Maya / Punta Cana / Floride) : **$39/mois** ou **$390/an**.
+
+### 2. Pro — la preuve sur votre site ET dans l'app (cœur de gamme)
+L'état de vos plages affiché sur votre site / page de réservation, à vos couleurs, pour rassurer le visiteur AVANT qu'il réserve — la preuve datée plutôt qu'un adjectif. (Widget aux couleurs de l'établissement : piste de travail, pas un livrable promis aujourd'hui — voir « Cadre honnête ».)
+- **Cible** : hôtels avec site propre, offices de tourisme, résidences hôtelières.
+- **Valeur** : lever l'incertitude au moment de la décision (moins d'incertitude = moins d'abandon), et faire de la transparence un argument de vente.
+- **Inclus (cible)** :
+  - **Mise en avant dans l'app Le Veilleur** ⭐ — votre établissement présenté au voyageur **sur la fiche de VOTRE plage**, au moment EXACT où il vérifie l'état des sargasses avant de réserver. Encart « Partenaire » (logo + ligne + lien vers votre site/réservation). C'est le bénéfice phare : pas un coût, un **canal d'acquisition** sur l'audience la plus qualifiée qui soit. *Implémenté (`PartnerCard` sur la fiche plage) ; activé à la main quand le paiement Pro est confirmé.*
+  - affichage à vos couleurs (widget) + le Brief (palier 1) + badge « plage veillée au satellite ».
+- **Garde-fou honnêteté (intangible)** : la mise en avant est **clairement labellisée « Partenaire »** (placement payant assumé) et **n'influence JAMAIS le verdict sargasses** — un partenaire dont la plage est envahie reste affiché « à éviter ». La neutralité de la donnée est ce qui rend la mise en avant crédible ; on ne la vend pas.
+- **Prix** (arrêté 2026-06-29) :
+  - EUR : **79 €/mois** ou **690 €/an** (2 mois offerts). Essai 30 j gratuit sans carte.
+  - USD : **$89/mois** ou **$790/an**.
+
+### 3. Territory — tout le littoral, baie par baie (haut de gamme)
+Pour les **mairies, offices de tourisme et groupes hôteliers** qui veillent plusieurs plages à la fois : la même mer, lue crique par crique sur tout votre territoire.
+- rapport quotidien (PDF/email) couvrant TOUTES les plages de la commune ou du portefeuille, baie par baie — pas une moyenne qui lisse la côte ;
+- accès **API JSON** (même format que `public/api/copernicus/sargassum.json`) pour vos propres écrans / affichages / apps ;
+- historique + export pour le reporting (saison sargasses, communication publique, demandes d'aide / subventions).
+- **Cible** : mairies littorales (Sainte-Anne, Le Gosier, Playa del Carmen, Miami Beach…), offices de tourisme, groupes hôteliers.
+- **Self-serve bout-en-bout** (décision fondateur 2026-06-29 : tout self-serve, zéro démo) :
+  - EUR : **199 €/mois** ou **1 990 €/an** (lien annuel Mollie `territory_annual`, minté au prochain run `mollie-paylinks.cjs`).
+  - USD : **$249/mois** ou sur devis (lien USD pas encore minté).
+  - Activation in-app = essai 30 j instantané (`b2b-trial.php`) + paiement annuel direct, comme Brief/Pro.
+
+## Grille récap (prix de référence — paliers non câblés)
+
+| Palier      | EUR (MQ/GP)          | USD (US/MX/DR)        | Cible type                              |
+|-------------|----------------------|-----------------------|-----------------------------------------|
+| 1. Brief    | 29 €/mo · 290 €/an   | $39/mo · $390/an      | Petit hôtel, gîte, club, resto plage    |
+| 2. Pro      | 79 €/mo · 690 €/an   | $89/mo · $790/an      | Hôtel avec site, résidence, office      |
+| 3. Territory| 199 €/mo · 1 990 €/an| $249/mo · sur devis   | Mairie, office, groupe hôtelier         |
+
+État réel (2026-06-29) : pricing **arrêté**. **Annuel self-serve LIVE** (liens Mollie `b2b-paylinks.json` : Pro 690 €, Brief 290 € ; **Territoire 1 990 € ajouté au TIERS → minté au prochain run**). **Mensuel récurrent (79/29 €) câblé en repo** (`mol_b2b_plans`, #210). **Essai 30 j = token émis INSTANTANÉMENT in-app** (`B2BModal`→`b2b-trial.php`, #240) ET dans `/pro/espace/`. **Les 3 tiers (Brief/Pro/Territoire) sont 100 % self-serve — plus aucune « démo », zéro humain.**
+
+## Pitch email (premier contact, consultatif)
+
+Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'état de vos plages en direct »). Ce doc décrit l'**upsell payant** quand l'établissement répond / clique. Sur une réponse chaude, le prospect se sert lui-même via `/pro/espace/` (essai 30 j, paiement en ligne) — aucun appel ; l'email reste le canal de réponse aux questions.
+
+**Objet** : Vos plages, surveillées au satellite — pour vos clients
+
+**Corps (FR, MQ/GP)** — preuve avant pitch, ask honnête :
+
+> Bonjour,
+>
+> La première question d'un client avant de réserver chez vous, c'est souvent : « est-ce qu'il y a des sargasses sur la plage ? ». Et une plage envahie un matin, vous l'apprenez parfois en même temps que lui : avis négatif, déception, parfois remboursement.
+>
+> On ne va pas vous le promettre, on va vous le montrer. Le Veilleur est un satellite qui veille la mer (données publiques Copernicus Marine + NOAA, indice par plage, croisé 4×/jour) — il regarde la mer, jamais vos visiteurs. Voici l'état réel des plages autour de chez vous aujourd'hui, daté : [aperçu]. Avec la prévision J+1→J+7, vous prévenez le client AVANT l'arrivée des algues.
+>
+> Et on est honnêtes jusqu'au bout : notre taux d'erreur est publié et audité chaque jour, par régime. En saison calme, 100 % de nos prévisions « mer propre » se sont vérifiées (2 805 contrôles, 2026-05-19 → 2026-06-18) ; tous régimes confondus on tourne autour de 75-78 %, et les rares alertes de saison calme sont affichées en faible confiance. Vous voyez nos réussites comme nos limites — c'est précisément ce que les outils gratuits ne publient pas.
+>
+> Et il y a un retour pour vous : avec le palier Pro, on **met votre établissement en avant DANS l'application**, sur la fiche de votre plage — donc juste au moment où le voyageur vérifie s'il y a des sargasses avant de réserver. C'est exactement votre futur client, au bon instant. Voici à quoi ça ressemblerait pour vous : [aperçu]. (Affiché « Partenaire », et ça ne touche jamais le verdict de la plage — c'est ce qui le rend crédible.)
+>
+> Essayez gratuitement 30 jours, sans carte (Pro à partir de 79 €/mois, ou 690 €/an, deux mois offerts). Tout se fait en ligne, à votre rythme : voici votre espace, avec vos plages en direct, votre widget et votre mise en avant → [lien /pro/espace/].
+>
+> Bien à vous,
+> Le Veilleur · veille côtière opérée depuis la Martinique
+
+**Corps (EN, Miami / Riviera Maya / Punta Cana)** — à brancher quand le copy EN/ES sera prêt côté `b2b-outreach.cjs` (aujourd'hui le template retombe sur le FR/MQ pour les island US) :
+
+> Hi,
+>
+> The first question a guest asks before booking is often: "is there sargassum on the beach right now?" And when a beach gets buried overnight, you often find out at the same time they do — a bad review, a let-down guest, sometimes a refund.
+>
+> We won't promise it, we'll show it. Le Veilleur is a satellite that watches the sea (public Copernicus Marine + NOAA data, per-beach index, cross-checked 4×/day) — it watches the sea, never your guests. Here's the real, dated state of the beaches near you today: [preview]. With the J+1→J+7 forecast, you warn the guest BEFORE the seaweed lands.
+>
+> And we stay honest all the way: our miss rate is published and audited every day, by regime. In calm season, 100% of our "clean water" forecasts proved correct (2,805 checks, 2026-05-19 → 2026-06-18); across all regimes we run ~75-78%, and the rare calm-season alerts are flagged low-confidence. You see our wins and our limits — exactly what the free tools don't publish.
+>
+> And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
+>
+> Try it free for 30 days, no card (Pro from $89/mo, or $790/yr, two months free). It's all online, at your own pace: here's your space, with your beaches live, your widget and your in-app placement → [/pro/espace/ link]. Annual is payable online today; just reply if you have a question.
+>
+> Best,
+> Le Veilleur · coastal watch, operated from Martinique
+
+## Pour câbler l'offre (ce qui manque avant de la rendre live)
+
+Le pricing est arrêté et l'annuel est déjà payable en self-serve. Ce qui reste à câbler pour le 100 % automatique (sans humain) :
+
+- Brancher un copy EN/ES dans `b2b-outreach.cjs` (`buildEmailHTML`) selon `target.island` (florida/rivieramaya → EN, puntacana → ES/EN). Aujourd'hui, tout island ≠ `gp` retombe sur le template FR/Martinique.
+- Créer les Payment Links / prix correspondants (3 paliers × 2 devises × mensuel/annuel) puis les référencer dans `regions/<id>.json`. (B2C neuf = Mollie pass-only ; le B2B mensuel récurrent est **câblé** via Mollie `mol_b2b_plans` (#210) — restent les paylinks annuels par devise ; ne pas réutiliser les liens USD Stripe désactivés.)
+- Le palier Pro (affichage à vos couleurs) : ajouter un flag `?brand=<id>&hideLogo=1` au widget `public/widget/embed`, servi uniquement aux clients payants (token). Tant que non livré, ne pas l'annoncer comme white-label.
+- L'API (palier Territory) : exposer la donnée publique `public/api/copernicus/sargassum.json` derrière une clé (compteur d'appels, pas de nouveau pipeline).

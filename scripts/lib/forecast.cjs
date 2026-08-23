@@ -1,0 +1,692 @@
+/**
+ * forecast.cjs — Honest sargassum forecast (v3, 2026-04-10)
+ *
+ * v2 (2026-04-06) replaced fabricated sin/cos noise with satellite trend + wind drift.
+ * v3 (2026-04-10) fixes biases found by backtest on 5-day archive:
+ *   - J+1 under-predicted 28% of cases (said less than reality)
+ *   - J+2 over-predicted clean 25% of cases
+ *   - J+3 over-predicted clean 38% of cases
+ *   - J+4 over-predicted clean 50% of cases
+ *   - Day-6 values collapsed to 3 unique numbers across 20 beaches (not a forecast)
+ *
+ * Changes vs v2:
+ *   - Replace linear `cleanPull` with EXPONENTIAL PERSISTENCE (half-life 5.0d, cf confidence.cjs)
+ *   - Plug in sargassum-banks.json drift predictions (J+0 to J+1 arrival signal)
+ *   - Plug in community reports (48h window) to shift baseline up/down
+ *   - Memory-sourced beaches: forecast ONLY day 0+1 (honest — no synthetic projection)
+ *   - Trend R² gate: ignore regression if r² < 0.4 or < 5 points
+ *   - Cap meaningful horizon at 4 days (days 5-7 flagged as `horizon`, conf < 15)
+ *
+ * Sources used:
+ *   - Day 0: satellite observation (or memory if satellite missed a past event)
+ *   - Day 1-3: persistence + arrival signal (banks drift) + wind + trend (if r²≥0.4)
+ *   - Day 4+: persistence only + wider uncertainty (marked as horizon)
+ */
+
+const fs = require('fs')
+const path = require('path')
+const {
+  forecastConfidence,
+  classifyRegime,
+  regimeAdjustedConfidence,
+  regimeConfidenceSummary,
+  HALF_LIFE_DAYS,
+  DECAY_LAMBDA,
+  BEACHED_DECAY_LAMBDA,
+  BEACHED_HALF_LIFE_DAYS,
+} = require('./confidence.cjs')
+
+const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
+
+// Beached-persistence ratchet — kill-switch + tunable (adversarial panel 2026-07-01).
+// The verdict path gets a reversible flag ("pas de flag = pas de merge"): set env
+// SG_BEACHED_HOLD=0 in the pipeline to fall back to pure sea-dispersion decay (the
+// old behaviour, a total no-op of this feature) without touching code. The hold
+// half-life is also env-tunable (SG_BEACHED_HALF_LIFE, days) so the founder can
+// dial it from the workflow once real échouage-season data lets us fit it — the
+// 12d default is a PROVISIONAL physics prior (literature: beached Sargassum rots
+// over weeks if untouched, but flagship beaches are cleaned ~daily, so 12d is a
+// deliberate middle, biased neither to "gone in days" nor "red for a month").
+const BEACHED_HOLD_ON = process.env.SG_BEACHED_HOLD !== '0'
+// Generated calibration file (written by beached-calibrate.cjs once real
+// échouage data lets the pipeline fit the half-life). Read lazily & cached; a
+// missing/invalid file is normal (calm season) → fall back to the prior.
+const BEACHED_CALIB_PATH = path.join(__dirname, '../automation/data/beached-calibration.json')
+let _calibCache
+function calibratedHalfLifeDays() {
+  if (_calibCache === undefined) {
+    try {
+      const j = JSON.parse(fs.readFileSync(BEACHED_CALIB_PATH, 'utf-8'))
+      const v = parseFloat(j.halfLifeDays)
+      _calibCache = isFinite(v) && v > 0 ? v : null
+    } catch { _calibCache = null }
+  }
+  return _calibCache
+}
+// Resolve the beached-hold half-life per call. Precedence:
+//   env SG_BEACHED_HALF_LIFE (manual pin / kill)  >  overrideDays (sweep/opts)
+//   >  generated calibration JSON  >  provisional prior (BEACHED_HALF_LIFE_DAYS).
+// Clamped ≥1d. Resolving per call (not once at require) lets the calibration
+// sweep vary it via opts without reloading the module.
+function resolveBeachedLambda(overrideDays) {
+  let days = BEACHED_HALF_LIFE_DAYS
+  const calib = calibratedHalfLifeDays()
+  if (calib != null) days = calib
+  if (overrideDays != null && isFinite(overrideDays)) days = overrideDays
+  if (process.env.SG_BEACHED_HALF_LIFE) days = parseFloat(process.env.SG_BEACHED_HALF_LIFE)
+  return Math.LN2 / Math.max(1, days)
+}
+// A beach only counts as "beached" (grounded stock that persists) above a clear
+// load, with hysteresis above the 0.15 clean/moderate line so a beach chattering
+// at the boundary — or a transient OFFSHORE-water AFAI blip that the trades blow
+// past in a day — doesn't get frozen red. 0.20 = clearly moderate, not noise.
+const BEACHED_TRIGGER_AFAI = 0.20
+
+// --- Regime-aware arrival gating (2026-06-15) ----------------------------
+// The re-forecast backtest proved that in the CALM regime the arrival-banks
+// signal cries wolf: 100% of calm-season alerts were false (the beach stayed
+// clean). Root cause: the Atlantic belt always has banks drifting within the
+// threat radius, so an offshore bank "approaching" a quiet, persistently-clean
+// beach injects enough AFAI to flip it to moderate — and that injection then
+// PERSISTS forward, echoing the false alarm across later days.
+//
+// Fix (NOT a floor — the opposite): when a beach has been quiet, DAMPEN the
+// arrival contribution and RAISE the bar to declare "arrivée imminente", so an
+// offshore bank alone can no longer push a calm beach into alert. Full physics
+// is preserved for transition/high regimes (and for any beach whose own reading
+// is already elevated, which lands it out of the calm regime anyway). This only
+// ever lowers values; it never pins a beach to a threshold.
+const REGIME_ARRIVAL_GAIN = { calm: 0.45, transition: 0.85, high: 1.0, unknown: 0.85 }
+const REGIME_ARRIVAL_DETECT = { calm: 0.12, transition: 0.05, high: 0.05, unknown: 0.07 }
+
+function regimeArrivalGain(regime) {
+  return REGIME_ARRIVAL_GAIN[regime] != null ? REGIME_ARRIVAL_GAIN[regime] : 0.85
+}
+function regimeArrivalDetectThreshold(regime) {
+  return REGIME_ARRIVAL_DETECT[regime] != null ? REGIME_ARRIVAL_DETECT[regime] : 0.07
+}
+
+/**
+ * Mean observed AFAI for a beach over its most recent satellite history.
+ * Used to classify the beach's conditions regime (calm vs active). Looks only
+ * at PAST observations — never the forecast — so it's an honest read of the
+ * stretch the beach has actually been in.
+ * @returns {number|null} null if fewer than 3 usable observations
+ */
+function recentObservedMean(beachId, history, windowDays = 7) {
+  if (!history || !history.length) return null
+  const sorted = history
+    .filter(h => h.levels)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-windowDays)
+  const vals = []
+  for (const entry of sorted) {
+    const bl = entry.levels.find(l => l.id === beachId)
+    if (bl && typeof bl.afai === 'number') vals.push(bl.afai)
+  }
+  if (vals.length < 3) return null
+  return vals.reduce((a, b) => a + b, 0) / vals.length
+}
+
+function cleanFloorFor() {
+  return CLEAN_BASELINE
+}
+
+function statusFromAfai(afai) {
+  if (afai < 0.15) return 'clean'
+  if (afai < 0.40) return 'moderate'
+  return 'avoid'
+}
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v))
+}
+
+/**
+ * Linear regression on satellite history for a single beach.
+ * @returns {{ slope, r2, days } | null} — null if insufficient or unreliable
+ */
+function computeSatelliteTrend(beachId, history) {
+  if (!history || !history.length) return null
+
+  const sorted = history
+    .filter(h => h.levels)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-7)
+
+  const points = []
+  for (const entry of sorted) {
+    const bl = entry.levels.find(l => l.id === beachId)
+    if (bl && typeof bl.afai === 'number') {
+      points.push({ x: points.length, y: bl.afai })
+    }
+  }
+
+  if (points.length < 5) return null // v3: stricter gate (was 3)
+
+  const n = points.length
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0
+  for (const p of points) {
+    sumX += p.x; sumY += p.y
+    sumXY += p.x * p.y; sumX2 += p.x * p.x; sumY2 += p.y * p.y
+  }
+  const denom = n * sumX2 - sumX * sumX
+  if (denom === 0) return null
+
+  const slope = (n * sumXY - sumX * sumY) / denom
+  const meanY = sumY / n
+  let ssTot = 0, ssRes = 0
+  const intercept = (sumY - slope * sumX) / n
+  for (const p of points) {
+    const pred = intercept + slope * p.x
+    ssRes += (p.y - pred) ** 2
+    ssTot += (p.y - meanY) ** 2
+  }
+  const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0
+
+  // v3: gate on quality
+  if (r2 < 0.4) return null
+
+  return {
+    slope: Math.round(slope * 1000) / 1000,
+    r2: Math.round(r2 * 100) / 100,
+    days: n,
+  }
+}
+
+/**
+ * Geodesic distance in km (beach → bank centroid).
+ */
+function distKm(lat1, lng1, lat2, lng2) {
+  const dLat = (lat2 - lat1) * 111
+  const dLng = (lng2 - lng1) * 111 * Math.cos(lat1 * Math.PI / 180)
+  return Math.sqrt(dLat * dLat + dLng * dLng)
+}
+
+/**
+ * Compute arrival signal for a beach from nearby sargassum banks.
+ * Uses current position + 6h/12h/24h drift predictions to find the MINIMUM
+ * distance the bank will come to the beach in the next 24h.
+ *
+ * GEOGRAPHY RULE: 'sheltered' beaches (baie Fort-de-France, Basse-Terre
+ * west coast) are protected by the relief and trade winds push sargassum
+ * away. These return 0 — never an arrival signal.
+ *
+ * Anses d'Arlet + south-Martinique + Vieux-Fort (GP) are kept 'atlantic'
+ * because sargassum can round the southern tip of the island with shifting
+ * currents and reach them (rare but possible).
+ *
+ * @param {object} beach - { id, lat, lng, coast }
+ * @param {Array} banks - sargassum-banks.json entries
+ * @param {number} dayIndex - 1..3 (arrival only modeled in short term)
+ * @returns {number} arrival contribution to AFAI (0 to 0.25)
+ */
+function arrivalSignalFromBanks(beach, banks, dayIndex) {
+  if (!banks || !banks.length || dayIndex < 1 || dayIndex > 3) return 0
+  if (!beach || beach.lat == null) return 0
+  // RULE: sheltered beaches (baie FDF + Basse-Terre west) are always protected
+  if (beach.coast === 'sheltered') return 0
+
+  // v3.2 (2026-06-14): the arrival model was crying wolf. Backtest showed
+  // ~13/20 beaches flagged 'arrival-banks' EVERY day while history.json had
+  // ~0 actual beaching (calm season) — precision near 0%, the dominant source
+  // of the moderate/avoid over-prediction (cf. project-calm-season-overprediction).
+  // Tightened: radius 40→28km, mass floor 0.05→0.10, cap 0.20→0.15, and the key
+  // fix — REQUIRE NET APPROACH: a bank only counts if its 24h-predicted position
+  // is meaningfully closer (≥3km) than its current position. A bank merely
+  // sitting offshore within radius, or drifting away, no longer triggers.
+  // Result on live banks: 12→4 false dirty predictions, genuine south-exposed
+  // approaching beaches preserved. Do NOT widen back without a fresh backtest.
+  const THREAT_RADIUS = 28
+  let maxSignal = 0
+
+  for (const bank of banks) {
+    const mass = bank.mass || 0.10
+    if (mass < 0.10) continue // ignore thin/scattered patches
+
+    // Current position vs where it'll be in 24h (12h fallback, else stationary)
+    const cur = bank.centroid
+    const preds = bank.drift?.predictions || {}
+    // Horizon par jour (action #2, 22/06) : J1 = position advectée à 24h, J2 = 48h, J3 = 72h →
+    // vraie fenêtre d'arrivée multi-jours portée par les courants. Fallback 24h→12h→cur si l'horizon
+    // long est absent (bancs d'archive avant l'extension = comportement strictement identique).
+    const horizonKey = dayIndex >= 3 ? '72h' : dayIndex === 2 ? '48h' : '24h'
+    const fut = preds[horizonKey]?.centroid || preds['24h']?.centroid || preds['12h']?.centroid || cur
+
+    const dCur = distKm(beach.lat, beach.lng, cur[0], cur[1])
+    const dFut = distKm(beach.lat, beach.lng, fut[0], fut[1])
+    const minDist = Math.min(dCur, dFut)
+    if (minDist > THREAT_RADIUS) continue
+
+    // NET APPROACH: bank must be getting closer by ≥3km over 24h. A bank that is
+    // stationary offshore or drifting away is not an arrival threat (was the #1
+    // false-alarm source: the Atlantic belt always has banks within 40km).
+    if (dFut > dCur - 3) continue
+
+    // GEOGRAPHIC ORIENTATION: bank must be in the "incoming" direction, inside a
+    // 140° cone centered on coastNormal. No proximity escape (also a false source).
+    const cn = beach.coastNormal || 90 // default: faces east
+    const bankBearing = Math.round((Math.atan2(fut[1] - beach.lng, fut[0] - beach.lat) * 180 / Math.PI + 360) % 360)
+    let diff = Math.abs(bankBearing - cn)
+    if (diff > 180) diff = 360 - diff
+    if (diff > 70) continue
+
+    // Signal strength: proximity × mass, degraded for far-out days
+    const proximity = Math.max(0, 1 - minDist / THREAT_RADIUS)
+    const dayDecay = dayIndex === 1 ? 1.0 : dayIndex === 2 ? 0.65 : 0.35
+    const signal = mass * proximity * dayDecay
+
+    if (signal > maxSignal) maxSignal = signal
+  }
+
+  // Cap at 0.15 — arrival alone can't push a clean beach past moderate in 1 day
+  return Math.min(0.15, Math.round(maxSignal * 1000) / 1000)
+}
+
+/**
+ * Community reports override / reinforce satellite reading.
+ * @param {object} reports - { clean, moderate, avoid, total } for this beach (last 48h)
+ * @returns {number} bias to apply to AFAI (-0.10 to +0.15)
+ */
+function communityBias(reports) {
+  if (!reports || !reports.total || reports.total < 2) return 0
+  // Age-weighted counts: recent reports matter more (7-day window)
+  const r24 = reports.recent24h || {}
+  const p48 = reports.prev24_48h || {}
+  const r24Total = (r24.clean || 0) + (r24.moderate || 0) + (r24.avoid || 0)
+  const p48Total = (p48.clean || 0) + (p48.moderate || 0) + (p48.avoid || 0)
+  const olderTotal = Math.max(0, reports.total - r24Total - p48Total)
+  // Weighted: 0-24h=1.0, 24-48h=0.6, 48h-7d=0.3
+  const wClean = (r24.clean || 0) * 1.0 + (p48.clean || 0) * 0.6 + Math.max(0, (reports.clean || 0) - (r24.clean || 0) - (p48.clean || 0)) * 0.3
+  const wMod = (r24.moderate || 0) * 1.0 + (p48.moderate || 0) * 0.6 + Math.max(0, (reports.moderate || 0) - (r24.moderate || 0) - (p48.moderate || 0)) * 0.3
+  const wAvoid = (r24.avoid || 0) * 1.0 + (p48.avoid || 0) * 0.6 + Math.max(0, (reports.avoid || 0) - (r24.avoid || 0) - (p48.avoid || 0)) * 0.3
+  const t = wClean + wMod + wAvoid
+  if (t < 1.5) return 0 // ~2 recent reports minimum
+  const avoidFrac = wAvoid / t
+  const moderateFrac = wMod / t
+  const cleanFrac = wClean / t
+
+  // Strong avoid consensus → bias up
+  if (avoidFrac >= 0.5) return Math.min(0.15, 0.08 + avoidFrac * 0.1)
+  // Moderate consensus → slight bias up
+  if (moderateFrac + avoidFrac >= 0.6) return 0.06
+  // Strong clean consensus overrides (boats often know faster than satellite)
+  if (cleanFrac >= 0.7 && t >= 2.5) return -0.08
+  return 0
+}
+
+/**
+ * Surface drift effect (wind + waves + ocean current → onshore component).
+ * Uses real marine data (waves for physical Stokes drift, current direction)
+ * when available. Falls back to wind-based 2.5% Stokes estimate if not.
+ */
+function windDriftEffect(beach, hourlyWind, dayIndex, marineData) {
+  if (!hourlyWind || !hourlyWind.length) return 0
+
+  const startH = dayIndex * 24
+  const endH = startH + 24
+  const relevant = hourlyWind.slice(startH, endH)
+  if (!relevant.length) return 0
+
+  let sumSpeed = 0, sumSinDir = 0, sumCosDir = 0
+  for (const w of relevant) {
+    sumSpeed += w.speed
+    const rad = w.dir * Math.PI / 180
+    sumSinDir += Math.sin(rad)
+    sumCosDir += Math.cos(rad)
+  }
+  const avgSpeed = sumSpeed / relevant.length
+  const avgDir = (Math.atan2(sumSinDir / relevant.length, sumCosDir / relevant.length) * 180 / Math.PI + 360) % 360
+
+  // Stokes drift: prefer wave-based physical calculation from marine data
+  const island = beach.island || (beach.lat < 15.5 ? 'mq' : 'gp')
+  const marine = marineData?.[island]
+  const marineH = marine?.hourly?.slice(startH, Math.min(endH, (marine?.hourly?.length || 0)))
+  let stokes, driftBearing
+  if (marineH?.length > 0) {
+    // Physical Stokes drift from waves: V_s ≈ 0.016 * H² / T (m/s → km/h)
+    let sumStk = 0, sumStkSin = 0, sumStkCos = 0, n = 0
+    for (const mh of marineH) {
+      if (mh.waveH > 0 && mh.wavePeriod > 1) {
+        const s = 0.016 * (mh.waveH ** 2) / mh.wavePeriod * 3.6 // km/h
+        const dir = (mh.waveDir + 180) % 360 // push direction
+        sumStk += s; sumStkSin += Math.sin(dir * Math.PI / 180); sumStkCos += Math.cos(dir * Math.PI / 180); n++
+      }
+    }
+    if (n > 0) {
+      stokes = sumStk / n
+      driftBearing = (Math.atan2(sumStkSin / n, sumStkCos / n) * 180 / Math.PI + 360) % 360
+    } else {
+      stokes = avgSpeed * 0.025
+      driftBearing = (avgDir + 180) % 360
+    }
+  } else {
+    stokes = avgSpeed * 0.025
+    driftBearing = (avgDir + 180) % 360
+  }
+
+  // coastNormal: direction the coast faces. Drift pushing in that direction is "onshore".
+  const coastBearing = beach.coastNormal || (beach.lng < -61.5 ? 270 : 260)
+  const angleDiff = (driftBearing - coastBearing + 360) % 360
+  const onshoreComponent = stokes * Math.cos(angleDiff * Math.PI / 180)
+
+  // Ocean current contribution (adds to onshore push)
+  let currentOnshore = 0
+  if (marine?.current?.speed) {
+    const curKmh = marine.current.speed * 3.6
+    const curAngle = (marine.current.dir - coastBearing + 360) % 360
+    currentOnshore = curKmh * Math.cos(curAngle * Math.PI / 180) * 0.01 // scaled down
+  }
+
+  const effect = (onshoreComponent * 0.035) + currentOnshore
+  return Math.max(-0.04, Math.min(0.08, Math.round(effect * 1000) / 1000))
+}
+
+/**
+ * Onshore-wind GATE pour le signal d'arrivée (recherche concurrents 22/06).
+ * La littérature (NOAA/AOML) : près de la côte, le vent ONSHORE est le déclencheur
+ * d'échouage le plus robuste — un banc proche avec vent OFFSHORE peut ne jamais toucher.
+ * On projette le vent moyen (jours 1-3) sur la coastNormal de la plage et on SUPPRIME le
+ * signal d'arrivée UNIQUEMENT quand le vent souffle CLAIREMENT vers le large (onshoreCos < -0.3).
+ * Conservateur par conception :
+ *   - on ne BOOSTE jamais (>1.0) → aucun risque de réintroduire les fausses alertes saison calme ;
+ *   - les cas onshore/cross-shore (le commun, modèle déjà calé) restent à 1.0 → backtest inchangé ;
+ *   - on n'écrase pas les arrivées portées par le COURANT (sud/SW) sous alizés d'est, qui ne sont
+ *     pas « offshore-vent » → onshoreCos n'est pas franchement négatif pour elles.
+ * Renvoie 1.0 (neutre) si pas de vent / pas de coastNormal / plage abritée → backtest et chemin
+ * sans-vent strictement identiques.
+ */
+function onshoreWindGate(beach, hourlyWind) {
+  if (!beach || beach.coast === 'sheltered') return 1.0
+  const cn = beach.coastNormal
+  if (cn == null || !hourlyWind || !hourlyWind.length) return 1.0
+  let sumSin = 0, sumCos = 0, n = 0
+  for (let h = 24; h < 96 && h < hourlyWind.length; h++) {
+    const w = hourlyWind[h]; if (!w || w.dir == null) continue
+    const rad = w.dir * Math.PI / 180
+    sumSin += Math.sin(rad); sumCos += Math.cos(rad); n++
+  }
+  if (!n) return 1.0
+  const avgDir = (Math.atan2(sumSin / n, sumCos / n) * 180 / Math.PI + 360) % 360
+  // onshoreCos : +1 = le vent (venant du large) pousse vers la côte ; -1 = pousse vers le large.
+  // (Alizé d'est avgDir≈90 sur côte est coastNormal≈90 → cos(0)=+1 = onshore, cohérent.)
+  const onshoreCos = Math.cos((avgDir - cn) * Math.PI / 180)
+  // Suppress-only, et SEULEMENT pour un vent franchement offshore (< -0.3). Sinon 1.0.
+  return onshoreCos < -0.3 ? Math.max(0.5, 1.0 + (onshoreCos + 0.3) * 0.7) : 1.0
+}
+
+/**
+ * Build the 7-day honest forecast.
+ *
+ * @param {Array} levels - [{ id, afai, status, confidence, beachMemory, ... }]
+ * @param {object|null} windForecast - { mq: { hourly }, gp: { hourly } }
+ * @param {Array} history - history.json entries
+ * @param {Array} beaches - BEACHES with lat/lng/island
+ * @param {Array} [banks] - sargassum-banks.json entries (optional)
+ * @param {object} [communityReports] - { beachId: { clean, moderate, avoid, total } } (optional)
+ */
+function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports, marineData, opts) {
+  const weekly = {}
+  // Beached-hold half-life resolved once per call (env pin > opts override >
+  // calibration JSON > prior). opts.beachedHalfLifeDays lets the calibration
+  // sweep test candidates without reloading the module.
+  const beachedLambda = resolveBeachedLambda(opts && opts.beachedHalfLifeDays)
+  // Generique multi-regions: windForecast est cle par island/region (mq, gp, puntacana, ...)
+  const hasWind = !!(windForecast && Object.values(windForecast).some(w => w?.hourly?.length))
+  const hasBanks = Array.isArray(banks) && banks.length > 0
+  const reports = communityReports || {}
+
+  for (const level of levels) {
+    const beach = beaches ? beaches.find(b => b.id === level.id) : null
+    const island = beach?.island || (level.id.startsWith('gp-') ? 'gp' : 'mq')
+    const hourlyWind = windForecast?.[island]?.hourly || null
+    const trend = computeSatelliteTrend(level.id, history)
+    const baseConf = level.confidence || 75
+    const isMemory = !!(level.beachMemory || (level.source && level.source.includes('memory')))
+    const bReports = reports[level.id] || null
+    const cBias = communityBias(bReports)
+
+    // Conditions regime from this beach's OWN recent observations (not the
+    // calendar). Drives arrival gating + per-regime confidence below.
+    const recentMean = recentObservedMean(level.id, history)
+    const regime = classifyRegime(recentMean, level.afai)
+
+    // Check if any bank threatens this beach
+    const islandBanks = hasBanks ? banks.filter(b => b.island === island) : []
+    const hasArrival = islandBanks.length > 0
+
+    // Strongest raw arrival signal over the short horizon. Coherence rule: in the
+    // calm regime a WEAK arrival (below the raised calm detect threshold) is
+    // damped to gain 0.45 and never banners; but a signal strong enough to CLEAR
+    // that bar is a credible arrival and runs at FULL strength — so the "arrivée
+    // imminente" banner (arrivalDetected, same threshold) and the forecast AFAI
+    // always agree. Without this, a supra-threshold-but-damped signal could fire
+    // the banner while the displayed AFAI stayed clean (number/banner mismatch).
+    // Outside calm, the regime gain (0.85 / 1.0) is unchanged.
+    // Vent offshore (recherche concurrents 22/06) : atténue le signal d'arrivée si le vent souffle
+    // CLAIREMENT vers le large (un banc proche ne s'échoue pas contre le vent). 1.0 (neutre) sinon →
+    // chemin commun + backtest sans-vent strictement inchangés.
+    const onshoreFactor = onshoreWindGate(beach, hourlyWind)
+    // Signal d'arrivée PAR JOUR (J1/J2/J3) — sert l'ETA « J+N » du badge carte (action #2 multi-jours).
+    const _daySignals = (beach && hasArrival)
+      ? [1, 2, 3].map(d => onshoreFactor * arrivalSignalFromBanks(beach, islandBanks, d))
+      : [0, 0, 0]
+    const rawMaxArrival = Math.max(_daySignals[0], _daySignals[1], _daySignals[2])
+    const calmArrivalCredible = regime === 'calm' && rawMaxArrival >= regimeArrivalDetectThreshold(regime)
+    const arrivalGain = calmArrivalCredible ? 1.0 : regimeArrivalGain(regime)
+
+    const series = []
+    const t = new Date()
+
+    // Starting AFAI for Day 0: satellite + community bias (clamped)
+    const day0Raw = clamp01(level.afai + cBias)
+
+    // BEACHED HOLD decision — made ONCE from the OBSERVED day-0 load, not from the
+    // self-held projection, so the ratchet can't self-reinforce day over day.
+    //  - only for a clearly-loaded, NON-sheltered beach (sheltered coasts are
+    //    protected — arrivalSignalFromBanks already returns 0 for them; mirror it
+    //    here so a stray reading can't freeze them red);
+    //  - RELEASED to fast sea-dispersion by CLEARING EVIDENCE. Ground truth wins:
+    //    a community "clean" consensus (humans see the SAND) is the primary release.
+    //    Satellite trend only corroborates — it senses WATER, not sand, so it must
+    //    be a STRONG, sustained fall (slope < -0.02, r²-gated) before it may unlatch
+    //    a beached hold, never a shallow slope that noise can trip.
+    const clearingEvidence = cBias < 0 || (trend && trend.slope < -0.02)
+    const beachedHold = BEACHED_HOLD_ON && !!beach && beach.coast !== 'sheltered'
+      && day0Raw >= BEACHED_TRIGGER_AFAI && !clearingEvidence
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(t)
+      d.setDate(d.getDate() + i)
+
+      let afai, sources = []
+      // Raw physics signal, then regime-dampened (calm beaches resist arrival hype).
+      const rawArrival = hasArrival ? onshoreFactor * arrivalSignalFromBanks(beach, islandBanks, i) : 0
+      const arrivalContribution = rawArrival * arrivalGain
+      let { confidence, type } = forecastConfidence(i, baseConf, hasWind, arrivalContribution > 0.02)
+      // Memory beach forecasts must never be more confident than the memory observation itself
+      if (isMemory && i > 0) confidence = Math.min(confidence, baseConf)
+
+      if (i === 0) {
+        // Day 0: direct observation (with community bias)
+        afai = day0Raw
+        sources = bReports && bReports.total >= 3 ? ['satellite', 'community'] : ['satellite']
+      } else if (isMemory) {
+        // Memory beaches: pure exponential decay for ALL forecast days.
+        // No arrival/wind contributions — the beach-memory model only knows the last event decayed.
+        const decayFactor = Math.exp(-DECAY_LAMBDA * i)
+        afai = Math.max(cleanFloorFor(beach), day0Raw * decayFactor)
+        sources = ['memory-decay']
+      } else {
+        // Days 1-6 (non-memory): persistence + arrival + wind
+        // PHYSICAL MODEL: afai(d) = afai(d-1) * decay_1day + arrivals - dispersion
+        const prevAfai = series[i - 1]?.afai || day0Raw
+
+        // 1 day decay — SEA vs BEACHED (two physics, cf. confidence.cjs).
+        // Floating sargassum disperses fast (5d half-life). But sargassum already
+        // grounded on the sand does not clear on that timescale without
+        // collection/boom/retreating swell: hold it with the slower beached
+        // half-life (decision made ONCE above from the observed day-0 load).
+        // Calm beaches are clean at day0 so beachedHold is false → the calm-season
+        // false-alarm calibration stays byte-identical.
+        const dayLambda = beachedHold ? beachedLambda : DECAY_LAMBDA
+        const dayDecay = Math.exp(-dayLambda) // ~0.87/d (sea) or ~0.94/d (beached hold)
+
+        // Wind: small contribution, weaker as days increase
+        // Garde NaN (moat) : un effet non-fini (vent/slope corrompu) ne doit pas
+        // contaminer `raw` → NaN → statusFromAfai fabriquerait un 'avoid'.
+        let windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
+        if (!Number.isFinite(windEffect)) windEffect = 0
+
+        // Trend: only if r² passed gate (computeSatelliteTrend returns null otherwise)
+        // Apply only for days 1-3 where short-term trend matters
+        let trendEffect = trend && i <= 3 ? trend.slope * 0.5 : 0
+        if (!Number.isFinite(trendEffect)) trendEffect = 0
+        // In a calm stretch, don't extrapolate a RISING trend from quiet-water
+        // noise — it was the co-driver of the residual calm false alarms. Falling
+        // trends (dispersion) pass through untouched: they only ever help. This is
+        // self-correcting — a genuinely rising day-0 lifts the beach out of the
+        // calm regime, restoring full-strength trend.
+        if (trendEffect > 0) trendEffect *= arrivalGain
+
+        // Persist + add arrival + wind + trend
+        let raw = prevAfai * dayDecay + arrivalContribution + windEffect + trendEffect
+
+        // Clean baseline floor (0.05) — never go below a quiet-beach reading.
+        // (NB: NOT a 0.15 floor — that pinned south beaches at clean/moderate =
+        // 100% false alarms, banned in feedback_forecast_floor_ban.)
+        afai = clamp01(Math.max(cleanFloorFor(beach), raw))
+
+        sources = []
+        sources.push('persistence')
+        if (arrivalContribution > 0.02) sources.push('banks-drift')
+        if (windEffect !== 0) sources.push('wind')
+        if (trendEffect !== 0) sources.push('satellite-trend')
+      }
+
+      afai = Math.round(afai * 100) / 100
+      const dayStatus = statusFromAfai(afai)
+      // Honest confidence: cap a calm-season ALERT (never trustworthy) AND floor a
+      // calm-season CLEAN call (empirically ~100% reliable — stop hiding it under
+      // the horizon-decay collapse). Floor suppressed for memory beaches and
+      // bounded by the day-0 observation confidence.
+      confidence = regimeAdjustedConfidence(confidence, regime, dayStatus, i, { allowFloor: !isMemory, baseConf })
+
+      series.push({
+        day: i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : DAYS[d.getDay()],
+        date: d.toISOString().slice(0, 10),
+        afai,
+        status: dayStatus,
+        confidence,
+        type,
+        regime,
+        sources,
+      })
+    }
+
+    // Total drift: day 0 → day 3 (meaningful horizon, not day 6 noise)
+    const meaningfulTrend = series[3].afai - series[0].afai
+
+    // Arrival detection: significant arrival signal on day 1, 2 or 3
+    // This is the USER-FACING "sargasses coming soon" signal — drives banner,
+    // disclaimer, drift label, and score penalty in lockstep. Threshold 0.05
+    // is the point at which the signal is strong enough to actually move the
+    // displayed forecast numbers; weaker signals (0.03-0.04) produced flat
+    // forecasts paired with "arrival imminent" messaging = false alarms.
+    // Reuse the pre-loop raw max (same 3 horizons) — no recompute.
+    const maxArrival = rawMaxArrival
+    // Higher bar in the calm regime (0.12) than in active stretches (0.05): only
+    // a strong, close, genuinely-approaching bank flags "imminent" on a quiet
+    // beach — killing the calm-season "arrival imminente" false banners. When it
+    // DOES clear the bar, calmArrivalCredible above runs the forecast at full
+    // strength so the banner and the AFAI numbers stay coherent.
+    const arrivalDetected = maxArrival >= regimeArrivalDetectThreshold(regime) && level.afai < 0.20
+
+    // ETA d'échouage pour le badge « J+N » de la carte (action #2, horizon multi-jours) :
+    //   0    = déjà là (plage modérée/avoid aujourd'hui)
+    //   1-3  = premier jour où le signal d'arrivée (par jour) franchit le seuil du régime
+    //   null = aucune arrivée prévue
+    const _firstArrDay = _daySignals.findIndex(s => s >= regimeArrivalDetectThreshold(regime))
+    const arrivalDay = (level.status === 'avoid' || level.status === 'moderate') ? 0
+      : arrivalDetected ? (_firstArrDay >= 0 ? _firstArrDay + 1 : 1)
+      : null
+
+    // Forecast method label
+    let forecastMethod, forecastDisclaimer
+    if (isMemory) {
+      forecastMethod = 'memory-decay'
+      forecastDisclaimer = 'Donnees reconstruites (event passe). Prevision = decay naturel seulement.'
+    } else if (arrivalDetected) {
+      forecastMethod = 'arrival-banks'
+      forecastDisclaimer = 'Banc de sargasses detecte a proximite — arrivee possible dans 1-3 jours.'
+    } else if (hasBanks && hasArrival) {
+      forecastMethod = 'banks-persistence'
+      forecastDisclaimer = 'Persistance + bancs satellite + vent. Fiabilite decroit apres J+3.'
+    } else if (hasWind) {
+      forecastMethod = 'persistence-wind'
+      forecastDisclaimer = 'Persistance + vent Open-Meteo. Pas de banc detecte a proximite.'
+    } else {
+      forecastMethod = 'persistence'
+      forecastDisclaimer = `Persistance simple (half-life ${HALF_LIFE_DAYS}j). Pas de signal externe.`
+    }
+
+    // Beach held by the beached ratchet (loaded today, no clearing evidence, no
+    // fresh arrival): the honest story is NOT "dispersion" — the algae are on the
+    // sand and stay until removed. Front label stays plain + temporal + hedged
+    // (guide voice, answers "how long"); the mechanism ("sans ramassage…") lives
+    // one layer down in the disclaimer, never promise a dispersion we don't measure.
+    const beachedPersist = beachedHold && !arrivalDetected
+
+    const driftDir = arrivalDetected ? 'up'
+      : beachedPersist ? 'stable'
+      : meaningfulTrend > 0.05 ? 'up'
+      : meaningfulTrend < -0.05 ? 'down'
+      : 'stable'
+    const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
+      : beachedPersist ? 'Sargasses probablement encore la quelques jours'
+      : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
+      : meaningfulTrend < -0.05 ? 'Dispersion attendue'
+      : 'Stable'
+    if (beachedPersist) {
+      forecastDisclaimer = 'Sargasses probablement echouees : sans ramassage/barrage, la dispersion marine seule ne les enleve pas — persistance probable quelques jours.'
+    }
+
+    weekly[level.id] = {
+      forecast: series,
+      drift: driftDir,
+      driftLabel: driftLbl,
+      driftValue: Math.round(meaningfulTrend * 100) / 100,
+      forecastMethod,
+      forecastDisclaimer,
+      // Max reliable horizon in days (frontend can cap display)
+      reliableHorizon: isMemory ? 1 : hasArrival ? 3 : 2,
+      // Flag for UI alert banner "arrival detected"
+      arrivalDetected,
+      arrivalStrength: Math.round(maxArrival * 100) / 100,
+      arrivalDay, // ETA badge « J+N » : 0 = déjà là, 1-3 = jour d'arrivée prévu, null = aucune
+
+      // Conditions regime + per-regime reliability — lets the app/pages show an
+      // HONEST confidence ("saison calme : alertes peu fiables") instead of a
+      // single global % that masks the regime.
+      regime,
+      regimeConfidence: regimeConfidenceSummary(regime),
+    }
+  }
+
+  return weekly
+}
+
+module.exports = {
+  buildHonestForecast,
+  computeSatelliteTrend,
+  windDriftEffect,
+  onshoreWindGate,
+  arrivalSignalFromBanks,
+  communityBias,
+  statusFromAfai,
+  recentObservedMean,
+  regimeArrivalGain,
+  regimeArrivalDetectThreshold,
+  DAYS,
+}

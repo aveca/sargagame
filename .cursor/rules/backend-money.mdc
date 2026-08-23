@@ -1,0 +1,87 @@
+---
+description: Money-path Mollie/PayPal/Stripe — règles paiements, webhooks, tokens, B2B. touching payment code = review obligatoire.
+globs: ["public/api/**/*.php", "scripts/automation/*pay*", "scripts/automation/*mollie*", "scripts/automation/*b2b*"]
+alwaysApply: false
+---
+
+# Backend Money-Path — Règles paiements
+
+## Hiérarchie des caisses
+
+| Voie | Statut | Règle |
+|------|--------|-------|
+| **Mollie** | **CAISSE ACTIVE** | Modif additive only. Montants en repo. |
+| **PayPal** | secondaire vivant | Additif, mêmes règles que Mollie |
+| **Stripe** | **LEGACY run-off, LECTURE SEULE** | Surveiller MRR. Ne pas étendre. |
+
+## Config secrets
+
+- En repo = `*-config.example.php` SEULEMENT
+- Vrais `*-config.php` sur FTP (gitignored, jamais écrasés)
+- **Ne jamais** les lire localement ni les commit
+- `php -l` passe sur les `.php` non-config
+
+## Money-path Mollie
+
+### Flow B2C pass (one-time)
+```
+Frontend (PremiumModal.jsx)
+  → createToken() (Mollie Components)
+  → POST /api/mollie.php {action:"create_payment", pass, cents, email}
+  → mollie.php: build amount from cents, validate allowlist, create payment
+  → return {checkoutUrl, paymentId}
+  → Si 3DS: redirect → Mollie → retour /?mollie_return=1
+  → Frontend polls payment_status → localStorage premium
+  → Webhook (async): mol_b2c_pass_grant() → backup serveur
+```
+
+### Flow B2B subscription (monthly)
+```
+Frontend
+  → POST /api/mollie.php {action:"create_subscription", plan, email}
+  → mollie.php: create/find customer, create subscription
+  → return {checkoutUrl, subscriptionId}
+  → Webhook subscription.created → mol_b2b_grant_once() → token Pro
+```
+
+### Allowlist prix B2C (source unique)
+
+```php
+$passPrices = [
+    'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
+    'trip7'  => ['EUR' => 4.99,  'USD' => null],   // USD variable par région
+    'season' => ['EUR' => 24.99, 'USD' => null],
+];
+```
+
+### Surcharge USD peak season
+- Juin-novembre : +15% sur USD (hors trip7)
+- Le frontend affiche le prix de base, le backend applique la surcharge
+
+## Check-list merge money-path
+
+1. **Additif only** — ne casse JAMAIS le flux B2C
+2. **`php -l`** sur chaque `.php` touché
+3. **Revue panel adverse** (adversarial-reviewer persona)
+4. **Paiement test** = SEULEMENT pour un NOUVEAU mécanisme
+5. **L'argent ne touche JAMAIS le verdict** (encart = `sponsored`)
+
+## Webhook Mollie
+
+- Signature `X-Mollie-Signature` vérifiée (HMAC-SHA256)
+- `payment.paid` → grant B2C pass (`mol_b2c_pass_grant`)
+- `subscription.created/updated` → grant B2B Pro (`mol_b2b_grant_once`)
+- `subscription.canceled/expired` → revoke (`mol_b2b_revoke`)
+- Idempotent : même ID = pas de double action
+
+## B2B plans (montants en repo)
+
+```php
+// mollie-lib.php → mol_b2b_plans()
+'pro_monthly'  => 79.00 EUR
+'brief_monthly' => 29.00 EUR
+```
+
+Annuel : `scripts/automation/mollie-paylinks.cjs` (paylinks hosted)
+- `pro_annual` = 690 €
+- `brief_annual` = 290 €

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Transition Carte → Plage — assets animés (Marée du Veilleur)</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0A1714;font-family:system-ui,-apple-system,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:18px}
+  .wrap{width:100%;max-width:390px}
+  .frame{position:relative;width:100%;aspect-ratio:390/680;border-radius:20px;overflow:hidden;box-shadow:0 14px 50px rgba(0,0,0,.45);background:#0B2230}
+  #scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .cap{position:absolute;left:0;right:0;bottom:16px;text-align:center;pointer-events:none}
+  .cap span{position:absolute;left:0;right:0;font:800 14px/1.2 system-ui;color:#EAF7F4;text-shadow:0 2px 12px rgba(0,0,0,.55);letter-spacing:.02em;transition:opacity .35s}
+  .cap b{color:#FFC72C}
+  .row{display:flex;align-items:center;gap:10px;margin-top:14px;color:#8aa}
+  .row input[type=range]{flex:1;accent-color:#FFC72C}
+  .lab{font-size:12px;font-weight:700;letter-spacing:.04em;opacity:.8}
+  .btn{margin-top:10px;width:100%;padding:12px;border:none;border-radius:14px;cursor:pointer;
+    font:800 14px system-ui;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="frame">
+    <svg id="scene" viewBox="0 0 390 680" preserveAspectRatio="xMidYMid slice" aria-label="Plongée de la carte vers la plage">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/><stop offset=".72" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFE6A8" stop-opacity=".95"/><stop offset=".4" stop-color="#FFD884" stop-opacity=".5"/><stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1C3138"/><stop offset="1" stop-color="#13242A"/>
+        </linearGradient>
+      </defs>
+
+      <rect x="0" y="0" width="390" height="680" fill="url(#sky)"/>
+      <g id="gSun"><circle cx="110" cy="300" r="135" fill="url(#sun)"/><circle cx="110" cy="300" r="26" fill="#FFE6A8"/></g>
+
+      <rect x="0" y="330" width="390" height="350" fill="url(#sea)"/>
+      <path d="M86 332 L134 332 L150 680 L70 680 Z" fill="#FFD884" opacity=".10"/>
+      <ellipse cx="110" cy="346" rx="46" ry="4" fill="#FFD884" opacity=".30"/>
+      <ellipse cx="110" cy="372" rx="64" ry="4.5" fill="#FFD884" opacity=".16"/>
+
+      <g id="gRays" opacity="0">
+        <path d="M120 120 L150 120 L120 360 L98 360 Z" fill="url(#ray)"/>
+        <path d="M200 120 L222 120 L210 360 L192 360 Z" fill="url(#ray)"/>
+        <path d="M280 120 L308 120 L300 360 L274 360 Z" fill="url(#ray)"/>
+      </g>
+
+      <g id="gBeam" opacity=".45"><path d="M300 96 L322 96 L150 348 L120 338 Z" fill="#FFE6A8" opacity=".4"/></g>
+
+      <g id="gDots">
+        <g class="dot"><circle cx="70" cy="392" r="13" fill="#22C55E" opacity=".25"/><circle cx="70" cy="392" r="5" fill="#22C55E"/></g>
+        <g class="dot"><circle cx="150" cy="430" r="13" fill="#22C55E" opacity=".25"/><circle cx="150" cy="430" r="5" fill="#22C55E"/></g>
+        <g class="dot"><circle cx="232" cy="404" r="12" fill="#E8A800" opacity=".25"/><circle cx="232" cy="404" r="5" fill="#E8A800"/></g>
+        <g class="dot"><circle cx="312" cy="446" r="12" fill="#22C55E" opacity=".25"/><circle cx="312" cy="446" r="5" fill="#22C55E"/></g>
+        <g class="dot"><circle cx="110" cy="476" r="12" fill="#E8522A" opacity=".25"/><circle cx="110" cy="476" r="5" fill="#E8522A"/></g>
+        <g class="dot"><circle cx="276" cy="492" r="12" fill="#22C55E" opacity=".25"/><circle cx="276" cy="492" r="5" fill="#22C55E"/></g>
+      </g>
+      <g id="gFocus"><circle cx="190" cy="430" r="16" fill="#FFE6A8" opacity=".5"/><circle cx="190" cy="430" r="7" fill="#22C55E" stroke="#06121A" stroke-width="1.6"/></g>
+
+      <g id="gWisps" opacity=".4">
+        <path d="M40 420 q26 -8 54 0 q-12 9 -28 7 q-16 -2 -26 -7z" fill="#4A3618" opacity=".7"/>
+        <path d="M250 452 q30 -9 62 0 q-14 10 -32 8 q-18 -2 -30 -8z" fill="#3d2e10" opacity=".7"/>
+        <path d="M150 488 q22 -6 46 0 q-10 8 -24 6 q-14 -1 -22 -6z" fill="#4A3618" opacity=".6"/>
+      </g>
+
+      <g id="gYole" opacity="0">
+        <path d="M232 346 q18 6 36 0 l-6 10 q-12 4 -24 0 z" fill="#E8522A"/>
+        <path d="M232 346 q18 6 36 0" fill="none" stroke="#FFE6A8" stroke-width="1.4" opacity=".7"/>
+        <rect x="248" y="330" width="2.4" height="16" fill="#10231E"/>
+        <path d="M250 331 l11 9 l-11 3 z" fill="#FFD884"/>
+      </g>
+
+      <g id="gBirds" opacity="0" stroke="#0B2230" stroke-width="2.2" fill="none" stroke-linecap="round">
+        <path d="M150 150 q7 -7 14 0 q7 -7 14 0"/>
+        <path d="M196 168 q5 -5 10 0 q5 -5 10 0"/>
+        <path d="M126 178 q5 -5 10 0 q5 -5 10 0"/>
+      </g>
+
+      <g id="gSat">
+        <g transform="translate(300,90)">
+          <rect x="-9" y="-7" width="18" height="14" rx="3" fill="#0E2A2E" stroke="#5FD3C9" stroke-width="1.4"/>
+          <rect x="-26" y="-4" width="13" height="8" rx="1.5" fill="#173B40" stroke="#2A6B66" stroke-width="1"/>
+          <rect x="13" y="-4" width="13" height="8" rx="1.5" fill="#173B40" stroke="#2A6B66" stroke-width="1"/>
+          <circle cx="0" cy="0" r="3.4" fill="#FFE6A8"/>
+        </g>
+      </g>
+
+      <g id="gBeach" opacity="0">
+        <path d="M0 520 Q150 496 390 528 L390 680 L0 680 Z" fill="url(#sand)"/>
+        <path d="M0 520 Q150 496 390 528" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".30"/>
+        <path d="M0 540 Q160 520 390 548 L390 566 Q160 540 0 560 Z" fill="#FFB87A" opacity=".14"/>
+        <g transform="translate(338,540)" fill="#0C1410">
+          <path d="M6 0 q-30 -8 -50 10 l5 5 q16 -15 44 -9 z"/>
+          <path d="M6 -2 q-10 -26 -38 -30 l-1 8 q22 4 32 24 z"/>
+          <path d="M8 0 q18 -24 36 -22 l3 7 q-15 0 -32 19 z"/>
+          <path d="M7 -3 q2 -26 20 -38 l6 6 q-15 11 -18 34 z"/>
+          <path d="M8 0 q28 -10 42 2 l-2 7 q-13 -9 -36 -3 z"/>
+          <path d="M4 -2 l9 -1 q14 64 9 130 l-12 0 q6 -64 -6 -128 z"/>
+        </g>
+        <g fill="#4A3618" opacity=".6"><ellipse cx="70" cy="560" rx="30" ry="6"/><ellipse cx="210" cy="582" rx="22" ry="5"/></g>
+      </g>
+    </svg>
+    <div class="cap">
+      <span id="capMap">La carte — toutes tes plages, en direct</span>
+      <span id="capBeach" style="opacity:0"><b>Anse Madame</b> — propre aujourd'hui</span>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lab">Carte</span>
+    <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Plonger de la carte vers la plage">
+    <span class="lab">Plage</span>
+  </div>
+  <button class="btn" id="dive">Plonger ↓</button>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var scene=$('scene'),scrub=$('scrub');
+  var els={sun:$('gSun'),rays:$('gRays'),beam:$('gBeam'),dots:$('gDots'),focus:$('gFocus'),
+    wisps:$('gWisps'),yole:$('gYole'),birds:$('gBirds'),sat:$('gSat'),beach:$('gBeach'),
+    capMap:$('capMap'),capBeach:$('capBeach')};
+  var clamp=function(v){return v<0?0:v>1?1:v};
+  var lerp=function(a,b,t){return a+(b-a)*t};
+  var smooth=function(t){return t*t*(3-2*t)};
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var t=0, px=0, py=0, tpx=0, tpy=0, raf=null, autoT=null;
+
+  function render(){
+    var s=smooth(t);
+    els.sun.style.opacity=(0.6+0.4*t).toFixed(3);
+    // constellation : fond, s'enfonce + s'efface
+    els.dots.style.opacity=clamp(1-t/0.5).toFixed(3);
+    els.dots.setAttribute('transform','translate('+(px*4).toFixed(1)+','+(70*s).toFixed(1)+') scale('+(1-0.3*s).toFixed(3)+')');
+    // plage focus : grandit puis cède la place à la plage
+    els.focus.style.opacity=clamp(1-(t-0.28)/0.32).toFixed(3);
+    els.focus.setAttribute('transform','translate(0,'+(60*s).toFixed(1)+') scale('+lerp(1,3.2,s).toFixed(3)+')');
+    // satellite : veille, puis se retire en douceur (faisceau sur la MER, jamais l'user)
+    els.sat.setAttribute('transform','translate('+(px*-6).toFixed(1)+','+(-66*s).toFixed(1)+')');
+    els.sat.style.opacity=(1-0.55*s).toFixed(3);
+    els.beam.style.opacity=(0.45*(1-0.8*s)).toFixed(3);
+    // god-rays : pic au milieu de la plongée
+    els.rays.style.opacity=(Math.sin(Math.PI*t)*0.5).toFixed(3);
+    els.rays.setAttribute('transform','translate('+(px*8).toFixed(1)+','+lerp(-26,26,t).toFixed(1)+')');
+    // dérive de sargasses : parallaxe avant
+    els.wisps.style.opacity=(0.3+0.5*t).toFixed(3);
+    els.wisps.setAttribute('transform','translate('+(px*12).toFixed(1)+','+lerp(-52,38,t).toFixed(1)+')');
+    // yole + oiseaux : la vie arrive à hauteur de plage
+    els.yole.style.opacity=clamp((t-0.5)/0.3).toFixed(3);
+    els.birds.style.opacity=clamp((t-0.42)/0.3).toFixed(3);
+    els.birds.setAttribute('transform','translate('+lerp(0,30,t).toFixed(1)+',0)');
+    // la plage monte dans le champ
+    var bt=smooth(clamp((t-0.35)/0.65));
+    els.beach.style.opacity=clamp((t-0.36)/0.28).toFixed(3);
+    els.beach.setAttribute('transform','translate(0,'+(360*(1-bt)).toFixed(1)+')');
+    // légende : crossfade
+    els.capMap.style.opacity=clamp(1-t/0.4).toFixed(3);
+    els.capBeach.style.opacity=clamp((t-0.55)/0.25).toFixed(3);
+  }
+
+  function tick(){
+    var working=false;
+    if(autoT!==null){
+      autoT+=0.0125; var e=autoT<0?0:autoT>1?1:autoT;
+      t=e<0.5?4*e*e*e:1-Math.pow(-2*e+2,3)/2; // easeInOutCubic sur la progression
+      scrub.value=Math.round(t*1000);
+      if(autoT>=1){autoT=null;t=1;scrub.value=1000;} else working=true;
+    }
+    // parallaxe pointeur : easing vers la cible
+    px+=(tpx-px)*0.12; py+=(tpy-py)*0.12;
+    if(Math.abs(tpx-px)>0.01||Math.abs(tpy-py)>0.01) working=true;
+    render();
+    if(working){raf=requestAnimationFrame(tick);} else {raf=null;}
+  }
+  function wake(){ if(raf===null) raf=requestAnimationFrame(tick); }
+
+  // scrub manuel : rendu direct (pas besoin de rAF)
+  scrub.addEventListener('input',function(){ autoT=null; t=parseInt(scrub.value,10)/1000; render(); });
+
+  function dive(){ autoT=0; wake(); }
+  $('dive').addEventListener('click',dive);
+
+  // parallaxe pointeur (vie = interaction ; amplitude faible)
+  if(!reduce){
+    scene.addEventListener('pointermove',function(ev){
+      var r=scene.getBoundingClientRect();
+      tpx=((ev.clientX-r.left)/r.width-0.5)*2;
+      tpy=((ev.clientY-r.top)/r.height-0.5)*2;
+      wake();
+    });
+    scene.addEventListener('pointerleave',function(){ tpx=0;tpy=0;wake(); });
+  }
+
+  document.addEventListener('visibilitychange',function(){ if(document.hidden&&raf){cancelAnimationFrame(raf);raf=null;} });
+
+  if(reduce){ t=1; scrub.value=1000; render(); }   // plancher dur : pose plage figée, lisible
+  else { t=0; render(); setTimeout(dive,420); }     // auto-plongée 1× puis repos (pas d'idle)
+})();
+</script>
+</body>
+</html>

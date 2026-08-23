@@ -1,0 +1,446 @@
+{
+  "_note": "Contenido SEO en español (lengua secundaria) para Punta Cana (sargassumpuntacana.com). Las páginas se renderizan bajo /es/. El primario (EN) vive en regions/seo-content/puntacana.json. Mismos hechos que el archivo EN, escritos de forma nativa para visitantes hispanohablantes (neutro/dominicano) — no traducción automática. Los slugs son en español; las rutas aquí alimentan las páginas best + weekly de /es/.",
+  "home": {
+    "title": "Sargazo en Punta Cana Hoy — Mapa de Playas en Vivo y Pronóstico a 7 Días 2026",
+    "desc": "¿Hay sargazo en Punta Cana hoy? Mapa en vivo de 12 playas — Bávaro, Macao, Cap Cana — actualizado 4× al día por satélite, con pronóstico a 7 días por playa."
+  },
+  "routes": {
+    "best": "mejores-playas-sin-sargazo-punta-cana",
+    "weekly": "sargazo-punta-cana-esta-semana"
+  },
+  "faq": [
+    {
+      "q": "¿Cuándo es la temporada de sargazo en Punta Cana?",
+      "a": "La temporada de sargazo en Punta Cana va de abril a octubre, con los arribos más fuertes entre mayo y agosto. Fuera de esos meses las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como las condiciones cambian de una semana a otra, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuatro veces al día — para que veas lo que de verdad hay en la arena hoy, no un promedio de temporada."
+    },
+    {
+      "q": "¿Qué playas tienen menos sargazo en Punta Cana?",
+      "a": "Ninguna playa es inmune, pero Playa Blanca y Juanillo en Cap Cana, además de Cabeza de Toro, suelen salir mejor libradas gracias a la protección del arrecife y a la limpieza intensiva de los resorts. La franja abierta Bávaro–Macao–Uvero Alto mira de frente al Atlántico y acumula más alga en los meses pico. Revisa nuestro mapa en vivo antes de elegir: las actualizaciones satelitales diarias muestran qué playas están limpias ahora mismo, no el mes pasado."
+    },
+    {
+      "q": "¿Qué tan confiables son los datos de sargazo de este sitio?",
+      "a": "Nuestros datos provienen de los programas satelitales Copernicus y NOAA, que detectan el sargazo flotante con el índice espectral AFAI. Los actualizamos cuatro veces al día y los combinamos con reportes de bañistas en la playa. La nubosidad puede retrasar ocasionalmente una lectura, por eso cada playa muestra su hora exacta de actualización y un nivel de confianza — siempre sabes qué tan fresca es la información."
+    },
+    {
+      "q": "¿De verdad se puede pronosticar el sargazo con 7 días de anticipación?",
+      "a": "Sí, con límites. El sargazo deriva con el viento y las corrientes marinas, así que en cuanto los satélites detectan una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante la semana siguiente. El alga que ya está en una playa se degrada con una vida media de unos 3.5 días, salvo que llegue material nuevo. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. El pronóstico se recalcula con cada actualización satelital — cuatro veces al día — y es el único pronóstico de sargazo a 7 días playa por playa publicado para Punta Cana. Publicamos su precisión medida de forma abierta en nuestra página de metodología."
+    },
+    {
+      "q": "¿Los resorts de Punta Cana limpian el sargazo de sus playas?",
+      "a": "La mayoría de los grandes resorts de Bávaro, Cap Cana y Uvero Alto rastrillan su frente de playa cada mañana, y algunos despliegan barreras mar adentro. La limpieza ayuda, pero durante arribos fuertes el alga puede regresar en horas. Por eso seguimos el flujo real mar adentro por satélite, actualizado a diario: si no viene nada nuevo, la playa rastrillada aguanta limpia todo el día; si se aproxima una mancha grande, hasta las mejores cuadrillas se quedan atrás."
+    },
+    {
+      "q": "¿Qué debo hacer si mi playa tiene sargazo hoy?",
+      "a": "Revisa el mapa en vivo para encontrar la playa limpia más cercana — las condiciones suelen variar muchísimo a poca distancia en carro, y Cap Cana o Cabeza de Toro pueden estar bien mientras Bávaro está cubierta. Nadar cerca de cantidades pequeñas es inofensivo, aunque los montones en descomposición huelen a azufre y conviene evitarlos. Los usuarios premium reciben alertas push en cuanto una playa guardada cambia de estado, además del pronóstico a 7 días para planear alrededor de los días cargados."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "pronostico-sargazo",
+      "title": "Pronóstico de Sargazo Punta Cana 2026 — 7 Días por Playa",
+      "desc": "Pronóstico de sargazo a 7 días para Punta Cana, recalculado 4× al día con datos satelitales de Copernicus. Mira qué playas siguen limpias esta semana — Bávaro, Macao, Cap Cana.",
+      "h1": "Pronóstico de Sargazo en Punta Cana — Próximos 7 Días, Playa por Playa",
+      "intro": "Casi todos los pronósticos de sargazo para Punta Cana te dan un solo veredicto para toda la costa — normalmente basado en imágenes oficiales que ya tienen días de retraso cuando se publican. Esta página funciona distinto. Corremos un pronóstico dedicado para cada una de las 12 playas que monitoreamos, de Uvero Alto hasta Juanillo, porque las condiciones divergen de verdad: una mancha que tapa Macao puede no tocar Cap Cana en absoluto. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, revisa lo que viene en camino mar adentro y proyecta los arribos de los próximos siete días. Obtienes un panorama día por día y por playa, no un promedio regional. Y como cuatro actualizaciones satelitales al día alimentan el modelo, lo que lees aquí refleja el mar de hoy, no el de la semana pasada. Úsalo para elegir tus días de playa antes de que el alga los elija por ti.",
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan manchas de sargazo flotante desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial — el sargazo deriva a un 2.5% de la velocidad del viento más la corriente local. Para el alga que ya está en una playa aplicamos persistencia exponencial con vida media de 3.5 días: se degrada salvo que llegue material nuevo. Luego el modelo califica cada playa a diario, de limpia a evitar. Los reportes de la comunidad corrigen la vista satelital cuando las nubes bloquean una pasada. La mayor precisión está en los días 1 a 3, y todo el pronóstico se recalcula con cada actualización satelital — cuatro veces al día."
+    },
+    "today": {
+      "slug": "playas-sin-sargazo-hoy",
+      "title": "Playas sin Sargazo en Punta Cana Hoy (Lista en Vivo)",
+      "desc": "Lista en vivo de las playas de Punta Cana sin sargazo ahora mismo. Verificada por satélite 4 veces al día — encuentra arena limpia hoy en Bávaro, Cap Cana o Uvero Alto.",
+      "h1": "Playas sin Sargazo Hoy en Punta Cana",
+      "intro": "¿Buscas una playa limpia en Punta Cana ahora mismo? Abajo está la lista del día con las playas actualmente libres de sargazo, ordenadas de la más limpia a la más afectada. Se arma con la última pasada satelital de Copernicus y se actualiza cuatro veces al día, así que refleja las condiciones de esta mañana — no una foto de archivo ni una reseña del mes pasado. Como regla general, Cap Cana y Cabeza de Toro se recuperan más rápido, mientras que la franja abierta de Bávaro a Uvero Alto recibe más alga en temporada. Pero el mar reescribe ese ranking cada semana, y por eso existe esta lista. Revisa el número junto a tu playa y lánzate."
+    },
+    "map": {
+      "slug": "mapa-sargazo",
+      "title": "Mapa del Sargazo Punta Cana (En Vivo) — Playa por Playa",
+      "desc": "Mapa interactivo del sargazo en Punta Cana, actualizado 4 veces al día con imágenes satelitales. Revisa las condiciones de alga en vivo en cada playa antes de salir.",
+      "h1": "Mapa del Sargazo en Vivo de Punta Cana",
+      "intro": "Este es un mapa de algas en vivo e interactivo de Punta Cana — cada playa, de Uvero Alto a Juanillo, tiene su propio estado en colores: limpia, moderada o evitar. El mapa funciona con imágenes satelitales de Copernicus actualizadas cuatro veces al día, combinadas con reportes de gente que está parada en la arena en este momento. Toca cualquier playa para ver su estado actual, una calificación de 0 a 100 y el panorama de sargazo a 7 días. A diferencia de las guías de temporada estáticas, este mapa cambia cuando cambia el mar: un giro de viento en la noche puede limpiar Bávaro y cargar Macao a la hora del almuerzo. Revísalo la mañana que vayas — ahí es cuando vale la pena."
+    },
+    "seaweed": {
+      "slug": "algas-punta-cana",
+      "title": "Algas en Punta Cana Hoy — Estado del Sargazo por Playa en Vivo",
+      "desc": "¿Hay algas en Punta Cana ahora mismo? Estado en vivo de cada playa, Beach Score 0-100 y pronóstico a 7 días. Actualizado 4× al día con datos satelitales.",
+      "h1": "Algas en Punta Cana — Estado de Playas en Vivo Hoy",
+      "intro": "Las algas (sargazo) en Punta Cana cambian playa por playa, día a día — y a veces hora por hora en temporada alta. Esta página te da el estado en vivo de cada playa monitoreada, de Uvero Alto a Juanillo, actualizado cuatro veces al día con imágenes satelitales de Copernicus. Sin promedios de temporada, sin suposiciones: solo las condiciones reales de algas de hoy, una calificación Beach Score 0–100 para cada lugar y un pronóstico a 7 días para que planifiques tus días de playa alrededor del alga, no al revés. Cap Cana y Cabeza de Toro suelen estar más limpias gracias a la protección del arrecife; la franja abierta de Bávaro–Macao–Uvero Alto mira al Atlántico y acumula más algas en temporada. Pero el mar reescribe ese patrón cada semana — y por exactamente esa razón existe este rastreador en vivo. Revísalo la mañana que salgas y sabrás exactamente lo que te espera."
+    },
+    "season": {
+      "intro": "¿Planeas un viaje a Punta Cana y te preguntas por el sargazo? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planear alrededor de ello. En corto: de noviembre a mediados de marzo es fiablemente limpio; el Gran Cinturón de Sargazo del Atlántico llega de abril a octubre, más fuerte de mayo a agosto. Si tus fechas son flexibles, ese único dato decide tu viaje.",
+      "slug": "temporada-sargazo-punta-cana",
+      "title": "Temporada de Sargazo en Punta Cana 2026 — Mes por Mes",
+      "desc": "¿Cuándo es la temporada de sargazo en Punta Cana? De abril a octubre, con pico de mayo a agosto. Calendario mes a mes, mejores ventanas de viaje y seguimiento satelital diario.",
+      "h1": "Temporada de Sargazo en Punta Cana — 2026 Mes por Mes",
+      "months": [
+        {
+          "period": "Noviembre – Febrero",
+          "text": "La ventana confiable. Los arribos de sargazo son raros y ligeros, la floración del Atlántico está en su mínimo anual y casi todas las playas, de Uvero Alto a Cap Cana, se mantienen limpias semanas enteras. Si evitar el alga es tu máxima prioridad, este es el momento de venir."
+        },
+        {
+          "period": "Marzo",
+          "text": "El mes de aviso temprano. Los satélites suelen empezar a detectar las primeras manchas de la nueva floración derivando hacia el oeste por el Atlántico. Las playas en general siguen limpias, pero pueden caer manchones sueltos, sobre todo en la expuesta franja de Bávaro. Vale la pena un vistazo al mapa antes de reservar excursiones."
+        },
+        {
+          "period": "Abril",
+          "text": "Arranca la temporada. Los arribos se vuelven regulares en las playas que miran al este — Bávaro, Arena Gorda, Macao — aunque los volúmenes todavía son moderados y las cuadrillas de los resorts mantienen el ritmo con el rastrillado matutino. Cap Cana y Cabeza de Toro suelen seguir cómodas. Revisar el mapa a diario empieza a rendir."
+        },
+        {
+          "period": "Mayo – Junio",
+          "text": "El primer pico. El Gran Cinturón de Sargazo del Atlántico ya entrega volumen constante, y la costa abierta puede tener mañanas cargadas varias veces por semana. Las diferencias entre playas se amplían muchísimo — aquí es cuando un pronóstico por playa importa más."
+        },
+        {
+          "period": "Julio – Agosto",
+          "text": "El pico de la temporada, coincidiendo con la mayor demanda turística. Los arribos más fuertes del año golpean Macao, Uvero Alto y Bávaro; Cap Cana, protegida por arrecife, sale mejor librada. Los resorts rastrillan a fondo, pero pueden quedarse atrás en días de gran arribazón. Usa el pronóstico a 7 días para ubicar tus días de playa entre pulsos."
+        },
+        {
+          "period": "Septiembre – Octubre",
+          "text": "El descenso lento. Los volúmenes bajan semana a semana, pero la cola es impredecible — un solo pulso tardío puede cubrir una playa dos o tres días. Para fines de octubre la mayoría de las playas vuelve a estar fiablemente limpia. Aquí los pronósticos son decisivos, porque los promedios engañan."
+        }
+      ],
+      "tips": "Si tus fechas son flexibles, reserva de noviembre a principios de marzo y olvídate del tema por completo. ¿Viajas en pico de temporada? Prefiere Cap Cana o Cabeza de Toro sobre la franja abierta de Bávaro, elige un resort con limpieza diaria de playa y revisa nuestro mapa en vivo la semana previa al vuelo — las condiciones de un mes antes casi no dicen nada. Ya aquí, planea las mañanas de playa (la arena más limpia es justo después del rastrillado) y deja una excursión de respaldo, como la Isla Saona, en el bolsillo para los días cargados."
+    }
+  },
+  "beachBlurbs": {
+    "pc001": "La franja insignia de Punta Cana: kilómetros de arena blanca, agua calmada por el arrecife y los grandes todo incluido justo detrás — ideal para familias. Mira al Atlántico abierto, así que recibe sargazo en temporada, aunque las cuadrillas de los resorts rastrillan cada mañana. Ve temprano para la arena más limpia del día.",
+    "pc002": "Un tramo relajado de condominios y clubes de playa en el extremo norte de Bávaro, popular entre quienes se quedan más tiempo y a pie de restaurantes. Comparte la exposición al este de Bávaro, así que revisa las condiciones en temporada. La opción correcta si quieres bares de playa y un público más joven sin la burbuja del todo incluido.",
+    "pc003": "Lo más parecido a un pueblo de playa que tiene Bávaro — lanchas de pescadores, puestos de souvenirs, vendedores de deportes acuáticos y comederos de mariscos sobre la arena. Totalmente expuesta al este, acumula alga en los días de arribo, y los tramos públicos se rastrillan menos que el frente de los resorts. Ven por el sabor local tanto como por el baño.",
+    "pc004": "Una cinta de arena amplia y más tranquila al norte de Bávaro, frente a grandes resorts. La exposición al noreste hace que comparta el patrón de sargazo de Bávaro, pero la enorme anchura de la playa mantiene agradables las zonas rastrilladas. Lo mejor para huéspedes que prefieren espacio y calma sobre la acción.",
+    "pc005": "Una bahía curva y más protegida entre Punta Cana y Bávaro, conocida por sus charters de pesca y un agua notablemente más calmada. Su orientación la libra de los peores arribos, lo que la convierte en una de las apuestas más seguras en pico de temporada. Una opción sólida para familias, con snorkel decente en días tranquilos.",
+    "pc006": "La salvaje — una playa pública, sin desarrollar, de arena dorada con oleaje de verdad y una escuela de surf reconocida, querida por los locales los fines de semana. Está totalmente expuesta y nadie la rastrilla de forma sistemática, así que en temporada puede desaparecer bajo el alga rápido. En un día limpio de invierno, es posiblemente la playa más bonita de esta costa.",
+    "pc007": "El reducto remoto del norte: arena dorada más oscura, olas más vivas y resorts aislados a unos 40 minutos del aeropuerto. Su exposición abierta al noreste trae sargazo regular en temporada, que los resorts combaten con barreras y rastrillado diario. Elígela por el aislamiento y el surf — y vigila el pronóstico en verano.",
+    "pc008": "La joya de Cap Cana — arena de talco, agua turquesa para nadar y una escena de club de playa pulida. Ubicada cerca del extremo sur de la costa y con protección de arrecife, suele mantenerse más limpia que Bávaro cuando llega el alga, y la limpieza es meticulosa. La opción exclusiva para un día de paseo cuando la costa abierta pasa una mala semana.",
+    "pc009": "Una playa boutique protegida por arrecife dentro de Cap Cana, con agua bajita y calmada y un restaurante frente al mar muy conocido. Su posición resguardada y su tamaño pequeño la hacen fácil de mantener limpia, así que rinde por encima de su tamaño en temporada. Genial para parejas y para quien busque un ambiente más tranquilo y cuidado.",
+    "pc010": "La playa tranquila junto al Puntacana Resort & Club, en el punto este de la costa — campos de golf detrás, agua calmada por el arrecife enfrente. Menos afluencia que Bávaro y condiciones a menudo un punto mejores. Buena para mañanas de snorkel y días sin prisa lejos de la franja principal.",
+    "pc011": "Un tramo más calmado justo al sur del bullicio de El Cortecito, metido entre zonas hoteleras — la misma arena, menos vendedores. Sigue el ritmo de sargazo de Bávaro, así que un vistazo rápido al mapa en temporada es buena idea. Elígela cuando quieras la ubicación sin la multitud.",
+    "pc012": "Un rincón genuinamente local de Bávaro con puestos de artesanías, dominó y familias dominicanas los fines de semana — sin el pulido de un resort y sin estacionamiento. Está expuesta y se limpia de forma irregular, así que revisa el mapa en temporada. Vale la pena por el ambiente y un plato de pescado fresco tanto como por el baño."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
+    "introPattern": "¿Quieres saber si la playa de {resort} está limpia de sargazo ahora mismo? Esta página monitorea {beach}, el tramo de arena frente al resort, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Abajo encontrarás el estado actual, una calificación de playa de 0 a 100 y un pronóstico a 7 días, para planear tus días de mar — o un plan B — antes del check-in. En temporada las condiciones pueden cambiar de la noche a la mañana, así que guarda esta página y revísala cada mañana de tu estancia."
+  },
+  "press": {
+    "_doc": "Página de prensa renderizada en /es/press/ por region-seo-pages.cjs. Tokens resueltos en build desde datos reales — nunca inventados. Espejo del contrato press de puntacana (EN).",
+    "slug": "press",
+    "title": "Sargazo en Punta Cana — Kit de Prensa y Datos para Medios",
+    "desc": "Recursos de prensa sobre el sargazo en Punta Cana: estado satelital por playa actualizado 4× al día, pronóstico de 7 días y precisión publicada. Libre de citar.",
+    "h1": "Prensa y medios — datos de sargazo de Punta Cana",
+    "intro": "El Atlántico vive una temporada de sargazo de niveles récord, ampliamente reportada. Lo que los titulares no pueden decirle a tu audiencia es la pregunta que de verdad se hace: ¿se puede nadar en mi playa hoy? Publicamos esa respuesta para Punta Cana, playa por playa, a partir de datos satelitales — y es libre de citar con atribución.",
+    "sections": [
+      {
+        "h2": "Qué publicamos",
+        "text": "Estado del sargazo en vivo para {beachCount} playas de Punta Cana, desde Uvero Alto hasta Juanillo en Cap Cana — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI (Alternative Floating Algae Index) de los programas satelitales Copernicus y NOAA, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuatro veces al día, con datos de viento y oleaje de Open-Meteo. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
+      },
+      {
+        "h2": "Precisión, publicada abiertamente",
+        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red del Caribe, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. Los días 1 a 3 son los más fiables; los días 4 a 7 muestran la tendencia — y lo decimos en cada página. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
+      },
+      {
+        "h2": "Libre de usar, con atribución",
+        "text": "Periodistas, blogueros y medios pueden citar cualquier estado de playa, score o pronóstico con un enlace a la página de origen. Cita sugerida: {citation}. Para insertar el mapa en vivo, obtener datos por playa para un reportaje o un comentario sobre las condiciones actuales, escribe a {contact} — respondemos rápido."
+      },
+      {
+        "h2": "Ángulos de reportaje listos hoy",
+        "text": "Qué playa de Punta Cana está limpia esta semana (lista clasificada en vivo, actualizada 4× al día) · Por qué Bávaro, Macao y Cap Cana pueden diferir muchísimo el mismo día · Qué significa un récord de sargazo atlántico a nivel de playa para el turismo dominicano · Cómo funciona la detección satelital AFAI, con la precisión del pronóstico medida y publicada en nuestra página de metodología."
+      },
+      {
+        "h2": "Sobre la red",
+        "text": "SargassumPuntaCana.com forma parte de una red de monitoreo del Caribe de cinco sitios: Martinica y Guadalupe (francés), Punta Cana (inglés), Cancún y la Riviera Maya (español), y Miami y Florida (inglés). Los cinco sitios usan el mismo flujo satelital y la misma metodología publicada abiertamente. El mapa en vivo es gratuito para todos; la suscripción premium añade recomendaciones diarias de playa, alertas push y un resumen matinal."
+      }
+    ],
+    "citation": "Fuente: sargassumpuntacana.com — datos satelitales Copernicus/NOAA, actualizados 4× al día",
+    "contact": "support@sargassumpuntacana.com"
+  },
+  "extraPages": [
+    {
+      "lang": "es",
+      "slug": "sargazo-punta-cana-hoy",
+      "title": "Sargazo en Punta Cana Hoy — Mapa en Vivo",
+      "desc": "¿Hay sargazo en Punta Cana hoy? Estado en vivo de cada playa — Bávaro, Macao, Cap Cana — por satélite 4× al día, con pronóstico a 7 días.",
+      "h1": "¿Hay Sargazo en Punta Cana Hoy?",
+      "intro": "La respuesta corta: depende de la playa, y cambia cada mañana. Algunas playas de Punta Cana pueden estar limpias hoy mientras otras a pocos minutos en carro acumulan alga — por eso revisamos cada una por separado en lugar de dar un solo veredicto para toda la costa. Nuestro mapa en vivo muestra el estado de hoy de cada playa (limpia, moderada o evitar), una calificación Beach Score de 0 a 100 y la hora exacta de la última actualización. Funciona con imágenes satelitales de Copernicus y NOAA, refrescadas cuatro veces al día, no con una reseña vieja ni un promedio de temporada. Somos honestos con la incertidumbre: cuando las nubes tapan una pasada del satélite, te lo decimos y cada playa muestra su nivel de confianza. No adivinamos el mar — lo medimos, y te entregamos el resultado cada mañana. Mira abajo qué playa te conviene hoy y, si la tuya está cargada, dónde está la arena limpia más cercana.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de Punta Cana están limpias ahora mismo?",
+          "text": "Revisa el mapa en vivo arriba para el estado de hoy playa por playa — es el único dato que de verdad importa, porque el ranking cambia cada semana. Como guía general: Cap Cana (Juanillo, Playa Blanca) y Cabeza de Toro suelen salir mejor libradas gracias a la protección del arrecife y a la limpieza intensiva, mientras la franja abierta de Bávaro, Arena Gorda, Macao y Uvero Alto mira de frente al Atlántico y recibe más alga en temporada. Pero un giro de viento durante la noche puede invertir todo esto: limpiar Bávaro y cargar Macao para la hora del almuerzo. Por eso cada playa lleva su propio Beach Score actualizado cuatro veces al día. Toca tu playa para ver su estado de hoy y su pronóstico a 7 días antes de salir."
+        },
+        {
+          "h2": "¿Por qué hay sargazo en Punta Cana y cuándo se va?",
+          "text": "El sargazo que llega a Punta Cana viene del Gran Cinturón de Sargazo del Atlántico, una enorme masa de alga flotante que deriva desde el Atlántico tropical empujada por el viento y las corrientes. La temporada va de abril a octubre, con los arribos más fuertes de mayo a agosto; de noviembre a marzo las playas suelen estar fiablemente limpias. El alga que ya está en la arena se degrada en pocos días si no llega material nuevo, así que una playa cargada hoy puede amanecer despejada en 48–72 horas — o cubrirse de nuevo si se aproxima otra mancha mar adentro. Nuestro pronóstico a 7 días por playa rastrea exactamente eso: qué viene en camino y cuándo se espera que tu playa quede limpia."
+        },
+        {
+          "h2": "¿Es peligroso el sargazo? ¿Y qué hago si mi playa está cargada hoy?",
+          "text": "Nadar cerca de pequeñas cantidades de sargazo es inofensivo. El problema son los montones acumulados en descomposición: al pudrirse liberan sulfuro de hidrógeno (H2S), ese olor a huevo podrido que puede irritar ojos y garganta, sobre todo en zonas mal ventiladas. Si hay montones grandes y huele fuerte, evita esa franja. ¿Tu playa está cargada hoy? Usa el mapa en vivo para encontrar la playa limpia más cercana — las condiciones varían muchísimo a poca distancia, y Cap Cana o Cabeza de Toro pueden estar perfectas mientras Bávaro está cubierta. Con el PASS recibes alertas cuando una playa guardada cambia de estado, más el pronóstico a 7 días para planear tus mañanas de playa alrededor de los días cargados."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en Punta Cana ahora mismo?",
+          "a": "Depende de la playa. Revisa el mapa en vivo arriba: muestra el estado de hoy de cada playa de Punta Cana —limpia, moderada o evitar— con su Beach Score de 0 a 100 y la hora de la última actualización. Lo refrescamos cuatro veces al día con satélite Copernicus y NOAA, así que ves las condiciones reales de esta mañana, no un promedio."
+        },
+        {
+          "q": "¿Cómo está el sargazo en Punta Cana hoy?",
+          "a": "El estado de hoy varía playa por playa y se actualiza cuatro veces al día por satélite. Cap Cana y Cabeza de Toro suelen estar más limpias; la franja abierta Bávaro–Macao–Uvero Alto recibe más alga en temporada. Toca tu playa en el mapa para ver su Beach Score actual y el pronóstico a 7 días antes de decidir adónde ir."
+        },
+        {
+          "q": "¿Qué playas no tienen sargazo en Punta Cana hoy?",
+          "a": "Ninguna playa es inmune, pero Juanillo y Playa Blanca en Cap Cana, además de Cabeza de Toro, suelen salir mejor libradas por la protección del arrecife. Como el mar reescribe el ranking cada semana, revisa nuestra lista en vivo de playas limpias hoy en vez de fiarte de una guía vieja: muestra qué arena está despejada ahora mismo."
+        },
+        {
+          "q": "¿Por qué hay sargazo en Punta Cana?",
+          "a": "El sargazo llega del Gran Cinturón de Sargazo del Atlántico, una masa de alga flotante que deriva con el viento y las corrientes desde el Atlántico tropical. Afecta a Punta Cana de abril a octubre, con pico de mayo a agosto. Las playas que miran al Atlántico abierto, como Bávaro y Macao, reciben más; las protegidas por arrecife, menos."
+        },
+        {
+          "q": "¿Cuándo se va a limpiar mi playa?",
+          "a": "El alga que ya está en la arena se degrada en pocos días si no llega material nuevo, así que una playa cargada hoy puede amanecer limpia en 48–72 horas. Pero si se aproxima otra mancha mar adentro, vuelve a cargarse. Nuestro pronóstico a 7 días por playa rastrea exactamente eso y se recalcula con cada actualización satelital."
+        },
+        {
+          "q": "¿Es peligroso bañarse donde hay sargazo?",
+          "a": "Nadar cerca de cantidades pequeñas es inofensivo. El riesgo está en los montones acumulados en descomposición, que liberan sulfuro de hidrógeno (H2S) —olor a huevo podrido— y pueden irritar ojos y garganta. Si hay pilas grandes y olor fuerte, evita esa zona y busca en el mapa la playa limpia más cercana."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-bavaro-hoy",
+      "title": "Sargazo en Bávaro Hoy — Mapa Satelital en Vivo",
+      "desc": "¿Hay sargazo en Bávaro hoy? Estado en vivo de la playa por satélite Copernicus, actualizado 4× al día, con Beach Score y pronóstico a 7 días antes de salir.",
+      "h1": "Sargazo en Bávaro Hoy — Mapa Satelital en Vivo",
+      "intro": "¿Hay sargazo en Bávaro hoy? La respuesta cambia cada mañana, y por eso revisamos esta playa por separado en lugar de dar un veredicto único para toda la costa. El mapa en vivo de arriba muestra el estado de hoy de Bávaro —limpia, moderada o evitar—, su Beach Score de 0 a 100 y la hora exacta de la última lectura. Funciona con imágenes satelitales de Copernicus y NOAA, refrescadas cuatro veces al día, no con una reseña vieja ni un promedio de temporada. Bávaro es la franja hotelera más densa de Punta Cana y mira de frente al Atlántico abierto, así que recibe más alga que las playas protegidas por arrecife —pero las cuadrillas de los resorts rastrillan cada mañana, y un giro de viento nocturno puede cambiarlo todo. Somos honestos con la incertidumbre: cuando las nubes tapan una pasada del satélite, te lo decimos, y cada lectura muestra su nivel de confianza. No adivinamos el mar: lo medimos, y te entregamos el resultado cada mañana.",
+      "sections": [
+        {
+          "h2": "¿Cómo está Bávaro ahora mismo?",
+          "text": "Mira el Beach Score y el estado de hoy en el mapa de arriba: es el único dato que de verdad importa, porque Bávaro cambia de un día a otro. Como referencia, esta playa mira al este, hacia el Atlántico abierto, así que en temporada acumula más sargazo que Cap Cana o Cabeza de Toro. Pero los grandes resorts de la franja rastrillan su frente de playa cada mañana, y la arena más limpia del día suele estar justo después de ese rastrillado. Muestreamos los píxeles satelitales frente a Bávaro específicamente —no un promedio de toda la costa— y los actualizamos cuatro veces al día. Toca la playa en el mapa para ver su estado actual y el pronóstico a 7 días antes de bajar a la arena."
+        },
+        {
+          "h2": "¿Cuándo se limpia Bávaro?",
+          "text": "El sargazo que ya está en la arena se degrada en pocos días si no llega material nuevo, así que un Bávaro cargado hoy puede amanecer despejado en 48 a 72 horas. El problema es lo que viene en camino: si una mancha grande deriva hacia la costa mar adentro, la playa vuelve a cargarse aunque las cuadrillas rastrillen a fondo. La temporada fuerte va de mayo a agosto, con arribos regulares en la franja abierta; de noviembre a marzo Bávaro suele estar fiablemente limpia. Nuestro pronóstico a 7 días por playa rastrea exactamente eso —qué se aproxima y cuándo se espera que la arena quede limpia— y se recalcula con cada actualización satelital, cuatro veces al día."
+        },
+        {
+          "h2": "Si Bávaro está cargada hoy, ¿adónde voy?",
+          "text": "Las condiciones varían muchísimo a poca distancia en carro. Mientras Bávaro está cubierta, Cap Cana —Juanillo, Playa Blanca— o Cabeza de Toro pueden estar perfectas gracias a la protección del arrecife y a una limpieza más intensiva. Usa el mapa en vivo para encontrar la playa limpia más cercana a tu hotel en vez de resignarte a un mal día de mar. Con el PASS recibes alertas push en cuanto una playa guardada cambia de estado, más el pronóstico a 7 días para ubicar tus mañanas de playa entre pulsos de alga. Así no pierdes la mañana caminando hasta la orilla para descubrir que el agua no está como esperabas."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en Bávaro hoy?",
+          "a": "Depende del día. Revisa el mapa en vivo de arriba: muestra el estado de hoy de Bávaro —limpia, moderada o evitar—, su Beach Score de 0 a 100 y la hora de la última lectura. Lo refrescamos cuatro veces al día con satélite Copernicus y NOAA, así que ves las condiciones reales de esta mañana, no un promedio de temporada."
+        },
+        {
+          "q": "¿Por qué Bávaro recibe más sargazo que otras playas?",
+          "a": "Bávaro mira de frente al Atlántico abierto, así que el sargazo que deriva con el viento y las corrientes llega directo a su costa. Las playas protegidas por arrecife, como Juanillo o Playa Blanca en Cap Cana, quedan más resguardadas y suelen acumular menos alga en los mismos días."
+        },
+        {
+          "q": "¿A qué hora está Bávaro más limpia?",
+          "a": "La arena más limpia del día suele estar justo después del rastrillado matutino de los resorts. Por eso conviene planear las mañanas de playa. Aun así, si llega una mancha nueva mar adentro, el alga puede regresar en horas: revisa el mapa y el pronóstico a 7 días antes de bajar."
+        },
+        {
+          "q": "¿Cuándo se va a limpiar Bávaro?",
+          "a": "El sargazo en la arena se degrada en 48 a 72 horas si no llega material nuevo, así que una mañana cargada puede despejar en pocos días. Pero si otra mancha se aproxima, vuelve a cargarse. Nuestro pronóstico a 7 días por playa rastrea exactamente qué viene en camino y se recalcula cuatro veces al día."
+        },
+        {
+          "q": "Si Bávaro está cargada, ¿qué playa cercana está limpia?",
+          "a": "Cap Cana (Juanillo, Playa Blanca) y Cabeza de Toro suelen salir mejor libradas por la protección del arrecife. Como el ranking cambia cada semana, revisa el mapa en vivo para ver qué arena está despejada ahora mismo en lugar de fiarte de una guía vieja."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "playas-sin-sargazo-en-punta-cana",
+      "title": "Playas sin Sargazo en Punta Cana — Limpias Hoy",
+      "desc": "¿Qué playas de Punta Cana están sin sargazo hoy? Lista en vivo por satélite, actualizada 4× al día, con Beach Score por playa. Encuentra arena limpia ahora.",
+      "h1": "Playas sin Sargazo en Punta Cana — Cuáles Están Limpias Hoy",
+      "intro": "¿Buscas una playa sin sargazo en Punta Cana hoy? El mapa en vivo de arriba ordena las playas de la más limpia a la más afectada ahora mismo, así que puedes elegir adónde ir antes de salir del hotel. Se arma con la última pasada satelital de Copernicus y NOAA y se actualiza cuatro veces al día, lo que significa que refleja las condiciones de esta mañana, no una foto de archivo ni una reseña del mes pasado. Como referencia, Cap Cana —Juanillo y Playa Blanca— y Cabeza de Toro suelen recuperarse más rápido gracias a la protección del arrecife, mientras la franja abierta de Bávaro a Uvero Alto recibe más alga en temporada. Pero el mar reescribe ese ranking cada semana, y por eso existe esta lista en lugar de una recomendación fija. No inventamos un \"top de playas limpias\": medimos cada una por satélite y te mostramos el resultado del día, con su Beach Score y su nivel de confianza cuando las nubes complican la lectura.",
+      "sections": [
+        {
+          "h2": "¿Qué playas están limpias ahora mismo?",
+          "text": "Revisa el mapa en vivo de arriba para el estado de hoy playa por playa: ese es el único dato que de verdad importa, porque el orden cambia cada semana. Cada playa lleva su propio Beach Score de 0 a 100 y una etiqueta de limpia, moderada o evitar, muestreada de los píxeles satelitales justo frente a esa arena —no un promedio regional— y actualizada cuatro veces al día. Como guía general, las playas protegidas por arrecife (Cap Cana, Cabeza de Toro) tienden a estar más limpias que las que miran al Atlántico abierto (Bávaro, Arena Gorda, Macao, Uvero Alto). Pero un giro de viento nocturno puede invertirlo todo. Toca cada playa para ver su estado actual y su pronóstico a 7 días, y elige la arena despejada más cercana a tu hotel."
+        },
+        {
+          "h2": "¿Por qué unas playas están limpias y otras no el mismo día?",
+          "text": "Punta Cana no es una sola playa: es una costa de unos cuarenta minutos en carro, y la orientación de cada tramo decide cuánto sargazo recibe. Las playas que miran de frente al Atlántico abierto reciben el alga que deriva con el viento y las corrientes; las bahías protegidas por arrecife, como Juanillo o Cabeza de Toro, quedan resguardadas y suelen acumular menos. A eso se suma la limpieza: los grandes resorts rastrillan su frente cada mañana, mientras los tramos públicos se limpian de forma irregular. Por eso una playa puede estar perfecta mientras otra, a pocos minutos, está cubierta. Esta lista captura esas diferencias en tiempo real para que no apuestes por la playa equivocada."
+        },
+        {
+          "h2": "¿Cómo planeo alrededor de los días cargados?",
+          "text": "Si tus fechas son flexibles, de noviembre a marzo casi todas las playas se mantienen fiablemente limpias. En temporada (mayo a agosto), conviene tener un plan B. El sargazo en la arena se degrada en 48 a 72 horas si no llega material nuevo, así que una playa cargada hoy puede despejar en pocos días —y nuestro pronóstico a 7 días por playa te dice cuándo. Con el PASS recibes alertas push cuando una playa guardada cambia de estado, más ese pronóstico para ubicar tus mañanas de playa entre pulsos de alga. Y si todas tus opciones cercanas están cargadas un día, una excursión a la Isla Saona suele ser un respaldo limpio."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Qué playas no tienen sargazo en Punta Cana hoy?",
+          "a": "Depende del día. Revisa el mapa en vivo de arriba: ordena las playas de la más limpia a la más afectada ahora mismo, con el Beach Score de cada una. Se actualiza cuatro veces al día por satélite, así que muestra qué arena está despejada esta mañana en vez de un promedio de temporada."
+        },
+        {
+          "q": "¿Cuál es la playa más limpia de Punta Cana?",
+          "a": "No hay una respuesta fija: el ranking cambia cada semana según el viento y las corrientes. Como referencia, Juanillo y Playa Blanca en Cap Cana, y Cabeza de Toro, suelen salir mejor libradas por la protección del arrecife. Revisa el mapa en vivo para ver cuál está más limpia hoy."
+        },
+        {
+          "q": "¿Cap Cana tiene sargazo?",
+          "a": "Cap Cana suele recibir menos sargazo que la franja abierta de Bávaro porque sus playas están más protegidas por el arrecife y la limpieza es intensiva. Pero ninguna playa es inmune: en arribos fuertes también puede cargarse. Revisa su Beach Score actual en el mapa antes de ir."
+        },
+        {
+          "q": "¿Hay alguna playa en Punta Cana siempre libre de sargazo?",
+          "a": "No. Ninguna playa está garantizada libre de sargazo, ni siquiera las protegidas por arrecife. Lo que sí varía mucho es cuánta alga recibe cada una en un día dado, y por eso medimos las doce playas por separado y publicamos la lista en vivo en lugar de prometer una playa siempre limpia."
+        },
+        {
+          "q": "¿Cuándo están más limpias las playas de Punta Cana?",
+          "a": "De noviembre a marzo las playas suelen estar fiablemente limpias, con el mínimo anual del Gran Cinturón de Sargazo del Atlántico. La temporada de arribos va de abril a octubre, con pico de mayo a agosto. Si tus fechas son flexibles, viajar en invierno reduce mucho el riesgo."
+        },
+        {
+          "q": "¿Qué hago si todas las playas cercanas tienen sargazo hoy?",
+          "a": "Usa el mapa para encontrar la arena despejada más cercana —las condiciones varían muchísimo a poca distancia— y, si todas tus opciones están cargadas, una excursión a la Isla Saona suele ser un respaldo limpio. Con el PASS, las alertas push te avisan cuando una playa guardada vuelve a estar limpia."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "es-peligroso-el-sargazo-en-punta-cana",
+      "title": "¿Es Peligroso el Sargazo en Punta Cana?",
+      "desc": "¿Es peligroso el sargazo en Punta Cana? Nadar cerca de poca alga es inofensivo; el riesgo son los montones en descomposición y el H2S. Guía honesta y mapa en vivo.",
+      "h1": "¿Es Peligroso el Sargazo en Punta Cana? Lo que Debes Saber",
+      "intro": "¿Es peligroso el sargazo en Punta Cana? Para la mayoría de los visitantes, no: nadar cerca de pequeñas cantidades de sargazo flotante es inofensivo, y el alga fresca en el agua no es tóxica al contacto. El riesgo real aparece cuando los montones se acumulan en la arena y empiezan a descomponerse: al pudrirse liberan sulfuro de hidrógeno (H2S), ese olor a huevo podrido que puede irritar ojos, nariz y garganta, sobre todo en zonas mal ventiladas y en personas con asma o problemas respiratorios. En resumen, el sargazo es más una molestia que un peligro grave para un viajero sano, pero conviene evitar las pilas grandes en descomposición. Lo que no podemos decirte desde un artículo es si tu playa tiene esos montones hoy —y por eso medimos cada playa de Punta Cana por satélite, cuatro veces al día, con su Beach Score y su estado actual. No adivinamos las condiciones: las leemos del satélite y te las mostramos cada mañana para que decidas con datos, no con suposiciones.",
+      "sections": [
+        {
+          "h2": "¿Qué riesgos reales tiene el sargazo?",
+          "text": "El sargazo flotante en el agua no es venenoso: puedes nadar cerca de pequeñas cantidades sin problema. El riesgo aparece en tierra, cuando el alga se amontona y se descompone. Al pudrirse libera sulfuro de hidrógeno (H2S) y amoníaco; el H2S es el responsable del olor a huevo podrido y, en concentraciones altas y mal ventiladas, puede causar dolor de cabeza, náuseas e irritación de ojos y vías respiratorias. Las personas con asma, embarazadas, bebés y adultos mayores son más sensibles. También pueden esconderse pequeños organismos marinos entre el alga que causan picazón. Nada de esto es un peligro grave para un viajero sano que se mantiene lejos de los montones grandes, pero sí una razón de peso para evitar las playas muy cargadas."
+        },
+        {
+          "h2": "¿El olor del sargazo es dañino?",
+          "text": "El olor a huevo podrido del sargazo en descomposición es sulfuro de hidrógeno (H2S). A las concentraciones bajas que se sienten al pasar por una playa cargada, es desagradable pero no peligroso para la mayoría. El problema son las acumulaciones grandes y antiguas en espacios poco ventilados, donde el gas se concentra: ahí puede irritar y, en casos extremos cerca de pilas enormes, provocar malestar. Curiosamente, en cuanto hueles fuerte el azufre, el cuerpo deja de percibirlo bien, lo que engaña sobre la exposición real. La regla práctica: si una franja de playa huele intensamente a azufre y ves montones en descomposición, aléjate y busca arena limpia. Nuestro mapa te ayuda a encontrarla sin recorrer la costa a ciegas."
+        },
+        {
+          "h2": "¿Es seguro nadar donde hay sargazo?",
+          "text": "Nadar cerca de cantidades pequeñas y dispersas de sargazo flotante es seguro: el alga no irrita la piel de la mayoría de las personas. Lo que conviene evitar es meterse en medio de balsas densas de alga —dificultan el movimiento y pueden ocultar criaturas que pican— y bañarte frente a montones grandes en descomposición en la orilla. Si tu playa tiene poco sargazo y agua relativamente despejada, el baño es perfectamente normal. Si está cubierta de alga, la mejor decisión es buscar una playa más limpia ese día en vez de forzarlo. El estado de cada playa y su Beach Score en nuestro mapa en vivo te dicen exactamente cuál es la situación antes de que metas un pie en el agua."
+        },
+        {
+          "h2": "¿Cómo evito el sargazo en mi viaje?",
+          "text": "La mejor defensa es elegir la playa y el día correctos. De noviembre a marzo el sargazo es mínimo; la temporada fuerte va de mayo a agosto. En temporada, las playas protegidas por arrecife (Cap Cana, Cabeza de Toro) suelen recibir menos alga que la franja abierta de Bávaro a Uvero Alto, y un resort con rastrillado diario marca la diferencia. El día de tu salida, revisa nuestro mapa en vivo: muestra qué playas están limpias ahora mismo, actualizado cuatro veces al día por satélite. Con el PASS recibes alertas push cuando una playa guardada cambia de estado y un pronóstico a 7 días por playa, para planear tus mañanas de mar alrededor de los días cargados en lugar de toparte con la sorpresa al llegar."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Es peligroso el sargazo para la salud en Punta Cana?",
+          "a": "Para un viajero sano, el sargazo es más molestia que peligro. Nadar cerca de poca alga es inofensivo. El riesgo está en los montones en descomposición, que liberan sulfuro de hidrógeno (H2S) y pueden irritar ojos y vías respiratorias, sobre todo en personas con asma. Evita las pilas grandes y las zonas con olor fuerte a azufre."
+        },
+        {
+          "q": "¿El sargazo es tóxico al tocarlo?",
+          "a": "El sargazo flotante no es tóxico al contacto y nadar cerca de pequeñas cantidades es seguro. Algunas personas sienten picazón por pequeños organismos marinos escondidos entre el alga densa, pero no es venenoso. El verdadero problema es el gas que liberan los montones al descomponerse en la arena, no el contacto con el alga fresca."
+        },
+        {
+          "q": "¿Por qué huele tan mal el sargazo?",
+          "a": "El olor a huevo podrido viene del sulfuro de hidrógeno (H2S) que el sargazo libera al descomponerse en la arena. A bajas concentraciones es desagradable pero no peligroso para la mayoría. Las acumulaciones grandes y poco ventiladas concentran más gas, así que conviene alejarse de las pilas en descomposición."
+        },
+        {
+          "q": "¿Puedo nadar si hay sargazo en la playa?",
+          "a": "Sí, si hay poco sargazo y el agua está relativamente despejada, nadar es normal y seguro. Evita meterte en medio de balsas densas de alga y bañarte frente a montones grandes en descomposición. Si la playa está muy cargada, busca una más limpia ese día; nuestro mapa en vivo te dice cuáles lo están."
+        },
+        {
+          "q": "¿El sargazo es peligroso para niños o personas con asma?",
+          "a": "Pueden ser más sensibles al sulfuro de hidrógeno que liberan los montones en descomposición, que irrita ojos y vías respiratorias. No es un peligro grave en exposiciones breves al aire libre, pero conviene mantener a bebés, embarazadas, adultos mayores y personas con asma lejos de las playas muy cargadas y con olor fuerte a azufre."
+        },
+        {
+          "q": "¿Cómo sé si mi playa tiene sargazo hoy?",
+          "a": "Revisa nuestro mapa en vivo: muestra el estado actual de cada playa de Punta Cana —limpia, moderada o evitar— con su Beach Score de 0 a 100, actualizado cuatro veces al día por satélite Copernicus y NOAA. Así sabes si tu playa está cargada hoy antes de salir, en vez de descubrirlo al llegar."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "como-saber-si-hay-sargazo-en-punta-cana",
+      "title": "Cómo saber si hay sargazo en Punta Cana",
+      "desc": "Cómo saber si hay sargazo en Punta Cana antes de viajar: consulta el mapa satelital en vivo, con estado por playa actualizado 4 veces al día.",
+      "h1": "Cómo saber si hay sargazo en Punta Cana antes de viajar",
+      "intro": "Para saber si hay sargazo en Punta Cana antes de viajar, consulta un mapa satelital en vivo que mide cada playa en lugar de fiarte de fotos viejas o comentarios sueltos. La forma fiable es revisar el estado del día -- limpio, moderado o evitar -- y el Beach Score de cada playa, no recordar cómo estaba la costa la temporada pasada. Nosotros vigilamos el litoral con imágenes satelitales de Copernicus y NOAA actualizadas cuatro veces al día, las convertimos en una puntuación de 0 a 100 y publicamos el estado de cada playa. Es medido, no adivinado. Cuando las nubes tapan el satélite, lo marcamos como baja confianza en vez de inventar un número. Abajo te explicamos paso a paso cómo comprobarlo antes del viaje, cómo leer el pronóstico de 7 días y qué hacer si tu playa aparece en \"evitar\".",
+      "sections": [
+        {
+          "h2": "Revisa el mapa satelital en vivo",
+          "text": "El primer paso es abrir el mapa de Punta Cana y mirar el estado de cada playa: limpio, moderado o evitar, junto a su Beach Score del día. Esa puntuación sale de imágenes satelitales procesadas cuatro veces al día, no de una suposición ni de una foto antigua. Una puntuación alta significa agua y arena despejadas; una baja indica que probablemente hay sargazo. Como las playas que dan al este recogen más sargazo a la deriva, conviene comparar varias antes de decidir. Si la última pasada del satélite quedó cubierta de nubes, no fingimos seguridad: marcamos el día como incierto y te decimos que no se ve con claridad. Esa transparencia es el punto -- recibes la medición, incluso cuando la medición es débil."
+        },
+        {
+          "h2": "Consulta el pronóstico de 7 días",
+          "text": "El sargazo llega en oleadas, no como una marea constante. Una playa puede estar en \"evitar\" varios días y despejarse rápido cuando el viento gira hacia afuera y la corriente arrastra las algas. Por eso publicamos un pronóstico de 7 días para cada playa, que muestra si va mejorando, estable o empeorando, y así puedes elegir el día o cambiar de sitio antes de viajar. También publicamos la precisión de nuestro backtest para que juzgues cuánto confiar en la previsión, y bajamos la confianza en los días nublados. Preferimos decirte \"hoy no vemos bien\" antes que adivinar. Usa el pronóstico para planificar la semana y confirma el estado en vivo la mañana que vayas."
+        },
+        {
+          "h2": "Qué hacer si tu playa tiene sargazo",
+          "text": "Si tu playa preferida aparece en \"evitar\", no canceles el plan -- cambia de playa. El mapa en vivo te deja comparar playas cercanas de Punta Cana por Beach Score, así que cuando una zona que da al este está cargada de sargazo, una caleta más resguardada a poca distancia puede seguir saliendo limpia. Ordena la lista, elige el estado limpio con la puntuación más alta a tu alcance y tendrás un plan B antes de salir del hotel. Esto es lo que hace El Vigía cada mañana: un satélite que vigila el mar mientras duermes y te dice dónde está el agua limpia. Un PASS único desbloquea todas las puntuaciones y el pronóstico completo -- sin suscripción, solo la respuesta, desde USD 5.99."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Cómo sé si hay sargazo en Punta Cana antes de viajar?",
+          "a": "Consulta el mapa satelital en vivo: cada playa tiene un estado (limpio, moderado o evitar) y un Beach Score, actualizados cuatro veces al día con imágenes de Copernicus y NOAA. Es la forma medida, no adivinada."
+        },
+        {
+          "q": "¿Puedo ver el sargazo de los próximos días?",
+          "a": "Sí. Cada playa tiene un pronóstico de 7 días que muestra si va mejorando o empeorando. Úsalo para planificar y confirma el estado en vivo la mañana que vayas, porque las condiciones cambian rápido."
+        },
+        {
+          "q": "¿Qué tan fiable es el dato de sargazo?",
+          "a": "Se basa en imágenes satelitales de Copernicus y NOAA, actualizadas cuatro veces al día, y publicamos la precisión de nuestro backtest. En días nublados marcamos baja confianza en lugar de inventar un número."
+        },
+        {
+          "q": "¿Hay alguna playa en Punta Cana sin sargazo segura?",
+          "a": "No existe una playa siempre limpia: el sargazo se mueve con el viento y la corriente. Te mostramos cuál sale limpia hoy y cómo evoluciona cada playa en los próximos 7 días."
+        },
+        {
+          "q": "¿Cuánto cuesta ver toda la información?",
+          "a": "Un PASS único desbloquea el estado y el pronóstico de todas las playas de Punta Cana, desde USD 5.99. Sin suscripción: pagas una vez por la respuesta."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "cuando-hay-menos-sargazo-en-punta-cana",
+      "title": "Cuando Hay Menos Sargazo en Punta Cana? Meses Clave",
+      "desc": "Los meses con menos sargazo en Punta Cana suelen ser de noviembre a marzo. Compara la temporada y mira el mapa satelital en vivo por playa.",
+      "h1": "Cuando hay menos sargazo en Punta Cana? Meses con menos sargazo",
+      "intro": "En Punta Cana, los meses con menos sargazo suelen ser de noviembre a marzo, la temporada seca, cuando las corrientes y los vientos del norte mantienen las algas mar adentro. Los picos de sargazo llegan normalmente entre mayo y agosto, con junio y julio como los meses mas cargados. Pero un calendario promedio no es una garantia: cada ano cambia y cada playa de Punta Cana se ensucia de forma distinta. Por eso nosotros no adivinamos. El Vigia es un satelite que observa el mar mientras duermes y cada manana te dice donde el agua esta limpia, con imagenes Copernicus y NOAA refrescadas 4 veces al dia. Te damos un Beach Score por playa (0-100), un estado limpio/moderado/evitar y un pronostico de 7 dias medido, no inventado. Cuando hay nubes que tapan el satelite, te lo decimos con honestidad en vez de fingir certeza.",
+      "sections": [
+        {
+          "h2": "Que meses tienen menos sargazo en Punta Cana?",
+          "text": "La ventana mas limpia suele ir de noviembre a abril, con el minimo entre diciembre y marzo. En esos meses los frentes frios y los vientos del norte empujan las algas lejos de la costa este, y muchas mananas las playas amanecen despejadas. A partir de abril el sargazo empieza a subir; mayo, junio, julio y agosto concentran las mayores llegadas, y septiembre-octubre van bajando poco a poco. Aun asi, el patron varia cada ano segun la cantidad de sargazo en el Atlantico tropical. En lugar de confiar solo en el promedio historico, conviene mirar el estado real del dia: el satelite ve lo que hay ahora, no lo que suele haber."
+        },
+        {
+          "h2": "El promedio no basta: mira el dia y la playa exacta",
+          "text": "Dos playas separadas por pocos kilometros pueden amanecer muy distintas: Bavaro limpia y Macao cargada, o al reves, segun el viento y la corriente de esa manana. Por eso damos un Beach Score por playa, no un dato general de la zona. Antes de reservar excursion o de elegir donde nadar, abre el mapa y revisa el estado de hoy de tu playa concreta. El Vigia procesa imagenes satelitales 4 veces al dia, calcula el Beach Score (0-100) y marca limpio, moderado o evitar. Cuando una capa de nubes impide ver bien, lo indicamos: preferimos decir no podemos confirmar hoy antes que darte una cifra falsa."
+        },
+        {
+          "h2": "Si tu mes tiene sargazo, donde ir en Punta Cana?",
+          "text": "Incluso en temporada alta de sargazo casi siempre hay opciones mejores el mismo dia. Las playas del norte (Uvero Alto) y algunas calas protegidas como Juanillo en Cap Cana suelen recibir cantidades distintas que el tramo central de Bavaro. La clave es comparar el Beach Score de varias playas la misma manana y moverte hacia la de mejor estado. Tambien ayuda salir temprano: muchos resorts limpian la arena al amanecer. Con el pronostico de 7 dias por playa puedes planear que dia y que tramo te conviene para snorkel, foto o un bano tranquilo, en lugar de descubrirlo al llegar."
+        }
+      ],
+      "faq": [
+        {
+          "q": "Cual es el mejor mes para evitar el sargazo en Punta Cana?",
+          "a": "De diciembre a marzo suele ser la ventana mas limpia, dentro de la temporada seca (noviembre-abril). Aun asi varia cada ano, asi que confirma el estado del dia en el mapa antes de viajar o reservar excursion."
+        },
+        {
+          "q": "Que meses tienen mas sargazo en Punta Cana?",
+          "a": "Normalmente de mayo a agosto, con junio y julio como los mas cargados. Septiembre y octubre suelen ir bajando. Es un patron promedio: el satelite te muestra lo que realmente hay cada manana, playa por playa."
+        },
+        {
+          "q": "El sargazo afecta igual a todas las playas?",
+          "a": "No. El viento y las corrientes hacen que playas cercanas amanezcan distintas el mismo dia. Por eso damos un Beach Score por playa (0-100) y un estado limpio/moderado/evitar, no un dato unico para toda la zona."
+        },
+        {
+          "q": "Como sabe el mapa donde hay sargazo?",
+          "a": "Procesamos imagenes satelitales Copernicus y NOAA (AFAI) refrescadas 4 veces al dia. Es medido, no adivinado. Cuando las nubes tapan la imagen, te lo decimos con honestidad en lugar de inventar una cifra."
+        },
+        {
+          "q": "Puedo ver un pronostico de sargazo por adelantado?",
+          "a": "Si. Cada playa tiene un pronostico de 7 dias para ayudarte a planear que dia y que tramo conviene. Publicamos ademas la precision real de nuestro pronostico (backtest) para que sepas cuanto confiar."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    }
+  ]
+}

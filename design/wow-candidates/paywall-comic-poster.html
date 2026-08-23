@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Paywall — AFFICHE COMIC / POSTER BD (Le Veilleur Premium)</title>
+<!--
+  DIRECTION : AFFICHE COMIC / POSTER BD. Le paywall = une affiche golden-hour audacieuse.
+  Gros titre Anton, encadrés ink épais, halftone, badge -33% en pastille « slam » comic,
+  CTA bouton BD bombé avec ombre portée dure. Énergie, premium-pop — PAS dark-SaaS.
+
+  PORTAGE : aucune logique de paiement ici. Au port dans PremiumModal (A/B `pw_poster`),
+  le CTA appelle startCheckout(effectivePlan,"poster") inchangé ; selPlan() ne fait que
+  basculer le visuel + le sous-texte CTA (classList/textContent only, zéro innerHTML).
+
+  CONTENU 100% préservé : 2 plans (4,99/mois | 39,99/an -33% « soit 3,33 €/mois »),
+  CTA « JE VEUX LA PRÉVISION → » + sous-lignes, 3 rassurances (Stripe/30j/2 clics),
+  bloc garantie 30j, liens « J'ai déjà un abonnement » + « Hôtel ou collectivité ? → »,
+  footer « Paiement sécurisé Stripe · Sans engagement ».
+-->
+<style>
+@font-face{font-family:"AntonLC";src:local("Anton"),local("Anton-Regular"),
+  url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#1a1320;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;
+  font-family:"Bricolage Grotesque","Bricolage",system-ui,sans-serif;padding:18px 0}
+
+/* ===== Tokens marque golden-hour comic ===== */
+.poster{
+  --ink:#0D0D0D; --paper:#FDFCF7; --paper2:#FFF6E0;
+  --gold:#FFC72C; --goldD:#E8A800; --goldL:#FFE47A;
+  --teal:#009E8E; --green:#22C55E; --coral:#E8522A; --amber:#B87A00;
+  position:relative; width:380px; max-width:100vw; color:var(--ink);
+  border:4px solid var(--ink); border-radius:22px; overflow:hidden;
+  box-shadow:0 14px 0 rgba(13,13,13,.18), 0 26px 60px rgba(13,13,13,.5);
+  background:var(--paper);
+}
+
+/* ===== HALFTONE + golden-hour ground (l'affiche) ===== */
+.poster::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(rgba(13,13,13,.10) 1.3px,transparent 1.6px) 0 0/8px 8px,
+    radial-gradient(rgba(13,13,13,.10) 1.3px,transparent 1.6px) 4px 4px/8px 8px;
+  opacity:.55}
+
+/* close */
+.x{position:absolute;top:13px;right:13px;z-index:9;width:40px;height:40px;border-radius:50%;
+  border:3px solid var(--ink);background:var(--gold);color:var(--ink);font-size:16px;font-weight:800;
+  cursor:pointer;box-shadow:3px 3px 0 var(--ink);line-height:1;display:grid;place-items:center}
+.x:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+
+/* ===== HERO POSTER : ciel coucher + sunburst + Veilleur + verdict ===== */
+.hero{position:relative;z-index:1;height:218px;border-bottom:4px solid var(--ink);overflow:hidden}
+.hero svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.eyebrow{position:absolute;left:12px;top:13px;z-index:4;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink);background:var(--paper);border:2.5px solid var(--ink);padding:4px 10px;border-radius:6px;
+  box-shadow:2.5px 2.5px 0 var(--ink)}
+.veil{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:3;
+  filter:drop-shadow(3px 5px 0 rgba(13,13,13,.35))}
+.verdict{position:absolute;left:12px;bottom:11px;z-index:4;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:12px;letter-spacing:.4px;color:#fff;
+  border:3px solid var(--ink);border-radius:9px;padding:5px 11px;box-shadow:3px 3px 0 var(--ink);
+  transform:rotate(-2deg);text-shadow:1px 1px 0 rgba(0,0,0,.25)}
+.verdict.mod{background:var(--amber)}
+.season{position:absolute;right:12px;bottom:11px;z-index:4;font-size:10px;font-weight:800;color:var(--ink);
+  background:var(--goldL);border:2.5px solid var(--ink);border-radius:14px;padding:4px 9px;letter-spacing:.3px;
+  box-shadow:2px 2px 0 var(--ink)}
+
+/* ===== BODY ===== */
+.body{position:relative;z-index:2;padding:16px 18px 6px}
+.kick{display:inline-block;font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.2px;
+  text-transform:uppercase;color:#fff;background:var(--teal);border:2.5px solid var(--ink);
+  padding:3px 10px;border-radius:100px;box-shadow:2px 2px 0 var(--ink);transform:rotate(-1.5deg);margin-bottom:9px}
+.title{font-family:"AntonLC",system-ui,sans-serif;font-size:33px;line-height:.96;margin:2px 0 9px;
+  color:var(--ink);letter-spacing:.3px;text-shadow:3px 3px 0 var(--goldL)}
+.title em{font-style:normal;color:var(--coral);text-shadow:3px 3px 0 var(--ink)}
+.sub{font-size:13.5px;font-weight:600;color:#2a2330;line-height:1.4;margin:0 0 15px}
+.sub b{color:var(--ink)}
+
+/* value = bandes d'affiche (cases BD inclinées) */
+.panel{position:relative;display:flex;align-items:center;gap:12px;
+  background:var(--paper2);border:3px solid var(--ink);border-radius:14px;padding:11px 13px;margin-bottom:10px;
+  box-shadow:4px 4px 0 var(--ink)}
+.panel:nth-of-type(odd){transform:rotate(-.8deg)}
+.panel:nth-of-type(even){transform:rotate(.8deg)}
+.panel.gold{background:linear-gradient(180deg,var(--goldL),var(--gold))}
+.num{flex:0 0 auto;width:36px;text-align:center;font-family:"AntonLC",system-ui,sans-serif;font-size:30px;
+  line-height:1;color:var(--ink);text-shadow:2.5px 2.5px 0 #fff}
+.panel.gold .num{text-shadow:2.5px 2.5px 0 var(--coral);color:#fff;-webkit-text-stroke:1.5px var(--ink)}
+.pc{flex:1;min-width:0}
+.pk{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--amber);margin-bottom:2px;text-transform:uppercase}
+.panel.gold .pk{color:#7a3a12}
+.pl{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.18}
+.pm{font-size:11.5px;font-weight:700;color:#5a5360;margin-top:2px}
+.panel.gold .pm{color:#5c3a0a}
+
+.proof{text-align:center;font-size:11.5px;font-weight:800;color:var(--ink);margin:8px 0 4px;
+  letter-spacing:.2px;opacity:.92}
+.proof .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);
+  border:1.5px solid var(--ink);vertical-align:middle;margin-right:5px}
+
+/* ===== ACTION : socle d'affiche golden-hour ===== */
+.act{position:relative;z-index:2;margin:12px -18px 0;padding:16px 18px 20px;
+  background:linear-gradient(180deg,var(--goldL),var(--gold));border-top:4px solid var(--ink)}
+.act::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(rgba(13,13,13,.08) 1.3px,transparent 1.6px) 2px 2px/8px 8px;opacity:.5}
+.act>*{position:relative}
+
+/* plan toggle = tickets BD */
+.plans{display:flex;gap:10px;margin-bottom:14px}
+.plan{flex:1;border:3px solid var(--ink);border-radius:13px;padding:11px 8px 10px;cursor:pointer;position:relative;
+  background:var(--paper);color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s;
+  text-align:center}
+.plan:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.plan.on{background:#fff;box-shadow:0 0 0 3px var(--ink),5px 5px 0 var(--ink);transform:translateY(-2px)}
+.plan b{display:block;font-size:12px;font-weight:800;letter-spacing:.2px}
+.plan .pr{display:block;font-family:"AntonLC",system-ui,sans-serif;font-size:22px;margin-top:3px;letter-spacing:.3px}
+.plan .pr small{font-size:11px;font-weight:400;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.plan .eq{display:block;font-size:9.5px;font-weight:800;color:var(--amber);margin-top:2px}
+.plan.on .pr{color:var(--coral)}
+/* badge -33% = pastille SLAM comic */
+.slam{position:absolute;top:-15px;right:-13px;z-index:5;width:50px;height:50px;
+  display:grid;place-items:center;transform:rotate(-14deg)}
+.slam svg{position:absolute;inset:0;width:100%;height:100%}
+.slam span{position:relative;font-family:"AntonLC",system-ui,sans-serif;font-size:14px;color:#fff;
+  line-height:.9;text-align:center;text-shadow:1.5px 1.5px 0 rgba(0,0,0,.35);letter-spacing:.2px}
+
+/* CTA = bouton BD bombé, ombre portée dure */
+.cta{display:block;width:100%;border:4px solid var(--ink);border-radius:16px;padding:15px 16px;cursor:pointer;
+  font-family:"AntonLC",system-ui,sans-serif;letter-spacing:.6px;text-transform:uppercase;text-align:center;
+  background:linear-gradient(180deg,#fff,var(--goldL));color:var(--ink);
+  box-shadow:0 6px 0 var(--ink),0 13px 22px rgba(13,13,13,.42);transition:transform .08s,box-shadow .08s}
+.cta:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink),0 4px 10px rgba(13,13,13,.35)}
+.cta .big{display:block;font-size:19px;line-height:1.04}
+.cta .sm{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:12px;font-weight:700;
+  text-transform:none;color:#5a4408;margin-top:5px}
+.cta .sm2{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:11px;font-weight:800;
+  text-transform:none;color:var(--teal);margin-top:2px}
+
+/* trust = 3 timbres BD */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.tcell{background:var(--paper);border:3px solid var(--ink);border-radius:12px;padding:9px 5px;text-align:center;
+  box-shadow:2.5px 2.5px 0 var(--ink)}
+.tcell .ic{display:block;font-size:17px;line-height:1}
+.tcell b{display:block;font-size:11px;font-weight:800;color:var(--ink);margin-top:3px}
+.tcell em{display:block;font-style:normal;font-size:9px;color:#5a5360;font-weight:700;line-height:1.25;margin-top:1px}
+
+/* garantie */
+.guar{display:flex;align-items:center;gap:11px;margin-top:13px;padding:11px 13px;border-radius:13px;
+  background:var(--paper);border:3px solid var(--green);box-shadow:3.5px 3.5px 0 var(--ink)}
+.guar .gic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--green);border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-size:17px;box-shadow:1.5px 1.5px 0 var(--ink)}
+.guar b{display:block;font-size:12.5px;color:var(--ink);line-height:1.2}
+.guar em{display:block;font-style:normal;font-size:11px;color:#1f6b3a;font-weight:700;margin-top:2px;line-height:1.3}
+
+/* liens secondaires + footer */
+.links{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px}
+.link{background:none;border:none;color:var(--ink);font-weight:800;font-size:12.5px;text-decoration:underline;
+  text-underline-offset:3px;cursor:pointer;font-family:inherit}
+.link.pro{color:#5a4408}
+.secure{text-align:center;font-size:10.5px;color:#5a4408;font-weight:800;margin-top:12px;letter-spacing:.2px}
+
+@media (prefers-reduced-motion:reduce){.cta,.x,.plan{transition:none}}
+</style>
+</head>
+<body>
+<div class="poster" role="dialog" aria-label="Passer au Veilleur Premium">
+  <button class="x" aria-label="Fermer">✕</button>
+
+  <!-- ===== HERO POSTER ===== -->
+  <div class="hero">
+    <svg class="scene" viewBox="0 0 380 218" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0B2230"/><stop offset=".34" stop-color="#155A5A"/>
+          <stop offset=".64" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFF2C4"/><stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="380" height="218" fill="url(#sky)"/>
+      <!-- sunburst d'affiche -->
+      <g transform="translate(190,108)" opacity=".5">
+        <g fill="#FFE9A8" opacity=".5">
+          <path d="M0 0 L-190 -34 L-190 34 Z"/><path d="M0 0 L190 -34 L190 34 Z"/>
+          <path d="M0 0 L-34 -190 L34 -190 Z"/><path d="M0 0 L-34 190 L34 190 Z"/>
+          <path d="M0 0 L-150 -130 L-110 -160 Z"/><path d="M0 0 L150 -130 L110 -160 Z"/>
+          <path d="M0 0 L-150 130 L-110 160 Z"/><path d="M0 0 L150 130 L110 160 Z"/>
+        </g>
+      </g>
+      <circle cx="190" cy="108" r="58" fill="url(#sun)"/>
+      <circle cx="190" cy="108" r="30" fill="#FFF2C4"/>
+      <circle cx="190" cy="108" r="30" fill="none" stroke="#0D0D0D" stroke-width="2" opacity=".25"/>
+      <!-- mer golden-hour + liseré encre -->
+      <path d="M0 150 H380 V218 H0 Z" fill="#1A5852"/>
+      <path d="M0 150 q95 -9 190 0 t190 0 V172 H0 Z" fill="#08251F" opacity=".5"/>
+      <g stroke="#FFD884" stroke-opacity=".6" stroke-width="2" stroke-linecap="round">
+        <line x1="120" y1="166" x2="260" y2="166"/><line x1="150" y1="180" x2="230" y2="180"/>
+      </g>
+      <!-- yole ronde (vie + échelle + âme, MQ) -->
+      <g transform="translate(296,158)">
+        <path d="M-17 0 Q0 13 17 0 L13 6 Q0 11 -13 6 Z" fill="#E8522A" stroke="#0D0D0D" stroke-width="2"/>
+        <line x1="0" y1="0" x2="0" y2="-15" stroke="#0D0D0D" stroke-width="2"/>
+        <path d="M0 -15 L11 -3 L0 -3 Z" fill="#FFC72C" stroke="#0D0D0D" stroke-width="1.6"/>
+      </g>
+      <path d="M0 150 q95 -9 190 0 t190 0" fill="none" stroke="#0D0D0D" stroke-width="2.5"/>
+    </svg>
+
+    <span class="eyebrow">Le Veilleur · Premium</span>
+
+    <!-- Le Veilleur : satellite crème, œil ami mi-clos, regarde la MER (rassure ≠ surveille) -->
+    <span class="veil">
+      <svg viewBox="0 0 120 116" width="80" height="78" aria-hidden="true">
+        <g stroke="#0D0D0D" stroke-width="3">
+          <rect x="4" y="46" width="22" height="24" rx="3" fill="#1EC8B0"/>
+          <rect x="94" y="46" width="22" height="24" rx="3" fill="#1EC8B0"/>
+          <line x1="6" y1="52" x2="24" y2="52"/><line x1="6" y1="64" x2="24" y2="64"/>
+          <line x1="96" y1="52" x2="114" y2="52"/><line x1="96" y1="64" x2="114" y2="64"/>
+          <line x1="26" y1="58" x2="38" y2="58"/><line x1="94" y1="58" x2="82" y2="58"/>
+        </g>
+        <!-- corps -->
+        <circle cx="60" cy="58" r="34" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3.5"/>
+        <!-- antenne -->
+        <line x1="60" y1="24" x2="60" y2="9" stroke="#0D0D0D" stroke-width="3"/>
+        <circle cx="60" cy="6" r="5" fill="#FFC72C" stroke="#0D0D0D" stroke-width="2.5"/>
+        <!-- œil ami mi-clos, regard légèrement BAS-DROITE (vers la mer), jamais l'utilisateur -->
+        <path d="M44 56 Q60 50 76 56" fill="none" stroke="#0D0D0D" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="64" cy="60" r="9" fill="#009E8E" stroke="#0D0D0D" stroke-width="2.5"/>
+        <circle cx="64" cy="60" r="3.5" fill="#0D0D0D"/>
+        <circle cx="66" cy="58" r="1.5" fill="#fff"/>
+        <!-- faisceau de veille vers l'eau (caring, pas scan) -->
+        <path d="M68 66 L96 96 L82 98 Z" fill="#FFE47A" opacity=".55"/>
+        <!-- sourire doux -->
+        <path d="M50 78 Q60 84 70 78" fill="none" stroke="#0D0D0D" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </span>
+
+    <span class="verdict mod">Anse Dufour · à surveiller</span>
+    <span class="season">La saison est là</span>
+  </div>
+
+  <!-- ===== BODY ===== -->
+  <div class="body">
+    <span class="kick">Ta prévision plage</span>
+    <h2 class="title">SOIS <em>PRÉVENU</em><br>AVANT QUE ÇA TOURNE</h2>
+    <p class="sub">Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ta plage bascule.</p>
+
+    <div class="panel gold">
+      <span class="num">1</span>
+      <span class="pc">
+        <span class="pk">Chaque matin · 7h</span>
+        <span class="pl">Ta meilleure plage du jour</span>
+        <span class="pm">Brief perso · vérifié satellite 4×/jour</span>
+      </span>
+    </div>
+    <div class="panel">
+      <span class="num">2</span>
+      <span class="pc">
+        <span class="pk">Alerte instantanée</span>
+        <span class="pl">Le jour où ta plage change</span>
+        <span class="pm">Propre → modéré : on te prévient · J-1</span>
+      </span>
+    </div>
+    <div class="panel">
+      <span class="num">3</span>
+      <span class="pc">
+        <span class="pk">7 jours d'avance</span>
+        <span class="pl">Cale ton week-end tranquille</span>
+        <span class="pm">La prévision par plage, jour par jour</span>
+      </span>
+    </div>
+
+    <div class="proof"><span class="dot"></span>14/18 plages propres en ce moment</div>
+
+    <!-- ===== ACTION (socle affiche) ===== -->
+    <div class="act">
+      <div class="plans">
+        <div class="plan" id="planMo" onclick="selPlan('mo')" role="button" aria-pressed="false">
+          <b>Mensuel</b><span class="pr">4,99 €<small>/mois</small></span>
+        </div>
+        <div class="plan on" id="planYr" onclick="selPlan('yr')" role="button" aria-pressed="true">
+          <span class="slam" aria-hidden="true">
+            <svg viewBox="0 0 50 50"><path d="M25 1 L31 9 L41 6 L40 17 L49 22 L42 30 L47 40 L36 40 L31 49 L25 42 L19 49 L14 40 L3 40 L8 30 L1 22 L10 17 L9 6 L19 9 Z" fill="#E8522A" stroke="#0D0D0D" stroke-width="2.5" stroke-linejoin="round"/></svg>
+            <span>-33%</span>
+          </span>
+          <b>Annuel</b><span class="pr">39,99 €<small>/an</small></span>
+          <span class="eq">soit 3,33 €/mois</span>
+        </div>
+      </div>
+
+      <button class="cta" id="cta">
+        <span class="big">JE VEUX LA PRÉVISION →</span>
+        <span class="sm" id="ctaSub">39,99 €/an · annulable en 2 clics</span>
+        <span class="sm2" id="ctaSub2">soit 0,11 €/jour · moins qu'un café</span>
+      </button>
+
+      <div class="trust">
+        <div class="tcell"><span class="ic">🛡️</span><b>Stripe</b><em>Paiement sécurisé</em></div>
+        <div class="tcell"><span class="ic">↩️</span><b>30 jours</b><em>Satisfait ou remboursé</em></div>
+        <div class="tcell"><span class="ic">✌️</span><b>2 clics</b><em>Annule quand tu veux</em></div>
+      </div>
+
+      <div class="guar">
+        <span class="gic">🛡️</span>
+        <span><b>Garantie 30 jours satisfait ou remboursé</b><em>Pas convaincu ? Un email, remboursé — sans condition.</em></span>
+      </div>
+
+      <div class="links">
+        <button class="link">J'ai déjà un abonnement</button>
+        <button class="link pro">Hôtel ou collectivité ? →</button>
+      </div>
+
+      <div class="secure">🔒 Paiement sécurisé Stripe · Sans engagement</div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* selPlan — visuel + sous-texte CTA uniquement (classList/textContent, zéro innerHTML).
+   Au port : le clic CTA appelle startCheckout(plan,"poster"). */
+function selPlan(p){
+  var mo=document.getElementById("planMo"), yr=document.getElementById("planYr");
+  var on=(p==="yr");
+  yr.classList.toggle("on",on);  yr.setAttribute("aria-pressed",String(on));
+  mo.classList.toggle("on",!on); mo.setAttribute("aria-pressed",String(!on));
+  document.getElementById("ctaSub").textContent =
+    on ? "39,99 €/an · annulable en 2 clics" : "4,99 €/mois · annulable en 2 clics";
+  document.getElementById("ctaSub2").textContent =
+    on ? "soit 0,11 €/jour · moins qu'un café" : "résiliable à tout moment";
+}
+</script>
+</body>
+</html>

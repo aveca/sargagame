@@ -1,0 +1,271 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ciné-Atlas — Le Veilleur</title>
+<style>
+:root{--ink:#0D0D0D;--gold:#E8A800;--goldL:#FFC72C;--goldS:#FFE47A;--teal:#009E8E;--tealL:#1EC8B0;--bg:#070f14}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(120% 90% at 50% -10%,#123 0%,var(--bg) 60%) fixed;color:#eaf7f4;
+  font:600 15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+header{padding:34px 22px 18px;max-width:1180px;margin:0 auto}
+.wm{font:700 11px/1 system-ui;letter-spacing:.24em;color:var(--tealL);text-transform:uppercase}
+h1{font:400 clamp(38px,9vw,74px)/.92 'Anton',Impact,'Haettenschweiler',sans-serif;letter-spacing:-.01em;
+  text-transform:uppercase;margin:.12em 0 .1em;color:#fff}
+.sub{font:600 14.5px/1.5 system-ui;color:rgba(234,247,244,.82);max-width:56ch}
+.sub b{color:var(--goldS)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 2px}
+.bar .cnt{font:700 12px/1 ui-monospace,Menlo,Consolas,monospace;color:var(--goldS);letter-spacing:.02em}
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap}
+.seg button{-webkit-appearance:none;appearance:none;cursor:pointer;background:rgba(255,255,255,.06);
+  border:1px solid rgba(30,200,176,.35);color:#eaf7f4;border-radius:9px;min-height:38px;padding:0 12px;
+  font:800 12px/1 system-ui;letter-spacing:.02em}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--goldS),var(--goldL));color:#1a2b26;border-color:transparent}
+.langs button{min-height:38px}
+main{max-width:1180px;margin:0 auto;padding:14px 22px 60px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.card{margin:0;background:#0c1620;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
+.card:hover,.card:focus-within{transform:translateY(-3px);border-color:rgba(30,200,176,.6);outline:none}
+.frame{position:relative;aspect-ratio:9/16;background:#01060c}
+.card.r16_9 .frame{aspect-ratio:16/9}
+.clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;top:8px;left:8px;font:800 9.5px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;
+  color:#1a2b26;background:var(--goldS);border-radius:6px;padding:4px 7px}
+figcaption{padding:11px 12px 13px;display:flex;flex-direction:column;gap:3px}
+.nm{font:400 17px/1 'Anton',Impact,sans-serif;letter-spacing:.01em;text-transform:uppercase;color:#fff}
+.hf{font:700 10px/1.2 ui-monospace,Menlo,Consolas,monospace;color:var(--tealL);opacity:.85}
+.meta{font:700 9.5px/1.2 ui-monospace,Menlo,Consolas,monospace;color:rgba(234,247,244,.55);margin-top:2px}
+.dl{font:800 11px/1 system-ui;margin-top:6px}
+.dl a{color:var(--goldL);text-decoration:none;border-bottom:1px solid rgba(255,199,44,.4)}
+.foot{max-width:1180px;margin:0 auto;padding:0 22px 48px;color:rgba(234,247,244,.6);font:600 12.5px/1.6 system-ui}
+.foot b{color:var(--goldS)}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style></head>
+<body>
+<header>
+  <div class="wm">Le Veilleur · Comics Group</div>
+  <h1>Ciné-Atlas</h1>
+  <p class="sub">Le catalogue de <b>clips ciné on-brand</b> — mouvements de caméra maison joués sur nos scènes SVG,
+  rendus <b>SVG→ffmpeg</b>. <b>100 % gratuit · zéro IA · zéro crédit.</b> Là où les autres facturent des crédits IA,
+  on scale le volume à coût marginal nul. <b>Illustration d'ambiance</b> — le verdict réel, mesuré au satellite, vit sur la page.</p>
+  <div class="bar">
+    <span class="cnt" id="cnt"></span>
+    <span class="seg" id="fRegion" role="group" aria-label="Région"></span>
+    <span class="seg" id="fRatio" role="group" aria-label="Format"></span>
+    <span class="seg langs" id="fLang" role="group" aria-label="Langue">
+      <button data-lang="fr" aria-pressed="true">FR</button><button data-lang="en" aria-pressed="false">EN</button><button data-lang="es" aria-pressed="false">ES</button>
+    </span>
+  </div>
+</header>
+<main><div class="grid" id="grid">
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/arc_left-9x16-mq.png">
+        <source src="../../public/cine-atlas/arc_left-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Arc gauche" data-en="Arc Left" data-es="Arco izq.">Arc gauche</span>
+      <span class="hf">≈ Arc Left / Dolly Left</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/arc_left-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/arc_left-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/arc_right-9x16-mq.png">
+        <source src="../../public/cine-atlas/arc_right-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Arc droit" data-en="Arc Right" data-es="Arco der.">Arc droit</span>
+      <span class="hf">≈ Arc Right / Dolly Right</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/arc_right-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/arc_right-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/crane_down-9x16-mq.png">
+        <source src="../../public/cine-atlas/crane_down-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Grue basse" data-en="Crane Down" data-es="Grúa abajo">Grue basse</span>
+      <span class="hf">≈ Crane Down / Jib Down</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/crane_down-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/crane_down-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/crane_up-9x16-mq.png">
+        <source src="../../public/cine-atlas/crane_up-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Grue haute" data-en="Crane Up" data-es="Grúa arriba">Grue haute</span>
+      <span class="hf">≈ Crane Up / Jib Up</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/crane_up-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/crane_up-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/descent-9x16-mq.png">
+        <source src="../../public/cine-atlas/descent-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="La Descente" data-en="The Descent" data-es="El Descenso">La Descente</span>
+      <span class="hf">≈ Earth Zoom Out / Space Hyperlapse</span>
+      <span class="meta">7.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/descent-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/descent-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/fpv_glide-9x16-mq.png">
+        <source src="../../public/cine-atlas/fpv_glide-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Vol FPV" data-en="FPV Glide" data-es="Vuelo FPV">Vol FPV</span>
+      <span class="hf">≈ FPV Drone / Flying</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/fpv_glide-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/fpv_glide-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/golden_lapse-9x16-mq.png">
+        <source src="../../public/cine-atlas/golden_lapse-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Heure dorée" data-en="Golden Lapse" data-es="Hora dorada">Heure dorée</span>
+      <span class="hf">≈ Timelapse Landscape / Hyperlapse</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/golden_lapse-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/golden_lapse-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/orbit-9x16-mq.png">
+        <source src="../../public/cine-atlas/orbit-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Orbite douce" data-en="Gentle Orbit" data-es="Órbita suave">Orbite douce</span>
+      <span class="hf">≈ 360 Orbit / Lazy Susan</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/orbit-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/orbit-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/pull_out-9x16-mq.png">
+        <source src="../../public/cine-atlas/pull_out-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Recul" data-en="Pull-Out" data-es="Alejamiento">Recul</span>
+      <span class="hf">≈ Crash Zoom Out / Dolly Out</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/pull_out-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/pull_out-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/push_in-9x16-mq.png">
+        <source src="../../public/cine-atlas/push_in-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Fondu avant" data-en="Push-In" data-es="Acercamiento">Fondu avant</span>
+      <span class="hf">≈ Dolly / Super Dolly In</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/push_in-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/push_in-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/rack_focus-9x16-mq.png">
+        <source src="../../public/cine-atlas/rack_focus-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Bascule de netteté" data-en="Rack Focus" data-es="Cambio de foco">Bascule de netteté</span>
+      <span class="hf">≈ Focus Change / Rack Focus</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/rack_focus-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/rack_focus-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+<figure class="card r9_16" data-region="mq" data-ratio="9x16" tabindex="0">
+    <div class="frame">
+      <video class="clip" preload="none" muted loop playsinline poster="../../public/cine-atlas/tilt_up-9x16-mq.png">
+        <source src="../../public/cine-atlas/tilt_up-9x16-mq.mp4" type="video/mp4">
+      </video>
+      <span class="badge">MQ · 9x16</span>
+    </div>
+    <figcaption>
+      <span class="nm" data-fr="Panoramique haut" data-en="Tilt Up" data-es="Inclinación">Panoramique haut</span>
+      <span class="hf">≈ Tilt Up</span>
+      <span class="meta">6.3s · SVG→ffmpeg · 0 IA</span>
+      <span class="dl"><a href="../../public/cine-atlas/tilt_up-9x16-mq.mp4" download>mp4</a> · <a href="../../public/cine-atlas/tilt_up-9x16-mq.gif" download>gif</a></span>
+    </figcaption>
+  </figure>
+</div></main>
+<p class="foot"><b>12 clips</b> · usine <code>scripts/design/cine-atlas-batch.mjs</code> (idempotent, capé, <code>--regions/--ratios/--skills/--limit</code>)
+· galerie régénérée par <code>scripts/design/gen-cine-atlas.cjs</code> · médias dans <code>public/cine-atlas/</code> (produits en local ou CI).
+Le verdict reste 100 % ERDDAP ; l'argent ne le touche jamais.</p>
+<script>
+(function(){
+  var grid=document.getElementById('grid'), cards=[].slice.call(grid.children);
+  // hover/tap = play ; leave = pause (léger : preload=none, jamais 100 vidéos qui tournent)
+  cards.forEach(function(c){
+    var v=c.querySelector('video'); if(!v)return;
+    var play=function(){ if(matchMedia('(prefers-reduced-motion:reduce)').matches)return; v.play().catch(function(){}); };
+    var stop=function(){ try{v.pause();}catch(e){} };
+    c.addEventListener('mouseenter',play); c.addEventListener('mouseleave',stop);
+    c.addEventListener('focus',play); c.addEventListener('blur',stop);
+    c.addEventListener('click',function(){ v.paused?play():stop(); });
+  });
+  // filtres région / ratio
+  var regions=["mq"], ratios=["9x16"];
+  var state={region:'all',ratio:'all',lang:'fr'};
+  function seg(host,vals,key){
+    var mk=function(val,lab){var b=document.createElement('button');b.textContent=lab;b.setAttribute('aria-pressed',String(state[key]===val));
+      b.addEventListener('click',function(){state[key]=val;[].forEach.call(host.children,function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');apply();});host.appendChild(b);};
+    mk('all','Tout'); vals.forEach(function(v){mk(v,v.toUpperCase());});
+  }
+  seg(document.getElementById('fRegion'),regions,'region');
+  seg(document.getElementById('fRatio'),ratios,'ratio');
+  function apply(){
+    var n=0;
+    cards.forEach(function(c){
+      var ok=(state.region==='all'||c.dataset.region===state.region)&&(state.ratio==='all'||c.dataset.ratio===state.ratio);
+      c.style.display=ok?'':'none'; if(ok)n++;
+    });
+    document.getElementById('cnt').textContent=n+' clips';
+  }
+  document.getElementById('fLang').addEventListener('click',function(e){
+    var btn=e.target.closest('button'); if(!btn)return; state.lang=btn.dataset.lang;
+    [].forEach.call(this.children,function(x){x.setAttribute('aria-pressed',String(x===btn));});
+    document.documentElement.lang=state.lang;
+    cards.forEach(function(c){var nm=c.querySelector('.nm'); if(nm&&nm.dataset[state.lang])nm.textContent=nm.dataset[state.lang];});
+  });
+  apply();
+})();
+</script>
+</body></html>

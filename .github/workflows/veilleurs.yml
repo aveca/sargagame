@@ -1,0 +1,120 @@
+name: Veilleurs — orchestration
+
+# LE CHEF DE QUART (série) → 10 WORKERS (matrix, parallèle) → SYNTHÈSE (série).
+# 100 % cloud : tourne même PC éteint (fondateur mobile). Les Veilleurs REGARDENT
+# et produisent de l'intelligence datée par marché ; ils N'ENVOIENT rien (les envois
+# restent aux workflows dédiés : weekly-outreach, drip, dunning).
+
+on:
+  schedule:
+    - cron: '23 6 * * *'   # tous les jours 06:23 UTC (off-minute, cf. CLAUDE.md)
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'due = veilleurs dûs par cadence | all = les 10 en parallèle'
+        type: choice
+        options: [due, all]
+        default: due
+
+# Sérialise les runs de CE workflow (le job synthèse push le digest).
+concurrency:
+  group: veilleurs-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  orchestrator:
+    name: Chef de quart
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        env:
+          SCOPE: ${{ github.event.inputs.scope || 'due' }}
+        run: node scripts/veilleurs/orchestrator.cjs
+
+  veilleur:
+    name: ${{ matrix.name }}
+    needs: orchestrator
+    if: needs.orchestrator.outputs.count != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix: ${{ fromJSON(needs.orchestrator.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      # continue-on-error : un veilleur qui échoue ne bloque ni les autres (fail-fast:false)
+      # ni la synthèse. ANTHROPIC_API_KEY est OPTIONNEL (absent = recon déterministe).
+      - name: Veille ${{ matrix.id }}
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/veilleurs/run-veilleur.cjs ${{ matrix.id }}
+      - name: Upload brief
+        uses: actions/upload-artifact@v4
+        with:
+          name: veilleur-${{ matrix.id }}
+          path: scripts/veilleurs/out/${{ matrix.id }}/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  synthesis:
+    name: Synthèse
+    needs: [orchestrator, veilleur]
+    if: always() && needs.orchestrator.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Download briefs
+        uses: actions/download-artifact@v4
+        with:
+          path: scripts/veilleurs/_artifacts
+        continue-on-error: true
+      - name: Digest + commit
+        run: |
+          node scripts/veilleurs/synthesize.cjs
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/veilleurs/out scripts/veilleurs/DIGEST.md scripts/veilleurs/latest-digest.json 2>/dev/null || true
+          git diff --cached --quiet && { echo "rien à committer"; exit 0; }
+          git commit -m "veilleurs: digest $(date -u +'%Y-%m-%d')"
+          git pull --rebase --autostash -X theirs || true
+          git push || (git pull --rebase --autostash -X theirs && git push)
+
+  notify-failure:
+    needs: [orchestrator, veilleur, synthesis]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Alerte échec
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          WORKFLOW_NAME: 'Veilleurs'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs

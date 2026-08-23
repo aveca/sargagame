@@ -1,0 +1,26 @@
+{
+  "_note": "CATALOGUE des hôtels candidats à la « mise en avant in-app » (palier Pro). SOURCE DE VÉRITÉ du gate : `active:true` = paiement Pro confirmé ET accord de mise en avant donné → l'hôtel passe en LIVE sur la fiche plage. `active:false` = pas (encore) payant → reste en `preview` (visible uniquement via ?preview_partner=<slug>, pour la démo de vente). Le paiement Mollie B2B étant anonyme, c'est le FONDATEUR qui bascule `active:true` après avoir rapproché le paiement (dashboard Mollie) d'un établissement. Aucun hôtel ne peut s'auto-insérer. Champs d'affichage : name, tagline (1 ligne), url, area, beachId (= beach.id runtime, ex. mq016), logo (URL ou null). Régénérer public/api/b2b-partners.json via: node scripts/automation/gen-b2b-partners.cjs",
+  "updatedAt": "2026-06-29",
+  "partners": [
+    {
+      "slug": "diamant-les-bains",
+      "active": false,
+      "name": "Hôtel Diamant Les Bains",
+      "tagline": "Résidence hôtelière en bordure de plage, face au Rocher du Diamant.",
+      "url": "https://www.diamant-les-bains.fr/",
+      "area": "Le Diamant",
+      "beachId": "mq016",
+      "logo": null
+    },
+    {
+      "slug": "anoli-lodges",
+      "active": false,
+      "name": "Anoli Lodges",
+      "tagline": "Lodges au calme à Sainte-Anne, à 5 min de la plage des Salines.",
+      "url": "https://anoli-lodges.com",
+      "area": "Sainte-Anne",
+      "beachId": "mq001",
+      "logo": null
+    }
+  ]
+}

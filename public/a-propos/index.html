@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<title>Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Martinique</title>
+<meta name="description" content="Données satellite Copernicus & NOAA, méthode publique, fiabilité mesurée chaque jour contre l'observation réelle. Qui est derrière Sargasses Martinique."/>
+<link rel="canonical" href="https://sargasses-martinique.com/a-propos/"/>
+<meta property="og:title" content="Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Martinique"/>
+<meta property="og:description" content="Données satellite Copernicus & NOAA, méthode publique, fiabilité mesurée chaque jour contre l'observation réelle. Qui est derrière Sargasses Martinique."/>
+<meta property="og:url" content="https://sargasses-martinique.com/a-propos/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Pourquoi nous faire confiance — À propos · Sources & fiabilité" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:locale:alternate" content="en_US" />
+<meta property="og:site_name" content="Sargasses Martinique" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Pourquoi nous faire confiance — À propos · Sources & fiabilité" />
+<meta name="twitter:description" content="Données satellite Copernicus & NOAA, méthode publique, fiabilité mesurée chaque jour." />
+<meta name="twitter:image" content="https://sargasses-martinique.com/social-share.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  // Bucket persistant 50/50, override URL ?az=1 (variant) / ?az=0 (control)
+  var qs=new URLSearchParams(location.search), az;
+  if(qs.get('az')==='1'||qs.get('az')==='0'){ az=qs.get('az')==='1';
+    try{localStorage.setItem('sg_az_apropos',az?'1':'0')}catch(e){} }
+  else { try{var s=localStorage.getItem('sg_az_apropos');
+    az = s!=null ? s==='1' : Math.random()<0.5;
+    localStorage.setItem('sg_az_apropos',az?'1':'0')}catch(e){ az=Math.random()<0.5 } }
+  document.documentElement.classList.toggle('az-on', az);
+})();
+</script>
+<link rel="stylesheet" href="colors_and_type.css"/>
+<style>
+  html,body{margin:0;background:#E8E4DB}
+  .page{max-width:390px;margin:0 auto;background:var(--sg-bg);min-height:100vh;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.08)}
+
+  /* A/B Test class toggling */
+  .control-only { display: block; }
+  .v2 { display: none; }
+  
+  html.az-on .control-only { display: none !important; }
+  html.az-on .v2 { display: block !important; }
+  html.az-on .v2-flex { display: flex !important; }
+  
+  html.az-on .page { max-width: 520px; }
+  
+  /* Hero V2 styles */
+  html.az-on .hero.v2 {
+    padding: calc(30px + env(safe-area-inset-top)) 24px 40px;
+    background: radial-gradient(130% 70% at 76% 4%,rgba(255,224,160,.16),transparent 48%),
+                linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%);
+    color: #fff;
+    overflow: hidden;
+  }
+  html.az-on .hero.v2 .hero-eyebrow { color: #5FD3C9; }
+  html.az-on .hero.v2 .hero-eyebrow::before { background: #5FD3C9; }
+  html.az-on .hero.v2 h1 { color: #fff; }
+  html.az-on .hero.v2 p { color: rgba(255,255,255,.8); }
+  
+  .sun {
+    position: absolute; top: -30%; right: -12%; width: 80%; height: 80%; pointer-events: none;
+    background: radial-gradient(closest-side,rgba(255,243,214,.42),rgba(255,216,132,.18) 46%,transparent 72%);
+    animation: sunBreath 11s ease-in-out infinite;
+  }
+  @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+  @media (prefers-reduced-motion:reduce){.sun{animation:none}}
+  
+  .veilleur-container { position: absolute; top: 10px; right: 10px; width: 80px; height: 80px; z-index: 2; }
+  
+  /* Freshpill live */
+  .freshpill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(8,18,16,.45); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 999px; padding: 6px 12px 6px 10px;
+    margin-top: 20px; font-family: var(--sg-font-mono); font-size: 11px;
+    font-weight: 700; color: #fff;
+  }
+  .freshpill .pulse {
+    width: 6px; height: 6px; border-radius: 50%; background: #6AC15A;
+    box-shadow: 0 0 0 3px rgba(106,193,90,.15);
+  }
+  
+  /* Section 02 V2 stats */
+  .real-stats {
+    background: #10231E; border: 1px solid rgba(255,255,255,.09);
+    border-radius: 20px; padding: 24px 20px; margin-top: 14px;
+    color: #fff;
+  }
+  .real-stats-headline {
+    font-size: 14px; font-weight: 700; line-height: 1.5;
+    border-left: 3px solid #FFC72C; padding-left: 12px; margin-bottom: 20px;
+  }
+  .real-stats-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .real-stats-card {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px; padding: 14px 12px; text-align: center;
+  }
+  .real-stats-card-val {
+    font-family: var(--sg-font-display); font-size: 32px; font-weight: 900;
+    line-height: 1.1; margin-bottom: 4px;
+  }
+  .real-stats-card-lbl {
+    font-size: 11px; color: rgba(255,255,255,.6); line-height: 1.3;
+  }
+  .real-stats-window {
+    font-size: 11px; color: rgba(255,255,255,.45); margin-top: 14px;
+    text-align: right;
+  }
+
+
+  /* ---------- topbar ---------- */
+  .tb{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--sg-border-m);background:var(--sg-bg)}
+  .tb-back{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;color:var(--sg-ink);font-weight:600;text-decoration:none}
+  .tb-lang{display:flex;gap:4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--sg-mid)}
+  .tb-lang b{color:var(--sg-ink)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:48px 24px 40px;position:relative;overflow:hidden;background:
+    radial-gradient(120% 80% at 50% 0%, rgba(232,168,0,.07), transparent 60%),
+    var(--sg-bg)}
+  .hero::before{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(0deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px);
+    pointer-events:none;mask:radial-gradient(80% 60% at 50% 30%,#000 30%,transparent 70%)}
+  .hero-eyebrow{position:relative;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .hero-eyebrow::before{content:"";width:18px;height:1px;background:var(--sg-teal)}
+  .hero h1{position:relative;font-family:var(--sg-font-display);font-weight:900;font-size:40px;line-height:.98;letter-spacing:-.025em;margin:0 0 18px;color:var(--sg-ink);text-transform:uppercase}
+  .hero h1 em{font-style:normal;color:var(--sg-gold);font-family:var(--sg-font-display);position:relative}
+  .hero h1 em::after{content:"";position:absolute;left:0;right:0;bottom:4px;height:6px;background:var(--sg-gold-bg-l);z-index:-1}
+  .hero p{position:relative;font-size:15px;line-height:1.55;color:var(--sg-mid);margin:0;max-width:320px}
+  .hero-sig{position:relative;display:flex;align-items:center;gap:10px;margin-top:28px;font-size:11px;color:var(--sg-mid)}
+  .hero-sig-dot{width:6px;height:6px;border-radius:50%;background:var(--sg-clean);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+
+  /* ---------- section chrome ---------- */
+  section{padding:40px 24px;border-top:1px solid var(--sg-border-m)}
+  .sec-num{font-family:var(--sg-font-mono);font-size:10px;color:var(--sg-mid);letter-spacing:.1em}
+  .sec-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:14px}
+  .sec-h{font-family:var(--sg-font-display);font-size:28px;line-height:1.02;letter-spacing:-.02em;margin:0 0 6px;text-transform:uppercase}
+  .sec-sub{font-size:13px;color:var(--sg-mid);margin:0 0 24px;line-height:1.55}
+
+  /* ---------- data sources ---------- */
+  .src-grid{display:grid;gap:12px}
+  .src{padding:18px;border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);background:var(--sg-card);position:relative}
+  .src-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .src-name{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .src-org{font-size:10px;color:var(--sg-mid);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+  .src-badge{font-family:var(--sg-font-mono);font-size:9px;letter-spacing:.08em;padding:4px 7px;border-radius:4px;background:var(--sg-teal-bg);color:#00786C;font-weight:700;white-space:nowrap}
+  .src-desc{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:0 0 14px}
+  .src-meta{display:flex;align-items:center;gap:12px;font-size:10.5px;color:var(--sg-mid);border-top:1px dashed var(--sg-border-m);padding-top:10px}
+  .src-meta b{color:var(--sg-ink);font-weight:700}
+  .src-pulse{display:inline-flex;align-items:center;gap:5px}
+  .src-pulse-dot{width:5px;height:5px;border-radius:50%;background:var(--sg-clean);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ---------- backtest ---------- */
+  .bt-wrap{background:var(--sg-night);color:#fff;border-radius:var(--sg-r-xl);padding:28px 22px;margin-top:4px}
+  .bt-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-gold-l);margin-bottom:16px}
+  .bt-head{font-family:var(--sg-font-display);font-size:22px;line-height:1.05;margin:0 0 24px;text-transform:uppercase;letter-spacing:-.015em}
+  .bt-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+  .bt-stat{padding:14px 0;border-top:1px solid rgba(255,255,255,.14)}
+  .bt-stat-big{font-family:var(--sg-font-display);font-size:44px;line-height:1;letter-spacing:-.02em;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A800);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .bt-stat-lab{font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;letter-spacing:.04em}
+  .bt-note{font-size:11px;color:rgba(255,255,255,.55);margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);line-height:1.5}
+
+  /* ---------- team ---------- */
+  .team-card{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:24px 22px;display:flex;gap:16px;align-items:flex-start}
+  .team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--sg-gold-ll),var(--sg-gold));display:flex;align-items:center;justify-content:center;font-family:var(--sg-font-display);font-size:28px;color:var(--sg-night);flex-shrink:0;position:relative}
+  .team-avatar::after{content:"";position:absolute;inset:-4px;border:1px dashed var(--sg-gold);border-radius:50%;opacity:.5}
+  .team-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .team-role{font-size:11px;color:#00786C;font-weight:700;letter-spacing:.04em;margin-top:2px;text-transform:uppercase}
+  .team-bio{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:10px 0 0}
+  .team-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .team-tag{font-size:10px;padding:3px 8px;background:var(--sg-gold-bg);color:#8a6a00;border-radius:var(--sg-r-pill);font-weight:600}
+  .team-note{font-size:11px;color:var(--sg-mid);margin-top:16px;padding:12px 14px;background:var(--sg-bg-d);border-radius:var(--sg-r-sm);border-left:2px solid var(--sg-teal);line-height:1.5}
+
+  /* ---------- vidéo de vision (section "L'approche") ---------- */
+  .founder-video{margin-top:20px;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px;overflow:hidden}
+  .founder-video-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
+  .founder-video video{display:block;width:100%;max-height:70vh;border-radius:var(--sg-r-lg);background:#06140f;aspect-ratio:9/16;object-fit:cover}
+  .founder-video-cap{font-size:11.5px;color:var(--sg-mid);margin-top:10px;line-height:1.5}
+
+  /* ---------- testimonials ---------- */
+  .t-list{display:grid;gap:12px}
+  .t{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:18px}
+  .t-quote{font-size:14px;line-height:1.5;color:var(--sg-ink);margin:0;font-style:italic}
+  .t-quote::before{content:"«";color:var(--sg-gold);font-size:22px;line-height:0;margin-right:4px;vertical-align:-4px;font-style:normal}
+  .t-quote::after{content:"»";color:var(--sg-gold);font-size:22px;line-height:0;margin-left:2px;vertical-align:-4px;font-style:normal}
+  .t-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px dashed var(--sg-border-m)}
+  .t-who{font-size:12px;font-weight:700}
+  .t-loc{font-size:10.5px;color:var(--sg-mid);margin-top:1px}
+  .t-stars{color:var(--sg-gold);letter-spacing:2px;font-size:11px}
+  .t-placeholder{opacity:.65}
+
+  /* ---------- guarantee ---------- */
+  .g-grid{display:grid;gap:10px}
+  .g{display:flex;gap:14px;padding:18px;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);align-items:flex-start}
+  .g-icon{width:36px;height:36px;border-radius:50%;background:var(--sg-teal-bg);color:#00786C;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:800}
+  .g-title{font-size:14px;font-weight:800;letter-spacing:-.01em}
+  .g-desc{font-size:12px;color:var(--sg-mid);margin-top:3px;line-height:1.5}
+
+  /* ---------- bottom CTA ---------- */
+  .cta-sec{padding:44px 24px 56px;background:var(--sg-night);color:#fff;position:relative;overflow:hidden}
+  .cta-sec::before{content:"";position:absolute;top:-30%;right:-20%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(232,168,0,.18),transparent 70%)}
+  .cta-h{position:relative;font-family:var(--sg-font-display);font-size:30px;line-height:.98;letter-spacing:-.02em;margin:0 0 12px;text-transform:uppercase}
+  .cta-h em{font-style:normal;color:var(--sg-gold-l)}
+  .cta-p{position:relative;font-size:13.5px;color:rgba(255,255,255,.7);margin:0 0 24px;line-height:1.55;max-width:300px}
+  .cta-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:18px;background:linear-gradient(180deg,#FFC72C,#E8A800);color:var(--sg-night);font-family:var(--sg-font-display);font-size:17px;letter-spacing:.02em;text-transform:uppercase;border:none;border-radius:var(--sg-r-lg);font-weight:900;text-decoration:none;box-shadow:0 8px 28px rgba(232,168,0,.35)}
+  .cta-micro{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.5);letter-spacing:.04em}
+  .cta-alt{position:relative;display:block;text-align:center;margin-top:18px;font-size:12px;color:rgba(255,255,255,.55);text-decoration:underline;text-underline-offset:3px}
+
+  .footer{padding:24px;text-align:center;font-size:10px;color:var(--sg-mute);letter-spacing:.04em;border-top:1px solid var(--sg-border-m);background:var(--sg-bg-d)}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com","logo":{"@type":"ImageObject","url":"https://sargasses-martinique.com/icon-512.png","width":512,"height":512},"description":"Suivi satellite des sargasses aux Antilles — score 0-100 par plage, prévision 7 jours, fiabilité publiée et auditée.","areaServed":["Martinique","Guadeloupe"],"knowsAbout":["sargasses","plages","baignade","AFAI","détection satellite","météo marine"],"sameAs":["https://www.data.gouv.fr/datasets/palmares-auditable-des-previsions-sargasses-antilles-francaises","https://www.data.gouv.fr/reuses/sargasses-guadeloupe-carte-temps-reel-palmares-auditable-des-previsions"]}
+</script>
+</head>
+<body>
+<div class="page" data-screen-label="Trust Page">
+
+  <div class="tb">
+    <a class="tb-back" href="/">← <span>Retour</span></a>
+    <div class="tb-lang"><b>FR</b>·<span>EN</span>·<span>ES</span></div>
+  </div>
+
+  <!-- HERO (Control) -->
+  <div class="hero control-only">
+    <div class="hero-eyebrow">À propos · Transparence</div>
+    <h1>Pourquoi nous faire <em>confiance</em> ?</h1>
+    <p>Données satellite Copernicus (ESA) et NOAA, croisées 4×/jour. Méthode publique, auditable. Fiabilité recalculée chaque jour contre ce que le satellite a réellement vu — mesuré, jamais deviné.</p>
+    <div class="hero-sig"><span class="hero-sig-dot"></span>Le Veilleur veille la mer pendant que tu dors · indice Copernicus, croisé 4×/jour</div>
+  </div>
+
+  <!-- HERO (V2) -->
+  <div class="hero v2">
+    <div class="sun"></div>
+    <div class="veilleur-container">
+      <svg viewBox="0 0 120 120" style="width:100%;height:100%">
+        <defs>
+          <radialGradient id="phalo-ap" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g id="veilleur-ap" transform="translate(60 60) scale(1.1)" opacity=".96" aria-hidden="true">
+          <circle cx="0" cy="0" r="42" fill="url(#phalo-ap)"/>
+          <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
+          <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
+          <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
+          <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
+          <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
+          <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
+          <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
+          <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-eyebrow">À propos · Transparence</div>
+    <h1 style="position:relative;z-index:2">Pourquoi nous faire <br><em>confiance</em> ?</h1>
+    <p style="position:relative;z-index:2">Données satellite Copernicus (ESA) et NOAA, croisées 4×/jour. Méthode publique, auditable. Fiabilité recalculée chaque jour contre ce que le satellite a réellement vu — mesuré, jamais deviné.</p>
+    <div class="freshpill" style="position:relative;z-index:2">
+      <span class="pulse"></span>
+      <span id="ap-fresh-val">Vérification en cours</span>
+    </div>
+  </div>
+
+  <!-- DATA SOURCES -->
+  <section>
+    <div class="sec-num">01 / 05</div>
+    <div class="sec-label">Données brutes</div>
+    <h2 class="sec-h">Trois sources officielles. Zéro invention.</h2>
+    <p class="sec-sub">Aucune donnée n'est générée par nous. Nous interpolons et croisons — et nous citons toujours la source.</p>
+
+    <div class="src-grid">
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">Copernicus Marine</div>
+            <div class="src-org">Agence spatiale européenne · ESA</div>
+          </div>
+          <div class="src-badge">SAT · L4</div>
+        </div>
+        <p class="src-desc">Indice AFAI (Alternative Floating Algae Index) calculé par signature spectrale MODIS. Résolution 1 km, couverture Antilles complète.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>4×/jour</span>
+          <span>Mise à jour auto</span>
+        </div>
+      </div>
+
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">NOAA ERDDAP</div>
+            <div class="src-org">National Oceanic · USA</div>
+          </div>
+          <div class="src-badge">SIR v1.4</div>
+        </div>
+        <p class="src-desc">Sargassum Inundation Report — bancs dérivants détectés à l'échelle caribéenne. Utilisé pour notre modèle de dérive J+1 à J+3.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>4×/jour</span>
+          <span>Wang & Hu 2016</span>
+        </div>
+      </div>
+
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">Open-Meteo</div>
+            <div class="src-org">Météo &amp; océan · Suisse</div>
+          </div>
+          <div class="src-badge">ICON · HRES</div>
+        </div>
+        <p class="src-desc">Vent, houle, UV, SST, pluie — réanalyse ECMWF. Les 7 facteurs qui entrent dans notre Score Plage 0–100.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>1×/heure</span>
+          <span>Open data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKTEST -->
+  <section>
+    <div class="sec-num">02 / 05</div>
+    <div class="sec-label">Fiabilité mesurée</div>
+    <h2 class="sec-h">On se trompe parfois. On l'écrit.</h2>
+    <p class="sec-sub">Chaque prévision J+1 à J+4 est recoupée aux observations satellite réelles — par régime (mer calme / saison haute) et par horizon. Recalculé chaque jour, publié brut, jamais lissé en un seul chiffre flatteur.</p>
+
+    <!-- Control version -->
+    <div class="bt-wrap control-only">
+      <div class="bt-eyebrow">Fiabilité mesurée · recalculée chaque jour</div>
+      <h3 class="bt-head">On compare chaque prévision à ce que le satellite a vraiment vu</h3>
+      <p class="bt-note" style="margin-top:2px">Le décompte complet et à jour — fiabilité par horizon (J+1→J+4), par régime, par plage, avec l'échantillon, les dates et ce qu'on rate — est public et recalculé chaque jour :</p>
+      <p style="margin:14px 0 2px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#FFC72C;font-weight:700;text-decoration:none">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
+
+      <p class="bt-note">Méthode : écart entre catégorie prévue (propre / modéré / alerte) et catégorie observée, sur l'ensemble des plages suivies. Le décompte exact (échantillon, fenêtre, dates) vit sur la page Fiabilité, recalculé chaque jour.</p>
+    </div>
+
+    <!-- V2 version -->
+    <div id="ap-real-stats" class="real-stats v2">
+      <div id="ap-stats-headline" class="real-stats-headline">Chargement des données...</div>
+      <div class="real-stats-cards">
+        <div class="real-stats-card">
+          <div id="ap-stats-clean-val" class="real-stats-card-val" style="color: #22C55E">—</div>
+          <div class="real-stats-card-lbl"><strong>Prévisions « Propre »</strong><br>vérifiées</div>
+        </div>
+        <div class="real-stats-card" id="ap-stats-false-card">
+          <div id="ap-stats-false-val" class="real-stats-card-val" style="color: #FFC72C">—</div>
+          <div class="real-stats-card-lbl"><strong>Taux Fausses Alertes</strong><br>en saison calme</div>
+        </div>
+      </div>
+      <div id="ap-stats-window" class="real-stats-window">Période : —</div>
+      <p style="margin:20px 0 2px; text-align: center;"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#FFC72C;font-weight:700;text-decoration:none">Voir le rapport de fiabilité détaillé → /fiabilite/</a></p>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section>
+    <div class="sec-num">03 / 05</div>
+    <div class="sec-label">L'approche</div>
+    <h2 class="sec-h">Né d'une question banale, posée un matin devant la mer.</h2>
+    <p class="sec-sub">« L'eau est-elle propre devant cette plage, maintenant ? » Pas hier sur Instagram, pas « ça dépend ». Maintenant. Personne ne savait répondre — alors, depuis la Martinique, on a choisi de répondre par la mesure plutôt que par la supposition. Pas de levée de fonds, pas d'algorithme secret, pas d'avis fabriqués : le code et la méthode sont ouverts, auditables par n'importe qui.</p>
+
+    <div class="team-card">
+      <div style="flex:1;min-width:0">
+        <div class="team-name">Un projet indépendant &amp; local</div>
+        <div class="team-role">Martinique &amp; Guadeloupe</div>
+        <p class="team-bio">Les satellites lisent déjà l'Atlantique en continu — Copernicus, la NOAA, Open-Meteo — et ces données sont publiques. Il manquait quelqu'un pour les traduire chaque matin, plage par plage, sans boîte noire. La côte est complexe pour de vrai : certaines anses se vérifient presque à tous les coups, d'autres restent des énigmes (l'hydrographie change baie par baie). On ne prétend pas être parfait partout — chaque jour on confronte la prévision à ce que le satellite a réellement vu, et le taux d'erreur est publié, daté, par régime. On se trompe parfois. On l'écrit.</p>
+        <div class="team-tags">
+          <span class="team-tag">Méthode ouverte</span>
+          <span class="team-tag">Données satellite</span>
+          <span class="team-tag">Sans tracker publicitaire</span>
+        </div>
+      </div>
+    </div>
+    <p class="team-note">L'app est opérée depuis la Martinique, serveurs en France (OVH Paris). RGPD-ready · aucune revente de données · aucun tracker publicitaire (mesure d'audience anonyme uniquement).</p>
+
+    <div class="founder-video">
+      <div class="founder-video-eyebrow">◆ 51 secondes</div>
+      <video controls playsinline preload="none" poster="vision-fondateur-poster.jpg" id="ap-vision-video">
+        <source src="vision-fondateur.mp4" type="video/mp4">
+      </video>
+      <p class="founder-video-cap">Pourquoi Le Veilleur existe, en une minute — mesuré au satellite, jamais deviné.</p>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section>
+    <div class="sec-num">04 / 05</div>
+    <div class="sec-label">Preuve</div>
+    <h2 class="sec-h">On ne fabrique pas d'avis.</h2>
+    <p class="sec-sub">Beaucoup de sites affichent de faux témoignages. Nous, non. Juge-nous sur ce qui est mesurable : la méthode ci-dessus, et la fiabilité publiée — recalculée chaque jour, échantillon et dates compris.</p>
+    <p style="margin-top:16px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#8A6A00;font-weight:700;text-decoration:underline;text-underline-offset:3px">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
+    <p style="margin-top:8px"><a href="/recherche/" style="display:inline-flex;align-items:center;gap:7px;color:var(--sg-mid);font-weight:700;text-decoration:none">Espace recherche &amp; données ouvertes → /recherche/</a></p>
+  </section>
+
+  <!-- GUARANTEE -->
+  <section>
+    <div class="sec-num">05 / 05</div>
+    <div class="sec-label">Aucun risque</div>
+    <h2 class="sec-h">Trois filets de sécurité.</h2>
+    <p class="sec-sub">Si l'app ne tient pas sa promesse, tu récupères ton argent. Point.</p>
+
+    <div class="g-grid">
+      <div class="g">
+        <div class="g-icon">📡</div>
+        <div>
+          <div class="g-title">Mesuré, pas deviné</div>
+          <div class="g-desc">Chaque verdict vient de la donnée satellite, jamais d'un avis — et on publie notre taux d'erreur sur /fiabilite/.</div>
+        </div>
+      </div>
+      <div class="g">
+        <div class="g-icon">✓</div>
+        <div>
+          <div class="g-title">Un pass, paiement unique — sans abonnement</div>
+          <div class="g-desc">Tu vois le prix avant de payer. Un pass d'accès, dès 7,99 € pour 7 jours. Pas d'abonnement, rien à résilier, aucun renouvellement automatique.</div>
+        </div>
+      </div>
+      <div class="g">
+        <div class="g-icon">€</div>
+        <div>
+          <div class="g-title">Paiement sécurisé · EU</div>
+          <div class="g-desc">Chiffrement bancaire, hébergement France. Aucune carte stockée chez nous.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-sec">
+    <h2 class="cta-h">Prêt à <em>vérifier</em><br/>avant de partir ?</h2>
+    <p class="cta-p">Un pass, paiement unique — dès 7,99 €, sans abonnement. Accès immédiat, rien à résilier.</p>
+    <a class="cta-btn" href="/?paywall=1&amp;utm_source=apropos">Voir le verdict de ma plage →</a>
+    <div class="cta-micro">🔒 Paiement sécurisé · Paiement unique · Sans abonnement</div>
+    <a class="cta-alt" href="/offres/?utm_source=apropos&amp;utm_medium=cta_alt">Voir toutes les offres &amp; tarifs</a>
+  </div>
+
+  <footer class="footer" style="text-align:left;padding:32px 24px 40px">
+    <div style="max-width:520px;margin:0 auto">
+      <div style="display:flex;flex-wrap:wrap;gap:9px 16px;margin-bottom:13px">
+        <a href="/" style="color:#FFC72C;font-weight:700;font-size:13px;text-decoration:none">Carte en temps réel</a>
+        <a href="/previsions/" style="color:#FFC72C;font-weight:700;font-size:13px;text-decoration:none">Prévisions 7 jours</a>
+        <a href="/fiabilite/" style="color:#FFC72C;font-weight:700;font-size:13px;text-decoration:none">Fiabilité</a>
+        <a href="/offres/" style="color:#FFC72C;font-weight:700;font-size:13px;text-decoration:none">Offres</a>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:16px">
+        <a href="/cgv.html" style="color:rgba(255,255,255,.55);font-size:12px;text-decoration:none">CGV</a>
+        <a href="/remboursement.html" style="color:rgba(255,255,255,.55);font-size:12px;text-decoration:none">Remboursement</a>
+        <a href="/confidentialite.html" style="color:rgba(255,255,255,.55);font-size:12px;text-decoration:none">Confidentialité</a>
+        <a href="/mentions-legales.html" style="color:rgba(255,255,255,.55);font-size:12px;text-decoration:none">Mentions légales</a>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.7;letter-spacing:0">
+        <strong style="color:rgba(255,255,255,.72)">97TECH</strong> — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com" style="color:rgba(255,255,255,.62);text-decoration:none">alerte@sargasses-martinique.com</a><br>
+        Données satellite Copernicus (ESA) &amp; NOAA · © 2026 97TECH. Informations fournies à titre indicatif.
+      </div>
+    </div>
+  </footer>
+</div>
+<script>
+(function() {
+  var VARIANT = document.documentElement.classList.contains("az-on") ? "az" : "control";
+  if (VARIANT === "az") {
+    // Freshness check
+    fetch('/api/copernicus/sargassum.json', { cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.json() : null })
+      .then(function(d) {
+        if (d && d.updatedAt) {
+          var age = Math.floor((Date.now() - new Date(d.updatedAt).getTime()) / 3.6e6);
+          var el = document.getElementById('ap-fresh-val');
+          if (el) {
+            if (age < 12) {
+              el.textContent = 'MIS À JOUR IL Y A ' + (age < 1 ? 'MOINS D\'UNE' : age) + ' H';
+            } else {
+              el.textContent = 'VÉRIFICATION EN COURS';
+            }
+          }
+        }
+      })
+      .catch(function(){});
+
+    // Reliability fetch
+    fetch('/api/reliability.json', { cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.json() : null })
+      .then(function(d) {
+        if (d && d.regimeReliability && d.regimeReliability.regimes) {
+          var rr = d.regimeReliability;
+          var calmSamples = rr.regimes.calm ? rr.regimes.calm.samples : 0;
+          var highSamples = rr.regimes.high ? rr.regimes.high.samples : 0;
+          var dominant = highSamples > calmSamples ? 'high' : 'calm';
+          var rd = rr.regimes[dominant];
+          if (rd) {
+            var hEl = document.getElementById('ap-stats-headline');
+            var cEl = document.getElementById('ap-stats-clean-val');
+            var fEl = document.getElementById('ap-stats-false-val');
+            var wEl = document.getElementById('ap-stats-window');
+            var fCard = document.getElementById('ap-stats-false-card');
+            
+            if (hEl && rr.headline && rr.headline.fr) hEl.textContent = rr.headline.fr;
+            if (cEl) cEl.textContent = rd.cleanReliabilityPct + '%';
+            if (fEl) fEl.textContent = rd.falseAlarmRatePct + '%';
+            if (wEl && rr.window) wEl.textContent = 'Période : ' + rr.window;
+            
+            if (rd.alertSamples === 0 && fCard) {
+              fCard.style.display = 'none';
+            }
+          }
+        }
+      })
+      .catch(function(){
+        var container = document.getElementById('ap-real-stats');
+        if (container) container.style.display = 'none';
+      });
+  }
+
+  // Tracking setup
+  var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec";
+  
+  function track(event, params) {
+    var p = params || {};
+    try {
+      var ab = JSON.parse(localStorage.getItem("sg_ab") || "{}");
+      for (var k in ab) { p["ab_" + k] = ab[k]; }
+    } catch(e){}
+    p["ab_az"] = VARIANT === "az" ? 1 : 0;
+    
+    // MP collect GA4
+    try {
+      var mid = "G-V8JGMDZZ2Y";
+      var sec = "eFHMRr4tQ-2B-JYidixOSA";
+      var cid = document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);
+      cid = cid ? cid[1] : "a." + Date.now();
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
+          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
+        );
+      }
+    } catch(e){}
+    
+    // Apps Script backup
+    try {
+      var entry = { e: event, p: p, t: Date.now(), island: "MQ" };
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(APPS_SCRIPT_URL, JSON.stringify({ type: "analytics_event", ...entry }));
+      }
+    } catch(e){}
+  }
+  
+  track("sg_view", { page: "apropos", variant: VARIANT });
+  
+  document.querySelectorAll('a[href*="paywall=1"]').forEach(function(link) {
+    link.addEventListener("click", function(e) {
+      var src = link.getAttribute("href").indexOf("tarifs") !== -1 ? "apropos_tarifs" : "apropos";
+      track("sg_apropos_cta", { src: src, variant: VARIANT });
+    });
+  });
+
+  var visionVideo = document.getElementById("ap-vision-video");
+  if (visionVideo) {
+    var visionPlayed = false;
+    visionVideo.addEventListener("play", function() {
+      if (visionPlayed) return;
+      visionPlayed = true;
+      track("sg_apropos_video_play", { variant: VARIANT });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+// Edge Function `moderate` — valide/rejette une photo OU un signalement terrain EN 1 TAP
+// depuis l'email de modération.
+//
+// Les emails d'alerte (scripts/automation/notify-new-photos.cjs pour les photos,
+// notify-new-reports.cjs pour les événements terrain) contiennent des liens :
+//   {SUPABASE_URL}/functions/v1/moderate?id=<uuid>&action=approve|reject&token=<MODERATE_TOKEN>
+//   ...&table=beach_reports        (défaut = photos, rétro-compatible)
+//   ...&back=<url fiche plage>     (redirection après approbation, allowlist ci-dessous)
+//
+// Un tap → cette fonction passe le `status` (approve/reject). Modèle simple (décision fondateur) :
+// approuver un signalement terrain applique son SENS au verdict affiché côté front (beaching
+// monte, cleanup baisse) ; pas de « clé 2 » séparée. Protégé par un jeton partagé MODERATE_TOKEN.
+// Utilise la clé service_role (auto-injectée) pour écrire malgré le RLS.
+//
+// DÉPLOIEMENT : via .github/workflows/deploy-edge-function.yml (workflow_dispatch, secret
+// SUPABASE_ACCESS_TOKEN) — « Verify JWT » désactivé (config.toml), on protège par token.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+// Tables modérables (allowlist stricte : aucune autre table n'est atteignable).
+const TABLES = new Set(["photos", "beach_reports"])
+
+// Domaines de prod (allowlist anti-open-redirect). Après approbation, le lien `back` de
+// l'email (fiche plage) ne redirige QUE vers un de ces hôtes — jamais une URL arbitraire.
+const REDIRECT_HOSTS = new Set([
+  "sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassummiami.com",
+  "sargassumpuntacana.com", "sargassumcancun.com", "sargassumbarbados.com",
+])
+function safeBack(raw: string | null): string | null {
+  if (!raw) return null
+  try {
+    const u = new URL(raw)
+    const host = u.hostname.replace(/^www\./, "")
+    return (u.protocol === "https:" && REDIRECT_HOSTS.has(host)) ? u.toString() : null
+  } catch { return null }
+}
+function redirect(to: string): Response {
+  return new Response(null, { status: 302, headers: { location: to } })
+}
+
+function page(emoji: string, msg: string, code = 200): Response {
+  return new Response(
+    `<!doctype html><meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width,initial-scale=1">` +
+    `<body style="font-family:system-ui;display:flex;min-height:88vh;align-items:center;justify-content:center;text-align:center;padding:24px">` +
+    `<div><div style="font-size:48px">${emoji}</div>` +
+    `<p style="font-size:18px;color:#1d2b3a;max-width:320px">${msg}</p></div></body>`,
+    { status: code, headers: { "content-type": "text/html; charset=utf-8" } },
+  )
+}
+
+Deno.serve(async (req) => {
+  const url = new URL(req.url)
+  const id = url.searchParams.get("id")
+  const action = url.searchParams.get("action")
+  const token = url.searchParams.get("token")
+  const table = url.searchParams.get("table") || "photos"
+
+  const back = safeBack(url.searchParams.get("back")) // fiche plage (redirection post-approbation)
+
+  const expected = Deno.env.get("MODERATE_TOKEN")
+  if (!expected || token !== expected) return page("⛔", "Lien invalide ou expiré.", 403)
+  if (!TABLES.has(table)) return page("⛔", "Cible invalide.", 400)
+  // Modèle simple : approve applique le SENS du signalement au verdict affiché (front), reject
+  // l'ignore. Pas de « clé 2 » séparée (décision fondateur : un seul bouton de validation).
+  if (!id || (action !== "approve" && action !== "reject")) return page("⛔", "Requête invalide.", 400)
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  )
+
+  const status = action === "approve" ? "approved" : "rejected"
+  const { error } = await supabase.from(table).update({ status }).eq("id", id)
+  if (error) return page("⚠️", "Erreur : " + error.message, 500)
+
+  // Approbation → on emmène le fondateur voir le résultat sur la fiche plage (si `back` fourni
+  // et sur un domaine autorisé). Le rejet reste sur une page de confirmation (rien à voir).
+  if (action === "approve" && back) return redirect(back)
+
+  const isPhoto = table === "photos"
+  return action === "approve"
+    ? page("✅", isPhoto
+        ? "Photo approuvée — elle est maintenant en ligne sur la fiche plage."
+        : "Signalement approuvé — il s'affiche désormais sur la fiche plage.")
+    : page("❌", isPhoto
+        ? "Photo rejetée — elle ne sera pas affichée."
+        : "Signalement rejeté — il ne sera pas affiché.")
+})

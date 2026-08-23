@@ -1,0 +1,314 @@
+{
+  "contacted": {
+    "martinique.org": {
+      "date": "2026-06-23T12:34:46.243Z",
+      "emailHash": "022cd99bb79311e2d6449f1f8ecfd63a",
+      "emailDomain": "2x.webp",
+      "island": "mq",
+      "status": "failed",
+      "error": "Can't send mail - all recipients were rejected: 550-The mail server could not deliver mail to ile@2x.webp.  The account or\n550-domain may not exist, they may be blacklisted, or missing the proper dns\n550 entries."
+    },
+    "comite-martinique.org": {
+      "date": "2026-06-23T12:34:47.183Z",
+      "status": "no-email"
+    },
+    "ville-robert.fr": {
+      "date": "2026-06-23T12:34:54.247Z",
+      "emailHash": "efad5c4eb5f5d5ffdfa0c951c78708fc",
+      "emailDomain": "ville-robert.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "ville-francois.fr": {
+      "date": "2026-06-23T12:34:56.662Z",
+      "emailHash": "20cec5af90a97471a950840bb162faa4",
+      "emailDomain": "ville-francois.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "diamant-les-bains.fr": {
+      "date": "2026-06-23T12:35:00.909Z",
+      "emailHash": "9a9cdbd282d741fb6e56c1e35bfc0552",
+      "emailDomain": "diamantlesbains.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "anoli-lodges.com": {
+      "date": "2026-06-23T12:35:08.126Z",
+      "emailHash": "68b7f3ca4dc643a90940adbf81c8bdb5",
+      "emailDomain": "gmail.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "rivieradulevant.fr": {
+      "date": "2026-07-07T12:33:08.862Z",
+      "status": "no-email"
+    },
+    "capesterrebelleeau.fr": {
+      "date": "2026-07-07T12:33:16.441Z",
+      "status": "no-email"
+    },
+    "creolebeach.com": {
+      "date": "2026-07-07T12:33:20.559Z",
+      "emailHash": "197b77981fac3a014cfe1ad824390714",
+      "emailDomain": "creolebeach.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "majesty-palm.com": {
+      "date": "2026-07-07T12:33:26.300Z",
+      "emailHash": "1ceed3e228efbf9500c9320992fbbb6c",
+      "emailDomain": "majesty-palm.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "hotel-bambou.com": {
+      "date": "2026-07-07T12:33:26.565Z",
+      "status": "no-email"
+    },
+    "frenchcoco.com": {
+      "date": "2026-07-07T12:33:27.201Z",
+      "status": "no-email"
+    },
+    "cap-est.com": {
+      "date": "2026-07-07T12:33:30.524Z",
+      "status": "no-email"
+    },
+    "hotel-plein-soleil.fr": {
+      "date": "2026-07-07T12:33:31.077Z",
+      "status": "no-email"
+    },
+    "la-suite-villa.com": {
+      "date": "2026-07-14T11:32:35.263Z",
+      "emailHash": "bca368d0780b1f676de05ed420fb1d57",
+      "emailDomain": "la-suite-villa.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotelbakoua.fr": {
+      "date": "2026-07-14T11:32:35.883Z",
+      "status": "no-email"
+    },
+    "karibea.com": {
+      "date": "2026-07-14T11:32:38.204Z",
+      "emailHash": "d62ef580cbeca29aed60b6faf23bc69f",
+      "emailDomain": "karibeahotel.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotel-corail-residence.com": {
+      "date": "2026-07-14T11:32:38.507Z",
+      "status": "no-email"
+    },
+    "residence-village-creole.com": {
+      "date": "2026-07-14T11:32:38.699Z",
+      "status": "no-email"
+    },
+    "simon-hotel.com": {
+      "date": "2026-07-14T11:32:41.240Z",
+      "status": "no-email"
+    },
+    "hotel-la-pagerie.com": {
+      "date": "2026-07-14T11:32:42.390Z",
+      "status": "no-email"
+    },
+    "hotellafregate.fr": {
+      "date": "2026-07-14T11:32:43.006Z",
+      "status": "no-email"
+    },
+    "domaine-saint-aubin.com": {
+      "date": "2026-07-21T11:53:47.610Z",
+      "emailHash": "8ab2fad77d1f998bd0249e7034e1cb8a",
+      "emailDomain": "gmail.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "le-domaine-des-bulles.com": {
+      "date": "2026-07-21T11:53:47.845Z",
+      "status": "no-email"
+    },
+    "clubmed.fr": {
+      "date": "2026-07-21T11:53:58.397Z",
+      "emailHash": "97817c0c49994eb500ad0a5e7e2d8aed",
+      "emailDomain": "domain.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "hotelpierrelegrand.com": {
+      "date": "2026-07-21T11:53:58.607Z",
+      "status": "no-email"
+    },
+    "residence-mercure-diamant.com": {
+      "date": "2026-07-21T11:53:58.839Z",
+      "status": "no-email"
+    },
+    "hotelarawak.com": {
+      "date": "2026-07-21T11:53:59.061Z",
+      "status": "no-email"
+    },
+    "mairie-sainteanne-martinique.fr": {
+      "date": "2026-07-21T11:53:59.373Z",
+      "status": "no-email"
+    },
+    "sainteluce.fr": {
+      "date": "2026-07-21T11:54:01.423Z",
+      "status": "no-email"
+    },
+    "ville-trinite.fr": {
+      "date": "2026-07-28T12:10:34.883Z",
+      "status": "no-email"
+    },
+    "ville-lamarin.fr": {
+      "date": "2026-07-28T12:10:35.118Z",
+      "status": "no-email"
+    },
+    "mairie-troisilets.fr": {
+      "date": "2026-07-28T12:10:35.461Z",
+      "status": "no-email"
+    },
+    "mairie-schoelcher.fr": {
+      "date": "2026-07-28T12:10:47.004Z",
+      "status": "no-email"
+    },
+    "ville-casepilote.fr": {
+      "date": "2026-07-28T12:10:47.263Z",
+      "status": "no-email"
+    },
+    "mairie-tartane.fr": {
+      "date": "2026-07-28T12:10:47.602Z",
+      "status": "no-email"
+    },
+    "macouba.fr": {
+      "date": "2026-07-28T12:10:47.870Z",
+      "status": "no-email"
+    },
+    "ville-vauclin.fr": {
+      "date": "2026-07-28T12:10:59.040Z",
+      "emailHash": "b4ccaf6de688a5e948522c437fd0201e",
+      "emailDomain": "mairie-vauclin.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "mairie-anses-arlet.fr": {
+      "date": "2026-08-04T12:15:24.805Z",
+      "status": "no-email"
+    },
+    "tourisme-sainteanne-martinique.com": {
+      "date": "2026-08-04T12:15:25.035Z",
+      "status": "no-email"
+    },
+    "tourisme-troisilets.com": {
+      "date": "2026-08-04T12:15:25.260Z",
+      "status": "no-email"
+    },
+    "kalinago-beach.com": {
+      "date": "2026-08-04T12:15:25.463Z",
+      "status": "no-email"
+    },
+    "lapetiteanse.com": {
+      "date": "2026-08-04T12:15:25.664Z",
+      "status": "no-email"
+    },
+    "ilet-oscar.com": {
+      "date": "2026-08-04T12:15:25.884Z",
+      "status": "no-email"
+    },
+    "hotel-le-marouba.com": {
+      "date": "2026-08-04T12:15:26.121Z",
+      "status": "no-email"
+    },
+    "langley-resort-fort-royal.com": {
+      "date": "2026-08-04T12:15:26.409Z",
+      "status": "no-email"
+    },
+    "bwasibo.com": {
+      "date": "2026-08-07T17:15:44.947Z",
+      "status": "no-email"
+    },
+    "toubana.com": {
+      "date": "2026-08-07T17:15:49.044Z",
+      "emailHash": "7c8394c00c89be4b2566b1a6727e48ae",
+      "emailDomain": "toubana.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "lacreolebeach.com": {
+      "date": "2026-08-07T17:15:52.334Z",
+      "status": "no-email"
+    },
+    "fleurdepicsa.com": {
+      "date": "2026-08-07T17:15:52.560Z",
+      "status": "no-email"
+    },
+    "canelladeau.com": {
+      "date": "2026-08-07T17:15:52.733Z",
+      "status": "no-email"
+    },
+    "lecaraibe.com": {
+      "date": "2026-08-07T17:15:52.958Z",
+      "status": "no-email"
+    },
+    "hotelbananier.com": {
+      "date": "2026-08-07T17:15:53.209Z",
+      "status": "no-email"
+    },
+    "auberge-distillerie.fr": {
+      "date": "2026-08-07T17:15:57.502Z",
+      "status": "no-email"
+    },
+    "tendacayou.com": {
+      "date": "2026-08-11T11:01:56.101Z",
+      "emailHash": "21753d6c29c1a8e9dbc93db7dc9f7d73",
+      "emailDomain": "tendacayou.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "lejardinmalanga.com": {
+      "date": "2026-08-11T11:02:52.102Z",
+      "status": "no-email"
+    },
+    "habitation-grande-anse.com": {
+      "date": "2026-08-11T11:02:54.379Z",
+      "emailHash": "0f2d666cf53a811a584a0c3f23578609",
+      "emailDomain": "gmail.com",
+      "island": "gp",
+      "status": "sent",
+      "error": null
+    },
+    "karibea-prao.com": {
+      "date": "2026-08-11T11:02:54.500Z",
+      "status": "no-email"
+    },
+    "salako.com": {
+      "date": "2026-08-11T11:02:56.865Z",
+      "status": "no-email"
+    },
+    "bois-joli.com": {
+      "date": "2026-08-11T11:02:57.182Z",
+      "status": "no-email"
+    },
+    "hotel-amaudo.fr": {
+      "date": "2026-08-11T11:02:57.588Z",
+      "status": "no-email"
+    },
+    "cocoyer-beach.com": {
+      "date": "2026-08-11T11:02:58.004Z",
+      "status": "no-email"
+    }
+  },
+  "lastRun": "2026-08-11T11:02:58.004Z",
+  "totalSent": 14
+}

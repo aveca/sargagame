@@ -1,0 +1,251 @@
+{
+  "generatedAt": "2026-08-10T12:09:53.177Z",
+  "sites": {
+    "mq": {
+      "opportunityCount": 0,
+      "winCount": 8,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-michel/",
+          "impressions": 64,
+          "clicks": 26,
+          "position": 47.4,
+          "actualCtr": 40.63,
+          "expectedCtr": 0.5,
+          "ctrLift": 40.13
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/",
+          "impressions": 111,
+          "clicks": 39,
+          "position": 4.5,
+          "actualCtr": 35.14,
+          "expectedCtr": 7.09,
+          "ctrLift": 28.05
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-le-diamant/",
+          "impressions": 133,
+          "clicks": 35,
+          "position": 7.4,
+          "actualCtr": 26.32,
+          "expectedCtr": 2.82,
+          "ctrLift": 23.5
+        },
+        {
+          "url": "https://sargasses-martinique.com/",
+          "impressions": 9161,
+          "clicks": 1685,
+          "position": 5.3,
+          "actualCtr": 18.39,
+          "expectedCtr": 5.47,
+          "ctrLift": 12.92
+        },
+        {
+          "url": "https://sargasses-martinique.com/carte-sargasses/",
+          "impressions": 1308,
+          "clicks": 121,
+          "position": 10.5,
+          "actualCtr": 9.25,
+          "expectedCtr": 0.5,
+          "ctrLift": 8.75
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/pointe-faula/",
+          "impressions": 74,
+          "clicks": 4,
+          "position": 18.4,
+          "actualCtr": 5.41,
+          "expectedCtr": 0.5,
+          "ctrLift": 4.91
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+          "impressions": 509,
+          "clicks": 31,
+          "position": 8.3,
+          "actualCtr": 6.09,
+          "expectedCtr": 2.33,
+          "ctrLift": 3.76
+        },
+        {
+          "url": "https://sargasses-martinique.com/saison-sargasses-martinique/",
+          "impressions": 153,
+          "clicks": 11,
+          "position": 6.4,
+          "actualCtr": 7.19,
+          "expectedCtr": 3.62,
+          "ctrLift": 3.57
+        }
+      ]
+    },
+    "gp": {
+      "opportunityCount": 0,
+      "winCount": 9,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/",
+          "impressions": 160,
+          "clicks": 97,
+          "position": 18.1,
+          "actualCtr": 60.62,
+          "expectedCtr": 0.5,
+          "ctrLift": 60.12
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+          "impressions": 84,
+          "clicks": 35,
+          "position": 29.7,
+          "actualCtr": 41.67,
+          "expectedCtr": 0.5,
+          "ctrLift": 41.17
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+          "impressions": 125,
+          "clicks": 42,
+          "position": 6.6,
+          "actualCtr": 33.6,
+          "expectedCtr": 3.39,
+          "ctrLift": 30.21
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "impressions": 168,
+          "clicks": 39,
+          "position": 4.9,
+          "actualCtr": 23.21,
+          "expectedCtr": 6.29,
+          "ctrLift": 16.92
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-saint-francois/",
+          "impressions": 89,
+          "clicks": 12,
+          "position": 60.3,
+          "actualCtr": 13.48,
+          "expectedCtr": 0.5,
+          "ctrLift": 12.98
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/",
+          "impressions": 13488,
+          "clicks": 2480,
+          "position": 4.9,
+          "actualCtr": 18.39,
+          "expectedCtr": 6.17,
+          "ctrLift": 12.22
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+          "impressions": 3503,
+          "clicks": 555,
+          "position": 5.6,
+          "actualCtr": 15.84,
+          "expectedCtr": 4.8,
+          "ctrLift": 11.04
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+          "impressions": 53,
+          "clicks": 6,
+          "position": 42.1,
+          "actualCtr": 11.32,
+          "expectedCtr": 0.5,
+          "ctrLift": 10.82
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
+          "impressions": 81,
+          "clicks": 9,
+          "position": 73.1,
+          "actualCtr": 11.11,
+          "expectedCtr": 0.5,
+          "ctrLift": 10.61
+        }
+      ]
+    },
+    "florida": {
+      "opportunityCount": 0,
+      "winCount": 3,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargassummiami.com/es/mapa-sargazo/",
+          "impressions": 219,
+          "clicks": 47,
+          "position": 6.4,
+          "actualCtr": 21.46,
+          "expectedCtr": 3.62,
+          "ctrLift": 17.84
+        },
+        {
+          "url": "https://sargassummiami.com/",
+          "impressions": 1881,
+          "clicks": 165,
+          "position": 12,
+          "actualCtr": 8.77,
+          "expectedCtr": 0.5,
+          "ctrLift": 8.27
+        },
+        {
+          "url": "https://sargassummiami.com/seaweed-map/",
+          "impressions": 174,
+          "clicks": 11,
+          "position": 38.6,
+          "actualCtr": 6.32,
+          "expectedCtr": 0.5,
+          "ctrLift": 5.82
+        }
+      ]
+    },
+    "puntacana": {
+      "opportunityCount": 0,
+      "winCount": 3,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/",
+          "impressions": 108,
+          "clicks": 12,
+          "position": 14.1,
+          "actualCtr": 11.11,
+          "expectedCtr": 0.5,
+          "ctrLift": 10.61
+        },
+        {
+          "url": "https://sargassumpuntacana.com/",
+          "impressions": 1468,
+          "clicks": 134,
+          "position": 8.8,
+          "actualCtr": 9.13,
+          "expectedCtr": 2.1,
+          "ctrLift": 7.03
+        },
+        {
+          "url": "https://sargassumpuntacana.com/es/",
+          "impressions": 88,
+          "clicks": 4,
+          "position": 22.7,
+          "actualCtr": 4.55,
+          "expectedCtr": 0.5,
+          "ctrLift": 4.05
+        }
+      ]
+    },
+    "rivieramaya": {
+      "opportunityCount": 0,
+      "winCount": 0,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": []
+    }
+  }
+}

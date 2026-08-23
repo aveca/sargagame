@@ -1,0 +1,42 @@
+{
+  "name": "sargagame",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "node scripts/run-tests.cjs",
+    "build": "node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs",
+    "daily": "node scripts/sync-version.cjs && node scripts/scrape-copernicus.cjs && vite build && node scripts/stamp-sw-hash.cjs && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
+    "preview": "vite preview",
+    "martinique": "npm run build && node scripts/prepare-ftp.cjs",
+    "ftp-deploy": "node scripts/manual-ftp-deploy.cjs",
+    "deploy-files": "node scripts/manual-ftp-deploy.cjs --files",
+    "deploy-provision": "node scripts/manual-ftp-deploy.cjs --provision",
+    "verify-ftp": "node scripts/verify-ftp-ready.cjs",
+    "session": "node scripts/cursor-session-startup.cjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "adm-zip": "^0.6.0",
+    "basic-ftp": "^5.3.0",
+    "googleapis": "^171.4.0",
+    "imapflow": "^1.4.3",
+    "mailparser": "^3.9.12",
+    "nodemailer": "^9.0.1",
+    "preact": "^10.29.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.185.1",
+    "three-stdlib": "^2.36.1",
+    "web-vitals": "^5.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "playwright": "^1.59.1",
+    "sharp": "^0.35.3",
+    "vite": "^5.4.21"
+  }
+}

@@ -1,0 +1,329 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sargasses — Liste des plages (poli · bible v1)</title>
+<!--
+  MOCKUP STANDALONE — Onglet « Plages » poli selon la BIBLE DE MARQUE v1 (22/06).
+  Cible : src/Sargasses_PROD.jsx L4770-4987.
+  Discipline appliquée (zéro rebrand) :
+   - 3 fonts grammaire fermée : Anton (accent rare) · Bricolage (95% pixels) · JetBrains Mono (chiffres).
+   - 1 valeur couleur par rôle (tokens) : or #E8A800 RARE = CTA · teal #009E8E · trio statut #22C55E/#B87A00/#E8522A.
+   - Signature comic : liseré ink 2.5px + ombre dure 0-blur bas-droite (pop-1/2/3) + halftone or discret (1 zone).
+   - Pastille-verdict couleur+FORME+MOT (✓/◐/✕). ZÉRO emoji OS. Le Veilleur SVG = seul "visage".
+   - Plancher lisibilité : corps 15px / micro 12px / score en Mono. AA. Grille 4px. Touch ≥44px.
+   - Conversion : 1 SEUL CTA or pop-3 (strip Premium openPremium('beach_list')). Forecast-lock cohérent même token.
+   - Doctrine calme : au repos = tableau (pas de cascade slideUp). reduced-motion = plancher dur.
+   - ZÉRO image/vidéo IA — tout SVG/CSS.
+-->
+<style>
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:local('Anton'),local('Anton-Regular')}
+@font-face{font-family:'Bricolage Grotesque';font-display:swap;src:local('Bricolage Grotesque')}
+@font-face{font-family:'JetBrains Mono';font-display:swap;src:local('JetBrains Mono')}
+
+:root{
+  /* ── PRIMITIFS (source unique — voir colors_and_type.css en prod) ── */
+  --sg-gold:#E8A800; --sg-gold-l:#FFC72C; --sg-gold-ll:#FFE47A;
+  --sg-teal:#009E8E; --sg-teal-l:#1EC8B0;
+  --sg-clean:#22C55E; --sg-moderate:#B87A00; --sg-avoid:#E8522A;
+  --sg-ink:#0D0D0D; --sg-mid:#5A5A5A; --sg-paper:#FDFCF7;
+  --scene-ink:#0A1714;
+  /* sur scène sombre, statuts en version vive AA-safe pour traits/pastilles ≥18px / fonds */
+  --sg-clean-vivid:#34D979;
+  /* ── TYPO échelle réglée (plancher 12 / corps 15) ── */
+  --fs-micro:12px; --fs-body:15px; --fs-lead:17px; --fs-h3:20px;
+  --fs-h2:clamp(24px,6vw,30px); --fs-h1:clamp(30px,8vw,42px);
+  /* ── SURFACE : recette unique comic ── */
+  --pop-1:2px 2px 0 var(--sg-ink);
+  --pop-2:4px 4px 0 var(--sg-ink);
+  --pop-3:6px 6px 0 var(--sg-ink);
+  --pop-press:1px 1px 0 var(--sg-ink);
+  --r-card:16px; --r-soft:12px; --r-pill:999px;
+  /* statuts sur surface sombre : contour comic visible = ink restant l'identité, halo léger en plus */
+  --stroke:2.5px solid var(--sg-ink);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  background:#2a2320; display:flex; justify-content:center; padding:20px 0;
+}
+/* PHONE FRAME 380px (mobile-first) */
+.phone{
+  width:380px; min-height:760px; position:relative; overflow:hidden;
+  border-radius:34px; border:2.5px solid #000; box-shadow:10px 10px 0 #000;
+  /* fond scène golden-hour (identique au gradient prod, discipliné) */
+  background:
+    radial-gradient(120% 70% at 72% 0%, rgba(232,168,0,.30), rgba(232,168,0,.05) 44%, transparent 66%),
+    linear-gradient(180deg,#0B2230 0%,#103029 42%,var(--scene-ink) 100%);
+  color:#fff;
+}
+/* ── HEADER de marque ── */
+.hdr{padding:16px 16px 8px; position:relative}
+.wordmark{display:flex;align-items:center;gap:8px}
+.wordmark .veil{width:30px;height:30px;flex:none}
+.wordmark .wm{font-family:'Anton',Impact,sans-serif;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:#fff;line-height:1}
+.live{
+  margin-left:auto; display:inline-flex; align-items:center; gap:6px;
+  font-weight:800; font-size:var(--fs-micro); letter-spacing:.06em; text-transform:uppercase;
+  color:var(--scene-ink); background:var(--sg-teal-l);
+  border:2px solid var(--sg-ink); border-radius:var(--r-pill);
+  padding:4px 10px; box-shadow:var(--pop-1);
+}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--sg-teal);box-shadow:0 0 0 2px rgba(255,255,255,.5);animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* eyebrow + compteur titre d'écran */
+.eyebrow{font-weight:800;font-size:var(--fs-micro);letter-spacing:.10em;text-transform:uppercase;color:var(--sg-teal-l)}
+.count-row{display:flex;align-items:baseline;gap:10px;margin-top:10px}
+.count-num{font-family:'Anton',Impact,sans-serif;font-size:34px;line-height:1;letter-spacing:-.02em;color:#fff}
+.count-lbl{font-size:var(--fs-body);font-weight:600;color:#fff}
+.count-lbl b{color:var(--sg-clean-vivid);font-weight:800}
+
+/* ── STRIP « MEILLEURE AUJOURD'HUI » (seule zone halftone or) ── */
+.best{
+  display:flex;align-items:center;gap:12px;width:calc(100% - 32px);margin:12px 16px;
+  padding:14px;border-radius:var(--r-card);border:var(--stroke);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(232,168,0,.10) 1.4px, transparent 1.6px) 0 0/7px 7px,
+    linear-gradient(135deg,#15433A,#0E2B25);
+  box-shadow:var(--pop-2); cursor:pointer; text-align:left; color:#fff;
+  font-family:inherit; position:relative;
+}
+.best .thumb{width:54px;height:54px;flex:none;border-radius:var(--r-soft);border:2px solid var(--sg-ink);
+  background:linear-gradient(160deg,#2b6f63,#0e1f1a);position:relative;overflow:hidden}
+.best .thumb .wave{position:absolute;left:0;right:0;bottom:0;height:18px;background:var(--sg-teal-l);opacity:.55;
+  clip-path:polygon(0 40%,15% 20%,30% 40%,45% 20%,60% 40%,75% 20%,90% 40%,100% 25%,100% 100%,0 100%)}
+.best .grow{flex:1;min-width:0}
+.best .ti{font-family:'Anton',Impact,sans-serif;font-size:var(--fs-h3);line-height:1.08;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.best .sub{font-size:var(--fs-micro);color:#fff;margin-top:3px;font-weight:600}
+.best .sub .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+/* ── PASTILLE STATUT (signature trait 2) ── */
+.status{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--sg-ink);border-radius:var(--r-pill);
+  padding:3px 9px;font-weight:800;font-size:var(--fs-micro);text-transform:uppercase;letter-spacing:.02em;
+  box-shadow:var(--pop-1);color:var(--sg-ink);white-space:nowrap}
+.status .gly{font-size:13px;line-height:1}
+.is-clean{background:var(--sg-clean)} .is-moderate{background:var(--sg-moderate);color:#fff} .is-avoid{background:var(--sg-avoid);color:#fff}
+
+/* ── RECHERCHE + CHIPS ── */
+.tools{padding:0 16px 12px}
+.field{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--sg-ink);
+  border-radius:var(--r-soft);padding:0 14px;height:48px;box-shadow:var(--pop-1)}
+.field input{flex:1;background:none;border:none;outline:none;font-size:16px;color:var(--sg-ink);font-family:inherit;font-weight:600}
+.field input::placeholder{color:var(--sg-mid)}
+.field .mag{width:18px;height:18px;flex:none}
+.chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border-radius:var(--r-pill);
+  border:2px solid var(--sg-ink);background:#fff;color:var(--sg-ink);font-weight:800;font-size:var(--fs-micro);
+  text-transform:uppercase;letter-spacing:.02em;box-shadow:var(--pop-1);cursor:pointer;font-family:inherit}
+.chip .gly{font-size:13px;line-height:1}
+.chip .cnt{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-weight:700;opacity:.7}
+.chip.active{box-shadow:var(--pop-press);transform:translate(2px,2px)}
+.chip.active.c-clean{background:var(--sg-clean)}
+.chip.active.c-mod{background:var(--sg-moderate);color:#fff}
+.chip.active.c-avoid{background:var(--sg-avoid);color:#fff}
+.chip.active.c-fav{background:var(--sg-gold-l)}
+
+/* ── CTA OR PREMIUM (le SEUL pop-3 de l'écran — conversion) ── */
+.premium{margin:4px 16px 16px;border:var(--stroke);border-radius:var(--r-card);box-shadow:var(--pop-3);
+  background:
+    radial-gradient(circle at 1px 1px, rgba(13,13,13,.10) 1.3px, transparent 1.5px) 0 0/7px 7px,
+    linear-gradient(135deg,var(--sg-gold-l),var(--sg-gold));
+  color:var(--sg-ink);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;width:calc(100% - 32px);font-family:inherit}
+.premium .veil{width:42px;height:42px;flex:none}
+.premium .pt{flex:1;min-width:0}
+.premium .pe{font-weight:800;font-size:var(--fs-micro);text-transform:uppercase;letter-spacing:.10em;color:#5c4500}
+.premium .pm{font-size:var(--fs-body);font-weight:800;line-height:1.3;margin-top:2px;color:var(--sg-ink)}
+.premium .go{flex:none;width:30px;height:30px;border-radius:50%;background:var(--sg-ink);color:var(--sg-gold-l);
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800}
+
+/* ── LISTE CARTES (tableau au repos, recette unique) ── */
+.list{padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.card{
+  position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;font-family:inherit;color:#fff;
+  background:linear-gradient(180deg,#16322B,#0E2620);
+  border:var(--stroke);border-radius:var(--r-card);box-shadow:var(--pop-2);
+  padding:12px;cursor:pointer;overflow:hidden;transition:transform .08s ease,box-shadow .08s ease;
+}
+.card:active{transform:translate(2px,2px);box-shadow:var(--pop-press)}
+.card.hot{box-shadow:var(--pop-3)}
+/* rail statut gauche 4px (statique, pas de glow) */
+.card .rail{position:absolute;left:0;top:0;bottom:0;width:5px}
+.rail.s-clean{background:var(--sg-clean)} .rail.s-moderate{background:var(--sg-moderate)} .rail.s-avoid{background:var(--sg-avoid)}
+.card .thumb{width:60px;height:60px;flex:none;border-radius:var(--r-soft);border:2px solid var(--sg-ink);margin-left:4px;
+  background:linear-gradient(160deg,#2b6f63,#0e1f1a);position:relative;overflow:hidden}
+.card .thumb .wave{position:absolute;left:0;right:0;bottom:0;height:16px;background:var(--sg-teal-l);opacity:.5;
+  clip-path:polygon(0 40%,20% 20%,40% 40%,60% 20%,80% 40%,100% 25%,100% 100%,0 100%)}
+.card .body{flex:1;min-width:0}
+.card .nm{font-family:'Anton',Impact,sans-serif;font-size:var(--fs-h3);line-height:1.08;text-transform:uppercase;
+  color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .nm .fav{color:var(--sg-gold-l)}
+.card .meta{font-size:var(--fs-micro);color:#fff;opacity:.92;margin-top:3px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .meta .num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.card .pastille{margin-top:8px}
+/* score à droite — Mono, pas Anton */
+.card .score{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;padding-right:4px}
+.card .score .n{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:28px;font-weight:800;line-height:.95}
+.card .score .u{font-family:'JetBrains Mono',monospace;font-size:var(--fs-micro);font-weight:700;color:#fff;opacity:.8;margin-top:1px}
+.n-clean{color:var(--sg-clean-vivid)} .n-moderate{color:var(--sg-gold-l)} .n-avoid{color:var(--sg-avoid)}
+
+/* ── FORECAST-LOCK (fav non-premium) — même token or, désigne la conversion ── */
+.fclock{width:100%;margin-top:10px;padding:12px;border-radius:var(--r-soft);
+  border:2px solid var(--sg-gold);background:rgba(232,168,0,.10);cursor:pointer}
+.fclock .ft{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fclock .fe{font-weight:800;font-size:var(--fs-micro);text-transform:uppercase;letter-spacing:.06em;color:var(--sg-gold-l)}
+.fclock .fs{font-size:var(--fs-micro);color:#fff;opacity:.9;margin-top:3px;font-weight:600}
+.fbars{display:flex;align-items:flex-end;gap:10px}
+.fbar{display:flex;flex-direction:column;align-items:center;gap:5px}
+.fbar .bar{width:22px;border-radius:5px;border:2px solid var(--sg-ink)}
+.fbar .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;opacity:.85}
+.fbar.locked .bar{display:flex;align-items:center;justify-content:center;border:2px dashed var(--sg-gold-l);background:rgba(255,199,44,.12)}
+.fbar.locked .lbl{color:var(--sg-gold-l)}
+
+/* full whitespace footer */
+.foot{height:24px}
+
+/* ── DOCTRINE CALME : reduced-motion = plancher dur ── */
+@media (prefers-reduced-motion:reduce){
+  .live .dot{animation:none}
+  .card{transition:none}
+}
+</style>
+
+<div class="phone">
+
+  <!-- HEADER de marque : wordmark + Le Veilleur (calme, teal) + EN DIRECT branché updatedAt -->
+  <div class="hdr">
+    <div class="wordmark">
+      <svg class="veil" viewBox="0 0 40 40" aria-hidden="true">
+        <!-- Le Veilleur calme : corps teal, regarde la mer (gauche), rassure -->
+        <ellipse cx="20" cy="26" rx="12" ry="3" fill="#000" opacity=".18"/>
+        <rect x="9" y="11" width="22" height="15" rx="6" fill="#1EC8B0" stroke="#0D0D0D" stroke-width="2"/>
+        <circle cx="16" cy="18" r="3.4" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="1.6"/>
+        <circle cx="15" cy="18" r="1.6" fill="#0D0D0D"/>
+        <path d="M5 13 L9 16 M5 22 L9 19" stroke="#009E8E" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span class="wm">Sargasses</span>
+      <span class="live"><span class="dot"></span>En direct</span>
+    </div>
+
+    <div class="eyebrow" style="margin-top:14px">Aujourd'hui · Martinique</div>
+    <div class="count-row">
+      <span class="count-num">42</span>
+      <span class="count-lbl">plages · <b>23 propres</b> aujourd'hui</span>
+    </div>
+  </div>
+
+  <!-- MEILLEURE AUJOURD'HUI — halftone or, pastille verdict -->
+  <button class="best" onclick="(window.openBeach||function(){})('grande-anse')">
+    <div class="thumb"><div class="wave"></div></div>
+    <div class="grow">
+      <div class="eyebrow" style="color:var(--sg-gold-l)">Meilleure aujourd'hui</div>
+      <div class="ti">Grande Anse</div>
+      <div class="sub">Deshaies · <span class="num">94</span><span class="num">/100</span></div>
+    </div>
+    <span class="status is-clean"><span class="gly">✓</span>Propre</span>
+  </button>
+
+  <!-- RECHERCHE + CHIPS (trio statut complet : Propre / Modéré / À éviter + Favoris) -->
+  <div class="tools">
+    <label class="field">
+      <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="#5A5A5A" stroke-width="2.4"/><path d="M16.5 16.5 L21 21" stroke="#5A5A5A" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <input placeholder="Rechercher une plage…" aria-label="Rechercher une plage">
+    </label>
+    <div class="chips">
+      <button class="chip active c-clean"><span class="gly">✓</span>Propres <span class="cnt">23</span></button>
+      <button class="chip c-mod"><span class="gly">◐</span>Modéré <span class="cnt">11</span></button>
+      <button class="chip c-avoid"><span class="gly">✕</span>Éviter <span class="cnt">8</span></button>
+      <button class="chip c-fav"><span class="gly">♥</span>Favoris <span class="cnt">3</span></button>
+    </div>
+  </div>
+
+  <!-- CTA OR PREMIUM — SEUL pop-3 / seule surface or pleine → conversion -->
+  <button class="premium" onclick="(window.openPremium||function(){})('beach_list')">
+    <svg class="veil" viewBox="0 0 40 40" aria-hidden="true">
+      <!-- Veilleur scan (or) qui DÉSIGNE la mer/CTA, jamais l'utilisateur -->
+      <rect x="9" y="11" width="22" height="15" rx="6" fill="#0D0D0D"/>
+      <rect x="11" y="13" width="18" height="11" rx="4" fill="#FFC72C"/>
+      <circle cx="16" cy="18" r="3" fill="#0D0D0D"/><circle cx="15" cy="17.5" r="1.1" fill="#FFE47A"/>
+      <path d="M31 18 L37 15 M31 20 L37 22" stroke="#0D0D0D" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    <div class="pt">
+      <div class="pe">Le Veilleur perso</div>
+      <div class="pm">Sois alerté dès qu'une de tes plages change — aujourd'hui</div>
+    </div>
+    <span class="go">→</span>
+  </button>
+
+  <!-- LISTE : tableau au repos, recette unique, pastille couleur+forme+mot, score Mono -->
+  <div class="list">
+
+    <!-- carte FAV + HOT (pop-3) avec forecast-lock conversion -->
+    <button class="card hot" onclick="(window.openBeach||function(){})('grande-anse')">
+      <span class="rail s-clean"></span>
+      <div style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="thumb"><div class="wave"></div></div>
+        <div class="body">
+          <div class="nm"><span class="fav">♥ </span>Grande Anse</div>
+          <div class="meta">Deshaies · <span class="num">18</span> min</div>
+          <div class="pastille"><span class="status is-clean"><span class="gly">✓</span>Propre</span></div>
+        </div>
+        <div class="score"><span class="n n-clean">94</span><span class="u">/100</span></div>
+      </div>
+      <div class="fclock" onclick="event.stopPropagation();(window.openPremium||function(){})('list_forecast_lock')">
+        <div class="ft">
+          <div>
+            <div class="fe">Prévisions 4 jours</div>
+            <div class="fs">Sam · Dim réservés aux Veilleurs</div>
+          </div>
+          <div class="fbars">
+            <div class="fbar"><div class="bar" style="height:20px;background:var(--sg-clean)"></div><span class="lbl">Auj</span></div>
+            <div class="fbar"><div class="bar" style="height:26px;background:var(--sg-moderate)"></div><span class="lbl">Ven</span></div>
+            <div class="fbar locked"><div class="bar" style="height:28px">🔒</div><span class="lbl">Sam</span></div>
+            <div class="fbar locked"><div class="bar" style="height:28px">🔒</div><span class="lbl">Dim</span></div>
+          </div>
+        </div>
+      </div>
+    </button>
+
+    <!-- carte standard MODÉRÉ -->
+    <button class="card" onclick="(window.openBeach||function(){})('le-diamant')">
+      <span class="rail s-moderate"></span>
+      <div class="thumb"><div class="wave"></div></div>
+      <div class="body">
+        <div class="nm">Le Diamant</div>
+        <div class="meta">Le Diamant · <span class="num">32</span> min</div>
+        <div class="pastille"><span class="status is-moderate"><span class="gly">◐</span>Modéré</span></div>
+      </div>
+      <div class="score"><span class="n n-moderate">58</span><span class="u">/100</span></div>
+    </button>
+
+    <!-- carte standard À ÉVITER -->
+    <button class="card" onclick="(window.openBeach||function(){})('le-robert')">
+      <span class="rail s-avoid"></span>
+      <div class="thumb"><div class="wave"></div></div>
+      <div class="body">
+        <div class="nm">Anse du Robert</div>
+        <div class="meta">Le Robert · <span class="num">41</span> min</div>
+        <div class="pastille"><span class="status is-avoid"><span class="gly">✕</span>À éviter</span></div>
+      </div>
+      <div class="score"><span class="n n-avoid">23</span><span class="u">/100</span></div>
+    </button>
+
+    <!-- carte standard PROPRE -->
+    <button class="card" onclick="(window.openBeach||function(){})('anse-noire')">
+      <span class="rail s-clean"></span>
+      <div class="thumb"><div class="wave"></div></div>
+      <div class="body">
+        <div class="nm">Anse Noire</div>
+        <div class="meta">Les Anses-d'Arlet · <span class="num">27</span> min</div>
+        <div class="pastille"><span class="status is-clean"><span class="gly">✓</span>Propre</span></div>
+      </div>
+      <div class="score"><span class="n n-clean">88</span><span class="u">/100</span></div>
+    </button>
+
+  </div>
+  <div class="foot"></div>
+</div>

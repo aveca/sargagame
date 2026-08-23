@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390,initial-scale=1">
+<title>Proto — Repère santé H₂S (ChasseDetail)</title>
+<!-- Reproduit À L'IDENTIQUE le markup + CSS de H2sNote (src/ChasseHome.jsx).
+     Sert à vérifier le rendu visuel des 2 états (avoid=bad / moderate=mod),
+     puisque les 20 plages live sont 'clean' (saison calme) → la note ne s'affiche
+     sur aucune plage en prod aujourd'hui (comportement correct : pas de danger). -->
+<style>
+:root{--ink:#0d0b14;--paper:#fdf6e3;--yel:#ffd23f;--grn:#27c46b;--org:#ff8a3d;--red:#e8322a}
+body{margin:0;background:#fdf6e3;font-family:"Comic Neue",system-ui,sans-serif;padding:18px;max-width:520px;margin:0 auto}
+h3{font-family:system-ui;font-size:13px;color:#7a6f6f;margin:18px 0 6px;letter-spacing:.3px}
+/* ---- copie exacte des règles .lc-h2s injectées ---- */
+.lc-h2s{margin:2px 0 18px;border:3px solid var(--ink);border-radius:13px;padding:11px 13px 12px;box-shadow:0 4px 0 var(--ink);forced-color-adjust:none}
+.lc-h2s.bad{background:#fff0ed}
+.lc-h2s.mod{background:#fff7e6}
+.lc-h2s-h{display:flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-weight:800;font-size:15px;letter-spacing:.4px;color:var(--ink);line-height:1}
+.lc-h2s.bad .lc-h2s-h{color:var(--red)}
+.lc-h2s-ic{font-size:17px;line-height:1}
+.lc-h2s-txt{font-size:12.5px;font-weight:700;line-height:1.45;color:#2a1f1f;margin:8px 0 0}
+.lc-h2s-sens{display:flex;gap:8px;align-items:flex-start;margin-top:9px;font-size:12px;font-weight:800;color:var(--ink);
+  background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:8px 10px;box-shadow:2px 2px 0 var(--ink);line-height:1.4}
+.lc-h2s-sens b{font-size:15px;line-height:1;flex:0 0 auto}
+.lc-h2s-src{font-size:9.5px;font-weight:700;color:#8a7f7f;margin-top:9px;letter-spacing:.2px}
+</style></head><body>
+<h3>État « avoid » (plage à éviter)</h3>
+<div class="lc-h2s bad" role="note">
+  <div class="lc-h2s-h"><span class="lc-h2s-ic">⚠️</span>GAZ H₂S — PRUDENCE</div>
+  <p class="lc-h2s-txt">Les sargasses échouées qui pourrissent dégagent du sulfure d'hydrogène (H₂S, odeur d'œuf pourri) et de l'ammoniac. À forte concentration ça irrite les yeux, la gorge et les voies respiratoires, et peut donner maux de tête et nausées.</p>
+  <div class="lc-h2s-sens"><b>👶</b><span>Nourrissons, femmes enceintes, asthmatiques, personnes âgées ou cardiaques : restez à distance des amas échoués et ne stationnez pas sous le vent.</span></div>
+  <div class="lc-h2s-src">Repère santé — recommandations sargasses (ARS Antilles)</div>
+</div>
+<h3>État « moderate » (à surveiller)</h3>
+<div class="lc-h2s mod" role="note">
+  <div class="lc-h2s-h"><span class="lc-h2s-ic">👃</span>ODEUR POSSIBLE</div>
+  <p class="lc-h2s-txt">Quelques sargasses peuvent échouer et dégager une légère odeur en se décomposant. Sans danger en passage, mais évitez de stationner près des amas, surtout avec de jeunes enfants.</p>
+  <div class="lc-h2s-src">Repère santé — recommandations sargasses (ARS Antilles)</div>
+</div>
+</body></html>

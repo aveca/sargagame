@@ -1,0 +1,16 @@
+{
+  "MQ": {
+    "cleanCount": 53,
+    "total": 53,
+    "updatedAt": "2026-08-13T07:11:55.003Z",
+    "seenAt": "2026-08-13T07:12:45.141Z",
+    "lastSwingAt": null
+  },
+  "GP": {
+    "cleanCount": 83,
+    "total": 83,
+    "updatedAt": "2026-08-13T07:11:54.776Z",
+    "seenAt": "2026-08-13T07:12:45.141Z",
+    "lastSwingAt": null
+  }
+}

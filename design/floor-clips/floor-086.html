@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — palier 86/100 · PRISME (clip design)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* clip généré — voir scripts/design/gen-floor-clips.cjs. Bibliothèque design, hors funnel. */
+:root{
+  --top:#0e323c; --bot:#0a2329;
+  --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --ink:#0D0D0D; --paper:#FDFCF7;
+  --green:#22C55E; --amber:#B87A00; --coral:#E8522A; --teal:#009E8E; --tealL:#1EC8B0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden}
+body{background:linear-gradient(180deg,var(--top),var(--bot) 70%,#02060a);color:#EAF7F4;
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  font-weight:400;letter-spacing:-.01em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+#stage{position:fixed;inset:0;display:flex;flex-direction:column}
+.chrome{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px}
+.wm{font-family:'Anton',sans-serif;font-size:15px;color:#fff;letter-spacing:-.01em;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.wm b{display:block;margin-top:2px;font:700 8.5px/1 "Bricolage Grotesque";letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,216,132,.8)}
+.tag{font:700 9px/1 'JetBrains Mono';letter-spacing:.06em;color:rgba(234,247,244,.55);text-align:right}
+
+/* halo ambient au centre (satellite/oeil) */
+.emblem-wrap{display:flex;justify-content:center;padding-top:6px}
+.emblem{width:44px;height:56px;color:var(--goldL)}
+.tier-pilot .emblem{color:var(--tealL)}
+.tier-horizon .emblem{color:rgba(234,247,244,.55);opacity:.6}
+.em-ant{stroke:currentColor;stroke-width:2.4;stroke-linecap:round;fill:none}
+.em-body{fill:rgba(16,38,34,.9)}
+.em-ring{stroke:currentColor;stroke-width:2.6;fill:none}
+.em-lens{fill:#0a2b2b}
+.em-iris{fill:var(--goldL)}
+.tier-pilot .em-iris{fill:var(--tealL)}
+.tier-horizon .em-iris{fill:none;stroke:rgba(234,247,244,.4);stroke-width:1.2}
+@media (prefers-reduced-motion:no-preference){
+  .emblem{animation:breathe 6.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:6px 22px;gap:8px}
+.eyebrow{font:800 10.5px/1.3 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,216,132,.85);text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.depth{font:700 15px/1 'JetBrains Mono';color:var(--tealL);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.tiername{font-size:clamp(38px,13vw,68px);line-height:.92;color:#fff;text-shadow:0 3px 22px rgba(0,0,0,.55);margin:2px 0}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.badge.live{background:rgba(34,197,94,.16);color:#5be79a;border:1px solid rgba(34,197,94,.5)}
+.badge.pilot{background:rgba(30,200,176,.16);color:var(--tealL);border:1px solid rgba(30,200,176,.5)}
+.badge.horizon{background:rgba(234,247,244,.1);color:rgba(234,247,244,.85);border:1px solid rgba(234,247,244,.32)}
+.market{font:700 12px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.75);letter-spacing:.02em}
+.value{font:700 16px/1.4 "Bricolage Grotesque";color:#fff;max-width:30ch;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+
+.tierline{font:600 13.5px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.85);max-width:32ch}
+.tierline .price{color:var(--goldS);font-weight:800}
+.cta{display:inline-flex;align-items:center;gap:9px;margin-top:6px;text-decoration:none;cursor:pointer;
+  border:2px solid var(--ink);border-radius:13px;padding:13px 20px;color:var(--ink);
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  box-shadow:5px 5px 0 rgba(0,0,0,.45);font:800 15px/1 "Bricolage Grotesque"}
+.pilotnote{margin-top:4px;display:inline-flex;align-items:center;gap:8px;font:700 12px/1.3 "Bricolage Grotesque";color:var(--tealL)}
+.pilotnote .d{width:8px;height:8px;border-radius:50%;background:var(--tealL)}
+.wall{margin-top:6px;border-left:3px solid rgba(232,82,42,.55);padding:2px 0 2px 12px;max-width:30ch;text-align:left}
+.wall .wl{display:block;font:800 9.5px/1 "Bricolage Grotesque";letter-spacing:.16em;text-transform:uppercase;color:var(--coral);margin-bottom:5px;opacity:.9}
+.wall .wt{font:600 13px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.9)}
+
+/* bulles ascendantes — physique de flottabilité, boucle CSS pure */
+.bub{position:absolute;bottom:-6%;border-radius:50%;background:rgba(255,255,255,.16);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){
+  .bub{animation:rise linear infinite}
+  @keyframes rise{0%{transform:translate(0,0);opacity:0}8%{opacity:.5}92%{opacity:.35}100%{transform:translate(var(--dx,6px),-112vh);opacity:0}}
+}
+
+.foot{text-align:center;padding:10px 16px 14px;font:600 9.5px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.42)}
+
+@media (prefers-reduced-motion:reduce){ .bub{display:none} }
+</style>
+</head>
+<body class="tier-pilot">
+
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">
+Le Veilleur — palier 86 sur 100, PRISME, profondeur 4280 mètres, Licence data / API.
+</h1>
+
+<div id="stage">
+  <div class="chrome">
+    <div class="wm">LE VEILLEUR<b>Bibliothèque design · clip palier</b></div>
+    <div class="tag">086/100</div>
+  </div>
+
+  <div class="bub" style="left:12%;width:7px;height:7px;--dx:10px;animation-duration:9s;animation-delay:-1s"></div>
+  <div class="bub" style="left:26%;width:4px;height:4px;--dx:-8px;animation-duration:7s;animation-delay:-3.4s"></div>
+  <div class="bub" style="left:70%;width:6px;height:6px;--dx:6px;animation-duration:10.5s;animation-delay:-.6s"></div>
+  <div class="bub" style="left:84%;width:5px;height:5px;--dx:-6px;animation-duration:8.2s;animation-delay:-5s"></div>
+  <div class="bub" style="left:50%;width:3px;height:3px;--dx:4px;animation-duration:6.5s;animation-delay:-2.1s"></div>
+
+  <main>
+    <div class="emblem-wrap">
+      <svg class="emblem" viewBox="0 0 46 58" aria-hidden="true">
+        <line class="em-ant" x1="23" y1="6" x2="23" y2="16"/>
+        <circle class="em-iris" cx="23" cy="6" r="3.4"/>
+        <path class="em-body" d="M23 16 C33 16 39 23 39 31 C39 42 32 50 23 50 C14 50 7 42 7 31 C7 23 13 16 23 16 Z"/>
+        <circle class="em-lens" cx="23" cy="33" r="12"/>
+        <circle class="em-ring" cx="23" cy="33" r="12"/>
+        <circle class="em-iris" cx="23" cy="36" r="4.6"/>
+      </svg>
+    </div>
+    <div class="eyebrow">Palier 6/10 · PRISME</div>
+    <div class="depth">−4 280 m</div>
+    <h2 class="tiername anton">PRISME</h2>
+    <span class="badge pilot"><span class="ck">◐</span> En chantier</span>
+    <div class="market">Licence data / API</div>
+    <p class="value">Notre satellite brut + prévision, en API.</p>
+    <p class="tierline">En chantier — pour qui veut la source, pas l’app.</p>
+      <div class="pilotnote"><span class="d"></span>En chantier — aucun accès à vendre aujourd’hui</div>
+  </main>
+
+  <div class="foot">Clip 86/100 · pièce de bibliothèque design, hors funnel, pas déployée · verdict 100&nbsp;% donnée mesurée, l’argent ne touche jamais la mesure</div>
+</div>
+</body>
+</html>

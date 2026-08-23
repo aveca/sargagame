@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SARG · GSC Dashboard — sargasses-martinique.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#06080C;--surface:#0C1018;--card:#111620;--card2:#161D28;
+  --b:rgba(255,255,255,.07);--bL:rgba(255,255,255,.12);
+  --w:#E8EFF8;--mid:#6A8CA8;--mute:#304558;
+  --cyan:#00D4C8;--cyanL:#00F0E4;--cyanBg:rgba(0,212,200,.08);
+  --green:#22D97A;--greenBg:rgba(34,217,122,.08);
+  --orange:#F08C14;--orangeBg:rgba(240,140,20,.08);
+  --red:#E83030;--redBg:rgba(232,48,48,.08);
+  --purple:#AA44FF;--purpleBg:rgba(170,68,255,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--bg);color:var(--w);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6}
+body{min-height:100vh;padding-bottom:60px}
+
+/* ── NOISE TEXTURE ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.4;
+}
+
+/* ── GLOW ORBS ── */
+.orb1{position:fixed;top:-200px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,200,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+.orb2{position:fixed;bottom:-200px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(34,217,122,.05) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* ── LAYOUT ── */
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* ── HEADER ── */
+header{padding:32px 0 24px;border-bottom:1px solid var(--b);margin-bottom:32px}
+.header-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.h-brand{display:flex;align-items:center;gap:12px}
+.h-mark{width:36px;height:36px;border-radius:50%;background:conic-gradient(from 0deg,var(--cyanL),#004A46,var(--cyan),var(--cyanL));animation:spin 12s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.h-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--w)}
+.h-url{font-family:'Space Mono',monospace;font-size:11px;color:var(--cyan);margin-top:1px}
+.h-meta{text-align:right}
+.h-period{font-size:11px;color:var(--mute);font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.h-dates{font-family:'Space Mono',monospace;font-size:13px;color:var(--mid)}
+.launch-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:6px;
+  padding:3px 10px;border-radius:100px;border:1px solid rgba(34,217,122,.25);
+  background:rgba(34,217,122,.07);font-size:10px;font-weight:600;color:var(--green);
+  letter-spacing:.06em;text-transform:uppercase;
+}
+.dot-live{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── FLASH STRIP ── */
+.flash-strip{display:flex;flex-wrap:wrap;gap:8px 20px;padding:12px 16px;margin-bottom:24px;background:var(--card);border:1px solid var(--b);border-radius:12px;font-size:12px;color:var(--mid)}
+.flash-strip span{display:flex;align-items:center;gap:6px}
+.flash-strip strong{color:var(--w);font-weight:600}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1px solid var(--b);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi:hover{border-color:var(--bL)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.kpi.c{--ac:var(--cyan);--acBg:var(--cyanBg)} .kpi.c::before{background:var(--cyan)}
+.kpi.g{--ac:var(--green);--acBg:var(--greenBg)} .kpi.g::before{background:var(--green)}
+.kpi.o{--ac:var(--orange);--acBg:var(--orangeBg)} .kpi.o::before{background:var(--orange)}
+.kpi.p{--ac:var(--purple);--acBg:var(--purpleBg)} .kpi.p::before{background:var(--purple)}
+.kpi-icon{font-size:22px;margin-bottom:10px;display:block}
+.kpi-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--ac);line-height:1;margin-bottom:4px;letter-spacing:-.02em}
+.kpi-lbl{font-size:11px;font-weight:600;color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.kpi-sub{font-size:11px;color:var(--mid);margin-top:4px}
+.kpi-trend{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--acBg);color:var(--ac);display:inline-block;margin-top:5px}
+
+/* ── SECTION TITLE ── */
+.section-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--b)}
+
+/* ── CHART SECTION ── */
+.chart-section{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:28px}
+@media(max-width:900px){.chart-section{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1px solid var(--b);border-radius:16px;padding:20px}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.chart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--w)}
+.chart-legend{display:flex;gap:14px}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid)}
+.cl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+canvas{max-width:100%}
+
+/* ── TWO COLS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+
+/* ── TABLE CARD ── */
+.tcard{background:var(--card);border:1px solid var(--b);border-radius:16px;padding:0;overflow:hidden}
+.tcard-head{padding:16px 20px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.tcard-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
+.tcard-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute)}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);border-bottom:1px solid var(--b);background:var(--card2)}
+td{padding:9px 14px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--mid)}
+td:first-child{color:var(--w);font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:none}
+.badge{padding:2px 7px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.05em;font-family:'Space Mono',monospace}
+.b-green{background:rgba(34,217,122,.12);color:var(--green)}
+.b-orange{background:rgba(240,140,20,.12);color:var(--orange)}
+.b-red{background:rgba(232,48,48,.12);color:var(--red)}
+.b-purple{background:rgba(170,68,255,.12);color:var(--purple)}
+.b-cyan{background:rgba(0,212,200,.1);color:var(--cyan)}
+.b-gray{background:rgba(255,255,255,.06);color:var(--mid)}
+
+/* position pill */
+.pos-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700}
+.pos-top{background:rgba(34,217,122,.12);color:var(--green)}
+.pos-mid{background:rgba(240,140,20,.12);color:var(--orange)}
+.pos-low{background:rgba(232,48,48,.12);color:var(--red)}
+
+/* bar */
+.bar-wrap{display:flex;align-items:center;gap:8px;width:100%}
+.bar-track{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.16,1,.3,1)}
+.bar-val{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;min-width:30px;text-align:right}
+
+/* ── OPPORTUNITY SECTION ── */
+.oppo-section{margin-bottom:28px}
+.oppo-section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.oppo-section-title .dot{width:6px;height:6px;border-radius:50%}
+.oppo-section-title.quick .dot{background:var(--green)}
+.oppo-section-title.pages .dot{background:var(--cyan)}
+.oppo-section-title.signaux .dot{background:var(--purple)}
+.oppo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.oppo-grid.quick .oppo-card{border-left:3px solid var(--green)}
+.oppo-grid.pages .oppo-card{border-left:3px solid var(--cyan)}
+.oppo-grid.signaux .oppo-card{border-left:3px solid var(--purple)}
+@media(max-width:900px){.oppo-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.oppo-grid{grid-template-columns:1fr}}
+.oppo-card{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:16px;transition:border-color .2s}
+.oppo-card:hover{border-color:var(--bL)}
+.oppo-type{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.oppo-kw{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--w);margin-bottom:8px;line-height:1.3}
+.oppo-stats{display:flex;gap:10px;flex-wrap:wrap}
+.os{font-size:10px;font-family:'Space Mono',monospace;font-weight:700}
+.oppo-action{font-size:11px;color:var(--mid);margin-top:8px;line-height:1.5;border-top:1px solid var(--b);padding-top:8px}
+.oppo-estimate{font-size:10px;color:var(--green);font-weight:600;margin-top:4px}
+
+/* ── DEVICE / GEO ── */
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+/* DONUT wrapper */
+.donut-wrap{position:relative;width:120px;height:120px;margin:0 auto 12px}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.dc-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--w)}
+.dc-lbl{font-size:9px;color:var(--mute);letter-spacing:.06em}
+
+/* ── FOOTER ── */
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--b);text-align:center;font-size:11px;color:var(--mute)}
+footer span{color:var(--cyan)}
+
+/* ── ANIM ── */
+.fade-in{opacity:0;transform:translateY(14px);animation:fadeUp .5s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+.d5{animation-delay:.25s}.d6{animation-delay:.3s}.d7{animation-delay:.35s}.d8{animation-delay:.4s}
+</style>
+</head>
+<body>
+<div class="orb1"></div>
+<div class="orb2"></div>
+
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="h-brand">
+      <div class="h-mark"></div>
+      <div>
+        <div class="h-name">SARG · GSC Dashboard</div>
+        <div class="h-url">sargasses-martinique.com</div>
+      </div>
+    </div>
+    <div class="h-meta">
+      <div class="h-period">Période analysée</div>
+      <div class="h-dates">18 fév → 06 mar 2026</div>
+      <div class="launch-badge"><span class="dot-live"></span> 19 jours live</div>
+    </div>
+  </div>
+</header>
+
+<!-- Résumé flash 30s -->
+<div class="flash-strip fade-in d1">
+  <span><strong>Requête reine</strong> « sargasse martinique en temps réel » · pos 3.9 · CTR 27% · 162 clics</span>
+  <span>87% des clics → homepage · 78% mobile · France + Martinique + Canada = 92% clics</span>
+</div>
+
+<!-- KPI STRIP -->
+<div class="kpi-grid">
+  <div class="kpi c fade-in d1">
+    <span class="kpi-icon">👆</span>
+    <div class="kpi-val">498</div>
+    <div class="kpi-lbl">Clics totaux</div>
+    <div class="kpi-sub">~26 clics / jour</div>
+    <div class="kpi-trend">↗ +47 clics le 05/03</div>
+  </div>
+  <div class="kpi g fade-in d2">
+    <span class="kpi-icon">👁</span>
+    <div class="kpi-val">3 175</div>
+    <div class="kpi-lbl">Impressions</div>
+    <div class="kpi-sub">~167 / jour</div>
+    <div class="kpi-trend">↗ Croissance continue</div>
+  </div>
+  <div class="kpi o fade-in d3">
+    <span class="kpi-icon">🎯</span>
+    <div class="kpi-val">15.7%</div>
+    <div class="kpi-lbl">CTR moyen</div>
+    <div class="kpi-sub">Excellent (avg. ~3%)</div>
+    <div class="kpi-trend">Top 5% des sites</div>
+  </div>
+  <div class="kpi p fade-in d4">
+    <span class="kpi-icon">📍</span>
+    <div class="kpi-val">5.2</div>
+    <div class="kpi-lbl">Position moy.</div>
+    <div class="kpi-sub">Page 1 · Top 5</div>
+    <div class="kpi-trend">↘ Améliore (-0.7 en 19j)</div>
+  </div>
+</div>
+
+<!-- CHART ROW -->
+<div class="section-title fade-in d5">Évolution quotidienne</div>
+<div class="chart-section fade-in d5">
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title">Clics & Impressions / jour</div>
+      <div class="chart-legend">
+        <div class="cl-item"><div class="cl-dot" style="background:#00D4C8"></div>Clics</div>
+        <div class="cl-item"><div class="cl-dot" style="background:rgba(0,212,200,.3)"></div>Impressions /10</div>
+      </div>
+    </div>
+    <canvas id="chart-daily" height="80"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title">CTR & Position</div>
+      <div class="chart-legend">
+        <div class="cl-item"><div class="cl-dot" style="background:#22D97A"></div>CTR %</div>
+        <div class="cl-item"><div class="cl-dot" style="background:#AA44FF"></div>Position</div>
+      </div>
+    </div>
+    <canvas id="chart-ctr" height="130"></canvas>
+  </div>
+</div>
+
+<!-- KEYWORDS + PAGES -->
+<div class="section-title fade-in d6">Mots-clés & Pages</div>
+<div class="two-col fade-in d6">
+  <!-- Top requêtes -->
+  <div class="tcard">
+    <div class="tcard-head">
+      <div class="tcard-title">🔍 Requêtes Top 15</div>
+      <div class="tcard-count">86 requêtes total</div>
+    </div>
+    <table>
+      <thead><tr><th>Requête</th><th>Clics</th><th>CTR</th><th>Pos.</th></tr></thead>
+      <tbody id="tb-queries"></tbody>
+    </table>
+  </div>
+  <!-- Pages -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="tcard">
+    <div class="tcard-head">
+      <div class="tcard-title">📄 Pages indexées</div>
+      <div class="tcard-count">13 pages · 87% clics → homepage</div>
+    </div>
+      <table>
+        <thead><tr><th>Page</th><th>Clics</th><th>CTR</th></tr></thead>
+        <tbody id="tb-pages"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- OPPORTUNITIES: 3 blocs -->
+<div class="section-title fade-in d7">🚀 Opportunités SEO — plan d’action</div>
+
+<div class="oppo-section fade-in d7">
+  <div class="oppo-section-title quick"><span class="dot"></span> Quick wins immédiats</div>
+  <div class="oppo-grid quick" id="oppo-quick"></div>
+</div>
+<div class="oppo-section fade-in d7">
+  <div class="oppo-section-title pages"><span class="dot"></span> Pages à créer</div>
+  <div class="oppo-grid pages" id="oppo-pages"></div>
+</div>
+<div class="oppo-section fade-in d7">
+  <div class="oppo-section-title signaux"><span class="dot"></span> Signaux forts</div>
+  <div class="oppo-grid signaux" id="oppo-signaux"></div>
+</div>
+
+<!-- DEVICES + GEO -->
+<div class="section-title fade-in d8">Devices & Géographie</div>
+<div class="three-col fade-in d8">
+  <!-- Devices donut -->
+  <div class="chart-card">
+    <div class="chart-title" style="margin-bottom:14px">📱 Appareils</div>
+    <div class="donut-wrap">
+      <canvas id="chart-dev"></canvas>
+      <div class="donut-center"><div class="dc-val">78%</div><div class="dc-lbl">Mobile</div></div>
+    </div>
+    <div id="dev-legend" style="display:flex;flex-direction:column;gap:6px;margin-top:4px"></div>
+  </div>
+  <!-- Top pays -->
+  <div class="tcard" style="grid-column:span 2">
+    <div class="tcard-head">
+      <div class="tcard-title">🌍 Top Pays</div>
+      <div class="tcard-count">42 pays</div>
+    </div>
+    <table>
+      <thead><tr><th>Pays</th><th>Clics</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead>
+      <tbody id="tb-geo"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  Données Google Search Console · Export 08 mars 2026 · <span>sargasses-martinique.com</span> · 19 jours post-lancement
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// ── DATA ──
+const daily = [
+  {d:'18/02',cl:0,im:0,ctr:0,pos:0},
+  {d:'19/02',cl:14,im:82,ctr:17.07,pos:6.4},
+  {d:'20/02',cl:7,im:67,ctr:10.45,pos:6.5},
+  {d:'21/02',cl:11,im:83,ctr:13.25,pos:7},
+  {d:'22/02',cl:20,im:157,ctr:12.74,pos:6.8},
+  {d:'23/02',cl:29,im:169,ctr:17.16,pos:6.1},
+  {d:'24/02',cl:42,im:220,ctr:19.09,pos:6.6},
+  {d:'25/02',cl:35,im:220,ctr:15.91,pos:6.1},
+  {d:'26/02',cl:45,im:272,ctr:16.54,pos:6.7},
+  {d:'27/02',cl:33,im:194,ctr:17.01,pos:5.8},
+  {d:'28/02',cl:35,im:206,ctr:16.99,pos:4.9},
+  {d:'01/03',cl:41,im:287,ctr:14.29,pos:4.9},
+  {d:'02/03',cl:25,im:234,ctr:10.68,pos:6.1},
+  {d:'03/03',cl:29,im:167,ctr:17.37,pos:4.6},
+  {d:'04/03',cl:42,im:266,ctr:15.79,pos:4.6},
+  {d:'05/03',cl:47,im:254,ctr:18.5,pos:4.4},
+  {d:'06/03',cl:35,im:239,ctr:14.64,pos:5.1},
+];
+
+const queries = [
+  {q:'sargasse martinique en temps réel',cl:162,im:595,ctr:27.23,pos:3.86},
+  {q:'sargasse martinique aujourd\'hui',cl:30,im:239,ctr:12.55,pos:5.2},
+  {q:'sargasses martinique',cl:23,im:222,ctr:10.36,pos:4.57},
+  {q:'carte sargasse martinique',cl:22,im:220,ctr:10,pos:4.99},
+  {q:'sargasse martinique',cl:13,im:145,ctr:8.97,pos:8.79},
+  {q:'sargasses martinique carte',cl:9,im:43,ctr:20.93,pos:5.16},
+  {q:'sargasse martinique en direct',cl:8,im:12,ctr:66.67,pos:3.25},
+  {q:'sargasse en temps réel',cl:6,im:154,ctr:3.9,pos:8.17},
+  {q:'carte sargasse martinique 2026',cl:6,im:96,ctr:6.25,pos:5.15},
+  {q:'carte des sargasses martinique',cl:6,im:37,ctr:16.22,pos:5.76},
+  {q:'carte sargasses martinique',cl:5,im:59,ctr:8.47,pos:4.81},
+  {q:'sargasse martinique carte',cl:3,im:28,ctr:10.71,pos:5.14},
+  {q:'alerte sargasse martinique',cl:1,im:4,ctr:25,pos:2},
+  {q:'algue martinique',cl:1,im:4,ctr:25,pos:2},
+  {q:'pointe faula sargasses',cl:1,im:1,ctr:100,pos:2},
+];
+
+const pages = [
+  {p:'/',cl:433,im:2656,ctr:16.3,pos:5.23},
+  {p:'/plages/',cl:17,im:166,ctr:10.24,pos:6.69},
+  {p:'/plages/pointe-marin/',cl:16,im:114,ctr:14.04,pos:6.35},
+  {p:'/plages/anse-letang/',cl:14,im:140,ctr:10,pos:9.14},
+  {p:'/communes/sainte-anne/',cl:6,im:61,ctr:9.84,pos:7.34},
+  {p:'/plages/anse-caffard/',cl:3,im:17,ctr:17.65,pos:4.94},
+  {p:'/plage/',cl:3,im:17,ctr:17.65,pos:6.88},
+  {p:'/plages/anse-azerot/',cl:2,im:13,ctr:15.38,pos:6.15},
+  {p:'/plages/case-navire/',cl:0,im:20,ctr:0,pos:12.8},
+];
+
+const devices = [{l:'Mobile',cl:389,im:2426,pct:78},{l:'Ordinateur',cl:87,im:616,pct:17.5},{l:'Tablette',cl:18,im:133,pct:3.6}];
+
+const geo = [
+  {c:'🇫🇷 France',cl:198,im:1365,ctr:14.51,pos:5.99},
+  {c:'🇲🇶 Martinique',cl:166,im:887,ctr:18.71,pos:5.12},
+  {c:'🇨🇦 Canada',cl:95,im:597,ctr:15.91,pos:5.61},
+  {c:'🇨🇭 Suisse',cl:12,im:49,ctr:24.49,pos:4.57},
+  {c:'🇮🇹 Italie',cl:5,im:22,ctr:22.73,pos:3.64},
+  {c:'🇲🇽 Mexique',cl:4,im:46,ctr:8.7,pos:7.63},
+  {c:'🇩🇪 Allemagne',cl:3,im:23,ctr:13.04,pos:5.22},
+  {c:'🇧🇪 Belgique',cl:3,im:22,ctr:13.64,pos:5.59},
+  {c:'🇺🇸 États-Unis',cl:0,im:41,ctr:0,pos:6.05},
+  {c:'🇬🇵 Guadeloupe',cl:1,im:13,ctr:7.69,pos:5.85},
+];
+
+const opportunitiesQuickWins = [
+  {type:'Quick Win',kw:'sargasse en temps réel',im:154,cl:6,ctr:3.9,pos:8.2,
+   action:'Pos. 8.2 → page 1 possible. Ajouter "en temps réel" dans H1/title de la homepage.',
+   estimate:'+100 clics estimés'},
+  {type:'CTR boost',kw:'sargasse martinique aujourd\'hui',im:239,cl:30,ctr:12.5,pos:5.2,
+   action:'12.5% CTR mais sans rich snippet date. Ajouter schema Article + dateModified.',
+   estimate:''},
+];
+
+const opportunitiesPages = [
+  {type:'Page dédiée',kw:'carte des sargasses',im:40,cl:0,ctr:0,pos:7.88,
+   action:'Créer /carte-sargasses/ avec carte OpenLayers + balises FAQ schema. 40 impr., 0 clic actuellement.',
+   estimate:''},
+  {type:'Page dédiée',kw:'prévisions sargasses martinique 7 jours',im:4,cl:0,ctr:0,pos:8,
+   action:'Créer /previsions/ — Title exact : "Prévisions sargasses Martinique 7 jours". Cibler J+3 / J+7.',
+   estimate:''},
+];
+
+const opportunitiesSignaux = [
+  {type:'Géo',kw:'Canada · 95 clics (19% du total)',im:597,cl:95,ctr:15.9,pos:5.6,
+   action:'Diaspora martiniquaise + touristes. Penser à une section diaspora/voyageurs.',
+   estimate:''},
+  {type:'Expansion EN',kw:'sargassum monitoring martinique',im:41,cl:0,ctr:0,pos:3,
+   action:'Position 3 en anglais, 0 CTR. Créer /en/ pour capturer les touristes US (41 impr., 0 conversion).',
+   estimate:''},
+];
+
+// ── CHART.JS ──
+Chart.defaults.color = '#4A6880';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.borderColor = 'rgba(255,255,255,.05)';
+
+// Daily clics + impressions
+new Chart(document.getElementById('chart-daily'), {
+  type: 'bar',
+  data: {
+    labels: daily.map(d=>d.d),
+    datasets: [
+      {
+        label:'Clics',type:'line',data:daily.map(d=>d.cl),
+        borderColor:'#00D4C8',backgroundColor:'rgba(0,212,200,.12)',
+        borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#00D4C8',
+        yAxisID:'y',order:1
+      },
+      {
+        label:'Impressions /10',type:'bar',data:daily.map(d=>Math.round(d.im/10)),
+        backgroundColor:'rgba(0,212,200,.18)',borderColor:'rgba(0,212,200,.4)',
+        borderWidth:1,borderRadius:4,
+        yAxisID:'y',order:2
+      }
+    ]
+  },
+  options:{
+    responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(0,212,200,.2)',borderWidth:1,
+      titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:10,
+      callbacks:{label:ctx=>ctx.dataset.label===('Impressions /10')?'Impressions: '+(ctx.raw*10):ctx.dataset.label+': '+ctx.raw}
+    }},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}},beginAtZero:true}
+    }
+  }
+});
+
+// CTR + Position
+new Chart(document.getElementById('chart-ctr'), {
+  type:'line',
+  data:{
+    labels:daily.slice(1).map(d=>d.d),
+    datasets:[
+      {label:'CTR %',data:daily.slice(1).map(d=>d.ctr),
+       borderColor:'#22D97A',backgroundColor:'rgba(34,217,122,.06)',
+       borderWidth:2,fill:true,tension:.4,pointRadius:2,yAxisID:'y1'},
+      {label:'Position',data:daily.slice(1).map(d=>d.pos),
+       borderColor:'#AA44FF',backgroundColor:'rgba(170,68,255,.06)',
+       borderWidth:2,fill:false,tension:.4,pointRadius:2,yAxisID:'y2',
+       borderDash:[4,2]}
+    ]
+  },
+  options:{
+    responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(255,255,255,.08)',borderWidth:1,
+      titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:10
+    }},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}}},
+      y1:{position:'left',grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}},
+         title:{display:true,text:'CTR %',font:{size:9},color:'#22D97A'}},
+      y2:{position:'right',grid:{display:false},ticks:{font:{size:9},color:'#AA44FF'},
+         reverse:true,title:{display:true,text:'Pos.',font:{size:9},color:'#AA44FF'}}
+    }
+  }
+});
+
+// Device donut
+new Chart(document.getElementById('chart-dev'), {
+  type:'doughnut',
+  data:{
+    labels:devices.map(d=>d.l),
+    datasets:[{
+      data:devices.map(d=>d.cl),
+      backgroundColor:['rgba(0,212,200,.7)','rgba(34,217,122,.6)','rgba(170,68,255,.6)'],
+      borderWidth:0,hoverOffset:4
+    }]
+  },
+  options:{
+    cutout:'72%',responsive:true,
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(255,255,255,.08)',borderWidth:1,
+      titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:8
+    }}
+  }
+});
+
+// Device legend
+const devColors=['#00D4C8','#22D97A','#AA44FF'];
+document.getElementById('dev-legend').innerHTML = devices.map((d,i)=>`
+  <div style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="width:8px;height:8px;border-radius:2px;background:${devColors[i]}"></div>
+      <span style="font-size:11px;color:var(--mid)">${d.l}</span>
+    </div>
+    <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--w)">${d.cl}</span>
+  </div>
+`).join('');
+
+// ── TABLES ──
+function posPill(pos){
+  if(!pos) return '<span class="badge b-gray">—</span>';
+  const cls = pos<=4?'pos-top':pos<=7?'pos-mid':'pos-low';
+  return `<span class="pos-pill ${cls}">#${pos.toFixed(1)}</span>`;
+}
+
+// Queries table
+document.getElementById('tb-queries').innerHTML = queries.map(r=>{
+  const maxCl=162;
+  const ctrColor = r.ctr>=20?'var(--green)':r.ctr>=10?'var(--orange)':'var(--mid)';
+  return `<tr>
+    <td title="${r.q}">${r.q}</td>
+    <td>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:${(r.cl/maxCl*100).toFixed(0)}%;background:var(--cyan)"></div></div>
+        <div class="bar-val" style="color:var(--cyan)">${r.cl}</div>
+      </div>
+    </td>
+    <td style="color:${ctrColor};font-family:'Space Mono',monospace;font-size:10px;font-weight:700">${r.ctr}%</td>
+    <td>${posPill(r.pos)}</td>
+  </tr>`;
+}).join('');
+
+// Pages table
+document.getElementById('tb-pages').innerHTML = pages.map(p=>{
+  const label = p.p==='/'?'🏠 Homepage':p.p.replace(/\//g,' ').trim().replace('plages ','📍 ').replace('communes ','🏘 ').replace('plage ','📍 ')||p.p;
+  const pct = p.cl===0?'<span class="badge b-gray">0 clic</span>':`<span class="badge b-cyan">${p.ctr}%</span>`;
+  return `<tr>
+    <td title="${p.p}">${label}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--w)">${p.cl}</td>
+    <td>${pct}</td>
+  </tr>`;
+}).join('');
+
+// Geo table
+document.getElementById('tb-geo').innerHTML = geo.map(g=>{
+  const ctrColor = g.ctr>=20?'var(--green)':g.ctr>=10?'var(--orange)':g.ctr===0?'var(--red)':'var(--mid)';
+  return `<tr>
+    <td>${g.c}</td>
+    <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--w)">${g.cl}</td>
+    <td>${g.im}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:${ctrColor}">${g.ctr}%</td>
+    <td>${posPill(g.pos)}</td>
+  </tr>`;
+}).join('');
+
+// Opportunities — 3 blocs
+function renderOppos(arr, elId){
+  document.getElementById(elId).innerHTML = arr.map(o=>`
+  <div class="oppo-card">
+    <div class="oppo-type" style="color:var(--mid)">${o.type}</div>
+    <div class="oppo-kw">${o.kw}</div>
+    <div class="oppo-stats">
+      <span class="os" style="color:var(--mid)">${o.im} impr.</span>
+      <span class="os" style="color:var(--w)">${o.cl} clics</span>
+      ${o.pos?`<span class="os" style="color:var(--cyan)">pos. ${typeof o.pos==='number'?o.pos.toFixed(2):o.pos}</span>`:''}
+    </div>
+    <div class="oppo-action">${o.action}</div>
+    ${o.estimate?`<div class="oppo-estimate">${o.estimate}</div>`:''}
+  </div>
+`).join('');
+}
+renderOppos(opportunitiesQuickWins, 'oppo-quick');
+renderOppos(opportunitiesPages, 'oppo-pages');
+renderOppos(opportunitiesSignaux, 'oppo-signaux');
+</script>
+</body>
+</html>

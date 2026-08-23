@@ -1,0 +1,141 @@
+<!doctype html>
+<!-- Proto INTERNE — bancs de sargasses comic "bien dessinés" qui DÉRIVENT (mouvement comic) et
+     S'ÉCHOUENT sur les plages où ils sont prévus (statut avoid/moderate = "là où ils atterrissent").
+     À porter dans src/WorldMapView.jsx (couche live légère au-dessus du monde baké). 1 seul rAF,
+     pausable, reduced-motion = figé. -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proto sargasses dérive + échouage</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:390px;height:600px;margin:0 auto;overflow:hidden}
+  .lbl{position:fixed;top:6px;left:8px;z-index:99;font:700 11px/1.4 monospace;background:rgba(0,0,0,.55);padding:5px 8px;border-radius:6px}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%),
+    linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body>
+<div class="lbl" id="lbl">dérive + échouage — clic = pause</div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="map" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="land" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset=".3" stop-color="#41BE7B"/><stop offset=".62" stop-color="#2BAE66"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <radialGradient id="sargG" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".5" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <pattern id="halftone" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/></pattern>
+    </defs>
+    <!-- île -->
+    <g>
+      <path d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="#062033" opacity=".5" transform="translate(7 13)"/>
+      <path d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="url(#land)"/>
+      <path d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="none" stroke="#0d0b14" stroke-width="3.5" stroke-linejoin="round"/>
+      <ellipse cx="320" cy="200" rx="26" ry="17" fill="#2c5a26" opacity=".5"/>
+      <ellipse cx="350" cy="350" rx="22" ry="14" fill="#2c5a26" opacity=".45"/>
+    </g>
+    <g id="foamLayer"></g>   <!-- éclaboussures d'échouage (sous les pins) -->
+    <g id="bankLayer"></g>   <!-- bancs qui dérivent -->
+    <g id="pinLayer"></g>    <!-- pins plage -->
+  </svg>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+function rng(seed){let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;}
+function splat(cx,cy,r,seed,N){N=N||9;const rand=rng(seed),p=[];for(let i=0;i<N;i++){const a=(i/N)*6.2832,rr=r*(0.6+rand()*0.75);p.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}return d+"Z";}
+
+// ── BANC comic "bien dessiné" : mat de lobes (silhouette unifiée) + clumps internes + reflet + halftone ──
+function makeBank(scale,seed){
+  const g=el("g",{}); const R=22*scale;
+  const sil=splat(0,0,R,seed,11);                    // silhouette du mat
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".32",transform:"translate(2 3)"}));     // ombre/contour
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":1.8,"stroke-linejoin":"round"})); // corps doré
+  // clumps internes (densité, texture comic)
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8,oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splat(ox,oy,R*0.34,seed*9+i*7,7),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".3"}));                    // halftone BD
+  g.appendChild(el("path",{d:splat(-R*0.2,-R*0.26,R*0.5,seed+3,7),fill:"#FFE9A8",opacity:".45"})); // reflet
+  // fronds/wisps (tendrils comic en bord)
+  const rf=rng(seed*3+2);
+  for(let i=0;i<3;i++){const a=rf()*6.28,x=Math.cos(a)*R*0.9,y=Math.sin(a)*R*0.9;
+    g.appendChild(el("path",{d:`M${(x*.6).toFixed(1)} ${(y*.6).toFixed(1)} Q${x.toFixed(1)} ${y.toFixed(1)} ${(x*1.25).toFixed(1)} ${(y*1.25+4).toFixed(1)}`,
+      stroke:"#7C6A22","stroke-width":2,fill:"none","stroke-linecap":"round",opacity:".7"}));}
+  return g;
+}
+// ── ÉCLABOUSSURE d'échouage (foam comic : blob blanc + traits radiants + dots) ──
+function makeFoam(){
+  const g=el("g",{opacity:"0"});
+  g.appendChild(el("ellipse",{cx:0,cy:0,rx:26,ry:12,fill:"#eafcff",opacity:".75"}));
+  for(let i=0;i<7;i++){const a=(i/7)*6.28,x=Math.cos(a)*22,y=Math.sin(a)*11;
+    g.appendChild(el("line",{x1:(x*.5).toFixed(1),y1:(y*.5).toFixed(1),x2:x.toFixed(1),y2:y.toFixed(1),stroke:"#fff","stroke-width":2.4,"stroke-linecap":"round",opacity:".85"}));}
+  for(let i=0;i<6;i++){const a=(i/6)*6.28+0.4;g.appendChild(el("circle",{cx:(Math.cos(a)*30).toFixed(1),cy:(Math.sin(a)*15).toFixed(1),r:2.2,fill:"#fff",opacity:".8"}));}
+  return g;
+}
+// ── PIN statut ──
+function pin(x,y,st){const fill=st==="avoid"?"#E8472A":st==="moderate"?"#F2B330":"#2FBE6B";
+  const g=el("g",{transform:`translate(${x} ${y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:5,ry:2,fill:"#062033",opacity:".4"}));
+  g.appendChild(el("path",{d:"M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z",fill,stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));
+  g.appendChild(el("circle",{cx:0,cy:-14.4,r:3,fill:"#fff",stroke:INK,"stroke-width":.7}));return g;}
+
+// ── DONNÉES : plages (statut). Sargasse vient de l'EST (Atlantique) → s'échoue côte est/sud. ──
+const CX=330, CY=300;
+const beaches=[
+  {x:455,y:285,st:"avoid"},{x:470,y:360,st:"avoid"},{x:430,y:458,st:"moderate"},
+  {x:322,y:512,st:"moderate"},{x:210,y:380,st:"clean"},{x:240,y:255,st:"clean"},{x:265,y:462,st:"clean"},
+];
+const pinLayer=document.getElementById("pinLayer");
+beaches.forEach(b=>pinLayer.appendChild(pin(b.x,b.y,b.st)));
+
+// ── BANCS : ciblent les plages avoid/moderate ("là où ils atterrissent") ──
+const bankLayer=document.getElementById("bankLayer"), foamLayer=document.getElementById("foamLayer");
+const banks=[];
+beaches.filter(b=>b.st!=="clean").forEach((b,bi)=>{
+  const n = b.st==="avoid"?2:1;                       // plus de bancs sur les avoid
+  for(let k=0;k<n;k++){
+    const seed=bi*97+k*31+7;
+    // origine large au sud-est (sens de dérive Atlantique→côte)
+    const dx=b.x-CX, dy=b.y-CY, L=Math.hypot(dx,dy)||1;
+    const ox=b.x + (dx/L)*(160+k*40) + 30, oy=b.y + (dy/L)*(120+k*30) + 40;
+    const g=makeBank(b.st==="avoid"?1.05:0.8, seed);
+    const foam=makeFoam(); foam.setAttribute("transform",`translate(${b.x} ${b.y})`);
+    bankLayer.appendChild(g); foamLayer.appendChild(foam);
+    banks.push({g,foam,bx:b.x,by:b.y,ox,oy,seed,op:b.st==="avoid"?.95:.82,
+      phase:(bi*0.27+k*0.5)%1, speed:0.045+0.012*k, rot:(seed%20)-10});
+  }
+});
+
+// ── MOTEUR : 1 seul rAF, dérive + bob + échouage + respawn. Reduced-motion = figé mi-course. ──
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+let raf=0, paused=false, t0=0;
+function frame(tms){
+  if(!t0)t0=tms; const t=(tms-t0)/1000;
+  for(const bk of banks){
+    let p = REDUCED ? 0.46 : ((t*bk.speed + bk.phase) % 1);
+    const drift=ease(Math.min(1,p/0.82));
+    const x=bk.ox+(bk.bx-bk.ox)*drift, y=bk.oy+(bk.by-bk.oy)*drift;
+    const bob=REDUCED?0:Math.sin(t*1.5+bk.seed)*5*(1-drift);
+    const grow=0.72+drift*0.5, washing=p>0.82, wk=washing?(p-0.82)/0.18:0;
+    const sx=grow*(1+wk*0.55), sy=grow*(1-wk*0.5);
+    const rot=bk.rot+(REDUCED?0:Math.sin(t*0.8+bk.seed)*4);
+    bk.g.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+bob).toFixed(1)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) rotate(${rot.toFixed(1)})`);
+    bk.g.setAttribute("opacity",(washing?(1-wk)*bk.op:bk.op).toFixed(2));
+    bk.foam.setAttribute("opacity",washing?Math.sin(wk*Math.PI).toFixed(2):"0");
+  }
+  if(!REDUCED&&!paused)raf=requestAnimationFrame(frame);
+}
+if(REDUCED)frame(0); else raf=requestAnimationFrame(frame);
+document.body.addEventListener("click",()=>{paused=!paused;document.getElementById("lbl").textContent="dérive + échouage — "+(paused?"PAUSE":"play");if(!paused){t0=0;raf=requestAnimationFrame(frame);}else cancelAnimationFrame(raf);});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)cancelAnimationFrame(raf);else if(!paused&&!REDUCED){t0=0;raf=requestAnimationFrame(frame);}});
+</script>
+</body></html>

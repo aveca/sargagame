@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;font-family:'Segoe UI',Arial,sans-serif;background:#1B2D2A;overflow:hidden;position:relative}
+.content{position:relative;z-index:2;padding:50px 70px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#06D6A0;letter-spacing:3px;text-transform:uppercase}
+.live-dot{width:10px;height:10px;border-radius:50%;background:#06D6A0}
+.question{font-size:58px;font-weight:800;color:white;line-height:1.2;margin-top:20px;max-width:700px}
+.question span{color:#FFD166}
+.stats{display:flex;gap:30px;margin-top:auto}
+.stat{background:rgba(255,255,255,0.08);border-radius:16px;padding:20px 28px;display:flex;flex-direction:column;gap:4px}
+.stat-num{font-size:36px;font-weight:800;color:#06D6A0}
+.stat-label{font-size:14px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.url{color:rgba(255,255,255,0.4);font-size:15px;letter-spacing:1px}
+.tag{background:#E8A800;color:white;padding:10px 22px;border-radius:20px;font-size:14px;font-weight:700;letter-spacing:1px}
+.deco{position:absolute;right:60px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;opacity:0.15}
+.bar{height:8px;border-radius:4px}
+.b1{width:80px;background:#06D6A0}.b2{width:120px;background:#00B4D8}.b3{width:60px;background:#FFD166}
+.b4{width:100px;background:#06D6A0}.b5{width:140px;background:#00B4D8}.b6{width:70px;background:#FFD166}
+.b7{width:90px;background:#06D6A0}.b8{width:110px;background:#00B4D8}.b9{width:50px;background:#FFD166}
+</style></head>
+<body>
+<div class="deco">
+<div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
+<div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div>
+<div class="bar b7"></div><div class="bar b8"></div><div class="bar b9"></div>
+<div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
+<div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div>
+</div>
+<div class="content">
+  <div>
+    <div class="live"><div class="live-dot"></div> EN TEMPS REEL</div>
+    <div class="question">Ce weekend,<br>quelle plage<br><span>sans sargasses</span> ?</div>
+  </div>
+  <div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">44</div><div class="stat-label">Plages propres MQ</div></div>
+      <div class="stat"><div class="stat-num">77</div><div class="stat-label">Plages propres GP</div></div>
+      <div class="stat"><div class="stat-num">4x</div><div class="stat-label">Mis a jour / jour</div></div>
+    </div>
+    <div class="bottom" style="margin-top:20px">
+      <div class="url">sargasses-martinique.com</div>
+      <div class="tag">GRATUIT</div>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,1447 @@
+{
+  "updatedAt": "2026-08-13T07:12:33.241Z",
+  "signals": {
+    "paidSignal": "mollie",
+    "leadsSignal": "subscribers",
+    "clickSignal": "à brancher (token &b + stats)"
+  },
+  "counts": {
+    "discovered": 3,
+    "contacted": 152,
+    "lead": 4,
+    "paid": 0
+  },
+  "funnel": {
+    "9a9cdbd282d741fb6e56c1e35bfc0552": {
+      "stage": "contacted",
+      "name": "Hôtel Diamant Les Bains",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T04:02:19.500Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "21a1ce456cce137686a67f39bb046917": {
+      "stage": "lead",
+      "name": "Anoli Lodges",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T03:59:33.859Z",
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "197b77981fac3a014cfe1ad824390714": {
+      "stage": "contacted",
+      "name": "La Créole Beach Hôtel & Spa",
+      "island": "GP",
+      "contactedAt": "2026-06-28T04:02:19.774Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "1ceed3e228efbf9500c9320992fbbb6c": {
+      "stage": "contacted",
+      "name": "Majesty Palm Hotel & Spa",
+      "island": "GP",
+      "contactedAt": "2026-06-28T04:02:20.085Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "68b608e279a86ea9df43e0515ff2e4e7": {
+      "stage": "contacted",
+      "name": "Bambou Resort (Hôtel Bambou)",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T04:02:22.037Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "62098b0361188b94d03b943ddd0323f7": {
+      "stage": "contacted",
+      "name": "Hôtel Plein Soleil",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T04:02:22.563Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "bca368d0780b1f676de05ed420fb1d57": {
+      "stage": "contacted",
+      "name": "La Suite Villa",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T08:54:30.104Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "149125a95bc6c8c600198cb8b9399638": {
+      "stage": "contacted",
+      "name": "Hôtel Bakoua",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T08:54:30.553Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "34e3bf3520495bde3bd398bfa6abdf79": {
+      "stage": "contacted",
+      "name": "Karibea Hôtels & Résidences",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T08:54:31.284Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "713ca6f5148332776e8ae2d48c51de33": {
+      "stage": "contacted",
+      "name": "ILOMA Hotel & Spa (ex-Corail Résidence)",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T08:54:31.571Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8e87822d3fe7e0f8e82242856cca7637": {
+      "stage": "contacted",
+      "name": "Hôtel La Pagerie Tropical Garden",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T08:54:31.994Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "76690b3b63d61ac3b0f797410162ca55": {
+      "stage": "contacted",
+      "name": "Hôtel Frégate Bleue",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T13:48:52.105Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8ab2fad77d1f998bd0249e7034e1cb8a": {
+      "stage": "contacted",
+      "name": "Domaine Saint Aubin",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T13:48:52.402Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "790f73c8cf68f823ed818e5b645909ea": {
+      "stage": "contacted",
+      "name": "Le Domaine des Bulles",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T13:48:52.864Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "42a4f510f3f4ed69bd09d4c97f21165d": {
+      "stage": "contacted",
+      "name": "Hotel Arawak Beach Resort",
+      "island": "GP",
+      "contactedAt": "2026-06-28T13:48:53.246Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "3799c25eb1613468dda4a1a7e39f16d4": {
+      "stage": "contacted",
+      "name": "La Maison de l'Ilet Oscar",
+      "island": "MQ",
+      "contactedAt": "2026-06-28T13:48:53.528Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8cb9d4a3ea8cc38696066ba3c22aaffd": {
+      "stage": "contacted",
+      "name": "Langley Resort Fort Royal",
+      "island": "GP",
+      "contactedAt": "2026-06-28T19:25:47.952Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "7c8394c00c89be4b2566b1a6727e48ae": {
+      "stage": "contacted",
+      "name": "La Toubana Hôtel & Spa",
+      "island": "GP",
+      "contactedAt": "2026-06-28T19:25:49.754Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "f20713055aadf258b479b9c32f8c7852": {
+      "stage": "contacted",
+      "name": "Tendacayou Ecolodge & SPA",
+      "island": "GP",
+      "contactedAt": "2026-06-28T19:25:50.069Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "f172ad192ebac4990856a9f6fe5ab745": {
+      "stage": "contacted",
+      "name": "Le Jardin Malanga",
+      "island": "GP",
+      "contactedAt": "2026-06-28T19:25:50.315Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "0f2d666cf53a811a584a0c3f23578609": {
+      "stage": "contacted",
+      "name": "Habitation Grande Anse",
+      "island": "GP",
+      "contactedAt": "2026-06-28T19:25:50.431Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "fc32a9989124a697d5189ace073e8c84": {
+      "stage": "discovered",
+      "name": "Karibea Résidence Prao (Karibea Beach Resort Gosier)",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "90367996a9c7de95467ea9a7da99d26e": {
+      "stage": "contacted",
+      "name": "Hôtel Bois Joli",
+      "island": "GP",
+      "contactedAt": "2026-06-29T04:14:46.174Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "570b71d132173d5e5806ceb07224aa9b": {
+      "stage": "contacted",
+      "name": "Hôtel Amaudo",
+      "island": "GP",
+      "contactedAt": "2026-06-29T04:14:47.003Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "26c84124b4a366d93e3bc4c280759f88": {
+      "stage": "discovered",
+      "name": "Kawann Beach Hôtel",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "f93adc42d207dddcf9f0a260c9d59eb3": {
+      "stage": "contacted",
+      "name": "Bao Beach",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T04:14:47.544Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "725711cb92e8a9b8503c6286f1631fc8": {
+      "stage": "contacted",
+      "name": "Maya Beach Club",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T11:06:38.863Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a5c5a1c206527b7b9bd0c5f8d0498178": {
+      "stage": "contacted",
+      "name": "Boucaniers Diving",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T11:06:38.974Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "7a4bbb48d7d2fa3b75986fe951858419": {
+      "stage": "contacted",
+      "name": "Kalinago Plongee",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T11:06:39.250Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "1771f5e2f2acce1876aa680fe243c518": {
+      "stage": "contacted",
+      "name": "Residence Turquoise",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T15:50:21.127Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c0b884660112b2eb6c1ab3a4ccf846a3": {
+      "stage": "contacted",
+      "name": "Hôtel Diamant Beach",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T15:50:21.534Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8ca2a8da25e468897531179e5034526a": {
+      "stage": "contacted",
+      "name": "DSC Plongée (Diamant Sub Club)",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T15:50:21.859Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c56edd2978a61f7d13b0a0af3081f287": {
+      "stage": "contacted",
+      "name": "Hôtel Carayou & SPA",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T20:00:59.016Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "24d78de1816ba79c5688b53fdaee6b54": {
+      "stage": "contacted",
+      "name": "Le Courbaril (Courbaril Village)",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T20:00:59.632Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "da0d6771ae926af7b1a3ec1e53bf0d97": {
+      "stage": "contacted",
+      "name": "L'Impératrice Village",
+      "island": "MQ",
+      "contactedAt": "2026-06-29T20:00:59.969Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "31de89ca85a74c2a9ef7e2ab0c01b812": {
+      "stage": "contacted",
+      "name": "Kawan Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:36.873Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "5fa9026168761be3a1a57ce07d19f5ee": {
+      "stage": "contacted",
+      "name": "Kariba Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:37.178Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "7fa5b59c71b0bf6fd6a2734e58e984f1": {
+      "stage": "contacted",
+      "name": "Résidence Brise Marine",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:37.626Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c0f27e563c9957717615f0aabc45bb71": {
+      "stage": "contacted",
+      "name": "Les Villas du Lagon (ex-Cap Est Lagoon Resort & Spa)",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:38.127Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "82efa2491fb7fd1632b272166da2cdc5": {
+      "stage": "contacted",
+      "name": "Zenergie",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:38.412Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "e3200672cc3eae0f0f7e23a7274b676e": {
+      "stage": "contacted",
+      "name": "Hôtel Sable Bleu",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T03:47:39.066Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a544ca79573316aeccbb525080f7a381": {
+      "stage": "contacted",
+      "name": "Résidence des Îles",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:16.084Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a6b661c398aeed53d598a55401ebe606": {
+      "stage": "contacted",
+      "name": "LA VILLA Baie du Marin",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:16.399Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "14ae9a22608724489ca02cd0bc4aa7e3": {
+      "stage": "contacted",
+      "name": "Marin Plongée Martinique",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:17.019Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "dc8bcf98f3fca667c372b7d6727a4c6f": {
+      "stage": "contacted",
+      "name": "Madinina Kite Surf",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:17.331Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "04673909809c69b03fcdd284af773a60": {
+      "stage": "contacted",
+      "name": "Deep Turtle Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:18.250Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "507144809e57826592c02c3ad2ed84a3": {
+      "stage": "contacted",
+      "name": "Alpha Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T09:44:18.899Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "96c79a8adc8d8f6ea07fe0374c561f69": {
+      "stage": "contacted",
+      "name": "Aliotis Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:48.941Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "460d6671a76b9dc4ac2d9fcb5d7b2645": {
+      "stage": "contacted",
+      "name": "Anses d'Arlet Plongée",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:49.255Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "792208f610f4770bf68136d3fcbbfa74": {
+      "stage": "contacted",
+      "name": "Résid'Anses",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:50.908Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "ac3f6d4dad866ddc70aa8e26f1e678a5": {
+      "stage": "contacted",
+      "name": "Lez'arlet Plage",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:51.218Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "aa30953e68f513a09ba293c897d805bc": {
+      "stage": "contacted",
+      "name": "L'Escale",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:51.534Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d800ce5d6ca947f01e57726b2b03336c": {
+      "stage": "contacted",
+      "name": "Hôtel French Coco",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T14:21:51.868Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d110dbd92e83b9e57088270b321523df": {
+      "stage": "contacted",
+      "name": "Au Citron Vert Hébergements",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:07.247Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "de4fab14e0ce41d12e66116eacb1733c": {
+      "stage": "contacted",
+      "name": "Hôtel Le Manguier",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:07.632Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "49f4f276e5af5ed3677c7962d3a8fefc": {
+      "stage": "contacted",
+      "name": "Locations Vue Turquoise (bungalows & villas Tartane)",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:08.021Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "ebdcea31cb4f0cb811c6d08cbbbde6ff": {
+      "stage": "contacted",
+      "name": "Village de la Pointe",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:08.452Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "64b2cd61d40db94ccdcf4537b2982df9": {
+      "stage": "contacted",
+      "name": "Cap Macabou Hotel-Restaurant",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:09.022Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "3a1f3e868bf62708801944d219e4fc7a": {
+      "stage": "contacted",
+      "name": "Les Plages de Macabou (Vacances Authentiques)",
+      "island": "MQ",
+      "contactedAt": "2026-06-30T20:01:10.582Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "f5d0f041e4a78e0d94496f9c7ea2179f": {
+      "stage": "contacted",
+      "name": "Club Nautique du Vauclin",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:03.287Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c14ca19947f562213b3c05db3f0ef633": {
+      "stage": "contacted",
+      "name": "Martinique Kiteschool",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:03.597Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "651d24db148c0b806dafd76d677c4205": {
+      "stage": "contacted",
+      "name": "Dénébola - Les Plaisirs Nautiques",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:04.041Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "7d23eaac3c2bcedb59ccf5b512f331ac": {
+      "stage": "contacted",
+      "name": "La Voile - Marina du Robert",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:04.450Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "0881323f2fbfb74c2f06b72a3ad6d517": {
+      "stage": "contacted",
+      "name": "Le Mouillage",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:04.783Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "cc56f85b65d0ba6eedfc329ef9ffd7bd": {
+      "stage": "contacted",
+      "name": "L'Escale du Robert",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T04:00:05.114Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "1dc334ec31a26290dd3ed4a5889fb11b": {
+      "stage": "contacted",
+      "name": "La Yole Bleue",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T09:52:22.862Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "ef83c1620f4dceb6c69ed85d642e8392": {
+      "stage": "contacted",
+      "name": "Le Paradis d'Adam et Eve",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T09:52:22.976Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "37bb5715fcd1fb3ca6a25aea04b0d8f7": {
+      "stage": "contacted",
+      "name": "O'TAN'TIK EVASION",
+      "island": "MQ",
+      "contactedAt": "2026-07-01T09:52:23.084Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "f519642456364ef5067a4c79f391a221": {
+      "stage": "contacted",
+      "name": "Canella Beach Hôtel",
+      "island": "GP",
+      "contactedAt": "2026-07-01T09:52:23.687Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c401503422ddc683e4a1be3f39cff534": {
+      "stage": "contacted",
+      "name": "Hôtel Fleur d'Épée",
+      "island": "GP",
+      "contactedAt": "2026-07-01T09:52:24.093Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a98cea49e51c7b567547e907920369ab": {
+      "stage": "contacted",
+      "name": "Centre Nautique Bleu Outremer",
+      "island": "GP",
+      "contactedAt": "2026-07-01T09:52:24.210Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "e9bb88e4ef67c0782685aabe4e6ce94d": {
+      "stage": "contacted",
+      "name": "Villa La Playa",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:50.744Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "9a0ca4f62c025df8a20605eaff1b5615": {
+      "stage": "contacted",
+      "name": "Gîte Ty Koko",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:51.417Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c3c1e6a65476a99990dfafd58e2004f3": {
+      "stage": "contacted",
+      "name": "Iguane Café",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:51.692Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "32b950cae1f71f7ca11b0581a7d11790": {
+      "stage": "contacted",
+      "name": "Noa Plongée",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:51.968Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "68f37f793c2c7fa74d320fd5b8a038e8": {
+      "stage": "contacted",
+      "name": "Restaurant Bar Le Kontiki",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:52.246Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "385281715704e1d2de81f9e265dda40f": {
+      "stage": "contacted",
+      "name": "Gîtes Kazasand",
+      "island": "GP",
+      "contactedAt": "2026-07-01T14:41:52.531Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "55fe1a626932ab8113cf029521017432": {
+      "stage": "contacted",
+      "name": "Les KAZ de Sainte-Anne (Ecolodges & Gîtes)",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:19.241Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "2b4950b5124eca7740f34caa220c14b2": {
+      "stage": "contacted",
+      "name": "Oasis Grande Anse",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:19.562Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "805dda28390871badeb4177570b176ba": {
+      "stage": "contacted",
+      "name": "Au Jardin des Colibris",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:20.019Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "6d2af35e323e35abdc71e4b0da5bdea4": {
+      "stage": "contacted",
+      "name": "Koté Lagon",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:20.375Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "bd2b1991669ae18fdf3a48ff7b91e574": {
+      "stage": "contacted",
+      "name": "Tropicalsub Diving",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:20.734Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "35d828094d5a78673922beff6fddca51": {
+      "stage": "contacted",
+      "name": "Calypso Plongée",
+      "island": "GP",
+      "contactedAt": "2026-07-01T19:59:21.057Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "2751322338abcfaf38e559cb9ec4ab26": {
+      "stage": "contacted",
+      "name": "CIP Guadeloupe (Centre International de Plongée)",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:10.927Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "ef556a3b23faa88334496f23d1eb833b": {
+      "stage": "contacted",
+      "name": "Les Heures Saines",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:11.574Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "611af0b761cddea656210b7921add07a": {
+      "stage": "contacted",
+      "name": "Le Rocher de Malendure",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:11.950Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "86df388ea2ab4bba586722f1d1642d42": {
+      "stage": "contacted",
+      "name": "Gîtes Couleur Caraïbes",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:12.256Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "80cb1526d83a5622af73a9cd0abab244": {
+      "stage": "contacted",
+      "name": "Les Lodges de Malendure",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:14.281Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "36089b2535413818fa6db4256139cd86": {
+      "stage": "contacted",
+      "name": "Gîte Mayo & Hylode's Song",
+      "island": "GP",
+      "contactedAt": "2026-07-02T03:44:14.641Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a7768e43c04cd8124105fbe7cb21f82d": {
+      "stage": "discovered",
+      "name": "Bik Karaïb",
+      "island": "GP",
+      "contactedAt": null,
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "à contacter (prospection auto)"
+    },
+    "2e99c6daa2ecbdf586da0d0985a56eaf": {
+      "stage": "contacted",
+      "name": "Karukera Surf Club",
+      "island": "GP",
+      "contactedAt": "2026-07-02T08:59:17.583Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "102e4c17d947010ffd80e5dcb5fe6ce4": {
+      "stage": "contacted",
+      "name": "Résidence Tropicale",
+      "island": "GP",
+      "contactedAt": "2026-07-02T08:59:18.078Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "92c49fe52ce8b951f25d7dff14da8870": {
+      "stage": "contacted",
+      "name": "Kayali Studios & Spa",
+      "island": "GP",
+      "contactedAt": "2026-07-02T08:59:18.408Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "354005124759b38845963df39d08e538": {
+      "stage": "contacted",
+      "name": "SeacretDive",
+      "island": "GP",
+      "contactedAt": "2026-07-02T08:59:18.883Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a6ed3c0dfd7c16ef602a70d0768473ec": {
+      "stage": "contacted",
+      "name": "Eden Plongée",
+      "island": "GP",
+      "contactedAt": "2026-07-02T08:59:19.199Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c72b496aac834ea07927e98abe45affe": {
+      "stage": "contacted",
+      "name": "Le Poisson d'Or",
+      "island": "GP",
+      "contactedAt": "2026-07-02T14:04:08.127Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "51d8c090f740f25ca9949641acc40eed": {
+      "stage": "contacted",
+      "name": "Hôtel Kanaoa",
+      "island": "GP",
+      "contactedAt": "2026-07-02T14:04:08.382Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "51e2ce6a1ac12be39eafab45a1e9dd8a": {
+      "stage": "contacted",
+      "name": "Les Petits Saints",
+      "island": "GP",
+      "contactedAt": "2026-07-02T14:04:08.623Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "95a693365eee699fa2e19dc1d5a2a3cc": {
+      "stage": "contacted",
+      "name": "LoBleu Hôtel",
+      "island": "GP",
+      "contactedAt": "2026-07-02T14:04:08.900Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "3182037431b0989e37489f9da99a9120": {
+      "stage": "contacted",
+      "name": "La Dive Bouteille",
+      "island": "GP",
+      "contactedAt": "2026-07-02T14:04:09.493Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "2720dd2d6b07a5e54b43e8590df4445f": {
+      "stage": "contacted",
+      "name": "Pisquettes Club de Plongée des Saintes",
+      "island": "GP",
+      "contactedAt": "2026-07-02T19:27:48.009Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "fed6ffa0ed8036ce09b47b690230caa6": {
+      "stage": "contacted",
+      "name": "Café de la Marine",
+      "island": "GP",
+      "contactedAt": "2026-07-02T19:27:48.312Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "4aae3c9bea2f084ea90ef035be62caae": {
+      "stage": "contacted",
+      "name": "Le Relais du Moulin - Hôtel de Charme & Spa",
+      "island": "GP",
+      "contactedAt": "2026-07-02T19:27:48.909Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c58a1c3635d80c60b0fd0b83f45672e9": {
+      "stage": "contacted",
+      "name": "Résidence Les Eaux Bleues (Gîtes Sainte-Anne)",
+      "island": "GP",
+      "contactedAt": "2026-07-02T19:27:49.206Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "efc01d3ff7d31ede252d1e154671d1fe": {
+      "stage": "contacted",
+      "name": "Les Zitadines",
+      "island": "GP",
+      "contactedAt": "2026-07-02T19:27:49.515Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "78c049e8f1967ea8fd7ce9bcc6168207": {
+      "stage": "contacted",
+      "name": "Gîtes Mosaïques",
+      "island": "GP",
+      "contactedAt": "2026-07-03T03:04:30.213Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "3de1f1d453a40c5f984d30b4f1cf0c43": {
+      "stage": "contacted",
+      "name": "Pipirite Chantant",
+      "island": "GP",
+      "contactedAt": "2026-07-03T03:04:30.467Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "22677d4e42a07b6c48a2f6aba53e12a9": {
+      "stage": "contacted",
+      "name": "Habitation Saint Charles - Hôtel & Spa 4*",
+      "island": "GP",
+      "contactedAt": "2026-07-03T03:04:31.093Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d6a8cde9e9676949f1f6a73530c40dd9": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:23.180Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "74c0435a981646a04a67558d6708ca2e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:23.563Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "8a378432a79cb4cb24f32f619c06a68b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:23.902Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "b63012bf905ee25a3b0232f8d08d4a16": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:24.199Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "9ca20c2813628f3ccac6786d7fb6db3b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:24.633Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "73342bf076f90109082d69b63f3857de": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:25.024Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a7c93bdbfc989b3a54ce025b76c7a7f6": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:25.572Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "0a0a133d6db24edc058483938381247c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:26.115Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "55c88d2d037fe4868eac95f5ca4d2942": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:26.616Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "07398e02ff8915d458a2428ba8112e9c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:27.030Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "39b0108d37b9016ff902812efb32cd63": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:27.404Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d72d3cb2994533530a6cbc1f1c3ff5fe": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:27.747Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "6383e0f3a0d151099a29a031e37070a3": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:28.239Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "605512d7f836ca4a4e3ac30e2919f620": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:28.886Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d7b17294fb769f0e1fb0ba535bc8be0f": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:29.519Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "46e5c9c394955d8c414d223ed0ef53a4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:29.875Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c8d3b8c9ab0a5dba15f844972fe6b7e4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:30.416Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "a943f45360ab607d9b31fe96bd576b85": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:30.881Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "4bf13269b6330973750be5c61a28f29b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:32.177Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c625bc797e5cb1f123ca998801f24f19": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:32.514Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "fce0393d17236003d26b6e21d9ffe941": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:32.821Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "faa51fedc67bc680e96f447e5c06511d": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:33.136Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8aeb77227b927667239a5964ab5c00ed": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:33.450Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "87043c0443dea31ab6243266b165d352": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:33.792Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "8577d67b4d85b15bf83926a946c8d232": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:34.346Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "3374484be57cb66185c8eb6f37e7405e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T08:43:34.685Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d853e136b07f284fc20c2ff754160bdf": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.066Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "1d3f211fbdb4b81ee15fde4f339dbe60": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.495Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "b07b770f37c2dc6ecaac05691c94e29b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:29.837Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "f4dd22277b67d72fe0d7ae8ae79ce89b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:30.254Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "24d34c9fce3a30ef38fad7a033ebabc4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:30.706Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "bbdbad686094966d6ad4662b4a97452a": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:31.687Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "5ec5b586f022e87838fadb2802673807": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:32.116Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "4c837f6be35bfb8daa8cca59dd740158": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:32.448Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "32185bf2610191c03fcac3d3216a2749": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:34.452Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "c62d813b2266edc25e5d2f8e95dee3ac": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:34.931Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "4e342426455a8382a0dab2108c8b00fb": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:35.376Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "d7029fceb1e9be0d071db246470a7a90": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:35.817Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "2338d4c2df8adfaf63840dccf9759f6c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:36.128Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "c3053fc4fadca450a129fb3cb65bd51e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:36.542Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "3ccc36ec6db2fa1bf1cde9991dfff61c": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:41.569Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "aff0aa46a9ef4e586e10cd45b74cc4f0": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.022Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "b8a34ea764c4c40f5e48aa9a677c060b": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.533Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "f6e6f9c63e452e1196b6a063d9810690": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:42.954Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "5835247283f6e4f30c2e9424a8922bb4": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:43.486Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "c4b78b5421cead5d672591ab4d545e8e": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:43.845Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "ce94c3712f7f4d16201fa7838e9adbcf": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:44.403Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "relance c4 (auto)"
+    },
+    "ed2c1a86dfb93586bed900f77528a615": {
+      "stage": "contacted",
+      "name": null,
+      "island": null,
+      "contactedAt": "2026-07-28T14:09:44.816Z",
+      "isLead": false,
+      "isPaid": false,
+      "nextAction": "sans réponse 14j → requalifier / pause"
+    },
+    "8eed02370a530f21c11bd53b5cd9b14b": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "5c95ee32a5e22aa29948066c273242f7": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    },
+    "97c7c018dd71f2b08d294859533f5aa2": {
+      "stage": "lead",
+      "name": null,
+      "island": null,
+      "contactedAt": null,
+      "isLead": true,
+      "isPaid": false,
+      "nextAction": "pousser la conversion (drip b13 → lien de paiement)"
+    }
+  }
+}

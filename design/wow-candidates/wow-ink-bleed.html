@@ -1,0 +1,294 @@
+<!doctype html>
+<!-- WOW candidate — INFILTRATION / BUVARD (ink bleed).
+     Un banc de sargasses golden-brown arrive vite, touche la plage et se "dissout" comme de
+     l'encre sur buvard : des digitations / tendrils bruns rampent et S'INFILTRENT dans le sable
+     en s'elargissant, le halftone se revele, puis fade doux. Boucle d'arrivees.
+     Style de marque : comic / BD golden-hour, contours encre #0d0b14, aplats dores, halftone, ecume.
+     Contraintes : viewBox 0 0 800 600, < ~40 noeuds animes, 1 SEUL rAF, transform/opacity only,
+     reduced-motion = pose finale figee (depot etale), AUCUN innerHTML (createElementNS + setAttribute). -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOW — Infiltration / Buvard (ink bleed)</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:390px;height:600px;margin:0 auto;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+  .lbl{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:99;
+    font:700 11px/1.4 system-ui,sans-serif;letter-spacing:.02em;
+    background:rgba(13,11,20,.62);padding:6px 12px;border-radius:20px;
+    border:1px solid rgba(255,233,168,.25);white-space:nowrap}
+  .lbl .k{color:#FFE9A8}
+  .hint{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:99;
+    font:600 10px/1 system-ui,sans-serif;color:rgba(255,255,255,.4)}
+  /* fond mer coucher de soleil violet->orange (deja en place dans l'app) */
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(120% 80% at 82% 2%, rgba(255,214,140,.62), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 110% at 4% 118%, rgba(42,21,80,.72), rgba(58,28,90,.28) 42%, transparent 62%),
+    linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 16%,#8a4a8e 38%,#6a2f9e 58%,#3e2470 82%,#2e1a5e 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body>
+<div class="lbl"><span class="k">Infiltration</span><span id="lblTxt"> · le banc se dissout dans le sable</span></div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="map" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="land" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset=".3" stop-color="#41BE7B"/>
+        <stop offset=".62" stop-color="#2BAE66"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <!-- bande de sable (buvard) : dore pale -> ocre, c'est la que l'encre s'infiltre -->
+      <linearGradient id="sandG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F6E2B0"/><stop offset="1" stop-color="#E9C879"/>
+      </linearGradient>
+      <radialGradient id="sargG" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".5" stop-color="#B08A2A"/>
+        <stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <!-- encre infiltree : brun profond au coeur, golden-brown en bord -->
+      <radialGradient id="bleedG" cx="50%" cy="42%" r="62%">
+        <stop offset="0" stop-color="#5d5a1e"/><stop offset=".45" stop-color="#8a6f24"/>
+        <stop offset="1" stop-color="#B08A2A"/>
+      </radialGradient>
+      <pattern id="halftone" width="6" height="6" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="1.5" r="1.15" fill="#2c2a12" opacity=".5"/></pattern>
+      <!-- le halftone ne se revele QUE dans la zone infiltree -->
+      <clipPath id="bleedClip"><path id="bleedClipPath" d="M400 360"/></clipPath>
+    </defs>
+
+    <!-- ile jade (cote) -->
+    <g>
+      <path d="M120 360 C190 300 300 300 400 318 C520 340 640 320 700 372 C720 392 720 600 720 600 L100 600 C100 600 96 392 120 360 Z"
+            fill="#062033" opacity=".42" transform="translate(7 11)"/>
+      <path d="M120 360 C190 300 300 300 400 318 C520 340 640 320 700 372 C720 392 720 600 720 600 L100 600 C100 600 96 392 100 360 Z"
+            fill="url(#land)"/>
+      <ellipse cx="240" cy="470" rx="40" ry="22" fill="#2c5a26" opacity=".4"/>
+      <ellipse cx="560" cy="500" rx="46" ry="24" fill="#2c5a26" opacity=".38"/>
+    </g>
+
+    <!-- lisere de sable (le "buvard") + son contour encre -->
+    <g>
+      <path d="M120 360 C190 300 300 300 400 318 C520 340 640 320 700 372
+               C660 392 540 372 400 360 C260 348 170 372 120 360 Z" fill="url(#sandG)"/>
+      <path d="M120 360 C190 300 300 300 400 318 C520 340 640 320 700 372"
+            fill="none" stroke="#0d0b14" stroke-width="3.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- (1) tache infiltree dans le sable — sous tout le reste, clippee par la zone qui grandit -->
+    <g id="bleedGroup" clip-path="url(#bleedClip)">
+      <rect x="120" y="300" width="600" height="120" fill="url(#bleedG)"/>
+      <rect id="bleedTone" x="120" y="300" width="600" height="120" fill="url(#halftone)" opacity="0"/>
+    </g>
+
+    <!-- (2) tendrils / digitations qui rampent dans le sable (construits en JS) -->
+    <g id="tendrilLayer"></g>
+    <!-- (3) ecume comic au point d'impact -->
+    <g id="foamLayer"></g>
+    <!-- (4) le banc qui derive puis s'efface en se dissolvant -->
+    <g id="bankLayer"></g>
+    <!-- (5) pin rouge "avoid" -->
+    <g id="pinLayer"></g>
+  </svg>
+</div>
+<div class="hint">clic = pause / play</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+function rng(seed){let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;}
+
+// blob seede lisse (generateur de splat de la marque)
+function splat(cx,cy,r,seed,N){N=N||9;const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*6.2832,rr=r*(0.6+rand()*0.75);
+    p.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];
+    d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";}
+// splat aplati (ellipse-ish) pour coller a une bande de sable
+function flatSplat(cx,cy,r,seed,N,ky){const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*6.2832,rr=r*(0.62+rand()*0.7);
+    p.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr*ky]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];
+    d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";}
+
+// ── Point d'echouage sur la cote ──
+const IMPACT={x:400,y:354};
+
+// ── BANC comic avant impact : mat dore ~r22, contour encre, clumps, reflet, halftone ──
+function makeBank(scale,seed){
+  const g=el("g",{}); const R=22*scale, sil=splat(0,0,R,seed,11);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".30",transform:"translate(2 3)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":1.8,"stroke-linejoin":"round"}));
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8,oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splat(ox,oy,R*0.34,seed*9+i*7,7),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".28"}));
+  g.appendChild(el("path",{d:splat(-R*0.2,-R*0.26,R*0.5,seed+3,7),fill:"#FFE9A8",opacity:".48"}));
+  return g;
+}
+
+// ── ECUME comic au contact (blob blanc + traits radiants + dots) ──
+function makeFoam(){
+  const g=el("g",{opacity:"0",transform:`translate(${IMPACT.x} ${IMPACT.y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:0,rx:30,ry:12,fill:"#eafcff",opacity:".78"}));
+  for(let i=0;i<8;i++){const a=(i/8)*6.28,x=Math.cos(a)*26,y=Math.sin(a)*10;
+    g.appendChild(el("line",{x1:(x*.5).toFixed(1),y1:(y*.5).toFixed(1),x2:x.toFixed(1),y2:y.toFixed(1),
+      stroke:"#fff","stroke-width":2.4,"stroke-linecap":"round",opacity:".85"}));}
+  for(let i=0;i<6;i++){const a=(i/6)*6.28+0.4;
+    g.appendChild(el("circle",{cx:(Math.cos(a)*34).toFixed(1),cy:(Math.sin(a)*13).toFixed(1),r:2.2,fill:"#fff",opacity:".82"}));}
+  return g;
+}
+
+// ── PIN rouge "avoid" ──
+function pin(x,y){
+  const g=el("g",{transform:`translate(${x} ${y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:5,ry:2,fill:"#062033",opacity:".4"}));
+  g.appendChild(el("path",{d:"M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z",
+    fill:"#E8472A",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));
+  g.appendChild(el("circle",{cx:0,cy:-14.4,r:3,fill:"#fff",stroke:INK,"stroke-width":.7}));
+  return g;
+}
+
+// ── TENDRILS / digitations : chemins-buvard qui partent du point d'impact vers le sable.
+//    Chaque tendril = une courbe organique. On anime stroke-dashoffset (rampe) + scale du blob bout.
+//    Construits 1x ; la longueur "revelee" est pilotee par dashoffset dans le rAF. ──
+const T_N=7;                 // 7 digitations (cheap)
+const tendrils=[];
+const tLayer=document.getElementById("tendrilLayer");
+(function buildTendrils(){
+  const rand=rng(91);
+  for(let i=0;i<T_N;i++){
+    // eventail vers le bas / les cotes (l'encre s'infiltre vers l'interieur du sable)
+    const spread=(i/(T_N-1)-0.5);            // -0.5 .. 0.5
+    const ang=Math.PI*0.5 + spread*2.0;      // ~vers le bas, etale
+    const len=58+rand()*46;                  // 58..104
+    const x0=IMPACT.x, y0=IMPACT.y;
+    const wob=(rand()-0.5)*60;
+    const cx=x0+Math.cos(ang)*len*0.55+wob;
+    const cy=y0+Math.sin(ang)*len*0.55*0.8;
+    const ex=x0+Math.cos(ang)*len+(rand()-0.5)*26;
+    const ey=y0+Math.sin(ang)*len*0.7;       // aplati (le sable est une bande)
+    const d=`M${x0} ${y0} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+    const path=el("path",{d,fill:"none",stroke:"url(#bleedG)","stroke-width":(7-i%3*1.4).toFixed(1),
+      "stroke-linecap":"round",opacity:"0"});
+    const L=Math.hypot(ex-x0,ey-y0)+Math.hypot(cx-x0,cy-y0)*0.25;
+    path.setAttribute("stroke-dasharray",L.toFixed(1));
+    tLayer.appendChild(path);
+    const blob=el("path",{d:splat(ex,ey,9,i*23+5,8),fill:"url(#bleedG)",opacity:"0"});
+    tLayer.appendChild(blob);
+    tendrils.push({path,blob,L,ex,ey,delay:i*0.045});
+  }
+})();
+
+// ── la ZONE infiltree (clip) grandit du point d'impact : un blob aplati qui s'etale dans le sable ──
+const bleedClipPath=document.getElementById("bleedClipPath");
+const bleedTone=document.getElementById("bleedTone");
+function setBleed(p){           // p = 0..1 = avancee de l'infiltration
+  bleedClipPath.setAttribute("d", flatSplat(IMPACT.x, IMPACT.y+8+p*16, 8+p*70, 41, 12, 0.55));
+}
+
+// ── instances ──
+const bankLayer=document.getElementById("bankLayer");
+const foamLayer=document.getElementById("foamLayer");
+document.getElementById("pinLayer").appendChild(pin(IMPACT.x,IMPACT.y));
+const bank=makeBank(1.05, 17); bankLayer.appendChild(bank);
+const foam=makeFoam(); foamLayer.appendChild(foam);
+const bleedGroup=document.getElementById("bleedGroup");
+const lblTxt=document.getElementById("lblTxt");
+// origine du banc : au large (haut), arrive vite vers l'impact
+const ORIGIN={x:IMPACT.x+96, y:IMPACT.y-250};
+
+// ── MOTEUR : 1 seul rAF. Cycle ~2.4s : arrivee -> impact -> infiltration buvard -> fade -> reset ──
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const PERIOD=2.4;
+let raf=0, paused=false, t0=0;
+
+function render(cycle){       // cycle = 0..1
+  // ----- BANC : derive du large a l'impact (0..0.30), puis se dissout (0.30..0.52) -----
+  const arr=Math.min(1, cycle/0.30), drift=ease(arr);
+  const bx=ORIGIN.x+(IMPACT.x-ORIGIN.x)*drift;
+  const by=ORIGIN.y+(IMPACT.y-ORIGIN.y)*drift;
+  const bob=REDUCED?0:Math.sin(cycle*PERIOD*6+1.2)*4*(1-drift);
+  const diss=cycle<0.30?0:Math.min(1,(cycle-0.30)/0.22);
+  const sx=(0.74+drift*0.34)*(1+diss*0.5);
+  const sy=(0.74+drift*0.34)*(1-diss*0.7);
+  const bankOp=cycle<0.30?0.95:(1-diss)*0.95;
+  bank.setAttribute("transform",
+    `translate(${bx.toFixed(1)} ${(by+bob).toFixed(1)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})`);
+  bank.setAttribute("opacity",bankOp.toFixed(2));
+
+  // ----- ECUME : flash court au contact (0.27..0.42) -----
+  let fo=0;
+  if(cycle>0.27&&cycle<0.42) fo=Math.sin((cycle-0.27)/0.15*Math.PI);
+  foam.setAttribute("opacity",fo.toFixed(2));
+
+  // ----- INFILTRATION (buvard) : 0.30 -> 0.80 -----
+  const infP=cycle<0.30?0:Math.min(1,(cycle-0.30)/0.50);   // 0..1
+  setBleed(ease(infP));
+
+  // ----- TENDRILS : rampent (dashoffset) avec delais echelonnes, bout qui grossit -----
+  for(const td of tendrils){
+    let p=cycle<0.30?0:(cycle-0.30-td.delay)/0.42;
+    p=Math.max(0,Math.min(1,p));
+    const e=ease(p);
+    td.path.setAttribute("stroke-dashoffset",(td.L*(1-e)).toFixed(1));
+    td.path.setAttribute("opacity", (p>0?0.92:0).toFixed(2));
+    const bp=Math.max(0,(p-0.55)/0.45);
+    td.blob.setAttribute("opacity",(bp*0.85).toFixed(2));
+    td.blob.setAttribute("transform",
+      `translate(${td.ex} ${td.ey}) scale(${(0.4+bp*0.9).toFixed(2)}) translate(${-td.ex} ${-td.ey})`);
+  }
+
+  // ----- FADE doux global du depot sur la fin (0.86 -> 1.0) puis reset -----
+  const fade=cycle<0.86?1:1-(cycle-0.86)/0.14;
+  tLayer.setAttribute("opacity",fade.toFixed(2));
+  bleedGroup.setAttribute("opacity",fade.toFixed(2));
+  bleedTone.setAttribute("opacity",(Math.min(1,infP*1.4)*0.5*fade).toFixed(2));
+}
+
+function frame(tms){
+  if(!t0)t0=tms;
+  const cycle=((tms-t0)/1000/PERIOD)%1;
+  render(cycle);
+  if(!REDUCED&&!paused)raf=requestAnimationFrame(frame);
+}
+
+// ── reduced-motion : POSE FINALE FIGEE = le depot etale, infiltre, visible (pas d'anim) ──
+function staticPose(){
+  bank.setAttribute("opacity","0");
+  foam.setAttribute("opacity","0");
+  setBleed(1);
+  for(const td of tendrils){
+    td.path.setAttribute("stroke-dashoffset","0");
+    td.path.setAttribute("opacity","0.92");
+    td.blob.setAttribute("opacity","0.85");
+    td.blob.setAttribute("transform",
+      `translate(${td.ex} ${td.ey}) scale(1.3) translate(${-td.ex} ${-td.ey})`);
+  }
+  tLayer.setAttribute("opacity","1");
+  bleedGroup.setAttribute("opacity","1");
+  bleedTone.setAttribute("opacity","0.5");
+}
+
+if(REDUCED){ staticPose(); }
+else { raf=requestAnimationFrame(frame); }
+
+// ── pause / play au clic (textContent uniquement, jamais innerHTML) ──
+if(!REDUCED){
+  document.body.addEventListener("click",()=>{
+    paused=!paused;
+    lblTxt.textContent = paused ? " · PAUSE" : " · le banc se dissout dans le sable";
+    if(!paused){ t0=0; raf=requestAnimationFrame(frame); }
+    else cancelAnimationFrame(raf);
+  });
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)cancelAnimationFrame(raf);
+  else if(!paused&&!REDUCED){ t0=0; raf=requestAnimationFrame(frame); }
+});
+</script>
+</body></html>

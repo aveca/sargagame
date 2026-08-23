@@ -1,0 +1,33 @@
+{
+  "_doc": "Crédits des photos Floride re-sourcées 2026-06-11 (remplacement des 5 photos indignes identifiées par l'audit visuel session 40). Source : Wikimedia Commons, licences PD/CC-BY-SA. Originaux pré-remplacement dans .realesrgan/orig-backup/ (suffixe .pre-resource-20260611 pour fl001/fl002 dont le backup pré-upscale existait déjà).",
+  "fl001": {
+    "file": "gplace-fl001.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Miami_Beach_-_Beach_scene.jpg",
+    "license": "CC BY-SA 4.0",
+    "author": "P. Hughes"
+  },
+  "fl002": {
+    "file": "gplace-fl002.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Lifeguard_stand,_Miami_Beach.jpg",
+    "license": "CC BY-SA 4.0",
+    "author": "Radomianin"
+  },
+  "fl004": {
+    "file": "gplace-fl004.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:PALM_BEACH_FLORIDA_AERIAL_2011.jpg",
+    "license": "CC BY-SA 3.0",
+    "author": "Michael Kagdis"
+  },
+  "fl007": {
+    "file": "gplace-fl007.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Gfp-florida-keys-key-largo-beach-and-trees.jpg",
+    "license": "Public domain",
+    "author": "Yinan Chen (goodfreephotos.com)"
+  },
+  "fl010": {
+    "file": "gplace-fl010.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Surfing_at_the_Cocoa_Beach_Pier_(Cocoa_Beach,_Florida)_002.jpg",
+    "license": "CC BY-SA 3.0",
+    "author": "Leonard J. DeFrancisci"
+  }
+}

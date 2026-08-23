@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-08-10T12:10:02.583Z",
+  "sites": {
+    "mq": {
+      "pageCount": 366,
+      "pagesSkippedNoindex": 22,
+      "totalImages": 54,
+      "issueCount": 0,
+      "byKind": {},
+      "issues": []
+    },
+    "gp": {
+      "pageCount": 405,
+      "pagesSkippedNoindex": 22,
+      "totalImages": 84,
+      "issueCount": 0,
+      "byKind": {},
+      "issues": []
+    }
+  }
+}

@@ -1,0 +1,370 @@
+# Redirections SEO — à la racine du site (public_html / www)
+# Redirection www vers non-www (évite contenu dupliqué)
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.(sargasses-martinique\.com|sargasses-guadeloupe\.com)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Forcer HTTPS (si le serveur le gère en amont, ces règles ne s'appliquent pas)
+<IfModule mod_rewrite.c>
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Apple Pay — fichier de vérification de domaine servi au chemin exact attendu par Apple.
+# Le fichier réel est dans api/ (toujours déployé, exclu du fallback SPA, jamais shadowé) ;
+# rewrite INTERNE vers /.well-known/... (override aussi un éventuel vieux fichier physique).
+<IfModule mod_rewrite.c>
+RewriteRule ^\.well-known/apple-developer-merchantid-domain-association$ /api/apple-pay-domain-association [L]
+</IfModule>
+
+# Redirections 301 — anciennes URLs vers la nouvelle structure (SEO : récupère le jus)
+<IfModule mod_rewrite.c>
+
+# =====================================================================
+# GUADELOUPE — Smart redirects : /plages-guadeloupe/{old} → /plages/{new}
+# Specific rules FIRST, catch-all LAST
+# =====================================================================
+
+# --- Malendure ---
+RewriteRule ^plages-guadeloupe/plage-de-malendure/?$ /plages/plage-de-malendure/ [R=301,L]
+RewriteRule ^plages-guadeloupe/malendure/?$ /plages/plage-de-malendure/ [R=301,L]
+RewriteRule ^plages/malendure-bouillante/?$ /plages/plage-de-malendure/ [R=301,L]
+
+# --- Grande Anse (Bouillante) ---
+RewriteRule ^plages-guadeloupe/plage-de-grande-anse/?$ /plages/plage-de-grande-anse/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse/?$ /plages/plage-de-grande-anse/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse-bouillante/?$ /plages/plage-de-grande-anse/ [R=301,L]
+RewriteRule ^plages/grande-anse/?$ /plages/plage-de-grande-anse/ [R=301,L]
+
+# --- Sainte-Anne ---
+RewriteRule ^plages-guadeloupe/plage-de-sainte-anne/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^plages-guadeloupe/sainte-anne/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-du-bourg-de-sainte-anne/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^plages/sainte-anne/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+
+# --- Pointe des Châteaux ---
+RewriteRule ^plages-guadeloupe/pointe-des-chateaux/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-des-grandes-salines/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages-guadeloupe/anse-a-la-gourde/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages/pointe-des-chateaux-saint-francois/?$ /plages/pointe-des-chateaux/ [R=301,L]
+
+# --- Le Gosier ---
+RewriteRule ^plages-guadeloupe/plage-du-gosier/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/le-gosier/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-de-petit-havre/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/petit-havre/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^plages/gosier-plage/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^plages/le-gosier-plage/?$ /plages/plage-du-gosier/ [R=301,L]
+
+# --- Plage Caravelle ---
+RewriteRule ^plages-guadeloupe/la-caravelle/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-de-la-caravelle/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages-guadeloupe/caravelle/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages/la-caravelle/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages/caravelle/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages/caravelle-sainte-anne/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+
+# --- Bas du Fort ---
+RewriteRule ^plages-guadeloupe/plage-de-bas-du-fort/?$ /plages/plage-de-bas-du-fort/ [R=301,L]
+RewriteRule ^plages-guadeloupe/bas-du-fort/?$ /plages/plage-de-bas-du-fort/ [R=301,L]
+RewriteRule ^plages/bas-du-fort-gosier/?$ /plages/plage-de-bas-du-fort/ [R=301,L]
+
+# --- Grande Anse (Deshaies) ---
+RewriteRule ^plages-guadeloupe/plage-de-grande-anse-deshaies/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse-deshaies/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-guadeloupe/deshaies/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages/grande-anse-deshaies-plage/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+
+# --- Plage Souffleur ---
+RewriteRule ^plages-guadeloupe/plage-du-souffleur/?$ /plages/plage-du-souffleur/ [R=301,L]
+RewriteRule ^plages-guadeloupe/souffleur/?$ /plages/plage-du-souffleur/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-du-souffleur-port-louis/?$ /plages/plage-du-souffleur/ [R=301,L]
+RewriteRule ^plages/souffleur/?$ /plages/plage-du-souffleur/ [R=301,L]
+RewriteRule ^plages/souffleur-port-louis/?$ /plages/plage-du-souffleur/ [R=301,L]
+
+# --- Anse de la Gourde ---
+RewriteRule ^plages-guadeloupe/vieux-fort/?$ /plages/anse-a-la-gourde/ [R=301,L]
+RewriteRule ^plages-guadeloupe/anse-de-la-gourde/?$ /plages/anse-a-la-gourde/ [R=301,L]
+RewriteRule ^plages/anse-de-la-gourde-saint-francois/?$ /plages/anse-a-la-gourde/ [R=301,L]
+
+# =====================================================================
+# GUADELOUPE — Communes → nearest new beach page
+# =====================================================================
+RewriteRule ^communes/deshaies/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+RewriteRule ^communes/bouillante/?$ /plages/plage-de-grande-anse/ [R=301,L]
+RewriteRule ^communes/sainte-anne/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^communes/saint-francois/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^communes/le-gosier/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^communes/gosier/?$ /plages/plage-du-gosier/ [R=301,L]
+RewriteRule ^communes/port-louis/?$ /plages/plage-du-souffleur/ [R=301,L]
+RewriteRule ^communes/petit-bourg/?$ / [R=301,L]
+RewriteRule ^communes/sainte-rose/?$ / [R=301,L]
+RewriteRule ^communes/baie-mahault/?$ / [R=301,L]
+# Catch-all communes
+RewriteRule ^communes/(.+)/?$ / [R=301,L]
+RewriteRule ^communes/?$ / [R=301,L]
+
+# =====================================================================
+# GUADELOUPE — Editorial pages redirects
+# =====================================================================
+RewriteRule ^carte-temps-reel/?$ /carte-sargasses/ [R=301,L]
+# /methode-carte/ EST une vraie page éditoriale générée (vite.config pages[],
+# « méthode et sources de la carte ») ET déclarée au sitemap. Le 301 legacy la
+# masquait (301 → /carte-sargasses/ constaté en prod le 2026-06-16) = page jamais
+# servie. Retiré : ne JAMAIS 301 un chemin servable (leçon /a-propos/ 2026-06-10).
+RewriteRule ^previsions-sargasses-guadeloupe/?$ /previsions/ [R=301,L]
+# /faq/ et /a-propos/ sont des VRAIES pages (build + public/) — les 301
+# legacy (f60141a, posés quand elles n'existaient pas) les masquaient : le
+# lien trust du paywall vers /a-propos/ redirigeait vers la home (découvert
+# 2026-06-10). Règle : ne JAMAIS 301 un chemin sans vérifier qu'il n'est
+# pas servi (health-check.cjs le surveille désormais).
+RewriteRule ^cgu/?$ /mentions-legales.html [R=301,L]
+RewriteRule ^mentions-legales/?$ /mentions-legales.html [R=301,L]
+RewriteRule ^politique-de-confidentialite/?$ /confidentialite.html [R=301,L]
+RewriteRule ^contact/?$ / [R=301,L]
+RewriteRule ^premium/?$ / [R=301,L]
+RewriteRule ^quand-sargasses-guadeloupe/?$ /saison-sargasses-guadeloupe/ [R=301,L]
+RewriteRule ^plages-deshaies-guadeloupe/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-saint-francois-guadeloupe/?$ /plages/plage-de-la-caravelle/ [R=301,L]
+RewriteRule ^plages-sans-sargasses-guadeloupe/?$ /plages-sans-sargasses/ [R=301,L]
+
+# --- GSC 404 fixes: beaches crawled but not in current list → nearest match ---
+RewriteRule ^plages/anse-a-la-fontaine/?$ /plages/anse-champagne/ [R=301,L]
+RewriteRule ^plages/paul-thomas/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-d-anse-champagne/?$ /plages/anse-champagne/ [R=301,L]
+RewriteRule ^plages/petite-anse-du-diamant/?$ /plages/anse-cafard/ [R=301,L]
+
+# =====================================================================
+# MARTINIQUE — Smart redirects : old /plage(s)/{old} → /plages/{new}
+# =====================================================================
+
+# --- Grande Anse d'Arlet ---
+RewriteRule ^plage/grande-anse-darlet/?$ /plages/grande-anse-d-arlet/ [R=301,L]
+RewriteRule ^plage/grande-anse/?$ /plages/grande-anse-d-arlet/ [R=301,L]
+RewriteRule ^plage/grande-anse-d-arlet/?$ /plages/grande-anse-d-arlet/ [R=301,L]
+RewriteRule ^plages-martinique/grande-anse/?$ /plages/grande-anse-d-arlet/ [R=301,L]
+RewriteRule ^plages-martinique/grande-anse-darlet/?$ /plages/grande-anse-d-arlet/ [R=301,L]
+
+# --- Anse Mitan ---
+RewriteRule ^plage/anse-mitan/?$ /plages/anse-mitan/ [R=301,L]
+RewriteRule ^plages-martinique/anse-mitan/?$ /plages/anse-mitan/ [R=301,L]
+
+# --- Les Salines ---
+RewriteRule ^plage/les-salines/?$ /plages/plage-des-salines/ [R=301,L]
+RewriteRule ^plage/salines/?$ /plages/plage-des-salines/ [R=301,L]
+RewriteRule ^plages-martinique/les-salines/?$ /plages/plage-des-salines/ [R=301,L]
+RewriteRule ^plages-martinique/salines/?$ /plages/plage-des-salines/ [R=301,L]
+
+# --- Anse Couleuvre ---
+RewriteRule ^plage/anse-couleuvre/?$ /plages/anse-couleuvre/ [R=301,L]
+RewriteRule ^plages-martinique/anse-couleuvre/?$ /plages/anse-couleuvre/ [R=301,L]
+
+# --- Diamant ---
+RewriteRule ^plage/diamant/?$ /plages/plage-du-diamant/ [R=301,L]
+RewriteRule ^plage/plage-du-diamant/?$ /plages/plage-du-diamant/ [R=301,L]
+RewriteRule ^plages-martinique/diamant/?$ /plages/plage-du-diamant/ [R=301,L]
+
+# --- Anse Noire ---
+RewriteRule ^plage/anse-noire/?$ /plages/anse-noire/ [R=301,L]
+RewriteRule ^plages-martinique/anse-noire/?$ /plages/anse-noire/ [R=301,L]
+
+# --- Anse Dufour ---
+RewriteRule ^plage/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
+RewriteRule ^plages-martinique/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
+
+# --- Cap Chevalier ---
+RewriteRule ^plage/cap-chevalier/?$ / [R=301,L]
+RewriteRule ^plages-martinique/cap-chevalier/?$ / [R=301,L]
+
+# --- Anse Tartane ---
+RewriteRule ^plage/anse-tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
+RewriteRule ^plages-martinique/anse-tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
+RewriteRule ^plages-martinique/tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
+
+# =====================================================================
+# MARTINIQUE — Editorial pages redirects
+# =====================================================================
+RewriteRule ^sante-et-science/?$ / [R=301,L]
+RewriteRule ^sargasses-outre-mer/?$ / [R=301,L]
+RewriteRule ^plages-sans-sargasses-martinique/?$ /plages-sans-sargasses/ [R=301,L]
+RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
+
+# =====================================================================
+
+# 2026-06-16 : 4 règles « ^plages/<slug>/ → /plages/<slug>/ » (auto-ajoutées par
+# seo-fix-404 le 2026-04-13) retirées. Ces slugs sont devenus de VRAIES plages GP
+# (anse-laborde, plage-des-amandiers, plage-de-sainte-claire, plage-de-la-desirade-sud :
+# servies 200 + au sitemap GP) → la règle les redirigeait vers elles-mêmes = no-op
+# au mieux, boucle 301 au pire. Aucune cible à « réparer » → supprimées.
+
+# Auto-added 2026-06-22 by seo-fix-404
+RewriteRule ^plages/anse-laborde/?$ /plages/anse-laborde/ [R=301,L]
+RewriteRule ^plages/plage-des-amandiers/?$ /plages/plage-des-amandiers/ [R=301,L]
+RewriteRule ^plages/plage-de-sainte-claire/?$ /plages/plage-de-sainte-claire/ [R=301,L]
+RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud/ [R=301,L]
+# CATCH-ALL — remaining old URLs that don't match specific rules → homepage
+# These MUST come AFTER all specific redirects above
+# =====================================================================
+
+# Anciennes pages /plage/ (singulier) sans correspondance → accueil
+RewriteRule ^plage/(.+)/?$ / [R=301,L]
+RewriteRule ^plage/?$ / [R=301,L]
+
+# /plages/ a désormais sa vraie page hub (générée par vite.config — "Toutes les
+# plages") : plus de redirect accueil. Le sitemap la déclare, Google la voyait
+# en "Duplicate, submitted URL not selected as canonical" à cause de l'ancien 301.
+RewriteRule ^plages/?$ /plages/index.html [L]
+
+# Anciennes pages plages-guadeloupe sans correspondance → accueil
+RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-guadeloupe/?$ / [R=301,L]
+
+# Anciennes pages plages-martinique sans correspondance → accueil
+RewriteRule ^plages-martinique/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-martinique/?$ / [R=301,L]
+
+# Ancien landing
+RewriteRule ^landing-v2\.html$ / [R=301,L]
+# weekend.html : ancienne LP de capture email, orpheline (aucun lien app/email),
+# self-canonical + au sitemap = page fine indexable. Consolidée vers l'accueil
+# (capture email désormais in-app). Retirée du sitemap (vite.config). 2026-06-16.
+RewriteRule ^weekend\.html$ / [R=301,L]
+# /articles/* : 2 bilans hebdomadaires avril 2026 — contenu daté, consolidé vers
+# /previsions/ (le flux hebdomadaire vivant). Retirés sitemap (vide index.json). 2026-06-16.
+RewriteRule ^articles/(.*)$ /previsions/ [R=301,L]
+# Pages legacy HTML (noindex ou canonical croisé) — consolidées. 2026-06-16.
+# onboarding.html : ancien onboarding abandonné (noindex), jamais lié depuis l'app.
+RewriteRule ^onboarding\.html$ / [R=301,L]
+# neptunes_fury.html : mini-jeu prototype (noindex), sans lien actif depuis l'app.
+RewriteRule ^neptunes_fury\.html$ / [R=301,L]
+# sarg_carte_satellite_app.html : ancienne carte satellite standalone (canonical → /carte-sargasses/).
+RewriteRule ^sarg_carte_satellite_app\.html$ /carte-sargasses/ [R=301,L]
+# arena-v2.html : prototype navigable « ARENA v2 » (jeu-arène RETIRÉE du produit),
+# orphelin (aucun lien app, hors sitemap) mais INDEXABLE (pas de noindex) et porteur
+# d'une copie d'abonnement B2C MORTE (4,99€/mois + annuel 39,99€ + checkout Stripe)
+# qui contredit le modèle pass one-time Mollie. Consolidé vers l'accueil. 2026-07-02.
+RewriteRule ^arena-v2\.html$ / [R=301,L]
+</IfModule>
+
+# =====================================================================
+# FILET DE SÉCURITÉ — page Fiabilité générée au build (reliability-page.cjs)
+# Slugs : /fiabilite/ (FR — MQ + miroir _gp GP), /reliability/ (EN régions),
+#         /fiabilidad/ (ES régions). Écrites dans dist/ à CHAQUE build, MAIS
+# generateReliabilityPages() tourne sous un try/catch qui n'avale l'erreur
+# qu'en console.warn (vite.config.js) : un throw du générateur = build vert
+# = déploiement SANS la page. Sans ce filet, le SPA catch-all ci-dessous sert
+# alors l'app shell (index.html) à la place — état CONSTATÉ en prod le
+# 2026-06-16 sur sargassumpuntacana.com/fiabilidad/ (HTTP 200 mais id="root").
+# Or /a-propos/ (paywall trust page) pointe 2× vers /fiabilite/ : sans filet,
+# ces liens tombent sur l'app, pas sur une page de confiance.
+#
+# !-f / !-d : la règle NE TIRE JAMAIS quand la page existe (le dossier généré
+# est servi tel quel) — elle ne masque donc jamais la vraie page. Quand elle
+# manque → /a-propos/, page de confiance committée dans public/ (donc toujours
+# déployée, jamais générée au build), vérifiée live HTTP 200 sur les 5 domaines
+# le 2026-06-16, et qui porte le même récit méthode/backtest.
+#
+# 302 (temporaire) et NON 301 : l'absence est TRANSITOIRE (glitch de build).
+# Un 301 serait caché par le navigateur ET désindexerait la vraie URL côté
+# Google en la consolidant vers /a-propos/ ; au retour de la page, les clients
+# resteraient coincés sur la redirection. Le 302 garde l'URL d'origine indexée
+# et force un re-check. (cf. règle projet : ne jamais 301 un chemin qui PEUT
+# être servi — leçon /a-propos/ masquée par un 301 legacy, 2026-06-10.)
+# =====================================================================
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(fiabilite|reliability|fiabilidad)/?$ /a-propos/ [R=302,L]
+</IfModule>
+
+# SPA fallback : redirige les routes virtuelles vers index.html
+# (nécessaire pour que /carte-sargasses/, /previsions/ etc. fonctionnent en accès direct)
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(?!api/|assets/|en/|beaches/|config/|plages/)(.*)$ /index.html [L]
+</IfModule>
+
+# Page 404 personnalisée
+ErrorDocument 404 /404.html
+
+# Cache-Control pour les assets statiques (SEO : vitesse de chargement)
+<IfModule mod_headers.c>
+# Hashed assets (JS/CSS fingerprintes) — immutable 1 an.
+# IMPORTANT : exclure sw.js du lookahead, SINON le service worker est cache 1 an et les
+# users restent coinces sur l'ancien bundle (= bug "clic plages" juin 2026, cause racine).
+<FilesMatch "^(?!sw\.js$).+\.(js|css)$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+# Polices content-hashées (anton-*.woff2, bricolagegrotesque-*.woff2) — immutable 1 an.
+# Exclues de la règle js|css ci-dessus → elles tombaient sur le défaut mod_expires (1h via
+# le host), donc re-validées à chaque visite des 136 landing SEO (où le SW n'est pas installé).
+<FilesMatch "\.woff2?$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+# sw.js + version.json JAMAIS caches. Place EN DERNIER pour ecraser toute regle ci-dessus
+# (Header set = le dernier qui matche gagne). Double securite avec le lookahead ci-dessus.
+<FilesMatch "(sw\.js|version\.json)$">
+Header set Cache-Control "no-cache, no-store, must-revalidate"
+Header set Pragma "no-cache"
+Header set Expires "0"
+</FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType text/html "access plus 0 seconds"
+ExpiresByType text/css "access plus 1 year"
+ExpiresByType application/javascript "access plus 1 year"
+ExpiresByType image/jpeg "access plus 1 month"
+ExpiresByType image/png "access plus 1 month"
+ExpiresByType image/webp "access plus 1 month"
+ExpiresByType image/svg+xml "access plus 1 month"
+ExpiresByType application/json "access plus 1 hour"
+ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# Compression gzip (SEO : vitesse)
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+# Compression Brotli (~15-20% de mieux que gzip sur JS/CSS/HTML/JSON). DEFLATE reste le
+# fallback ci-dessus ; Vary: Accept-Encoding déjà posé (section headers). NB : LiteSpeed/
+# Cloudflare gèrent souvent brotli en amont (panel/edge) → cette directive peut être un
+# no-op. Vérifier en prod : curl -H 'Accept-Encoding: br' -I https://… | grep -i content-encoding
+<IfModule mod_brotli.c>
+AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Trailing slash cohérent : redirige les URLs sans slash vers avec slash (évite contenu dupliqué)
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !/$
+RewriteCond %{REQUEST_URI} !\.
+RewriteRule ^(carte-sargasses|previsions|alertes|en|saison-sargasses-martinique|saison-sargasses-guadeloupe|plages-sans-sargasses|danger-sargasses-h2s|comprendre-sargasses|bilan-sargasses-2025|detection-satellite-sargasses|previsions-methode|nettoyer-sargasses|sargasses-record-2026)$ /$1/ [R=301,L]
+</IfModule>
+
+# Security headers (trust signals SEO + sécurité)
+<IfModule mod_headers.c>
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-Content-Type-Options "nosniff"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+# HSTS — 2 ans, include subdomains, preload-ready. Actif uniquement si HTTPS détecté
+# (évite de bloquer les requêtes HTTP en staging/dev). À activer en prod une fois HTTPS-only.
+<IfModule mod_rewrite.c>
+RewriteCond %{HTTPS} on
+Header set Strict-Transport-Security "max-age=63072000; includeSubDomains"
+</IfModule>
+# Permissions-Policy : ferme l'API aux features non utilisées (caméra, micro, géoloc, USB, etc.)
+# geolocation=() nécessaire car on l'utilise (carte → "Ma position"), on autorise SELF uniquement.
+Header set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(self https://www.mollie.com), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+# CSP — défense anti-XSS. Mollie + Apps Script + Cloudflare autorisés. unsafe-inline nécessaire
+# pour les styles inline React (vite injecte des <style> inline). unsafe-eval NON autorisé.
+# Note: si la carte Leaflet/Mapbox ou un script tiers casse, ajuster 'script-src' ici.
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://script.google.com https://script.googleusercontent.com https://www.clarity.ms https://*.supabase.co wss:; frame-src 'self' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.mollie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com"
+Header append Vary Accept-Encoding
+</IfModule>
+
+AddDefaultCharset UTF-8

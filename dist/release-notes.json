@@ -1,0 +1,332 @@
+{
+  "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
+  "current": "v219",
+  "releases": [
+    {
+      "v": "v219",
+      "date": "2026-08-11",
+      "title": {
+        "fr": "Paywall restauré + paiements réparés",
+        "en": "Paywall restored + payments fixed",
+        "es": "Paywall restaurado + pagos reparados"
+      },
+      "items": [
+        {
+          "emoji": "💳",
+          "fr": "Bouton Pass 30j réparé — déclenche bien le paiement one-time (create_payment) au lieu de l'abonnement.",
+          "en": "Pass 30-day button fixed — now triggers one-time payment (create_payment) instead of subscription.",
+          "es": "Botón Pass 30 días reparado — activa pago único (create_payment) en lugar de suscripción."
+        },
+        {
+          "emoji": "🖥️",
+          "fr": "Le paywall s'affiche en modal sombre (overlay) au lieu d'être en ligne dans la page.",
+          "en": "Paywall now shows as a dark modal overlay instead of rendering inline on the page.",
+          "es": "El paywall ahora se muestra como modal oscuro superpuesto en vez de en línea en la página."
+        }
+      ]
+    },
+    {
+      "v": "v218",
+      "date": "2026-07-29",
+      "title": {
+        "fr": "Paiements corrigés + SW fix",
+        "en": "Payments fixed + SW fix",
+        "es": "Pagos arreglados + SW fix"
+      },
+      "items": [
+        {
+          "emoji": "💳",
+          "fr": "Paiements Google Pay / Apple Pay / Carte restaurés — Mollie SDK remplacé par client cURL natif.",
+          "en": "Google Pay / Apple Pay / Card payments restored — Mollie SDK replaced with native cURL client.",
+          "es": "Pagos Google Pay / Apple Pay / Tarjeta restaurados — SDK Mollie reemplazado por cliente cURL nativo."
+        },
+        {
+          "emoji": "🛠️",
+          "fr": "Service Worker ne bloque plus les POST /api (paiements) — bypass natif pour méthodes non-GET.",
+          "en": "Service Worker no longer blocks POST /api (payments) — native bypass for non-GET methods.",
+          "es": "Service Worker ya no bloquea POST /api (pagos) — bypass nativo para métodos no-GET."
+        }
+      ]
+    },
+    {
+      "v": "v217",
+      "date": "2026-06-22",
+      "title": {
+        "fr": "Nouveau logo",
+        "en": "New logo",
+        "es": "Nuevo logo"
+      },
+      "items": [
+        {
+          "emoji": "🩵",
+          "fr": "Un petit cœur golden-hour habille désormais l'onglet de ton navigateur.",
+          "en": "A little golden-hour heart now marks the app in your browser tab.",
+          "es": "Un corazón golden-hour identifica ahora la app en la pestaña del navegador."
+        }
+      ]
+    },
+    {
+      "v": "v216",
+      "date": "2026-06-21",
+      "title": {
+        "fr": "Plus rapide & plus fluide",
+        "en": "Faster & smoother",
+        "es": "Más rápida y fluida"
+      },
+      "items": [
+        {
+          "emoji": "🚀",
+          "fr": "L'app charge plus vite et la carte se déplace sans à-coups.",
+          "en": "The app loads faster and the map pans without stutter.",
+          "es": "La app carga más rápido y el mapa se desplaza sin tirones."
+        },
+        {
+          "emoji": "🎯",
+          "fr": "Les plages signalées par la communauté s'affichent à leur vraie couleur dès l'ouverture.",
+          "en": "Beaches flagged by the community show their real status right from the start.",
+          "es": "Las playas señaladas por la comunidad muestran su estado real desde el inicio."
+        }
+      ]
+    },
+    {
+      "v": "v215",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Nouveau look",
+        "en": "New look",
+        "es": "Nuevo look"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "L'app teste son nouvel habillage (cartes/comic & version claire). Le tunnel de paiement reste identique.",
+          "en": "The app is testing its new look (card/comic & a light version). Checkout is unchanged.",
+          "es": "La app prueba su nuevo look (cartas/comic y una versión clara). El pago no cambia."
+        }
+      ]
+    },
+    {
+      "v": "v214",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Nouveau look (test)",
+        "en": "New look (test)",
+        "es": "Nuevo look (test)"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "Un nouvel habillage cartes/comic est testé sur une partie des visiteurs.",
+          "en": "A new card/comic skin is being tested on some visitors.",
+          "es": "Probamos un nuevo estilo cartas/comic con parte de los visitantes."
+        }
+      ]
+    },
+    {
+      "v": "v213",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Prototype jouable",
+        "en": "Playable prototype",
+        "es": "Prototipo jugable"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "Prototype interactif de l'univers cartes (32 écrans connectés, navigable).",
+          "en": "Interactive card-universe prototype (32 connected screens).",
+          "es": "Prototipo interactivo del universo cartas (32 pantallas)."
+        }
+      ]
+    },
+    {
+      "v": "v212",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Thèmes jouables",
+        "en": "Playable themes",
+        "es": "Temas jugables"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Choisis ton thème : un bouton 🎨 en bas à droite pour habiller l'app (comic, arcade, manga, sticker). Réglable, sans rien changer à tes données.",
+          "en": "Pick your theme: a 🎨 button (bottom-right) to skin the app (comic, arcade, manga, sticker).",
+          "es": "Elige tu tema: un botón 🎨 abajo a la derecha para vestir la app."
+        }
+      ]
+    },
+    {
+      "v": "v211",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Coulisses",
+        "en": "Behind the scenes",
+        "es": "Entre bastidores"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "Maquette illustrée de l'univers cartes (refonte SVG) en exploration.",
+          "en": "Illustrated card-universe mockup (SVG refonte) in exploration.",
+          "es": "Maqueta ilustrada del universo cartas en exploración."
+        }
+      ]
+    },
+    {
+      "v": "v210",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Coulisses",
+        "en": "Behind the scenes",
+        "es": "Entre bastidores"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Maquettes de deux univers visuels (cartes & arcade) en exploration.",
+          "en": "Two visual universes (cards & arcade) in exploration.",
+          "es": "Dos universos visuales en exploración."
+        }
+      ]
+    },
+    {
+      "v": "v209",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Coulisses",
+        "en": "Behind the scenes",
+        "es": "Entre bastidores"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Système de thèmes en préparation (comic, arcade, manga, sticker) — bientôt jouable.",
+          "en": "Theme system in the works (comic, arcade, manga, sticker) — playable soon.",
+          "es": "Sistema de temas en preparación — pronto."
+        }
+      ]
+    },
+    {
+      "v": "v208",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Coulisses",
+        "en": "Behind the scenes",
+        "es": "Entre bastidores"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "Préparation de nouveaux habillages visuels (style cartes à collectionner) — bientôt.",
+          "en": "New visual skins in the works (collectible-card style) — soon.",
+          "es": "Nuevos estilos visuales en preparación (estilo cartas) — pronto."
+        }
+      ]
+    },
+    {
+      "v": "v207",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Affichage",
+        "en": "Display",
+        "es": "Pantalla"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Désactivation d'un thème expérimental qui pouvait afficher des lignes grises par-dessus l'app.",
+          "en": "Disabled an experimental theme that could overlay grey lines on the app.",
+          "es": "Desactivado un tema experimental que podía superponer líneas grises en la app."
+        }
+      ]
+    },
+    {
+      "v": "v206",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Soleil net sur iPhone",
+        "en": "Crisp sun on iPhone",
+        "es": "Sol nítido en iPhone"
+      },
+      "items": [
+        {
+          "emoji": "🌅",
+          "fr": "Le soleil du golden-hour ne peut plus apparaître en gris sur iPhone — affichage garanti chaud et net.",
+          "en": "The golden-hour sun can no longer show up grey on iPhone — guaranteed warm and crisp.",
+          "es": "El sol del golden-hour ya no puede verse gris en iPhone — garantizado cálido y nítido."
+        }
+      ]
+    },
+    {
+      "v": "v205",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Soleil net sur iPhone",
+        "en": "Crisp sun on iPhone",
+        "es": "Sol nítido en iPhone"
+      },
+      "items": [
+        {
+          "emoji": "🌅",
+          "fr": "Correctif d'affichage : sur Safari iPhone, le soleil du golden-hour pouvait apparaître en gris — c'est réglé, il s'affiche chaud et net.",
+          "en": "Display fix: on iPhone Safari the golden-hour sun could show up grey — now fixed, it renders warm and crisp.",
+          "es": "Corrección de pantalla: en Safari de iPhone el sol del golden-hour podía verse gris — ya está arreglado, se ve cálido y nítido."
+        }
+      ]
+    },
+    {
+      "v": "v204",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Affichage plus net",
+        "en": "Crisper display",
+        "es": "Pantalla más nítida"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Correctif d'affichage : sur Edge et Brave, certains écrans pouvaient virer au gris — c'est réglé, le golden-hour s'affiche net partout.",
+          "en": "Display fix: on Edge and Brave a few screens could turn grey — now fixed, the golden-hour renders crisp everywhere.",
+          "es": "Corrección de pantalla: en Edge y Brave algunas vistas podían volverse grises — ya está arreglado, el golden-hour se ve nítido en todas partes."
+        }
+      ]
+    },
+    {
+      "v": "v203",
+      "date": "2026-06-17",
+      "title": {
+        "fr": "Ce qu'on a construit pour toi",
+        "en": "What we built for you",
+        "es": "Lo que construimos para ti"
+      },
+      "items": [
+        {
+          "emoji": "🛰️",
+          "fr": "Un Veilleur veille ta plage en continu — il change d'humeur selon l'état de la mer.",
+          "en": "A Watcher keeps an eye on your beach around the clock — its mood shifts with the sea.",
+          "es": "Un Vigía cuida tu playa sin parar — su ánimo cambia con el estado del mar."
+        },
+        {
+          "emoji": "🗺️",
+          "fr": "Carte en direct plus nette : les bancs de sargasses au large sont désormais ancrés à la géographie réelle.",
+          "en": "Sharper live map: offshore sargassum rafts are now anchored to the real coastline.",
+          "es": "Mapa en vivo más nítido: los bancos de sargazo mar adentro se anclan a la costa real."
+        },
+        {
+          "emoji": "✅",
+          "fr": "Fiabilité publiée : on affiche notre taux de justesse, saison par saison, en toute transparence.",
+          "en": "Reliability, in the open: we now publish how often we get it right, season by season.",
+          "es": "Fiabilidad a la vista: publicamos qué tan seguido acertamos, temporada por temporada.",
+          "href": "/fiabilite/"
+        },
+        {
+          "emoji": "📊",
+          "fr": "Score 0-100 par plage : sargasses, houle, vent, soleil et température de l'eau, recalculé chaque jour.",
+          "en": "0-100 score per beach: sargassum, swell, wind, sun and water temp, recomputed daily.",
+          "es": "Puntuación 0-100 por playa: sargazo, oleaje, viento, sol y temperatura del agua, cada día."
+        }
+      ]
+    }
+  ]
+}

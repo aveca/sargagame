@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sargasses — carte « Bump » (proto design)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --ink:#0d0b14;
+    --clean:#22C55E; --clean2:#16A34A;
+    --mod:#F59E0B;   --mod2:#D97706;
+    --avoid:#FB4E4E; --avoid2:#E11D48;
+  }
+  html,body{height:100%;font-family:'Bricolage Grotesque',system-ui,sans-serif;overflow:hidden}
+  body{
+    /* Ciel/mer saturé façon Zenly : dégradé vivant + grain doux */
+    background:
+      radial-gradient(120% 80% at 80% -5%, #FFD15C 0%, rgba(255,209,92,0) 45%),
+      radial-gradient(90% 70% at 10% 110%, #5B2BD6 0%, rgba(91,43,214,0) 50%),
+      linear-gradient(165deg,#FF7A59 0%,#FF5C8A 32%,#8B43E6 64%,#3A1D8A 100%);
+    position:fixed;inset:0;display:flex;justify-content:center}
+  .phone{position:relative;width:100%;max-width:440px;height:100%;overflow:hidden}
+
+  /* halos qui respirent en fond (vie) */
+  .blob{position:absolute;border-radius:50%;filter:blur(36px);opacity:.5;animation:float 7s ease-in-out infinite}
+  .b1{width:240px;height:240px;background:#FF4E8A;top:-40px;left:-50px}
+  .b2{width:200px;height:200px;background:#36E0C8;bottom:120px;right:-40px;animation-delay:-3s}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
+
+  /* Header pilule */
+  .top{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;right:14px;display:flex;gap:10px;z-index:20}
+  .pill{background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border:2.5px solid var(--ink);
+    border-radius:22px;box-shadow:0 6px 0 var(--ink);padding:11px 16px;font-weight:800;color:var(--ink);
+    display:flex;align-items:center;gap:8px;font-size:15px}
+  .pill .dot{width:11px;height:11px;border-radius:50%;background:var(--clean);box-shadow:0 0 0 4px rgba(34,197,94,.3);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(34,197,94,.3)}50%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+  .pill.grow{flex:1}
+  .search{flex:1;justify-content:flex-start;color:#9a93a8;font-weight:700}
+
+  /* Île stylisée */
+  .island{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:300px;height:380px;z-index:5}
+  .island svg{width:100%;height:100%;filter:drop-shadow(0 18px 30px rgba(13,11,20,.35))}
+
+  /* Bulles plage façon Zenly : carte arrondie + avatar + bob */
+  .bub{position:absolute;z-index:10;display:flex;flex-direction:column;align-items:center;gap:5px;
+    animation:bob var(--d,4s) ease-in-out infinite;transform-origin:bottom center}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .face{width:54px;height:54px;border-radius:18px;border:3px solid var(--ink);box-shadow:0 7px 0 var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;background:#fff}
+  .face.clean{background:linear-gradient(160deg,#6EF09A,var(--clean))}
+  .face.mod{background:linear-gradient(160deg,#FFD36A,var(--mod))}
+  .face.avoid{background:linear-gradient(160deg,#FF8A8A,var(--avoid))}
+  .face .score{position:absolute;-bottom:0;bottom:-9px;right:-9px;background:#fff;border:2.5px solid var(--ink);
+    border-radius:10px;font-size:11px;font-weight:800;padding:1px 5px;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+  .tag{background:var(--ink);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:11px;white-space:nowrap}
+  .tag.clean{background:var(--clean2)} .tag.mod{background:var(--mod2)} .tag.avoid{background:var(--avoid2)}
+  .pin{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--ink);margin-top:-2px}
+
+  /* Carte du bas (sheet Zenly) */
+  .sheet{position:absolute;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:30;
+    background:#fff;border:3px solid var(--ink);border-radius:28px;box-shadow:0 10px 0 var(--ink);
+    padding:16px 16px 14px;animation:rise .5s cubic-bezier(.2,1,.3,1) both}
+  @keyframes rise{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .sheet .row{display:flex;align-items:center;gap:12px}
+  .sheet .big{width:58px;height:58px;border-radius:18px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(160deg,#6EF09A,var(--clean))}
+  .sheet h2{font-size:20px;color:var(--ink);font-weight:800;line-height:1}
+  .sheet .sub{font-size:13px;color:#7a7388;font-weight:700;margin-top:3px}
+  .sheet .verdict{margin-left:auto;background:var(--clean2);color:#fff;font-weight:800;font-size:14px;padding:8px 13px;border-radius:14px;border:2.5px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+  .cta{margin-top:14px;display:flex;gap:10px}
+  .btn{flex:1;text-align:center;font-weight:800;font-size:15px;padding:13px;border-radius:16px;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);color:var(--ink)}
+  .btn.gold{background:linear-gradient(160deg,#FFE47A,#FFC72C)}
+  .btn.dark{background:var(--ink);color:#fff;box-shadow:0 5px 0 #000}
+
+  /* Dock avatars façon Zenly */
+  .dock{position:absolute;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;
+    display:flex;gap:-10px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:2.5px solid var(--ink);
+    border-radius:30px;box-shadow:0 6px 0 var(--ink);padding:6px}
+  .ava{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--ink);margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff}
+  .ava:first-child{margin-left:0}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="blob b1"></div><div class="blob b2"></div>
+
+  <div class="top">
+    <div class="pill"><span class="dot"></span>EN DIRECT</div>
+    <div class="pill grow search">🔎 Chercher une plage…</div>
+  </div>
+
+  <div class="island">
+    <svg viewBox="0 0 300 380" fill="none">
+      <path d="M150 18C108 30 86 70 96 116c8 38-22 52-30 96-8 44 18 70 60 96 40 24 92 30 116-8 22-34 8-78 22-120 16-46-6-86-46-116-28-22-46-58-68-46Z"
+        fill="#74E08C" stroke="#0d0b14" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M120 150c20-8 44-6 60 8" stroke="#3FBF6B" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="170" cy="120" r="5" fill="#3FBF6B"/><circle cx="120" cy="220" r="5" fill="#3FBF6B"/>
+    </svg>
+  </div>
+
+  <!-- bulles plages -->
+  <div class="bub" style="left:70px;top:120px;--d:4.2s">
+    <div class="face clean">🏖️<span class="score">82</span></div>
+    <div class="tag clean">Anse propre</div><div class="pin"></div>
+  </div>
+  <div class="bub" style="right:48px;top:165px;--d:5s">
+    <div class="face avoid">🌊<span class="score">31</span></div>
+    <div class="tag avoid">Sargasses</div><div class="pin"></div>
+  </div>
+  <div class="bub" style="left:120px;top:255px;--d:4.6s">
+    <div class="face mod">🐢<span class="score">58</span></div>
+    <div class="tag mod">Modéré</div><div class="pin"></div>
+  </div>
+
+  <!-- dock amis / veilleurs -->
+  <div class="dock">
+    <div class="ava" style="background:#FFD36A">🛰️</div>
+    <div class="ava" style="background:#9ED8FF">😎</div>
+    <div class="ava" style="background:#FFB3C7">🐠</div>
+    <div class="ava" style="background:#C9F2D0">+</div>
+  </div>
+
+  <!-- sheet plage sélectionnée -->
+  <div class="sheet">
+    <div class="row">
+      <div class="big">🏖️</div>
+      <div>
+        <h2>Les Salines</h2>
+        <div class="sub">Sainte-Anne · vérifié il y a 2 h 🛰️</div>
+      </div>
+      <div class="verdict">PROPRE · 82</div>
+    </div>
+    <div class="cta">
+      <div class="btn gold">7 prochains jours →</div>
+      <div class="btn dark">Y aller</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

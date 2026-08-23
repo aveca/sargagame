@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le Veilleur te répond — proto (assistant visuel, zéro-IA)</title>
+<!--
+  PROTO "Le Veilleur te répond" (workflow visual-assistant-concept, gagnant).
+  Assistant VISUEL, 100% CLIENT, ZERO-LLM : intent-parsing deterministe (regex+lexique) ->
+  SELECTION d'une vraie plage dans la data -> reponse en BULLES VISUELLES (scene SVG au gout
+  + verdict reel + plan B). Il ne PEUT PAS halluciner (pas de generation de texte libre).
+  Data ILLUSTRATIVE (mockup) ; le port app filtrera sargData reel. Moat/safety : donnee
+  manquante = cadenas ; plage a eviter = alerte H2S AVANT le CTA. Zero compute lourd, zero credit.
+-->
+<style>
+  :root{
+    --gold:#FFC72C; --goldL:#FFE47A; --ink:#0D0D0D; --paper:#FDFCF7; --teal:#009E8E; --tealL:#1EC8B0;
+    --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --disp:Anton,Impact,Haettenschweiler,"Arial Narrow",system-ui,sans-serif;
+    --body:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--body);color:var(--ink);background:#0a1620}
+  .wrap{max-width:520px;margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#0a1620,#0e2a26 40%,#123a34);
+    display:flex;flex-direction:column;position:relative}
+
+  header{padding:16px 16px 12px;border-bottom:2px solid rgba(255,255,255,.08);display:flex;gap:12px;align-items:center}
+  header .av{flex:0 0 auto;width:46px;height:46px}
+  header .tt{font:400 22px/1 var(--disp);letter-spacing:.02em;color:var(--goldL);text-transform:uppercase}
+  header .st{margin-top:3px;font:700 11px/1 var(--mono);color:var(--tealL);letter-spacing:.02em;display:flex;align-items:center;gap:5px}
+  header .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.28)}
+
+  .conv{flex:1 1 auto;overflow-y:auto;padding:16px 14px 8px;display:flex;flex-direction:column;gap:12px}
+  .bubble{max-width:88%;animation:pop .42s cubic-bezier(.22,1.4,.36,1) both}
+  @keyframes pop{0%{opacity:0;transform:translateY(10px) scale(.9,1.06)}60%{opacity:1;transform:translateY(0) scale(1.03,.97)}100%{transform:scale(1)}}
+  .b-user{align-self:flex-end;background:var(--gold);color:var(--ink);border:2.5px solid var(--ink);
+    border-radius:16px 16px 4px 16px;padding:10px 14px;font:600 14.5px/1.35 var(--body);box-shadow:2px 2px 0 var(--ink)}
+  .b-veil{align-self:flex-start;width:100%;max-width:100%}
+  .card{border:3px solid var(--ink);border-radius:18px;overflow:hidden;background:var(--paper);box-shadow:4px 5px 0 rgba(0,0,0,.5)}
+  .card .scene-wrap{position:relative}
+  .card .scene-wrap svg.scene{display:block;width:100%;height:150px}
+  .stamp{position:absolute;left:12px;bottom:10px;background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;
+    padding:6px 12px 5px;transform:rotate(-3deg);box-shadow:3px 3px 0 var(--ink)}
+  .stamp .v{font:400 22px/.86 var(--disp);text-transform:uppercase;color:var(--green)}
+  .stamp.s-mod .v{color:var(--amber)} .stamp.s-avoid .v{color:var(--coral)}
+  .stamp .sc{font:700 10px/1 var(--mono);color:var(--ink);margin-top:3px}
+  .card .body{padding:11px 13px 13px}
+  .card .nm{font:800 16px/1.1 var(--body);color:var(--ink)}
+  .card .nm span{font:600 12px/1 var(--body);color:#5A5A5A}
+  .card .src{margin:5px 0 8px;font:700 10.5px/1.3 var(--mono);color:var(--amber)}
+  .facts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+  .fact{font:700 12px/1 var(--body);background:#eef3f2;border:2px solid var(--ink);border-radius:999px;padding:6px 9px}
+  .h2s{margin:7px 0 0;padding:8px 10px;border:2px solid var(--coral);border-radius:10px;background:#fff2ee;
+    font:700 12px/1.35 var(--body);color:#8a1c05}
+  .planb{margin:8px 0 0;padding:9px 11px;border:2px dashed var(--teal);border-radius:12px;background:#eafcf8;display:flex;gap:9px;align-items:center}
+  .planb svg{flex:0 0 auto;width:56px;height:40px;border-radius:6px;border:1.5px solid var(--ink)}
+  .planb .t{font:700 12.5px/1.3 var(--body);color:#075} .planb .t b{color:var(--teal)}
+  .cta{display:block;margin:10px 0 0;text-align:center;text-decoration:none;font:800 14px/1 var(--body);color:var(--ink);
+    background:var(--gold);border:2.5px solid var(--ink);border-radius:12px;padding:12px;box-shadow:3px 3px 0 var(--ink)}
+  .cta:active{transform:scale(.98)}
+  .lock{padding:12px 14px;border:2px dashed #789;border-radius:12px;background:#0e2a26;color:#cfe;font:600 13px/1.4 var(--body)}
+
+  .rebound{display:flex;flex-wrap:wrap;gap:7px;margin:9px 2px 2px}
+  .rebound button,.dock .chip{font:700 12.5px/1 var(--body);cursor:pointer;background:rgba(255,255,255,.08);
+    color:#eafcf8;border:2px solid rgba(255,255,255,.2);border-radius:999px;padding:8px 12px;min-height:34px}
+  .rebound button:active,.dock .chip:active{transform:scale(.95)}
+
+  .dock{flex:0 0 auto;padding:10px 12px calc(env(safe-area-inset-bottom,0) + 12px);border-top:2px solid rgba(255,255,255,.08);
+    background:#0a1620}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips .chip{white-space:nowrap;background:rgba(255,199,44,.14);border-color:rgba(255,199,44,.4);color:var(--goldL)}
+  .inbar{display:flex;gap:8px}
+  .inbar input{flex:1 1 auto;font:600 15px/1 var(--body);color:#fff;background:rgba(255,255,255,.06);
+    border:2px solid rgba(255,255,255,.2);border-radius:12px;padding:12px 14px;min-height:46px}
+  .inbar input::placeholder{color:rgba(255,255,255,.5)}
+  .inbar button{flex:0 0 auto;width:46px;border:2.5px solid var(--ink);background:var(--gold);border-radius:12px;
+    font:800 18px/1 var(--body);cursor:pointer}
+  .inbar button:active{transform:scale(.95)}
+
+  @media (prefers-reduced-motion:reduce){ .bubble{animation:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="av" viewBox="-52 -30 104 84" aria-hidden="true">
+      <rect x="-46" y="-14" width="26" height="28" rx="5" fill="#E8A800" stroke="#0D0D0D" stroke-width="3"/>
+      <rect x="20" y="-14" width="26" height="28" rx="5" fill="#E8A800" stroke="#0D0D0D" stroke-width="3"/>
+      <rect x="-18" y="-22" width="36" height="44" rx="9" fill="#FFC72C" stroke="#0D0D0D" stroke-width="3.5"/>
+      <circle cx="0" cy="4" r="11" fill="#0d1117"/><circle cx="3" cy="7" r="4.4" fill="#1EC8B0"/>
+      <path d="M0 22 L-8 40 L8 40 Z" fill="#009E8E" opacity=".5"/>
+    </svg>
+    <div>
+      <div class="tt">Le Veilleur te répond</div>
+      <div class="st"><span class="dot"></span>MESURÉ AU SATELLITE · JAMAIS DEVINÉ</div>
+    </div>
+  </header>
+
+  <div class="conv" id="conv" aria-live="polite"></div>
+
+  <div class="dock">
+    <div class="chips" id="chips"></div>
+    <div class="inbar">
+      <input id="q" type="text" placeholder="Dis-moi ce que tu cherches…" autocomplete="off">
+      <button id="send" aria-label="Envoyer">&#10148;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=false; try{ reduce=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+  var conv=document.getElementById('conv');
+
+  // ---- DATA illustrative (mockup) : le port app filtrera sargData reel ----
+  var BEACHES=[
+    {id:'mq001', nm:'Les Salines', co:'Sainte-Anne', st:'clean', sc:84, afai:0.16, kids:1, snork:0, arch:'shore', sky:['#123047','#C97E3A']},
+    {id:'mq012', nm:'Anse Michel', co:'Sainte-Anne', st:'clean', sc:79, afai:0.19, kids:1, snork:1, arch:'reef', sky:['#0B2230','#E0A24A']},
+    {id:'mq005', nm:'Le Diamant', co:'Le Diamant', st:'clean', sc:82, afai:0.18, kids:0, snork:1, arch:'rock', sky:['#123047','#C97E3A']},
+    {id:'mq022', nm:'Anse Trabaud', co:'Sainte-Anne', st:'moderate', sc:54, afai:0.34, kids:0, snork:0, arch:'shore', sky:['#0B2230','#6a4a2a']},
+    {id:'mq031', nm:'Cap Chevalier', co:'Sainte-Anne', st:'avoid', sc:28, afai:0.52, kids:0, snork:0, arch:'reef', sky:['#141026','#B85A2A']}
+  ];
+  var LBL={clean:'PROPRE',moderate:'MODÉRÉ',avoid:'À ÉVITER'};
+
+  // ---- routeur DETERMINISTE (regex+lexique) : slots -> selection, ZERO generation ----
+  function route(q){
+    var s=(q||'').toLowerCase();
+    var wantClean = /(propre|sans algue|sans sargasse|baignab|clean|limpi)/.test(s) || !/(algue|sargasse)/.test(s);
+    var kids = /(enfant|famille|kids|petit|bambin|ni.o)/.test(s);
+    var snork = /(snork|masque|tuba|plong|poisson|fond)/.test(s);
+    var loc=null, named=null;
+    BEACHES.forEach(function(b){ if(s.indexOf(b.nm.toLowerCase())>-1) named=b; if(s.indexOf(b.co.toLowerCase())>-1) loc=b.co; });
+    var best;
+    if(named){ best=named; }              // plage NOMMÉE → son vrai verdict (même 'à éviter')
+    else {
+      var pool=BEACHES.slice();
+      if(loc) pool=pool.filter(function(b){return b.co===loc;});
+      if(kids) pool=pool.filter(function(b){return b.kids;});
+      if(snork) pool=pool.filter(function(b){return b.snork;});
+      var clean=pool.filter(function(b){return b.st==='clean';});
+      best = wantClean ? (clean[0]||null) : (pool.sort(function(a,b){return b.sc-a.sc;})[0]||null);
+    }
+    // plan B = plage propre la plus proche differente
+    var planB = BEACHES.filter(function(b){return b.st==='clean' && (!best||b.id!==best.id) && (!kids||b.kids) && (!snork||b.snork);})[0]
+             || BEACHES.filter(function(b){return b.st==='clean' && (!best||b.id!==best.id);})[0];
+    return {best:best, planB:planB, kids:kids, snork:snork, loc:loc, wantClean:wantClean};
+  }
+
+  // ---- scene SVG (au gout, deterministe, aucune donnee gravee) ----
+  function scene(b, w, h){
+    w=w||400; h=h||150; var id='s'+b.id+w;
+    var feat='';
+    if(b.arch==='rock') feat='<path d="M292 '+(h-18)+' L332 '+(h-56)+' L372 '+(h-18)+' Z" fill="#0b1f22"/>';
+    else if(b.arch==='reef') feat='<ellipse cx="320" cy="'+(h-16)+'" rx="70" ry="12" fill="#0e2a26"/>';
+    else feat='<path d="M0 '+(h-20)+' Q200 '+(h-28)+' 400 '+(h-20)+' L400 '+h+' L0 '+h+' Z" fill="#1C1712"/>';
+    var mood = b.st==='clean'?'#1EC8B0':b.st==='moderate'?'#E8B23A':'#E8522A';
+    var sarg = b.st==='clean' ? '' : '<path d="M0 '+(h-30)+' Q120 '+(h-38)+' 260 '+(h-30)+' L260 '+(h-18)+' L0 '+(h-18)+' Z" fill="#2c3019" opacity=".9"/>';
+    return '<svg class="scene" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+      +'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+b.sky[0]+'"/><stop offset="1" stop-color="'+b.sky[1]+'"/></linearGradient></defs>'
+      +'<rect width="'+w+'" height="'+h+'" fill="url(#'+id+')"/>'
+      +'<circle cx="'+(w*0.62)+'" cy="'+(h*0.5)+'" r="'+(h*0.34)+'" fill="#FFD884" opacity=".85"/>'
+      +'<rect y="'+(h*0.62)+'" width="'+w+'" height="'+(h*0.5)+'" fill="#0e3a35"/>'
+      +sarg+feat
+      // Le Veilleur : regarde LA MER, humeur = verdict
+      +'<g transform="translate('+(w*0.16)+' '+(h*0.34)+')"><rect x="-13" y="-15" width="26" height="30" rx="7" fill="#FFC72C" stroke="#0D0D0D" stroke-width="2.5"/>'
+      +'<circle cx="0" cy="2" r="7.5" fill="#0d1117"/><circle cx="2" cy="4" r="3" fill="'+mood+'"/></g>'
+      +'</svg>';
+  }
+  function svgNode(str){ try{ var d=new DOMParser().parseFromString(str,'image/svg+xml'); if(d.getElementsByTagName('parsererror').length) return null; return document.importNode(d.documentElement,true);}catch(e){return null;} }
+
+  function el(tag,cls,txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+
+  function bubble(cls){ var b=el('div','bubble '+cls); conv.appendChild(b); conv.scrollTop=conv.scrollHeight; return b; }
+
+  function userSay(txt){ var b=bubble('b-user'); b.textContent=txt; }
+
+  function chipRow(items){
+    var r=el('div','rebound');
+    items.forEach(function(it){ var btn=el('button',null,it); btn.addEventListener('click',function(){ ask(it); }); r.appendChild(btn); });
+    conv.appendChild(r); conv.scrollTop=conv.scrollHeight;
+  }
+
+  function veilleurAnswer(res){
+    var b=bubble('b-veil');
+    if(!res.best){
+      var lk=el('div','lock'); lk.textContent="Aucune mesure fraîche ne satisfait ça pour l'instant — je préfère te le dire plutôt que d'inventer. Élargis la zone ?";
+      b.appendChild(lk); chipRow(['plus loin','sans contrainte','voir la carte']); return;
+    }
+    var beach=res.best;
+    var card=el('div','card');
+    var sw=el('div','scene-wrap');
+    var sc=svgNode(scene(beach,400,150)); if(sc) sw.appendChild(sc);
+    var stamp=el('div','stamp'+(beach.st==='clean'?'':beach.st==='moderate'?' s-mod':' s-avoid'));
+    stamp.appendChild(el('div','v',LBL[beach.st]));
+    stamp.appendChild(el('div','sc','score '+beach.sc+'/100'));
+    sw.appendChild(stamp); card.appendChild(sw);
+
+    var body=el('div','body');
+    var nm=el('div','nm'); nm.appendChild(document.createTextNode(beach.nm+' ')); var comm=el('span',null,'· '+beach.co); nm.appendChild(comm); body.appendChild(nm);
+    body.appendChild(el('div','src','SATELLITE COPERNICUS · AFAI '+beach.afai.toFixed(2)+' · MESURÉ 06:42'));
+
+    var facts=el('div','facts');
+    if(beach.kids) facts.appendChild(el('span','fact','👶 Familles'));
+    if(beach.snork) facts.appendChild(el('span','fact','🤿 Snorkeling'));
+    facts.appendChild(el('span','fact', beach.st==='clean'?'🌊 Baignade OK ce matin':'⚠️ Vérifie sur place'));
+    body.appendChild(facts);
+
+    // SAFETY H2S avant tout CTA si a eviter
+    if(beach.st==='avoid'){
+      body.appendChild(el('div','h2s','Algues en décomposition possibles — éloigne-toi si ça sent l’œuf pourri (H₂S). Déconseillé enfants / asthme / grossesse.'));
+    }
+
+    // plan B (mini-scene)
+    if(res.planB){
+      var pb=el('div','planb'); var pbs=svgNode(scene(res.planB,120,40)); if(pbs) pb.appendChild(pbs);
+      var t=el('div','t'); t.appendChild(document.createTextNode('Plan B propre à côté : ')); var pbn=el('b',null,res.planB.nm+' ('+res.planB.co+')'); t.appendChild(pbn); pb.appendChild(t);
+      body.appendChild(pb);
+    }
+
+    var cta=el('a','cta', (beach.st==='clean'?'🔔 Être prévenu si ça change à '+beach.nm:'Voir la fiche de '+beach.nm)); cta.href='#';
+    body.appendChild(cta);
+    card.appendChild(body); b.appendChild(card);
+
+    chipRow(['et pour demain ?', res.snork?'plutôt au calme':'pour le snorkeling', 'près du Diamant', 'montre-moi la carte']);
+  }
+
+  function ask(q){ userSay(q); var res=route(q); (reduce?function(f){f();}:function(f){setTimeout(f,340);})(function(){ veilleurAnswer(res); }); }
+
+  // intro
+  (function(){
+    var b=bubble('b-veil'); var lk=el('div','lock');
+    lk.textContent='Salut — dis-moi où tu veux aller et pour qui, je regarde la mer et je te réponds avec la crique qu’il te faut. Ex : « une plage propre près de Sainte-Anne, pour les enfants ».';
+    b.appendChild(lk);
+  })();
+
+  var SUG=['propre près de Sainte-Anne, pour les enfants','snorkeling au calme','où aller ce week-end ?','une plage sans algues'];
+  var chips=document.getElementById('chips');
+  SUG.forEach(function(s){ var c=el('button','chip',s); c.addEventListener('click',function(){ ask(s); }); chips.appendChild(c); });
+
+  var input=document.getElementById('q');
+  function submit(){ var v=input.value.trim(); if(!v) return; input.value=''; ask(v); }
+  document.getElementById('send').addEventListener('click',submit);
+  input.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Proto — Paywall COMIC (Le Veilleur Premium)</title>
+<!--
+  PROTO de la REFONTE PAYWALL en COMIC-BOOK / BD (PRODUCT.md §6, north-star 19/06).
+  Source de vérité visuelle = .lc- tokens de src/ChasseHome.jsx (ChasseDetail).
+  Objectif : tuer « le paywall blanc générique » (cards blanches sur vert sombre).
+  Cette page = l'ASSET validé à porter dans PremiumModal derrière A/B `pw_comic`.
+  La logique de paiement (Stripe on-site / startCheckout / plans) N'EST PAS ici :
+  au port, le CTA appelle startCheckout(effectivePlan,"comic") inchangé.
+-->
+<style>
+@font-face{font-family:"AntonLC";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#10202b;display:flex;justify-content:center;min-height:100vh;
+  font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif}
+
+/* ====== SHELL comic golden-hour (porté de .lc-detail) ====== */
+.pwc{position:relative;width:100%;max-width:430px;min-height:100vh;color:#0d0b14;
+  --ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#27a9e3;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
+  background:
+    radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
+    radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
+    linear-gradient(170deg,#2bb6ef,#5fc8ef 26%,#ffb36b 68%,#ff8a3d);
+  overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+/* close */
+.pwc-x{position:absolute;top:14px;right:14px;z-index:6;width:42px;height:42px;border-radius:50%;
+  border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;
+  cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+
+/* ====== HERO : scène golden-hour + Veilleur + verdict de contexte ====== */
+.pwc-hero{position:relative;height:194px;border-bottom:3px solid var(--ink);overflow:hidden}
+.pwc-hero svg.scene{position:absolute;inset:0;width:100%;height:100%}
+.pwc-veil{position:absolute;left:50%;top:48%;transform:translate(-50%,-58%);z-index:2;
+  filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+.pwc-eyebrow{position:absolute;left:12px;top:14px;z-index:3;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--ink);background:var(--yel);border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
+.pwc-verdict{position:absolute;left:12px;bottom:10px;z-index:3;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:12px;color:#fff;
+  border:2.5px solid var(--ink);border-radius:9px;padding:4px 11px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
+.pwc-verdict.s-ok{background:var(--grn)}.pwc-verdict.s-mod{background:var(--org)}.pwc-verdict.s-bad{background:var(--red)}
+.pwc-season{position:absolute;right:12px;bottom:10px;z-index:3;
+  font-size:10px;font-weight:800;color:#fff;background:rgba(13,11,20,.7);border:2px solid #fff;border-radius:14px;padding:3px 9px;letter-spacing:.3px}
+
+/* ====== BODY ====== */
+.pwc-body{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:16px 18px 30px}
+@keyframes pwc-chroma{
+  0%{text-shadow:-1.5px 0 rgba(255,0,92,.55),1.6px 0 rgba(0,214,255,.55),2px 2px 0 #fff}
+  100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 #fff}}
+.pwc-title{font-family:"AntonLC",system-ui,sans-serif;font-size:27px;line-height:1.02;margin:8px 0 8px;
+  color:var(--ink);letter-spacing:.2px;text-shadow:2px 2px 0 #fff;
+  animation:pwc-chroma 1.6s steps(3) infinite alternate}
+.pwc-title em{font-style:normal;color:var(--red)}
+.pwc-sub{font-size:13.5px;font-weight:700;color:#0d2330;margin:0 0 16px;line-height:1.35}
+
+/* panneaux value = cases BD */
+.pwc-panel{position:relative;display:flex;align-items:center;gap:13px;
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:11px;
+  box-shadow:4px 4px 0 var(--ink)}
+.pwc-panel:nth-child(odd){transform:rotate(-.7deg)}
+.pwc-panel:nth-child(even){transform:rotate(.7deg)}
+.pwc-num{flex:0 0 auto;width:38px;text-align:center;font-family:"AntonLC",system-ui,sans-serif;font-size:30px;line-height:1;
+  color:var(--ink);text-shadow:2px 2px 0 var(--yel)}
+.pwc-panel.gold{background:linear-gradient(180deg,#fff6d6,#ffe9a6);border-color:var(--ink)}
+.pwc-panel.gold .pwc-num{text-shadow:2px 2px 0 var(--org)}
+.pwc-pc{flex:1;min-width:0}
+.pwc-kicker{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#9a5b12;margin-bottom:3px;text-transform:uppercase}
+.pwc-line{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.2}
+.pwc-meta{font-size:11.5px;font-weight:700;color:#5a5566;margin-top:3px}
+
+/* preuve live */
+.pwc-proof{text-align:center;font-size:11.5px;font-weight:700;color:#0d2330;margin:6px 0 16px;opacity:.85}
+
+/* ====== ACTION BAR (sticky-like) ====== */
+.pwc-act{margin:4px -18px 0;padding:16px 18px 22px;
+  background:linear-gradient(180deg,rgba(13,11,20,0),rgba(13,11,20,.06) 10%,#0d0b14 30%);
+  border-radius:18px 18px 0 0}
+/* plan toggle comic */
+.pwc-plans{display:flex;gap:9px;margin-bottom:13px}
+.pwc-plan{flex:1;border:2.5px solid var(--ink);border-radius:12px;padding:10px 8px;cursor:pointer;position:relative;
+  background:var(--paper);color:var(--ink);box-shadow:2px 2px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.pwc-plan.on{background:linear-gradient(180deg,#ffe07a,var(--yel));box-shadow:0 4px 0 var(--ink)}
+.pwc-plan b{display:block;font-size:13px;font-weight:800}
+.pwc-plan .pr{display:block;font-family:"AntonLC",system-ui,sans-serif;font-size:19px;margin-top:2px;letter-spacing:.3px}
+.pwc-plan .pr small{font-size:11px;font-weight:400;font-family:"Comic Neue",system-ui,sans-serif}
+.pwc-plan .eq{display:block;font-size:9px;font-weight:700;color:#7a6a2a;margin-top:1px}
+.pwc-badge{position:absolute;top:-9px;right:7px;background:var(--red);color:#fff;font-size:9px;font-weight:800;
+  padding:2px 7px;border-radius:100px;border:2px solid var(--ink)}
+
+/* CTA */
+.pwc-cta{display:block;width:100%;border:2.5px solid var(--ink);border-radius:14px;padding:15px 18px;cursor:pointer;
+  font-family:"AntonLC",system-ui,sans-serif;letter-spacing:.5px;text-transform:uppercase;text-align:center;
+  background:linear-gradient(180deg,#ffe07a,var(--yel));color:var(--ink);
+  box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.4);transform:rotate(-.8deg);transition:transform .08s}
+.pwc-cta:active{transform:rotate(-.8deg) translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.pwc-cta .big{display:block;font-size:18px;line-height:1.05}
+.pwc-cta .sm{display:block;font-family:"Comic Neue",system-ui,sans-serif;font-size:12px;font-weight:700;text-transform:none;opacity:.82;margin-top:4px}
+
+/* trust */
+.pwc-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.pwc-tcell{background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;padding:9px 6px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+.pwc-tcell .ic{font-size:17px}
+.pwc-tcell b{display:block;font-size:10.5px;color:var(--ink);margin-top:2px}
+.pwc-tcell em{display:block;font-style:normal;font-size:9px;color:#5a5566;font-weight:700;line-height:1.25;margin-top:1px}
+
+.pwc-guar{display:flex;align-items:center;gap:11px;margin-top:13px;padding:11px 13px;border-radius:13px;
+  background:rgba(39,196,107,.16);border:2.5px solid var(--grn);box-shadow:3px 3px 0 var(--ink)}
+.pwc-guar .gic{font-size:19px}
+.pwc-guar b{display:block;font-size:12.5px;color:var(--ink)}
+.pwc-guar em{display:block;font-style:normal;font-size:11px;color:#2a4a33;font-weight:700;margin-top:1px}
+
+.pwc-foot{display:block;width:100%;margin-top:11px;background:none;border:none;
+  color:#fff;font-weight:800;font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit;opacity:.9}
+.pwc-secure{text-align:center;font-size:10px;color:rgba(255,255,255,.7);font-weight:700;margin-top:9px}
+
+@media (prefers-reduced-motion:reduce){.pwc-title{animation:none;text-shadow:2px 2px 0 #fff}}
+</style>
+</head>
+<body>
+<div class="pwc" id="pwc">
+  <button class="pwc-x" aria-label="Fermer">✕</button>
+
+  <!-- HERO -->
+  <div class="pwc-hero">
+    <svg class="scene" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1f6f9e"/><stop offset=".5" stop-color="#5fb6d6"/>
+          <stop offset=".78" stop-color="#ffb267"/><stop offset="1" stop-color="#ff8a3d"/>
+        </linearGradient>
+      </defs>
+      <rect width="430" height="200" fill="url(#sky)"/>
+      <circle cx="330" cy="120" r="46" fill="#ffe08a" opacity=".5"/>
+      <circle cx="330" cy="120" r="28" fill="#fff2c4"/>
+      <g stroke="#fff" stroke-opacity=".28" stroke-width="1.6">
+        <line x1="20" y1="36" x2="120" y2="31"/><line x1="14" y1="54" x2="96" y2="50"/>
+      </g>
+      <path d="M0 138 H430 V200 H0 Z" fill="#2bb6a6"/>
+      <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#2bb6a6" opacity=".6"/>
+      <path d="M0 176 Q215 168 430 182 V200 H0 Z" fill="#f3d9a3"/>
+      <path d="M0 176 Q215 168 430 182" fill="none" stroke="#0d0b14" stroke-width="1.6"/>
+    </svg>
+    <span class="pwc-eyebrow">Le Veilleur · Premium</span>
+    <span class="pwc-veil">
+      <svg viewBox="0 0 120 120" width="74" height="74" aria-hidden="true">
+        <g stroke="#0d0b14" stroke-width="2.5">
+          <rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+          <rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+          <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+        </g>
+        <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" stroke-width="3"/>
+        <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" stroke-width="3"/>
+        <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" stroke-width="2.5"/>
+        <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+        <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
+        <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+        <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+        <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round"/>
+        <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="pwc-verdict s-mod">Anse Dufour · à surveiller</span>
+    <span class="pwc-season">La saison est là</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="pwc-body">
+    <h2 class="pwc-title">Sois <em>prévenu</em><br>avant que ta plage tourne</h2>
+    <p class="pwc-sub">Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</p>
+
+    <div class="pwc-panel gold">
+      <span class="pwc-num">01</span>
+      <span class="pwc-pc">
+        <span class="pwc-kicker">Chaque matin · 7h</span>
+        <span class="pwc-line">Ta meilleure plage : Anse Dufour</span>
+        <span class="pwc-meta">Score 88/100 · vérifié satellite</span>
+      </span>
+    </div>
+    <div class="pwc-panel">
+      <span class="pwc-num">02</span>
+      <span class="pwc-pc">
+        <span class="pwc-kicker">Alerte instantanée</span>
+        <span class="pwc-line">Ta plage favorite a changé</span>
+        <span class="pwc-meta">Propre → Modéré — va plutôt au Diamant</span>
+      </span>
+    </div>
+    <div class="pwc-panel">
+      <span class="pwc-num">03</span>
+      <span class="pwc-pc">
+        <span class="pwc-kicker">Le weekend</span>
+        <span class="pwc-line">Samedi : Grande Anse</span>
+        <span class="pwc-meta">Propre tout le weekend · idéal enfants</span>
+      </span>
+    </div>
+
+    <div class="pwc-proof">14/18 plages propres en ce moment · satellite 4×/jour</div>
+
+    <!-- ACTION BAR -->
+    <div class="pwc-act">
+      <div class="pwc-plans">
+        <div class="pwc-plan" id="planMo" onclick="selPlan('mo')">
+          <b>Mensuel</b><span class="pr">4,99 €<small>/mois</small></span>
+        </div>
+        <div class="pwc-plan on" id="planYr" onclick="selPlan('yr')">
+          <span class="pwc-badge">-33%</span>
+          <b>Annuel</b><span class="pr">39,99 €<small>/an</small></span>
+          <span class="eq">soit 3,33 €/mois</span>
+        </div>
+      </div>
+
+      <button class="pwc-cta">
+        <span class="big">Activer mon Veilleur →</span>
+        <span class="sm" id="ctaSub">39,99 €/an · annulable en 2 clics</span>
+      </button>
+
+      <div class="pwc-trust">
+        <div class="pwc-tcell"><span class="ic">🛡</span><b>Stripe</b><em>Paiement sécurisé</em></div>
+        <div class="pwc-tcell"><span class="ic">⏱</span><b>30 jours</b><em>Satisfait ou remboursé</em></div>
+        <div class="pwc-tcell"><span class="ic">✕</span><b>2 clics</b><em>Annule quand tu veux</em></div>
+      </div>
+
+      <div class="pwc-guar">
+        <span class="gic">🛡️</span>
+        <span><b>Garantie 30 jours satisfait ou remboursé</b><em>Pas convaincu ? Un email, remboursé — sans condition.</em></span>
+      </div>
+
+      <button class="pwc-foot">J'ai déjà un abonnement</button>
+      <div class="pwc-secure">🔒 Paiement sécurisé Stripe · Sans engagement</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* toggle de plan — classList + textContent uniquement (zéro innerHTML) */
+function selPlan(p){
+  document.getElementById("planMo").classList.toggle("on",p==="mo");
+  document.getElementById("planYr").classList.toggle("on",p==="yr");
+  document.getElementById("ctaSub").textContent =
+    p==="mo" ? "4,99 €/mois · annulable en 2 clics" : "39,99 €/an · annulable en 2 clics";
+}
+</script>
+</body>
+</html>

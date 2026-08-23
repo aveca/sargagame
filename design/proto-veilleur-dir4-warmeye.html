@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Veilleur — Direction 4 · L'Œil-Chaud (warm eye max)</title>
+<style>
+  /* ============================================================
+     DIRECTION 4 — L'ŒIL-CHAUD POUSSÉ À FOND
+     Mandat : garder l'œil-lentille v2, mais aussi RASSURANT que
+     possible. Œil mi-clos serein qui regarde la MER (jamais
+     l'utilisateur). Chaleur max. Sert de CONTROL : prouve si un œil
+     PEUT rassurer. Scène élevée (yole, filets refaits, profondeur).
+     Réutilise le moteur v2 (1 rAF, toVB slice-aware, snap humeur,
+     reduced-motion floor, overlay LIVE+Anton+CTA).
+     ============================================================ */
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868;
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glit:#FFD884; --sand:#1C1712; --rim:#FFD884;
+    --display:"Anton","Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+    --ui:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    /* humeur courante (mutée par JS, crossfades doux) */
+    --mood:#1FB6A6;       /* lentille / teinte */
+    --moodHalo:#1FB6A6;   /* halo veilleur (chaleur) */
+    --moodDot:#22C55E;    /* pastille antenne */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#06140f;color:#fff;font-family:var(--ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+  #stage{position:fixed;inset:0;overflow:hidden}
+  svg#scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+  @keyframes uiIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .fadeIn{animation:uiIn 1.5s cubic-bezier(.22,1,.36,1) .35s both}
+
+  /* AMBIENT lent autorisé (doctrine calme) : lumière + nuages + houle lente */
+  @keyframes cloud{from{transform:translateX(0)}to{transform:translateX(64px)}}
+  @keyframes cloud2{from{transform:translateX(0)}to{transform:translateX(-46px)}}
+  @keyframes sunBreath{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.86;transform:scale(1.06)}}
+  @keyframes sailBreath{0%,100%{transform:translateX(0) rotate(0deg)}50%{transform:translateX(0) rotate(.5deg)}}
+  .cloud{animation:cloud 132s linear infinite alternate;transform-box:fill-box}
+  .cloud-b{animation:cloud2 168s linear infinite alternate;transform-box:fill-box}
+  #sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+
+  /* Ripple barrage (transitoire au clic) */
+  @keyframes ripple{from{r:2;opacity:.65;stroke-width:3}to{r:52;opacity:0;stroke-width:.5}}
+  .ripple{animation:ripple 1.2s cubic-bezier(.2,.6,.2,1) forwards}
+  @keyframes boomIn{from{opacity:0;transform:scale(.55) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .boom{animation:boomIn .5s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:center}
+
+  /* OVERLAY UI */
+  .ov{position:absolute;left:0;right:0;pointer-events:none}
+  .top{top:0;padding:16px 18px;display:flex;align-items:center;gap:12px}
+  .live{pointer-events:auto;display:inline-flex;align-items:center;gap:7px;background:rgba(8,20,15,.42);border:1px solid rgba(255,216,132,.28);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:6px 11px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.08em}
+  .live i{width:8px;height:8px;border-radius:50%;background:var(--moodDot);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:dot 2.6s ease-out infinite}
+  @keyframes dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .wm{font-family:var(--display);font-size:15px;letter-spacing:.04em;opacity:.92;text-transform:uppercase}
+  /* puce crédibilité satellite (caution) — discrète, en haut à droite */
+  .sat{margin-left:auto;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;background:rgba(8,20,15,.34);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:5px 10px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:.02em;color:rgba(255,255,255,.82)}
+  .sat svg{width:13px;height:13px;display:block}
+
+  .scrim{position:absolute;left:0;right:0;bottom:0;height:48%;pointer-events:none;
+    background:linear-gradient(to top,rgba(4,16,11,.66) 0%,rgba(4,16,11,.3) 42%,rgba(4,16,11,0) 100%)}
+
+  .bottom{bottom:0;padding:0 20px max(22px,env(safe-area-inset-bottom)) 20px;display:flex;flex-direction:column;gap:10px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--goldLL);text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .title{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.02em;line-height:.9;margin:0;font-size:clamp(40px,11.5vw,80px);text-shadow:0 2px 26px rgba(0,0,0,.5)}
+  .sub{max-width:31ch;font-size:15px;line-height:1.45;color:rgba(255,255,255,.92);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+  .cta{pointer-events:auto;align-self:flex-start;margin-top:8px;border:0;cursor:pointer;font-family:var(--ui);font-weight:800;font-size:16px;color:#1a1300;padding:14px 24px;border-radius:100px;
+    background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+    box-shadow:0 8px 26px rgba(232,148,0,.4),inset 0 1px 0 rgba(255,255,255,.55);
+    transition:transform .16s cubic-bezier(.175,.885,.32,1.275),box-shadow .25s ease}
+  .cta:hover{box-shadow:0 12px 32px rgba(232,148,0,.55),inset 0 1px 0 rgba(255,255,255,.6)}
+  .cta:active{transform:scale(.96)}
+  .hint{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);font-size:11.5px;letter-spacing:.06em;color:rgba(255,255,255,.62);pointer-events:none;text-shadow:0 1px 8px rgba(0,0,0,.6);white-space:nowrap}
+
+  @media (min-width:740px){
+    .bottom{padding-bottom:40px} .sub{font-size:17px} .hint{bottom:112px}
+  }
+
+  /* PLANCHER DUR reduced-motion — tableau figé, lisible, cliquable */
+  @media (prefers-reduced-motion:reduce){
+    #scene *{animation:none!important;transition:none!important}
+    .fadeIn{animation:none!important;opacity:1!important;transform:none!important}
+    .live i{animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-label="Le Veilleur, l'œil chaud mi-clos, veille la mer et la yole au lever du jour">
+    <defs>
+      <!-- ===== CIEL golden-hour imposé (montée en qualité : +1 stop, halo plus riche) ===== -->
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--sky0)"/>
+        <stop offset=".4" stop-color="var(--sky1)"/>
+        <stop offset=".72" stop-color="var(--sky2)"/>
+        <stop offset="1" stop-color="var(--sky3)"/>
+      </linearGradient>
+      <!-- lavis chaud bas-de-ciel : épaissit la lumière dorée près de l'horizon -->
+      <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
+        <stop offset=".55" stop-color="#C97E3A" stop-opacity=".26"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity=".52"/>
+      </linearGradient>
+      <!-- voile atmosphérique : adoucit l'horizon (profondeur aérienne) -->
+      <linearGradient id="hazeG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F2B05E" stop-opacity="0"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity=".30"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2a6f64"/>
+        <stop offset=".5" stop-color="#0f3b34"/>
+        <stop offset="1" stop-color="var(--seaB)"/>
+      </linearGradient>
+      <!-- bande chaude où l'allée du soleil touche la mer -->
+      <linearGradient id="seaWarm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F2B05E" stop-opacity=".34"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFF6E0"/>
+        <stop offset=".46" stop-color="var(--glit)"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+      </radialGradient>
+      <!-- FAISCEAU = LUMIÈRE DE VEILLE chaude, posée sur la MER (jamais un scan dur) -->
+      <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+        <stop offset="0" stop-color="var(--glit)" stop-opacity=".42"/>
+        <stop offset=".62" stop-color="var(--glit)" stop-opacity=".12"/>
+        <stop offset="1" stop-color="var(--glit)" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- LENTILLE de l'œil : dégradé marque conservé, plus de profondeur -->
+      <radialGradient id="lens" cx="38%" cy="30%" r="74%">
+        <stop offset="0" stop-color="#E6FBFF"/>
+        <stop offset=".3" stop-color="#1FB6A6"/>
+        <stop offset="1" stop-color="#042625"/>
+      </radialGradient>
+      <radialGradient id="irisG" cx="42%" cy="36%" r="64%">
+        <stop offset="0" stop-color="#0b403e"/>
+        <stop offset="1" stop-color="#03100f"/>
+      </radialGradient>
+
+      <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#214541"/>
+        <stop offset=".55" stop-color="#11302b"/>
+        <stop offset="1" stop-color="#0A1714"/>
+      </linearGradient>
+      <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#1b4763"/>
+        <stop offset="1" stop-color="#0B2230"/>
+      </linearGradient>
+      <!-- halo veilleur = CHALEUR (couleur d'humeur) -->
+      <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".58"/>
+        <stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".2"/>
+        <stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+      </radialGradient>
+      <!-- halo CHAUD permanent (le perso "rayonne" la chaleur — réassurance) -->
+      <radialGradient id="warmHalo" cx="50%" cy="46%" r="50%">
+        <stop offset="0" stop-color="#FFD884" stop-opacity=".34"/>
+        <stop offset=".55" stop-color="#FFC72C" stop-opacity=".1"/>
+        <stop offset="1" stop-color="#FFC72C" stop-opacity="0"/>
+      </radialGradient>
+      <!-- voiles de la yole : dégradés tissu chauds -->
+      <linearGradient id="sailA" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FFF1D6"/>
+        <stop offset="1" stop-color="#F2B05E"/>
+      </linearGradient>
+      <linearGradient id="sailB" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FFD884"/>
+        <stop offset="1" stop-color="#E8522A"/>
+      </linearGradient>
+      <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1FB6A6"/>
+        <stop offset="1" stop-color="#0c5f57"/>
+      </linearGradient>
+
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+      <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".028"/></feComponentTransfer><feComposite operator="over" in2="SourceGraphic"/></filter>
+
+      <!-- ============================================================
+           SYMBOLE RÉDUCTIBLE — la marque (silhouette 24px→1024px)
+           œil-chaud mi-clos + sourire-paupière + halo chaud + antenne.
+           Direction 4 : la SILHOUETTE doit lire "chaleur", pas "caméra".
+           ============================================================ -->
+      <symbol id="veilleur-glyph" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="56" fill="url(#warmHalo)"/>
+        <path d="M60 10
+                 C92 10 108 26 108 58
+                 C108 94 92 112 60 112
+                 C28 112 12 94 12 58
+                 C12 26 28 10 60 10 Z" fill="url(#bodyG)"/>
+        <line x1="60" y1="10" x2="60" y2="-10" stroke="#0e2622" stroke-width="5"/>
+        <circle cx="60" cy="-14" r="7" fill="var(--moodDot)"/>
+        <!-- œil-lentille MI-CLOS : la paupière chaude couvre le tiers haut -->
+        <circle cx="60" cy="58" r="33" fill="url(#lens)"/>
+        <circle cx="60" cy="58" r="33" fill="none" stroke="var(--gold)" stroke-width="5"/>
+        <circle cx="60" cy="58" r="16" fill="url(#irisG)"/>
+        <circle cx="54" cy="51" r="5.5" fill="#fff7e2"/>
+        <!-- paupière chaude descendue (mi-clos serein) -->
+        <path d="M27 58 Q60 36 93 58 L93 22 L27 22 Z" fill="url(#bodyG)"/>
+        <!-- COURBE-SOURIRE de paupière basse (le "sourire des yeux") -->
+        <path d="M40 74 Q60 86 80 74" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+
+    <!-- ===================== PLAN ARRIÈRE (parallaxe ~0) ===================== -->
+    <g id="pBack">
+      <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+      <rect id="warm" x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+
+      <!-- soleil bas + halo qui respire (golden-hour) -->
+      <circle id="sunGlow" cx="618" cy="212" r="132" fill="url(#sunG)"/>
+      <circle cx="618" cy="212" r="44" fill="#FFF7E2"/>
+
+      <!-- nuages longs lents (2 couches déphasées) -->
+      <g class="cloud" opacity=".4">
+        <ellipse cx="180" cy="112" rx="132" ry="11" fill="#10333E"/>
+        <ellipse cx="252" cy="126" rx="72" ry="7" fill="#10333E" opacity=".7"/>
+      </g>
+      <g class="cloud-b" opacity=".3">
+        <ellipse cx="500" cy="148" rx="104" ry="8" fill="#0d2c36"/>
+      </g>
+
+      <!-- vol d'oiseaux lointains (échelle + vie, profondeur) -->
+      <g opacity=".5" stroke="#0B2230" stroke-width="2.2" fill="none" stroke-linecap="round">
+        <path d="M690 128 q7 -6 14 0 q7 -6 14 0"/>
+        <path d="M722 138 q5 -4 10 0 q5 -4 10 0" opacity=".7"/>
+        <path d="M666 144 q5 -4 10 0 q5 -4 10 0" opacity=".6"/>
+      </g>
+
+      <!-- voile atmosphérique d'horizon (profondeur aérienne) -->
+      <rect x="-40" y="288" width="880" height="64" fill="url(#hazeG)"/>
+    </g>
+
+    <!-- ===================== PLAN MÉDIAN (parallaxe légère) ===================== -->
+    <g id="pMid">
+      <!-- îles-silhouettes lointaines (2 plans = profondeur) -->
+      <path d="M40 332 q70 -34 150 -30 q60 3 96 30 Z" fill="#0a2a2c" opacity=".5"/>
+      <path d="M560 333 q56 -22 120 -20 q48 2 84 20 Z" fill="#0a2a2c" opacity=".38"/>
+
+      <!-- mer -->
+      <rect x="-40" y="330" width="880" height="312" fill="url(#sea)"/>
+      <!-- bande chaude de la mer sous le soleil -->
+      <rect x="-40" y="330" width="880" height="120" fill="url(#seaWarm)"/>
+
+      <!-- ALLÉE scintillante du soleil (étendue, dégradée vers le perso) -->
+      <g id="sunPath" opacity=".92">
+        <ellipse cx="618" cy="350" rx="86" ry="6" fill="var(--glit)" opacity=".5"/>
+        <ellipse cx="604" cy="366" rx="64" ry="5" fill="var(--glit)" opacity=".42"/>
+        <ellipse cx="588" cy="384" rx="48" ry="4.5" fill="var(--glit)" opacity=".34"/>
+        <ellipse cx="566" cy="404" rx="34" ry="4" fill="var(--glit)" opacity=".26"/>
+        <ellipse cx="540" cy="426" rx="24" ry="3.5" fill="var(--glit)" opacity=".2"/>
+        <ellipse cx="512" cy="448" rx="16" ry="3" fill="var(--glit)" opacity=".15"/>
+      </g>
+
+      <!-- houle douce (REFAITE : courbes fluides, plus de "filet"/grille cheap) -->
+      <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" fill="none" opacity=".42">
+        <path d="M70 392 q26 -5 52 0 t52 0"/>
+        <path d="M250 432 q24 -5 48 0 t48 0"/>
+        <path d="M440 472 q30 -5 60 0 t60 0"/>
+        <path d="M120 506 q26 -5 52 0 t52 0"/>
+      </g>
+    </g>
+
+    <!-- ===================== PLAN AVANT (parallaxe + acteurs) ===================== -->
+    <g id="pFront">
+      <!-- FAISCEAU de veille (lumière chaude posée sur la MER, émis sous l'œil) -->
+      <g id="beamG">
+        <polygon id="beam" points="0,0 -64,206 64,206" fill="url(#beamGrad)" opacity="0"/>
+      </g>
+      <!-- halo doux de veille sur l'eau (au lieu d'un anneau de "scan" dur) -->
+      <ellipse id="scanRing" cx="300" cy="362" rx="46" ry="9" fill="url(#warmHalo)" stroke="var(--glit)" stroke-width="1" stroke-opacity=".4" opacity="0"/>
+
+      <!-- ============================================================
+           LA YOLE RONDE de Martinique — voile traditionnelle colorée.
+           Donne vie + échelle + âme locale. Calée dans l'allée du soleil,
+           se balance très lentement (ambient toléré).
+           ============================================================ -->
+      <g id="yole" transform="translate(330 430)">
+        <g style="animation:sailBreath 9s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%">
+          <!-- reflet de la coque sur l'eau (crédibilité reflets) -->
+          <ellipse cx="0" cy="34" rx="46" ry="6" fill="#08251F" opacity=".5"/>
+          <!-- coque ronde (gommier / yole) -->
+          <path d="M-46 24 Q0 50 46 24 Q40 36 0 38 Q-40 36 -46 24 Z" fill="url(#hullG)" stroke="#063f39" stroke-width="1.5"/>
+          <!-- liston clair -->
+          <path d="M-44 24 Q0 44 44 24" fill="none" stroke="#FFE47A" stroke-width="2" stroke-opacity=".7"/>
+          <!-- mât + bôme -->
+          <line x1="-2" y1="26" x2="-6" y2="-58" stroke="#3a2a18" stroke-width="3" stroke-linecap="round"/>
+          <!-- grand-voile (ocre lumineux) -->
+          <path d="M-6 -58 Q34 -36 30 22 L-4 24 Z" fill="url(#sailA)" stroke="#E89400" stroke-width="1" stroke-opacity=".5"/>
+          <!-- voile avant (corail = âme caribéenne) -->
+          <path d="M-6 -50 Q-40 -18 -38 22 L-6 22 Z" fill="url(#sailB)" stroke="#E8522A" stroke-width="1" stroke-opacity=".4"/>
+          <!-- couture des voiles (détail craft, pas une grille) -->
+          <path d="M-6 -42 Q18 -20 16 18 M-6 -34 Q4 -16 4 16" fill="none" stroke="#E89400" stroke-width=".8" stroke-opacity=".35"/>
+          <!-- petit fanion -->
+          <path d="M-6 -58 l10 4 l-10 4 z" fill="#22C55E"/>
+        </g>
+        <!-- reflets des voiles sur l'eau (miroir doux, anti-bof) -->
+        <path d="M-6 38 Q30 54 26 70 L-2 40 Z" fill="url(#sailA)" opacity=".18"/>
+      </g>
+
+      <!-- RADEAU de sargasses (se rapproche/grossit en alerte) — refait plus organique -->
+      <g id="raft" transform="translate(584 416)" opacity=".95">
+        <ellipse cx="0" cy="6" rx="44" ry="6" fill="#08251F" opacity=".4"/>
+        <ellipse cx="0" cy="0" rx="42" ry="9" fill="#3a4a1e"/>
+        <ellipse cx="-20" cy="-4" rx="17" ry="6" fill="#4d6326"/>
+        <ellipse cx="16" cy="3" rx="15" ry="5" fill="#2f3d18"/>
+        <ellipse cx="-2" cy="5" rx="22" ry="5" fill="#56702c"/>
+        <ellipse cx="24" cy="-2" rx="11" ry="4" fill="#445a24"/>
+      </g>
+
+      <!-- tortue posée (figée au repos = tableau) -->
+      <g id="turtle" transform="translate(150 498)" opacity=".88">
+        <ellipse cx="0" cy="0" rx="30" ry="19" fill="#0c4b44"/>
+        <ellipse cx="0" cy="-2" rx="22" ry="13" fill="#11635a"/>
+        <path d="M-2 -13 l4 0 l3 8 l-10 0 z" fill="#0a423c"/>
+        <path d="M-9 9 l5 8 M9 9 l5 8 M-22 -4 l-9 3 M22 -4 l9 3" stroke="#0c4b44" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="26" cy="-3" rx="8" ry="6" fill="#0c4b44"/>
+        <circle cx="29" cy="-4" r="1.6" fill="#06140f"/>
+      </g>
+
+      <!-- poisson (s'éloigne au tap) -->
+      <g id="fish" transform="translate(440 460)" style="cursor:pointer">
+        <path d="M0 0 q14 -9 30 0 q-14 9 -30 0 z" fill="#1EC8B0"/>
+        <path d="M0 0 l-12 -7 l3 7 l-3 7 z" fill="#0f8f7e"/>
+        <circle cx="22" cy="-1" r="2" fill="#06140f"/>
+      </g>
+
+      <!-- ============================================================
+           LE VEILLEUR — L'ŒIL-CHAUD (Direction 4)
+           gPose = posture (translate+rotate) — JS
+             gLife = micro-vie (respiration/flottaison) — JS
+               gBody = corps + œil mi-clos serein + sourire de paupière
+           Ancre scène : translate(EYE.x, 196). Œil centré local (0,4).
+           CLÉ RÉASSURANCE : le regard est BORNÉ vers la mer ; jamais il ne
+           remonte fixer l'utilisateur. La paupière reste mi-close (serein).
+           ============================================================ -->
+      <!-- halo CHAUD permanent derrière le perso (il rayonne la chaleur) -->
+      <circle id="warmRay" cx="300" cy="196" r="150" fill="url(#warmHalo)" opacity=".7"/>
+      <!-- halo d'humeur (couleur) -->
+      <circle id="halo" cx="300" cy="196" r="116" fill="url(#haloG)" filter="url(#soft)" opacity=".5"/>
+
+      <g id="gPose" transform="translate(400 196)">
+       <g id="gLife">
+        <g id="gBody" transform="scale(1.42)">
+
+          <!-- panneaux solaires (instrument = caution crédibilité) -->
+          <g>
+            <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+            <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+            <g stroke="#2f7390" stroke-width="1" opacity=".6">
+              <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+              <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+            </g>
+            <!-- bord chaud des panneaux (golden-hour rim) -->
+            <line x1="-86" y1="22" x2="-30" y2="22" stroke="var(--rim)" stroke-width="1.4" stroke-opacity=".5" transform="rotate(-7 -58 7)"/>
+            <line x1="30" y1="22" x2="86" y2="22" stroke="var(--rim)" stroke-width="1.4" stroke-opacity=".5" transform="rotate(7 58 7)"/>
+          </g>
+          <!-- bras -->
+          <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+
+          <!-- CORPS = squircle (joues > sommet = baby-schema, chaleur) -->
+          <path d="M0 -30
+                   C20 -30 32 -20 32 0
+                   C32 24 22 42 0 42
+                   C-22 42 -32 24 -32 0
+                   C-32 -20 -20 -30 0 -30 Z"
+                fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+          <!-- rim-light chaud (bord droit) — golden-hour sur le corps -->
+          <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.6" stroke-opacity=".62" stroke-linecap="round"/>
+
+          <!-- ===== ŒIL-CHAUD (cœur du perso) ===== -->
+          <!-- lentille -->
+          <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
+          <!-- FIX blocker v2 : la LENTILLE (plus grand élément) porte la couleur d'humeur -->
+          <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".4"/>
+          <!-- anneaux d'objectif (crédibilité instrument, dorés chauds) -->
+          <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+          <circle cx="0" cy="4" r="22" fill="none" stroke="#06201f" stroke-width="1" stroke-opacity=".8"/>
+          <circle cx="0" cy="4" r="16.5" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-opacity=".5"/>
+
+          <!-- groupe iris (translaté par le regard, BORNÉ bas) -->
+          <g id="gIris">
+            <circle id="iris" cx="0" cy="0" r="8" fill="url(#irisG)"/>
+            <circle id="irisTint" cx="0" cy="0" r="8" fill="var(--mood)" opacity=".5"/>
+            <circle id="pupil" cx="0" cy="0" r="3.4" fill="#02100f"/>
+            <!-- double catchlight CHAUD : gros soleil fixe + petit qui dérive -->
+            <circle id="catchA" cx="-3" cy="-3.4" r="3" fill="#fff7e2"/>
+            <circle id="catchB" cx="3.4" cy="2.6" r="1.3" fill="#FFE47A" opacity=".9"/>
+          </g>
+
+          <!-- PAUPIÈRES = arcs réécrits par JS. Direction 4 : paupière HAUTE
+               reste BASSE (mi-close) en permanence → registre "serein/bienveillant",
+               jamais "grand œil fixe qui scrute". -->
+          <path id="lidTop" d="M-22 4 Q0 -8 22 4 L22 -22 L-22 -22 Z" fill="url(#bodyG)"/>
+          <path id="lidBot" d="M-22 4 Q0 24 22 4 L22 28 L-22 28 Z" fill="url(#bodyG)"/>
+          <!-- masque circulaire : borne les paupières au disque de lentille -->
+          <circle cx="0" cy="4" r="22.2" fill="none" stroke="url(#bodyG)" stroke-width="6" opacity="1"/>
+          <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+
+          <!-- SOURIRE DES YEUX : courbe douce dorée sous l'œil (paupière basse souriante)
+               = le levier de réassurance n°1. Réécrite par JS selon l'humeur. -->
+          <path id="smile" d="M-13 16 Q0 24 13 16" fill="none" stroke="var(--gold)" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+
+          <!-- ARC-SOURCIL doux (chaleur, jamais froncé en calme) -->
+          <path id="brow" d="M-15 -16 Q0 -21 15 -16" fill="none" stroke="#0a1f1c" stroke-width="3.2" stroke-linecap="round" opacity=".82"/>
+
+          <!-- antenne -->
+          <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+          <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+          <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
+        </g>
+       </g>
+      </g>
+    </g>
+
+    <!-- grain -->
+    <rect x="0" y="0" width="800" height="600" filter="url(#grain)" opacity=".42" pointer-events="none"/>
+  </svg>
+
+  <!-- assombrissement local sous le texte -->
+  <div class="scrim"></div>
+
+  <!-- Overlay marque -->
+  <div class="ov top fadeIn">
+    <span class="live"><i></i> EN TEMPS RÉEL</span>
+    <span class="wm">Sargasses</span>
+    <!-- caution crédibilité : la donnée vient d'un VRAI satellite -->
+    <span class="sat" title="Donnée satellite Copernicus, 4 passages/jour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FFE47A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l4 4M14 10l-4 4M5 9l-2 2 4 4 2-2M13 17l2-2 4 4-2 2zM14 6l4 4M12 8l4 4"/></svg>
+      Satellite
+    </span>
+  </div>
+
+  <div class="hint fadeIn" id="hint">il veille la mer, serein · touche l'eau</div>
+
+  <div class="ov bottom fadeIn">
+    <span class="eyebrow" id="eyebrow">Martinique · Aujourd'hui</span>
+    <h1 class="title">La mer,<br>veillée pour toi.</h1>
+    <p class="sub">Au lever du jour, le Veilleur garde un œil sur la mer — pas sur toi. Propre, ou pas : tu le sauras avant de partir.</p>
+    <button class="cta" id="cta">Voir ma plage →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- noeuds ----
+  var svg      = document.getElementById("scene");
+  var pMid     = document.getElementById("pMid");
+  var pFront   = document.getElementById("pFront");
+  var gPose    = document.getElementById("gPose");
+  var gLife    = document.getElementById("gLife");
+  var gIris    = document.getElementById("gIris");
+  var iris     = document.getElementById("iris");
+  var irisTint = document.getElementById("irisTint");
+  var pupil    = document.getElementById("pupil");
+  var catchA   = document.getElementById("catchA");
+  var catchB   = document.getElementById("catchB");
+  var lidTop   = document.getElementById("lidTop");
+  var lidBot   = document.getElementById("lidBot");
+  var smile    = document.getElementById("smile");
+  var brow     = document.getElementById("brow");
+  var halo     = document.getElementById("halo");
+  var warmRay  = document.getElementById("warmRay");
+  var beamG    = document.getElementById("beamG");
+  var beam     = document.getElementById("beam");
+  var scanRing = document.getElementById("scanRing");
+  var raft     = document.getElementById("raft");
+  var fish     = document.getElementById("fish");
+  var turtle   = document.getElementById("turtle");
+  var ant      = document.getElementById("ant");
+  var cta      = document.getElementById("cta");
+  var hint     = document.getElementById("hint");
+  var eyebrow  = document.getElementById("eyebrow");
+  var rootStyle= document.documentElement.style;
+
+  var RM=false; try{RM=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+
+  // ---- géométrie : le VRAI œil en coords viewBox ----
+  // ancre gPose translate(400,196) ; œil local (0, 4)*scale(1.42) ≈ (0, 5.7)
+  var EYE = {x:400, y:201.7};
+
+  // ---- utils ----
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function easeInOut(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+  function hx(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
+  function mix(a,b,t){var A=hx(a),B=hx(b);return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')';}
+
+  // clientXY -> coords viewBox (slice = cover)
+  function toVB(clientX,clientY){
+    var r=svg.getBoundingClientRect();
+    var vw=800,vh=600, sc=Math.max(r.width/vw,r.height/vh);
+    var dw=vw*sc,dh=vh*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
+    return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
+  }
+
+  // ============================================================
+  //  PALETTES D'HUMEUR — Direction 4 : 3 humeurs SANS jamais flipper.
+  //  La paupière reste MI-CLOSE même en alerte (registre "concerné mais
+  //  serein", pas "œil grand ouvert qui scrute"). smile = ouverture du
+  //  sourire des yeux. lidTop reste haut (>0) en permanence.
+  //  irisR modéré (un œil dilaté à fond = registre peur/prédateur).
+  // ============================================================
+  var MOODS = {
+    calm:  { mood:'#1FB6A6', halo:'#1FB6A6', dot:'#22C55E', irisR:7.0,  pose:0,    lift:0,  browLift:-1.2, lidTop:.34, lidBot:.18, smile:.85, beam:0   },
+    scan:  { mood:'#FFC72C', halo:'#E8A800', dot:'#FFC72C', irisR:8.0,  pose:2.6,  lift:0,  browLift:.4,   lidTop:.22, lidBot:.06, smile:.5,  beam:1   },
+    alert: { mood:'#E8522A', halo:'#E8522A', dot:'#E8522A', irisR:8.4,  pose:-2.4, lift:-4, browLift:2.0,  lidTop:.16, lidBot:.04, smile:.25, beam:.25 }
+  };
+  var M = clone(MOODS.calm), MT = clone(MOODS.calm);
+  function clone(o){var n={};for(var k in o)n[k]=o[k];return n;}
+  function setMoodTarget(name){ if(MOODS[name]) MT=clone(MOODS[name]); curMoodName=name; }
+  var curMoodName='calm';
+
+  // setMood public : branché sur le VRAI score plage (honnêteté = pricing)
+  // score >=70 calme · 40-69 scan · <40 alerte.
+  function setMoodFromScore(score){
+    if(score>=70) setMoodTarget('calm');
+    else if(score>=40) setMoodTarget('scan');
+    else setMoodTarget('alert');
+  }
+  window.setVeilleurScore = setMoodFromScore; // hook data-driven externe
+
+  // ============================================================
+  //  PAUPIÈRES + SOURIRE — réécrits selon mood + blink.
+  //  Direction 4 : la paupière haute ne s'ouvre JAMAIS au-delà de mi-clos.
+  // ============================================================
+  function setLids(blink){
+    var cy=4;
+    // fermeture haut/bas (mood déforme, blink ferme tout)
+    // lidTop élevé = paupière BASSE (mi-clos). Plancher 0.12 = jamais grand ouvert.
+    var kT = clamp(M.lidTop + blink, 0.10, 1);
+    var kB = clamp(M.lidBot + blink, 0.0, 1);
+    var cpTop = lerp(-20, cy+1, kT);   // kT->1 : paupière haute descend jusqu'au centre
+    var cpBot = lerp(28,  cy-1, kB);
+    lidTop.setAttribute('d','M-22 '+cy+' Q0 '+cpTop+' 22 '+cy+' L22 -22 L-22 -22 Z');
+    lidBot.setAttribute('d','M-22 '+cy+' Q0 '+cpBot+' 22 '+cy+' L22 30 L-22 30 Z');
+  }
+  function setSmile(){
+    // sourire des yeux : amplitude de la courbe vers le bas selon M.smile
+    var amp = lerp(2, 10, clamp(M.smile,0,1));   // 2px (plat) -> 10px (grand sourire)
+    smile.setAttribute('d','M-13 16 Q0 '+(16+amp).toFixed(1)+' 13 16');
+    smile.setAttribute('opacity',(0.5+0.4*clamp(M.smile,0,1)).toFixed(2));
+  }
+
+  // ============================================================
+  //  REGARD lissé — CLÉ DE RÉASSURANCE : le regard est BORNÉ à la MER.
+  //  Le veilleur ne remonte JAMAIS fixer l'utilisateur. ey est clampé >=0
+  //  (l'iris ne monte jamais au-dessus du centre = il regarde vers le bas/la mer).
+  // ============================================================
+  var tx=EYE.x, ty=430, cx=EYE.x, cy=430;
+  var pointerActive=false;
+  var POI = [ {x:440,y:460}, {x:584,y:416}, {x:330,y:430}, {x:150,y:498} ];
+
+  function onMove(e){
+    var p=toVB(e.clientX,e.clientY);
+    // Direction 4 : il "accompagne" le curseur uniquement vers la MER.
+    // Si le curseur est au-dessus de l'eau (vers le user/ciel), il garde
+    // les yeux sur la mer devant (ty plancher = 360). Réassurance dure.
+    tx=clamp(p.x, 60, 740);
+    ty=clamp(p.y, 360, 560);
+    pointerActive=true; lastInput=now(); saccadeUntil=0;
+    wake();
+  }
+
+  // clic mer = barrage + ripple ; le Veilleur valide d'un cligne complice
+  svg.addEventListener("pointerdown",function(e){
+    var p=toVB(e.clientX,e.clientY);
+    if(e.target===fish || fish.contains(e.target)){ flee(); return; }
+    if(p.y<334) { tapVeilleurMaybe(p); return; }
+    dropBarrage(p.x,p.y);
+    blinkNow(170, true);
+    tx=clamp(p.x,40,760); ty=clamp(p.y,360,560); saccadeUntil=now()+1400;
+    wake();
+  });
+
+  function tapVeilleurMaybe(p){
+    var dx=p.x-EYE.x, dy=p.y-EYE.y;
+    if(dx*dx+dy*dy < 64*64){
+      var order=['calm','scan','alert'];
+      var i=(order.indexOf(curMoodName)+1)%3;
+      setMoodTarget(order[i]);
+      blinkNow(150,true);
+      updateHint(order[i]);
+      wake();
+    }
+  }
+
+  function updateHint(m){
+    var t = m==='calm' ? "mer propre — il veille, serein"
+          : m==='scan' ? "il mesure ta plage en direct"
+          : "sargasses repérées — il te prévient (calmement)";
+    hint.textContent=t;
+    hint.style.opacity='1';
+  }
+
+  function flee(){
+    var dx=(Math.random()*130-30), dy=(Math.random()*40-26);
+    var nx=clamp(440+dx,60,720), ny=clamp(460+dy,360,540);
+    fishX=nx; fishY=ny; fishFlip=(dx<0?-1:1); fishTween=now();
+    tx=nx; ty=ny; saccadeUntil=now()+1300;
+    wake();
+  }
+  var fishX=440,fishY=460,fishFlip=1,fishTween=-1,fishFromX=440,fishFromY=460;
+
+  function dropBarrage(x,y){
+    y=clamp(y,338,560);
+    var ns="http://www.w3.org/2000/svg";
+    var rip=document.createElementNS(ns,"circle");
+    rip.setAttribute("cx",x);rip.setAttribute("cy",y);
+    rip.setAttribute("fill","none");rip.setAttribute("stroke","var(--glit)");
+    rip.setAttribute("stroke-width","2");rip.setAttribute("class","ripple");
+    pFront.appendChild(rip);
+    setTimeout(function(){rip.remove();},1250);
+    if(RM) return;
+    var g=document.createElementNS(ns,"g");g.setAttribute("class","boom");g.setAttribute("opacity",".96");
+    var line=document.createElementNS(ns,"line");
+    line.setAttribute("x1",x-26);line.setAttribute("y1",y);line.setAttribute("x2",x+26);line.setAttribute("y2",y);
+    line.setAttribute("stroke","#0e2622");line.setAttribute("stroke-width","3");g.appendChild(line);
+    for(var i=-2;i<=2;i++){
+      var b=document.createElementNS(ns,"circle");
+      b.setAttribute("cx",x+i*13);b.setAttribute("cy",y);b.setAttribute("r","4.4");
+      b.setAttribute("fill",i%2?"#FFC72C":"#1FB6A6");g.appendChild(b);
+    }
+    pFront.appendChild(g);
+    var booms=pFront.querySelectorAll(".boom");
+    if(booms.length>6) booms[0].remove();
+  }
+
+  // CTA "désigné" quand le curseur approche
+  var ctaR=null;
+  function refreshCtaRect(){ ctaR=cta.getBoundingClientRect(); }
+  refreshCtaRect();
+  window.addEventListener("resize",function(){ refreshCtaRect(); });
+  cta.addEventListener("pointerenter",function(){ ctaHot=now(); });
+  var ctaHot=0;
+  cta.addEventListener("click",function(){
+    var o=cta.textContent;
+    cta.textContent="✓ ouverture de ta plage…";
+    blinkNow(140,true);
+    setMoodTarget('calm');
+    setTimeout(function(){cta.textContent=o;},1500);
+  });
+
+  // ============================================================
+  //  TIMELINE INTRO (même horloge que la boucle réactive)
+  // ============================================================
+  var t0=performance.now();
+  function now(){return performance.now();}
+  var introDone=RM;
+  var lastInput=-1, saccadeUntil=0;
+  function introProgress(){ return clamp((now()-t0)/3600,0,1); }
+
+  // BLINK + RESPIRATION
+  var blinkStart=-1, blinkDur=180, blinkComplice=false, nextBlink=now()+rand(2600,4200);
+  var nextSaccade=now()+rand(4000,7000);
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function blinkNow(dur,complice){ blinkStart=now(); blinkDur=dur||180; blinkComplice=!!complice; wake(); }
+
+  // PARALLAXE légère (input only)
+  var paMidX=0,paMidY=0, paFrX=0,paFrY=0;
+
+  // IDLE-STOP du rAF
+  var paused=false, raf=0;
+  function wake(){ if(!RM && !paused && !raf){ raf=requestAnimationFrame(tick); } }
+  var raftK=0;
+
+  // ============================================================
+  //  BOUCLE UNIQUE
+  // ============================================================
+  function tick(ts){
+    raf=0;
+    if(paused||RM) return;
+    var t=now();
+
+    // ---------- humeur : lerp lent ----------
+    var ms=.02;
+    M.irisR  = lerp(M.irisR, MT.irisR, ms);
+    M.pose   = lerp(M.pose, MT.pose, ms);
+    M.lift   = lerp(M.lift, MT.lift, ms);
+    M.browLift=lerp(M.browLift, MT.browLift, ms);
+    M.lidTop = lerp(M.lidTop, MT.lidTop, ms);
+    M.lidBot = lerp(M.lidBot, MT.lidBot, ms);
+    M.smile  = lerp(M.smile, MT.smile, ms);
+    M.beam   = lerp(M.beam, MT.beam, ms);
+    // couleurs (crossfade)
+    var moodCol = mixCss(getCss('--mood'), MT.mood, ms);
+    var haloCol = mixCss(getCss('--moodHalo'), MT.halo, ms);
+    var dotCol  = mixCss(getCss('--moodDot'), MT.dot, ms);
+    rootStyle.setProperty('--mood', moodCol);
+    rootStyle.setProperty('--moodHalo', haloCol);
+    rootStyle.setProperty('--moodDot', dotCol);
+    // FIX blocker v2 : snap aux VRAIES couleurs marque une fois stabilisé
+    if(Math.abs(M.irisR-MT.irisR)<0.05){ rootStyle.setProperty('--mood',MT.mood); rootStyle.setProperty('--moodHalo',MT.halo); rootStyle.setProperty('--moodDot',MT.dot); }
+
+    // iris dilatation (modérée — jamais "œil de prédateur")
+    iris.setAttribute('r', M.irisR.toFixed(2));
+    irisTint.setAttribute('r', M.irisR.toFixed(2));
+    pupil.setAttribute('r', (M.irisR*0.42).toFixed(2));
+
+    // ---------- regard au repos : revient DOUCEMENT vers la mer ----------
+    if(pointerActive && t-lastInput<1100){
+      // accompagne le curseur (déjà borné mer dans onMove)
+    } else if(t>saccadeUntil){
+      // doctrine calme : aucune saccade autonome. Le regard se pose sur la mer.
+      tx=lerp(tx,EYE.x,.02); ty=lerp(ty,440,.02);
+    }
+
+    // ---------- regard lissé ----------
+    cx=lerp(cx,tx,.08); cy=lerp(cy,ty,.08);
+    var ex=clamp((cx-EYE.x)/48, -3.4, 3.4);
+    // RÉASSURANCE DURE : ey BORNÉ >= 0.4 → l'iris est toujours bas (regarde la mer),
+    // jamais il ne remonte fixer l'utilisateur.
+    var ey=clamp((cy-EYE.y)/60, 0.4, 4);
+    gIris.setAttribute('transform','translate('+ex.toFixed(2)+' '+ey.toFixed(2)+')');
+    catchB.setAttribute('cx',(3.4+ex*.7).toFixed(2));
+    catchB.setAttribute('cy',(2.6+ey*.7).toFixed(2));
+
+    // ---------- micro-vie : respiration + flottaison ----------
+    var breathe = Math.sin(t/3300)*2.0;
+    var floatR  = Math.sin(t/5500)*0.6;
+    gLife.setAttribute('transform','translate(0 '+breathe.toFixed(2)+') rotate('+floatR.toFixed(3)+')');
+
+    // ---------- posture (g externe) — pivot AUTOUR du perso (FIX v2) ----------
+    var poseAng = M.pose + floatR*0.3;
+    gPose.setAttribute('transform','translate('+(EYE.x).toFixed(1)+' '+(196+M.lift).toFixed(1)+') rotate('+poseAng.toFixed(2)+')');
+
+    // ---------- blink ----------
+    var blinkK=0;
+    if(blinkStart>0){
+      var bt=(t-blinkStart)/blinkDur;
+      if(bt>=1){ blinkStart=-1; }
+      else { blinkK = bt<.5 ? easeInOut(bt*2) : easeInOut((1-bt)*2); }
+    }
+    if(t>nextBlink && blinkStart<0){ blinkNow(180,false); nextBlink=t+rand(3200,6500); }
+    setLids(blinkK);
+    setSmile();
+
+    // sourcil doux (jamais froncé en calme)
+    var bl = M.browLift;
+    brow.setAttribute('d','M-15 '+(-16+bl*0.2).toFixed(2)+' Q0 '+(-21+bl).toFixed(2)+' 15 '+(-16+bl*0.2).toFixed(2));
+
+    // ---------- halos : suivent la respiration (chaleur qui "vit" doucement) ----------
+    halo.setAttribute('opacity',(0.42+0.12*Math.sin(t/3300)+0.05).toFixed(3));
+    warmRay.setAttribute('opacity',(0.6+0.1*Math.sin(t/4200)).toFixed(3));
+
+    // ---------- faisceau de VEILLE (lumière chaude sur la mer) ----------
+    var introT=introProgress();
+    var beamOn = M.beam;
+    var sweep=0, sweepOp=0;
+    if(introT<1 && !introDone){
+      if(introT>0.32){
+        var s=clamp((introT-0.32)/0.68,0,1);
+        sweep = (-12 + 22*easeInOut(s));     // balaye doux gauche->droite
+        sweepOp = Math.sin(s*Math.PI)*0.8;
+      }
+    } else { introDone=true; }
+
+    // l'angle suit la cible MAIS reste pointé VERS LE BAS (la mer)
+    var ang=Math.atan2(cy-EYE.y, cx-EYE.x)*180/Math.PI-90;
+    ang=clamp(ang,-22,22);
+    if(!introDone) ang=sweep;
+    beamG.setAttribute('transform','translate('+EYE.x+' '+(EYE.y+8)+') rotate('+ang.toFixed(2)+')');
+    var bOp = introDone ? beamOn*0.8 : Math.max(sweepOp,beamOn*0.8);
+    beam.setAttribute('opacity',bOp.toFixed(3));
+
+    // halo de veille sur l'eau (doux, pas un anneau de scan dur)
+    var hitX=EYE.x+Math.tan(clamp(ang,-22,22)*Math.PI/180)*(370-EYE.y);
+    scanRing.setAttribute('cx',clamp(hitX,40,760));
+    scanRing.setAttribute('opacity',(bOp*0.7).toFixed(3));
+    scanRing.setAttribute('rx',(46+6*Math.abs(Math.sin(t/2600))*beamOn).toFixed(2));
+
+    // antenne : pulse TRÈS doux en scan
+    if(beamOn>0.4){
+      ant.setAttribute('opacity',(0.85+0.15*Math.abs(Math.sin(t/2200))).toFixed(2));
+    } else ant.setAttribute('opacity','1');
+
+    // ---------- radeau : se rapproche en alerte ----------
+    var alertK = curMoodName==='alert' ? 1 : 0;
+    raftK = lerp(raftK, alertK, .015);
+    var rx=584 - raftK*64, ry=416 + raftK*20, rs=1+raftK*0.32;
+    raft.setAttribute('transform','translate('+rx.toFixed(1)+' '+ry.toFixed(1)+') scale('+rs.toFixed(3)+')');
+    if(curMoodName==='alert' && t>nextSaccade-3000 && Math.sin(t/2000)>0.4){
+      tx=rx; ty=ry; saccadeUntil=t+1200;
+    }
+
+    // ---------- poisson tween ----------
+    if(fishTween>0){
+      var ft=clamp((t-fishTween)/900,0,1);
+      var e=easeInOut(ft);
+      var fx=lerp(fishFromX,fishX,e), fy=lerp(fishFromY,fishY,e);
+      fish.setAttribute('transform','translate('+fx.toFixed(1)+' '+fy.toFixed(1)+') scale('+fishFlip+' 1)');
+      if(ft>=1){ fishTween=-1; fishFromX=fishX; fishFromY=fishY; }
+    }
+
+    // tortue : FIGÉE au repos (tableau, pas aquarium).
+
+    // ---------- parallaxe légère (input only) ----------
+    if(pointerActive){
+      var ndx=(cx-400), ndy=(cy-300);
+      paMidX=lerp(paMidX, clamp(-ndx*0.012,-6,6), .06);
+      paMidY=lerp(paMidY, clamp(-ndy*0.010,-4,4), .06);
+      paFrX =lerp(paFrX,  clamp(-ndx*0.030,-10,10), .06);
+      paFrY =lerp(paFrY,  clamp(-ndy*0.020,-6,6), .06);
+    } else {
+      paMidX=lerp(paMidX,0,.04); paMidY=lerp(paMidY,0,.04);
+      paFrX=lerp(paFrX,0,.04);   paFrY=lerp(paFrY,0,.04);
+    }
+    pMid.setAttribute('transform','translate('+paMidX.toFixed(2)+' '+paMidY.toFixed(2)+')');
+    pFront.setAttribute('transform','translate('+paFrX.toFixed(2)+' '+paFrY.toFixed(2)+')');
+
+    // ---------- CTA "désigné" ----------
+    if(ctaHot && t-ctaHot<1800 && ctaR){
+      var c=toVB(ctaR.left+ctaR.width/2, ctaR.top+ctaR.height/2);
+      tx=clamp(c.x,60,740); ty=clamp(c.y,360,560); saccadeUntil=t+800;
+    }
+
+    if(!RM) requestAnimationFrame(tick);
+  }
+
+  // ---- helpers couleur ----
+  function getCss(name){
+    var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v||'#1FB6A6';
+  }
+  function mixCss(curr, target, t){ return mix(toHex(curr), toHex(target), t); }
+  function toHex(c){
+    c=c.trim();
+    if(c[0]==='#') return c.length===4 ? '#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3] : c;
+    var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); }
+    return '#1FB6A6';
+  }
+
+  // ============================================================
+  //  DÉMARRAGE
+  // ============================================================
+  if(!RM){
+    window.addEventListener("pointermove",onMove,{passive:true});
+    // ouvre en CALME (tableau serein). Signature au load = beam-sweep doux.
+    setMoodTarget('calm'); updateHint('calm');
+    requestAnimationFrame(tick);
+  } else {
+    // reduced-motion = TABLEAU figé sur une pose CALME sereine
+    M=clone(MOODS.calm); MT=clone(MOODS.calm); curMoodName='calm';
+    rootStyle.setProperty('--mood', MOODS.calm.mood);
+    rootStyle.setProperty('--moodHalo', MOODS.calm.halo);
+    rootStyle.setProperty('--moodDot', MOODS.calm.dot);
+    iris.setAttribute('r', MOODS.calm.irisR);
+    irisTint.setAttribute('r', MOODS.calm.irisR);
+    pupil.setAttribute('r', (MOODS.calm.irisR*0.42).toFixed(2));
+    setLids(0);
+    setSmile();
+    brow.setAttribute('d','M-15 -16 Q0 '+(-21+MOODS.calm.browLift)+' 15 -16');
+    halo.setAttribute('opacity','.5');
+    warmRay.setAttribute('opacity','.6');
+    beam.setAttribute('opacity','0');
+    scanRing.setAttribute('opacity','0');
+    // regard posé doux vers la mer (bas)
+    gIris.setAttribute('transform','translate(0 2.2)');
+  }
+
+  // pause sur visibilitychange (unique rAF)
+  document.addEventListener("visibilitychange",function(){
+    paused=document.hidden;
+    if(!paused && !RM && !raf){ raf=requestAnimationFrame(tick); }
+  });
+
+  setTimeout(refreshCtaRect, 400);
+})();
+</script>
+</body>
+</html>

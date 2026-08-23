@@ -1,0 +1,120 @@
+{
+  "faq": [
+    {
+      "q": "When does sargassum season hit the Bahamas?",
+      "a": "The active window runs roughly May through September, peaking June to August — but here is the honest part: the Bahamas sit on the northern fringe of the Great Atlantic Sargassum Belt, so even peak months are mild compared with Mexico or the eastern Caribbean. Landings are episodic and concentrate on east-facing Atlantic shores; January through March and October–November are essentially seaweed-free. 2026 is forecast as a record belt year, which is exactly why checking real conditions beats quoting seasonal averages."
+    },
+    {
+      "q": "Do the Bahamas really get less sargassum than the rest of the Caribbean?",
+      "a": "Yes, and we say it plainly because it is true: NOAA and USF classify the Bahamas as a lower-exposure region. The archipelago lies north of the belt's main track, and its shallow banks deflect many of the rafts drifting past. What does arrive lands mostly on windward Atlantic faces — eastern Eleuthera, the Exuma Sound side, southeast Grand Bahama — while leeward shores stay clean. We track it anyway: 'usually mild' is not 'always clear', and a record bloom year tests every rule."
+    },
+    {
+      "q": "Which Bahamas beaches stay free of sargassum?",
+      "a": "Sheltered, leeward beaches almost never see it: Cable Beach and Junkanoo in Nassau, Volleyball Beach on Stocking Island, and Pig Beach on the banks side of Big Major Cay. The seasonal risk sits on Atlantic-facing strands — Pink Sands, French Leave, Lighthouse Beach, Gold Rock. Even then, crossing to the leeward shore is usually a 15-minute fix, and our live map shows which side is winning today, beach by beach."
+    },
+    {
+      "q": "How accurate is this sargassum tracker?",
+      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Beachgoer reports fill the gaps. It is the difference between a measurement and a guess."
+    },
+    {
+      "q": "Can you really forecast sargassum a week out?",
+      "a": "To a useful degree, yes. Once satellites detect mats offshore, their drift is largely set by the trade winds and the currents threading the Bahamian banks, which we model daily for each beach. Days 1–3 are the most reliable; days 4–7 show the direction of travel. Seaweed already beached decays on a 3.5-day half-life unless resupplied. The forecast re-runs every day as fresh satellite passes arrive."
+    },
+    {
+      "q": "What should I do if my beach has sargassum?",
+      "a": "In the Bahamas the answer is built into the geography: cross to the leeward side. Almost every island pairs an exposed Atlantic face with a sheltered banks-side shore minutes away — if Pink Sands is carrying a wrack line, Harbour Island's bay side is likely clear; if Cabbage Beach catches a pulse, Cable Beach across the bridge usually is not. Small amounts are harmless to swimmers; large rotting piles smell of sulfur and are worth avoiding. Premium alerts tell you the moment a saved beach changes status."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Sargassum Forecast Bahamas 2026 — 7-Day Beach Outlook",
+      "desc": "7-day sargassum forecast for Bahamas beaches, updated daily from satellite. Beach-level outlooks for Nassau, Exuma, Eleuthera, Grand Bahama and Abaco.",
+      "h1": "Bahamas Sargassum Forecast — Next 7 Days, Beach by Beach",
+      "intro": "Most sargassum information for the Bahamas comes as a single regional label — 'lower exposure' — accurate in broad strokes, useless for deciding where to swim on Saturday. This forecast works at the level that actually matters: the individual beach. We track 14 of them, from Cable Beach and Paradise Island through the Exumas to Eleuthera, Grand Bahama and Abaco, and run a separate 7-day projection for each, because their realities diverge sharply — an Atlantic-facing strand can carry a wrack line while the banks side of the same island stays spotless. The model ingests fresh Copernicus satellite imagery daily, locates the mats drifting offshore, and projects what reaches which sand and when. And because the Bahamas genuinely are a low-exposure destination, the forecast will often simply tell you everything is clear — that reassurance is the product. Check it before you commit to a beach day; the ocean does not read regional labels.",
+      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; around the Bahamas, the trade winds and the shallow banks do most of the steering, which is why windward Atlantic faces collect seaweed while leeward shores stay clean. Each beach's exposure — which way its coastline faces — is built into the model. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, corrected by community reports when clouds block the view. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Bahamas Beaches Without Sargassum Today (Live List)",
+      "desc": "Live list of Bahamas beaches with no sargassum right now. Satellite-checked daily — clean options from Cable Beach and Exuma to Eleuthera and Grand Bahama.",
+      "h1": "Bahamas Beaches Without Sargassum Today",
+      "intro": "Need a seaweed-free beach in the Bahamas today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed four times a day. The pattern usually favors the leeward, banks-side shores (Cable Beach, Junkanoo, Volleyball Beach, Pig Beach are clear most of the year), while Atlantic-facing strands — Pink Sands, French Leave, Lighthouse Beach, Gold Rock — swing with the east wind in season. Most days in the Bahamas, this whole list reads clean, and we will happily tell you so. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Bahamas Seaweed Map (Live) — Sargassum Beach Tracker",
+      "desc": "Interactive seaweed map of the Bahamas, updated 4 times a day from satellite imagery. Live sargassum status for Nassau, Exuma, Eleuthera and Grand Bahama.",
+      "h1": "Live Sargassum Map of the Bahamas",
+      "intro": "An interactive, live seaweed map covering the Bahamas' most visited coasts — Nassau and Paradise Island, the Exumas, Harbour Island and Eleuthera, Grand Bahama and Abaco. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, cross-checked against reports from people on the sand. Regional bulletins lump 700 islands into one label days late; this map shows your beach, today — and because Bahamian geography splits every island into an exposed Atlantic face and a sheltered banks side, it also shows the clean alternative a few minutes away. A sustained east wind can redraw the windward coasts overnight — check the map the morning you go."
+    },
+    "season": {
+      "slug": "sargassum-season-bahamas",
+      "title": "Bahamas Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When does sargassum hit the Bahamas? May–September, lighter than the Caribbean, mostly on Atlantic-facing shores. Month-by-month 2026 guide, daily tracking.",
+      "h1": "Sargassum Season in the Bahamas — 2026 Month-by-Month",
+      "months": [
+        {
+          "period": "December – March",
+          "text": "The cleanest window of the year, and it is genuinely clean: the Atlantic bloom is at its annual minimum and the Bahamas sit north of what little circulates. Every coast — Nassau, the Exumas, Eleuthera's Atlantic face, Grand Bahama — runs clear, and winter visitors can ignore seaweed entirely."
+        },
+        {
+          "period": "April",
+          "text": "First stirrings, far away. The new bloom organizes in the tropical Atlantic well south of the archipelago; Bahamian beaches stay essentially clear, with at most stray wisps on the most exposed east-facing shores. A map check is optional this month — we will tell you if that changes."
+        },
+        {
+          "period": "May – June",
+          "text": "The season opens, Bahamas-style: episodic strands on windward Atlantic faces — eastern Eleuthera (Pink Sands, French Leave, Lighthouse Beach), the Exuma Sound side, southeast Grand Bahama (Gold Rock) — while leeward shores like Cable Beach, Junkanoo and Volleyball Beach stay clean. Even these landings are light by Caribbean standards; the banks deflect most passing rafts."
+        },
+        {
+          "period": "July – August",
+          "text": "Peak months — but perspective matters: the Bahamian peak is what Mexico would call a quiet week. Sustained east winds can push real wrack lines onto Atlantic strands for a few days at a time, then conditions reset. The leeward escape is always minutes away, and the 7-day forecast tells you which days the windward beaches are worth it. 2026's record Atlantic bloom makes this the year to check rather than assume."
+        },
+        {
+          "period": "September",
+          "text": "The fade begins. The Atlantic bloom dies back and landings become rarer and lighter, though warm-water stragglers still reach east-facing Eleuthera and Exuma shores after a blow. Most beaches read clean most days, and trip planning gets noticeably easier."
+        },
+        {
+          "period": "October – November",
+          "text": "Clear again — the second great window. Landings become rare and light everywhere, and by November the archipelago is essentially seaweed-free. Stray patches after late-season storms are possible, so the cautious still glance at the map, but the odds are firmly in your favor."
+        }
+      ],
+      "tips": "The honest version first: the Bahamas are a low-exposure destination, and most trips never meet sargassum at all. December through April is effectively seaweed-proof everywhere. For summer trips, geography is your insurance — every major island pairs an exposed Atlantic face with a sheltered leeward shore minutes away, so book lodging with both options in reach (Nassau and George Town are ideal for this). If your heart is set on an Atlantic strand like Pink Sands or Gold Rock in June–August, glance at the 7-day forecast before you lock in the beach days, and keep a banks-side morning in reserve."
+    }
+  },
+  "beachBlurbs": {
+    "bs001": "Nassau's resort flagship fronting Baha Mar — a long ribbon of pale sand on New Providence's northwest shore. Facing the Northwest Providence Channel and screened by shallow banks, it stays clean through most of the season; rafts that drift past are usually deflected before they land. Easy public access and parking along West Bay Street.",
+    "bs002": "Paradise Island's showpiece — broad white sand backed by Atlantis and the RIU. It faces the open Atlantic to the north, so it takes occasional summer swell and, in peak months, episodic sargassum strands that resort crews clear quickly. Arrive on foot, by taxi or by ferry; parking is nearly nonexistent.",
+    "bs003": "The famous blush-pink strand running five kilometres down Harbour Island's Atlantic face. A close offshore reef softens both the surf and much of the incoming seaweed, keeping swimming gentle and snorkeling viable — though sustained east winds can lay strands on the sand in season. The island runs on golf carts; there is no car parking.",
+    "bs004": "Home of the swimming pigs of Big Major Cay, reachable only by boat excursion from Staniel Cay, Great Exuma or Nassau. The beach sits on the cay's southwest, banks-facing shore — leeward, shallow and naturally protected — so sargassum rarely amounts to more than a stray clump.",
+    "bs005": "Nassau's downtown beach, thirteen minutes on foot from the cruise port. Tucked behind the harbour entrance and Paradise Island, it is well sheltered from Atlantic swell and seaweed alike. Convenience is the draw: food shacks, clear urban water, and limited free parking.",
+    "bs006": "Little Exuma's postcard crescent — also called Pelican Beach — straddling the latitude line it is named for. It opens east onto Exuma Sound, the exposed side of the chain, so it can catch strands when the belt pushes north in summer; the shallow, calm water and clear snorkeling rarely disappoint regardless. Small free parking area by the access path.",
+    "bs007": "Stocking Island's social hub — the Chat 'N' Chill beach on Elizabeth Harbour, five minutes by water taxi from George Town. Facing west into the enclosed harbour, it is thoroughly sheltered; stingrays cruise the shoreline and sargassum almost never reaches it.",
+    "bs008": "The Lucayan National Park's vast low-tide sandbar — a Pirates of the Caribbean filming location. It faces southeast on Grand Bahama's exposed shore, making it one of the island's more sargassum-prone beaches in season. Park entrance fee (Bahamas National Trust) and parking at the trailhead.",
+    "bs009": "Grand Bahama's main resort beach, fronting the Grand Lucayan and Port Lucaya Marketplace. The south-facing shore is comparatively protected, and the real snorkeling happens by boat (UNEXSO) rather than from the sand. Easy access, easy parking, full services.",
+    "bs010": "Eleuthera's wild southern tip — pink-tinged sand under limestone cliffs, with snorkel reefs close to shore. Fully exposed to the Atlantic, it collects more seaweed than the island's leeward side in season; access is by 4x4 track with zero services, and the adjacent Disney Lighthouse Point is reserved for cruise guests.",
+    "bs011": "Freeport's family beach on Grand Bahama's south coast, screened by the offshore reef line near Peterson Cay. Calm water, easy parking, and the famous Wednesday fish fry — a relaxed, mostly clean alternative when the exposed southeast shore is catching weed.",
+    "bs012": "A five-kilometre crescent of powder sand on Abaco, regularly listed among the world's best beaches. It faces northeast but sits in the lee of Whale Cay and Great Guana Cay, which blunt open-Atlantic swell and most sargassum. The beach came through Hurricane Dorian intact; the resort behind it is still rebuilding, with condos and rentals open.",
+    "bs013": "Governor's Harbour's pink-sand classic — the old Club Med beach — two kilometres of wide, shallow shore off Banks Road. On Eleuthera's Atlantic side, it takes seasonal strands when east winds persist, with small snorkel reefs between the sandy stretches. Three public accesses; a few parking spots at the Beach House.",
+    "bs014": "New Providence's best shore snorkeling — forty acres of protected coral within swimming distance, the reef about three metres down at low tide. The northwest-facing shore sits leeward of the sargassum flow and stays clean most of the year. Access is via narrow public paths between private homes; parking is very limited."
+  },
+  "beachFaq": {
+    "_doc": "Per-beach FAQPage JSON-LD templates. Consumed by region-seo-pages.cjs. Tokens, all resolved from public/api/copernicus/bahamas/sargassum.json at build time — never invented: {beach}=b.name, {status}=STATUS_WORD[lang][b.lv.status], {score}=b.lv.score, {today}=fmtDate(lang), {forecastLine}=forecastLine(data.weekly,b.id,lang), {nextArrival}=nextArrivalRisk with {day}/{date} of the first J+1..J+7 forecast day whose status!=='clean', else nextArrivalNone. Emit no FAQPage if live data is missing for the beach.",
+    "questions": [
+      {
+        "q": "Is there sargassum at {beach} today?",
+        "a": "As of {today}, {beach} reads \"{status}\" on the latest satellite pass, with a Beach Score of {score}/100. The status is re-checked four times a day from Copernicus/NOAA AFAI (Alternative Floating Algae Index) imagery sampled directly offshore of this beach, so this answer reflects today's conditions — open the live map for the exact update time and a confidence level."
+      },
+      {
+        "q": "When is the next sargassum arrival expected at {beach}?",
+        "a": "{nextArrival} The full 7-day outlook for {beach}: {forecastLine}. Days 1–3 are the most reliable; days 4–7 show the trend. The forecast is recalculated with every satellite refresh, four times a day."
+      }
+    ],
+    "nextArrivalRisk": "The next landing risk at {beach} is {day} ({date}), based on sargassum mats currently tracked offshore.",
+    "nextArrivalNone": "No significant sargassum arrival is forecast at {beach} over the next 7 days."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Checking conditions before a stay at {resort}? This page monitors {beach} — the sand directly in front — with Copernicus satellite imagery refreshed four times a day. You will find the live sargassum status, a 0–100 Beach Score that also weighs surf and weather, and a 7-day forecast covering the days of your trip. The Bahamas are a low-exposure destination, so most days this page will simply confirm clear water — but in season an east wind can change a windward beach overnight, so check back the morning you pack the beach bag."
+  }
+}

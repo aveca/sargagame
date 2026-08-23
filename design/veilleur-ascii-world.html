@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LE VEILLEUR — MONDE ASCII VIVANT (proto v2)</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#0d0b14;overflow:hidden;font-family:ui-monospace,Menlo,monospace}
+  #c{display:block;position:fixed;inset:0}
+  .hud{position:fixed;top:max(14px,env(safe-area-inset-top));left:0;right:0;display:flex;
+       justify-content:space-between;align-items:center;padding:0 16px;pointer-events:none}
+  .hud .l{font:800 11px/1 ui-monospace,monospace;letter-spacing:3px;color:#ffd23f;
+       text-shadow:0 0 10px rgba(255,210,63,.7)}
+  .hud .r{font:900 12px/1 ui-monospace,monospace;color:#0d0b14;background:#27c46b;
+       border:2px solid #0d0b14;border-radius:999px;padding:6px 11px;box-shadow:3px 3px 0 #0d0b14}
+  .foot{position:fixed;left:0;right:0;bottom:8vh;text-align:center;pointer-events:none}
+  .foot h1{font-family:"Arial Black",Impact,sans-serif;font-weight:900;color:#fdf6e3;
+       font-size:11vw;line-height:.9;letter-spacing:-1px;text-shadow:3px 3px 0 #0d0b14,0 0 24px rgba(255,210,63,.3)}
+  .foot h1 b{color:#ffd23f}
+  .foot p{margin-top:8px;font:800 13px/1.2 ui-monospace,monospace;letter-spacing:2px;color:#bfe9f4}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><div class="l">◍ LE VEILLEUR SCANNE</div><div class="r" id="cnt">0 PROPRES</div></div>
+<div class="foot"><h1>LE <b>VEILLEUR</b></h1><p>MARTINIQUE · EN DIRECT</p></div>
+<script>
+const cv=document.getElementById('c'), ctx=cv.getContext('2d'), cntEl=document.getElementById('cnt');
+const DPR=Math.min(window.devicePixelRatio||1,2);
+let W=innerWidth,H=innerHeight,cols,rows,charW=5.8,charH=9.2;
+const F=9, RAMP=" .·:-=+*coxX#%@█";
+cols=Math.ceil(W/charW); rows=Math.ceil(H/charH);
+cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);
+ctx.font=`${F}px ui-monospace,Menlo,monospace`; ctx.textBaseline='top';
+
+// scène basse-rés (1px = 1 caractère), redessinée CHAQUE frame -> vraie "vidéo"
+const s=document.createElement('canvas'); s.width=cols; s.height=rows; const x=s.getContext('2d');
+const seaTop=Math.round(rows*0.46);
+// plages le long de la côte (statut). x normalisé, y dans l'île
+const beaches=[ {nx:.18,ny:.70,st:0},{nx:.30,ny:.83,st:0},{nx:.44,ny:.62,st:0},
+  {nx:.52,ny:.90,st:0},{nx:.63,ny:.71,st:0},{nx:.74,ny:.80,st:0},{nx:.38,ny:.74,st:0} ];
+let cleanCount=0;
+
+function island(col,off){
+  x.fillStyle=col; const ix=cols*.47,iy=rows*.74,w=cols*.34,h=rows*.30;
+  x.save(); x.translate(off,off*1.1); x.beginPath();
+  x.ellipse(ix,iy,w*.58,h*.6,-.16,0,7);
+  x.ellipse(ix-w*.22,iy+h*.26,w*.32,h*.34,.12,0,7);
+  x.ellipse(ix+w*.26,iy-h*.24,w*.30,h*.32,-.3,0,7);
+  x.ellipse(ix+w*.04,iy+h*.40,w*.26,h*.26,0,0,7); x.fill(); x.restore();
+}
+function scene(t){
+  // ciel heure dorée -> mer
+  const g=x.createLinearGradient(0,0,0,rows);
+  g.addColorStop(0,'#ff7a2f'); g.addColorStop(.15,'#ffac5e'); g.addColorStop(.30,'#ffd23f');
+  g.addColorStop(.40,'#cfe9d8'); g.addColorStop(.46,'#7fcfe6'); g.addColorStop(.66,'#1f8fc4'); g.addColorStop(1,'#0e2c3a');
+  x.fillStyle=g; x.fillRect(0,0,cols,rows);
+  // soleil pulsant
+  const cx=cols*.80, cy=rows*.16, R=rows*(.20+.012*Math.sin(t*1.6));
+  const sun=x.createRadialGradient(cx,cy,0,cx,cy,R);
+  sun.addColorStop(0,'#fff7e0'); sun.addColorStop(.5,'#ffe08a'); sun.addColorStop(1,'rgba(255,210,80,0)');
+  x.fillStyle=sun; x.beginPath(); x.arc(cx,cy,R,0,7); x.fill();
+  // MER VIVANTE : bandes scintillantes qui défilent vers l'horizon
+  for(let i=0;i<16;i++){
+    const yy=seaTop+(((i*6 - t*14)%(rows-seaTop))+(rows-seaTop))%(rows-seaTop);
+    x.strokeStyle='rgba(255,242,205,'+(0.04+0.05*Math.abs(Math.sin(t*2+i)))+')';
+    x.lineWidth=1; x.beginPath();
+    for(let c=0;c<=cols;c+=2){ const py=yy+Math.sin(c*0.28+t*3+i)*1.3; c===0?x.moveTo(c,py):x.lineTo(c,py); }
+    x.stroke();
+  }
+  // reflet doré du soleil sur l'eau
+  const rf=x.createLinearGradient(0,seaTop,0,rows); rf.addColorStop(0,'rgba(255,224,138,.4)'); rf.addColorStop(1,'rgba(255,224,138,0)');
+  x.fillStyle=rf; x.fillRect(cols*.66,seaTop,cols*.26,rows-seaTop);
+  // ÎLE
+  island('#1c8f4e',0); island('#27c46b',-cols*.004);
+  // SATELLITE qui dérive + FAISCEAU de scan (le "personnage" qui se déplace)
+  const sx=cols*(0.16+0.68*(0.5+0.5*Math.sin(t*0.45)));
+  const sy=rows*0.13, beamY=rows*0.80;
+  x.fillStyle='rgba(255,224,138,0.16)'; x.beginPath();
+  x.moveTo(sx-1.5,sy); x.lineTo(sx-7+Math.sin(t*5)*2,beamY); x.lineTo(sx+7+Math.sin(t*5)*2,beamY); x.closePath(); x.fill();
+  x.fillStyle='#fff7e0'; x.beginPath(); x.arc(sx,sy,Math.max(2,cols*.022),0,7); x.fill();      // corps
+  x.fillStyle='#0d0b14'; x.beginPath(); x.arc(sx,sy,Math.max(1,cols*.011),0,7); x.fill();        // pupille
+  x.fillStyle='#27a9e3'; x.fillRect(sx-cols*.05,sy-1,cols*.03,2); x.fillRect(sx+cols*.02,sy-1,cols*.03,2); // panneaux
+  // PLAGES : la pastille "pop" en vert quand le faisceau passe dessus
+  let cnt=0;
+  for(const b of beaches){ const bx=cols*b.nx, by=rows*(0.58+0.34*b.ny*0+b.ny*0)+0; const py=rows*b.ny;
+    const hit=Math.abs(bx-sx)<cols*0.10;
+    if(hit && b.st<1) b.st=Math.min(1,b.st+0.12);
+    const col=b.st>=1?'#27c46b':b.st>0?'#ffd23f':'#e8c98a';
+    const pr=Math.max(1.3,cols*0.012)*(1+(b.st>=1?0.4*Math.abs(Math.sin(t*4)):0));
+    x.fillStyle=col; x.beginPath(); x.arc(bx,py,pr,0,7); x.fill();
+    if(b.st>=1) cnt++;
+  }
+  cleanCount=cnt;
+  // PETIT PERSO qui longe la plage (baigneur) — bobbing + avance
+  const ax=(cols*0.1+ (t*7)%(cols*0.8)), ay=rows*0.965+Math.sin(t*6)*0.6;
+  x.fillStyle='#ffd23f'; x.fillRect(ax,ay-2.4,1.5,2.6); x.fillRect(ax-0.6,ay-0.2,2.7,1); // corps + bras
+}
+function render(){
+  const data=x.getImageData(0,0,cols,rows).data;
+  ctx.fillStyle='#0d0b14'; ctx.fillRect(0,0,W,H);
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const i=(r*cols+c)*4, R=data[i],G=data[i+1],B=data[i+2];
+    const lum=(0.299*R+0.587*G+0.114*B)/255; const ch=RAMP[(lum*(RAMP.length-1))|0];
+    if(ch===' ')continue;
+    const bo=v=>Math.min(255,38+v*0.93);
+    ctx.fillStyle=`rgb(${bo(R)|0},${bo(G)|0},${bo(B)|0})`;
+    ctx.fillText(ch,c*charW,r*charH);
+  }
+}
+let t0;
+function loop(ts){ if(!t0)t0=ts; const t=(ts-t0)/1000; scene(t); render();
+  cntEl.textContent=cleanCount+' PROPRES';
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

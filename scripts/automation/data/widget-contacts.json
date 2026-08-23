@@ -1,0 +1,6 @@
+{
+  "_note": "Map host (qui a embarqué le widget, cf. widget-hosts-seen.json) → contact réel, pour l'outreach de conversion automatique (widget-convert.cjs). Enrichi à la main ou par l'agent d'enrichissement B2B. Un installeur de widget = lead CHAUD (il utilise déjà le produit).",
+  "contacts": {
+    "www.anoli-lodges.com": { "email": "admin@anoli-lodges.com", "name": "Anoli Lodges", "town": "Sainte-Anne", "island": "MQ", "tier": "pro" }
+  }
+}

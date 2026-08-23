@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>États & micro-copy — Sargasses (polish bible v1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   BIBLE DE MARQUE v1 — tokens (source unique = colors_and_type.css)
+   Ici inlinés pour un mockup standalone runnable.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  /* — couleur : 1 valeur par rôle — */
+  --sg-gold:#E8A800; --sg-gold-l:#FFC72C; --sg-gold-ll:#FFE47A;
+  --sg-teal:#009E8E; --sg-teal-l:#1EC8B0; --sg-teal-bg:rgba(0,158,142,.08);
+  --sg-clean:#22C55E; --sg-moderate:#B87A00; --sg-avoid:#E8522A;
+  --sg-ink:#0D0D0D; --sg-mid:#5A5A5A; --sg-paper:#FDFCF7;
+  --sg-line:rgba(13,13,13,.12); --scene-ink:#0A1714;
+  --surface:var(--sg-paper); --surface-raised:#FFFFFF; --surface-ink:#120821;
+  --text:var(--sg-ink); --text-muted:var(--sg-mid);
+  --text-on-gold:var(--sg-ink); --text-on-ink:var(--sg-paper);
+  --cta-bg:var(--sg-gold); --cta-text:var(--sg-ink); --link:var(--sg-teal);
+
+  /* — type : 3 fontes, grammaire fermée — */
+  --f-anton:'Anton','Arial Narrow',Impact,sans-serif;
+  --f-bric:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sg-fs-micro:12px; --sg-fs-body:15px; --sg-fs-lead:17px; --sg-fs-h3:20px;
+  --sg-fs-h2:clamp(24px,6vw,30px); --sg-fs-h1:clamp(30px,8vw,42px);
+
+  /* — surface : 1 recette (contour ink + ombre dure 0-blur bas-droite) — */
+  --sg-stroke:2.5px solid var(--sg-ink);
+  --sg-pop-1:2px 2px 0 var(--sg-ink);
+  --sg-pop-2:4px 4px 0 var(--sg-ink);
+  --sg-pop-3:6px 6px 0 var(--sg-ink);
+  --sg-r-card:16px; --sg-r-soft:12px; --sg-r-pill:999px;
+
+  /* — espacement : grille 4px — */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--f-bric); font-weight:600; font-size:var(--sg-fs-body);
+  line-height:1.55; color:var(--text); background:#E9E5DA;
+  -webkit-font-smoothing:antialiased; padding:24px 12px 64px;
+  display:flex; flex-direction:column; align-items:center; gap:28px;
+}
+
+/* halftone golden-hour (TRAIT 3) — discret, 4 zones-clés seulement */
+.halftone{position:relative}
+.halftone::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background-image:radial-gradient(var(--sg-gold) 1.1px, transparent 1.2px);
+  background-size:7px 7px; opacity:.10;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%);
+  mask-image:linear-gradient(180deg,#000,transparent 70%);
+}
+
+/* type utilitaires (source unique) */
+.t-h2{font-family:var(--f-anton);font-weight:400;text-transform:uppercase;font-size:var(--sg-fs-h2);line-height:1.08;letter-spacing:-.02em;margin:0}
+.t-h3{font-family:var(--f-bric);font-weight:800;font-size:var(--sg-fs-h3);line-height:1.30;margin:0}
+.t-lead{font-size:var(--sg-fs-lead);line-height:1.30;font-weight:800;margin:0}
+.t-body{font-size:var(--sg-fs-body);line-height:1.55;font-weight:600;margin:0}
+.t-micro{font-size:var(--sg-fs-micro);line-height:1.4;font-weight:600;color:var(--text-muted)}
+.t-eyebrow{font-family:var(--f-bric);font-weight:800;font-size:var(--sg-fs-micro);text-transform:uppercase;letter-spacing:.10em;color:var(--sg-teal)}
+.t-num{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums}
+.muted{color:var(--text-muted)}
+
+/* ════════════ KIT COMPOSANTS (recette unique) ════════════ */
+.sg-card{background:var(--surface-raised);border:var(--sg-stroke);border-radius:var(--sg-r-card);box-shadow:var(--sg-pop-2);padding:var(--s4)}
+.sg-card--hot{box-shadow:var(--sg-pop-3)}
+
+.sg-btn{font-family:var(--f-bric);font-weight:800;font-size:var(--sg-fs-body);min-height:44px;padding:12px 18px;border:var(--sg-stroke);border-radius:var(--sg-r-card);background:#fff;color:var(--sg-ink);box-shadow:var(--sg-pop-2);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.sg-btn:active{transform:translate(2px,2px);box-shadow:var(--sg-pop-press,1px 1px 0 var(--sg-ink))}
+.sg-btn--cta{background:linear-gradient(135deg,var(--sg-gold-l),var(--sg-gold));color:var(--text-on-gold);box-shadow:var(--sg-pop-3);padding:14px 22px}
+.sg-btn--quiet{border:none;box-shadow:none;background:none;color:var(--text-muted);font-weight:600;min-height:44px;text-decoration:none;padding:10px 4px}
+.sg-btn--quiet:hover{text-decoration:underline}
+
+/* pastille statut — couleur + FORME + MOT (jamais couleur seule, zéro emoji OS) */
+.sg-status{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:2px solid var(--sg-ink);border-radius:var(--sg-r-pill);box-shadow:var(--sg-pop-1);font-weight:800;font-size:var(--sg-fs-micro);text-transform:uppercase;letter-spacing:.02em;background:#fff;white-space:nowrap}
+.sg-status .gl{width:14px;height:14px;display:inline-block}
+.is-clean{color:var(--sg-clean)} .is-moderate{color:var(--sg-moderate)} .is-avoid{color:var(--sg-avoid)}
+
+/* pill EN DIRECT — branché sur la fraîcheur, respiration coupée par reduced-motion */
+.sg-live{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:2px solid var(--sg-ink);border-radius:var(--sg-r-pill);box-shadow:var(--sg-pop-1);background:var(--sg-teal-bg);color:var(--sg-teal);font-weight:800;font-size:var(--sg-fs-micro);text-transform:uppercase;letter-spacing:.06em}
+.sg-live .dot{width:7px;height:7px;border-radius:50%;background:var(--sg-teal);animation:breathe 2.4s ease-in-out infinite}
+
+/* badge */
+.sg-badge{display:inline-block;background:var(--sg-gold-ll);color:var(--sg-ink);border:2px solid var(--sg-ink);border-radius:var(--sg-r-soft);box-shadow:var(--sg-pop-1);font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px}
+
+/* ════════════ LE TOAST CANONIQUE (.sg-toast) — source unique ════════════ */
+.sg-toast{display:flex;align-items:center;gap:var(--s3);background:var(--surface-raised);border:var(--sg-stroke);border-radius:var(--sg-r-card);box-shadow:var(--sg-pop-2);padding:var(--s4);width:100%;position:relative;overflow:hidden}
+.sg-toast--dark{background:var(--surface-ink);border-color:var(--sg-gold-ll);color:#fff}
+.sg-toast--dark .t-micro{color:rgba(255,255,255,.92)}
+.sg-toast__bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.sg-toast__body{flex:1;min-width:0}
+.sg-toast__title{font-weight:800;font-size:var(--sg-fs-body);line-height:1.3}
+.sg-toast .x{flex-shrink:0;width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;color:inherit;font-size:18px}
+
+/* champ email (nerf conversion) */
+.sg-field{width:100%;font-family:inherit;font-size:16px;font-weight:600;background:#fff;border:2px solid var(--sg-ink);border-radius:var(--sg-r-soft);padding:13px 14px;min-height:48px}
+.sg-field:focus{outline:none;border-color:var(--sg-gold-l);box-shadow:0 0 0 3px rgba(255,199,44,.18)}
+
+/* skeleton tokenisé (chargement = pro, pas proto) */
+.sk{background:linear-gradient(100deg,#EFEDE6 30%,#F8F6F0 50%,#EFEDE6 70%);background-size:200% 100%;border-radius:8px;animation:shimmer 1.6s ease-in-out infinite}
+.sk--title{height:18px;width:60%}
+.sk--line{height:13px;width:100%;margin-top:8px}
+.sk--line.short{width:45%}
+.sk--pill{height:24px;width:96px;border-radius:999px}
+
+/* ════════════ LE VEILLEUR (mascotte — RASSURE, regarde la mer) ════════════
+   1 seul objet = le satellite. 3 humeurs couleur. Pas d'emoji OS. */
+.veilleur{display:block}
+@keyframes scanSweep{0%,100%{opacity:.25}50%{opacity:.85}}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+
+/* layout mockup */
+.frame{width:380px;max-width:100%;background:var(--surface);border:var(--sg-stroke);border-radius:24px;box-shadow:var(--sg-pop-3);padding:var(--s4);display:flex;flex-direction:column;gap:var(--s4)}
+.section-tag{font-family:var(--f-bric);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--sg-ink);background:var(--sg-gold-ll);border:2px solid var(--sg-ink);box-shadow:var(--sg-pop-1);border-radius:999px;padding:4px 12px;align-self:flex-start}
+.stack{display:flex;flex-direction:column;gap:var(--s4)}
+.row{display:flex;gap:var(--s2);flex-wrap:wrap}
+.center{text-align:center}
+.empty-illus{margin:0 auto var(--s3)}
+h1.page{font-family:var(--f-anton);font-weight:400;text-transform:uppercase;font-size:26px;letter-spacing:-.02em;color:var(--sg-ink);margin:0 0 2px}
+.page-sub{font-size:var(--sg-fs-body);color:var(--text-muted);max-width:340px;text-align:center;margin:0 0 8px}
+
+@media (prefers-reduced-motion: reduce){
+  .sk,.sg-live .dot,.scanSweep{animation:none!important}
+  .sk{background:#EFEDE6}
+}
+</style>
+</head>
+<body>
+
+<h1 class="page">États &amp; micro-copy — poli</h1>
+<p class="page-sub">Une seule recette : liseré ink 2.5px + ombre dure bas-droite. Le Veilleur porte le chargement et l'erreur. Or rare = le seul CTA. Corps ≥15px partout, zéro emoji OS.</p>
+
+<!-- ════════ SVG VEILLEUR : 3 humeurs (defs réutilisés) ════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="halo-scan" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#FFC72C" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#FFC72C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-calm" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#1EC8B0" stop-opacity=".5"/>
+      <stop offset="100%" stop-color="#1EC8B0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-alert" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#E8522A" stop-opacity=".45"/>
+      <stop offset="100%" stop-color="#E8522A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<!-- ════════════════════════════════════════════════════════════
+     1. CHARGEMENT — Le Veilleur en humeur SCAN (or) + skeletons
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame" style="animation:popIn .4s ease">
+  <span class="section-tag">1 · Chargement</span>
+
+  <!-- état héro : Le Veilleur lit le satellite -->
+  <div class="sg-card halftone center" style="padding:var(--s6) var(--s4)">
+    <svg class="veilleur" width="92" height="92" viewBox="0 0 92 92" style="margin:0 auto var(--s2)" aria-hidden="true">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-scan)"/>
+      <!-- panneaux solaires -->
+      <rect x="6" y="36" width="20" height="14" rx="3" fill="#0A1714" stroke="#0D0D0D" stroke-width="2.5"/>
+      <rect x="66" y="36" width="20" height="14" rx="3" fill="#0A1714" stroke="#0D0D0D" stroke-width="2.5"/>
+      <line x1="26" y1="43" x2="34" y2="43" stroke="#0D0D0D" stroke-width="2.5"/>
+      <line x1="58" y1="43" x2="66" y2="43" stroke="#0D0D0D" stroke-width="2.5"/>
+      <!-- corps satellite -->
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#FFC72C" stroke="#0D0D0D" stroke-width="2.5"/>
+      <!-- œil/lentille qui regarde la MER (vers le bas) -->
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="2.5"/>
+      <circle cx="46" cy="47" r="2.4" fill="#0D0D0D"/>
+      <!-- faisceau de scan vers la mer -->
+      <path d="M40 56 L34 74 L58 74 L52 56 Z" fill="#FFC72C" opacity=".3" style="animation:scanSweep 1.8s ease-in-out infinite"/>
+    </svg>
+    <p class="t-eyebrow" style="margin:0 0 4px">En direct</p>
+    <p class="t-lead" style="margin:0 0 4px">Le Veilleur lit le satellite…</p>
+    <p class="t-micro">Premier relevé du jour&nbsp;· <span class="t-num">≈ 3 s</span></p>
+  </div>
+
+  <!-- skeletons de cartes plage (pas de vide gris) -->
+  <div class="sg-card" aria-hidden="true">
+    <div style="display:flex;gap:var(--s3);align-items:flex-start">
+      <div style="flex:1">
+        <div class="sk sk--title"></div>
+        <div class="sk sk--line"></div>
+        <div class="sk sk--line short"></div>
+      </div>
+      <div class="sk sk--pill"></div>
+    </div>
+  </div>
+  <div class="sg-card" aria-hidden="true" style="opacity:.7">
+    <div style="display:flex;gap:var(--s3);align-items:flex-start">
+      <div style="flex:1">
+        <div class="sk sk--title"></div>
+        <div class="sk sk--line short"></div>
+      </div>
+      <div class="sk sk--pill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     2. VIDE — EmptyState unifié (Veilleur calme, copy i18n unique)
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">2 · Aucun résultat</span>
+  <div class="sg-card halftone center" style="padding:var(--s8) var(--s4)">
+    <svg class="empty-illus veilleur" width="84" height="84" viewBox="0 0 92 92" aria-hidden="true">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-calm)"/>
+      <rect x="6" y="36" width="20" height="14" rx="3" fill="#0A1714" stroke="#0D0D0D" stroke-width="2.5"/>
+      <rect x="66" y="36" width="20" height="14" rx="3" fill="#0A1714" stroke="#0D0D0D" stroke-width="2.5"/>
+      <line x1="26" y1="43" x2="34" y2="43" stroke="#0D0D0D" stroke-width="2.5"/>
+      <line x1="58" y1="43" x2="66" y2="43" stroke="#0D0D0D" stroke-width="2.5"/>
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#1EC8B0" stroke="#0D0D0D" stroke-width="2.5"/>
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="2.5"/>
+      <circle cx="46" cy="47" r="2.4" fill="#0D0D0D"/>
+    </svg>
+    <p class="t-lead center" style="margin:0 0 6px">Aucune plage trouvée</p>
+    <p class="t-body muted center" style="margin:0 auto;max-width:32ch">Essaie un autre filtre ou une autre recherche — le Veilleur garde l'œil sur le reste.</p>
+    <div style="margin-top:var(--s4)">
+      <button class="sg-btn sg-btn--ghost" type="button">Réinitialiser les filtres</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     3. ERREUR DONNÉES — toast de marque (plus jamais d'alert() OS)
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">3 · Erreur de données</span>
+  <div class="sg-toast" role="alert" style="align-items:flex-start">
+    <span class="sg-toast__bar" style="background:var(--sg-avoid)"></span>
+    <svg width="40" height="40" viewBox="0 0 92 92" aria-hidden="true" style="flex-shrink:0">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-alert)"/>
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#E8522A" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="47" r="2.4" fill="#0D0D0D"/>
+    </svg>
+    <div class="sg-toast__body">
+      <div class="sg-toast__title">Je n'arrive pas à lire le satellite</div>
+      <p class="t-micro" style="margin-top:2px">Je réessaie tout seul. Tu peux relancer maintenant.</p>
+      <div class="row" style="margin-top:var(--s3)">
+        <button class="sg-btn" type="button" style="padding:8px 14px;min-height:40px;font-size:var(--sg-fs-micro)">Réessayer</button>
+        <a class="sg-btn--quiet" href="#" style="min-height:40px">Contacter le support</a>
+      </div>
+    </div>
+  </div>
+  <p class="t-micro" style="text-align:center">Statut affiché = <span class="t-num">vérification en cours</span> tant que la donnée a plus de <span class="t-num">12&nbsp;h</span> (jamais de fausse fraîcheur).</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     4. ERREUR PAIEMENT — in-UI, jamais alert(). Corail marque.
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">4 · Échec de paiement</span>
+
+  <!-- montage stripe : Veilleur scan, pas un spinner générique -->
+  <div class="sg-card sg-toast--dark" style="border-color:var(--sg-gold-ll);color:#fff;display:flex;align-items:center;gap:var(--s3)">
+    <svg width="34" height="34" viewBox="0 0 92 92" aria-hidden="true">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-scan)"/>
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#FFC72C" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3"/>
+      <path d="M40 56 L34 72 L58 72 L52 56 Z" fill="#FFC72C" opacity=".3" style="animation:scanSweep 1.6s ease-in-out infinite"/>
+    </svg>
+    <div>
+      <div style="font-weight:800;font-size:var(--sg-fs-body)">Paiement sécurisé…</div>
+      <p class="t-micro" style="color:rgba(255,255,255,.92)">Connexion à Stripe</p>
+    </div>
+  </div>
+
+  <!-- erreur paiement : encart corail marque, phrase ≥15px -->
+  <div class="sg-card" style="border-left:4px solid var(--sg-avoid)" role="alert">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span class="sg-status is-avoid">
+        <svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        Échec
+      </span>
+    </div>
+    <p class="t-body" style="margin:0">Ta banque a refusé le paiement. Aucun montant n'a été débité — tu peux réessayer avec une autre carte.</p>
+    <div class="row" style="margin-top:var(--s4)">
+      <button class="sg-btn sg-btn--cta" type="button" style="flex:1">Réessayer le paiement</button>
+    </div>
+    <div class="center" style="margin-top:var(--s2)">
+      <a class="sg-btn--quiet" href="#">Choisir un autre moyen</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     5. TOAST FAVORI — recette canonique, ✓ + MOT, CTA or unique
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">5 · Toast favori</span>
+  <div class="sg-toast" style="animation:popIn .3s ease">
+    <span class="sg-status is-clean" style="box-shadow:none;border-width:2px">
+      <svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.4L13 4.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ajoutée
+    </span>
+    <div class="sg-toast__body">
+      <div class="sg-toast__title">Plage suivie</div>
+      <p class="t-micro" style="margin-top:2px">Reçois une alerte quand les conditions changent.</p>
+    </div>
+    <button class="sg-btn sg-btn--cta" type="button" style="padding:10px 14px;min-height:44px;font-size:var(--sg-fs-micro);flex-shrink:0">Alertes</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     6. TOAST JEU — recette canonique, pas d'emoji 🌊
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">6 · Toast jeu (idle)</span>
+  <div class="sg-toast sg-toast--dark halftone">
+    <svg width="34" height="34" viewBox="0 0 92 92" aria-hidden="true" style="flex-shrink:0">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-calm)"/>
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#1EC8B0" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3"/>
+    </svg>
+    <div class="sg-toast__body">
+      <div class="sg-toast__title" style="color:#fff">30 secondes à tuer&nbsp;?</div>
+      <p class="t-micro" style="color:rgba(255,255,255,.92);margin-top:2px">Sauve la plage — bats le score du jour.</p>
+    </div>
+    <button class="sg-btn sg-btn--cta" type="button" style="padding:10px 14px;min-height:44px;font-size:var(--sg-fs-micro);flex-shrink:0">Jouer</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     7. WELCOME PREMIUM — teal/papier de marque (plus de bleu pirate)
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">7 · Premium activé</span>
+  <div class="sg-toast halftone" style="background:var(--sg-paper);align-items:flex-start;box-shadow:var(--sg-pop-3)">
+    <span class="sg-toast__bar" style="background:linear-gradient(180deg,var(--sg-gold-l),var(--sg-gold))"></span>
+    <svg width="40" height="40" viewBox="0 0 92 92" aria-hidden="true" style="flex-shrink:0;margin-left:4px">
+      <circle cx="46" cy="42" r="40" fill="url(#halo-calm)"/>
+      <rect x="34" y="30" width="24" height="26" rx="6" fill="#009E8E" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="45" r="6" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3"/>
+      <circle cx="46" cy="47" r="2.4" fill="#0D0D0D"/>
+    </svg>
+    <div class="sg-toast__body">
+      <p class="t-eyebrow" style="margin:0 0 2px">Le Veilleur veille</p>
+      <div class="sg-toast__title" style="font-family:var(--f-anton);font-weight:400;text-transform:uppercase;font-size:20px;letter-spacing:-.01em">Premium activé</div>
+      <p class="t-micro" style="margin-top:2px">Brief matin&nbsp;· alertes&nbsp;· reco du jour.</p>
+      <a class="sg-btn--quiet" href="?manage=1" style="display:inline-block;min-height:auto;padding:6px 0;color:var(--link);font-weight:800">Gérer mon abonnement</a>
+    </div>
+    <button class="x" aria-label="Fermer" type="button">✕</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RÉFÉRENCE — le trio statut canonique (couleur+forme+mot)
+     ════════════════════════════════════════════════════════════ -->
+<div class="frame">
+  <span class="section-tag">Réf · Statuts (a11y daltonisme)</span>
+  <div class="row" style="justify-content:center;gap:var(--s2)">
+    <span class="sg-status is-clean">
+      <svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.4L13 4.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Propre
+    </span>
+    <span class="sg-status is-moderate">
+      <svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M8 2a6 6 0 010 12z" fill="currentColor"/></svg>
+      Modéré
+    </span>
+    <span class="sg-status is-avoid">
+      <svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      À éviter
+    </span>
+    <span class="sg-live"><span class="dot"></span>En direct</span>
+  </div>
+</div>
+
+</body>
+</html>

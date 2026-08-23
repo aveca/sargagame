@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paywall — Le Veilleur · scène golden-hour</title>
+<style>
+/* ============================================================
+   PAYWALL — DIRECTION « SCÈNE GOLDEN-HOUR + LE VEILLEUR »
+   Le paywall vit dans une mini-scène coucher-de-soleil (mer,
+   horizon doré) où LE VEILLEUR (satellite crème, œil mi-clos
+   serein) PRÉSENTE l'offre : antenne + regard tournés vers le
+   CTA, jamais vers l'utilisateur. Chaleureux, narratif, premium.
+
+   RÈGLE : on touche au LOOK, pas à l'offre. Tout le contenu de
+   conversion est conservé, juste re-stylé en COMIC golden-hour.
+   ============================================================ */
+:root{
+  --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+  --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --ink:#0D0D0D; --mid:#686868;
+  /* scène */
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --glit:#FFD884; --rim:#FFD884;
+  --display:"Anton","Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+  --ui:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap');
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0a1a16;font-family:var(--ui);-webkit-font-smoothing:antialiased}
+body{display:grid;place-items:center;padding:18px 0}
+
+/* ---- carte paywall : 380px, encre BD ---- */
+.paywall{
+  position:relative;width:380px;max-width:100%;border-radius:26px;overflow:hidden;
+  background:var(--bg);
+  border:3px solid var(--ink);
+  box-shadow:0 18px 0 -2px rgba(13,13,13,.16), 0 30px 60px rgba(8,30,24,.5);
+}
+
+/* ============================================================
+   1. LA SCÈNE — golden-hour comic en haut, le Veilleur présente
+   ============================================================ */
+.scene{position:relative;height:266px;overflow:hidden;border-bottom:3px solid var(--ink);background:var(--sky0)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* puce LIVE (temps réel = demande #1) — flotte sur la scène */
+.live{
+  position:absolute;top:14px;left:14px;z-index:4;display:inline-flex;align-items:center;gap:7px;
+  background:rgba(8,20,15,.46);border:1.5px solid rgba(255,216,132,.4);
+  -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+  padding:6px 11px;border-radius:100px;color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em
+}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:dot 2.6s ease-out infinite}
+@keyframes dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+/* bulle BD — le Veilleur "présente" l'offre */
+.bubble{
+  position:absolute;top:50px;right:13px;z-index:4;max-width:158px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:16px;
+  padding:9px 12px;font-size:12.5px;font-weight:700;line-height:1.32;color:var(--ink);
+  box-shadow:3px 3px 0 rgba(13,13,13,.9)
+}
+.bubble b{color:var(--coral)}
+.bubble:after{ /* queue de bulle pointée vers le Veilleur */
+  content:"";position:absolute;left:30px;bottom:-13px;width:18px;height:14px;
+  background:#fff;border-left:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);
+  transform:skewX(-18deg)
+}
+
+/* ambient golden-hour très lent (doctrine calme : tableau, pas aquarium) */
+@keyframes sunBreath{0%,100%{opacity:.6}50%{opacity:.95}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+#sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+#veilFloat{animation:floaty 7s ease-in-out infinite;transform-box:view-box}
+@media (prefers-reduced-motion:reduce){#sunGlow,#veilFloat,.live i{animation:none!important}}
+
+/* ============================================================
+   2. CORPS DE L'OFFRE
+   ============================================================ */
+.body{padding:18px 18px 16px}
+
+.eyebrow{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0 0 4px}
+.h1{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;line-height:.92;
+  font-size:30px;color:var(--ink);margin:0 0 10px}
+.h1 .mer{color:var(--teal)}
+
+/* ---- les 2 plans ---- */
+.plans{display:flex;gap:10px;margin:2px 0 14px}
+.plan{
+  flex:1;position:relative;border:2.5px solid var(--ink);border-radius:16px;padding:12px 11px 13px;background:#fff;
+  box-shadow:3px 3px 0 rgba(13,13,13,.16)
+}
+.plan .ptag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);padding-left:22px}
+.plan .price{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;color:var(--ink);margin:5px 0 1px;letter-spacing:-.01em}
+.plan .price small{font-size:13px;font-family:var(--ui);font-weight:700;color:var(--mid);letter-spacing:0}
+.plan .note{font-size:11px;font-weight:600;color:var(--mid);min-height:14px}
+
+/* annuel mis en avant : aplat or + ombre comic + badge -33% */
+.plan.featured{
+  background:linear-gradient(168deg,#FFF6DC 0%,#FFE9A8 100%);
+  border-color:var(--ink);box-shadow:4px 5px 0 var(--ink);transform:translateY(-2px)
+}
+.plan.featured .price{color:var(--ink)}
+.plan.featured .note{color:#7a5a00;font-weight:700}
+.badge{
+  position:absolute;top:-12px;right:-9px;background:var(--coral);color:#fff;
+  font-family:var(--display);font-size:14px;letter-spacing:.02em;
+  padding:3px 9px;border-radius:9px;border:2.5px solid var(--ink);transform:rotate(6deg);
+  box-shadow:2px 2px 0 rgba(13,13,13,.85)
+}
+.plan .pick{position:absolute;top:11px;left:11px;width:15px;height:15px;border-radius:50%;border:2.5px solid var(--ink);background:#fff}
+.plan.featured .pick{background:var(--ink)}
+.plan.featured .pick:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--goldL)}
+
+/* ---- CTA principal énorme ---- */
+.cta{
+  display:block;width:100%;border:3px solid var(--ink);cursor:pointer;font-family:var(--ui);
+  font-weight:800;font-size:17px;color:#1a1300;padding:15px 18px 14px;border-radius:16px;text-align:center;
+  background:linear-gradient(160deg,#FFE47A 0%,#FFC72C 42%,#E89400 100%);
+  box-shadow:0 6px 0 var(--ink),0 12px 22px rgba(232,148,0,.42);
+  transition:transform .12s cubic-bezier(.175,.885,.32,1.275),box-shadow .12s ease;
+  letter-spacing:.01em
+}
+.cta:hover{transform:translateY(-1px);box-shadow:0 7px 0 var(--ink),0 16px 28px rgba(232,148,0,.5)}
+.cta:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink),0 6px 14px rgba(232,148,0,.4)}
+.cta .arrow{display:inline-block;transition:transform .15s}
+.cta:hover .arrow{transform:translateX(3px)}
+.ctaSub{font-size:12.5px;font-weight:700;color:var(--ink);text-align:center;margin:9px 0 2px}
+.ctaSub .dot{color:var(--mid)}
+.ctaCoffee{font-size:11.5px;font-weight:600;color:var(--mid);text-align:center;margin:0 0 14px}
+.ctaCoffee b{color:var(--amber)}
+
+/* ---- 3 rassurances ---- */
+.reassure{display:flex;gap:8px;margin:0 0 13px}
+.rcell{flex:1;text-align:center;border:2px solid var(--ink);border-radius:13px;padding:9px 4px 8px;background:#fff;box-shadow:2px 2px 0 rgba(13,13,13,.14)}
+.rcell .ric{display:block;margin:0 auto 4px}
+.rcell .rt{font-size:11px;font-weight:800;color:var(--ink);line-height:1.1}
+.rcell .rs{font-size:9.5px;font-weight:600;color:var(--mid);line-height:1.15;margin-top:2px}
+
+/* ---- bloc garantie ---- */
+.guarantee{
+  display:flex;gap:10px;align-items:flex-start;
+  border:2.5px dashed var(--teal);border-radius:14px;padding:11px 12px;margin:0 0 13px;
+  background:rgba(0,158,142,.07)
+}
+.guarantee svg{flex:none;margin-top:1px}
+.guarantee .gt{font-size:12.5px;font-weight:800;color:var(--teal);line-height:1.25}
+.guarantee .gs{font-size:11.5px;font-weight:600;color:var(--mid);line-height:1.3;margin-top:2px}
+
+/* ---- liens secondaires ---- */
+.links{display:flex;justify-content:space-between;gap:10px;margin:0 0 12px}
+.links a{font-size:12px;font-weight:700;color:var(--teal);text-decoration:none;border-bottom:2px solid rgba(0,158,142,.3);padding-bottom:1px}
+.links a:hover{border-bottom-color:var(--teal)}
+.links a.pro{color:var(--ink);margin-left:auto;text-align:right}
+.links a.pro:hover{color:var(--coral)}
+
+/* ---- footer ---- */
+.foot{
+  text-align:center;font-size:11px;font-weight:600;color:var(--mid);
+  border-top:2px solid rgba(13,13,13,.12);padding-top:11px;display:flex;align-items:center;justify-content:center;gap:7px
+}
+.foot svg{opacity:.7}
+</style>
+</head>
+<body>
+
+<div class="paywall">
+
+  <!-- ============================ SCÈNE ============================ -->
+  <div class="scene">
+    <span class="live"><i></i> EN TEMPS RÉEL</span>
+    <div class="bubble">Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</div>
+
+    <svg viewBox="0 0 380 266" preserveAspectRatio="none" aria-label="Le Veilleur, satellite serein, veille la mer au lever du jour et présente l'offre">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sky0)"/>
+          <stop offset=".42" stop-color="var(--sky1)"/>
+          <stop offset=".72" stop-color="var(--sky2)"/>
+          <stop offset="1" stop-color="var(--sky3)"/>
+        </linearGradient>
+        <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFF6E0"/>
+          <stop offset=".46" stop-color="var(--glit)"/>
+          <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2a6f64"/>
+          <stop offset=".5" stop-color="#0f3b34"/>
+          <stop offset="1" stop-color="#08251F"/>
+        </linearGradient>
+        <linearGradient id="seaWarm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#F2B05E" stop-opacity=".34"/>
+          <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+        </linearGradient>
+        <radialGradient id="warmHalo" cx="50%" cy="46%" r="50%">
+          <stop offset="0" stop-color="#FFD884" stop-opacity=".42"/>
+          <stop offset=".55" stop-color="#FFC72C" stop-opacity=".12"/>
+          <stop offset="1" stop-color="#FFC72C" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="lens" cx="38%" cy="30%" r="74%">
+          <stop offset="0" stop-color="#E6FBFF"/>
+          <stop offset=".3" stop-color="var(--tealL)"/>
+          <stop offset="1" stop-color="#042625"/>
+        </radialGradient>
+        <radialGradient id="irisG" cx="42%" cy="36%" r="64%">
+          <stop offset="0" stop-color="#0b403e"/>
+          <stop offset="1" stop-color="#03100f"/>
+        </radialGradient>
+        <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FBF3DE"/>
+          <stop offset=".55" stop-color="#ECDCB6"/>
+          <stop offset="1" stop-color="#D9C28C"/>
+        </linearGradient>
+        <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2a6da0"/>
+          <stop offset="1" stop-color="#123247"/>
+        </linearGradient>
+        <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+          <stop offset="0" stop-color="var(--glit)" stop-opacity=".5"/>
+          <stop offset=".6" stop-color="var(--glit)" stop-opacity=".12"/>
+          <stop offset="1" stop-color="var(--glit)" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- ciel -->
+      <rect x="0" y="0" width="380" height="170" fill="url(#sky)"/>
+      <!-- soleil bas + halo qui respire (à gauche, dégage le Veilleur) -->
+      <circle id="sunGlow" cx="64" cy="120" r="68" fill="url(#sunG)"/>
+      <circle cx="64" cy="120" r="24" fill="#FFF7E2"/>
+      <!-- nuages longs (figés = tableau) -->
+      <ellipse cx="250" cy="58" rx="78" ry="6" fill="#10333E" opacity=".4"/>
+      <ellipse cx="300" cy="78" rx="52" ry="5" fill="#10333E" opacity=".3"/>
+      <!-- oiseaux lointains (échelle) -->
+      <g opacity=".5" stroke="#0B2230" stroke-width="1.6" fill="none" stroke-linecap="round">
+        <path d="M196 66 q5 -4 10 0 q5 -4 10 0"/>
+        <path d="M220 74 q4 -3 8 0 q4 -3 8 0" opacity=".7"/>
+      </g>
+      <!-- îles silhouettes -->
+      <path d="M0 156 q60 -26 130 -22 q44 3 80 22 Z" fill="#0a2a2c" opacity=".5"/>
+      <path d="M250 158 q44 -18 96 -16 q40 2 70 16 Z" fill="#0a2a2c" opacity=".4"/>
+
+      <!-- mer -->
+      <rect x="0" y="150" width="380" height="140" fill="url(#sea)"/>
+      <rect x="0" y="150" width="380" height="64" fill="url(#seaWarm)"/>
+      <!-- allée du soleil -->
+      <g opacity=".9">
+        <ellipse cx="64" cy="162" rx="44" ry="4" fill="var(--glit)" opacity=".5"/>
+        <ellipse cx="70" cy="176" rx="34" ry="3.5" fill="var(--glit)" opacity=".4"/>
+        <ellipse cx="78" cy="192" rx="26" ry="3" fill="var(--glit)" opacity=".3"/>
+        <ellipse cx="86" cy="208" rx="18" ry="2.6" fill="var(--glit)" opacity=".22"/>
+      </g>
+      <!-- houle douce -->
+      <g stroke="#0c302b" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".4">
+        <path d="M40 196 q18 -4 36 0 t36 0"/>
+        <path d="M210 214 q20 -4 40 0 t40 0"/>
+        <path d="M120 236 q18 -4 36 0 t36 0"/>
+      </g>
+
+      <!-- yole ronde de Martinique (vie + âme locale) -->
+      <g transform="translate(296 196) scale(.8)">
+        <ellipse cx="0" cy="22" rx="34" ry="4" fill="#08251F" opacity=".5"/>
+        <path d="M-34 14 Q0 36 34 14 Q30 26 0 28 Q-30 26 -34 14 Z" fill="#0c5f57" stroke="#063f39" stroke-width="1.2"/>
+        <line x1="-2" y1="16" x2="-4" y2="-40" stroke="#3a2a18" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M-4 -40 Q26 -24 22 14 L-2 16 Z" fill="#FFE3B0" stroke="#E89400" stroke-width="1" stroke-opacity=".5"/>
+        <path d="M-4 -34 Q-28 -12 -26 14 L-4 14 Z" fill="#F2966A" stroke="#E8522A" stroke-width="1" stroke-opacity=".4"/>
+        <path d="M-4 -40 l7 3 l-7 3 z" fill="var(--green)"/>
+      </g>
+
+      <!-- FAISCEAU de veille chaud, posé sur la MER (sous l'œil, pas un scan)
+           pointé vers le bas-droit = vers l'offre / le CTA -->
+      <polygon points="0,0 -36,150 36,150" fill="url(#beamGrad)" opacity=".7" transform="translate(208 136) rotate(16)"/>
+
+      <!-- ============= LE VEILLEUR (satellite crème, œil mi-clos serein) =============
+           Centré, hero. Antenne + regard inclinés vers le CTA (en bas), JAMAIS vers le user. -->
+      <g id="veil" transform="translate(208 130)">
+       <g id="veilFloat">
+        <!-- halo chaud permanent (il rayonne la chaleur) -->
+        <circle cx="0" cy="6" r="86" fill="url(#warmHalo)"/>
+        <g transform="rotate(-7)">
+          <!-- panneaux solaires (instrument = crédibilité satellite) -->
+          <rect x="-78" y="-6" width="44" height="26" rx="3" fill="url(#panel)" transform="rotate(-7 -56 7)" stroke="#0D0D0D" stroke-width="2"/>
+          <rect x="34" y="-6" width="44" height="26" rx="3" fill="url(#panel)" transform="rotate(7 56 7)" stroke="#0D0D0D" stroke-width="2"/>
+          <g stroke="#0D0D0D" stroke-width="1" opacity=".5">
+            <line x1="-64" y1="-4" x2="-64" y2="18"/><line x1="-50" y1="-4" x2="-50" y2="18"/>
+            <line x1="48" y1="-4" x2="48" y2="18"/><line x1="62" y1="-4" x2="62" y2="18"/>
+          </g>
+          <line x1="-34" y1="6" x2="-26" y2="6" stroke="#0D0D0D" stroke-width="3"/>
+          <line x1="26" y1="6" x2="34" y2="6" stroke="#0D0D0D" stroke-width="3"/>
+
+          <!-- corps squircle crème (baby-schema = chaleur), contour encre -->
+          <path d="M0 -26
+                   C18 -26 28 -17 28 1
+                   C28 22 19 38 0 38
+                   C-19 38 -28 22 -28 1
+                   C-28 -17 -18 -26 0 -26 Z"
+                fill="url(#bodyG)" stroke="#0D0D0D" stroke-width="3"/>
+          <!-- joues rosées (BD) -->
+          <ellipse cx="-19" cy="14" rx="6" ry="4" fill="#FF8F73" opacity=".5"/>
+          <ellipse cx="19" cy="14" rx="6" ry="4" fill="#FF8F73" opacity=".5"/>
+          <!-- rim-light golden-hour bord droit -->
+          <path d="M23 -13 C30 -8 30 20 19 30" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".7" stroke-linecap="round"/>
+
+          <!-- ŒIL-LENTILLE mi-clos serein -->
+          <circle cx="0" cy="3" r="19" fill="url(#lens)" stroke="#0D0D0D" stroke-width="3"/>
+          <circle cx="0" cy="3" r="19" fill="none" stroke="var(--gold)" stroke-width="2.4"/>
+          <!-- iris décalé en bas (regarde la mer / le CTA, pas le user) -->
+          <g transform="translate(-1 4)">
+            <circle cx="0" cy="0" r="8" fill="url(#irisG)"/>
+            <circle cx="0" cy="0" r="3.4" fill="#02100f"/>
+            <circle cx="-2.6" cy="-2.6" r="2.6" fill="#fff7e2"/>
+            <circle cx="2.4" cy="1.8" r="1.1" fill="var(--goldLL)" opacity=".9"/>
+          </g>
+          <!-- paupière haute BASSE (mi-clos = serein), masque le tiers haut -->
+          <path d="M-19 3 Q0 -10 19 3 L19 -19 L-19 -19 Z" fill="url(#bodyG)"/>
+          <path d="M-19 3 Q0 -9 19 3" fill="none" stroke="#0D0D0D" stroke-width="2.6"/>
+          <!-- sourire des yeux (réassurance n°1) -->
+          <path d="M-11 14 Q0 21 11 14" fill="none" stroke="var(--gold)" stroke-width="2.4" stroke-linecap="round"/>
+          <!-- sourcil doux -->
+          <path d="M-13 -14 Q0 -19 13 -14" fill="none" stroke="#0D0D0D" stroke-width="2.6" stroke-linecap="round" opacity=".8"/>
+
+          <!-- antenne (pointée vers l'offre) -->
+          <line x1="0" y1="-26" x2="-3" y2="-42" stroke="#0D0D0D" stroke-width="2.8" stroke-linecap="round"/>
+          <circle cx="-3" cy="-45" r="8" fill="var(--green)" opacity=".25"/>
+          <circle cx="-3" cy="-45" r="4" fill="var(--green)" stroke="#0D0D0D" stroke-width="2"/>
+        </g>
+        <!-- étincelles BD -->
+        <g fill="#fff">
+          <path d="M60 -34 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2Z" opacity=".9"/>
+          <path d="M-66 24 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5Z" opacity=".8"/>
+        </g>
+       </g>
+      </g>
+
+    </svg>
+  </div>
+
+  <!-- ============================ OFFRE ============================ -->
+  <div class="body">
+    <p class="eyebrow">Le veilleur personnel</p>
+    <h1 class="h1">Sache si ta <span class="mer">plage</span> est propre — avant de partir.</h1>
+
+    <!-- 2 plans : annuel mis en avant -->
+    <div class="plans">
+      <div class="plan">
+        <span class="pick"></span>
+        <div class="ptag">Mensuel</div>
+        <div class="price">4,99<small> €</small></div>
+        <div class="note">par mois</div>
+      </div>
+      <div class="plan featured">
+        <span class="pick"></span>
+        <span class="badge">−33%</span>
+        <div class="ptag">Annuel</div>
+        <div class="price">39,99<small> €</small></div>
+        <div class="note">soit 3,33 €/mois</div>
+      </div>
+    </div>
+
+    <!-- CTA principal énorme -->
+    <button class="cta">JE VEUX LA PRÉVISION <span class="arrow">→</span></button>
+    <p class="ctaSub">39,99 €/an <span class="dot">·</span> annulable en 2 clics</p>
+    <p class="ctaCoffee">soit <b>0,11 €/jour</b> · moins qu'un café</p>
+
+    <!-- 3 rassurances -->
+    <div class="reassure">
+      <div class="rcell">
+        <svg class="ric" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#009E8E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        <div class="rt">Stripe</div>
+        <div class="rs">paiement sécurisé</div>
+      </div>
+      <div class="rcell">
+        <svg class="ric" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8A800" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
+        <div class="rt">30 jours</div>
+        <div class="rs">satisfait ou remboursé</div>
+      </div>
+      <div class="rcell">
+        <svg class="ric" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8522A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/><path d="M22 11l-4 4"/></svg>
+        <div class="rt">2 clics</div>
+        <div class="rs">annule quand tu veux</div>
+      </div>
+    </div>
+
+    <!-- bloc garantie -->
+    <div class="guarantee">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#009E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+      <div>
+        <div class="gt">Garantie 30 jours satisfait ou remboursé</div>
+        <div class="gs">Pas convaincu ? Un email, remboursé — sans condition.</div>
+      </div>
+    </div>
+
+    <!-- liens secondaires -->
+    <div class="links">
+      <a href="#">J'ai déjà un abonnement</a>
+      <a href="#" class="pro">Hôtel ou collectivité ? →</a>
+    </div>
+
+    <!-- footer -->
+    <div class="foot">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#686868" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      Paiement sécurisé Stripe · Sans engagement
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

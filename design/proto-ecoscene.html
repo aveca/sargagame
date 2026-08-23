@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le Veilleur — Scène écosystème (promo honnête)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#FFC72C; --goldD:#E8A800; --goldLL:#FFE47A;
+    --ink:#0d1117; --paper:#FDFCF7;
+    --green:#22C55E; --amber:#E8A800; --coral:#E8522A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0a0f14;color:#EAF7F4;
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .anton{font-family:"Anton",Impact,"Haettenschweiler","Arial Narrow",sans-serif;
+    letter-spacing:-.01em;text-transform:uppercase}
+  .wrap{max-width:460px;margin:0 auto;padding:14px 14px 40px}
+  .stage{position:relative;width:100%;aspect-ratio:440/760;border-radius:22px;overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06)}
+  .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* overlay copy */
+  .veil-grad{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(4,12,16,0) 34%,rgba(4,12,16,.30) 58%,rgba(4,12,16,.78) 82%,rgba(4,12,16,.95) 100%)}
+  .copy{position:absolute;left:0;right:0;bottom:0;padding:20px 20px 22px;z-index:5}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,216,132,.12);
+    border:1px solid rgba(255,216,132,.32);border-radius:999px;padding:5px 11px 5px 8px;
+    font-size:11.5px;font-weight:700;letter-spacing:.01em;margin-bottom:12px}
+  .chip .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.28)}
+  .promise{font-size:25px;line-height:1.08;margin:0 0 13px;text-shadow:0 2px 20px rgba(0,0,0,.55)}
+  .promise b{color:var(--gold)}
+  .cta{display:block;width:100%;border:none;cursor:pointer;text-align:center;border-radius:15px;
+    padding:15px 16px;background:linear-gradient(135deg,var(--gold),var(--goldD));color:#1A2B26;
+    box-shadow:0 12px 30px rgba(232,168,0,.32);font-family:inherit}
+  .cta .big{font-size:16.5px;font-weight:800;letter-spacing:.005em}
+  .cta .sub{font-size:12px;font-weight:600;opacity:.8;margin-top:3px}
+  .safety{text-align:center;margin-top:11px;font-size:10.5px;font-weight:600;
+    color:rgba(234,247,244,.55);letter-spacing:.015em}
+  .safety a{color:rgba(255,199,44,.85)}
+
+  /* strategy legend */
+  h2.sec{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);margin:30px 2px 4px}
+  p.lead{font-size:13px;line-height:1.5;color:rgba(234,247,244,.7);margin:0 2px 14px}
+  .leg{display:grid;gap:9px}
+  .row{display:grid;grid-template-columns:26px 1fr;gap:11px;align-items:start;
+    background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);
+    border-radius:13px;padding:11px 13px}
+  .row .k{font-size:18px;line-height:1.1;text-align:center}
+  .row .t b{font-size:13px;font-weight:800;color:#EAF7F4}
+  .row .t .r{display:block;font-size:12px;line-height:1.45;color:rgba(234,247,244,.72);margin-top:2px}
+  .row .t .h{display:block;font-size:10.5px;line-height:1.4;color:rgba(122,201,182,.85);margin-top:4px}
+  .guard{margin-top:26px;border:1px dashed rgba(255,199,44,.3);border-radius:14px;padding:14px 15px;
+    background:rgba(255,199,44,.04)}
+  .guard b{color:var(--gold);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .guard ul{margin:9px 0 0;padding-left:17px}
+  .guard li{font-size:11.5px;line-height:1.55;color:rgba(234,247,244,.72);margin-bottom:5px}
+  .foot{margin-top:22px;font-size:10.5px;color:rgba(234,247,244,.4);text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="stage" role="img" aria-label="Scène golden-hour du Veilleur : la côte, le verdict par plage et la route vers la bonne crique.">
+    <svg viewBox="0 0 440 760" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#241a4d"/><stop offset=".44" stop-color="#5b2f86"/>
+          <stop offset=".70" stop-color="#9c4f6e"/><stop offset=".88" stop-color="#e0894a"/>
+          <stop offset="1" stop-color="#ffb865"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#06201B"/>
+        </linearGradient>
+        <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2a1f16"/><stop offset="1" stop-color="#140d08"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFE6A8" stop-opacity=".95"/>
+          <stop offset=".4" stop-color="#FFD884" stop-opacity=".5"/>
+          <stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="beamG" cx="50%" cy="0%" r="90%">
+          <stop offset="0" stop-color="#FFE6A8" stop-opacity=".42"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+      </defs>
+
+      <!-- SKY -->
+      <rect x="0" y="0" width="440" height="470" fill="url(#sky)"/>
+      <circle cx="300" cy="330" r="150" fill="url(#sun)"/>
+      <circle cx="300" cy="330" r="34" fill="#FFE6A8" opacity=".92"/>
+
+      <!-- planes at horizon — neutral ambiance, no urgency -->
+      <g fill="#12262B" opacity=".72">
+        <path d="M120 150 l13 3 l-2 -5 l4 1 l3 5 l7 1 l-7 2 l-3 5 l-4 1 l2 -5 z"/>
+        <path d="M355 118 l10 2 l-1 -4 l3 1 l2 4 l6 1 l-6 1 l-2 4 l-3 1 l1 -4 z" opacity=".8"/>
+        <path d="M230 92 l8 2 l-1 -3 l2 1 l2 3 l5 1 l-5 1 l-2 3 l-2 1 l1 -3 z" opacity=".6"/>
+      </g>
+      <g id="planeTrail" stroke="#FFE6A8" stroke-width="1" opacity=".14" fill="none">
+        <path d="M60 158 L118 150"/><path d="M300 126 L352 119"/>
+      </g>
+
+      <!-- LE VEILLEUR — mascot top-left, sensor turned toward the SEA (down-right) -->
+      <g id="veilleur">
+        <!-- scanning beam cone toward the water -->
+        <g id="beam"><path d="M104 148 L250 470 L150 470 Z" fill="url(#beamG)"/></g>
+        <!-- solar wings -->
+        <rect x="46" y="120" width="26" height="15" rx="2" fill="#1b2a4a" stroke="#3a5aa0" stroke-width="1"/>
+        <rect x="126" y="120" width="26" height="15" rx="2" fill="#1b2a4a" stroke="#3a5aa0" stroke-width="1"/>
+        <line x1="72" y1="127" x2="86" y2="127" stroke="#0e1626" stroke-width="4"/>
+        <line x1="112" y1="127" x2="126" y2="127" stroke="#0e1626" stroke-width="4"/>
+        <!-- body -->
+        <rect x="82" y="104" width="34" height="46" rx="12" fill="#0f1a2e" stroke="#FFC72C" stroke-width="1.6"/>
+        <!-- lens / eye (largest colored element = mood) watching the sea -->
+        <circle id="lens" cx="99" cy="130" r="10.5" fill="#FFC72C"/>
+        <circle cx="99" cy="130" r="10.5" fill="none" stroke="#FFE6A8" stroke-width="1.4" opacity=".7"/>
+        <circle cx="102" cy="127" r="2.4" fill="#fff" opacity=".9"/>
+        <rect x="95" y="99" width="8" height="7" rx="2" fill="#0f1a2e" stroke="#FFC72C" stroke-width="1.2"/>
+      </g>
+
+      <!-- SEA -->
+      <rect x="0" y="360" width="440" height="230" fill="url(#sea)"/>
+      <path d="M232 340 L360 340 L410 590 L150 590 Z" fill="#FFD884" opacity=".08"/>
+      <ellipse cx="300" cy="372" rx="52" ry="4" fill="#FFD884" opacity=".26"/>
+      <ellipse cx="300" cy="404" rx="72" ry="5" fill="#FFD884" opacity=".14"/>
+
+      <!-- TRAFFIC = movement of the SARGASSUM (satellite drift), never a crowd -->
+      <g id="drift" opacity=".9">
+        <path d="M40 452 q40 -12 84 -2 q40 9 78 -2 q30 -8 60 1" fill="none" stroke="#5c6b3a" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+        <path d="M60 470 q46 -10 92 0 q44 9 86 -3" fill="none" stroke="#41502a" stroke-width="7" stroke-linecap="round" opacity=".5"/>
+        <ellipse cx="120" cy="458" rx="34" ry="7" fill="#4a5a30" opacity=".4"/>
+        <ellipse cx="250" cy="464" rx="40" ry="8" fill="#3e4d29" opacity=".38"/>
+      </g>
+      <!-- pale low-confidence route over drift (honest uncertainty) -->
+      <path id="routePale" d="M250 640 C 220 560, 150 520, 96 476" fill="none" stroke="#FFE47A"
+            stroke-width="2" stroke-dasharray="5 7" opacity=".45"/>
+
+      <!-- ROUTES = golden path from the reader to the clean cove (J+1 → J+7) -->
+      <path id="routeSafe" d="M250 660 C 300 580, 348 560, 372 512" fill="none" stroke="#FFC72C"
+            stroke-width="3.4" stroke-linecap="round" opacity=".92"/>
+      <g fill="#FFC72C" opacity=".9">
+        <circle cx="292" cy="606" r="2.6"/><circle cx="330" cy="572" r="2.6"/><circle cx="356" cy="540" r="2.6"/>
+      </g>
+
+      <!-- BOATS (yoles) — one to the clean cove, one skirting the drift -->
+      <g id="boatA" fill="#0E1F25">
+        <path d="M356 500 l20 0 l-3 7 l-14 0 z"/><line x1="366" y1="486" x2="366" y2="500" stroke="#0E1F25" stroke-width="1.5"/>
+        <path d="M366 488 l10 11 l-10 0 z" fill="#FFD884" opacity=".8"/>
+      </g>
+      <g id="boatB" fill="#0E1F25" opacity=".9">
+        <path d="M150 476 l16 0 l-2 6 l-12 0 z"/><line x1="158" y1="464" x2="158" y2="476" stroke="#0E1F25" stroke-width="1.3"/>
+        <path d="M158 466 l8 9 l-8 0 z" fill="#EAD9A0" opacity=".7"/>
+      </g>
+
+      <!-- COASTLINE / LAND -->
+      <path d="M0 560 Q140 512 260 548 Q360 578 440 540 L440 760 L0 760 Z" fill="url(#land)"/>
+      <path d="M0 560 Q140 512 260 548 Q360 578 440 540" fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".28"/>
+
+      <!-- BUSINESS = Partner hotel, placed next to a RED (avoid) beach to PROVE neutrality -->
+      <g id="hotel">
+        <rect x="316" y="556" width="70" height="40" rx="4" fill="#241a12" stroke="#4a3a26" stroke-width="1"/>
+        <g fill="#FFD884" opacity=".92">
+          <rect x="324" y="566" width="7" height="7" rx="1"/><rect x="337" y="566" width="7" height="7" rx="1"/>
+          <rect x="350" y="566" width="7" height="7" rx="1"/><rect x="363" y="566" width="7" height="7" rx="1"/>
+          <rect x="330" y="580" width="7" height="7" rx="1"/><rect x="350" y="580" width="7" height="7" rx="1"/>
+        </g>
+        <!-- the partner's own beach patch shows an honest RED verdict — money never tints the color -->
+        <path d="M330 604 q22 -7 52 0" fill="none" stroke="#5c6b3a" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+        <circle cx="356" cy="600" r="6" fill="#E8522A" stroke="#140d08" stroke-width="1.4"/>
+      </g>
+
+      <!-- BEACH = the good cove (clean, glowing gold) beside a shaded weed strip -->
+      <circle cx="120" cy="612" r="58" fill="url(#glow)"/>
+      <path d="M44 636 q40 -22 96 -14 q42 5 78 -4" fill="none" stroke="#F2C879" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+      <path d="M188 622 q26 -4 54 6" fill="none" stroke="#5c6b3a" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+      <circle id="verdict" cx="120" cy="608" r="8.5" fill="#22C55E" stroke="#06121A" stroke-width="1.6"/>
+      <circle cx="120" cy="608" r="14" fill="none" stroke="#FFE6A8" stroke-width="1.3" opacity=".6"/>
+
+      <!-- STATION = single warm embarkation jetty (the ONE CTA), visually dominant on the right -->
+      <g id="station">
+        <rect x="392" y="600" width="40" height="120" fill="#1c140d"/>
+        <rect x="386" y="592" width="52" height="12" rx="3" fill="#2a1f14" stroke="#FFC72C" stroke-width="1.2"/>
+        <circle cx="412" cy="576" r="22" fill="url(#glow)"/>
+        <circle cx="412" cy="582" r="6" fill="#FFC72C"/>
+        <line x1="412" y1="560" x2="412" y2="592" stroke="#FFC72C" stroke-width="2" opacity=".8"/>
+      </g>
+
+      <!-- inline labels for load-bearing metaphors (<2s comprehension) -->
+      <g font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800">
+        <g transform="translate(120,662)"><rect x="-38" y="-13" width="76" height="19" rx="9" fill="rgba(6,18,20,.62)"/><text x="0" y="1" text-anchor="middle" font-size="10.5" fill="#EAF7F4">la bonne crique</text></g>
+        <g transform="translate(356,632)"><rect x="-46" y="-12" width="92" height="18" rx="9" fill="rgba(6,18,20,.7)"/><text x="0" y="1" text-anchor="middle" font-size="9" fill="#FFB59E">Partenaire · sponsorisé</text></g>
+        <g transform="translate(150,432)"><rect x="-40" y="-12" width="80" height="18" rx="9" fill="rgba(6,18,20,.55)"/><text x="0" y="1" text-anchor="middle" font-size="9" fill="#c9d6a0">dérive du sargasse</text></g>
+      </g>
+    </svg>
+
+    <div class="veil-grad"></div>
+    <div class="copy">
+      <span class="chip"><span class="dot"></span> Les Salines · propre aujourd'hui</span>
+      <p class="promise anton">Le Veilleur surveille <b>votre plage</b> et vous dit comment finit l'histoire.</p>
+      <button class="cta" type="button">
+        <span class="big">Voir comment l'histoire finit →</span>
+        <span class="sub">dès 7,99 € · paiement unique, sans abonnement</span>
+      </button>
+      <div class="safety">Mesuré au satellite, pas deviné · remboursé 30 j si ça ne vous sert pas · <a href="#">on publie nos erreurs</a></div>
+    </div>
+  </div>
+
+  <!-- ── STRATEGY, described by the scene ── -->
+  <h2 class="sec">La stratégie, racontée par la scène</h2>
+  <p class="lead">Un seul tableau golden-hour. Chaque élément de l'écosystème touristique porte une pièce
+  de l'argumentaire — <b>honnêtement</b>, sans un seul chiffre inventé. Verdict = 100 % donnée satellite.</p>
+
+  <div class="leg">
+    <div class="row"><div class="k">🏖️</div><div class="t"><b>La plage — « la bonne crique »</b>
+      <span class="r">Le cadeau montré AVANT l'ask : le verdict par plage du jour (couleur ERDDAP réelle), jamais une moyenne d'île.</span>
+      <span class="h">Honnête : couleur = donnée live de CETTE plage · donnée manquante → cadenas, jamais une couleur inventée.</span></div></div>
+
+    <div class="row"><div class="k">🛰️</div><div class="t"><b>Le Veilleur — le guide</b>
+      <span class="r">Capteur tourné vers la MER, jamais vers le client. Il rassure : « mesuré au satellite, pas deviné ».</span>
+      <span class="h">Honnête : son humeur dérive du score réel ; il énonce du hedgé et pointe /fiabilite/.</span></div></div>
+
+    <div class="row"><div class="k">⛵</div><div class="t"><b>Les yoles — l'âme locale & le plan B</b>
+      <span class="r">Une yole met le cap sur la crique propre, l'autre contourne la dérive : on choisit toujours la bonne plage.</span>
+      <span class="h">Honnête : les sillages suivent la lecture satellite, jamais un « plus que 3 places ».</span></div></div>
+
+    <div class="row"><div class="k">✈️</div><div class="t"><b>Les avions — le décor, neutre</b>
+      <span class="r">L'écosystème tourne, les voyageurs arrivent. Ambiance evergreen, pas d'enjeu de sunk-cost.</span>
+      <span class="h">Honnête : aucun compte-à-rebours, aucun « vos dates sont bloquées ».</span></div></div>
+
+    <div class="row"><div class="k">🌊</div><div class="t"><b>Le trafic — le mouvement du sargasse</b>
+      <span class="r">L'honnêteté auditée incarnée : la vraie dérive des algues (vent + courant). C'est /fiabilite/ rendu visible.</span>
+      <span class="h">Honnête : « trafic » = mouvement satellite, JAMAIS une foule de gens ni de la preuve sociale.</span></div></div>
+
+    <div class="row"><div class="k">🛣️</div><div class="t"><b>Les routes — J+1 → J+7</b>
+      <span class="r">Le renversement de statut : la route dorée de votre position vers la crique propre. Le pass achète cette visibilité.</span>
+      <span class="h">Honnête : route sûre = trait plein · faible confiance = trait pâle (vraie incertitude) · donnée manquante = cadenas.</span></div></div>
+
+    <div class="row"><div class="k">🚏</div><div class="t"><b>La station — le seul CTA</b>
+      <span class="r">Un quai chaleureux, pas un mur de paywall. Un point lumineux → Mollie (Apple/Google Pay, one-time). Zéro toggle.</span>
+      <span class="h">Honnête : point de départ evergreen · la garantie 30 j = le billet retour, ligne calme sous le CTA.</span></div></div>
+
+    <div class="row"><div class="k">🏨</div><div class="t"><b>Le business — l'hôtel Partenaire (porte B2B)</b>
+      <span class="r">La même scène sert l'hôtelier : « éclairez la mer toute la saison ». Route vers Pro (essai 30 j sans carte → 79 €/mo ou 690 €/an, sur /pro/*).</span>
+      <span class="h">Honnête : encart « sponsorisé » séparé du verdict — placé à côté d'un verdict ROUGE. L'argent ne teinte JAMAIS une couleur.</span></div></div>
+  </div>
+
+  <div class="guard">
+    <b>Garde-fous d'honnêteté (le moat)</b>
+    <ul>
+      <li>ZÉRO chiffre fabriqué : pas de compte-à-rebours de saison, pas de compteur de voyageurs/ventes/vues.</li>
+      <li>La seule urgence = un fait ERDDAP réel et daté (« demain le vent tourne »), tiré live.</li>
+      <li>Promesse strictement POSITIVE (« connaître la fin de l'histoire ») ; jamais « débloquez J+2-7 ».</li>
+      <li>B2C = pass one-time Mollie · aucun mot « essai/trial/gratuit/sans carte » sur une surface de paiement (dispute Stripe).</li>
+      <li>Taux de fiabilité toujours hedgé (~76 % tous régimes, daté, N comparaisons) + lien /fiabilite/. Jamais un « 100 % » nu.</li>
+    </ul>
+  </div>
+
+  <div class="foot">Prototype design/ · rollback <code>?ecoscene=0</code> · prix = source unique (bloc maître CLAUDE.md) — jamais figé ici.<br>
+  Verdict 100 % data ERDDAP · Le Veilleur regarde la mer, jamais vos clients.</div>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return; // reduced-motion floor: keep the static golden-hour pose
+  var beam=document.getElementById('beam'), boatA=document.getElementById('boatA'),
+      boatB=document.getElementById('boatB'), drift=document.getElementById('drift');
+  var raf, running=true, t0=null;
+  function frame(ts){
+    if(!running) return;
+    if(t0===null) t0=ts; var t=(ts-t0)/1000;
+    // Veilleur beam sways gently toward the sea (low amplitude, returns to the water)
+    if(beam) beam.setAttribute('transform','rotate('+(Math.sin(t*0.6)*2.4)+' 104 148)');
+    // boats bob softly
+    if(boatA) boatA.setAttribute('transform','translate(0,'+(Math.sin(t*1.1)*1.6)+')');
+    if(boatB) boatB.setAttribute('transform','translate(0,'+(Math.sin(t*1.1+1.3)*1.4)+')');
+    // sargassum drift breathes (movement of the seaweed, not people)
+    if(drift) drift.setAttribute('transform','translate('+(Math.sin(t*0.4)*3)+',0)');
+    raf=requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange',function(){
+    running=!document.hidden;
+    if(running){ t0=null; raf=requestAnimationFrame(frame);} else if(raf) cancelAnimationFrame(raf);
+  });
+  raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

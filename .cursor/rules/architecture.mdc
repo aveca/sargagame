@@ -1,0 +1,95 @@
+---
+description: Architecture globale du projet Sargagame — à charger pour toute tâche touchant la structure, le build, le deploy ou l'infra.
+globs: ["**/*.{js,jsx,ts,php,yml,json}", ".github/**/*"]
+alwaysApply: false
+---
+
+# Architecture — Sargagame
+
+## Vue d'ensemble
+
+Monolithe React (`src/Sargasses_PROD.jsx`, ~13 400 lignes) + API PHP (`public/api/`) + pipeline Python/Node (`scripts/`) + 136+ pages SEO générées au build.
+
+## Stack
+
+| Couche | Technologie | Rôle |
+|--------|-------------|------|
+| Frontend | React 18 + Vite | SPA mobile-first, SVG map, PWA |
+| Backend API | PHP 8 (Mollie SDK) | Paiements, tokens, webhooks |
+| Backend data | Node.js (scripts/) | Pipeline ERDDAP, forecast, confidence |
+| Analytics | Supabase + Apps Script | Events, funnel, leads |
+| Paiements | Mollie (actif) + Stripe (legacy mort) | B2C passes + B2B subscriptions |
+| Deploy | FTP + GitHub Actions | Auto-deploy au push sur main |
+| CDN | Cloudflare (implicit) | Cache, compression |
+
+## Structure du repo
+
+```
+src/
+  Sargasses_PROD.jsx      # monolithe — app + carte + header + flags
+  WorldMapView.jsx         # carte SVG vedette (funnel)
+  ArchipelView.jsx         # vue île
+  ChasseHome.jsx           # home comic (lane .lc-)
+  PremiumModal.jsx         # paywall + paiement
+  PassOffer.jsx            # card offre pass
+  ComicDetail.jsx          # détail plage
+  SargaChat.jsx            # chat IA
+  AccountSheet.jsx         # compte utilisateur
+  BeachPhotos.jsx          # photos visiteurs (Supabase)
+  supabasePhotos.js        # client Supabase photos
+  Themes.css               # tokens couleur runtime
+  app-runtime.css          # CSS appliquée AVANT mount (anti-CLS)
+  useSwipeClose.js         # hook fermeture swipe-down
+  lib/                     # utilitaires (segment, etc.)
+
+public/
+  api/
+    mollie.php             # checkout Mollie on-site
+    mollie-webhook.php     # webhook paiements
+    mollie-lib.php         # helpers partagés (B2B plans, grants)
+    mollie-config.php      # SECRETS (gitignored)
+    paypal.php             # checkout PayPal (secondaire)
+    widget-token.php       # token PRO HMAC widget
+    b2b-trial.php          # essai Pro 30j
+    copernicus/            # données satellite live
+  sw.js                    # service worker PWA
+
+scripts/
+  fetch-sargassum-live.cjs # pipeline ERDDAP
+  build-sargassum-json.cjs # build données
+  lib/forecast.cjs         # forecast + persistence
+  lib/confidence.cjs       # score confiance
+  automation/              # outreach, email, paylinks
+  check-bundle-budget.cjs  # budget JS eager
+
+regions/
+  mq.json, gp.json, florida.json, puntacana.json, rivieramaya.json
+  index.cjs                # validateur régions
+
+.github/workflows/
+  daily-copernicus.yml     # pipeline principal (build + deploy)
+```
+
+## Build chain
+
+```bash
+npm run build
+= sync-version.cjs → build-sargassum-json.cjs → gen-b2b-partners.cjs → vite build → stamp-sw-hash.cjs
+```
+
+## Deploy
+
+Auto au push sur `main` via `daily-copernicus.yml` :
+- Build 5 régions (MQ, GP, FL, PU, RM)
+- Deploy FTP par région
+- Health check
+
+## Règles architecture
+
+1. **Monolithe** : tout dans `Sargasses_PROD.jsx` sauf features lazy-loadées
+2. **Pas de nouveau framework** : React + Vite uniquement
+3. **Budget** : ≤ 210 Ko JS eager gzip (CI bloquant)
+4. **CSS hors bundle** : `app-runtime.css` importé statiquement (avant mount)
+5. **Lazy chunks** : PremiumModal, SargaChat, WeekHub, etc.
+6. **SVG = carte primaire** : WorldMapView, jamais de refacto sans screenshot
+7. **PHP = API uniquement** : pas de HTML rendu côté serveur

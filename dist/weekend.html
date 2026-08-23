@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sargasses ce weekend — Martinique & Guadeloupe</title>
+<meta name="description" content="Chaque vendredi, recois les 3 meilleures plages pour ton weekend. Gratuit, par email.">
+<meta property="og:title" content="Ce weekend, quelle plage choisir ?">
+<meta property="og:description" content="Bulletin sargasses gratuit chaque vendredi. 135 plages surveillees par satellite.">
+<meta property="og:image" content="https://sargasses-martinique.com/og-weekend.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sargasses-martinique.com/og-weekend.png">
+<link rel="canonical" href="https://sargasses-martinique.com/weekend.html">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FDFCF7;color:#0D0D0D;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:420px;width:100%;background:#fff;border-radius:24px;padding:40px 28px;box-shadow:0 8px 40px rgba(0,0,0,.08);text-align:center}
+h1{font-size:28px;font-weight:800;line-height:1.2;margin-bottom:8px}
+h1 span{background:linear-gradient(135deg,#E8A800,#FFC72C);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:15px;color:#686868;line-height:1.5;margin-bottom:24px}
+.preview{background:#F7F5EF;border-radius:16px;padding:20px;margin-bottom:24px;text-align:left}
+.preview-header{font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.beach-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.beach-row:last-child{border:none}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.beach-name{font-size:14px;font-weight:600;flex:1}
+.beach-commune{font-size:12px;color:#686868}
+.cta{display:block;width:100%;padding:18px;border-radius:16px;border:none;cursor:pointer;font-size:17px;font-weight:700;color:#0D0D0D;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);box-shadow:0 6px 24px rgba(232,168,0,.35);text-decoration:none;margin-bottom:12px;transition:transform .2s}
+.cta:hover{transform:translateY(-2px)}
+.alt{display:block;font-size:13px;color:#686868;text-decoration:none;margin-bottom:20px}
+.alt:hover{color:#0D0D0D}
+.proof{font-size:12px;color:#999;line-height:1.5}
+.proof b{color:#686868}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Ce weekend,<br><span>quelle plage choisir ?</span></h1>
+  <p class="sub">Chaque vendredi soir, Le Veilleur regarde la mer pour toi et t'envoie les 3 plages propres pour ton weekend — vérifiées au satellite, pas devinées. Gratuit, par email.</p>
+
+  <div class="preview">
+    <div class="preview-header">À quoi ça ressemble (exemple)</div>
+    <div class="beach-row">
+      <div class="dot" style="background:#22C55E"></div>
+      <div>
+        <div class="beach-name">Grande Anse d'Arlet</div>
+        <div class="beach-commune">Les Anses-d'Arlet · 25 min</div>
+      </div>
+    </div>
+    <div class="beach-row">
+      <div class="dot" style="background:#22C55E"></div>
+      <div>
+        <div class="beach-name">Anse Noire</div>
+        <div class="beach-commune">Les Anses-d'Arlet · 28 min</div>
+      </div>
+    </div>
+    <div class="beach-row">
+      <div class="dot" style="background:#B87A00"></div>
+      <div>
+        <div class="beach-name">Plage du Diamant</div>
+        <div class="beach-commune">Le Diamant · 32 min — a surveiller</div>
+      </div>
+    </div>
+  </div>
+
+  <form id="signup" style="margin-bottom:16px">
+    <input type="email" id="email" placeholder="ton@email.com" required style="width:100%;padding:16px 18px;border-radius:14px;border:1.5px solid #e0e0e0;font-size:15px;font-family:inherit;margin-bottom:10px;outline:none;transition:border .2s" onfocus="this.style.borderColor='#E8A800'" onblur="this.style.borderColor='#e0e0e0'">
+    <button type="submit" class="cta">Recevoir le bulletin weekend</button>
+  </form>
+
+  <p class="proof">
+    <b>Gratuit</b> · Chaque vendredi · Désabonnement en 1 clic<br>
+    Données satellite Copernicus &amp; NOAA, mises à jour 4×/jour · 136 plages<br>
+    Mesuré au satellite, pas deviné — et quand on se trompe, on l'écrit.
+  </p>
+  <p id="season" style="display:none;margin-top:12px;padding:8px 14px;background:rgba(232,82,42,.08);border:1px solid rgba(232,82,42,.2);border-radius:10px;font-size:12px;font-weight:700;color:#E8522A">
+    🔴 Saison sargasses en cours — les plages changent chaque jour
+  </p>
+  <div id="success" style="display:none;text-align:center;margin-top:16px">
+    <p style="color:#16A34A;font-weight:700;font-size:14px;margin-bottom:12px">C'est noté ! Vendredi soir, Le Veilleur t'envoie tes 3 plages pour le weekend.</p>
+    <a href="/" style="display:inline-block;padding:12px 24px;background:#0D1E1C;color:#fff;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none">Voir la carte en direct</a>
+  </div>
+</div>
+
+<script>
+document.getElementById('signup').addEventListener('submit', function(e) {
+  e.preventDefault()
+  var email = document.getElementById('email').value
+  if (!email) return
+  var island = location.hostname.includes('guadeloupe') ? 'GP' : 'MQ'
+  fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {
+    method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({email: email, island: island, source: 'weekend-landing', date: new Date().toISOString()})
+  })
+  document.getElementById('signup').style.display = 'none'
+  document.getElementById('success').style.display = 'block'
+  try { gtag('event', 'sg_weekend_signup', {island: island, source: 'landing'}) } catch(e) {}
+})
+// Show season urgency banner (April-September)
+var m = new Date().getMonth()
+if (m >= 3 && m <= 8) document.getElementById('season').style.display = 'block'
+// Adapt title for GP hostname
+if (location.hostname.includes('guadeloupe')) {
+  document.title = 'Sargasses ce weekend — Guadeloupe'
+  document.querySelector('meta[name="description"]').content = 'Chaque vendredi, recois les 3 meilleures plages de Guadeloupe pour ton weekend. Gratuit, par email.'
+}
+</script>
+</body>
+</html>

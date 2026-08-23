@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<title>pw_hot_intent — in-scene paywall</title>
+<style>
+  :root{
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --land:#16242A;
+    --ink:#EAF7F4; --gold:#E8A800; --goldL:#FFC72C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#02060A;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  /* Phone frame to judge real mobile bottom-sheet feel */
+  .stage{display:flex;gap:26px;padding:26px;align-items:flex-start}
+  .phone{width:390px;border-radius:30px;overflow:hidden;position:relative;
+    background:#0A1714;box-shadow:0 30px 80px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.06)}
+  .cap{position:absolute;top:10px;left:14px;z-index:9;color:var(--ink);
+    font:700 11px system-ui;letter-spacing:.06em;text-transform:uppercase;opacity:.62;text-shadow:0 1px 4px #000}
+
+  /* ===== HOT in-scene panel (the new variant) ===== */
+  .scene{position:relative;width:100%;height:720px;overflow:hidden}
+  .scene svg.bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* darken plate that sits on the sea, anchored, NOT a floating card */
+  .veil{position:absolute;left:0;right:0;bottom:0;height:58%;
+    background:linear-gradient(180deg,rgba(4,12,16,0) 0%,rgba(4,12,16,.22) 34%,rgba(4,12,16,.70) 64%,rgba(4,12,16,.93) 100%)}
+
+  .panel{position:absolute;left:0;right:0;bottom:0;padding:22px 22px 26px;color:var(--ink)}
+
+  /* anchor chip — names THIS beach, ties the wall to where the user already is */
+  .anchor{display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,216,132,.12);border:1px solid rgba(255,216,132,.30);
+    border-radius:999px;padding:6px 12px 6px 9px;margin-bottom:16px}
+  .anchor .dot{width:9px;height:9px;border-radius:50%;background:#F4845F;box-shadow:0 0 0 3px rgba(244,132,95,.22)}
+  .anchor .nm{font:800 12.5px system-ui;letter-spacing:.01em}
+  .anchor .sc{font-size:11px;opacity:.7;font-weight:600}
+
+  /* 1 PROMISE — display font */
+  .promise{font-family:Anton,system-ui;font-weight:400;font-size:30px;line-height:1.06;
+    letter-spacing:.005em;margin:0 0 16px;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+  .promise .b{color:var(--goldL)}
+
+  /* 1 PROOF — the real computed next-degradation date, framed as data not pressure */
+  .proof{display:flex;gap:13px;align-items:flex-start;
+    background:rgba(232,82,42,.13);border:1px solid rgba(232,82,42,.34);
+    border-radius:15px;padding:14px 15px;margin-bottom:18px}
+  .proof .ic{font-size:19px;line-height:1;flex-shrink:0;margin-top:1px;filter:saturate(1.1)}
+  .proof .tx{flex:1;min-width:0}
+  .proof .hd{font:800 13px system-ui;color:#FFB59E;margin-bottom:3px;letter-spacing:.01em}
+  .proof .bd{font:600 12.5px system-ui;line-height:1.45;color:rgba(234,247,244,.92)}
+  .proof .src{display:block;margin-top:6px;font:600 10.5px system-ui;color:rgba(234,247,244,.55);letter-spacing:.02em}
+
+  /* 1 CTA */
+  .cta{display:block;width:100%;border:none;cursor:pointer;font-family:inherit;
+    text-align:center;border-radius:15px;padding:16px 18px;
+    background:linear-gradient(135deg,var(--goldL),var(--gold));
+    color:#1A2B26;box-shadow:0 10px 30px rgba(232,168,0,.30)}
+  .cta .t{font:800 16.5px system-ui;letter-spacing:.005em}
+  .cta .s{font:600 12px system-ui;opacity:.78;margin-top:3px}
+
+  .reassure{text-align:center;margin-top:13px;font:600 10.5px system-ui;
+    color:rgba(234,247,244,.5);letter-spacing:.015em}
+
+  /* ===== COLD sheet (the thing being replaced) — shown muted for contrast ===== */
+  .cold{width:360px;border-radius:24px;overflow:hidden;position:relative;
+    background:#0E1C20;border:1px solid rgba(255,255,255,.06);padding:24px 22px 26px;color:var(--ink);opacity:.92}
+  .cold h3{font-family:Anton,system-ui;font-weight:400;font-size:23px;margin:0 0 4px;color:var(--ink)}
+  .cold .sub{font:600 12px system-ui;color:rgba(234,247,244,.6);margin-bottom:18px}
+  .card{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:13px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:10px}
+  .card .e{font-size:20px;flex-shrink:0}
+  .card .ct{font:600 12px system-ui;line-height:1.4;color:rgba(234,247,244,.78)}
+  .card .ct b{color:var(--ink);font-weight:800;display:block;margin-bottom:2px;font-size:12.5px}
+  .cold .ccta{margin-top:6px;width:100%;border:none;cursor:pointer;font-family:inherit;text-align:center;
+    border-radius:13px;padding:15px;background:linear-gradient(135deg,var(--goldL),var(--gold));color:#1A2B26;font:800 15px system-ui}
+  .deadstat{position:absolute;top:14px;right:16px;font:800 11px system-ui;color:#F4845F;letter-spacing:.04em}
+
+  .lbl{position:absolute;bottom:-30px;left:0;right:0;text-align:center;
+    font:700 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:rgba(234,247,244,.55)}
+  .colwrap{position:relative}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- ===================== HOT in-scene paywall ===================== -->
+  <div class="colwrap">
+  <div class="phone">
+    <div class="cap">pw_hot_intent · source = forecast_lock</div>
+    <div class="scene">
+      <!-- golden-hour beach scene, anchored to THIS beach -->
+      <svg class="bg" viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0B2230"/>
+            <stop offset=".46" stop-color="#155A5A"/>
+            <stop offset=".74" stop-color="#C97E3A"/>
+            <stop offset="1" stop-color="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1A5852"/>
+            <stop offset="1" stop-color="#08251F"/>
+          </linearGradient>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".95"/>
+            <stop offset=".4" stop-color="#FFD884" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1C3138"/>
+            <stop offset="1" stop-color="#16242A"/>
+          </linearGradient>
+          <radialGradient id="anchorGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/>
+            <stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- sky -->
+        <rect x="0" y="0" width="390" height="430" fill="url(#sky)"/>
+        <!-- low sun on horizon -->
+        <circle cx="262" cy="300" r="120" fill="url(#sun)"/>
+        <circle cx="262" cy="300" r="30" fill="#FFE6A8" opacity=".9"/>
+
+        <!-- distant headland (Le Diamant rock silhouette — calm, static) -->
+        <path d="M0 300 Q40 286 86 296 L120 300 Z" fill="#0E1F25" opacity=".8"/>
+        <path d="M286 282 q14 -40 30 -2 q8 22 4 22 l-44 0 q-2 -10 10 -18 Z" fill="#12262B" opacity=".92"/>
+
+        <!-- sea -->
+        <rect x="0" y="300" width="390" height="240" fill="url(#sea)"/>
+        <!-- sun glint path on water (single, calm, no animation) -->
+        <path d="M232 304 L292 304 L320 540 L204 540 Z" fill="#FFD884" opacity=".10"/>
+        <ellipse cx="262" cy="324" rx="40" ry="4" fill="#FFD884" opacity=".30"/>
+        <ellipse cx="262" cy="356" rx="58" ry="4.5" fill="#FFD884" opacity=".16"/>
+        <ellipse cx="262" cy="392" rx="74" ry="5" fill="#FFD884" opacity=".09"/>
+
+        <!-- near shore / sand -->
+        <path d="M0 470 Q150 446 390 486 L390 720 L0 720 Z" fill="url(#land)"/>
+        <path d="M0 470 Q150 446 390 486" fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".26"/>
+
+        <!-- THE anchor: a single lit point on the water = THIS beach the user reached for.
+             Lifted above the veil so the "this is your beach" cue stays visible. -->
+        <circle cx="116" cy="372" r="52" fill="url(#anchorGlow)"/>
+        <circle cx="116" cy="372" r="7.5" fill="#F4845F" stroke="#06121A" stroke-width="1.4"/>
+        <circle cx="116" cy="372" r="13" fill="none" stroke="#FFE6A8" stroke-width="1.2" opacity=".6"/>
+      </svg>
+
+      <div class="veil"></div>
+
+      <div class="panel">
+        <div class="anchor">
+          <span class="dot"></span>
+          <span class="nm">Le Diamant</span>
+          <span class="sc">· propre aujourd'hui</span>
+        </div>
+
+        <!-- 1 PROMISE -->
+        <h2 class="promise">Le Veilleur surveille <span class="b">Le&nbsp;Diamant</span> et te prévient.</h2>
+
+        <!-- 1 PROOF (real next-degradation date from weeklyData.forecast L3144-3152) -->
+        <div class="proof">
+          <span class="ic">⚠️</span>
+          <div class="tx">
+            <div class="hd">Dégradation prévue&nbsp;: samedi</div>
+            <div class="bd">Le satellite voit les sargasses arriver sur cette plage samedi. Tu seras prévenu avant que ça tourne.</div>
+            <span class="src">Donnée Copernicus · prévision recoupée, 80&nbsp;% justes / 30&nbsp;j</span>
+          </div>
+        </div>
+
+        <!-- 1 CTA -->
+        <button class="cta">
+          <div class="t">Activer l'alerte sur Le Diamant</div>
+          <div class="s">4,99 €/mois · annulable en 2 clics</div>
+        </button>
+        <div class="reassure">Sans engagement · Paiement sécurisé Stripe</div>
+      </div>
+    </div>
+  </div>
+  <div class="lbl">HOT → in-scene, ancré, 1 promesse · 1 preuve · 1 CTA</div>
+  </div>
+
+  <!-- ===================== COLD sheet (replaced) ===================== -->
+  <div class="colwrap">
+  <div class="cold">
+    <div class="deadstat">2 % CTR · 3 418×</div>
+    <h3>Passe en Premium</h3>
+    <div class="sub">Le veilleur personnel de tes plages</div>
+    <div class="card"><span class="e">🔔</span><div class="ct"><b>Alertes plage</b>Sois prévenu quand une plage change d'état.</div></div>
+    <div class="card"><span class="e">🌅</span><div class="ct"><b>Brief du matin</b>Ta reco du jour chaque matin par email.</div></div>
+    <div class="card"><span class="e">📅</span><div class="ct"><b>Prévisions 7 jours</b>Sache où sera la mer toute la semaine.</div></div>
+    <button class="ccta">Activer ma reco — 7 jours offerts</button>
+  </div>
+  <div class="lbl">COLD → générique, 3 cartes, aucun ancrage</div>
+  </div>
+
+</div>
+</body>
+</html>

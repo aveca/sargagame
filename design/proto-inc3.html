@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+  *{box-sizing:border-box} html,body{margin:0;background:#04090B;font-family:system-ui,-apple-system,sans-serif}
+  .stage{display:flex;gap:18px;padding:20px;align-items:flex-start}
+  .col{position:relative}
+  .cap{color:#EAF7F4;font:700 13px system-ui;margin:0 0 8px 2px;opacity:.92}
+  .sub{color:#9FC3BC;font:500 11px system-ui;margin:0 0 10px 2px;opacity:.8}
+  svg{display:block;border-radius:14px;background:#04090B}
+</style></head>
+<body>
+<div class="stage">
+  <div class="col">
+    <p class="cap">Sur la carte — appui long (~400ms) sur un point</p>
+    <p class="sub">Les barres jaillissent une fois, restent fixes (calme).</p>
+    <svg viewBox="0 0 300 420" width="300" height="420" xmlns="http://www.w3.org/2000/svg">
+    
+  <defs>
+    <linearGradient id="skyM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/>
+      <stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="seaM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <linearGradient id="landM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C3138"/><stop offset="1" stop-color="#16242A"/></linearGradient>
+    <radialGradient id="sunM" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset=".6" stop-color="#FFD884" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#FFD884" stop-opacity="0"/></radialGradient>
+    <radialGradient id="groundM" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#16383A" stop-opacity=".8"/><stop offset=".6" stop-color="#123031" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pressM" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFE6A8" stop-opacity=".30"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect x="0" y="0" width="300" height="420" fill="url(#skyM)"/>
+  <circle cx="186" cy="127.51200000000001" r="176.4" fill="url(#sunM)"/>
+  <circle cx="186" cy="127.51200000000001" r="23.1" fill="#FFD884" opacity=".85"/>
+  <rect x="0" y="193.20000000000002" width="300" height="226.79999999999998" fill="url(#seaM)"/>
+  <line x1="0" y1="193.20000000000002" x2="300" y2="193.20000000000002" stroke="#FFD884" stroke-width="1.4" stroke-dasharray="2 11" opacity=".45"/>
+  <path d="M186 193.20000000000002 L150 420 L222 420 Z" fill="#FFD884" opacity=".07"/>
+  <path d="M0 310.8 Q 84.00000000000001 252 150 294 Q 222 336 300 277.2 L 300 420 L 0 420 Z"
+    fill="url(#landM)" opacity=".96"/>
+  <path d="M0 310.8 Q 84.00000000000001 252 150 294 Q 222 336 300 277.2"
+    fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".22"/><g><g>
+    <circle cx="70" cy="300" r="16" fill="url(#groundM)" opacity=".7"/>
+    <circle cx="70" cy="300" r="7" fill="#22C55E" stroke="#06121A" stroke-width="1.4"/>
+    <circle cx="67.76" cy="297.76" r="2.24" fill="#fff" opacity=".5"/>
+  </g><g>
+    <circle cx="108" cy="340" r="16" fill="url(#groundM)" opacity=".7"/>
+    <circle cx="108" cy="340" r="7" fill="#22C55E" stroke="#06121A" stroke-width="1.4"/>
+    <circle cx="105.76" cy="337.76" r="2.24" fill="#fff" opacity=".5"/>
+  </g><g>
+    <circle cx="232" cy="360" r="16" fill="url(#groundM)" opacity=".7"/>
+    <circle cx="232" cy="360" r="7" fill="#E8522A" stroke="#06121A" stroke-width="1.4"/>
+    <circle cx="229.76" cy="357.76" r="2.24" fill="#fff" opacity=".5"/>
+  </g><g>
+    <circle cx="258" cy="316" r="16" fill="url(#groundM)" opacity=".7"/>
+    <circle cx="258" cy="316" r="7" fill="#F59E0B" stroke="#06121A" stroke-width="1.4"/>
+    <circle cx="255.76" cy="313.76" r="2.24" fill="#fff" opacity=".5"/>
+  </g><g>
+    <circle cx="200" cy="388" r="16" fill="url(#groundM)" opacity=".7"/>
+    <circle cx="200" cy="388" r="7" fill="#22C55E" stroke="#06121A" stroke-width="1.4"/>
+    <circle cx="197.76" cy="385.76" r="2.24" fill="#fff" opacity=".5"/>
+  </g></g><circle cx="150" cy="344" r="33.5" fill="url(#pressM)"/><line x1="150" y1="334.5" x2="150" y2="326.5" stroke="#FFD884" stroke-width="1.2" opacity=".28"/><line x1="115" y1="326.5" x2="185" y2="326.5" stroke="#FFD884" stroke-width="1.2" opacity=".34"/><rect x="119" y="275.5" width="11" height="50" rx="3" fill="#22C55E"/><rect x="119" y="275.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="124.5" y="337.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">AUJ</text><rect x="136" y="278.5" width="11" height="47" rx="3" fill="#22C55E"/><rect x="136" y="278.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="141.5" y="337.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">J+1</text><rect x="153" y="294.5" width="11" height="31" rx="3" fill="#F59E0B"/><rect x="153" y="294.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="158.5" y="337.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">J+2</text><rect x="170" y="299.5" width="11" height="26" rx="3" fill="rgba(232,168,0,.10)"/><rect x="170" y="299.5" width="11" height="26" rx="3" fill="none" stroke="#FFC72C" stroke-width="1.4" stroke-dasharray="3 2.5" opacity=".9"/><text x="175.5" y="292.5" text-anchor="middle" font-size="14" font-family="system-ui">🔒</text><text x="175.5" y="337.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#FFC72C" opacity="1">J+3</text><circle cx="150" cy="344" r="11" fill="#06121A" opacity=".55"/><circle cx="150" cy="344" r="9.5" fill="#22C55E" stroke="#FFF" stroke-width="1.7"/><circle cx="146.96" cy="340.96" r="3.2300000000000004" fill="#fff" opacity=".55"/>
+    <text x="150" y="374" text-anchor="middle" font-family="Anton, system-ui" font-size="15" fill="#EAF7F4" opacity=".94" style="letter-spacing:.02em">LE DIAMANT</text>
+  </svg>
+  </div>
+  <div class="col">
+    <p class="cap">Zoom — la lecture sous le pouce</p>
+    <p class="sub">AUJ / J+1 / J+2 colorés par statut · J+3 🔒 → onPremium()</p>
+    <svg viewBox="0 0 300 420" width="300" height="420" xmlns="http://www.w3.org/2000/svg">
+    
+  <defs>
+    <linearGradient id="skyD2b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/>
+      <stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="seaD2b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <linearGradient id="landD2b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C3138"/><stop offset="1" stop-color="#16242A"/></linearGradient>
+    <radialGradient id="sunD2b" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset=".6" stop-color="#FFD884" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#FFD884" stop-opacity="0"/></radialGradient>
+    <radialGradient id="groundD2b" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#16383A" stop-opacity=".8"/><stop offset=".6" stop-color="#123031" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pressD2b" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFE6A8" stop-opacity=".30"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect x="0" y="0" width="300" height="420" fill="url(#skyD2b)"/>
+  <circle cx="186" cy="127.51200000000001" r="176.4" fill="url(#sunD2b)"/>
+  <circle cx="186" cy="127.51200000000001" r="23.1" fill="#FFD884" opacity=".85"/>
+  <rect x="0" y="193.20000000000002" width="300" height="226.79999999999998" fill="url(#seaD2b)"/>
+  <line x1="0" y1="193.20000000000002" x2="300" y2="193.20000000000002" stroke="#FFD884" stroke-width="1.4" stroke-dasharray="2 11" opacity=".45"/>
+  <path d="M186 193.20000000000002 L150 420 L222 420 Z" fill="#FFD884" opacity=".07"/>
+  <path d="M0 310.8 Q 84.00000000000001 252 150 294 Q 222 336 300 277.2 L 300 420 L 0 420 Z"
+    fill="url(#landD2b)" opacity=".96"/>
+  <path d="M0 310.8 Q 84.00000000000001 252 150 294 Q 222 336 300 277.2"
+    fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".22"/>
+    <g transform="translate(0,22) scale(1.6) translate(-54,-100)"><circle cx="150" cy="300" r="33.5" fill="url(#pressD2b)"/><line x1="150" y1="290.5" x2="150" y2="282.5" stroke="#FFD884" stroke-width="1.2" opacity=".28"/><line x1="115" y1="282.5" x2="185" y2="282.5" stroke="#FFD884" stroke-width="1.2" opacity=".34"/><rect x="119" y="229.5" width="11" height="52" rx="3" fill="#22C55E"/><rect x="119" y="229.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="124.5" y="293.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">AUJ</text><rect x="136" y="233.5" width="11" height="48" rx="3" fill="#22C55E"/><rect x="136" y="233.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="141.5" y="293.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">J+1</text><rect x="153" y="249.5" width="11" height="32" rx="3" fill="#F59E0B"/><rect x="153" y="249.5" width="11" height="4" rx="2" fill="#fff" opacity=".38"/><text x="158.5" y="293.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#EAF7F4" opacity=".82">J+2</text><rect x="170" y="254.5" width="11" height="27" rx="3" fill="rgba(232,168,0,.10)"/><rect x="170" y="254.5" width="11" height="27" rx="3" fill="none" stroke="#FFC72C" stroke-width="1.4" stroke-dasharray="3 2.5" opacity=".9"/><text x="175.5" y="247.5" text-anchor="middle" font-size="14" font-family="system-ui">🔒</text><text x="175.5" y="293.5" text-anchor="middle" font-size="7.6" font-family="system-ui" font-weight="700" fill="#FFC72C" opacity="1">J+3</text><circle cx="150" cy="300" r="11" fill="#06121A" opacity=".55"/><circle cx="150" cy="300" r="9.5" fill="#22C55E" stroke="#FFF" stroke-width="1.7"/><circle cx="146.96" cy="296.96" r="3.2300000000000004" fill="#fff" opacity=".55"/></g>
+    <text x="150" y="384" text-anchor="middle" font-family="Anton, system-ui" font-size="16" fill="#EAF7F4" opacity=".95" style="letter-spacing:.02em">LE DIAMANT</text>
+    <text x="150" y="403" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="600" fill="#9FC3BC" opacity=".9">3 jours visibles · J+3 verrouillé</text>
+  </svg>
+  </div>
+</div>
+</body></html>

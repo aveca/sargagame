@@ -1,0 +1,2482 @@
+[
+  {
+    "id": "2026-07-14/saga-gp-2026-07-14.png",
+    "date": "2026-07-14",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-14.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/saga-mq-2026-07-14.png",
+    "date": "2026-07-14",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-14.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/verdict-gp-2026-07-14.png",
+    "date": "2026-07-14",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-14.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/verdict-mq-2026-07-14.png",
+    "date": "2026-07-14",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-14.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/wordle-gp-2026-07-14-a.png",
+    "date": "2026-07-14",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-14-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/wordle-gp-2026-07-14-q.png",
+    "date": "2026-07-14",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-14-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/wordle-mq-2026-07-14-a.png",
+    "date": "2026-07-14",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-14-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-14/wordle-mq-2026-07-14-q.png",
+    "date": "2026-07-14",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-14-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-14"
+  },
+  {
+    "id": "2026-07-15/saga-gp-2026-07-15.png",
+    "date": "2026-07-15",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-15.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/saga-mq-2026-07-15.png",
+    "date": "2026-07-15",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-15.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/verdict-gp-2026-07-15.png",
+    "date": "2026-07-15",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-15.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/verdict-mq-2026-07-15.png",
+    "date": "2026-07-15",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-15.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/wordle-gp-2026-07-15-a.png",
+    "date": "2026-07-15",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-15-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/wordle-gp-2026-07-15-q.png",
+    "date": "2026-07-15",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-15-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/wordle-mq-2026-07-15-a.png",
+    "date": "2026-07-15",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-15-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-15/wordle-mq-2026-07-15-q.png",
+    "date": "2026-07-15",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-15-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-15"
+  },
+  {
+    "id": "2026-07-16/saga-gp-2026-07-16.png",
+    "date": "2026-07-16",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-16.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/saga-mq-2026-07-16.png",
+    "date": "2026-07-16",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-16.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/verdict-gp-2026-07-16.png",
+    "date": "2026-07-16",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-16.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/verdict-mq-2026-07-16.png",
+    "date": "2026-07-16",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-16.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/wordle-gp-2026-07-16-a.png",
+    "date": "2026-07-16",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-16-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/wordle-gp-2026-07-16-q.png",
+    "date": "2026-07-16",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-16-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/wordle-mq-2026-07-16-a.png",
+    "date": "2026-07-16",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-16-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-16/wordle-mq-2026-07-16-q.png",
+    "date": "2026-07-16",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-16-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-16"
+  },
+  {
+    "id": "2026-07-17/saga-gp-2026-07-17.png",
+    "date": "2026-07-17",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-17.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/saga-mq-2026-07-17.png",
+    "date": "2026-07-17",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-17.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/verdict-gp-2026-07-17.png",
+    "date": "2026-07-17",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-17.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/verdict-mq-2026-07-17.png",
+    "date": "2026-07-17",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-17.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/wordle-gp-2026-07-17-a.png",
+    "date": "2026-07-17",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-17-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/wordle-gp-2026-07-17-q.png",
+    "date": "2026-07-17",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-17-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/wordle-mq-2026-07-17-a.png",
+    "date": "2026-07-17",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-17-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-17/wordle-mq-2026-07-17-q.png",
+    "date": "2026-07-17",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-17-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-17"
+  },
+  {
+    "id": "2026-07-18/saga-gp-2026-07-18.png",
+    "date": "2026-07-18",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-18.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/saga-mq-2026-07-18.png",
+    "date": "2026-07-18",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-18.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/verdict-gp-2026-07-18.png",
+    "date": "2026-07-18",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-18.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/verdict-mq-2026-07-18.png",
+    "date": "2026-07-18",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-18.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/wordle-gp-2026-07-18-a.png",
+    "date": "2026-07-18",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-18-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/wordle-gp-2026-07-18-q.png",
+    "date": "2026-07-18",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-18-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/wordle-mq-2026-07-18-a.png",
+    "date": "2026-07-18",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-18-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-18/wordle-mq-2026-07-18-q.png",
+    "date": "2026-07-18",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-18-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-18"
+  },
+  {
+    "id": "2026-07-19/saga-gp-2026-07-19.png",
+    "date": "2026-07-19",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-19.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/saga-mq-2026-07-19.png",
+    "date": "2026-07-19",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-19.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/verdict-gp-2026-07-19.png",
+    "date": "2026-07-19",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-19.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/verdict-mq-2026-07-19.png",
+    "date": "2026-07-19",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-19.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/wordle-gp-2026-07-19-a.png",
+    "date": "2026-07-19",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-19-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/wordle-gp-2026-07-19-q.png",
+    "date": "2026-07-19",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-19-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/wordle-mq-2026-07-19-a.png",
+    "date": "2026-07-19",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-19-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-19/wordle-mq-2026-07-19-q.png",
+    "date": "2026-07-19",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-19-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-19"
+  },
+  {
+    "id": "2026-07-20/saga-gp-2026-07-20.png",
+    "date": "2026-07-20",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-20.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/saga-mq-2026-07-20.png",
+    "date": "2026-07-20",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-20.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/verdict-gp-2026-07-20.png",
+    "date": "2026-07-20",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-20.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/verdict-mq-2026-07-20.png",
+    "date": "2026-07-20",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-20.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/wordle-gp-2026-07-20-a.png",
+    "date": "2026-07-20",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-20-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/wordle-gp-2026-07-20-q.png",
+    "date": "2026-07-20",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-20-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/wordle-mq-2026-07-20-a.png",
+    "date": "2026-07-20",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-20-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-20/wordle-mq-2026-07-20-q.png",
+    "date": "2026-07-20",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-20-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-20"
+  },
+  {
+    "id": "2026-07-21/saga-gp-2026-07-21.png",
+    "date": "2026-07-21",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-21.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/saga-mq-2026-07-21.png",
+    "date": "2026-07-21",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-21.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/verdict-gp-2026-07-21.png",
+    "date": "2026-07-21",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-21.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/verdict-mq-2026-07-21.png",
+    "date": "2026-07-21",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-21.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/wordle-gp-2026-07-21-a.png",
+    "date": "2026-07-21",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-21-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/wordle-gp-2026-07-21-q.png",
+    "date": "2026-07-21",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-21-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/wordle-mq-2026-07-21-a.png",
+    "date": "2026-07-21",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-21-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-21/wordle-mq-2026-07-21-q.png",
+    "date": "2026-07-21",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-21-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-21"
+  },
+  {
+    "id": "2026-07-22/saga-gp-2026-07-22.png",
+    "date": "2026-07-22",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-22.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/saga-mq-2026-07-22.png",
+    "date": "2026-07-22",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-22.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/verdict-gp-2026-07-22.png",
+    "date": "2026-07-22",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-22.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/verdict-mq-2026-07-22.png",
+    "date": "2026-07-22",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-22.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/wordle-gp-2026-07-22-a.png",
+    "date": "2026-07-22",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-22-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/wordle-gp-2026-07-22-q.png",
+    "date": "2026-07-22",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-22-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/wordle-mq-2026-07-22-a.png",
+    "date": "2026-07-22",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-22-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-22/wordle-mq-2026-07-22-q.png",
+    "date": "2026-07-22",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-22-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-22"
+  },
+  {
+    "id": "2026-07-23/saga-gp-2026-07-23.png",
+    "date": "2026-07-23",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-23.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/saga-mq-2026-07-23.png",
+    "date": "2026-07-23",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-23.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/verdict-gp-2026-07-23.png",
+    "date": "2026-07-23",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-23.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/verdict-mq-2026-07-23.png",
+    "date": "2026-07-23",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-23.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/wordle-gp-2026-07-23-a.png",
+    "date": "2026-07-23",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-23-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/wordle-gp-2026-07-23-q.png",
+    "date": "2026-07-23",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-23-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/wordle-mq-2026-07-23-a.png",
+    "date": "2026-07-23",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-23-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-23/wordle-mq-2026-07-23-q.png",
+    "date": "2026-07-23",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-23-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-23"
+  },
+  {
+    "id": "2026-07-24/saga-gp-2026-07-24.png",
+    "date": "2026-07-24",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-24.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/saga-mq-2026-07-24.png",
+    "date": "2026-07-24",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-24.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/verdict-gp-2026-07-24.png",
+    "date": "2026-07-24",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-24.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/verdict-mq-2026-07-24.png",
+    "date": "2026-07-24",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-24.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/wordle-gp-2026-07-24-a.png",
+    "date": "2026-07-24",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-24-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/wordle-gp-2026-07-24-q.png",
+    "date": "2026-07-24",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-24-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/wordle-mq-2026-07-24-a.png",
+    "date": "2026-07-24",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-24-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-24/wordle-mq-2026-07-24-q.png",
+    "date": "2026-07-24",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-24-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-24"
+  },
+  {
+    "id": "2026-07-25/saga-gp-2026-07-25.png",
+    "date": "2026-07-25",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-25.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/saga-mq-2026-07-25.png",
+    "date": "2026-07-25",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-25.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/verdict-gp-2026-07-25.png",
+    "date": "2026-07-25",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-25.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/verdict-mq-2026-07-25.png",
+    "date": "2026-07-25",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-25.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/wordle-gp-2026-07-25-a.png",
+    "date": "2026-07-25",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-25-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/wordle-gp-2026-07-25-q.png",
+    "date": "2026-07-25",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-25-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/wordle-mq-2026-07-25-a.png",
+    "date": "2026-07-25",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-25-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-25/wordle-mq-2026-07-25-q.png",
+    "date": "2026-07-25",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-25-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-25"
+  },
+  {
+    "id": "2026-07-26/saga-gp-2026-07-26.png",
+    "date": "2026-07-26",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-26.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/saga-mq-2026-07-26.png",
+    "date": "2026-07-26",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-26.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/verdict-gp-2026-07-26.png",
+    "date": "2026-07-26",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-26.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/verdict-mq-2026-07-26.png",
+    "date": "2026-07-26",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-26.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/wordle-gp-2026-07-26-a.png",
+    "date": "2026-07-26",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-26-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/wordle-gp-2026-07-26-q.png",
+    "date": "2026-07-26",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-26-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/wordle-mq-2026-07-26-a.png",
+    "date": "2026-07-26",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-26-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-26/wordle-mq-2026-07-26-q.png",
+    "date": "2026-07-26",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-26-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-26"
+  },
+  {
+    "id": "2026-07-27/saga-gp-2026-07-27.png",
+    "date": "2026-07-27",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-27.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/saga-mq-2026-07-27.png",
+    "date": "2026-07-27",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-27.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/verdict-gp-2026-07-27.png",
+    "date": "2026-07-27",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-27.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/verdict-mq-2026-07-27.png",
+    "date": "2026-07-27",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-27.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/wordle-gp-2026-07-27-a.png",
+    "date": "2026-07-27",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-27-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/wordle-gp-2026-07-27-q.png",
+    "date": "2026-07-27",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-27-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/wordle-mq-2026-07-27-a.png",
+    "date": "2026-07-27",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-27-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-27/wordle-mq-2026-07-27-q.png",
+    "date": "2026-07-27",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-27-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-27"
+  },
+  {
+    "id": "2026-07-28/saga-gp-2026-07-28.png",
+    "date": "2026-07-28",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-28.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/saga-mq-2026-07-28.png",
+    "date": "2026-07-28",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-28.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/verdict-gp-2026-07-28.png",
+    "date": "2026-07-28",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-28.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/verdict-mq-2026-07-28.png",
+    "date": "2026-07-28",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-28.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/wordle-gp-2026-07-28-a.png",
+    "date": "2026-07-28",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-28-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/wordle-gp-2026-07-28-q.png",
+    "date": "2026-07-28",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-28-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/wordle-mq-2026-07-28-a.png",
+    "date": "2026-07-28",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-28-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-28/wordle-mq-2026-07-28-q.png",
+    "date": "2026-07-28",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-28-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-28"
+  },
+  {
+    "id": "2026-07-29/saga-gp-2026-07-29.png",
+    "date": "2026-07-29",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-29.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/saga-mq-2026-07-29.png",
+    "date": "2026-07-29",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-29.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/verdict-gp-2026-07-29.png",
+    "date": "2026-07-29",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-29.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/verdict-mq-2026-07-29.png",
+    "date": "2026-07-29",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-29.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/wordle-gp-2026-07-29-a.png",
+    "date": "2026-07-29",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-29-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/wordle-gp-2026-07-29-q.png",
+    "date": "2026-07-29",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-29-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/wordle-mq-2026-07-29-a.png",
+    "date": "2026-07-29",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-29-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-29/wordle-mq-2026-07-29-q.png",
+    "date": "2026-07-29",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-29-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-29"
+  },
+  {
+    "id": "2026-07-30/saga-gp-2026-07-30.png",
+    "date": "2026-07-30",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-30.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/saga-mq-2026-07-30.png",
+    "date": "2026-07-30",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-30.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/verdict-gp-2026-07-30.png",
+    "date": "2026-07-30",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-30.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/verdict-mq-2026-07-30.png",
+    "date": "2026-07-30",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-30.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/wordle-gp-2026-07-30-a.png",
+    "date": "2026-07-30",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-30-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/wordle-gp-2026-07-30-q.png",
+    "date": "2026-07-30",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-30-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/wordle-mq-2026-07-30-a.png",
+    "date": "2026-07-30",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-30-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-30/wordle-mq-2026-07-30-q.png",
+    "date": "2026-07-30",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-30-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-30"
+  },
+  {
+    "id": "2026-07-31/saga-gp-2026-07-31.png",
+    "date": "2026-07-31",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-07-31.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/saga-mq-2026-07-31.png",
+    "date": "2026-07-31",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-07-31.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/verdict-gp-2026-07-31.png",
+    "date": "2026-07-31",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-07-31.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/verdict-mq-2026-07-31.png",
+    "date": "2026-07-31",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-07-31.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/wordle-gp-2026-07-31-a.png",
+    "date": "2026-07-31",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-31-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/wordle-gp-2026-07-31-q.png",
+    "date": "2026-07-31",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-07-31-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/wordle-mq-2026-07-31-a.png",
+    "date": "2026-07-31",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-31-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-07-31/wordle-mq-2026-07-31-q.png",
+    "date": "2026-07-31",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-07-31-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-07-31"
+  },
+  {
+    "id": "2026-08-01/saga-gp-2026-08-01.png",
+    "date": "2026-08-01",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-01.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/saga-mq-2026-08-01.png",
+    "date": "2026-08-01",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-01.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/verdict-gp-2026-08-01.png",
+    "date": "2026-08-01",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-01.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/verdict-mq-2026-08-01.png",
+    "date": "2026-08-01",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-01.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/wordle-gp-2026-08-01-a.png",
+    "date": "2026-08-01",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-01-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/wordle-gp-2026-08-01-q.png",
+    "date": "2026-08-01",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-01-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/wordle-mq-2026-08-01-a.png",
+    "date": "2026-08-01",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-01-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-01/wordle-mq-2026-08-01-q.png",
+    "date": "2026-08-01",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-01-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-01"
+  },
+  {
+    "id": "2026-08-02/saga-gp-2026-08-02.png",
+    "date": "2026-08-02",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-02.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/saga-mq-2026-08-02.png",
+    "date": "2026-08-02",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-02.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/verdict-gp-2026-08-02.png",
+    "date": "2026-08-02",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-02.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/verdict-mq-2026-08-02.png",
+    "date": "2026-08-02",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-02.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/wordle-gp-2026-08-02-a.png",
+    "date": "2026-08-02",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-02-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/wordle-gp-2026-08-02-q.png",
+    "date": "2026-08-02",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-02-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/wordle-mq-2026-08-02-a.png",
+    "date": "2026-08-02",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-02-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-02/wordle-mq-2026-08-02-q.png",
+    "date": "2026-08-02",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-02-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-02"
+  },
+  {
+    "id": "2026-08-03/saga-gp-2026-08-03.png",
+    "date": "2026-08-03",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-03.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/saga-mq-2026-08-03.png",
+    "date": "2026-08-03",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-03.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/verdict-gp-2026-08-03.png",
+    "date": "2026-08-03",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-03.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/verdict-mq-2026-08-03.png",
+    "date": "2026-08-03",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-03.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/wordle-gp-2026-08-03-a.png",
+    "date": "2026-08-03",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-03-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/wordle-gp-2026-08-03-q.png",
+    "date": "2026-08-03",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-03-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/wordle-mq-2026-08-03-a.png",
+    "date": "2026-08-03",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-03-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-03/wordle-mq-2026-08-03-q.png",
+    "date": "2026-08-03",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-03-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-03"
+  },
+  {
+    "id": "2026-08-04/saga-gp-2026-08-04.png",
+    "date": "2026-08-04",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-04.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/saga-mq-2026-08-04.png",
+    "date": "2026-08-04",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-04.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/verdict-gp-2026-08-04.png",
+    "date": "2026-08-04",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-04.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/verdict-mq-2026-08-04.png",
+    "date": "2026-08-04",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-04.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/wordle-gp-2026-08-04-a.png",
+    "date": "2026-08-04",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-04-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/wordle-gp-2026-08-04-q.png",
+    "date": "2026-08-04",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-04-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/wordle-mq-2026-08-04-a.png",
+    "date": "2026-08-04",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-04-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-04/wordle-mq-2026-08-04-q.png",
+    "date": "2026-08-04",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-04-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-04"
+  },
+  {
+    "id": "2026-08-05/saga-gp-2026-08-05.png",
+    "date": "2026-08-05",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/saga-mq-2026-08-05.png",
+    "date": "2026-08-05",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/verdict-gp-2026-08-05.png",
+    "date": "2026-08-05",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/verdict-mq-2026-08-05.png",
+    "date": "2026-08-05",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-05.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/wordle-gp-2026-08-05-a.png",
+    "date": "2026-08-05",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-05-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/wordle-gp-2026-08-05-q.png",
+    "date": "2026-08-05",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-05-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/wordle-mq-2026-08-05-a.png",
+    "date": "2026-08-05",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-05-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-05/wordle-mq-2026-08-05-q.png",
+    "date": "2026-08-05",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-05-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-05"
+  },
+  {
+    "id": "2026-08-06/saga-gp-2026-08-06.png",
+    "date": "2026-08-06",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-06.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/saga-mq-2026-08-06.png",
+    "date": "2026-08-06",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-06.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/verdict-gp-2026-08-06.png",
+    "date": "2026-08-06",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-06.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/verdict-mq-2026-08-06.png",
+    "date": "2026-08-06",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-06.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/wordle-gp-2026-08-06-a.png",
+    "date": "2026-08-06",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-06-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/wordle-gp-2026-08-06-q.png",
+    "date": "2026-08-06",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-06-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/wordle-mq-2026-08-06-a.png",
+    "date": "2026-08-06",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-06-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-06/wordle-mq-2026-08-06-q.png",
+    "date": "2026-08-06",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-06-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-06"
+  },
+  {
+    "id": "2026-08-07/saga-gp-2026-08-07.png",
+    "date": "2026-08-07",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-07.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/saga-mq-2026-08-07.png",
+    "date": "2026-08-07",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-07.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/verdict-gp-2026-08-07.png",
+    "date": "2026-08-07",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-07.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/verdict-mq-2026-08-07.png",
+    "date": "2026-08-07",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-07.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/wordle-gp-2026-08-07-a.png",
+    "date": "2026-08-07",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-07-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/wordle-gp-2026-08-07-q.png",
+    "date": "2026-08-07",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-07-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/wordle-mq-2026-08-07-a.png",
+    "date": "2026-08-07",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-07-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-07/wordle-mq-2026-08-07-q.png",
+    "date": "2026-08-07",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-07-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-07"
+  },
+  {
+    "id": "2026-08-08/saga-gp-2026-08-08.png",
+    "date": "2026-08-08",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-08.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/saga-mq-2026-08-08.png",
+    "date": "2026-08-08",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-08.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/verdict-gp-2026-08-08.png",
+    "date": "2026-08-08",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-08.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/verdict-mq-2026-08-08.png",
+    "date": "2026-08-08",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-08.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/wordle-gp-2026-08-08-a.png",
+    "date": "2026-08-08",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-08-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/wordle-gp-2026-08-08-q.png",
+    "date": "2026-08-08",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-08-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/wordle-mq-2026-08-08-a.png",
+    "date": "2026-08-08",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-08-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-08/wordle-mq-2026-08-08-q.png",
+    "date": "2026-08-08",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-08-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-08"
+  },
+  {
+    "id": "2026-08-09/saga-gp-2026-08-09.png",
+    "date": "2026-08-09",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-09.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/saga-mq-2026-08-09.png",
+    "date": "2026-08-09",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-09.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/verdict-gp-2026-08-09.png",
+    "date": "2026-08-09",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-09.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/verdict-mq-2026-08-09.png",
+    "date": "2026-08-09",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-09.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/wordle-gp-2026-08-09-a.png",
+    "date": "2026-08-09",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-09-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/wordle-gp-2026-08-09-q.png",
+    "date": "2026-08-09",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-09-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/wordle-mq-2026-08-09-a.png",
+    "date": "2026-08-09",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-09-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-09/wordle-mq-2026-08-09-q.png",
+    "date": "2026-08-09",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-09-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-09"
+  },
+  {
+    "id": "2026-08-10/saga-gp-2026-08-10.png",
+    "date": "2026-08-10",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-10.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/saga-mq-2026-08-10.png",
+    "date": "2026-08-10",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-10.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/verdict-gp-2026-08-10.png",
+    "date": "2026-08-10",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-10.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/verdict-mq-2026-08-10.png",
+    "date": "2026-08-10",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-10.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/wordle-gp-2026-08-10-a.png",
+    "date": "2026-08-10",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-10-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/wordle-gp-2026-08-10-q.png",
+    "date": "2026-08-10",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-10-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/wordle-mq-2026-08-10-a.png",
+    "date": "2026-08-10",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-10-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-10/wordle-mq-2026-08-10-q.png",
+    "date": "2026-08-10",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-10-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-10"
+  },
+  {
+    "id": "2026-08-11/saga-gp-2026-08-11.png",
+    "date": "2026-08-11",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-11.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/saga-mq-2026-08-11.png",
+    "date": "2026-08-11",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-11.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/verdict-gp-2026-08-11.png",
+    "date": "2026-08-11",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-11.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/verdict-mq-2026-08-11.png",
+    "date": "2026-08-11",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-11.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/wordle-gp-2026-08-11-a.png",
+    "date": "2026-08-11",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-11-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/wordle-gp-2026-08-11-q.png",
+    "date": "2026-08-11",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-11-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/wordle-mq-2026-08-11-a.png",
+    "date": "2026-08-11",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-11-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-11/wordle-mq-2026-08-11-q.png",
+    "date": "2026-08-11",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-11-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-11"
+  },
+  {
+    "id": "2026-08-12/saga-gp-2026-08-12.png",
+    "date": "2026-08-12",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-12.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/saga-mq-2026-08-12.png",
+    "date": "2026-08-12",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-12.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/verdict-gp-2026-08-12.png",
+    "date": "2026-08-12",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-12.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/verdict-mq-2026-08-12.png",
+    "date": "2026-08-12",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-12.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/wordle-gp-2026-08-12-a.png",
+    "date": "2026-08-12",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-12-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/wordle-gp-2026-08-12-q.png",
+    "date": "2026-08-12",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-12-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/wordle-mq-2026-08-12-a.png",
+    "date": "2026-08-12",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-12-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-12/wordle-mq-2026-08-12-q.png",
+    "date": "2026-08-12",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-12-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-12"
+  },
+  {
+    "id": "2026-08-13/saga-gp-2026-08-13.png",
+    "date": "2026-08-13",
+    "region": "gp",
+    "type": "saga",
+    "asset": "saga-gp-2026-08-13.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/saga-mq-2026-08-13.png",
+    "date": "2026-08-13",
+    "region": "mq",
+    "type": "saga",
+    "asset": "saga-mq-2026-08-13.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/verdict-gp-2026-08-13.png",
+    "date": "2026-08-13",
+    "region": "gp",
+    "type": "verdict",
+    "asset": "verdict-gp-2026-08-13.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/verdict-mq-2026-08-13.png",
+    "date": "2026-08-13",
+    "region": "mq",
+    "type": "verdict",
+    "asset": "verdict-mq-2026-08-13.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/wordle-gp-2026-08-13-a.png",
+    "date": "2026-08-13",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-13-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/wordle-gp-2026-08-13-q.png",
+    "date": "2026-08-13",
+    "region": "gp",
+    "type": "wordle",
+    "asset": "wordle-gp-2026-08-13-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/wordle-mq-2026-08-13-a.png",
+    "date": "2026-08-13",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-13-a.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  },
+  {
+    "id": "2026-08-13/wordle-mq-2026-08-13-q.png",
+    "date": "2026-08-13",
+    "region": "mq",
+    "type": "wordle",
+    "asset": "wordle-mq-2026-08-13-q.png",
+    "releaseTag": "social-reservoir",
+    "state": "staged",
+    "createdAt": "2026-08-13"
+  }
+]

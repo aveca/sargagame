@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:#02060A;color:#EAF7F4;font-family:system-ui,-apple-system,sans-serif}
+  .wrap{padding:18px}
+  .stage{position:relative;border-radius:18px;overflow:hidden;background:#04090B;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  .cap{position:absolute;top:10px;left:14px;font:700 13px system-ui;color:#EAF7F4;text-shadow:0 1px 5px #000;z-index:3}
+  .hint{position:absolute;bottom:10px;left:14px;right:14px;font:600 11px system-ui;color:rgba(234,247,244,.62);text-shadow:0 1px 4px #000;z-index:3}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .lbl{font:700 11px system-ui;color:rgba(234,247,244,.55);letter-spacing:.04em;text-transform:uppercase;margin:0 0 7px 4px}
+  svg{display:block}
+</style></head><body><div class="wrap">
+  <p class="lbl">aw_press_verdict — pointerdown sur un point au repos = verdict tactile (1 seul vivant, info DANS la scène, zéro anim idle)</p>
+  <div class="stage" style="width:760px">
+    <div class="cap">La constellation des plages — golden-hour, calme au repos</div>
+    <div class="hint">Appui maintenu sur Le Diamant → il grossit ~1,4× et fait éclore son anneau (couleur réelle du score) + nom + verdict d'un mot. Relâche = fondu.</div>
+    <svg viewBox="0 0 760 470" width="760" height="470"><defs>
+    <linearGradient id="skym" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/><stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="seam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <radialGradient id="grdm" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#16383A" stop-opacity=".82"/><stop offset=".6" stop-color="#123031" stop-opacity=".46"/><stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glowm" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE6A8" stop-opacity=".34"/><stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/><stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/></radialGradient>
+  </defs><rect width="760" height="470" fill="url(#skym)"/>
+    <rect y="197.4" width="760" height="272.6" fill="url(#seam)"/>
+    <rect y="195.4" width="760" height="3" fill="#FFD884" opacity=".42"/>
+    <circle cx="380" cy="87.4" r="120" fill="#FFD884" opacity=".05"/>
+    <circle cx="380" cy="87.4" r="62" fill="#FFD884" opacity=".10"/>
+    <circle cx="380" cy="87.4" r="38" fill="#FFD884" opacity=".5"/>
+    <path d="M358 197.4 L402 197.4 L424 470 L336 470 Z" fill="#FFD884" opacity=".09"/><g><circle cx="300" cy="330" r="42" fill="url(#grdm)"/><circle cx="560" cy="392" r="42" fill="url(#grdm)"/><circle cx="236" cy="300" r="42" fill="url(#grdm)"/><circle cx="600" cy="360" r="42" fill="url(#grdm)"/><circle cx="560" cy="150" r="42" fill="url(#grdm)"/><circle cx="198" cy="148" r="42" fill="url(#grdm)"/><circle cx="176" cy="108" r="42" fill="url(#grdm)"/><circle cx="430" cy="286" r="42" fill="url(#grdm)"/><circle cx="618" cy="300" r="42" fill="url(#grdm)"/><circle cx="640" cy="402" r="42" fill="url(#grdm)"/><circle cx="150" cy="70" r="42" fill="url(#grdm)"/><circle cx="640" cy="248" r="42" fill="url(#grdm)"/><circle cx="520" cy="392" r="42" fill="url(#grdm)"/><circle cx="300" cy="210" r="42" fill="url(#grdm)"/></g><g style="mix-blend-mode:screen"><circle cx="300" cy="330" r="46" fill="url(#glowm)"/><circle cx="560" cy="392" r="46" fill="url(#glowm)"/><circle cx="236" cy="300" r="46" fill="url(#glowm)"/><circle cx="600" cy="360" r="46" fill="url(#glowm)"/><circle cx="560" cy="150" r="46" fill="url(#glowm)"/><circle cx="198" cy="148" r="46" fill="url(#glowm)"/><circle cx="176" cy="108" r="46" fill="url(#glowm)"/><circle cx="430" cy="286" r="46" fill="url(#glowm)"/><circle cx="618" cy="300" r="46" fill="url(#glowm)"/><circle cx="640" cy="402" r="46" fill="url(#glowm)"/><circle cx="150" cy="70" r="46" fill="url(#glowm)"/><circle cx="640" cy="248" r="46" fill="url(#glowm)"/><circle cx="520" cy="392" r="46" fill="url(#glowm)"/><circle cx="300" cy="210" r="46" fill="url(#glowm)"/></g><g transform="translate(560 392)"><circle r="10.4" fill="#22C55E" opacity=".92"/><circle r="10.4" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(236 300)"><circle r="9.9" fill="#3FB46B" opacity=".92"/><circle r="9.9" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(600 360)"><circle r="8.5" fill="#F59E0B" opacity=".92"/><circle r="8.5" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(560 150)"><circle r="7.1" fill="#E8522A" opacity=".92"/><circle r="7.1" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(198 148)"><circle r="10.2" fill="#2FA85F" opacity=".92"/><circle r="10.2" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(176 108)"><circle r="10.7" fill="#22C55E" opacity=".92"/><circle r="10.7" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(430 286)"><circle r="8.2" fill="#F59E0B" opacity=".92"/><circle r="8.2" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(618 300)"><circle r="6.8" fill="#E8522A" opacity=".92"/><circle r="6.8" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(640 402)"><circle r="8.7" fill="#E8A800" opacity=".92"/><circle r="8.7" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(150 70)"><circle r="10.9" fill="#22C55E" opacity=".92"/><circle r="10.9" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(640 248)"><circle r="6.5" fill="#E8522A" opacity=".92"/><circle r="6.5" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(520 392)"><circle r="8.3" fill="#F59E0B" opacity=".92"/><circle r="8.3" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(300 210)"><circle r="9.7" fill="#3FB46B" opacity=".92"/><circle r="9.7" fill="none" stroke="#06121A" stroke-width="1.2"/></g><g transform="translate(300 330)">
+    <circle r="27.7" fill="#E8522A" opacity=".10"/>
+    <circle r="20.5" fill="#E8522A" opacity=".14"/>
+    <circle r="15.2" fill="none" stroke="#E8522A" stroke-width="2.2" opacity=".55"/>
+    <circle r="9.2" fill="#E8522A" opacity=".96"/>
+    <circle r="9.2" fill="none" stroke="#06121A" stroke-width="1.4"/>
+    <circle r="2.8" fill="#fff" opacity=".55"/>
+    <text y="-27.2" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="20" fill="#EAF7F4" style="letter-spacing:.01em;paint-order:stroke" stroke="#03110F" stroke-width="3.4">Le Diamant</text>
+    <text y="39.2" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="22" fill="#E8522A" style="letter-spacing:.02em;paint-order:stroke" stroke="#03110F" stroke-width="3.6">PAS AUJOURD&#39;HUI</text>
+  </g></svg>
+  </div>
+  <p class="lbl" style="margin-top:22px">Le geste, sur 3 régimes (donnée réelle : couleur = scoreColor, mot = verdictMeta)</p>
+  <div class="row">
+    <div class="stage" style="width:240px"><div class="cap" style="font-size:11px">Repos (aucun halo)</div><svg viewBox="0 0 240 220" width="240" height="220"><defs>
+    <linearGradient id="skyr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/><stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="sear" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <radialGradient id="grdr" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#16383A" stop-opacity=".82"/><stop offset=".6" stop-color="#123031" stop-opacity=".46"/><stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glowr" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE6A8" stop-opacity=".34"/><stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/><stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/></radialGradient>
+  </defs><rect width="240" height="220" fill="url(#skyr)"/>
+    <rect y="92.39999999999999" width="240" height="127.60000000000001" fill="url(#sear)"/>
+    <rect y="90.39999999999999" width="240" height="3" fill="#FFD884" opacity=".42"/>
+    <circle cx="120" cy="-17.60000000000001" r="120" fill="#FFD884" opacity=".05"/>
+    <circle cx="120" cy="-17.60000000000001" r="62" fill="#FFD884" opacity=".10"/>
+    <circle cx="120" cy="-17.60000000000001" r="38" fill="#FFD884" opacity=".5"/>
+    <path d="M98 92.39999999999999 L142 92.39999999999999 L164 220 L76 220 Z" fill="#FFD884" opacity=".09"/><g><circle cx="120" cy="120" r="42" fill="url(#grdr)"/></g><g style="mix-blend-mode:screen"><circle cx="120" cy="120" r="46" fill="url(#glowr)"/></g><g transform="translate(120 120)"><circle r="10.4" fill="#22C55E" opacity=".92"/><circle r="10.4" fill="none" stroke="#06121A" stroke-width="1.2"/></g></svg></div>
+    <div class="stage" style="width:240px"><div class="cap" style="font-size:11px">Appui · Vas-y</div><svg viewBox="0 0 240 220" width="240" height="220"><defs>
+    <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/><stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="seag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <radialGradient id="grdg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#16383A" stop-opacity=".82"/><stop offset=".6" stop-color="#123031" stop-opacity=".46"/><stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glowg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE6A8" stop-opacity=".34"/><stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/><stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/></radialGradient>
+  </defs><rect width="240" height="220" fill="url(#skyg)"/>
+    <rect y="92.39999999999999" width="240" height="127.60000000000001" fill="url(#seag)"/>
+    <rect y="90.39999999999999" width="240" height="3" fill="#FFD884" opacity=".42"/>
+    <circle cx="120" cy="-17.60000000000001" r="120" fill="#FFD884" opacity=".05"/>
+    <circle cx="120" cy="-17.60000000000001" r="62" fill="#FFD884" opacity=".10"/>
+    <circle cx="120" cy="-17.60000000000001" r="38" fill="#FFD884" opacity=".5"/>
+    <path d="M98 92.39999999999999 L142 92.39999999999999 L164 220 L76 220 Z" fill="#FFD884" opacity=".09"/><g><circle cx="120" cy="120" r="42" fill="url(#grdg)"/></g><g style="mix-blend-mode:screen"><circle cx="120" cy="120" r="46" fill="url(#glowg)"/></g><g transform="translate(120 120)">
+    <circle r="43.7" fill="#22C55E" opacity=".10"/>
+    <circle r="32.2" fill="#22C55E" opacity=".14"/>
+    <circle r="23.9" fill="none" stroke="#22C55E" stroke-width="2.2" opacity=".55"/>
+    <circle r="14.6" fill="#22C55E" opacity=".96"/>
+    <circle r="14.6" fill="none" stroke="#06121A" stroke-width="1.4"/>
+    <circle r="4.4" fill="#fff" opacity=".55"/>
+    <text y="-35.9" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="20" fill="#EAF7F4" style="letter-spacing:.01em;paint-order:stroke" stroke="#03110F" stroke-width="3.4">Les Salines</text>
+    <text y="47.9" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="22" fill="#22C55E" style="letter-spacing:.02em;paint-order:stroke" stroke="#03110F" stroke-width="3.6">VAS-Y</text>
+  </g></svg></div>
+    <div class="stage" style="width:240px"><div class="cap" style="font-size:11px">Appui · Prudence</div><svg viewBox="0 0 240 220" width="240" height="220"><defs>
+    <linearGradient id="skyd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".5" stop-color="#155A5A"/><stop offset=".82" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>
+    <linearGradient id="sead" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>
+    <radialGradient id="grdd" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#16383A" stop-opacity=".82"/><stop offset=".6" stop-color="#123031" stop-opacity=".46"/><stop offset="1" stop-color="#123031" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glowd" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE6A8" stop-opacity=".34"/><stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/><stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/></radialGradient>
+  </defs><rect width="240" height="220" fill="url(#skyd)"/>
+    <rect y="92.39999999999999" width="240" height="127.60000000000001" fill="url(#sead)"/>
+    <rect y="90.39999999999999" width="240" height="3" fill="#FFD884" opacity=".42"/>
+    <circle cx="120" cy="-17.60000000000001" r="120" fill="#FFD884" opacity=".05"/>
+    <circle cx="120" cy="-17.60000000000001" r="62" fill="#FFD884" opacity=".10"/>
+    <circle cx="120" cy="-17.60000000000001" r="38" fill="#FFD884" opacity=".5"/>
+    <path d="M98 92.39999999999999 L142 92.39999999999999 L164 220 L76 220 Z" fill="#FFD884" opacity=".09"/><g><circle cx="120" cy="120" r="42" fill="url(#grdd)"/></g><g style="mix-blend-mode:screen"><circle cx="120" cy="120" r="46" fill="url(#glowd)"/></g><g transform="translate(120 120)">
+    <circle r="35.6" fill="#F59E0B" opacity=".10"/>
+    <circle r="26.2" fill="#F59E0B" opacity=".14"/>
+    <circle r="19.5" fill="none" stroke="#F59E0B" stroke-width="2.2" opacity=".55"/>
+    <circle r="11.9" fill="#F59E0B" opacity=".96"/>
+    <circle r="11.9" fill="none" stroke="#06121A" stroke-width="1.4"/>
+    <circle r="3.6" fill="#fff" opacity=".55"/>
+    <text y="-31.5" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="20" fill="#EAF7F4" style="letter-spacing:.01em;paint-order:stroke" stroke="#03110F" stroke-width="3.4">Grande Anse</text>
+    <text y="43.5" text-anchor="middle" font-family="'Anton',system-ui,sans-serif" font-size="22" fill="#F59E0B" style="letter-spacing:.02em;paint-order:stroke" stroke="#03110F" stroke-width="3.6">PRUDENCE</text>
+  </g></svg></div>
+  </div>
+</div></body></html>

@@ -1,0 +1,421 @@
+<!doctype html>
+<!-- ════════════════════════════════════════════════════════════════════════════
+     FIELD "reveal-south" — Le VRAI champ de sargasses au large, révélé.
+
+     DIRECTION : garder l'île centrale, RÉVÉLER LA BANDE SUD hors-cadre + SEUIL BAS
+     (montrer aussi trace/modéré), DÉRIVE LENTE vers l'OUEST (courant Caraïbes),
+     et SEULES les cellules que LE CALCUL prévoit atterrir s'échouent (Le Grand Splat).
+
+     DONNÉES RÉELLES embarquées depuis design/wow-candidates/_mq-scene.json
+     (49 cellules satellite ; ~24 ont vy>600 = AU SUD hors-cadre 0..600 = le champ à révéler).
+
+     TECHNIQUE (contraintes dures) :
+       · viewBox 0 0 800 600 · createElementNS/setAttribute SEULEMENT (zéro innerHTML)
+       · 1 SEUL requestAnimationFrame, pausable + visibilitychange
+       · STRICTEMENT transform/opacity par frame (aucun filtre/blur/turbulence,
+         aucune régénération de path 'd' par frame)
+       · DÉRIVE LENTE : le champ traverse l'écran en ~6 min (à peine perceptible/frame)
+       · LOD/cap mobile · prefers-reduced-motion = PLANCHER DUR (champ figé, lisible)
+     ════════════════════════════════════════════════════════════════════════════ -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Champ de sargasses au large — révélation Sud</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:800px;max-width:100vw;aspect-ratio:800/600;margin:0 auto;overflow:hidden;border-radius:10px}
+  .lbl{position:fixed;top:8px;left:10px;z-index:99;font:600 12px/1.45 ui-monospace,monospace;background:rgba(0,0,0,.56);padding:7px 11px;border-radius:8px;max-width:62vw}
+  .lbl b{color:#FFE9A8}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(120% 70% at 80% -4%, rgba(255,214,140,.60), rgba(255,140,80,.24) 36%, transparent 64%),
+    radial-gradient(140% 130% at 6% 122%, rgba(40,20,78,.78), rgba(58,28,92,.30) 44%, transparent 66%),
+    linear-gradient(168deg,#ff8a4d 0%,#ff7a4d 14%,#8a4a8e 36%,#6a2f9e 56%,#3e2470 80%,#2a1858 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  /* léger grain de mer fixe (non animé) */
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:radial-gradient(rgba(255,255,255,.7) .6px,transparent .6px);background-size:5px 5px}
+</style></head>
+<body>
+<div class="lbl" id="lbl">Champ au large — dérive lente vers l'ouest · <b>2 arrivées prévues s'échouent</b> · <b>clic = pause</b></div>
+<div class="stage">
+  <div class="sea"></div>
+  <div class="grain"></div>
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="sargG" cx="40%" cy="32%" r="72%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".48" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <radialGradient id="splatG" cx="42%" cy="36%" r="74%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".4" stop-color="#B08A2A"/><stop offset=".82" stop-color="#7C6A22"/><stop offset="1" stop-color="#5d5a1e"/>
+      </radialGradient>
+      <linearGradient id="islandG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FBE9B8"/><stop offset="1" stop-color="#E9C77E"/>
+      </linearGradient>
+      <pattern id="halftone" width="7" height="7" patternUnits="userSpaceOnUse">
+        <circle cx="1.6" cy="1.6" r="1.1" fill="#2c2a12" opacity=".42"/>
+      </pattern>
+      <!-- clip du dépôt sur le sable de la zone d'échouage (ne déborde jamais en mer) -->
+      <clipPath id="sandClipA"><path id="sandClipPathA" d=""/></clipPath>
+      <clipPath id="sandClipB"><path id="sandClipPathB" d=""/></clipPath>
+    </defs>
+
+    <!-- ── COUCHE CHAMP AU LARGE (dérive lente, jamais d'échouage) ── -->
+    <g id="fieldLayer"></g>
+
+    <!-- ── ÎLE jade (markup statique, dessinée au runtime depuis islandPath) ── -->
+    <g id="islandLayer"></g>
+
+    <!-- ── ZONES D'ÉCHOUAGE (sable + écume aux 2 points d'arrivée prévus) ── -->
+    <g id="coastLayer"></g>
+
+    <!-- ── ORDRE D'EMPILEMENT effet Splat (par zone) ── -->
+    <g id="depositLayer"></g>   <!-- dépôts (clippés sur sable) -->
+    <g id="rippleLayer"></g>    <!-- ondes concentriques -->
+    <g id="foamLayer"></g>      <!-- écume d'impact -->
+    <g id="dropLayer"></g>      <!-- gouttes -->
+    <g id="bankLayer"></g>      <!-- bancs entrants (les "prévus") -->
+    <g id="lineLayer"></g>      <!-- speed-lines -->
+  </svg>
+</div>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);if(a)for(const k in a)e.setAttribute(k,a[k]);return e;};
+const rng=seed=>{let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;};
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const LOWPERF = (navigator.hardwareConcurrency||4)<=4 || /Mobi|Android/i.test(navigator.userAgent);
+
+// ── splat blob générique (path figé, jamais régénéré par frame) ──
+function splatPath(cx,cy,r,seed,N,jag){
+  N=N||10; jag=jag==null?0.75:jag;
+  const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*6.2832, rr=r*(1-jag*0.5+rand()*jag);p.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";
+}
+
+/* ════════════════ DONNÉES RÉELLES (embarquées depuis _mq-scene.json) ════════════════ */
+const ISLAND_PATH="M206.4 105.8 L208.0 123.6 L218.1 140.1 L226.8 143.2 L232.5 154.2 L250.6 172.9 L244.1 206.2 L251.1 224.4 L272.1 257.6 L282.5 263.1 L285.6 271.1 L306.3 277.8 L322.2 301.4 L341.2 298.0 L344.1 302.5 L344.2 297.5 L348.1 299.8 L350.5 295.7 L348.8 304.7 L351.3 306.3 L355.8 301.2 L359.1 303.0 L357.8 308.7 L361.2 308.2 L363.7 300.7 L369.2 304.7 L365.9 296.3 L369.3 291.1 L373.8 294.8 L381.4 285.6 L388.9 288.9 L394.5 284.2 L390.2 297.9 L379.0 301.2 L398.8 298.6 L393.3 306.2 L380.0 306.9 L379.4 313.1 L382.6 314.5 L385.4 310.7 L392.3 310.0 L390.0 313.3 L399.6 320.4 L395.1 330.0 L398.4 333.1 L407.1 321.8 L405.1 328.0 L407.5 330.0 L404.7 332.1 L412.3 333.8 L408.0 337.5 L419.7 339.4 L413.6 344.1 L418.3 346.6 L409.0 348.0 L411.0 350.5 L418.3 348.6 L412.2 354.0 L413.2 357.4 L408.6 355.5 L410.1 361.7 L405.1 360.0 L404.0 354.7 L402.5 359.6 L390.4 357.8 L395.0 353.1 L393.3 350.7 L385.1 358.8 L384.2 353.0 L377.0 356.8 L373.1 355.3 L374.7 351.8 L368.4 352.6 L362.5 346.8 L368.7 343.6 L367.9 338.2 L364.9 343.2 L356.5 342.6 L359.0 335.6 L356.9 337.5 L356.1 333.0 L354.8 341.4 L348.2 343.2 L344.2 352.0 L335.7 350.3 L326.0 357.3 L326.1 363.3 L320.4 365.7 L314.7 380.3 L328.0 382.9 L328.9 388.5 L324.3 389.2 L323.6 393.5 L332.7 396.6 L333.2 405.5 L330.1 408.3 L332.5 414.7 L340.8 414.8 L345.3 424.6 L353.2 427.6 L359.2 423.4 L361.8 413.5 L373.2 407.1 L384.2 404.1 L395.2 412.5 L394.2 401.8 L394.2 407.5 L397.3 405.8 L400.9 414.4 L407.4 416.6 L408.3 413.2 L404.1 412.1 L408.6 411.5 L406.7 401.5 L412.6 411.0 L414.3 406.4 L411.4 403.8 L413.9 404.7 L414.3 397.8 L420.3 407.2 L419.9 414.3 L425.9 413.2 L425.8 408.9 L425.4 411.8 L428.3 410.7 L426.7 406.3 L430.0 406.8 L431.2 412.5 L436.9 417.5 L443.8 416.0 L455.3 420.0 L468.5 415.9 L469.7 412.0 L470.4 415.0 L474.8 414.6 L474.2 419.0 L475.5 414.5 L474.4 421.9 L485.2 432.9 L504.3 412.1 L507.6 414.6 L513.0 412.9 L518.8 417.3 L511.8 423.7 L517.8 424.2 L515.5 431.4 L508.6 423.8 L505.1 429.5 L507.6 432.8 L502.7 433.8 L498.1 429.3 L501.5 440.9 L490.0 457.0 L496.8 462.6 L497.2 469.8 L504.3 473.5 L503.3 477.1 L511.1 479.3 L521.7 477.2 L522.7 470.8 L530.1 462.8 L536.2 465.3 L536.8 462.0 L530.7 460.7 L532.5 456.8 L527.2 455.7 L527.8 450.8 L533.2 451.1 L534.5 455.1 L539.8 453.8 L540.0 446.2 L548.3 439.6 L551.0 425.8 L560.8 422.2 L557.1 421.8 L553.5 413.2 L548.3 412.4 L550.4 407.3 L554.8 409.5 L552.7 412.2 L557.5 410.2 L560.3 404.4 L555.9 393.5 L549.7 391.5 L549.2 376.0 L543.8 374.6 L546.5 376.0 L540.2 379.0 L537.7 376.1 L541.0 371.8 L539.4 367.1 L547.6 362.9 L545.9 359.1 L537.9 358.5 L539.7 354.1 L546.5 354.9 L536.6 343.5 L547.7 327.7 L540.7 328.3 L536.2 333.2 L536.9 337.1 L529.7 337.3 L534.6 329.0 L527.6 329.5 L532.9 324.9 L525.5 327.4 L522.4 324.3 L524.3 320.2 L533.4 318.3 L523.5 317.9 L530.4 314.0 L526.4 312.6 L525.8 303.9 L520.5 311.1 L514.0 309.9 L507.6 303.3 L508.2 298.5 L511.6 299.1 L509.9 294.6 L501.1 290.4 L509.8 283.0 L504.1 281.1 L495.9 286.3 L494.6 280.7 L493.4 283.2 L485.7 281.4 L487.8 279.4 L485.2 275.3 L492.1 272.9 L492.0 268.4 L487.9 269.6 L488.9 265.8 L494.1 263.9 L478.7 259.7 L482.7 253.1 L484.3 255.0 L485.6 252.4 L487.4 257.7 L488.2 254.1 L492.6 256.3 L493.5 250.7 L496.6 254.0 L499.2 243.3 L492.7 242.7 L489.7 248.6 L485.2 246.6 L487.1 243.0 L483.2 245.6 L479.4 241.8 L479.5 245.5 L477.0 245.4 L474.8 242.4 L467.8 252.4 L461.6 253.8 L454.8 243.4 L448.4 240.0 L453.5 227.9 L463.8 231.5 L459.8 227.2 L461.2 223.5 L473.6 219.9 L474.8 223.4 L478.4 216.6 L483.1 216.6 L484.1 213.7 L481.7 212.9 L483.4 210.3 L477.2 214.0 L472.5 210.1 L473.0 198.6 L469.3 198.9 L466.9 203.9 L456.9 206.0 L456.2 202.0 L463.3 193.8 L458.6 193.8 L455.4 199.1 L447.2 192.8 L447.4 183.4 L453.8 184.7 L446.9 179.6 L448.1 175.0 L453.3 169.1 L462.7 168.3 L474.4 174.3 L475.9 181.8 L492.2 181.8 L491.8 176.8 L485.2 174.7 L494.1 167.1 L487.2 161.5 L487.6 158.5 L498.1 153.6 L502.5 162.0 L507.4 161.7 L504.5 154.8 L507.4 152.5 L504.0 148.4 L506.0 147.5 L497.0 146.0 L494.6 142.6 L491.1 148.4 L481.4 154.7 L477.8 155.3 L476.5 152.3 L474.4 158.0 L467.7 161.5 L463.2 157.3 L446.3 162.6 L435.6 180.9 L431.6 178.5 L432.5 170.7 L427.6 167.2 L427.1 159.7 L414.3 147.5 L418.1 146.8 L417.2 144.5 L410.8 144.7 L407.8 137.7 L402.4 136.1 L396.5 127.2 L398.3 117.5 L394.0 118.0 L394.9 115.2 L390.1 119.4 L385.0 117.6 L381.1 106.0 L373.0 104.7 L375.3 98.9 L367.8 98.6 L363.6 92.9 L354.0 96.6 L345.5 87.5 L338.7 86.9 L322.9 77.8 L316.9 70.1 L282.5 57.5 L246.9 59.8 L241.4 65.6 L226.2 71.1 L214.4 86.2 L206.4 105.8 Z";
+const ISLAND_CENTER=[400,300];
+// cells = [vx, vy, afai] — coordonnées MONDE (vy peut dépasser 600 = au sud, hors-cadre)
+const CELLS_RAW=[[340.8,1049.3,0.2],[822.6,1023.1,0.11],[-191.6,970.7,0.1],[138,839.7,0.14],[898.6,813.5,0.11],[112.7,708.7,0.16],[290.1,708.7,0.16],[138,682.5,0.1],[163.4,682.5,0.12],[188.7,682.5,0.32],[340.8,682.5,0.19],[467.6,682.5,0.11],[949.3,682.5,0.1],[974.7,682.5,0.11],[61.9,630.1,0.32],[87.3,630.1,0.17],[112.7,630.1,0.23],[264.8,630.1,0.13],[290.1,630.1,0.11],[87.3,603.9,0.32],[112.7,603.9,0.32],[163.4,603.9,0.13],[188.7,603.9,0.1],[264.8,603.9,0.12],[214.1,577.7,0.13],[-90.2,551.5,0.32],[-64.8,551.5,0.32],[-115.5,525.3,0.14],[-90.2,525.3,0.3],[-64.8,525.3,0.29],[-140.9,499.1,0.12],[-115.5,499.1,0.1],[-140.9,472.9,0.11],[-191.6,420.5,0.11],[974.7,341.9,0.11],[-90.2,315.7,0.15],[138,315.7,0.1],[-64.8,289.5,0.14],[36.6,289.5,0.1],[11.2,263.3,0.1],[36.6,263.3,0.13],[61.9,263.3,0.12],[87.3,263.3,0.1],[11.2,237.1,0.11],[36.6,237.1,0.11],[949.3,184.7,0.17],[11.2,158.5,0.15],[36.6,-77.3,0.12],[264.8,-182.1,0.13]];
+
+/* ════════════════ PROJECTION MONDE → CADRE (révéler la bande Sud) ════════════════
+   On garde l'île à sa position native. On COMPRESSE le monde Y au-delà de l'île pour
+   amener la bande sud (vy 600..1080) dans le tiers inférieur visible (Y 470..596),
+   et on borne le monde X (vx peut être négatif ou >800) dans une marge jouable.
+   => zéro cellule hors-cadre involontaire ; le champ dense du sud devient visible. */
+const SOUTH_START=560;            // au-delà : zone "hors-cadre sud" à comprimer
+const VISIBLE_FLOOR=470, VISIBLE_BOTTOM=596;
+function projY(vy){
+  if(vy<=SOUTH_START) return vy;  // au-dessus du sud : identité (île + champ proche)
+  // 560..1080 (monde) -> 470..596 (cadre), clampé
+  const t=clamp((vy-SOUTH_START)/(1080-SOUTH_START),0,1);
+  return VISIBLE_FLOOR + t*(VISIBLE_BOTTOM-VISIBLE_FLOOR);
+}
+function projX(vx){
+  // borne X dans [40..760] en compressant doucement les débordements latéraux
+  if(vx<40) return 40 + (vx-40)*0.18;     // tire les très-à-gauche vers le bord, sans empiler
+  if(vx>760) return 760 + (vx-760)*0.18;
+  return vx;
+}
+
+// SEUIL BAS : on montre dès afai>=0.10 (trace). Opacité/rayon montent avec l'afai.
+const AFAI_MIN=0.10, AFAI_MAX=0.32;
+const FIELD = CELLS_RAW.map((c,i)=>{
+  const [vx,vy,afai]=c;
+  const x=projX(vx), y=projY(vy);
+  const dens=clamp((afai-AFAI_MIN)/(AFAI_MAX-AFAI_MIN),0,1);  // 0=trace .. 1=modéré
+  return {i,x,y,afai,dens,vx,vy};
+}).filter(c=>c.x>-30&&c.x<830&&c.y>-30&&c.y<630);
+
+// LOD mobile : sur appareil faible, on garde les plus denses (cap au nombre)
+let FIELD_LOD = FIELD.slice().sort((a,b)=>b.dens-a.dens);
+const CAP = LOWPERF?28:FIELD.length;
+FIELD_LOD = FIELD_LOD.slice(0,CAP);
+
+/* ════════════════ DÉRIVE — courant des Caraïbes : OUEST + léger NORD-OUEST, LENT ════
+   Le champ traverse l'écran (≈800px) en ~6 minutes => ~2.2 px/s. À peine perceptible.
+   On dérive le GROUPE entier via 1 transform translate (pas de re-path).
+   Wrap doux : quand le groupe a dérivé d'une période, on le remet (modulo) — invisible
+   car les blobs sont denses et le champ est large. */
+const DRIFT_VX = -2.2;            // px/seconde vers l'ouest (lent)
+const DRIFT_VY = -0.5;            // léger vers le nord (NO)
+const WRAP_X = 360;              // période de wrap horizontal
+const WRAP_Y = 90;
+
+/* ════════════════ CHAMP : un blob par cellule, dans 1 groupe dérivant ════════════════ */
+const fieldLayer=document.getElementById("fieldLayer");
+const fieldGroup=el("g",{}); fieldLayer.appendChild(fieldGroup);
+// bande d'ambiance "sud" : voile doré très léger derrière le champ dense (statique, opacity only)
+const southHaze=el("rect",{x:-40,y:VISIBLE_FLOOR-30,width:880,height:VISIBLE_BOTTOM-VISIBLE_FLOOR+90,
+  fill:"#B08A2A",opacity:".07",rx:24});
+fieldLayer.insertBefore(southHaze, fieldGroup);
+
+function makeFieldBlob(c){
+  const g=el("g",{transform:`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)})`});
+  const R = 9 + c.dens*15;                     // trace petit, modéré gros
+  const seed = c.i*97+13;
+  const sil = splatPath(0,0,R,seed, c.dens>0.5?11:9, 0.62);
+  // ombre encre
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:(0.16+c.dens*0.10).toFixed(2),transform:"translate(2 2.6)"}));
+  // corps golden-brown
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":(1.3+c.dens*0.9).toFixed(2),"stroke-linejoin":"round","opacity":(0.5+c.dens*0.45).toFixed(2)}));
+  // halftone (uniquement sur denses pour la perf, pas de filtre)
+  if(!LOWPERF && c.dens>0.35) g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:(c.dens*0.30).toFixed(2)}));
+  // reflet doré
+  if(c.dens>0.25) g.appendChild(el("path",{d:splatPath(-R*0.24,-R*0.3,R*0.46,seed+5,7,0.5),fill:"#FFE9A8",opacity:(0.30+c.dens*0.20).toFixed(2)}));
+  return g;
+}
+for(const c of FIELD_LOD) fieldGroup.appendChild(makeFieldBlob(c));
+
+/* ════════════════ ÎLE jade (dessinée 1× depuis islandPath) ════════════════ */
+const islandLayer=document.getElementById("islandLayer");
+islandLayer.appendChild(el("path",{d:ISLAND_PATH,fill:INK,opacity:".22",transform:"translate(3 4)"}));
+islandLayer.appendChild(el("path",{d:ISLAND_PATH,fill:"url(#islandG)",stroke:INK,"stroke-width":3,"stroke-linejoin":"round"}));
+islandLayer.appendChild(el("path",{d:ISLAND_PATH,fill:"url(#halftone)",opacity:".10"}));
+
+/* ════════════════ ARRIVÉES PRÉVUES (gate calcul) ════════════════
+   SEULES ces cellules s'échouent : on choisit, parmi le champ proche de la côte SUD,
+   les bancs DENSES dont la dérive (ouest/NO) croise une côte sous le vent ⇒ "prévu atterrir".
+   Ici 2 zones plausibles sur le littoral sud/sud-est de la Martinique (data exemple).
+   Les autres cellules dérivent au large SANS jamais s'échouer. */
+const ARRIVALS=[
+  // {impact côte, origine banc large, tangente côte deg}
+  { id:"A", impact:{x:372,y:432}, origin:{x:300,y:560}, coastDeg:-18, seed:42 },
+  { id:"B", impact:{x:486,y:452}, origin:{x:560,y:560}, coastDeg:10,  seed:77 }
+];
+
+/* ════════════════ Construction des effets Splat par zone ════════════════ */
+function makeBank(seed){
+  const g=el("g",{}), R=20, sil=splatPath(0,0,R,seed,11,0.55);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".30",transform:"translate(2.4 3.2)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":2,"stroke-linejoin":"round"}));
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8, oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splatPath(ox,oy,R*0.32,seed*9+i*7,7,0.6),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".26"}));
+  g.appendChild(el("path",{d:splatPath(-R*0.22,-R*0.28,R*0.5,seed+3,7,0.5),fill:"#FFE9A8",opacity:".5"}));
+  return g;
+}
+function makeDeposit(seed){
+  const g=el("g",{opacity:"0"}), R=56, sil=splatPath(0,0,R,seed,13,0.78);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".26",transform:"translate(3 4)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#splatG)",stroke:INK,"stroke-width":2.4,"stroke-linejoin":"round"}));
+  const rl=rng(seed*7+3);
+  for(let i=0;i<4;i++){const a=(0.15+rl()*0.7)*3.14159, len=R*(0.95+rl()*0.6);
+    const x=Math.cos(a)*len, y=Math.abs(Math.sin(a))*len*0.7+R*0.3, w=9+rl()*8;
+    g.appendChild(el("path",{d:splatPath(x,y,w,seed*13+i*5,7,0.7),fill:"url(#splatG)",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));}
+  const rd=rng(seed*11+2);
+  for(let i=0;i<5;i++){const ox=(rd()-.5)*R*1.1, oy=(rd()-.5)*R*0.9;
+    g.appendChild(el("path",{d:splatPath(ox,oy,R*(0.18+rd()*0.12),seed*17+i*9,7,0.6),fill:"#5d5a1e",opacity:".5"}));}
+  const ht=el("path",{d:sil,fill:"url(#halftone)",opacity:"0"});
+  g.appendChild(ht);
+  g.appendChild(el("path",{d:splatPath(-R*0.28,-R*0.34,R*0.42,seed+5,8,0.5),fill:"#FFE9A8",opacity:".45"}));
+  return {g, ht};
+}
+function makeFoam(seed){
+  const g=el("g",{opacity:"0"});
+  g.appendChild(el("path",{d:splatPath(0,4,34,seed+1,12,0.6),fill:"none",stroke:"#eafcff","stroke-width":7,opacity:".9","stroke-linejoin":"round"}));
+  g.appendChild(el("path",{d:splatPath(0,4,34,seed+1,12,0.6),fill:"none",stroke:"#ffffff","stroke-width":2.4,opacity:".95","stroke-linejoin":"round"}));
+  const rf=rng(seed*3+4);
+  for(let i=0;i<7;i++){const a=(i/7)*6.28+rf()*0.4, rr=40+rf()*14;
+    g.appendChild(el("circle",{cx:(Math.cos(a)*rr).toFixed(1),cy:(Math.sin(a)*rr*0.7+6).toFixed(1),r:(2+rf()*2).toFixed(1),fill:"#fff",opacity:".85"}));}
+  return g;
+}
+function makeRipple(seed){
+  const g=el("g",{opacity:"0"});
+  g.appendChild(el("path",{d:splatPath(0,0,26,seed+9,14,0.18),fill:"none",stroke:INK,"stroke-width":3,opacity:".7"}));
+  g.appendChild(el("path",{d:splatPath(0,0,26,seed+9,14,0.18),fill:"none",stroke:"#FFE9A8","stroke-width":1.4,opacity:".9"}));
+  return g;
+}
+
+// par zone : sable clippé + écume rivage + couches d'effet + timeline décalée
+const depositLayer=document.getElementById("depositLayer");
+const rippleLayer=document.getElementById("rippleLayer");
+const foamLayer=document.getElementById("foamLayer");
+const dropLayer=document.getElementById("dropLayer");
+const bankLayer=document.getElementById("bankLayer");
+const lineLayer=document.getElementById("lineLayer");
+const coastLayer=document.getElementById("coastLayer");
+
+const ZONES = ARRIVALS.map((A, zi)=>{
+  const coastRad=A.coastDeg*Math.PI/180;
+  const TAN={x:Math.cos(coastRad), y:Math.sin(coastRad)};
+  // normale "vers le sable" (perpendiculaire, pointant côté terre = vers l'île/haut-gauche)
+  const SINK={x:-Math.sin(coastRad), y:Math.cos(coastRad)};
+
+  // petit croissant de sable local autour de l'impact (clip dépôt) — orienté tangente
+  const L=64;                       // demi-longueur de plage
+  const ax=A.impact.x - TAN.x*L, ay=A.impact.y - TAN.y*L;
+  const bx=A.impact.x + TAN.x*L, by=A.impact.y + TAN.y*L;
+  // bande de sable : ligne rivage -> décalée côté terre
+  const inx=SINK.x*40, iny=SINK.y*40;
+  const sandD=`M${ax.toFixed(1)} ${ay.toFixed(1)} L${bx.toFixed(1)} ${by.toFixed(1)} L${(bx+inx).toFixed(1)} ${(by+iny).toFixed(1)} L${(ax+inx).toFixed(1)} ${(ay+iny).toFixed(1)} Z`;
+  const foamD=`M${ax.toFixed(1)} ${ay.toFixed(1)} L${bx.toFixed(1)} ${by.toFixed(1)}`;
+
+  document.getElementById(zi===0?"sandClipPathA":"sandClipPathB").setAttribute("d",sandD);
+
+  const cg=el("g",{});
+  cg.appendChild(el("path",{d:sandD,fill:"url(#sand)",stroke:INK,"stroke-width":2.4,"stroke-linejoin":"round",opacity:".95"}));
+  const shoreFoam=el("path",{d:foamD,fill:"none",stroke:"#eafcff","stroke-width":5,"stroke-linecap":"round",opacity:".85"});
+  const shoreFoam2=el("path",{d:foamD,fill:"none",stroke:"#ffffff","stroke-width":2,"stroke-linecap":"round",opacity:".9"});
+  cg.appendChild(shoreFoam); cg.appendChild(shoreFoam2);
+  coastLayer.appendChild(cg);
+
+  const depG=el("g",{"clip-path":`url(#${zi===0?"sandClipA":"sandClipB"})`});
+  depositLayer.appendChild(depG);
+  const dep=makeDeposit(A.seed); depG.appendChild(dep.g);
+
+  const ripple=makeRipple(A.seed); ripple.setAttribute("transform",`translate(${A.impact.x} ${A.impact.y})`); rippleLayer.appendChild(ripple);
+  const foam=makeFoam(A.seed); foam.setAttribute("transform",`translate(${A.impact.x} ${A.impact.y})`); foamLayer.appendChild(foam);
+  const bank=makeBank(A.seed); bankLayer.appendChild(bank);
+
+  // gouttes : 7 rivage (tangente+absorption) + 5 splash (parabole)
+  const drops=[]; const dlg=el("g",{}); dropLayer.appendChild(dlg);
+  for(let i=0;i<7;i++){
+    const seed=A.seed+i*37+11, rand=rng(seed), Lp=(i/6-0.5)*2, dist=40+Math.abs(Lp)*90;
+    const tx=A.impact.x + TAN.x*Lp*dist + SINK.x*(Math.abs(Lp)*9);
+    const ty=A.impact.y + TAN.y*Lp*dist + SINK.y*(Math.abs(Lp)*9);
+    const rr=2.4+rand()*3.2, g=el("g",{opacity:"0"});
+    g.appendChild(el("path",{d:splatPath(0,0,rr,seed,7,0.55),fill:"url(#sargG)",stroke:INK,"stroke-width":1.1,"stroke-linejoin":"round"}));
+    dlg.appendChild(g); drops.push({g,type:"shore",tx,ty,delay:Math.abs(Lp)*0.06,rot:(rand()*2-1)*120});
+  }
+  for(let i=0;i<5;i++){
+    const seed=A.seed+i*53+200, rand=rng(seed), ang=-2.5+rand()*1.9, spd=80+rand()*120, rr=2.2+rand()*3, g=el("g",{opacity:"0"});
+    g.appendChild(el("path",{d:splatPath(0,0,rr,seed,7,0.55),fill:"url(#sargG)",stroke:INK,"stroke-width":1.1,"stroke-linejoin":"round"}));
+    dlg.appendChild(g);
+    drops.push({g,type:"splash",vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,delay:rand()*0.05,rot:(rand()*2-1)*180});
+  }
+
+  // speed-lines
+  const lines=[]; const llg=el("g",{transform:`translate(${A.impact.x} ${A.impact.y})`}); lineLayer.appendChild(llg);
+  const rl=rng(A.seed+99);
+  for(let i=0;i<9;i++){const a=(i/9)*6.28+rl()*0.25;
+    const x1=Math.cos(a)*26,y1=Math.sin(a)*26,x2=Math.cos(a)*(60+rl()*28),y2=Math.sin(a)*(60+rl()*28);
+    const ln=el("line",{x1:x1.toFixed(1),y1:y1.toFixed(1),x2:x2.toFixed(1),y2:y2.toFixed(1),stroke:"#FFE9A8","stroke-width":(2.4+rl()*1.4).toFixed(1),"stroke-linecap":"round",opacity:"0"});
+    llg.appendChild(ln); lines.push(ln);}
+
+  // PHASE décalée par zone pour ne pas synchroniser les 2 splats
+  return { A, TAN, SINK, dep, ripple, foam, bank, drops, lines, llg, shoreFoam,
+           phase: zi*4.0 };   // zone B démarre 4s après A
+});
+
+/* ════════════════ Timeline d'un échouage (en sec, dans un cycle de 9s) ════════════════ */
+const T_APPROACH=2.6, T_IMPACT=2.8, T_SETTLE=3.3, T_FADE=7.2, T_CYCLE=9.0;
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const easeOut=p=>1-Math.pow(1-p,3);
+
+function renderZone(Z, tc){
+  const A=Z.A, IM=A.impact, OR=A.origin;
+  // BANC : dérive LENTE depuis le large vers l'impact, puis squash
+  if(tc<T_IMPACT){
+    const p=ease(clamp(tc/T_APPROACH,0,1));
+    const x=OR.x+(IM.x-OR.x)*p, y=OR.y+(IM.y-OR.y)*p, sc=0.7+p*0.5;
+    const squash=tc>T_APPROACH?1+(tc-T_APPROACH)/(T_IMPACT-T_APPROACH)*0.7:1;
+    Z.bank.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(sc*squash).toFixed(3)} ${(sc/squash).toFixed(3)})`);
+    Z.bank.setAttribute("opacity",tc>T_APPROACH?(1-(tc-T_APPROACH)/(T_IMPACT-T_APPROACH)).toFixed(2):"1");
+  } else Z.bank.setAttribute("opacity","0");
+
+  // DÉPÔT (rotate côte + halftone révélé)
+  if(tc>=T_IMPACT){
+    const pg=clamp((tc-T_IMPACT)/(T_SETTLE-T_IMPACT),0,1);
+    const sc=(0.25+easeOut(pg)*0.75)*(1+0.10*Math.sin(pg*Math.PI));
+    let op=1; if(tc>T_FADE) op=clamp(1-(tc-T_FADE)/(T_CYCLE-T_FADE),0,1);
+    Z.dep.g.setAttribute("transform",`translate(${IM.x} ${IM.y}) rotate(${A.coastDeg}) scale(${sc.toFixed(3)})`);
+    Z.dep.g.setAttribute("opacity",op.toFixed(2));
+    Z.dep.ht.setAttribute("opacity",(easeOut(pg)*0.32*op).toFixed(2));
+  } else Z.dep.g.setAttribute("opacity","0");
+
+  // SPEED-LINES
+  {const dt=tc-T_IMPACT; let lp=dt<0?0:dt<0.05?dt/0.05:dt<0.30?1-(dt-0.05)/0.25:0; lp=clamp(lp,0,1);
+   Z.llg.setAttribute("transform",`translate(${IM.x} ${IM.y}) scale(${(0.6+lp*0.6).toFixed(3)})`);
+   for(const ln of Z.lines) ln.setAttribute("opacity",(lp*0.9).toFixed(2));}
+
+  // ONDE
+  {const dt=tc-T_IMPACT; let rp=dt<0||dt>0.26?0:1-dt/0.26;
+   const rsc=1+easeOut(clamp(dt/0.26,0,1))*3;
+   Z.ripple.setAttribute("transform",`translate(${IM.x} ${IM.y}) scale(${rsc.toFixed(3)})`);
+   Z.ripple.setAttribute("opacity",clamp(rp,0,1).toFixed(2));}
+
+  // ÉCUME impact
+  {const dt=tc-T_IMPACT; let fp=dt<0?0:dt<0.5?Math.sin((dt/0.5)*Math.PI*0.9):0; fp=clamp(fp,0,1);
+   Z.foam.setAttribute("transform",`translate(${IM.x} ${IM.y}) scale(${(0.5+easeOut(clamp(dt/0.5,0,1))*0.9).toFixed(3)})`);
+   Z.foam.setAttribute("opacity",fp.toFixed(2));}
+
+  // PULSE écume rivage
+  {const dt=tc-T_IMPACT; const pulse=dt>=0&&dt<0.18?Math.sin(dt/0.18*Math.PI):0;
+   Z.shoreFoam.setAttribute("stroke-width",(5+pulse*4).toFixed(2));}
+
+  // GOUTTES
+  {const dt=tc-T_IMPACT;
+   for(const d of Z.drops){
+     const lt=dt-d.delay;
+     if(lt<0||lt>0.9){ d.g.setAttribute("opacity","0"); continue; }
+     if(d.type==="shore"){
+       const fly=easeOut(clamp(lt/0.34,0,1));
+       const x=IM.x+(d.tx-IM.x)*fly, y=IM.y+(d.ty-IM.y)*fly;
+       const ab=clamp((lt-0.55)/0.3,0,1);
+       const sc=clamp(1-lt*0.45,0.4,1)*(1-ab*0.55), op=ab<1?1-ab:0;
+       d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+ab*4).toFixed(1)}) scale(${sc.toFixed(2)}) rotate(${(d.rot*fly).toFixed(0)})`);
+       d.g.setAttribute("opacity",clamp(op,0,1).toFixed(2));
+     } else {
+       const x=IM.x+d.vx*lt, y=IM.y+d.vy*lt+300*lt*lt;
+       const sc=clamp(1-lt*0.5,0.4,1), op=lt<0.6?1:1-(lt-0.6)/0.25;
+       d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sc.toFixed(2)}) rotate(${(d.rot*lt).toFixed(0)})`);
+       d.g.setAttribute("opacity",clamp(op,0,1).toFixed(2));
+     }
+   }}
+}
+function freezeZone(Z){
+  const A=Z.A, IM=A.impact;
+  Z.bank.setAttribute("opacity","0");
+  for(const ln of Z.lines) ln.setAttribute("opacity","0");
+  for(const d of Z.drops) d.g.setAttribute("opacity","0");
+  Z.ripple.setAttribute("opacity","0");
+  Z.foam.setAttribute("transform",`translate(${IM.x} ${IM.y}) scale(1.05)`); Z.foam.setAttribute("opacity",".28");
+  Z.dep.g.setAttribute("transform",`translate(${IM.x} ${IM.y}) rotate(${A.coastDeg}) scale(1)`);
+  Z.dep.g.setAttribute("opacity","1"); Z.dep.ht.setAttribute("opacity","0.32");
+  Z.shoreFoam.setAttribute("stroke-width","5");
+}
+
+/* ════════════════ 1 SEUL rAF ════════════════ */
+let raf=0, paused=false, t0=0;
+function render(t){
+  // DÉRIVE LENTE du champ entier (translate + wrap doux, transform only)
+  let dx=(DRIFT_VX*t)%WRAP_X, dy=(DRIFT_VY*t)%WRAP_Y;
+  fieldGroup.setAttribute("transform",`translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
+  // échouages : chaque zone sur son cycle décalé
+  for(const Z of ZONES){
+    let tc=(t - Z.phase)%T_CYCLE; if(tc<0) tc+=T_CYCLE;
+    renderZone(Z, tc);
+  }
+}
+function frame(tms){ if(!t0)t0=tms; const t=(tms-t0)/1000; render(t); if(!paused) raf=requestAnimationFrame(frame); }
+function freezeAll(){
+  fieldGroup.setAttribute("transform","translate(0 0)");
+  for(const Z of ZONES) freezeZone(Z);
+}
+
+if(REDUCED){ freezeAll(); }
+else { raf=requestAnimationFrame(frame); }
+
+const lbl=document.getElementById("lbl");
+document.body.addEventListener("click",()=>{
+  if(REDUCED) return;
+  paused=!paused;
+  if(paused){ cancelAnimationFrame(raf); raf=0; }
+  else { t0=0; raf=requestAnimationFrame(frame); }
+});
+document.addEventListener("visibilitychange",()=>{
+  if(REDUCED) return;
+  if(document.hidden){ if(raf){cancelAnimationFrame(raf); raf=0;} }
+  else if(!paused){ t0=0; raf=requestAnimationFrame(frame); }
+});
+</script>
+</body></html>

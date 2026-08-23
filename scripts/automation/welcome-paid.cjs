@@ -1,0 +1,205 @@
+#!/usr/bin/env node
+/**
+ * welcome-paid.cjs — Email de BIENVENUE aux nouveaux clients PAYANTS (Stripe → Resend).
+ *
+ * PART 2 de l'onboarding payant (Part 1 = in-app PaidOnboarding). Cible les ABONNÉS
+ * Stripe (status active + trialing) créés récemment — PAS la liste leads du Google
+ * Sheet (welcome-email.cjs, qui pousse vers le paywall). Ici ils ont DÉJÀ payé :
+ * email SANS CTA paywall, 100% onboarding (« ton veilleur est en place, comment ça
+ * marche, choisis tes plages »). i18n fr/en/es selon la région.
+ *
+ * Dédupe via data/welcome-paid-sent.json (hash). Idempotent → re-run sans double-envoi.
+ * Dry-run par défaut. Clés : STRIPE_SECRET_KEY + SMTP_PASS (process.env OU .env).
+ *
+ * Usage:
+ *   node scripts/automation/welcome-paid.cjs                 # dry-run
+ *   node scripts/automation/welcome-paid.cjs --send          # envoie
+ *   node scripts/automation/welcome-paid.cjs --since-days=14 # fenêtre (défaut 14j)
+ */
+const fs = require('fs')
+const path = require('path')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
+const { getAllRegions } = require('../../regions/index.cjs')
+
+const args = process.argv.slice(2)
+const DO_SEND = args.includes('--send')
+// --recover : RÉCUPÉRATION d'accès — cible TOUS les abonnés entitled (active/trialing/
+// past_due) quelle que soit leur date de création (pas seulement <14j), pour que les
+// ANCIENS payeurs qui ont perdu l'accès (cross-device) le retrouvent en 1 clic. Évite
+// remboursements + SAV. Idempotent par hash (welcome-paid-sent.json) → 1 email/payeur.
+const DO_RECOVER = args.includes('--recover')
+const SINCE_DAYS = Number((args.find(a => a.startsWith('--since-days=')) || '--since-days=14').split('=')[1]) || 14
+
+function envVal(name) {
+  if (process.env[name]) return process.env[name].trim()
+  try {
+    const txt = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
+    const m = txt.match(new RegExp('^' + name + '=([^\\r\\n]+)', 'm'))
+    return m ? m[1].trim() : null
+  } catch { return null }
+}
+const STRIPE_KEY = envVal('STRIPE_SECRET_KEY')
+// Envoi via SMTP (boîte alerte@). Bridge .env → process.env pour l'exécution locale.
+;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => { if (!process.env[k]) { const v = envVal(k); if (v) process.env[k] = v } })
+
+const SENT_PATH = path.join(__dirname, 'data', 'welcome-paid-sent.json')
+const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
+const HOOK = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+const FROM_DOMAIN = 'alerte@sargasses-martinique.com' // seul domaine vérifié Resend (free plan)
+const REGIONS = Object.fromEntries(getAllRegions().map(r => [r.id, r]))
+const DOMAINS = { mq: 'sargasses-martinique.com', gp: 'sargasses-guadeloupe.com' }
+const regionDomain = island => DOMAINS[island] || (REGIONS[island] && REGIONS[island].domain) || 'sargasses-martinique.com'
+const unsubUrl = (email, island) => `${HOOK}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}`
+// Lien d'accès ONE-CLICK : ?premium_email=<email> → l'app vérifie l'abo (sgVerifySub →
+// Stripe/Mollie/comp) et débloque le premium sur CET appareil, sans mot de passe ni
+// formulaire. C'est CE lien qui répare le « payeur bloqué sur un nouvel appareil ».
+const oneClickUrl = (email, island) => `https://${regionDomain(island)}/?premium_email=${encodeURIComponent(email)}&utm_source=email&utm_medium=welcome_paid&utm_campaign=access`
+// Page « on publie nos erreurs » (le moat honnêteté), localisée par langue.
+const reliability = lang => ({ fr: ['/fiabilite/', 'on publie nos erreurs'], en: ['/reliability/', 'we publish our errors'], es: ['/fiabilidad/', 'publicamos nuestros errores'] }[lang] || ['/fiabilite/', 'on publie nos erreurs'])
+
+async function stripe(pathname) {
+  const res = await fetch(`https://api.stripe.com/v1/${pathname}`, {
+    headers: { Authorization: `Basic ${Buffer.from(STRIPE_KEY + ':').toString('base64')}` },
+  })
+  const json = await res.json()
+  if (json.error) throw new Error(`Stripe ${pathname}: ${json.error.message}`)
+  return json
+}
+async function listAll(base, cap = 400) {
+  let url = base.includes('?') ? `${base}&limit=100` : `${base}?limit=100`
+  const out = []
+  while (out.length < cap) {
+    const pg = await stripe(url)
+    out.push(...pg.data)
+    if (!pg.has_more) break
+    url = (base.includes('?') ? `${base}&limit=100` : `${base}?limit=100`) + `&starting_after=${pg.data[pg.data.length - 1].id}`
+  }
+  return out
+}
+const loadJSON = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fb } }
+const saveJSON = (p, d) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(d, null, 2)) }
+const hashedSet = arr => new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
+
+// ─── Copy par langue (région) — AUCUN CTA paywall (le client a déjà payé) ──────
+function copy(region) {
+  const lang = region.primaryLang || 'fr'
+  const name = region.name
+  const app = `https://${regionDomain(region.id)}/?utm_source=email&utm_medium=welcome_paid&utm_campaign=onboarding`
+  if (lang === 'es') return {
+    subject: 'Tu vigía está activo', kicker: 'Bienvenido', pre: 'Elige tus playas y recibe una alerta cuando el agua cambie.',
+    title: 'Tu vigía está activo', sub: 'Gracias por suscribirte. Así sacas el máximo provecho:',
+    steps: [['Elige tus playas', 'Abre la app y toca ♥ en 1 a 3 playas. Tu vigía las vigila por ti.'],
+            ['Recibe alertas', 'Te avisamos la mañana en que una de ellas cambia — sin spam.'],
+            ['Tu brief matinal', 'Cada mañana, el estado de tus playas y la recomendación del día te esperan arriba.']],
+    cta: 'Abrir mi vigía', ctaUrl: app, foot: `${name}`, manage: 'Gestionar o cancelar mi suscripción', unsub: 'Darse de baja',
+  }
+  if (lang === 'en') return {
+    subject: 'Your watchman is live', kicker: 'Welcome', pre: 'Pick your beaches and get an alert when the water changes.',
+    title: 'Your watchman is live', sub: 'Thanks for subscribing. Here is how to get the most out of it:',
+    steps: [['Pick your beaches', 'Open the app and tap ♥ on 1 to 3 beaches. Your watchman keeps an eye on them.'],
+            ['Get alerts', 'We warn you the morning one of them changes — no spam.'],
+            ['Your morning brief', 'Every morning, your beaches’ status and the daily pick wait at the top of the app.']],
+    cta: 'Open my watchman', ctaUrl: app, foot: `${name}`, manage: 'Manage or cancel my subscription', unsub: 'Unsubscribe',
+  }
+  return {
+    subject: 'Ton veilleur est en place', kicker: 'Bienvenue', pre: 'Choisis tes plages et reçois une alerte quand l’eau change.',
+    title: 'Ton veilleur est en place', sub: 'Merci pour ton abonnement. Voici comment en profiter à fond :',
+    steps: [['Choisis tes plages', 'Ouvre l’app et touche ♥ sur 1 à 3 plages. Ton veilleur les surveille pour toi.'],
+            ['Reçois les alertes', 'On te prévient le matin où l’une d’elles bascule — sans spam.'],
+            ['Ton brief du matin', 'Chaque matin, l’état de tes plages et la reco du jour t’attendent en haut de l’app.']],
+    cta: 'Ouvrir mon veilleur', ctaUrl: app, foot: `${name}`, manage: 'Gérer ou résilier mon abonnement', unsub: 'Se désabonner',
+  }
+}
+
+function buildHTML(region, email) {
+  const c = copy(region)
+  const lang = region.primaryLang || 'fr'
+  const oneClick = oneClickUrl(email, region.id)
+  // Lien GÉRER / RÉSILIER self-serve (le client a explicitement le pouvoir d'annuler
+  // sans nous écrire — conformité + zéro SAV). ?manage=1 ouvre le Customer Portal
+  // Stripe (résilier, changer de carte, voir les factures). prov=stripe : CET email
+  // ne cible QUE des abonnés Stripe (welcome-paid liste les subscriptions Stripe).
+  const manageUrl = `https://${regionDomain(region.id)}/?manage=1&email=${encodeURIComponent(email)}&prov=stripe&utm_source=email&utm_medium=welcome_paid&utm_campaign=manage`
+  const [relPath, relWord] = reliability(lang)
+  const relUrl = `https://${regionDomain(region.id)}${relPath}`
+  // Bandeau ACCÈS one-click EN HAUT (le plus visible) — répare le « payeur bloqué » :
+  // un clic, sans mot de passe, ça suit le compte sur tout appareil.
+  const accessL = { fr: ['Ton accès, en 1 clic ✅', 'Pas de mot de passe, rien à taper : tu cliques, c\'est débloqué — sur n\'importe quel appareil.', 'Activer mon accès'], en: ['Your access, in 1 click ✅', 'No password, nothing to type: click and you\'re in — on any device.', 'Unlock my access'], es: ['Tu acceso, en 1 clic ✅', 'Sin contraseña, nada que escribir: haz clic y entras — en cualquier dispositivo.', 'Activar mi acceso'] }[lang]
+  // Ligne preuve/honnêteté (le moat) — jamais de chiffre nu, lien obligatoire.
+  const proof = { fr: `Avant tout, va voir ce qu'on vaut vraiment : <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (prévisions datées vs réalité, ~76 % justes tous régimes, jusqu'à 79 % en saison).`, en: `First, see what we're really worth: <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (dated forecasts vs reality, ~76% accurate all regimes, up to 79% in season).`, es: `Antes de nada, mira lo que valemos: <a href="${relUrl}" style="color:#190c2c;font-weight:700">${relWord}</a> (previsiones fechadas vs realidad, ~76% acertadas, hasta 79% en temporada).` }[lang]
+  const accessBox = `<div style="background:#fff7e0;border:1px solid #FFC72C;border-radius:12px;padding:16px 18px;margin:0 0 6px"><p style="margin:0 0 4px;font-weight:800;color:#190c2c;font-size:14px">${accessL[0]}</p><p style="margin:0 0 12px;font-size:13px;color:#5a4a1a">${accessL[1]}</p><p style="margin:0;text-align:center"><a href="${oneClick}" style="display:inline-block;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#190c2c;font-weight:800;text-decoration:none;padding:13px 28px;border-radius:11px;font-size:15px">${accessL[2]} →</a></p></div>`
+  const steps = c.steps.map((s, i) => `<tr><td style="padding:0 0 15px"><table role="presentation" width="100%"><tr>
+      <td width="34" valign="top"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FFE47A,#E8A800);color:#0A2A26;font-weight:800;text-align:center;line-height:28px;font-size:14px">${i + 1}</div></td>
+      <td style="padding-left:12px"><div style="font-weight:800;color:#0D0D0D;font-size:15px;margin-bottom:2px">${s[0]}</div><div style="color:#555;font-size:13px;line-height:1.5">${s[1]}</div></td>
+    </tr></table></td></tr>`).join('')
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;background:#FDFCF7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table role="presentation" width="100%" style="background:#FDFCF7"><tr><td align="center" style="padding:24px 14px">
+  <table role="presentation" width="100%" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.06)">
+    <tr><td>${brandHeader(c.kicker, c.title, c.sub)}</td></tr>
+    <tr><td style="padding:22px 24px 4px">${accessBox}</td></tr>
+    <tr><td style="padding:10px 24px 6px"><table role="presentation" width="100%">${steps}</table></td></tr>
+    <tr><td style="padding:0 24px 18px"><p style="margin:0;font-size:13px;color:#5a4a1a;line-height:1.5">${proof}</p></td></tr>
+    <tr><td style="padding:0 24px 26px" align="center">
+      <a href="${oneClick}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0A2A26;font-weight:800;font-size:15px;text-decoration:none;padding:14px 26px;border-radius:12px">${c.cta} →</a>
+      <div style="margin-top:18px"><a href="${manageUrl}" style="color:#5a4a1a;font-size:13px;font-weight:700;text-decoration:underline">${c.manage}</a></div>
+      <div style="color:#888;font-size:11px;margin-top:8px">${c.foot}</div>
+      <div style="margin-top:10px"><a href="${unsubUrl(email, region.id)}" style="color:#aaa;font-size:11px">${c.unsub}</a></div>
+    </td></tr>
+  </table></td></tr></table></body></html>`
+}
+
+async function main() {
+  if (!STRIPE_KEY) { console.error('STRIPE_SECRET_KEY introuvable (.env / CI secret)'); process.exit(1) }
+  const sent = hashedSet(loadJSON(SENT_PATH, []))
+  const bounced = hashedSet(loadJSON(BOUNCED_PATH, []))
+  const cutoff = Date.now() - SINCE_DAYS * 86400000
+  // --recover : tous les statuts ENTITLED (past_due inclus : ils ont accès pendant le
+  // dunning) et AUCUN filtre de date → les anciens payeurs sont couverts. Sinon : abos
+  // récents active/trialing (onboarding normal du jour).
+  const statuses = DO_RECOVER ? ['active', 'trialing', 'past_due'] : ['active', 'trialing']
+  const subs = (await Promise.all(statuses.map(st => listAll(`subscriptions?status=${st}`)))).flat()
+  const recent = DO_RECOVER ? subs : subs.filter(s => s.created * 1000 >= cutoff)
+  console.log(`${subs.length} abonnement(s) entitled (${statuses.join('+')}) · ${recent.length} ${DO_RECOVER ? 'à (re)couvrir (recover: toutes dates)' : `créés < ${SINCE_DAYS}j`}`)
+
+  const queue = []
+  for (const s of recent) {
+    let email = null
+    try { const cust = await stripe(`customers/${s.customer}`); email = cust.email } catch {}
+    if (!email || !email.includes('@')) continue
+    const h = emailHash(email)
+    if (sent.has(h)) continue
+    if (bounced.has(h)) { console.log(`  ⏭️  ${logId(email)} : bounced`); continue }
+    const region = REGIONS[s.metadata?.island] || REGIONS.mq
+    queue.push({ email, island: region.id, region, h })
+  }
+  console.log(`${queue.length} nouveau(x) payeur(s) à accueillir :`)
+  for (const q of queue) console.log(`  • ${logId(q.email)} (${q.island}, ${q.region.primaryLang || 'fr'})`)
+
+  if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. Relancer avec --send.'); return }
+  if (!mailReady()) { console.error('\n❌ SMTP_PASS absent — impossible d\'envoyer.'); process.exit(1) }
+  const resend = null
+  const sentArr = loadJSON(SENT_PATH, [])
+  for (const q of queue) {
+    const c = copy(q.region)
+    try {
+      const { data, error } = await sendEmail(resend, {
+        from: `Sargasses <${FROM_DOMAIN}>`, to: q.email, subject: c.subject,
+        html: buildHTML(q.region, q.email), preheader: c.pre, unsubUrl: unsubUrl(q.email, q.island),
+        trackingId: makeTrackingId('welcome_paid', q.email),
+      })
+      if (error) { console.log(`  ❌ ${logId(q.email)} : ${error.message || JSON.stringify(error)}`); continue }
+      sentArr.push(q.h); saveJSON(SENT_PATH, sentArr)
+      console.log(`  ✅ ${logId(q.email)} accueilli`)
+      try {
+        await fetch(HOOK, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ type: 'email_tracking', resend_id: data?.id || '', to: q.email, subject: c.subject, email_type: 'welcome_paid', island: q.island, status: 'sent', date: new Date().toISOString() }) })
+      } catch {}
+    } catch (e) { console.log(`  ❌ ${logId(q.email)} : ${e.message}`) }
+  }
+  console.log('\nTerminé.')
+}
+
+module.exports = { copy, buildHTML }
+if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })

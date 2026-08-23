@@ -1,0 +1,259 @@
+name: Weekly SEO Automation
+
+on:
+  schedule:
+    # Cut 2026-04-13 (quota 100%) : Mon+Thu -> Mon only. The 22-step
+    # workflow grew to ~12 min/run after 11 new analyzers landed, so
+    # 8 runs/mo = 96 min/mo. Mon only = 4 runs/mo ≈ 48 min/mo.
+    # Re-enable Thu when budget allows.
+    - cron: '0 11 * * 1'
+  workflow_dispatch: # Déclenchement manuel possible
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-seo-automation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  seo-automation:
+    runs-on: ubuntu-latest
+    # 5 sites (MQ/GP + 3 USD depuis fin juin) → le SEO audit fait ~24 min de GSC URL
+    # Inspection (222 URLs séquentielles). Bug 2026-06-22 + 2026-06-29 (runs 27965371161 /
+    # 28380458527) : avec timeout-minutes:30 ici et 20 sur le step SEO Audit, le step
+    # dépassait SA propre borne (masquée par continue-on-error → skip silencieux des
+    # 6 analyzers avals) PUIS le job entier se faisait couper par SON plafond pendant
+    # le déploiement FTP. Même bug déjà résolu sur weekly-ux-report.yml (PR #429) —
+    # portée ici. Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 50
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 0. Register GA4 custom dimensions (idempotent) ───
+      - name: Register GA4 A/B test dimensions
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+          GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+        run: node scripts/automation/register-ga4-dimensions.cjs
+
+      # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
+      - name: SEO Audit (data collection)
+        id: seo-audit
+        # ~24 min normal (222 GSC URL Inspections séquentielles à ~6 s, 5 sites).
+        # Guardrail AU-DESSUS du normal : ne borne qu'un vrai hang, pas les runs
+        # lents légitimes (cf. commentaire timeout-minutes du job).
+        timeout-minutes: 30
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+          GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+        run: node scripts/automation/seo-audit.cjs
+        continue-on-error: true
+
+      # ── 1b. UX Audit (from audit data) ───────────────────
+      - name: UX Audit (analyze UX issues)
+        if: steps.seo-audit.outcome == 'success'
+        run: node scripts/automation/ux-audit.cjs
+
+      # ── 1b2. Position Tracker (rolling 90d history + drop alerts) ─
+      - name: Track GSC positions over time
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-position-tracker.cjs
+
+      # ── 1b3. Orphan Detector (sitemap pages with no GSC traffic) ─
+      - name: Detect orphan pages
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-orphan-detector.cjs
+
+      # ── 1b4. CTR diagnostic (position-vs-CTR gap detection) ──────
+      - name: CTR diagnostic (AWR curve)
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-ctr-diagnostic.cjs
+
+      # ── 1b5. Cannibalization (queries with multiple competing pages)
+      - name: Detect keyword cannibalization
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-cannibalization.cjs
+
+      # ── 1b6. CWV tracker (rolling 90d CrUX history) ──────────────
+      - name: Track Core Web Vitals over time
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-cwv-tracker.cjs
+
+      # ── 1b7. Link Graph (structural orphans + phantom hrefs) ─────
+      # Runs after the build so the FTP folders exist (the analyzer
+      # walks martinique-ftp/ and guadeloupe-ftp/). Wired in step 6.5.
+
+      # ── 1c. Auto-Optimize (data-driven self-improvement) ─
+      - name: Auto-Optimize (apply data-driven fixes)
+        continue-on-error: true
+        run: node scripts/automation/auto-optimize.cjs
+
+      # ── 1d. Auto-Copywriting (GSC-driven meta optimization)
+      - name: Auto-copywriting (GSC-driven)
+        continue-on-error: true
+        run: node scripts/automation/auto-copywriting.cjs
+
+      # ── 2. Auto-fix 404 errors ───────────────────────────
+      - name: Fix 404 errors (auto-redirect)
+        run: node scripts/automation/seo-fix-404.cjs
+
+      # ── 3. Optimize meta titles/descriptions ─────────────
+      - name: Optimize meta (CTR-based)
+        run: node scripts/automation/seo-optimize-meta.cjs
+
+      # ── 4. Enrich beach page content ─────────────────────
+      - name: Enrich content (FAQ + noscript + links)
+        run: node scripts/automation/seo-enrich-content.cjs
+
+      # ── 5. (retiré : generate-seo-pages.cjs = findKeywordGaps() stub vide → no-op
+      #     silencieux. À réactiver quand findKeywordGaps lit les vrais gaps GSC.) ──
+
+      # ── 6. Rebuild with all SEO changes ──────────────────
+      - name: Build site (Vite) + prepare FTP
+        run: |
+          npm run build
+          node scripts/prepare-ftp.cjs
+
+      # ── 6.5. Link Graph (post-build, reads martinique-ftp/) ─────
+      - name: Analyze internal link graph
+        continue-on-error: true
+        run: node scripts/automation/seo-link-graph.cjs
+
+      # ── 6.6. Broken links (0-tolerance: hard fail in CI) ────────
+      - name: Check for broken internal links
+        continue-on-error: true
+        run: node scripts/automation/seo-broken-links.cjs
+
+      # ── 6.7. JSON-LD schema validator ───────────────────────────
+      - name: Validate JSON-LD schemas
+        continue-on-error: true
+        run: node scripts/automation/seo-schema-validator.cjs
+
+      # ── 6.8. Meta uniqueness (duplicate titles/descriptions) ────
+      - name: Check meta title/description uniqueness
+        continue-on-error: true
+        run: node scripts/automation/seo-meta-uniqueness.cjs
+
+      # ── 6.9. Canonical + hreflang validation ────────────────────
+      - name: Validate canonical and hreflang
+        continue-on-error: true
+        run: node scripts/automation/seo-canonical-hreflang.cjs
+
+      # ── 6.10. Content depth (thin pages + rich winners) ─────────
+      - name: Audit content depth
+        continue-on-error: true
+        run: node scripts/automation/seo-content-depth.cjs
+
+      # ── 6.11. Sitemap completeness check ────────────────────────
+      - name: Cross-check sitemap vs disk
+        continue-on-error: true
+        run: node scripts/automation/seo-sitemap-check.cjs
+
+      # ── 6.12. Image alt audit ───────────────────────────────────
+      - name: Audit image alt text
+        continue-on-error: true
+        run: node scripts/automation/seo-image-audit.cjs
+
+      # ── 6.13. Orphan healer (inject related-links into donors) ──
+      # Modifies HTML in martinique-ftp/ and guadeloupe-ftp/, must
+      # run AFTER orphan-detector + link-graph and BEFORE FTP deploy.
+      - name: Heal orphan pages (inject related-links blocks)
+        continue-on-error: true
+        run: node scripts/automation/seo-orphan-healer.cjs
+
+      # ── 4. Submit URLs to Google Indexing API ─────────────
+      - name: Submit URLs to Google Indexing
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/seo-submit-urls.cjs
+        continue-on-error: true
+
+      # ── 7. A/B Test: auto-fetch from GA4 then evaluate ──
+      - name: Fetch A/B test data from GA4
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+        run: node scripts/automation/ab-fetch-ga4.cjs
+
+      - name: Evaluate A/B tests
+        continue-on-error: true
+        run: node scripts/automation/ab-evaluate.cjs
+
+      # ── 8. Commit all SEO changes ────────────────────────
+      - name: Commit SEO automation changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json scripts/automation/data/position-history.json scripts/automation/data/position-changes.json scripts/automation/data/orphan-pages.json scripts/automation/data/link-graph.json scripts/automation/data/broken-links.json scripts/automation/data/orphan-healer.json scripts/automation/data/schema-validation.json scripts/automation/data/meta-uniqueness.json scripts/automation/data/canonical-hreflang.json scripts/automation/data/content-depth.json scripts/automation/data/ctr-diagnostic.json scripts/automation/data/cannibalization.json scripts/automation/data/sitemap-check.json scripts/automation/data/image-audit.json scripts/automation/data/cwv-history.json scripts/automation/data/cwv-changes.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
+          [ -f scripts/automation/ab-results.json ] && git add scripts/automation/ab-results.json
+          git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
+          git stash push -u -m "actions-pre-rebase" || true
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git rebase -X theirs "origin/$BRANCH" || { echo "::warning::rebase failed ($i/5)"; git rebase --abort || true; sleep 10; continue; }
+            if git push origin "HEAD:$BRANCH"; then push_ok=1; break; fi
+            echo "::warning::git push failed ($i/5), sleep 20s"; sleep 20
+          done
+          [ "$push_ok" = "1" ] || { echo "::error::git push failed after 5 attempts"; exit 1; }
+
+      # ── 9. FTPS sessions fragmentées (même logique que daily-copernicus)
+      - name: Deploy FTPS Martinique + Guadeloupe
+        continue-on-error: true
+        env:
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+        run: node scripts/manual-ftp-deploy.cjs
+
+  # ── Notify on failure ──────────────────────────────────
+  notify-failure:
+    needs: seo-automation
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send failure alert email
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          WORKFLOW_NAME: 'Weekly SEO Automation'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs

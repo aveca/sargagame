@@ -1,0 +1,33 @@
+---
+description: Démarrage session Sargasses — reprend les checks CLAUDE.md + mémoire (équivalent anciens crons session)
+alwaysApply: true
+---
+
+# Session startup (Cursor)
+
+Au **premier message utile** d’une session dans ce dépôt (ou quand l’utilisateur parle du projet / statut / déploiement), **exécuter sans demander confirmation** :
+
+```bash
+npm run session
+```
+
+(équivalent : `node scripts/cursor-session-startup.cjs`)
+
+Puis **lire** si présents (chemins Windows typiques) :
+
+- `%USERPROFILE%\.claude\projects\C--Users-user-Desktop-Backup-sargagame\memory\MEMORY.md`
+- `project_roadmap.md`, `project_metrics.md`, `project_next_session.md` dans le même dossier `memory/`
+
+**Résumer en 5 lignes max** : pipeline (OK/STALE), dernière ligne métriques, dernier run gh si visible, mémoire lue ou absente, action STALE si déclenchée.
+
+Si `gh` n’est pas disponible, ne pas bloquer — le script l’indique.
+
+## « Anciens crons Claude » vs réalité
+
+Les tâches planifiées **data / build / deploy** sont **GitHub Actions** (repo `aveca/sargagame`) : `daily-copernicus`, `weekly-seo-automation`, `content-generation`, etc. **Ne pas recréer de crons locaux** pour ça.
+
+Les entrées type `sargasses-ab-evaluate` dans la mémoire projet étaient des **objectifs / chantiers**, pas des services installés. En Cursor : appliquer le **skill / doc sargasses** et les scripts du repo quand l’utilisateur demande une action concrète.
+
+## Déploiement
+
+Après build réussi en local : enchaîner FTP si les variables d’environnement le permettent (`npm run ftp-deploy`), conformément à la mémoire projet — sans demander validation pour un déploiement de secours si le workflow CI a échoué.

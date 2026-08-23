@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Paywall — Continuité du monde SVG (Le Veilleur Premium)</title>
+<!--
+  DIRECTION : CONTINUITÉ MONDE SVG.
+  Le paywall PROLONGE l'univers de la carte — même mer golden-hour, même langage comic
+  (contours encre, aplats, halftone BD, ombres portées), même Veilleur.
+  On vend LA PRÉVISION en la MONTRANT : le bloc-héros est un aperçu réel du calendrier
+  7 jours (AUJ + DEM lisibles, J+2…J+6 verrouillés) + une courbe golden-hour stylisée.
+  TOUTE la structure de conversion est conservée (2 plans, CTA, 3 rassurances, garantie,
+  liens secondaires, footer). Au port : le CTA appelle startCheckout(plan,"world") inchangé.
+  Palette = tokens sg-design-system exacts. Fonts = Anton (titres) + Bricolage Grotesque (UI).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+  --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --ink:#0D0D0D; --mid:#686868;
+  /* scène golden-hour (tokens scène) */
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --seaT:#1A5852; --seaB:#08251F; --sun:#FFD884; --sand:#1C1712;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:#0c1a22;display:flex;justify-content:center;min-height:100vh;
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink)}
+.anton{font-family:"Anton",Impact,"Arial Narrow",sans-serif;font-weight:400;
+  text-transform:uppercase;letter-spacing:-.02em}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ================= SHELL ================= */
+.pw{position:relative;width:100%;max-width:380px;min-height:100vh;overflow:hidden;
+  background:var(--bg);
+  /* halftone BD très léger sur le papier chaud */
+  background-image:
+    radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 0 0/7px 7px,
+    radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 3.5px 3.5px/7px 7px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.5);}
+.pw-x{position:absolute;top:13px;right:13px;z-index:9;width:40px;height:40px;border-radius:50%;
+  border:2.5px solid var(--ink);background:var(--goldL);color:var(--ink);font-size:16px;font-weight:800;
+  cursor:pointer;box-shadow:2px 2px 0 var(--ink);line-height:1}
+.pw-x:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
+
+/* ================= HERO : la MER continue de la carte ================= */
+.hero{position:relative;height:150px;border-bottom:3px solid var(--ink);overflow:hidden}
+.hero .scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.eyebrow{position:absolute;left:12px;top:12px;z-index:4;
+  font-size:10px;letter-spacing:1.3px;padding:4px 9px;border-radius:6px;
+  color:var(--ink);background:var(--goldL);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.season{position:absolute;right:12px;top:14px;z-index:4;font-size:9.5px;font-weight:800;color:#fff;
+  background:rgba(13,13,13,.62);border:1.5px solid rgba(255,255,255,.85);border-radius:20px;padding:3px 9px;letter-spacing:.3px}
+.veil{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);z-index:3;
+  filter:drop-shadow(2px 3px 0 rgba(13,13,13,.45))}
+.veil .breathe{animation:breathe 6s ease-in-out infinite;transform-origin:60px 70px}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+/* bulle BD COMPACTE du Veilleur (il parle de l'offre, regarde la mer — pas l'user) */
+.vbubble{position:absolute;right:10px;top:33px;z-index:5;max-width:148px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:14px;
+  padding:7px 10px;font-size:11px;font-weight:700;line-height:1.28;color:var(--ink);
+  box-shadow:3px 3px 0 rgba(13,13,13,.9)}
+.vbubble b{color:var(--coral)}
+.vbubble:after{ /* queue de bulle pointée vers le Veilleur (bas-gauche, vers la mer/satellite) */
+  content:"";position:absolute;left:24px;bottom:-12px;width:16px;height:13px;
+  background:#fff;border-left:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);
+  transform:skewX(-18deg)}
+
+/* ================= BODY ================= */
+.body{position:relative;z-index:1;padding:15px 17px 16px}
+.title{font-size:30px;line-height:.96;margin:2px 0 8px;color:var(--ink);
+  text-shadow:2px 2px 0 var(--goldLL)}
+/* mot accentué (corail) = DOUBLE ombre poster : goldL puis ink, impact « affiche » */
+.title em{font-style:normal;color:var(--coral);text-shadow:2px 2px 0 var(--goldLL),4px 4px 0 var(--ink)}
+.sub{font-size:13px;font-weight:600;color:#1c2c2c;margin:0 0 13px;line-height:1.32}
+.sub b{color:var(--ink)}
+
+/* ====== APERÇU PRÉVISION 7 JOURS = on vend la prévision en la montrant ====== */
+.fcast{position:relative;border:2.5px solid var(--ink);border-radius:16px;overflow:hidden;
+  box-shadow:4px 4px 0 var(--ink);background:#fff;margin-bottom:13px}
+.fcast-top{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;background:linear-gradient(180deg,#10343a,#0c272b);border-bottom:2.5px solid var(--ink)}
+.fcast-top .ttl{font-size:11px;letter-spacing:.6px;color:#fff}
+.fcast-top .loc{font-size:10px;font-weight:800;color:var(--goldL)}
+/* courbe golden-hour stylisée derrière les jours */
+.fcast-curve{position:absolute;left:0;right:0;top:40px;height:50px;z-index:0;pointer-events:none}
+.days{position:relative;z-index:1;display:grid;grid-template-columns:repeat(7,1fr);gap:0;
+  padding:9px 4px 10px}
+.day{text-align:center;position:relative}
+.day .dn{font-size:8.5px;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:.1px}
+.day .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);margin:6px auto 4px;
+  box-shadow:1.5px 1.5px 0 rgba(13,13,13,.22)}
+.day .vd{font-size:7.5px;font-weight:800;color:var(--ink);line-height:1}
+.dot.ok{background:var(--green)} .dot.mod{background:var(--goldL)} .dot.bad{background:var(--coral)}
+/* jours verrouillés = grisés + cadenas, donne envie */
+.day.lock{filter:saturate(.22);opacity:.92}
+.day.lock .dot{background:repeating-linear-gradient(45deg,#cfcabb,#cfcabb 3px,#e4e0d4 3px,#e4e0d4 6px)}
+.day.lock .vd{font-size:8.5px;display:flex;justify-content:center}
+.day.lock .vd svg{width:9px;height:9px;display:block;color:#9a9484}
+/* séparateur encre entre le révélé (Auj/Dem) et le verrouillé */
+.lockdiv{position:absolute;z-index:2;top:38px;bottom:9px;left:calc(2/7*100%);
+  border-left:2.5px dashed var(--ink);opacity:.7;pointer-events:none}
+/* bandeau d'invite SOUS la grille, pleine largeur, lisible */
+.lockcta{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:7px 10px;background:linear-gradient(180deg,var(--goldLL),var(--goldL));
+  border-top:2.5px solid var(--ink)}
+.lockcta .lk{width:13px;height:13px;display:block;color:var(--ink)}
+.lockcta b{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.2px}
+
+/* ====== 3 bénéfices = mini-cases BD ====== */
+.perks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.perk{display:flex;align-items:center;gap:10px;background:#fff;
+  border:2.5px solid var(--ink);border-radius:13px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
+.perk .pic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:2.5px solid var(--ink);
+  display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+.perk .pic svg{width:19px;height:19px;display:block}
+.perk.a .pic{background:var(--goldLL)} .perk.b .pic{background:var(--tealL)} .perk.c .pic{background:#ffd0c2}
+.perk b{display:block;font-size:13px;font-weight:800;color:var(--ink);line-height:1.15}
+.perk em{display:block;font-style:normal;font-size:11px;font-weight:600;color:var(--mid);margin-top:1px;line-height:1.25}
+
+.proof{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 15px;
+  font-size:11px;font-weight:700;color:#1c2c2c}
+.proof .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+/* ================= PLANS ================= */
+.plans{display:flex;gap:9px;margin-bottom:12px}
+.plan{flex:1;border:2.5px solid var(--ink);border-radius:13px;padding:13px 9px 11px;cursor:pointer;position:relative;
+  text-align:center;background:#fff;box-shadow:2px 2px 0 var(--ink);transition:transform .09s,box-shadow .09s,background .12s}
+.plan:active{transform:translate(1px,1px)}
+.plan.on{background:linear-gradient(180deg,var(--goldLL),var(--goldL));box-shadow:0 4px 0 var(--ink)}
+.plan .pn{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink)}
+.plan .pr{display:block;margin-top:3px;font-size:21px;line-height:1}
+.plan .pr small{font-size:11px;font-weight:600;letter-spacing:0}
+.plan .eq{display:block;font-size:9.5px;font-weight:800;color:#8a6a12;margin-top:3px}
+.plan.on .eq{color:#7a5a06}
+.plan .none{display:block;font-size:9.5px;font-weight:700;color:transparent;margin-top:3px;user-select:none}
+/* badge −33% = ÉTOILE-TAMPON « slam » comic corail, piquée sur l'annuel, inclinée -14° */
+.slam{position:absolute;top:-15px;right:-13px;z-index:5;width:50px;height:50px;
+  display:grid;place-items:center;transform:rotate(-14deg);pointer-events:none}
+.slam svg{position:absolute;inset:0;width:100%;height:100%}
+.slam span{position:relative;font-family:"Anton",Impact,sans-serif;font-size:14px;color:#fff;
+  line-height:.9;text-align:center;text-shadow:1.5px 1.5px 0 rgba(0,0,0,.35);letter-spacing:.2px}
+/* pastille CHECK ronde sur le plan SÉLECTIONNÉ (lève toute ambiguïté sur le plan au checkout) */
+.plan .selck{position:absolute;top:7px;left:7px;width:19px;height:19px;border-radius:50%;
+  border:2.5px solid var(--ink);background:var(--goldL);display:grid;place-items:center;
+  box-shadow:1.5px 1.5px 0 var(--ink);opacity:0;transform:scale(.55);transition:opacity .12s,transform .12s}
+.plan .selck svg{width:11px;height:11px;display:block}
+.plan.on .selck{opacity:1;transform:scale(1)}
+
+/* ================= CTA ================= */
+.cta{display:block;width:100%;border:3px solid var(--ink);border-radius:15px;padding:14px 16px 13px;cursor:pointer;
+  background:linear-gradient(180deg,var(--goldLL) 0%,var(--goldL) 55%,var(--gold) 100%);color:var(--ink);
+  box-shadow:0 6px 0 var(--ink),0 13px 22px rgba(13,13,13,.34);transition:transform .08s,box-shadow .08s}
+.cta:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink),0 4px 10px rgba(13,13,13,.3)}
+.cta .big{display:block;font-size:18px;line-height:1.02}
+.cta .s1{display:block;font-size:12px;font-weight:800;margin-top:5px}
+.cta .s2{display:block;font-size:10.5px;font-weight:700;color:#6a5208;margin-top:1px}
+
+/* trust row */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
+.tcell{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:8px 5px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+.tcell .ic{width:20px;height:20px;margin:0 auto;display:block}
+.tcell b{display:block;font-size:10px;font-weight:800;color:var(--ink);margin-top:3px}
+.tcell em{display:block;font-style:normal;font-size:8.5px;font-weight:700;color:var(--mid);line-height:1.2;margin-top:1px}
+
+/* garantie */
+.guar{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:13px;
+  background:rgba(34,197,94,.13);border:2.5px solid var(--green);box-shadow:3px 3px 0 var(--ink)}
+.guar .gic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--green);
+  border:2.5px solid var(--ink);display:grid;place-items:center;box-shadow:1.5px 1.5px 0 var(--ink)}
+.guar .gic svg{width:18px;height:18px;display:block}
+.guar b{display:block;font-size:12px;font-weight:800;color:var(--ink)}
+.guar em{display:block;font-style:normal;font-size:10.5px;font-weight:600;color:#1f5132;margin-top:1px;line-height:1.3}
+
+/* liens secondaires */
+.links{display:flex;flex-direction:column;align-items:center;gap:9px;margin-top:14px}
+.link{background:none;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:800;
+  color:#16323a;text-decoration:underline;text-underline-offset:2px}
+.link.b2b{color:var(--teal)}
+.secure{display:flex;align-items:center;justify-content:center;gap:5px;
+  text-align:center;font-size:9.5px;font-weight:700;color:var(--mid);margin-top:13px;letter-spacing:.2px}
+.secure svg{width:11px;height:11px;display:block}
+
+@media (prefers-reduced-motion:reduce){
+  .veil .breathe{animation:none}.proof .pulse{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="pw" id="pw">
+  <button class="pw-x" aria-label="Fermer">✕</button>
+
+  <!-- ===== HERO : la même mer golden-hour que la carte ===== -->
+  <div class="hero">
+    <svg class="scene" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
+          <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFE9B0"/><stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="380" height="150" fill="url(#sky)"/>
+      <!-- soleil bas golden-hour -->
+      <circle cx="276" cy="86" r="58" fill="url(#glow)"/>
+      <circle cx="276" cy="86" r="27" fill="#FFE08A"/>
+      <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" stroke-width="2.5"/>
+      <!-- rais de lumière BD -->
+      <g stroke="#FFF" stroke-opacity=".22" stroke-width="2">
+        <line x1="20" y1="30" x2="118" y2="24"/><line x1="14" y1="48" x2="92" y2="44"/>
+        <line x1="22" y1="66" x2="80" y2="64"/>
+      </g>
+      <!-- mer -->
+      <path d="M0 100 H380 V150 H0 Z" fill="url(#sea)"/>
+      <path d="M0 100 Q95 90 190 100 t190 0 V118 H0 Z" fill="#0F3D39" opacity=".7"/>
+      <!-- reflet soleil sur l'eau -->
+      <g fill="#FFD884" opacity=".8">
+        <rect x="266" y="104" width="20" height="3" rx="1.5"/>
+        <rect x="262" y="112" width="28" height="3" rx="1.5"/>
+        <rect x="258" y="121" width="36" height="3.5" rx="1.5"/>
+        <rect x="252" y="131" width="48" height="4" rx="2"/>
+      </g>
+      <!-- liseré encre horizon -->
+      <path d="M0 100 H380" stroke="#0D0D0D" stroke-width="2" opacity=".55"/>
+      <!-- yole ronde (vie + échelle + âme, iconique MQ) -->
+      <g transform="translate(70,112)">
+        <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#E8522A" stroke="#0D0D0D" stroke-width="2"/>
+        <path d="M-13 0 H13" stroke="#0D0D0D" stroke-width="1.5"/>
+        <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" stroke-width="2"/>
+        <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" stroke-width="1.6"/>
+      </g>
+    </svg>
+
+    <span class="eyebrow anton">Le Veilleur · Premium</span>
+    <span class="season">La saison est là</span>
+
+    <!-- bulle BD compacte : le Veilleur parle de l'offre (regard vers la mer, jamais l'user) -->
+    <div class="vbubble">Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</div>
+
+    <!-- Le Veilleur (satellite) qui veille la MER, présente l'offre -->
+    <span class="veil">
+      <svg viewBox="0 0 120 90" width="78" height="58" aria-hidden="true">
+        <g class="breathe">
+          <!-- panneaux solaires -->
+          <g stroke="#0D0D0D" stroke-width="2.5">
+            <rect x="6" y="44" width="19" height="20" rx="2" fill="#1EC8B0"/>
+            <rect x="95" y="44" width="19" height="20" rx="2" fill="#1EC8B0"/>
+            <line x1="15.5" y1="44" x2="15.5" y2="64"/><line x1="104.5" y1="44" x2="104.5" y2="64"/>
+            <line x1="25" y1="54" x2="38" y2="54"/><line x1="95" y1="54" x2="82" y2="54"/>
+          </g>
+          <!-- corps satellite crème -->
+          <circle cx="60" cy="56" r="30" fill="#FDFCF7" stroke="#0D0D0D" stroke-width="3"/>
+          <!-- antenne -->
+          <line x1="60" y1="26" x2="60" y2="13" stroke="#0D0D0D" stroke-width="3"/>
+          <circle cx="60" cy="10" r="5" fill="#FFC72C" stroke="#0D0D0D" stroke-width="2.5"/>
+          <!-- œil ami mi-clos, regard vers la MER (vers le bas-droite), ne fixe pas l'user -->
+          <path d="M44 52 Q60 44 76 52" fill="none" stroke="#0D0D0D" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="62" cy="58" rx="13" ry="9" fill="#0D0D0D"/>
+          <ellipse cx="62" cy="58" rx="13" ry="9" fill="none"/>
+          <circle cx="64" cy="58" r="5.5" fill="#FFC72C"/>
+          <circle cx="65.5" cy="56.5" r="1.8" fill="#fff"/>
+          <!-- paupière mi-close (serein) -->
+          <path d="M49 52 Q62 49 75 53" fill="#FDFCF7"/>
+          <path d="M49 52 Q62 49 75 53" fill="none" stroke="#0D0D0D" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- petit sourire -->
+          <path d="M52 72 Q60 78 68 72" fill="none" stroke="#0D0D0D" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- faisceau de veille DOUX vers la mer (caring, pas un scan) -->
+          <path d="M74 64 L104 86 L84 88 Z" fill="#FFD884" opacity=".5"/>
+        </g>
+      </svg>
+    </span>
+  </div>
+
+  <!-- ===== BODY ===== -->
+  <div class="body">
+    <h2 class="title anton">Vois ta plage<br><em>7 jours d'avance</em></h2>
+    <p class="sub">Le gratuit te dit <b>aujourd'hui</b>. Le Veilleur te montre toute ta semaine — et t'alerte le jour où ça bascule.</p>
+
+    <!-- APERÇU PRÉVISION 7 JOURS : on VEND la prévision en la MONTRANT -->
+    <div class="fcast" aria-label="Aperçu de la prévision 7 jours">
+      <div class="fcast-top">
+        <span class="ttl anton">Ta prévision · 7 jours</span>
+        <span class="loc">Anse Dufour</span>
+      </div>
+      <!-- courbe golden-hour stylisée (le « risque sargasses » sur la semaine) -->
+      <svg class="fcast-curve" viewBox="0 0 340 64" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="cv" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#22C55E"/><stop offset=".34" stop-color="#22C55E"/>
+            <stop offset=".5" stop-color="#FFC72C"/><stop offset=".72" stop-color="#E8522A"/>
+            <stop offset="1" stop-color="#FFC72C"/>
+          </linearGradient>
+          <linearGradient id="cvf" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFD884" stop-opacity=".34"/>
+            <stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0 44 C40 42 60 40 97 40 C140 39 150 24 194 22 C235 20 250 8 292 14 C320 18 330 26 340 30 L340 64 L0 64 Z" fill="url(#cvf)"/>
+        <path d="M0 44 C40 42 60 40 97 40 C140 39 150 24 194 22 C235 20 250 8 292 14 C320 18 330 26 340 30"
+          fill="none" stroke="url(#cv)" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <div class="days">
+        <span class="lockdiv"></span>
+        <div class="day"><span class="dn">Auj</span><span class="dot ok"></span><span class="vd">Net</span></div>
+        <div class="day"><span class="dn">Dem</span><span class="dot ok"></span><span class="vd">Net</span></div>
+        <div class="day lock"><span class="dn">Mer</span><span class="dot mod"></span><span class="vd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+        <div class="day lock"><span class="dn">Jeu</span><span class="dot bad"></span><span class="vd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+        <div class="day lock"><span class="dn">Ven</span><span class="dot bad"></span><span class="vd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+        <div class="day lock"><span class="dn">Sam</span><span class="dot mod"></span><span class="vd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+        <div class="day lock"><span class="dn">Dim</span><span class="dot ok"></span><span class="vd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+      </div>
+      <div class="lockcta"><span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><b>Débloque les 5 jours suivants</b></div>
+    </div>
+
+    <!-- 3 bénéfices = le veilleur personnel -->
+    <div class="perks">
+      <div class="perk a">
+        <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M12 2 9.5 4.5M12 2l2.5 2.5"/><path d="M2 18h2M20 18h2M4.5 11.5 6 13M19.5 11.5 18 13M1 22h22"/></svg></span>
+        <span><b>Ton brief chaque matin · 7h</b><em>Ta meilleure plage du jour, prête avant ton café.</em></span>
+      </div>
+      <div class="perk b">
+        <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+        <span><b>Alerte le jour où ça bascule</b><em>Ta plage favorite change ? Tu le sais avant d'y aller.</em></span>
+      </div>
+      <div class="perk c">
+        <span class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/><path d="M7.5 14h3M13.5 14h3M7.5 18h3"/></svg></span>
+        <span><b>Toute ta semaine, plage par plage</b><em>Cale ton weekend sur 7 jours vérifiés satellite.</em></span>
+      </div>
+    </div>
+
+    <div class="proof"><span class="pulse"></span>14/18 plages propres en ce moment · satellite vérifié 4×/jour</div>
+
+    <!-- ===== PLANS ===== -->
+    <div class="plans">
+      <div class="plan" id="planMo" onclick="selPlan('mo')">
+        <span class="selck" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span class="pn">Mensuel</span>
+        <span class="pr anton">4,99 €<small>/mois</small></span>
+        <span class="none">—</span>
+      </div>
+      <div class="plan on" id="planYr" onclick="selPlan('yr')">
+        <span class="slam" aria-hidden="true">
+          <svg viewBox="0 0 50 50"><path d="M25 1 L31 9 L41 6 L40 17 L49 22 L42 30 L47 40 L36 40 L31 49 L25 42 L19 49 L14 40 L3 40 L8 30 L1 22 L10 17 L9 6 L19 9 Z" fill="#E8522A" stroke="#0D0D0D" stroke-width="2.5" stroke-linejoin="round"/></svg>
+          <span>−33%</span>
+        </span>
+        <span class="selck" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span class="pn">Annuel</span>
+        <span class="pr anton">39,99 €<small>/an</small></span>
+        <span class="eq">soit 3,33 €/mois</span>
+      </div>
+    </div>
+
+    <!-- ===== CTA : on vend LA PRÉVISION ===== -->
+    <button class="cta">
+      <span class="big anton">Je veux la prévision →</span>
+      <span class="s1" id="ctaS1">39,99 €/an · annulable en 2 clics</span>
+      <span class="s2" id="ctaS2">soit 0,11 €/jour · moins qu'un café</span>
+    </button>
+
+    <!-- 3 rassurances -->
+    <div class="trust">
+      <div class="tcell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>Stripe</b><em>Paiement sécurisé</em></div>
+      <div class="tcell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>30 jours</b><em>Satisfait ou remboursé</em></div>
+      <div class="tcell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>2 clics</b><em>Annule quand tu veux</em></div>
+    </div>
+
+    <!-- garantie -->
+    <div class="guar">
+      <span class="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <span><b>Garantie 30 jours satisfait ou remboursé</b><em>Pas convaincu ? Un email, remboursé — sans condition.</em></span>
+    </div>
+
+    <!-- liens secondaires -->
+    <div class="links">
+      <button class="link">J'ai déjà un abonnement</button>
+      <button class="link b2b">Hôtel ou collectivité ? →</button>
+    </div>
+
+    <div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Paiement sécurisé Stripe · Sans engagement</div>
+  </div>
+</div>
+
+<script>
+/* toggle de plan — classList + textContent uniquement (zéro innerHTML, parité avec le port React) */
+function selPlan(p){
+  var mo=p==="mo";
+  document.getElementById("planMo").classList.toggle("on",mo);
+  document.getElementById("planYr").classList.toggle("on",!mo);
+  document.getElementById("ctaS1").textContent = mo
+    ? "4,99 €/mois · annulable en 2 clics"
+    : "39,99 €/an · annulable en 2 clics";
+  document.getElementById("ctaS2").textContent = mo
+    ? "résilie quand tu veux · sans engagement"
+    : "soit 0,11 €/jour · moins qu'un café";
+}
+</script>
+</body>
+</html>

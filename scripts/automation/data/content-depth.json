@@ -1,0 +1,345 @@
+{
+  "generatedAt": "2026-08-10T12:10:01.836Z",
+  "sites": {
+    "mq": {
+      "pageCount": 366,
+      "medianWords": 41,
+      "thinCount": 212,
+      "richCount": 80,
+      "thinPages": [
+        {
+          "url": "/en/best-beaches-martinique/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-no-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/en/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-alerts/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-map/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-season/",
+          "words": 0
+        },
+        {
+          "url": "/en/satellite-sargassum-detection/",
+          "words": 0
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/es/alertas-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/",
+          "words": 0
+        },
+        {
+          "url": "/es/mapa-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/mejores-playas-sin-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/veille/",
+          "words": 0
+        },
+        {
+          "url": "/veilleur/",
+          "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 1
+        },
+        {
+          "url": "/google22dbf19e7b743f5a.html",
+          "words": 2
+        },
+        {
+          "url": "/googlead132357ff9b38c4.html",
+          "words": 2
+        },
+        {
+          "url": "/jeu/",
+          "words": 5
+        },
+        {
+          "url": "/widget/embed/saint-felix/",
+          "words": 8
+        },
+        {
+          "url": "/widget/embed/anse-a-l-ane/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-a-l-eau/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-a-sable/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-belleville/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-bertrand-nord/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-bonneville/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-cafard/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-caritan/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-champagne/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-charpentier/",
+          "words": 9
+        }
+      ],
+      "topPages": [
+        {
+          "url": "/themes-lab/neon.html",
+          "words": 2124
+        },
+        {
+          "url": "/themes-lab/arena.html",
+          "words": 1986
+        },
+        {
+          "url": "/themes-lab/arena-v2.html",
+          "words": 1900
+        },
+        {
+          "url": "/themes-lab/arena-app.html",
+          "words": 1894
+        },
+        {
+          "url": "/plages/grande-anse-d-arlet/",
+          "words": 1849
+        },
+        {
+          "url": "/plages/plage-du-marin/",
+          "words": 1839
+        },
+        {
+          "url": "/plages/plage-du-bourg-sainte-anne/",
+          "words": 1834
+        },
+        {
+          "url": "/plages/anse-corps-de-garde/",
+          "words": 1825
+        },
+        {
+          "url": "/plages/anse-mitan/",
+          "words": 1824
+        },
+        {
+          "url": "/plages/grande-anse-du-carbet/",
+          "words": 1817
+        }
+      ]
+    },
+    "gp": {
+      "pageCount": 405,
+      "medianWords": 195,
+      "thinCount": 212,
+      "richCount": 111,
+      "thinPages": [
+        {
+          "url": "/en/best-beaches-guadeloupe/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-no-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/en/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-alerts/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-map/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-season/",
+          "words": 0
+        },
+        {
+          "url": "/en/satellite-sargassum-detection/",
+          "words": 0
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/es/alertas-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/",
+          "words": 0
+        },
+        {
+          "url": "/es/mapa-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/mejores-playas-sin-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/veille/",
+          "words": 0
+        },
+        {
+          "url": "/veilleur/",
+          "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 1
+        },
+        {
+          "url": "/google22dbf19e7b743f5a.html",
+          "words": 2
+        },
+        {
+          "url": "/googlead132357ff9b38c4.html",
+          "words": 2
+        },
+        {
+          "url": "/jeu/",
+          "words": 5
+        },
+        {
+          "url": "/widget/embed/saint-felix/",
+          "words": 8
+        },
+        {
+          "url": "/widget/embed/anse-a-l-ane/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-a-l-eau/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-a-sable/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-belleville/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-bertrand-nord/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-bonneville/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-cafard/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-caritan/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-champagne/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-charpentier/",
+          "words": 9
+        }
+      ],
+      "topPages": [
+        {
+          "url": "/themes-lab/neon.html",
+          "words": 2124
+        },
+        {
+          "url": "/themes-lab/arena.html",
+          "words": 1986
+        },
+        {
+          "url": "/themes-lab/arena-v2.html",
+          "words": 1900
+        },
+        {
+          "url": "/themes-lab/arena-app.html",
+          "words": 1894
+        },
+        {
+          "url": "/plages/plage-de-grande-anse/",
+          "words": 1888
+        },
+        {
+          "url": "/plages/plage-de-la-caravelle/",
+          "words": 1876
+        },
+        {
+          "url": "/plages/plage-de-deshaies/",
+          "words": 1853
+        },
+        {
+          "url": "/plages/plage-de-malendure/",
+          "words": 1847
+        },
+        {
+          "url": "/plages/plage-de-la-desirade-sud/",
+          "words": 1840
+        },
+        {
+          "url": "/plages/plage-du-gosier/",
+          "words": 1839
+        }
+      ]
+    }
+  }
+}

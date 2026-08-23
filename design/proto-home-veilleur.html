@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le Veilleur — home juicy (proto)</title>
+<!--
+  PROTO home "Le tampon qui claque" (jury home-page-juicy-hero 2026-07-03).
+  Verdict HONNETE = un tampon BD qui CLAQUE (squash-&-stretch), TOUJOURS au-dessus de l'ambiance.
+  Scene SVG golden-hour = illustration (jamais lue comme mesure). Grille "Le Veilleur veille chaque
+  crique" = reveal staggere facon Higgsfield, mais notre data. 100% CSS transform + JS de classes
+  minimal (0 lib), reduced-motion = plancher, responsive any-device. Data = ILLUSTRATIVE (mockup) ;
+  le port app lira le live (verdict ERDDAP, updatedAt). ZERO IA, ZERO credit.
+-->
+<style>
+  :root{
+    --gold:#FFC72C; --goldL:#FFE47A; --ink:#0D0D0D; --paper:#FDFCF7;
+    --teal:#009E8E; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --disp:Anton,Impact,Haettenschweiler,"Arial Narrow",system-ui,sans-serif;
+    --body:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--body);color:var(--ink);background:#08251F;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;background:var(--paper);min-height:100vh;overflow:hidden;position:relative}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;height:min(86vh,720px);overflow:hidden;border-bottom:3px solid var(--ink)}
+  .hero svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .chip{position:absolute;z-index:6;display:inline-flex;align-items:center;gap:6px;
+    font:800 12px/1 var(--body);letter-spacing:.02em;color:var(--ink);background:var(--goldL);
+    border:2px solid var(--ink);border-radius:999px;padding:7px 11px;box-shadow:2px 2px 0 var(--ink);
+    text-decoration:none;min-height:34px}
+  .chip.live{top:14px;left:14px;background:#0d1117;color:var(--goldL);border-color:#0d1117}
+  .chip.live .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.3)}
+  .chip.film{top:14px;right:14px}
+  .chip:active{transform:scale(.96)}
+
+  /* le TAMPON — le verdict, heros absolu, AU-DESSUS de l'ambiance */
+  .stamp{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) rotate(-3.5deg);
+    z-index:5;text-align:center;transform-origin:center bottom;cursor:pointer;
+    background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:14px 22px 12px;
+    box-shadow:5px 6px 0 var(--ink);will-change:transform}
+  .stamp .verdict{font:400 clamp(30px,10vw,52px)/.9 var(--disp);letter-spacing:.01em;text-transform:uppercase;color:var(--green)}
+  .stamp.s-moderate .verdict{color:var(--amber)} .stamp.s-avoid .verdict{color:var(--coral)}
+  .stamp .beach{margin-top:8px;font:700 13px/1.2 var(--mono);color:var(--ink);letter-spacing:.01em}
+  .stamp .beach b{color:#111;background:var(--goldL);padding:1px 6px;border-radius:5px}
+  .stamp.land{animation:tampon-land .72s cubic-bezier(.22,1.4,.36,1) both}
+  .stamp.squish{animation:tampon-squish .38s cubic-bezier(.22,1.4,.36,1)}
+  @keyframes tampon-land{
+    0%{transform:translate(-50%,-140%) rotate(-3.5deg) scale(.6);opacity:0}
+    60%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(1.14,.82);opacity:1}
+    78%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(.94,1.08)}
+    100%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(1)}
+  }
+  @keyframes tampon-squish{
+    0%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(1)}
+    45%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(.9,1.12)}
+    100%{transform:translate(-50%,-50%) rotate(-3.5deg) scale(1)}
+  }
+
+  /* preuve + source (le moat, sous le tampon) */
+  .proof{position:absolute;left:0;right:0;bottom:0;z-index:5;padding:16px 18px 18px;
+    background:linear-gradient(0deg,rgba(6,20,16,.92),rgba(6,20,16,.55) 60%,transparent);color:#fff}
+  .proof .src{font:700 11px/1.4 var(--mono);color:var(--goldL);letter-spacing:.02em}
+  .proof .say{margin:6px 0 0;font:700 clamp(14px,4.2vw,17px)/1.35 var(--body);color:#fff}
+  .cta{display:block;margin:14px 0 0;text-align:center;text-decoration:none;
+    font:800 clamp(15px,4.6vw,18px)/1 var(--body);color:var(--ink);background:var(--gold);
+    border:3px solid var(--ink);border-radius:14px;padding:15px;box-shadow:4px 5px 0 var(--ink);min-height:52px}
+  .cta:active{transform:scale(.985)}
+  .cta small{display:block;margin-top:5px;font:700 11px/1 var(--mono);opacity:.75}
+
+  /* ---------- GRILLE "Le Veilleur veille chaque crique" ---------- */
+  .grid-sec{padding:26px 16px 10px}
+  .kicker{font:700 12px/1 var(--mono);color:var(--teal);letter-spacing:.08em;text-transform:uppercase}
+  .h2{margin:8px 0 4px;font:400 clamp(24px,7vw,34px)/.98 var(--disp);text-transform:uppercase;letter-spacing:.01em}
+  .sub{margin:0 0 16px;font:500 14px/1.45 var(--body);color:#5A5A5A}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;background:#0b3b38;
+    box-shadow:3px 3px 0 var(--ink);opacity:0;transform:translateY(26px) scale(.96);
+    transition:transform .5s cubic-bezier(.22,1.4,.36,1),opacity .4s ease;cursor:pointer}
+  .card.in{opacity:1;transform:translateY(0) scale(1)}
+  .card:active{transform:scale(.96)}
+  .card svg{display:block;width:100%;height:96px}
+  .card .lab{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;background:var(--paper)}
+  .card .nm{font:800 13px/1.1 var(--body);color:var(--ink)}
+  .card .pill{font:800 10px/1 var(--mono);padding:4px 7px;border-radius:999px;border:2px solid var(--ink)}
+  .pill.s-clean{background:var(--green);color:#06210f} .pill.s-moderate{background:var(--amber);color:#fff} .pill.s-avoid{background:var(--coral);color:#fff}
+
+  /* ---------- storytelling ---------- */
+  .story{padding:24px 16px 8px}
+  .beat{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:2px dashed rgba(13,13,13,.14)}
+  .beat:first-child{border-top:0}
+  .beat .n{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--goldL);
+    font:400 18px/34px var(--disp);text-align:center}
+  .beat p{margin:0;font:500 14.5px/1.42 var(--body);color:#222}
+  .beat p b{color:var(--ink)}
+  .honest{margin:10px 0 0;font:700 13px/1.4 var(--body)}
+  .honest a{color:var(--teal)}
+
+  /* ---------- offer ---------- */
+  .offer{margin:20px 16px 30px;padding:20px;border:3px solid var(--ink);border-radius:18px;
+    background:#0d1117;color:#fff;box-shadow:6px 7px 0 var(--gold);text-align:center}
+  .offer .big{font:400 clamp(20px,6vw,28px)/1.05 var(--disp);text-transform:uppercase;color:var(--goldL)}
+  .offer .price{margin:8px 0 2px;font:800 15px/1 var(--mono);color:#fff}
+  .offer .sig{margin:12px 0 0;font:600 12px/1.4 var(--body);color:rgba(255,255,255,.7)}
+
+  @media (prefers-reduced-motion:reduce){
+    .stamp.land,.stamp.squish{animation:none!important}
+    .card{opacity:1!important;transform:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <!-- ILLUSTRATION golden-hour (scene, jamais lue comme mesure) -->
+    <svg class="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
+          <stop offset=".72" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFF3CE"/><stop offset=".5" stop-color="#FFD884"/>
+          <stop offset="1" stop-color="#FFD884" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="800" height="600" fill="url(#sky)"/>
+      <circle cx="410" cy="250" r="150" fill="url(#sun)"/>
+      <g opacity=".16" fill="#FFF3CE">
+        <path d="M410 250 L360 60 L470 60 Z"/><path d="M410 250 L560 110 L640 200 Z"/>
+        <path d="M410 250 L260 110 L180 200 Z"/><path d="M410 250 L620 300 L640 360 Z"/>
+        <path d="M410 250 L200 300 L180 360 Z"/>
+      </g>
+      <circle cx="410" cy="292" r="46" fill="#FFF1C4"/>
+      <rect y="316" width="800" height="200" fill="url(#sea)"/>
+      <g fill="#FFD884"><rect x="386" y="330" width="48" height="4" rx="2" opacity=".8"/>
+        <rect x="378" y="348" width="64" height="4" rx="2" opacity=".55"/>
+        <rect x="392" y="368" width="40" height="4" rx="2" opacity=".4"/></g>
+      <path d="M0 452 Q120 436 240 448 Q360 460 470 446 L500 486 Q300 498 120 492 Q50 490 0 496 Z" fill="#3a3f22" opacity=".9"/>
+      <path d="M0 470 Q140 458 280 470 Q380 478 480 468 L480 520 L0 520 Z" fill="#2c3019" opacity=".92"/>
+      <g transform="translate(300 404)">
+        <path d="M-30 4 Q0 22 30 4 L24 12 Q0 24 -24 12 Z" fill="#0b3b38"/>
+        <rect x="-26" y="-2" width="52" height="4" rx="2" fill="#E8522A"/>
+        <rect x="-26" y="-6" width="52" height="4" rx="2" fill="#FFC72C"/>
+        <line x1="0" y1="-6" x2="0" y2="-38" stroke="#5b4a2a" stroke-width="2.4"/>
+        <path d="M0 -38 L17 -16 L0 -16 Z" fill="#FBF3DC" opacity=".92"/>
+      </g>
+      <rect y="500" width="800" height="100" fill="#1C1712"/>
+      <path d="M0 500 Q200 490 400 500 T800 500 L800 508 L0 508 Z" fill="#FFD884" opacity=".3"/>
+      <!-- satellite-mascotte "Le Veilleur" : regarde LA MER, jamais le spectateur -->
+      <g transform="translate(600 138)">
+        <rect x="-46" y="-14" width="26" height="28" rx="5" fill="#E8A800" stroke="#0D0D0D" stroke-width="3"/>
+        <rect x="20" y="-14" width="26" height="28" rx="5" fill="#E8A800" stroke="#0D0D0D" stroke-width="3"/>
+        <rect x="-18" y="-22" width="36" height="44" rx="9" fill="#FFC72C" stroke="#0D0D0D" stroke-width="3.5"/>
+        <circle cx="0" cy="4" r="11" fill="#0d1117"/><circle cx="3" cy="7" r="4.4" fill="#1EC8B0"/>
+        <path d="M0 22 L-8 40 L8 40 Z" fill="#009E8E" opacity=".5"/>
+      </g>
+    </svg>
+
+    <span class="chip live"><span class="dot"></span>EN DIRECT · 06:42 UTC</span>
+    <a class="chip film" href="#">&#9654; Le film &middot; 3 min</a>
+
+    <!-- LE TAMPON (verdict honnete, AU-DESSUS de l'ambiance) -->
+    <div class="stamp s-clean" id="stamp" role="button" tabindex="0" aria-label="Verdict du matin : propre">
+      <div class="verdict">Propre<br>aujourd'hui</div>
+      <div class="beach"><b>Le Diamant</b> &middot; score 82/100</div>
+    </div>
+
+    <!-- preuve + source (le moat) -->
+    <div class="proof">
+      <div class="src">SATELLITE COPERNICUS &middot; AFAI 0.18 &middot; MESURÉ 06:42</div>
+      <p class="say">La mesure de ce matin — pas une supposition. Demain, Le Veilleur regarde pour toi.</p>
+      <a class="cta" href="#">Deviens celui qui connaît la fin de l'histoire<small>Pass — paiement unique, dès 7,99 €</small></a>
+    </div>
+  </section>
+
+  <!-- ================= GRILLE : Le Veilleur veille chaque crique ================= -->
+  <section class="grid-sec">
+    <div class="kicker">Ton équipe qui ne dort jamais</div>
+    <h2 class="h2">Le Veilleur veille chaque crique</h2>
+    <p class="sub">Pendant que tu dors, il lit la mer plage par plage. Voici ta côte, ce matin.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ================= STORYTELLING (6 temps condenses) ================= -->
+  <section class="story">
+    <div class="beat"><div class="n">1</div><p><b>Tu regardes Les Salines.</b> Demain soir, le vent tourne — et personne ne te préviendra.</p></div>
+    <div class="beat"><div class="n">2</div><p>Sauf lui. Chaque matin, <b>le verdict de ta plage, gratuit</b> — et les trois criques propres les plus proches.</p></div>
+    <div class="beat"><div class="n">3</div><p>Personne n'aime découvrir les algues une fois la serviette posée.</p></div>
+    <div class="beat"><div class="n">4</div><p>Deviens <b>le copain qui ne se trompe jamais de crique.</b></p></div>
+    <p class="honest">Mesuré au satellite, pas deviné. On se trompe parfois — <a href="#">on l'écrit, va voir ce qu'on vaut vraiment &rarr;</a></p>
+  </section>
+
+  <!-- ================= OFFRE ================= -->
+  <section class="offer">
+    <div class="big">Une plage. Un verdict. Zéro mauvaise surprise.</div>
+    <div class="price">Pass — paiement unique, dès 7,99 €</div>
+    <a class="cta" href="#" style="margin-top:14px">Commencer maintenant</a>
+    <div class="sig">« il regarde la mer, jamais vos clients »</div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var reduce=false;
+  try{ reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+
+  // ----- LE TAMPON : CLAC au mount + re-squish au tap -----
+  var stamp=document.getElementById('stamp');
+  if(stamp&&!reduce){
+    stamp.classList.add('land');
+    stamp.addEventListener('animationend',function h(){ stamp.classList.remove('land'); stamp.removeEventListener('animationend',h); });
+    var squish=function(){ stamp.classList.remove('squish'); void stamp.offsetWidth; stamp.classList.add('squish'); };
+    stamp.addEventListener('pointerdown',squish);
+    stamp.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); squish(); } });
+  }
+
+  // ----- GRILLE : cartes par archetype (diversite) -----
+  var CARDS=[
+    {nm:'Le Diamant', st:'clean', sky:['#123047','#C97E3A'], feat:'rock'},
+    {nm:'Anse Noire', st:'moderate', sky:['#0B2230','#6a4a2a'], feat:'black'},
+    {nm:'La Caravelle', st:'clean', sky:['#0B2230','#E0A24A'], feat:'cliff'},
+    {nm:'Grande Anse', st:'avoid', sky:['#141026','#B85A2A'], feat:'shore'}
+  ];
+  var LBL={clean:'PROPRE',moderate:'MODÉRÉ',avoid:'ÉVITE'};
+  function miniSvg(c,i){
+    var id='cg'+i;
+    var feat='';
+    if(c.feat==='rock') feat='<path d="M296 78 L336 38 L376 78 Z" fill="#0b1f22"/><rect x="296" y="76" width="80" height="12" fill="#0b1f22"/>';
+    else if(c.feat==='cliff') feat='<path d="M248 38 L400 38 L400 84 L248 84 Q248 55 248 38 Z" fill="#0e2a26"/>';
+    else if(c.feat==='black') feat='<rect x="0" y="72" width="400" height="18" fill="#161310"/>';
+    else feat='<path d="M0 78 Q200 70 400 78 L400 90 L0 90 Z" fill="#1C1712"/>';
+    return '<svg viewBox="0 0 400 96" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+      +'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c.sky[0]+'"/><stop offset="1" stop-color="'+c.sky[1]+'"/></linearGradient></defs>'
+      +'<rect width="400" height="96" fill="url(#'+id+')"/>'
+      +'<circle cx="210" cy="54" r="30" fill="#FFD884" opacity=".85"/>'
+      +'<rect y="62" width="400" height="30" fill="#0e3a35"/>'
+      +feat+'</svg>';
+  }
+  function parseSvg(str){
+    try{ var d=new DOMParser().parseFromString(str,'image/svg+xml');
+      if(d.getElementsByTagName('parsererror').length) return null;
+      return document.importNode(d.documentElement,true); }catch(e){ return null; }
+  }
+  var grid=document.getElementById('grid');
+  CARDS.forEach(function(c,i){
+    var el=document.createElement('div'); el.className='card'; el.setAttribute('role','button'); el.tabIndex=0;
+    var svg=parseSvg(miniSvg(c,i)); if(svg) el.appendChild(svg);
+    var lab=document.createElement('div'); lab.className='lab';
+    var nm=document.createElement('span'); nm.className='nm'; nm.textContent=c.nm;
+    var pill=document.createElement('span'); pill.className='pill s-'+c.st; pill.textContent=LBL[c.st];
+    lab.appendChild(nm); lab.appendChild(pill);
+    el.appendChild(lab); grid.appendChild(el);
+  });
+
+  // reveal staggere (facon Higgsfield) via IntersectionObserver + delay CSS
+  var cards=grid.querySelectorAll('.card');
+  if(reduce){ [].forEach.call(cards,function(c){ c.classList.add('in'); }); }
+  else{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ var i=[].indexOf.call(cards,e.target);
+        e.target.style.transitionDelay=(i*70)+'ms'; e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{rootMargin:'0px 0px -8% 0px'});
+    [].forEach.call(cards,function(c){ io.observe(c); });
+  }
+})();
+</script>
+</body>
+</html>

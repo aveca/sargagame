@@ -1,0 +1,269 @@
+{
+  "id": "bahamas",
+  "name": "Bahamas",
+  "country": "Bahamas",
+  "domain": "sargassum-bahamas.com",
+  "ftpDir": "bahamas-ftp",
+  "primaryLang": "en",
+  "secondaryLangs": [
+    "es"
+  ],
+  "currency": "USD",
+  "pricing": {
+    "monthly": "$9.99",
+    "yearly": "$79"
+  },
+  "timezone": "America/Nassau",
+  "bbox": [
+    -79.15,
+    22.94,
+    -75.1,
+    27.18
+  ],
+  "center": {
+    "lat": 25.06,
+    "lng": -77.13
+  },
+  "zoom": 7,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "emails": {
+    "alerts": "alerts@sargassum-bahamas.com",
+    "support": "support@sargassum-bahamas.com"
+  },
+  "beachFilter": {
+    "island": "bahamas"
+  },
+  "routes": {
+    "season": "sargassum-season-bahamas",
+    "best": "best-beaches-no-sargassum-bahamas",
+    "weekly": "sargassum-bahamas-this-week"
+  },
+  "seo": {
+    "homeTitle": "Bahamas Sargassum Today — Live Beach Map & 7-Day Forecast",
+    "homeDesc": "Is there sargassum in the Bahamas today? Live map of 14 beaches — Nassau, Exuma, Eleuthera, Grand Bahama — updated 4x daily by satellite, with 7-day forecasts.",
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
+  },
+  "geoDetect": {
+    "latMin": 22.94,
+    "latMax": 27.18,
+    "lngMin": -79.15,
+    "lngMax": -75.1
+  },
+  "competitors": [
+    "SargassumReport.com (regional 'Lower Exposure' label, only 2 beaches named, $19 resort check)",
+    "HowIsTheSargassum.com (beach-level + 7-day, but 100% Mexico — zero Bahamas coverage)",
+    "NOAA SIR / USF SaWS (institutional, coarse resolution, monthly bulletin)",
+    "SargassumMonitoring.com (crowdsourced map, no per-beach score, noisy signal)"
+  ],
+  "differentiators": [
+    "Only per-beach tracker for the Bahamas (closest rival names just 2 beaches, admits no beach-level forecast)",
+    "Copernicus satellite 4x/day vs monthly regional bulletins from NOAA/USF",
+    "0-100 Beach Score + backtested 7-day forecast per beach",
+    "Windward/leeward intelligence — THE decisive factor across Bahamian coasts (Atlantic faces vs banks-side shores)",
+    "Honest low-exposure positioning: find today's clean beach and be reassured, not fear-sold"
+  ],
+  "beaches": [
+    {
+      "id": "bs001",
+      "island": "bahamas",
+      "name": "Cable Beach",
+      "commune": "Nassau",
+      "lat": 25.0781,
+      "lng": -77.4117,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 350
+    },
+    {
+      "id": "bs002",
+      "island": "bahamas",
+      "name": "Cabbage Beach",
+      "commune": "Paradise Island",
+      "lat": 25.0856,
+      "lng": -77.3164,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": false,
+      "coast": "atlantic",
+      "coastNormal": 10
+    },
+    {
+      "id": "bs003",
+      "island": "bahamas",
+      "name": "Pink Sands Beach",
+      "commune": "Harbour Island",
+      "lat": 25.5055,
+      "lng": -76.6316,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": false,
+      "coast": "atlantic",
+      "coastNormal": 80
+    },
+    {
+      "id": "bs004",
+      "island": "bahamas",
+      "name": "Pig Beach",
+      "commune": "Big Major Cay (Exumas)",
+      "lat": 24.1836,
+      "lng": -76.4564,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": false,
+      "coast": "sheltered",
+      "coastNormal": 225
+    },
+    {
+      "id": "bs005",
+      "island": "bahamas",
+      "name": "Junkanoo Beach",
+      "commune": "Downtown Nassau",
+      "lat": 25.0792,
+      "lng": -77.3487,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "sheltered",
+      "coastNormal": 10
+    },
+    {
+      "id": "bs006",
+      "island": "bahamas",
+      "name": "Tropic of Cancer Beach",
+      "commune": "Little Exuma",
+      "lat": 23.4411,
+      "lng": -75.605,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 120
+    },
+    {
+      "id": "bs007",
+      "island": "bahamas",
+      "name": "Volleyball Beach",
+      "commune": "Stocking Island (George Town)",
+      "lat": 23.5193,
+      "lng": -75.755,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": false,
+      "coast": "sheltered",
+      "coastNormal": 250
+    },
+    {
+      "id": "bs008",
+      "island": "bahamas",
+      "name": "Gold Rock Beach",
+      "commune": "Lucayan National Park",
+      "lat": 26.5999,
+      "lng": -78.4065,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 140
+    },
+    {
+      "id": "bs009",
+      "island": "bahamas",
+      "name": "Lucaya Beach",
+      "commune": "Lucaya (Freeport)",
+      "lat": 26.5048,
+      "lng": -78.6473,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 180
+    },
+    {
+      "id": "bs010",
+      "island": "bahamas",
+      "name": "Lighthouse Beach",
+      "commune": "Bannerman Town (Eleuthera)",
+      "lat": 24.6173,
+      "lng": -76.1455,
+      "status": "moderate",
+      "kids": false,
+      "snorkel": true,
+      "parking": false,
+      "coast": "atlantic",
+      "coastNormal": 150
+    },
+    {
+      "id": "bs011",
+      "island": "bahamas",
+      "name": "Taino Beach",
+      "commune": "Freeport",
+      "lat": 26.52,
+      "lng": -78.6194,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 180
+    },
+    {
+      "id": "bs012",
+      "island": "bahamas",
+      "name": "Treasure Cay Beach",
+      "commune": "Treasure Cay (Abaco)",
+      "lat": 26.6772,
+      "lng": -77.28,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 40
+    },
+    {
+      "id": "bs013",
+      "island": "bahamas",
+      "name": "French Leave Beach",
+      "commune": "Governor's Harbour (Eleuthera)",
+      "lat": 25.2011,
+      "lng": -76.2319,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true,
+      "coast": "atlantic",
+      "coastNormal": 90
+    },
+    {
+      "id": "bs014",
+      "island": "bahamas",
+      "name": "Love Beach",
+      "commune": "Nassau West",
+      "lat": 25.0634,
+      "lng": -77.4887,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": false,
+      "coast": "atlantic",
+      "coastNormal": 320
+    }
+  ],
+  "countryCode": "BS",
+  "noTrial": true
+}

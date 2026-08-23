@@ -1,0 +1,116 @@
+{
+  "weekendEmailFix": {
+    "date": "2026-04-09T23:00:00.000Z",
+    "action": "email-weekend-saturday-forecast",
+    "description": "Weekend bulletin now uses Saturday forecast statuses instead of current day. MQ: 8 clean (was 5), GP: 9 clean (was 6) for weekend Apr 11-12.",
+    "commit": "09ed250"
+  },
+  "abTests": {
+    "lastEvaluated": "2026-06-09T22:04:17.607Z",
+    "results": [
+      {
+        "id": "em1",
+        "metric": "sg_email_submit",
+        "variants": [
+          "control",
+          "curiosity"
+        ],
+        "rates": [
+          "0.21%",
+          "0.21%"
+        ],
+        "lift": "-0.4%",
+        "z": 0.01,
+        "p": 0.495,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (16489 sessions, need ~1500+)."
+      },
+      {
+        "id": "pw_cta_order",
+        "metric": "sg_sample_start",
+        "variants": [
+          "control",
+          "sample_first"
+        ],
+        "rates": [
+          "0.00%",
+          "0.00%"
+        ],
+        "lift": "NaN%",
+        "z": 0,
+        "p": 1,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (10541 sessions, need ~1500+)."
+      },
+      {
+        "id": "pw_prelude",
+        "metric": "sg_checkout_redirect",
+        "variants": [
+          "direct",
+          "prelude"
+        ],
+        "rates": [
+          "0.24%",
+          "0.23%"
+        ],
+        "lift": "-6.2%",
+        "z": 0.16,
+        "p": 0.437,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (10603 sessions, need ~1500+)."
+      }
+    ]
+  },
+  "premiumModalLiveData": {
+    "date": "2026-04-13T00:38:00.000Z",
+    "action": "premium-modal-real-beach-data",
+    "description": "Funnel analysis (Apps Script ?action=funnel): 126 modal opens → 14 CTA = 11% bottleneck. Root cause: fake hardcoded beach names felt manufactured. Fix: wire sargData+island into PremiumModal. Morning brief card now shows real top-scoring beach + satellite score. Social proof shows live X/Y clean count. Fallback to static copy when sargData not loaded.",
+    "commit": "67f9832",
+    "funnelBefore": {
+      "modal_opens": 126,
+      "cta_clicks": 14,
+      "modal_to_cta_pct": 11
+    },
+    "hypothesis": "Real live beach names + scores increase perceived credibility → modal→CTA lifts above 15%"
+  },
+  "weekendPrep": {
+    "date": "2026-04-10T08:00:00.000Z",
+    "action": "weekend-prep-verified",
+    "description": "Weekend email prep for Apr 11-12 verified. MQ: 45 clean/6 mod/2 avoid. GP: 78 clean/3 mod/1 avoid. Subjects generated. Duplicate send fix confirmed (weekly-optimize.yml clean, dedup guard active). 39 subscribers ready (27 MQ, 12 GP). Will fire Fri Apr 11 at 12h UTC.",
+    "saturdayDate": "2026-04-11",
+    "mqStats": {
+      "clean": 45,
+      "moderate": 6,
+      "avoid": 2
+    },
+    "gpStats": {
+      "clean": 78,
+      "moderate": 3,
+      "avoid": 1
+    },
+    "mqTop5": [
+      "Anse Caritan",
+      "Anse Michel",
+      "Grande Anse d Arlet",
+      "Grande Anse du Carbet",
+      "Anse Turin"
+    ],
+    "gpTop5": [
+      "Plage des Raisins Clairs",
+      "Anse à la Gourde",
+      "Plage de la Caravelle",
+      "Plage du Gosier",
+      "Plage de Grande Anse"
+    ],
+    "subscribersReady": 39,
+    "mqSubject": "Ce weekend : 45 plages propres en Martinique",
+    "gpSubject": "Ce weekend : 78 plages propres en Guadeloupe",
+    "workflowCheck": "daily-copernicus.yml fires at 12h UTC Fri (dow=5, hour=12) — CONFIRMED"
+  }
+}

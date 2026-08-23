@@ -1,0 +1,446 @@
+#!/usr/bin/env node
+/**
+ * Welcome Email — Sargasses MQ/GP (via SMTP, boîte alerte@)
+ *
+ * Runs 4x/day in the pipeline. Checks a local JSON file for emails
+ * that haven't received a welcome email yet. Sends via SMTP (nodemailer).
+ *
+ * The email list comes from the Apps Script webhook which POSTs new
+ * subscriber data back to the repo (via daily pipeline commit).
+ *
+ * Env: SMTP_PASS (required pour envoyer ; absent = dry-run)
+ * Usage: node scripts/automation/welcome-email.cjs
+ */
+const fs = require('fs')
+const path = require('path')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
+const { pickArm, applyArm } = require('./lib/email-ab.cjs')
+const AB_VARS = require('./data/email-ab-variants.json')
+
+const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
+const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
+const SENT_PATH = path.join(__dirname, 'data', 'welcome-sent.json')
+const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
+const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
+const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
+// Leads PRO (formulaires /pro/*) : exclus du welcome grand public — ils ont leur
+// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre Pass conso.
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
+// Sources de CAPTURE qui DÉBLOQUENT réellement 7j premium côté front (rang 1 :
+// capture-gate + gap_freemium posent sg_premium_pass_end). Le welcome leur CONFIRME
+// l'accès actif + le verdict du matin (qu'ils reçoivent désormais — cf. DAILY_SOURCES
+// dans drip-email.cjs). Les autres sources gardent le welcome générique.
+const PREMIUM_CAPTURE_SOURCES = new Set(['capture-gate', 'gap_freemium'])
+
+// From address — GP uses MQ verified domain (free plan = 1 domain)
+const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
+const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
+// Nouvelles régions : même domaine vérifié MQ (Resend free = 1 domaine), display name régional.
+const { getAllRegions } = require('../../regions/index.cjs')
+const NEW_REGIONS = Object.fromEntries(
+  getAllRegions().filter(r => r.id !== 'mq' && r.id !== 'gp').map(r => [r.id.toUpperCase(), r])
+)
+const UNSUB_BASE = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
+
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+function loadJSON(p, fallback) {
+  try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
+}
+function saveJSON(p, data) {
+  fs.mkdirSync(path.dirname(p), { recursive: true })
+  fs.writeFileSync(p, JSON.stringify(data, null, 2))
+}
+// RGPD : l'état persisté ne contient que des hashes. Toute entrée legacy
+// contenant '@' est hashée en mémoire (le fichier sera réécrit hashé au prochain save).
+function hashedSet(arr) {
+  return new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
+}
+
+function buildWelcomeHTML(island, cleanCount, email, source) {
+  const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+  const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
+  // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
+  // email ouvre le paywall on-site via ?paywall=1 (deep-link App → openPremium).
+  const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
+  const headerHtml = brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur veille la mer pendant que tu dors. Chaque matin, le verdict de ta plage.')
+  const captureBlock = PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
+      <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
+      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — Baignade OK / À surveiller / Évite — arrive chaque matin dans ta boîte, mesuré au satellite cette nuit. Prévision 7 jours détaillée + alertes dans l'app.</div>
+    </div>` : ''
+  const cleanBlock = cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
+      <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
+      <div style="font-size:13px;color:#686868;margin-top:2px">plages propres en ce moment en ${name}</div>
+    </div>` : ''
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Bienvenue parmi nous</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0A1714; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0A1714;">
+<tr>
+<td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+
+<tr>
+<td style="padding:0;">${headerHtml}</td>
+</tr>
+
+<tr>
+<td style="background-color:#F7F5EF; border-radius:0 0 16px 16px; padding:0;">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr>
+<td style="padding:28px 32px 0 32px;">${captureBlock}</td>
+</tr>
+
+<tr>
+<td style="padding:16px 32px 0 32px;">${cleanBlock}</td>
+</tr>
+
+<tr>
+<td style="padding:28px 32px 0 32px;">
+<p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:13px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#E89400; font-weight:bold;">Le mot du Veilleur</p>
+<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:1.3; color:#0A1714; font-weight:bold;">Chaque matin, je regarde la mer pour toi.</p>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:16px; line-height:1.65; color:#2E3B38;">Tu viens de rejoindre les habitants de ${name} qui demandent à la mer avant de partir, au lieu de deviner. Plus de trajet pour rien, plus de matin gâché à l'arrivée. Et quand on n'est pas sûrs, on te le dit. Voici ce que tu vas recevoir chaque jour.</p>
+</td>
+</tr>
+
+<tr>
+<td style="padding:26px 32px 0 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr>
+<td style="padding:0 0 18px 0; border-bottom:1px solid #E4E0D6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">01</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Le bulletin du vendredi</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">Les plages propres pour ton week-end, livrées chaque vendredi. Tu choisis où poser ta serviette en un coup d'œil.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:18px 0; border-bottom:1px solid #E4E0D6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">02</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">La carte live</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">L'état de n'importe quelle plage vérifié en 5 secondes, quand tu veux, depuis ton téléphone.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:18px 0 0 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">03</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Mesuré, pas deviné</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">De vraies images Copernicus et NOAA, croisées 4 fois par jour. Pas d'avis, pas de boîte noire : juste ce que le satellite a réellement vu. Et si l'image a plus de 36h, on l'écrit.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:32px 32px 8px 32px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center" bgcolor="#FFC72C" style="border-radius:10px; background-color:#FFC72C;">
+<a href="https://${domain}" target="_blank" style="display:inline-block; padding:17px 38px; font-family:Arial, Helvetica, sans-serif; font-size:17px; font-weight:bold; color:#0A1714; text-decoration:none; border-radius:10px; background-color:#FFC72C;">Voir la carte maintenant</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:0 32px 30px 32px;">
+<p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.5; color:#52605C; font-weight:bold;">Commence par ta plage préférée.</p>
+<p style="margin:5px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#8A938F;">C'est tout ce que tu as à faire aujourd'hui. Ouvre la carte une fois, tu y reviendras.</p>
+</td>
+</tr>
+
+<tr>
+<td style="padding:0 24px 28px 24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B2230; border-radius:14px;">
+<tr>
+<td style="padding:30px 30px 28px 30px;">
+<p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:12px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#FFC72C; font-weight:bold;">Pour aller plus loin</p>
+<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:21px; line-height:1.35; color:#FFFFFF; font-weight:bold;">Vois le matin où ça bascule, 7 jours avant.</p>
+<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#C7D2CE;">« Les Salines passe Propre → Modéré demain — bascule sur Tartane. » Le Pass débloque la prévision 7 jours détaillée et l'alerte le matin où une plage tourne. En haute saison, savoir d'avance sauve un week-end. En saison calme, les alertes sont rares et peu fiables — on ne te le vend pas comme essentiel.
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;">
+<tr>
+<td align="center" bgcolor="#E8A800" style="border-radius:10px; background-color:#E8A800;">
+<a href="${stripe}" target="_blank" style="display:inline-block; padding:15px 34px; font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold; color:#0A1714; text-decoration:none; border-radius:10px; background-color:#E8A800;">Activer mon Pass</a>
+</td>
+</tr>
+</table>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique, sans abonnement · accès immédiat</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:8px 32px 32px 32px; border-top:1px solid #E4E0D6;">
+<p style="margin:24px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:15px; line-height:1.4; color:#0A1714; font-weight:bold;">Le Veilleur</p>
+<p style="margin:8px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.5; color:#9AA39F;">On veille sur tes plages à ${name}.</p>
+<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.5; color:#9AA39F;"><a href="${unsubUrl(email, island)}" target="_blank" style="color:#9AA39F; text-decoration:underline;">Se désabonner</a></p>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>`
+}
+
+// Welcome HTML des nouvelles régions — même gabarit visuel, strings EN/ES.
+// Pas de promesse de bulletin hebdo (email-weekend est MQ/GP-only pour l'instant).
+function buildWelcomeHTMLRegion(region, cleanCount, email) {
+  const es = region.primaryLang === 'es'
+  const name = region.name
+  const domain = region.domain
+  // CTA premium → paywall ON-SITE (Mollie pass), comme le chemin MQ/GP plus haut.
+  // Avant : paymentLinks.monthly = lien Stripe DÉSACTIVÉ (USD) → CTA mort dans l'email.
+  const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
+  const monthly = (region.pricing && region.pricing.monthly) || '$9.99'
+  const t = es ? {
+    kicker: 'Bienvenido a bordo',
+    brand: `Sargazo ${name}`,
+    tagline: 'Se acabaron las sorpresas al llegar a la playa.',
+    cleanLabel: `playas sin sargazo ahora mismo en ${name}`,
+    intro: `Acabas de unirte a quienes verifican la playa antes de salir. Esto es lo que recibes:`,
+    f1t: 'Mapa en vivo', f1d: 'Verifica cualquier playa en 5 segundos antes de ir.',
+    f2t: 'Medido, no adivinado', f2d: 'Imágenes reales de Copernicus + NOAA, cruzadas 4 veces al día. Sin opiniones, sin caja negra — solo lo que el satélite vio de verdad.',
+    f3t: 'Beach Score 0-100', f3d: 'Sargazo, oleaje, viento y sol combinados en una sola nota por playa.',
+    cta: 'Ver el mapa ahora',
+    upKicker: 'Para ir más lejos', upTitle: 'Mira la mañana en que cambia, 7 días antes',
+    upDesc: '"Tu playa pasa de Limpia → Moderada mañana — cámbiate a la siguiente."<br>El Pase desbloquea el pronóstico de 7 días detallado y la alerta la mañana en que una playa cambia. En temporada tranquila las alertas son raras y de baja confianza — así que no te lo vendemos como esencial.',
+    upCta: 'Activar mi pase',
+    upFoot: 'Desde $5.99 · pago único, sin suscripción · acceso inmediato',
+    unsub: 'Darse de baja',
+  } : {
+    kicker: 'Welcome aboard',
+    brand: `Sargassum ${name}`,
+    tagline: 'Le Veilleur watches the sea while you sleep. Each morning, your beach verdict.',
+    cleanLabel: `sargassum-free beaches right now in ${name}`,
+    intro: `You just joined the people who check the beach before heading out. Here's what you get:`,
+    f1t: 'Live map', f1d: 'Check any beach in 5 seconds before you go.',
+    f2t: 'Measured, not guessed', f2d: 'Real Copernicus + NOAA imagery, cross-checked 4 times a day. No opinions, no black box — just what the satellite actually saw.',
+    f3t: 'Beach Score 0-100', f3d: 'Sargassum, swell, wind and sun blended into one score per beach.',
+    cta: 'See the map now',
+    upKicker: 'Go further', upTitle: 'See the morning it turns, 7 days ahead',
+    upDesc: '"Your beach goes Clean → Moderate tomorrow — switch to the next one."<br>The Pass unlocks the detailed 7-day forecast and the alert the morning a beach turns. In calm season, alerts are rare and low-confidence — so we don\'t sell it as essential.',
+    upCta: 'Activate my Pass',
+    upFoot: 'From $5.99 · one-time, no subscription · instant access',
+    unsub: 'Unsubscribe',
+  }
+  const island = region.id.toUpperCase()
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+
+  ${brandHeader(t.kicker, t.brand, t.tagline)}
+
+  <div style="background:#fff;padding:24px 20px">
+    ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
+      <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
+      <div style="font-size:13px;color:#686868;margin-top:2px">${t.cleanLabel}</div>
+    </div>` : ''}
+
+    <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">${t.intro}</div>
+
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:10px 0;vertical-align:top;width:30px;font-size:18px">\u{1F5FA}️</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f1t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f1d}</div></td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F6F0}️</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f2t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f2d}</div></td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F3C6}</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f3t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f3d}</div></td></tr>
+    </table>
+
+    <div style="margin-top:22px;text-align:center">
+      <a href="https://${domain}" style="display:inline-block;padding:15px 36px;
+        background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
+        color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
+        box-shadow:0 4px 16px rgba(232,168,0,.3)">${t.cta}</a>
+    </div>
+  </div>
+
+  ${stripe ? `<div style="background:linear-gradient(145deg,#0D1E1C,#0A1714);padding:22px 24px;text-align:center">
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">${t.upKicker}</div>
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">${t.upTitle}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5">${t.upDesc}</div>
+    <a href="${stripe}" style="display:inline-block;padding:11px 26px;
+      background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
+      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">${t.upCta}</a>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">${t.upFoot}</div>
+  </div>` : ''}
+
+  <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
+    ${t.brand} · ${domain}<br>
+    <a href="${unsubUrl(email, island)}" style="color:#999">${t.unsub}</a>
+  </div>
+</div>
+</body>
+</html>`
+}
+
+// Plages propres d'une nouvelle région (levels du sargassum.json régional).
+function regionCleanCount(region) {
+  const p = path.join(__dirname, `../../public/api/copernicus/${region.id}/sargassum.json`)
+  const d = loadJSON(p, {})
+  return Array.isArray(d.levels) ? d.levels.filter(l => l.status === 'clean').length : 0
+}
+
+async function main() {
+  console.log('=== Welcome Email (SMTP) ===')
+
+  const resend = API_KEY ? {} : null
+
+  // Load subscriber list and already-sent list (state files store email hashes — RGPD)
+  const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
+  const sentSet = hashedSet(loadJSON(SENT_PATH, []))
+  const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, []))
+
+  // Find new subscribers not yet welcomed (skip bounced) — compare by hash
+  const newSubs = subscribers.filter(s => s.email && !B2B_SOURCES.has(s.source) && !sentSet.has(emailHash(s.email)) && !bouncedSet.has(emailHash(s.email)))
+  const alreadySent = subscribers.filter(s => s.email && sentSet.has(emailHash(s.email))).length
+  console.log(`Subscribers: ${subscribers.length} | already welcomed: ${alreadySent} | new: ${newSubs.length}`)
+
+  if (!newSubs.length) {
+    console.log('No new subscribers to welcome.')
+    return
+  }
+
+  if (!API_KEY) {
+    console.log(`SMTP_PASS not set — skipping sends (would send ${newSubs.length}).`)
+    return
+  }
+
+  console.log(`Found ${newSubs.length} new subscriber(s) to welcome`)
+
+  // Get clean beach count for the email
+  const sargData = loadJSON(SARG_PATH, {})
+  const beaches = loadJSON(BEACHES_PATH, [])
+
+  let sentCount = 0
+  for (const sub of newSubs) {
+    const island = (sub.island || 'MQ').toUpperCase()
+    const newRegion = NEW_REGIONS[island] || null
+
+    let from, subjectLine, htmlBody, preheader
+    if (newRegion) {
+      // Nouvelle r\u00E9gion : sender via domaine MQ v\u00E9rifi\u00E9, contenu EN/ES.
+      const cleanCount = regionCleanCount(newRegion)
+      const es = newRegion.primaryLang === 'es'
+      from = `${es ? 'Sargazo' : 'Sargassum'} ${newRegion.name} <alerte@sargasses-martinique.com>`
+      subjectLine = es
+        ? (cleanCount > 0 ? `${cleanCount} playas sin sargazo en ${newRegion.name} \u2014 tu mapa est\u00E1 listo` : `Bienvenido \u2014 tu mapa de sargazo de ${newRegion.name} est\u00E1 listo`)
+        : (cleanCount > 0 ? `${cleanCount} sargassum-free beaches in ${newRegion.name} \u2014 your map is ready` : `Welcome \u2014 your ${newRegion.name} sargassum map is ready`)
+      htmlBody = buildWelcomeHTMLRegion(newRegion, cleanCount, sub.email)
+      preheader = es
+        ? `Tu mapa de playas en vivo, actualizado 4×/día — mira cualquier playa en 5 segundos.`
+        : `Your live beach map, updated 4×/day — check any beach in 5 seconds.`
+    } else {
+      const islandBeaches = beaches.filter(b => b.island === island.toLowerCase())
+      const cleanCount = islandBeaches.filter(b => b.status === 'clean').length
+      from = island === 'GP' ? FROM_GP : FROM_MQ
+      const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+      subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
+      htmlBody = buildWelcomeHTML(island, cleanCount, sub.email, sub.source)
+      preheader = `Ta carte des plages en direct, mise \u00E0 jour 4\u00D7/jour \u2014 et le bon plan plage chaque vendredi.`
+    }
+
+    // A/B email (subject + preheader — levier #1, body/html = control intact)
+    const _isEs = newRegion && newRegion.primaryLang === 'es'
+    const abTestKey = newRegion
+      ? (_isEs ? 'em_welcome_es_v1' : 'em_welcome_en_v1')
+      : 'em_welcome_fr_v1'
+    const abVarKey = newRegion ? (_isEs ? 'welcome.es' : 'welcome.en') : 'welcome.fr'
+    const abArm = pickArm(abTestKey, sub.email)
+    const abOut = applyArm(abArm, { subject: subjectLine, preheader }, AB_VARS[abVarKey]?.ship)
+
+    try {
+      const unsub = unsubUrl(sub.email, island)
+      const { data, error } = await sendEmail(resend, {
+        from,
+        to: sub.email,
+        subject: abOut.subject,
+        html: htmlBody,
+        preheader: abOut.preheader,
+        unsubUrl: unsub,
+        trackingId: makeTrackingId('welcome', sub.email),
+      })
+
+      if (error) {
+        console.log(`  ❌ ${logId(sub.email)}: ${error.message}`)
+      } else {
+        console.log(`  ✅ ${logId(sub.email)} (${island})`)
+        sentSet.add(emailHash(sub.email))
+        saveJSON(SENT_PATH, [...sentSet]) // flush incrémental : un crash/retry mid-run ne re-welcome JAMAIS un lead déjà servi
+        // Throttle SMTP (hôte mutualisé cPanel) — cohérent avec email-weekend :
+        // un gros backlog de nouveaux leads ne tire pas en rafale sur la boîte alerte@.
+        if (++sentCount % 25 === 0) await sleep(1500)
+        // Track to Google Sheet
+        try {
+          await fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'email_tracking', resend_id: data?.id || '', to: sub.email,
+              subject: abOut.subject, email_type: 'welcome', island,
+              ab_test: abTestKey, ab_arm: abArm,
+              status: 'sent', source: sub.source || '', date: new Date().toISOString()
+            })
+          })
+        } catch {}
+      }
+    } catch (e) {
+      console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
+    }
+  }
+
+  // Save updated sent list
+  saveJSON(SENT_PATH, [...sentSet])
+  console.log('Done.')
+}
+
+if (require.main === module) main().catch(e => console.error(e))
+
+module.exports = { buildWelcomeHTML, buildWelcomeHTMLRegion }

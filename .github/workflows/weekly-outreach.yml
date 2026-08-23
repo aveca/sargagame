@@ -1,0 +1,109 @@
+name: Weekly Outreach (Backlinks + Social)
+
+on:
+  schedule:
+    # Cut 2026-04-13 (quota 100%): Tue+Thu -> Tue only. 8 runs/mo -> 4.
+    # Tue outreach stays (fresh targets), Thu relance dropped for this cycle.
+    - cron: '0 10 * * 2'
+  workflow_dispatch:
+
+# Garde anti-race : sérialise les runs de CE workflow (push log outreach/social).
+# Le cross-workflow est géré par `git rebase -X theirs` côté script (cf. CLAUDE.md).
+concurrency:
+  group: weekly-outreach-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  outreach:
+    runs-on: ubuntu-latest
+    # Bug 2026-06-30 (run 28443080616) : timeout-minutes:10 était trop juste pour les
+    # 3 scripts d'outreach séquentiels (auto ~3m20 + curated ~3m40 + b2b >3m, encore
+    # en cours) → le job s'est fait couper PENDANT le B2B outreach, et « Commit
+    # outreach logs » a été SKIPPED — perdant le dédup des 2 étapes précédentes,
+    # pourtant réussies (risque de renvoyer les mêmes emails la semaine suivante).
+    # Repo public = minutes GH illimitées, donc large.
+    timeout-minutes: 25
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. Scrape targets + send outreach emails (backlinks) ─
+      # continue-on-error : un hang/échec ici ne doit JAMAIS empêcher "Commit
+      # outreach logs" de tourner (sinon le dédup des étapes suivantes est perdu).
+      - name: Auto-outreach (scrape + email backlink requests)
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          # International outreach (US/MX/DR) pitches the /press/ kit and sends
+          # from each region's own domain — those domains must be verified as
+          # Resend senders. Set to '1' to enable; intl sends that fail (e.g.
+          # unverified domain) are not recorded and retry next week.
+          OUTREACH_INTL: '1'
+        run: node scripts/automation/auto-outreach.cjs
+
+      # ── 1a. Curated high-authority backlink outreach (DMOs, tourism boards,
+      #   municipal beach-conditions pages, local news) from seo-growth/
+      #   backlink-prospects.json. Deliverability-first: max 2/run, REAL on-site
+      #   email only (no guessed fallback), dedup-for-life, value-first + opt-out.
+      #   Intl (US/MX/DR) gated on OUTREACH_INTL=1 (already set above).
+      - name: Curated backlink outreach (low-volume, high-authority)
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          OUTREACH_INTL: '1'
+          CURATED_MAX: '2'
+        run: node scripts/automation/seo-outreach-curated.cjs
+
+      # ── 1b. Prospection B2B sortante SELF-SERVE (le bot prospecte, pas le fondateur).
+      #   CTA = brief quotidien auto + widget gratuit (AUCUN appel demandé).
+      #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur SMTP_PASS.
+      - name: B2B outreach (self-serve, faible volume)
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/b2b-outreach.cjs
+
+      # ── 2. Commit outreach logs ─────────────────────────────
+      - name: Commit outreach logs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A scripts/automation/data/ || true
+          git diff --cached --quiet || git commit -m "outreach: backlink + B2B $(date -u +'%Y-%m-%d')"
+          git push || (git pull --rebase --autostash && git push)
+
+  notify-failure:
+    needs: outreach
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send failure alert
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          WORKFLOW_NAME: 'Weekly Outreach'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs

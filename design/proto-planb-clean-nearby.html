@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<!--
+  PROTO — Feature #2 PLAN-B « OU ALLER MAINTENANT »
+  Surface : declenchee quand TA plage NEAR est touchee (status=avoid/moderate).
+  Montre instantanement les plages PROPRES les plus proches (rankBeaches filtre clean + distance),
+  mini-apercu in-scene + flyTo. Reduit l'angoisse "journee gachee".
+
+  Standalone (zero edition monolithe). Verif : python -m http.server 8799 puis
+  http://127.0.0.1:8799/design/proto-planb-clean-nearby.html  (file:// bloque).
+
+  DOCTRINE : calme (tableau au repos), reduced-motion = plancher dur, golden-hour,
+  Le Veilleur rassure!=surveille (regarde la MER, designe l'alternative), 1 seul rAF.
+  DATA HONNETE : aucune valeur inventee — chaque carte = un signal reel du pipeline
+  (status clean + AFAI + score 0-100 + distance haversine + confiance). Voir bloc DATA.
+  DOM construit sans innerHTML (textContent + createElement) — pas de surface XSS.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan-B — Plages propres pres de toi</title>
+<style>
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868;
+    --card:#FFFFFF; --border:rgba(13,13,13,.10);
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaTop:#1A5852; --seaBot:#08251F; --sun:#FFD884; --sand:#1C1712; --rim:#FFD884;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:#0a1620;
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink);overflow:hidden}
+  .anton{font-family:Anton,Impact,"Haettenschweiler","Arial Narrow",sans-serif;
+    letter-spacing:-.02em;text-transform:uppercase}
+
+  #stage{position:fixed;inset:0;overflow:hidden}
+  #scene{position:absolute;inset:0;width:100%;height:100%}
+
+  #planb{
+    position:absolute;left:0;right:0;bottom:0;
+    padding:14px clamp(12px,4vw,28px) max(14px,env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(8,21,18,0) 0%,rgba(8,21,18,.55) 32%,rgba(7,18,15,.92) 100%);
+  }
+  .pb-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .pb-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--coral);
+    display:flex;align-items:center;gap:7px}
+  .pb-dot{width:8px;height:8px;border-radius:50%;background:var(--coral);
+    box-shadow:0 0 0 0 rgba(232,82,42,.55);animation:pulse 2.6s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}70%{box-shadow:0 0 0 9px rgba(232,82,42,0)}100%{box-shadow:0 0 0 0 rgba(232,82,42,0)}}
+  .pb-title{margin:2px 0 0;font-size:clamp(20px,5.2vw,26px);line-height:1.02;color:#fff}
+  .pb-title em{font-style:normal;color:var(--goldL)}
+  .pb-sub{font-size:12px;color:rgba(255,255,255,.62);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .pb-live{display:inline-flex;align-items:center;gap:5px;color:var(--tealL);font-weight:700}
+  .pb-live b{width:6px;height:6px;border-radius:50%;background:var(--tealL);display:inline-block}
+
+  .pb-rail{display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:2px 2px 4px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .pb-rail::-webkit-scrollbar{display:none}
+
+  .card{flex:0 0 auto;width:172px;scroll-snap-align:start;cursor:pointer;
+    background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);text-align:left;font-family:inherit;padding:0;
+    transition:transform .18s ease, box-shadow .18s ease;will-change:transform}
+  .card:hover,.card:focus-visible{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.30);outline:none}
+  .card:active{transform:translateY(-1px) scale(.99)}
+  .card.is-best{width:188px;border-color:rgba(255,199,44,.55);box-shadow:0 8px 22px rgba(232,168,0,.30)}
+
+  .thumb{position:relative;height:90px;overflow:hidden}
+  .thumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .badge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;letter-spacing:.04em;
+    padding:3px 8px;border-radius:999px;color:#06231d;background:var(--green)}
+  .ribbon{position:absolute;top:0;right:0;background:var(--gold);color:#2a1c00;font-size:9.5px;font-weight:800;
+    letter-spacing:.08em;padding:3px 9px;border-bottom-left-radius:10px;text-transform:uppercase}
+
+  .body{padding:9px 11px 11px}
+  .bname{font-size:14px;font-weight:800;color:var(--ink);line-height:1.1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bplace{font-size:11px;color:var(--mid);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brow{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .bdist{font-size:11px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:4px}
+  .bdist.nodist{color:var(--amber)}
+  .bscore{display:flex;align-items:baseline;gap:2px}
+  .bscore .n{font-size:17px;font-weight:800;color:var(--ink)}
+  .bscore .d{font-size:10px;color:var(--mid)}
+  .bgo{margin-top:9px;width:100%;border:0;border-radius:10px;
+    padding:8px 0;font-family:inherit;font-size:12px;font-weight:800;
+    background:linear-gradient(180deg,var(--goldL),var(--gold));color:#2a1c00;
+    display:flex;align-items:center;justify-content:center;gap:6px}
+  .card.is-best .bgo{background:linear-gradient(180deg,var(--goldLL),var(--gold))}
+  .conf{font-size:10px;color:var(--mid);margin-top:6px;display:flex;align-items:center;gap:5px}
+  .conf .bar{flex:1;height:3px;border-radius:2px;background:rgba(13,13,13,.10);overflow:hidden}
+  .conf .bar>i{display:block;height:100%;background:var(--teal);border-radius:2px}
+
+  .card.more{width:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.30);color:#fff;
+    box-shadow:none;padding:12px}
+  .card.more:hover{background:rgba(255,255,255,.12)}
+  .card.more .mi{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);
+    display:flex;align-items:center;justify-content:center;font-size:16px}
+  .card.more span{font-size:11px;font-weight:700;text-align:center;line-height:1.15}
+
+  #toast{position:absolute;left:50%;top:22px;transform:translateX(-50%) translateY(-14px);
+    background:rgba(7,18,15,.92);color:#fff;border:1px solid rgba(255,255,255,.14);
+    padding:9px 16px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;
+    transition:opacity .25s,transform .25s;pointer-events:none;z-index:5;backdrop-filter:blur(6px)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast em{font-style:normal;color:var(--goldL)}
+
+  #demo{position:absolute;top:10px;left:10px;z-index:6;display:flex;gap:6px}
+  #demo button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.25);
+    background:rgba(7,18,15,.6);color:#fff;border-radius:8px;padding:5px 9px;cursor:pointer}
+  #demo button.on{background:var(--gold);color:#2a1c00;border-color:var(--gold)}
+
+  @media (prefers-reduced-motion: reduce){
+    .pb-dot{animation:none}
+    .card{transition:none}
+    #toast{transition:none}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--sky0)"/><stop offset=".42" stop-color="var(--sky1)"/>
+        <stop offset=".72" stop-color="var(--sky2)"/><stop offset="1" stop-color="var(--sky3)"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--seaTop)"/><stop offset="1" stop-color="var(--seaBot)"/>
+      </linearGradient>
+      <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFF3CE"/><stop offset=".5" stop-color="var(--sun)"/>
+        <stop offset="1" stop-color="var(--sun)" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="hazeBeach" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4a3a1e" stop-opacity="0"/><stop offset="1" stop-color="#1C1712"/>
+      </linearGradient>
+      <filter id="soft"><feGaussianBlur stdDeviation="1.1"/></filter>
+    </defs>
+
+    <rect width="800" height="600" fill="url(#sky)"/>
+    <circle cx="560" cy="232" r="120" fill="url(#sunG)"/>
+    <circle cx="560" cy="232" r="38" fill="#FFF1C4"/>
+
+    <path d="M0,308 Q120,286 240,300 T520,296 Q640,290 800,302 L800,330 L0,330 Z" fill="#0d3330" opacity=".55"/>
+
+    <rect y="318" width="800" height="170" fill="url(#sea)"/>
+    <g id="reflect" opacity=".7">
+      <rect x="540" y="324" width="40" height="3" rx="1.5" fill="var(--sun)" opacity=".8"/>
+      <rect x="536" y="338" width="48" height="3" rx="1.5" fill="var(--sun)" opacity=".6"/>
+      <rect x="544" y="354" width="34" height="3" rx="1.5" fill="var(--sun)" opacity=".5"/>
+      <rect x="532" y="372" width="56" height="4" rx="2" fill="var(--sun)" opacity=".4"/>
+    </g>
+
+    <!-- sargasse echouee = TA plage touchee (honnetete: c'est le motif "avoid") -->
+    <g id="sarg" opacity=".92">
+      <path d="M0,470 Q90,452 200,464 Q320,476 430,460 L460,500 Q300,512 140,506 Q60,504 0,510 Z" fill="#3a3f22"/>
+      <path d="M0,486 Q120,472 260,484 Q360,492 470,482 L470,520 L0,520 Z" fill="#2c3019"/>
+    </g>
+
+    <rect y="500" width="800" height="100" fill="var(--sand)"/>
+    <rect y="488" width="800" height="40" fill="url(#hazeBeach)"/>
+    <path d="M0,500 Q200,490 400,500 T800,500 L800,506 L0,506 Z" fill="var(--rim)" opacity=".35"/>
+
+    <!-- yole ronde (vie + echelle + ame, barre qualite PRO). Ancree x~300 -> visible desktop ET mobile portrait. -->
+    <g id="yole" transform="translate(300,408)">
+      <g id="yoleRock">
+        <path d="M-30,4 Q0,22 30,4 L24,12 Q0,24 -24,12 Z" fill="#0b3b38"/>
+        <path d="M-30,4 Q0,18 30,4 L30,2 Q0,14 -30,2 Z" fill="#13514c"/>
+        <rect x="-26" y="-2" width="52" height="4" rx="2" fill="#E8522A"/>
+        <rect x="-26" y="-6" width="52" height="4" rx="2" fill="#FFC72C"/>
+        <rect x="-26" y="-10" width="52" height="4" rx="2" fill="#009E8E"/>
+        <line x1="0" y1="-10" x2="0" y2="-40" stroke="#5b4a2a" stroke-width="2.4"/>
+        <path d="M0,-40 L18,-16 L0,-16 Z" fill="#FBF3DC" opacity=".92"/>
+      </g>
+    </g>
+
+    <!-- Le Veilleur-satellite : veille la MER, designe l'alternative (Plan-B), ne fixe jamais l'utilisateur -->
+    <g id="veilleur" transform="translate(610,150)">
+      <g id="vBody">
+        <g opacity=".95">
+          <rect x="-78" y="-9" width="48" height="20" rx="3" fill="#0e3b46"/>
+          <rect x="-78" y="-9" width="48" height="20" rx="3" fill="none" stroke="#1EC8B0" stroke-width="1" opacity=".5"/>
+          <line x1="-62" y1="-9" x2="-62" y2="11" stroke="#08252b" stroke-width="1"/>
+          <line x1="-46" y1="-9" x2="-46" y2="11" stroke="#08252b" stroke-width="1"/>
+          <rect x="30" y="-9" width="48" height="20" rx="3" fill="#0e3b46"/>
+          <rect x="30" y="-9" width="48" height="20" rx="3" fill="none" stroke="#1EC8B0" stroke-width="1" opacity=".5"/>
+          <line x1="46" y1="-9" x2="46" y2="11" stroke="#08252b" stroke-width="1"/>
+          <line x1="62" y1="-9" x2="62" y2="11" stroke="#08252b" stroke-width="1"/>
+        </g>
+        <rect x="-26" y="-20" width="52" height="42" rx="11" fill="#10434b"/>
+        <rect x="-26" y="-20" width="52" height="42" rx="11" fill="none" stroke="#1EC8B0" stroke-width="1.4" opacity=".55"/>
+        <g id="vLensG" transform="translate(0,2)">
+          <circle id="vLens" r="13" fill="#0c2f33"/>
+          <circle id="vIris" r="8.5" fill="var(--tealL)"/>
+          <circle r="4" fill="#06231d"/>
+          <circle cx="-2.5" cy="-2.5" r="1.6" fill="#Eafff9" opacity=".9"/>
+        </g>
+        <line x1="0" y1="-20" x2="0" y2="-34" stroke="#1EC8B0" stroke-width="2"/>
+        <circle cx="0" cy="-34" r="2.6" fill="var(--goldL)"/>
+      </g>
+      <g id="beam" opacity=".5">
+        <path id="beamPath" d="M0,14 L-46,150 L46,150 Z" fill="var(--tealL)" opacity=".16" filter="url(#soft)"/>
+      </g>
+    </g>
+  </svg>
+
+  <div id="toast"></div>
+
+  <section id="planb" aria-label="Plages propres les plus proches">
+    <div class="pb-head">
+      <div>
+        <div class="pb-kicker"><span class="pb-dot"></span><span id="kicker"></span></div>
+        <h2 class="pb-title anton" id="pbTitle"></h2>
+        <div class="pb-sub">
+          <span class="pb-live"><b></b><span id="liveTxt"></span></span>
+          <span>&middot;</span><span id="fromTxt"></span>
+        </div>
+      </div>
+    </div>
+    <div class="pb-rail" id="rail"></div>
+  </section>
+
+  <div id="demo">
+    <button id="dGeo" class="on">geoloc ON</button>
+    <button id="dRM">reduced-motion</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   DATA MODEL (honnete) — chaque carte = un signal REEL du pipeline, jamais invente.
+   En prod, ces objets viennent de :  rankBeaches(allBeaches, island, userPos, sargData)
+     filtre a b.status==='clean', puis trie par distance croissante (haversine),
+     puis re-trie best-first par _score pour la carte #1.
+   Champs reels utilises :
+     name, commune     <- beaches-list.json
+     status:'clean'    <- pipeline (sargassum.json levels[].status)
+     score (0-100)     <- beach-score (sargData.scores / levels[].score)
+     afai              <- levels[].afai  (sert la vignette : 0 sargasse = eau nette)
+     distKm            <- haversine(userPos, b.lat/lng)  (null si pas de geoloc)
+     driveMin          <- b.drive  (fallback HONNETE quand distKm=null : temps de route data)
+     conf (%)          <- levels[].confidence / forecast[0].confidence
+     updatedAt         <- sargassum.json updatedAt  (freshness REELLE, <12h)
+   Valeurs ci-dessous = echantillons REALISTES tires des plages MQ clean existantes
+   (Anse Meunier/Caritan, Sainte-Anne ; Grande Anse, Anses-d'Arlet) — a cabler sur le live.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+var FROM_BEACH = "Le Diamant";
+var UPDATED_AT = Date.now() - 2*3600*1000;
+
+var CLEAN = [
+  {id:"anse-meunier", name:"Anse Meunier", commune:"Sainte-Anne", status:"clean",
+   score:78, afai:0.12, distKm:14.2, driveMin:24, conf:71, kids:true, seed:7},
+  {id:"anse-caritan", name:"Anse Caritan", commune:"Sainte-Anne", status:"clean",
+   score:74, afai:0.17, distKm:15.0, driveMin:26, conf:68, kids:true, seed:3},
+  {id:"grande-anse-darlet", name:"Grande Anse", commune:"Les Anses-d'Arlet", status:"clean",
+   score:69, afai:0.09, distKm:9.6, driveMin:18, conf:64, kids:false, seed:12}
+];
+
+var LANG = "fr";
+function _t(fr,en,es){return LANG==="en"?en:LANG==="es"?es:fr;}
+var GEO = true;
+
+/* ── helpers DOM surs (textContent, jamais innerHTML) ── */
+function el(tag,cls,txt){var n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n;}
+function svgNode(s){var d=document.createElement("div");d.innerHTML="";var p=new DOMParser().parseFromString(s,"image/svg+xml");return p.documentElement;}
+
+/* ── vignette SVG plage propre (aplats marque, deterministe par seed — JAMAIS d'image IA) ── */
+function thumbSVG(seed){
+  var rnd=mulberry(seed);
+  var palms = seed%3===0 ? 2 : (seed%2===0 ? 1 : 0);
+  var p="";
+  for(var i=0;i<palms;i++){
+    var px=30+Math.floor(rnd()*120), py=44+Math.floor(rnd()*6);
+    p+='<g transform="translate('+px+','+py+')">'
+      +'<path d="M0,0 q-2,-14 -1,-26" stroke="#13514c" stroke-width="3" fill="none"/>'
+      +'<path d="M-1,-26 q-12,-2 -20,4 M-1,-26 q12,-2 20,4 M-1,-26 q-6,-9 -14,-12 M-1,-26 q6,-9 14,-12" stroke="#1a6b5f" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+      +'</g>';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 90" preserveAspectRatio="xMidYMid slice">'
+    +'<defs><linearGradient id="ts'+seed+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0" stop-color="#9bd9cf"/><stop offset="1" stop-color="#1EC8B0"/></linearGradient></defs>'
+    +'<rect width="172" height="90" fill="#FFE9B0"/>'
+    +'<circle cx="132" cy="22" r="13" fill="#FFF1C4"/>'
+    +'<rect y="34" width="172" height="34" fill="url(#ts'+seed+')"/>'
+    +'<rect y="33" width="172" height="2" fill="#fff" opacity=".5"/>'
+    +'<path d="M0,62 Q86,56 172,62 L172,90 L0,90 Z" fill="#F2D9A0"/>'
+    +p+'</svg>';
+}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+function fmtFreshness(ts){
+  var h=(Date.now()-ts)/3.6e6;
+  if(h<12) return _t("EN DIRECT - il y a "+Math.max(1,Math.round(h))+" h",
+                     "LIVE - "+Math.max(1,Math.round(h))+"h ago",
+                     "EN VIVO - hace "+Math.max(1,Math.round(h))+" h");
+  return _t("verification en cours...","checking...","verificando...");
+}
+
+/* ── carte plage propre (createElement uniquement) ── */
+function buildCard(b,i){
+  var best=i===0;
+  var card=el("button","card"+(best?" is-best":""));
+  card.setAttribute("aria-label",b.name+" "+b.commune+", propre, score "+b.score+" sur 100");
+
+  var thumb=el("div","thumb");
+  thumb.appendChild(svgNode(thumbSVG(b.seed)));
+  thumb.appendChild(el("span","badge","PROPRE"));
+  if(best) thumb.appendChild(el("span","ribbon",_t("le + sur","best pick","mejor")));
+  card.appendChild(thumb);
+
+  var body=el("div","body");
+  body.appendChild(el("div","bname",b.name));
+  body.appendChild(el("div","bplace",b.commune+(b.kids?" - enfants ok":"")));
+
+  var row=el("div","brow");
+  var dist=el("span","bdist"+(GEO?"":" nodist"),
+    GEO ? "vers "+b.distKm.toFixed(0)+" km" : "env. "+b.driveMin+" min");
+  var sc=el("span","bscore");
+  sc.appendChild(el("span","n",String(b.score)));
+  sc.appendChild(el("span","d","/100"));
+  row.appendChild(dist); row.appendChild(sc);
+  body.appendChild(row);
+
+  var conf=el("div","conf");
+  conf.appendChild(el("span",null,_t("fiabilite","reliability","fiabilidad")));
+  var bar=el("span","bar"); var fill=el("i"); fill.style.width=b.conf+"%"; bar.appendChild(fill);
+  conf.appendChild(bar); conf.appendChild(el("b",null,b.conf+"%"));
+  body.appendChild(conf);
+
+  body.appendChild(el("div","bgo",_t("M'y emmener","Take me there","Llevame")+"  >"));
+  card.appendChild(body);
+
+  card.addEventListener("click",function(){flyTo(b,i);});
+  return card;
+}
+
+function render(){
+  document.getElementById("liveTxt").textContent=fmtFreshness(UPDATED_AT);
+  document.getElementById("fromTxt").textContent=_t("depuis "+FROM_BEACH,"from "+FROM_BEACH,"desde "+FROM_BEACH);
+  document.getElementById("kicker").textContent=_t("Sargasses sur ta plage aujourd'hui","Sargassum on your beach today","Sargazo en tu playa hoy");
+
+  var title=document.getElementById("pbTitle"); title.textContent="";
+  title.appendChild(document.createTextNode(_t("Pas grave - ","It's ok - ","Tranquilo - ")));
+  title.appendChild(el("em",null,_t(CLEAN.length+" plages propres",CLEAN.length+" clean beaches",CLEAN.length+" playas limpias")));
+  title.appendChild(document.createTextNode(_t(" pres de toi"," near you"," cerca")));
+
+  var rail=document.getElementById("rail"); rail.textContent="";
+  CLEAN.forEach(function(b,i){rail.appendChild(buildCard(b,i));});
+
+  var more=el("button","card more");
+  var mi=el("div","mi","carte");
+  more.appendChild(mi);
+  more.appendChild(el("span",null,_t("Toutes les plages propres","All clean beaches","Todas las playas limpias")));
+  more.addEventListener("click",function(){flyTo({id:"__all__",name:_t("la carte","the map","el mapa")},-1);});
+  rail.appendChild(more);
+}
+
+/* ── flyTo : en prod = onBeachClick(b) (NEAR) ou flyTo(region,'FAR') ; ici toast + cadrage Veilleur ── */
+function flyTo(b,i){
+  var t=document.getElementById("toast"); t.textContent="";
+  t.appendChild(document.createTextNode(_t("Vol vers ","Flying to ","Volando a ")));
+  t.appendChild(el("em",null,b.name));
+  t.appendChild(document.createTextNode("..."));
+  t.classList.add("show");
+  clearTimeout(flyTo._tm); flyTo._tm=setTimeout(function(){t.classList.remove("show");},1700);
+  /* (prod) track('sg_planb_pick',{from:FROM_BEACH,to:b.id,rank:i,dist:GEO?b.distKm:null}); */
+  if(window._pointBeam) window._pointBeam(b.id==="__all__"?-1:1);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SCENE — 1 SEUL rAF, pause sur visibilitychange, reduced-motion = plancher dur.
+   Le Veilleur : micro-respiration + faisceau qui balaie LENTEMENT la mer (amplitude faible),
+   et se braque brievement vers l'alternative au survol/clic (designe, ne fixe pas).
+   ════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  var RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var beam = document.getElementById("beam");
+  var vBody = document.getElementById("vBody");
+  var yoleRock = document.getElementById("yoleRock");
+  var reflect = document.getElementById("reflect");
+
+  var pointTarget=0, pointCur=0, pointHold=0;
+  function pointBeam(dir){ pointTarget = dir*26; pointHold = performance.now()+1100; wake(); }
+  window._pointBeam = pointBeam;
+
+  var running=false, raf=0;
+  function wake(){ if(RM||running)return; running=true; raf=requestAnimationFrame(loop); }
+  function loop(ts){
+    var t=ts/1000;
+    var br = 1 + Math.sin(t*0.7)*0.012;
+    vBody.setAttribute("transform","scale("+br+")");
+    if(ts>pointHold) pointTarget*=0.94;
+    pointCur += (pointTarget - pointCur)*0.08;
+    var sweep = Math.sin(t*0.28)*10;
+    beam.setAttribute("transform","rotate("+(sweep+pointCur)+")");
+    reflect.setAttribute("transform","translate(0,"+(Math.sin(t*0.5)*1.2)+")");
+    yoleRock.setAttribute("transform","rotate("+(Math.sin(t*0.45)*2.2)+")");
+    raf=requestAnimationFrame(loop);
+  }
+
+  function applyRM(){
+    if(RM){
+      cancelAnimationFrame(raf); running=false;
+      vBody.setAttribute("transform","scale(1)");
+      beam.setAttribute("transform","rotate(-6)");
+      yoleRock.setAttribute("transform","rotate(0)");
+      reflect.setAttribute("transform","translate(0,0)");
+    } else { wake(); }
+  }
+
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){cancelAnimationFrame(raf);running=false;} else applyRM();
+  });
+
+  document.getElementById("rail").addEventListener("pointerover",function(e){
+    var c=e.target.closest(".card"); if(c) pointBeam(c.classList.contains("more")?-1:1);
+  });
+
+  applyRM();
+
+  document.getElementById("dGeo").addEventListener("click",function(){
+    GEO=!GEO; this.classList.toggle("on",GEO); this.textContent="geoloc "+(GEO?"ON":"OFF"); render();
+  });
+  document.getElementById("dRM").addEventListener("click",function(){
+    RM=!RM; this.classList.toggle("on",RM); applyRM();
+  });
+})();
+
+render();
+</script>
+</body>
+</html>

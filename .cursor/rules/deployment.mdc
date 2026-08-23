@@ -1,0 +1,81 @@
+---
+description: Déploiement, CI/CD, gate de ship, FTP, GitHub Actions. Tout push sur main = deploy auto.
+globs: [".github/workflows/*.yml", "scripts/prepare-ftp.cjs", "scripts/manual-ftp-deploy.cjs"]
+alwaysApply: false
+---
+
+# Déploiement — Règles Sargagame
+
+## Pipeline de deploy
+
+```
+Push sur main
+  → daily-copernicus.yml trigger
+  → Build 5 régions (MQ, GP, FL, PU, RM)
+  → Prepare FTP (scripts/prepare-ftp.cjs)
+  → Deploy FTP (scripts/manual-ftp-deploy.cjs)
+  → Health check
+```
+
+**Zéro intervention fondateur.** Le workflow tourne seul.
+
+## Gate de ship (AUCUN merge ne saute cette séquence)
+
+```bash
+# 0. Syntaxe par fichier
+for f in $(git diff --name-only --diff-filter=ACM | grep -E '\.(jsx?|mjs|cjs)$'); do
+  npx esbuild "$f" --bundle=false --log-level=error --outfile=/dev/null || exit 1
+done
+for f in $(git diff --name-only --diff-filter=ACM | grep -E '\.php$'); do
+  php -l "$f" || exit 1
+done
+
+# 1. Build prod
+npm run build
+node scripts/check-bundle-budget.cjs
+
+# 2. Serve build
+npx vite preview --port 4173 &
+
+# 3. Smoke funnel
+node scripts/ux-smoke.mjs | tee /tmp/smoke.log
+# Valider les 4 tokens : FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+```
+
+**Passe =** build exit 0 + budget OK + smoke 4 tokens. Le reste = blocage.
+
+## Budget bundle
+
+- Seuil : **210 Ko** JS eager gzip
+- Mesuré par `check-bundle-budget.cjs` (entry + modulepreload)
+- CI **bloquant** si dépassé
+- Réel actuel : ~201 Ko
+
+## Concurrency guard
+
+Workflows qui écrivent des JSON générés → `concurrency group` + `git rebase -X theirs` :
+- `daily-copernicus`
+- `weekly-optimize`
+- `weekly-seo-automation`
+
+## Collision deux-sessions
+
+- `git add` **ciblé** sur tes fichiers
+- **JAMAIS** `git add -A` (sessions concurrentes touchent des JSON générés)
+
+## Vérif post-deploy
+
+1. Run workflow vert (`mcp__github__actions_list`)
+2. `curl` sur URL prod — jamais « live » sans l'avoir vu
+3. Vérifier le SW (`CACHE_NAME` auto-dérivé, pas de bump manuel)
+
+## Secrets
+
+Tous dans GitHub Actions secrets :
+- `MOLLIE_API_KEY`, `MOLLIE_WEBHOOK_SECRET`
+- `SMTP_PASS`, `GOOGLE_SERVICE_ACCOUNT_JSON`
+- `SUPABASE_SERVICE_KEY`, `SUPABASE_ACCESS_TOKEN`
+- `MODERATE_TOKEN`, `ONESIGNAL_API_KEY_*`
+- `SG_STATS_KEY_*`, `COPERNICUS_*`
+
+**Jamais en repo.** Les `*-config.php` vivent sur FTP.

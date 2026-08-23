@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<title>Étalement Marée — wow candidate</title>
+<style>
+  :root{
+    --ink:#0d0b14;
+    --sea0:#7C3F8F; --sea1:#A8417A; --sea2:#D45E45; --sea3:#F2A04C;
+    --jade0:#74D89E; --jade1:#157F49;
+    --sand0:#F6E4B8; --sand1:#E7C681;
+    --core0:#E3B743; --core1:#B08A2A; --core2:#7C6A22;
+    --clump:#5d5a1e; --gleam:#FFE9A8; --foam:#eafcff;
+    --paper:#fff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;
+    background:linear-gradient(180deg,#3a1750 0%,#7C3F8F 32%,#A8417A 52%,#D45E45 72%,#F2A04C 100%);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .wrap{position:relative;width:min(96vw,820px);aspect-ratio:4/3;
+    border-radius:18px;overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.55), inset 0 0 0 2px rgba(13,11,20,.12)}
+  svg{display:block;width:100%;height:100%}
+  .label{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    z-index:5;display:flex;align-items:center;gap:9px;
+    background:rgba(13,11,20,.78);border:2px solid var(--gleam);
+    padding:7px 15px 6px;border-radius:999px;
+    font-family:Anton,system-ui;font-weight:400;letter-spacing:.04em;
+    color:var(--gleam);font-size:15px;text-transform:uppercase;
+    box-shadow:0 6px 22px rgba(0,0,0,.4)}
+  .label .dot{width:9px;height:9px;border-radius:50%;background:var(--core0);
+    box-shadow:0 0 0 3px rgba(227,183,67,.3)}
+  .hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:5;
+    font:600 11px system-ui;letter-spacing:.05em;color:rgba(255,255,255,.72);
+    text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,.5);user-select:none}
+  .paused .hint::after{content:" · EN PAUSE";color:var(--gleam)}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="label"><span class="dot"></span>Étalement Marée</div>
+  <div class="hint" id="hint">Clic pour mettre en pause</div>
+
+  <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" id="stage" aria-label="Banc de sargasses qui s'échoue et s'étale sur la plage">
+    <defs>
+      <!-- sea / horizon glow -->
+      <radialGradient id="sun" cx="50%" cy="34%" r="62%">
+        <stop offset="0" stop-color="#FFE9A8" stop-opacity=".55"/>
+        <stop offset=".45" stop-color="#F2A04C" stop-opacity=".18"/>
+        <stop offset="1" stop-color="#F2A04C" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="seaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7C3F8F"/>
+        <stop offset=".5" stop-color="#A8417A"/>
+        <stop offset="1" stop-color="#D45E45"/>
+      </linearGradient>
+      <!-- sand -->
+      <linearGradient id="sandGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F6E4B8"/>
+        <stop offset="1" stop-color="#E7C681"/>
+      </linearGradient>
+      <!-- island jade -->
+      <linearGradient id="jadeGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/>
+        <stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <!-- sargassum core gradient (radial = mat look) -->
+      <radialGradient id="sargCore" cx="42%" cy="38%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/>
+        <stop offset=".55" stop-color="#B08A2A"/>
+        <stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <!-- smear gradient: dense at shore, fades to feathered edge -->
+      <linearGradient id="smearGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7C6A22"/>
+        <stop offset=".4" stop-color="#B08A2A"/>
+        <stop offset="1" stop-color="#E3B743"/>
+      </linearGradient>
+      <!-- halftone dots clipped onto the deposit -->
+      <pattern id="halftone" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+        <circle cx="3" cy="3" r="1.9" fill="#5d5a1e" opacity=".5"/>
+      </pattern>
+      <!-- foam dotted edge -->
+      <radialGradient id="foamG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+        <stop offset="1" stop-color="#eafcff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- ============ STATIC SCENE ============ -->
+    <!-- sea -->
+    <rect x="0" y="0" width="800" height="600" fill="url(#seaGrad)"/>
+    <rect x="0" y="0" width="800" height="600" fill="url(#sun)"/>
+    <!-- distant island (jade) on horizon -->
+    <g>
+      <path d="M540 150 Q600 120 670 138 Q740 150 770 172 L770 196 L540 196 Z"
+            fill="url(#jadeGrad)" stroke="#0d0b14" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M560 160 Q600 142 632 156" fill="none" stroke="#0d0b14" stroke-width="2" opacity=".35" stroke-linecap="round"/>
+    </g>
+    <!-- gentle sea swell lines (static, ink) -->
+    <g stroke="#0d0b14" stroke-width="2.5" fill="none" opacity=".16" stroke-linecap="round">
+      <path d="M60 250 Q160 240 260 250 T460 250"/>
+      <path d="M340 292 Q450 282 560 292 T780 292"/>
+    </g>
+
+    <!-- ============ BEACH / COAST ============ -->
+    <!-- sand arc (foreground cove) -->
+    <path d="M0 600 L0 430 Q200 372 400 392 Q600 412 800 372 L800 600 Z"
+          fill="url(#sandGrad)" stroke="#0d0b14" stroke-width="4" stroke-linejoin="round"/>
+    <!-- wet shoreline liseré -->
+    <path id="shore" d="M0 430 Q200 372 400 392 Q600 412 800 372"
+          fill="none" stroke="#0d0b14" stroke-width="3.5" stroke-linecap="round" opacity=".85"/>
+    <path d="M0 442 Q200 384 400 404 Q600 424 800 384"
+          fill="none" stroke="#FFE9A8" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+    <!-- sand texture halftone hint -->
+    <g fill="#0d0b14" opacity=".07">
+      <circle cx="120" cy="500" r="2.2"/><circle cx="260" cy="540" r="2.2"/>
+      <circle cx="430" cy="510" r="2.2"/><circle cx="600" cy="548" r="2.2"/>
+      <circle cx="700" cy="500" r="2.2"/><circle cx="340" cy="560" r="2.2"/>
+    </g>
+
+    <!-- "avoid" pin at the targeted beach point (400,360 coast) -->
+    <g id="avoidPin" transform="translate(400,372)">
+      <path d="M0 -34 C-17 -34 -26 -22 -26 -10 C-26 6 0 30 0 30 C0 30 26 6 26 -10 C26 -22 17 -34 0 -34 Z"
+            fill="#E8402A" stroke="#0d0b14" stroke-width="3.5" stroke-linejoin="round"/>
+      <circle cx="0" cy="-11" r="8.5" fill="#fff" stroke="#0d0b14" stroke-width="3"/>
+    </g>
+
+    <!-- ============ THE DEPOSIT (final smear, built dynamically into here) ============ -->
+    <g id="depositLayer"></g>
+
+    <!-- ============ THE DRIFTING BANK ============ -->
+    <!-- group is translated/scaled by JS; the blob path is static markup -->
+    <g id="bank" transform="translate(400,140)">
+      <g id="bankScale">
+        <!-- ink contour blob ~r22 (built via path so we keep it one node) -->
+        <path id="bankBody" d="M0,0" fill="url(#sargCore)" stroke="#0d0b14" stroke-width="4" stroke-linejoin="round"/>
+        <!-- internal clumps -->
+        <path id="bankClumps" d="M0,0" fill="#5d5a1e" opacity=".75"/>
+        <!-- top-left gleam -->
+        <ellipse id="bankGleam" cx="-7" cy="-8" rx="8" ry="5.5" fill="#FFE9A8" opacity=".8"/>
+      </g>
+    </g>
+
+    <!-- ============ ADVANCING FOAM LISERÉ (drawn by JS) ============ -->
+    <path id="foamLine" d="M0,0" fill="none" stroke="#eafcff" stroke-width="5"
+          stroke-linecap="round" opacity="0"/>
+    <g id="foamDots"></g>
+
+    <!-- splash burst shards (impact) -->
+    <g id="burst"></g>
+  </svg>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var svg = document.getElementById("stage");
+  var wrap = document.getElementById("wrap");
+  var hint = document.getElementById("hint");
+
+  var bank      = document.getElementById("bank");
+  var bankScale = document.getElementById("bankScale");
+  var bankBody  = document.getElementById("bankBody");
+  var bankClumps= document.getElementById("bankClumps");
+  var bankGleam = document.getElementById("bankGleam");
+  var foamLine  = document.getElementById("foamLine");
+  var foamDots  = document.getElementById("foamDots");
+  var burst     = document.getElementById("burst");
+  var deposit   = document.getElementById("depositLayer");
+
+  // ---- impact point on the coast ----
+  var IX = 400, IY = 360;
+
+  // ---------- seeded PRNG ----------
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+  // ---------- seeded smooth blob path (closed Catmull-Rom-ish) ----------
+  function blobPath(cx, cy, rx, ry, n, jitter, rnd){
+    var pts = [];
+    for(var i=0;i<n;i++){
+      var a = (i/n)*Math.PI*2;
+      var r = 1 + (rnd()*2-1)*jitter;
+      pts.push([cx + Math.cos(a)*rx*r, cy + Math.sin(a)*ry*r]);
+    }
+    // build smooth closed path with quadratic midpoints
+    var d = "";
+    for(var j=0;j<=n;j++){
+      var p0 = pts[(j)%n], p1 = pts[(j+1)%n];
+      var mx = (p0[0]+p1[0])/2, my = (p0[1]+p1[1])/2;
+      if(j===0){ d = "M"+mx.toFixed(1)+","+my.toFixed(1); }
+      else { d += " Q"+p0[0].toFixed(1)+","+p0[1].toFixed(1)+" "+mx.toFixed(1)+","+my.toFixed(1); }
+    }
+    return d + "Z";
+  }
+
+  // build the bank blob once (seeded)
+  var seed = 1337;
+  var rndBank = mulberry32(seed);
+  bankBody.setAttribute("d",   blobPath(0,0, 22,20, 11, 0.18, mulberry32(seed)));
+  bankClumps.setAttribute("d", blobPath(2,1, 12,10, 8, 0.30, mulberry32(seed+9)));
+
+  // ---------- build the final smear deposit (static, seeded) ----------
+  // long, low, lozenge that hugs the shoreline; we reveal it via clip-style scale.
+  // Deposit spans ~ IX-180 .. IX+180 along the coast, sitting just below shoreline.
+  var SMEAR_HALF = 188;      // half-width along shore
+  var SMEAR_H    = 30;       // vertical thickness
+  function smearPath(halfW, h, rnd){
+    // top edge follows the gentle shoreline tilt; bottom is feathered
+    var top = "M "+(-halfW)+" 4";
+    // upper ragged edge (toward sea) — small bumps
+    var steps = 9, d = "";
+    var topPts=[];
+    for(var i=0;i<=steps;i++){
+      var t = i/steps;
+      var x = -halfW + t*halfW*2;
+      var bump = (rnd()*2-1)*4;
+      var y = -2 + bump - Math.sin(t*Math.PI)*3; // slight crown
+      topPts.push([x,y]);
+    }
+    var botPts=[];
+    for(var k=0;k<=steps;k++){
+      var t2 = k/steps;
+      var x2 = halfW - t2*halfW*2;
+      var lobe = Math.sin(t2*Math.PI); // thick in the middle
+      var y2 = h*(0.45+0.55*lobe) + (rnd()*2-1)*4;
+      botPts.push([x2,y2]);
+    }
+    d = "M "+topPts[0][0].toFixed(1)+" "+topPts[0][1].toFixed(1);
+    for(var a=1;a<topPts.length;a++) d+=" L "+topPts[a][0].toFixed(1)+" "+topPts[a][1].toFixed(1);
+    for(var b=0;b<botPts.length;b++) d+=" L "+botPts[b][0].toFixed(1)+" "+botPts[b][1].toFixed(1);
+    return d+" Z";
+  }
+
+  // shoreline slope near impact ~ small downward to the right; tilt the deposit slightly
+  var SMEAR_TILT = -4; // degrees
+
+  // deposit body
+  var depRnd = mulberry32(424242);
+  var depG = document.createElementNS(NS,"g");
+  depG.setAttribute("transform","translate("+IX+","+(IY+10)+") rotate("+SMEAR_TILT+")");
+  // we scale this group's X from 0->1 to reveal the spread
+  var depInner = document.createElementNS(NS,"g");
+  depInner.setAttribute("id","depInner");
+
+  var depPathD = smearPath(SMEAR_HALF, SMEAR_H, mulberry32(424242));
+  var depBody = document.createElementNS(NS,"path");
+  depBody.setAttribute("d", depPathD);
+  depBody.setAttribute("fill","url(#smearGrad)");
+  depBody.setAttribute("stroke","#0d0b14");
+  depBody.setAttribute("stroke-width","3.5");
+  depBody.setAttribute("stroke-linejoin","round");
+  depInner.appendChild(depBody);
+
+  // halftone overlay on deposit
+  var depTone = document.createElementNS(NS,"path");
+  depTone.setAttribute("d", depPathD);
+  depTone.setAttribute("fill","url(#halftone)");
+  depInner.appendChild(depTone);
+
+  // a few clumps inside deposit (seeded)
+  for(var c=0;c<5;c++){
+    var clx = (depRnd()*2-1)*SMEAR_HALF*0.8;
+    var cly = 6 + depRnd()*SMEAR_H*0.7;
+    var cl = document.createElementNS(NS,"path");
+    cl.setAttribute("d", blobPath(clx, cly, 9+depRnd()*6, 5+depRnd()*3, 7, 0.3, mulberry32(700+c)));
+    cl.setAttribute("fill","#5d5a1e");
+    cl.setAttribute("opacity","0.6");
+    depInner.appendChild(cl);
+  }
+  // gleam streak on deposit (top)
+  var depGleam = document.createElementNS(NS,"path");
+  depGleam.setAttribute("d","M "+(-SMEAR_HALF*0.7)+" -1 Q 0 -6 "+(SMEAR_HALF*0.7)+" -1");
+  depGleam.setAttribute("fill","none");
+  depGleam.setAttribute("stroke","#FFE9A8");
+  depGleam.setAttribute("stroke-width","3");
+  depGleam.setAttribute("stroke-linecap","round");
+  depGleam.setAttribute("opacity","0.55");
+  depInner.appendChild(depGleam);
+
+  depG.appendChild(depInner);
+  deposit.appendChild(depG);
+
+  // ---------- foam dots (reused along advancing liseré) ----------
+  var FOAM_N = 7;
+  var foamCircles = [];
+  for(var f=0; f<FOAM_N; f++){
+    var fc = document.createElementNS(NS,"circle");
+    fc.setAttribute("r", (5 - (f%3)).toFixed(1));
+    fc.setAttribute("fill","url(#foamG)");
+    fc.setAttribute("opacity","0");
+    foamDots.appendChild(fc);
+    foamCircles.push(fc);
+  }
+
+  // ---------- burst shards (impact splash) ----------
+  var SHARD_N = 9;
+  var shards = [];
+  var sRnd = mulberry32(98765);
+  for(var s=0; s<SHARD_N; s++){
+    var sh = document.createElementNS(NS,"path");
+    sh.setAttribute("d", blobPath(0,0, 6+sRnd()*4, 5+sRnd()*3, 6, 0.35, mulberry32(50+s)));
+    sh.setAttribute("fill", s%3===0 ? "#FFE9A8" : (s%3===1 ? "#E3B743" : "#B08A2A"));
+    sh.setAttribute("stroke","#0d0b14");
+    sh.setAttribute("stroke-width","2.5");
+    sh.setAttribute("opacity","0");
+    burst.appendChild(sh);
+    var ang = (s/SHARD_N)*Math.PI - Math.PI*0.06 + (sRnd()*0.4-0.2); // spray mostly sideways/up
+    shards.push({ el:sh, dx:Math.cos(ang), dy:-Math.abs(Math.sin(ang))*0.55 - 0.15, dist:60+sRnd()*70, spin:(sRnd()*2-1)*180 });
+  }
+
+  // ---------- easing ----------
+  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+  function easeInCubic(t){ return t*t*t; }
+  function easeOutBack(t){ var c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); }
+  function clamp01(t){ return t<0?0:t>1?1:t; }
+
+  // ---------- timeline (ms) ----------
+  // 0..520   drift in from sea toward impact, slight grow
+  // 520..700 IMPACT: squash + burst shards
+  // 640..1180 SMEAR: scaleX explodes, scaleY flattens; foam advances then recedes; deposit reveals
+  // 1180..1700 settle + foam recede; bank fades into deposit
+  // 1700..2100 hold final pose, then fade deposit out and reset
+  var T_IN=520, T_IMPACT=700, T_SMEAR=1180, T_SETTLE=1700, T_HOLD=2100;
+  var START_Y = 140;       // bank starts up in the sea
+  var LOOP = T_HOLD + 260; // small gap before reset
+
+  function setBank(x,y,sx,sy,rot,op){
+    bank.setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+") rotate("+rot.toFixed(1)+")");
+    bankScale.setAttribute("transform","scale("+sx.toFixed(3)+","+sy.toFixed(3)+")");
+    bank.style.opacity = op;
+  }
+  function setDepositReveal(p){ // p:0..1 horizontal reveal + rise
+    var sx = 0.04 + 0.96*easeOutCubic(p);
+    var sy = 0.5 + 0.5*easeOutCubic(p);
+    depInner.setAttribute("transform","scale("+sx.toFixed(3)+","+sy.toFixed(3)+")");
+    depInner.style.opacity = clamp01(p*1.4);
+  }
+  function setFoam(advance, op){ // advance: how far foam sits above the deposit edge (px up), op:opacity
+    // foam line spans deposit width, sits at IY + (10 - advance)
+    var y = IY + 14 - advance;
+    var half = SMEAR_HALF*0.96;
+    foamLine.setAttribute("d","M "+(IX-half)+" "+y.toFixed(1)+
+      " Q "+IX+" "+(y-7).toFixed(1)+" "+(IX+half)+" "+y.toFixed(1));
+    foamLine.style.opacity = op;
+    for(var i=0;i<FOAM_N;i++){
+      var t=i/(FOAM_N-1);
+      var fx = IX - half + t*half*2;
+      var fy = y - Math.sin(t*Math.PI)*7 + (i%2? 2:-2);
+      foamCircles[i].setAttribute("cx",fx.toFixed(1));
+      foamCircles[i].setAttribute("cy",fy.toFixed(1));
+      foamCircles[i].style.opacity = op*0.9;
+    }
+  }
+
+  function frame(t){ // t in [0,LOOP)
+    // ----- defaults each frame -----
+    if(t < T_IN){
+      // DRIFT: float from sea to impact, slight grow + tiny wobble
+      var p = easeOutCubic(t/T_IN);
+      var x = IX + (Math.sin(t/120)*6)*(1-p);     // wobble settles
+      var y = START_Y + (IY-6 - START_Y)*p;
+      var g = 1 + 0.12*p;
+      setBank(x, y, g, g, Math.sin(t/160)*5*(1-p), 1);
+      setDepositReveal(0);
+      setFoam(0,0);
+      hideBurst();
+    }
+    else if(t < T_IMPACT){
+      // IMPACT: squash (scaleY down, scaleX up), fire burst
+      var p2 = (t-T_IN)/(T_IMPACT-T_IN);
+      var e = easeOutCubic(p2);
+      var sx = 1.12 + 0.9*e;     // start widening
+      var sy = 1.12 - 0.7*e;     // squash down
+      setBank(IX, IY-2 + 4*e, sx, sy, 0, 1);
+      setDepositReveal(0.06*e);
+      setFoam(2*e, e*0.8);
+      showBurst(p2);
+    }
+    else if(t < T_SMEAR){
+      // SMEAR: scaleX explodes to span the shore, scaleY flattens to ~thin film
+      var p3 = (t-T_IMPACT)/(T_SMEAR-T_IMPACT);
+      var e3 = easeOutCubic(p3);
+      var sx3 = 2.0 + (SMEAR_HALF/22 - 2.0)*e3;   // reach deposit half-width in bank units
+      var sy3 = 0.42 - 0.30*e3;                    // flatten to a film
+      // bank fades as the deposit takes over
+      var bankOp = 1 - easeInCubic(clamp01((p3-0.35)/0.65));
+      setBank(IX, IY+4, sx3, Math.max(0.08,sy3), 0, bankOp);
+      // deposit reveals outward in sync
+      setDepositReveal(e3);
+      // foam advances forward (up the beach) then peaks
+      var adv = 18*Math.sin(clamp01(p3)*Math.PI*0.85);
+      setFoam(adv, 0.85);
+      fadeBurst(p3);
+    }
+    else if(t < T_SETTLE){
+      // SETTLE: deposit full; foam recedes back to sea; bank gone
+      var p4 = (t-T_SMEAR)/(T_SETTLE-T_SMEAR);
+      var e4 = easeOutCubic(p4);
+      setBank(IX, IY+4, SMEAR_HALF/22, 0.12, 0, 0);
+      setDepositReveal(1);
+      // foam recedes: advance shrinks, fades
+      var adv2 = 18*(1-e4);
+      setFoam(adv2, 0.85*(1-e4));
+      hideBurst();
+    }
+    else {
+      // HOLD then fade for loop
+      var p5 = (t-T_SETTLE)/(T_HOLD-T_SETTLE);
+      setBank(IX, IY+4, SMEAR_HALF/22, 0.12, 0, 0);
+      // hold full, fade only in last 30%
+      var fade = p5<0.7 ? 1 : (1-(p5-0.7)/0.3);
+      depInner.setAttribute("transform","scale(1,1)");
+      depInner.style.opacity = clamp01(fade);
+      setFoam(0,0);
+      hideBurst();
+    }
+  }
+
+  function showBurst(p){ // p:0..1 across impact window
+    var e = easeOutCubic(clamp01(p));
+    for(var i=0;i<SHARD_N;i++){
+      var sh = shards[i];
+      var d = sh.dist*e;
+      var x = IX + sh.dx*d;
+      var y = (IY-6) + sh.dy*d + (e*e)*40; // gravity pull after launch
+      var sc = 1 - e*0.4;
+      sh.el.setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+") rotate("+(sh.spin*e).toFixed(1)+") scale("+sc.toFixed(2)+")");
+      sh.el.style.opacity = (1-e)*0.95;
+    }
+  }
+  function fadeBurst(p){ // during smear, finish flying down + fade out
+    var e = clamp01(0.4 + p*0.6);
+    for(var i=0;i<SHARD_N;i++){
+      var sh = shards[i];
+      var d = sh.dist*(0.7+0.3*e);
+      var x = IX + sh.dx*d;
+      var y = (IY-6) + sh.dy*d + (e*e)*70;
+      sh.el.setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+") scale("+(0.6).toFixed(2)+")");
+      sh.el.style.opacity = (1-e)*0.5;
+    }
+  }
+  function hideBurst(){ for(var i=0;i<SHARD_N;i++) shards[i].el.style.opacity=0; }
+
+  // ---------- reduced motion: FROZEN FINAL POSE ----------
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function freezeFinal(){
+    setBank(IX, IY+4, SMEAR_HALF/22, 0.12, 0, 0); // bank dissolved
+    depInner.setAttribute("transform","scale(1,1)");
+    depInner.style.opacity = 1;
+    setFoam(0,0);
+    hideBurst();
+    hint.textContent = "Pose finale (mouvement réduit)";
+  }
+
+  // ---------- single rAF loop ----------
+  var t0 = null, paused = false, rafId = null;
+  function tick(now){
+    if(t0===null) t0 = now;
+    var t = (now - t0) % LOOP;
+    frame(t);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  if(reduce){
+    freezeFinal();
+  } else {
+    rafId = requestAnimationFrame(tick);
+    wrap.addEventListener("click", function(){
+      paused = !paused;
+      wrap.classList.toggle("paused", paused);
+      if(paused){
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+      } else {
+        // resume without time jump
+        t0 = null;
+        rafId = requestAnimationFrame(tick);
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

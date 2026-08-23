@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SARG · GSC Dashboard — Comparatif MQ vs GP</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#06080C;--surface:#0C1018;--card:#111620;--card2:#161D28;
+  --b:rgba(255,255,255,.06);--bL:rgba(255,255,255,.12);
+  --w:#E8EFF8;--mid:#6A8CA8;--mute:#304558;
+  --mq:#00D4C8;--mqBg:rgba(0,212,200,.08);
+  --gp:#F08C14;--gpBg:rgba(240,140,20,.08);
+  --green:#22D97A;--greenBg:rgba(34,217,122,.08);
+  --red:#E83030;--redBg:rgba(232,48,48,.08);
+  --purple:#AA44FF;--purpleBg:rgba(170,68,255,.08);
+  --yellow:#F5C842;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--bg);color:var(--w);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6}
+body{min-height:100vh;padding-bottom:80px}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;}
+.orb1{position:fixed;top:-200px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,200,.05) 0%,transparent 70%);pointer-events:none;z-index:0}
+.orb2{position:fixed;bottom:-200px;left:0;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(240,140,20,.05) 0%,transparent 70%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;margin-bottom:0;border-bottom:1px solid var(--b);padding-top:24px}
+.tab{padding:10px 22px;cursor:pointer;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--mute);border-bottom:2px solid transparent;transition:all .2s;user-select:none;margin-bottom:-1px}
+.tab:hover{color:var(--mid)}
+.tab.active-mq{color:var(--mq);border-bottom-color:var(--mq)}
+.tab.active-gp{color:var(--gp);border-bottom-color:var(--gp)}
+.tab.active-vs{color:var(--purple);border-bottom-color:var(--purple)}
+.tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* CONTENT PANES */
+.pane{display:none}.pane.active{display:block;animation:fadeUp .35s ease}
+
+/* HEADER */
+.dash-header{padding:28px 0 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--b);margin-bottom:24px}
+.h-brand{display:flex;align-items:center;gap:12px}
+.h-orb{width:32px;height:32px;border-radius:50%;flex-shrink:0}
+.orb-mq{background:conic-gradient(from 0deg,#00F0E4,#004A46,#00D4C8,#00F0E4);animation:spin 10s linear infinite}
+.orb-gp{background:conic-gradient(from 0deg,#F0B814,#8A4A00,#F08C14,#F0B814);animation:spin 10s linear infinite}
+.orb-vs{background:conic-gradient(from 0deg,#00D4C8,#AA44FF,#F08C14,#00D4C8);animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.h-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.h-url{font-size:11px;font-family:'Space Mono',monospace;margin-top:1px}
+.h-meta{text-align:right}
+.h-period{font-size:10px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.h-dates{font-family:'Space Mono',monospace;font-size:12px;color:var(--mid);margin-top:2px}
+.launch-badge{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:2px 9px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.lb-mq{border:1px solid rgba(0,212,200,.3);background:rgba(0,212,200,.07);color:var(--mq)}
+.lb-gp{border:1px solid rgba(240,140,20,.3);background:rgba(240,140,20,.07);color:var(--gp)}
+.dot-live{width:5px;height:5px;border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* SECTION TITLE */
+.stitle{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--b)}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi:hover{border-color:var(--bL)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.kpi.c-mq{--ac:var(--mq)} .kpi.c-mq::before{background:var(--mq)}
+.kpi.c-gp{--ac:var(--gp)} .kpi.c-gp::before{background:var(--gp)}
+.kpi.c-g{--ac:var(--green)} .kpi.c-g::before{background:var(--green)}
+.kpi.c-p{--ac:var(--purple)} .kpi.c-p::before{background:var(--purple)}
+.kpi-icon{font-size:20px;margin-bottom:8px;display:block}
+.kpi-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--ac);line-height:1;margin-bottom:3px;letter-spacing:-.02em}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.kpi-sub{font-size:11px;color:var(--mid);margin-top:3px}
+.kpi-trend{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.2);color:var(--ac);display:inline-block;margin-top:4px;border:1px solid currentColor;border-opacity:.3}
+
+/* CHART ROW */
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:24px}
+@media(max-width:900px){.chart-row{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:18px}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.chart-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+.cl{display:flex;gap:12px;flex-wrap:wrap}
+.cli{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mid)}
+.cld{width:8px;height:8px;border-radius:50%}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+
+/* TABLE CARD */
+.tcard{background:var(--card);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.tcard-head{padding:14px 18px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.tcard-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+.tcard-n{font-family:'Space Mono',monospace;font-size:9px;color:var(--mute)}
+table{width:100%;border-collapse:collapse}
+th{padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);border-bottom:1px solid var(--b);background:var(--card2);text-align:left}
+td{padding:8px 12px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.025);color:var(--mid);vertical-align:middle}
+td:first-child{color:var(--w);font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.015)}
+tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.04em;font-family:'Space Mono',monospace}
+.b-green{background:rgba(34,217,122,.12);color:var(--green)}
+.b-orange{background:rgba(240,140,20,.12);color:var(--gp)}
+.b-red{background:rgba(232,48,48,.12);color:var(--red)}
+.b-mq{background:rgba(0,212,200,.1);color:var(--mq)}
+.b-gray{background:rgba(255,255,255,.06);color:var(--mid)}
+.b-purple{background:rgba(170,68,255,.12);color:var(--purple)}
+
+/* POS PILL */
+.pp{display:inline-flex;align-items:center;padding:2px 6px;border-radius:6px;font-family:'Space Mono',monospace;font-size:9px;font-weight:700}
+.pp-top{background:rgba(34,217,122,.12);color:var(--green)}
+.pp-mid{background:rgba(240,140,20,.12);color:var(--gp)}
+.pp-low{background:rgba(232,48,48,.12);color:var(--red)}
+.pp-dead{background:rgba(255,255,255,.06);color:var(--mute)}
+
+/* BAR */
+.bw{display:flex;align-items:center;gap:6px}
+.bt{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px}
+.bv{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;min-width:24px;text-align:right}
+
+/* OPPO */
+.oppo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:900px){.oppo-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.oppo-grid{grid-template-columns:1fr}}
+.oppo{background:var(--card);border:1px solid var(--b);border-radius:13px;padding:15px;transition:border-color .2s}
+.oppo:hover{border-color:var(--bL)}
+.oppo-type{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.oppo-kw{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--w);margin-bottom:7px;line-height:1.35}
+.oppo-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.os{font-size:9px;font-family:'Space Mono',monospace;font-weight:700}
+.oppo-action{font-size:11px;color:var(--mid);border-top:1px solid var(--b);padding-top:7px;line-height:1.5}
+
+/* VS COMPARE */
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:700px){.vs-grid{grid-template-columns:1fr}}
+.vs-card{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:18px}
+.vs-site-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.vs-kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.vk{flex:1;min-width:80px;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
+.vk-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1}
+.vk-lbl{font-size:9px;color:var(--mute);letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
+.compare-bar{margin-bottom:14px}
+.cb-label{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-bottom:4px}
+.cb-track{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;position:relative}
+.cb-fill-mq{height:100%;background:var(--mq);border-radius:3px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+.cb-fill-gp{height:100%;background:var(--gp);border-radius:3px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+
+/* GEO PAIR */
+.geo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+@media(max-width:700px){.geo-row{grid-template-columns:1fr}}
+
+/* ANIM */
+.fade-in{opacity:0;transform:translateY(12px);animation:fadeUp .4s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+.d5{animation-delay:.25s}.d6{animation-delay:.3s}.d7{animation-delay:.35s}
+
+/* PAGE BADGE */
+.page-short{font-size:10px;color:var(--mid);font-family:'Space Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+</style>
+</head>
+<body>
+<div class="orb1"></div>
+<div class="orb2"></div>
+<div class="wrap">
+
+<!-- TABS -->
+<div class="tab-bar">
+  <div class="tab active-gp" id="tab-gp" onclick="switchTab('gp')">
+    <span class="tab-dot" style="background:var(--gp)"></span>Guadeloupe
+  </div>
+  <div class="tab" id="tab-mq" onclick="switchTab('mq')">
+    <span class="tab-dot" style="background:var(--mq)"></span>Martinique
+  </div>
+  <div class="tab" id="tab-vs" onclick="switchTab('vs')">
+    <span class="tab-dot" style="background:var(--purple)"></span>Comparatif MQ vs GP
+  </div>
+</div>
+
+<!-- ════════ PANE GP ════════ -->
+<div class="pane active" id="pane-gp">
+  <div class="dash-header">
+    <div class="h-brand">
+      <div class="h-orb orb-gp"></div>
+      <div>
+        <div class="h-name" style="color:var(--gp)">GSC · Guadeloupe</div>
+        <div class="h-url" style="color:var(--gp)">sargasses-guadeloupe.com</div>
+      </div>
+    </div>
+    <div class="h-meta">
+      <div class="h-period">Période</div>
+      <div class="h-dates">21 fév → 06 mar 2026</div>
+      <div class="launch-badge lb-gp"><span class="dot-live" style="background:var(--gp)"></span> 14 jours live</div>
+    </div>
+  </div>
+
+  <!-- KPIs GP -->
+  <div class="kpi-grid fade-in d1">
+    <div class="kpi c-gp">
+      <span class="kpi-icon">👆</span>
+      <div class="kpi-val">112</div>
+      <div class="kpi-lbl">Clics totaux</div>
+      <div class="kpi-sub">~8 clics / jour</div>
+      <div class="kpi-trend">↗ ×5 en 2 semaines</div>
+    </div>
+    <div class="kpi c-g">
+      <span class="kpi-icon">👁</span>
+      <div class="kpi-val">1 750</div>
+      <div class="kpi-lbl">Impressions</div>
+      <div class="kpi-sub">~125 / jour</div>
+      <div class="kpi-trend">↗ En forte hausse</div>
+    </div>
+    <div class="kpi c-p">
+      <span class="kpi-icon">🎯</span>
+      <div class="kpi-val">6.4%</div>
+      <div class="kpi-lbl">CTR moyen</div>
+      <div class="kpi-sub">≈ 2× CTR industrie</div>
+      <div class="kpi-trend">Potentiel ↑ fort</div>
+    </div>
+    <div class="kpi c-gp" style="--ac:var(--red)">
+      <span class="kpi-icon">📍</span>
+      <div class="kpi-val" style="color:var(--red)">9.2</div>
+      <div class="kpi-lbl">Position moy.</div>
+      <div class="kpi-sub">Page 1 bas / p.2</div>
+      <div class="kpi-trend" style="color:var(--gp)">-4pt vs MQ 🎯</div>
+    </div>
+  </div>
+
+  <!-- CHART GP -->
+  <div class="stitle fade-in d2">Évolution quotidienne</div>
+  <div class="chart-row fade-in d2">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">Clics & Impressions</div>
+        <div class="cl">
+          <div class="cli"><div class="cld" style="background:var(--gp)"></div>Clics</div>
+          <div class="cli"><div class="cld" style="background:rgba(240,140,20,.3)"></div>Impr. /10</div>
+        </div>
+      </div>
+      <canvas id="gp-daily" height="75"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head">
+        <div class="chart-title">CTR & Position</div>
+        <div class="cl">
+          <div class="cli"><div class="cld" style="background:var(--green)"></div>CTR%</div>
+          <div class="cli"><div class="cld" style="background:var(--purple)"></div>Pos.</div>
+        </div>
+      </div>
+      <canvas id="gp-ctr" height="125"></canvas>
+    </div>
+  </div>
+
+  <!-- QUERIES + PAGES GP -->
+  <div class="stitle fade-in d3">Requêtes & Pages</div>
+  <div class="two-col fade-in d3">
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">🔍 Top requêtes GP</div>
+        <div class="tcard-n">~110 requêtes</div>
+      </div>
+      <table><thead><tr><th>Requête</th><th>Clics</th><th>CTR</th><th>Pos.</th></tr></thead>
+      <tbody id="gp-queries"></tbody></table>
+    </div>
+    <div class="tcard">
+      <div class="tcard-head">
+        <div class="tcard-title">📄 Pages actives GP</div>
+        <div class="tcard-n">130+ pages</div>
+      </div>
+      <table><thead><tr><th>Page</th><th>Clics</th><th>CTR</th></tr></thead>
+      <tbody id="gp-pages"></tbody></table>
+    </div>
+  </div>
+
+  <!-- OPPOS GP -->
+  <div class="stitle fade-in d4">🚀 Opportunités SEO — Guadeloupe</div>
+  <div class="oppo-grid fade-in d4" id="gp-oppo"></div>
+
+  <!-- GEO GP -->
+  <div class="stitle fade-in d5">🌍 Géographie</div>
+  <div class="tcard fade-in d5">
+    <div class="tcard-head"><div class="tcard-title">Top Pays</div><div class="tcard-n">54 pays</div></div>
+    <table><thead><tr><th>Pays</th><th>Clics</th><th>Impressions</th><th>CTR</th><th>Pos.</th></tr></thead>
+    <tbody id="gp-geo"></tbody></table>
+  </div>
+</div>
+
+<!-- ════════ PANE MQ ════════ -->
+<div class="pane" id="pane-mq">
+  <div class="dash-header">
+    <div class="h-brand">
+      <div class="h-orb orb-mq"></div>
+      <div>
+        <div class="h-name" style="color:var(--mq)">GSC · Martinique</div>
+        <div class="h-url" style="color:var(--mq)">sargasses-martinique.com</div>
+      </div>
+    </div>
+    <div class="h-meta">
+      <div class="h-period">Période</div>
+      <div class="h-dates">18 fév → 06 mar 2026</div>
+      <div class="launch-badge lb-mq"><span class="dot-live" style="background:var(--mq)"></span> 19 jours live</div>
+    </div>
+  </div>
+  <div class="kpi-grid fade-in d1">
+    <div class="kpi c-mq"><span class="kpi-icon">👆</span><div class="kpi-val">498</div><div class="kpi-lbl">Clics totaux</div><div class="kpi-sub">~26 clics / jour</div><div class="kpi-trend">↗ Meilleur site</div></div>
+    <div class="kpi c-g"><span class="kpi-icon">👁</span><div class="kpi-val">3 175</div><div class="kpi-lbl">Impressions</div><div class="kpi-sub">~167 / jour</div><div class="kpi-trend">↗ Croissance forte</div></div>
+    <div class="kpi c-mq" style="--ac:var(--green)"><span class="kpi-icon">🎯</span><div class="kpi-val" style="color:var(--green)">15.7%</div><div class="kpi-lbl">CTR moyen</div><div class="kpi-sub">Excellent (top 5%)</div><div class="kpi-trend" style="color:var(--green)">2.5× GP</div></div>
+    <div class="kpi c-p"><span class="kpi-icon">📍</span><div class="kpi-val">5.2</div><div class="kpi-lbl">Position moy.</div><div class="kpi-sub">Page 1 · Top 5</div><div class="kpi-trend">-4pt vs GP ✅</div></div>
+  </div>
+  <div class="stitle fade-in d2">Top requêtes</div>
+  <div class="tcard fade-in d2">
+    <div class="tcard-head"><div class="tcard-title">🔍 Top 10 requêtes MQ</div><div class="tcard-n">86 requêtes</div></div>
+    <table><thead><tr><th>Requête</th><th>Clics</th><th>CTR</th><th>Pos.</th></tr></thead>
+    <tbody id="mq-queries"></tbody></table>
+  </div>
+</div>
+
+<!-- ════════ PANE VS ════════ -->
+<div class="pane" id="pane-vs">
+  <div class="dash-header">
+    <div class="h-brand">
+      <div class="h-orb orb-vs"></div>
+      <div>
+        <div class="h-name" style="color:var(--purple)">Comparatif MQ vs GP</div>
+        <div class="h-url" style="color:var(--mid)">sargasses-martinique.com · sargasses-guadeloupe.com</div>
+      </div>
+    </div>
+    <div class="h-meta">
+      <div class="h-period">Export</div>
+      <div class="h-dates">08 mars 2026</div>
+    </div>
+  </div>
+
+  <!-- COMPARE BARS -->
+  <div class="stitle fade-in d1">Performance côte à côte</div>
+  <div class="vs-grid fade-in d1">
+    <div class="vs-card">
+      <div class="vs-site-tag"><span style="width:8px;height:8px;border-radius:50%;background:var(--mq);flex-shrink:0"></span><span style="color:var(--mq)">Martinique</span><span style="color:var(--mute);font-size:9px">· 19 jours</span></div>
+      <div class="vs-kpi-row">
+        <div class="vk"><div class="vk-val" style="color:var(--mq)">498</div><div class="vk-lbl">Clics</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--mq)">3 175</div><div class="vk-lbl">Impressions</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--green)">15.7%</div><div class="vk-lbl">CTR</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--purple)">5.2</div><div class="vk-lbl">Pos.</div></div>
+      </div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-site-tag"><span style="width:8px;height:8px;border-radius:50%;background:var(--gp);flex-shrink:0"></span><span style="color:var(--gp)">Guadeloupe</span><span style="color:var(--mute);font-size:9px">· 14 jours</span></div>
+      <div class="vs-kpi-row">
+        <div class="vk"><div class="vk-val" style="color:var(--gp)">112</div><div class="vk-lbl">Clics</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--gp)">1 750</div><div class="vk-lbl">Impressions</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--gp)">6.4%</div><div class="vk-lbl">CTR</div></div>
+        <div class="vk"><div class="vk-val" style="color:var(--red)">9.2</div><div class="vk-lbl">Pos.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARAISON PAR MÉTRIQUE -->
+  <div class="stitle fade-in d2">Écart par métrique</div>
+  <div class="chart-card fade-in d2" style="margin-bottom:24px">
+    <div class="chart-head"><div class="chart-title">Clics / jour (normalisé)</div></div>
+    <canvas id="vs-chart" height="60"></canvas>
+  </div>
+
+  <!-- ANALYSE COMPARE -->
+  <div class="stitle fade-in d3">Analyse & Recommandations</div>
+  <div class="oppo-grid fade-in d3" id="vs-analysis"></div>
+
+  <!-- REQUÊTES COMMUNES -->
+  <div class="stitle fade-in d4">Requêtes en commun (cross-linking)</div>
+  <div class="tcard fade-in d4">
+    <div class="tcard-head"><div class="tcard-title">🔗 Mots-clés ciblant les deux îles</div><div class="tcard-n">Opportunités de cross-linking</div></div>
+    <table><thead><tr><th>Requête</th><th>Site qui la reçoit</th><th>Impressions</th><th>Action recommandée</th></tr></thead>
+    <tbody id="vs-cross"></tbody></table>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── UTILS ──
+function posPill(pos){
+  if(!pos||pos===0) return '<span class="badge b-gray">—</span>';
+  const cls=pos<=4?'pp-top':pos<=8?'pp-mid':pos<=15?'pp-low':'pp-dead';
+  return `<span class="pp ${cls}">#${Number(pos).toFixed(1)}</span>`;
+}
+
+// ── DATA GP ──
+const gpDaily=[
+  {d:'21/02',cl:0,im:0,ctr:0,pos:0},
+  {d:'22/02',cl:3,im:7,ctr:42.86,pos:25.3},
+  {d:'23/02',cl:5,im:39,ctr:12.82,pos:14.7},
+  {d:'24/02',cl:9,im:115,ctr:7.83,pos:11.6},
+  {d:'25/02',cl:7,im:115,ctr:6.09,pos:11.3},
+  {d:'26/02',cl:3,im:47,ctr:6.38,pos:21},
+  {d:'27/02',cl:2,im:39,ctr:5.13,pos:24.8},
+  {d:'28/02',cl:3,im:50,ctr:6,pos:16},
+  {d:'01/03',cl:10,im:270,ctr:3.7,pos:8.9},
+  {d:'02/03',cl:18,im:277,ctr:6.5,pos:8.4},
+  {d:'03/03',cl:13,im:197,ctr:6.6,pos:9.5},
+  {d:'04/03',cl:17,im:195,ctr:8.72,pos:9.5},
+  {d:'05/03',cl:15,im:213,ctr:7.04,pos:8.7},
+  {d:'06/03',cl:7,im:186,ctr:3.76,pos:9},
+];
+
+const gpQueries=[
+  {q:'carte sargasse guadeloupe en direct',cl:6,im:25,ctr:24,pos:5.72},
+  {q:'carte des sargasses guadeloupe',cl:4,im:22,ctr:18.18,pos:4.68},
+  {q:'carte sargasses guadeloupe',cl:4,im:20,ctr:20,pos:5.4},
+  {q:'sargasse guadeloupe 2026',cl:3,im:102,ctr:2.94,pos:6.44},
+  {q:'carte sargasse guadeloupe',cl:3,im:43,ctr:6.98,pos:4.86},
+  {q:'sargasses guadeloupe 2026',cl:1,im:37,ctr:2.7,pos:6.08},
+  {q:'sargasse guadeloupe en direct',cl:1,im:18,ctr:5.56,pos:12.72},
+  {q:'plage de bois jolan sargasses',cl:1,im:13,ctr:7.69,pos:6.92},
+  {q:'prévision sargasse guadeloupe',cl:1,im:2,ctr:50,pos:5.5},
+  {q:'sargasse en temps réel',cl:0,im:60,ctr:0,pos:9.87},
+  {q:'carte des sargasses',cl:0,im:15,ctr:0,pos:9.47},
+  {q:'sargasses guadeloupe',cl:0,im:11,ctr:0,pos:69.82},
+  {q:'sargasse guadeloupe',cl:0,im:11,ctr:0,pos:70.18},
+  {q:'période sargasse guadeloupe',cl:0,im:6,ctr:0,pos:6.17},
+  {q:'meteo sargasse guadeloupe',cl:0,im:3,ctr:0,pos:6.67},
+];
+
+const gpPages=[
+  {p:'/carte-temps-reel/',cl:14,im:259,ctr:5.41,pos:7.15},
+  {p:'/quand-sargasses-guadeloupe/',cl:10,im:281,ctr:3.56,pos:10.93},
+  {p:'/previsions-sargasses-guadeloupe/',cl:9,im:237,ctr:3.8,pos:7.21},
+  {p:'/',cl:8,im:111,ctr:7.21,pos:15.63},
+  {p:'/plages/de-bois-jolan/',cl:5,im:38,ctr:13.16,pos:3.87},
+  {p:'/plages-guadeloupe/la-desirade-est/',cl:4,im:8,ctr:50,pos:4.5},
+  {p:'/plages/la-caravelle/',cl:3,im:18,ctr:16.67,pos:4.22},
+  {p:'/communes/deshaies/',cl:3,im:9,ctr:33.33,pos:6.33},
+  {p:'/plages-guadeloupe/plage-de-l-anse-des-rochers/',cl:3,im:4,ctr:75,pos:3},
+  {p:'/plages-guadeloupe/plage-de-l-anse-du-figuier/',cl:2,im:19,ctr:10.53,pos:5},
+];
+
+const gpGeo=[
+  {c:'🇫🇷 France',cl:65,im:892,ctr:7.29,pos:12.1},
+  {c:'🇬🇵 Guadeloupe',cl:23,im:271,ctr:8.49,pos:9.83},
+  {c:'🇨🇦 Canada',cl:16,im:280,ctr:5.71,pos:9.2},
+  {c:'🇲🇶 Martinique',cl:3,im:41,ctr:7.32,pos:7.2},
+  {c:'🇧🇪 Belgique',cl:3,im:38,ctr:7.89,pos:6.34},
+  {c:'🇨🇭 Suisse',cl:1,im:25,ctr:4,pos:7.72},
+  {c:'🇺🇸 États-Unis',cl:0,im:50,ctr:0,pos:5.94},
+  {c:'🇪🇸 Espagne',cl:0,im:25,ctr:0,pos:7.16},
+  {c:'🇲🇽 Mexique',cl:0,im:21,ctr:0,pos:8.76},
+  {c:'🇬🇧 Royaume-Uni',cl:0,im:14,ctr:0,pos:5.86},
+];
+
+const gpOppo=[
+  {type:'🚨 Urgence',color:'var(--red)',kw:'"sargasses guadeloupe" pos. 70',im:11,cl:0,ctr:0,pos:70,
+   action:'Terme générique = identité du site. Retravailler le title de la homepage : "Sargasses Guadeloupe – Carte & Prévisions en temps réel".'},
+  {type:'💰 Volume max',color:'var(--gp)',kw:'sargasse en temps réel',im:60,cl:0,ctr:0,pos:9.87,
+   action:'60 impr., 0 clic, pos 9.87 — ajouter "en temps réel" dans H1 + balise title de /carte-temps-reel/. Potentiel +50 clics.'},
+  {type:'📅 Saisonnier',color:'var(--green)',kw:'sargasse guadeloupe 2026',im:102,cl:3,ctr:2.94,pos:6.44,
+   action:'102 impressions mais CTR 2.9% — mettre "2026" dans title de la page prévisions. Snippet FAQ schema avec dates de saison.'},
+  {type:'🇺🇸 Expansion EN',color:'var(--purple)',kw:'sargassum guadeloupe (non indexé)',im:0,cl:0,pos:0,
+   action:'États-Unis : 50 impr., 0 clic, pos 5.94 en FR. Créer /en/ avec "sargassum forecast Guadeloupe" — même potentiel qu\'en MQ.'},
+  {type:'📍 Page plage top',color:'var(--green)',kw:'plage de bois jolan sargasses',im:13,cl:1,ctr:7.69,pos:6.92,
+   action:'/plages/de-bois-jolan/ — pos 3.87, CTR 13%. Enrichir avec photo satellite, H2S badge, widget prévisions inline.'},
+  {type:'🔗 CTR /quand/',color:'var(--gp)',kw:'quand viennent les sargasses GP',im:281,cl:10,ctr:3.56,pos:10.93,
+   action:'281 impressions mais CTR 3.5% — réécrire la meta description avec dates précises. Cibler rich snippet FAQ "quand 2026".'},
+];
+
+// DATA MQ
+const mqQueries=[
+  {q:'sargasse martinique en temps réel',cl:162,im:595,ctr:27.23,pos:3.86},
+  {q:'sargasse martinique aujourd\'hui',cl:30,im:239,ctr:12.55,pos:5.2},
+  {q:'sargasses martinique',cl:23,im:222,ctr:10.36,pos:4.57},
+  {q:'carte sargasse martinique',cl:22,im:220,ctr:10,pos:4.99},
+  {q:'sargasse martinique',cl:13,im:145,ctr:8.97,pos:8.79},
+  {q:'sargasses martinique carte',cl:9,im:43,ctr:20.93,pos:5.16},
+  {q:'sargasse martinique en direct',cl:8,im:12,ctr:66.67,pos:3.25},
+  {q:'sargasse en temps réel',cl:6,im:154,ctr:3.9,pos:8.17},
+  {q:'carte sargasse martinique 2026',cl:6,im:96,ctr:6.25,pos:5.15},
+  {q:'alerte sargasse martinique',cl:1,im:4,ctr:25,pos:2},
+];
+
+// CROSS
+const crossData=[
+  {q:'sargasse en temps réel',site:'Les 2 sites',mq:'154 impr.',gp:'60 impr.',action:'Harmoniser le H1 : "Sargasses [île] en temps réel" sur les deux homepages'},
+  {q:'carte des sargasses',site:'Les 2 sites',mq:'40 impr.',gp:'15 impr.',action:'Créer /carte-sargasses/ sur MQ + ajouter CTA cross-linking GP⟺MQ en footer'},
+  {q:'carte sargasse martinique 2026',site:'Apparaît sur GP',mq:'—',gp:'7 impr.',action:'GP reçoit du trafic MQ — ajouter cross-link "Voir Martinique" sur chaque page GP'},
+  {q:'sargasse guadeloupe aujourd\'hui',site:'Non indexé',mq:'—',gp:'1 impr.',action:'Créer /sargasses-guadeloupe-aujourd-hui/ — manque critique vs MQ qui a ce slug'},
+  {q:'algues antilles / algues martinique',site:'Les 2 sites',mq:'4 impr.',gp:'—',action:'Créer une page hub /algues-antilles/ cross-linking les deux sites (cluster régional)'},
+];
+
+// VS Analysis
+const vsAnalysis=[
+  {type:'📊 Diagnostic',color:'var(--purple)',kw:'MQ 4.4× plus de clics',
+   action:'Écart principalement dû au lancement 5 jours plus tôt + requête phare "en temps réel" bien positionnée. GP va rattraper.'},
+  {type:'🏆 Avantage GP',color:'var(--green)',kw:'130+ pages indexées',
+   action:'GP a 10× plus de pages de plages indexées. La longue traîne est déjà active. MQ doit accélérer ses pages plages.'},
+  {type:'⚠️ Problème GP',color:'var(--red)',kw:'Termes génériques en pos. 70',
+   action:'"sargasses guadeloupe" et "sargasse guadeloupe" sont en pos. 70+. MQ n\'a pas ce problème. Retravailler les metas homepage GP.'},
+  {type:'🔗 Cross-linking',color:'var(--gp)',kw:'8% du trafic GP vient de MQ',
+   action:'Martinique apparaît dans les requêtes GP. Installer un footer ou banner "Voir aussi Guadeloupe" sur chaque site.'},
+  {type:'🇺🇸 Opportunité EN',color:'var(--purple)',kw:'US : 50 impr. GP · 41 impr. MQ',
+   action:'Les deux sites ont des impressions US sans clics (pos 5–6 en français). Une version EN peut débloquer 100+ clics/mois.'},
+  {type:'📅 Timing',color:'var(--green)',kw:'Saison sargasses = Mars-Octobre',
+   action:'Les deux sites démarrent au meilleur moment. Saison de pointe arrive. Accélérer le SEO maintenant = pic de trafic à capter.'},
+];
+
+// ── CHARTS ──
+Chart.defaults.color='#4A6880';
+Chart.defaults.font.family="'DM Sans', sans-serif";
+Chart.defaults.borderColor='rgba(255,255,255,.05)';
+
+new Chart(document.getElementById('gp-daily'),{
+  type:'bar',
+  data:{
+    labels:gpDaily.map(d=>d.d),
+    datasets:[
+      {label:'Clics',type:'line',data:gpDaily.map(d=>d.cl),
+       borderColor:'#F08C14',backgroundColor:'rgba(240,140,20,.12)',
+       borderWidth:2,fill:true,tension:.4,pointRadius:2,yAxisID:'y',order:1},
+      {label:'Impressions /10',type:'bar',data:gpDaily.map(d=>Math.round(d.im/10)),
+       backgroundColor:'rgba(240,140,20,.2)',borderColor:'rgba(240,140,20,.4)',
+       borderWidth:1,borderRadius:3,yAxisID:'y',order:2}
+    ]
+  },
+  options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(240,140,20,.2)',borderWidth:1,
+      titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:8,
+      callbacks:{label:c=>c.dataset.label===('Impressions /10')?'Impressions: '+(c.raw*10):c.dataset.label+': '+c.raw}
+    }},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}}},
+            y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}},beginAtZero:true}}
+  }
+});
+
+new Chart(document.getElementById('gp-ctr'),{
+  type:'line',
+  data:{
+    labels:gpDaily.slice(1).map(d=>d.d),
+    datasets:[
+      {label:'CTR %',data:gpDaily.slice(1).map(d=>d.ctr),borderColor:'#22D97A',backgroundColor:'rgba(34,217,122,.06)',borderWidth:2,fill:true,tension:.4,pointRadius:2,yAxisID:'y1'},
+      {label:'Position',data:gpDaily.slice(1).map(d=>d.pos),borderColor:'#AA44FF',backgroundColor:'rgba(170,68,255,.06)',borderWidth:2,fill:false,tension:.4,pointRadius:2,yAxisID:'y2',borderDash:[4,2]}
+    ]
+  },
+  options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(255,255,255,.06)',borderWidth:1,titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:8}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}}},
+            y1:{position:'left',grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}},title:{display:true,text:'CTR%',font:{size:9},color:'#22D97A'}},
+            y2:{position:'right',grid:{display:false},ticks:{font:{size:9},color:'#AA44FF'},reverse:true,title:{display:true,text:'Pos.',font:{size:9},color:'#AA44FF'}}}
+  }
+});
+
+// VS Chart
+const mqDailyNorm=[0,0,4,7,11,20,29,42,35,45,33,35,41,25,29,42,47,35].map(c=>+(c/19*14).toFixed(1)); // normalized /jour
+const gpDailyRaw=[0,3,5,9,7,3,2,3,10,18,13,17,15,7];
+new Chart(document.getElementById('vs-chart'),{
+  type:'line',
+  data:{
+    labels:gpDaily.map(d=>d.d),
+    datasets:[
+      {label:'MQ (normalisé)',data:mqDailyNorm,borderColor:'#00D4C8',backgroundColor:'rgba(0,212,200,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:2},
+      {label:'GP',data:gpDailyRaw,borderColor:'#F08C14',backgroundColor:'rgba(240,140,20,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:2}
+    ]
+  },
+  options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(12,16,24,.95)',borderColor:'rgba(255,255,255,.06)',borderWidth:1,titleColor:'#E8EFF8',bodyColor:'#6A8CA8',padding:8}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{font:{size:9}},beginAtZero:true}}
+  }
+});
+
+// ── TABLES ──
+document.getElementById('gp-queries').innerHTML=gpQueries.map(r=>{
+  const cc=r.ctr>=18?'var(--green)':r.ctr>=8?'var(--gp)':'var(--mid)';
+  const maxCl=6;
+  return `<tr><td title="${r.q}">${r.q}</td>
+    <td><div class="bw"><div class="bt"><div class="bf" style="width:${(r.cl/maxCl*100).toFixed(0)}%;background:var(--gp)"></div></div><div class="bv" style="color:var(--gp)">${r.cl}</div></div></td>
+    <td style="color:${cc};font-family:'Space Mono',monospace;font-size:9px;font-weight:700">${r.ctr}%</td>
+    <td>${posPill(r.pos)}</td></tr>`;
+}).join('');
+
+document.getElementById('gp-pages').innerHTML=gpPages.map(p=>{
+  const lbl=p.p==='/'?'🏠 Homepage':p.p.replace(/\//g,' ').trim().replace('plages guadeloupe ','📍 ').replace('plages ','📍 ').replace('communes ','🏘 ')||p.p;
+  const cc=p.ctr>=30?'var(--green)':p.ctr>=10?'var(--gp)':'var(--mid)';
+  return `<tr><td><div title="${p.p}">${lbl}</div><div class="page-short">${p.p}</div></td>
+    <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--w)">${p.cl}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:${cc}">${p.ctr}%</td></tr>`;
+}).join('');
+
+document.getElementById('gp-geo').innerHTML=gpGeo.map(g=>{
+  const cc=g.ctr>=15?'var(--green)':g.ctr>=5?'var(--gp)':g.ctr===0?'var(--red)':'var(--mid)';
+  return `<tr><td>${g.c}</td>
+    <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--w)">${g.cl}</td>
+    <td>${g.im}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:${cc}">${g.ctr}%</td>
+    <td>${posPill(g.pos)}</td></tr>`;
+}).join('');
+
+document.getElementById('mq-queries').innerHTML=mqQueries.map(r=>{
+  const cc=r.ctr>=20?'var(--green)':r.ctr>=10?'var(--mq)':'var(--mid)';
+  const maxCl=162;
+  return `<tr><td title="${r.q}">${r.q}</td>
+    <td><div class="bw"><div class="bt"><div class="bf" style="width:${(r.cl/maxCl*100).toFixed(0)}%;background:var(--mq)"></div></div><div class="bv" style="color:var(--mq)">${r.cl}</div></div></td>
+    <td style="color:${cc};font-family:'Space Mono',monospace;font-size:9px;font-weight:700">${r.ctr}%</td>
+    <td>${posPill(r.pos)}</td></tr>`;
+}).join('');
+
+document.getElementById('gp-oppo').innerHTML=gpOppo.map(o=>`
+  <div class="oppo"><div class="oppo-type" style="color:${o.color}">${o.type}</div>
+  <div class="oppo-kw">${o.kw}</div>
+  <div class="oppo-stats">
+    <span class="os" style="color:var(--mid)">${o.im} impr.</span>
+    <span class="os" style="color:var(--w)">${o.cl} clics</span>
+    ${o.pos?`<span class="os" style="color:${o.color}">pos.${o.pos}</span>`:''}
+  </div>
+  <div class="oppo-action">${o.action}</div></div>
+`).join('');
+
+document.getElementById('vs-analysis').innerHTML=vsAnalysis.map(o=>`
+  <div class="oppo"><div class="oppo-type" style="color:${o.color}">${o.type}</div>
+  <div class="oppo-kw">${o.kw}</div>
+  <div class="oppo-action">${o.action}</div></div>
+`).join('');
+
+document.getElementById('vs-cross').innerHTML=crossData.map(r=>`
+  <tr><td>${r.q}</td><td><span class="badge b-purple">${r.site}</span></td>
+  <td><span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--mq)">${r.mq}</span> / <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--gp)">${r.gp}</span></td>
+  <td style="font-size:11px;color:var(--mid)">${r.action}</td></tr>
+`).join('');
+
+// ── TAB SWITCH ──
+function switchTab(name){
+  ['gp','mq','vs'].forEach(t=>{
+    document.getElementById('pane-'+t).classList.remove('active');
+    const el=document.getElementById('tab-'+t);
+    el.className='tab';
+    if(t===name){
+      document.getElementById('pane-'+t).classList.add('active');
+      el.classList.add('active-'+t);
+    }
+  });
+}
+</script>
+</body>
+</html>
