@@ -1,57 +1,58 @@
 {
   "window_days": 7,
-  "since": "2026-08-16T01:54:02.801Z",
-  "total_rows": 56488,
+  "since": "2026-08-16T06:59:25.509Z",
+  "total_rows": 54826,
   "counts": {
-    "session_start": 28484,
-    "forecast_lock_click": 0,
-    "premium_modal_open": 998,
-    "beach_open": 12788,
-    "pass_cta": 44,
+    "session_start": 27577,
+    "forecast_lock_click": 18,
+    "premium_modal_open": 793,
+    "beach_open": 12684,
+    "pass_cta": 82,
     "conversion": 0,
     "email_submit": 1,
     "mollie_checkout_redirect": 0,
-    "b2b_offer_view": 38,
+    "b2b_offer_view": 36,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
-  "cta_total": 44,
+  "cta_total": 82,
   "rates": {
-    "session_to_lock": 0,
-    "lock_to_beach": 0,
-    "beach_to_modal": 7.8,
-    "modal_to_cta": 4.4,
+    "session_to_lock": 0.1,
+    "lock_to_beach": 70466.7,
+    "beach_to_modal": 6.3,
+    "modal_to_cta": 10.3,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
+    "MQ": {
+      "session_start": 9246,
+      "beach_open": 7152,
+      "premium_modal_open": 533,
+      "pass_cta": 64,
+      "b2b_offer_view": 10,
+      "email_submit": 1,
+      "forecast_lock_click": 18
+    },
     "PUNTACANA": {
-      "b2b_offer_view": 21,
-      "session_start": 4846,
-      "beach_open": 761,
+      "session_start": 4769,
+      "beach_open": 756,
       "premium_modal_open": 62,
+      "b2b_offer_view": 19,
       "pass_cta": 2
     },
     "GP": {
-      "session_start": 7084,
-      "beach_open": 2677,
-      "premium_modal_open": 84,
+      "session_start": 7044,
+      "beach_open": 2624,
+      "premium_modal_open": 83,
       "pass_cta": 16,
       "b2b_offer_view": 1
     },
     "FLORIDA": {
-      "session_start": 5962,
-      "beach_open": 2062,
-      "premium_modal_open": 99
-    },
-    "MQ": {
-      "session_start": 9828,
-      "beach_open": 7116,
-      "premium_modal_open": 734,
-      "pass_cta": 26,
-      "b2b_offer_view": 10,
-      "email_submit": 1
+      "session_start": 5754,
+      "beach_open": 1980,
+      "premium_modal_open": 96
     },
     "RIVIERAMAYA": {
       "session_start": 721,
