@@ -1239,6 +1239,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGP)
+          // Primary region (MQ) gets sitemap.xml for Cloudflare Pages deployment
+          writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapMQ)
           console.log('   → Sitemaps générés avec lastmod:', today)
 
           // ── Garde d'intégrité sitemap (build-time) : toute URL publiée DOIT exister
@@ -2457,6 +2459,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           const sitemapGPFull = sitemapGP.replace('</urlset>', sitemapGPBeaches + '</urlset>')
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQFull)
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGPFull)
+          // Primary region (MQ) gets sitemap.xml for Cloudflare Pages deployment
+          writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapMQFull)
           console.log(`   → ${beaches.length} pages plages générées (${beaches.filter(b=>b.island==='mq').length} MQ + ${beaches.filter(b=>b.island==='gp').length} GP)`)
           console.log('   → Sitemaps enrichis avec URLs plages')
 
