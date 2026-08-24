@@ -69,7 +69,7 @@ jobs:
           # secret exposes publiquement, P0 corrige). Le payment path = worker
           # b2b-api (secret cote worker). Aucun .php de config sur Pages.
           
-          npx wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "âš ï¸ Deploy failed for $PROJECT (continuing...)"
+          npx wrangler pages deploy dist --project-name=$PROJECT --branch=main || echo "âš ï¸ Deploy failed for $PROJECT (continuing...)"
           echo "â”€â”€ Done ${{ matrix.region }} â”€â”€"
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
