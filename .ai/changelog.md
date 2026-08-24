@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-08-25 00:10 UTC · Agent: release_owner (OpenCode) — FACTORY RECONCILIATION post Agents (security hardening + P1-009 INP) → FACTORY GREEN
+
+### Travail effectué
+- **Résumé** : Réconciliation usine après les 2 livraisons (payment security hardening, P1-009 INP WorldMap). PR parasite #595 fermée (+branche supprimée) — contenu déjà sur main via #585/#586/#590/#591/#593/#594/#596, son diff restant régressait deploy-cloudflare.yml. **ROOT CAUSE fixée : `.github/workflows/agent-handoff.yml` YAML invalide depuis création (3 steps fin de fichier mal indentés → runs 0 job = boucle autonome morte silencieusement)** — réparé commit 06109c4e, dispatch de validation → SUCCESS. Serializer : lock libre, worktree clean, origin/main cohérent.
+- **Live QA 6/6 domaines** (mobile 390×844 DPR2 via ux-audit + desktop 1920×1080 probe) : HTTP 200 ×6, funnel home→map→fiche→list→paywall OK ×6, paywall ouvert ×6, 0 JS error page, 0 h-scroll desktop. DOMContentLoaded live 345–437ms.
+- **Workers paiement vérifiés** : `b2b-api` déployé 20:38:58Z (= e0418870, cohérent main), routes zone `/api/mollie*`+`/api/b2b*` présentes sur MQ/GP/Miami/Cancun/PuntaCana ; create_payment répond `400 {"error":"pass and cents required"}` proprement (dispatch OK). `payment_status` renvoie bien le champ `terminal` (fix agent 1, workers/b2b-api/index.js:553).
+
+### Fichiers modifiés
+- `.github/workflows/agent-handoff.yml` — réindentation des 3 derniers steps (Auto-merge if CI green / Rebase other agents / Post-merge tasks update), YAML valide (js-yaml OK)
+- `.ai/changelog.md`, `.ai/current_state.md` — handoff
+
+### Constats (non-bloquants, pré-existants, documentés)
+1. **Tulum sans routes Workers `/api/mollie*`+`/api/b2b*`** (405 statique Pages) → checkout Mollie impossible sur sargazotulum.com uniquement. Gap infra pré-existant (pas de backend PHP/Worker routé), classé bugs 023/024. Action : ajouter les 2 routes zone tulum → worker b2b-api.
+2. **ERDDAP upstream obs du 2026-08-22 12:00Z** (~60h) → flag stale=True honnête sur les 6 domaines (moat OK, pipeline updatedAt frais 2026-08-24 19:19Z).
+3. **Apple Pay** : `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines (wallet Apple Pay non vérifié, fallback carte OK).
+4. **GP titre statique** = "Plages Martinique" (build partagé legacy MQ/GP, ARCHITECTURE.md:18) — runtime OK, SEO quirk P3.
+5. `payment_status` avec ID inconnu → throw mollieGet (500) au lieu de JSON terminal — robustesse mineure (le front ne poll que des IDs qu'il vient de créer).
+6. Run Daily Copernicus périmé (0eb292d1, 22:36Z) resté in_progress devant la run courante — convergence finale vers HEAD, pas d'action.
+
+### Tests réalisés
+- [x] js-yaml parse agent-handoff.yml → OK · dispatch manuel run 32789435563 → SUCCESS
+- [x] CI push main 06109c4e : Secret scan ✅ CI Tests ✅ Perf ✅ Pages ✅ GH-Pages ✅ (Funnel/Playwright/Branch-policy = gates PR #598 6/6 SUCCESS)
+- [x] ux-audit LIVE ×6 (mq/gp/florida/rivieramaya/puntacana/tulum) + probe desktop 1920×1080 ×6
+- [x] curl matrix API : mollie.php POST 400/500-executed ×5 domaines, tulum 405 (gap documenté)
+- [x] serializer --check-lock/--check-worktree/--rebase-check → OK
+
+### Prochaine action recommandée
+1. Ajouter routes zone `sargazotulum.com/api/mollie*` + `/api/b2b*` → worker `b2b-api` (débloque checkout tulum) — Rôle : devops
+2. Déposer `apple-developer-merchantid-domain-association` sur les 6 domains (Apple Pay) — Rôle : security/devops
+3. Watch ERDDAP fraîcheur (obs >48h) — Rôle : data
+
+---
+
 ## 2026-08-24 17:30 UTC · Agent: autonomous (OpenCode) — CYCLE SHIPPED P0 USD pricing fix (PAY_CUR) — PR #584 merged, CI 6/6 GREEN, Pages deploy SUCCESS
 
 ### Travail effectué

@@ -1,5 +1,30 @@
 ---
 
+## 2026-08-25 00:10 UTC · Agent: release_owner (OpenCode) — FACTORY RECONCILIATION → **FACTORY GREEN** (main 06109c4e, PR #595 fermée, agent-handoff.yml réparé, live 6/6)
+
+### Travail effectué
+- **Résumé 1 ligne** : Réconciliation post 2 livraisons (security hardening + P1-009 INP) — PR parasite #595 fermée (contenu déjà sur main, son diff régressait deploy-cloudflare), root cause `agent-handoff.yml` YAML invalide depuis création (runs 0 job = boucle autonome morte) corrigée commit `06109c4e` + dispatch validation SUCCESS, serializer OK (lock libre/worktree clean/main cohérent), CI main verte, Pages deploy SUCCESS, live QA 6/6 domaines mobile+desktop GREEN.
+- **Détails** : cf entrée complète dans `.ai/changelog.md` (constats non-bloquants : tulum sans routes Workers mollie/b2b → checkout impossible sur ce seul domaine ; Apple Pay well-known 404 ×6 ; ERDDAP obs 2026-08-22 → stale flag honnête ×6 ; GP titre statique legacy).
+
+### Fichiers modifiés
+- `.github/workflows/agent-handoff.yml` — 3 steps fin de fichier réindentés (YAML valide, run 32789435563 SUCCESS)
+- `.ai/changelog.md`, `.ai/current_state.md`
+
+### Tests réalisés
+- [x] CI 06109c4e : secret-scan ✅ ci-tests ✅ perf ✅ pages ✅ gh-pages ✅ · gates PR (#598) funnel/playwright/branch-policy 6/6 ✅
+- [x] Live : HTTP 200 ×6 · ux-audit mobile ×6 (funnel complet + paywall OK) · desktop probe ×6 (0 JS error, 0 h-scroll)
+- [x] Workers : b2b-api déployé = e0418870, dispatch create_payment propre (400 allowlist), payment_status renvoie `terminal` ✓
+
+### Prochaine action recommandée
+1. Routes zone tulum `/api/mollie*`+`/api/b2b*` → b2b-api (checkout tulum) — Rôle : devops
+2. Apple Pay well-known file sur les 6 domains — Rôle : devops/security
+3. Daily Copernicus 06109c4e pending → vérifier conclusion FTP ≤120 min — Rôle : release
+
+### Branche / PR
+- Push direct main `06109c4e` (fix ci workflow, zéro PR requise — infra release owner) · PR actives : 0
+
+---
+
 ## 2026-08-24 17:30 UTC · Agent: autonomous (OpenCode) — CYCLE SHIPPED: P0 USD pricing fix (PAY_CUR) + E2E stabilisé → PR #584 merged, CI 6/6 GREEN, Pages deploy SUCCESS, FTP deploy in_progress
 
 ### Travail effectué
