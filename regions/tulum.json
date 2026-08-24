@@ -9,11 +9,84 @@
     "en"
   ],
   "currency": "USD",
-  "bbox": [-87.56, 20.04, -87.34, 20.42],
+  "bbox": [-87.60, 20.04, -87.28, 20.42],
   "center": { "lat": 20.23, "lng": -87.45 },
   "zoom": 11,
   "timezone": "America/Cancun",
-  "beaches": [],
+  "beaches": [
+    {
+      "id": "tu001",
+      "island": "tulum",
+      "name": "Playa Paraíso",
+      "commune": "Tulum",
+      "lat": 20.2041213,
+      "lng": -87.4335318,
+      "status": "moderate"
+    },
+    {
+      "id": "tu002",
+      "island": "tulum",
+      "name": "Playa Maya",
+      "commune": "Tulum",
+      "lat": 20.205427,
+      "lng": -87.4308618,
+      "status": "moderate"
+    },
+    {
+      "id": "tu003",
+      "island": "tulum",
+      "name": "Playa Santa Fe",
+      "commune": "Tulum",
+      "lat": 20.2083179,
+      "lng": -87.430456,
+      "status": "moderate"
+    },
+    {
+      "id": "tu004",
+      "island": "tulum",
+      "name": "Playa de Tulum",
+      "commune": "Tulum",
+      "lat": 20.2138256,
+      "lng": -87.4288325,
+      "status": "moderate"
+    },
+    {
+      "id": "tu005",
+      "island": "tulum",
+      "name": "Caleta Tankah",
+      "commune": "Tulum",
+      "lat": 20.231678,
+      "lng": -87.4180992,
+      "status": "moderate"
+    },
+    {
+      "id": "tu006",
+      "island": "tulum",
+      "name": "Playa Amansala",
+      "commune": "Tulum",
+      "lat": 20.1661205,
+      "lng": -87.4511564,
+      "status": "moderate"
+    },
+    {
+      "id": "tu007",
+      "island": "tulum",
+      "name": "Playa Akun",
+      "commune": "Tulum",
+      "lat": 20.1014589,
+      "lng": -87.4727931,
+      "status": "moderate"
+    },
+    {
+      "id": "tu008",
+      "island": "tulum",
+      "name": "Xcacel Beach",
+      "commune": "Tulum",
+      "lat": 20.3376234,
+      "lng": -87.3461594,
+      "status": "moderate"
+    }
+  ],
   "pricing": {
     "monthly": "$9.99",
     "yearly": "$79",
