@@ -129,7 +129,7 @@
 - **Fichiers** : `public/404.html`
 - **Repro** : `grep sargagame/fonts public/404.html` → 3 hits ; `node -e "console.log(JSON.parse(require('fs').readFileSync('scripts/automation/data/broken-links.json')).sites.mq.brokenCount)"` → 268
 - **Fix** : remplacer `/sargagame/fonts/` par `/fonts/` dans `public/404.html` (3 occurrences)
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-24) — Fix 3× `/sargagame/fonts/` → `/fonts/` dans `public/404.html:9-12`, build 64795fbf, bundle 35.5 Ko, smoke 4/4, PR #589 merged, deploy Pages SUCCESS
 
 ---
 
