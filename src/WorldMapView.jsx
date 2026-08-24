@@ -576,51 +576,67 @@ export default function WorldMapView({
     // d'abord (= le fallback bakedUrl=null déjà en place), puis le bake se fait HORS fenêtre
     // critique et swappe la texture GPU. Rendu final + optim pan/zoom inchangés ; seul le TIMING
     // change → LCP/TTI/TBT améliorés. Échec/annulation → on reste sur le SVG live (zéro régression).
+    // TASK-P1-009 (INP, mesuré sonde Event Timing CPU 4× : longtask ~300-350 ms à t≈1,3 s dans
+    // 5/5 runs, collision interaction 240 ms) : l'ancien timeout:2000 FORÇAIT ce bloc pile dans
+    // la fenêtre des premiers taps funnel. Deux correctifs :
+    //   (1) timeout 2000→9000 ms — l'idle réel passe avant ; plus de collision forcée avec les
+    //       premiers taps. Le fallback SVG live reste interactif pendant ce délai (état déjà
+    //       prévu), et onDown swappe le bitmap dès qu'il est prêt (inchangé).
+    //   (2) yield double-rAF entre sérialisation et decode/drawImage — scinde le bloc synchrone
+    //       monolithique en 2 chunks plus courts avec un frame rendu entre les deux → une
+    //       interaction peut s'intercaler, la pire durée d'interaction chute.
     const runBake=()=>{
       if(cancelled) return
       let xml
       try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
       xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
-      const img=new Image()
-      img.onload=()=>{
+      // Yield (double-rAF) AVANT la partie decode+drawImage : laisse le navigateur peindre un
+      // frame et traiter une interaction éventuelle entre les deux moitiés du bloc.
+      const kick=()=>{
         if(cancelled) return
-        try{
-          const cv=document.createElement('canvas'); cv.width=W; cv.height=H
-          cv.getContext('2d').drawImage(img,0,0,W,H)
-          // toBlob (ASYNC, encode PNG hors-thread principal) au lieu de toDataURL (SYNCHRONE,
-          // bloquait ~2,2 s sous 4× CPU = le hotspot du mount). Même image → objectURL au lieu
-          // de data-URL (qu'on révoque pour éviter la fuite mémoire). Échec → fallback SVG live.
-          cv.toBlob(blob=>{
-            if(cancelled){ return }
-            if(!blob){ setBakedUrl(null); return }
-            const url=URL.createObjectURL(blob)
-            if(cancelled){ URL.revokeObjectURL(url); return }
-            // Décoder le bitmap AVANT de swapper SVG→<image> : sinon le décodage se fait
-            // paresseusement quand le <image> peint la 1re frame → 1 frame de vide (la côte
-            // « clignote »). On pré-décode hors-thread puis on commit. Tout échec commit
-            // quand même (jamais de carte blanche : sémantique fallback inchangée).
-            const commit=()=>{
+        const img=new Image()
+        img.onload=()=>{
+          if(cancelled) return
+          try{
+            const cv=document.createElement('canvas'); cv.width=W; cv.height=H
+            cv.getContext('2d').drawImage(img,0,0,W,H)
+            // toBlob (ASYNC, encode PNG hors-thread principal) au lieu de toDataURL (SYNCHRONE,
+            // bloquait ~2,2 s sous 4× CPU = le hotspot du mount). Même image → objectURL au lieu
+            // de data-URL (qu'on révoque pour éviter la fuite mémoire). Échec → fallback SVG live.
+            cv.toBlob(blob=>{
+              if(cancelled){ return }
+              if(!blob){ setBakedUrl(null); return }
+              const url=URL.createObjectURL(blob)
               if(cancelled){ URL.revokeObjectURL(url); return }
-              if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
-              bakedObjUrlRef.current=url
-              // Le bake est une optimisation de pan/zoom, pas le rendu initial. Le laisser
-              // remplacer le SVG au repos le faisait devenir le LCP mobile tardif (image
-              // blob). On garde donc le même SVG visible jusqu'au premier geste utilisateur;
-              // dès ce geste, le bitmap déjà décodé prend le relais sans changer le design.
-              if(mapInteractedRef.current) setBakedUrl(url)
-              else pendingBakedUrlRef.current=url
-            }
-            const pre=new Image()
-            pre.onload=()=>{ (pre.decode?pre.decode():Promise.resolve()).then(commit,commit) }
-            pre.onerror=commit
-            pre.src=url
-          },'image/png')
-        }catch(_){ if(!cancelled) setBakedUrl(null) }
+              // Décoder le bitmap AVANT de swapper SVG→<image> : sinon le décodage se fait
+              // paresseusement quand le <image> peint la 1re frame → 1 frame de vide (la côte
+              // « clignote »). On pré-décode hors-thread puis on commit. Tout échec commit
+              // quand même (jamais de carte blanche : sémantique fallback inchangée).
+              const commit=()=>{
+                if(cancelled){ URL.revokeObjectURL(url); return }
+                if(bakedObjUrlRef.current) URL.revokeObjectURL(bakedObjUrlRef.current)
+                bakedObjUrlRef.current=url
+                // Le bake est une optimisation de pan/zoom, pas le rendu initial. Le laisser
+                // remplacer le SVG au repos le faisait devenir le LCP mobile tardif (image
+                // blob). On garde donc le même SVG visible jusqu'au premier geste utilisateur;
+                // dès ce geste, le bitmap déjà décodé prend le relais sans changer le design.
+                if(mapInteractedRef.current) setBakedUrl(url)
+                else pendingBakedUrlRef.current=url
+              }
+              const pre=new Image()
+              pre.onload=()=>{ (pre.decode?pre.decode():Promise.resolve()).then(commit,commit) }
+              pre.onerror=commit
+              pre.src=url
+            },'image/png')
+          }catch(_){ if(!cancelled) setBakedUrl(null) }
+        }
+        img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
+        img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
       }
-      img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
-      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
+      if(typeof requestAnimationFrame==="function") requestAnimationFrame(()=>requestAnimationFrame(kick))
+      else setTimeout(kick,50)
     }
-    if(typeof requestIdleCallback==="function") idle=requestIdleCallback(runBake,{timeout:2000})
+    if(typeof requestIdleCallback==="function") idle=requestIdleCallback(runBake,{timeout:9000})
     else idle=setTimeout(runBake,300)
     return ()=>{ cancelled=true; try{ (typeof cancelIdleCallback==="function"?cancelIdleCallback:clearTimeout)(idle) }catch(_){} }
   },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
