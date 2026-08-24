@@ -225,13 +225,21 @@ function checkIncompatibleAdvance(baseSha) {
 
 // 7. détection correctif déjà mergé (code présent sur main)
 function isFixAlreadyOnMain(taskId) {
-  // Vérif via tasks.md d'abord
+  // Vérif via tasks.md d'abord — source de vérité
   const st = isTaskClaimedOrDoneOnMain(taskId);
   if (st.done) return { already: true, reason: `tâche ${taskId} déjà marquée [x] done sur origin/main: ${st.line}` };
   if (st.claimed) return { already: false, claimed: true, reason: `tâche ${taskId} déjà [~] in_progress sur origin/main: ${st.line}` };
-  // Vérif via git log (commit message contient l'id)
-  const log = runSafe(`git log origin/main --oneline --grep=${taskId} -i`);
-  if (log) return { already: true, reason: `commit déjà sur main avec grep ${taskId}: ${log.split('\n')[0].slice(0, 120)}` };
+  // Vérif via git log uniquement pour les commits de fix (pas les commits d'ajout de tâche)
+  // On exclut les commits "chore(tasks): add" qui ne sont que l'ajout de la tâche au backlog
+  const log = runSafe(`git log origin/main --oneline --grep=${taskId} -i --grep="fix" --grep="feat"`);
+  // Le log ci-dessus est OR par défaut; on filtre manuellement
+  const allLogs = runSafe(`git log origin/main --oneline --grep=${taskId} -i`);
+  if (allLogs) {
+    const lines = allLogs.split('\n');
+    // Ne considérer comme déjà mergé que si le commit contient fix/feat/docs et n'est pas juste l'ajout
+    const fixLines = lines.filter(l => /fix|feat|docs\(/.test(l) && !/chore\(tasks\): add/.test(l));
+    if (fixLines.length) return { already: true, reason: `commit déjà sur main avec grep ${taskId}: ${fixLines[0].slice(0, 120)}` };
+  }
   return { already: false };
 }
 
