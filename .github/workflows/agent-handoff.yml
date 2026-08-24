@@ -683,65 +683,25 @@ jobs:
 
             --label "auto-handoff,${AGENT_TYPE}"
 
+      - name: Auto-merge if CI green
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'auto-handoff') }}
+        run: |
+          gh pr merge --auto --squash --delete-branch
 
-
-            # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
-
-            # 9. AUTO-MERGE ÔÇö Si CI vert, merge direct sur main
-
-            # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
-
-            - name: Auto-merge if CI green
-
-            if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'auto-handoff') }}
-
-            run: |
-
-            # Attendre que tous les checks soient verts
-
-            # Puis merge auto (pas de demande permission)
-
-            gh pr merge --auto --squash --delete-branch
-
-
-
-            # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
-
-            # 10. POST-MERGE ÔÇö D├®clencher deploy + MAJ tasks
-
-            # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
-
-            - name: Rebase other agents — fetch + re-evaluate from new main
-
+      - name: Rebase other agents - fetch + re-evaluate from new main
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
         run: |
           echo "=== POST-MERGE REBASE ==="
           git fetch origin --prune
           echo "new origin/main=$(git rev-parse --short origin/main)"
           echo "Les agents en cours doivent rebaser: git fetch origin && git rebase origin/main"
-          echo "Vérification: plus de PR agent/* active ?"
+          echo "Verification: plus de PR agent/* active ?"
           gh pr list --state open --json headRefName --jq '[.[] | select(.headRefName|startswith("agent/"))] | length' || true
 
       - name: Post-merge tasks update
+        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          echo "Task completed and merged to main"
 
-            if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-
-            run: |
-
-            # La t├óche vient d'├¬tre merg├®e sur main
-
-            # Marquer [x] done dans .ai/tasks.md
-
-            # (Le fichier a ├®t├® mis ├á jour par l'agent dans son handoff)
-
-            echo "Task completed and merged to main"
-
-          
-
-            # V├®rifier d├®ploiement
-
-            sleep 30
-
-            gh run list --repo ${{ github.repository }} --workflow daily-copernicus.yml --limit 1 --json conclusion --jq '.[0].conclusion'
-
+          sleep 30
+          gh run list --repo ${{ github.repository }} --workflow daily-copernicus.yml --limit 1 --json conclusion --jq '.[0].conclusion'
