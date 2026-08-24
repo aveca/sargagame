@@ -34,6 +34,10 @@ on:
 
 
 
+concurrency:
+  group: release-serialize
+  cancel-in-progress: false
+
 permissions:
 
   contents: write
@@ -136,9 +140,44 @@ jobs:
 
       # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
 
+      - name: Release serialize — fetch obligatoire + gate (verrou, PR unique, worktree)
+
+        id: release_gate
+
+        run: |
+
+          echo "=== RELEASE SERIALIZE GATE ==="
+
+          git fetch origin --prune
+
+          echo "origin/main=$(git rev-parse --short origin/main) local=$(git rev-parse --short HEAD)"
+
+          node scripts/lib/release-serialize.cjs --check-worktree || { echo "gate_ok=false" >> $GITHUB_OUTPUT; exit 0; }
+
+          # Une seule PR active par scope (global agent/*) — sérialisation
+          ACTIVE=$(gh pr list --state open --json headRefName --jq '[.[] | select(.headRefName|startswith("agent/"))] | length' 2>/dev/null || echo 0)
+
+          if [ "$ACTIVE" != "0" ] && [ "$ACTIVE" -gt 0 ]; then
+
+            echo "❌ $ACTIVE PR(s) agent/* déjà ouverte(s) — sérialisation: attendre merge puis rebase"
+
+            echo "gate_ok=false" >> $GITHUB_OUTPUT
+
+            gh pr list --state open --json headRefName,number,title --jq '.[] | select(.headRefName|startswith("agent/")) | "\(.number) \(.headRefName) \(.title)"'
+
+            exit 0
+
+          fi
+
+          echo "✅ gate worktree + PR unique OK"
+
+          echo "gate_ok=true" >> $GITHUB_OUTPUT
+
       - name: Pick next task
 
         id: pick_task
+
+        if: ${{ steps.release_gate.outputs.gate_ok == 'true' }}
 
         run: |
 
@@ -272,7 +311,7 @@ jobs:
 
       - name: Claim task in tasks.md
 
-        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        if: ${{ steps.pick_task.outputs.task_id != '' && steps.release_gate.outputs.gate_ok == 'true' }}
 
         run: |
 
@@ -324,7 +363,7 @@ jobs:
 
       - name: Create work branch
 
-        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        if: ${{ steps.pick_task.outputs.task_id != '' && steps.release_gate.outputs.gate_ok == 'true' }}
 
         run: |
 
@@ -354,7 +393,7 @@ jobs:
 
       - name: Execute agent work
 
-        if: ${{ steps.pick_task.outputs.task_id != '' }}
+        if: ${{ steps.pick_task.outputs.task_id != '' && steps.release_gate.outputs.gate_ok == 'true' }}
 
         id: agent_work
 
@@ -672,7 +711,19 @@ jobs:
 
             # ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
 
-            - name: Post-merge tasks update
+            - name: Rebase other agents — fetch + re-evaluate from new main
+
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+        run: |
+          echo "=== POST-MERGE REBASE ==="
+          git fetch origin --prune
+          echo "new origin/main=$(git rev-parse --short origin/main)"
+          echo "Les agents en cours doivent rebaser: git fetch origin && git rebase origin/main"
+          echo "Vérification: plus de PR agent/* active ?"
+          gh pr list --state open --json headRefName --jq '[.[] | select(.headRefName|startswith("agent/"))] | length' || true
+
+      - name: Post-merge tasks update
 
             if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
