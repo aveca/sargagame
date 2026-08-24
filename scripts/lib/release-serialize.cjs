@@ -149,19 +149,35 @@ function isTaskClaimedOrDoneOnMain(taskId) {
   return { claimed: false, done: false };
 }
 
-// 5. une seule PR active par scope (global agent/*)
-function hasActiveAgentPR(excludeTask) {
+// 5. une seule PR active par scope (sérialisation)
+// scope = ex: "money", "infra", "docs", ou "agent" pour global
+// Si scope fourni (ex: "money"), on ne bloque que les PR du même scope: agent/<scope>/* ou agent/<agentType>/*
+// Sinon global agent/*
+function hasActiveAgentPR(scopeOrTask, maybeScope) {
+  // compat: hasActiveAgentPR(excludeTask) ou hasActiveAgentPR(scope, excludeTask)
+  let scope = null;
+  let excludeTask = null;
+  if (maybeScope) { scope = scopeOrTask; excludeTask = maybeScope; }
+  else if (scopeOrTask && scopeOrTask.startsWith('TASK-')) { excludeTask = scopeOrTask; }
+  else { scope = scopeOrTask; }
   const json = runSafe(`gh pr list --state open --json headRefName,number,title --limit 50`);
   if (!json) return { has: false };
   try {
     const prs = JSON.parse(json);
-    const agentPRs = prs.filter(p => p.headRefName && p.headRefName.startsWith('agent/'));
-    if (!agentPRs.length) return { has: false };
+    let agentPRs = prs.filter(p => p.headRefName && p.headRefName.startsWith('agent/'));
+    if (scope && scope !== 'agent' && scope !== 'agent/*') {
+      // filtre par scope: agent/<scope>/ ou agent/<agentType>/ (scope peut être "money" → agent/money/ ou agent/coding/ si scope==coding)
+      // On considère scope comme un préfixe après agent/
+      const prefix = `agent/${scope}/`;
+      const altPrefix = scope.includes('/') ? scope : null;
+      agentPRs = agentPRs.filter(p => p.headRefName.startsWith(prefix) || (altPrefix && p.headRefName.startsWith(altPrefix)));
+      if (!agentPRs.length) return { has: false };
+    }
     if (excludeTask) {
       const same = agentPRs.find(p => p.headRefName.includes(excludeTask));
       if (same && agentPRs.length === 1) return { has: false, same };
     }
-    return { has: true, prs: agentPRs, count: agentPRs.length };
+    return { has: true, prs: agentPRs, count: agentPRs.length, scope: scope || 'agent/*' };
   } catch (_) {
     return { has: false };
   }
@@ -243,12 +259,14 @@ function runReleaseGate({ taskId, agentType, scope }) {
   if (merged.already) return { ok: false, reason: merged.reason, steps: out.steps, code: 'ALREADY_MERGED' };
   if (merged.claimed) return { ok: false, reason: merged.reason, steps: out.steps, code: 'ALREADY_CLAIMED' };
 
-  // 5. une seule PR active par scope (global)
-  const pr = hasActiveAgentPR(taskId);
-  out.steps.push(`PR active scope ${scope || 'agent/*'}: ${pr.has ? `OUI (${pr.count}) → STOP` : 'OK'}`);
+  // 5. une seule PR active par scope (sérialisation)
+  // scope = ex: money/infra/docs → on vérifie agent/<scope>/*, sinon global agent/*
+  const prScope = scope && scope !== 'agent' ? scope : null;
+  const pr = prScope ? hasActiveAgentPR(prScope, taskId) : hasActiveAgentPR(taskId);
+  out.steps.push(`PR active scope ${prScope || 'agent/*'}: ${pr.has ? `OUI (${pr.count}) → STOP` : 'OK'}`);
   if (pr.has) {
     const titles = (pr.prs || []).map(p => `#${p.number} ${p.headRefName}`).join(', ');
-    return { ok: false, reason: `une seule PR active par scope: ${pr.count} PR(s) ouverte(s) ${titles} — terminer ou merger avant nouveau claim`, steps: out.steps, code: 'PR_ACTIVE' };
+    return { ok: false, reason: `une seule PR active par scope${prScope ? ` ${prScope}` : ''}: ${pr.count} PR(s) ouverte(s) ${titles} — terminer ou merger avant nouveau claim`, steps: out.steps, code: 'PR_ACTIVE' };
   }
 
   // 6. si un baseSha avait été enregistré précédemment (reprise), vérifier avancement incompatible
