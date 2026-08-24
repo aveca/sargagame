@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-17T11:50:50.726Z",
+  "generatedAt": "2026-08-24T11:48:38.049Z",
   "sites": {
     "mq": {
       "pageCount": 366,
-      "totalLinks": 6415,
-      "checkedLinks": 5071,
-      "brokenCount": 268,
+      "totalLinks": 6806,
+      "checkedLinks": 4978,
+      "brokenCount": 267,
       "broken": [
         {
           "from": "/404.html",
@@ -545,12 +545,6 @@
           "from": "/nettoyer-sargasses/",
           "href": "/track-click.php",
           "target": "martinique-ftp/track-click.php",
-          "kind": "internal"
-        },
-        {
-          "from": "/payment/error.html",
-          "href": "/contact",
-          "target": "martinique-ftp/contact",
           "kind": "internal"
         },
         {
@@ -1619,9 +1613,9 @@
     },
     "gp": {
       "pageCount": 405,
-      "totalLinks": 8116,
-      "checkedLinks": 6409,
-      "brokenCount": 351,
+      "totalLinks": 8633,
+      "checkedLinks": 6290,
+      "brokenCount": 350,
       "broken": [
         {
           "from": "/404.html",
@@ -2167,12 +2161,6 @@
           "from": "/nettoyer-sargasses/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
-          "kind": "internal"
-        },
-        {
-          "from": "/payment/error.html",
-          "href": "/contact",
-          "target": "guadeloupe-ftp/contact",
           "kind": "internal"
         },
         {

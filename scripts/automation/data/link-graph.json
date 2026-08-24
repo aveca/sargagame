@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-08-17T11:50:50.432Z",
+  "generatedAt": "2026-08-24T11:48:37.749Z",
   "sites": {
     "mq": {
       "pageCount": 365,
       "noIncomingCount": 196,
       "fewIncomingCount": 42,
-      "phantomCount": 15,
+      "phantomCount": 14,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -100,7 +100,7 @@
         {
           "url": "/payment/error.html",
           "in": 0,
-          "out": 2
+          "out": 1
         },
         {
           "url": "/payment/good.html",
@@ -262,12 +262,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 15
+          "out": 29
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 11
+          "out": 18
         },
         {
           "url": "/en/sargassum-health/",
@@ -452,14 +452,14 @@
           "out": 13
         },
         {
+          "url": "/plages/grande-anse-d-arlet/",
+          "in": 26,
+          "out": 11
+        },
+        {
           "url": "/a-propos/",
           "in": 25,
           "out": 9
-        },
-        {
-          "url": "/plages/grande-anse-d-arlet/",
-          "in": 22,
-          "out": 11
         }
       ],
       "topDonors": [
@@ -474,9 +474,19 @@
           "out": 37
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 29
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
           "in": 6,
-          "out": 31
+          "out": 29
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
+          "out": 29
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -494,24 +504,14 @@
           "out": 21
         },
         {
-          "url": "/",
-          "in": 188,
+          "url": "/conditions/snorkeling/",
+          "in": 1,
           "out": 18
         },
         {
-          "url": "/sargasses-la-trinite/",
-          "in": 3,
-          "out": 17
-        },
-        {
-          "url": "/sargasses-sainte-anne-martinique/",
-          "in": 9,
-          "out": 17
-        },
-        {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
-          "out": 17
+          "url": "/",
+          "in": 188,
+          "out": 18
         }
       ],
       "phantom": [
@@ -575,12 +575,6 @@
           ]
         },
         {
-          "url": "/contact",
-          "incomingFrom": [
-            "/payment/error.html"
-          ]
-        },
-        {
           "url": "/en/sargassum-today/",
           "incomingFrom": [
             "/sargasses-aujourdhui/"
@@ -616,7 +610,7 @@
       "pageCount": 404,
       "noIncomingCount": 202,
       "fewIncomingCount": 42,
-      "phantomCount": 19,
+      "phantomCount": 18,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -726,7 +720,7 @@
         {
           "url": "/payment/error.html",
           "in": 0,
-          "out": 2
+          "out": 1
         },
         {
           "url": "/payment/good.html",
@@ -873,12 +867,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 17
+          "out": 38
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 11
+          "out": 17
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -1085,7 +1079,17 @@
           "out": 39
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 38
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 37
+        },
+        {
+          "url": "/conditions/mer-calme/",
           "in": 6,
           "out": 37
         },
@@ -1105,7 +1109,7 @@
           "out": 26
         },
         {
-          "url": "/conditions/plages-enfants/",
+          "url": "/conditions/snorkeling/",
           "in": 1,
           "out": 17
         },
@@ -1113,16 +1117,6 @@
           "url": "/meilleures-plages-guadeloupe-sargasses/",
           "in": 34,
           "out": 17
-        },
-        {
-          "url": "/sargasses-sainte-rose/",
-          "in": 3,
-          "out": 16
-        },
-        {
-          "url": "/sargasses-terre-de-haut-les-saintes/",
-          "in": 3,
-          "out": 16
         }
       ],
       "phantom": [
@@ -1184,12 +1178,6 @@
           "url": "/meteo-sargasses-martinique/",
           "incomingFrom": [
             "/meteo-sargasses-guadeloupe/"
-          ]
-        },
-        {
-          "url": "/contact",
-          "incomingFrom": [
-            "/payment/error.html"
           ]
         },
         {

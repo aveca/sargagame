@@ -1,34 +1,74 @@
 {
-  "generatedAt": "2026-08-10T12:09:53.310Z",
+  "generatedAt": "2026-08-24T11:48:29.874Z",
   "kind": "delta",
   "changes": [
     {
-      "site": "florida",
+      "site": "mq",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 3209,
-      "to": 2596,
-      "delta": -613,
+      "from": 3378,
+      "to": 1852,
+      "delta": -1526,
       "kind": "improvement",
-      "crossesThreshold": false
+      "crossesThreshold": true
     },
     {
       "site": "gp",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 3660,
-      "to": 3331,
-      "delta": -329,
+      "from": 3331,
+      "to": 2144,
+      "delta": -1187,
       "kind": "improvement",
-      "crossesThreshold": false
+      "crossesThreshold": true
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 2596,
+      "to": 1508,
+      "delta": -1088,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "puntacana",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 3084,
+      "to": 2164,
+      "delta": -920,
+      "kind": "improvement",
+      "crossesThreshold": true
     },
     {
       "site": "mq",
       "formFactor": "combined",
-      "metric": "LCP",
-      "from": 3579,
-      "to": 3378,
-      "delta": -201,
+      "metric": "TTFB",
+      "from": 1002,
+      "to": 648,
+      "delta": -354,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 996,
+      "to": 705,
+      "delta": -291,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 656,
+      "to": 522,
+      "delta": -134,
       "kind": "improvement",
       "crossesThreshold": false
     },
@@ -36,10 +76,20 @@
       "site": "florida",
       "formFactor": "combined",
       "metric": "INP",
-      "from": 310,
-      "to": 371,
-      "delta": 61,
+      "from": 371,
+      "to": 467,
+      "delta": 96,
       "kind": "regression",
+      "crossesThreshold": false
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 594,
+      "to": 527,
+      "delta": -67,
+      "kind": "improvement",
       "crossesThreshold": false
     }
   ]

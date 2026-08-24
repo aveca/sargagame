@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-17T11:50:51.336Z",
+  "generatedAt": "2026-08-24T11:48:38.655Z",
   "sites": {
     "mq": {
       "pageCount": 365,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 550,
+      "issueCount": 551,
       "issues": [
         {
           "file": "404.html",
@@ -121,14 +121,19 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 106
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 99
+          "length": 100
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -188,12 +193,6 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
-        },
-        {
-          "file": "en/sargassum-health/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
         }
       ]
     },
@@ -226,7 +225,7 @@
           ]
         }
       ],
-      "issueCount": 602,
+      "issueCount": 603,
       "issues": [
         {
           "file": "404.html",
@@ -327,9 +326,14 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 106
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
@@ -383,12 +387,6 @@
           "file": "en/index.html",
           "kind": "desc-length-warn",
           "length": 119
-        },
-        {
-          "file": "en/sargassum-alerts/index.html",
-          "kind": "title-length-warn",
-          "length": 66,
-          "value": "Sargassum alerts Guadeloupe & Martinique — Real-time notifications"
         }
       ]
     }
