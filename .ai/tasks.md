@@ -1,4 +1,4 @@
-# .ai/tasks.md — Backlog priorisé
+﻿# .ai/tasks.md — Backlog priorisé
 
 > Lu par tous les agents pour choisir leur prochaine tâche.
 > Priorité : P0 = critique, P1 = haute, P2 = moyenne, P3 = basse.
@@ -139,7 +139,7 @@
 - **Repro** : sonde Playwright Event Timing API mobile 390×844 DPR2 + CPU throttle 4× : tap pin à t≈1,2 s après load → durée interaction mesurée avant/après patch.
 - **Fix** : (1) `timeout:2000`→`timeout:9000` (le bake n'entre plus en collision forcée avec les premiers taps ; fallback SVG live reste interactif, swap bitmap inchangé au 1er geste) ; (2) yield double-rAF entre `serializeToString` et decode/drawImage (scinde le bloc synchrone en 2 chunks < seuil longtask).
 - **KPI attendu** : pire durée d'interaction (Event Timing) sur tap pin précoce < 250 ms après patch (vs baseline mesurée), zéro longtask >200 ms chevauchant l'interaction.
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-24) — bake deferrise (timeout 9000 + yield double-rAF) ; sonde Event Timing CPU4x : pire interaction tap precoce 240→200ms, bloc bake glisse t~1,3s→t~1,5s (hors fenetre taps) ; PR #598 merged 7671c6c2 ; PATCH LIVE verifie 6/6 domaines (chunk timeout:9e3 present, 2e3 absent) ; QA live MQ/Miami/Tulum pins+fiche+0 erreur
 
 ---
 
