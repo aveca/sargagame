@@ -122,6 +122,15 @@
 - **Estimation** : 3h
 - **Statut** : [x] done by coding_agent (2026-08-05) — header variants (scene/alert/watch/calm/constel), 3 pricing cards (Brief 29€ decoy / Pro 79€ target / Pro Annual 690€ value), RiskReversal 14j, SocialProof
 
+### TASK-P1-008 Fix 404.html fonts broken path (268 broken links)
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Description** : `public/404.html` référence `/sargagame/fonts/bricolagegrotesque…` et `anton…` et `fonts.css` via `/sargagame/fonts/` → 404 (audit `broken-links.json` 2026-08-17: brokenCount 268, 3 font files sur 404). Le 404 doit servir `/fonts/` comme `index.html` et `public/fonts/`. Impact: 404 sans fonts (layout cassé), crawl budget gaspillé, 3 liens internes 404 sur chaque 404.
+- **Fichiers** : `public/404.html`
+- **Repro** : `grep sargagame/fonts public/404.html` → 3 hits ; `node -e "console.log(JSON.parse(require('fs').readFileSync('scripts/automation/data/broken-links.json')).sites.mq.brokenCount)"` → 268
+- **Fix** : remplacer `/sargagame/fonts/` par `/fonts/` dans `public/404.html` (3 occurrences)
+- **Statut** : [x] done by coding_agent (2026-08-24) — Fix 3× `/sargagame/fonts/` → `/fonts/` dans `public/404.html:9-12`, build 64795fbf, bundle 35.5 Ko, smoke 4/4, PR #589 merged, deploy Pages SUCCESS
+
 ---
 
 ## P2 — Backlog normal

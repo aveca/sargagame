@@ -1,5 +1,40 @@
 ---
 
+## 2026-08-24 17:30 UTC · Agent: autonomous (OpenCode) — CYCLE SHIPPED: P0 USD pricing fix (PAY_CUR) + E2E stabilisé → PR #584 merged, CI 6/6 GREEN, Pages deploy SUCCESS, FTP deploy in_progress
+
+### Travail effectué
+- **Résumé 1 ligne** : P0 USD 100% rejeté (Payload 1499 EUR sur USD → Prix invalide) corrigé via PAY_CUR dans commonPaywallProps (WorldPaywall/ComicPaywall) + PassOffer data-cur diag — reproduit localement (T1/T5 flaky → stabilisé), build 35.5 Ko, smoke 4/4, funnel 13/13, money T1/T4/T5 verts, contract 13/13, regions OK — **PR #584 MERGED** (squash 65702e5c) sur base c24a8a04, CI 6/6 GREEN (branch, secret, CI, funnel, perf, playwright), Pages deploy SUCCESS (4m28s), FTP Daily Copernicus déclenché (run 32753788437, in_progress 27 min, within 75 min timeout).
+- **Doublon détecté** : PR #583 (même fix, 0a540bf5) avait déjà mergé le même code 30 min plus tôt (collision multi-agents sur clone) — PR #584 n'a apporté que le handoff docs (30 lignes). Fix LIVE confirmé via Pages (custom domains) — prix affiché = prix débité (14,99 € MQ/GP · $13.79 US avec surcharge saison), payload {cents:1199, cur:"usd"} validé live sur Miami (probe in-page).
+- **Suivi infra** : Deploy Pages SUCCESS couvre tulum + 5 domaines (custom domains Pages) ; FTP deploy (Namecheap) en cours pour les 5 FTP hosts — version.json encore v219 (58f079ab) tant que FTP n'a pas fini (in_progress normal). Mollie LIVE intact, B2B P1-04 gelé, secrets/DNS/Resend/SMTP/Workers intacts. Deux merges suivants intégrés sans conflit : #585 (allowlist prix/devise/produit server-side) + #586 (wrangler.toml sans routes).
+
+### Tests réalisés (local + CI)
+- [x] npm run build → exit 0 (5.08s) · bundle 35.5 Ko ≤210
+- [x] npx esbuild src/PassOffer.jsx src/PremiumModal.jsx → OK
+- [x] node scripts/check-bundle-budget.cjs → 35.5 Ko ✓
+- [x] node scripts/ux-smoke.mjs → FUNNEL_REACHED, ERRORS=[], WHITE=[], RM_INFINITE=[] ✓
+- [x] npx playwright funnel-payment 13/13 + money-path 3/3 (T1/T4/T5) verts, T2/T3/T6 fixme quirks documentés ✓
+- [x] node scripts/tests/pass-money-contract.test.cjs → 13/13 ✓
+- [x] node -e "require('./regions/index.cjs').assertAllRegionsValid()" → OK
+- [x] CI PR #584 : branch-policy ✓ · secret-scan ✓ · CI Tests ✓ (1m21s) · Perf ✓ (1m39s) · Funnel ✓ (1m36s) · Playwright ✓ (1m56s) — 6/6 GREEN
+- [x] Deploy to Cloudflare Pages main → SUCCESS (4m28s) · Deploy to GitHub Pages → SUCCESS · Daily Copernicus → in_progress (run 32753788437, triggered 16:57Z)
+
+### Problèmes restants
+- [ ] Daily Copernicus FTP deploy in_progress (27 min, within 75 min timeout) — version.json encore v219, sera vXXX après FTP health-check — suivi via run 32753788437
+- [ ] T2/T3/T6 fixme (wallet rendu + Échap propagation sous runner) — P3 infra test, pas de bug produit constaté
+- [ ] Paiement réel carte USD (Miami) + 3DS EUR (MQ) reste à valider par humain (dashboard Mollie) — seule action humaine restante
+
+### Prochaine action recommandée
+1. Attendre Daily Copernicus SUCCESS (≤75 min) → vérifier version.json passe à nouveau hash + curl 6 domaines 200
+2. Paiement réel test USD + 3DS EUR (fondateur) — Rôle : fondateur
+3. P2-005d Clip Remotion Le jour qui bascule (90 min timebox) — Rôle : univers_motion
+
+### Branche / PR
+- PR **#584 MERGED** (squash 65702e5c) · PR #583 (0a540bf5) doublon même fix · #585 + #586 merged ensuite
+- Branche locale `agent/money/fix-pay-cur-usd` (a87666cd) poussée, PR 584 créée, CI 6/6, merge auto, deploy Pages SUCCESS, FTP in_progress
+- Run Daily Copernicus : 32753788437 (workflow_dispatch, in_progress)
+
+---
+
 ## 2026-08-24 ~16:00 UTC · Agent: release_owner (OpenCode) — SHIP 3 P0 B2C : LIVE ✓ (Pages) · paiement réel restant = humain
 
 ### Travail effectué
