@@ -9,6 +9,11 @@
     "en"
   ],
   "currency": "USD",
+  "bbox": [-87.56, 20.04, -87.34, 20.42],
+  "center": { "lat": 20.23, "lng": -87.45 },
+  "zoom": 11,
+  "timezone": "America/Cancun",
+  "beaches": [],
   "pricing": {
     "monthly": "$9.99",
     "yearly": "$79",
