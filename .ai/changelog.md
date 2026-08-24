@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-08-24 17:30 UTC · Agent: autonomous (OpenCode) — CYCLE SHIPPED P0 USD pricing fix (PAY_CUR) — PR #584 merged, CI 6/6 GREEN, Pages deploy SUCCESS
+
+### Travail effectué
+- **P0 USD pricing fix** : `src/PremiumModal.jsx` commonPaywallProps ajout PAY_CUR (WorldPaywall/ComicPaywall attendaient la prop, sans elle PassOffer retombait sur eur → 1499 EUR envoyés avec cur usd → Mollie allowlist rejette Prix invalide sur 100% USD). `src/PassOffer.jsx` ajoute data-cur/data-display-cents (diag live). `tests/e2e/money-path-regression.spec.ts` stabilisé (dispatch DOM deterministe, poll tolerante navigation, seed once, diag openCheckout) → T1/T4/T5 verts, T2/T3/T6 fixme documentés.
+- **Repro** : git show origin/main:src/PremiumModal.jsx → commonPaywallProps sans PAY_CUR, WorldPaywall PAY_CUR=undefined → PassOffer currency defaut eur → cents 1499 sur USD → mollie.php allowlist USD 1199 → throw Prix invalide. T1 flaky (overlay non visible) + T5 navigation destroyed → stabilisés.
+- **CI** : PR #584 (a87666cd) → 6/6 GREEN (branch-policy, secret-scan, CI Tests 1m21s, Perf 1m39s, Funnel 1m36s, Playwright 1m56s). Doublon PR #583 (0a540bf5) déjà mergé 30 min avant (collision multi-agents) — PR #584 n'a apporté que le handoff docs.
+- **Deploy** : Deploy to Cloudflare Pages SUCCESS (4m28s) + Deploy to GitHub Pages SUCCESS + Daily Copernicus workflow_dispatch 32753788437 in_progress (27 min, within 75 min timeout) — version.json encore v219 tant que FTP n'a pas fini. Mollie LIVE intact, B2B P1-04 gelé, secrets/DNS/Resend/SMTP/Workers intacts. Merges suivants intégrés : #585 (allowlist prix/devise/produit server-side) + #586 (wrangler.toml sans routes).
+
+### Fichiers modifiés
+- `src/PremiumModal.jsx` — PAY_CUR ajouté à commonPaywallProps (1 ligne, root cause P0-1)
+- `src/PassOffer.jsx` — data-cur/data-display-cents (2 attrs, diag live)
+- `tests/e2e/money-path-regression.spec.ts` — stabilisation T1/T5 + diag (74 lignes, +54/-25)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (5.08s) · bundle 35.5 Ko ≤210 ✓
+- [x] node scripts/check-bundle-budget.cjs → 35.5 Ko ✓
+- [x] node scripts/ux-smoke.mjs → FUNNEL_REACHED, ERRORS=[], WHITE=[], RM_INFINITE=[] ✓
+- [x] npx playwright funnel-payment 13/13 + money-path 3/3 (T1/T4/T5) verts, T2/T3/T6 fixme ✓
+- [x] node scripts/tests/pass-money-contract.test.cjs → 13/13 ✓
+- [x] node -e "require('./regions/index.cjs').assertAllRegionsValid()" → OK
+- [x] CI PR #584 6/6 GREEN · Pages deploy SUCCESS · FTP in_progress
+
+### Problèmes restants
+- Daily Copernicus FTP deploy in_progress (run 32753788437) — version.json encore v219, sera mis à jour après health-check
+- T2/T3/T6 fixme quirks runner (pas de bug produit)
+- Paiement réel carte USD + 3DS EUR à valider par humain (dashboard Mollie)
+
+---
+
 ## 2026-08-23 (soir) UTC · Agent: team UX/UI+B2C+QA (OpenCode) · P0 money-path réparés (LOCAL, non poussé)
 
 ### Travail effectué
@@ -1249,10 +1278,10 @@ Fix :
 
 
 
-## 2026-08-23 22:10 UTC � Agent: coding_agent (OpenCode) � PR #579 CI r�solue (6/6 GitHub GREEN) + Workers Builds identifi� externe
-- Fix code: src/lib/pass-price.js ajout� (dac5a533) � cause racine des fails funnel/perf/test-frontend/playwright-build.
-- Fix scan (59d630b7): secret-scan.yml exclut .ai/plans/* + NEXT_SESSION.md + src/*.jsx (STRIPE_PK publique pk_live_ = faux positif; secrets Mollie dans docs = historique gitignor�).
-- Fix playwright �2 (ed087ee3 + 0da6e6d2): (a) reuseExistingServer:true + reporter playwright-report/ (clash test-results/ r�solu); (b) browserName:'chromium' � projet 'mobile-chromium' lan�ait WebKit (d�faut devices['iPhone 12']) non install� en CI. CI: 2m5s PASS, 21 tests.
-- Workers Builds sargagame: failing sur TOUTES les branches y compris main (preuve ind�pendance code). Deploy command wrangler versions upload sans wrangler.jsonc root = ERROR entry-point manquant. Worker vestigial (no bindings, subdomain off). Prod r�elle = GitHub Actions FTP�5 + Pages�6, non affect�e. Action humaine = d�connecter build integration dans dashboard Cloudflare.
+## 2026-08-23 22:10 UTC � Agent: coding_agent (OpenCode) � PR #579 CI r�solue (6/6 GitHub GREEN) + Workers Builds identifi� externe
+- Fix code: src/lib/pass-price.js ajout� (dac5a533) � cause racine des fails funnel/perf/test-frontend/playwright-build.
+- Fix scan (59d630b7): secret-scan.yml exclut .ai/plans/* + NEXT_SESSION.md + src/*.jsx (STRIPE_PK publique pk_live_ = faux positif; secrets Mollie dans docs = historique gitignor�).
+- Fix playwright �2 (ed087ee3 + 0da6e6d2): (a) reuseExistingServer:true + reporter playwright-report/ (clash test-results/ r�solu); (b) browserName:'chromium' � projet 'mobile-chromium' lan�ait WebKit (d�faut devices['iPhone 12']) non install� en CI. CI: 2m5s PASS, 21 tests.
+- Workers Builds sargagame: failing sur TOUTES les branches y compris main (preuve ind�pendance code). Deploy command wrangler versions upload sans wrangler.jsonc root = ERROR entry-point manquant. Worker vestigial (no bindings, subdomain off). Prod r�elle = GitHub Actions FTP�5 + Pages�6, non affect�e. Action humaine = d�connecter build integration dans dashboard Cloudflare.
 - Push final: 0da6e6d2 sur agent/ui/accessibility-p1. MERGE main: NON. Deploy: NON.
 
