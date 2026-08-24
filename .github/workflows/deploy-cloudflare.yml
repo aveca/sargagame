@@ -1,12 +1,10 @@
-﻿name: Deploy to Cloudflare Pages
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-jobs:
-  build-and-deploy:
+name: Deploy to Cloudflare Pages
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # SECURITE (2026-08-24): NE PAS ecrire mollie-config.php (secret webhook)
+          # dans dist/ - Pages sert les .php comme fichiers STATIQUES (source +
+          # secret exposes publiquement, P0 corrige). Le payment path = worker
+          # b2b-api (secret cote worker). Aucun .php de config sur Pages.
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
