@@ -1,5 +1,35 @@
 ---
 
+## 2026-08-24 ~16:00 UTC · Agent: release_owner (OpenCode) — SHIP 3 P0 B2C : LIVE ✓ (Pages) · paiement réel restant = humain
+
+### Travail effectué
+- **Résumé 1 ligne** : Les 3 P0 B2C sont LIVE sur Cloudflare Pages (custom domains) — USD affichage/payload cohérents ($13.79 = 11.99+15% saison, payload 1199/usd validé live), retour 3DS → grant auto (redirectUrl mollie_return actif), trou ?pass= fermé (session_id exigé, idempotence) — **paiement carte réel + 3DS = seule action humaine restante**.
+- **Chaîne exécutée** : lock workspace → verify diff → push → **PR #583 MERGED** → Deploy to Cloudflare Pages **success** (1m07s) → QA live 5 domaines + tulum (6e) → payload live capturé sur Miami.
+- **Découvertes infra majeures** (cf. bugs.md 023/024) :
+  1. **Le LIVE = Cloudflare Pages** (custom domains câblés aux projets Pages `sargagame*`), PAS le FTP Namecheap (racine FTP ≠ traffic ; 4 runs Daily Copernicus "success" avec FTP failed silencieux — timeout 75 min < volume upload).
+  2. **mollie.php LIVE (Namecheap) = version legacy SANS allowlist anti-tamper** (probe : create_payment 1499/usd ACCEPTÉ, checkoutUrl créé — 2 paiements probe non payés créés, expirent seuls, zéro débit). Le PHP = zone gelée → NON touché. Risque documenté (montant non vérifié serveur-side tant que le PHP à jour n'est pas déployé).
+  3. Collision multi-agents sur le clone (branches switchées/force-pushed pendant la session) → HEAD détaché piège : `git push branch:branch` poussait le mauvais ref. Contourné : push par SHA explicite (`tmp-ship-p0:agent/release/p0-money-final`).
+
+### Fichiers (PR #583, squash-mergée dans main)
+- `src/PremiumModal.jsx` — **ROOT CAUSE P0-1** : PAY_CUR absent de commonPaywallProps → ajouté (1 ligne)
+- `src/PassOffer.jsx` — data-cur/data-display-cents (debug live prix affiché vs débité)
+- `tests/e2e/money-path-regression.spec.ts`, `scripts/tests/pass-money-contract.test.cjs` — stabilisés (T1/T4/T5 verts)
+
+### Tests réalisés (LIVE, post-deploy 58f079ab)
+- [x] 5 domaines : HTTP 200 · paywall ✓ · **prix affiché = prix débité** (14,99 € MQ/GP · **$13.79** US) · ?pass= gate ✓ · grant avec session_id ✓
+- [x] Payload create_payment LIVE (Miami, stub Mollie in-page) : `{cents:1199, cur:"usd", redirectUrl:"https://sargassummiami.com/?mollie_return=1", consent:true}` ✓
+- [x] tulum (6e domaine) HTTP 200 · Pages deploy success 6 régions
+
+### Prochaine action recommandée
+1. **Paiement réel carte USD (Miami) + 3DS EUR (MQ)** — dashboard/phone fondateur, seul check restant — Rôle : fondateur
+2. Décision déploiement PHP à jour (allowlist anti-tamper serveur) — zone gelée, nécessite go — Rôle : fondateur/release
+3. Réparer le fast-path FTP (_deploy.php renvoie du source PHP — même classe que BUG-2026-018) ou réduire le volume upload — Rôle : devops
+
+### Branche / PR
+- PR **#583 MERGED** (squash) · deploy Pages success · live vérifié 58f079ab
+
+---
+
 ## 2026-08-23 (soir) UTC · Agent: team UX/UI+B2C+QA (OpenCode) — P0 money-path réparés · LOCAL NON POUSSÉ (attend go)
 
 ### Travail effectué
