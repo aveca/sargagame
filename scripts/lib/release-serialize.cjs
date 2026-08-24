@@ -173,13 +173,11 @@ function hasActiveAgentPR(scopeOrTask, maybeScope) {
     const prs = JSON.parse(json);
     let agentPRs = prs.filter(p => p.headRefName && p.headRefName.startsWith('agent/'));
     if (scope && scope !== 'agent' && scope !== 'agent/*') {
-      // filtre par scope: agent/<scope>/ ou agent/<agentType>/ (scope peut être "money" → agent/money/ ou agent/coding/ si scope==coding)
-      // On considère scope comme un préfixe après agent/
       const prefix = `agent/${scope}/`;
       const altPrefix = scope.includes('/') ? scope : null;
       agentPRs = agentPRs.filter(p => p.headRefName.startsWith(prefix) || (altPrefix && p.headRefName.startsWith(altPrefix)));
-      if (!agentPRs.length) return { has: false };
     }
+    if (!agentPRs.length) return { has: false };
     if (excludeTask) {
       const same = agentPRs.find(p => p.headRefName.includes(excludeTask));
       if (same && agentPRs.length === 1) return { has: false, same };
