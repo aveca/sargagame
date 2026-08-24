@@ -1,18 +1,11 @@
 name = "b2b-api"
 main = "index.js"
 compatibility_date = "2024-01-01"
-routes = [
-  { pattern = "sargasses-martinique.com/api/b2b*", zone_name = "sargasses-martinique.com" },
-  { pattern = "sargasses-martinique.com/api/mollie*", zone_name = "sargasses-martinique.com" },
-  { pattern = "sargasses-guadeloupe.com/api/b2b*", zone_name = "sargasses-guadeloupe.com" },
-  { pattern = "sargasses-guadeloupe.com/api/mollie*", zone_name = "sargasses-guadeloupe.com" },
-  { pattern = "sargassummiami.com/api/b2b*", zone_name = "sargassummiami.com" },
-  { pattern = "sargassummiami.com/api/mollie*", zone_name = "sargassummiami.com" },
-  { pattern = "sargassumcancun.com/api/b2b*", zone_name = "sargassumcancun.com" },
-  { pattern = "sargassumcancun.com/api/mollie*", zone_name = "sargassumcancun.com" },
-  { pattern = "sargassumpuntacana.com/api/b2b*", zone_name = "sargassumpuntacana.com" },
-  { pattern = "sargassumpuntacana.com/api/mollie*", zone_name = "sargassumpuntacana.com" }
-]
+# NB: les routes workers (*/api/mollie* + */api/b2b* sur les 6 zones) sont déjà
+# posées sur Cloudflare et stables — volontairement PAS re-déclarées ici : le
+# token CI (CLOUDFLARE_API_TOKEN) n'a pas le scope zones/workers_routes:edit
+# et wrangler échoue en Authentication error s'il tente de les réécrire.
+# Pour changer le routage: action fondateur (dashboard CF ou token à jour).
 
 [vars]
 SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
