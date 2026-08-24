@@ -89,15 +89,27 @@ async function openCheckout(page: Page) {
   await page.waitForTimeout(900)
   const buy = page.locator('button:has-text("Commencer maintenant"), button:has-text("Start now"), button:has-text("Empezar ahora")').first()
   await expect(buy).toBeVisible({ timeout: 15000 })
-  await buy.scrollIntoViewIfNeeded().catch(() => {})
-  try {
-    await buy.click({ force: true, timeout: 5000 })
-  } catch (_) {
-    // Secours déterministe : le sheet est scrollable, dispatch direct (même handler React).
-    await buy.evaluate((el: HTMLElement) => el.click())
-  }
+  // Dispatch DOM direct (déterministe) : le sheet animé + scrollable rend les clics
+  // géométriques instables (coordonnées shiftées pendant sgPwEnter / scroll).
+  await buy.evaluate((el: HTMLElement) => el.click())
   const overlay = page.locator('div[role="dialog"][aria-label="Paiement sécurisé"], div[role="dialog"][aria-label="Secure checkout"], div[role="dialog"][aria-label="Pago seguro"]').first()
-  await expect(overlay).toBeVisible({ timeout: 10000 })
+  try {
+    await expect(overlay).toBeVisible({ timeout: 10000 })
+  } catch (e) {
+    // Diagnostic : buy() a-t-il tourné (sg_checkout_started_at) ? overlay présent
+    // mais sans role ? paywall toujours ouvert ?
+    const diag = await page.evaluate(() => ({
+      startedAt: localStorage.getItem("sg_checkout_started_at"),
+      overlays: Array.from(document.querySelectorAll('[aria-label="Paiement sécurisé"]')).map(n => ({
+        role: n.getAttribute("role"), inert: n.hasAttribute("inert"),
+        transform: (n as HTMLElement).style.transform || "(none)",
+      })),
+      dialogs: Array.from(document.querySelectorAll('[role="dialog"]')).map(n => n.getAttribute("aria-label")),
+      panelVisible: !!document.querySelector(".sg-modal-panel"),
+    })).catch(() => "evaluate failed")
+    console.log("[openCheckout-diag]", JSON.stringify(diag))
+    throw e
+  }
   return { panel, overlay }
 }
 
@@ -121,8 +133,7 @@ test.describe("Money-path B2C — régressions 2026-08-23", () => {
     await tickConsent(page, overlay)
     const payer = overlay.locator('button:has-text("Payer"), button:has-text("Pay "), button:has-text("Pagar")').first()
     await expect(payer).toBeEnabled({ timeout: 5000 })
-    await payer.scrollIntoViewIfNeeded().catch(() => {})
-    await payer.click({ force: true })
+    await payer.evaluate((el: HTMLElement) => el.click())
     // Le front doit avoir posté create_payment avec le redirectUrl de retour app
     await expect.poll(
       async () => (await mollieBodies(page)).filter((b: any) => b.action === "create_payment").length,
@@ -212,25 +223,42 @@ test.describe("Money-path B2C — régressions 2026-08-23", () => {
   test("T5 — ?mollie_return=1 : paiement confirmé → grant + purge + anti-replay", async ({ page }) => {
     await stubMollieApi(page)
     await page.addInitScript(() => {
-      const ctx = JSON.stringify({ paymentId: "tr_ret_e2e", pass: "p30", days: 30, email: "e2e@sargasses.test" })
-      try { sessionStorage.setItem("sg_mollie_pending", ctx); localStorage.setItem("sg_mollie_pending", ctx) } catch (_) {}
+      // Guard : addInitScript tourne à CHAQUE navigation — sans lui, le seed
+      // ré-apparaîtrait après le location.replace() du handler (clean()).
+      try {
+        if (!sessionStorage.getItem("__t5_seeded")) {
+          sessionStorage.setItem("__t5_seeded", "1")
+          const ctx = JSON.stringify({ paymentId: "tr_ret_e2e", pass: "p30", days: 30, email: "e2e@sargasses.test" })
+          sessionStorage.setItem("sg_mollie_pending", ctx)
+          localStorage.setItem("sg_mollie_pending", ctx)
+        }
+      } catch (_) {}
     })
     await page.goto(TEST_URL + "?mollie_return=1", { waitUntil: "load", timeout: 60000 })
-    // Poll payment_status → paid → grant local
+    // Poll payment_status → paid → grant local, PUIS clean() fait un
+    // location.replace("/") — les evaluate doivent tolérer la navigation
+    // (contexte détruit pendant le replace = retry).
     await expect.poll(
-      () => page.evaluate(() => localStorage.getItem("sg_premium_pass_end")),
+      async () => {
+        try { return await page.evaluate(() => localStorage.getItem("sg_premium_pass_end")) } catch (_) { return null }
+      },
       { timeout: 30000 }
     ).toBeTruthy()
-    const state = await page.evaluate(() => ({
-      done: localStorage.getItem("sg_mollie_done_tr_ret_e2e"),
-      pendingLs: localStorage.getItem("sg_mollie_pending"),
-      pendingSs: sessionStorage.getItem("sg_mollie_pending"),
-    }))
-    expect(state.done).toBe("1")
-    expect(state.pendingLs).toBeNull()
-    expect(state.pendingSs).toBeNull()
-    // URL nettoyée (replace vers /)
-    await expect.poll(() => new URL(page.url()).search.includes("mollie_return"), { timeout: 10000 }).toBe(false)
+    // URL nettoyée (replace vers /) — attendre la fin de la navigation AVANT les asserts
+    await expect.poll(() => new URL(page.url()).search.includes("mollie_return"), { timeout: 15000 }).toBe(false)
+    await page.waitForLoadState("load").catch(() => {})
+    await expect.poll(
+      async () => {
+        try {
+          return await page.evaluate(() => ({
+            done: localStorage.getItem("sg_mollie_done_tr_ret_e2e"),
+            pendingLs: localStorage.getItem("sg_mollie_pending"),
+            pendingSs: sessionStorage.getItem("sg_mollie_pending"),
+          }))
+        } catch (_) { return null }
+      },
+      { timeout: 15000 }
+    ).toEqual(expect.objectContaining({ done: "1", pendingLs: null, pendingSs: null }))
   })
 
   // FIXME(test-infra) — Échap n'atteint pas le handler de l'overlay sous le runner
