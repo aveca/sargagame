@@ -68,7 +68,7 @@ export default {
     const path = url.pathname;
 
     // ── Mollie routes ──────────────────────────────────────────────
-    if (path.includes('mollie-webhook')) return handleMollieWebhook(request);
+    if (path.includes('mollie-webhook')) return handleMollieWebhook(request, env);
     if (path.includes('mollie.php') && method === 'POST') return handleMollieCheckout(request);
 
     // ── B2B routes ─────────────────────────────────────────────────
@@ -341,17 +341,26 @@ async function handleCheckout(method, _params, body) {
 // MOLLIE WEBHOOK — replaces mollie-webhook.php
 // ═══════════════════════════════════════════════════════════════════════
 
-async function handleMollieWebhook(request) {
+async function handleMollieWebhook(request, env) {
   const raw = await request.text();
   const signature = request.headers.get('X-Mollie-Signature') || '';
 
   if (!MOLLIE_WEBHOOK_SECRET) return err('webhook_unavailable', 503);
 
-  // HMAC-SHA256 verification
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(MOLLIE_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw));
-  const expected = [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
-  if (expected !== signature) return err('invalid_signature', 403);
+  // Anti-DoS: le re-fetch Mollie ci-dessous coûte un appel API par requête.
+  if (env && !(await rateLimit(env, 'mollie_webhook', 30))) return err('rate_limited', 429);
+
+  // HMAC OPTIONNEL : Mollie n'envoie PAS de header X-Mollie-Signature — la
+  // VÉRIFICATION réelle de l'événement = re-fetch du paiement auprès de l'API
+  // Mollie (molliePaymentEvent -> mollieGet), JAMAIS le body lui-même.
+  //  - signature PRÉSENTE et invalide -> rejet (appelant qui prétend être signé)
+  //  - signature absente -> webhook Mollie natif, accepté pour re-fetch
+  if (signature) {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(MOLLIE_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw));
+    const expected = [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
+    if (expected !== signature) return err('invalid_signature', 403);
+  }
 
   const data = JSON.parse(raw);
   const { id, resource, event } = data;
