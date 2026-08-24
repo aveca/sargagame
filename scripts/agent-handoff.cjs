@@ -26,7 +26,7 @@ const HANDOFF_TEMPLATE = path.join(AI_DIR, 'handoff-template.md');
 
 const args = process.argv.slice(2);
 const AUTO = args.includes('--auto');
-const FORCE_TASK = args.find(a => a.startsWith('--task='))?.split('=')[1] || args[args.indexOf('--task') + 1];
+const FORCE_TASK = args.find(a => a.startsWith('--task='))?.split('=')[1] || (args.includes('--task') ? args[args.indexOf('--task') + 1] : undefined);
 const COMPLETE = args.includes('--complete');
 const STATUS = args.includes('--status');
 const SHIP = args.includes('--ship');
@@ -333,9 +333,9 @@ if (STATUS) {
 }
 
 if (RELEASE_CHECK) {
-  const task = args[args.indexOf('--task') + 1] || args.find(a => a.startsWith('--task='))?.split('=')[1];
-  const agent = args[args.indexOf('--agent') + 1] || 'coding';
-  const scope = args[args.indexOf('--scope') + 1] || getScopeForTask(task || 'TASK-P0-001');
+  const task = args.find(a => a.startsWith('--task='))?.split('=')[1] || (args.includes('--task') ? args[args.indexOf('--task') + 1] : undefined);
+  const agent = args.find(a => a.startsWith('--agent='))?.split('=')[1] || (args.includes('--agent') ? args[args.indexOf('--agent') + 1] : 'coding');
+  const scope = args.find(a => a.startsWith('--scope='))?.split('=')[1] || (args.includes('--scope') ? args[args.indexOf('--scope') + 1] : getScopeForTask(task || 'TASK-P0-001'));
   if (!task) { console.error('usage: --release-check --task TASK-P2-005d --agent coding --scope money'); process.exit(1); }
   if (!release) { console.error('release-serialize lib manquant'); process.exit(1); }
   const r = release.runReleaseGate({ taskId: task, agentType: agent, scope });

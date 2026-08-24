@@ -308,24 +308,24 @@ function mainCLI() {
     process.exit(r.ok ? 0 : 1);
   }
   if (args.includes('--lock')) {
-    const task = args[args.indexOf('--task') + 1] || args.find(a => a.startsWith('--task='))?.split('=')[1];
-    const base = args[args.indexOf('--base') + 1] || args.find(a => a.startsWith('--base='))?.split('=')[1];
-    const agent = args[args.indexOf('--agent') + 1] || 'unknown';
+    const task = args.find(a => a.startsWith('--task='))?.split('=')[1] || (args.includes('--task') ? args[args.indexOf('--task') + 1] : undefined);
+    const base = args.find(a => a.startsWith('--base='))?.split('=')[1] || (args.includes('--base') ? args[args.indexOf('--base') + 1] : undefined);
+    const agent = args.find(a => a.startsWith('--agent='))?.split('=')[1] || (args.includes('--agent') ? args[args.indexOf('--agent') + 1] : 'unknown');
     if (!task || !base) { console.error('usage: --lock --task TASK --base SHA --agent coding'); process.exit(1); }
     const p = acquireWorkspaceLock({ task, baseSha: base, agent });
     console.log(`✅ lock acquis ${JSON.stringify(p)}`);
     return;
   }
   if (args.includes('--unlock')) {
-    const task = args[args.indexOf('--task') + 1];
+    const task = args.find(a => a.startsWith('--task='))?.split('=')[1] || (args.includes('--task') ? args[args.indexOf('--task') + 1] : undefined);
     releaseWorkspaceLock(task);
     console.log('✅ lock libéré');
     return;
   }
   if (args.includes('--check')) {
-    const task = args[args.indexOf('--task') + 1] || args.find(a => a.startsWith('--task='))?.split('=')[1];
-    const agent = args[args.indexOf('--agent') + 1] || 'coding';
-    const scope = args[args.indexOf('--scope') + 1] || 'agent';
+    const task = args.find(a => a.startsWith('--task='))?.split('=')[1] || (args.includes('--task') ? args[args.indexOf('--task') + 1] : undefined);
+    const agent = args.find(a => a.startsWith('--agent='))?.split('=')[1] || (args.includes('--agent') ? args[args.indexOf('--agent') + 1] : 'coding');
+    const scope = args.find(a => a.startsWith('--scope='))?.split('=')[1] || (args.includes('--scope') ? args[args.indexOf('--scope') + 1] : 'agent');
     if (!task) { console.error('usage: --check --task TASK --agent coding --scope money'); process.exit(1); }
     const r = runReleaseGate({ taskId: task, agentType: agent, scope });
     console.log(r.ok ? '✅ RELEASE GATE OK' : `❌ RELEASE GATE BLOQUÉ: ${r.reason}`);
