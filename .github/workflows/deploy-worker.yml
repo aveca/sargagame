@@ -1,0 +1,32 @@
+name: Deploy Worker b2b-api (payment path)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workers/b2b-api/**"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: node --check workers/b2b-api/index.js
+
+      - name: Deploy worker (wrangler)
+        run: npx wrangler deploy
+        working-directory: workers/b2b-api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
