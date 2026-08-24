@@ -3,6 +3,30 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-019 — [FIXÉ 2026-08-23, local non poussé] Achat pass USD 100 % rejeté (« Prix invalide ») sur Miami/Cancún/Punta Cana
+- **Sévérité** : P0 — tout le revenu USD mort
+- **Cause** : `PassOffer` n'avait pas `currency` → payload `{cents:1499(EUR), cur:"usd"}` → allowlist mollie.php attend 1199 → throw
+- **Fix** : `currency={PAY_CUR}` (WorldPaywall/ComicPaywall) + contrat `src/lib/pass-price.js` + test `scripts/tests/pass-money-contract.test.cjs`
+- **Validation post-deploy requise** : 1 vrai paiement test USD (dashboard Mollie)
+
+### BUG-2026-020 — [FIXÉ 2026-08-23, local non poussé] Paiement 3DS réussi → retour sans accès
+- **Sévérité** : P0 — payeur repart verrouillé après paiement confirmé
+- **Cause** : redirectUrl serveur par défaut = `/payment/good.html` (statique, zéro entitlement) ; handler de grant `?mollie_return=1` orphelin depuis le 2026-08-12
+- **Fix** : front envoie `redirectUrl: origin+"/?mollie_return=1"` (serveur valide déjà ce champ) + `good.html` → `/?premium_email=<email>` en secours + poller durci (6×2,5 s, purge LS, anti-replay)
+- **Validation post-deploy requise** : 1 achat EUR carte 3DS → retour app → accès actif sans ressaisie
+
+### BUG-2026-021 — [FIXÉ 2026-08-23, local non poussé] `?pass=p30` accordait le premium sans preuve de paiement
+- **Sévérité** : P0 revenu (trou d'accès gratuit renouvelable à volonté)
+- **Fix** : `session_id` exigé (présent dans tous les générateurs legacy) + idempotence `sg_grant_done_<sid>`
+- **Repro du trou** : `/?pass=p30` seul → `sg_premium_pass_end` posé (avant fix) — E2E T4 verrouille
+
+### BUG-2026-022 — [OUVERT, P3 infra test] Playwright runner : 3 quirks harness (pas de bug produit constaté)
+1. `page.route("**/api/mollie.php")` n'intercepte pas les `fetch` du chunk lazy PremiumModal sous le runner (OK en harnais manuel) → contournement : stub `window.fetch` in-page (`tests/e2e/money-path-regression.spec.ts`)
+2. Bouton Google Pay non rendu sous le runner malgré cache `sessionStorage sg_wallet_avail` seedé (T2/T3 fixme)
+3. Échap n'atteint pas le handler overlay checkout : `useModalA11y` du shell fait `stopPropagation` avant le handler overlay ; window-capture tenté sans succès sous runner (T6 fixme)
+- **Repro** : `npx playwright test tests/e2e/money-path-regression.spec.ts -g "T6"`
+- **Statut** : [ ] à diagnostiquer (qa_agent) — gardes wallet/Échap vérifiées par revue de code + harnais manuel
+
 ### BUG-2026-018 — Email tracking pixels return PHP source code on MQ+GP (cPanel PHP handler broken)
 - **Date** : 2026-08-18 · **Sévérité** : P0 — all email open/click tracking broken since ~Aug 13
 - **Fichiers** : `public/api/track-open.php`, `public/api/track-click.php` (live endpoints)
