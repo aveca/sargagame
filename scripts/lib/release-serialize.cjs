@@ -78,11 +78,13 @@ function checkWorktreeClean() {
 }
 
 // verrou workspace exclusif
-function checkWorkspaceLock() {
+function checkWorkspaceLock(taskId) {
   if (!fs.existsSync(LOCK_FILE)) return { ok: true };
   try {
     const raw = fs.readFileSync(LOCK_FILE, 'utf-8');
     const data = JSON.parse(raw);
+    // Le propriétaire du lock peut re-vérifier SA propre tâche (re-gate avant push).
+    if (taskId && data.task === taskId) return { ok: true, own: true };
     const started = new Date(data.started).getTime();
     const age = Date.now() - started;
     if (age < LOCK_TTL_MS) {
@@ -259,9 +261,9 @@ function runReleaseGate({ taskId, agentType, scope }) {
   out.steps.push(`worktree clean: ${wt.ok ? 'OK' : 'FAIL'}`);
   if (!wt.ok) return { ok: false, reason: wt.reason, steps: out.steps };
 
-  // 3. workspace lock
-  const wl = checkWorkspaceLock();
-  out.steps.push(`workspace lock: ${wl.ok ? (wl.expired ? 'expiré → OK' : 'OK') : 'LOCK'}`);
+  // 3. workspace lock (le propriétaire du lock re-vérifie sa propre tâche → OK)
+  const wl = checkWorkspaceLock(taskId);
+  out.steps.push(`workspace lock: ${wl.ok ? (wl.own ? 'à moi' : wl.expired ? 'expiré → OK' : 'OK') : 'LOCK'}`);
   if (!wl.ok) return { ok: false, reason: wl.reason, steps: out.steps };
 
   if (!taskId) return { ok: false, reason: 'taskId manquant', steps: out.steps };
