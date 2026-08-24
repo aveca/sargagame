@@ -3,6 +3,12 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-025 — [FIXÉ 2026-08-25] Tulum (sargazotulum.com) sans routes Workers `/api/mollie*`+`/api/b2b*` → checkout impossible + source PHP exposé
+- **Sévérité** : P1 — checkout Mollie mort sur ce seul domaine (+ fuite de source `mollie.php`/`mollie-lib.php` en `application/x-httpd-php` via l'origine statique Pages, pas de secret exposé : les `*-config.php` ne sont pas dans le build)
+- **Cause (prouvée API CF)** : zone `sargazotulum.com` n'avait que 5 routes Workers (supabase-proxy ×1, sg-payments ×4) contre 7 sur les 5 autres zones — manquaient `sargazotulum.com/api/mollie*` et `sargazotulum.com/api/b2b*` → `b2b-api`. Requêtes tombaient sur Pages = fichiers PHP servis bruts. Deuxième couche : `workers/b2b-api/index.js:509` mapping host→île sans branche `tulum` (fallback `'MQ'`) → même routé, checkout tulum aurait été rejeté `island_mismatch` (front envoie `island:'TULUM'`) ; et `allowedIslands` webhook sans `'TULUM'` → grants skippés.
+- **Fix** : (1) 2 routes zone créées via API CF (ids 37333c83…, 481eb4d5…) miroir des 5 zones saines ; (2) worker `index.js` : branche `host.includes('tulum') ? 'TULUM'` + `'TULUM'` dans allowedIslands (additif pur, zéro changement pour les 5 autres domaines).
+- **Validation live post-routes** : GET `/api/mollie.php`→404 JSON worker, `/api/mollie-lib.php`→404 (fuite source fermée), POST create_payment prix tamperé → `400 {"error":"Prix invalide"}` identique à Martinique (allowlist active, aucun paiement créé). Post-deploy worker : probe island_mismatch attendue en 400.
+
 ### BUG-2026-019 — [FIXÉ 2026-08-23, local non poussé] Achat pass USD 100 % rejeté (« Prix invalide ») sur Miami/Cancún/Punta Cana
 - **Sévérité** : P0 — tout le revenu USD mort
 - **Cause** : `PassOffer` n'avait pas `currency` → payload `{cents:1499(EUR), cur:"usd"}` → allowlist mollie.php attend 1199 → throw

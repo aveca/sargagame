@@ -1,5 +1,32 @@
 ---
 
+## 2026-08-25 01:30 UTC · Agent: devops (OpenCode) — TULUM API ROUTING FIXED (routes zone live + worker TULUM island, PR dédiée en cours)
+
+### Travail effectué
+- **Résumé 1 ligne** : sargazotulum.com aligné sur les 5 domaines — 2 routes zone `/api/mollie*`+`/api/b2b*` → b2b-api créées via API CF (**live vérifié**), + fix worker additif mapping host→île `'TULUM'` & allowedIslands webhook ; fuite de source PHP (`mollie.php`/`mollie-lib.php` servis bruts par Pages) fermée au passage.
+- **Cause prouvée** : zone tulum = 5 routes (vs 7 ailleurs) → fallback origine statique ; worker sans branche tulum → `island_mismatch` inévitable même routé. Cf BUG-2026-025 (.ai/bugs.md).
+
+### Fichiers modifiés
+- `workers/b2b-api/index.js` — 2 lignes additives (tulum host→île + allowedIslands)
+- Cloudflare API : routes zone sargazotulum.com ×2 → b2b-api
+- `.ai/bugs.md`, `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
+
+### Tests réalisés
+- [x] node --check worker OK · npm run build exit 0 · budget 35.5 Ko ≤ 210
+- [x] Live tulum post-routes : GET mollie.php→404 worker (=×5), webhook→500 (=×5), mollie-lib.php 200→404 (fuite fermée)
+- [x] POST create_payment tamperé → 400 « Prix invalide » identique Martinique, zéro paiement créé
+- [ ] Post-merge : probe island_mismatch 400 depuis tulum (mapping TULUM déployé) puis vrai paiement test USD (fondateur)
+
+### Prochaine action recommandée
+1. Merge PR (CI green attendu : worker-only, hors bundle app) → deploy-worker.yml auto — Rôle : release
+2. Paiement test réel USD depuis sargazotulum.com — Rôle : fondateur
+3. Drift dormant documenté : workers/sg-payments/wrangler.jsonc revendique mollie*/b2b-* ×6 (à corriger avant tout futur déploiement sg-payments) — Rôle : architect
+
+### Branche / PR
+- Branche : `agent/devops/tulum-api-routes` (commit code 3c421a96 sur base 60c663f8)
+
+---
+
 ## 2026-08-25 00:10 UTC · Agent: release_owner (OpenCode) — FACTORY RECONCILIATION → **FACTORY GREEN** (main 06109c4e, PR #595 fermée, agent-handoff.yml réparé, live 6/6)
 
 ### Travail effectué

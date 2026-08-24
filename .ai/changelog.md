@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-08-25 01:30 UTC · Agent: devops (OpenCode) — TULUM API ROUTING FIXED → routes zone + worker TULUM island (PR dédiée)
+
+### Travail effectué
+- **Résumé** : Watch-item P1 « tulum sans routes `/api/mollie*`+`/api/b2b*` » résolu en 2 couches : **(infra, live immédiat)** création des 2 routes zone `sargazotulum.com/api/mollie*` + `/api/b2b*` → worker `b2b-api` via API CF (miroir exact des 5 zones saines — zone tulum passe de 5 à 7 routes) ; **(code)** `workers/b2b-api/index.js` : mapping host→île gagne la branche `tulum → 'TULUM'` et `'TULUM'` rejoint `allowedIslands` webhook (additif pur, les 5 autres domaines inchangés).
+- **Cause prouvée (pas supposée)** : API CF zones/{id}/workers/routes comparées 6/6 — tulum n'avait que supabase-proxy ×1 + sg-payments ×4. Sans route, `/api/mollie.php` tombait sur l'origine statique Pages qui servait le **source PHP brut** (`200`, `Content-Type: application/x-httpd-php`) = fuite code confirmée (`mollie-lib.php` 200 aussi). Zéro secret exposé : `*-config.php` absents du build Pages (`mollie-config.php` → page SPA). Bonus : le mapping host sans `tulum` aurait renvoyé `island_mismatch 400` sur tout checkout tulum même routé (front `Sargasses_PROD.jsx:11454` envoie `REGION.id.toUpperCase()`=`'TULUM'`).
+- **Effet de bord corrigé au passage** : fuite de source PHP sur tulum fermée par le routage (`/api/mollie*` intercepte aussi `mollie-lib.php`).
+
+### Fichiers modifiés
+- `workers/b2b-api/index.js` — 2 lignes additives (branche tulum ligne ~509 + allowedIslands ligne ~398)
+- Cloudflare (hors repo) : zone 89397490… routes `api/mollie*`+`api/b2b*` → b2b-api (ids 37333c83… / 481eb4d5…)
+- `.ai/bugs.md` (BUG-2026-025 FIXÉ), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
+
+### Tests réalisés (non destructifs)
+- [x] `node --check workers/b2b-api/index.js` OK · build app 7b5373cf exit 0 · budget 35.5 Ko ≤ 210 (worker hors bundle, contrôle régression)
+- [x] Live post-routes tulum : GET mollie.php→404 JSON worker (= Martinique), mollie-webhook.php→500 (= ×5), b2b-trial→404, **mollie-lib.php 200→404** (fuite fermée)
+- [x] POST create_payment `{}` → `400 Unknown action` ; prix tamperé 100¢ USD p30 → `400 Prix invalide` **identique Martinique** — allowlist active, aucun paiement Mollie créé
+- [ ] Post-deploy worker (après merge) : probe island_mismatch attendue 400 depuis host tulum (prouve le mapping TULUM live)
+
+### Prochaine action recommandée
+1. Merge PR → deploy-worker.yml auto → relancer probe mismatch (400 island_mismatch attendu) — Rôle : devops/release
+2. Vrai paiement test pass USD depuis sargazotulum.com (dashboard Mollie) — Rôle : fondateur
+3. Nettoyer drift dormant : `workers/sg-payments/wrangler.jsonc` revendique `/api/mollie*`+`/api/b2b-*` ×6 alors qu'ils appartiennent à b2b-api en prod (aucun workflow ne déploie sg-payments aujourd'hui = pas actif, à corriger avant tout futur déploiement) — Rôle : architect
+
+---
+
 ## 2026-08-25 00:10 UTC · Agent: release_owner (OpenCode) — FACTORY RECONCILIATION post Agents (security hardening + P1-009 INP) → FACTORY GREEN
 
 ### Travail effectué
