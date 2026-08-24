@@ -464,6 +464,15 @@ async function grantB2BToken(metadata, planKey, subscriptionId, durationDays = 3
 // MOLLIE CHECKOUT — replaces mollie.php (create_payment action only)
 // ═══════════════════════════════════════════════════════════════════════
 
+// Allowlist prix B2C (miroir public/api/mollie.php + src/lib/pass-price.js).
+// Le serveur ne fait JAMAIS confiance au montant/devise/produit envoyés par le client.
+const PASS_PRICES = {
+  p30: { EUR: 14.99, USD: 11.99 },
+  trip7: { EUR: 4.99, USD: null }, // USD = prix variable saison -> plausibilité
+  season: { EUR: 19.99, USD: null },
+};
+const REDIRECT_HOSTS = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassummiami.com', 'sargassumpuntacana.com', 'sargassumcancun.com', 'sargazotulum.com'];
+
 async function handleMollieCheckout(request) {
   const data = await request.json();
   const { action } = data;
@@ -471,6 +480,23 @@ async function handleMollieCheckout(request) {
   if (action === 'create_payment') {
     const { pass, email, cents, cur, source, description, method: payMethod, redirectUrl, metadata: userMeta } = data;
     if (!pass || !cents) return err('pass and cents required');
+
+    // ── Allowlist produit/devise/montant (anti-tamper) ──────────────────
+    const curUp = (cur || 'EUR').toUpperCase();
+    if (curUp !== 'EUR' && curUp !== 'USD') return err('Prix invalide', 400);
+    const prices = PASS_PRICES[pass];
+    if (!prices) return err('Prix invalide', 400);
+    const expected = prices[curUp];
+    if (expected === undefined) return err('Prix invalide', 400);
+    let amountVal = cents / 100;
+    if (expected !== null && Math.abs(amountVal - expected) >= 0.02) return err('Prix invalide', 400);
+    if (expected === null && !(amountVal > 0.5 && amountVal < 50)) return err('Prix invalide', 400);
+
+    // ── Surcharge saison USD juin→nov (miroir mollie.php) ───────────────
+    if (curUp === 'USD' && pass !== 'trip7') {
+      const m = new Date().getUTCMonth() + 1;
+      if (m >= 6 && m <= 11) amountVal = Math.round(amountVal * 1.15 * 100) / 100;
+    }
 
     // Anti-spoofing: validate island metadata matches request domain
     const host = request.headers.get('Host') || '';
@@ -481,21 +507,79 @@ async function handleMollieCheckout(request) {
     }
     const island = serverIsland;
 
+    // ── redirectUrl : allowlist hosts (anti open-redirect) ──────────────
+    let safeRedirect = redirectUrl;
+    if (safeRedirect) {
+      try {
+        const rh = new URL(safeRedirect).hostname.replace(/^www\./, '');
+        if (!REDIRECT_HOSTS.some(h => rh === h || rh.endsWith('.' + h))) safeRedirect = null;
+      } catch (_) { safeRedirect = null; }
+    }
+    if (!safeRedirect) safeRedirect = `https://${host || 'sargasses-martinique.com'}/payment/good.html?kind=pass&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || '')}`;
+
     const res = await fetch('https://api.mollie.com/v2/payments', {
       method: 'POST',
       headers: { Authorization: `Bearer ${MOLLIE_API_KEY}`, 'Content-Type': 'application/json', Accept: 'application/hal+json' },
       body: JSON.stringify({
-        amount: { value: (cents / 100).toFixed(2), currency: (cur || 'EUR').toUpperCase() },
+        amount: { value: amountVal.toFixed(2), currency: curUp },
         description: description || `Sargasses Pass ${pass}`,
         method: payMethod || null,
         metadata: { source: source || 'unknown', pass, email, island },
         webhookUrl: 'https://sargasses-martinique.com/api/mollie-webhook.php',
-        redirectUrl: redirectUrl || `https://${host || 'sargasses-martinique.com'}/payment/good.html?kind=pass&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || '')}`,
+        redirectUrl: safeRedirect,
       }),
     });
     if (!res.ok) return err(`Mollie error: ${await res.text()}`, 500);
     const payment = await res.json();
     return json({ checkoutUrl: payment._links?.checkout?.href, paymentId: payment.id });
+  }
+
+  // ── payment_status (poller retour 3DS /?mollie_return=1) ────────────────
+  if (action === 'payment_status') {
+    const paymentId = data.paymentId;
+    if (!paymentId) return err('paymentId requis', 400);
+    const p = await mollieGet(`v2/payments/${encodeURIComponent(paymentId)}`);
+    const status = p.status || 'unknown';
+    return json({
+      paid: ['paid', 'settled'].includes(status),
+      status,
+      paymentId: p.id,
+      terminal: ['canceled', 'expired', 'failed'].includes(status),
+    });
+  }
+
+  // ── verify_subscription / pass (restauration d'accès par email) ─────────
+  if (action === 'verify_subscription') {
+    const email = (data.email || '').trim();
+    if (!email || !email.includes('@')) return err('Missing email', 400);
+    const rows = await sb('payment_grants', 'GET', null, `?select=pass,expires_at,payment_id&type=eq.b2c_pass&email=eq.${encodeURIComponent(email)}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
+    if (!rows || !rows.length) return json({ active: false, reason: 'no_pass_grant' });
+    const g = rows[0];
+    return json({ active: true, kind: 'pass', pass: g.pass, passEnd: Math.round(new Date(g.expires_at).getTime()), status: 'pass' });
+  }
+
+  // ── Apple Pay merchant session (front: applepay_merchant_session) ───────
+  if (action === 'applepay_merchant_session' || action === 'applepay_session') {
+    const validationUrl = data.validationUrl;
+    if (!validationUrl) return err('validationUrl requis', 400);
+    if (!/^https:\/\/(apple|cdn-apple|guzzoni).*\.apple\.com\//i.test(validationUrl)) return err("validationUrl doit provenir d'apple.com", 400);
+    const host = request.headers.get('Host') || '';
+    const res = await fetch('https://api.mollie.com/v2/wallets/applepay/sessions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${MOLLIE_API_KEY}`, 'Content-Type': 'application/json', Accept: 'application/hal+json' },
+      body: JSON.stringify({ validationUrl, domain: data.domain || host }),
+    });
+    const session = await res.json();
+    if (!res.ok) return err(`Mollie error: ${await res.text()}`, 500);
+    return json(session);
+  }
+
+  // ── claim_referral_credit (verrouillé: ledger referrals non implémenté) ──
+  if (action === 'claim_referral_credit') {
+    const code = (data.code || '') + '';
+    if (!/^REF-[A-Z0-9]{6}$/.test(code)) return err('Code de parrainage invalide', 400);
+    // Format réponse préservé pour compatibilité front (days=0 -> toast ignoré).
+    return json({ days: 0, code, enabled: false });
   }
 
   return err('Unknown action');
