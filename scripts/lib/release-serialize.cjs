@@ -132,19 +132,26 @@ function parseBaseShaFromClaim(taskId) {
 function isTaskClaimedOrDoneOnMain(taskId) {
   const remoteTasks = runSafe(`git show origin/main:${TASKS_FILE}`);
   if (!remoteTasks) return { claimed: false, done: false };
-  // Chercher la ligne du task sur origin/main
   const lines = remoteTasks.split('\n');
-  for (const line of lines) {
-    if (!line.includes(taskId)) continue;
-    if (line.includes('[~]')) return { claimed: true, done: false, line: line.trim() };
-    if (line.includes('[x]')) return { claimed: false, done: true, line: line.trim() };
-  }
-  // Aussi vérifier le format header ### TASK-... + **Statut** : [~]/[x]
-  const idx = remoteTasks.indexOf(taskId);
-  if (idx !== -1) {
-    const slice = remoteTasks.slice(idx, idx + 2000);
-    if (slice.includes('[~]')) return { claimed: true, done: false, line: 'header ~' };
-    if (slice.includes('[x]')) return { claimed: false, done: true, line: 'header x' };
+  // Chercher header ### TASK-ID puis la ligne **Statut** associée (10 lignes suivantes)
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i].includes(taskId)) continue;
+    // Header format: ### TASK-PX-NNN ... -> chercher Statut dans les 12 lignes suivantes
+    for (let j = i; j < Math.min(i + 12, lines.length); j++) {
+      const l = lines[j];
+      if (l.includes('**Statut**')) {
+        if (l.includes('[~]')) return { claimed: true, done: false, line: l.trim() };
+        if (l.includes('[x]')) return { claimed: false, done: true, line: l.trim() };
+        if (l.includes('[ ]')) return { claimed: false, done: false, line: l.trim() };
+        break;
+      }
+      // Si on croise un autre header TASK- avant de trouver Statut, on arrête
+      if (j > i && l.startsWith('### TASK-')) break;
+    }
+    // Aussi vérifier si la ligne elle-même contient le statut (format checkbox)
+    const cur = lines[i];
+    if (cur.includes('[~]')) return { claimed: true, done: false, line: cur.trim() };
+    if (cur.includes('[x]')) return { claimed: false, done: true, line: cur.trim() };
   }
   return { claimed: false, done: false };
 }
