@@ -65,12 +65,13 @@ jobs:
           done
           
           if [ -n "${{ secrets.MOLLIE_WEBHOOK_SECRET }}" ]; then
-            echo "<?php
-define('MOLLIE_API_KEY', getenv('MOLLIE_API_KEY'));
-define('MOLLIE_WEBHOOK_SECRET', '${{ secrets.MOLLIE_WEBHOOK_SECRET }}');
-define('MOLLIE_PROFILE_ID', 'pfl_t8KCk4Cm2C');
-define('MOLLIE_TESTMODE', false);
-" > dist/mollie-config.php
+            {
+              echo '<?php'
+              echo "define('MOLLIE_API_KEY', getenv('MOLLIE_API_KEY'));"
+              echo "define('MOLLIE_WEBHOOK_SECRET', '${{ secrets.MOLLIE_WEBHOOK_SECRET }}');"
+              echo "define('MOLLIE_PROFILE_ID', 'pfl_t8KCk4Cm2C');"
+              echo "define('MOLLIE_TESTMODE', false);"
+            } > dist/mollie-config.php
             echo "  → Wrote dist/mollie-config.php with webhook secret"
           fi
           
