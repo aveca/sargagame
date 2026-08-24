@@ -347,9 +347,6 @@ async function handleMollieWebhook(request, env) {
 
   if (!MOLLIE_WEBHOOK_SECRET) return err('webhook_unavailable', 503);
 
-  // Anti-DoS: le re-fetch Mollie ci-dessous coûte un appel API par requête.
-  if (env && !(await rateLimit(env, 'mollie_webhook', 30))) return err('rate_limited', 429);
-
   // HMAC OPTIONNEL : Mollie n'envoie PAS de header X-Mollie-Signature — la
   // VÉRIFICATION réelle de l'événement = re-fetch du paiement auprès de l'API
   // Mollie (molliePaymentEvent -> mollieGet), JAMAIS le body lui-même.
