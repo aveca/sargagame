@@ -25,6 +25,7 @@ const QUERY = {
   puntacana: "Higüey, Dominican Republic",
   florida: "Florida, USA",
   rivieramaya: "Quintana Roo, Mexico",
+  tulum: "Tulum, Quintana Roo, Mexico",
 };
 
 function clampPolyToBBox(ring, w, s, e, n) {
