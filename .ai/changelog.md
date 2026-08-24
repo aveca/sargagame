@@ -20,7 +20,11 @@
 - [x] `node --check workers/b2b-api/index.js` OK · build app 7b5373cf exit 0 · budget 35.5 Ko ≤ 210 (worker hors bundle, contrôle régression)
 - [x] Live post-routes tulum : GET mollie.php→404 JSON worker (= Martinique), mollie-webhook.php→500 (= ×5), b2b-trial→404, **mollie-lib.php 200→404** (fuite fermée)
 - [x] POST create_payment `{}` → `400 Unknown action` ; prix tamperé 100¢ USD p30 → `400 Prix invalide` **identique Martinique** — allowlist active, aucun paiement Mollie créé
-- [ ] Post-deploy worker (après merge) : probe island_mismatch attendue 400 depuis host tulum (prouve le mapping TULUM live)
+- [x] Post-deploy worker (run 32791207791 SUCCESS) : probe depuis host tulum `cents=1199/island=MQ` → **400 `{"error":"island_mismatch"}`** (prouve le mapping TULUM live ; l'ancien code aurait accepté et créé un paiement réel) ; `island=TULUM` + prix tamperé → 400 « Prix invalide » (allowlist active)
+- [x] QA live finale 6/6 : home HTTP 200 ×6 · `/api/copernicus/sargassum.json` 200 ×6 · mollie.php 404-worker identique ×6 · titre tulum SEO ES correct · CI PR 6/6 GREEN · merge c44c9796 · deploy-worker SUCCESS
+
+### Verdict
+**SHIPPED** — Tulum fonctionnel au même niveau que les 5 domaines. Reste hors périmètre agent : 1 vrai paiement test pass USD depuis sargazotulum.com (dashboard Mollie = action fondateur).
 
 ### Prochaine action recommandée
 1. Merge PR → deploy-worker.yml auto → relancer probe mismatch (400 island_mismatch attendu) — Rôle : devops/release

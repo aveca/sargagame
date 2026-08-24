@@ -1,29 +1,27 @@
 ---
 
-## 2026-08-25 01:30 UTC · Agent: devops (OpenCode) — TULUM API ROUTING FIXED (routes zone live + worker TULUM island, PR dédiée en cours)
+## 2026-08-25 02:00 UTC · Agent: devops (OpenCode) — TULUM API ROUTING **SHIPPED** (PR #599 mergée c44c9796, worker déployé, live 6/6 vérifié)
 
 ### Travail effectué
-- **Résumé 1 ligne** : sargazotulum.com aligné sur les 5 domaines — 2 routes zone `/api/mollie*`+`/api/b2b*` → b2b-api créées via API CF (**live vérifié**), + fix worker additif mapping host→île `'TULUM'` & allowedIslands webhook ; fuite de source PHP (`mollie.php`/`mollie-lib.php` servis bruts par Pages) fermée au passage.
-- **Cause prouvée** : zone tulum = 5 routes (vs 7 ailleurs) → fallback origine statique ; worker sans branche tulum → `island_mismatch` inévitable même routé. Cf BUG-2026-025 (.ai/bugs.md).
+- **Résumé 1 ligne** : sargazotulum.com aligné sur les 5 domaines — 2 routes zone `/api/mollie*`+`/api/b2b*` → b2b-api (live immédiat) + worker `TULUM` island mapping/allowedIslands (2 lignes additives, PR #599, CI 6/6, merged, deploy-worker SUCCESS) ; fuite de source PHP fermée.
+- **Prouve post-deploy** : probe host tulum `island=MQ`+montant valide → 400 `island_mismatch` (= nouveau mapping actif, zéro paiement créé) · tamperé → 400 « Prix invalide » · home/data/mollie 200/200/404-worker ×6.
 
 ### Fichiers modifiés
-- `workers/b2b-api/index.js` — 2 lignes additives (tulum host→île + allowedIslands)
-- Cloudflare API : routes zone sargazotulum.com ×2 → b2b-api
-- `.ai/bugs.md`, `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
+- `workers/b2b-api/index.js` — branche `tulum→'TULUM'` + allowedIslands webhook
+- Cloudflare API : zone sargazotulum.com routes ×2 → b2b-api
+- `.ai/bugs.md` (BUG-2026-025 FIXÉ), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
 
 ### Tests réalisés
-- [x] node --check worker OK · npm run build exit 0 · budget 35.5 Ko ≤ 210
-- [x] Live tulum post-routes : GET mollie.php→404 worker (=×5), webhook→500 (=×5), mollie-lib.php 200→404 (fuite fermée)
-- [x] POST create_payment tamperé → 400 « Prix invalide » identique Martinique, zéro paiement créé
-- [ ] Post-merge : probe island_mismatch 400 depuis tulum (mapping TULUM déployé) puis vrai paiement test USD (fondateur)
+- [x] node --check worker OK · build exit 0 · budget 35.5 Ko ≤ 210 · CI PR 6/6 GREEN
+- [x] Live : tulum mollie/webhook/b2b = réponses identiques aux 5 domaines sains · island_mismatch prouvé · allowlist active · aucun paiement créé lors des probes
+- [x] Merge c44c9796 → deploy-worker.yml run 32791207791 SUCCESS
 
 ### Prochaine action recommandée
-1. Merge PR (CI green attendu : worker-only, hors bundle app) → deploy-worker.yml auto — Rôle : release
-2. Paiement test réel USD depuis sargazotulum.com — Rôle : fondateur
-3. Drift dormant documenté : workers/sg-payments/wrangler.jsonc revendique mollie*/b2b-* ×6 (à corriger avant tout futur déploiement sg-payments) — Rôle : architect
+1. **1 vrai paiement test pass USD depuis sargazotulum.com** (dashboard Mollie) — Rôle : fondateur
+2. Drift dormant : workers/sg-payments/wrangler.jsonc revendique mollie*/b2b-* ×6 (aucun workflow ne le déploie ; corriger avant tout futur déploiement sg-payments) — Rôle : architect
 
 ### Branche / PR
-- Branche : `agent/devops/tulum-api-routes` (commit code 3c421a96 sur base 60c663f8)
+- PR **#599 MERGED** (squash c44c9796 sur main) · run deploy-worker 32791207791 SUCCESS
 
 ---
 
