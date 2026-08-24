@@ -35,7 +35,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const isComic = pwVariant === "comic"
 
   return (
-    <div className={v2Enabled?"sg-v2-pass-offer":undefined} style={{ position: "relative", color: isComic ? "#0D0B14" : "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif", background: isComic ? "#FDF6E3" : "transparent", borderRadius: isComic ? 18 : 0, padding: isComic ? "20px 16px 8px" : 0 }}>
+    <div className={v2Enabled?"sg-v2-pass-offer":undefined} data-cur={cur} data-display-cents={displayCents} style={{ position: "relative", color: isComic ? "#0D0B14" : "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif", background: isComic ? "#FDF6E3" : "transparent", borderRadius: isComic ? 18 : 0, padding: isComic ? "20px 16px 8px" : 0 }}>
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: isComic ? "#B87A00" : "#FFC72C" }}>

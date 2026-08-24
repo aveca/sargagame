@@ -123,7 +123,8 @@ export default function PremiumModal({
     elementsRef, stripeRef, setupSecretRef, mollieRef,
     pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
     doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
-    onPassBuy
+    onPassBuy,
+    PAY_CUR
   }
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
