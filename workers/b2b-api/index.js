@@ -395,7 +395,7 @@ async function molliePaymentEvent(id, event) {
     const source = metadata.source || 'unknown';
     const pass = metadata.pass;
     const island = (metadata.island || 'MQ').toUpperCase();
-    const allowedIslands = ['MQ', 'GP', 'FLORIDA', 'PUNTA_CANA', 'RIVIERA_MAYA'];
+    const allowedIslands = ['MQ', 'GP', 'FLORIDA', 'PUNTA_CANA', 'RIVIERA_MAYA', 'TULUM'];
     if (!allowedIslands.includes(island)) {
       return json({ received: true, type: 'payment', status, note: 'island_missing_grant_skipped' });
     }
@@ -506,7 +506,7 @@ async function handleMollieCheckout(request) {
 
     // Anti-spoofing: validate island metadata matches request domain
     const host = request.headers.get('Host') || '';
-    const serverIsland = host.includes('guadeloupe') ? 'GP' : host.includes('martinique') ? 'MQ' : host.includes('miami') ? 'FLORIDA' : host.includes('puntacana') ? 'PUNTA_CANA' : host.includes('cancun') ? 'RIVIERA_MAYA' : 'MQ';
+    const serverIsland = host.includes('guadeloupe') ? 'GP' : host.includes('martinique') ? 'MQ' : host.includes('miami') ? 'FLORIDA' : host.includes('puntacana') ? 'PUNTA_CANA' : host.includes('cancun') ? 'RIVIERA_MAYA' : host.includes('tulum') ? 'TULUM' : 'MQ';
     const clientIsland = (userMeta?.island || '').toUpperCase();
     if (clientIsland && clientIsland !== serverIsland) {
       return err('island_mismatch', 400);
