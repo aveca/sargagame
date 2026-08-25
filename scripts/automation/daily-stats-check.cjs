@@ -211,7 +211,10 @@ async function fetchFunnelFromSupabase() {
   if (!key) return null
   const url = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
   const cutoff = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'checkout_redirect']
+  // 2026-08-25 FIX (P1 funnel blind): checkout_redirect (sg_checkout_redirect) RETIRÉ du front
+  // (toujours 0) → canonique est mollie_checkout_redirect ; alias legacy gardé pour fenêtre
+  // historique. + onsite_checkout_opened / pay_onsite_back (overlay carte) chaînon manquant.
+  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back']
   const counts = {}
   for (const k of FUNNEL_KEYS) counts[k] = 0
   const PAGE = 1000
@@ -229,6 +232,7 @@ async function fetchFunnelFromSupabase() {
     if (!Array.isArray(batch) || !batch.length) break
     for (const r of batch) {
       const evt = String(r.event || '').replace(/^sg_/, '')
+      if (evt === 'checkout_redirect') { counts.mollie_checkout_redirect++ ; counts.checkout_redirect++ ; continue }
       if (counts[evt] !== undefined) counts[evt]++
     }
     if (batch.length < PAGE) break
@@ -363,6 +367,8 @@ async function main() {
     funnel: funnel ? (() => {
       const ctaTotal = (funnel.premium_modal_cta || 0) + (funnel.pass_cta || 0)
       const modalOpens = funnel.premium_modal_open || 0
+      const mollieRedirects = (funnel.mollie_checkout_redirect ?? funnel.checkout_redirect ?? 0)
+      const onsiteOpened = funnel.onsite_checkout_opened ?? 0
       const pct = (n, d) => d > 0 ? Math.round((n / d) * 1000) / 10 : 0
       return {
         sessions: funnel.session_start ?? null,
@@ -371,7 +377,11 @@ async function main() {
         modalCta: ctaTotal,   // unified CTA = pass_cta (+ premium_modal_cta if ever emitted)
         sampleStarts: null,
         emailSubmits: funnel.email_submit ?? null,
-        checkoutRedirects: funnel.checkout_redirect ?? null,
+        checkoutRedirects: mollieRedirects,
+        onsiteCheckoutOpened: onsiteOpened,
+        payOnsiteBack: funnel.pay_onsite_back ?? null,
+        // canonique Mollie + alias legacy unifiés → cta_to_redirect reflète désormais les vrais redirects
+        mollieCheckoutRedirects: mollieRedirects,
         conversions: funnel.conversion ?? null,
         paymentsReal: null, // ⚠️ trompeur — Mollie truth is in mollie block
         revenueReal: null,
@@ -379,7 +389,9 @@ async function main() {
           session_to_lock: pct(funnel.forecast_lock_click || 0, funnel.session_start || 0),
           lock_to_modal: pct(modalOpens, funnel.forecast_lock_click || 0),
           modal_to_cta: pct(ctaTotal, modalOpens),
-          cta_to_redirect: pct(funnel.checkout_redirect || 0, ctaTotal),
+          cta_to_onsite: pct(onsiteOpened, ctaTotal),
+          onsite_to_mollie: pct(mollieRedirects, onsiteOpened),
+          cta_to_redirect: pct(mollieRedirects, ctaTotal),
           cta_to_conversion: pct(funnel.conversion || 0, ctaTotal),
         },
       }

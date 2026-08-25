@@ -23,16 +23,22 @@ const OUT_PATH = path.join(__dirname, 'data', 'funnel-daily-report.json')
 const PAGE = 1000
 
 // Funnel steps dans l'ordre (top → bottom)
+// 2026-08-25 FIX (P1 funnel blind): checkout_redirect était le legacy sg_checkout_redirect
+// RETIRÉ du front (toujours 0) → le vrai event est sg_mollie_checkout_redirect depuis 2026-06.
+// On garde checkout_redirect en ALIAS pour la fenêtre historique, le canonique est
+// mollie_checkout_redirect. onsite_checkout_opened (2026-08-25) = overlay carte ouvert,
+// chaînon manquant entre CTA et Mollie redirect (pass_cta → onsite → mollie).
 const FUNNEL_STEPS = [
-  { key: 'map_open',          label: 'Map opened',       icon: '🗺️' },
-  { key: 'beach_open',        label: 'Beach selected',   icon: '🏖️' },
-  { key: 'verdict_scan_view', label: 'Verdict viewed',   icon: '📊' },
-  { key: 'premium_modal_open',label: 'Paywall seen',     icon: '🔒' },
+  { key: 'map_open',               label: 'Map opened',       icon: '🗺️' },
+  { key: 'beach_open',             label: 'Beach selected',   icon: '🏖️' },
+  { key: 'verdict_scan_view',      label: 'Verdict viewed',   icon: '📊' },
+  { key: 'premium_modal_open',     label: 'Paywall seen',     icon: '🔒' },
   // premium_modal_cta RETIRÉ (2026-08-18) : jamais émis par le frontend, compteur toujours 0.
   // Le CTA réel = pass_cta (émis par PremiumModal.jsx + PassOffer.jsx).
-  { key: 'pass_cta',          label: 'CTA (pass)',       icon: '👆' },
-  { key: 'checkout_redirect', label: 'Checkout clicked', icon: '💳' },
-  { key: 'conversion',        label: 'Paid',             icon: '✅' },
+  { key: 'pass_cta',               label: 'CTA clicked',      icon: '👆' },
+  { key: 'onsite_checkout_opened', label: 'Checkout opened',  icon: '🧾' },
+  { key: 'mollie_checkout_redirect', label: 'Mollie redirect', icon: '💳' },
+  { key: 'conversion',             label: 'Paid',             icon: '✅' },
 ]
 
 function svcHeaders(extra) {
@@ -63,16 +69,22 @@ function pct(n, d) { return d > 0 ? Math.round((n / d) * 1000) / 10 : 0 }
 
 function computeReport(rows) {
   // Comptage par step — strip sg_ prefix (frontend emits sg_map_open, sg_premium_modal_open, etc.)
+  // Alias legacy: checkout_redirect (ancien sg_checkout_redirect) → compte comme mollie_checkout_redirect
   const counts = {}
   for (const s of FUNNEL_STEPS) counts[s.key] = 0
+  // alias legacy non listé dans FUNNEL_STEPS mais compté vers mollie_checkout_redirect
+  counts.checkout_redirect = 0
   for (const r of rows) {
     const evt = String(r.event || '').replace(/^sg_/, '')
+    if (evt === 'checkout_redirect') { counts.mollie_checkout_redirect++ ; counts.checkout_redirect++ ; continue }
     if (counts[evt] !== undefined) counts[evt]++
-    // pass_cta + premium_modal_cta = CTA total
   }
 
   // Agrégation CTA = pass_cta (premium_modal_cta removed 2026-08-18 — never emitted)
   const ctaTotal = counts.pass_cta
+  // checkout = mollie (canonique) — alias déjà fusionné ci-dessus
+  const mollieRedirects = counts.mollie_checkout_redirect || 0
+  const onsiteOpened = counts.onsite_checkout_opened || 0
 
   // Taux de conversion entre étapes consécutives
   const steps = FUNNEL_STEPS.map((s, i) => {
@@ -80,15 +92,16 @@ function computeReport(rows) {
     return { ...s, count }
   })
 
-  // Remplacer les 2 lignes CTA par une seule
+  // Funnel view = 8 étapes (CTA → onsite → mollie) — le blind spot 2026-08-25 est fermé
   const funnelView = [
-    { key: 'map_open',          label: 'Map opened',       icon: '🗺️', count: counts.map_open },
-    { key: 'beach_open',        label: 'Beach selected',   icon: '🏖️', count: counts.beach_open },
-    { key: 'verdict_scan_view', label: 'Verdict viewed',   icon: '📊', count: counts.verdict_scan_view },
-    { key: 'premium_modal_open',label: 'Paywall seen',     icon: '🔒', count: counts.premium_modal_open },
-    { key: 'cta',               label: 'CTA clicked',      icon: '👆', count: ctaTotal },
-    { key: 'checkout_redirect', label: 'Checkout clicked', icon: '💳', count: counts.checkout_redirect },
-    { key: 'conversion',        label: 'Paid',             icon: '✅', count: counts.conversion },
+    { key: 'map_open',               label: 'Map opened',       icon: '🗺️', count: counts.map_open },
+    { key: 'beach_open',             label: 'Beach selected',   icon: '🏖️', count: counts.beach_open },
+    { key: 'verdict_scan_view',      label: 'Verdict viewed',   icon: '📊', count: counts.verdict_scan_view },
+    { key: 'premium_modal_open',     label: 'Paywall seen',     icon: '🔒', count: counts.premium_modal_open },
+    { key: 'cta',                    label: 'CTA clicked',      icon: '👆', count: ctaTotal },
+    { key: 'onsite_checkout_opened', label: 'Checkout opened',  icon: '🧾', count: onsiteOpened },
+    { key: 'mollie_checkout_redirect', label: 'Mollie redirect', icon: '💳', count: mollieRedirects },
+    { key: 'conversion',             label: 'Paid',             icon: '✅', count: counts.conversion },
   ]
 
   // Taux de conversion étape→étape
@@ -115,11 +128,12 @@ function computeReport(rows) {
     if (engagement[evt] !== undefined) engagement[evt]++
   }
 
-  // Par île — strip sg_ prefix (homogène au comptage principal)
+  // Par île — strip sg_ prefix + alias legacy checkout_redirect → mollie_checkout_redirect
   const byIsland = {}
   for (const r of rows) {
     const isl = (r.island || 'MQ').toUpperCase()
-    const evt = String(r.event || '').replace(/^sg_/, '')
+    let evt = String(r.event || '').replace(/^sg_/, '')
+    if (evt === 'checkout_redirect') evt = 'mollie_checkout_redirect'
     if (counts[evt] !== undefined) {
       byIsland[isl] = byIsland[isl] || {}
       byIsland[isl][evt] = (byIsland[isl][evt] || 0) + 1
