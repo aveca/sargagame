@@ -1904,6 +1904,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // jamais émis par le frontend → compteur toujours 0. Le CTA réel = sg_pass_cta.
   "sg_premium_modal_open","sg_pass_cta","sg_conversion","sg_email_submit",
   "sg_mollie_checkout_redirect",
+  // Checkout on-site (2026-08-25) : ouverture overlay carte + retour arrière —
+  // sans eux le funnel est aveugle entre pass_cta et mollie_checkout_redirect.
+  "sg_onsite_checkout_opened","sg_pay_onsite_back",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
