@@ -391,7 +391,8 @@ export function OnsiteCheckout({
                 <button
                   type="button"
                   aria-label="Apple Pay"
-                  disabled={payBusy || walletBlocked}
+                  disabled={payBusy}
+                  aria-disabled={walletBlocked ? "true" : undefined}
                   onClick={() => payWithWallet("applepay")}
                   style={{
                     width: "100%", padding: "14px", borderRadius: 12, border: "none",
@@ -409,7 +410,8 @@ export function OnsiteCheckout({
                 <button
                   type="button"
                   aria-label="Google Pay"
-                  disabled={payBusy || walletBlocked}
+                  disabled={payBusy}
+                  aria-disabled={walletBlocked ? "true" : undefined}
                   onClick={() => walletRedirect("googlepay")}
                   style={{
                     width: "100%", padding: "13px", borderRadius: 12, border: "none",
@@ -528,7 +530,8 @@ export function OnsiteCheckout({
         {/* Bouton PAIEMENT PRINCIPAL — déclenche doSubscribe() (qui lit mollieRef.current.createToken()) */}
         <button
           onClick={() => { try { doSubscribe() } catch (_) {} }}
-          disabled={payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)}
+          disabled={payBusy}
+          aria-disabled={consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk ? "true" : undefined}
           style={{
             width: "100%", padding: 15, borderRadius: 14, marginTop: 16,
             border: isComic ? "2.5px solid #0D0B14" : "none",
