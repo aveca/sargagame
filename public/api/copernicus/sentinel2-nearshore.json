@@ -1,17 +1,8 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
-  "updatedAt": "2026-08-24T19:19:39.871Z",
+  "updatedAt": "2026-08-25T02:31:13.888Z",
   "lookbackDays": 12,
-  "note": null,
-  "beaches": {
-    "tartane": {
-      "fai": 0.00705,
-      "afaiLike": 0.12,
-      "coverage": 0.14,
-      "obsDate": "2026-08-12",
-      "ageDays": 12,
-      "nPixels": 15435
-    }
-  }
+  "note": "no-valid-passes",
+  "beaches": {}
 }
