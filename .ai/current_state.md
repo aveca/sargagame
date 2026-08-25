@@ -1,5 +1,32 @@
 ---
 
+## 2026-08-25 01:05 UTC · Agent: product_ux_kpi (OpenCode) — P1 MONEY CTA TAP **SHIPPED** (PR #600 mergée 3e08f881, Pages SUCCESS, QA live 6/6)
+
+### Travail effectué
+- **Résumé 1 ligne** : Zones mortes du CTA money fermées — barre sticky PassOffer = 1 `<button>` pleine surface (recouvrait « Commencer maintenant » sur iPhone, ~70 % de sa surface morte) + funnel réobservé (`sg_onsite_checkout_opened`/`sg_pay_onsite_back` allowlistés) — PR #600, CI 6/6, merged, Pages deploy SUCCESS, QA 6 domaines GREEN.
+- **Preuve BEFORE** : Supabase 7j 615 opens → 78 CTA (12,7 %) → 0 checkout → 0 conversion ; repro live MQ iPhone 12 : taps réalistes barre sticky = zéro `sg_pass_cta` (CTA centre sous fold 664, sticky y 518–644) ; checkout lui-même sain (4 iframes, Payer réactif).
+- **Preuve AFTER (live 6/6)** : tap zone morte → `sg_pass_cta` émis ×6/6 + checkout ouvert ×6 (visuels Florida $13.79 + tulum capture-only) · rouge/vert local : spec dédiée 2 FAILED pré-fix / 2 PASSED post-fix.
+
+### Fichiers modifiés
+- `src/PassOffer.jsx` — sticky div → button pleine surface + touch-action manipulation
+- `src/Sargasses_PROD.jsx` — SG_FUNNEL_EVENTS += onsite_checkout_opened, pay_onsite_back
+- `tests/e2e/sticky-cta-tap.spec.ts` — nouveau (rollback `?nosticky=0`)
+
+### Tests réalisés
+- [x] build exit 0 · 35.5 Ko ≤ 210 · smoke 4/4 · regions OK
+- [x] Playwright 15/15 (funnel 13 + sticky 2) · CI PR #600 6/6 GREEN
+- [x] Live : HTTP 200 ×6 · sg_pass_cta zone morte ×6 · checkout ×6 (tulum=PAY_CAPTURE_ONLY par design)
+
+### Prochaine action recommandée
+1. 7j puis lire `modal→onsite_checkout_opened` (funnel-from-supabase --days=7) — Rôle : growth
+2. `mollie.paid` vide dans daily-metrics depuis 18/08 (collector Mollie, non bloquant) — Rôle : data
+3. Tulum PAY_CAPTURE_ONLY — voulu ou paiement réel ? — Rôle : fondateur
+
+### Branche / PR
+- PR **#600 MERGED** (squash 3e08f881) · Deploy Pages run 32793582583 SUCCESS · Daily Copernicus 32793582630 (FTP fond)
+
+---
+
 ## 2026-08-25 02:00 UTC · Agent: devops (OpenCode) — TULUM API ROUTING **SHIPPED** (PR #599 mergée c44c9796, worker déployé, live 6/6 vérifié)
 
 ### Travail effectué

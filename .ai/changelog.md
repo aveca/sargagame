@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-08-25 01:05 UTC · Agent: product_ux_kpi (OpenCode) — P1 MONEY CTA TAP → **SHIPPED** (PR #600 mergée 3e08f881, Pages deploy SUCCESS, QA live 6/6)
+
+### Travail effectué
+- **Résumé** : Zones mortes sur le CTA money mobile fermées — la barre sticky PassOffer (qui recouvre le CTA « Commencer maintenant » sur iPhone) est désormais **un seul `<button>` pleine surface** (texte + badges cliquables, visuel inchangé, `touch-action: manipulation` sur les 2 CTA) + funnel réobservé : `sg_onsite_checkout_opened` + `sg_pay_onsite_back` ajoutés à l'allowlist Supabase (l'étape checkout n'était plus mesurable entre `pass_cta` et `mollie_checkout_redirect`).
+- **Preuve BEFORE (données réelles)** : Supabase 7j = 615 paywall opens → **78 pass_cta (12,7 %)** → 0 checkout_redirect → 0 conversion ; repro live MQ iPhone 12 Playwright : CTA à y 610–879 (centre sous le fold 664), sticky y 518–644 → overlap 13 % de l'aire CTA ; taps réalistes sur la barre = zone morte, **zéro `sg_pass_cta`** ; le checkout lui-même fonctionne (4 iframes Mollie, Payer réactif, erreur propre carte vide).
+- **Preuve rouge/vert** : `tests/e2e/sticky-cta-tap.spec.ts` (tap zone texte 15 % + zone badges 92 % → checkout s'ouvre) — build pré-fix **2 FAILED**, post-fix **2 PASSED**.
+
+### Fichiers modifiés
+- `src/PassOffer.jsx` — sticky div → button pleine surface ; inner « Voir le prix » devient span ; touch-action manipulation CTA card + sticky
+- `src/Sargasses_PROD.jsx` — SG_FUNNEL_EVENTS += `sg_onsite_checkout_opened`, `sg_pay_onsite_back`
+- `tests/e2e/sticky-cta-tap.spec.ts` — nouveau (2 tests, rollback `?nosticky=0` documenté)
+
+### Tests réalisés
+- [x] npm run build exit 0 · bundle **35.5 Ko ≤ 210 Ko** · regions assertAllRegionsValid OK
+- [x] ux-smoke 4/4 tokens (FUNNEL_REACHED, ERRORS=[], WHITE=[], RM_INFINITE=[])
+- [x] Playwright : funnel-payment 13/13 + sticky-cta-tap 2/2 = 15/15 · CI PR #600 **6/6 GREEN** (branch-policy, scan, test-frontend, funnel, perf, playwright)
+- [x] Deploy Cloudflare Pages **SUCCESS** (run 32793582583) · GitHub Pages SUCCESS · Daily Copernicus FTP en fond (run 32793582630, timeout 75 min normal)
+- [x] **QA live 6/6 domaines** (iPhone 12, tap zone morte) : HTTP 200 ×6 · sticky=button ×6 · **`sg_pass_cta` émis ×6** (avant : 0) · checkout ouvert ×6 (visuel Florida « Activate your 30-day pass $13.79 » + Tulum ; tulum = mode PAY_CAPTURE_ONLY « Sin tarjeta », event checkout_opened non applicable par design)
+
+### Mesure AFTER / suivi
+- Funnel désormais observable : `premium_modal_open → pass_cta → onsite_checkout_opened → mollie_checkout_redirect → conversion` (le chaînon checkout était aveugle)
+- Attendu 7j : `modal→CTA` > 12,7 % (les taps morts deviennent des entrées checkout) — verdict via `funnel-from-supabase.cjs --days=7` au prochain cycle
+- Rollback : `?nosticky=0` (masque la barre, comportement pré-fix)
+
+### Prochaine action recommandée
+1. Laisser courir 7j puis lire `modal→onsite_checkout_opened` vs `modal→pass_cta` — Rôle : growth/product
+2. Mollie `mollie.paid` vide dans daily-metrics depuis le 18/08 (bloc API, pas bloquant : champ `payments` progresse +4.99 ×2) — investiguer l'auth Mollie du collector — Rôle : data
+3. Tulum en PAY_CAPTURE_ONLY (paiements offerts) — confirmer si voulu ou réactiver le paiement réel — Rôle : fondateur
+
+### Branche / PR
+- PR **#600 MERGED** (squash 3e08f881 sur main) · CI 6/6 · Pages deploy SUCCESS · QA 6/6 GREEN
+
+---
+
 ## 2026-08-25 01:30 UTC · Agent: devops (OpenCode) — TULUM API ROUTING FIXED → routes zone + worker TULUM island (PR dédiée)
 
 ### Travail effectué
