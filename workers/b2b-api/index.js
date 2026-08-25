@@ -484,7 +484,7 @@ async function handleMollieCheckout(request) {
   const { action } = data;
 
   if (action === 'create_payment') {
-    const { pass, email, cents, cur, source, description, method: payMethod, redirectUrl, metadata: userMeta } = data;
+    const { pass, email, cents, cur, source, description, method: payMethod, redirectUrl, metadata: userMeta, cardToken } = data;
     if (!pass || !cents) return err('pass and cents required');
 
     // ── Allowlist produit/devise/montant (anti-tamper) ──────────────────
@@ -523,17 +523,21 @@ async function handleMollieCheckout(request) {
     }
     if (!safeRedirect) safeRedirect = `https://${host || 'sargasses-martinique.com'}/payment/good.html?kind=pass&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || '')}`;
 
+    const effectiveMethod = cardToken ? 'card' : (payMethod || null);
+    const mollieBody = {
+      amount: { value: amountVal.toFixed(2), currency: curUp },
+      description: description || `Sargasses Pass ${pass}`,
+      method: effectiveMethod,
+      metadata: { source: source || 'unknown', pass, email, island },
+      webhookUrl: 'https://sargasses-martinique.com/api/mollie-webhook.php',
+      redirectUrl: safeRedirect,
+    };
+    if (cardToken) mollieBody.cardToken = cardToken;
+
     const res = await fetch('https://api.mollie.com/v2/payments', {
       method: 'POST',
       headers: { Authorization: `Bearer ${MOLLIE_API_KEY}`, 'Content-Type': 'application/json', Accept: 'application/hal+json' },
-      body: JSON.stringify({
-        amount: { value: amountVal.toFixed(2), currency: curUp },
-        description: description || `Sargasses Pass ${pass}`,
-        method: payMethod || null,
-        metadata: { source: source || 'unknown', pass, email, island },
-        webhookUrl: 'https://sargasses-martinique.com/api/mollie-webhook.php',
-        redirectUrl: safeRedirect,
-      }),
+      body: JSON.stringify(mollieBody),
     });
     if (!res.ok) return err(`Mollie error: ${await res.text()}`, 500);
     const payment = await res.json();
