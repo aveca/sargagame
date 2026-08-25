@@ -3107,7 +3107,8 @@
     "daily_count": 7,
     "j3": "2026-08-21T02:09:09.353Z",
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-21"
+    "install_nudge_last": "2026-08-21",
+    "j7": "2026-08-25T06:57:23.637Z"
   },
   "07c298004fb8f1ea5b73633a5c3ae0f6": {
     "daily_last": "2026-08-24",
@@ -3165,5 +3166,6 @@
   "1688896083a2eaa7c3f4bc88dc137b44": {},
   "e3ab9f185505c1d63a4869b20692a620": {},
   "3d69de8e01df17c59bef645e2147ff98": {},
-  "fd974932dda8bb39053d4ac1eca1d6fc": {}
+  "fd974932dda8bb39053d4ac1eca1d6fc": {},
+  "f952d6c94379c9c905f263b2121db523": {}
 }
