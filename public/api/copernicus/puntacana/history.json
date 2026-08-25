@@ -1960,7 +1960,7 @@
         },
         {
           "id": "pc002",
-          "afai": 0.11,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -1970,7 +1970,7 @@
         },
         {
           "id": "pc004",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -1990,17 +1990,17 @@
         },
         {
           "id": "pc008",
-          "afai": 0.11,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "pc009",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "pc010",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {

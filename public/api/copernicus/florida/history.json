@@ -3170,7 +3170,7 @@
         },
         {
           "id": "fl004",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -3200,7 +3200,7 @@
         },
         {
           "id": "fl010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3230,7 +3230,7 @@
         },
         {
           "id": "fl016",
-          "afai": 0.15,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
@@ -3240,8 +3240,8 @@
         },
         {
           "id": "fl018",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "fl019",
@@ -3260,6 +3260,13 @@
     {
       "date": "2026-08-20",
       "beach": "fl016",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-08-25",
+      "beach": "fl018",
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
