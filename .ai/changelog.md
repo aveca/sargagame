@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-25 08:35 UTC · Agent: product_ux_kpi (OpenCode) — P1 PAY CONSENT DEAD CLICK → **SHIPPED** (PR #602 mergée 4030763b, Pages SUCCESS, QA 6/6)
+
+### Travail effectué
+- **Résumé** : Bouton pay disabled sans feedback → dead/rage clicks (600 modals → 97 CTA → 0 checkout). Fix : `disabled={payBusy}` seul + `aria-disabled` (Payer + Apple Pay + Google Pay) → tap ouvre `payError` guidé "Coche la case..." (doSubscribe garde existante).
+- **Cause prouvée live MQ iPhone12** : `payBtn disabled true, click -> no alert` (dead) → après patch `disabled false, aria-disabled true, click -> "Coche la case pour activer ton accès immédiat."` (FR) + EN/ES équivalents vérifiés sur 5 domaines live.
+- **Fichiers** : `OnsiteCheckout.jsx` (3 boutons) + nouveau `tests/e2e/pay-consent-deadclick.spec.ts` 2/2.
+
+### Tests
+- [x] build 35.5 Ko ≤210 · smoke 4/4 · Playwright 17/17 · CI PR #602 6/6 GREEN · Pages 1m14s SUCCESS · QA 6/6 live PASS
+
+---
+
 ## 2026-08-25 03:55 UTC · Agent: metrics (OpenCode) — P1 MOLLIE PAID METRIC → **SHIPPED** (PR #601 mergée ed8c3867, Daily Copernicus 32798548339 SUCCESS, LIVE cohérent)
 
 ### Travail effectué

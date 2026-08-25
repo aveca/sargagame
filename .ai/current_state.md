@@ -1,5 +1,31 @@
 ---
 
+## 2026-08-25 08:35 UTC · Agent: product_ux_kpi (OpenCode) — P1 PAY CONSENT DEAD CLICK **SHIPPED** (PR #602 mergée 4030763b, Pages SUCCESS, QA 6/6)
+
+### Travail effectué
+- **Résumé 1 ligne** : Bouton "Payer 14,99 €" disabled si case 14j non cochée → tap mort sans feedback (600 modals → 97 CTA → 0 checkout). Fix : `disabled={payBusy}` seul + `aria-disabled` pour consent (3 boutons: Payer, Apple Pay, Google Pay) → tap déclenche `doSubscribe` → `payError` "Coche la case..." guidé.
+- **Cause prouvée** : Live MQ iPhone12, checkout overlay 4 iframes OK, `payBtn disabled true, aria-disabled null, consent unchecked false, click -> no alert` (dead). Après patch : `disabled false, aria-disabled true, click -> "Coche la case pour activer ton accès immédiat."` (6 langues OK).
+- **Preuve LIVE 6/6** : MQ/GP/Florida/RivieraMaya/PuntaCana → `disabled false, aria-disabled true, alert "Coche/Tick/Marca"` PASS ; Tulum PAY_CAPTURE_ONLY (pas de consent) skip. Sticky CTA full-button déjà SHIPPED (#600) reste GREEN.
+
+### Fichiers modifiés
+- `src/PremiumModal/OnsiteCheckout.jsx` — disabled payBusy seul + aria-disabled (×3 boutons)
+- `tests/e2e/pay-consent-deadclick.spec.ts` — nouveau 2 tests (sans coche → erreur, avec coche → pas d'erreur consent)
+
+### Tests réalisés
+- [x] build 35.5 Ko ≤210 · smoke 4/4 · regions OK
+- [x] Playwright 17/17 (funnel 13 + sticky 2 + pay-consent 2) · CI PR #602 6/6 GREEN
+- [x] Deploy Pages SUCCESS (1m14s) · Daily Copernicus FTPS in_progress (push 32827326962) — health-check pending
+- [x] QA live 6/6 après Pages : dead click fixé vérifié sur 5 domaines + Tulum skip
+
+### Prochaine action recommandée
+1. Suivre `cta_to_mollie` (funnel-snapshot) sur 7j — attendu >0% après fix (guide consent) — Rôle : growth
+2. Tulum PAY_CAPTURE_ONLY — voulu ou live ? — Rôle : fondateur
+
+### Branche / PR
+- PR **#602 MERGED** (squash 4030763b) · Pages 32827326957 SUCCESS · Copernicus 32827326962 in_progress
+
+---
+
 ## 2026-08-25 03:55 UTC · Agent: metrics (OpenCode) — P1 MOLLIE PAID METRIC **SHIPPED** (PR #601 mergée ed8c3867, Daily Copernicus SUCCESS, LIVE cohérent)
 
 ### Travail effectué
