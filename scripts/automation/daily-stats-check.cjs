@@ -154,48 +154,27 @@ async function mollieTruth() {
     } catch {}
   }
   if (!key) return null
-  const { logId } = require('./lib/email-hash.cjs')
   const since = Date.now() - 30 * 864e5
-  const round2 = n => Math.round(n * 100) / 100
-  const addCur = (obj, cur, val) => { obj[cur] = round2((obj[cur] || 0) + val) }
   try {
-    const paid = {}                                    // devise → { count, total }
-    const refunds = { count: 0, total: {} }            // paiements 30j avec amountRefunded > 0
-    const chargebacks = { count: 0, total: {} }
-    const payers = new Set()
-    let b2b = 0
+    const pages = []
     let url = 'https://api.mollie.com/v2/payments?limit=250'
     for (let pg = 0; pg < 12 && url; pg++) {
       const r = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
       const j = await r.json().catch(() => null)
       if (!r.ok || !j || !j._embedded) { if (pg === 0) return null; break } // page 1 KO = pas de bloc (carry-forward)
-      let pastWindow = false
-      for (const p of j._embedded.payments || []) {
-        const created = Date.parse(p.createdAt || '')
-        if (!isNaN(created) && created < since) { pastWindow = true; continue } // tri antéchronologique Mollie
-        if (p.status !== 'paid') continue
-        const cur = (p.amount && p.amount.currency) || 'EUR'
-        const val = parseFloat((p.amount && p.amount.value) || '0') || 0
-        if (!paid[cur]) paid[cur] = { count: 0, total: 0 }
-        paid[cur].count++
-        paid[cur].total = round2(paid[cur].total + val)
-        const ref = parseFloat((p.amountRefunded && p.amountRefunded.value) || '0') || 0
-        if (ref > 0) { refunds.count++; addCur(refunds.total, cur, ref) }
-        const cb = parseFloat((p.amountChargedBack && p.amountChargedBack.value) || '0') || 0
-        if (cb > 0) { chargebacks.count++; addCur(chargebacks.total, cur, cb) }
-        const m = p.metadata || {}
-        // Préfixe SANS le tiret cadratin — même forme EXACTE que mollie-webhook.php
-        // (annualGrid) et b2b-funnel.cjs : les 3 détections paylink doivent matcher
-        // le même ensemble, sinon le compteur b2b diverge du grant (panel 2026-07-02).
-        if (m.b2b === '1' || /^(pro|brief|territory)_/.test(m.plan || '') ||
-            (!m.email && /^(Sargasses|Sargassum) Pro /.test(p.description || ''))) b2b++
-        const em = m.email || m.customerEmail || ''
-        if (String(em).includes('@')) payers.add(logId(em))
-      }
+      const rows = j._embedded.payments || []
+      pages.push(rows)
+      // tri antéchronologique Mollie : première ligne hors fenêtre = fin utile
+      const pastWindow = rows.some(p => { const c = Date.parse(p.createdAt || ''); return !isNaN(c) && c < since })
       if (pastWindow) break
       url = (j._links && j._links.next && j._links.next.href) || null
     }
-    return { windowDays: 30, paid, refunds, chargebacks, b2b, payers: [...payers].sort() }
+    // Agrégation pure (testée : scripts/tests/mollie-paid-contract.test.cjs).
+    // lastPaidAt (vente payée la plus récente fetchée, même hors fenêtre 30j) +
+    // fetchedAt désambiguïent paid={} « 0 vente » d'un collector cassé, et
+    // rendent le carry-forward détectable dans la série.
+    const agg = require('./lib/mollie-aggregate.cjs').aggregateMolliePayments(pages, since)
+    return { windowDays: 30, ...agg, fetchedAt: new Date().toISOString() }
   } catch { return null }
 }
 
@@ -470,7 +449,9 @@ async function main() {
   // dans revenue-watch.cjs ; ici on rend juste la vérité lisible dans les logs.
   const mo = curr.mollie
   if (mo) {
-    const paidLine = Object.entries(mo.paid || {}).map(([c, v]) => `${v.count}× ${v.total} ${c}`).join(' · ') || '0 paiement'
+    const paidEntries = Object.entries(mo.paid || {})
+    const paidLine = (paidEntries.map(([c, v]) => `${v.count}× ${v.total} ${c}`).join(' · ') || '0 paiement')
+      + (paidEntries.length === 0 && mo.lastPaidAt ? ` (dernière vente: ${String(mo.lastPaidAt).slice(0, 10)} — sortie fenêtre 30j, collector OK)` : '')
     const refLine = mo.refunds && mo.refunds.count
       ? ` | ⚠️ refunds ${mo.refunds.count} (${Object.entries(mo.refunds.total).map(([c, v]) => `${v} ${c}`).join(' · ')})` : ''
     const cbLine = mo.chargebacks && mo.chargebacks.count ? ` | 🔴 chargebacks ${mo.chargebacks.count}` : ''
