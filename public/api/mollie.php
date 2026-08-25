@@ -193,6 +193,12 @@ try {
         }
         if (!empty($cardToken)) {
             $paymentData['cardToken'] = $cardToken;
+            // Fix: when cardToken is provided, explicitly set method=card so Mollie
+            // processes the card directly instead of showing method selection page.
+            // This matches the fix in workers/b2b-api/index.js (commit 611af4a2).
+            if (empty($paymentMethod)) {
+                $paymentData['method'] = 'card';
+            }
         }
         if ($paymentMethod) {
             $paymentData['method'] = $paymentMethod;
