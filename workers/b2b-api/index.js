@@ -523,16 +523,18 @@ async function handleMollieCheckout(request) {
     }
     if (!safeRedirect) safeRedirect = `https://${host || 'sargasses-martinique.com'}/payment/good.html?kind=pass&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || '')}`;
 
-    const effectiveMethod = cardToken ? 'card' : (payMethod || null);
     const mollieBody = {
       amount: { value: amountVal.toFixed(2), currency: curUp },
       description: description || `Sargasses Pass ${pass}`,
-      method: effectiveMethod,
+      method: payMethod || null,
       metadata: { source: source || 'unknown', pass, email, island },
       webhookUrl: 'https://sargasses-martinique.com/api/mollie-webhook.php',
       redirectUrl: safeRedirect,
     };
-    if (cardToken) mollieBody.cardToken = cardToken;
+    if (cardToken) {
+      mollieBody.cardToken = cardToken;
+      delete mollieBody.method;
+    }
 
     const res = await fetch('https://api.mollie.com/v2/payments', {
       method: 'POST',
