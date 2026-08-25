@@ -51,7 +51,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
 
         <div style={{ margin: "18px 0 0" }}>
           <button onClick={buy} className="sg-passcard-hero" style={{
-            position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "inherit",
+            position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
             border: isComic ? "2.5px solid #0D0B14" : "2px solid rgba(255,199,44,.5)", borderRadius: 18, padding: "18px 17px 16px",
             background: isComic ? "#FDF6E3" : "linear-gradient(165deg,rgba(255,199,44,.20),rgba(255,199,44,.04) 55%,transparent)",
             boxShadow: isComic ? "4px 4px 0 #0D0B14" : "0 4px 0 0 rgba(0,0,0,.35),0 14px 40px rgba(232,168,0,.18),inset 0 0 0 1px rgba(255,228,122,.15)",
@@ -141,19 +141,23 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
       </div>
 
       {!noSticky && (
-        <div className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both" }}>
+        // Barre sticky = UNE seule surface de tap → buy() (fix 2026-08-25 : avant,
+        // seuls ~30 % de la barre étaient cliquables — le reste (texte/badges) était
+        // une zone morte qui recouvrait le CTA « Commencer maintenant » sur mobile
+        // → taps morts sur le CTA money, modal→CTA plafonné à 12,7 %).
+        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
           <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
-          <button onClick={buy} style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, border: isComic ? "2px solid #0D0B14" : "none", background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: 12.5, cursor: "pointer", fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
+          <span style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {_t(lang, "Voir le prix →", "See price →", "Ver precio →")}
-          </button>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
+          </span>
+          <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span>🔒 Mollie</span><span aria-hidden="true">·</span>
             <span>💳 {_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
             <span>⚡ {_t(lang,"Sans engagement","No commitment","Sin compromiso")}</span>
-          </div>
-        </div>
+          </span>
+        </button>
       )}
     </div>
   )
