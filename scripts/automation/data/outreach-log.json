@@ -565,8 +565,53 @@
       "error": null,
       "url": "https://www.topmexicorealestate.com/blog/tag/sargassum-riviera-maya/",
       "market": "mx"
+    },
+    "cancun-adventure.com": {
+      "date": "2026-08-25T10:31:08.392Z",
+      "emailHash": "dac61af2f8285656a1475c3384a712a6",
+      "emailDomain": "cancun-adventure.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.cancun-adventure.com/en/blog/sargassum-cancun",
+      "market": "mx"
+    },
+    "poresto.com": {
+      "date": "2026-08-25T10:31:12.737Z",
+      "emailHash": "a5b88f0d8ed48601307f95cb8009cc10",
+      "emailDomain": "poresto.mx",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.poresto.com/quintana-roo/",
+      "market": "mx"
+    },
+    "24horasqroo.mx": {
+      "date": "2026-08-25T10:31:15.862Z",
+      "emailHash": "ae367814e159fe2f6268335ee2e2d685",
+      "emailDomain": "24horasqroo.mx",
+      "status": "sent",
+      "error": null,
+      "url": "https://24horasqroo.mx/",
+      "market": "mx"
+    },
+    "laverdadnoticias.com": {
+      "date": "2026-08-25T10:31:29.562Z",
+      "emailHash": "6f0d13fe5f9305cd0fdce0cfb0a8df9c",
+      "emailDomain": "laverdadnoticias.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://laverdadnoticias.com/quintanaroo/",
+      "market": "mx"
+    },
+    "bavarodigital.net": {
+      "date": "2026-08-25T10:31:39.090Z",
+      "emailHash": "15bdb3c9a81c2f213c3d0a65be6a2a30",
+      "emailDomain": "bavarodigital.net",
+      "status": "sent",
+      "error": null,
+      "url": "https://bavarodigital.net/",
+      "market": "dr"
     }
   },
-  "lastRun": "2026-08-18T10:26:52.275Z",
-  "totalSent": 64
+  "lastRun": "2026-08-25T10:31:39.090Z",
+  "totalSent": 69
 }

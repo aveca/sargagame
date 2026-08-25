@@ -111,8 +111,22 @@
       "emailHash": "7c8394c00c89be4b2566b1a6727e48ae",
       "authority": "medium",
       "market": "fr"
+    },
+    "jumbocar-martinique.com": {
+      "date": "2026-08-25T10:42:41.642Z",
+      "status": "sent",
+      "emailHash": "fcea962b6b34682ef0b723e547e16979",
+      "authority": "medium",
+      "market": "fr"
+    },
+    "hotel-bakoua.fr": {
+      "date": "2026-08-25T10:44:10.046Z",
+      "status": "sent",
+      "emailHash": "149125a95bc6c8c600198cb8b9399638",
+      "authority": "medium",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-08-18T10:37:40.736Z",
-  "totalSent": 16
+  "lastRun": "2026-08-25T10:44:10.047Z",
+  "totalSent": 18
 }

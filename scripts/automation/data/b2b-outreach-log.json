@@ -339,8 +339,44 @@
     "mariegalante.fr": {
       "date": "2026-08-18T10:39:58.313Z",
       "status": "no-email"
+    },
+    "ville-portlouis.fr": {
+      "date": "2026-08-25T10:44:41.665Z",
+      "emailHash": "c768993f62d5a422369db37cbed0fe50",
+      "emailDomain": "lamourduweb.comsi",
+      "island": "gp",
+      "status": "failed",
+      "error": "Can't send mail - all recipients were rejected: 550-The mail server could not deliver mail to contact@lamourduweb.comsi.  The\n550-account or domain may not exist, they may be blacklisted, or missing the\n550 proper dns entries."
+    },
+    "mairie-petitbourg.fr": {
+      "date": "2026-08-25T10:44:42.002Z",
+      "status": "no-email"
+    },
+    "lemoule.fr": {
+      "date": "2026-08-25T10:44:47.896Z",
+      "status": "no-email"
+    },
+    "tourisme-saintfrancois.com": {
+      "date": "2026-08-25T10:44:48.178Z",
+      "status": "no-email"
+    },
+    "tourisme-deshaies.com": {
+      "date": "2026-08-25T10:44:50.265Z",
+      "status": "no-email"
+    },
+    "club-med-caravelle.com": {
+      "date": "2026-08-25T10:44:50.407Z",
+      "status": "no-email"
+    },
+    "la-toubana-spa.com": {
+      "date": "2026-08-25T10:44:50.690Z",
+      "status": "no-email"
+    },
+    "hotel-le-rotabas.com": {
+      "date": "2026-08-25T10:44:50.938Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-08-18T10:39:58.313Z",
+  "lastRun": "2026-08-25T10:44:50.938Z",
   "totalSent": 14
 }
