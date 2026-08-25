@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-08-25 03:55 UTC · Agent: metrics (OpenCode) — P1 MOLLIE PAID METRIC → **SHIPPED** (PR #601 mergée ed8c3867, Daily Copernicus 32798548339 SUCCESS, LIVE cohérent)
+
+### Travail effectué
+- **Résumé** : `mollie.paid={}` depuis le 18/08 **prouvé correct** (dernière vente 2026-07-19 5.99 USD p7 sortie de fenêtre 30j le 18/08 ; API Mollie 116 paiements : 98 expired / 9 canceled / 3 failed / **6 paid all-time, 0 paid sur 30j** ; 24 paiements sur 10j tous non-paid) — le champ legacy `payments` (20→22, +4.99 ×2) compte créations dont expired trip7 19/08, d'où l'illusion. Fiabilisé sans fausse réparation.
+- **Fix** : `lib/mollie-aggregate.cjs` (agrégation pure extraite, `lastPaidAt` = vente paid la plus récente fetchée même hors 30j) ; `daily-stats-check.cjs` délègue + `fetchedAt` (carry-forward détectable) + log `Mollie 30j: 0 paiement (dernière vente: 2026-07-19 — sortie fenêtre 30j, collector OK)` ; `scripts/tests/mollie-paid-contract.test.cjs` contrat 7/7 (paid, non-paid exclus, boundary `< since`, pagination multi-pages + early-stop, multi-devises, B2B paylink).
+- **Preuve LIVE** : collector local (clé live masquée) → `{"paid":{},"lastPaidAt":"2026-07-19T03:46:26+00:00","fetchedAt":"2026-08-25T02:36:01.102Z"}` cross-validé API Mollie ; CI `Daily stats check` success (dispatch 32798548339) ; `daily-metrics.json` publié `9d9cd8e5` cohérent ; `payments=22 revenue=142.78` inchangé.
+
+### Fichiers modifiés
+- `scripts/automation/lib/mollie-aggregate.cjs` — nouveau
+- `scripts/automation/daily-stats-check.cjs` — délégation + fetchedAt
+- `scripts/tests/mollie-paid-contract.test.cjs` — nouveau 7/7
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] contrat 7/7 GREEN · syntax daily-stats-check OK · build 35.5 Ko ≤210 · smoke 4/4
+- [x] CI PR #601 6/6 GREEN · merge ed8c3867 · Daily Copernicus 32798548339 SUCCESS (FTPS success, Health check success, Daily stats success)
+
+---
+
 ## 2026-08-25 01:05 UTC · Agent: product_ux_kpi (OpenCode) — P1 MONEY CTA TAP → **SHIPPED** (PR #600 mergée 3e08f881, Pages deploy SUCCESS, QA live 6/6)
 
 ### Travail effectué

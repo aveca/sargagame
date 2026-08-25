@@ -1,5 +1,34 @@
 ---
 
+## 2026-08-25 03:55 UTC · Agent: metrics (OpenCode) — P1 MOLLIE PAID METRIC **SHIPPED** (PR #601 mergée ed8c3867, Daily Copernicus SUCCESS, LIVE cohérent)
+
+### Travail effectué
+- **Résumé 1 ligne** : `mollie.paid={}` depuis le 18/08 prouvé **correct** — dernière vente réelle 2026-07-19 sortie de fenêtre 30j, 0 paid depuis (API Mollie 6 paid all-time, 24 expired/canceled/failed sur 10j) — fiabilisé par `lastPaidAt` + `fetchedAt` additifs + contrat tests.
+- **Cause prouvée** : `mollieTruth()` filtrait `status==='paid'` + fenêtre 30j (`createdAt < since` skip) — sémantique correcte ; `paid={}` = zéro vente, non bug. Champ legacy `payments` (+4.99 ×2) compte créations dont expired (trip7 19/08), d'où contre-signal.
+- **Fix** : `lib/mollie-aggregate.cjs` pure (testable) + `daily-stats-check.cjs` délègue + `fetchedAt` (carry-forward détectable) + KPI log auto-expliqué `0 paiement (dernière vente: 2026-07-19)` ; `scripts/tests/mollie-paid-contract.test.cjs` 7/7.
+- **Preuve LIVE** : collector local 00:51 `lastPaidAt:2026-07-19T03:46:26+00:00` cross-validé API ; CI Daily stats check `success` ; `daily-metrics.json` publié `2026-08-25 paid:{}, lastPaidAt:2026-07-19..., fetchedAt:2026-08-25T02:36:01.102Z` ; `payments=22 revenue=142.78` cohérent.
+
+### Fichiers modifiés
+- `scripts/automation/lib/mollie-aggregate.cjs` — nouveau (agrégation pure + lastPaidAt)
+- `scripts/automation/daily-stats-check.cjs` — délégation lib + fetchedAt + log désambiguïsé
+- `scripts/tests/mollie-paid-contract.test.cjs` — nouveau contrat 7/7
+
+### Tests réalisés
+- [x] contrat 7/7 (paid compté, non-paid exclus, boundary 30j, pagination, multi-devises, B2B) · syntax daily-stats-check OK
+- [x] collector réel local `paid:{}` + `lastPaidAt` correct · build 35.5 Ko ≤210 · smoke 4/4
+- [x] CI PR #601 6/6 GREEN (branch-policy, scan, test-frontend, funnel, perf, playwright)
+- [x] Deploy Daily Copernicus `32798548339` SUCCESS — Daily stats check success · FTPS success · Health check success
+
+### Prochaine action recommandée
+1. Suivi KPI Mollie = `lastPaidAt` (pas `paid` vide) — Rôle : growth/data
+2. Tulum PAY_CAPTURE_ONLY — voulu ou paiement réel ? — Rôle : fondateur
+3. Prochain run schedule 06:00 UTC vérifiera automatiquement la fenêtre glissante
+
+### Branche / PR
+- PR **#601 MERGED** (squash ed8c3867) · run `32798548339` success · main `9d9cd8e5` · `daily-metrics` LIVE cohérent
+
+---
+
 ## 2026-08-25 01:05 UTC · Agent: product_ux_kpi (OpenCode) — P1 MONEY CTA TAP **SHIPPED** (PR #600 mergée 3e08f881, Pages SUCCESS, QA live 6/6)
 
 ### Travail effectué
