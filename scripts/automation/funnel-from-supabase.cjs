@@ -29,7 +29,9 @@ function svcHeaders(extra) {
 
 // Étapes comptées (clé = nom event sans le préfixe sg_, comme Code.js).
 // premium_modal_cta et checkout_redirect RETIRÉS (2026-08-18) : jamais émis par le frontend.
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect',
+// 2026-08-25: sg_mollie_checkout_redirect = vrai redirect Mollie, sg_onsite_checkout_opened = overlay carte.
+// 2026-08-25 FIX (P1 funnel blind): checkout_redirect gardé en ALIAS legacy (events pré-2026-08-18 dans la fenêtre)
+const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated']
 
@@ -68,16 +70,21 @@ function computeFunnel(rows) {
   }
   const pct = (n, d) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0)
   // modal→CTA : pass-only, le CTA réel = pass_cta (premium_modal_cta removed 2026-08-18).
+  // checkout = mollie_checkout_redirect (canonique) + checkout_redirect (alias legacy pré-2026-08-18)
   const ctaTotal = f.pass_cta
+  const mollieRedirects = (f.mollie_checkout_redirect || 0) + (f.checkout_redirect || 0)
+  const onsiteOpened = f.onsite_checkout_opened || 0
   const rates = {
     session_to_lock: pct(f.forecast_lock_click, f.session_start),
     lock_to_beach: pct(f.beach_open, f.forecast_lock_click),
     beach_to_modal: pct(f.premium_modal_open, f.beach_open),
     modal_to_cta: pct(ctaTotal, f.premium_modal_open),
-    cta_to_mollie: pct(f.mollie_checkout_redirect, ctaTotal),
-    mollie_to_conversion: pct(f.conversion, f.mollie_checkout_redirect),
+    cta_to_onsite: pct(onsiteOpened, ctaTotal),
+    onsite_to_mollie: pct(mollieRedirects, onsiteOpened),
+    cta_to_mollie: pct(mollieRedirects, ctaTotal),
+    mollie_to_conversion: pct(f.conversion, mollieRedirects),
   }
-  return { counts: f, cta_total: ctaTotal, rates, by_island: byIsland }
+  return { counts: f, cta_total: ctaTotal, mollie_redirects: mollieRedirects, onsite_opened: onsiteOpened, rates, by_island: byIsland }
 }
 
 async function main() {
