@@ -3170,8 +3170,8 @@
         },
         {
           "id": "rm004",
-          "afai": 0.2,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "rm005",
@@ -3250,8 +3250,8 @@
         },
         {
           "id": "rm020",
-          "afai": 0.2,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         }
       ]
     }
@@ -4235,7 +4235,7 @@
       "beach": "rm004",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.13
+      "afai": 0.11
     },
     {
       "date": "2026-08-25",
@@ -4270,7 +4270,7 @@
       "beach": "rm020",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.13
+      "afai": 0.11
     }
   ]
 }
