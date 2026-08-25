@@ -1,5 +1,34 @@
 ---
 
+## 2026-08-25 16:07 UTC · Agent: product_ux_kpi (OpenCode) — P1 FUNNEL CHECKOUT BLIND **SHIPPED** (PR #603 mergée fc4ccc71, Pages+SIP in_progress, OBSERVABILITY FIX)
+
+### Travail effectué
+- **Résumé 1 ligne** : Funnel KPI aveugle 100% — `funnel-daily-report`+`daily-stats` comptaient `checkout_redirect` legacy (sg_checkout_redirect retiré 2026-08-18 → toujours 0) au lieu du canonique `sg_mollie_checkout_redirect` (122 pass_cta → 0 checkout fake). + chaînon `sg_onsite_checkout_opened` (overlay carte, live depuis #600) jamais agrégé → CTA→checkout invisible → fix dead-click #600/#602 non mesurable.
+- **Cause prouvée** : Grep FUNNEL_STEPS/FUNNEL_KEYS `checkout_redirect` vs SG_FUNNEL_EVENTS `sg_mollie_checkout_redirect`+`sg_onsite_checkout_opened` = mismatch ; funnel-snapshot 7j 122 CTA→0 mollie, daily-report 24h 44 CTA→0, daily-metrics cta_to_redirect 0% (modal_to_cta 50.6% sain).
+- **Fix additif** : `funnel-daily-report.cjs` = checkout_redirect→mollie_checkout_redirect + alias legacy + step onsite_checkout_opened (funnel 8 étapes CTA→onsite→mollie) ; `daily-stats-check.cjs` = FUNNEL_KEYS +mollie+onsite+pay_back, checkoutRedirects=mollie (alias), rates cta_to_onsite/onsite_to_mollie ; `funnel-from-supabase.cjs` = +checkout_alias+onsite/pay_back, rates cta_to_onsite/onsite_to_mollie ; contrat 6/6.
+
+### Fichiers modifiés
+- `scripts/automation/funnel-from-supabase.cjs` — FUNNEL_KEYS + alias legacy + onsite/pay_back, rates mollieRedirects/onsiteOpened
+- `scripts/automation/funnel-daily-report.cjs` — FUNNEL_STEPS checkout→mollie+alias+onsite (8 steps), counts alias, byIsland alias, funnelView
+- `scripts/automation/daily-stats-check.cjs` — FUNNEL_KEYS +mollie+onsite, alias both-increment, funnel.checkoutRedirects=mollie, onsite/payBack, rates
+- `scripts/tests/funnel-checkout-contract.test.cjs` — nouveau 6/6 (canonique, alias, onsite, 0-div, convergence cross-file)
+
+### Tests réalisés
+- [x] contrat funnel-checkout 6/6, mollie-paid 7/7, pass-money 13/13
+- [x] build 35.5 Ko ≤210 · smoke 4/4 · regions OK · esbuild 3/3
+- [x] CI PR #603 5/6 GREEN (branch-policy, funnel, perf, playwright, test-frontend) + scan in_progress→admin merge (infra, pas code)
+- [x] Merge fc4ccc71 → Deploy Pages/Cloudflare in_progress (push 3287005xxxx, 20s), Daily Copernicus in_progress
+
+### Prochaine action recommandée
+1. Vérifier prochain run Daily Copernicus régénère funnel-snapshot/daily-report avec cta_to_onsite>0% (post-fix #602) — Rôle : growth/data
+2. Suivi 7j cta_to_mollie (vrai checkout) + onsite_to_mollie (friction carte) — Rôle : growth
+3. Tulum PAY_CAPTURE_ONLY — voulu ou live ? — Rôle : fondateur
+
+### Branche / PR
+- PR **#603 MERGED** (squash fc4ccc71) · 5/6 CI SUCCESS + scan infra-cancel · main fc4ccc71 · Deploy Pages/Copernicus in_progress
+
+---
+
 ## 2026-08-25 08:35 UTC · Agent: product_ux_kpi (OpenCode) — P1 PAY CONSENT DEAD CLICK **SHIPPED** (PR #602 mergée 4030763b, Pages SUCCESS, QA 6/6)
 
 ### Travail effectué
