@@ -2896,7 +2896,8 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-08-19",
     "j7": "2026-08-12T18:51:57.534Z",
-    "j14": "2026-08-20T01:36:16.471Z"
+    "j14": "2026-08-20T01:36:16.471Z",
+    "j21": "2026-08-26T19:58:23.320Z"
   },
   "679898fb3aa813979edd1d7254b9e53c": {
     "daily_last": "2026-08-21",
@@ -3163,10 +3164,13 @@
     "daily_sig": "Miami Beach|clean|80|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-26"
+    "install_nudge_last": "2026-08-26",
+    "j3": "2026-08-26T19:58:31.731Z"
   },
   "90dbe235de57a2784b6dad11ff3bc949": {},
-  "1688896083a2eaa7c3f4bc88dc137b44": {},
+  "1688896083a2eaa7c3f4bc88dc137b44": {
+    "j3": "2026-08-26T19:58:33.834Z"
+  },
   "e3ab9f185505c1d63a4869b20692a620": {},
   "3d69de8e01df17c59bef645e2147ff98": {},
   "fd974932dda8bb39053d4ac1eca1d6fc": {},
@@ -3180,5 +3184,6 @@
     "daily_last": "2026-08-26",
     "daily_sig": "Anse Madame|clean|65|clean|0|",
     "daily_count": 1
-  }
+  },
+  "0ad78a804886ac7f0e784954df32d953": {}
 }
