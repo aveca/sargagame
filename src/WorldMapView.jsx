@@ -1605,7 +1605,7 @@ export default function WorldMapView({
             if(pinTier[b.id]==="dot"&&!isSel){
               const dotCol=st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
               return(
-                <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer",pointerEvents:"auto"}}
+                <g key={b.id} data-beach={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer",pointerEvents:"auto"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
                   <circle r={mapPinHitOff?"8":"12"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
@@ -1615,7 +1615,7 @@ export default function WorldMapView({
             const fill=st==="clean"?"url(#wmPinClean)":st==="moderate"?"url(#wmPinMod)":st==="avoid"?"url(#wmPinAvoid)":"#9aa0a8"
             const s=isSel?1.18:1
             return(
-              <g key={b.id}
+              <g key={b.id} data-beach={b.id}
                 transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`}
                 style={{cursor:"pointer",pointerEvents:"auto"}}
                 onClick={e=>{ e.stopPropagation();
@@ -1733,9 +1733,10 @@ export default function WorldMapView({
           const col=STATUS_C[st]||"#888"
           const li=lang==="en"?1:lang==="es"?2:0
           const openB=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } }
-          return(
+            return(
             <div key={b.id}
               className="sg-maplabel"
+              data-beach={b.id}
               data-vx={b.vx}
               data-vy={b.vy}
               data-status={st}
