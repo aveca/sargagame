@@ -4,6 +4,33 @@
 
 ---
 
+## 2026-08-26 02:55 UTC · Agent: coding_agent (OpenCode) — **TASK-P1-010 H1 MANQUANTS — 6 DOMAINES GREEN**
+
+### Travail effectué
+- **P1 H1 SEO/a11y** : 0 `<h1>` sur homepage + `/plages/` + `/previsions/` (6 domaines) + doublon `/fiabilite/`. Fix : H1 dynamique par route dans `Sargasses_PROD.jsx` (home, plages, previsions, fiabilite, carte-sargasses) i18n FR/EN/ES, sr-only pour préserver design. `reliability-page.cjs` : H1 unique `/fiabilite/` (supprime doublon control/v2). `index.html` : retire H1 boot statique.
+- **Impact** : Corrige violations SEO + accessibilité (structure heading) sur les 6 domaines.
+
+### Fichiers
+- `src/Sargasses_PROD.jsx` — H1 conditionnel par pathname + view + langue
+- `scripts/lib/reliability-page.cjs` — H1 unique fiabilite
+- `index.html` — suppression H1 boot skeleton
+
+### Tests
+- [x] npm run build → exit 0 (35.5 Ko ≤210)
+- [x] check-bundle-budget → 35.5 Ko OK
+- [x] php -l → OK (3/3)
+- [x] regions valid → OK
+- [x] Playwright funnel-payment → 13/13 ✅
+- [x] CI Tests → 5/5 GREEN (test-frontend, perf, scan, funnel, playwright)
+- [x] Deploy Cloudflare Pages → 6/6 domaines SUCCESS
+- [x] Deploy GitHub Pages → SUCCESS
+- [x] Secret scan → SUCCESS
+
+### Rollback
+- `git revert c0e3ea32` — changements additifs, pas de flag
+
+---
+
 ## 2026-08-26 05:30 UTC · Agent: coding_agent (OpenCode) — **P0 RIVIERA MAYA BEACH DETAIL FIXED — 6/6 DOMAINES GREEN**
 
 ### Travail effectué
