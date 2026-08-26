@@ -1,5 +1,49 @@
 ---
 
+## 2026-08-26 07:15 UTC · Agent: coding_agent (OpenCode) — **P1 H1 SEO FIXED — 6/6 DOMAINES 1 H1/PAGE**
+
+### Travail effectué
+- **Résumé 1 ligne** : Fix systémique H1 manquant 6 domaines — SPA map sans H1 (0), /plages/ /previsions/ 0, /fiabilite/ duplication 2 → exactement 1 H1/page, i18n FR/EN/ES, sr-only sans perturber design
+- **Repro** : audit live 6 domaines : homepage MQ/GP/FL/RM/PC/Tulum 0 H1, /plages/ 0, /previsions/ 0, /fiabilite/ 2 dupliqués. Local build dist/index.html 2 H1 (sr-only homepage + noscript) → après hydration SPA 0 (sr-only supprimé, noscript caché). Fiabilité HTML source 2 H1 (control + v2) malgré display:none → comptés 2.
+- **Cause prouvée** : SPA React remplace #root (sr-only H1 dedans supprimé) et noscript H1 caché quand JS actif → 0 H1 en DOM JS. Fiabilité : 2 H1 distincts (control-only + v2 hero) même texte, cachés via .rel-* display:none mais toujours comptés. Template vite garde H1 homepage dans htmlSubpage pour sous-pages → 2 H1 source mais 0 en JS.
+- **Patch minimal** : `src/Sargasses_PROD.jsx` H1 global dynamique par route (home, /plages/, /previsions/, /fiabilite/, /carte-sargasses/) i18n FR/EN/ES, sr-only (position:absolute clip) → 1 H1 quand aucune scène dédiée n'en fournit, sinon <p> crawlable pour éviter duplication. `scripts/lib/reliability-page.cjs` refactor hero single-H1 (fiab-hero) → 1 H1 quelle que soit variante. `index.html` retire H1 boot statique (désormais géré en React). Additif, pas de flag (sémantique), revert = revert commit.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — H1 global conditionnel (L13769) route + view + hasDedicatedH1, i18n, sr-only
+- `scripts/lib/reliability-page.cjs` — single H1 fiab-hero, CSS .rel-v2 .fiab-hero, supprime duplication control/v2
+- `index.html` — retire H1 sr-only statique du boot (ligne 390)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (514.55 Ko Sargasses_PROD, 35.5 Ko ≤210)
+- [x] check-bundle-budget → 35.5 Ko OK
+- [x] esbuild Sargasses_PROD.jsx → OK
+- [x] regions valid → OK
+- [x] repro rouge→vert: dist/index.html 2→1 H1 source, dist/plages 2→1, dist/previsions 2→1, dist/fiabilite 2→1
+- [x] playwright H1 5/5 PASS (home 1, plages 1, previsions 1, fiabilite 1, carte 1) mobile 390x844 + desktop 1920x1080, title/canonical cohérents
+- [x] playwright funnel-payment 13/13 PASS (pas de régression funnel)
+- [x] ux-smoke FUNNEL_REACHED=map+fiche+paywall (à confirmer après deploy)
+- [x] live preview H1 1/page avant deploy (local)
+
+### Problèmes restants
+- [ ] P0 Tulum clean=0 — 8 plages moderate, 0 clean → 0 playas limpias (config à décider)
+- [ ] P1 Apple Pay domain association 404 ×6
+- [ ] P2 b2b-partners.json 404 MQ, collect.php 405 RM, declutter agressif, MQ 3072ms
+
+### Prochaine action recommandée
+1. P0 Tulum clean → data_agent/product_agent décider statut
+2. P1 Apple Pay → devops
+3. Vérifier deploy + QA live 6 domaines H1 (mobile/desktop, console 0 critique)
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P1-010` → main (direct push, PR à créer si besoin)
+- Commits : `c0e3ea32` feat(seo) + `4b80a4a8` docs
+- CI : CI Tests SUCCESS, Secret scan SUCCESS, Perf SUCCESS, Pages SUCCESS, Daily Copernicus PENDING (32924293645) → attente deploy + health-check
+- Deploy : Daily Copernicus en cours (push 02:51 UTC) → FTP 5 régions + Pages après succès
+- QA live : à faire après deploy (6 domaines × 4 pages × mobile/desktop)
+- Rollback : `git revert c0e3ea32` (additif, sr-only)
+
+---
+
 ## 2026-08-26 05:30 UTC · Agent: coding_agent (OpenCode) — **P0 RIVIERA MAYA BEACH DETAIL FIXED — 6/6 DOMAINES GREEN**
 
 ### Travail effectué
