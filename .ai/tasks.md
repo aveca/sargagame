@@ -177,7 +177,7 @@
 - **Description** : Audit SEO : 0 `<h1>` sur homepage (MQ, GP, FL, RM, PC, Tulum) + `/plages/` + `/previsions/` ; 2 H1 dupliqués sur `/fiabilite/`. Violations SEO + accessibilité (structure heading). SPA React nécessite injection SSR/meta ou composant HeadingProvider.
 - **Fichiers** : `src/Sargasses_PROD.jsx`, `index.html` (SSR/meta), composants page-level
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by coding_agent @db5b359 (base:db5b359)
 
 ### TASK-P1-011 Apple Pay merchant domain association — 6 domaines
 - **Priorité** : P1
