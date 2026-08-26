@@ -8,6 +8,12 @@
 
 ## Récemment complété
 
+- [x] **FULL PRODUCT HEALTH AUDIT — 6 domaines LIVE** (@senior_product_ux_qa OpenCode, 2026-08-25) — Audit complet UX/UI/Performance/Accessibilité/SEO/Broken Links sur MQ, GP, FL, RM, PC, Tulum. 0 P0 nouveaux, 1 P1 systémique (H1 manquants), 3 P0 existants (ERDDAP stale, Tulum clean=0, RM beach detail), 6 P2, 4 P3. Payment path observé 5/6 (PC fiche fail). AUCUNE correction — qualité rapport priorisée. Backlog 10 tâches créées ci-dessous. Artefacts: `tests/ux-recordings/*/`, `.ai/current_state.md` entrée complète.
+
+- [x] **P0 RIVIERA MAYA BEACH DETAIL — pin click → sheet absent FIXED** (@coding_agent, 2026-08-26) — WorldMapView pins sans data-beach → audit fallback 195,350 hors bbox RM/PC → sheet absent → switch_back_to_map timeout. Fix: data-beach sur pins+labels (ArchipelView déjà OK). PR #606 merged 6f8a41d8, CI 6/6, Deploy SUCCESS, QA 6/6 live PASS (RM 20 pins, PC 12, etc.).
+
+- [x] **P0 MOLLIE CARDTOKEN ROOT CAUSE — 0 conversions fixed** (@release_owner OpenCode, 2026-08-25) — Worker `b2b-api` ignorait `cardToken` du frontend → paiements `method=null` → page sélection Mollie → expiry 15min → **25/25 paiements récents expired, 0 paid depuis 2026-07-19**. Fix: destructure `cardToken` + forward to Mollie API + omit `method` when cardToken present. Paiement carte direct Mollie Components → plus d'expiry sélection méthode. Tests: build 35.5 Ko, smoke 4/4, contrats 26/26, Playwright 20/20, CI 6/6 GREEN, Merge deec0fd6+2213486b, Pages SUCCESS 6/6, Worker SUCCESS, Live QA 6/6 GREEN. PR **#604** merged.
+
 - [x] **P1 Pay consent dead click — pay button dead click → feedback guidé (dead/rage + funnel cta_to_mollie)** (@product_ux_kpi OpenCode, 2026-08-25) — Live MQ iPhone12: payBtn disabled true → tap mort sans feedback (600 modals → 97 CTA → 0 checkout). Fix: `disabled={payBusy}` seul + `aria-disabled` (×3 boutons) → tap déclenche `payError` "Coche la case...". Test 2/2 (sans coche → erreur, avec coche → pas d'erreur consent). PR #602 merged 4030763b, CI 6/6, Pages SUCCESS, QA 6/6 live PASS.
 
 - [x] **P1 Mollie paid metric — `mollie.paid={}` fiabilisé (lastPaidAt + fetchedAt + contrat)** (@metrics OpenCode, 2026-08-25) — `paid={}` depuis 18/08 prouvé correct : dernière vente Mollie 2026-07-19 (5.99 USD p7) sortie fenêtre 30j ; API 6 paid all-time, 0 sur 30j, 24 non-paid sur 10j (probes) ; `payments` +4.99 ×2 = créations expired. Fix : lib pure `mollie-aggregate.cjs` + `lastPaidAt`/`fetchedAt` additifs + contrat 7/7. Collector local + CI Daily stats check success ; `daily-metrics.json` LIVE `paid:{}, lastPaidAt:2026-07-19T03:46:26+00:00`. PR **#601** merged ed8c3867, Daily Copernicus **32798548339 SUCCESS**.
@@ -54,6 +60,22 @@
 ---
 
 ## P0 — Bloquant / urgent
+
+### TASK-P0-002 Tulum clean count = 0 — configurer au moins 1 plage status: "clean"
+- **Priorité** : P0
+- **Rôle** : data_agent / product_agent
+- **Description** : Tulum a 8 plages en config, toutes `status: "moderate"`, aucune `clean`. Audit affiche "0 playas limpias" → utilisateur voit zéro plage propre. Décision produit : ces plages sont-elles réellement sans sargasse (clean) ou modérées ? Ajuster config `regions/tulum.json` ou logique clean count.
+- **Fichiers** : `regions/tulum.json`
+- **Estimation** : 30 min
+- **Statut** : [ ] pending
+
+### TASK-P0-003 Rivieramaya beach detail ne s'ouvre pas — pin click → sheet absent
+- **Priorité** : P0
+- **Rôle** : coding_agent
+- **Description** : Sur RM, clic sur pin (svg circle) n'ouvre pas la fiche plage (.bsc-sheet/.lc-detail). Pins = `svg circle` sans `data-beach`. Fallback click coordonnées fixes ne fonctionne pas cross-domain. `switch_back_to_map` timeout 30s car détail jamais ouvert.
+- **Fichiers** : `src/WorldMapView.jsx` (pins + labels)
+- **Estimation** : 2h
+- **Statut** : [x] done by coding_agent (2026-08-26) — Fix: ajout `data-beach={b.id}` sur pins dot/full + labels dans WorldMapView.jsx (3 lignes). ArchipelView avait déjà data-beach, WorldMapView non → clic programmatique impossible, fallback 195,350 hors bbox RM/PC. Rouge: audit svg g[data-beach] 0→20, fallback ne déclenche pas sheet (svg pointer-events none + snap sans onOpenBeach). Vert: 20 pins, click force → sheet .lc-detail s'ouvre (Playa Ballenas rm018, Playa Maroma rm012), nav Mapa/Playas OK. Gate: build 35.5 Ko, esbuild 0, php 0, smoke FUNNEL_REACHED=map+fiche+paywall, regions valid. PR #606 merged 6f8a41d8, Deploy Daily Copernicus SUCCESS 32914975316, QA live 6/6 PASS (MQ 53, GP 83, FL 20, RM 20, PC 12, Tulum 8)
 
 ### TASK-P0-001 Configurer webhook secret Mollie en prod
 - **Priorité** : P0
@@ -149,6 +171,30 @@
 - **KPI attendu** : pire durée d'interaction (Event Timing) sur tap pin précoce < 250 ms après patch (vs baseline mesurée), zéro longtask >200 ms chevauchant l'interaction.
 - **Statut** : [x] done by coding_agent (2026-08-24) — bake deferrise (timeout 9000 + yield double-rAF) ; sonde Event Timing CPU4x : pire interaction tap precoce 240→200ms, bloc bake glisse t~1,3s→t~1,5s (hors fenetre taps) ; PR #598 merged 7671c6c2 ; PATCH LIVE verifie 6/6 domaines (chunk timeout:9e3 present, 2e3 absent) ; QA live MQ/Miami/Tulum pins+fiche+0 erreur
 
+### TASK-P1-010 H1 manquants homepage + pages clés — 6 domaines
+- **Priorité** : P1
+- **Rôle** : coding_agent + ui-ux_agent
+- **Description** : Audit SEO : 0 `<h1>` sur homepage (MQ, GP, FL, RM, PC, Tulum) + `/plages/` + `/previsions/` ; 2 H1 dupliqués sur `/fiabilite/`. Violations SEO + accessibilité (structure heading). SPA React nécessite injection SSR/meta ou composant HeadingProvider.
+- **Fichiers** : `src/Sargasses_PROD.jsx`, `index.html` (SSR/meta), composants page-level
+- **Estimation** : 3h
+- **Statut** : [ ] pending
+
+### TASK-P1-011 Apple Pay merchant domain association — 6 domaines
+- **Priorité** : P1
+- **Rôle** : devops_agent
+- **Description** : `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines. Apple Pay ne fonctionnera pas sans ce fichier. Doit être généré via Apple Developer Console et déployé sur chaque domaine (FTP Namecheap + Cloudflare Pages).
+- **Fichiers** : Déployer sur 6 domaines FTP/Pages
+- **Estimation** : 1h
+- **Statut** : [ ] pending
+
+### TASK-P1-012 Puntacana fiche step fail — fallback click hors bbox
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Description** : PC affiche 12 "clean" en UI mais config a 0 clean (tout avoid/moderate) — mismatch UI/data. Fiche step fail car fallback click (195,350) ne touche aucune plage (bbox/center différents). Utilisateur ne peut pas ouvrir fiche depuis carte.
+- **Fichiers** : `scripts/ux-audit.mjs` (fallback coords), `src/MapView.jsx` (pin click handler), `regions/puntacana.json` (clean status)
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
 ---
 
 ## P2 — Backlog normal
@@ -219,6 +265,46 @@
 - **Fichiers** : `video-remotion/scenes/le-jour-qui-bascule/` (nouveau), composables Remotion existantes réutilisées.
 - **Estimation** : 90 min timebox autonomie
 - **Statut** : [~] in_progress by coding_agent
+
+### TASK-P2-006 Map pins data-beach attribute — clic fiable cross-domain
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : Pins carte = `svg circle` sans attribut `data-beach` → clic programmatique impossible, fallback coordonnées fixes fragile cross-domain (Puntacana fail, RM fail). Ajouter `data-beach` sur pins dans MapView.jsx.
+- **Fichiers** : `src/MapView.jsx`
+- **Estimation** : 1h
+- **Statut** : [ ] pending
+
+### TASK-P2-007 Endpoint /api/b2b-partners.json (MQ) — 404
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : MQ appelle `/api/b2b-partners.json` au chargement → 404. Soit créer l'endpoint (gen-b2b-partners.cjs), soit supprimer l'appel si inutile.
+- **Fichiers** : `scripts/automation/gen-b2b-partners.cjs`, `vite.config.js` (copy), `src/Sargasses_PROD.jsx` (fetch)
+- **Estimation** : 1h
+- **Statut** : [ ] pending
+
+### TASK-P2-008 collect.php GET 405 (RM) — client ne devrait pas GET
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : Client fait GET sur `collect.php` (POST-only analytics first-party) → 405. Corriger client pour POST ou ignorer GET silencieusement côté serveur.
+- **Fichiers** : `public/api/collect.php`, `src/Sargasses_PROD.jsx` (analytics sender)
+- **Estimation** : 1h
+- **Statut** : [ ] pending
+
+### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
+- **Priorité** : P2
+- **Rôle** : coding_agent
+- **Description** : MQ DOMContentLoaded 3072ms vs ~380ms autres domaines (8x). Anomalie à investiguer (Vite dev? CDN? Bundle specific?).
+- **Fichiers** : `vite.config.js`, `src/Sargasses_PROD.jsx`, build analysis
+- **Estimation** : 2h
+- **Statut** : [ ] pending
+
+### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
+- **Priorité** : P2
+- **Rôle** : coding_agent + ui-ux_agent
+- **Description** : MQ: 4/53 labels visibles, RM: 1/20, PC: 1/12. Utilisateur ne voit quasi aucune étiquette plage. Revoir seuil declutter ou ajouter toggle "Afficher toutes les étiquettes".
+- **Fichiers** : `src/MapView.jsx`, `src/app-runtime.css`
+- **Estimation** : 2h
+- **Statut** : [ ] pending
 
 ---
 

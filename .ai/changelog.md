@@ -4,6 +4,82 @@
 
 ---
 
+## 2026-08-26 05:30 UTC · Agent: coding_agent (OpenCode) — **P0 RIVIERA MAYA BEACH DETAIL FIXED — 6/6 DOMAINES GREEN**
+
+### Travail effectué
+- **P0 RM/PC beach detail** : pins WorldMapView sans `data-beach` → audit et clic programmatique impossible (fallback 195,350 hors bbox RM/PC, svg pointer-events none) → `switch_back_to_map` timeout, fiche jamais ouverte. ArchipelView avait déjà `data-beach`, WorldMapView non.
+- **Patch** : `src/WorldMapView.jsx` +3 lignes `data-beach={b.id}` sur pins dot/full + label div. Additif, revert = delete.
+- **Repro** : local rivieramaya build `svg g[data-beach]` 0→20, `[data-beach]` 0→40. Avant: fallback ne déclenche pas sheet (hasSheet false). Après: `click({force:true})` sur `svg g[data-beach]` → `.lc-detail` s'ouvre (Playa Ballenas rm018 rm012), Escape ferme, nav Mapa/Playas OK. Live chunk `WorldMapView-Dpby1rnD.js` contient `data-beach`.
+- **Impact PC** : même cause, même fix → PC fiche step PASS (12 pins)
+
+### Fichiers
+- `src/WorldMapView.jsx` — L1608 dot, L1618 full, L1738 label
+
+### Tests
+- [x] build 35.5 Ko ≤210, esbuild OK, php 0, regions valid
+- [x] smoke FUNNEL_REACHED=map+fiche+paywall ERRORS=[] WHITE=[] RM_INFINITE=[] (serve-dist)
+- [x] Playwright local pin click → sheet PASS
+- [x] CI PR #606 6/6 GREEN (branch-policy, scan, test-frontend, funnel, perf, playwright 1m53s)
+- [x] Deploy Daily Copernicus 32914975316 SUCCESS (FTP 5 régions, Pages)
+- [x] QA live 6/6 PASS: MQ 53, GP 83, FL 20, RM 20, PC 12, Tulum 8 — HTTP 200, pins, sheet, nav, paywall
+
+### Rollback
+- `git revert 3427de3d` — additif pur, pas de flag
+
+---
+
+## 2026-08-25 22:30 UTC · Agent: senior_product_ux_qa (OpenCode) — **FULL PRODUCT HEALTH AUDIT COMPLETE — NO CODE REQUIRED**
+
+### Travail effectué
+- **Résumé** : Audit complet UX/UI/Performance/Accessibilité/SEO/Broken Links sur les 6 domaines LIVE (MQ, GP, FL, RM, PC, Tulum). 0 P0 bloquants nouveaux découverts, 1 P1 systémique (H1 manquants), 3 P0 existants (ERDDAP stale, Tulum clean=0, RM beach detail), plusieurs P2/P3 identifiés. Payment path observé fonctionnel sur 5/6 domaines (PC fiche fail). AUCUNE correction code livrée — qualité du rapport priorisée sur volume de changements.
+
+### Constats majeurs
+- **Data ERDDAP**: 33.8h stale sur les 6 domaines (upstream, banner honnête affiché)
+- **H1 manquants**: 0 `<h1>` sur homepage + /plages/ + /previsions/ (6 domaines) + doublon /fiabilite/ — P1 SEO/a11y
+- **Map pins**: Pas d'attribut `data-beach` → clic programmatique impossible, fallback coordonnées fixes fragile cross-domain
+- **Apple Pay**: `/.well-known/apple-developer-merchantid-domain-association` 404 ×6 domaines
+- **Tulum**: 8 plages config, 0 `status: "clean"` → clean count = 0 (P0)
+- **Rivieramaya**: Beach detail ne s'ouvre pas (pin click → sheet absent), switch_back_to_map timeout (P0)
+- **Puntacana**: Fiche step fail (fallback click hors bbox), UI affiche 12 clean vs config 0 (mismatch)
+
+### Tests réalisés
+- [x] UX audit Playwright 6/6 domaines (mobile 390×844 DPR2)
+- [x] ux-smoke tokens: FUNNEL_REACHED 5/6, WHITE=[], RM_INFINITE=[], ERRORS=Apple Pay 404
+- [x] Build: exit 0, bundle 35.5 Ko ≤ 210 Ko ✅
+- [x] PHP lint: 3/3 ✅
+- [x] Playwright funnel-payment: 13/13 ✅
+- [x] Playwright responsive: 3/3 ✅
+- [x] Playwright pay-consent + sticky-cta: 4/4 ✅
+- [x] Regions validation: ✅
+
+### Backlog priorisé (Top 10) — voir .ai/current_state.md entrée complète
+
+### Fichiers
+- `scripts/debug-*.mjs` (artefacts audit, à nettoyer)
+- `tests/ux-recordings/*/` (vidéos, rapports, screenshots, console)
+
+---
+
+## 2026-08-25 18:15 UTC · Agent: release_owner (OpenCode) — **P0 MOLLIE CARDTOKEN ROOT CAUSE FIXED — PRODUCTION RECOVERED**
+
+### Travail effectué
+- **Résumé** : 0 conversions Mollie depuis le lancement (~2026-07-19). Cause : worker `b2b-api/index.js` `handleMollieCheckout` recevait `cardToken` du frontend mais ne le transmettait JAMAIS à l'API Mollie. Paiement créé avec `method=null` → Mollie affiche page sélection méthode → expiry 15 min → **25/25 derniers paiements = expired**, `payment_grants` = 0 réels.
+- **Fix** : worker forward `cardToken` + omettre `method` quand `cardToken` présent. Paiement carte direct via Mollie Components → pas de page sélection → plus d'expiry 15 min.
+- **Impact** : Funnel maintenant fonctionnel end-to-end (CTA → onsite checkout → cardToken → Mollie direct → webhook → grant).
+
+### Fichiers
+- `workers/b2b-api/index.js` — destructure `cardToken`, include in Mollie API body, delete `method` when cardToken present
+
+### Tests
+- [x] worker syntax + build 35.5 Ko ≤210 + smoke 4/4 ✅
+- [x] Contrats: pass-money 13/13, mollie-paid 7/7, funnel-checkout 6/6 ✅
+- [x] Playwright 20/20 (funnel 13 + money-path 7 + sticky 2 + consent 2, 3 skipped fixme) ✅
+- [x] CI PR #604 6/6 GREEN ✅
+- [x] Merge main (deec0fd6 + 2213486b) → Pages SUCCESS 6/6 + Worker SUCCESS ✅
+- [x] Live QA 6/6 domaines: home/data 200, `/api/mollie.php` 200 + checkoutUrl ✅
+
+---
+
 ## 2026-08-25 08:35 UTC · Agent: product_ux_kpi (OpenCode) — P1 PAY CONSENT DEAD CLICK → **SHIPPED** (PR #602 mergée 4030763b, Pages SUCCESS, QA 6/6)
 
 ### Travail effectué
