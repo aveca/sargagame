@@ -185,7 +185,7 @@
 - **Description** : `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines. Apple Pay ne fonctionnera pas sans ce fichier. Doit être généré via Apple Developer Console et déployé sur chaque domaine (FTP Namecheap + Cloudflare Pages).
 - **Fichiers** : Déployer sur 6 domaines FTP/Pages
 - **Estimation** : 1h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_progress by coding_agent @ee8435a (base:ee8435a)
 
 ### TASK-P1-012 Puntacana fiche step fail — fallback click hors bbox
 - **Priorité** : P1
