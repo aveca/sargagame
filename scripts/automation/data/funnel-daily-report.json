@@ -1,43 +1,43 @@
 {
   "window_hours": 24,
-  "since": "2026-08-25T07:02:53.247Z",
-  "total_events": 1470,
+  "since": "2026-08-25T13:08:40.587Z",
+  "total_events": 1428,
   "funnel": [
     {
       "key": "map_open",
       "label": "Map opened",
       "icon": "🗺️",
-      "count": 16
+      "count": 20
     },
     {
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 369
+      "count": 422
     },
     {
       "key": "verdict_scan_view",
       "label": "Verdict viewed",
       "icon": "📊",
-      "count": 202
+      "count": 232
     },
     {
       "key": "premium_modal_open",
       "label": "Paywall seen",
       "icon": "🔒",
-      "count": 98
+      "count": 78
     },
     {
       "key": "cta",
       "label": "CTA clicked",
       "icon": "👆",
-      "count": 60
+      "count": 35
     },
     {
       "key": "onsite_checkout_opened",
       "label": "Checkout opened",
       "icon": "🧾",
-      "count": 58
+      "count": 35
     },
     {
       "key": "mollie_checkout_redirect",
@@ -56,27 +56,27 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 2306.3
+      "rate": 2110
     },
     {
       "from": "Beach selected",
       "to": "Verdict viewed",
-      "rate": 54.7
+      "rate": 55
     },
     {
       "from": "Verdict viewed",
       "to": "Paywall seen",
-      "rate": 48.5
+      "rate": 33.6
     },
     {
       "from": "Paywall seen",
       "to": "CTA clicked",
-      "rate": 61.2
+      "rate": 44.9
     },
     {
       "from": "CTA clicked",
       "to": "Checkout opened",
-      "rate": 96.7
+      "rate": 100
     },
     {
       "from": "Checkout opened",
@@ -91,71 +91,61 @@
   ],
   "global_rate": 0,
   "counts": {
-    "map_open": 16,
-    "beach_open": 369,
-    "verdict_scan_view": 202,
-    "premium_modal_open": 98,
-    "pass_cta": 60,
-    "onsite_checkout_opened": 58,
+    "map_open": 20,
+    "beach_open": 422,
+    "verdict_scan_view": 232,
+    "premium_modal_open": 78,
+    "pass_cta": 35,
+    "onsite_checkout_opened": 35,
     "mollie_checkout_redirect": 0,
     "conversion": 0,
     "checkout_redirect": 0
   },
-  "cta_total": 60,
+  "cta_total": 35,
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 98,
-    "payment_failed": 23,
+    "paywall_view": 78,
+    "payment_failed": 19,
     "premium_feature_click": 0
   },
   "by_island": {
+    "FLORIDA": {
+      "beach_open": 167,
+      "verdict_scan_view": 92,
+      "premium_modal_open": 10
+    },
     "MQ": {
-      "premium_modal_open": 58,
-      "pass_cta": 50,
-      "onsite_checkout_opened": 50,
-      "verdict_scan_view": 28,
-      "beach_open": 53,
-      "map_open": 4
+      "beach_open": 42,
+      "verdict_scan_view": 21,
+      "premium_modal_open": 41,
+      "map_open": 4,
+      "pass_cta": 35,
+      "onsite_checkout_opened": 35
     },
     "GP": {
-      "premium_modal_open": 6,
-      "onsite_checkout_opened": 2,
-      "pass_cta": 2,
-      "map_open": 12,
-      "beach_open": 75,
-      "verdict_scan_view": 43
+      "verdict_scan_view": 71,
+      "beach_open": 123,
+      "premium_modal_open": 7,
+      "map_open": 16
     },
-    "FLORIDA": {
-      "premium_modal_open": 13,
-      "pass_cta": 2,
-      "onsite_checkout_opened": 2,
-      "beach_open": 165,
-      "verdict_scan_view": 91
+    "PUNTACANA": {
+      "premium_modal_open": 19,
+      "verdict_scan_view": 41,
+      "beach_open": 76
     },
     "RIVIERAMAYA": {
-      "premium_modal_open": 2,
-      "pass_cta": 2,
-      "onsite_checkout_opened": 2,
       "beach_open": 14,
       "verdict_scan_view": 7
     },
-    "PUNTACANA": {
-      "premium_modal_open": 16,
-      "pass_cta": 2,
-      "onsite_checkout_opened": 2,
-      "beach_open": 62,
-      "verdict_scan_view": 33
-    },
     "TULUM": {
-      "premium_modal_open": 3,
-      "pass_cta": 2
+      "premium_modal_open": 1
     }
   },
   "by_pw_style": {
     "world": {
-      "modal_open": 98,
-      "paywall_view": 98,
+      "modal_open": 78,
+      "paywall_view": 78,
       "cta": 0,
       "conversion": 0
     }
