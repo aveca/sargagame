@@ -596,25 +596,22 @@ if (capForm) {
   .capture-consent{margin-top:10px;font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;position:relative;z-index:1}
   .cta{display:inline-block;margin-top:18px;background:linear-gradient(180deg,var(--gold),var(--gold-d));color:#0D1E1C;font-weight:800;font-size:14.5px;padding:14px 24px;border-radius:14px;text-decoration:none;box-shadow:0 8px 22px rgba(232,168,0,.3)}
 
-  /* A/B Test classes */
-  .rel-control .v2 { display: none !important; }
-  .rel-v2 .control-only { display: none !important; }
-
-  /* V2 styles */
-  .hero{position:relative;margin:0 -22px 20px;padding:calc(20px + env(safe-area-inset-top)) 22px 26px;overflow:hidden;
-    background:radial-gradient(130% 70% at 76% 4%,rgba(255,224,160,.16),transparent 48%),
-               linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)}
-  .hero .sun{position:absolute;top:-30%;right:-12%;width:80%;height:80%;pointer-events:none;
-    background:radial-gradient(closest-side,rgba(255,243,214,.42),rgba(255,216,132,.18) 46%,transparent 72%);
-    animation:sunBreath 11s ease-in-out infinite}
+  /* Fiabilité H1 — single H1, variant styling via .rel-v2 */
+  .fiab-hero{position:relative;margin:34px 0 14px}
+  .fiab-hero h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:0 0 14px;font-weight:400;color:var(--ink)}
+  .fiab-hero h1 em{font-style:normal;color:var(--gold-d)}
+  .fiab-hero .lead{color:var(--mut);font-size:15.5px;line-height:1.55;max-width:460px;margin:0}
+  .fiab-hero .sun, .fiab-hero .veil-satellite, .fiab-hero .gauge{display:none}
+  .rel-v2 .fiab-hero{margin:0 -22px 20px;padding:calc(20px + env(safe-area-inset-top)) 22px 26px;overflow:hidden;background:radial-gradient(130% 70% at 76% 4%,rgba(255,224,160,.16),transparent 48%),linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)}
+  .rel-v2 .fiab-hero .sun{position:absolute;top:-30%;right:-12%;width:80%;height:80%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,243,214,.42),rgba(255,216,132,.18) 46%,transparent 72%);animation:sunBreath 11s ease-in-out infinite;display:block}
   @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
-  @media (prefers-reduced-motion:reduce){.hero .sun{animation:none}}
-  
-  .hero-header { position: relative; z-index: 2; padding-right: 70px; }
-  .hero h1{color:#fff;margin-top:0}
-  .hero h1 em{color:var(--gold)}
-  .hero .lead{color:rgba(255,255,255,.82)}
-  .veil-satellite { position: absolute; top: -10px; right: 0; width: 80px; height: 80px; z-index: 2; }
+  @media (prefers-reduced-motion:reduce){.rel-v2 .fiab-hero .sun{animation:none}}
+  .rel-v2 .fiab-hero .hero-header{position:relative;z-index:2;padding-right:70px}
+  .rel-v2 .fiab-hero h1{color:#fff;margin-top:0}
+  .rel-v2 .fiab-hero h1 em{color:var(--gold)}
+  .rel-v2 .fiab-hero .lead{color:rgba(255,255,255,.82)}
+  .rel-v2 .fiab-hero .veil-satellite{position:absolute;top:-10px;right:0;width:80px;height:80px;z-index:2;display:block}
+  .rel-v2 .fiab-hero .gauge{display:inline-flex;margin-top:16px;align-items:center;gap:9px;background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 13px;position:relative;z-index:2;width:100%;}
   .veilleur-svg { width: 100%; height: 100%; }
 
   .gauge{margin-top:16px;display:inline-flex;align-items:center;gap:9px;
@@ -713,35 +710,28 @@ if (capForm) {
 <div class="page">
   <div class="tb"><a href="/">←&nbsp;${esc(t.back)}</a><span class="wordmark">${esc(siteName.toUpperCase())}</span></div>
 
-  <div class="control-only">
-    <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
-    <p class="lead">${esc(t.lead)}</p>
-  </div>
-
-  <div class="v2">
-    <div class="hero">
-      <div class="sun"></div>
-      <div class="hero-header">
-        <div class="veil-satellite">
-          <svg viewBox="0 0 120 120" class="veilleur-svg">
-            <g id="veilleur" transform="translate(60 60) scale(1.1)" opacity=".96" aria-hidden="true">
-              <circle cx="0" cy="0" r="42" fill="url(#phalo)"/>
-              <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
-              <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
-              <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
-              <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
-              <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
-              <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
-              <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
-              <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
-            </g>
-          </svg>
-        </div>
-        <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
-        <p class="lead">${esc(t.lead)}</p>
+  <div class="fiab-hero">
+    <div class="sun"></div>
+    <div class="hero-header">
+      <div class="veil-satellite">
+        <svg viewBox="0 0 120 120" class="veilleur-svg">
+          <g id="veilleur" transform="translate(60 60) scale(1.1)" opacity=".96" aria-hidden="true">
+            <circle cx="0" cy="0" r="42" fill="url(#phalo)"/>
+            <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
+            <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
+            <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
+            <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
+            <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
+            <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
+            <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
+            <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
+          </g>
+        </svg>
       </div>
-      ${gaugeMarkup}
+      <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+      <p class="lead">${esc(t.lead)}</p>
     </div>
+    ${gaugeMarkup}
   </div>
 
   <section>

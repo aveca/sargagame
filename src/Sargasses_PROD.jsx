@@ -13766,9 +13766,59 @@ useEffect(()=>{
           (carte → fiche → alerte). Code dormant conservé, joignable seulement via ?hero=1
           pour une éventuelle réintroduction ; aucun bouton « Jouer » en prod. */}
       <AbDebug/>
-      {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
-          l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
-      <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</p>
+      {/* H1 SEO sémantique — 1 seul H1 par page, sr-only pour ne pas perturber le design.
+           Fournit le heading manquant sur la carte (map view) et sur les URLs /plages/ /previsions/
+           quand aucune scène dédiée n'en fournit déjà un. Évite la duplication avec les scènes
+           qui ont leur propre H1 (ForecastLanding, Hero, AlertHub). */}
+      {(() => {
+        const _pn = (typeof getPathname === 'function' ? getPathname() : (typeof window !== 'undefined' ? window.location.pathname : '/')).replace(/\/+$/, '') || '/';
+        const _isHome = _pn === '/' || _pn === '/index.html' || _pn === '';
+        const _isPlages = _pn === '/plages' || _pn.startsWith('/plages/') || _pn.startsWith('/beaches') || _pn.startsWith('/playas');
+        const _isPrev = _pn === '/previsions' || _pn.startsWith('/previsions/') || _pn.startsWith('/en/previsions') || _pn.startsWith('/es/previsions') || _pn.startsWith('/forecast') || _pn.startsWith('/pronostico');
+        const _isFiab = _pn.startsWith('/fiabilite') || _pn.startsWith('/reliability') || _pn.startsWith('/fiabilidad');
+        const _isCarte = _pn.startsWith('/carte-sargasses') || _pn.startsWith('/sargassum-map') || _pn.startsWith('/mapa-sargazo');
+        const _hasDedicatedH1 = showHero || showPrevLanding || showCleanList || showAlertHub || showConditions || showStation;
+        const _isListView = view === 'list';
+        // Si une scène dédiée avec H1 est active, on garde un <p> crawlable mais pas de H1 global
+        if (_hasDedicatedH1) {
+          const _txt = IS_NEW_REGION ? (REGION.primaryLang==="es" ? `Sargazo en ${REGION.name} en vivo — mapa de playas hoy` : `${REGION.name} sargassum live — beach map today`) : island==="mq" ? "Sargasses Martinique en temps réel — carte et plages aujourd'hui" : "Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui";
+          return <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{_txt}</p>;
+        }
+        let _h1 = null;
+        const _label = island === 'gp' ? 'Guadeloupe' : 'Martinique';
+        const _rName = (typeof REGION !== 'undefined' && REGION && REGION.name) ? REGION.name : _label;
+        if (_isPlages || (_isHome && _isListView)) {
+          if (IS_NEW_REGION) {
+            _h1 = lang === 'es' ? `Todas las playas de ${_rName}` : `All beaches in ${_rName} — sargassum status today`;
+          } else {
+            _h1 = lang === 'en' ? `All beaches in ${_label} — sargassum status today` : lang === 'es' ? `Todas las playas de ${_label}` : `Toutes les plages de ${_label}`;
+          }
+        } else if (_isPrev) {
+          if (IS_NEW_REGION) {
+            _h1 = lang === 'es' ? `Pronóstico de sargazo ${_rName} — 7 días por playa` : `${_rName} Sargassum Forecast — 7 days by beach`;
+          } else {
+            _h1 = 'Prévisions sargasses Martinique et Guadeloupe — 7 jours par plage';
+          }
+        } else if (_isFiab) {
+          _h1 = lang === 'en' ? 'Our forecasts, verified' : lang === 'es' ? 'Nuestros pronósticos, verificados' : 'Nos prévisions, vérifiées';
+        } else if (_isCarte) {
+          _h1 = IS_NEW_REGION ? (lang === 'es' ? `Mapa de sargazo ${_rName} hoy — tiempo real` : `Sargassum Map ${_rName} Today — Live`) : `Carte des sargasses ${_label} aujourd'hui — temps réel et plages propres 2026`;
+        } else if (_isHome) {
+          if (IS_NEW_REGION) {
+            _h1 = lang === 'es' ? `Sargazo en ${_rName} hoy — mapa de playas en vivo` : `Sargassum ${_rName} today — live beach map`;
+          } else {
+            _h1 = lang === 'en' ? `Sargassum ${_label} in real time — map and beaches today` : lang === 'es' ? `Sargazo en ${_label} en tiempo real — mapa y playas hoy` : `Sargasses ${_label} en temps réel — carte et plages aujourd'hui`;
+          }
+        } else {
+          // Fallback homepage
+          if (IS_NEW_REGION) {
+            _h1 = lang === 'es' ? `Sargazo en ${_rName} hoy — mapa de playas en vivo` : `Sargassum ${_rName} today — live beach map`;
+          } else {
+            _h1 = `Sargasses ${_label} en temps réel — carte et plages aujourd'hui`;
+          }
+        }
+        return <h1 style={{position:"absolute",width:"1px",height:"1px",padding:0,margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>{_h1}</h1>;
+      })()}
       {/* contentVisibility:hidden pendant l'attract → la carte (WorldMapView, statique au
           repos) n'est plus peinte/composée sous le reel opaque (perf bas de gamme). No-op si
           non supporté ; "visible" par défaut → zéro impact hors attract (smoke inchangé). */}

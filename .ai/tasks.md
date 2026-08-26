@@ -269,10 +269,10 @@
 ### TASK-P2-006 Map pins data-beach attribute — clic fiable cross-domain
 - **Priorité** : P2
 - **Rôle** : coding_agent
-- **Description** : Pins carte = `svg circle` sans attribut `data-beach` → clic programmatique impossible, fallback coordonnées fixes fragile cross-domain (Puntacana fail, RM fail). Ajouter `data-beach` sur pins dans MapView.jsx.
-- **Fichiers** : `src/MapView.jsx`
+- **Description** : Pins carte = `svg circle` sans attribut `data-beach` → clic programmatique impossible, fallback coordonnées fixes fragile cross-domain (Puntacana fail, RM fail). Ajouter `data-beach` sur pins dans WorldMapView.jsx.
+- **Fichiers** : `src/WorldMapView.jsx` (pins dot/full + labels)
 - **Estimation** : 1h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-26) — Fix inclus dans PR #606 (TASK-P0-003). `data-beach={b.id}` ajouté sur pins dot (L1608) + full (L1618) + label (L1738) dans WorldMapView.jsx. `svg g[data-beach]` 0→20 (RM), 0→40 total. Clic programmatique fiable, fallback supprimé. QA live 6/6 PASS (RM 20, PC 12 pins).
 
 ### TASK-P2-007 Endpoint /api/b2b-partners.json (MQ) — 404
 - **Priorité** : P2
