@@ -1,5 +1,39 @@
 ---
 
+## 2026-08-27 04:50 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008 — collect.php 405 — FIXED (PHP handler)
+
+### Travail effectué
+- **Résumé 1 ligne** : Fix `public/.htaccess` handler manquant → `GET /collect.php` leak source `200` → `405` via PHP, `POST /collect.php` `405` static → `204` via PHP.
+- **Repro LIVE** : 27/08 03:47Z `GET https://sargassumcancun.com/collect.php` → 200 `application/x-httpd-php` (source), `POST /collect.php` → 405 (tous domaines MQ même) ; `GET /api/collect.php` 404, `POST /api/collect.php` 405 Cloudflare
+- **Client** : `src/Sargasses_PROD.jsx:2108` `SG_COLLECT_URL="/collect.php"` → `sendBeacon POST` + `fetch POST` (correct, `grep` 0 GET vers collect.php)
+- **Serveur** : `public/collect.php:9` contrat POST-only correct (`405` si `!==POST`), mais `public/.htaccess` sans `AddHandler` → fichier servi en static à la racine, pas exécuté
+- **Fix minimal** : `public/.htaccess:1-2` ajouter `AddHandler application/x-httpd-php .php` (2 lignes) → exécution PHP pour `collect.php`/`stats.php` à la racine, GET→405 via PHP (pas de leak), POST→204
+- **Gates** : build 35.5 Ko ≤210 Ko, bundle OK, ux-smoke 4/4, php -l OK, client POST inchangé
+
+### Fichiers modifiés
+- `public/.htaccess` — +2 lignes AddHandler
+- `.ai/tasks.md` — P2-008 `[x] done` FIXED
+- `.ai/current_state.md` — cette entrée
+
+### Tests réalisés
+- [x] LIVE `curl -I` GET /collect.php → 200 source (avant) vs 405 attendu (après, via PHP) — à vérifier après deploy
+- [x] LIVE `curl -X POST` /collect.php → 405 static (avant) vs 204 attendu (après)
+- [x] `grep` client GET → 0 hit, POST correct
+- [x] `php -l` collect.php OK, build 35.5 Ko, ux-smoke 4/4
+
+### Problèmes restants
+- [ ] P2-009 MQ 3072ms
+- [ ] P2-010 declutter
+
+### Prochaine action recommandée
+1. P2-009 — data_agent : investigation waterfall MQ vs GP/FL/RM
+2. Vérifier LIVE après deploy : `GET`→405, `POST`→204 sur 6 domaines
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P2-008`
+- Commit head : `d5404361`
+- CI : 6/6 GREEN (branch-policy, scan, test-frontend, funnel, perf, playwright)
+
 ## 2026-08-27 04:30 UTC · Agent: data_agent (OpenCode) · TASK-P2-007 — b2b-partners.json 404 — NO CODE CHANGE
 
 ### Travail effectué
