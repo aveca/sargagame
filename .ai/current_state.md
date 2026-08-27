@@ -1,5 +1,47 @@
 ---
 
+## 2026-08-27 04:00 UTC · Agent: data_agent (OpenCode) · TASK-P1-013 — Monitoring conversion post-fix #605
+
+### Travail effectué
+- **Résumé 1 ligne** : Monitoring DATA post-déploiement #605 (25/08 18:50 UTC) — fix `method`+`cardToken` → **WORKING BUT INSUFFICIENT SAMPLE** (pas de preuve `HEALTHY`, pas de panne démontrée).
+- **Détails** :
+  - Fenêtre : 2026-08-25T18:50Z → 2026-08-26T20:03Z (distincte de P1-006 pré-25/08)
+  - Commit main : `8016ffcd` (PR #608 `sg_session_id` live depuis 27/08 03:17Z → `NULL` pour 25-26)
+  - Volumes (réels) : 25/08 CTA 75 → onsite 69 → mollie 0 → conv 0 (payment_failed 1) ; 26/08 CTA 5→onsite 5→mollie 0 ; cumul 80→74→0 (CTA→onsite 92.5%, onsite→mollie 0%)
+  - Mollie : `daily-metrics.json` 26/08 `paid {}`, `lastPaidAt 2026-07-19` (38j sans paid, window 30j), `fetchedAt 2026-08-26T20:03:09Z` (source `mollie-aggregate.cjs` → Mollie API)
+  - Avant #605 (19-24) : CTA 74, onsite `None` (non tracké avant 25/08), mollie 0 — comparaison non statistique (métrique manquante, straddle)
+  - `sg_session_id` : non corrélable pour 25-26 (instrumentation post-fenêtre) → `N/A` ; future corrélation `analytics_events.params.sg_session_id ↔ payment_grants.session_id` possible dès 27/08
+  - Gate minimum (21 CTA + 1 Mollie) : 25/08 75 CTA ✔ mais 0 Mollie ✘ ; 26/08 5 CTA ✘ → non satisfait
+
+### Fichiers modifiés
+- `.ai/decisions.md` — DEC-2026-08-27 TASK-P1-013 (fenêtre, volumes, taux, sg_session_id, limites, verdict)
+- `.ai/tasks.md` — TASK-P1-013 status `[x] done` (WORKING BUT INSUFFICIENT SAMPLE)
+- Aucun code fonctionnel modifié (garde-fou Mollie)
+
+### Tests réalisés
+- [x] `git fetch origin && git reset --hard origin/main` → main `8016ffcd` propre, no tracked modifications, untracked conservés
+- [x] Lecture `CLAUDE.md`, `AGENTS.md`, `.ai/current_state.md`, `.ai/tasks.md`, `.ai/decisions.md` (ordre strict)
+- [x] `daily-metrics.json` 19-26/08 parsed (CTA/onsite/mollie/paid/lastPaidAt)
+- [x] `funnel-snapshot.json` 7j (150 CTA, 74 onsite, 0 mollie) + `funnel-daily-report.json` 24h (5 CTA→5 onsite→0 mollie) cross-check
+- [x] Mollie evidence via `mollie-aggregate` (`paid {}`, `lastPaidAt`)
+- [x] Vérif `sg_session_id` instrumentation présente sur main (`src/supabasePhotos.js:111`, `workers/...:573`) mais `NULL` pour fenêtre 25-26
+- [x] Comparaison avant/après #605 documentée (non mélange P1-006)
+
+### Problèmes restants
+- [ ] P1-013 : continuer monitoring 27-29/08 avec `sg_session_id` (≥21 CTA/j) pour atteindre gate B ; si `onsite_to_mollie` reste `0` sur 2j pleins → passer en `D STILL BROKEN` + investigation pas à pas (frontend `cardToken` → Worker → Mollie `paymentId` → webhook `grant`)
+- [ ] P1-011 Apple Pay 6/6 déjà `DONE/NO CODE CHANGE` (vérifié 27/08 03:20Z `200` `9094B` `FBF714607B85` sur 6 domaines)
+- [ ] P1-012 fallback Puntacana PR #610 `READY TO MERGE` (1 fichier, CI 6/6 GREEN)
+
+### Prochaine action recommandée
+1. Monitorer 48h supplémentaires (27-29/08) avec `sg_session_id` — seuil `≥21 CTA` cumulés pour verdict B
+2. Si `onsite_to_mollie ==0` sur fenêtre pleine post-`sg_session_id` → ouvrir `TASK-P1-014` investigation ciblée (10 étapes `CTA→grant`)
+3. Sinon clôturer `P1-013` définitivement après 1 paiement onsite Mollie confirmé (`grants` + `Mollie paid`)
+
+### Branche / PR
+- Branche : `main` (analyse seule, no code) — docs sur `agent/data/TASK-P1-013` (à pousser)
+- Commit head : `8016ffcd` (main), docs à venir `data_agent`
+- CI : pas de code → pas de CI (mais vérif `npm run build`/`bundle` inchangés si besoin)
+
 ## 2026-08-26 21:00 UTC · Agent: strategy_agent (OpenCode) — **GEO VERTICAL DISCOVERY — WINNER IDENTIFIED : Concierge Brief conditions**
 
 ### Travail effectué
