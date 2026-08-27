@@ -237,6 +237,25 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // ─── Apple Pay Domain Association ────────────────────
+    // Serves the Mollie-generated Apple Pay domain verification file
+    // at the standard well-known path required by Apple.
+    // Proxies to /api/apple-pay-domain-association which is served by the origin (FTP).
+    if (path === '/.well-known/apple-developer-merchantid-domain-association') {
+      const targetUrl = new URL('/api/apple-pay-domain-association', request.url);
+      const resp = await fetch(targetUrl, {
+        method: request.method,
+        headers: request.headers,
+      });
+      return new Response(resp.body, {
+        status: resp.status,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Cache-Control': 'public, max-age=86400',
+        },
+      });
+    }
+
     // ─── Mollie API ──────────────────────────────────────
     if (path === '/api/mollie') {
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });

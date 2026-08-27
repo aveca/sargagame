@@ -1,4 +1,133 @@
+## 2026-08-27 00:15 UTC · Agent: devops_agent (OpenCode) — **TASK-P1-011 APPLE PAY DOMAIN ASSOCIATION — LIVE 6/6**
+
+### Travail effectué
+- **Résumé 1 ligne** : Fix `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines via Worker `sg-payments` — interception Cloudflare Edge → proxy vers `/api/apple-pay-domain-association` existant (200, fichier Mollie valide).
+- **Cause racine** : `.htaccess` déployé sur FTP/origin mais non exécuté (AllowOverride None ou serveur non-Apache masqué). L'endpoint `/api/apple-pay-domain-association` retournait déjà 200 avec le fichier Apple Pay Mollie valide (hex JSON Mollie).
+- **Correction minimale** : 
+  - `workers/sg-payments/src/index.ts` : handler dédié AVANT routes `/api/*` — fetch vers `/api/apple-pay-domain-association` + retour `Content-Type: application/octet-stream` + body exact (pas de transformation JSON).
+  - `workers/sg-payments/wrangler.jsonc` : 6 routes ajoutées (1 par domaine réel).
+- **Fichiers modifiés** :
+  - `workers/sg-payments/src/index.ts` (+15 lignes handler)
+  - `workers/sg-payments/wrangler.jsonc` (+6 routes `.well-known/*`)
+- **Tests locaux** : 
+  - [x] npm run build → exit 0
+  - [x] check-bundle-budget → 35.5 Ko ≤ 210 Ko
+  - [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE=[], RM_INFINITE=[]
+  - [x] php -l → OK
+- **Résultats LIVE 6/6** :
+  - sargasses-martinique.com → 200, application/octet-stream, 9095 bytes ✓
+  - sargasses-guadeloupe.com → 200, application/octet-stream, 9095 bytes ✓
+  - sargassummiami.com → 200, application/octet-stream, 9095 bytes ✓
+  - sargassumcancun.com → 200, application/octet-stream, 9095 bytes ✓
+  - sargassumpuntacana.com → 200, application/octet-stream, 9095 bytes ✓
+  - sargazotulum.com → 200, application/octet-stream, 9095 bytes ✓
+- **Régression API** : Aucune. `/api/apple-pay-domain-association` 200 inchangé. `/api/mollie*`, `/api/widget-token*`, `/api/track-*`, `/api/b2b-*` tous fonctionnels.
+- **Déploiement** : Worker `sg-payments` déployé via `wrangler deploy` (Version ID: 99ba0574-3f68-4a35-8264-e395af529761), routes propagées sur les 6 zones Cloudflare.
+- **Rollback** : `wrangler rollback` vers version précédente si nécessaire.
+
+### Problèmes restants
+- [ ] TASK-P1-012 Puntacana fiche step fail — fallback click hors bbox — rôle coding_agent
+- [ ] TASK-P2-007 b2b-partners.json 404 MQ — rôle coding_agent
+- [ ] TASK-P2-008 collect.php 405 RM — rôle coding_agent
+- [ ] TASK-P2-009 MQ DOMContentLoaded 3072ms — rôle coding_agent
+- [ ] TASK-P2-010 Declutter labels agressif — rôle coding_agent + ui-ux_agent
+
+### Prochaine action recommandée
+1. TASK-P1-012 : Puntacana fiche step fail — fallback click hors bbox — rôle coding_agent
+
+### Branche / PR
+- Branche : `agent/devops/TASK-P1-011`
+- PR : auto-merge si CI vert
+- Commit head : (à créer après git add/commit)
+
 ---
+
+---
+
+## 2026-08-26 22:30 UTC · Agent: data_agent (OpenCode) — **CHECKOUT TRUTH — INSUFFICIENT DATA**
+
+### Travail effectué
+- **Résumé 1 ligne** : Analyse funnel CTA paywall → Mollie checkout → paiement → conversion sur fenêtre 7j (2026-08-19T18:00Z → 2026-08-26T18:00Z UTC). Résultat : **INSUFFICIENT DATA** — impossible de classifier les utilisateurs en catégories A/B/C/D/E mutuellement exclusives.
+
+### Fenêtre d'analyse
+- **Début** : 2026-08-19T18:00:00Z (UTC)
+- **Fin** : 2026-08-26T18:00:00Z (UTC)
+- **Sources** :
+  - Supabase `analytics_events` (frontend funnel, allowlisté : sg_pass_cta, sg_onsite_checkout_opened, sg_mollie_checkout_redirect, sg_conversion, sg_payment_failed)
+  - Supabase `payment_grants` (webhook mirror grants)
+  - Mollie API `/v2/payments` (payments créés dans la fenêtre)
+
+### Mesures brutes
+| Source | Métrique | Count |
+|---|---|---|
+| analytics_events | sg_premium_modal_open | 478 |
+| analytics_events | sg_pass_cta | 152 |
+| analytics_events | sg_onsite_checkout_opened | 74 |
+| analytics_events | sg_mollie_checkout_redirect | 0 |
+| analytics_events | sg_conversion | 0 |
+| Mollie API | payments créés | 25 (tous `expired`, 0 `paid`) |
+| payment_grants | grants | 3 (2 avec payment_id valide, 1 test null) |
+
+### Blocage classification A/B/C/D/E
+**Cause racine** : `analytics_events` n'a **aucun identifiant de session/client stable** (pas de `sg_session_id` dans les `params`) pour joindre :
+- `sg_pass_cta` / `sg_onsite_checkout_opened` (sans paymentId, paiement n'existe pas encore)
+- `sg_conversion` (a `session_id=paymentId`)
+- `payment_grants` (a `payment_id`)
+- Mollie API payments (a `id`)
+
+Le chemin carte on-site (majoritaire) n'a **aucun événement allowlisté entre checkout overlay et conversion** qui porte un `paymentId`. Le chemin redirect (`sg_mollie_checkout_redirect` a `paymentId`) = 0 événements dans la fenêtre.
+
+**Donnée manquante** : `sg_session_id` (depuis `sgUid()` dans `supabasePhotos.js`) émis dans `params` de chaque événement funnel allowlisté + propagé côté serveur (`sg_analytics_event`, `mol_supabase_mirror`).
+
+### Fichiers consultés (pas modifiés)
+- `src/Sargasses_PROD.jsx` (SG_FUNNEL_EVENTS allowlist, lignes 1901-1922)
+- `src/PremiumModal/doSubscribe.jsx` (événements track: lignes 79, 135, 149, 150, 223, 224, 231, 266, 270, 277, 285, 294, 301, 311, 328, 340, 341, 354, 355)
+- `src/PremiumModal/OnsiteCheckout.jsx` (événements track: lignes 111, 145, 194, 241)
+- `src/supabasePhotos.js` (logAnalyticsEvent, lignes 47-57 ; sgUid, lignes 110-116)
+- `public/api/mollie-lib.php` (sg_analytics_event lignes 657-671 ; mol_supabase_mirror lignes 375-411 ; mol_b2c_pass_grant lignes 418-457)
+- `public/api/mollie-webhook.php` (webhook flow, grants)
+
+### Résultat
+**INSUFFICIENT DATA — impossible de déterminer le leak avec les données actuellement disponibles.**
+
+### Prochaine action recommandée
+1. **Instrumentation P0** (tâche séparée) : ajouter `sg_session_id` à tous les événements funnel allowlistés (front + serveur) + colonne `session_id` dans `payment_grants` → rendre A/B/C/D/E mesurables par session.
+2. **Anomalies identifiées** (tâches séparées) :
+   - 25 payments Mollie créés → 25 expired → 0 paid
+   - 2 payment_grants avec payment_id valide malgré 0 paid Mollie (incohérence webhook vs API)
+   - Funnel instrumentation sans identifiant session stable
+
+### Branche / PR
+- Branche : `agent/data/CHECKOUT-TRUTH-2026-08-26` (analyse seule, pas de PR)
+- Commit head : aucun (pas de modification code)
+
+## 2026-08-26 22:30 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-005d: Clip Remotion « Le jour qui bascule » TERMINÉ**
+### Travail effectué
+- **Résumé 1 ligne** : Clip Remotion « Le jour qui bascule » rendu et validé — output.mp4 7.1MB, 25s vertical 9:16, 7 scènes FR/EN/ES, asset externe sans impact bundle (35.5 Ko ≤ 210 Ko gzip). Clip tournant 1×/semaine par région, pas de code shipped.
+
+### Fichiers modifiés
+- `.ai/tasks.md` — statut TASK-P2-005d passé [x] done
+- `video-remotion/output.mp4` — clip rendu (7.1 MB, artefact P2-005d)
+
+### Problèmes restants
+- [ ] <ID> : <description> — <sévérité> — <action>
+
+### Prochaine action recommandée
+1. TASK-P1-011 : Association domaine Apple Pay sur 6 domaines — rôle devops_agent
+2. TASK-P1-012 : Puntacana fiche step fail — fallback click hors bbox — rôle coding_agent
+3. Créer `.ai/geo_vertical_discovery_2026-08-26.md` — inventory scorecard winner mapping
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P2-005d`
+- Commit head : `c0e3ea32` (dernier commit sur main)
+
+### Travail effectué
+- **Résumé 1 ligne** : Spike scoring Riviera Maya validé, aucun merge. Module `scripts/lib/swim-surf-score.cjs` déterministe implémenté, 10/10 tests unitaires passent, runner `scripts/spike-swim-surf-rm.cjs` exécuté.
+- **Résultat important** : Scoring déterministe validé avec séparation données/score/recommandation/confiance. Aucune modification du core `WorldMapView.jsx`, pipeline production, régions ou APIs. 
+- **Blocker identifié** : `public/api/copernicus/sargassum.json` ne contient actuellement que MQ/GP → statut AFAI unknown pour Riviera Maya → spike renvoie `eviter` prudence pour les 20 plages RM. Intégration UI publique bloquée tant que le pipeline ERDDAP/Sargassum Riviera Maya n’est pas disponible.
+- **Fichiers concernés** : `scripts/lib/swim-surf-score.cjs`, `tests/unit/swim-surf-score.test.cjs`, `scripts/spike-swim-surf-rm.cjs`, `.ai/tasks.md` TASK-SPIKE-SWIM-SURF-RM [x] done.
+- **Tests** : 10/10 passent, cas limites wave/wind/AFAI/missing data couverts.
+- **Prochaine tâche recommandée** : Pipeline ERDDAP Sargassum Riviera Maya — créer tâche séparée pour ingestion satellite RM.
 
 ## 2026-08-26 21:00 UTC · Agent: strategy_agent (OpenCode) — **GEO VERTICAL DISCOVERY — WINNER IDENTIFIED : Concierge Brief conditions**
 

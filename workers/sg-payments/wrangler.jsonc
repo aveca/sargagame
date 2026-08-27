@@ -10,6 +10,7 @@
     { "pattern": "sargasses-martinique.com/api/copernicus/forecast*", "zone_name": "sargasses-martinique.com" },
     { "pattern": "sargasses-martinique.com/api/b2b-*", "zone_name": "sargasses-martinique.com" },
     { "pattern": "sargasses-martinique.com/api/create-checkout*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargasses-martinique.com" },
 
     { "pattern": "sargasses-guadeloupe.com/api/mollie*", "zone_name": "sargasses-guadeloupe.com" },
     { "pattern": "sargasses-guadeloupe.com/api/widget-token*", "zone_name": "sargasses-guadeloupe.com" },
@@ -17,6 +18,7 @@
     { "pattern": "sargasses-guadeloupe.com/api/copernicus/forecast*", "zone_name": "sargasses-guadeloupe.com" },
     { "pattern": "sargasses-guadeloupe.com/api/b2b-*", "zone_name": "sargasses-guadeloupe.com" },
     { "pattern": "sargasses-guadeloupe.com/api/create-checkout*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargasses-guadeloupe.com" },
 
     { "pattern": "sargassummiami.com/api/mollie*", "zone_name": "sargassummiami.com" },
     { "pattern": "sargassummiami.com/api/widget-token*", "zone_name": "sargassummiami.com" },
@@ -24,6 +26,7 @@
     { "pattern": "sargassummiami.com/api/copernicus/forecast*", "zone_name": "sargassummiami.com" },
     { "pattern": "sargassummiami.com/api/b2b-*", "zone_name": "sargassummiami.com" },
     { "pattern": "sargassummiami.com/api/create-checkout*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargassummiami.com" },
 
     { "pattern": "sargassumpuntacana.com/api/mollie*", "zone_name": "sargassumpuntacana.com" },
     { "pattern": "sargassumpuntacana.com/api/widget-token*", "zone_name": "sargassumpuntacana.com" },
@@ -31,6 +34,7 @@
     { "pattern": "sargassumpuntacana.com/api/copernicus/forecast*", "zone_name": "sargassumpuntacana.com" },
     { "pattern": "sargassumpuntacana.com/api/b2b-*", "zone_name": "sargassumpuntacana.com" },
     { "pattern": "sargassumpuntacana.com/api/create-checkout*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargassumpuntacana.com" },
 
     { "pattern": "sargassumcancun.com/api/mollie*", "zone_name": "sargassumcancun.com" },
     { "pattern": "sargassumcancun.com/api/widget-token*", "zone_name": "sargassumcancun.com" },
@@ -38,13 +42,15 @@
     { "pattern": "sargassumcancun.com/api/copernicus/forecast*", "zone_name": "sargassumcancun.com" },
     { "pattern": "sargassumcancun.com/api/b2b-*", "zone_name": "sargassumcancun.com" },
     { "pattern": "sargassumcancun.com/api/create-checkout*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargassumcancun.com" },
 
     { "pattern": "sargazotulum.com/api/mollie*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/widget-token*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/track-*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/copernicus/forecast*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/b2b-*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" }
+    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/.well-known/apple-developer-merchantid-domain-association", "zone_name": "sargazotulum.com" }
   ],
   "kv_namespaces": [
     { "binding": "TRANSIENTS", "id": "528c05c792e046029a84e2fdb84f4ae6" }

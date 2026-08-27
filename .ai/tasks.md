@@ -85,6 +85,22 @@
 - **Estimation** : 2h
 - **Statut** : [x] done by coding_agent (2026-08-26) — Fix: ajout `data-beach={b.id}` sur pins dot/full + labels dans WorldMapView.jsx (3 lignes). ArchipelView avait déjà data-beach, WorldMapView non → clic programmatique impossible, fallback 195,350 hors bbox RM/PC. Rouge: audit svg g[data-beach] 0→20, fallback ne déclenche pas sheet (svg pointer-events none + snap sans onOpenBeach). Vert: 20 pins, click force → sheet .lc-detail s'ouvre (Playa Ballenas rm018, Playa Maroma rm012), nav Mapa/Playas OK. Gate: build 35.5 Ko, esbuild 0, php 0, smoke FUNNEL_REACHED=map+fiche+paywall, regions valid. PR #606 merged 6f8a41d8, Deploy Daily Copernicus SUCCESS 32914975316, QA live 6/6 PASS (MQ 53, GP 83, FL 20, RM 20, PC 12, Tulum 8)
 
+### TASK-SPIKE-SWIM-SURF-RM — GO
+- **Priorité** : P0
+- **Rôle** : coding_agent
+- **Description** : Spike scoring “Brief matin conditions” Riviera Maya sur inputs beaches-weather.json + sargassum.json. Scoring déterministe 🟢 Baignade / 🟡 Surf / 🔴 Éviter avec priorité Éviter > Surf > Baignade.
+- **Fichiers** : scripts/lib/swim-surf-score.cjs, tests/unit/swim-surf-score.test.cjs, scripts/spike-swim-surf-rm.cjs
+- **Statut** : [x] done by coding_agent (2026-08-26) — Module implémenté, 10/10 tests unitaires passent, spike exécuté : 20/20 RM → eviter (sargassum.json ne contient pas RM, statut unknown → prudence). Données/score/confiance séparés. Core non modifié. Wording & confiance à valider par panel adverse avant merge.
+
+### TASK-PIPELINE-SARGASSUM-RM — PRIORITÉ P1
+- **Priorité** : P1
+- **Rôle** : data_agent
+- **Description** : Activer le pipeline ERDDAP sargassum pour Riviera Maya afin d’alimenter `public/api/copernicus/sargassum.json` avec les 20 plages RM. Sans données AFAI, le scoring swim/surf reste bloqué en mode prudence eviter.
+- **Fichiers** : `scripts/fetch-sargassum-live.cjs`, `regions/rivieramaya.json`, `public/api/copernicus/sargassum.json`
+- **Critères d'acceptation** : sargassum.json contient les 20 ids rm001-rm020 avec status AFAI clean/moderate/avoid et confiance.
+- **Estimation** : 4h
+- **Statut** : [ ] pending
+
 ### TASK-P0-001 Configurer webhook secret Mollie en prod
 - **Priorité** : P0
 - **Rôle** : coding_agent
@@ -191,9 +207,25 @@
 - **Priorité** : P1
 - **Rôle** : devops_agent
 - **Description** : `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines. Apple Pay ne fonctionnera pas sans ce fichier. Doit être généré via Apple Developer Console et déployé sur chaque domaine (FTP Namecheap + Cloudflare Pages).
-- **Fichiers** : Déployer sur 6 domaines FTP/Pages
+- **Fichiers** : `workers/sg-payments/src/index.ts`, `workers/sg-payments/wrangler.jsonc`
 - **Estimation** : 1h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by devops_agent (2026-08-27) — **LIVE 6/6**
+  - **Cause** : `.htaccess` sur serveur FTP/origin non exécuté (AllowOverride None ou LiteSpeed/Nginx masqué). L'endpoint existant `/api/apple-pay-domain-association` retourne déjà 200 avec le fichier Mollie valide (hex JSON Mollie `{"pspId":"D9C7F701C8C6F2C6F3D656C09944E32200B176F152E58D9140C1C53AA8246E60","version":1,"createdOn":1715203977496,"signature":"..."}`).
+  - **Correction** : Ajout route Worker `sg-payments` pour intercepter `/.well-known/apple-developer-merchantid-domain-association` et proxier vers `/api/apple-pay-domain-association` (conserve Content-Type `application/octet-stream` + body exact).
+  - **Fichiers modifiés** :
+    - `workers/sg-payments/src/index.ts` : handler dédié avant routes `/api/*`
+    - `workers/sg-payments/wrangler.jsonc` : 6 routes ajoutées (1 par domaine)
+  - **Tests locaux** : build OK (35.5 Ko ≤ 210 Ko), check-bundle-budget OK, ux-smoke 4/4 OK, PHP lint OK
+  - **Résultats LIVE 6/6** :
+    - sargasses-martinique.com → 200, application/octet-stream, 9095 bytes ✓
+    - sargasses-guadeloupe.com → 200, application/octet-stream, 9095 bytes ✓
+    - sargassummiami.com → 200, application/octet-stream, 9095 bytes ✓
+    - sargassumcancun.com → 200, application/octet-stream, 9095 bytes ✓
+    - sargassumpuntacana.com → 200, application/octet-stream, 9095 bytes ✓
+    - sargazotulum.com → 200, application/octet-stream, 9095 bytes ✓
+  - **Régression API** : Aucune. `/api/apple-pay-domain-association` 200 inchangé. `/api/mollie*`, `/api/widget-token*`, `/api/track-*`, `/api/b2b-*` tous 200/302/200 OK.
+  - **Déploiement** : Worker `sg-payments` déployé via `wrangler deploy` (Version ID: 99ba0574-3f68-4a35-8264-e395af529761), routes propagées sur les 6 zones Cloudflare.
+  - **Rollback** : `wrangler rollback` vers version précédente si nécessaire.
 
 ### TASK-P1-012 Puntacana fiche step fail — fallback click hors bbox
 - **Priorité** : P1
@@ -272,7 +304,8 @@
 - **Description** : Script clip Remotion 25 s, 9:16, sous-titré, coupe courte, 7 scènes selon spec livrée (cf. rapport prompt 07). Pipeline local gratuit via skill `video-brief` (ffmpeg + edge-tts + Playwright shoote calques SVG). Pas de code shipped (asset externe) — le clip tourne 1×/semaine par région, sans impact bundle.
 - **Fichiers** : `video-remotion/scenes/le-jour-qui-bascule/` (nouveau), composables Remotion existantes réutilisées.
 - **Estimation** : 90 min timebox autonomie
-- **Statut** : [~] in_progress by coding_agent
+- **Statut** : [x] done by coding_agent
+- **Livré** : output.mp4 (7.1 MB, 25s vertical 9:16, 7 scènes FR/EN/ES), clip externe sans impact bundle (35.5 Ko ≤ 210 Ko)
 
 ### TASK-P2-006 Map pins data-beach attribute — clic fiable cross-domain
 - **Priorité** : P2
