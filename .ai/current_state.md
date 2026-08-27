@@ -1,5 +1,43 @@
 ---
 
+## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008b — collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6
+
+### Travail effectué
+- **Résumé 1 ligne** : Architecture Pages découverte → route Worker `sg-payments` `/collect.php` × 6 zones + suppression `public/collect.php` (dead code). Source leak éliminé, collecte POST 204 restaurée sur 6/6 domaines.
+- **Architecture LIVE** : `wrangler pages project list` → 6 projets Pages (sargagame, -gp, -florida, -rivieramaya, -puntacana, -tulum) → `.htaccess`/PHP inopérants. Fix P2-008 (Apache) inertiel.
+- **Solution** : Option B retenue (Worker centralisé, DEC-2026-08-27). 6 routes `/collect.php` + handler `handleCollect()` : POST-only 405 (nosniff), Origin/Referer 6-host allowlist (+ sargazotulum.com), body cap 64KB, vh sha256(day|ip|ua)[:16], KV rate-limit 60/60s/vh, global daily cap 5000, Supabase `analytics_events` sink `sg_session`, 204 silencieux (jamais 4xx/429 → évite amplification client). Frontend inchangé.
+- **Dead code** : `public/collect.php` supprimé du repo (leak permanent sur Pages, *.pages.dev, FTP). Historique git = rollback instantané.
+
+### Fichiers modifiés
+- `workers/sg-payments/src/index.ts` — `COLLECT_HOSTS` + `handleCollect()`
+- `workers/sg-payments/wrangler.jsonc` — 6 routes `<domaine>/collect.php`
+- `public/collect.php` — deleted
+- `.ai/tasks.md` — P2-008b `[x] done`, P2-008 marked SUPERSEDED, TASK-P1-014 documented
+- `.ai/decisions.md` — DEC-2026-08-27 P2-008b option B
+
+### Tests réalisés
+- [x] esbuild Worker TS ✓
+- [x] wrangler dry-run ✓ (KV `TRANSIENTS`, secret `SUPABASE_SERVICE_KEY`)
+- [x] `npm run build` 35.5 Ko ✓ (`collect.php` absent de `dist/`)
+- [x] `check-bundle-budget` 35.5 Ko ≤ 210 Ko ✓
+- [x] `ux-smoke` 4/4 tokens ✓
+- [x] CI Playwright ✓
+- [x] Worker deploy `7d2adf43` ✓
+- [x] LIVE 6/6 : GET 405 no source, POST 204 valid Origin, `nosniff` header
+
+### Problèmes restants
+- [ ] `public/stats.php`, `public/ground-truth.php`, `dist/_deploy.php` exposés en source sous Pages (hors scope P2-008b — tâche sécurité dédiée)
+- [ ] TASK-P1-014 : CI/CD FTPS 530 masked by `continue-on-error` (documenté, tâche séparée)
+
+### Prochaine action recommandée
+1. Ne pas commencer P2-009 (MQ 3072ms) — P2-008b clos, source leak éliminé.
+2. Créer tâche sécurité pour les 3 fichiers PHP résiduels leakés sous Pages.
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P2-008b`
+- PR : #614 (merged `c052db33`)
+- Worker version : `7d2adf43-c8db-4928-bd3f-9913448467f2`
+
 ## 2026-08-27 04:50 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008 — collect.php 405 — FIXED (PHP handler)
 
 ### Travail effectué

@@ -341,7 +341,12 @@
 - **Fichiers** : `workers/sg-payments/src/index.ts` (route `/collect.php`), `workers/sg-payments/wrangler.jsonc` (6 routes), `public/collect.php` (supprimé — leak dead-code), `.ai/decisions.md`
 - **Architecture retenue (audit 27/08)** : **B — route Worker `sg-payments`** (voir `.ai/decisions.md`). Worker déjà en façade des 6 zones (routes `/api/*`), bindings `TRANSIENTS` (KV rate-limit) + `SUPABASE_SERVICE_KEY` (sink `analytics_events` — doctrine "pas d'état serveur hors Supabase"), helpers `rateLimit()`/`supa()`/`cors()` existants. Rejeté : A (Pages Function = 6e couche compute + secret sprawl sur 6 projets) ; C (aucun endpoint existant n'a ce contrat).
 - **Estimation** : 2h
-- **Statut** : [~] in_progress by coding_agent (27/08)
+- **Statut** : [x] done by coding_agent (2026-08-27) — **FIXED + LIVE VERIFIED 6/6**
+  - PR #614 merged `c052db33` (worker routes + handler + `public/collect.php` deleted)
+  - Worker deployed `7d2adf43` (38 routes dont 6 `/collect.php`)
+  - LIVE 27/08 ~19:30Z : 6/6 domaines → GET 405 (no source leak, `X-Content-Type-Options: nosniff`), POST 204 (valid Origin), Origin/Referer allowlist 6 domaines (incl. sargazotulum.com restauré), rate-limit KV 60/60s/vh actif, cap global 5000/j, Supabase `analytics_events` sink `sg_session`
+  - Frontend inchangé (SG_COLLECT_URL="/collect.php" sendBeacon POST)
+  - Gates CI : esbuild ✓, wrangler dry-run ✓, build 35.5 Ko ✓, bundle 35.5 Ko ≤210 Ko ✓, ux-smoke 4/4 ✓, Playwright ✓
 
 ### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
 - **Priorité** : P2

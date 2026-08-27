@@ -4,6 +4,30 @@
 
 ---
 
+## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-008b collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6**
+
+### Contexte
+Le fix P2-008 (`public/.htaccess` AddHandler) était inopérant car les 6 domaines sont servis par **Cloudflare Pages** (statique), pas par les origines Apache FTP. `GET /collect.php` exposait le source PHP (200 `application/x-httpd-php`), `POST` → 405 vide.
+
+### Changements
+- **Worker `sg-payments`** : 6 routes `<domaine>/collect.php` + handler `handleCollect()` (POST-only 405, Origin/Referer 6-host allowlist incl. sargazotulum.com, body cap 64KB, vh hash, KV rate-limit 60/60s, global cap 5000/j, Supabase `analytics_events` sink `sg_session`, 204 silencieux).
+- **`public/collect.php` supprimé** — dead code (PHP jamais exécuté sous Pages ; leak permanent sur Pages, *.pages.dev, FTP). Historique git = rollback.
+- **Frontend inchangé** : `SG_COLLECT_URL="/collect.php"` sendBeacon POST.
+
+### Validation
+- Gates : esbuild ✓, wrangler dry-run ✓, build 35.5 Ko ✓, bundle 35.5 Ko ≤210 Ko ✓, ux-smoke 4/4 ✓, CI Playwright ✓
+- Worker deploy : version `7d2adf43` (38 routes)
+- **LIVE 6/6** (27/08 ~19:30Z) :
+  - GET `/collect.php` → 405, `X-Content-Type-Options: nosniff`, **aucun source leak**
+  - POST `/collect.php` (Origin valide) → 204 No Content
+  - Allowlist 6 domaines active, rate-limit KV, cap global, sink Supabase
+
+### PR / Deploy
+- PR #614 merged → `c052db33`
+- Worker deployed `7d2adf43-c8db-4928-bd3f-9913448467f2`
+- DEC-2026-08-27 P2-008b option B documentée dans `.ai/decisions.md`
+- TASK-P2-008 marqué SUPERSEDED ; TASK-P1-014 (FTPS 530 masked) documenté
+
 ## 2026-08-26 14:00 UTC · Agent: data_agent (OpenCode) — **TASK-P0-002 TULUM CLEAN=0 — DATA-CONSISTENT (NO CODE CHANGE)**
 
 ### Travail effectué
