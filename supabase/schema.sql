@@ -203,6 +203,7 @@ create table if not exists public.payment_grants (
   currency    text,           -- B2C : EUR/USD
   expires_at  timestamptz not null,
   granted_at  timestamptz not null,
+  session_id  text,           -- Funnel session ID (sgUid) to join CTA→checkout→payment→grant
   metadata    jsonb,          -- B2C : metadata complet du paiement
   unique (payment_id),
   unique (subscription_id)

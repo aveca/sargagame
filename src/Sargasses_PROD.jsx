@@ -11,7 +11,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
 import "./Themes.css"
@@ -1935,6 +1935,9 @@ export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // Funnel session instrumentation: add stable anonymous session ID to all funnel events
+  // to join CTA → checkout → payment → grant by session (not by user PII).
+  if(SG_FUNNEL_EVENTS.has(event)){try{p.sg_session_id=sgUid()}catch(_){p.sg_session_id=""}}
   // GDPR: read consent state once — gates MP beacon, Supabase funnel sink, session collection.
   // gtag.js is already gated via consent mode (analytics_storage:'denied' default).
   const _consent=(()=>{try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})()

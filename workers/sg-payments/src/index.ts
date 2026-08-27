@@ -589,6 +589,7 @@ async function grantB2B(env: Env, customerId: string, planKey: string, subId: st
 async function grantB2C(env: Env, paymentId: string, pass: string, email: string, meta: Record<string, any>): Promise<void> {
   const k = `mol_b2c_pass_${paymentId}`; if (await env.TRANSIENTS.get(k)) return;
   const days = PASS_DURATIONS[pass] || 30; const exp = Math.floor(Date.now() / 1000) + days * 86400;
+  const sessionId = meta?.sg_session_id || null;
   await env.TRANSIENTS.put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
-  await supa(env, 'payment_grants', 'POST', { payment_id: paymentId, type: 'b2c_pass', pass, email, currency: meta.currency || 'EUR', expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString(), metadata: meta });
+  await supa(env, 'payment_grants', 'POST', { payment_id: paymentId, type: 'b2c_pass', pass, email, currency: meta.currency || 'EUR', expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString(), session_id: sessionId, metadata: meta });
 }
