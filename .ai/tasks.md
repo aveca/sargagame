@@ -203,7 +203,19 @@
 - **Estimation** : 2h
 - **Statut** : [ ] pending
 
----
+### TASK-P1-013 — Monitoring conversion post-fix #605 (fenêtre distincte de P1-006)
+- **Priorité** : P1
+- **Rôle** : data_agent
+- **Description** : Validation DATA post-déploiement #605 (25/08/2026 18:50 UTC) — fix `method`+`cardToken` Mollie. Mesurer l'effet réel du correctif sur funnel CTA→checkout→Mollie→paid→grant avec `sg_session_id` (PR #608). Fenêtre distincte de P1-006 (pré-25/08) — ne pas mélanger.
+- **Fichiers** : `scripts/automation/data/daily-metrics.json`, `funnel-snapshot.json`, `funnel-daily-report.json`, Supabase `analytics_events`/`payment_grants`, Mollie API, Workers
+- **Estimation** : 2h monitoring + doc
+- **Statut** : [x] done by data_agent @8016ffcd — **WORKING BUT INSUFFICIENT SAMPLE** (27/08 04:00 UTC, commit `8016ffcd`)
+  - Fenêtre 25/08 18:50Z → 26/08 20:03Z : CTA 80 (75+5), onsite 74 (69+5), mollie 0, conv 0, paid 0, grants 0, CTA→onsite 92.5%, onsite→mollie 0%
+  - Gate (21 CTA +1 Mollie) non satisfait : 25/08 75 CTA ✔ mais 0 Mollie ✘ ; 26/08 5 CTA ✘
+  - Mollie `paid {}` (30j) `lastPaidAt 2026-07-19` — 0 paid post-fix (38j sans paid)
+  - `sg_session_id` instrumentation (PR #608) live 27/08 03:17Z → `NULL` pour 25-26, corrélation future possible dès 27/08
+  - Avant #605 (19-24) CTA 74, onsite `None` (non tracké), mollie 0 — comparaison non statistique
+  - Aucun code modifié ; suite : monitorer 27-29/08 avec `sg_session_id` (≥21 CTA) pour verdict B, sinon D investigation 10 étapes
 
 ## P2 — Backlog normal
 
