@@ -107,7 +107,8 @@ export async function fetchApprovedPhotos(beachId, limit = 12) {
 // Identifiant device stable (anonyme, localStorage) — sert d'entrée à l'empreinte serveur
 // `submitter_hash` (l'Edge Function y ajoute l'IP + un salt secret). Pas de PII : aléa opaque.
 // Best-effort si localStorage est indisponible (mode privé strict).
-function sgUid() {
+// Exporté pour instrumentation funnel : sg_session_id joint CTA → checkout → paiement → grant.
+export function sgUid() {
   try {
     let u = localStorage.getItem("sg_uid")
     if (!u) { u = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("sg_uid", u) }

@@ -19,6 +19,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { track } from "../Sargasses_PROD.jsx"
 import { seasonalCents } from "../lib/pass-price.js"
+import { sgUid } from "../supabasePhotos.js"
 
 export function OnsiteCheckout({
   lang,
@@ -191,7 +192,7 @@ export function OnsiteCheckout({
       expiry.mount(molExpiryRef.current)
       cvc.mount(molCvcRef.current)
       payMountedRef.current = true
-      try { track("sg_onsite_checkout_opened", { plan: payPlanRef.current, pass: passCtx?.pass, source: source || "unknown" }) } catch (_) {}
+      try { track("sg_onsite_checkout_opened", { plan: payPlanRef.current, pass: passCtx?.pass, source: source || "unknown", sg_session_id: sgUid() }) } catch (_) {}
     } catch (e) {
       try { console.error("sg_mollie_mount_failed", e) } catch (_) {}
     }

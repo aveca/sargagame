@@ -136,6 +136,11 @@ try {
         $metadata['lang'] = $data['lang'] ?? 'fr';
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
         if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
+        // Funnel session instrumentation: preserve sg_session_id from frontend to join
+        // CTA → checkout → payment → grant by session (anonymous, no PII).
+        if (!empty($metadata['sg_session_id'])) {
+            $metadata['sg_session_id'] = $metadata['sg_session_id'];
+        }
 
         // ── Determine island from HOSTNAME (server-side, NOT client) ───────────
         $hostToIsland = [

@@ -4,6 +4,7 @@ import {useCallback,useRef} from "react"
 import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "../ga4-ecommerce.js"
 import * as SG from "../Sargasses_PROD.jsx"
 import relHref from "../lib/relHref.js"
+import { sgUid } from "../supabasePhotos.js"
 
 const {
   C, COMIC, IS_NEW_REGION, REGION, REGION_PAY,
@@ -102,9 +103,10 @@ export function usePaymentLogic({
     try{localStorage.setItem("sg_email",email)}catch(_){}
     const _pc=passCtxRef.current
     const _pcCur=_pc?_pc.cur:undefined
+    const sessionId = sgUid()
     const body=_pc
-      ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl()}
-      :{action:"create_subscription",plan:payPlanRef.current,email,cur:_pcCur,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+      ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),metadata:{sg_session_id:sessionId}}
+      :{action:"create_subscription",plan:payPlanRef.current,email,cur:_pcCur,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),metadata:{sg_session_id:sessionId}}
     // GA4 Ecommerce: begin_checkout fires HERE — on actual wallet payment attempt, not paywall open.
     try {
       const _bcPlan = _pc ? _pc.pass : payPlanRef.current
@@ -203,8 +205,9 @@ export function usePaymentLogic({
               const refBy=sgReferredBy()
               const myRef=sgMyReferralCode()
               const consentObj={accepted:true,v:"2026-06-29",lang}
+              const sessionId = sgUid()
               // Clé attendue par mollie.php (:191) = applePayPaymentToken (avant : paymentToken → jamais transmis)
-              const body={action:"create_payment",applePayPaymentToken:e.payment.token,pass:passVal,cents:centsVal,cur:curVal,email,source:source||"unknown",lang,referredBy:refBy,myReferralCode:myRef,consent:consentObj}
+              const body={action:"create_payment",applePayPaymentToken:e.payment.token,pass:passVal,cents:centsVal,cur:curVal,email,source:source||"unknown",lang,referredBy:refBy,myReferralCode:myRef,consent:consentObj,metadata:{sg_session_id:sessionId}}
               const r=await fetchTO("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json()
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
@@ -295,9 +298,10 @@ export function usePaymentLogic({
         const _pc=passCtxRef.current
         const _pcCur=_pc?_pc.cur:undefined
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
+        const sessionId = sgUid()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl()}
-          :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),metadata:{sg_session_id:sessionId}}
+          :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,metadata:{sg_session_id:sessionId}}
         try { track("sg_create_payment_request", { plan, pass: _pc?.pass, cents: _pc?.cents, cur: _pc?.cur, isSubscription: !_pc }) } catch (_) {}
         // GA4 Ecommerce: begin_checkout fires HERE — on actual payment attempt, not paywall open.
         // Invariant: 1 real Mollie checkout = 1 begin_checkout.
