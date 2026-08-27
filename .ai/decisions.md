@@ -6,6 +6,34 @@
 
 ---
 
+## DEC-2026-08-27 — TASK-P2-008b collect.php sous Cloudflare Pages — Worker sg-payments (option B)
+
+- **Date/Heure UTC** : 2026-08-27 07:00 UTC
+- **Contexte** : La vérification LIVE de P2-008 (fix `.htaccess` `AddHandler`, PR #613) a démontré que **les 6 domaines de production sont servis par Cloudflare Pages** (statique). Preuves : `npx wrangler pages project list` → `sargagame`/`sargagame-gp`/`sargagame-florida`/`sargagame-rivieramaya`/`sargagame-puntacana`/`sargagame-tulum` avec les 6 custom domains, re-déployés par le step 78 du workflow daily. Effets observés : `GET /collect.php` → 200 `application/x-httpd-php` + **source PHP exposé** (asset statique copié de `public/` vers `dist/` par Vite) ; `POST /collect.php` → 405 vide (comportement natif Pages sur POST statique) ; `.htaccess` inertiel (pas de SPA fallback, pas de 301 sur MQ). **Donc P2-008 (Apache) ne peut pas fonctionner en prod.**
+- **Audit des 3 options** :
+  - **A. Pages Function `functions/collect.php.ts`** — viable officiellement, mais ajoute une 2ᵉ couche compute (6 projets Pages à configurer, secrets `SUPABASE_SERVICE_KEY` à dupliquer sur 6 projets, logs/surveillance fragmentés). Complexité de déploiement supérieure, maintenance ×6 projets.
+  - **B. Route Worker `sg-payments`** — le Worker est **déjà en façade des 6 zones** (36 routes `/api/*` actives). Bindings déjà provisionnés : `TRANSIENTS` (KV, rate-limit existant via `rateLimit()`), `SUPABASE_SERVICE_KEY` (secret présent, vérifié via `wrangler secret list`) + helpers `supa()`/`cors()`. 1 seul codebase server, 1 seul déploiement (`wrangler deploy`), rollback = retirer 6 lignes de routes + 1 handler. Les routes Worker interceptent **avant** les assets Pages sur le même hostname → masquant l'asset statique (GET → 405 sans source) même en attendant le re-deploy Pages.
+  - **C. Endpoint existant** — aucun endpoint actuel (`track-*`, `b2b-*`, `mollie*`) ne porte le contrat (POST-only, 204, beacon same-origin). Rejeté.
+- **Décision** : **Option B retenue**. Route `<domaine>/collect.php` × 6 dans `workers/sg-payments/wrangler.jsonc` + handler `handleCollect()` dans `src/index.ts`. **`public/collect.php` supprimé** du repo (dead code : PHP jamais exécuté sous Pages ; sa présence = leak permanent sur les domaines ET sur `*.pages.dev` et les origines FTP legacy). Le contrat utile migre dans le Worker.
+- **Contrat préservé (parité `collect.php` PHP)** :
+  - POST-only : toute autre méthode → **405** vide, header `X-Content-Type-Options: nosniff`
+  - Origin/Referer : host présent mais étranger → **403** ; absent des deux → toléré (parité PHP, ne jamais perdre une mesure légitime). Allowlist = 6 domaines (5 historiques **+ sargazotulum.com**, absent de l'allowlist PHP mais domaine live du produit — la collecte tulum était droppée 403 par le PHP, elle est restaurée)
+  - Corps JSON capé **64 Ko** (au-delà → 204 drop silencieux ; PHP : lecture tronquée → decode KO → 204, sémantique équivalente)
+  - `vh` = sha256( jourUTC | ip | ua )[:16] — anonymat quotidien inchangé (pas de sel serveur : la PHP n'en utilisait pas non plus pour le hash, le `.statskey` servait à `stats.php`)
+  - Rate-limit **60 hits / 60 s / vh** via KV `TRANSIENTS` (remplace les compteurs fichiers `sg-data/rl/`) — drop silencieux **204** (jamais 4xx/429 : le client stash + rejoue sur non-2xx → éviter l'amplification)
+  - Cap global ~quotidien (remplace le cap disque 25 Mo/j) : compteur KV `collect:day:<YYYY-MM-DD>` TTL 48 h, plafond **5000 inserts/j global** → 204 au-delà
+  - Succès → **204 No Content** (fire-and-forget, jamais de body)
+  - Stockage : insert Supabase `analytics_events` `{event:'sg_session', params:{vh, d:<payload>}, island:<region|host>}` via `ctx.waitUntil(supa(...))` — **doctrine respectée** (aucun état serveur hors Supabase ; purge >90j déjà assurée par le workflow)
+- **Conséquences** :
+  - Frontend **inchangé** (`SG_COLLECT_URL="/collect.php"` same-origin, sendBeacon POST + fetch fallback) — aucun impact bundle (0 octet)
+  - Source leak : éliminé immédiatement après `wrangler deploy` (route intercepte) — et définitivement après re-deploy Pages (fichier supprimé)
+  - **Effet de bord à documenter** : `public/stats.php`, `public/ground-truth.php`, `dist/_deploy.php` restent exposés en source sous Pages (hors scope P2-008b — à traiter dans une tâche sécurité dédiée)
+  - Rollback : `git revert` + `wrangler deploy` (routes + handler) ; le fichier PHP est dans l'historique git
+  - Dépendances : aucune nouvelle
+  - Ancien sink `sg-data/` sur FTP : abandonné (Pages n'a pas de disque) ; la collecte Supabase est désormais la source unique — **le funnel Supabase (P1-013) n'est pas impacté** (sink séparé, `logAnalyticsEvent`)
+
+---
+
 ## DEC-2026-08-27 — TASK-P1-013 Monitoring conversion post-fix #605 — WORKING BUT INSUFFICIENT SAMPLE
 
 - **Date/Heure UTC** : 2026-08-27 04:00 UTC

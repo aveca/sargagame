@@ -217,6 +217,17 @@
   - Avant #605 (19-24) CTA 74, onsite `None` (non tracké), mollie 0 — comparaison non statistique
   - Aucun code modifié ; suite : monitorer 27-29/08 avec `sg_session_id` (≥21 CTA) pour verdict B, sinon D investigation 10 étapes
 
+### TASK-P1-014 — CI/CD deploy FTPS failures masked by continue-on-error
+- **Priorité** : P1
+- **Rôle** : devops_agent
+- **Description** : Le step `Deploy FTPS toutes régions` de `daily-copernicus.yml` est `continue-on-error: true` → le workflow affiche SUCCESS alors que des régions échouent. Run 33038263230 (27/08, SHA 5f6d629c) : `FATAL: 530 Login authentication failed` sur MQ, GP (×2), RM (secrets GitHub `FTP_*` périmés — les credentials **locales** `.env` fonctionnent, 5/5 connect OK), Tulum/Barbados ignorés (creds absents). Warning final présent dans les logs mais le job reste vert.
+- **Preuves** : logs run 33038263230 job 98407369883 (step 77) ; test local `basic-ftp` 27/08 ~06:20Z : MQ/GP/FL/RM/PC tous `CONNECTED` avec `.env` local.
+- **Domaines concernés** : MQ, GP, RM (530 secrets), Tulum, Barbados (creds manquants jamais provisionnés).
+- **Risque** : un déploiement partiel passe inaperçu ; fichiers FTP des hôtes legacy non synchronisés ; si les origines FTP redeviennent le chemin de service (ou pour tout endpoint servi par FTP), staleness silencieux.
+- **Fichiers** : `.github/workflows/daily-copernicus.yml` (step 77 `Deploy FTPS toutes régions (sessions fragmentées)`), secrets GitHub `FTP_SERVER_MQ/GP/RIVIERAMAYA` (à regénérer depuis `.env` local), `scripts/manual-ftp-deploy.cjs`.
+- **Action attendue** : (1) regénérer secrets GH depuis creds valides, (2) retirer `continue-on-error` ou le remplacer par un step "assert" qui échoue si ≥1 région live échoue, (3) provisionner creds Tulum/Barbados ou exclure explicitement les régions `live:false`.
+- **Statut** : [ ] pending — NE PAS corriger dans P2-008b (tâche séparée)
+
 ## P2 — Backlog normal
 
 ### TASK-P2-001 Spliter PremiumModal.jsx (~3 352, lignes)
@@ -321,6 +332,16 @@
   - Fix : `public/.htaccess:1` ajouter `AddHandler application/x-httpd-php .php` (2 lignes) → garantit exécution PHP pour `collect.php`/`stats.php`/`ground-truth.php` à la racine, GET→405 via PHP (pas de leak), POST→204
   - Gates : build 35.5 Ko ≤210 Ko, ux-smoke 4/4, php -l OK, bundle inchangé, client POST déjà correct — aucune régression autre région (tous domaines même handler)
   - Live validation après deploy : `GET /collect.php` → 405, `POST /collect.php` → 204 (vérifier via curl)
+  - **SUPERSEDED le 27/08 ~06:45Z** : la vérif LIVE a démontré que les 6 domaines sont servis par **Cloudflare Pages** (statique) — le fix `.htaccess` est inertiel. Voir **TASK-P2-008b** (architecture réelle) et DEC dans `.ai/decisions.md`.
+
+### TASK-P2-008b collect.php sous Cloudflare Pages — source leak + collecte POST
+- **Priorité** : P2 (sécurité/production — exposé publiquement)
+- **Rôle** : coding_agent
+- **Description** : Les 6 domaines LIVE sont des custom domains **Cloudflare Pages** (prouvé par `wrangler pages project list` : sargagame, sargagame-gp, sargagame-florida, sargagame-rivieramaya, sargagame-puntacana, sargagame-tulum, tous re-déployés par le step 78 de daily-copernicus). Pages ne traite pas `.htaccess` ni PHP : `public/collect.php` copié tel quel dans `dist/` est servi comme asset statique → **GET 200 + source leak `<?php`**, POST → 405 vide (comportement Pages natif). Le fix P2-008 (AddHandler) est sans effet. Objectif : éliminer le source leak ET restaurer la collecte POST 204 sur les 6 domaines, en préservant le contrat historique de `collect.php` (POST-only, Origin/Referer allowlist, 64 Ko cap, vh hash journalier, rate-limit 60/60s, drop silencieux 204).
+- **Fichiers** : `workers/sg-payments/src/index.ts` (route `/collect.php`), `workers/sg-payments/wrangler.jsonc` (6 routes), `public/collect.php` (supprimé — leak dead-code), `.ai/decisions.md`
+- **Architecture retenue (audit 27/08)** : **B — route Worker `sg-payments`** (voir `.ai/decisions.md`). Worker déjà en façade des 6 zones (routes `/api/*`), bindings `TRANSIENTS` (KV rate-limit) + `SUPABASE_SERVICE_KEY` (sink `analytics_events` — doctrine "pas d'état serveur hors Supabase"), helpers `rateLimit()`/`supa()`/`cors()` existants. Rejeté : A (Pages Function = 6e couche compute + secret sprawl sur 6 projets) ; C (aucun endpoint existant n'a ce contrat).
+- **Estimation** : 2h
+- **Statut** : [~] in_progress by coding_agent (27/08)
 
 ### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
 - **Priorité** : P2
