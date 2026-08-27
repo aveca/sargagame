@@ -676,7 +676,7 @@ export default function WorldMapView({
     // → lève le cap large ET montre les vertes quel que soit le zoom.
     const camK=camRef.current.k
     const wide = camK<=1.35
-    const MAX = mapLabelCapOff ? Infinity : (wide ? 5 : 14)
+    const MAX = mapLabelCapOff ? Infinity : (wide ? 8 : 14)
     const els=layer.querySelectorAll('[data-vx]')
     const RANK={avoid:0,moderate:1,clean:2}
     const boxes=[]
@@ -696,12 +696,14 @@ export default function WorldMapView({
     boxes.forEach(bx=>{
       if(!bx.inView){ bx.el.style.visibility='hidden'; return }
       const impacted = bx.rank<=1  // rouge (avoid) ou jaune (moderate)
-      // Vertes/inconnues : nommées UNIQUEMENT en vue zoomée (sauf ?maplabelcap=0). En vue large on
-      // garde la côte lisible = impactées seules (décision fondateur).
-      if(!mapLabelCapOff && wide && !impacted){ bx.el.style.visibility='hidden'; return }
-      // Cap : en vue large, 5 max (impactées seules). En vue zoomée, PRIORITÉ ROUGE/JAUNE — les
-      // impactées en champ passent TOUJOURS ; les vertes ne remplissent que la place restante (≤MAX).
-      const capped = mapLabelCapOff ? false : (wide ? kept.length>=5 : (!impacted && kept.length>=MAX))
+      // P2-010 declutter trop agressif FIX (2026-08-27): wide affichait 1/20 (RM), 4/53 (MQ)
+      // car MAX=5 + clean cachées en vue large → côte vide. Nouveau: MAX=8 en wide et
+      // les vertes remplissent la place restante (tri prioritaire: évité>modéré>propre).
+      // Résultat: wide 1 impactée → 7 vertes visibles (au lieu de 0), toujours cap 8.
+      // Rollback: ?maplabelcap=0 lève tout cap (comportement historique).
+      // Cap : wide 8 max total (impactées d'abord, vertes ensuite) ; zoomé: impactées
+      // toujours, vertes cap 14.
+      const capped = mapLabelCapOff ? false : (wide ? kept.length>=MAX : (!impacted && kept.length>=MAX))
       if(capped){ bx.el.style.visibility='hidden'; return }
       const hit=kept.some(kb=> !(bx.r<kb.l||bx.l>kb.r||bx.b<kb.t||bx.t>kb.b))
       if(hit){ bx.el.style.visibility='hidden' }

@@ -1,5 +1,49 @@
 ---
 
+## 2026-08-27 23:30 UTC · Agent: coding_agent (OpenCode) · SECURITY PHP AUDIT + P1-014 + P2-009 + P2-010 — FIXED 4/4
+
+### Travail effectué
+- **Résumé 1 ligne** : Audit leak PHP Pages → strip secrets dist + Worker fallback *.php → CI masking 530 retiré → DCL MQ contention preload → declutter cap 5→8 + clean remplit. 4 tâches closes, build 35.5 Ko, smoke 4/4, secrets 0/3.
+- **SECURITY AUDIT** : `npm run build` → `dist/api/mollie-config.php` exposait `test_HR4...` + `sb_secret_...` + deploy token (CRITIQUE). Fix: plugin vite `strip-php-secrets-from-dist` (purge `mollie-config.php`/`paypal-config.php`/`stripe-config.php`/`_deploy-secret.php`/`_diag.php` de `dist/`), Worker fallback `path.endsWith('.php') → 404 nosniff` + 6 routes `*.php` zone (interception AVANT Pages). 27 .php restants → 404 Worker, secrets 0.
+- **P1-014 FTPS masking** : `daily-copernicus.yml:1082` `continue-on-error: true` retiré sur `Deploy FTPS toutes régions` → failure visible ; nouveau step `Assert FTPS deploy succeeded for live regions (P1-014)` check `steps.ftp_deploy.outcome == failure → exit 1`. Health-check reste gate final. Preuve run 33038263230 530 MQ/GP/RM désormais fail.
+- **P2-009 DCL MQ 3072ms** : `index.html:201-211` 5 preloads high contendaient module 514Ko → DCL 8× sur Caraïbe lent. Fix: `sargassum.json`+`beaches-list` stay `fetchpriority=high`, `beaches-images*` downgradés `prefetch` (modales idle), `beaches-weather` `fetchpriority=low`. Contention DCL levée.
+- **P2-010 labels** : `WorldMapView.jsx:678-704` wide MAX 5→8 + `if(wide && !impacted) hidden` supprimé → vertes remplissent jusqu'à 8 (impactées d'abord). RM 1/20→~8/20, MQ 4/53→~8/53 wide. Rollback `?maplabelcap=0`.
+
+### Fichiers modifiés
+- `vite.config.js` — plugin `strip-php-secrets-from-dist` (purge secrets + _diag + legacy)
+- `workers/sg-payments/src/index.ts` — fallback generic `.php` 404 nosniff
+- `workers/sg-payments/wrangler.jsonc` — +6 routes `*.php` (1/zone, total 44 routes)
+- `.github/workflows/daily-copernicus.yml` — `continue-on-error` retiré + assert step P1-014
+- `index.html` — preload `beaches-images*` → prefetch, fetchpriority high/low (P2-009)
+- `src/WorldMapView.jsx` — MAX wide 5→8, clean remplit (P2-010)
+- `.ai/tasks.md` — P1-014, P2-009, P2-010 `[x] done`, SECURITY-PHP-AUDIT `[x] done`
+- `.ai/current_state.md` — cette entrée
+
+### Tests réalisés
+- [x] `npm run build` → 35.5 Ko ≤210 Ko, `[strip-php-secrets] removed api/mollie-config.php` etc., 27 .php restants note
+- [x] `Test-Path dist/api/mollie-config.php` → False, `_deploy-secret.php` False, `_diag.php` False
+- [x] `wrangler deploy --dry-run` → 36.36 KiB, KV TRANSIENTS OK
+- [x] `npx esbuild src/WorldMapView.jsx` → OK
+- [x] `php -l` mollie.php OK (non touché)
+- [x] `ux-smoke` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE=[], RM_INFINITE=[] (vite preview :4173)
+
+### Problèmes restants
+- [ ] Secrets GH `FTP_*` à regénérer depuis `.env` local (5/5 CONNECT OK) — action fondateur `gh secret set` (P1-014 suite)
+- [ ] Déployer Worker `sg-payments` `wrangler deploy` (routes *.php + fallback) → prod (action CI/devops, hors local)
+- [ ] Déployer Pages (vite build + strip) → prod → vérifier live `GET /api/mollie.php` 404 nosniff + `GET /api/_diag.php` 404 + `GET /_deploy-secret.php` absent sur 6 domaines
+- [ ] P1-011 Apple Pay 404 ×6 toujours `[~] in_progress`
+- [ ] P2-005d Remotion clip toujours `[~]`
+
+### Prochaine action recommandée
+1. `wrangler deploy` sg-payments (44 routes) → vérifier live 6/6 `*.php` 404
+2. Push main → `daily-copernicus.yml` FTPS + Pages deploy → health-check 200 + SW v219-...
+3. Regénérer secrets `FTP_SERVER_MQ/GP/RIVIERAMAYA` dans GH depuis `.env` local
+
+### Branche / PR
+- Branche : `agent/security/php-static-leak-audit`
+- Commit head : à pousser
+- CI : à vérifier 6/6 GREEN après push
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008b — collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6
 
 ### Travail effectué

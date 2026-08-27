@@ -198,17 +198,22 @@
       .sg-header-row{padding-right:52px}
     }
   </style>
-  <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
+  <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin fetchpriority="high" />
   <!-- Data du premier ècran : sans preload, ces fetches partaient APRêS l'exècution
        du bundle (mesurè t+4,8s sur sargassumcancun.com, TTFB hèbergeur 0,5-2,6s) ÔÇö
        la carte mettait 8-12s à montrer ses pins (audit map-loading 2026-06-11). -->
-  <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin />
-  <link rel="preload" href="/data/beaches-images.json" as="fetch" crossorigin />
-  <link rel="preload" href="/data/beaches-images-quality.json" as="fetch" crossorigin />
+  <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin fetchpriority="high" />
+  <!-- P2-009 FIX (2026-08-27): beaches-images + quality étaient en preload high
+       → 5 fetches high-priority contendaient le module JS critique (514KB) sur
+       réseau Caraïbe lent → DCL MQ 3072ms vs 380ms autres (audit 25/08). Ces JSON
+       ne servent qu'aux modales (pas au first paint carte) → downgradés en prefetch
+       low-priority : plus de contention au DCL, chargés idle. -->
+  <link rel="prefetch" href="/data/beaches-images.json" as="fetch" crossorigin />
+  <link rel="prefetch" href="/data/beaches-images-quality.json" as="fetch" crossorigin />
   <!-- Mètèo par plage : alimente le score du verdict (vent/houle/SST/UV/nuages/marèe) ÔåÆ
        m├¬me vague critique que sargassum. Sans preload, ce fetch (41 Ko statique) ne
        partait qu'APRêS le boot JS ÔåÆ rallongeait la cascade du 1er verdict. -->
-  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin />
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin fetchpriority="low" />
   <!-- Polices AUTO-H├ëBERG├ëES (same-origin) ÔÇö Google Fonts est bloquè par les navigateurs
        anti-suivi (Edge ┬½ Prèvention du suivi ┬╗, Brave Shields) ÔåÆ rendu en police de secours
        (┬½ gris/cheap ┬╗). En les servant depuis notre domaine, plus rien à bloquer + chargement

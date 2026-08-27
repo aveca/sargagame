@@ -53,7 +53,21 @@
     { "pattern": "sargassummiami.com/collect.php", "zone_name": "sargassummiami.com" },
     { "pattern": "sargassumpuntacana.com/collect.php", "zone_name": "sargassumpuntacana.com" },
     { "pattern": "sargassumcancun.com/collect.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" }
+    { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" },
+
+    // SECURITY AUDIT 2026-08-27: generic PHP source-leak guard.
+    // Tout .php sous public/ (mollie.php, _diag.php, mollie-lib.php, b2b-db.php, etc.)
+    // serait sinon servi en statique par Pages (source leak, cf. collect.php avant fix).
+    // Le Worker étant AVANT Pages sur le custom domain, une route *.php garantit
+    // l'interception → le fallback generic dans src/index.ts renvoie 404 nosniff.
+    // Les secrets (*-config.php, _deploy-secret.php) sont en plus PURGÉS de dist/ par
+    // vite (strip-php-secrets). 1 route par zone = 6 routes (sous la limite 100/zone).
+    { "pattern": "sargasses-martinique.com/*.php", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-guadeloupe.com/*.php", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargassummiami.com/*.php", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassumpuntacana.com/*.php", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumcancun.com/*.php", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargazotulum.com/*.php", "zone_name": "sargazotulum.com" }
   ],
   "kv_namespaces": [
     { "binding": "TRANSIENTS", "id": "528c05c792e046029a84e2fdb84f4ae6" }

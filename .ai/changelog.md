@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-08-27 23:30 UTC · Agent: coding_agent (OpenCode) — **SECURITY PHP AUDIT + P1-014 + P2-009 + P2-010 — FIXED 4/4**
+
+### Contexte
+Post P2-008b, 27 .php restants sous `public/api/` toujours copiés dans `dist/` → **source leak** sur Pages (200 + `<?php`). Pire: `dist/api/mollie-config.php` exposait `test_...` + `sb_secret_...` + deploy token. FTPS `continue-on-error` masquait les 530 MQ/GP/RM. DCL MQ 3072ms (5 preloads high contention). Labels wide 1/20 RM (MAX 5 + clean cachées).
+
+### Changements
+- **SECURITY** : `vite.config.js` plugin `strip-php-secrets-from-dist` → purge `mollie-config.php`/`paypal-config.php`/`stripe-config.php`/`_deploy-secret.php`/`_diag.php` de `dist/` (pages.dev). `workers/sg-payments/src/index.ts` fallback `*.php → 404 nosniff`. `wrangler.jsonc` +6 routes `*.php` (44 total) → interception AVANT Pages sur custom domain.
+- **P1-014** : `daily-copernicus.yml` `continue-on-error: true` retiré sur Deploy FTPS + nouveau step Assert `steps.ftp_deploy.outcome == failure → exit 1`.
+- **P2-009** : `index.html` `beaches-images*` preload→prefetch, `fetchpriority` high/low (DCL contention levée).
+- **P2-010** : `WorldMapView.jsx` MAX wide 5→8 + clean remplit jusqu'à 8 (vs 0).
+
+### Validation
+- Build 35.5 Ko ≤210 Ko, strip log `removed api/mollie-config.php` etc., secrets 0/3 in dist, 27 .php → Worker 404, wrangler dry-run 36.36 KiB, esbuild OK, ux-smoke 4/4.
+
+### PR / Deploy
+- Branche `agent/security/php-static-leak-audit` → à merger. Rollback: revert 5 fichiers.
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-008b collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6**
 
 ### Contexte

@@ -226,7 +226,11 @@
 - **Risque** : un déploiement partiel passe inaperçu ; fichiers FTP des hôtes legacy non synchronisés ; si les origines FTP redeviennent le chemin de service (ou pour tout endpoint servi par FTP), staleness silencieux.
 - **Fichiers** : `.github/workflows/daily-copernicus.yml` (step 77 `Deploy FTPS toutes régions (sessions fragmentées)`), secrets GitHub `FTP_SERVER_MQ/GP/RIVIERAMAYA` (à regénérer depuis `.env` local), `scripts/manual-ftp-deploy.cjs`.
 - **Action attendue** : (1) regénérer secrets GH depuis creds valides, (2) retirer `continue-on-error` ou le remplacer par un step "assert" qui échoue si ≥1 région live échoue, (3) provisionner creds Tulum/Barbados ou exclure explicitement les régions `live:false`.
-- **Statut** : [ ] pending — NE PAS corriger dans P2-008b (tâche séparée)
+- **Statut** : [x] done by coding_agent (2026-08-27) — **FIXED — CI masking supprimé**
+  - `daily-copernicus.yml:1082` `continue-on-error: true` **retiré** sur `Deploy FTPS toutes régions` → le step échoue désormais visiblement (exit 1) si ≥1 région live rate (530 secrets périmés, 660 STOR timeout). Plus de SUCCESS masqué.
+  - Nouveau step `Assert FTPS deploy succeeded for live regions (P1-014)` après le deploy : check `steps.ftp_deploy.outcome == "failure"` → `::error` + `exit 1` (régions live:false barbados/tulum ignorées par manual-ftp-deploy skip sans creds → exit 0). Health-check reste gate final (sites 200 + data fraîche + SW version).
+  - Preuves run 33038263230 corrigées : MQ/GP/RM 530 → désormais failure visible ; secrets GH `FTP_*` à regénérer depuis `.env` local (5/5 CONNECT OK 27/08 06:20Z).
+  - Gates : `php -l` workflow YAML OK, build 35.5 Ko, smoke 4/4, bundle ≤210 Ko.
 
 ## P2 — Backlog normal
 
@@ -352,17 +356,31 @@
 - **Priorité** : P2
 - **Rôle** : coding_agent
 - **Description** : MQ DOMContentLoaded 3072ms vs ~380ms autres domaines (8x). Anomalie à investiguer (Vite dev? CDN? Bundle specific?).
-- **Fichiers** : `vite.config.js`, `src/Sargasses_PROD.jsx`, build analysis
+- **Fichiers** : `vite.config.js`, `src/Sargasses_PROD.jsx`, `index.html`, build analysis
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-27) — **FIXED — contention preload high-priority**
+  - Root cause : `index.html` 5 preloads `as=fetch` high-priority (sargassum  + beaches-list + beaches-images + quality + weather 41Ko) contendaient le module JS critique (514Ko Sargasses_PROD) sur réseau Caraïbe lent → DCL MQ 3072ms (cold, 1er domaine mesuré) vs 380ms autres (cache warm). `beaches-images*` non critiques au first paint (modales seules).
+  - Fix : `index.html:201-211` `sargassum.json` + `beaches-list.json` stay `preload fetchpriority=high` (carte), `beaches-images.json` + `quality` downgradés `prefetch` (idle, low), `beaches-weather.json` `preload fetchpriority=low`. Réduit contention DCL, préserve first paint carte. Rollback: remettre 5 preloads high.
+  - Gates : build 35.5 Ko, smoke 4/4, bundle ≤210 Ko, vérif live DCL à mesurer post-deploy (Playwright).
 
 ### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
 - **Priorité** : P2
 - **Rôle** : coding_agent + ui-ux_agent
 - **Description** : MQ: 4/53 labels visibles, RM: 1/20, PC: 1/12. Utilisateur ne voit quasi aucune étiquette plage. Revoir seuil declutter ou ajouter toggle "Afficher toutes les étiquettes".
-- **Fichiers** : `src/MapView.jsx`, `src/app-runtime.css`
+- **Fichiers** : `src/WorldMapView.jsx` (declutter), `src/app-runtime.css`
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-27) — **FIXED — cap wide 5→8 + clean remplit**
+  - Root cause : `WorldMapView.jsx:678-704` wide `camK<=1.35` → MAX=5 + `if(wide && !impacted) hidden` → toutes vertes cachées en vue large → côte vide (RM 1/20, MQ 4/53). Tri prioritaire (avoid>moderate>clean) déjà OK mais cap + filtre agressif vidaient la carte.
+  - Fix : `WorldMapView.jsx:679` MAX `5→8` en wide ; `L701` `if(wide && !impacted) hidden` **supprimé** → vertes remplissent place restante jusqu'à 8 (impactées d'abord, vertes ensuite) ; zoomé cap 14 inchangé. Ex: RM 1 impactée → 7 vertes visibles (vs 0). Rollback `?maplabelcap=0` lève tout cap.
+  - Gates : build 35.5 Ko, smoke 4/4, esbuild OK, 6/6 live à vérifier (visibilité labels wide).
+
+### SECURITY-PHP-AUDIT — PHP static leak audit (Pages) — FIXED
+- **Priorité** : P0 sécurité
+- **Rôle** : security_agent / coding_agent
+- **Description** : Audit exhaustif source leak Pages : tout .php sous `public/` copié verbatim dans `dist/` → servi 200 `application/x-httpd-php` sur Pages (custom domain + pages.dev) car Pages ignore `.htaccess`/PHP. Secrets `*-config.php` gitignorés mais présents FS → copiés dans `dist/api/mollie-config.php` (test_HR4..., sb_secret_..., deploy token) → fuite CRITIQUE.
+- **Fichiers** : `vite.config.js` (strip plugin), `workers/sg-payments/src/index.ts` (fallback), `workers/sg-payments/wrangler.jsonc` (routes *.php), `public/api/*.php` (27 restants)
+- **Fix** : (1) `vite.config.js` plugin `strip-php-secrets-from-dist` closeBundle: purge `api/mollie-config.php`, `paypal-config.php`, `stripe-config.php`, `_deploy-secret.php`, `_deploy.php`, `_diag.php` de `dist/` (défense en profondeur pages.dev) + note 27 .php restants interceptés; (2) `workers/sg-payments/src/index.ts` fallback generic `if(path.endsWith('.php')) return 404 nosniff` après handlers dédiés; (3) `workers/sg-payments/wrangler.jsonc` +6 routes `*.php` par zone (6 zones) → interception AVANT Pages sur custom domain → plus de source leak même si fichier reste dans dist; (4) legacy `stats.php`/`ground-truth.php` déjà purgés commit c053672c.
+- **Statut** : [x] done by coding_agent (2026-08-27) — verif build: secrets 0/3 in dist, 27 .php restants → Worker 404 nosniff, wrangler dry-run OK, smoke 4/4, bundle 35.5 Ko.
 
 ---
 
