@@ -227,10 +227,40 @@ async function auditRegion(region, liveUrl) {
           }
         }
         if (!clicked) {
-          // Fallback: click on map center-ish area
-          vlog('No data-beach pins found, clicking map area');
-          await page.mouse.click(195, 350);
-          await page.waitForTimeout(1000);
+          // Fallback: click on first beach pin's actual screen position (region-agnostic)
+          vlog('No data-beach pins found via selectors, trying JS fallback to first beach');
+          try {
+            const beachPos = await page.evaluate(() => {
+              const pins = document.querySelectorAll('[data-beach]');
+              if (pins.length > 0) {
+                const rect = pins[0].getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+              }
+              // Last resort: compute from first beach in beachList if available
+              const beachList = window.__SG_BEACH_LIST__ || [];
+              const worldToScreen = window.__SG_WORLD_TO_SCREEN__;
+              if (beachList.length > 0 && worldToScreen) {
+                const b = beachList[0];
+                const [sx, sy] = worldToScreen(b.vx, b.vy);
+                return { x: sx, y: sy };
+              }
+              return null;
+            });
+            if (beachPos) {
+              await page.mouse.click(beachPos.x, beachPos.y);
+              await page.waitForTimeout(1000);
+              log(`Clicked beach pin via JS fallback at (${Math.round(beachPos.x)}, ${Math.round(beachPos.y)})`);
+              clicked = true;
+            }
+          } catch (e) {
+            vlog(`JS fallback failed: ${e.message}`);
+          }
+          if (!clicked) {
+            // Ultimate fallback: map center (should rarely trigger)
+            vlog('All fallbacks failed, clicking map center');
+            await page.mouse.click(195, 350);
+            await page.waitForTimeout(1000);
+          }
         }
       }
     },
