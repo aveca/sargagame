@@ -4,7 +4,59 @@
 
 ---
 
-## 2026-08-26 14:00 UTC · Agent: data_agent (OpenCode) — **TASK-P0-002 TULUM CLEAN=0 — DATA-CONSISTENT (NO CODE CHANGE)**
+## 2026-08-27 00:15 UTC · Agent: devops_agent (OpenCode) — **TASK-P1-011 APPLE PAY DOMAIN ASSOCIATION — LIVE 6/6**
+
+### Travail effectué
+- **Résumé** : Fix `/.well-known/apple-developer-merchantid-domain-association` 404 sur les 6 domaines via Worker `sg-payments` (Cloudflare Edge) — interception → proxy vers `/api/apple-pay-domain-association` existant (200, fichier Mollie valide).
+- **Cause** : `.htaccess` sur FTP/origin non exécuté (AllowOverride None / serveur non-Apache). L'endpoint `/api/apple-pay-domain-association` retournait déjà 200 avec le fichier Apple Pay Mollie valide.
+- **Correction** : 
+  - `workers/sg-payments/src/index.ts` : handler dédié AVANT routes `/api/*` — fetch vers `/api/apple-pay-domain-association` + retour `Content-Type: application/octet-stream` + body exact (pas de transformation).
+  - `workers/sg-payments/wrangler.jsonc` : 6 routes `.well-known/*` ajoutées (1 par domaine réel).
+- **Fichiers modifiés** :
+  - `workers/sg-payments/src/index.ts` (+15 lignes)
+  - `workers/sg-payments/wrangler.jsonc` (+6 routes)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 35.5 Ko ≤ 210 Ko
+- [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE=[], RM_INFINITE=[]
+- [x] php -l → OK
+
+### Résultats LIVE 6/6
+| Domaine | Status | Content-Type | Body Size | Identique API |
+|---------|--------|--------------|-----------|---------------|
+| sargasses-martinique.com | 200 | application/octet-stream | 9095 | ✓ |
+| sargasses-guadeloupe.com | 200 | application/octet-stream | 9095 | ✓ |
+| sargassummiami.com | 200 | application/octet-stream | 9095 | ✓ |
+| sargassumcancun.com | 200 | application/octet-stream | 9095 | ✓ |
+| sargassumpuntacana.com | 200 | application/octet-stream | 9095 | ✓ |
+| sargazotulum.com | 200 | application/octet-stream | 9095 | ✓ |
+
+### Régression API
+- Aucune : `/api/apple-pay-domain-association` 200 inchangé, `/api/mollie*`, `/api/widget-token*`, `/api/track-*`, `/api/b2b-*` OK
+
+### Déploiement
+- Worker `sg-payments` déployé via `wrangler deploy` (Version ID: 99ba0574-3f68-4a35-8264-e395af529761)
+- Routes propagées sur 6 zones Cloudflare
+
+### Rollback
+- `wrangler rollback` vers version précédente si nécessaire
+---
+
+## 2026-08-26 22:30 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-005d: Clip Remotion « Le jour qui bascule » TERMINÉ**
+### Travail effectué
+- **Clip Remotion « Le jour qui bascule »** rendu et validé : `output.mp4` 7.1 MB, 25s vertical 9:16, 7 scènes FR/EN/ES suivant la colonne vertébrale des 6 temps (CONSTAT → CADEAU → DOULEUR → RENVERSÉMENT → HONNÊTETÉ → OFFRE → SIGNATURE)
+- **Asset externe** — pas de code shipped, clip tournant 1×/semaine par région, sans impact bundle (35.5 Ko ≤ 210 Ko gzip budget)
+- **Budget vérifié** : ✓ 35.5 Ko gzip TOTAL, marge 8 % intacte pour ajouts mineurs
+
+### Fichiers modifiés
+- `.ai/tasks.md` — statut TASK-P2-005d passé [x] done
+- `video-remotion/output.mp4` — clip rendu (7.1 MB, artefact P2-005d)
+
+### Tests réalisés
+- [x] output.mp4 existant et lisible (7.1 MB)
+- [x] check-bundle-budget → ✓ OK (35.5 Ko ≤ 210 Ko, pas de régression)
+- [x] Clip externe → aucun impact sur JS eager bundle
 
 ### Travail effectué
 - **Analyse complète Tulum clean=0** : Déterminé si `clean=0` est vrai bug pipeline ou donné réel.
