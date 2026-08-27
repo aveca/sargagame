@@ -426,6 +426,8 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
     $days = $durations[$pass] ?? 30;
     $expiresAt = time() + ($days * 86400);
     $currency = $metadata['currency'] ?? 'EUR';
+    // Funnel session instrumentation: extract sg_session_id from metadata
+    $sessionId = $metadata['sg_session_id'] ?? null;
 
     $grantData = json_encode([
         'pass' => $pass,
@@ -448,10 +450,11 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
         'island' => $island,
         'expires_at' => date('c', $expiresAt),
         'granted_at' => date('c', time()),
+        'session_id' => $sessionId,
         'metadata' => $metadata,
     ]);
 
-    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days island=$island expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
+    error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days island=$island session_id=" . ($sessionId ?? 'NULL') . " expires=" . date('c', $expiresAt) . " mirror_ok=" . ($mirrorOk ? 'true' : 'false'));
 
     return ['granted' => true, 'pass' => $pass, 'expires_at' => $expiresAt, 'days' => $days, 'mirror_ok' => $mirrorOk];
 }
