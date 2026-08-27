@@ -300,7 +300,13 @@
 - **Description** : MQ appelle `/api/b2b-partners.json` au chargement → 404. Soit créer l'endpoint (gen-b2b-partners.cjs), soit supprimer l'appel si inutile.
 - **Fichiers** : `scripts/automation/gen-b2b-partners.cjs`, `vite.config.js` (copy), `src/Sargasses_PROD.jsx` (fetch)
 - **Estimation** : 1h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by data_agent (2026-08-27) — **NO CODE CHANGE — FILE EXISTS, DEPLOY PENDING**
+  - LIVE repro : `curl -I https://sargasses-martinique.com/api/b2b-partners.json` → 404 (27/08 03:43Z) sur MQ/GP/FL (tous 404), alors que `public/api/b2b-partners.json` et `dist/api/b2b-partners.json` et `martinique-ftp/api/b2b-partners.json` existent localement (`partners:[]`, `preview:2`, `updatedAt 2026-08-26`).
+  - Usage : `src/ChasseHome.jsx:348` `fetch("/api/b2b-partners.json",{cache:"no-store"}).then(r=>r.ok?r.json():null)` → gère 404 gracieusement (`catch()=>{partners:[],preview:[]}`), 0 partners LIVE = valide (catalogue `b2b-partner-meta.json` `active:false` pour 2 hôtels), encart partenaire masqué, preview `?preview_partner=` fonctionne.
+  - Contrat : `gen-b2b-partners.cjs` génère `public/api/b2b-partners.json` depuis `b2b-partner-meta.json` (source vérité, gate `active:true`), ajouté au build `package.json: build = ... gen-b2b-partners.cjs && vite build`. Fichier tracké `git ls-files` → sera déployé via `prepare-ftp.cjs` (copie `dist` → `martinique-ftp/`/`guadeloupe-ftp/`).
+  - Root cause : FTP live en retard (dernier deploy `daily-copernicus` 2026-08-26 20:04Z avant main `2eaad2c6` 03:44Z) — fichier local à jour mais FTP pas encore resynchro (prochain push main → deploy).
+  - Décision : **Ne pas créer endpoint fictif, ne pas supprimer l'appel** (appel utile pour encart, partners vide = état attendu 0 LIVE). Aucun patch minimal requis — prochain deploy résoudra 404. Si 404 persiste après 24h → rouvrir et investiguer WAF/_headers.
+  - Gates : build OK (fichier présent dist), bundle inchangé, ux-smoke non impacté (encart vide non bloquant).
 
 ### TASK-P2-008 collect.php GET 405 (RM) — client ne devrait pas GET
 - **Priorité** : P2
