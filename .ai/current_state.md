@@ -31,8 +31,40 @@
 
 ### Branche / PR
 - Branche : `agent/coding/TASK-P2-008`
-- Commit head : `c0fccba0` → `14984394` (à venir)
-- CI : en attente (build/bundle/ux-smoke OK local)
+- Commit head : `d5404361`
+- CI : 6/6 GREEN (branch-policy, scan, test-frontend, funnel, perf, playwright)
+
+## 2026-08-27 04:30 UTC · Agent: data_agent (OpenCode) · TASK-P2-007 — b2b-partners.json 404 — NO CODE CHANGE
+
+### Travail effectué
+- **Résumé 1 ligne** : Diagnostic LIVE `/api/b2b-partners.json` 404 MQ → fichier existe localement (`public`/`dist`/`martinique-ftp` `partners:[]` `preview:2` `updatedAt 2026-08-26`), appel `ChasseHome.jsx:348` gère 404 gracieusement, contrat `gen-b2b-partners.cjs` valide — **NO CODE CHANGE**, deploy pending.
+- **Repro LIVE** : `curl -I https://sargasses-martinique.com/api/b2b-partners.json` → 404 (27/08 03:43Z) ; même sur GP/FL ; `public/api/b2b-partners.json` + `dist/api/b2b-partners.json` + `martinique-ftp/api/b2b-partners.json` présents (`git ls-files` tracké).
+- **Usage** : `src/ChasseHome.jsx:338,348` `fetch("/api/b2b-partners.json",{cache:"no-store"}).then(r=>r.ok?r.json():null)` → `catch()=>{partners:[],preview:[]}` ; 0 LIVE = état attendu (catalogue `b2b-partner-meta.json` 2 entrées `active:false`), encart masqué, preview `?preview_partner=` OK.
+- **Contrat** : `scripts/automation/gen-b2b-partners.cjs` → `public/api/b2b-partners.json` (gate `active:true`), intégré `package.json:build` + `prepare-ftp.cjs` copie `dist`→`martinique-ftp/` (vérifié `Test-Path` true).
+- **Décision** : Ne pas créer endpoint fictif, ne pas supprimer l'appel (utile). Root cause = FTP live en retard (dernier build 20:04Z avant main 2eaad2c6 03:44Z). Prochain push main → deploy résoudra. Si 404 persiste 24h → rouvrir WAF/_headers.
+
+### Fichiers modifiés
+- `.ai/tasks.md` — P2-007 `[x] done` NO CODE CHANGE
+- Aucun code fonctionnel modifié
+
+### Tests réalisés
+- [x] LIVE `curl -I` 3 domaines → 404 confirmé
+- [x] Local `Test-Path` `public`/`dist`/`martinique-ftp` → true, `git ls-files` tracké
+- [x] Grep `b2b-partners` → usage `ChasseHome.jsx:348`, contrat `gen-b2b-partners.cjs:25`, `package.json:10`
+
+### Problèmes restants
+- [ ] P2-008 collect.php 405 RM
+- [ ] P2-009 MQ 3072ms
+- [ ] P2-010 declutter 4/53, 1/20, 1/12
+
+### Prochaine action recommandée
+1. P2-008 — data_agent : identifier appel `collect.php` GET vs POST
+2. Vérifier après prochain deploy que `/api/b2b-partners.json` passe 200
+
+### Branche / PR
+- Branche : `main` (analyse seule)
+- Commit head : `2eaad2c6`
+- CI : non requis (no code)
 
 ## 2026-08-27 04:00 UTC · Agent: data_agent (OpenCode) · TASK-P1-013 — Monitoring conversion post-fix #605
 
