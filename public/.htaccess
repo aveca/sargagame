@@ -1,3 +1,6 @@
+# PHP handler — ensure .php at root (collect.php, stats.php) are executed via PHP, not served as source
+AddHandler application/x-httpd-php .php
+
 # Redirections SEO — à la racine du site (public_html / www)
 # Redirection www vers non-www (évite contenu dupliqué)
 <IfModule mod_rewrite.c>

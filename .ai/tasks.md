@@ -306,9 +306,15 @@
 - **Priorité** : P2
 - **Rôle** : coding_agent
 - **Description** : Client fait GET sur `collect.php` (POST-only analytics first-party) → 405. Corriger client pour POST ou ignorer GET silencieusement côté serveur.
-- **Fichiers** : `public/api/collect.php`, `src/Sargasses_PROD.jsx` (analytics sender)
+- **Fichiers** : `public/collect.php`, `public/.htaccess`, `src/Sargasses_PROD.jsx` (analytics sender `SG_COLLECT_URL="/collect.php"` POST)
 - **Estimation** : 1h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-27) — **FIXED — PHP handler missing at root**
+  - LIVE repro 27/08 03:47Z : `GET https://sargassumcancun.com/collect.php` → 200 `application/x-httpd-php` (source leak, devrait être 405 via PHP), `POST https://sargassumcancun.com/collect.php` → 405 (devrait être 204) ; même sur MQ (`sargasses-martinique.com`) — handler manquant, pas client GET
+  - Client : `src/Sargasses_PROD.jsx:2108` `SG_COLLECT_URL="/collect.php"` utilise `navigator.sendBeacon` POST + `fetch POST` fallback (correct, aucun GET vers collect.php dans `src` — `grep` 0 GET)
+  - Serveur : `public/collect.php:9` `if(REQUEST_METHOD!=='POST') 405`, contrat POST-only correct, mais `public/.htaccess` n'avait pas `AddHandler` pour `.php` à la racine (seul `public/api/.htaccess` l'avait) → PHP non exécuté à la racine, fichier servi en static (GET 200 source, POST 405 static)
+  - Fix : `public/.htaccess:1` ajouter `AddHandler application/x-httpd-php .php` (2 lignes) → garantit exécution PHP pour `collect.php`/`stats.php`/`ground-truth.php` à la racine, GET→405 via PHP (pas de leak), POST→204
+  - Gates : build 35.5 Ko ≤210 Ko, ux-smoke 4/4, php -l OK, bundle inchangé, client POST déjà correct — aucune régression autre région (tous domaines même handler)
+  - Live validation après deploy : `GET /collect.php` → 405, `POST /collect.php` → 204 (vérifier via curl)
 
 ### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
 - **Priorité** : P2
