@@ -10,6 +10,7 @@
  *   GET  /api/widget-token.php       → Widget token verify
  *   GET  /api/track-click.php        → Email click redirect
  *   GET  /api/track-open.php         → Email open pixel
+ *   POST /collect.php                → Collecte analytics first-party (ex PHP, cf. DEC-2026-08-27 P2-008b)
  *   POST /api/copernicus/forecast.php → Premium forecast
  *   *    /api/b2b-prospects.php      → B2B prospects CRUD
  *   *    /api/b2b-concierge.php      → B2B concierge
@@ -48,6 +49,18 @@ const B2B_PLANS: Record<string, { amount: number; currency: string; description:
 const PASS_DURATIONS: Record<string, number> = { p30: 30, trip7: 7, season: 210 };
 
 const CLICK_REDIRECT_HOSTS = ['sargasses-martinique.com','sargasses-guadeloupe.com','sargassumpuntacana.com','sargassummiami.com','sargassumcancun.com'];
+
+// Collecte first-party (/collect.php) — 5 domaines historiques (parité collect.php PHP)
+// + sargazotulum.com : 6ᵉ domaine live du produit, son trafic était droppé 403 par
+// l'ancienne allowlist PHP. Restaurer la collecte sur les 6 (cf. DEC-2026-08-27 P2-008b).
+const COLLECT_HOSTS = [
+  'sargasses-martinique.com',
+  'sargasses-guadeloupe.com',
+  'sargassumpuntacana.com',
+  'sargassummiami.com',
+  'sargassumcancun.com',
+  'sargazotulum.com',
+];
 
 const PIXEL_GIF = Uint8Array.from(atob('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), c => c.charCodeAt(0));
 
@@ -259,6 +272,13 @@ export default {
       });
     }
 
+    // ─── Collecte first-party (ex public/collect.php PHP → Worker, DEC-2026-08-27 P2-008b)
+    // La route intercepte GET comme POST AVANT les assets Pages : le source PHP
+    // n'est plus jamais servi ; le fichier public/collect.php a été supprimé.
+    if (path === '/collect.php') {
+      return handleCollect(request, env, ctx);
+    }
+
     // ─── Track Click ─────────────────────────────────────
     if (path === '/api/track-click.php') {
       const id = (url.searchParams.get('id') || '').replace(/[^a-zA-Z0-9_-]/g, '');
@@ -423,6 +443,58 @@ export default {
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   },
 };
+
+// ─── Collecte first-party (parité public/collect.php PHP — DEC-2026-08-27 P2-008b)
+// Contrat : POST-only (405 sinon, source leak impossible), Origin/Referer allowlist
+// (403 si étranger, toléré si absent), body JSON ≤ 64 Ko (204 drop sinon), vh =
+// sha256(jourUTC|ip|ua)[:16] (anonymat quotidien, pas de PII), rate-limit 60/60s par
+// vh (KV TRANSIENTS), cap global 5000 inserts/j (KV, remplace le cap disque 25 Mo/j),
+// succès 204 No Content toujours silencieux — jamais 4xx sur un drop : le client
+// (sendBeacon/fetch, Sargasses_PROD.jsx) stash + rejoue sur non-2xx → éviter l'amplification.
+async function handleCollect(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const noSniff = { 'X-Content-Type-Options': 'nosniff' };
+  if (request.method !== 'POST') return new Response(null, { status: 405, headers: noSniff });
+
+  const hostOk = (u: string | null): boolean | null => {
+    if (!u) return null; // header absent → indéterminé (parité PHP : on tolère)
+    try {
+      const h = new URL(u).hostname.toLowerCase();
+      return COLLECT_HOSTS.some(d => h === d || h.endsWith('.' + d));
+    } catch { return false; }
+  };
+  let ok = hostOk(request.headers.get('Origin'));
+  if (ok === null) ok = hostOk(request.headers.get('Referer'));
+  if (ok === false) return new Response(null, { status: 403, headers: noSniff });
+
+  const raw = await request.text().catch(() => '');
+  if (raw.length > 65536 || raw.length < 2) return new Response(null, { status: 204, headers: noSniff });
+  let data: any = null;
+  try { data = JSON.parse(raw); } catch { /* drop */ }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return new Response(null, { status: 204, headers: noSniff });
+
+  const day = new Date().toISOString().slice(0, 10);
+  const ip = request.headers.get('CF-Connecting-IP') || '';
+  const ua = (request.headers.get('User-Agent') || '').slice(0, 120);
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${day}|${ip}|${ua}`));
+  const vh = Array.from(new Uint8Array(digest)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  if (!(await rateLimit(env, `collect:${vh}`, 60, 60))) return new Response(null, { status: 204, headers: noSniff });
+
+  // Cap global quotidien (remplace le cap disque 25 Mo/j du PHP — pas de disque sous Pages)
+  const dayKey = `collect:day:${day}`;
+  const dayCount = parseInt(await env.TRANSIENTS.get(dayKey) || '0');
+  if (dayCount >= 5000) return new Response(null, { status: 204, headers: noSniff });
+  ctx.waitUntil(env.TRANSIENTS.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }));
+
+  const region = typeof data.region === 'string' ? data.region.slice(0, 20) : '';
+  ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
+    event: 'sg_session',
+    params: { vh, d: data },
+    island: region || (new URL(request.url).hostname),
+  }));
+
+  return new Response(null, { status: 204, headers: noSniff });
+}
 
 // ─── Mollie Handler ──────────────────────────────────────────────────
 

@@ -44,7 +44,16 @@
     { "pattern": "sargazotulum.com/api/track-*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/copernicus/forecast*", "zone_name": "sargazotulum.com" },
     { "pattern": "sargazotulum.com/api/b2b-*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" }
+    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" },
+
+    // Collecte first-party (DEC-2026-08-27 P2-008b) : intercepte /collect.php AVANT
+    // l'asset statique Pages (GET → 405 sans source, POST → 204).
+    { "pattern": "sargasses-martinique.com/collect.php", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-guadeloupe.com/collect.php", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargassummiami.com/collect.php", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassumpuntacana.com/collect.php", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumcancun.com/collect.php", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" }
   ],
   "kv_namespaces": [
     { "binding": "TRANSIENTS", "id": "528c05c792e046029a84e2fdb84f4ae6" }
