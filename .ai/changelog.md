@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-28 11:45 UTC · Agent: coding_agent (OpenCode) — **P2-010 beach labels declutter — FIXED ISOLATED**
+
+### Contexte
+Wide cap 5 + clean cachées → côte vide (RM 1/20, MQ 4/53).
+
+### Changements
+- `WorldMapView.jsx` MAX wide 5→8 + clean remplit jusqu'à 8.
+
+### Validation
+- Build 35.5 Ko, esbuild OK, smoke 4/4, live 6/6 à vérifier.
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-008b collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6**
 
 ### Contexte

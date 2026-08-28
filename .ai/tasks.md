@@ -359,10 +359,12 @@
 ### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
 - **Priorité** : P2
 - **Rôle** : coding_agent + ui-ux_agent
+- **Branche** : `agent/ui/p2-010-beach-labels`
 - **Description** : MQ: 4/53 labels visibles, RM: 1/20, PC: 1/12. Utilisateur ne voit quasi aucune étiquette plage. Revoir seuil declutter ou ajouter toggle "Afficher toutes les étiquettes".
-- **Fichiers** : `src/MapView.jsx`, `src/app-runtime.css`
+- **Fichiers** : `src/WorldMapView.jsx` (declutter cap)
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-28) — **FIXED isolated — cap 5→8 + clean remplit**
+  - MAX wide 5→8 ; `if(wide && !impacted) hidden` supprimé → vertes remplissent jusqu'à 8 (impactées d'abord). RM 1/20→8/20. Build 35.5 Ko, smoke 4/4.
 
 ---
 

@@ -1,5 +1,13 @@
 ---
 
+## 2026-08-28 11:45 UTC · Agent: coding_agent (OpenCode) · P2-010 beach labels declutter — FIXED ISOLATED
+
+### Travail effectué
+- **Résumé 1 ligne** : MAX wide 5→8 + clean remplit jusqu'à 8 → labels visibles RM 1/20→8/20.
+- **Fichiers** : `src/WorldMapView.jsx` (declutter cap wide + clean logic).
+- **Tests** : build 35.5 Ko, esbuild OK, smoke 4/4, live 6/6 à vérifier (MQ/GP/Miami/RM/PC/Tulum).
+- **Branche** : `agent/ui/p2-010-beach-labels`
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008b — collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6
 
 ### Travail effectué
