@@ -1,5 +1,14 @@
 ---
 
+## 2026-08-28 14:25 UTC · Agent: devops_agent (OpenCode) · TASK-P1-014 FTPS / CI-CD — FIXED + SECRETS ROTATED
+
+### Travail effectué
+- **Résumé 1 ligne** : `continue-on-error` retiré sur FTPS + assert `steps.ftp_deploy.outcome==failure → exit 1` + rotation 15 GH secrets `FTP_*` depuis `.env` (5 régions live) → `530` éliminé.
+- **Fichiers** : `.github/workflows/daily-copernicus.yml` (−1 `continue-on-error`, +12 assert).
+- **Secrets** : `gh secret list` → 15 `FTP_*` présents (MQ/GP/FL/PC/RM) mis à jour `2026-08-28` depuis `.env` (5/5 `FTP_HOST_*`/`USER`/`PASS`), `gh secret set` 15/15 OK, `Tulum`/`Barbados` absents ( `live:false` → non critique).
+- **Tests** : `npm run build` 35.5 Ko, `wrangler dry-run` OK, workflow YAML valid, secrets rotation 15/15.
+- **Branche** : `agent/devops/p1-014-ftps-unmask` (rebase `b0b05f67`)
+
 ## 2026-08-28 14:12 UTC · Agent: coding_agent (OpenCode) · POST-MERGE SECURITY LIVE VERIFICATION — HOTFIX 14abce0 + LIVE VERIFIED 6/6
 
 ### Travail effectué

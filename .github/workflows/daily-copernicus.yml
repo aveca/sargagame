@@ -1079,7 +1079,11 @@ jobs:
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
         if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
-        continue-on-error: true
+# SECURITY P1-014: continue-on-error RETIRÉ (2026-08-27). Le masquage 530 → SUCCESS
+# faisait passer un deploy partiel (MQ/GP/RM 530, secrets GH périmés) pour vert.
+# Désormais le step échoue visiblement ; le health-check reste le gate final.
+# Un hôte FTP instable (FL/PC/RM) peut encore flaker → le retry-on-failure
+# schedule-only (1 retry) reste. Ne pas remettre continue-on-error.
 # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
         # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
         # déjà continue-on-error à un timeout n'échoue PAS le build, il laisse tourner
@@ -1104,6 +1108,20 @@ jobs:
           FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
           FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
         run: node scripts/manual-ftp-deploy.cjs
+
+      - name: Assert FTPS deploy succeeded for live regions (P1-014)
+        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        run: |
+          # P1-014: le step FTPS n'est plus continue-on-error → son outcome est
+          # désormais visible. Si manual-ftp-deploy a échoué (530 secrets périmés,
+          # 660 STOR timeout, etc.) on échoue ICI explicitement pour que le run
+          # ne reste pas vert. Les régions live:false (barbados, tulum si live:false)
+          # sont déjà ignorées par manual-ftp-deploy (skip sans creds → exit 0).
+          if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
+            echo "::error::FTPS deploy a échoué (530/timeout). Vérifier secrets FTP_* GH vs .env local + logs job 98407369883 (run 33038263230). Health-check suivra."
+            exit 1
+          fi
+          echo "FTPS deploy OK (ou skipped non-live)."
 
       # ── 5b. Deploy to Cloudflare Pages (all regions) ──
       # Pages projects need region-specific builds + data copy. This runs after

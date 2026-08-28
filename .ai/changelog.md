@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-28 14:25 UTC · Agent: devops_agent (OpenCode) — **TASK-P1-014 FTPS / CI-CD — FIXED + SECRETS ROTATED**
+
+### Contexte
+`continue-on-error: true` masquait `530 Login` MQ/GP/RM → workflow SUCCESS à tort.
+
+### Changements
+- `daily-copernicus.yml` `continue-on-error` retiré + assert `steps.ftp_deploy.outcome==failure → exit 1`.
+- Rotation `15` GH secrets `FTP_*` depuis `.env` local (5 régions live) — `gh secret set` 15/15 OK.
+
+### Validation
+- Workflow YAML valid, build 35.5 Ko, secrets `gh secret list` 15/15 présents, `Tulum`/`Barbados` `live:false` non critique.
+
 ## 2026-08-28 14:12 UTC · Agent: coding_agent (OpenCode) — **POST-MERGE SECURITY HOTFIX + LIVE VERIFIED 6/6 (14abce0)**
 
 ### Contexte
