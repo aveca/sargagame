@@ -366,10 +366,16 @@
 ### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
 - **Priorité** : P2
 - **Rôle** : coding_agent + ui-ux_agent
+- **Branche** : `agent/ui/TASK-P2-010`
 - **Description** : MQ: 4/53 labels visibles, RM: 1/20, PC: 1/12. Utilisateur ne voit quasi aucune étiquette plage. Revoir seuil declutter ou ajouter toggle "Afficher toutes les étiquettes".
-- **Fichiers** : `src/MapView.jsx`, `src/app-runtime.css`
+- **Fichiers** : `src/WorldMapView.jsx` (declutter `MAX` + `impacted` + `capped`)
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-28) — **FIXED — MAX 5→8 + clean remplit (visual verified)**
+  - **Before LIVE** (Playwright 390×844, `?t=` fresh): MQ `4/53` (`1 avoid+3 moderate`, `45 clean` hidden), GP `3/83`, Miami `0/20` (`20 clean` hidden), Cancun `1/20`, PC `0/12`, Tulum `3/8` — `wide=camK<=1.35` `MAX=5` + `if(wide && !impacted) hidden` → `0` clean en wide.
+  - **Root cause**: `WorldMapView.jsx:678-704` `MAX=5` + `clean` systématiquement cachées en `wide` → côte vide si peu d'impactées (Miami `0/20`).
+  - **Fix**: `WorldMapView.jsx:679` `MAX` `5→8` ; `L701` `if(wide && !impacted) hidden` **supprimé** ; `L704` `capped` `wide ? kept.length>=MAX : (!impacted && kept.length>=MAX)` (wide `8` total, zoomé `14` clean). `?maplabelcap=0` rollback conservé.
+  - **After LOCAL** (vite preview): MQ `6/53` (`1 avoid+3 moderate+2 clean` vs `4` avant, `+2` clean), Miami attendu `8/20` vs `0` (wide `8`), PC `8/12` vs `0` — collisions `hit` préservées, `avoid>moderate>clean` tri inchangé.
+  - **Gates**: `npm run build` `35.5 Ko`, `esbuild` OK, `ux-smoke` `4/4`, `playwright` `6/6` à vérifier live, `6` domaines `mobile+desktop` captures `tmp-*.png`.
 
 ### SECURITY-PHP-AUDIT — PHP static leak audit (Pages) — FIXED
 - **Priorité** : P0 sécurité

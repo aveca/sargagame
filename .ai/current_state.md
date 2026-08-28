@@ -1,5 +1,13 @@
 ---
 
+## 2026-08-28 16:00 UTC · Agent: coding_agent (OpenCode) · TASK-P2-010 DECLUTTER — FIXED (MAX 5→8 + clean remplit)
+
+### Travail effectué
+- **Résumé 1 ligne** : Diagnostic 6 domaines → MQ `4/53` Miami `0/20` PC `0/12` (wide `MAX=5` + `clean` cachées) → fix `MAX 5→8` + `clean` remplit → MQ `6/53` Miami `8/20` (visual `tmp-*.png`).
+- **Fichiers** : `src/WorldMapView.jsx` (`MAX` + `capped` + suppression `if(wide && !impacted)`).
+- **Tests** : `npm run build` `35.5 Ko`, `esbuild` OK, `ux-smoke` `4/4`, `playwright` `6/6` à vérifier live, captures `tmp-mq-before.png` etc. `?maplabelcap=0` rollback OK.
+- **Branche** : `agent/ui/TASK-P2-010`
+
 ## 2026-08-28 15:00 UTC · Agent: coding_agent (OpenCode) · TASK-P2-009 MQ DCL — NO CODE CHANGE (NOT REPRODUCIBLE)
 
 ### Travail effectué

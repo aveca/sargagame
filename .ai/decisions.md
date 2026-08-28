@@ -50,6 +50,13 @@
 - **Décision** : `NO CODE CHANGE` — anomalie non reproductible, pas de root cause code (cold-start / transient server STALE `33.8h` / deploy running vs `beaches-images→prefetch` non prouvé). Risque régression carte > gain hypothétique. Si récidive, mesurer en CI avec `web-vitals` + `performance` nav timing sur `origin/main` frais.
 - **Conséquences** : `index.html` inchangé (5 fetch preloads), `vite.config.js` `region-outlines` inchangé, `build` `35.5 Ko` inchangé. Monitoring `DCL` via `playwright` fresh-browser si re-rapport.
 
+## DEC-2026-08-28 — TASK-P2-010 Declutter — MAX 5→8 + clean remplit
+
+- **Date/Heure UTC** : 2026-08-28 16:00 UTC
+- **Contexte** : Live `tmp-label-count.cjs` 390×844 `MQ 4/53` (`1a+3m`, `45c` hidden), `GP 3/83`, `Miami 0/20` (`20c` hidden), `Cancun 1/20`, `PC 0/12` (`12c` hidden), `Tulum 3/8` — `WorldMapView.jsx:678-704` `wide=camK<=1.35` `MAX=5` + `if(wide && !impacted) hidden` → `0` clean en wide → côte vide si peu d'impactées. `avoid>moderate>clean` tri déjà correct, mais `capped` + filtre agressif vidaient.
+- **Décision** : `MAX` `5→8` en `wide` (cap total, pas seulement impactées) + `if(wide && !impacted) hidden` **supprimé** → `capped` `wide ? kept.length>=MAX : (!impacted && kept.length>=MAX)` (wide `8` total, zoomé `14` clean, `impacted` toujours). `?maplabelcap=0` rollback conservé. Densité `wide 8` + collisions `hit` préservent lisibilité (test local MQ `4→6`, Miami `0→8` attendu).
+- **Conséquences** : `src/WorldMapView.jsx` seul, `build` `35.5 Ko`, `esbuild` OK, `ux-smoke` `4/4`, `playwright` `6/6` à vérifier live, captures `tmp-*.png` avant/après, `avoid>moderate>clean` inchangé.
+
 ## DEC-2026-08-27 — TASK-P1-013 Monitoring conversion post-fix #605 — WORKING BUT INSUFFICIENT SAMPLE
 
 - **Date/Heure UTC** : 2026-08-27 04:00 UTC

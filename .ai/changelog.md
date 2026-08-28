@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-28 16:00 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-010 DECLUTTER — FIXED (MAX 5→8 + clean remplit)**
+
+### Contexte
+Live `4/53` `0/20` `0/12` (wide `MAX=5` + `clean` cachées) → côte vide.
+
+### Changements
+- `src/WorldMapView.jsx` `MAX 5→8` + `if(wide && !impacted)` supprimé + `capped` `wide 8` total.
+
+### Validation
+- Live `tmp-label-count.cjs` 6 domaines, local `4→6` MQ, `build` `35.5 Ko`, `esbuild` OK, `ux-smoke` `4/4`, captures `tmp-*.png`.
+
 ## 2026-08-28 15:00 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-009 MQ DCL — NO CODE CHANGE (NOT REPRODUCIBLE)**
 
 ### Contexte
