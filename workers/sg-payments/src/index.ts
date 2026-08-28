@@ -440,6 +440,15 @@ export default {
       return new Response(JSON.stringify({ error: 'method_not_allowed' }), { status: 405, headers: h });
     }
 
+    // ─── SECURITY: generic PHP source-leak guard — MUST BE LAST PHP CHECK (SPECIFIC FIRST → GENERIC LAST)
+    // Tous les handlers .php légitimes ci-dessus ont été tentés (mollie, widget-token, track-*, forecast,
+    // b2b-prospects/concierge/trial/meeting/create-checkout + b2b-contacts/events/scores/forecast-delivery,
+    // collect.php). Tout .php restant serait servi en source depuis dist/ sur Pages → 404 nosniff sans body.
+    // Les routes wrangler *.php assurent l'interception AVANT Pages. Ne jamais placer ce guard AVANT un handler légitime.
+    if (path.endsWith('.php')) {
+      return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' } });
+    }
+
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   },
 };

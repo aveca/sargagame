@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-28 11:30 UTC · Agent: coding_agent (OpenCode) — **SECURITY PHP STATIC LEAK — FIXED ISOLATED**
+
+### Contexte
+Tout .php sous `public/` copié dans `dist/` → servi 200 source sur Pages. Secrets `*-config.php` exposaient `sb_secret` + deploy token.
+
+### Changements
+- `vite.config.js` plugin `strip-php-secrets-from-dist` purge `mollie-config.php`/`paypal-config.php`/`stripe-config.php`/`_deploy-secret.php`/`_diag.php` de `dist/`.
+- `workers/sg-payments/src/index.ts` fallback `*.php → 404 nosniff`.
+- `workers/sg-payments/wrangler.jsonc` +6 routes `*.php` (44 total).
+
+### Validation
+- Build 35.5 Ko, secrets 0/3, wrangler dry-run 36.36 KiB, smoke 4/4.
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-008b collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6**
 
 ### Contexte

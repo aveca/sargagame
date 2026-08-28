@@ -364,6 +364,15 @@
 - **Estimation** : 2h
 - **Statut** : [ ] pending
 
+### SECURITY-PHP-AUDIT — PHP static leak audit (Pages) — FIXED
+- **Priorité** : P0 sécurité
+- **Rôle** : security_agent / coding_agent
+- **Branche** : `agent/security/php-static-leak-audit-isolated`
+- **Description** : Audit exhaustif source leak Pages : tout .php sous `public/` copié verbatim dans `dist/` → servi 200 `application/x-httpd-php` sur Pages. Secrets `*-config.php` gitignorés mais présents FS → copiés dans `dist/api/mollie-config.php` (sb_secret + deploy token) → fuite CRITIQUE.
+- **Fichiers** : `vite.config.js` (strip plugin), `workers/sg-payments/src/index.ts` (fallback), `workers/sg-payments/wrangler.jsonc` (routes *.php)
+- **Fix** : (1) vite plugin `strip-php-secrets-from-dist` purge secrets de `dist/`; (2) Worker fallback `*.php → 404 nosniff`; (3) +6 routes `*.php` / zone (44 total).
+- **Statut** : [x] done by coding_agent (2026-08-28) — build 35.5 Ko, secrets 0/3 in dist, 27 .php → Worker 404, wrangler dry-run OK, smoke 4/4.
+
 ---
 
 ## P3 — Améliorations
