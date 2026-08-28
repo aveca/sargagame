@@ -43,6 +43,13 @@
 - **Conséquences** : `DEPLOY SUCCESS = tous les déploiements LIVE obligatoires ont réussi`. Un `530` ou timeout 120m (USD instable) → `FAIL` visible, `retry-on-failure` schedule-only (1 retry) reste. `health-check` final ne peut plus masquer. Prochain run `daily-copernicus` validera `5/5` FTPS + `5/5` Pages + Worker `a2d8512a`.
 - **Rollback** : `git revert` du commit workflow + `gh secret set` depuis `.env` (re-rotation).
 
+## DEC-2026-08-28 — TASK-P2-009 MQ DCL 3072ms — NO CODE CHANGE (NOT REPRODUCIBLE)
+
+- **Date/Heure UTC** : 2026-08-28 15:00 UTC
+- **Contexte** : Audit `22:30 UTC` 6 domaines `MQ 3072ms` `requestStart 2830` vs `GP 327` `99` — hypothèse `5 preloads as=fetch` en compétition avec module critique. Re-mesure `28/08` `tmp-perf-measure.cjs` (Playwright chromium, iPhone 12, `domContentLoaded` via `navigation` timing): sequential same-context MQ `3137` `2830` (1st nav cold) vs isolated fresh-browser MQ `372` `98`, GP `337`, 5 runs MQ `334-395` — variance normale. HTML size 35-41 Ko, `transfer 16Ko`, preloads 8 identiques (`sargassum`, `beaches-list`, `images`, `quality`, `weather`, 2 fonts, `region-outlines`), `fetchpriority` `null` tous.
+- **Décision** : `NO CODE CHANGE` — anomalie non reproductible, pas de root cause code (cold-start / transient server STALE `33.8h` / deploy running vs `beaches-images→prefetch` non prouvé). Risque régression carte > gain hypothétique. Si récidive, mesurer en CI avec `web-vitals` + `performance` nav timing sur `origin/main` frais.
+- **Conséquences** : `index.html` inchangé (5 fetch preloads), `vite.config.js` `region-outlines` inchangé, `build` `35.5 Ko` inchangé. Monitoring `DCL` via `playwright` fresh-browser si re-rapport.
+
 ## DEC-2026-08-27 — TASK-P1-013 Monitoring conversion post-fix #605 — WORKING BUT INSUFFICIENT SAMPLE
 
 - **Date/Heure UTC** : 2026-08-27 04:00 UTC

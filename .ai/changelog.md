@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-28 15:00 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-009 MQ DCL — NO CODE CHANGE (NOT REPRODUCIBLE)**
+
+### Contexte
+MQ `3072ms` vs `~380ms` — re-profiling 6 domaines fresh-browser `MQ 374ms` vs `GP 337ms` (vs sequential `3137ms` cold-start artifact).
+
+### Changements
+- Aucun — `index.html` inchangé (5 preloads), `NO CODE CHANGE` documenté.
+
+### Validation
+- 6 domaines `DCL` `327-580ms` (MQ `334-395` 5 runs), `requestStart` `92-99ms`, `transfer 16Ko`, `preload 8`, `HTML 35-41 Ko`.
+
 ## 2026-08-28 14:25 UTC · Agent: devops_agent (OpenCode) — **TASK-P1-014 FTPS / CI-CD — FIXED + SECRETS ROTATED**
 
 ### Contexte

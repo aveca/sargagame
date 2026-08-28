@@ -354,10 +354,14 @@
 ### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
 - **Priorité** : P2
 - **Rôle** : coding_agent
+- **Branche** : `agent/perf/TASK-P2-009`
 - **Description** : MQ DOMContentLoaded 3072ms vs ~380ms autres domaines (8x). Anomalie à investiguer (Vite dev? CDN? Bundle specific?).
-- **Fichiers** : `vite.config.js`, `src/Sargasses_PROD.jsx`, build analysis
+- **Fichiers** : `index.html` (preload), `vite.config.js` (region preload), `dist` HTML diff
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-28) — **NO CODE CHANGE — NOT REPRODUCIBLE**
+  - **Baseline 2026-08-28 (Playwright chromium, iPhone 12, fresh browser per domain, 1 run)** : MQ `3137ms` `reqStart 2830` (1st in sequential context) vs GP `327ms` `99`, Miami `313ms`, Cancun `443ms`, PC `329ms`, Tulum `580ms` — **artifact**: `requestStart` 2830ms vs 92ms → delay before request, not HTML/JS. **Isolated re-test** (fresh browser per domain, GP first): MQ `374ms` `99`, GP `337ms` `99` — **normal**. 5 runs MQ fresh: `334`, `357`, `395`, `338`, `372` (variance 60ms). **Conclusion**: anomaly non reproductible, likely cold-start / sequential context / transient server (22:30 UTC STALE 33.8h, deploy running) — pas de root cause code.
+  - **Preloads**: 8 each (`/api/copernicus/sargassum.json`, `/data/beaches-list.json`, `/data/beaches-images.json`, `quality`, `/api/weather/beaches-weather.json`, 2 fonts, `region-outlines/mq.json` vs `gp.json`) — `fetchpriority` `null` tous, `transferSize` 16-17 Ko MQ/GP, HTML size 35-41 Ko (MQ 35686, GP 35686, Miami 41559) — pas de contention prouvée. `beaches-images` non critique mais non coupable.
+  - **Décision**: `NO CODE CHANGE` — ne pas appliquer `preload→prefetch` sans preuve. Risque régression carte > gain hypothétique. Re-mesurer en CI avec `performance` + `web-vitals` si récidive.
 
 ### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
 - **Priorité** : P2
