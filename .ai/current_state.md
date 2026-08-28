@@ -1,5 +1,13 @@
 ---
 
+## 2026-08-28 11:30 UTC · Agent: coding_agent (OpenCode) · SECURITY PHP STATIC LEAK — FIXED ISOLATED
+
+### Travail effectué
+- **Résumé 1 ligne** : Purge secrets `dist/api/*-config.php` + Worker fallback `*.php → 404 nosniff` + 6 routes `*.php` → source leak éliminé.
+- **Fichiers** : `vite.config.js` plugin `strip-php-secrets-from-dist`, `workers/sg-payments/src/index.ts` fallback, `workers/sg-payments/wrangler.jsonc` +6 routes `*.php` (44 total).
+- **Tests** : build 35.5 Ko ≤210, secrets 0/3 in dist, 27 .php → Worker 404, wrangler dry-run 36.36 KiB, smoke 4/4.
+- **Branche** : `agent/security/php-static-leak-audit-isolated`
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008b — collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6
 
 ### Travail effectué

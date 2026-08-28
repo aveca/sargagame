@@ -416,6 +416,17 @@ export default {
       }
     }
 
+    // ─── SECURITY: generic PHP source-leak guard (DEC-2026-08-27 AUDIT) ───
+    // Tout .php sous /api/ ou à la racine qui n'a pas été matché plus haut (mollie, track,
+    // b2b, etc.) serait autrement servi en statique depuis dist/ sur Pages (source leak).
+    // Le Worker est AVANT Pages sur le custom domain → on le bloque ici avec nosniff + 404
+    // (jamais de body PHP). Les routes wrangler.jsonc *.php assurent l'interception.
+    // Les secrets (*-config.php, _deploy-secret.php) sont DE PLUS purgés de dist/ par
+    // le plugin vite strip-php-secrets, défense en profondeur (pages.dev direct).
+    if (path.endsWith('.php')) {
+      return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' } });
+    }
+
     // ─── B2B Contacts / Events / Scores / Forecast Delivery ───
     if (path === '/api/b2b-contacts.php' || path === '/api/b2b-events.php' || path === '/api/b2b-scores.php' || path === '/api/b2b-forecast-delivery.php') {
       const table = path.includes('contacts') ? 'b2b_contacts' : path.includes('events') ? 'b2b_events' : path.includes('scores') ? 'b2b_scores' : 'b2b_forecast_deliveries';

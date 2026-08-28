@@ -171,22 +171,53 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    // ── Copy _deploy.php to build root for fast FTP deploy ──
-    // _deploy.php doit être à la racine web (ex: https://sargasses-martinique.com/_deploy.php)
-    // pour que le fast deploy fonctionne (upload zip + extraction côté serveur).
+    // ── SECURITY: strip secrets + PHP source leaks from Cloudflare Pages ──
+    // Vite copie public/ → dist/ verbatim → tout .php sous public/api/ serait servi
+    // en statique sur Pages (GET 200 + source leak), y compris les *-config.php gitignorés
+    // qui portent pourtant des secrets (mollie-config.php, paypal-config.php, stripe-config.php,
+    // _deploy-secret.php). Ces fichiers ne doivent JAMAIS atterrir dans dist/. Les autres
+    // .php (mollie.php, etc.) sont quant à eux interceptés AVANT Pages par le Worker sg-payments
+    // (route /api/mollie* etc. + fallback generic *.php) → source non exposée sur le custom
+    // domain, mais on purge aussi les secrets par défense en profondeur (pages.dev direct).
+    // Seuls les .json/.js/.html/.assets restent dans dist/. Le FTP legacy garde ses PHP via
+    // prepare-ftp.cjs qui les re-copie depuis public/ si besoin (hors scope Pages).
     {
-      name: 'copy-deploy-php',
-      writeBundle: {
+      name: 'strip-php-secrets-from-dist',
+      closeBundle: {
         sequential: true,
         async handler() {
-          const { copyFileSync, existsSync } = await import('fs')
+          const { rmSync, existsSync, readdirSync } = await import('fs')
           const { resolve } = await import('path')
-          const src = resolve(__dirname, 'public/api/_deploy.php')
-          const dest = resolve(__dirname, 'dist/_deploy.php')
-          if (existsSync(src)) {
-            copyFileSync(src, dest)
-            console.log('[copy-deploy-php] copied to dist/_deploy.php')
+          const outDir = resolve(__dirname, 'dist')
+          if (!existsSync(outDir)) return
+          // Secrets — jamais dans un artifact Pages (même via pages.dev direct)
+          const secretRel = [
+            'api/mollie-config.php',
+            'api/paypal-config.php',
+            'api/stripe-config.php',
+            'api/_deploy-secret.php',
+            'api/_deploy.php',
+          ]
+          for (const rel of secretRel) {
+            const p = resolve(outDir, rel)
+            if (existsSync(p)) { rmSync(p); console.log(`[strip-php-secrets] removed ${rel}`) }
           }
+          // _diag.php = endpoint debug (leak PHP_VERSION) — jamais shippé
+          const diag = resolve(outDir, 'api/_diag.php')
+          if (existsSync(diag)) { rmSync(diag); console.log('[strip-php-secrets] removed api/_diag.php') }
+          // Le Worker sg-payments intercepte /collect.php + /api/*.php avant Pages,
+          // mais on purge aussi stats.php/ground-truth.php historiquement leakés
+          const legacyRoot = ['stats.php','ground-truth.php','collect.php']
+          for (const f of legacyRoot) {
+            const p = resolve(outDir, f)
+            if (existsSync(p)) { rmSync(p); console.log(`[strip-php-secrets] removed ${f}`) }
+          }
+          // Garde-fou: lister les .php restants (non-bloquant, info)
+          try {
+            const apiFiles = readdirSync(resolve(outDir, 'api'))
+            const left = apiFiles.filter(f=>f.endsWith('.php'))
+            if (left.length) console.log(`[strip-php-secrets] note: ${left.length} .php restants dans dist/api/ (interceptés par Worker sg-payments)`)
+          } catch {}
         }
       }
     },
