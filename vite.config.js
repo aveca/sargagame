@@ -190,33 +190,57 @@ export default defineConfig({
           const { resolve } = await import('path')
           const outDir = resolve(__dirname, 'dist')
           if (!existsSync(outDir)) return
-          // Secrets — jamais dans un artifact Pages (même via pages.dev direct)
-          const secretRel = [
-            'api/mollie-config.php',
-            'api/paypal-config.php',
-            'api/stripe-config.php',
-            'api/_deploy-secret.php',
-            'api/_deploy.php',
-          ]
-          for (const rel of secretRel) {
-            const p = resolve(outDir, rel)
-            if (existsSync(p)) { rmSync(p); console.log(`[strip-php-secrets] removed ${rel}`) }
-          }
-          // _diag.php = endpoint debug (leak PHP_VERSION) — jamais shippé
-          const diag = resolve(outDir, 'api/_diag.php')
-          if (existsSync(diag)) { rmSync(diag); console.log('[strip-php-secrets] removed api/_diag.php') }
-          // Le Worker sg-payments intercepte /collect.php + /api/*.php avant Pages,
-          // mais on purge aussi stats.php/ground-truth.php historiquement leakés
-          const legacyRoot = ['stats.php','ground-truth.php','collect.php']
-          for (const f of legacyRoot) {
-            const p = resolve(outDir, f)
-            if (existsSync(p)) { rmSync(p); console.log(`[strip-php-secrets] removed ${f}`) }
-          }
-          // Garde-fou: lister les .php restants (non-bloquant, info)
+          // SECURITY FIX 2026-08-28: purge ALL .php from Pages artifact.
+          // Tout .php sous public/ copié dans dist/ serait servi 200 source sur Pages
+          // (cf. stats.php, _ratelimit.php, comps.php, paypal.php leaks constatés 28/08).
+          // Les endpoints légitimes (mollie, b2b, track, collect, forecast) sont servis
+          // via Worker sg-payments (routes exactes `api/mollie*`, `api/b2b-*`, etc.) AVANT
+          // Pages → pas besoin de .php dans dist. On purge tout pour défense en profondeur
+          // (pages.dev direct, custom domain). Secrets déjà inclus, mais on purge l'ensemble.
           try {
-            const apiFiles = readdirSync(resolve(outDir, 'api'))
-            const left = apiFiles.filter(f=>f.endsWith('.php'))
-            if (left.length) console.log(`[strip-php-secrets] note: ${left.length} .php restants dans dist/api/ (interceptés par Worker sg-payments)`)
+            const { readdirSync: r2, rmSync: rm2, existsSync: ex2 } = await import('fs');
+            // root *.php
+            for (const f of r2(outDir)) {
+              if (f.endsWith('.php')) {
+                const p = resolve(outDir, f);
+                try { rm2(p); console.log(`[strip-php-secrets] removed ${f}`); } catch {}
+              }
+            }
+            // api/*.php + api/**/*.php (ex: copernicus/forecast.php)
+            const apiDir = resolve(outDir, 'api');
+            if (ex2(apiDir)) {
+              for (const f of r2(apiDir)) {
+                const full = resolve(apiDir, f);
+                // Use fs.stat to handle dirs
+                const { statSync } = await import('fs');
+                try {
+                  const st = statSync(full);
+                  if (st.isDirectory()) {
+                    // recurse one level (copernicus)
+                    for (const sub of r2(full)) {
+                      if (sub.endsWith('.php')) {
+                        const sp = resolve(full, sub);
+                        try { rm2(sp); console.log(`[strip-php-secrets] removed api/${f}/${sub}`); } catch {}
+                      }
+                    }
+                  } else if (f.endsWith('.php')) {
+                    try { rm2(full); console.log(`[strip-php-secrets] removed api/${f}`); } catch {}
+                  }
+                } catch {}
+              }
+            }
+          } catch (e) { console.log('[strip-php-secrets] purge all php error', e.message); }
+          // Garde-fou: vérifier qu'il ne reste aucun .php (doit être 0)
+          try {
+            const { readdirSync: r3 } = await import('fs');
+            let left = 0;
+            try { left += r3(resolve(outDir)).filter(f=>f.endsWith('.php')).length; } catch {}
+            try { left += r3(resolve(outDir,'api')).filter(f=>f.endsWith('.php')).length; } catch {}
+            try {
+              const cop = resolve(outDir,'api/copernicus');
+              left += r3(cop).filter(f=>f.endsWith('.php')).length;
+            } catch {}
+            console.log(`[strip-php-secrets] final php count in dist: ${left} (expected 0)`);
           } catch {}
         }
       }

@@ -55,19 +55,12 @@
     { "pattern": "sargassumcancun.com/collect.php", "zone_name": "sargassumcancun.com" },
     { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" },
 
-    // SECURITY AUDIT 2026-08-27: generic PHP source-leak guard.
-    // Tout .php sous public/ (mollie.php, _diag.php, mollie-lib.php, b2b-db.php, etc.)
-    // serait sinon servi en statique par Pages (source leak, cf. collect.php avant fix).
-    // Le Worker étant AVANT Pages sur le custom domain, une route *.php garantit
-    // l'interception → le fallback generic dans src/index.ts renvoie 404 nosniff.
-    // Les secrets (*-config.php, _deploy-secret.php) sont en plus PURGÉS de dist/ par
-    // vite (strip-php-secrets). 1 route par zone = 6 routes (sous la limite 100/zone).
-    { "pattern": "sargasses-martinique.com/*.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/*.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/*.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/*.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/*.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/*.php", "zone_name": "sargazotulum.com" }
+    // SECURITY AUDIT 2026-08-28 FIX: routes `*.php` invalides (wildcard non terminal) → retirées.
+    // La protection générique est assurée par le purge ALL .php de dist/ via vite
+    // (strip-php-secrets) → Pages ne sert plus aucun .php (404). Les légitimes restent
+    // interceptés par les routes exactes ci-dessus (`api/mollie*`, `api/b2b-*`, `collect.php`, etc.)
+    // + fallback generic `path.endsWith('.php') → 404 nosniff` dans le Worker pour les
+    // routes légitimes déjà matchées (ex: `api/mollie-config.php` via `api/mollie*`).
   ],
   "kv_namespaces": [
     { "binding": "TRANSIENTS", "id": "528c05c792e046029a84e2fdb84f4ae6" }
