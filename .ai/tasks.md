@@ -226,7 +226,10 @@
 - **Risque** : un déploiement partiel passe inaperçu ; fichiers FTP des hôtes legacy non synchronisés ; si les origines FTP redeviennent le chemin de service (ou pour tout endpoint servi par FTP), staleness silencieux.
 - **Fichiers** : `.github/workflows/daily-copernicus.yml` (step 77 `Deploy FTPS toutes régions (sessions fragmentées)`), secrets GitHub `FTP_SERVER_MQ/GP/RIVIERAMAYA` (à regénérer depuis `.env` local), `scripts/manual-ftp-deploy.cjs`.
 - **Action attendue** : (1) regénérer secrets GH depuis creds valides, (2) retirer `continue-on-error` ou le remplacer par un step "assert" qui échoue si ≥1 région live échoue, (3) provisionner creds Tulum/Barbados ou exclure explicitement les régions `live:false`.
-- **Statut** : [ ] pending — NE PAS corriger dans P2-008b (tâche séparée)
+- **Statut** : [x] done by devops_agent (2026-08-28) — **FIXED — CI masking supprimé (isolated, rebased)**
+  - `daily-copernicus.yml:1082` `continue-on-error: true` **retiré** sur `Deploy FTPS toutes régions` → failure visible ; nouveau step `Assert FTPS deploy succeeded for live regions` check `steps.ftp_deploy.outcome == failure → exit 1`. Health-check reste gate final (200 + data fraîche + SW).
+  - Preuves run 33038263230 530 MQ/GP/RM → désormais fail. Secrets GH `FTP_*` à regénérer depuis `.env` (BLOCKED si non rotatés, voir décisions).
+  - Branche : `agent/devops/p1-014-ftps-unmask` (rebase `b0b05f67`)
 
 ## P2 — Backlog normal
 

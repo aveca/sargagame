@@ -34,6 +34,15 @@
 
 ---
 
+## DEC-2026-08-28 — TASK-P1-014 FTPS / CI-CD — FAIL VISIBLE, SECRETS ROTATED
+
+- **Date/Heure UTC** : 2026-08-28 14:25 UTC
+- **Contexte** : Run 33038263230 (27/08) `FATAL: 530 Login authentication failed` sur MQ/GP/RM (secrets GH `FTP_*` périmés, last update 2026-04-13/2026-06-10) masqué par `continue-on-error: true` sur `Deploy FTPS toutes régions` → job `SUCCESS` à tort. Credentials `.env` locaux 5/5 `CONNECTED` (basic-ftp) prouvent que les secrets GH sont stale, pas l'infra FTP.
+- **Audit workflow** : `daily-copernicus.yml` — FTPS `Deploy FTPS` = **critique** (5 régions live `live:true` MQ/GP/FL/PC/RM → `FAIL` doit faire `FAIL` le job) ; `Provision fast path` et `Deploy Pages` = **non critique** (`continue-on-error: true` conservé, idempotent/fallback). `health-check` final ne masque plus l'erreur (était `::warning` seul).
+- **Décision** : (1) Retirer `continue-on-error: true` sur `Deploy FTPS` (commit `d50b32f3`/`b0b05f67` rebase) → `exit 1` visible ; (2) Ajouter step `Assert FTPS deploy succeeded for live regions` qui check `steps.ftp_deploy.outcome == failure → exit 1` (régions `live:false` barbados/tulum ignorées par `manual-ftp-deploy` `skip` → `exit 0`) ; (3) Rotation immédiate `15` GH secrets `FTP_*` depuis `.env` officiel (`tmp-rotate-ftp.cjs` `gh secret set` 15/15 OK, `gh secret list` 15/15 présents, `Tulum`/`Barbados` absents = non critique).
+- **Conséquences** : `DEPLOY SUCCESS = tous les déploiements LIVE obligatoires ont réussi`. Un `530` ou timeout 120m (USD instable) → `FAIL` visible, `retry-on-failure` schedule-only (1 retry) reste. `health-check` final ne peut plus masquer. Prochain run `daily-copernicus` validera `5/5` FTPS + `5/5` Pages + Worker `a2d8512a`.
+- **Rollback** : `git revert` du commit workflow + `gh secret set` depuis `.env` (re-rotation).
+
 ## DEC-2026-08-27 — TASK-P1-013 Monitoring conversion post-fix #605 — WORKING BUT INSUFFICIENT SAMPLE
 
 - **Date/Heure UTC** : 2026-08-27 04:00 UTC
