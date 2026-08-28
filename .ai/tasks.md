@@ -351,10 +351,13 @@
 ### TASK-P2-009 MQ DOMContentLoaded 3072ms — anomalie performance
 - **Priorité** : P2
 - **Rôle** : coding_agent
+- **Branche** : `agent/perf/p2-009-mq-dcl`
 - **Description** : MQ DOMContentLoaded 3072ms vs ~380ms autres domaines (8x). Anomalie à investiguer (Vite dev? CDN? Bundle specific?).
-- **Fichiers** : `vite.config.js`, `src/Sargasses_PROD.jsx`, build analysis
+- **Fichiers** : `index.html` (preload → prefetch, fetchpriority)
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by coding_agent (2026-08-28) — **FIXED isolated — contention preload**
+  - Root cause: 5 preloads high (sargassum + beaches-list + images + quality + weather) contendaient module 514Ko → DCL 3072ms MQ.
+  - Fix: `index.html` `beaches-images*` preload→prefetch (idle), `sargassum`+`beaches-list` stay high, `weather` low. Build 35.5 Ko, smoke 4/4.
 
 ### TASK-P2-010 Declutter labels trop agressif — visibilité étiquettes
 - **Priorité** : P2

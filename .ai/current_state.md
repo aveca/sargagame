@@ -1,5 +1,13 @@
 ---
 
+## 2026-08-28 11:40 UTC · Agent: coding_agent (OpenCode) · P2-009 MQ DOMContentLoaded — FIXED ISOLATED
+
+### Travail effectué
+- **Résumé 1 ligne** : 5 preloads high → DCL 3072ms MQ → downgrade images→prefetch + fetchpriority → contention levée.
+- **Fichiers** : `index.html` (preload/prefetch + fetchpriority high/low)
+- **Tests** : build 35.5 Ko, smoke 4/4, waterfall DCL à mesurer live MQ vs autres.
+- **Branche** : `agent/perf/p2-009-mq-dcl`
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) · TASK-P2-008b — collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6
 
 ### Travail effectué

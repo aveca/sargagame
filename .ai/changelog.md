@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-28 11:40 UTC · Agent: coding_agent (OpenCode) — **P2-009 MQ DOMContentLoaded — FIXED ISOLATED**
+
+### Contexte
+MQ 3072ms vs 380ms autres (8×) — 5 preloads high contendaient module critique.
+
+### Changements
+- `index.html` `beaches-images*` preload→prefetch, fetchpriority high/low.
+
+### Validation
+- Build 35.5 Ko, smoke 4/4, DCL live à mesurer.
+
 ## 2026-08-27 19:45 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-008b collect.php sous Cloudflare Pages — FIXED + LIVE VERIFIED 6/6**
 
 ### Contexte
