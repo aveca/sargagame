@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-28 14:12 UTC · Agent: coding_agent (OpenCode) — **POST-MERGE SECURITY HOTFIX + LIVE VERIFIED 6/6 (14abce0)**
+
+### Contexte
+Post-merge `af3895f8` Worker deploy bloqué par routes `*.php` invalides (wildcard non terminal) + Pages `dist` contenait encore 27 `api/*.php` (`_ratelimit.php`/`comps.php`/`paypal.php` leaks 200).
+
+### Changements
+- `vite.config.js` purge ALL `*.php` de `dist` (root + `api/` + `api/copernicus/`) → 0 php in Pages artifact.
+- `workers/sg-payments/wrangler.jsonc` retrait des 6 routes `*.php` invalides (38 routes restantes, toutes `*` terminal).
+- Worker `sg-payments` redeployed `a2d8512a` + Pages 6/6 redeployed (`4ef6d43f` etc.) → `stats.php`/`ground-truth.php`/`_deploy.php` 404 nosniff sur `?t=` bust, `*.pages.dev` 404.
+
+### Validation
+- 6/6 sensitive 404 nosniff, 6/6 unknown 404, legit `collect` 204 / `track-open` 200 / `track-click` 302, `wrangler deploy` SUCCESS, `npm run build` 0 php.
+
 ## 2026-08-28 11:30 UTC · Agent: coding_agent (OpenCode) — **SECURITY PHP STATIC LEAK — FIXED ISOLATED**
 
 ### Contexte

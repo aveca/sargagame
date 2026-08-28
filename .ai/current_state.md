@@ -1,5 +1,15 @@
 ---
 
+## 2026-08-28 14:12 UTC · Agent: coding_agent (OpenCode) · POST-MERGE SECURITY LIVE VERIFICATION — HOTFIX 14abce0 + LIVE VERIFIED 6/6
+
+### Travail effectué
+- **Résumé 1 ligne** : Worker `sg-payments` redeployed `a2d8512a` (fix invalid `*.php` routes) + Pages 6/6 redeployed `4ef6d43f` etc. (vite purge ALL php, 0 php in dist) → leaks `stats.php`/`_ratelimit.php`/`comps.php`/`paypal.php` éliminés.
+- **Worker** : `sg-payments` version `a2d8512a-af1a-4a23-b252-8749e7e4aa0a` — routes `api/mollie*`, `api/b2b-*`, `api/track-*`, `api/widget-token*`, `api/copernicus/forecast*`, `api/create-checkout*`, `collect.php` (38 routes, `*.php` invalides retirées) — code `path.endsWith('.php') → 404 nosniff` après tous handlers légitimes (16 allowlistés) — `wrangler deploy` SUCCESS.
+- **Pages** : 6 projets redeployed `dist` 0 php (`4ef6d43f` sargagame, `bdd08b22` gp, `f364493f` florida, `5bec43f5` rivieramaya, `de1dc8a1` puntacana, `c26452a9` tulum) — preview `*.pages.dev/stats.php` 404, custom domain `?t=` bust 404 nosniff.
+- **Tests LIVE** : 6/6 sensitive 404 nosniff, 6/6 unknown 404, 6/6 legit (`/collect.php` 204 with Origin, `/track-open` 200, `/track-click` 302, `/api/b2b-*` via `api/b2b-*` route), 6/6 `*.pages.dev` 404, aucun `<?php` ni `sb_secret`.
+- **Fichiers** : `vite.config.js` purge ALL php, `workers/sg-payments/wrangler.jsonc` remove invalid `*.php` routes — hotfix `14abce0` sur `main`.
+- **Branche** : `main` `14abce0` (post-`af3895f8`)
+
 ## 2026-08-28 11:30 UTC · Agent: coding_agent (OpenCode) · SECURITY PHP STATIC LEAK — FIXED ISOLATED
 
 ### Travail effectué
