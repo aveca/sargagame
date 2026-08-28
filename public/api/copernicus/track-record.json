@@ -1,23 +1,23 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-08-27T22:10:32.114Z",
+  "generatedAt": "2026-08-28T10:51:22.718Z",
   "window": {
-    "from": "2026-07-29",
-    "to": "2026-08-27",
+    "from": "2026-07-30",
+    "to": "2026-08-28",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-07-27",
-    "to": "2026-08-27",
-    "days": 32,
-    "sampleSize": 3591,
-    "statusHitRatePct": 96
+    "to": "2026-08-28",
+    "days": 33,
+    "sampleSize": 3696,
+    "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-08-27T22:10:32.011Z",
+    "computedAt": "2026-08-28T10:51:22.633Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
   "sampleSize": 3339,
@@ -54,7 +54,7 @@
     },
     {
       "day": 5,
-      "hitRatePct": 97,
+      "hitRatePct": 98,
       "pairs": 525
     },
     {
@@ -67,32 +67,32 @@
     "unknown": {
       "samples": 126,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 121,
+      "cleanSamples": 120,
       "alertReliabilityPct": 0,
-      "alertSamples": 5,
-      "falseAlarmRatePct": 4
+      "alertSamples": 6,
+      "falseAlarmRatePct": 5
     },
     "calm": {
-      "samples": 3183,
+      "samples": 3189,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 3075,
+      "cleanSamples": 3086,
       "alertReliabilityPct": 0,
-      "alertSamples": 108,
+      "alertSamples": 103,
       "falseAlarmRatePct": 3
     },
     "transition": {
-      "samples": 30,
+      "samples": 24,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 30,
+      "cleanSamples": 24,
       "alertReliabilityPct": null,
       "alertSamples": 0,
       "falseAlarmRatePct": 0
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-07-29 → 2026-08-27) se sont vérifiées (sur 3075) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-07-29 → 2026-08-27) proved correct (over 3075); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-29 → 2026-08-27) resultaron correctos (sobre 3075); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-07-30 → 2026-08-28) se sont vérifiées (sur 3086) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-07-30 → 2026-08-28) proved correct (over 3086); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-07-30 → 2026-08-28) resultaron correctos (sobre 3086); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
@@ -141,7 +141,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.006
+      "afaiMAE": 0.007
     },
     {
       "id": "gp-malendure",
@@ -189,7 +189,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.009
     },
     {
       "id": "anse-mitan",
@@ -197,7 +197,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.009
     },
     {
       "id": "anse-noire",
@@ -205,7 +205,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.008
+      "afaiMAE": 0.007
     },
     {
       "id": "grande-anse",
@@ -220,8 +220,8 @@
       "name": "Le Diamant",
       "island": "mq",
       "samples": 159,
-      "hitRatePct": 48,
-      "afaiMAE": 0.075
+      "hitRatePct": 47,
+      "afaiMAE": 0.077
     },
     {
       "id": "vauclin",
@@ -236,8 +236,8 @@
       "name": "Les Salines",
       "island": "mq",
       "samples": 159,
-      "hitRatePct": 92,
-      "afaiMAE": 0.015
+      "hitRatePct": 95,
+      "afaiMAE": 0.012
     },
     {
       "id": "pt-marin",
@@ -261,7 +261,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.02
+      "afaiMAE": 0.019
     }
   ],
   "disclaimer": "Au-delà de J+3 la fiabilité décroît (prévision indicative). Les alertes (sargasses attendues) sont émises à confiance prudente tant que la donnée satellite ne les confirme pas. La période couverte est dans « window » ; les chiffres sont recalculés à chaque mise à jour de l'archive.",
