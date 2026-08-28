@@ -2495,42 +2495,42 @@
       "levels": [
         {
           "id": "tu001",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu002",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu003",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu004",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu005",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu006",
-          "afai": 0.21,
+          "afai": 0.22,
           "status": "moderate"
         },
         {
           "id": "tu007",
-          "afai": 0.2,
+          "afai": 0.21,
           "status": "moderate"
         },
         {
           "id": "tu008",
-          "afai": 0.21,
+          "afai": 0.23,
           "status": "moderate"
         }
       ]

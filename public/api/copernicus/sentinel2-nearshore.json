@@ -1,10 +1,18 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
-  "updatedAt": "2026-08-28T10:46:30.938Z",
+  "updatedAt": "2026-08-28T16:25:29.060Z",
   "lookbackDays": 12,
   "note": null,
   "beaches": {
+    "les-salines": {
+      "fai": 0.00004,
+      "afaiLike": 0.12,
+      "coverage": 0.94,
+      "obsDate": "2026-08-25",
+      "ageDays": 3,
+      "nPixels": 104322
+    },
     "sainte-anne": {
       "fai": -0.00089,
       "afaiLike": 0.05,
@@ -28,6 +36,14 @@
       "obsDate": "2026-08-25",
       "ageDays": 3,
       "nPixels": 69762
+    },
+    "tartane": {
+      "fai": 0.00895,
+      "afaiLike": 0.12,
+      "coverage": 0.22,
+      "obsDate": "2026-08-25",
+      "ageDays": 3,
+      "nPixels": 24893
     }
   }
 }
