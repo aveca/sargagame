@@ -2495,7 +2495,7 @@
       "levels": [
         {
           "id": "tu001",
-          "afai": 0.22,
+          "afai": 0.21,
           "status": "moderate"
         },
         {
@@ -2520,17 +2520,17 @@
         },
         {
           "id": "tu006",
-          "afai": 0.22,
-          "status": "moderate"
-        },
-        {
-          "id": "tu007",
           "afai": 0.21,
           "status": "moderate"
         },
         {
+          "id": "tu007",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
           "id": "tu008",
-          "afai": 0.23,
+          "afai": 0.22,
           "status": "moderate"
         }
       ]
