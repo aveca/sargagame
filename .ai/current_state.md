@@ -1,5 +1,14 @@
 ---
 
+## 2026-08-28 15:00 UTC · Agent: coding_agent (OpenCode) · TASK-P2-009 MQ DCL — NO CODE CHANGE (NOT REPRODUCIBLE)
+
+### Travail effectué
+- **Résumé 1 ligne** : Profiling 6 domaines (Playwright, fresh browser per domain) → MQ `374ms` vs GP `337ms` (vs audit `3137ms` `reqStart 2830` artifact) → non reproductible, pas de patch.
+- **Baseline** : `tmp-perf-measure.cjs` 6 domaines sequential same-context: MQ `3137` `2830` vs GP `327` `92` (1st nav cold) ; isolated fresh browser: MQ `372` `98`, GP `332` `94`, 5 runs MQ `334-395` — variance normale. **Root cause**: mesure initiale (22:30 UTC, STALE 33.8h, deploy running) vs cold-start, pas HTML/preload (8 preloads identiques, `transfer 16Ko`, HTML 35-41 Ko).
+- **Fichiers** : `index.html` **inchangé** (5 fetch preloads `null` prio) — `beaches-images→prefetch` non appliqué sans preuve.
+- **Tests** : `npm run build` 35.5 Ko, `chrome` fresh, `performance` nav timing, `htmlSize` diff, `preload` count.
+- **Branche** : `agent/perf/TASK-P2-009`
+
 ## 2026-08-28 14:25 UTC · Agent: devops_agent (OpenCode) · TASK-P1-014 FTPS / CI-CD — FIXED + SECRETS ROTATED
 
 ### Travail effectué
