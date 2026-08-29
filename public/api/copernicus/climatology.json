@@ -2,8 +2,8 @@
   "note": "OBSERVÉ au satellite (pas prédit). Taux par côte/mois, gate N>=60 jours-plage. Auditable comme /fiabilite/.",
   "min_samples": 60,
   "history_span": {
-    "first": "2026-07-29",
-    "last": "2026-08-28",
+    "first": "2026-07-30",
+    "last": "2026-08-29",
     "days": 31
   },
   "cells": [
@@ -14,10 +14,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 196,
+      "n_samples": 203,
       "n_beaches": 7,
       "first_date": "2026-08-01",
-      "last_date": "2026-08-28"
+      "last_date": "2026-08-29"
     },
     {
       "island": "gp",
@@ -26,10 +26,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 84,
+      "n_samples": 87,
       "n_beaches": 3,
       "first_date": "2026-08-01",
-      "last_date": "2026-08-28"
+      "last_date": "2026-08-29"
     },
     {
       "island": "mq",
@@ -38,10 +38,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 224,
+      "n_samples": 232,
       "n_beaches": 8,
       "first_date": "2026-08-01",
-      "last_date": "2026-08-28"
+      "last_date": "2026-08-29"
     },
     {
       "island": "mq",
@@ -50,10 +50,10 @@
       "clean_rate": 100,
       "moderate_rate": 0,
       "avoid_rate": 0,
-      "n_samples": 84,
+      "n_samples": 87,
       "n_beaches": 3,
       "first_date": "2026-08-01",
-      "last_date": "2026-08-28"
+      "last_date": "2026-08-29"
     }
   ]
 }
