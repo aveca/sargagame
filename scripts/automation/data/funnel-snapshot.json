@@ -1,12 +1,12 @@
 {
   "window_days": 7,
-  "since": "2026-08-21T22:20:04.065Z",
-  "total_rows": 11052,
+  "since": "2026-08-22T06:44:09.351Z",
+  "total_rows": 11202,
   "counts": {
-    "session_start": 2126,
-    "forecast_lock_click": 115,
-    "premium_modal_open": 383,
-    "beach_open": 3609,
+    "session_start": 2133,
+    "forecast_lock_click": 121,
+    "premium_modal_open": 386,
+    "beach_open": 3547,
     "pass_cta": 131,
     "conversion": 0,
     "email_submit": 0,
@@ -14,7 +14,7 @@
     "checkout_redirect": 0,
     "onsite_checkout_opened": 77,
     "pay_onsite_back": 2,
-    "b2b_offer_view": 37,
+    "b2b_offer_view": 38,
     "b2b_step": 0,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
@@ -23,55 +23,55 @@
   "mollie_redirects": 0,
   "onsite_opened": 77,
   "rates": {
-    "session_to_lock": 5.4,
-    "lock_to_beach": 3138.3,
-    "beach_to_modal": 10.6,
-    "modal_to_cta": 34.2,
+    "session_to_lock": 5.7,
+    "lock_to_beach": 2931.4,
+    "beach_to_modal": 10.9,
+    "modal_to_cta": 33.9,
     "cta_to_onsite": 58.8,
     "onsite_to_mollie": 0,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "beach_open": 1159,
-      "session_start": 627,
-      "premium_modal_open": 73,
-      "pass_cta": 7,
-      "forecast_lock_click": 37,
+    "RIVIERAMAYA": {
+      "premium_modal_open": 24,
+      "session_start": 66,
+      "beach_open": 161,
+      "b2b_offer_view": 7,
       "onsite_checkout_opened": 5,
-      "b2b_offer_view": 5
+      "pass_cta": 5,
+      "forecast_lock_click": 11
     },
     "PUNTACANA": {
-      "beach_open": 630,
-      "session_start": 431,
-      "premium_modal_open": 78,
-      "b2b_offer_view": 19,
+      "beach_open": 616,
+      "premium_modal_open": 77,
+      "session_start": 445,
+      "b2b_offer_view": 20,
       "forecast_lock_click": 34,
       "pass_cta": 5,
       "onsite_checkout_opened": 5
     },
     "GP": {
-      "session_start": 537,
-      "beach_open": 827,
+      "beach_open": 793,
+      "session_start": 522,
       "premium_modal_open": 35,
       "b2b_offer_view": 2,
       "pass_cta": 3,
       "onsite_checkout_opened": 3,
       "forecast_lock_click": 2
     },
-    "RIVIERAMAYA": {
-      "beach_open": 166,
-      "premium_modal_open": 24,
-      "session_start": 65,
-      "b2b_offer_view": 7,
+    "FLORIDA": {
+      "beach_open": 1160,
+      "session_start": 639,
+      "premium_modal_open": 77,
+      "pass_cta": 7,
+      "forecast_lock_click": 43,
       "onsite_checkout_opened": 5,
-      "pass_cta": 5,
-      "forecast_lock_click": 11
+      "b2b_offer_view": 5
     },
     "MQ": {
-      "session_start": 461,
-      "beach_open": 821,
+      "beach_open": 811,
+      "session_start": 456,
       "premium_modal_open": 160,
       "pass_cta": 106,
       "forecast_lock_click": 31,
