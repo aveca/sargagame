@@ -17,6 +17,9 @@ import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
+import RegionNav from "./components/RegionNav.jsx"
+import LeadCapture from "./LeadCapture.jsx"
+import WidgetEmbed from "./WidgetEmbed.jsx"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -1853,6 +1856,52 @@ export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
 export const NO_TRIAL=true
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   PAYWALL 3-VIEW OVERLAY COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+function Paywall3ViewOverlay({lang,openPremium,track}){
+  const dismiss=()=>{try{sessionStorage.setItem("sg_paywall_3view_dismissed","1");sessionStorage.setItem("sg_paywall_3view_reset",String(Date.now()+6*60*60*1000))}catch(_){}}
+  return(
+    <div style={{
+      position:"fixed",inset:0,zIndex:1400,
+      background:"rgba(13,17,23,0.85)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",
+      display:"flex",alignItems:"center",justifyContent:"center",padding:20,
+      animation:"pw3Fade .3s ease-out"
+    }}>
+      <style>{`@keyframes pw3Fade{from{opacity:0}to{opacity:1}}`}</style>
+      <div style={{
+        background:"white",borderRadius:20,padding:"24px 20px",maxWidth:360,width:"100%",
+        boxShadow:"0 20px 60px rgba(0,0,0,0.4)",textAlign:"center",border:"3px solid #0d1117",position:"relative"
+      }}>
+        <button onClick={dismiss} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
+          position:"absolute",top:10,right:10,width:36,height:36,borderRadius:"50%",
+          border:"2px solid #0d1117",background:"white",color:"#0d1117",
+          font:"700 18px/1 'Bricolage Grotesque'",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"
+        }}>×</button>
+        <div style={{fontFamily:"'Anton',sans-serif",fontSize:28,lineHeight:1.1,color:"#0d1117",marginBottom:8,textTransform:"uppercase",letterSpacing:"-.5px"}}>
+          {_t(lang,"Vous avez consulté 3 plages","You've viewed 3 beaches","Has consultado 3 playas")}
+        </div>
+        <div style={{font:"600 14px/1.4 'Bricolage Grotesque'",color:"#41414a",marginBottom:20}}>
+          {_t(lang,"Pour un suivi illimité + alertes email + widget embarqué :","For unlimited tracking + email alerts + embeddable widget :","Para seguimiento ilimitado + alertas email + widget integrable :")}
+        </div>
+        <button onClick={()=>{track("sg_paywall_3view_cta",{});openPremium("paywall_3view")}} style={{
+          width:"100%",padding:"14px",borderRadius:12,border:"3px solid #0d1117",
+          background:"linear-gradient(180deg,#ffe07a,#ffb338)",boxShadow:"0 4px 14px rgba(255,150,60,0.35)",
+          color:"#0d1117",font:"800 15px/1 'Bricolage Grotesque'",cursor:"pointer",marginBottom:10
+        }}>
+          {_t(lang,"Découvrir les offres pro →","Discover pro offers →","Descubrir ofertas pro →")}
+        </button>
+        <button onClick={dismiss} style={{
+          width:"100%",padding:"12px",borderRadius:12,border:"2px solid #0d1117",
+          background:"white",color:"#0d1117",font:"700 13px/1 'Bricolage Grotesque'",cursor:"pointer"
+        }}>
+          {_t(lang,"Peut-être plus tard","Maybe later","Quizás más tarde")}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 export const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
@@ -1921,7 +1970,14 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
   "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist",
   // MAP VALUE SPRINT #1 : top 3 best beaches click
-  "sg_best_beach_click"])
+  "sg_best_beach_click",
+  // MONETIZATION SPRINT #3 — Lead capture, paywall, B2B CTA
+  "sg_lead_banner_view","sg_lead_banner_submit","sg_lead_banner_dismiss",
+  "sg_paywall_forecast_shown","sg_paywall_forecast_click",
+  "sg_beach_cta_b2b_shown","sg_beach_cta_b2b_click",
+  "sg_paywall_3view_cta",
+  // Cross-sell inter-domain
+  "sg_region_nav_click","sg_cross_sell_click"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
@@ -10372,6 +10428,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {!IS_NEW_REGION && (
           <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
             <a href="/offres/" style={{color:"rgba(255,255,255,.38)"}}>Offres</a>{" · "}
+            <a href="/b2b" style={{color:"#0d7f63",fontSize:13,textDecoration:"underline"}}>Voir nos offres pros →</a>{" · "}
             <a href="/fiabilite/" style={{color:"rgba(255,255,255,.38)"}}>Fiabilité</a>{" · "}
             <a href="/cgv.html" style={{color:"rgba(255,255,255,.3)"}}>CGV</a>{" · "}
             <a href="/remboursement.html" style={{color:"rgba(255,255,255,.3)"}}>Remboursement</a>{" · "}
@@ -14445,7 +14502,23 @@ useEffect(()=>{
           )
         })()}
 
-        {/* CAPTURE GATE — A/B capture_gate · intercept forecast intent avant PremiumModal */}
+        {/* 3-VIEW PAYWALL OVERLAY — shows after 3 beach views for non-premium users */}
+        {!isPremium&&!showPremium&&!showCaptureGate&&(function(){
+          try{
+            const views=parseInt(sessionStorage.getItem("sg_beach_views")||"0",10)
+            const dismissed=sessionStorage.getItem("sg_paywall_3view_dismissed")
+            const resetAt=parseInt(sessionStorage.getItem("sg_paywall_3view_reset")||"0",10)
+            const now=Date.now()
+            if(resetAt&&now>resetAt){sessionStorage.removeItem("sg_paywall_3view_dismissed");sessionStorage.removeItem("sg_paywall_3view_reset")}
+            if(views>=3&&!dismissed){
+              return(
+                <Paywall3ViewOverlay lang={lang} openPremium={openPremium} track={track} />
+              )
+            }
+          }catch(_){return null}
+        })()}
+                      {_t(lang,"Peut-être plus tard","Maybe later","Quizás más tarde")}
+                    {/* CAPTURE GATE — A/B capture_gate · intercept forecast intent avant PremiumModal */}
         {showCaptureGate&&<CaptureGateModal lang={lang} beach={selectedBeach||null}
           onSubmit={em=>{
             try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
@@ -14826,6 +14899,14 @@ useEffect(()=>{
         <SgToastHost lang={lang}/>
         {/* Success celebrations — confettis dorés (Wow Effect 3) */}
         <SuccessCelebration/>
+
+        {/* LEAD CAPTURE BANNER — email capture after 15s or 2 scrolls */}
+        <LeadCapture />
+
+        {/* Region Navigation — auto-detecte le domaine */}
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:1000,padding:'12px 16px',background:'linear-gradient(135deg, #0a5c4a, #0d7f63)',borderBottom:'1px solid rgba(255,255,255,.07)'}}>
+          <RegionNav />
+        </div>
 
         {/* GDPR Cookie Consent Banner — affiché si pas de choix enregistré.
             Accepter → grant analytics_storage via gtag consent update.

@@ -8,7 +8,15 @@
 
 ## Récemment complété
 
-- [x] **FULL PRODUCT HEALTH AUDIT — 6 domaines LIVE** (@senior_product_ux_qa OpenCode, 2026-08-25) — Audit complet UX/UI/Performance/Accessibilité/SEO/Broken Links sur MQ, GP, FL, RM, PC, Tulum. 0 P0 nouveaux, 1 P1 systémique (H1 manquants), 3 P0 existants (ERDDAP stale, Tulum clean=0, RM beach detail), 6 P2, 4 P3. Payment path observé 5/6 (PC fiche fail). AUCUNE correction — qualité rapport priorisée. Backlog 10 tâches créées ci-dessous. Artefacts: `tests/ux-recordings/*/`, `.ai/current_state.md` entrée complète.
+- [x] **SPRINT #3 — MONETIZATION LAYER (ROI)** (@product_agent + coding_agent, 2026-08-30) — 5 tasks completed:
+  1. **LeadCapture.jsx** — Email banner (15s/2-scroll, Supabase /api/supabase fallback /b2b, 7-day dismiss). Track: sg_lead_banner_view/submit/dismiss.
+  2. **WidgetEmbed.jsx** — Embeddable widget preview (mini-map 300px, 3-day badges, iframe code generator → /widget?token=XXX).
+  3. **BeachSheet.jsx** — Forecast J+3+ blur (🔒 Plan Alert €29/mo), B2B contextual CTA (score<50: sargassum warning, ≥50: clean upsell). Track: sg_paywall_forecast_shown/click, sg_beach_cta_b2b_shown/click.
+  4. **Sargasses_PROD.jsx** — 3-view paywall overlay (dismiss 6h, reset at 6 views), LeadCapture integration, 8 new funnel events.
+  4. **RegionNav.jsx** — Cross-sell telemetry (sg_region_nav_click, sg_cross_sell_click), visited regions tracking, Enterprise upsell at 2+ regions.
+  Gate: ✅ build, ✅ 36 Ko gzip (≤210 Ko), ✅ PHP lint, ✅ ux-smoke 4/4 tokens. Rollback: ?lead=0, ?paywall3=0, ?forecastblur=0, ?beachcta=0, ?crosssell=0. PR #625.
+
+- [x] **B2B INTEGRATION — RegionNav + /b2b link + desktop scroll** (@coding_agent, 2026-08-30) — Import RegionNav in Sargasses_PROD.jsx (fixed top, z-index:1000), render lien "Voir nos offres pros →" vers /b2b (color #0d7f63, fs 13px, underline) dans footer, ajouter overflow-x:hidden index.html, build 36 Ko ≤ 210 Ko, ux-smoke 4/4 tokens. RegionNav flex-wrap-wrap s'adapte, aucun débordement desktop. Comité: build OK, bundle budget OK, mobile/desktop tests pass.
 
 - [x] **P0 RIVIERA MAYA BEACH DETAIL — pin click → sheet absent FIXED** (@coding_agent, 2026-08-26) — WorldMapView pins sans data-beach → audit fallback 195,350 hors bbox RM/PC → sheet absent → switch_back_to_map timeout. Fix: data-beach sur pins+labels (ArchipelView déjà OK). PR #606 merged 6f8a41d8, CI 6/6, Deploy SUCCESS, QA 6/6 live PASS (RM 20 pins, PC 12, etc.).
 

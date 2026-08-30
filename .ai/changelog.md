@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-08-30 16:00 UTC · Agent: coding_agent (OpenCode) — **TASK: B2B INTEGRATION — RegionNav + /b2b link + desktop scroll fix**
+
+### Travail effectué
+- **RegionNav** import + render dans `src/Sargasses_PROD.jsx` : position fixed en haut, `z-index:1000`, `padding 12px 16px`, background gradient `#0a5c4a` → `#0d7f63`. Détection domaine auto (`window.location.hostname`). `flex-wrap:wrap` → s'adapte mobile comme desktop.
+- **/b2b link** ajouté dans footer MQ/GP : "Voir nos offres pros →" vers `/b2b`, style `color:#0d7f63, font-size:13px, text-decoration:underline`. Placé après le lien "Offres" existant.
+- **Débordement desktop** : `overflow-x:hidden` ajouté sur `html,body` dans `index.html`. Vérifié 1920×1080 → aucun scroll horizontal, RegionNav et chips TOP 3 alignés.
+- **Build & budget** : `npm run build` exit 0, `check-bundle-budget.cjs` → 36.0 Ko gzip ≤ 210 Ko ✅. `ux-smoke.mjs` → FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=✅.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — import RegionNav + render RegionNav fixe + lien /b2b footer
+- `index.html` — `overflow-x:hidden` sur `html,body`
+- `public/api/b2b-partners.json` — régénéré par build (snapshot à jour)
+
+### Validation
+- Build ✅, bundle ✅, ux-smoke ✅, régions valid ✅, desktop scroll ✅, mobile test ✅, /b2b link ✅
+
+---
+
+## 2026-08-30 12:00 UTC · Agent: product_agent + coding_agent (OpenCode) — **SPRINT #3 MONETIZATION LAYER — 5 TASKS COMPLETED**
+
+### Contexte
+Sprint #3 — Maximiser conversions B2B et capture leads. Priorité: Task 2 (lead capture) > Task 3 (paywall) > Task 4 (B2B CTA) > Task 1 (widget) > Task 5 (cross-sell).
+
+### Changements
+- **src/LeadCapture.jsx** (nouveau) — Email capture banner bottom-fixed, déclenché 15s session OU 2ème scroll. POST `/api/supabase` (table `b2b_leads`) `{email, domain, region, source:'map_banner'}`, fallback redirect `/b2b`. Dismiss 7j localStorage. Track: `sg_lead_banner_view/submit/dismiss`.
+- **src/WidgetEmbed.jsx** (nouveau) — Widget preview embarquable (mini-map 300px + 3 badges J/J+1/J+2 + iframe code copiable). CTA "Get this widget →" → `/b2b`. Iframe généré: `<iframe src="https://DOMAIN.com/widget?token=TOKEN" width="100%" height="320" frameborder="0" style="border-radius:12px"></iframe>`.
+- **src/BeachSheet.jsx** — Forecast J+3+ blur (`filter:blur(3px)`, opacity 0.65) + overlay "🔒 Plan Alert €29/mo" cliquable → paywall. B2B CTA contextuel selon score plage: `<50` "⚠️ Sargassum détecté... Recevez nos alertes 48h avant" / `≥50` "✅ Plage propre... Anticipez 7 jours". Track: `sg_paywall_forecast_shown/click`, `sg_beach_cta_b2b_shown/click`.
+- **src/Sargasses_PROD.jsx** — 3-beach-view paywall overlay (apparaît après 3 vues, dismiss 6h, reset à 6 vues). LeadCapture intégré. 8 nouveaux events funnel: `sg_lead_banner_*`, `sg_paywall_forecast_*`, `sg_beach_cta_b2b_*`, `sg_paywall_3view_cta`, `sg_region_nav_click`, `sg_cross_sell_click`.
+- **src/components/RegionNav.jsx** — Telemetry cross-sell: `sg_region_nav_click {from, to}`, stocke `sg_visited_regions` array. Si 2+ régions visitées → banner "Plan multi-région Enterprise →" vers `/b2b`. Track: `sg_cross_sell_click`.
+
+### Validation
+- ✅ `npm run build` exit 0
+- ✅ `node scripts/check-bundle-budget.cjs` — 36.0 Ko gzip (budget 210 Ko)
+- ✅ `php -l` sur 4 fichiers PHP touchés (mollie.php, mollie-lib.php, mollie-webhook.php, create-checkout.php)
+- ✅ `node scripts/ux-smoke.mjs` — FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+
+### Rollback flags
+- `?lead=0` — LeadCapture
+- `?paywall3=0` — 3-view overlay
+- `?forecastblur=0` — Forecast J+3+ blur
+- `?beachcta=0` — B2B contextual CTA
+- `?crosssell=0` — RegionNav cross-sell
+
+### Branche / PR
+- Branche: `agent/product/b2b-integration`
+- PR: #625
+- Commit: `35846777`
+
 ## 2026-08-28 16:00 UTC · Agent: coding_agent (OpenCode) — **TASK-P2-010 DECLUTTER — FIXED (MAX 5→8 + clean remplit)**
 
 ### Contexte

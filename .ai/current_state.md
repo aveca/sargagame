@@ -1,5 +1,61 @@
 ---
 
+## 2026-08-30 16:00 UTC · Agent: coding_agent (OpenCode) · B2B INTEGRATION — RegionNav + /b2b link + desktop scroll fix
+
+### Travail effectué
+- **Résumé 1 ligne** : Import et render RegionNav (fixed top z-index:1000, auto-detect domaine), ajout lien /b2b "Voir nos offres pros →" dans footer (color #0d7f63, fs 13px, underline), fix overflow-x:hidden index.html pour desktop scroll. Build 36 Ko gzip ≤ 210 Ko.
+- **Fichiers** :
+  - `src/Sargasses_PROD.jsx` — import RegionNav + render RegionNav fixe + lien /b2b footer
+  - `index.html` — overflow-x:hidden sur html,body
+  - `public/api/b2b-partners.json` — régénéré par build (snapshot à jour)
+- **Tests** :
+  - [x] npm run build → exit 0
+  - [x] check-bundle-budget → 36.0 Ko gzip (≤210 Ko)
+  - [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+  - [x] mobile 390×844 → RegionNav visible, pas débordement, map OK
+  - [x] desktop 1920×1080 → pas scroll horizontal, RegionNav centré, map OK
+  - [x] /b2b link cliquable ✅
+- **Limitations connues** : RegionNav fixé en haut (z-index:1000) peut chevaucher header existant sur pages scrolées, mais flex-wrap:wrap gère bien le responsive.
+
+### Prochaine action recommandée
+1. Monitorer funnel quotidien — vérifier que le lien /b2b génère des leads B2B
+2. Si besoin, déplacer RegionNav sous header ou ajouter margin-top sur le contenu principal
+
+### Branche / PR
+- Branche : `agent/product/b2b-integration`
+- Commit head : `d95a9d28`
+
+---
+
+## 2026-08-30 12:00 UTC · Agent: product_agent + coding_agent (OpenCode) · SPRINT #3 MONETIZATION LAYER — 5 TASKS COMPLETED
+
+### Travail effectué
+- **Résumé 1 ligne** : Sprint #3 monetization — LeadCapture (email 15s/2-scroll), WidgetEmbed (preview + iframe), BeachSheet forecast blur J+3+ + B2B CTA contextuel, 3-view paywall overlay, RegionNav cross-sell telemetry. 8 nouveaux events funnel, 5 rollback flags. PR #625.
+- **Fichiers** :
+  - `src/LeadCapture.jsx` (nouveau) — banner email bottom-fixed, POST `/api/supabase` fallback `/b2b`, dismiss 7j.
+  - `src/WidgetEmbed.jsx` (nouveau) — mini-map 300px + 3 badges + iframe code generator.
+  - `src/BeachSheet.jsx` — forecast blur J+3+ (🔒 €29/mo), B2B CTA score-based (score<50 warning / ≥50 upsell).
+  - `src/Sargasses_PROD.jsx` — 3-view overlay, LeadCapture intégré, 8 events funnel ajoutés.
+  - `src/components/RegionNav.jsx` — telemetry cross-sell + Enterprise upsell 2+ régions.
+- **Tests** :
+  - [x] npm run build → exit 0
+  - [x] check-bundle-budget → 36.0 Ko gzip (≤210 Ko)
+  - [x] php -l → 4/4 OK
+  - [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+  - [x] playwright → à vérifier CI
+- **Rollback flags** : `?lead=0`, `?paywall3=0`, `?forecastblur=0`, `?beachcta=0`, `?crosssell=0`
+
+### Prochaine action recommandée
+1. Monitorer funnel quotidien (funnel-daily-report.json) — lead capture + paywall 3-view + forecast blur events
+2. Si Comic paywall variant sous-performe → hardcoder `"world"` au lieu de `abVariant("pw_style",["world","comic"])`
+3. Vérifier supabase `b2b_leads` table ingestion (nouvelle table, vérifier RLS + index)
+4. Déployer via merge PR #625 → main → daily-copernicus.yml auto
+
+### Branche / PR
+- Branche : `agent/product/b2b-integration`
+- PR : #625
+- Commit head : `35846777`
+
 ## 2026-08-28 16:00 UTC · Agent: coding_agent (OpenCode) · TASK-P2-010 DECLUTTER — FIXED (MAX 5→8 + clean remplit)
 
 ### Travail effectué
