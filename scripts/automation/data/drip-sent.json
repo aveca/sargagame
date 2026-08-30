@@ -3170,7 +3170,8 @@
     "daily_count": 8,
     "install_nudge_count": 1,
     "install_nudge_last": "2026-08-26",
-    "j3": "2026-08-26T19:58:31.731Z"
+    "j3": "2026-08-26T19:58:31.731Z",
+    "j7": "2026-08-30T16:25:32.567Z"
   },
   "90dbe235de57a2784b6dad11ff3bc949": {},
   "1688896083a2eaa7c3f4bc88dc137b44": {
@@ -3206,16 +3207,20 @@
     "daily_sig": "Clearwater Beach|clean|69|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-30"
+    "install_nudge_last": "2026-08-30",
+    "j3": "2026-08-30T16:25:36.342Z"
   },
   "6b4687ac0076d655c25f503887e599e2": {
     "daily_last": "2026-08-30",
     "daily_sig": "Clearwater Beach|clean|69|clean|0|",
     "daily_count": 4,
     "install_nudge_count": 1,
-    "install_nudge_last": "2026-08-30"
+    "install_nudge_last": "2026-08-30",
+    "j3": "2026-08-30T16:25:37.838Z"
   },
-  "74f4b0e544b33528a853ed6f7f0132d4": {},
+  "74f4b0e544b33528a853ed6f7f0132d4": {
+    "j3": "2026-08-30T16:25:39.679Z"
+  },
   "b4e5d527f4fe0f1a9caf3eb3406f5045": {
     "daily_last": "2026-08-28",
     "daily_sig": "Bavaro Beach|clean|56|clean|0|",
