@@ -175,15 +175,29 @@ function AnimatedScore({target,duration=1500,size=64}){
 }
 
 /* ── Forecast bar ── */
-function ForecastBar({day,status,index,lang="fr"}){
+function ForecastBar({day,status,index,lang="fr",gated=false,onUnlock}){
   const [ref,revealed]=useReveal()
   const pct=status==="clean"?90:status==="moderate"?50:status==="avoid"?20:0
   const col=forecastColor(status)
   return(
-    <div ref={ref} style={{display:"flex",alignItems:"center",gap:10,width:"100%"}}>
+    <div ref={ref} style={{display:"flex",alignItems:"center",gap:10,width:"100%",position:"relative"}}>
       <span style={{font:"700 11px/1 'Bricolage Grotesque'",color:COMIC.sub,minWidth:28,textAlign:"right"}}>{day||"·"}</span>
-      <div style={{flex:1,height:28,borderRadius:8,background:COMIC.ink+"0d",border:`2px solid ${COMIC.ink}`,overflow:"hidden",position:"relative"}}>
+      <div style={{flex:1,height:28,borderRadius:8,background:COMIC.ink+"0d",border:`2px solid ${COMIC.ink}`,overflow:"hidden",position:"relative",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
         <div style={{height:"100%",borderRadius:6,background:col,width:revealed?pct+"%":"0%",transition:"width 1s cubic-bezier(.22,1,.36,1) "+(index*.12)+"s"}}/>
+        {gated&&(
+          <div onClick={onUnlock} style={{
+            position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(13,17,23,0.7)",cursor:"pointer",zIndex:2,
+            borderRadius:6
+          }}>
+            <span style={{
+              font:"700 10px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",
+              letterSpacing:".5px",background:"rgba(13,17,23,0.9)",padding:"2px 8px",borderRadius:4
+            }}>
+              🔒 {_t(lang,"Plan Alert €29/mo","Plan Alert €29/mo","Plan Alerta €29/mes")}
+            </span>
+          </div>
+        )}
       </div>
       <span style={{font:"700 10px/1 'Bricolage Grotesque'",color:COMIC.sub,minWidth:48,textAlign:"left",opacity:.7}}>{forecastLabel(status,lang)}</span>
     </div>
@@ -360,7 +374,8 @@ export default function BeachSheet({
                 ? <div style={{display:"flex",flexDirection:"column",gap:10}}>
                     {fcDays.map((d,i)=>{
                       const dayLabel=i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)
-                      return <ForecastBar key={i} day={dayLabel} status={d.status||"_loading"} index={i} lang={lang}/>
+                      const gated=!isPremium&&i>=2
+                      return <ForecastBar key={i} day={dayLabel} status={d.status||"_loading"} index={i} lang={lang} gated={gated} onUnlock={()=>{trk("sg_paywall_forecast_click",{beach_id:beach?.id,day:i});onCTA()}}/>
                     })}
                   </div>
                 : <div style={{textAlign:"center",padding:20,color:COMIC.sub,font:"600 13px/1.4 'Bricolage Grotesque'"}}>
@@ -493,10 +508,19 @@ export default function BeachSheet({
                 </span>}
               </div>
               <div style={{display:"flex",gap:5}}>
-                {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
-                  <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
+                {fcDays.map((d,i)=>{const gated=!isPremium&&i>=2;return(
+                  <div key={i} style={{flex:1,textAlign:"center",position:"relative",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
                     <div style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animation:"bsPop .5s cubic-bezier(.16,1,.3,1) both",animationDelay:(.15+i*.05)+"s"}}/>
-                    <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
+                    {gated&&(
+                      <div onClick={()=>{trk("sg_paywall_forecast_click",{beach_id:beach?.id,day:i});onCTA()}} style={{
+                        position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
+                        background:"rgba(13,17,23,0.7)",cursor:"pointer",zIndex:2,borderRadius:7,
+                        font:"700 8px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",letterSpacing:".3px"
+                      }}>
+                        🔒 {_t(lang,"€29/mo","€29/mo","€29/mes")}
+                      </div>
+                    )}
+                    <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,position:"relative",zIndex:1}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
                   </div>)}).slice(0,7)}
               </div>
             </div>
@@ -518,6 +542,37 @@ export default function BeachSheet({
               </div>
             </div>
           )}
+
+          {/* B2B Contextual CTA — based on beach score */}
+          {!isPremium&&(
+            <div style={{
+              marginBottom:14,padding:"12px 14px",borderRadius:12,
+              background:hasScore&&beach.score<50?"#FFF3E0":"#E8F5E9",
+              border:`2px solid ${hasScore&&beach.score<50?"#FFB74D":"#81C784"}`,
+              boxShadow:`0 2px 8px ${hasScore&&beach.score<50?"rgba(255,183,77,0.2)":"rgba(129,199,132,0.2)"}`
+            }}>
+              <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                <span style={{fontSize:18,flexShrink:0}}>{hasScore&&beach.score<50?"⚠️":"✅"}</span>
+                <div style={{flex:1,minWidth:200}}>
+                  <div style={{font:"800 13px/1.3 'Bricolage Grotesque'",color:hasScore&&beach.score<50?"#E65100":"#1B5E20"}}>
+                    {hasScore&&beach.score<50
+                      ? _t(lang,"Sargassum détecté sur cette plage. Hôtel ou gîte à proximité? Recevez nos alertes 48h avant l'arrivée des algues →","Sargassum detected on this beach. Hotel or guesthouse nearby? Get our alerts 48h before algae arrival →","Sargazo detectado en esta playa. ¿Hotel o alojamiento cerca? Reciba nuestras alertas 48h antes de la llegada de las algas →")
+                      : _t(lang,"Plage propre aujourd'hui. Anticipez les prochains jours avec nos prévisions 7 jours →","Beach clean today. Anticipate the next days with our 7-day forecasts →","Playa limpia hoy. Anticipe los próximos días con nuestros pronósticos 7 días →")}
+                  </div>
+                </div>
+                <a href="/b2b" onClick={(e)=>{trk("sg_beach_cta_b2b_click",{beach_id:beach?.id,score:beach?.score||null,status})}} style={{
+                  display:"inline-flex",alignItems:"center",gap:6,padding:"8px 14px",
+                  borderRadius:8,border:`2px solid ${hasScore&&beach.score<50?"#FFB74D":"#81C784"}`,
+                  background:"white",color:hasScore&&beach.score<50?"#E65100":"#1B5E20",
+                  font:"700 12px/1 'Bricolage Grotesque'",textDecoration:"none",whiteSpace:"nowrap",flexShrink:0
+                }}>
+                  {_t(lang,"Voir les offres pro →","See pro offers →","Ver ofertas pro →")}
+                </a>
+              </div>
+            </div>
+          )}
+          {/* Track B2B CTA shown */}
+          {!isPremium&&useEffect(()=>{trk("sg_beach_cta_b2b_shown",{beach_id:beach?.id,score:beach?.score||null,status})},[beach?.id,beach?.score,status,isPremium])}
 
           {/* CTA collant */}
           <div style={{position:"sticky",bottom:0,paddingTop:8,paddingBottom:"env(safe-area-inset-bottom,0px)",background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
