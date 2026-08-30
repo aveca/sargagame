@@ -17,6 +17,7 @@ import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
+import RegionNav from "./components/RegionNav.jsx"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -10372,6 +10373,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {!IS_NEW_REGION && (
           <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
             <a href="/offres/" style={{color:"rgba(255,255,255,.38)"}}>Offres</a>{" · "}
+            <a href="/b2b" style={{color:"#0d7f63",fontSize:13,textDecoration:"underline"}}>Voir nos offres pros →</a>{" · "}
             <a href="/fiabilite/" style={{color:"rgba(255,255,255,.38)"}}>Fiabilité</a>{" · "}
             <a href="/cgv.html" style={{color:"rgba(255,255,255,.3)"}}>CGV</a>{" · "}
             <a href="/remboursement.html" style={{color:"rgba(255,255,255,.3)"}}>Remboursement</a>{" · "}
@@ -14826,6 +14828,11 @@ useEffect(()=>{
         <SgToastHost lang={lang}/>
         {/* Success celebrations — confettis dorés (Wow Effect 3) */}
         <SuccessCelebration/>
+
+        {/* Region Navigation — auto-detecte le domaine */}
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:1000,padding:'12px 16px',background:'linear-gradient(135deg, #0a5c4a, #0d7f63)',borderBottom:'1px solid rgba(255,255,255,.07)'}}>
+          <RegionNav />
+        </div>
 
         {/* GDPR Cookie Consent Banner — affiché si pas de choix enregistré.
             Accepter → grant analytics_storage via gtag consent update.
