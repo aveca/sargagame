@@ -1919,6 +1919,30 @@ export default function WorldMapView({
             </span>
           </div>
           </>)}
+          {/* TOP 3 — MAP VALUE SPRINT #1 — outil décision <10s (score DESC, confidence tie-break) */}
+          {dataReady && beachList.length>=3 && !selected && !emailSent && (()=>{ const top3=[...beachList].filter(b=>b.score!=null && b.days && b.days[day]!=null).sort((a,b)=>{const sd=(b.score||0)-(a.score||0); if(sd!==0) return sd; return (b.conf?.[day]||0)-(a.conf?.[day]||0)}).slice(0,3); if(!top3.length) return null; return (
+          <div style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,padding:"0 2px"}}>
+              <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}>🏆 {_t(lang,"Meilleures plages aujourd’hui","Best beaches today","Mejores playas hoy")}</span>
+            </div>
+            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:2,scrollbarWidth:"none"}}>
+              {top3.map((b,i)=>{
+                const sc=Math.round(b.score); const st=b.days[day]; const col=STATUS_C[st]||"#9aa0a8";
+                return (
+                <button key={b.id} type="button" onClick={()=>{ try{track&&track("sg_best_beach_click",{beachId:b.id,rank:i+1})}catch(_){}; onOpenBeach&&onOpenBeach(b)}}
+                  style={{flex:"1 1 0",minWidth:108,display:"flex",flexDirection:"column",alignItems:"flex-start",gap:4,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`2.5px 2.5px 0 ${INK}`,borderRadius:12,padding:"8px 10px",cursor:"pointer",textAlign:"left"}}>
+                  <span style={{font:"800 10px/1 'Bricolage Grotesque',sans-serif",color:"#6b6478"}}>#{i+1}</span>
+                  <span style={{font:"800 12px/1.1 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>{b.name}</span>
+                  <span style={{display:"flex",alignItems:"center",gap:5}}>
+                    <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minWidth:26,padding:"2px 5px",borderRadius:6,background:col,color:"#fff",font:"800 11px/1 'Bricolage Grotesque',sans-serif",border:`1px solid ${INK}`}}>{sc}</span>
+                    <span style={{width:7,height:7,borderRadius:"50%",background:col,border:`1px solid ${INK}`}}/>
+                    <span style={{font:"700 10px/1 'Bricolage Grotesque',sans-serif",color:INK,textTransform:"uppercase"}}>{_t(lang,STATUS_LBL[st]?.[0]||st,STATUS_LBL[st]?.[1]||st,STATUS_LBL[st]?.[2]||st)}</span>
+                  </span>
+                </button>
+              )})}
+            </div>
+          </div>
+          )})()}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
               Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}

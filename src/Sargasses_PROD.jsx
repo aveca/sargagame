@@ -1919,7 +1919,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan",
   // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
-  "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
+  "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist",
+  // MAP VALUE SPRINT #1 : top 3 best beaches click
+  "sg_best_beach_click"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
