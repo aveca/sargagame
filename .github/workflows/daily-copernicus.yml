@@ -32,11 +32,13 @@ concurrency:
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
-    # 25 → 60 : les full builds enchaînent désormais 4 builds Vite (3 nouvelles
-    # régions + build partagé MQ/GP) + 5 deploys FTPS. Repo public = minutes illimitées.
-    timeout-minutes: 120  # 5 regions × (build + FTP) + Pages deploys + health checks
+    # Build + prepare-ftp + Pages deploy. FTPS moved to parallel matrix job.
+    timeout-minutes: 75
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    outputs:
+      full_build: ${{ steps.check_build.outputs.full }}
+      verify_data_outcome: ${{ steps.verify_data.outcome }}
 
     steps:
       - name: Checkout repository
@@ -783,6 +785,52 @@ jobs:
         if: steps.check_build.outputs.full == 'true'
         run: node scripts/prepare-ftp.cjs
 
+      # Upload FTP staging artifacts for parallel FTPS deploy (P1-018)
+      - name: Upload FTP staging artifacts
+        if: steps.check_build.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-staging-mq
+          path: martinique-ftp
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload FTP staging artifacts (GP)
+        if: steps.check_build.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-staging-gp
+          path: guadeloupe-ftp
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload FTP staging artifacts (FL)
+        if: steps.check_build.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-staging-florida
+          path: florida-ftp
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload FTP staging artifacts (PC)
+        if: steps.check_build.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-staging-puntacana
+          path: puntacana-ftp
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload FTP staging artifacts (RM)
+        if: steps.check_build.outputs.full == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-staging-rivieramaya
+          path: rivieramaya-ftp
+          if-no-files-found: ignore
+          retention-days: 7
+
       # Injecte api/mollie-config.php (clé live + webhook_secret) dans les dossiers de staging EUR à
       # partir des secrets MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET. Les secrets ne sont lus que via env:
       # (jamais dans une ligne shell → pas dans les logs). Échoue explicitement si webhook_secret absent.
@@ -1076,52 +1124,8 @@ jobs:
           FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
         run: node scripts/manual-ftp-deploy.cjs --provision
 
-      - name: Deploy FTPS toutes régions (sessions fragmentées)
-        id: ftp_deploy
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
-# SECURITY P1-014: continue-on-error RETIRÉ (2026-08-27). Le masquage 530 → SUCCESS
-# faisait passer un deploy partiel (MQ/GP/RM 530, secrets GH périmés) pour vert.
-# Désormais le step échoue visiblement ; le health-check reste le gate final.
-# Un hôte FTP instable (FL/PC/RM) peut encore flaker → le retry-on-failure
-# schedule-only (1 retry) reste. Ne pas remettre continue-on-error.
-# Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
-        # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
-        # déjà continue-on-error à un timeout n'échoue PAS le build, il laisse tourner
-        # le health-check (sites up = warning, down = error). Borne le blocage de queue.
-        # USD host (FL/PC/RM) is VERY unstable - extended timeout to 120min
-        timeout-minutes: 120
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
-          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
-          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
-          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
-          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
-          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
-          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
-          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
-          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
-          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
-          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
-          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
-          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
-          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
-          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
-        run: node scripts/manual-ftp-deploy.cjs
-
-      - name: Assert FTPS deploy succeeded for live regions (P1-014)
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
-        run: |
-          # P1-014: le step FTPS n'est plus continue-on-error → son outcome est
-          # désormais visible. Si manual-ftp-deploy a échoué (530 secrets périmés,
-          # 660 STOR timeout, etc.) on échoue ICI explicitement pour que le run
-          # ne reste pas vert. Les régions live:false (barbados, tulum si live:false)
-          # sont déjà ignorées par manual-ftp-deploy (skip sans creds → exit 0).
-          if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
-            echo "::error::FTPS deploy a échoué (530/timeout). Vérifier secrets FTP_* GH vs .env local + logs job 98407369883 (run 33038263230). Health-check suivra."
-            exit 1
-          fi
-          echo "FTPS deploy OK (ou skipped non-live)."
+      # FTPS deployment moved to parallel matrix job 'ftps-deploy' (P1-018)
+      # This job now only handles build, prepare-ftp, and Pages deploy.
 
       # ── 5b. Deploy to Cloudflare Pages (all regions) ──
       # Pages projects need region-specific builds + data copy. This runs after
@@ -1206,16 +1210,8 @@ jobs:
             echo "::error::Sites down:$DOWN — FTP deploys failed and sites not serving"
             exit 1
           fi
-          # If FTP attempt 2 also failed AND data is stale (>6h), alert
-          if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
-            echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
-          fi
-          # Deploy FTP SAUTÉ par le gate d'intégrité (verify_data KO) : les sites
-          # restent up sur l'ancienne donnée (cache/CDN) → pas de "site down", mais
-          # publication volontairement bloquée. On le rend visible (sinon skip muet).
-          if [ "${{ steps.ftp_deploy.outcome }}" = "skipped" ]; then
-            echo "::warning::Deploy FTP SAUTÉ — intégrité des données refusée (source dégradée ou pic tout-vert). Sites servent l'ancienne donnée (réelle). Prochain run re-tentera la source live."
-          fi
+          # FTPS results are now checked in the 'assert-ftps' job (P1-018).
+          # This health check focuses on HTTP/SW verification.
           # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
           # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
           # Référence = le sw.js du dossier FTP réellement uploadé, JAMAIS
@@ -1275,9 +1271,232 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+
+  # ── FTPS Parallel Deploy (P1-018) ──────────────────────────
+  ftps-deploy:
+    needs: update-and-deploy
+    if: github.event_name == 'push' || needs.update-and-deploy.outputs.full_build == 'true' || needs.update-and-deploy.outputs.verify_data_outcome == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50  # global ceiling > max regional timeout (45)
+    strategy:
+      fail-fast: false
+      matrix:
+        region:
+          - mq
+          - gp
+          - florida
+          - puntacana
+          - rivieramaya
+        include:
+          - region: mq
+            timeout: 45
+          - region: gp
+            timeout: 45
+          - region: florida
+            timeout: 30
+          - region: puntacana
+            timeout: 30
+          - region: rivieramaya
+            timeout: 30
+    env:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+      FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+      FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+      FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+      FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+      FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+      FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+      FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+      FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+      FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+      FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+      FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+      FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+      FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+      FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+      FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ftp-staging-${{ matrix.region }}
+          path: ${{ matrix.region == 'mq' && 'martinique-ftp' || matrix.region == 'gp' && 'guadeloupe-ftp' || matrix.region == 'florida' && 'florida-ftp' || matrix.region == 'puntacana' && 'puntacana-ftp' || 'rivieramaya-ftp' }}
+
+      - name: Deploy FTPS ${{ matrix.region }}
+        timeout-minutes: ${{ matrix.timeout }}
+        env:
+          ONLY: ${{ matrix.region }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
+        run: |
+          START=$(date +%s)
+          if node scripts/manual-ftp-deploy.cjs; then
+            DURATION=$(( $(date +%s) - START ))
+            echo "{\"region\":\"${{ matrix.region }}\",\"status\":\"success\",\"duration_seconds\":$DURATION}" > ftps-result.json
+          else
+            DURATION=$(( $(date +%s) - START ))
+            echo "{\"region\":\"${{ matrix.region }}\",\"status\":\"failure\",\"duration_seconds\":$DURATION}" > ftps-result.json
+            exit 1
+          fi
+
+      - name: Upload FTPS result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftps-result-${{ matrix.region }}
+          path: ftps-result.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ── Assert FTPS Results (P1-018) ───────────────────────────
+  assert-ftps:
+    needs: ftps-deploy
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check if FTPS deploy was skipped
+        id: check_skip
+        run: |
+          FTPS_RESULT="${{ needs.ftps-deploy.result }}"
+          echo "ftps_result=$FTPS_RESULT" >> $GITHUB_OUTPUT
+
+      - name: Download all FTPS results
+        if: steps.check_skip.outputs.ftps_result != 'skipped'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ftps-result-*
+          path: ftps-results
+
+      - name: Assert FTPS per region
+        if: steps.check_skip.outputs.ftps_result != 'skipped'
+        run: |
+          REGIONS=("mq" "gp" "florida" "puntacana" "rivieramaya")
+          FAILED=0
+          MISSING=0
+          for R in "${REGIONS[@]}"; do
+            RESULT_FILE="ftps-results/ftps-result-${R}/ftps-result.json"
+            if [ -f "$RESULT_FILE" ]; then
+              STATUS=$(jq -r '.status' "$RESULT_FILE" 2>/dev/null || echo "unknown")
+              DURATION=$(jq -r '.duration_seconds // 0' "$RESULT_FILE" 2>/dev/null)
+              echo "Region $R: $STATUS (${DURATION}s)"
+              if [ "$STATUS" != "success" ]; then
+                FAILED=1
+              fi
+            else
+              echo "Region $R: MISSING RESULT"
+              MISSING=1
+            fi
+          done
+          if [ $FAILED -eq 1 ] || [ $MISSING -eq 1 ]; then
+            echo "::error::FTPS deployment incomplete: failed=$FAILED missing=$MISSING"
+            exit 1
+          fi
+          echo "All 5 regions deployed successfully."
+
+      - name: FTPS skipped (data-only deploy)
+        if: steps.check_skip.outputs.ftps_result == 'skipped'
+        run: echo "FTPS deploy skipped (data-only deploy) — assertion bypassed."
+
+  # ── Health Check (after FTPS + Pages) ──────────────────────
+  health-check:
+    needs: [update-and-deploy, assert-ftps]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Health check after deploy
+        run: |
+          sleep 10
+          DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().filter(r => r.live !== false).map(r => r.domain).join(' '))")
+          DOWN=""
+          TS=$(date +%s)
+          for D in $DOMAINS; do
+            STATUS=000
+            for ATTEMPT in 1 2 3; do
+              TS=$(date +%s)
+              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" "https://$D/?t=$TS" || echo 000)
+              [ "$STATUS" = "200" ] && break
+              [ "$ATTEMPT" -lt 3 ] && { echo "$D: HTTP $STATUS (tentative $ATTEMPT/3) — retry…"; sleep $((ATTEMPT * 2)); }
+            done
+            AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json?t=$TS" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+            echo "$D: HTTP $STATUS | data age ${AGE}h"
+            if [ "$STATUS" != "200" ]; then DOWN="$DOWN $D"; fi
+          done
+          if [ -n "$DOWN" ]; then
+            echo "::error::Sites down:$DOWN — FTP deploys failed and sites not serving"
+            exit 1
+          fi
+
+          # SW version check (ref: deployed sw.js on FTP)
+          WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
+          [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
+          check_sw() {
+            local out=""
+            for D in $1; do
+              GOT=$(curl -sL --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: */*" "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
+              [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
+            done
+            echo "$out"
+          }
+          MISMATCH=$(check_sw "$DOMAINS")
+          TRIES=0
+          while [ -n "$MISMATCH" ] && [ "$TRIES" -lt 4 ]; do
+            TRIES=$((TRIES+1))
+            echo "::notice::SW pas encore propagé (essai $TRIES/4) :$MISMATCH — nouvelle vérif dans 20s"
+            sleep 20
+            PENDING=$(echo "$MISMATCH" | sed 's/([^)]*)//g')
+            MISMATCH=$(check_sw "$PENDING")
+          done
+          if [ -n "$MISMATCH" ]; then
+            echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris (après $TRIES re-essai(s))"
+            exit 1
+          fi
+          if [ "$TRIES" -gt 0 ]; then echo "SW version OK après $TRIES re-essai(s): $WANT"; else echo "SW version OK sur toutes les régions: $WANT"; fi
+
+          # Gardes email
+          node -e "try{const i=require('./scripts/automation/data/incidents.json');const stuck=i.filter(x=>(x.recipients||[]).some(h=>!(x.sent||{})[h])&&Date.now()-new Date(x.created)>864e5);if(stuck.length)console.log('::warning::Incident(s) excuse en attente >24h: '+stuck.map(x=>x.id).join(','))}catch(e){}"
+          node -e "try{const s=require('./scripts/automation/data/subscribers.json');const n=s.filter(x=>['sargacatch','beach_alert'].includes(x.source||'')).length;if(n>85)console.log('::warning::Audience daily_verdict '+n+' — proche du plafond Resend 100/jour (tache 37: upgrade ou throttle)')}catch(e){}"
+
   # ── Notify on failure ──────────────────────────────────
   notify-failure:
-    needs: update-and-deploy
+    needs: [update-and-deploy, ftps-deploy, assert-ftps, health-check]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -1312,7 +1531,7 @@ jobs:
   # d'état) ont renvoyé 6× le même drip J+3. schedule-only = exactement 1 retry
   # par échec de cron, jamais de chaîne dispatch→fail→dispatch.
   retry-on-failure:
-    needs: update-and-deploy
+    needs: [update-and-deploy, ftps-deploy, assert-ftps, health-check]
     if: failure() && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
