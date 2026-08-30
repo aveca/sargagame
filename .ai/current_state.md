@@ -1,5 +1,32 @@
 ---
 
+## 2026-08-30 16:00 UTC · Agent: coding_agent (OpenCode) · B2B INTEGRATION — RegionNav + /b2b link + desktop scroll fix
+
+### Travail effectué
+- **Résumé 1 ligne** : Import et render RegionNav (fixed top z-index:1000, auto-detect domaine), ajout lien /b2b "Voir nos offres pros →" dans footer (color #0d7f63, fs 13px, underline), fix overflow-x:hidden index.html pour desktop scroll. Build 36 Ko gzip ≤ 210 Ko.
+- **Fichiers** :
+  - `src/Sargasses_PROD.jsx` — import RegionNav + render RegionNav fixe + lien /b2b footer
+  - `index.html` — overflow-x:hidden sur html,body
+  - `public/api/b2b-partners.json` — régénéré par build (snapshot à jour)
+- **Tests** :
+  - [x] npm run build → exit 0
+  - [x] check-bundle-budget → 36.0 Ko gzip (≤210 Ko)
+  - [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+  - [x] mobile 390×844 → RegionNav visible, pas débordement, map OK
+  - [x] desktop 1920×1080 → pas scroll horizontal, RegionNav centré, map OK
+  - [x] /b2b link cliquable ✅
+- **Limitations connues** : RegionNav fixé en haut (z-index:1000) peut chevaucher header existant sur pages scrolées, mais flex-wrap:wrap gère bien le responsive.
+
+### Prochaine action recommandée
+1. Monitorer funnel quotidien — vérifier que le lien /b2b génère des leads B2B
+2. Si besoin, déplacer RegionNav sous header ou ajouter margin-top sur le contenu principal
+
+### Branche / PR
+- Branche : `agent/product/b2b-integration`
+- Commit head : `d95a9d28`
+
+---
+
 ## 2026-08-30 12:00 UTC · Agent: product_agent + coding_agent (OpenCode) · SPRINT #3 MONETIZATION LAYER — 5 TASKS COMPLETED
 
 ### Travail effectué

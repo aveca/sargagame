@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-08-30 16:00 UTC · Agent: coding_agent (OpenCode) — **TASK: B2B INTEGRATION — RegionNav + /b2b link + desktop scroll fix**
+
+### Travail effectué
+- **RegionNav** import + render dans `src/Sargasses_PROD.jsx` : position fixed en haut, `z-index:1000`, `padding 12px 16px`, background gradient `#0a5c4a` → `#0d7f63`. Détection domaine auto (`window.location.hostname`). `flex-wrap:wrap` → s'adapte mobile comme desktop.
+- **/b2b link** ajouté dans footer MQ/GP : "Voir nos offres pros →" vers `/b2b`, style `color:#0d7f63, font-size:13px, text-decoration:underline`. Placé après le lien "Offres" existant.
+- **Débordement desktop** : `overflow-x:hidden` ajouté sur `html,body` dans `index.html`. Vérifié 1920×1080 → aucun scroll horizontal, RegionNav et chips TOP 3 alignés.
+- **Build & budget** : `npm run build` exit 0, `check-bundle-budget.cjs` → 36.0 Ko gzip ≤ 210 Ko ✅. `ux-smoke.mjs` → FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=✅.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — import RegionNav + render RegionNav fixe + lien /b2b footer
+- `index.html` — `overflow-x:hidden` sur `html,body`
+- `public/api/b2b-partners.json` — régénéré par build (snapshot à jour)
+
+### Validation
+- Build ✅, bundle ✅, ux-smoke ✅, régions valid ✅, desktop scroll ✅, mobile test ✅, /b2b link ✅
+
+---
+
 ## 2026-08-30 12:00 UTC · Agent: product_agent + coding_agent (OpenCode) — **SPRINT #3 MONETIZATION LAYER — 5 TASKS COMPLETED**
 
 ### Contexte
