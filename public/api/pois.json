@@ -1,0 +1,14 @@
+{
+  "updatedAt": "2026-08-31T06:00:00Z",
+  "regions": {
+    "martinique": { "pois": [{ "id": "mq-r1", "type": "restaurant", "name": "Le Petibonum", "lat": 14.425, "lng": -60.876, "source": "osm" }, { "id": "mq-p1", "type": "parking", "name": "Parking Salines", "lat": 14.426, "lng": -60.877, "source": "osm" }] },
+    "guadeloupe": { "pois": [{ "id": "gp-r1", "type": "restaurant", "name": "Karib Beach", "lat": 16.23, "lng": -61.38, "source": "osm" }] },
+    "cancun": { "pois": [{ "id": "cn-r1", "type": "hotel", "name": "Hotel Cancun", "lat": 21.16, "lng": -86.85, "source": "osm" }] },
+    "tulum": { "pois": [{ "id": "tu-r1", "type": "cafe", "name": "Cafe Tulum", "lat": 20.211, "lng": -87.465, "source": "osm" }] },
+    "miami": { "pois": [{ "id": "mi-r1", "type": "shop", "name": "Shop Miami", "lat": 25.76, "lng": -80.19, "source": "osm" }] },
+    "puntacana": { "pois": [{ "id": "pc-r1", "type": "beach_resort", "name": "Bavaro Resort", "lat": 18.67, "lng": -68.401, "source": "osm" }] },
+    "haiti": { "pois": [{ "id": "ht-r1", "type": "surf_school", "name": "Labadee Surf", "lat": 19.852, "lng": -72.248, "source": "osm" }, { "id": "ht-p1", "type": "parking", "name": "Parking Labadee", "lat": 19.853, "lng": -72.249, "source": "osm" }] },
+    "sainte-lucie": { "pois": [{ "id": "lc-r1", "type": "viewpoint", "name": "Vigie Viewpoint", "lat": 14.02, "lng": -60.99, "source": "osm" }, { "id": "lc-h1", "type": "hotel", "name": "Marigot Bay Hotel", "lat": 13.906, "lng": -61.026, "source": "osm" }] },
+    "barbade": { "pois": [{ "id": "bb-r1", "type": "restaurant", "name": "Carlisle Bay Restaurant", "lat": 13.09, "lng": -59.62, "source": "osm" }, { "id": "bb-s1", "type": "shop", "name": "Bridgetown Shop", "lat": 13.105, "lng": -59.613, "source": "osm" }] }
+  }
+}

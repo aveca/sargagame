@@ -8,6 +8,10 @@ const REGIONS = [
   { domain: 'sargazotulum.com', label: 'Tulum', flag: '🇲🇽' },
   { domain: 'sargassumpuntacana.com', label: 'Punta Cana', flag: '🇩🇴' },
   { domain: 'sargassummiami.com', label: 'Miami', flag: '🇺🇸' },
+  // SPRINT 21 — expansion sans NDD sur puntacana.com
+  { domain: 'sargassumpuntacana.com/haiti', label: 'Haïti', flag: '🇭🇹' },
+  { domain: 'sargassumpuntacana.com/sainte-lucie', label: 'Sainte-Lucie', flag: '🇱🇨' },
+  { domain: 'sargassumpuntacana.com/barbade', label: 'Barbade', flag: '🇧🇧' },
 ]
 
 const VISITED_KEY = "sg_visited_regions"

@@ -18,6 +18,7 @@ import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
 import "./sprint20.css"
+import { detectExtendedRegion } from "./lib/regions-extended.js"
 import RegionNav from "./components/RegionNav.jsx"
 import LeadCapture from "./LeadCapture.jsx"
 import WidgetEmbed from "./WidgetEmbed.jsx"
@@ -13213,6 +13214,15 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
     try{ localStorage.setItem("sg_dark_mode",theme==="dark"?"dark":"light") }catch{}
     s("sg_theme",theme)
   },[theme])
+
+  // SPRINT 21 — detection region étendue via path (rollback ?subregions=0)
+  useEffect(()=>{
+    try{
+      if(/[?&]subregions=0/.test(window.location.search)) return;
+      const ext=detectExtendedRegion(window.location.pathname, window.location.hostname);
+      if(ext) { try{ track("sg_region_extended_view",{region:ext, path:window.location.pathname})}catch{} }
+    }catch{}
+  },[])
 
   // Visit counter (persists across sessions for smart email trigger)
   useEffect(()=>{
