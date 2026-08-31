@@ -1,140 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-06-01",
-      "sites": {
-        "mq": {
-          "https://sargasses-martinique.com/": {
-            "avgPos": 5.3,
-            "clicks": 1112,
-            "impressions": 4627,
-            "queries": {
-              "sargasse martinique en temps réel": {
-                "pos": 1.6,
-                "impressions": 570,
-                "clicks": 307
-              },
-              "sargasse martinique aujourd'hui": {
-                "pos": 2,
-                "impressions": 586,
-                "clicks": 282
-              },
-              "meteo sargasse martinique": {
-                "pos": 2.4,
-                "impressions": 253,
-                "clicks": 71
-              },
-              "sargasse martinique": {
-                "pos": 3.7,
-                "impressions": 885,
-                "clicks": 120
-              },
-              "sargasses martinique": {
-                "pos": 4.2,
-                "impressions": 551,
-                "clicks": 53
-              },
-              "carte sargasse martinique": {
-                "pos": 2.8,
-                "impressions": 207,
-                "clicks": 39
-              },
-              "meteo des sargasses martinique": {
-                "pos": 2.4,
-                "impressions": 62,
-                "clicks": 17
-              },
-              "sargasse martinique 2026": {
-                "pos": 6.8,
-                "impressions": 259,
-                "clicks": 27
-              },
-              "carte des sargasses martinique": {
-                "pos": 2.9,
-                "impressions": 67,
-                "clicks": 11
-              },
-              "carte sargasses martinique": {
-                "pos": 2.8,
-                "impressions": 57,
-                "clicks": 9
-              },
-              "bulletin sargasses martinique": {
-                "pos": 4.7,
-                "impressions": 58,
-                "clicks": 4
-              },
-              "carte sargasse martinique 2026": {
-                "pos": 5.4,
-                "impressions": 174,
-                "clicks": 6
-              }
-            }
-          },
-          "https://sargasses-martinique.com/sargasses-record-2026/": {
-            "avgPos": 6.2,
-            "clicks": 40,
-            "impressions": 823,
-            "queries": {
-              "sargasse en temps réel 2026": {
-                "pos": 6.7,
-                "impressions": 608,
-                "clicks": 29
-              },
-              "carte des sargasses 2026": {
-                "pos": 9.4,
-                "impressions": 86,
-                "clicks": 1
-              }
-            }
-          },
-          "https://sargasses-martinique.com/en/": {
-            "avgPos": 9.7,
-            "clicks": 9,
-            "impressions": 81,
-            "queries": {}
-          },
-          "https://sargasses-martinique.com/plages/anse-des-galets/": {
-            "avgPos": 8.2,
-            "clicks": 1,
-            "impressions": 125,
-            "queries": {
-              "anse des galets martinique": {
-                "pos": 8.2,
-                "impressions": 98,
-                "clicks": 1
-              }
-            }
-          },
-          "https://sargasses-martinique.com/en/sargassum-map/": {
-            "avgPos": 17.5,
-            "clicks": 3,
-            "impressions": 102,
-            "queries": {}
-          },
-          "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
-            "avgPos": 11.3,
-            "clicks": 1,
-            "impressions": 29,
-            "queries": {}
-          },
-          "https://sargasses-martinique.com/en/best-beaches-martinique/": {
-            "avgPos": 46,
-            "clicks": 1,
-            "impressions": 80,
-            "queries": {}
-          },
-          "https://sargasses-martinique.com/plages/plage-du-diamant/": {
-            "avgPos": 5.6,
-            "clicks": 0,
-            "impressions": 44,
-            "queries": {}
-          }
-        },
-        "gp": {}
-      }
-    },
-    {
       "date": "2026-06-08",
       "sites": {
         "mq": {
@@ -5968,6 +5834,869 @@
             "avgPos": 23.3,
             "clicks": 1,
             "impressions": 84,
+            "queries": {}
+          }
+        }
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "sites": {
+        "mq": {
+          "https://sargasses-martinique.com/": {
+            "avgPos": 5.7,
+            "clicks": 1036,
+            "impressions": 6897,
+            "queries": {
+              "sargasse martinique": {
+                "pos": 4.1,
+                "impressions": 1675,
+                "clicks": 274
+              },
+              "sargasses martinique": {
+                "pos": 4.3,
+                "impressions": 2407,
+                "clicks": 244
+              },
+              "sargasse martinique en temps réel": {
+                "pos": 2.4,
+                "impressions": 374,
+                "clicks": 99
+              },
+              "meteo sargasse martinique": {
+                "pos": 2,
+                "impressions": 289,
+                "clicks": 75
+              },
+              "sargasse martinique aujourd'hui": {
+                "pos": 3.6,
+                "impressions": 396,
+                "clicks": 46
+              },
+              "meteo des sargasses martinique": {
+                "pos": 2,
+                "impressions": 99,
+                "clicks": 37
+              },
+              "carte sargasse martinique": {
+                "pos": 3,
+                "impressions": 190,
+                "clicks": 30
+              },
+              "meteo sargasses martinique": {
+                "pos": 2,
+                "impressions": 57,
+                "clicks": 21
+              },
+              "carte des sargasses martinique": {
+                "pos": 3,
+                "impressions": 108,
+                "clicks": 18
+              },
+              "carte sargasses martinique": {
+                "pos": 2.9,
+                "impressions": 88,
+                "clicks": 24
+              },
+              "bulletin sargasses martinique": {
+                "pos": 2.9,
+                "impressions": 71,
+                "clicks": 12
+              },
+              "martinique sargasses": {
+                "pos": 5.2,
+                "impressions": 211,
+                "clicks": 18
+              },
+              "martinique sargasses carte": {
+                "pos": 3.9,
+                "impressions": 50,
+                "clicks": 4
+              },
+              "sargasse en martinique": {
+                "pos": 4.8,
+                "impressions": 68,
+                "clicks": 7
+              },
+              "martinique sargasse": {
+                "pos": 5.4,
+                "impressions": 117,
+                "clicks": 6
+              }
+            }
+          },
+          "https://sargasses-martinique.com/plages/anse-michel/": {
+            "avgPos": 8.6,
+            "clicks": 46,
+            "impressions": 85,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/carte-sargasses/": {
+            "avgPos": 9.4,
+            "clicks": 79,
+            "impressions": 956,
+            "queries": {
+              "sargasse martinique en temps réel": {
+                "pos": 4.8,
+                "impressions": 351,
+                "clicks": 24
+              },
+              "carte sargasse martinique 2026": {
+                "pos": 2.9,
+                "impressions": 125,
+                "clicks": 17
+              },
+              "sargasse martinique aujourd'hui": {
+                "pos": 8.2,
+                "impressions": 195,
+                "clicks": 8
+              },
+              "carte sargasse martinique": {
+                "pos": 9.4,
+                "impressions": 85,
+                "clicks": 4
+              }
+            }
+          },
+          "https://sargasses-martinique.com/plages/anse-trabaud/": {
+            "avgPos": 17.7,
+            "clicks": 5,
+            "impressions": 25,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/sargasses-record-2026/": {
+            "avgPos": 9.2,
+            "clicks": 19,
+            "impressions": 288,
+            "queries": {
+              "sargasse en temps réel 2026": {
+                "pos": 4.5,
+                "impressions": 85,
+                "clicks": 9
+              },
+              "sargasse martinique 2026": {
+                "pos": 5.9,
+                "impressions": 75,
+                "clicks": 3
+              }
+            }
+          },
+          "https://sargasses-martinique.com/plages/pointe-faula/": {
+            "avgPos": 5.7,
+            "clicks": 6,
+            "impressions": 40,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/sargasses-le-diamant/": {
+            "avgPos": 3.8,
+            "clicks": 29,
+            "impressions": 132,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/": {
+            "avgPos": 4,
+            "clicks": 25,
+            "impressions": 90,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/plage-du-diamant/": {
+            "avgPos": 9,
+            "clicks": 3,
+            "impressions": 64,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/conditions/uv-fort/": {
+            "avgPos": 7.8,
+            "clicks": 2,
+            "impressions": 44,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/meteo-sargasses-guadeloupe/": {
+            "avgPos": 8.3,
+            "clicks": 2,
+            "impressions": 115,
+            "queries": {
+              "meteo sargasse guadeloupe": {
+                "pos": 7.7,
+                "impressions": 56,
+                "clicks": 0
+              }
+            }
+          },
+          "https://sargasses-martinique.com/meteo-sargasses-martinique/": {
+            "avgPos": 11.9,
+            "clicks": 1,
+            "impressions": 31,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/plage-des-salines/": {
+            "avgPos": 8.6,
+            "clicks": 1,
+            "impressions": 20,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages-sans-sargasses/": {
+            "avgPos": 6.8,
+            "clicks": 2,
+            "impressions": 36,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/sargasses-le-vauclin/": {
+            "avgPos": 8.8,
+            "clicks": 2,
+            "impressions": 22,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/saison-sargasses-martinique/": {
+            "avgPos": 10.2,
+            "clicks": 1,
+            "impressions": 42,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/best-beaches-martinique/": {
+            "avgPos": 23.9,
+            "clicks": 3,
+            "impressions": 27,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/saison-sargasses-guadeloupe/": {
+            "avgPos": 7.9,
+            "clicks": 0,
+            "impressions": 23,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/anse-corps-de-garde/": {
+            "avgPos": 12,
+            "clicks": 0,
+            "impressions": 23,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
+            "avgPos": 15.6,
+            "clicks": 0,
+            "impressions": 27,
+            "queries": {}
+          }
+        },
+        "gp": {
+          "https://sargasses-guadeloupe.com/": {
+            "avgPos": 5.4,
+            "clicks": 1395,
+            "impressions": 9523,
+            "queries": {
+              "sargasse guadeloupe": {
+                "pos": 3.3,
+                "impressions": 2351,
+                "clicks": 360
+              },
+              "sargasses guadeloupe": {
+                "pos": 3.5,
+                "impressions": 3125,
+                "clicks": 352
+              },
+              "sargasse guadeloupe en direct": {
+                "pos": 1.6,
+                "impressions": 398,
+                "clicks": 161
+              },
+              "carte sargasse guadeloupe en direct": {
+                "pos": 2.7,
+                "impressions": 234,
+                "clicks": 50
+              },
+              "meteo sargasse guadeloupe": {
+                "pos": 2.8,
+                "impressions": 337,
+                "clicks": 52
+              },
+              "sargasses en guadeloupe aujourd'hui": {
+                "pos": 3.5,
+                "impressions": 363,
+                "clicks": 57
+              },
+              "carte sargasse guadeloupe": {
+                "pos": 4.5,
+                "impressions": 269,
+                "clicks": 33
+              },
+              "plage sargasse guadeloupe": {
+                "pos": 4.2,
+                "impressions": 73,
+                "clicks": 26
+              },
+              "meteo des sargasses guadeloupe": {
+                "pos": 2.5,
+                "impressions": 84,
+                "clicks": 19
+              },
+              "sargasses guadeloupe aujourd'hui": {
+                "pos": 2.5,
+                "impressions": 80,
+                "clicks": 27
+              },
+              "guadeloupe sargasses": {
+                "pos": 3.6,
+                "impressions": 171,
+                "clicks": 22
+              },
+              "meteo sargasses guadeloupe": {
+                "pos": 2.7,
+                "impressions": 51,
+                "clicks": 12
+              },
+              "sargasse guadeloupe 2026": {
+                "pos": 5.5,
+                "impressions": 68,
+                "clicks": 8
+              },
+              "sargasses en guadeloupe": {
+                "pos": 5.5,
+                "impressions": 77,
+                "clicks": 8
+              },
+              "les sargasses en guadeloupe": {
+                "pos": 7.8,
+                "impressions": 140,
+                "clicks": 5
+              },
+              "carte des sargasses guadeloupe": {
+                "pos": 4.9,
+                "impressions": 164,
+                "clicks": 11
+              },
+              "carte sargasse guadeloupe 2026": {
+                "pos": 7.8,
+                "impressions": 92,
+                "clicks": 8
+              },
+              "sargasse en guadeloupe": {
+                "pos": 4.4,
+                "impressions": 60,
+                "clicks": 5
+              },
+              "algues guadeloupe 2026": {
+                "pos": 7.4,
+                "impressions": 69,
+                "clicks": 5
+              },
+              "carte sargasses guadeloupe": {
+                "pos": 4,
+                "impressions": 53,
+                "clicks": 6
+              },
+              "plage guadeloupe sans sargasse": {
+                "pos": 7.9,
+                "impressions": 55,
+                "clicks": 3
+              },
+              "plage sans sargasse guadeloupe": {
+                "pos": 6.6,
+                "impressions": 60,
+                "clicks": 3
+              },
+              "sargasse en temps réel": {
+                "pos": 5.6,
+                "impressions": 104,
+                "clicks": 3
+              }
+            }
+          },
+          "https://sargasses-guadeloupe.com/carte-sargasses/": {
+            "avgPos": 5.4,
+            "clicks": 419,
+            "impressions": 2224,
+            "queries": {
+              "carte sargasse guadeloupe en direct": {
+                "pos": 2.8,
+                "impressions": 234,
+                "clicks": 87
+              },
+              "carte sargasse guadeloupe": {
+                "pos": 2.8,
+                "impressions": 265,
+                "clicks": 75
+              },
+              "carte des sargasses guadeloupe": {
+                "pos": 3,
+                "impressions": 165,
+                "clicks": 48
+              },
+              "sargasse guadeloupe 2026": {
+                "pos": 4.2,
+                "impressions": 263,
+                "clicks": 39
+              },
+              "carte sargasse guadeloupe 2026": {
+                "pos": 2.1,
+                "impressions": 98,
+                "clicks": 37
+              },
+              "sargasse guadeloupe en direct": {
+                "pos": 7,
+                "impressions": 353,
+                "clicks": 30
+              },
+              "sargasses en guadeloupe aujourd'hui": {
+                "pos": 8.6,
+                "impressions": 78,
+                "clicks": 6
+              },
+              "carte sargasses guadeloupe": {
+                "pos": 3.7,
+                "impressions": 50,
+                "clicks": 10
+              },
+              "guadeloupe sargasses 2026": {
+                "pos": 4,
+                "impressions": 62,
+                "clicks": 8
+              },
+              "sargasses guadeloupe 2026": {
+                "pos": 4.7,
+                "impressions": 71,
+                "clicks": 11
+              },
+              "sargasse en temps réel 2026": {
+                "pos": 6.7,
+                "impressions": 55,
+                "clicks": 2
+              },
+              "sargasses guadeloupe aujourd'hui": {
+                "pos": 8.4,
+                "impressions": 56,
+                "clicks": 3
+              },
+              "carte des sargasses": {
+                "pos": 8.4,
+                "impressions": 90,
+                "clicks": 0
+              },
+              "carte des sargasses 2026": {
+                "pos": 5.4,
+                "impressions": 58,
+                "clicks": 0
+              }
+            }
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-des-raisins-clairs/": {
+            "avgPos": 1.3,
+            "clicks": 25,
+            "impressions": 34,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/": {
+            "avgPos": 1.5,
+            "clicks": 77,
+            "impressions": 119,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/": {
+            "avgPos": 1.2,
+            "clicks": 18,
+            "impressions": 21,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-du-gosier/": {
+            "avgPos": 22.5,
+            "clicks": 26,
+            "impressions": 79,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-du-souffleur/": {
+            "avgPos": 2.1,
+            "clicks": 9,
+            "impressions": 22,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/": {
+            "avgPos": 3.4,
+            "clicks": 18,
+            "impressions": 44,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-de-saint-francois/": {
+            "avgPos": 7,
+            "clicks": 10,
+            "impressions": 61,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/": {
+            "avgPos": 2.8,
+            "clicks": 30,
+            "impressions": 79,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/en/": {
+            "avgPos": 6.8,
+            "clicks": 36,
+            "impressions": 158,
+            "queries": {
+              "sargassum map today": {
+                "pos": 9.7,
+                "impressions": 72,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargasses-guadeloupe.com/en/sargassum-map/": {
+            "avgPos": 21.9,
+            "clicks": 10,
+            "impressions": 39,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/anse-champagne/": {
+            "avgPos": 9.8,
+            "clicks": 1,
+            "impressions": 42,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/anse-rodrigue/": {
+            "avgPos": 11.5,
+            "clicks": 1,
+            "impressions": 26,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/meilleures-plages-guadeloupe-sargasses/": {
+            "avgPos": 14.1,
+            "clicks": 2,
+            "impressions": 57,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/sargasses-la-desirade/": {
+            "avgPos": 6.9,
+            "clicks": 4,
+            "impressions": 39,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/sargasses-marie-galante/": {
+            "avgPos": 9.4,
+            "clicks": 5,
+            "impressions": 40,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/": {
+            "avgPos": 3.8,
+            "clicks": 3,
+            "impressions": 53,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/plages/anse-a-la-gourde/": {
+            "avgPos": 10.6,
+            "clicks": 0,
+            "impressions": 78,
+            "queries": {}
+          },
+          "https://sargasses-guadeloupe.com/conditions/snorkeling/": {
+            "avgPos": 57.2,
+            "clicks": 0,
+            "impressions": 39,
+            "queries": {}
+          }
+        },
+        "florida": {
+          "https://sargassummiami.com/es/": {
+            "avgPos": 6.5,
+            "clicks": 144,
+            "impressions": 2038,
+            "queries": {
+              "sargazo en miami hoy": {
+                "pos": 7.4,
+                "impressions": 410,
+                "clicks": 25
+              },
+              "sargazo miami hoy": {
+                "pos": 6.8,
+                "impressions": 248,
+                "clicks": 26
+              },
+              "playas sin sargazo en miami hoy": {
+                "pos": 8.6,
+                "impressions": 175,
+                "clicks": 9
+              },
+              "sargazo hoy en miami": {
+                "pos": 6.4,
+                "impressions": 85,
+                "clicks": 12
+              },
+              "hay sargazo en miami hoy": {
+                "pos": 7.4,
+                "impressions": 209,
+                "clicks": 6
+              },
+              "miami sargazo hoy": {
+                "pos": 6.9,
+                "impressions": 144,
+                "clicks": 11
+              },
+              "sargazo en miami beach hoy": {
+                "pos": 7,
+                "impressions": 69,
+                "clicks": 3
+              },
+              "como esta el sargazo en miami hoy": {
+                "pos": 7,
+                "impressions": 93,
+                "clicks": 3
+              },
+              "hay sargazo hoy en miami beach": {
+                "pos": 6.4,
+                "impressions": 50,
+                "clicks": 3
+              }
+            }
+          },
+          "https://sargassummiami.com/seaweed-map/": {
+            "avgPos": 26.7,
+            "clicks": 50,
+            "impressions": 245,
+            "queries": {
+              "hollywood beach seaweed today map": {
+                "pos": 4.5,
+                "impressions": 65,
+                "clicks": 10
+              }
+            }
+          },
+          "https://sargassummiami.com/": {
+            "avgPos": 9.7,
+            "clicks": 214,
+            "impressions": 1989,
+            "queries": {
+              "miami beach seaweed today map": {
+                "pos": 3.1,
+                "impressions": 55,
+                "clicks": 8
+              },
+              "sargassum miami today": {
+                "pos": 6.6,
+                "impressions": 80,
+                "clicks": 22
+              },
+              "miami sargassum today": {
+                "pos": 7.9,
+                "impressions": 140,
+                "clicks": 10
+              },
+              "sargassum miami beach today": {
+                "pos": 8.9,
+                "impressions": 64,
+                "clicks": 7
+              },
+              "fort lauderdale beach seaweed today map": {
+                "pos": 7.4,
+                "impressions": 61,
+                "clicks": 5
+              },
+              "miami beach seaweed today": {
+                "pos": 9.5,
+                "impressions": 102,
+                "clicks": 5
+              },
+              "sargassum florida map": {
+                "pos": 9.6,
+                "impressions": 69,
+                "clicks": 3
+              },
+              "miami beach sargassum today": {
+                "pos": 9,
+                "impressions": 160,
+                "clicks": 4
+              },
+              "sargassum map florida": {
+                "pos": 9.1,
+                "impressions": 82,
+                "clicks": 2
+              }
+            }
+          },
+          "https://sargassummiami.com/beaches-without-sargassum-today/": {
+            "avgPos": 16.4,
+            "clicks": 13,
+            "impressions": 119,
+            "queries": {}
+          },
+          "https://sargassummiami.com/es/mapa-sargazo/": {
+            "avgPos": 5.3,
+            "clicks": 73,
+            "impressions": 254,
+            "queries": {
+              "mapa de sargazo hoy miami": {
+                "pos": 3.7,
+                "impressions": 56,
+                "clicks": 10
+              }
+            }
+          },
+          "https://sargassummiami.com/es/playas/fort-lauderdale-beach/": {
+            "avgPos": 4.5,
+            "clicks": 9,
+            "impressions": 57,
+            "queries": {}
+          },
+          "https://sargassummiami.com/sunny-isles-beach-sargassum-today/": {
+            "avgPos": 3.6,
+            "clicks": 18,
+            "impressions": 55,
+            "queries": {}
+          },
+          "https://sargassummiami.com/sargassum-august-2026/": {
+            "avgPos": 3.8,
+            "clicks": 4,
+            "impressions": 32,
+            "queries": {}
+          },
+          "https://sargassummiami.com/miami-beach-seaweed-map-today/": {
+            "avgPos": 16.9,
+            "clicks": 4,
+            "impressions": 49,
+            "queries": {}
+          },
+          "https://sargassummiami.com/es/temporada-sargazo-florida/": {
+            "avgPos": 5.8,
+            "clicks": 11,
+            "impressions": 118,
+            "queries": {}
+          }
+        },
+        "puntacana": {
+          "https://sargassumpuntacana.com/": {
+            "avgPos": 7.2,
+            "clicks": 153,
+            "impressions": 1728,
+            "queries": {
+              "sargassum punta cana": {
+                "pos": 6.9,
+                "impressions": 135,
+                "clicks": 35
+              },
+              "punta cana sargassum today": {
+                "pos": 8.5,
+                "impressions": 318,
+                "clicks": 16
+              },
+              "punta cana seaweed today live": {
+                "pos": 5.8,
+                "impressions": 262,
+                "clicks": 18
+              },
+              "sargassum punta cana today": {
+                "pos": 8.3,
+                "impressions": 185,
+                "clicks": 15
+              },
+              "sargassum punta cana aktuell": {
+                "pos": 7.1,
+                "impressions": 57,
+                "clicks": 5
+              },
+              "mapa sargaço punta cana hoje": {
+                "pos": 8,
+                "impressions": 76,
+                "clicks": 4
+              },
+              "sargassum in punta cana today": {
+                "pos": 8.7,
+                "impressions": 80,
+                "clicks": 3
+              },
+              "punta cana sargassum": {
+                "pos": 7.2,
+                "impressions": 60,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/": {
+            "avgPos": 8.6,
+            "clicks": 26,
+            "impressions": 235,
+            "queries": {}
+          },
+          "https://sargassumpuntacana.com/es/playas/macao-beach/": {
+            "avgPos": 8.1,
+            "clicks": 7,
+            "impressions": 80,
+            "queries": {}
+          },
+          "https://sargassumpuntacana.com/es/": {
+            "avgPos": 14.2,
+            "clicks": 6,
+            "impressions": 191,
+            "queries": {}
+          },
+          "https://sargassumpuntacana.com/sargassum-august-2026/": {
+            "avgPos": 10.2,
+            "clicks": 7,
+            "impressions": 65,
+            "queries": {}
+          },
+          "https://sargassumpuntacana.com/sargassum-forecast/": {
+            "avgPos": 12,
+            "clicks": 17,
+            "impressions": 179,
+            "queries": {}
+          },
+          "https://sargassumpuntacana.com/es/como-saber-si-hay-sargazo-en-punta-cana/": {
+            "avgPos": 61.6,
+            "clicks": 0,
+            "impressions": 30,
+            "queries": {}
+          }
+        },
+        "rivieramaya": {
+          "https://sargassumcancun.com/playas/playa-maroma/": {
+            "avgPos": 13.5,
+            "clicks": 3,
+            "impressions": 36,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/en/": {
+            "avgPos": 35.4,
+            "clicks": 2,
+            "impressions": 325,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/semaforo-del-sargazo/": {
+            "avgPos": 16.6,
+            "clicks": 1,
+            "impressions": 56,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/temporada-sargazo-rivieramaya/": {
+            "avgPos": 9.5,
+            "clicks": 1,
+            "impressions": 405,
+            "queries": {
+              "temporada de sargazo en riviera maya": {
+                "pos": 5.4,
+                "impressions": 50,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargassumcancun.com/": {
+            "avgPos": 24.3,
+            "clicks": 0,
+            "impressions": 203,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/en/sargassum-forecast/": {
+            "avgPos": 60.5,
+            "clicks": 0,
+            "impressions": 56,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/en/sargassum-season-cancun/": {
+            "avgPos": 58.5,
+            "clicks": 0,
+            "impressions": 34,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/que-es-el-sargazo/": {
+            "avgPos": 24.8,
+            "clicks": 0,
+            "impressions": 49,
             "queries": {}
           }
         }

@@ -1,14 +1,15 @@
 {
-  "generatedAt": "2026-08-24T11:48:38.895Z",
+  "generatedAt": "2026-08-31T18:15:40.399Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
+      "pageCount": 366,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 172,
+      "pagesWithCanonical": 173,
       "pagesWithHreflang": 157,
-      "issueCount": 176,
+      "issueCount": 177,
       "byKind": {
         "missing-canonical": 171,
+        "canonical-invalid-url": 1,
         "canonical-mismatch": 1,
         "hreflang-target-missing": 4
       },
@@ -16,6 +17,11 @@
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "b2b/index.html",
+          "kind": "canonical-invalid-url",
+          "canonical": "/pro/"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -218,21 +224,18 @@
         {
           "file": "widget/embed/anse-du-figuier-saintes/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 404,
+      "pageCount": 405,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 211,
+      "pagesWithCanonical": 212,
       "pagesWithHreflang": 196,
-      "issueCount": 176,
+      "issueCount": 177,
       "byKind": {
         "missing-canonical": 171,
+        "canonical-invalid-url": 1,
         "canonical-mismatch": 1,
         "hreflang-target-missing": 4
       },
@@ -240,6 +243,11 @@
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "b2b/index.html",
+          "kind": "canonical-invalid-url",
+          "canonical": "/pro/"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -441,10 +449,6 @@
         },
         {
           "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
           "kind": "missing-canonical"
         }
       ]

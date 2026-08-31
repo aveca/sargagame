@@ -1,94 +1,64 @@
 {
-  "generatedAt": "2026-08-24T11:48:29.874Z",
+  "generatedAt": "2026-08-31T18:15:31.356Z",
   "kind": "delta",
   "changes": [
-    {
-      "site": "mq",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 3378,
-      "to": 1852,
-      "delta": -1526,
-      "kind": "improvement",
-      "crossesThreshold": true
-    },
     {
       "site": "gp",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 3331,
-      "to": 2144,
-      "delta": -1187,
+      "from": 2144,
+      "to": 1686,
+      "delta": -458,
       "kind": "improvement",
-      "crossesThreshold": true
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 2596,
-      "to": 1508,
-      "delta": -1088,
-      "kind": "improvement",
-      "crossesThreshold": true
+      "crossesThreshold": false
     },
     {
       "site": "puntacana",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 3084,
-      "to": 2164,
-      "delta": -920,
+      "from": 2164,
+      "to": 1756,
+      "delta": -408,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "mq",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 1852,
+      "to": 1629,
+      "delta": -223,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "puntacana",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 827,
+      "to": 656,
+      "delta": -171,
       "kind": "improvement",
       "crossesThreshold": true
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 467,
+      "to": 345,
+      "delta": -122,
+      "kind": "improvement",
+      "crossesThreshold": false
     },
     {
       "site": "mq",
       "formFactor": "combined",
       "metric": "TTFB",
-      "from": 1002,
-      "to": 648,
-      "delta": -354,
-      "kind": "improvement",
-      "crossesThreshold": true
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
-      "metric": "TTFB",
-      "from": 996,
-      "to": 705,
-      "delta": -291,
-      "kind": "improvement",
-      "crossesThreshold": true
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "TTFB",
-      "from": 656,
-      "to": 522,
-      "delta": -134,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 371,
-      "to": 467,
-      "delta": 96,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 594,
-      "to": 527,
-      "delta": -67,
+      "from": 648,
+      "to": 537,
+      "delta": -111,
       "kind": "improvement",
       "crossesThreshold": false
     }

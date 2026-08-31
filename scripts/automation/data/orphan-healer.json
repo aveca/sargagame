@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T11:48:40.182Z",
+  "generatedAt": "2026-08-31T18:15:41.742Z",
   "sites": {
     "mq": {
       "donorCount": 5,
@@ -30,16 +30,16 @@
         "/alertes/",
         "/danger-sargasses-h2s/",
         "/agir/",
+        "/b2b/",
         "/bulletin-sargasses-martinique/",
         "/comic-cartes.html",
         "/conditions/",
-        "/confidentialite/",
-        "/confirme/"
+        "/confidentialite/"
       ]
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 51,
+      "targetCount": 50,
       "injections": [
         {
           "donor": "/",
@@ -66,9 +66,9 @@
         "/alertes/",
         "/danger-sargasses-h2s/",
         "/previsions/",
-        "/saison-sargasses-martinique/",
         "/agir/",
         "/algues-guadeloupe/",
+        "/b2b/",
         "/bulletin-sargasses-guadeloupe/",
         "/comic-cartes.html"
       ]

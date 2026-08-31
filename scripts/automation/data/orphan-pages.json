@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T11:48:29.691Z",
+  "generatedAt": "2026-08-31T18:15:31.154Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,24 +12,18 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7991,
-          "clicks": 1337
-        },
-        {
-          "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1064,
-          "clicks": 92
+          "impressions": 6897,
+          "clicks": 1036
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-martinique.com/alertes/",
-          "impressions": 4,
+          "impressions": 2,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -38,8 +32,7 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -48,8 +41,7 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -58,18 +50,16 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
-          "impressions": 2,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -78,8 +68,7 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -88,30 +77,29 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         }
       ]
     },
     "gp": {
       "sitemapSize": 15,
-      "orphanCount": 9,
+      "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 4,
+        "editorial": 3,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 11470,
-          "clicks": 1930
+          "impressions": 9523,
+          "clicks": 1395
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 2728,
-          "clicks": 496
+          "impressions": 2224,
+          "clicks": 419
         }
       ],
       "orphans": [
@@ -138,16 +126,6 @@
         {
           "url": "https://sargasses-guadeloupe.com/previsions/",
           "impressions": 1,
-          "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/",
-            "https://sargasses-guadeloupe.com/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
-          "impressions": 5,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [

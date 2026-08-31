@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-24T11:48:38.655Z",
+  "generatedAt": "2026-08-31T18:15:40.144Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
-      "uniqueTitles": 207,
+      "pageCount": 366,
+      "uniqueTitles": 208,
       "uniqueDescs": 188,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 551,
+      "issueCount": 552,
       "issues": [
         {
           "file": "404.html",
@@ -70,6 +70,16 @@
           "kind": "title-length-warn",
           "length": 66,
           "value": "Sargasses Martinique avril 2026 — 55 % des plages propres ce matin"
+        },
+        {
+          "file": "b2b/index.html",
+          "kind": "title-length-warn",
+          "length": 19,
+          "value": "Sargasses Pro — B2B"
+        },
+        {
+          "file": "b2b/index.html",
+          "kind": "missing-desc"
         },
         {
           "file": "bulletin-sargasses-martinique/index.html",
@@ -121,11 +131,6 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 107
@@ -133,7 +138,7 @@
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 100
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -188,17 +193,12 @@
           "kind": "title-length-warn",
           "length": 66,
           "value": "Sargassum alerts Martinique & Guadeloupe — Real-time notifications"
-        },
-        {
-          "file": "en/sargassum-alerts/index.html",
-          "kind": "desc-length-warn",
-          "length": 106
         }
       ]
     },
     "gp": {
-      "pageCount": 404,
-      "uniqueTitles": 246,
+      "pageCount": 405,
+      "uniqueTitles": 247,
       "uniqueDescs": 228,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
@@ -225,7 +225,7 @@
           ]
         }
       ],
-      "issueCount": 603,
+      "issueCount": 604,
       "issues": [
         {
           "file": "404.html",
@@ -277,6 +277,16 @@
           "value": "Sargasses Guadeloupe avril 2026 — 55 % des plages propres ce matin"
         },
         {
+          "file": "b2b/index.html",
+          "kind": "title-length-warn",
+          "length": 19,
+          "value": "Sargasses Pro — B2B"
+        },
+        {
+          "file": "b2b/index.html",
+          "kind": "missing-desc"
+        },
+        {
           "file": "bulletin-sargasses-guadeloupe/index.html",
           "kind": "title-length-warn",
           "length": 67,
@@ -324,11 +334,6 @@
           "kind": "title-length-warn",
           "length": 65,
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
-        },
-        {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
         },
         {
           "file": "conditions/mer-calme/index.html",
@@ -382,11 +387,6 @@
           "kind": "title-length-warn",
           "length": 61,
           "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
-        },
-        {
-          "file": "en/index.html",
-          "kind": "desc-length-warn",
-          "length": 119
         }
       ]
     }

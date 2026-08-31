@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T11:48:39.155Z",
+  "generatedAt": "2026-08-31T18:15:40.684Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
+      "pageCount": 366,
       "medianWords": 41,
       "thinCount": 211,
       "richCount": 80,
@@ -147,35 +147,35 @@
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "words": 1849
+          "words": 1847
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1841
+          "words": 1839
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1836
+          "words": 1834
         },
         {
           "url": "/plages/anse-corps-de-garde/",
-          "words": 1825
+          "words": 1823
         },
         {
           "url": "/plages/anse-mitan/",
-          "words": 1824
+          "words": 1822
         },
         {
           "url": "/plages/grande-anse-du-carbet/",
-          "words": 1819
+          "words": 1817
         }
       ]
     },
     "gp": {
-      "pageCount": 404,
+      "pageCount": 405,
       "medianWords": 195,
-      "thinCount": 210,
-      "richCount": 114,
+      "thinCount": 211,
+      "richCount": 111,
       "thinPages": [
         {
           "url": "/404.html",
@@ -329,7 +329,7 @@
         },
         {
           "url": "/plages/plage-de-malendure/",
-          "words": 1847
+          "words": 1845
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-24T11:48:37.749Z",
+  "generatedAt": "2026-08-31T18:15:39.225Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
-      "noIncomingCount": 196,
+      "pageCount": 366,
+      "noIncomingCount": 197,
       "fewIncomingCount": 42,
       "phantomCount": 14,
       "noIncoming": [
@@ -24,6 +24,11 @@
         },
         {
           "url": "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+          "in": 0,
+          "out": 1
+        },
+        {
+          "url": "/b2b/",
           "in": 0,
           "out": 1
         },
@@ -251,23 +256,18 @@
           "url": "/widget/embed/anse-belleville/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-bertrand-nord/",
-          "in": 0,
-          "out": 0
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 19
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 18
+          "out": 14
         },
         {
           "url": "/en/sargassum-health/",
@@ -452,14 +452,14 @@
           "out": 13
         },
         {
-          "url": "/plages/grande-anse-d-arlet/",
-          "in": 26,
-          "out": 11
-        },
-        {
           "url": "/a-propos/",
           "in": 25,
           "out": 9
+        },
+        {
+          "url": "/plages/grande-anse-d-arlet/",
+          "in": 23,
+          "out": 11
         }
       ],
       "topDonors": [
@@ -474,21 +474,6 @@
           "out": 37
         },
         {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 29
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 29
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 29
-        },
-        {
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
           "out": 25
@@ -499,14 +484,29 @@
           "out": 22
         },
         {
+          "url": "/conditions/mer-agitee/",
+          "in": 6,
+          "out": 21
+        },
+        {
           "url": "/plages/plages-cote-atlantique-martinique/",
           "in": 18,
           "out": 21
         },
         {
-          "url": "/conditions/snorkeling/",
+          "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 18
+          "out": 19
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 19
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
+          "out": 19
         },
         {
           "url": "/",
@@ -607,8 +607,8 @@
       ]
     },
     "gp": {
-      "pageCount": 404,
-      "noIncomingCount": 202,
+      "pageCount": 405,
+      "noIncomingCount": 203,
       "fewIncomingCount": 42,
       "phantomCount": 18,
       "noIncoming": [
@@ -634,6 +634,11 @@
         },
         {
           "url": "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+          "in": 0,
+          "out": 1
+        },
+        {
+          "url": "/b2b/",
           "in": 0,
           "out": 1
         },
@@ -856,23 +861,18 @@
           "url": "/widget/embed/anse-a-l-ane/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-a-l-eau/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 38
+          "out": 26
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 17
+          "out": 12
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -1079,21 +1079,6 @@
           "out": 39
         },
         {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 38
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 37
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 37
-        },
-        {
           "url": "/conditions/uv-fort/",
           "in": 6,
           "out": 37
@@ -1104,14 +1089,29 @@
           "out": 28
         },
         {
+          "url": "/conditions/plages-enfants/",
+          "in": 1,
+          "out": 26
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "in": 6,
+          "out": 26
+        },
+        {
           "url": "/plages/plages-iles-guadeloupe/",
           "in": 23,
           "out": 26
         },
         {
-          "url": "/conditions/snorkeling/",
-          "in": 1,
-          "out": 17
+          "url": "/conditions/baignade-ideale/",
+          "in": 6,
+          "out": 25
+        },
+        {
+          "url": "/conditions/mer-agitee/",
+          "in": 6,
+          "out": 19
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",

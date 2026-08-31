@@ -1,36 +1,12 @@
 {
-  "generatedAt": "2026-08-24T11:48:38.049Z",
+  "generatedAt": "2026-08-31T18:15:39.527Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "totalLinks": 6806,
-      "checkedLinks": 4978,
-      "brokenCount": 267,
+      "pageCount": 367,
+      "totalLinks": 6789,
+      "checkedLinks": 4961,
+      "brokenCount": 263,
       "broken": [
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
-          "target": "martinique-ftp/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
-          "target": "martinique-ftp/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/fonts.css",
-          "target": "martinique-ftp/sargagame/fonts/fonts.css",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/fonts.css",
-          "target": "martinique-ftp/sargagame/fonts/fonts.css",
-          "kind": "internal"
-        },
         {
           "from": "/404.html",
           "href": "/sargagame/",
@@ -1612,35 +1588,11 @@
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "totalLinks": 8633,
-      "checkedLinks": 6290,
-      "brokenCount": 350,
+      "pageCount": 406,
+      "totalLinks": 8608,
+      "checkedLinks": 6265,
+      "brokenCount": 346,
       "broken": [
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
-          "target": "guadeloupe-ftp/sargagame/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
-          "target": "guadeloupe-ftp/sargagame/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/fonts.css",
-          "target": "guadeloupe-ftp/sargagame/fonts/fonts.css",
-          "kind": "internal"
-        },
-        {
-          "from": "/404.html",
-          "href": "/sargagame/fonts/fonts.css",
-          "target": "guadeloupe-ftp/sargagame/fonts/fonts.css",
-          "kind": "internal"
-        },
         {
           "from": "/404.html",
           "href": "/sargagame/",
