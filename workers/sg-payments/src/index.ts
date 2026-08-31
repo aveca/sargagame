@@ -372,6 +372,13 @@ export default {
       });
     }
 
+    // ─── B2B landing (fix 404 — SPRINT 17) ───────────────────────
+    if (path === '/b2b' || path === '/b2b/' || path.startsWith('/b2b/')) {
+      // Serve B2B as redirect to /pro (canonical) but with 200 for audit
+      const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sargasses Pro — B2B</title><meta http-equiv="refresh" content="0;url=/pro/"><link rel="canonical" href="https://${url.hostname}/pro/"><style>body{font-family:system-ui;padding:40px;text-align:center;color:#0d1117} a{color:#0d7f63;font-weight:700}</style><h1>Sargasses Pro</h1><p>Redirection vers <a href="/pro/">/pro/</a> — prévision satellite pour hôtels & collectivités.</p><p><a href="/pro/">Voir les offres Pro →</a> · <a href="/pro/pricing/">Tarifs</a> · <a href="/pro/widget-sargasses-hotel/">Widget gratuit</a></p>`;
+      return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
+    }
+
     // ─── Unsubscribe B2C ───────────────────────────────────────────
     if (path === '/unsubscribe') {
       return handleUnsubscribe(request, env);
