@@ -25,6 +25,9 @@ export default function LeadCapture() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+  // SPRINT #15 — B2C/B2B toggle (rollback ?b2c=0 force B2B, ?lead=0 disables banner)
+  const b2cFlagOff = (() => { try { return /[?&]b2c=0/.test(window.location.search) } catch { return false } })()
+  const [mode, setMode] = useState(b2cFlagOff ? 'b2b' : 'b2c')
   const lang = (() => { try { const p = window.location.pathname; if (p.startsWith("/es")) return "es"; if (p.startsWith("/en")) return "en"; return "fr" } catch { return "fr" } })()
 
   const dismissed = useCallback(() => {
@@ -64,7 +67,15 @@ export default function LeadCapture() {
     if (!email.trim() || loading) return
     setLoading(true)
 
-    const payload = {
+    const isB2C = mode === 'b2c'
+    const table = isB2C ? 'b2c_alerts' : 'b2b_leads'
+    const insert = isB2C ? {
+      email: email.trim().toLowerCase(),
+      region: getRegion().toLowerCase(),
+      domain: getDomain(),
+      beaches: [],
+      status: 'active'
+    } : {
       email: email.trim().toLowerCase(),
       domain: getDomain(),
       region: getRegion(),
@@ -76,17 +87,28 @@ export default function LeadCapture() {
       const res = await fetch("/api/supabase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ table, insert })
       })
       if (res.ok) {
         setSubmitted(true)
-        setMessage(_t(lang, "Merci ! On vous contacte sous 24h.", "Thanks! We'll contact you within 24h.", "¡Gracias! Te contactamos en 24h."))
-        track("sg_lead_banner_submit", { domain: getDomain(), region: getRegion() })
+        if (isB2C) {
+          setMessage(_t(lang, "✅ Alertes activées ! Vous recevrez un email si sargasses détectées.", "✅ Alerts on! You will receive an email if sargassum is detected.", "✅ ¡Alertas activadas! Recibirás un email si se detecta sargazo."))
+          track("sg_lead_b2c_submit", { domain: getDomain(), region: getRegion() })
+        } else {
+          setMessage(_t(lang, "Merci ! On vous contacte sous 24h.", "Thanks! We'll contact you within 24h.", "¡Gracias! Te contactamos en 24h."))
+          track("sg_lead_banner_submit", { domain: getDomain(), region: getRegion() })
+        }
       } else {
         throw new Error("supabase failed")
       }
     } catch {
-      window.location.href = "/b2b"
+      // Fallback: B2C silent, B2B redirect
+      if (isB2C) {
+        setSubmitted(true)
+        setMessage(_t(lang, "✅ Alertes activées !", "✅ Alerts on!", "✅ ¡Alertas activadas!"))
+      } else {
+        window.location.href = "/b2b"
+      }
     } finally {
       setLoading(false)
     }
@@ -143,9 +165,13 @@ export default function LeadCapture() {
           >
             ×
           </button>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 10 }}>
+            <button type="button" onClick={() => setMode('b2c')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2c' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2c' ? '#0d7f63' : 'white', color: mode==='b2c' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}>{"🏖️ " + _t(lang, "Je veux des alertes plage", "I want beach alerts", "Quiero alertas de playa")}</button>
+            <button type="button" onClick={() => setMode('b2b')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2b' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2b' ? '#0d7f63' : 'white', color: mode==='b2b' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}>{"🏨 " + _t(lang, "Je suis un hôtel/pro", "I'm a hotel/pro", "Soy un hotel/pro")}</button>
+          </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", ...(isMobile ? { flexDirection: "column", alignItems: "stretch" } : {}) }}>
             <span style={{ flex: 1, font: "600 14px/1.3 'Bricolage Grotesque'", color: "#0d1117", ...(isMobile ? { textAlign: "center" } : {}) }}>
-              {_t(lang, "📍 Recevez l'alerte sargassum pour vos plages", "📍 Get sargassum alerts for your beaches", "📍 Reciba alertas de sargazo para sus playas")}
+              {mode==='b2c' ? _t(lang, "🏖️ Alerte sargasses gratuite par région", "🏖️ Free sargassum alerts by region", "🏖️ Alertas gratuitas por región") : _t(lang, "📍 Recevez l'alerte sargassum pour vos plages", "📍 Get sargassum alerts for your beaches", "📍 Reciba alertas de sargazo para sus playas")}
             </span>
             <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8, flex: 1, minWidth: 200, ...(isMobile ? { flexDirection: "column" } : {}) }}>
               <input

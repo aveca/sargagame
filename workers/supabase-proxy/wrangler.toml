@@ -16,4 +16,5 @@ routes = [
 SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
 
 # Secrets (set via: wrangler secret put SECRET_NAME)
+# SUPABASE_SERVICE_KEY
 # SUPABASE_SERVICE_ROLE_KEY_v2

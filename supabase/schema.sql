@@ -214,3 +214,51 @@ alter table public.payment_grants enable row level security;
 -- Anon NE PEUT PAS lire (PII : email, customer_id) — lecture service_role seulement
 -- Écriture = webhook Mollie (clé service) via mol_supabase_mirror()
 -- Pas de policy INSERT anon → écriture côté serveur seulement
+
+-- =====================================================================
+-- b2c_alerts — Alertes B2C sargassum par région (SPRINT #15)
+-- Insert via LeadCapture B2C toggle → /api/supabase generic
+-- Cron Worker sg-payments 2x/jour (06:00/18:00) → sendEmail si sargassum moderate+
+-- Unsubscribe : GET /unsubscribe?token=XXX → status='unsubscribed'
+-- =====================================================================
+create table if not exists public.b2c_alerts (
+  id                uuid primary key default gen_random_uuid(),
+  email             text not null,
+  region            text not null,
+  domain            text not null,
+  beaches           text[],
+  status            text not null default 'active',
+  created_at        timestamptz not null default now(),
+  unsubscribe_token text not null default gen_random_uuid()::text
+);
+create index if not exists b2c_alerts_status_idx on public.b2c_alerts (status);
+create index if not exists b2c_alerts_token_idx on public.b2c_alerts (unsubscribe_token);
+alter table public.b2c_alerts enable row level security;
+drop policy if exists "anon insert b2c_alert" on public.b2c_alerts;
+create policy "anon insert b2c_alert" on public.b2c_alerts for insert to anon with check (true);
+drop policy if exists "anon select b2c_alert" on public.b2c_alerts;
+create policy "anon select b2c_alert" on public.b2c_alerts for select to anon using (true);
+-- UPDATE via service_role seulement (Worker unsubscribe), pas d'UPDATE anon
+-- Lecture service_role pour cron (tous les actifs)
+
+-- =====================================================================
+-- b2b_leads — Leads B2B map_banner (LeadCapture B2B toggle)
+-- =====================================================================
+create table if not exists public.b2b_leads (
+  id           uuid primary key default gen_random_uuid(),
+  email        text not null,
+  domain       text not null,
+  region       text not null,
+  source       text default 'map_banner',
+  status       text default 'new',
+  contacted_at timestamptz,
+  created_at   timestamptz not null default now()
+);
+alter table public.b2b_leads enable row level security;
+drop policy if exists "b2b_leads_insert" on public.b2b_leads;
+create policy "b2b_leads_insert" on public.b2b_leads for insert with check (true);
+drop policy if exists "b2b_leads_select" on public.b2b_leads;
+create policy "b2b_leads_select" on public.b2b_leads for select using (true);
+drop policy if exists "b2b_leads_update" on public.b2b_leads;
+create policy "b2b_leads_update" on public.b2b_leads for update using (true);
+create index if not exists b2b_leads_status_idx on public.b2b_leads (status, created_at);

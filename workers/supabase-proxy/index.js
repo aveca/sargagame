@@ -15,8 +15,7 @@
  *   GET  /api/supabase/photos?...           — approved photos only
  *   GET  /api/supabase/beach_reports?...    — approved reports only
  *   GET  /api/supabase/analytics_events?... — denied (write-only)
- *
- * Region detection: from request hostname + VITE_REGION consistency
+ *   POST /api/supabase                      — generic table insert (LeadCapture, b2b leads, etc.)
  */
 
 const CORS = {
@@ -74,7 +73,7 @@ const ALLOWED_BEACH_REPORT_EVENTS = new Set(['beaching', 'cleanup']);
 // ─── Supabase REST helper (service_role only) ─────────────────────────
 async function sbRequest(table, method, body = null, query = '', env) {
   const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY_v2;
+  const serviceKey = env.SUPABASE_SERVICE_KEY;
   console.log('DEBUG sbRequest:', { table, method, hasServiceKey: !!serviceKey, keyPrefix: serviceKey?.substring(0, 10) });
   const headers = {
     apikey: serviceKey,
@@ -112,10 +111,10 @@ export default {
     // Debug endpoint: /api/supabase/debug
     if (url.pathname === '/api/supabase/debug') {
       return json({
-        hasServiceKey: !!env.SUPABASE_SERVICE_ROLE_KEY_v2,
+        hasServiceKey: !!env.SUPABASE_SERVICE_KEY,
         hasUrl: !!env.SUPABASE_URL,
-        serviceKeyPrefix: env.SUPABASE_SERVICE_ROLE_KEY_v2?.substring(0, 10),
-        serviceKeyFull: env.SUPABASE_SERVICE_ROLE_KEY_v2,
+        serviceKeyPrefix: env.SUPABASE_SERVICE_KEY?.substring(0, 10),
+        serviceKeyFull: env.SUPABASE_SERVICE_KEY,
         allEnvKeys: Object.keys(env)
       });
     }
@@ -128,8 +127,10 @@ export default {
     if (path === '/api/supabase/analytics_events') {
       if (method === 'POST') {
         let body;
+        let rawBody;
         try {
-          body = await request.json();
+          rawBody = await request.text();
+          body = JSON.parse(rawBody);
         } catch {
           return err('Invalid JSON', 400);
         }
@@ -163,8 +164,10 @@ export default {
     if (path === '/api/supabase/photos') {
       if (method === 'POST') {
         let body;
+        let rawBody;
         try {
-          body = await request.json();
+          rawBody = await request.text();
+          body = JSON.parse(rawBody);
         } catch {
           return err('Invalid JSON', 400);
         }
@@ -227,8 +230,10 @@ export default {
     if (path === '/api/supabase/planner_alerts') {
       if (method === 'POST') {
         let body;
+        let rawBody;
         try {
-          body = await request.json();
+          rawBody = await request.text();
+          body = JSON.parse(rawBody);
         } catch {
           return err('Invalid JSON', 400);
         }
@@ -264,8 +269,10 @@ export default {
     if (path === '/api/supabase/beach_reports') {
       if (method === 'POST') {
         let body;
+        let rawBody;
         try {
-          body = await request.json();
+          rawBody = await request.text();
+          body = JSON.parse(rawBody);
         } catch {
           return err('Invalid JSON', 400);
         }
@@ -324,660 +331,30 @@ export default {
       return err('Method not allowed', 405);
     }
 
+    // ─── Generic table insert (LeadCapture, b2b leads, b2b_subscriptions, etc.) ────────────
+    if (path === '/api/supabase') {
+      if (method !== 'POST') return err('Method not allowed', 405);
+      let body;
+      let rawBody;
+      try {
+        rawBody = await request.text();
+        body = JSON.parse(rawBody);
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'Parse failed: ' + e.message, received: rawBody.substring(0, 200) }), { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS } });
+      }
+      const { table, insert } = body || {};
+      if (!table || !insert || typeof insert !== 'object') {
+        return err('Missing table or insert object', 400);
+      }
+      try {
+        await sbRequest(table, 'POST', insert, '', env);
+        return json({ success: true });
+      } catch (e) {
+        return err(e.message, 500);
+      }
+    }
+
     // ─── Not found ────────────────────────────────────────────────────
     return err('Not found', 404);
   },
-};
-
-// ─── Allowlisted operations ───────────────────────────────────────────
-const ALLOWED_EVENTS = new Set([
-  'sg_session_start',
-  'sg_beach_lock',
-  'sg_beach_click',
-  'sg_paywall_open',
-  'sg_paywall_cta',
-  'sg_conversion',
-  'sg_email_submit',
-  'sg_verdict_confirm',
-  'sg_observation',
-]);
-
-const ALLOWED_BEACH_REPORT_EVENTS = new Set(['beaching', 'cleanup']);
-
-// ─── Supabase REST helper (service_role only) ─────────────────────────
-async function sbRequest(table, method, body = null, query = '', env) {
-  const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY_v2;
-  console.log('DEBUG sbRequest:', { table, method, hasServiceKey: !!serviceKey, keyPrefix: serviceKey?.substring(0, 10) });
-  const headers = {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    'Content-Type': 'application/json',
-  };
-  if (['GET', 'POST', 'PATCH'].includes(method)) {
-    headers.Prefer = 'return=representation';
-  }
-  const opts = { method, headers, body: body ? JSON.stringify(body) : undefined };
-  const res = await fetch(url, opts);
-  if (res.status === 204) return [];
-  const text = await res.text();
-  if (!text) return [];
-  const data = JSON.parse(text);
-  if (res.status >= 400) {
-    console.log('Supabase error:', { status: res.status, text });
-    throw new Error(`Supabase ${res.status}: ${text}`);
-  }
-  return data;
-}
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function err(msg, status = 400) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS }
-  });
-}
-
-function detectRegion(request) {
-  const url = new URL(request.url);
-  const hostname = url.hostname.replace(/^www\./, '');
-  return REGION_BY_HOSTNAME[hostname] || null;
-}
-
-const REGION_BY_HOSTNAME = {
-  'sargasses-martinique.com': 'MQ',
-  'sargasses-guadeloupe.com': 'GP',
-  'sargassummiami.com': 'FLORIDA',
-  'sargassumpuntacana.com': 'PUNTA_CANA',
-  'sargassumcancun.com': 'RIVIERA_MAYA',
-  'sargazotulum.com': 'TULUM',
-  'sargassumbarbados.com': 'BARBADOS',
 };

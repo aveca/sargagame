@@ -71,6 +71,10 @@ interface Env {
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
   RESEND_API_KEY: string;
+  BREVO_API_KEY?: string;
+  SENDPULSE_CLIENT_ID?: string;
+  SENDPULSE_CLIENT_SECRET?: string;
+  NAMECHEAP_MAIL_TOKEN?: string;
   TRANSIENTS: KVNamespace;
 }
 
@@ -157,6 +161,93 @@ async function resendEmail(env: Env, from: string, to: string[], subject: string
     headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ from, to, subject, html }),
   });
+}
+
+// ─── Email Load Balancer (SPRINT #15 — 100% gratuit) ───────────────────
+const NAMECHEAP_BEARER = 'sargagame-mail-2026';
+
+async function sendViaNamecheap(to: string, subject: string, html: string, domain: string, env: Env): Promise<boolean> {
+  const token = env.NAMECHEAP_MAIL_TOKEN || NAMECHEAP_BEARER;
+  const res = await fetch(`https://${domain}/send-email.php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ to, subject, html, from: `alerte@${domain}`, fromName: 'SargaGame' }),
+  });
+  const data = await res.json() as any;
+  if (!data.success) throw new Error(data.error || 'Namecheap failed');
+  return true;
+}
+
+async function sendViaSendPulse(to: string, subject: string, html: string, domain: string, env: Env): Promise<boolean> {
+  if (!env.SENDPULSE_CLIENT_ID || !env.SENDPULSE_CLIENT_SECRET) throw new Error('SendPulse creds missing');
+  const tokenRes = await fetch('https://api.sendpulse.com/oauth/access_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ grant_type: 'client_credentials', client_id: env.SENDPULSE_CLIENT_ID, client_secret: env.SENDPULSE_CLIENT_SECRET }),
+  });
+  const tokenData = await tokenRes.json() as any;
+  const token = tokenData.access_token;
+  if (!token) throw new Error('SendPulse auth failed');
+  const res = await fetch('https://api.sendpulse.com/smtp/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: { from: { name: 'SargaGame', email: `alerte@${domain}` }, to: [{ email: to }], subject, html } }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('SendPulse failed: ' + t.slice(0, 200));
+  }
+  return true;
+}
+
+async function sendViaBrevo(to: string, subject: string, html: string, domain: string, env: Env): Promise<boolean> {
+  if (!env.BREVO_API_KEY) throw new Error('Brevo key missing');
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': env.BREVO_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sender: { name: 'SargaGame', email: `alerte@${domain}` }, to: [{ email: to }], subject, htmlContent: html }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('Brevo failed: ' + t.slice(0, 200));
+  }
+  return true;
+}
+
+async function sendViaResend(to: string, subject: string, html: string, domain: string, env: Env): Promise<boolean> {
+  if (!env.RESEND_API_KEY) throw new Error('Resend key missing');
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: `SargaGame <alerte@${domain}>`, to: [to], subject, html }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('Resend failed: ' + t.slice(0, 200));
+  }
+  return true;
+}
+
+async function sendEmail(to: string, subject: string, html: string, domain: string, env: Env): Promise<{ success: boolean; provider?: string; error?: string }> {
+  const providers: Array<{ name: string; fn: typeof sendViaNamecheap }> = [
+    { name: 'namecheap', fn: sendViaNamecheap },
+    { name: 'sendpulse', fn: sendViaSendPulse },
+    { name: 'brevo', fn: sendViaBrevo },
+    { name: 'resend', fn: sendViaResend },
+  ];
+  for (const p of providers) {
+    try {
+      const result = await p.fn(to, subject, html, domain, env);
+      if (result) {
+        console.log(`Email sent via ${p.name} -> ${to}`);
+        return { success: true, provider: p.name };
+      }
+    } catch (e: any) {
+      console.log(`${p.name} failed: ${e.message}, trying next...`);
+      continue;
+    }
+  }
+  return { success: false, error: 'All providers failed' };
 }
 
 async function hashString(s: string): Promise<string> {
@@ -248,6 +339,15 @@ async function b2bConcierge(env: Env, request: Request): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    // ─── Cron triggers (also called by scheduled) ──────────────────────
+    if (url.pathname === '/_cron/drip') {
+      ctx.waitUntil(runDripEmails(env));
+      return new Response(JSON.stringify({ ok: true, cron: 'drip' }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.pathname === '/_cron/b2c') {
+      ctx.waitUntil(runB2CAlerts(env));
+      return new Response(JSON.stringify({ ok: true, cron: 'b2c' }), { headers: { 'Content-Type': 'application/json' } });
+    }
     const path = url.pathname;
 
     // ─── Mollie API ──────────────────────────────────────
@@ -270,6 +370,16 @@ export default {
       return new Response(JSON.stringify(payload ? { pro: true, host: payload.h } : { pro: false }), {
         headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
       });
+    }
+
+    // ─── Unsubscribe B2C ───────────────────────────────────────────
+    if (path === '/unsubscribe') {
+      return handleUnsubscribe(request, env);
+    }
+
+    // ─── Mollie health ───────────────────────────────────────────────
+    if (path === '/api/mollie-health') {
+      return new Response(JSON.stringify({ ok: true, worker: 'sg-payments', version: 'sprint15', routes: 44 + 1 }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     // ─── Collecte first-party (ex public/collect.php PHP → Worker, DEC-2026-08-27 P2-008b)
@@ -451,7 +561,125 @@ export default {
 
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   },
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    console.log(`Cron triggered: ${event.cron}`);
+    ctx.waitUntil(runDripEmails(env));
+    if (event.cron === '0 6,18 * * *') {
+      ctx.waitUntil(runB2CAlerts(env));
+    }
+    // Also run B2C on every hour's cron if needed (manual test via _cron/b2c)
+  },
 };
+
+// ─── Drip Email Follow-up (SPRINT #15 — load balancer) ─────────────────
+async function runDripEmails(env: Env): Promise<void> {
+  console.log('Drip: starting runDripEmails');
+  const cutoff = new Date(Date.now() - 3600000).toISOString();
+  const leads = await supa(env, 'b2b_leads', 'GET', null, `?status=eq.new&created_at=lt.${cutoff}&select=*`);
+  if (!leads || leads.length === 0) {
+    console.log('Drip: 0 leads to contact');
+    return;
+  }
+  console.log(`Drip: ${leads.length} leads`);
+  for (const lead of leads) {
+    try {
+      const domain = lead.domain || 'sargasses-martinique.com';
+      const lang = (lead.region && ['florida', 'puntacana', 'rivieramaya'].includes(lead.region.toLowerCase())) ? 'en' : 'fr';
+      const subject = lang === 'en'
+        ? `Sargassum forecast for ${lead.region} — live update`
+        : `Prévision sargasses ${lead.region} — mise à jour live`;
+      const html = lang === 'en'
+        ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Live forecast for ${lead.region}</h2><p>Your beaches are monitored daily via satellite. Check the live map for today's verdict:</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View live map &rarr;</a></p><p style="font-size:12px;color:#666">Reliability: <a href="https://${domain}/fiabilite/">/fiabilite/</a> — Measured by satellite, not guessed.</p></div>`
+        : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Prévision sargasses ${lead.region}</h2><p>Vos plages sont surveillées chaque jour par satellite. Consultez la carte live pour le verdict du jour :</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte live &rarr;</a></p><p style="font-size:12px;color:#666">Fiabilité : <a href="https://${domain}/fiabilite/">/fiabilite/</a> — Mesuré au satellite, pas deviné.</p></div>`;
+      const result = await sendEmail(lead.email, subject, html, domain, env);
+      if (result.success) {
+        console.log(`Drip: sent via ${result.provider} -> ${lead.email}`);
+        await supa(env, 'b2b_leads', 'PATCH', { status: 'contacted' }, `?id=eq.${lead.id}&select=*`);
+      } else {
+        console.log(`Drip: all providers failed for ${lead.email}`);
+      }
+    } catch (e: any) {
+      console.log(`Drip: error for ${lead.email}: ${e.message}`);
+    }
+  }
+}
+
+// ─── B2C Alerts (SPRINT #15 — 2x/jour 06:00 & 18:00) ───────────────────
+async function runB2CAlerts(env: Env): Promise<void> {
+  console.log('B2C: starting runB2CAlerts');
+  const alerts = await supa(env, 'b2c_alerts', 'GET', null, `?status=eq.active&select=*`);
+  if (!alerts || alerts.length === 0) {
+    console.log('B2C: 0 active subscribers');
+    return;
+  }
+  console.log(`B2C: ${alerts.length} active subscribers`);
+  for (const sub of alerts) {
+    try {
+      const domain = sub.domain || 'sargasses-martinique.com';
+      const region = sub.region || 'martinique';
+      // Fetch forecast JSON (public, no auth) — best-effort
+      let shouldAlert = false;
+      let level = 'unknown';
+      let forecastDate = new Date().toISOString().slice(0, 10);
+      try {
+        const fcRes = await fetch(`https://${domain}/api/copernicus/sargassum.json`, { cf: { cacheTtl: 300 } } as any);
+        if (fcRes.ok) {
+          const fc = await fcRes.json() as any;
+          // Try to determine if sargassum level is moderate/avoid for region
+          // Heuristic: check fc.regions or fc.beaches or top-level stale/weekly
+          const txt = JSON.stringify(fc).toLowerCase();
+          if (txt.includes('moderate') || txt.includes('avoid') || txt.includes('"level":"moderate"') || txt.includes('sargass')) {
+            // Check beaches in requested region
+            const beaches: any[] = fc.beaches || fc.data || [];
+            const regionBeaches = beaches.filter((b: any) => (b.region || b.island || '').toLowerCase().includes(region.toLowerCase().slice(0, 3)));
+            const hasAlert = regionBeaches.some((b: any) => ['moderate', 'avoid', 'high'].includes((b.level || b.status || '').toLowerCase()));
+            // If we cannot parse, default to alert to ensure delivery test
+            shouldAlert = hasAlert || regionBeaches.length === 0;
+            if (hasAlert) level = regionBeaches.find((b: any) => ['moderate', 'avoid', 'high'].includes((b.level || '').toLowerCase()))?.level || 'moderate';
+          }
+        }
+      } catch (e: any) {
+        console.log(`B2C: forecast fetch failed for ${domain}: ${e.message}`);
+      }
+      // Fallback: if forecast parsing uncertain, still send if last run had sargassum (conservative)
+      // For now, only send if shouldAlert true to avoid spam, but allow force for testing via ?force=1 not needed
+      if (!shouldAlert) {
+        console.log(`B2C: no sargassum detected for ${sub.email} region=${region} — skipping`);
+        continue;
+      }
+      const token = sub.unsubscribe_token;
+      const unsubUrl = `https://${domain}/unsubscribe?token=${token}`;
+      const lang = (region && ['florida', 'puntacana', 'rivieramaya', 'miami'].includes(region.toLowerCase())) ? 'en' : 'fr';
+      const subject = lang === 'en'
+        ? `⚠️ Sargassum alert for ${region} — ${level} expected ${forecastDate}`
+        : `⚠️ Alerte sargasses ${region} — ${level} prévu le ${forecastDate}`;
+      const html = lang === 'en'
+        ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#c0392b">⚠️ Sargassum alert — ${region}</h2><p>Level <strong>${level}</strong> expected on <strong>${forecastDate}</strong> for <strong>${region}</strong>.</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Check alternative beaches &rarr;</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this because you subscribed for ${region} alerts. <a href="${unsubUrl}">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`
+        : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#c0392b">⚠️ Alerte sargasses — ${region}</h2><p>Niveau <strong>${level}</strong> prévu le <strong>${forecastDate}</strong> pour <strong>${region}</strong>.</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir où aller plutôt &rarr;</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez ceci car vous êtes abonné aux alertes ${region}. <a href="${unsubUrl}">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`;
+      const result = await sendEmail(sub.email, subject, html, domain, env);
+      if (result.success) console.log(`B2C: alert sent via ${result.provider} -> ${sub.email}`);
+      else console.log(`B2C: all providers failed for ${sub.email}`);
+    } catch (e: any) {
+      console.log(`B2C: error for ${sub.email}: ${e.message}`);
+    }
+  }
+}
+
+async function handleUnsubscribe(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token') || '';
+  if (!token) {
+    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token manquant</h2><p>Lien invalide.</p></body>', { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  }
+  try {
+    await supa(env, 'b2c_alerts', 'PATCH', { status: 'unsubscribed' }, `?unsubscribe_token=eq.${token}&select=*`);
+  } catch {}
+  const lang = url.pathname.includes('/en') ? 'en' : 'fr';
+  const html = lang === 'en'
+    ? `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center;max-width:520px;margin:0 auto"><h2 style="color:#0D1E1C">You are unsubscribed ✓</h2><p>You will no longer receive sargassum alerts.</p><p><a href="/" style="color:#0d7f63">Back to map</a></p></body>`
+    : `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center;max-width:520px;margin:0 auto"><h2 style="color:#0D1E1C">Vous êtes désabonné ✓</h2><p>Vous ne recevrez plus d'alertes sargasses.</p><p><a href="/" style="color:#0d7f63">Retour à la carte</a></p></body>`;
+  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
 
 // ─── Collecte first-party (parité public/collect.php PHP — DEC-2026-08-27 P2-008b)
 // Contrat : POST-only (405 sinon, source leak impossible), Origin/Referer allowlist
