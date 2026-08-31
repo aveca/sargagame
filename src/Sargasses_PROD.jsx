@@ -17,6 +17,7 @@ import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
+import "./sprint20.css"
 import RegionNav from "./components/RegionNav.jsx"
 import LeadCapture from "./LeadCapture.jsx"
 import WidgetEmbed from "./WidgetEmbed.jsx"
@@ -13205,9 +13206,11 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
     }).catch(()=>{})
   },[])
 
-  // Theme
+  // Theme — dark mode SPRINT 20 (localStorage sg_dark_mode compat + data-theme for CSS variables, no flash)
   useEffect(()=>{
     document.documentElement.classList.toggle("theme-dark",theme==="dark")
+    document.documentElement.setAttribute("data-theme",theme==="dark"?"dark":"light")
+    try{ localStorage.setItem("sg_dark_mode",theme==="dark"?"dark":"light") }catch{}
     s("sg_theme",theme)
   },[theme])
 
