@@ -92,7 +92,8 @@ export default function LeadCapture() {
       if (res.ok) {
         setSubmitted(true)
         if (isB2C) {
-          setMessage(_t(lang, "✅ Alertes activées ! Vous recevrez un email si sargasses détectées.", "✅ Alerts on! You will receive an email if sargassum is detected.", "✅ ¡Alertas activadas! Recibirás un email si se detecta sargazo."))
+          const reg = getRegion();
+          setMessage(_t(lang, `✅ Vous recevrez les alertes sargassum pour ${reg} par email`, `✅ You will receive sargassum alerts for ${reg} by email`, `✅ Recibirás alertas de sargazo para ${reg} por email`))
           track("sg_lead_b2c_submit", { domain: getDomain(), region: getRegion() })
         } else {
           setMessage(_t(lang, "Merci ! On vous contacte sous 24h.", "Thanks! We'll contact you within 24h.", "¡Gracias! Te contactamos en 24h."))

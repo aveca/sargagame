@@ -678,12 +678,31 @@ async function runB2CAlerts(env: Env): Promise<void> {
       const token = sub.unsubscribe_token;
       const unsubUrl = `https://${domain}/unsubscribe?token=${token}`;
       const lang = (region && ['florida', 'puntacana', 'rivieramaya', 'miami'].includes(region.toLowerCase())) ? 'en' : 'fr';
+      const levelEmoji: Record<string,string> = { clean:'🟢', moderate:'🟡', avoid:'🔴', high:'🔴', unknown:'⚪' };
+      const levelColor: Record<string,string> = { clean:'#16a34a', moderate:'#eab308', avoid:'#dc2626', high:'#dc2626', unknown:'#6b7280' };
+      const emoji = levelEmoji[level]||'⚠️';
+      const color = levelColor[level]||'#c0392b';
+      // Build J+1-3 preview from sargassum.json if available
+      let forecastHtml = '';
+      try {
+        const c = await fetch(`https://${domain}/api/copernicus/sargassum.json`, { cf:{cacheTtl:300}} as any).then(r=>r.ok?r.json():null);
+        const wk = (c as any)?.weekly;
+        if (wk) {
+          const firstKey = Object.keys(wk)[0];
+          const fc = wk[firstKey]?.forecast?.slice(0,4) || [];
+          if (fc.length >= 2) {
+            const rows = fc.slice(1,4).map((d:any,i:number)=>`<tr><td style="padding:6px 10px;border:1px solid #e5e7eb">J+${i+1}</td><td style="padding:6px 10px;border:1px solid #e5e7eb">${levelEmoji[d.status]||''} ${d.status}</td><td style="padding:6px 10px;border:1px solid #e5e7eb">${d.date||''}</td></tr>`).join('');
+            forecastHtml = `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:13px"><tr><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Jour</th><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Niveau</th><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Date</th></tr>${rows}</table>`;
+          }
+        }
+      } catch {}
+      const beachesList = (sub.beaches && sub.beaches.length) ? sub.beaches.join(', ') : (lang==='en'?'All beaches in region':'Toutes les plages de la région');
       const subject = lang === 'en'
-        ? `⚠️ Sargassum alert for ${region} — ${level} expected ${forecastDate}`
-        : `⚠️ Alerte sargasses ${region} — ${level} prévu le ${forecastDate}`;
+        ? `⚠️ Sargassum alert — ${region} — ${forecastDate}`
+        : `⚠️ Alerte sargassum — ${region} — ${forecastDate}`;
       const html = lang === 'en'
-        ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#c0392b">⚠️ Sargassum alert — ${region}</h2><p>Level <strong>${level}</strong> expected on <strong>${forecastDate}</strong> for <strong>${region}</strong>.</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Check alternative beaches &rarr;</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this because you subscribed for ${region} alerts. <a href="${unsubUrl}">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`
-        : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#c0392b">⚠️ Alerte sargasses — ${region}</h2><p>Niveau <strong>${level}</strong> prévu le <strong>${forecastDate}</strong> pour <strong>${region}</strong>.</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir où aller plutôt &rarr;</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez ceci car vous êtes abonné aux alertes ${region}. <a href="${unsubUrl}">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`;
+        ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:${color}">${emoji} Sargassum alert — ${region}</h2><p>Hello,</p><p>The sargassum level is <strong style="color:${color}">${emoji} ${level}</strong> in <strong>${region}</strong> today.</p><p>Beaches concerned: <strong>${beachesList}</strong></p>${forecastHtml}<p>Forecast: ${forecastHtml?'see table above':'J+1-3 available on map'}</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map →</a> <a href="https://${domain}/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts →</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="${unsubUrl}">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`
+        : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:${color}">${emoji} Alerte sargassum — ${region}</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:${color}">${emoji} ${level}</strong> sur <strong>${region}</strong> aujourd'hui.</p><p>Plages concernées: <strong>${beachesList}</strong></p>${forecastHtml}<p>Prévisions: ${forecastHtml?'voir tableau ci-dessus':'J+1 à J+3 sur la carte'}</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte →</a> <a href="https://${domain}/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les prévisions complètes →</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous êtes abonné aux alertes SargaGame.<br><a href="${unsubUrl}">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`;
       const result = await sendEmail(sub.email, subject, html, domain, env);
       if (result.success) console.log(`B2C: alert sent via ${result.provider} -> ${sub.email}`);
       else console.log(`B2C: all providers failed for ${sub.email}`);
