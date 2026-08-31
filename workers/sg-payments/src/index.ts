@@ -419,29 +419,50 @@ export default {
       });
     }
 
-    // ─── Forecast (premium) ──────────────────────────────
-    if (path === '/api/copernicus/forecast.php') {
+    // ─── Forecast (premium + gratuit J+1-3 — SPRINT 18) ─────────────────
+    if (path.startsWith('/api/copernicus/forecast')) {
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
-      const k = url.searchParams.get('k') || '';
-      let authorized = false;
-      if (k) {
-        const payload = await widgetVerify(env, k);
-        if (payload) authorized = true;
-      }
-      if (!authorized && request.method === 'POST') {
-        const body = await request.json() as any;
-        const email = (body.email || '').trim();
-        if (email) {
-          const rows = await supa(env, 'payment_grants', 'GET', null, `?email=eq.${email}&expires_at=gt.now()&select=type&limit=1`);
-          if (rows?.length) authorized = true;
+      // days param gratuit ≤3, premium >3 — ZÉRO nouveau compte, utilise cache sargassum.json existant
+      const daysParam = parseInt(url.searchParams.get('days') || '7', 10);
+      const isFree = !isNaN(daysParam) && daysParam <= 3;
+      // Architecture: Copernicus → cron build (sargassum.json) → Supabase non nécessaire, lecture cache direct
+      // Le Worker lit le cache public sargassum.json (généré 4×/jour par daily-copernicus.yml), pas Copernicus direct
+      if (!isFree) {
+        const k = url.searchParams.get('k') || '';
+        let authorized = false;
+        if (k) {
+          const payload = await widgetVerify(env, k);
+          if (payload) authorized = true;
         }
+        if (!authorized && request.method === 'POST') {
+          try {
+            const body = await request.json() as any;
+            const email = (body.email || '').trim();
+            if (email) {
+              const rows = await supa(env, 'payment_grants', 'GET', null, `?email=eq.${email}&expires_at=gt.now()&select=type&limit=1`);
+              if (rows?.length) authorized = true;
+            }
+          } catch {}
+        }
+        // GET days>3 sans k → 403 premium
+        if (!authorized) return new Response(JSON.stringify({ ok: false, error: 'Premium required for days>3' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
       }
-      if (!authorized) return new Response(JSON.stringify({ ok: false }), { status: 403, headers: { 'Content-Type': 'application/json' } });
-      // Return public forecast data (the private file isn't available on Pages)
+      // Gratuit ≤3 ou premium autorisé → retourne cache sargassum.json (weekly) limité à days
       const sargData = await fetch(`${url.origin}/api/copernicus/sargassum.json`).then(r => r.json()).catch(() => null);
       if (!sargData) return new Response(JSON.stringify({ ok: false, reason: 'no_data' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
-      return new Response(JSON.stringify({ ok: true, updatedAt: sargData.updatedAt, weekly: sargData.weekly }), {
-        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      // Slice weekly forecast à days si demandé
+      let weekly = sargData.weekly;
+      if (!isNaN(daysParam) && weekly && typeof weekly === 'object') {
+        const sliced: any = {};
+        for (const [bid, wk] of Object.entries(weekly as any)) {
+          const w = wk as any;
+          if (w?.forecast?.length) sliced[bid] = { ...w, forecast: w.forecast.slice(0, daysParam) };
+          else sliced[bid] = w;
+        }
+        weekly = sliced;
+      }
+      return new Response(JSON.stringify({ ok: true, updatedAt: sargData.updatedAt, weekly, days: daysParam, free: isFree }), {
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': isFree ? 'public, max-age=1800' : 'no-store' },
       });
     }
 
