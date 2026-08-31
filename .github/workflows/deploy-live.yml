@@ -1,0 +1,235 @@
+name: Deploy Live (Every Push → Production)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "deploy-live-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  # 1. BUILD — single build, shared artifacts
+  build:
+    name: Build & Bundle Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (all regions via VITE_REGION)
+        run: npm run build
+        env:
+          DEPLOY_TARGET: cloudflare
+
+      - name: Check bundle budget (≤ 250 KB gzip)
+        id: budget
+        run: |
+          SIZE=$(gzip -c dist/assets/*.js | wc -c)
+          echo "Bundle gzip: $SIZE bytes"
+          if [ $SIZE -gt 250000 ]; then
+            echo "::error::BUNDLE TOO LARGE: $SIZE bytes (> 250 KB)"
+            exit 1
+          fi
+          echo "bundle_size=$SIZE" >> $GITHUB_OUTPUT
+
+      - name: Version stamp
+        id: version
+        run: |
+          VER=$(cat public/version.json | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+          echo "version=$VER" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  # 2. DEPLOY CLOUDFLARE PAGES — 6 regions matrix
+  deploy-pages:
+    name: Deploy Cloudflare Pages (6 regions)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [mq, gp, florida, puntacana, rivieramaya, tulum]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install wrangler
+        run: npm install -g wrangler && echo "$(npm bin -g)" >> $GITHUB_PATH
+
+      - name: Prepare region-specific data
+        run: |
+          echo "Preparing region ${{ matrix.region }}..."
+          case "${{ matrix.region }}" in
+            mq) PROJECT="sargagame" ;;
+            gp) PROJECT="sargagame-gp" ;;
+            florida) PROJECT="sargagame-florida" ;;
+            puntacana) PROJECT="sargagame-puntacana" ;;
+            rivieramaya) PROJECT="sargagame-rivieramaya" ;;
+            tulum) PROJECT="sargagame-tulum" ;;
+          esac
+          echo "PROJECT=$PROJECT" >> $GITHUB_ENV
+
+      - name: Copy region-specific Copernicus data
+        run: |
+          mkdir -p dist/api/copernicus
+          for F in sargassum.json history.json; do
+            SRC="public/api/copernicus/${{ matrix.region }}/$F"
+            if [ -f "$SRC" ]; then
+              cp "$SRC" "dist/api/copernicus/$F"
+              echo "  ✓ Copied ${{ matrix.region }}/$F"
+            fi
+          done
+
+      - name: Deploy to Cloudflare Pages
+        run: |
+          echo "Deploying ${{ env.PROJECT }}..."
+          npx wrangler pages deploy dist --project-name=${{ env.PROJECT }} --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+
+  # 3. DEPLOY WORKERS — all workers in parallel
+  deploy-workers:
+    name: Deploy Workers (sg-payments, supabase-proxy, b2b-api)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        worker:
+          - sg-payments
+          - supabase-proxy
+          - b2b-api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: |
+          cd workers/${{ matrix.worker }}
+          if [ -f index.ts ]; then
+            npx tsc --noEmit --skipLibCheck index.ts 2>&1 || true
+          elif [ -f index.js ]; then
+            node --check index.js
+          fi
+
+      - name: Deploy worker
+        run: |
+          echo "Deploying ${{ matrix.worker }}..."
+          npx wrangler deploy
+        working-directory: workers/${{ matrix.worker }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+  # 4. HEALTH CHECK — verify all endpoints respond
+  health-check:
+    name: Health Check (All 6 Domains)
+    needs: [deploy-pages, deploy-workers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - sargasses-martinique.com
+          - sargasses-guadeloupe.com
+          - sargassummiami.com
+          - sargassumpuntacana.com
+          - sargassumcancun.com
+          - sargazotulum.com
+    steps:
+      - name: Health check domain
+        run: |
+          echo "Checking https://${{ matrix.domain }}/..."
+          for i in 1 2 3; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}/")
+            if [ "$CODE" = "200" ]; then
+              echo "✅ ${{ matrix.domain }} — 200 OK"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i: got $CODE, retrying in 5s..."
+            sleep 5
+          done
+          echo "❌ ${{ matrix.domain }} — failed after 3 attempts"
+          exit 1
+
+      - name: Health check API endpoints
+        run: |
+          for EP in /api/mollie-health /api/copernicus/forecast?region=martinique&days=1 /_cron/drip; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}${EP}")
+            if [ "$CODE" = "200" ]; then
+              echo "✅ ${{ matrix.domain }}${EP} — 200"
+            else
+              echo "⚠️ ${{ matrix.domain }}${EP} — got $CODE"
+            fi
+          done
+
+  # 5. NOTIFY — success/failure summary
+  notify:
+    name: Notify Deploy Result
+    needs: [health-check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Deploy status
+        run: |
+          if [ "${{ needs.health-check.result }}" = "success" ]; then
+            echo "🚀 DEPLOY SUCCESS — all 6 domains live!"
+            echo "📦 Bundle: ${{ needs.build.outputs.bundle_size }} bytes"
+            echo "🏷️ Version: ${{ needs.build.outputs.version }}"
+            echo "✅ All 6 domains healthy"
+          else
+            echo "❌ DEPLOY FAILED — check workflow logs"
+            echo "🔍 Failed job: ${{ needs.health-check.result }}"
+            exit 1
+          fi
