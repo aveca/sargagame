@@ -1,23 +1,9 @@
 export async function onRequest(context) {
-  const { request, env, next } = context;
+  const { request, env } = context;
   const url = new URL(request.url);
+  const pathname = url.pathname;
 
-  // Laisser passer les assets statiques
-  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2?|webp|avif)$/)) {
-    return next(request);
-  }
-
-  // Laisser passer les routes API
-  if (url.pathname.startsWith('/api/')) {
-    return next(request);
-  }
-
-  // Laisser passer les routes widget vers la Function dédiée
-  if (url.pathname.startsWith('/widget')) {
-    return next(request);
-  }
-
-  // Widget embeddable endpoint — GET /widget?token=XXX
+  // 1. Widget embeddable endpoint — GET /widget?token=XXX (inline handling)
   if (url.pathname === '/widget' && url.searchParams.has('token')) {
     const REGION_MAP = {
       'sargasses-martinique.com': 'mq',
@@ -148,6 +134,22 @@ export async function onRequest(context) {
     }
   }
 
-  // SPA fallback : servir index.html
+  // 2. Laisser passer les assets statiques vers le serveur static
+  const assetPatterns = /\.(js|css|png|jpg|jpeg|svg|ico|woff2?|webp|avif)$/;
+  if (pathname.match(assetPatterns)) {
+    return env.ASSETS.fetch(new Request(new URL(pathname, request.url), request));
+  }
+
+  // 3. Laisser passer les routes API vers Workers
+  if (pathname.startsWith('/api/')) {
+    return env.ASSETS.fetch(new Request(new URL(pathname, request.url), request));
+  }
+
+  // 4. Laisser passer les routes widget vers la Function dédiée
+  if (pathname.startsWith('/widget')) {
+    return env.ASSETS.fetch(new Request(new URL(pathname, request.url), request));
+  }
+
+  // 5. SPA fallback : servir index.html pour tout le reste
   return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
 }
