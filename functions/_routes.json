@@ -9,9 +9,15 @@
     "*.css",
     "*.png",
     "*.jpg",
+    "*.jpeg",
     "*.svg",
     "*.ico",
+    "*.woff",
     "*.woff2",
-    "*.webp"
+    "*.webp",
+    "*.avif",
+    "*.map",
+    "*.json",
+    "*.webmanifest"
   ]
 }

@@ -135,9 +135,8 @@ export async function onRequest(context) {
   }
 
   // 2. Laisser passer les assets statiques vers le serveur static
-  const assetPatterns = /\.(js|css|png|jpg|jpeg|svg|ico|woff2?|webp|avif)$/;
-  if (pathname.match(assetPatterns)) {
-    return env.ASSETS.fetch(new Request(new URL(pathname, request.url), request));
+  if (pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff|woff2|webp|avif|map|json|webmanifest)$/)) {
+    return env.ASSETS.fetch(request);
   }
 
   // 3. Laisser passer les routes API vers Workers
