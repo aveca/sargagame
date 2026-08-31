@@ -12120,7 +12120,7 @@ export default function App(){
           .then(r=>{
             const ct=r.headers.get("content-type")||"";
             if(!ct.includes("application/json")){console.warn("[sg] referral_claim: réponse non-JSON (dev mode?)");return Promise.reject(new Error("non-json"))}
-            return r.json()
+try{return r.json()}catch(e){console.warn("referral_claim: response is not JSON",e);return Promise.reject(e)}
           }).then(d=>{
             const days=Math.max(0,Math.min(30,parseInt(d&&d.days)||0))
             if(days<=0)return

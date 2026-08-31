@@ -1780,7 +1780,6 @@ export default function WorldMapView({
                 // sous-ensemble gardé, sinon le 1er paint montre TOUS les noms puis le
                 // débounce 90ms en masque la plupart (« flash de tous les noms »).
                 visibility:"hidden",
-                transform:"translate(-50%,-100%)",
                 paddingBottom:mapLabelTapOff?8:14,
                 textAlign:"center",
                 whiteSpace:"nowrap",
