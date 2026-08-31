@@ -151,8 +151,5 @@ export async function onRequest(context) {
 
   // 5. SPA fallback : servir index.html pour tout le reste
   // Test: return 200 directement pour vérifier que la fonction peut return 200
-  return new Response('<html><body>SPA Fallback OK</body></html>', {
-    status: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
+  return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
 }
