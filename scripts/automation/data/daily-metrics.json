@@ -3607,5 +3607,110 @@
         "users": 115
       }
     }
+  },
+  {
+    "date": "2026-08-31",
+    "time": "2026-08-31T04:57:02.408Z",
+    "payments": 22,
+    "revenue": 142.78,
+    "emails": 593,
+    "feedbacks": 1,
+    "avgRating": 4,
+    "pipelineOk": true,
+    "funnel": {
+      "sessions": 236,
+      "lockClicks": 31,
+      "modalOpens": 18,
+      "modalCta": 1,
+      "sampleStarts": null,
+      "emailSubmits": 0,
+      "checkoutRedirects": 0,
+      "onsiteCheckoutOpened": 1,
+      "payOnsiteBack": 0,
+      "mollieCheckoutRedirects": 0,
+      "conversions": 0,
+      "paymentsReal": null,
+      "revenueReal": null,
+      "rates": {
+        "session_to_lock": 13.1,
+        "lock_to_modal": 58.1,
+        "modal_to_cta": 5.6,
+        "cta_to_onsite": 100,
+        "onsite_to_mollie": 0,
+        "cta_to_redirect": 0,
+        "cta_to_conversion": 0
+      }
+    },
+    "email": {
+      "sent": 5065,
+      "delivered": null,
+      "opened": 103,
+      "clicked": 63,
+      "bounced": null,
+      "openRate": 2.03,
+      "clickRate": 61.17,
+      "tracking": "pixel_first_party"
+    },
+    "stripe": {
+      "active": 14,
+      "mrr": {
+        "eur": 69.86
+      },
+      "pastDue": 0,
+      "cancelScheduled": 0,
+      "checkout": {
+        "windowDays": 30,
+        "reached": 0,
+        "paid": 0,
+        "completionRate": null,
+        "recoverable": 0,
+        "lostCents": {}
+      },
+      "bySource": {
+        "map_scrub_forecast": {
+          "active": 1,
+          "mrrEur": 4.99
+        },
+        "forecast_teaser": {
+          "active": 1,
+          "mrrEur": 4.99
+        },
+        "(none)": {
+          "active": 12,
+          "mrrEur": 59.88
+        }
+      },
+      "emailAttributed": {
+        "active": 0,
+        "mrrEur": 0
+      }
+    },
+    "mollie": {
+      "windowDays": 30,
+      "paid": {},
+      "refunds": {
+        "count": 0,
+        "total": {}
+      },
+      "chargebacks": {
+        "count": 0,
+        "total": {}
+      },
+      "b2b": 0,
+      "payers": [],
+      "lastPaidAt": "2026-07-19T03:46:26+00:00",
+      "fetchedAt": "2026-08-31T04:57:10.134Z"
+    },
+    "ga4": {
+      "date": "2026-08-30",
+      "mq": {
+        "sessions": 28,
+        "users": 168
+      },
+      "gp": {
+        "sessions": 9,
+        "users": 39
+      }
+    }
   }
 ]
