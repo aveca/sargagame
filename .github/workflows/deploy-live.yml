@@ -44,12 +44,14 @@ jobs:
       - name: Check bundle budget (≤ 250 KB gzip)
         id: budget
         run: |
-          SIZE=$(gzip -c dist/assets/*.js | wc -c)
-          echo "Bundle gzip: $SIZE bytes"
-          if [ $SIZE -gt 250000 ]; then
-            echo "::error::BUNDLE TOO LARGE: $SIZE bytes (> 250 KB)"
-            exit 1
-          fi
+          node scripts/check-bundle-budget.cjs
+          # Extract eager bundle size from the script output for artifact metadata
+          SIZE=$(node -e "
+            const { execSync } = require('child_process');
+            const out = execSync('node scripts/check-bundle-budget.cjs', {encoding: 'utf8'});
+            const match = out.match(/(\\d+\\.?\\d*) Ko gzip TOTAL/);
+            if (match) console.log(Math.round(parseFloat(match[1]) * 1024));
+          ")
           echo "bundle_size=$SIZE" >> $GITHUB_OUTPUT
 
       - name: Version stamp
