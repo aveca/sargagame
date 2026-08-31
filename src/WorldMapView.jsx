@@ -1535,6 +1535,8 @@ export default function WorldMapView({
 
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
       <svg
+        ref={svgRef}
+        className="wm-map-svg"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",zIndex:1,touchAction:"none",pointerEvents:"none"}}
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
@@ -1544,6 +1546,15 @@ export default function WorldMapView({
         onClick={onMapBgClick}
       >
         {mapDefs}
+
+        {/* Ocean animated waves layer */}
+        <g className="wm-ocean-layer" aria-hidden="true">
+          <div className="wm-waves" style={{position:"absolute",inset:0,overflow:"hidden"}}>
+            <div className="wm-wave" style={{height:"60%",bottom:"-10%"}}/>
+            <div className="wm-wave" style={{height:"45%",bottom:"-5%"}}/>
+            <div className="wm-wave" style={{height:"30%",bottom:"0%"}}/>
+          </div>
+        </g>
 
         {/* Monde — transform caméra appliqué ici via ref. (will-change retiré : sur GPU mobile
             faible il met la mémoire sous pression et n'aide pas le pinch-zoom ; la vraie promo
@@ -1723,9 +1734,27 @@ export default function WorldMapView({
           <circle cx="60" cy="60" r="52" fill="none" stroke="#ffd23f" strokeWidth="1" opacity=".12"
             style={{pointerEvents:"none",transformOrigin:"60px 60px",transformBox:"fill-box",animation:noAnim?"none":"bob 6s ease-in-out infinite"}}/>
         </g>
-      </svg>
 
-      {/* Labels plages — couche HTML screen-space (hors transform SVG → taille pixel constante).
+        {/* Compass — rose des vents animée selon le vent */}
+        <g className="wm-compass" aria-hidden="true" style={{pointerEvents:"none"}}>
+          <circle cx="28" cy="28" r="26" fill="var(--sg-card,#fff)" stroke="var(--sg-ink,#0d0b14)" strokeWidth="2"/>
+          <path className="wm-compass-needle" d="M28 2 L28 26" stroke="var(--sg-avoid,#dc2626)" strokeWidth="2" strokeLinecap="round" transform="rotate(0 28 28)" style={{transformOrigin:"28px 28px"}}>
+            <animateTransform attributeName="transform" type="rotate" from="0 28 28" to="2 28 28" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .58 1" values="0 28 28;2 28 28;0 28 28"/>
+          </path>
+          <text x="28" y="8" text-anchor="middle" font="700 7px 'Bricolage Grotesque'" fill="var(--sg-mute,#6b7280)">N</text>
+          <text x="28" y="54" text-anchor="middle" font="700 7px 'Bricolage Grotesque'" fill="var(--sg-mute,#6b7280)">S</text>
+          <text x="52" y="31" text-anchor="middle" font="700 7px 'Bricolage Grotesque'" fill="var(--sg-mute,#6b7280)">E</text>
+          <text x="4" y="31" text-anchor="middle" font="700 7px 'Bricolage Grotesque'" fill="var(--sg-mute,#6b7280)">W</text>
+        </g>
+
+        {/* Scale bar — barre d'échelle */}
+        <g className="wm-scalebar" aria-hidden="true" style={{pointerEvents:"none"}}>
+          <rect x="4" y="4" width="108" height="20" rx="4" fill="rgba(255,255,255,.9)" stroke="var(--sg-ink,#0d0b14)" strokeWidth="2"/>
+          <text x="58" y="15" text-anchor="middle" font="600 9px 'Bricolage Grotesque'" fill="var(--sg-ink,#0d0b14)">1 km</text>
+          <rect x="14" y="12" width="80" height="3" rx="1.5" fill="var(--sg-ink,#0d0b14)"/>
+        </g>
+
+      </svg>
           Nom À CÔTÉ DU PIN, uniquement pour les ~5 plages les plus impactées (labeledIds). */}
       <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
         {(dataReady?beachList:[]).filter(b=>labeledIds.has(b.id)).map(b=>{

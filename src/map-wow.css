@@ -1,0 +1,325 @@
+/* MAP WOW EFFECTS — Sprint 22 Caribbean Cool — zero deps, GPU-only */
+/* ---- Ocean animated waves ---- */
+.wm-ocean-layer{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(13,127,99,.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(16,158,125,.12) 0%, transparent 50%),
+    linear-gradient(135deg, #0d7f63 0%, #109e7d 50%, #1bc99a 100%);
+}
+[data-theme="dark"] .wm-ocean-layer{
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(16,158,125,.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(26,58,50,.18) 0%, transparent 50%),
+    linear-gradient(135deg, #0a5c4a 0%, #0f2a20 50%, #0d2a1f 100%);
+}
+
+.wm-waves{
+  position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+}
+.wm-wave{
+  position:absolute; left:0; right:0; bottom:0;
+  border-radius:50% 50% 0 0;
+  opacity:.35;
+  animation:wmWave 8s ease-in-out infinite;
+  transform-origin:bottom center;
+}
+.wm-wave:nth-child(1){ height:60%; bottom:-10%; background:linear-gradient(180deg, transparent 40%, rgba(255,255,255,.12)); animation:wmWave 12s ease-in-out infinite; }
+.wm-wave:nth-child(2){ height:45%; bottom:-5%; background:linear-gradient(180deg, transparent 50%, rgba(255,255,255,.08)); animation:wmWave 10s ease-in-out infinite reverse; }
+.wm-wave:nth-child(3){ height:30%; bottom:0%; background:linear-gradient(180deg, transparent 60%, rgba(255,255,255,.05)); animation:wmWave 8s ease-in-out infinite; }
+
+@keyframes wmWave{
+  0%,100%{ transform:translateX(-2%) scaleY(1); }
+  50%{ transform:translateX(2%) scaleY(1.08); }
+}
+
+[data-theme="dark"] .wm-wave:nth-child(1){ background:linear-gradient(180deg, transparent 40%, rgba(255,255,255,.06)); }
+[data-theme="dark"] .wm-wave:nth-child(2){ background:linear-gradient(180deg, transparent 50%, rgba(255,255,255,.04)); }
+[data-theme="dark"] .wm-wave:nth-child(3){ background:linear-gradient(180deg, transparent 60%, rgba(255,255,255,.02)); }
+
+/* ---- Pin animations ---- */
+.wm-pin{
+  cursor:pointer;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), filter .2s;
+}
+.wm-pin:hover{
+  transform:scale(1.05);
+  filter:drop-shadow(0 4px 12px rgba(255,199,44,.5));
+}
+.wm-pin:active{
+  transform:scale(.95);
+}
+.wm-pin-selected{
+  animation:wmPinSelect .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes wmPinSelect{
+  0%{ transform:scale(1); }
+  40%{ transform:scale(1.18); }
+  60%{ transform:scale(1.08); }
+  100%{ transform:scale(1); }
+}
+
+/* Ripple effect on pin click */
+.wm-ripple{
+  position:absolute;
+  border-radius:50%;
+  transform:scale(0);
+  opacity:.5;
+  pointer-events:none;
+  animation:wmRipple .6s ease-out forwards;
+}
+@keyframes wmRipple{
+  to{ transform:scale(4); opacity:0; }
+}
+
+/* Pin stagger entrance */
+.wm-pin-enter{
+  animation:wmPinEnter .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.wm-pin-enter:nth-child(1){ animation-delay:0ms; }
+.wm-pin-enter:nth-child(2){ animation-delay:50ms; }
+.wm-pin-enter:nth-child(3){ animation-delay:100ms; }
+.wm-pin-enter:nth-child(4){ animation-delay:150ms; }
+.wm-pin-enter:nth-child(5){ animation-delay:200ms; }
+.wm-pin-enter:nth-child(6){ animation-delay:250ms; }
+.wm-pin-enter:nth-child(7){ animation-delay:300ms; }
+.wm-pin-enter:nth-child(8){ animation-delay:350ms; }
+.wm-pin-enter:nth-child(9){ animation-delay:400ms; }
+.wm-pin-enter:nth-child(10){ animation-delay:450ms; }
+@keyframes wmPinEnter{
+  from{ opacity:0; transform:translateY(20px) scale(.8); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* Pulse animation for TOP 1 pin */
+.wm-pin-top1::before{
+  content:"";
+  position:absolute; inset:-4px; border-radius:50%;
+  background:radial-gradient(circle at center, rgba(255,199,44,.6), transparent 70%);
+  animation:wmHalo 2.5s ease-in-out infinite;
+  z-index:-1;
+}
+@keyframes wmHalo{
+  0%,100%{ opacity:.3; transform:scale(.9); }
+  50%{ opacity:.8; transform:scale(1.25); }
+}
+
+/* ---- Compass ---- */
+.wm-compass{
+  position:absolute; top:16px; right:16px; z-index:10;
+  width:56px; height:56px;
+  background:var(--sg-card,#fff); border:2px solid var(--sg-ink,#0d0b14);
+  border-radius:50%; box-shadow:0 4px 16px rgba(0,0,0,.15);
+  display:flex; align-items:center; justify-content:center;
+  cursor:default;
+}
+.wm-compass-needle{
+  width:2px; height:24px; background:var(--sg-avoid,#dc2626);
+  position:absolute; top:4px; left:50%; transform:translateX(-50%);
+  transform-origin:bottom center; border-radius:1px;
+  animation:wmNeedle 3s ease-in-out infinite;
+}
+.wm-compass-rose{
+  position:absolute; inset:4px;
+  font-size:9px; font-weight:800; color:var(--sg-mute,#6b7280);
+  pointer-events:none;
+}
+.wm-compass-rose::before{
+  content:"N"; position:absolute; top:0; left:50%; transform:translateX(-50%);
+}
+.wm-compass-rose::after{
+  content:"S"; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+}
+@keyframes wmNeedle{
+  0%,100%{ transform:translateX(-50%) rotate(0deg); }
+  50%{ transform:translateX(-50%) rotate(2deg); }
+}
+[data-theme="dark"] .wm-compass{ background:var(--sg-card,#1a2332); border-color:var(--sg-border,#2a3441); }
+
+/* ---- Scale Bar ---- */
+.wm-scale{
+  position:absolute; bottom:16px; left:16px; z-index:10;
+  background:var(--sg-card,#fff); border:2px solid var(--sg-ink,#0d0b14);
+  border-radius:8px; padding:8px 12px;
+  font:700 11px/1 'Bricolage Grotesque',system-ui;
+  color:var(--sg-ink,#0d0b14); box-shadow:0 4px 12px rgba(0,0,0,.12);
+  display:flex; align-items:center; gap:8px;
+}
+.wm-scale-bar{
+  height:4px; background:var(--sg-ink,#0d0b14); border-radius:2px;
+  position:relative;
+}
+.wm-scale-bar::after{
+  content:"1 km"; position:absolute; top:-16px; left:50%;
+  transform:translateX(-50%); font:600 9px/1 'Bricolage Grotesque';
+  color:var(--sg-ink,#0d0b14); white-space:nowrap;
+}
+[data-theme="dark"] .wm-scale{
+  background:var(--sg-card,#1a2332); border-color:var(--sg-border,#2a3441);
+  color:var(--sg-text,#e0e0e0);
+}
+[data-theme="dark"] .wm-scale-bar{ background:var(--sg-text,#e0e0e0); }
+[data-theme="dark"] .wm-scale-bar::after{ color:var(--sg-text,#e0e0e0); }
+
+/* ---- Loading stagger ---- */
+.wm-loading{
+  position:absolute; inset:0; z-index:5; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:16px;
+  background:var(--sg-map-bg,#e8f4f0);
+  transition:opacity .3s ease;
+}
+[data-theme="dark"] .wm-loading{ background:var(--sg-map-bg,#0a1a14); }
+.wm-loading-hidden{ opacity:0; pointer-events:none; }
+.wm-loading-text{ font:600 14px/1.3 'Bricolage Grotesque'; color:var(--sg-mute); }
+.wm-loading-dots{ display:flex; gap:6px; }
+.wm-loading-dots span{
+  width:10px; height:10px; border-radius:50%;
+  background:linear-gradient(180deg,#FFE47A,#FFC72C);
+  animation:wmDot 1.2s ease-in-out infinite;
+}
+.wm-loading-dots span:nth-child(2){ animation-delay:.15s; }
+.wm-loading-dots span:nth-child(3){ animation-delay:.3s; }
+@keyframes wmDot{
+  0%,100%{ transform:scale(1); opacity:.6; }
+  50%{ transform:scale(1.3); opacity:1; }
+}
+
+/* Pin stagger entrance (applied via inline style delay) */
+.wm-pin-stagger{
+  animation:wmPinEnter .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes wmPinEnter{
+  from{ opacity:0; transform:translateY(16px) scale(.85); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .wm-wave,
+  .wm-ripple,
+  .wm-pin-enter,
+  .wm-pin-stagger,
+  .wm-wave,
+  .wm-needle,
+  .wm-halo,
+  .wm-dot,
+  .wm-pin-enter,
+  .wm-pin-stagger{ animation:none!important; transition:none!important; }
+  .wm-needle{ animation:none!important; }
+  .wm-wave{ animation:none!important; }
+  .wm-pin-enter{ animation:none!important; }
+  .wm-pin-stagger{ animation:none!important; }
+}
+
+/* ---- Scale Bar (in-map) ---- */
+.wm-scalebar{
+  position:absolute; bottom:16px; left:16px; z-index:10;
+  display:flex; flex-direction:column; align-items:flex-start; gap:4px;
+  padding:6px 10px; background:rgba(255,255,255,.9); border-radius:6px;
+  font:600 10px/1 'Bricolage Grotesque'; color:#0d0b14;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+[data-theme="dark"] .wm-scalebar{
+  background:rgba(26,35,50,.95); color:#e0e0e0;
+}
+.wm-scalebar-line{
+  height:3px; background:#0d0b14; border-radius:2px; width:100px;
+  position:relative;
+}
+.wm-scalebar-line::after{
+  content:"1 km"; position:absolute; top:-14px; left:50%;
+  transform:translateX(-50%); font:600 9px/1 'Bricolage Grotesque';
+  color:#0d0b14; white-space:nowrap;
+}
+[data-theme="dark"] .wm-scalebar-line{ background:#e0e0e0; }
+[data-theme="dark"] .wm-scalebar-line::after{ color:#e0e0e0; }
+
+/* ---- Top3 chips animation ---- */
+.wm-top3 .sg-chip{
+  animation:wmChipEnter .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+.wm-top3 .sg-chip:nth-child(1){ animation-delay:0ms; }
+.wm-top3 .sg-chip:nth-child(2){ animation-delay:100ms; }
+.wm-top3 .sg-chip:nth-child(3){ animation-delay:200ms; }
+@keyframes wmChipEnter{
+  from{ opacity:0; transform:translateY(-12px) scale(.9); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* ---- Paywall fade ---- */
+.wm-paywall{ animation:wmFadeIn 200ms ease-out; }
+.wm-paywall-exit{ animation:wmFadeOut 150ms ease-in forwards; }
+@keyframes wmFadeIn{ from{opacity:0} to{opacity:1} }
+@keyframes wmFadeOut{ to{opacity:0} }
+
+/* ---- Lead banner slide ---- */
+.wm-lead-banner{ animation:wmSlideUp 300ms cubic-bezier(.34,1.56,.64,1); }
+.wm-lead-banner-exit{ animation:wmSlideDown 200ms cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes wmSlideUp{ from{opacity:0; transform:translateY(100%)} to{opacity:1; transform:translateY(0)} }
+@keyframes wmSlideDown{ to{opacity:0; transform:translateY(100%)} }
+
+/* ---- Map zoom/pan smooth ---- */
+.wm-map-svg{
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ---- Empty state illustrations ---- */
+.wm-empty{ text-align:center; padding:40px 20px; animation:wmFadeIn .4s ease; }
+.wm-empty__icon{ font-size:48px; margin-bottom:12px; }
+.wm-empty__title{ font:800 18px/1.2 'Bricolage Grotesque'; color:var(--sg-text); margin:0 0 8px; }
+.wm-empty__text{ font:500 14px/1.5 system-ui; color:var(--sg-mute); max-width:32ch; margin:0 auto; }
+
+/* ---- SVG Illustrations (inline) ---- */
+.wm-illustration{
+  display:block; margin:0 auto; max-width:200px;
+}
+
+/* Palm tree + sun empty state */
+.wm-illustration-beach-empty{
+  width:160px; height:160px;
+}
+.wm-illustration-beach-empty .trunk{
+  stroke:#8b5e3c; stroke-width:4; stroke-linecap:round;
+}
+.wm-illustration-beach-empty .leaves{
+  stroke:#16a34a; stroke-width:3; stroke-linecap:round; fill:none;
+}
+.wm-illustration-beach-empty .sun{
+  stroke:#fbbf24; stroke-width:2; fill:none;
+}
+
+/* Clean ocean illustration */
+.wm-illustration-clean{
+  width:160px; height:160px;
+}
+.wm-illustration-clean .wave{
+  stroke:#0ea5e9; stroke-width:2; fill:none; stroke-linecap:round;
+}
+.wm-illustration-clean .sun{
+  stroke:#fbbf24; stroke-width:2; fill:none;
+}
+
+/* Error illustration */
+.wm-illustration-error{
+  width:160px; height:160px;
+}
+.wm-illustration-error .boat{
+  stroke:#dc2626; stroke-width:2; fill:none; stroke-linecap:round;
+}
+.wm-illustration-error .wave{
+  stroke:#f97316; stroke-width:2; fill:none; stroke-linecap:round;
+}
+
+/* Paywall illustration */
+.wm-illustration-paywall{
+  width:160px; height:160px;
+}
+.wm-illustration-paywall .chest{
+  stroke:#eab308; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round;
+}
+.wm-illustration-paywall .lock{
+  stroke:#991b1b; stroke-width:2; fill:none;
+}
+.wm-illustration-paywall .key{
+  stroke:#fbbf24; stroke-width:2; fill:none; stroke-linecap:round;
+}
