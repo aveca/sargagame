@@ -1549,11 +1549,13 @@ export default function WorldMapView({
 
         {/* Ocean animated waves layer */}
         <g className="wm-ocean-layer" aria-hidden="true">
-          <div className="wm-waves" style={{position:"absolute",inset:0,overflow:"hidden"}}>
-            <div className="wm-wave" style={{height:"60%",bottom:"-10%"}}/>
-            <div className="wm-wave" style={{height:"45%",bottom:"-5%"}}/>
-            <div className="wm-wave" style={{height:"30%",bottom:"0%"}}/>
-          </div>
+          <foreignObject style={{position:"absolute",inset:0,overflow:"hidden"}}>
+            <div className="wm-waves" style={{position:"absolute",inset:0,overflow:"hidden"}}>
+              <div className="wm-wave" style={{height:"60%",bottom:"-10%"}}/>
+              <div className="wm-wave" style={{height:"45%",bottom:"-5%"}}/>
+              <div className="wm-wave" style={{height:"30%",bottom:"0%"}}/>
+            </div>
+          </foreignObject>
         </g>
 
         {/* Monde — transform caméra appliqué ici via ref. (will-change retiré : sur GPU mobile
