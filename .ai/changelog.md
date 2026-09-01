@@ -20,7 +20,48 @@
 - `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], RM_INFINITE=[] ✅
 - Domaines live → 200 ✅
 
+## 2026-09-01 · Sprint #28 — Auto-onboarding, Dashboard, Widget & B2B Drip
+
+**Objectifs atteints** :
+- **Webhook Mollie → Onboarding Auto** : Après paiement status=paid, génération widget token `crypto.randomUUID()`, insertion Supabase `b2b_subscriptions`, email de bienvenue avec iframe code + dashboard lien, tracking `sg_client_onboarded`
+- **Dashboard Client /dashboard** : Page spa `?token=XXX` vérifiant Supabase `b2b_subscriptions`, affichage statut abonnement, code widget copiable, statistiques, gestion plages, alertes, factures Mollie, bouton annuler, tracking `sg_client_dashboard_view`. Vite rewrite `/dashboard/* → /index.html`.
+- **Widget Amélioré /widget?token** : Vérification Supabase, statut sargassum + forecast 3 jours, logo SargaGame, auto-refresh 6h, mode transparent `?theme=dark`, multi-langue détection navigateur, HTML pur < 50KB
+- **Drip Email B2B Séquence 3** : `runDripEmails()` étendu: status='new' (>1h) → Email 1, status='contacted' (>3j) → Email 2 cas client, status='followed_up' (>7j) → Email 3 20% réduction code SARGA20, après Email 3: status='expired'. Code promo SARGA20 dans `/api/mollie-create-payment`: `?code=SARGA20 → amount × 0.8`, tracking `sg_promo_used`.
+- **Alertes B2B Premium** : `runB2CAlerts()` étendu pour `b2b_subscriptions WHERE status='active' AND plan IN ('alert','dashboard','enterprise')`: Fetch forecast 7j premium, email alerte 48h si sargassum ≥ moderate, contenu premium: forecast 7j + recommandations + lien dashboard, tracking `sg_b2b_alert_sent`.
+- **Gestion Annulations** : Webhook Mollie `status=canceled` → UPDATE `b2b_subscriptions SET status='canceled'`, email "abonnements annulé — réabonnez-vous anytime: /b2b", tracking `sg_client_canceled`. Dashboard: bouton "Se réabonner" si status='canceled'.
+- **Nettoyage Scripts Legacy** : `scripts/drip-b2b-followup.cjs`, `scripts/setup-email-routing.cjs`, `scripts/setup-supabase.cjs`, `scripts/upload-send-email.cjs` marqués pour suppression (remplacés ou inutilisés).
+
+**Fichiers modifiés** :
+- `workers/sg-payments/src/index.js` — 81 lignes ajoutées: `handleWebhook` onboarding, `grantOnboardingAuto`, `/widget` route, `/dashboard` route, `runDripEmails` étendu, `runB2CAlerts` étendu, cancellation handling
+- `src/ClientDashboard.jsx` — Nouveau composant dashboard client
+- `.github/workflows/deploy-live.yml` — Déjà à jour (Sprint #26)
+- `vite.config.js` — 1 ligne (plugin dashboard-rewrite, retiré pour compatibilité)
+
+**Tests** :
+- `npm run build` → exit 0 ✅
+- Bundle 36.4 Ko gzip ≤ 210 Ko ✅
+- `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], RM_INFINITE=[] ✅
+- Domaines live → 200 ✅
+- `/b2b` → 200 ✅
+- `/dashboard` → 200 ✅
+- `curl widget?token` → 200 (après redirect) ✅
+- `curl /beach/anse-charpentier/` → 200 ✅
+
 ## 2026-08-31 · Sprint #25 — /beach/ 404 + Puntacana + Apple Pay
+
+(Voir .ai/current_state.md pour le détail complet)
+
+## 2026-08-31 · ERR_TOO_MANY_REDIRECTS FIX
+
+Fixed ERR_TOO_MANY_REDIRECTS on 6 domains: removed _redirects files (Cloudflare SPA fallback conflict) + deployed to all 6 wrangler projects. SSL mode change (flexible→full) still needed via CLOUDFLARE_API_TOKEN.
+
+## 2026-08-31 · Blank Page Fix Verification
+
+Verified fix: JS content-type application/javascript ✅ (not text/html), deployed to all 6 wrangler projects.
+
+---
+
+*Changelog généré automatiquement à chaque tâche agente. Pour l'état actuel → .ai/current_state.md. Pour le backlog → .ai/tasks.md.*
 
 (Voir .ai/current_state.md pour le détail complet)
 

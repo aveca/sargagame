@@ -35,6 +35,12 @@
 - [ ] SSL mode flexible→full via API Cloudflare (sans CLOUDFLARE_API_TOKEN, bloqué fondateur)
 - [ ] daily-copernicus.yml : FTP steps conservés pour data refresh schedule (non bloquant push)
 - [x] Apple Pay placeholder / .well-known supprimé (déjà absent, exclude déjà dans _routes.json, vérifié 404)
+- [x] Sprint #28: Onboarding auto + Dashboard client + Widget amélioré + Drip B2B + Alertes B2B + Nettoyage scripts + Live verification ✅
+
+### Prochaine action recommandée
+1. Monitorer prochain run `daily-copernicus.yml` (schedule) pour s'assurer FTP steps fonctionnent toujours
+2. Vérifier les funnel complets utilisateur (map→beach→paywall) sur 6 domaines
+3. Planifier sprint #29 selon priorité produit
 
 ### Prochaine action recommandée
 1. `git add -A && git commit -m "fix(sprint26): kill FTP, deploy-live only + purge cache + all-regions beach verified" && git push origin main` → déclenchera `daily-copernicus.yml` build 5 régions + FTP (schedule uniquement, pas sur push) + health-check
