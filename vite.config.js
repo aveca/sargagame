@@ -2547,12 +2547,15 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           } catch (e) { console.warn('   ⚠ pages mois:', e.message) }
 
           // Sprint #25 — pages dédiées /beach, /poi, /region, /activity (fix 404)
+          // Single build (deploy-live) must contain ALL regions' dedicated pages so that
+          // the same dist deployed to 6 Cloudflare projects serves /beach/bavaro-beach on PC
+          // and /beach/anse-charpentier on MQ without per-region matrix builds (keeps deploy 2-4 min).
           try {
             const { generateDedicatedPages } = _require('./scripts/lib/dedicated-pages.cjs')
-            const { getRegion } = _require('./regions/index.cjs')
-            // MQ shared build: generate for both islands (dist will be split by prepare-ftp)
-            try { generateDedicatedPages(getRegion('mq'), outDir) } catch (e) { console.warn('   ⚠ pages dédiées mq:', e.message) }
-            // GP mirror generation handled via prepare-ftp copy + domain swap; no need to double-generate here
+            const { getAllRegions } = _require('./regions/index.cjs')
+            for (const r of getAllRegions()) {
+              try { generateDedicatedPages(r, outDir) } catch (e) { console.warn(`   ⚠ pages dédiées ${r.id}:`, e.message) }
+            }
           } catch (e) { console.warn('   ⚠ pages dédiées legacy:', e.message) }
         } catch (e) {
           console.warn('SEO pages:', e.message)

@@ -216,10 +216,28 @@ jobs:
             fi
           done
 
-  # 5. NOTIFY — success/failure summary
+  # 5. PURGE CACHE — Cloudflare CDN purge post-deploy (2-4 min target)
+  purge-cache:
+    name: Purge Cache (All 6 Zones)
+    needs: [deploy-pages, deploy-workers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Purge all zones
+        run: |
+          ZONES="0d79f522fecdc36cdd27d88c91acfaee 5f9ea6d6042d60fb7b562bfe793e1a8c 7e4289282dcaffd5c65b9bac03c39bec 181cc2861f83ce426c22c2a7fe275a96 f83a729f298b70a42b0e41dbae8383ca 89397490a67e4c69c1f788b6ad9ba164"
+          for ZONE in $ZONES; do
+            echo "Purging $ZONE..."
+            curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d '{"purge_everything":true}' | grep -q '"success":true' && echo "✅ $ZONE purged" || echo "⚠️ $ZONE purge failed (check token perms)"
+          done
+
+  # 6. NOTIFY — success/failure summary
   notify:
     name: Notify Deploy Result
-    needs: [health-check]
+    needs: [health-check, purge-cache]
     runs-on: ubuntu-latest
     if: always()
     steps:
