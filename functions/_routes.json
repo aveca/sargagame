@@ -5,6 +5,11 @@
     "/assets/*",
     "/api/*",
     "/widget/*",
+    "/.well-known/*",
+    "/beach/*",
+    "/poi/*",
+    "/region/*",
+    "/activity/*",
     "*.js",
     "*.css",
     "*.png",
@@ -14,10 +19,10 @@
     "*.ico",
     "*.woff",
     "*.woff2",
-    "*.webp",
-    "*.avif",
-    "*.map",
-    "*.json",
-    "*.webmanifest"
+    ".webp",
+    ".avif",
+    ".map",
+    ".json",
+    ".webmanifest"
   ]
 }

@@ -1620,7 +1620,7 @@ export default function WorldMapView({
               return(
                 <g key={b.id} data-beach={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer",pointerEvents:"auto"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
-                  <circle r={mapPinHitOff?"8":"12"} fill="transparent"/>
+                  <circle r={mapPinHitOff?"8":"16"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
                 </g>
               )
@@ -1639,8 +1639,8 @@ export default function WorldMapView({
                   selectBeach(b)
                   if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_pin"})}catch(_){}; onOpenBeach(b) }
                 }}>
-                {/* Hit-zone tactile ≥44px (transparente, art inchangé) — fix dead/rage-clicks carte. */}
-                {!mapPinHitOff&&<circle r="22" cy="-9" fill="transparent"/>}
+                {/* Hit-zone tactile ≥44px (transparente, art inchangé) — fix dead/rage-clicks carte. Sprint #25: enlarged to 26 for Puntacana dense bbox */}
+                {!mapPinHitOff&&<circle r="26" cy="-9" fill="transparent"/>}
                 {/* Soft pulsing glow behind alert/moderate markers */}
                 {(st==="avoid"||st==="moderate")&&<circle r="18" cy="-9" fill={st==="avoid"?"#E8522A":"#B87A00"} opacity=".12" className="pulseAnim" style={{transformBox:"fill-box",transformOrigin:"center"}}/>}
                 {/* halo doux pour les propres / pulsation sélection */}
@@ -1757,7 +1757,7 @@ export default function WorldMapView({
         </g>
 
       </svg>
-          Nom À CÔTÉ DU PIN, uniquement pour les ~5 plages les plus impactées (labeledIds). */}
+      {/* Nom À CÔTÉ DU PIN, uniquement pour les ~5 plages les plus impactées (labeledIds). */}
       <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
         {(dataReady?beachList:[]).filter(b=>labeledIds.has(b.id)).map(b=>{
           const st=b.days[day]

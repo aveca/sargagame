@@ -12774,27 +12774,47 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
       return
     }
 
-    // 2) Handle /plages/:slug
-    const m=p.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
-    if(!m)return
-    const slug=m[1]
-    const match=allBeaches.find(b=>getCanonicalSlug(b)===slug)
-    if(match){
-      setSelectedBeach(match)
-      track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})
-    } else {
-      // Check if it's a zone slug (MID zoom)
-      const isZone = Object.values(COAST_ZONES).flat().some(z => z.slug === slug)
-      if(isZone){
-        setInitialZone(slug) // flyTo(MID)
-        setShowHero(false)
-        setShowPrevLanding(false)
-        setShowCleanList(false)
-        setShowAlertHub(false)
-        setSelectedBeach(null)
-        setShowArchipel(true)
-        try { track("sg_zone_open", { zone: slug, source: "deeplink" }) } catch(_) {}
+    // 2) Handle /plages/:slug AND /beach/:slugOrId (Sprint #25 fix 404 — dedicated pages)
+    const mPlage=p.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
+    const mBeach=p.match(/^\/beach\/([^/]+)/)
+    const m = mPlage || mBeach
+    if(m){
+      const slug=m[1]
+      // Support both slug and direct id (mq051) — dedicated /beach pages use both
+      let match = allBeaches.find(b=>b.id===slug) || allBeaches.find(b=>getCanonicalSlug(b)===slug)
+      if(match){
+        setSelectedBeach(match)
+        track("sg_beach_open",{beach_id:match.id,status:match.status,source: mBeach ? "dedicated_beach" : "deeplink"})
+        return
+      } else {
+        // Check if it's a zone slug (MID zoom) — only for /plages
+        if (mPlage) {
+          const isZone = Object.values(COAST_ZONES).flat().some(z => z.slug === slug)
+          if(isZone){
+            setInitialZone(slug) // flyTo(MID)
+            setShowHero(false)
+            setShowPrevLanding(false)
+            setShowCleanList(false)
+            setShowAlertHub(false)
+            setSelectedBeach(null)
+            setShowArchipel(true)
+            try { track("sg_zone_open", { zone: slug, source: "deeplink" }) } catch(_) {}
+            return
+          }
+        }
+        // Unknown beach slug — show map instead of blank (static HTML already gives 200 + noscript)
+        return
       }
+    }
+    // 3) Dedicated SEO pages /poi, /region, /activity — static HTML with noscript already serves 200
+    // SPA fallback: just show map hero (avoid blank screen if JS takes over)
+    if(/^\/(?:poi|region|activity)\//.test(p)){
+      setShowHero(false)
+      setShowPrevLanding(false)
+      setShowCleanList(false)
+      setShowAlertHub(false)
+      setSelectedBeach(null)
+      return
     }
   },[allBeaches])
 

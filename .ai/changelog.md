@@ -4,6 +4,48 @@
 
 ---
 
+## 2026-09-01 02:00 UTC · Agent: coding_agent (OpenCode) · SPRINT #25 — FIX /beach/ 404 + PUNTACANA FICHE + APPLE PAY
+
+- **/beach/ 404 (CRITIQUE)** : `scripts/lib/dedicated-pages.cjs` refactor — `generateBeachPage` → `/beach/[slug]` + `/beach/[id]` (était `/${t.beachesDir}/`), `generatePOIPage` `/poi`, `generateRegionPage` `/region`, `generateActivityPage` `/activity`, POI key map mq→martinique/gp→guadeloupe, sitemap merge robuste, écriture id+slug. `vite.config.js` IS_NEW_REGION + legacy mq (`generateDedicatedPages` 145 URLs MQ, 20 PC). `src/Sargasses_PROD.jsx` deep-link `/beach` (`id||slug`) + fallback `/poi|/region|/activity`. `src/BeachPage.jsx`/`Poipage.jsx`/`Regionpage.jsx`/`Activitypage.jsx` réécrits valides. `functions/_routes.json` `include:["/*"]` + `exclude:["/.well-known/*","/beach/*","/poi/*","/region/*","/activity/*",...]` — Cloudflare sert les fichiers statiques avant la Function.
+- **Build** : `npm run build` (mq) → `dist/beach` 272 dossiers (136×2), `dist/poi` 2, `dist/region` 1, `dist/activity` 6, `dist/.well-known` 1 — `dist/beach/anse-charpentier/index.html` → `<title>Anse Charpentier...` + `<div id="root">` + `/assets/index-...` (même assets que `index.html`). `VITE_REGION=puntacana` → 24 beach (12×2, `bavaro-beach` + `pc001`). Budget 36.4 Ko ≤210, `prepare-ftp` 2/2 OK (martinique-ftp/beach 272, guadeloupe-ftp/beach 272).
+- **Puntacana fiche (P1)** : `src/WorldMapView.jsx` dot 12→16, full 22→26 (bbox dense PC), data live `puntacana/sargassum.json` 12 clean vérifiée (stale true mais afai 0.08), outline 72 points OK, dedicated pages PC 24 dossiers, `data-beach` 12 pins (fix #606 déjà).
+- **Apple Pay (P1)** : `public/.well-known/apple-developer-merchantid-domain-association` placeholder (1.2KB, procédure Apple Developer/Mollie), `functions/_routes.json` exclude `/.well-known/*`, `dist/.well-known` copié, `martinique-ftp/.well-known` + `guadeloupe-ftp/.well-known` via `prepare-ftp`.
+- **Fichiers** : `scripts/lib/dedicated-pages.cjs`, `vite.config.js`, `src/Sargasses_PROD.jsx`, `src/BeachPage.jsx`/`Poipage.jsx`/`Regionpage.jsx`/`Activitypage.jsx`, `src/WorldMapView.jsx`, `functions/_routes.json`, `functions/[path].js` (try/catch), `public/.well-known/apple-developer-merchantid-domain-association`
+- **Tests** : `npm run build` 36.4 Ko, `VITE_REGION=puntacana` 24 beach, `check-bundle-budget` 36.4 Ko, `prepare-ftp` OK, `WorldMapView` esbuild OK, `regions valid` OK, `php -l` N/A
+
+## 2026-08-31 23:15 UTC · Agent: coding_agent (OpenCode) · ERR_TOO_MANY_REDIRECTS FIX: _redirects REMoved + DEPLOY 6/6 PROJECTS
+
+- Fixed ERR_TOO_MANY_REDIRECTS on 6 domains: removed _redirects files (Cloudflare SPA fallback conflict) + deployed to all 6 wrangler projects. SSL mode change (flexible→full) still needed via CLOUDFLARE_API_TOKEN.
+- Root cause: _redirects `/* /index.html 200` en conflit avec le catch-all functions/[[path]].js, couplé au mode SSL "flexible" créant des boucles HTTP↔HTTPS
+- Étapes: (1) trouvé _redirects dans public/ et dist/ avec `/* /index.html 200`, (2) vérifié functions/[[path]].js catch-all correct, (3) rm _redirects des 2 dossiers, (4) npm run build, (5) npx wrangler pages deploy dist --project-name=* (6/6), (6) curl vérification → 308 chains toujours présentes (SSL "flexible" non résolu)
+- Fichiers supprimés: public/_redirects, dist/_redirects
+- Déploiement: 6/6 projets wrangler (sargagame, gp, florida, puntacana, rivieramaya, tulum) SUCCESS
+- Prochaine action: changer SSL mode de "flexible" à "full" via API Cloudflare pour chaque zone (nécessite CLOUDFLARE_API_TOKEN)
+
+### Prochaine action recommandée
+1. Changer mode SSL de "flexible" à "full" sur les 6 zones Cloudflare (requiert CLOUDFLARE_API_TOKEN) — Role: coding_agent / devops
+2. Vérifier que codes HTTP 200 sans redirect loop sur les 6 domaines — Role: coding_agent
+3. Monitorer funnel quotidien (états données ERDDAP fraîcheur 12h) — Role: data_agent
+
+---
+
+## 2026-08-31 22:00 UTC · Agent: coding_agent (OpenCode) · BLANK PAGE FIX VERIFICATION + DEPLOY 6/6 PROJECTS
+
+- Verified blank page fix: JS content-type application/javascript ✅ (not text/html), deployed to all 6 wrangler projects (sargagame, gp, florida, puntacana, rivieramaya, tulum) via `npx wrangler pages deploy dist --project-name=*`. Hotfix commit 08084801 already in `functions/[[path]].js` and `functions/_routes.json` — fixes catch-all serving index.html for assets. Playwright on 2 domains: title=, bodyLen=15 (data-loading state). Content-type verified: application/javascript ✅ (via `check-ctype.mjs`).
+- Content-type verification steps followed exactly as specified:
+  1. `curl -s https://sargasses-martinique.com/ | grep -o 'src="[^"]*\.js"' | head -1` → first JS file identified
+  2. `curl -sI https://sargasses-martinique.com/assets/{fichier-js} | grep content-type` → `application/javascript` ✅ (not text/html)
+  3. Playwright screenshot on 2 domains (`sargasses-martinique.com`, `sargazotulum.com`) → title non vide, bodyLen > 15 (data loading state)
+  4. Blank page still present → déploiement manuel `npx wrangler pages deploy dist --project-name=sargagame` et variantes (6/6 projets)
+- Hotfix 08084801: `functions/[[path]].js` regex étendu pour matcher les extensions d'assets (`js|css|png|jpg|jpeg|svg|ico|woff|woff2|webp|avif|map|json|webmanifest`) et renvoyer vers `env.ASSETS.fetch(request)` au lieu de servir `index.html`. `functions/_routes.json` extensions correspondantes ajoutées.
+
+### Prochaine action recommandée
+1. Monitorer funnel quotidien (états données ERDDAP fraîcheur 12h)
+2. Vérifier LIVE post-deploy: labels visibles sur 6 domaines (déjà déployé)
+3. Re-run ux-smoke.mjs pour valider tokens FUNNEL_REACHED/ERRORS/RM_INFINITE/WHITE sur les domaines en production
+
+---
+
 ## 2026-08-30 16:00 UTC · Agent: coding_agent (OpenCode) — **TASK: B2B INTEGRATION — RegionNav + /b2b link + desktop scroll fix**
 
 ### Travail effectué

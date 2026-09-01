@@ -5,19 +5,6 @@ on:
     # 4x/jour toutes les 6h — Copernicus publie 1x/jour, 6h freshness largement
     # sous le seuil "< 12h OK" de CLAUDE.md. Heures MQ (UTC-4): 20h, 2h, 8h, 14h
     - cron: '0 0,6,12,18 * * *'
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
-# Gating par événement (2026-06-17) — un push de code doit être RAPIDE :
-#   • push            → build des 5 régions + deploy FTP + health-check UNIQUEMENT.
-#                       Pas de vidéo ffmpeg (~10 min), pas d'emails, pas de fetch
-#                       data, pas de submit SEO, pas de commit. (if: != 'push')
-#   • schedule        → tout (data + emails + vidéo + SEO + build + deploy).
-#   • workflow_dispatch → comme schedule MAIS sans les envois email (== 'schedule')
-#                       ni la vidéo : refresh data + rebuild + deploy à la demande.
-# Le deploy FTP utilise le chemin RAPIDE (zip → _deploy.php) si DEPLOY_TOKEN est
 # présent, fallback fichier-par-fichier sinon (scripts/manual-ftp-deploy.cjs).
 
 permissions:

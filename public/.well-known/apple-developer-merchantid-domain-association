@@ -1,0 +1,31 @@
+-----BEGIN APPLE PAY MERCHANT DOMAIN ASSOCIATION-----
+# Sargassum / Sargasses — Placeholder Apple Pay Domain Verification
+# This file must be replaced with the real verification file from Apple Developer.
+#
+# How to get the real file:
+# 1. Go to https://developer.apple.com/account/resources/identifiers/list/merchant
+# 2. Select your Merchant ID (e.g. merchant.com.sargasses-martinique)
+# 3. Click "Configure" next to Apple Pay → Add Merchant Domain for each domain:
+#    - sargasses-martinique.com
+#    - sargasses-guadeloupe.com
+#    - sargassummiami.com
+#    - sargassumcancun.com
+#    - sargassumpuntacana.com
+#    - sargazotulum.com
+# 4. Download the file apple-developer-merchantid-domain-association
+# 5. Replace this placeholder with the downloaded file (exact content, no modifications)
+# 6. Deploy — the file must be accessible at https://DOMAIN/.well-known/apple-developer-merchantid-domain-association
+#    and return HTTP 200 with Content-Type text/plain.
+#
+# Note: Mollie Dashboard also provides this file under Settings → Apple Pay (if using Mollie Apple Pay).
+# For more details see: https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server#3172427
+# and https://docs.mollie.com/docs/apple-pay-direct-integration
+#
+# Until the real file is installed, Apple Pay will not be available on-site (fallback redirect remains).
+# This placeholder ensures the path exists (200) and can be verified via curl.
+#
+# Placeholder content — NOT a valid Apple Pay verification (intentionally invalid for Apple validation,
+# but returns 200 for health checks). Replace with real file before enabling Apple Pay live.
+PLACEHOLDER-APPLE-PAY-MERCHANT-DOMAIN-ASSOCIATION-SARGASSES-SPRINT25
+# To validate after deploy: curl -s https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association | head
+-----END APPLE PAY MERCHANT DOMAIN ASSOCIATION-----

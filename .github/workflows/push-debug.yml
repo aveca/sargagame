@@ -23,9 +23,12 @@ on:
         required: false
         type: string
         default: ''
-
 permissions:
   contents: read
+
+concurrency:
+  group: push-debug-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   run-debug:

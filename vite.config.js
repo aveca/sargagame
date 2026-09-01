@@ -527,6 +527,11 @@ export default defineConfig({
             const { generateLegalPages } = _require('./scripts/lib/legal-pages.cjs')
             generateLegalPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ pages légales région:', e.message) }
+          // Sprint #25 — pages dédiées /beach, /poi, /region, /activity (fix 404)
+          try {
+            const { generateDedicatedPages } = _require('./scripts/lib/dedicated-pages.cjs')
+            generateDedicatedPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ pages dédiées région:', e.message) }
           return
         }
         const indexPath = resolve(outDir, 'index.html')
@@ -2540,6 +2545,15 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             const { generateMonthPages } = _require('./scripts/lib/month-pages.cjs')
             generateMonthPages(null, outDir)
           } catch (e) { console.warn('   ⚠ pages mois:', e.message) }
+
+          // Sprint #25 — pages dédiées /beach, /poi, /region, /activity (fix 404)
+          try {
+            const { generateDedicatedPages } = _require('./scripts/lib/dedicated-pages.cjs')
+            const { getRegion } = _require('./regions/index.cjs')
+            // MQ shared build: generate for both islands (dist will be split by prepare-ftp)
+            try { generateDedicatedPages(getRegion('mq'), outDir) } catch (e) { console.warn('   ⚠ pages dédiées mq:', e.message) }
+            // GP mirror generation handled via prepare-ftp copy + domain swap; no need to double-generate here
+          } catch (e) { console.warn('   ⚠ pages dédiées legacy:', e.message) }
         } catch (e) {
           console.warn('SEO pages:', e.message)
         }
