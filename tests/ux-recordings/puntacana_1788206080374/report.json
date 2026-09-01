@@ -1,0 +1,221 @@
+{
+  "region": "puntacana",
+  "url": "https://sargassumpuntacana.com",
+  "timestamp": "2026-08-31T19:54:55.743Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "9 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206080769
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206080769
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1788206080818
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206081229
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206081229
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206083238
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206083730
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206084237
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206084238
+          }
+        ]
+      },
+      "ts": 1788206095138
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "8 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "https://sargassumpuntacana.com/api/weather/beaches-weather.json",
+            "error": "HTTP 403",
+            "ts": 1788206080768
+          },
+          {
+            "url": "https://sargassumpuntacana.com/api/copernicus/sargassum.json",
+            "error": "HTTP 403",
+            "ts": 1788206080769
+          },
+          {
+            "url": "https://sargassumpuntacana.com/api/community/fb-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206081229
+          },
+          {
+            "url": "https://sargassumpuntacana.com/api/community/app-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206081229
+          },
+          {
+            "url": "https://sargassumpuntacana.com/api/copernicus/history.json",
+            "error": "HTTP 403",
+            "ts": 1788206083238
+          }
+        ]
+      },
+      "ts": 1788206095138
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 385.19999998807907,
+    "load": 681,
+    "lcp": null,
+    "resourceCount": 32
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206080769
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206080769
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1788206080818
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206081229
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206081229
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206083238
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206083730
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206084237
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206084238
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://sargassumpuntacana.com/api/weather/beaches-weather.json",
+      "error": "HTTP 403",
+      "ts": 1788206080768
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/copernicus/sargassum.json",
+      "error": "HTTP 403",
+      "ts": 1788206080769
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206081229
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/community/app-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206081229
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/copernicus/history.json",
+      "error": "HTTP 403",
+      "ts": 1788206083238
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/mollie.php",
+      "error": "HTTP 403",
+      "ts": 1788206083730
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206084237
+    },
+    {
+      "url": "https://sargassumpuntacana.com/api/community/fb-posts.json",
+      "error": "HTTP 403",
+      "ts": 1788206084238
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

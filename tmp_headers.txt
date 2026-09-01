@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+Date: Mon, 31 Aug 2026 21:44:58 GMT
+Content-Type: text/html; charset=utf-8
+Connection: keep-alive
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=3k3jlrOTGyYqcVbW5lwomyM8eDqDfRsqVuV37P3mScDY8IENy%2FBjFnrZbWP%2BVzKoaP8bn5vGcK7HBNSaOORXdXv5mwDL%2FmPIYv0IN4DfBXRZ%2FZnkEJ%2B4XVZdECj4UiT7r1baovxp%2BUDvCSU%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Access-Control-Allow-Origin: *
+Cache-Control: public, max-age=0, must-revalidate
+x-content-type-options: nosniff
+Link: <https://www.clarity.ms>; rel="preconnect", <https://js.stripe.com>; rel="preconnect", <https://m.stripe.network>; rel="preconnect", <https://api.stripe.com>; rel="preconnect"
+referrer-policy: strict-origin-when-cross-origin
+Server: cloudflare
+cf-cache-status: DYNAMIC
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+CF-RAY: a33f3834b9feb887-MIA
+alt-svc: h3=":443"; ma=86400
+

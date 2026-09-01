@@ -1,0 +1,116 @@
+{
+  "region": "florida",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-08-31T19:50:46.095Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "4 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "[sg] referral_claim non-json",
+            "ts": 1788205829977
+          },
+          {
+            "type": "error",
+            "text": "[sg] errbound svgRef is not defined",
+            "ts": 1788205831078
+          },
+          {
+            "type": "error",
+            "text": "[sg] errbound svgRef is not defined",
+            "ts": 1788205841042
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "ts": 1788205844347
+          }
+        ]
+      },
+      "ts": 1788205845481
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "1 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "http://localhost:8799/collect.php",
+            "error": "HTTP 404",
+            "ts": 1788205844347
+          }
+        ]
+      },
+      "ts": 1788205845481
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 13718.200000047684,
+    "load": 13734.5,
+    "lcp": null,
+    "resourceCount": 60
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "[sg] referral_claim non-json",
+      "ts": 1788205829977
+    },
+    {
+      "type": "error",
+      "text": "[sg] errbound svgRef is not defined",
+      "ts": 1788205831078
+    },
+    {
+      "type": "error",
+      "text": "[sg] errbound svgRef is not defined",
+      "ts": 1788205841042
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "ts": 1788205844347
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "http://localhost:8799/collect.php",
+      "error": "HTTP 404",
+      "ts": 1788205844347
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

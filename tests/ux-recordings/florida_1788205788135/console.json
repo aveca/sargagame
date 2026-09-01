@@ -1,0 +1,112 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1788205804363
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/copernicus/sargassum.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205810208
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-list.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205810208
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205810208
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/weather/beaches-weather.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205810208
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images-quality.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205810208
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1788205811039
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/copernicus/sargassum.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819128
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-list.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819128
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819128
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/weather/beaches-weather.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819128
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images-quality.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819128
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/copernicus/sargassum.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819246
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-list.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819246
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819246
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/api/weather/beaches-weather.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819246
+  },
+  {
+    "type": "warning",
+    "text": "The resource http://localhost:8799/data/beaches-images-quality.json was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "ts": 1788205819246
+  },
+  {
+    "type": "warning",
+    "text": "[sg] referral_claim: réponse non-JSON (dev mode?)",
+    "ts": 1788205829977
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim non-json",
+    "ts": 1788205829977
+  },
+  {
+    "type": "error",
+    "text": "[sg] errbound svgRef is not defined",
+    "ts": 1788205831078
+  },
+  {
+    "type": "error",
+    "text": "[sg] errbound svgRef is not defined",
+    "ts": 1788205841042
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "ts": 1788205844347
+  }
+]

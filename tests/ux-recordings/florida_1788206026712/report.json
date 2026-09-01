@@ -1,0 +1,221 @@
+{
+  "region": "florida",
+  "url": "https://sargassummiami.com",
+  "timestamp": "2026-08-31T19:54:02.230Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "9 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206027207
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206027216
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1788206027265
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206027515
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206027515
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206029517
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206030018
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206030520
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206030523
+          }
+        ]
+      },
+      "ts": 1788206041612
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "8 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "https://sargassummiami.com/api/weather/beaches-weather.json",
+            "error": "HTTP 403",
+            "ts": 1788206027207
+          },
+          {
+            "url": "https://sargassummiami.com/api/copernicus/sargassum.json",
+            "error": "HTTP 403",
+            "ts": 1788206027216
+          },
+          {
+            "url": "https://sargassummiami.com/api/community/app-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206027515
+          },
+          {
+            "url": "https://sargassummiami.com/api/community/fb-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206027515
+          },
+          {
+            "url": "https://sargassummiami.com/api/copernicus/history.json",
+            "error": "HTTP 403",
+            "ts": 1788206029517
+          }
+        ]
+      },
+      "ts": 1788206041612
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 479.69999998807907,
+    "load": 784.3000000119209,
+    "lcp": null,
+    "resourceCount": 33
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206027207
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206027216
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1788206027265
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206027515
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206027515
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206029517
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206030018
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206030520
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206030523
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://sargassummiami.com/api/weather/beaches-weather.json",
+      "error": "HTTP 403",
+      "ts": 1788206027207
+    },
+    {
+      "url": "https://sargassummiami.com/api/copernicus/sargassum.json",
+      "error": "HTTP 403",
+      "ts": 1788206027216
+    },
+    {
+      "url": "https://sargassummiami.com/api/community/app-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206027515
+    },
+    {
+      "url": "https://sargassummiami.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206027515
+    },
+    {
+      "url": "https://sargassummiami.com/api/copernicus/history.json",
+      "error": "HTTP 403",
+      "ts": 1788206029517
+    },
+    {
+      "url": "https://sargassummiami.com/api/mollie.php",
+      "error": "HTTP 403",
+      "ts": 1788206030018
+    },
+    {
+      "url": "https://sargassummiami.com/api/community/fb-posts.json",
+      "error": "HTTP 403",
+      "ts": 1788206030520
+    },
+    {
+      "url": "https://sargassummiami.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206030523
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

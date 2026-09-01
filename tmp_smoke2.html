@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="fr" data-theme="light" style="--sg-vh: 720px;"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- CSP disabled for Mollie testing -->
+    <!-- theme-color pilotè en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein ÔåÆ on l'a
+         d'abord RETIR├ë. Mais sans theme-color, Safari iOS (ÔëÑ15, surtout la barre flottante
+         ┬½ Liquid Glass ┬╗ d'iOS 26) ├ëCHANTILLONNE la couleur du contenu derriïre sa barre basse :
+         elle re-virait à l'or en captant le CTA dorè, et changeait de teinte selon l'ècran
+         (┬½ bande ┬╗ mouvante en bas, signalèe en navigateur ÔÇö pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = m├¬me fond que html (cadre sombre dèjà utilisè
+         pour combler le standalone) ÔåÆ barre basse Safari constante, fond avec l'app, jamais dorèe.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+      /* iOS standalone (ècran d'accueil) : position:fixed/100vh/100dvh ne descendent
+          PAS jusqu'au bord bas rèel (bug viewport standalone) ÔåÆ bande vide en bas, tous
+          ècrans. Les 3 fixes CSS prècèdents (couleur, position:fixed, longhand) ont
+          èchouè car tous purement CSS. Ici on MESURE la vraie hauteur visible
+          (window.innerHeight = plein ècran sous viewport-fit=cover) ÔåÆ --sg-vh, et #root
+          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+      (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) ÔåÆ barre basse Safari iOS constante
+           (sinon elle èchantillonne le contenu dorè = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
+           ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
+           (dèjà correct : inset:0 atteint le vrai bas au-dessus de la toolbar ; --sg-vh
+           = innerHeight y est instable et crèait une bande). */
+        if(isSA())d.classList.add('sg-standalone')
+        function vh(){var h=window.innerHeight;
+          /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
+             l'ècran rèel (screen.height 896) ÔåÆ le contenu s'arr├¬te à 852 = bande vide.
+             L'app est portrait-locked (manifest) donc screen.height = la vraie hauteur
+             portrait fiable. On la prend SEULEMENT en standalone (en Safari screen.height
+             dèpasse la zone visible ÔåÆ cacherait le bas derriïre la toolbar). */
+          if(isSA()&&window.screen&&screen.height>h)h=screen.height;
+          d.style.setProperty('--sg-vh',h+'px')}
+        vh();
+        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+        addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
+        addEventListener('load',function(){vh();setTimeout(vh,300)});
+        if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script><meta name="theme-color" content="#0d1117">
+    <script>
+      /* Apple Pay domain validation check ÔÇö sets __SG_APPLEPAY_DOMAIN_READY when
+         the domain verification file exists at /.well-known/apple-developer-merchantid-domain-association
+         This enables Apple Pay ON-SITE (direct) instead of fallback redirect. */
+      (function(){
+        var checkUrl = '/.well-known/apple-developer-merchantid-domain-association';
+        fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
+          .catch(function(){});
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026</title>
+    <meta name="description" content="Quelle

@@ -379,6 +379,45 @@ export default {
       return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
     }
 
+    // ─── Dashboard Client ────────────────────────────────────
+    if (path === '/dashboard' || path === '/dashboard/') {
+      // Vérifier le token via query string
+      const url = new URL(request.url);
+      const token = url.searchParams.get('token') || '';
+      const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SargaGame Dashboard</title><link rel="stylesheet" href="/app-runtime.css"></head><body><div id="root"></div><script>window.__DASHBOARD_TOKEN__="${token}"</script><script src="/assets/index-B7MZ2uBf.js"></script></body></html>`;
+      return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    // ─── Widget Embarkable ─────────────────────────────────────
+    if (path === '/widget') {
+      const url = new URL(request.url);
+      const token = url.searchParams.get('token') || '';
+      if (!token) return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token manquant</h2><p>Ajoutez ?token=XXX à l\'URL.</p></body>', { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+      // Vérifier dans Supabase b2b_subscriptions
+      const rows = await supa(env, 'b2b_subscriptions', 'GET', null, `?widget_token=eq.${token}&select=*&limit=1`);
+      if (!rows?.length) return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token invalide</h2><p>Aucun abonnement trouvé pour ce widget token.</p></body>', { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+      const sub = rows[0];
+      // Déterminer la langue
+      const region = sub.region || 'martinique';
+      const lang = (region && ['florida', 'puntacana', 'rivieramaya'].includes(region.toLowerCase())) ? 'en' : 'fr';
+      const domain = sub.domain || 'sargasses-martinique.com';
+      // Récupérer le statut sargassum
+      let sargStatus = 'unknown'; let forecast3j = '';
+      try {
+        const c = await fetch(`${origin}/api/copernicus/sargassum.json`).then(r=>r.ok?r.json():null);
+        if (c) {
+          const wk = c.weekly; if (wk) { const firstKey = Object.keys(wk)[0]; const fc = wk[firstKey]?.forecast?.slice(0,3) || []; sargStatus = fc.length > 0 ? fc[0].status || 'unknown' : 'unknown'; forecast3j = fc.slice(1,4).map(d=>`<p>J+${fc.indexOf(d)+1}: ${d.status}</p>`).join(''); }
+        }
+      } catch {}
+      // Couleurs selon statut
+      const statusColors: Record<string,string> = { clean:'#16a34a', moderate:'#eab308', avoid:'#dc2626', high:'#dc2626', unknown:'#6b7280' };
+      const statusEmoji: Record<string,string> = { clean:'🟢', moderate:'🟡', avoid:'🔴', high:'🔴', unknown:'⚪' };
+      const html = lang === 'en'
+        ? `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui;margin:0;padding:20px;color:#0d1117} .card{max-width:600px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px} h1{color:#0D1E1C;margin-top:0} .btn{display:inline-block;background:#FFC72C;color:#0d1117;padding:12px 24px;border-radius:999px;font-weight:700;text-decoration:none;margin:8px}</style></head><body><div class="card"><h1>SargaGame Widget</h1><p><strong>Region:</strong> ${region}</p><p><strong>Status:</strong> <span style="color:${statusColors[sargStatus]||'#6b7280'}">${statusEmoji[sargStatus]||'⚠️'} ${sargStatus}</span></p>${forecast3j ? `<div style="margin-top:16px"><h3>3-day forecast</h3>${forecast3j}</div>` : ''}<p><iframe src="https://${domain}/widget?token=${token}" width="100%" height="320" style="border:none; margin:16px 0;" frameborder="0"></iframe></p><p>Powered by SargaGame • <a href="https://${domain}/b2b?token=${token}" class="btn">Manage subscription →</a> <a href="https://${domain}/" class="btn" style="background:#0d7f63;color:white">Back to map →</a></p></div></body></html>`
+        : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui;margin:0;padding:20px;color:#0d1117} .card{max-width:600px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px} h1{color:#0D1E1C;margin-top:0}</style></head><body><div class="card"><h1>Widget SargaGame</h1><p><strong>Région:</strong> ${region}</p><p><strong>Niveau:</strong> <span style="color:${statusColors[sargStatus]||'#6b7280'}">${statusEmoji[sargStatus]||'⚠️'} ${sargStatus}</span></p>${forecast3j ? `<div style="margin-top:16px"><h3>Prévisions 3 jours</h3>${forecast3j}</div>` : ''}<p><iframe src="https://${domain}/widget?token=${token}" width="100%" height="320" style="border:none; margin:16px 0;" frameborder="0"></iframe></p><p>Powered by SargaGame • <a href="https://${domain}/b2b?token=${token}" class="btn" style="background:#0d7f63;color:white">Gérer l'abonnement →</a> <a href="https://${domain}/" class="btn">Retour à la carte →</a></p></div></body></html>`;
+      return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
     // ─── Unsubscribe B2C ───────────────────────────────────────────
     if (path === '/unsubscribe') {
       return handleUnsubscribe(request, env);
@@ -897,6 +936,10 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
         const source = metadata.source || ''; const pass = metadata.pass || ''; const email = metadata.email || '';
         if (source === 'b2b_annual') await grantB2B(env, email, 'pro_monthly', id, 365);
         else if (pass && ['p30', 'trip7', 'season'].includes(pass)) await grantB2C(env, id, pass, email, metadata);
+        // Onboarding auto: widget token + supabase insert + welcome email
+        if (source === 'b2b_subscription' && email) {
+          await grantOnboardingAuto(env, email, metadata);
+        }
       }
       await env.TRANSIENTS.put(markerKey, '1', { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: 'payment', status }));
@@ -929,4 +972,42 @@ async function grantB2C(env: Env, paymentId: string, pass: string, email: string
   const sessionId = meta?.sg_session_id || null;
   await env.TRANSIENTS.put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
   await supa(env, 'payment_grants', 'POST', { payment_id: paymentId, type: 'b2c_pass', pass, email, currency: meta.currency || 'EUR', expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString(), session_id: sessionId, metadata: meta });
+}
+
+async function grantOnboardingAuto(env: Env, email: string, meta: Record<string, any>): Promise<void> {
+  // 1. Générer widget token unique
+  const widgetToken = crypto.randomUUID();
+  const tokenKey = `widget_token_${widgetToken}`;
+  // 2. Préparer les métadonnées Supabase
+  const plan = (meta.plan || 'pro_monthly').toString();
+  const region = (meta.region || 'martinique').toString();
+  const domain = (meta.domain || 'sargasses-martinique.com').toString();
+  const expiresAt = Math.floor(Date.now() / 1000) + 365 * 86400; // 1 an
+  // 3. Insérer dans Supabase b2b_subscriptions
+  await supa(env, 'b2b_subscriptions', 'POST', {
+    company_email: email,
+    region: region,
+    domain: domain,
+    plan: plan,
+    status: 'active',
+    widget_token: widgetToken,
+    mollie_customer_id: meta.mollie_customer_id || '',
+    created_at: new Date().toISOString(),
+  }, null);
+  // 4. Générer le code d'intégration iframe
+  const iframeCode = `<iframe src="https://${domain}/widget?token=${widgetToken}" width="100%" height="320" frameborder="0"></iframe>`;
+  // 5. Envoyer email de bienvenue
+  const subject = plan === 'pro_monthly'
+    ? `Bienvenue SargaGame Pro — votre widget est prêt`
+    : `Bienvenue SargaGame Brief — votre widget est prêt`;
+  const lang = region && ['florida', 'puntacana', 'rivieramaya'].includes(region.toLowerCase()) ? 'en' : 'fr';
+  const html = lang === 'en'
+    ? `Bonjour,<br><br>Your SargaGame ${plan} subscription is active.<br><br>Here is your widget to integrate into your site:<br><code>${iframeCode}</code><br><br>Copy this code and paste it into your website.<br><br>Your dashboard: https://${domain}/b2b?token=${widgetToken}<br>Support: contact@${domain}<br><br>Thank you for your trust,<br>SargaGame`
+    : `Bonjour,<br><br>Abonnement SargaGame ${plan} actif.<br><br>Voici votre widget à intégrer sur votre site :<br><code>${iframeCode}</code><br><br>Copiez ce code et collez-le dans votre site web.<br><br>Votre dashboard: https://${domain}/b2b?token=${widgetToken}<br>Support: contact@${domain}<br><br>Merci de votre confiance,<br>SargaGame`;
+  await sendEmail(email, subject, html, domain, env);
+  // 6. Track
+  await supa(env, 'analytics_events', 'POST', {
+    event: 'sg_client_onboarded',
+    params: { plan, region, domain, email },
+  }).catch(() => {});
 }

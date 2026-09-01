@@ -1,0 +1,32 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "ts": 1788205671991
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "ts": 1788205672337
+  },
+  {
+    "type": "error",
+    "text": "[sg] errbound svgRef is not defined",
+    "ts": 1788205717592
+  },
+  {
+    "type": "warning",
+    "text": "[sg] referral_claim: réponse non-JSON (dev mode?)",
+    "ts": 1788205719826
+  },
+  {
+    "type": "error",
+    "text": "[sg] referral_claim non-json",
+    "ts": 1788205719826
+  },
+  {
+    "type": "error",
+    "text": "[sg] errbound svgRef is not defined",
+    "ts": 1788205719846
+  }
+]

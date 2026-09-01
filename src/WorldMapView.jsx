@@ -313,6 +313,7 @@ export default function WorldMapView({
   // touche JAMAIS le verdict — encart `sponsored`/aperçu, le verdict reste 100% data.
   const previewHotel = (()=>{try{const m=window.location.search.match(/[?&]preview_name=([^&]+)/);return m?decodeURIComponent(m[1]).replace(/[<>]/g,"").slice(0,48):null}catch(_){return null}})()
   const wrapRef    = useRef(null)
+  const svgRef     = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
   const camRef     = useRef({ tx:0, ty:0, k:1 })
   const rafRef     = useRef(0)

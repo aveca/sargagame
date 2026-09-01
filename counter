@@ -1,0 +1,7 @@
+Set-Content : Impossible de trouver un paramŠtre positionnel acceptant l'argument ®ÿ\nÿ¯.
+Au caractŠre Ligne:1 : 1
++ Set-Content -Path 'C:\\temp\\write_report.py' -Value 'import os\nf =  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument : (:) [Set-Content], ParameterBindingException
+    + FullyQualifiedErrorId : PositionalParameterNotFound,Microsoft.PowerShell.Commands.SetContentCommand
+ 

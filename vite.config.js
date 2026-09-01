@@ -1320,7 +1320,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           writeFileSync(resolve(outDir, 'previsions', 'index.html'), prevHtml.replace('</head>', breadcrumbPrev + '\n</head>'))
           const alertesHtml = readFileSync(resolve(outDir, 'alertes', 'index.html'), 'utf-8')
           writeFileSync(resolve(outDir, 'alertes', 'index.html'), alertesHtml.replace('</head>', breadcrumbAlertes + '\n</head>'))
-          console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et /alertes/')
+console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et /alertes/')
 
           // ── /recherche/ /research/ /investigacion/ : synchroniser le JSON-LD Dataset
           // + meta avec track-record.json (anti-dérive Google Dataset Search : ces pages

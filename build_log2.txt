@@ -1,0 +1,29 @@
+
+> sargagame@0.0.0 build
+> node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs
+
+[sync-version] public/version.json déjà à jour (v219)
+[sync-version] public/sw.js CACHE_NAME déjà à jour (sargasses-v219)
+[sync-version] OK — flotte alignée sur v219 (2026-08-11).
+OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)
+[gen-b2b-partners] OK — 0 partenaire(s) LIVE, 2 en preview → public\api\b2b-partners.json
+X [ERROR] Syntax error "n"
+
+    vite.config.js:167:43:
+      167 │       { from: /^\/admin\/analytics, to: '/index.html' },
+          ╵                                            ^
+
+[31mfailed to load config from C:\Users\user\Documents\Backup\sargagame\vite.config.js[39m
+[31merror during build:
+Error: Build failed with 1 error:
+vite.config.js:167:43: ERROR: Syntax error "n"
+    at failureErrorWithLog (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:1472:15)
+    at C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:945:25
+    at runOnEndCallbacks (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:1315:45)
+    at buildResponseToResult (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:943:7)
+    at C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:970:16
+    at responseCallbacks.<computed> (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:622:9)
+    at handleIncomingPacket (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:677:12)
+    at Socket.readFromStdout (C:\Users\user\Documents\Backup\sargagame\node_modules\esbuild\lib\main.js:600:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:563:12)[39m

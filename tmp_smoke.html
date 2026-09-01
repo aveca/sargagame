@@ -1,0 +1,434 @@
+<!DOCTYPE html><html lang="fr" data-theme="light" style="--sg-vh: 720px;"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- CSP disabled for Mollie testing -->
+    <!-- theme-color pilotè en JS plus bas (= #0d1117, le cadre sombre de l'app). HISTOIRE :
+         theme-color STATIQUE #E8A800 (or) peignait la barre Safari iOS en or plein ÔåÆ on l'a
+         d'abord RETIR├ë. Mais sans theme-color, Safari iOS (ÔëÑ15, surtout la barre flottante
+         ┬½ Liquid Glass ┬╗ d'iOS 26) ├ëCHANTILLONNE la couleur du contenu derriïre sa barre basse :
+         elle re-virait à l'or en captant le CTA dorè, et changeait de teinte selon l'ècran
+         (┬½ bande ┬╗ mouvante en bas, signalèe en navigateur ÔÇö pas en PWA qui n'a pas de barre).
+         FIX : on le remet en DYNAMIQUE à #0d1117 = m├¬me fond que html (cadre sombre dèjà utilisè
+         pour combler le standalone) ÔåÆ barre basse Safari constante, fond avec l'app, jamais dorèe.
+         En JS (pas un <meta> statique) : survit au replace build-time de Vite + couvre /en,/es. -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+      /* iOS standalone (ècran d'accueil) : position:fixed/100vh/100dvh ne descendent
+          PAS jusqu'au bord bas rèel (bug viewport standalone) ÔåÆ bande vide en bas, tous
+          ècrans. Les 3 fixes CSS prècèdents (couleur, position:fixed, longhand) ont
+          èchouè car tous purement CSS. Ici on MESURE la vraie hauteur visible
+          (window.innerHeight = plein ècran sous viewport-fit=cover) ÔåÆ --sg-vh, et #root
+          + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+      (function(){var d=document.documentElement;
+        /* theme-color = cadre sombre de l'app (#0d1117) ÔåÆ barre basse Safari iOS constante
+           (sinon elle èchantillonne le contenu dorè = bande or mouvante, cf. commentaire head). */
+        var tc=document.querySelector('meta[name="theme-color"]');
+        if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
+        tc.setAttribute('content','#0d1117');
+        function isSA(){return (window.navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+        /* Marque <html> SEULEMENT en standalone : la correction de hauteur (--sg-vh)
+           ne s'applique QU'ici. En Safari, #root/carte gardent position:fixed;inset:0
+           (dèjà correct : inset:0 atteint le vrai bas au-dessus de la toolbar ; --sg-vh
+           = innerHeight y est instable et crèait une bande). */
+        if(isSA())d.classList.add('sg-standalone')
+        function vh(){var h=window.innerHeight;
+          /* DIAG 2846 : en standalone iOS, innerHeight (852) est 44px PLUS COURT que
+             l'ècran rèel (screen.height 896) ÔåÆ le contenu s'arr├¬te à 852 = bande vide.
+             L'app est portrait-locked (manifest) donc screen.height = la vraie hauteur
+             portrait fiable. On la prend SEULEMENT en standalone (en Safari screen.height
+             dèpasse la zone visible ÔåÆ cacherait le bas derriïre la toolbar). */
+          if(isSA()&&window.screen&&screen.height>h)h=screen.height;
+          d.style.setProperty('--sg-vh',h+'px')}
+        vh();
+        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+        addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
+        addEventListener('load',function(){vh();setTimeout(vh,300)});
+        if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script><meta name="theme-color" content="#0d1117">
+    <script>
+      /* Apple Pay domain validation check ÔÇö sets __SG_APPLEPAY_DOMAIN_READY when
+         the domain verification file exists at /.well-known/apple-developer-merchantid-domain-association
+         This enables Apple Pay ON-SITE (direct) instead of fallback redirect. */
+      (function(){
+        var checkUrl = '/.well-known/apple-developer-merchantid-domain-association';
+        fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
+          .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
+          .catch(function(){});
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <title>Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026</title>
+    <meta name="description" content="Quelle plage de Martinique aujourd'hui ? Score 0-100 par plage (sargasses, houle, vent, soleil, température eau). 53 plages notées en direct, mise à jour quotidienne.">
+    <link rel="canonical" href="https://sargasses-martinique.com/">
+    <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/">
+    <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/en/">
+    <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/es/">
+    <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/">
+    <meta name="geo.region" content="MQ">
+    <meta name="geo.placename" content="Martinique">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Plages Martinique aujourd'hui — Score 0-100 par plage (sargasses, mer, soleil) 2026">
+    <meta property="og:description" content="Quelle plage de Martinique aujourd'hui ? Score 0-100 qui combine sargasses, houle, vent, soleil et température de l'eau. 53 plages notées en direct, toute l'annèe.">
+    <meta property="og:url" content="https://sargasses-martinique.com/">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:locale:alternate" content="es_MX">
+    <meta property="og:site_name" content="Sargasses Martinique">
+    <meta property="og:image" content="https://sargasses-martinique.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <!-- Preconnect to external APIs for faster connection -->
+    <link rel="preconnect" href="https://coastwatch.pfeg.noaa.gov" crossorigin="">
+    <link rel="preconnect" href="https://api.mollie.com" crossorigin="">
+    <link rel="dns-prefetch" href="https://coastwatch.pfeg.noaa.gov">
+    <link rel="dns-prefetch" href="https://api.mollie.com">
+    <!-- A/B test og:image — fallback régional si pas de flag -->
+    <script>
+      (function(){
+        var u = location.search; var og = u.match(/[?&]og=([01])/);
+        if (!og) return; // garde l'image existante
+        var isOn = og[1] === '1';
+        var el = document.querySelector('meta[property="og:image"]');
+        if (!el) return;
+        if (isOn) {
+          // endpoint serverless /api/og/beach/{slug}.png?lang=fr|en|es
+          //slug home page: on utilise le premier slug disponible ou "accueil"
+          const defaultSlug = 'les-salines'; // plage pilote par défaut
+          el.setAttribute('content', `https://sargasses-martinique.com/api/og/beach/${defaultSlug}.png?lang=fr`);
+        } else {
+          el.setAttribute('content', 'https://sargasses-martinique.com/og-image.png');
+        }
+      })();
+    </script>
+    <meta property="og:image:alt" content="Score 0-100 par plage en Martinique - sargasses, houle, vent, soleil, eau">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Plages Martinique aujourd'hui — Score 0-100 par plage (2026)">
+    <meta name="twitter:description" content="Score 0-100 par plage : sargasses, mer, vent, soleil, température eau. 53 plages en direct, toute l'annèe.">
+    <meta name="twitter:image" content="https://sargasses-martinique.com/og-image.png">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Martinique — Score 0-100","description":"Score 0-100 par plage en Martinique : sargasses, houle, vent, soleil, température de l'eau. 53 plages notées en direct, toute l'annèe.","url":"https://sargasses-martinique.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"2026-09-01","datePublished":"2026-02-18","publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":"https://sargasses-martinique.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-martinique.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Martinique aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Martinique ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. Les pics sont observés entre avril et septembre mais l'application fonctionne toute l'année et intègre les sargasses dans le score 0-100 de chaque plage."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite NOAA. En dessous de 0,15 la plage est propre, au-dessus de 0,40 il vaut mieux éviter. L'AFAI pèse 30% dans le score 0-100."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S est un gaz libéré quand les sargasses pourrissent. En forte concentration il irrite les yeux et la gorge. Les plages au score bas (moins de 40) signalent ce risque."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses viennent de NOAA ERDDAP (satellite). Les données mer, vent, soleil et température viennent d'Open-Meteo. Tout est rafraîchi plusieurs fois par jour pour la Martinique et la Guadeloupe."}}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com","logo":"https://sargasses-martinique.com/icon-512.png","description":"Compagnon plage Antilles — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau","areaServed":["Martinique","Guadeloupe"],"knowsAbout":["plages","sargasses","baignade","Martinique","Guadeloupe","Antilles","météo marine"],"sameAs":["https://www.data.gouv.fr/datasets/palmares-auditable-des-previsions-sargasses-antilles-francaises"]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"SiteNavigationElement","name":["Carte","Plages","Prèvisions","Alertes"],"url":["https://sargasses-martinique.com/carte-sargasses/","https://sargasses-martinique.com/plages/","https://sargasses-martinique.com/previsions/","https://sargasses-martinique.com/alertes/"]}
+    </script>
+  <style>
+    :root{--sg-header-offset:108px}
+    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
+    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
+    /* SCENE_TOKENS golden-hour (dèfaut) èmis en --sg-* : l'app + les 136 pages SEO (pageShell rèutilise cet index.html) partagent la source ; REGION.sceneTheme surcharge par marchè via vite.config.js. Aucun consommateur par dèfaut ÔåÆ 0 changement visuel. */
+    :root{--sg-sky-0:#0B2230;--sg-sky-1:#155A5A;--sg-sky-2:#C97E3A;--sg-sky-3:#F2B05E;--sg-sea-top:#1A5852;--sg-sea-bot:#08251F;--sg-sand:#1C1712;--sg-rim:#FFD884;--sg-glit:#FFD884;--sg-sarg:#7a5c14;--sg-sarg-d:#5d400e;--sg-sarg-l:#8a6c1c;--sg-sarg-glint:#a8862a;--sg-sarg-strand:#6b4a12;--sg-sat-body:#C9971F;--sg-sat-top:#FFC72C;--sg-sat-lens:#07201E;}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    /* GLOBAL : l'app garde SES couleurs (golden-hour, dorès, statuts) m├¬me si le systïme
+       force les couleurs (thïme contraste Windows / filtre couleur / forced-colors). Hèritè
+       ÔåÆ couvre TOUTE l'app (nav, modales, boutons), pas juste les surfaces SVG. Sinon les
+       fonds inline ètaient remappés en gris/blanc systïme (rapport fondateur : ┬½ cases grises
+       ècritures grises sur les boutons ┬╗). Justifiè : couleur = sens (statuts vert/ambre/corail). */
+    /* ÔÜá´©Å forced-color-adjust N'EST PAS hèritè (spec CSS) ÔåÆ `html{}` seul n'exemptait QUE
+       l'èlèment html, pas les boutons descendants : en forced-colors, les <button> (prïs de
+       moi, ┬½ h├┤tel ? ┬╗) voyaient leur fond crïme inline remappé en transparent + texte noir
+       systïme ÔåÆ illisibles (rapport fondateur, plusieurs fois). On applique à TOUS les
+       èlèments. Justifiè : couleur = sens (statuts vert/ambre/corail, golden-hour). */
+    html,html *{forced-color-adjust:none}
+    /* BULLETPROOF lisibilitè sous mode contraste èlevè (forced-colors actif, ex. iOS
+       ┬½ Augmenter le contraste ┬╗/┬½ Inverser ┬╗ ou Windows high-contrast) : si l'opt-out
+       ci-dessus ne suffit pas, on FORCE des couleurs SYSTêME garanties lisibles sur les
+       chips de carte (┬½ prïs de moi ┬╗, ┬½ h├┤tel ? ┬╗) ÔÇö fond/texte/bordure systïme qui
+       contrastent toujours. Mèthode W3C standard. Ne touche que ces 2 boutons. */
+    @media (forced-colors: active){
+      .sg-mapchip{forced-color-adjust:auto !important;background:ButtonFace !important;color:ButtonText !important;border:2px solid ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip *{color:ButtonText !important;-webkit-text-fill-color:ButtonText !important}
+      .sg-mapchip svg{stroke:ButtonText !important;fill:none !important}
+    }
+    /* PWA standalone : la zone derriïre l'app (safe-area home-indicator + tout gap
+       sous 100dvh sur iOS) montrait le BLANC du body (thïme clair) ÔåÆ bande blanche en
+       bas (┬½ crop ┬╗ ècran d'accueil). On peint le <html> en sombre (= manifest
+       background_color/chrome de l'app) : aucun blanc ne transpara├«t ; le body garde sa
+       couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overflow-x:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html.sg-standalone,html.sg-standalone body{height:var(--sg-vh,100dvh)}
+    html{background:#0d1117}
+    /* Fond = cadre sombre de l'app (#0d1117, = html + #sg-chin + manifest background_color +
+       meta theme-color posè en JS). !important : bat le body{background:var(--sg-bg)} du bundle
+       CSS (chargè APRêS ce <style>) ÔåÆ aucun sous-frame blanc ni colorè avant le squelette. Body
+       est de toute fa├ºon masquè par #root fixe aprïs le mount. Neutre : ni blanc, ni teal, ni
+       orange ÔÇö un cadre sombre discret, comme un splash d'app. */
+    body{background:#0d1117 !important}
+    /* Safari/par dèfaut : position:fixed;inset:0 atteint le vrai bas (au-dessus de la
+       toolbar) ÔÇö NE PAS y toucher. iOS standalone UNIQUEMENT (html.sg-standalone) :
+       le layout viewport (innerHeight ~852) est ~44px plus court que l'ècran rèel
+       (screen.height 896, mesurè IMG_2846/2847) ÔåÆ bande vide en bas. On ètend #root à
+       la hauteur MESUR├ëE --sg-vh (= screen.height en standalone, cf. <script> head). */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    html.sg-standalone #root{bottom:auto;width:100%;height:var(--sg-vh,100dvh)}
+    /* iOS 26+ Safari NAVIGATEUR : la barre basse ┬½ Liquid Glass ┬╗ IGNORE theme-color et se
+       teinte en èchantillonnant le background-color d'un èlèment position:fixed prïs du bord
+       bas (sinon fallback body) ÔåÆ elle captait le contenu dorè = bande dorèe qui ┬½ change
+       selon l'ècran ┬╗ (mècanisme confirmè : shadcn#8471, MUI#46953, WebKit/Safari 26 notes).
+       #sg-chin = ancre fixe sombre pleine largeur collèe au bord bas ÔåÆ devient la cible
+       d'èchantillonnage ÔåÆ barre basse Safari constante #0d1117 (= cadre app, m├¬me couleur
+       que html + theme-color legacy), jamais dorèe. NAVIGATEUR SEULEMENT : cachè en standalone
+       (pas de barre Safari, et un liserè sombre y serait visible). pointer-events:none ;
+       ~6px rèels, cachès sous la barre Safari. */
+    #sg-chin{display:none;position:fixed;left:0;right:0;bottom:-8px;height:14px;width:100%;background:linear-gradient(175deg,#0B2230 0%,#155A5A 45%,#C97E3A 85%,#F2B05E 100%);z-index:0;pointer-events:none}
+    /* iOS WebKit UNIQUEMENT (-webkit-touch-callout faux sur desktop Safari/Chrome/Firefox)
+       ÔåÆ pas de liserè sombre parasite en bas sur desktop/Android, o├╣ le bug n'existe pas. */
+    @supports (-webkit-touch-callout:none){#sg-chin{display:block}}
+    html.sg-standalone #sg-chin{display:none}
+    *,*::before,*::after{box-sizing:border-box}
+    img,svg{max-width:100%;display:block}
+    @media (max-width:500px){
+      :root{--sg-header-offset:108px}
+      .sg-carib-btn{padding:8px 10px !important;gap:0 !important}
+      .sg-carib-label{display:none !important}
+      .sg-header-row{padding-right:52px}
+    }
+  </style>
+  <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin="">
+  <!-- Data du premier ècran : sans preload, ces fetches partaient APRêS l'exècution
+       du bundle (mesurè t+4,8s sur sargassumcancun.com, TTFB hèbergeur 0,5-2,6s) ÔÇö
+       la carte mettait 8-12s à montrer ses pins (audit map-loading 2026-06-11). -->
+  <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin="">
+  <link rel="preload" href="/data/beaches-images.json" as="fetch" crossorigin="">
+  <link rel="preload" href="/data/beaches-images-quality.json" as="fetch" crossorigin="">
+  <!-- Mètèo par plage : alimente le score du verdict (vent/houle/SST/UV/nuages/marèe) ÔåÆ
+       m├¬me vague critique que sargassum. Sans preload, ce fetch (41 Ko statique) ne
+       partait qu'APRêS le boot JS ÔåÆ rallongeait la cascade du 1er verdict. -->
+  <link rel="preload" href="/api/weather/beaches-weather.json" as="fetch" crossorigin="">
+  <!-- Polices AUTO-H├ëBERG├ëES (same-origin) ÔÇö Google Fonts est bloquè par les navigateurs
+       anti-suivi (Edge ┬½ Prèvention du suivi ┬╗, Brave Shields) ÔåÆ rendu en police de secours
+       (┬½ gris/cheap ┬╗). En les servant depuis notre domaine, plus rien à bloquer + chargement
+       plus rapide. cf. public/fonts/. -->
+  <!-- fonts.css = QUE des @font-face (display:swap) ÔåÆ non render-blocking : le navigateur peint
+       en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
+       4G avant le 1er paint. (Pattern media=printÔåÆonload ; noscript fallback.) -->
+  <!-- Preload des 2 sous-ensembles LATIN above-the-fold (corps Bricolage + titres Anton) :
+       lance le download de la police DêS le parse HTML, sans attendre que fonts.css soit chargè
+       puis parsè ÔåÆ rèduit la durèe de FOUT et le dècalage (CLS) du swap tardif. `crossorigin`
+       OBLIGATOIRE m├¬me same-origin (les polices sont fetchèes en mode CORS). Seuls les subsets
+       latin sont prèchargès (les FR/EN/ES n'utilisent que U+0000ÔÇô00FF). -->
+  <link rel="preload" href="/fonts/bricolagegrotesque-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2" as="font" type="font/woff2" crossorigin="">
+  <link rel="preload" href="/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin="">
+  <link rel="stylesheet" href="/fonts/fonts.css" media="all" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
+  <link rel="preconnect" href="https://www.clarity.ms">
+  <!-- Stripe : TLS cold-start mesurè à 9-22s sur rèseau Cara├»be ÔÇö prèchauffer les
+       connexions pendant le chargement de l'app rend le checkout on-site instantanè. -->
+  <link rel="preconnect" href="https://js.stripe.com">
+  <link rel="preconnect" href="https://m.stripe.network">
+  <link rel="preconnect" href="https://api.stripe.com">
+  <link rel="dns-prefetch" href="https://api.open-meteo.com">
+  <link rel="dns-prefetch" href="https://marine-api.open-meteo.com">
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com">
+  <!-- (polices servies via /fonts/fonts.css ci-dessus ÔÇö plus de dèpendance Google Fonts) -->
+  <!-- OneSignal Push ÔÇö SDK chargè à la demande (pas au dèmarrage) -->
+  <script>
+    window.ONESIGNAL_APP_ID="4280dcab-fc43-415d-a9cd-a3da8cf601f1";
+    window.loadOneSignal=function(){
+      if(window.__osLoaded)return;window.__osLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload=function(){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        OneSignalDeferred.push(function(O){O.init({appId:window.ONESIGNAL_APP_ID,allowLocalhostAsSecureOrigin:true,autoPrompt:false});O.Notifications.requestPermission()});
+      };document.head.appendChild(s);
+    };
+  </script>
+  <!-- Google Analytics 4 ÔÇö gtag.js (159 Ko !) DIFF├ëR├ë à l'idle (injectè dans boot() ci-dessous)
+       pour le sortir du chemin critique de chargement. Le stub gtag() + dataLayer queue les events
+       en attendant ÔåÆ ils partent quand gtag.js arrive (zèro perte). GA4 reste branchè pour le funnel.
+       GDPR : consent par dèfaut DENIED ÔÇö le banner cookie (sg_cookie_consent) grant analytics. -->
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
+  gtag('js',new Date());gtag('config','G-V8JGMDZZ2Y',{transport_url:'https://www.google-analytics.com'});</script>
+  <!-- Stripe.js ÔÇö chargè à la demande (seulement si l'utilisateur ouvre Premium) -->
+  <script>
+    window.loadStripe=function(){
+      if(window.Stripe)return Promise.resolve(window.Stripe);
+      return new Promise(function(ok){
+        var s=document.createElement('script');s.src='https://js.stripe.com/v3/';
+        s.onload=function(){ok(window.Stripe)};document.head.appendChild(s);
+      });
+    };
+  </script>
+  <!-- Microsoft Clarity + bridge ÔÇö deferred after first paint, gated behind cookie consent.
+       GDPR: Clarity only loads after user accepts analytics. Bridge listeners are installed
+       immediately (they just queue to gtag, no Clarity dependency). -->
+  <script>
+  (function(){
+    function boot(){
+      // GA4 gtag.js ÔÇö injectè ICI (idle) au lieu du <head> eager : 159 Ko sortis du chemin critique.
+      var _ga=document.createElement('script');_ga.async=true;_ga.src='https://www.googletagmanager.com/gtag/js?id=G-V8JGMDZZ2Y';document.head.appendChild(_ga);
+      // Clarity â€" gated behind cookie consent (GDPR). Load now if already accepted,
+      // otherwise wait for consent change via localStorage polling.
+      var CLARITY_ID="w4o6w9aenv";
+      function loadClarity(){
+        if(window.__clarityLoaded)return;window.__clarityLoaded=true;
+        (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script",CLARITY_ID);
+      }
+      var _cc=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+      if(_cc==="accepted"){loadClarity();}
+      else{
+        // Poll for consent change (max 5 min, then give up)
+        var _start=Date.now();
+        var _poll=setInterval(function(){
+          if(Date.now()-_start>300000){clearInterval(_poll);return;}
+          var v=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(v==="accepted"){clearInterval(_poll);loadClarity();}
+          else if(v==="denied"){clearInterval(_poll);}
+        },1000);
+      }
+      // Clarity â†' GA4 bridge (queues events to gtag, no Clarity dependency)
+      if(!window.gtag)return;
+      var sent={};
+      function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
+      var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
+      document.addEventListener('click',function(e){
+        var now=Date.now(),t=e.target;
+        if(t.closest('.leaflet-container'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||'');
+        clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
+        var same=clicks.filter(function(c){return c.tag===tag});
+        if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
+      },true);
+      document.addEventListener('click',function(e){
+        var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
+        // SPA-aware : un tap qui ouvre une feuille/modale/tooltip via l'ètat React ne change PAS
+        // l'URL ÔåÆ sans le garde de mutation DOM ci-dessous ces taps utiles ètaient comptès ┬½ morts ┬╗
+        // (bruit : ~7923 dead-clicks sur / en juillet). On aligne sur le dètecteur durci du template
+        // GP (prepare-ftp.cjs) : allowlist èlargie + delta de n┼ôuds DOM. [data-sg-live] = surface
+        // non-bouton dont le tap EST gèrè (carte, backdrops) ÔÇö m├¬me convention que la heatmap first-party.
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click,.leaflet-container,[data-sg-live]'))return;
+        var tag=t.tagName+'.'+(typeof t.className==='string'?t.className:'').split(' ')[0]+'#'+(t.id||''),url=location.href;
+        var preCount=document.getElementsByTagName('*').length;
+        setTimeout(function(){
+          var postCount=document.getElementsByTagName('*').length;
+          if(location.href===url&&Math.abs(postCount-preCount)<5)send('clarity_dead_click',{target:tag,page:location.pathname});
+        },2000);
+      },true);
+      var loaded=Date.now();
+      window.addEventListener('beforeunload',function(){
+        if(Date.now()-loaded<10000){
+          // GDPR: gate quick_bounce behind consent (MP beacon bypasses gtag consent)
+          var _c=(function(){try{return localStorage.getItem("sg_cookie_consent")}catch(_){return null}})();
+          if(_c==="accepted")navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
+            'G-V8JGMDZZ2Y'+
+            '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+        }
+      });
+    }
+    if('requestIdleCallback' in window)requestIdleCallback(boot,{timeout:3000});
+    else setTimeout(boot,2000);
+  })();
+  </script>
+  <script type="module" crossorigin="" src="/assets/index-B3ERc08L.js"></script>
+  <link rel="modulepreload" crossorigin="" href="/assets/react-vendor-Cjuj7-iD.js">
+  <link rel="modulepreload" crossorigin="" href="/assets/WorldMapView-BRjZbMUO.js">
+  <link rel="preload" href="/data/region-outlines/mq.json" as="fetch" crossorigin="">
+<link rel="modulepreload" as="script" crossorigin="" href="/assets/Sargasses_PROD-BMUsp_jC.js"><link rel="stylesheet" crossorigin="" href="/assets/Sargasses_PROD-eWJcAzSn.css"><script async="" src="https://www.googletagmanager.com/gtag/js?id=G-V8JGMDZZ2Y"></script><link rel="modulepreload" as="script" crossorigin="" href="/assets/index-B3ERc08L.js"></head>
+  <body class="theme-comic">
+    <script>
+      (function(){
+        try {
+          var v = localStorage.getItem("sg_theme");
+          if (v === '"dark"') document.documentElement.classList.add("theme-dark");
+          else if (v !== '"light"' && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
+        } catch (e) {}
+      })();
+    </script>
+    <script>
+    // Crash recovery ÔÇö if React dies, auto-reload once instead of blank page
+    window.onerror=function(msg,src,line){
+      if(sessionStorage.getItem('sg_crash'))return;
+      sessionStorage.setItem('sg_crash','1');
+      setTimeout(function(){location.reload()},500);
+    };
+    // Clear crash flag on successful load
+    window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
+    </script>
+    <!-- Static CTA : visible DÈS le 1er paint (zéro JS), fixed au-dessus du fold mobile.
+         Disparaît quand React monte (createRoot remplace #root) ou après 8s (garde-fou).
+         z-index:999 = au-dessus du contenu mais sous les modales (z-index:1000+). -->
+    <div id="static-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#11463E,#1a5c4f);text-align:center;font-family:'Anton','Impact',sans-serif">
+      <a href="/track-click.php?url=/carte-sargasses/&amp;ref=static_cta_floating" style="display:inline-block;width:100%;max-width:400px;padding:14px 0;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#1A2B26;font-size:17px;font-weight:700;letter-spacing:.02em;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(232,168,0,.45),0 2px 0 rgba(0,0,0,.18)">Voir ma plage →</a>
+    </div>
+    <script>
+    (function(){
+      /* Show static CTA only on mobile (≤768px). Uses matchMedia for accuracy. */
+      var mql=window.matchMedia&&window.matchMedia('(max-width:768px)');
+      if(!mql||!mql.matches)return;
+      var cta=document.getElementById('static-cta');
+      if(!cta)return;
+      cta.style.display='block';
+      /* Hide when React mounts (root gets children) or after 8s (timeout safety). */
+      function hide(){if(cta&&cta.parentNode){cta.parentNode.removeChild(cta)}}
+      var timer=setTimeout(hide,8000);
+      /* Poll every 200ms for React mount (lightweight, stops after 10s). */
+      var poll=setInterval(function(){
+        var r=document.getElementById('root');
+        if(r&&r.children.length>1){clearInterval(poll);clearTimeout(timer);hide();}
+      },200);
+      setTimeout(function(){clearInterval(poll)},10000);
+    })();
+    </script>
+    <div id="root"><h1 style="position: absolute; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; border: 0px;">Sargasses Martinique en temps réel — carte et plages aujourd'hui</h1><div style="position: relative; width: 100%; height: 100%; overflow: hidden; content-visibility: visible;"><div style="position: absolute; inset: 0px; opacity: 1; transform: scale(1); transform-origin: 50% 42%; pointer-events: auto; transition: opacity 0.28s, transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgb(11, 34, 48);"></div><div style="position: absolute; inset: 0px; opacity: 0; transform: translateY(14px); pointer-events: none; transition: opacity 0.28s, transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgb(11, 34, 48);"></div><div style="position: absolute; top: 0px; left: 0px; right: 0px; z-index: 700; padding: calc(max(12px, env(safe-area-inset-top)) + 0px) 16px 0; pointer-events: none; transition: padding-top 0.25s;"><div class="sg-header-chrome" style="max-width: 460px; margin: 0px auto; pointer-events: none;"><style>.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}</style><div class="sg-header-row sg-rail"><button aria-label="Accueil" class="sg-seg sg-seg-home"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#0A1714"></circle><path d="M4 13.5 Q8 11 12 12.5 T20 12" stroke="#1EC8B0" stroke-width="2.2" fill="none" stroke-linecap="round"></path><path d="M4 16.5 Q8 14.2 12 15.6 T20 15" stroke="#009E8E" stroke-width="2" fill="none" stroke-linecap="round"></path><circle cx="16.5" cy="8" r="2.4" fill="#FFC72C" stroke="#0d0b14" stroke-width="1.4"></circle></svg></button><div role="group" aria-label="Région" class="sg-seg sg-iso"><span aria-hidden="true" class="sg-iso-knob" style="transform: translateX(3px);"></span><button style="color: rgb(13, 11, 20);">MQ</button><button style="color: var(--sg-mid,#5A5A5A);">GP</button></div><a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer" aria-label="Données en direct" class="sg-seg sg-live"><span aria-hidden="true" class="sg-live-dot"><span class="sg-live-halo"></span><i></i></span><span class="sg-live-lbl">EN DIRECT</span><span class="sg-live-age">· il y a 2h</span><span aria-label="Fraîcheur satellite" class="sg-seg sg-freshness"><span>Données satellite en retard — de plus de 24 h</span></span></a><div role="group" aria-label="Préférences" class="sg-seg sg-util"><button aria-label="Activer les alertes sargasses" title="Activer les alertes"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"></path><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M4 4L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button><button aria-label="Mon accès" title="Mon accès"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="2"></circle><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button><button aria-label="Dark mode"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"></circle><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"></path></g></svg></button><button aria-label="Switch to English" class="sg-lang">EN</button></div></div></div></div><div style="position: absolute; left: 0px; right: 0px; z-index: 700; bottom: calc(128px + max(12px, env(safe-area-inset-bottom,0px)) + 8px); padding: 0px 16px; pointer-events: none; max-height: calc(-140px + 100vh);"><div class="sg-map-chrome" style="max-width: 460px; margin: 0px auto; pointer-events: none; display: flex; flex-direction: column; gap: 8px;"><style>.sg-map-chrome > *{pointer-events:auto}</style><div style="position: relative;"><div style="position: relative; display: flex; align-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgb(90, 90, 90); transition: color 0.15s; flex-shrink: 0; pointer-events: none;"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.4"></circle><path d="M16.5 16.5 L21 21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg><input type="search" placeholder="Chercher une plage…" aria-label="Chercher une plage" autocomplete="off" autocorrect="off" autocapitalize="off" enterkeyhint="search" style="width: 100%; min-height: 48px; padding: 13px 14px 13px 42px; border-radius: 12px; border: 2.5px solid rgb(13, 13, 13); background: var(--sg-card,#fff); color: var(--sg-ink,#0D0D0D); font-size: 16px; font-weight: 600; letter-spacing: 0px; font-family: inherit; outline: none; box-sizing: border-box; box-shadow: rgb(13, 13, 13) 2px 2px 0px; transition: box-shadow 0.12s;"></div></div></div></div><nav class="sg-bottom-nav" style="position: fixed; bottom: 0px; left: 0px; right: 0px; z-index: 1040; display: flex; justify-content: space-around; align-items: stretch; background: var(--sg-card,#fff); border-top: 2.5px solid var(--sg-ink,#0d0b14); box-shadow: 0 -4px 0 -1px var(--sg-ink,#0d0b14); padding: 8px 4px max(12px,env(safe-area-inset-bottom));"><button style="display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; color: var(--sg-ink,#0d0b14); font-family: &quot;Bricolage Grotesque&quot;, sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0px; transition: color 0.2s; padding: 4px 16px; position: relative; min-height: 44px; justify-content: center; opacity: 1;"><div style="position: absolute; top: -2px; width: 24px; height: 3px; border-radius: 2px; background: rgb(232, 168, 0);"></div><span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1.12);"><span style="width: 24px; height: 24px; display: flex;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5 6-2.5V17.5L15 20 9 17.5 3 20z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"></path><path d="M9 4v13.5M15 6.5V20" stroke="currentColor" stroke-width="2"></path></svg></span></span><span style="font-size: 13px; font-weight: 800;">Carte</span></button><button style="display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; color: var(--sg-ink,#0d0b14); font-family: &quot;Bricolage Grotesque&quot;, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0px; transition: color 0.2s; padding: 4px 16px; position: relative; min-height: 44px; justify-content: center; opacity: 0.75;"><span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(1);"><span style="width: 24px; height: 24px; display: flex;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><circle cx="4" cy="6" r="1.5" fill="currentColor"></circle><circle cx="4" cy="12" r="1.5" fill="currentColor"></circle><circle cx="4" cy="18" r="1.5" fill="currentColor"></circle></svg></span></span><span style="font-size: 13px; font-weight: 700;">Plages</span></button><button style="display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; color: var(--sg-ink,#0d0b14); font-family: &quot;Bricolage Grotesque&quot;, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0px; transition: color 0.2s; padding: 4px 16px; position: relative; min-height: 44px; justify-content: center; opacity: 0.75;"><span style="width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: rgb(255, 228, 122); border: 2px solid var(--sg-ink,#0d0b14); box-shadow: 2px 2px 0 var(--sg-ink,#0d0b14);"><span style="width: 18px; height: 18px; display: flex;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z" fill="#E8A800" stroke="#0d0b14" stroke-width="1.6" stroke-linejoin="round"></path></svg></span></span><span style="font-size: 13px; font-weight: 700;">Premium</span></button></nav>Peut-être plus tard<div style="display: flex; align-items: center; justify-content: center; min-height: 120px; padding: 16px; text-align: center; font-family: system-ui, sans-serif; font-size: 14px; color: rgba(255, 255, 255, 0.6);"><span>Une erreur s'est produite. Réessayez ou rafraîchissez la page.</span></div><div style="position: absolute; bottom: max(20px,env(safe-area-inset-bottom,0px)+8px); left: 50%; transform: translateX(-50%); z-index: 1400; pointer-events: none; animation: 4s ease-out 8s 1 normal both running mapTipFade;"><style>@keyframes mapTipFade{0%,60%{opacity:1;transform:translateX(-50%) translateY(0)}90%{opacity:0;transform:translateX(-50%) translateY(6px)}100%{opacity:0;transform:translateX(-50%) translateY(6px);pointer-events:none}}</style><div style="display: inline-flex; align-items: center; gap: 9px; padding: 12px 20px; border-radius: 14px; background: rgba(13, 17, 23, 0.92); border: 1.5px solid rgba(255, 199, 44, 0.35); box-shadow: rgba(0, 0, 0, 0.35) 0px 4px 0px 0px, rgba(0, 0, 0, 0.4) 0px 8px 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"></circle><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7Z"></path></svg><span style="font-size: 14px; font-weight: 700; color: rgb(234, 247, 244); font-family: &quot;Bricolage Grotesque&quot;, system-ui, sans-serif; white-space: nowrap;">Tape une plage</span></div></div><div style="position: fixed; top: 0px; left: 0px; right: 0px; z-index: 1000; padding: 12px 16px; background: linear-gradient(135deg, rgb(10, 92, 74), rgb(13, 127, 99)); border-bottom: 1px solid rgba(255, 255, 255, 0.07);"><div style="background: linear-gradient(135deg, rgb(10, 92, 74), rgb(13, 127, 99)); padding: 10px 16px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center;"><span style="font-size: 13px; color: rgb(184, 240, 221); white-space: nowrap; font-weight: 600;">🌍 SargaGame Network —</span><div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;"><a href="https://sargasses-martinique.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇲🇶 Martinique</a><a href="https://sargasses-guadeloupe.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇬🇵 Guadeloupe</a><a href="https://sargassumcancun.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇲🇽 Cancún</a><a href="https://sargazotulum.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇲🇽 Tulum</a><a href="https://sargassumpuntacana.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇩🇴 Punta Cana</a><a href="https://sargassummiami.com" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇺🇸 Miami</a><a href="https://sargassumpuntacana.com/haiti" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇭🇹 Haïti</a><a href="https://sargassumpuntacana.com/sainte-lucie" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇱🇨 Sainte-Lucie</a><a href="https://sargassumpuntacana.com/barbade" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; color: white; text-decoration: none; background: rgba(255, 255, 255, 0.12); font-weight: 400; pointer-events: auto;">🇧🇧 Barbade</a></div></div></div><div class="sg-cookie-banner sg-v2-cookie-banner" style="position: fixed; bottom: calc(100px + max(16px, env(safe-area-inset-bottom))); left: 0px; right: 0px; z-index: 1025; background: linear-gradient(rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.99)); border-top: 1px solid rgba(255, 199, 44, 0.2); padding: 16px max(16px,env(safe-area-inset-left)) 16px; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(12px);"><div style="font-size: 13px; line-height: 1.5; color: rgba(255, 255, 255, 0.72);">Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser. <a href="/confidentialite/" style="color: rgb(255, 199, 44); text-decoration: underline;">En savoir plus</a></div><div style="display: flex; gap: 10px; flex-wrap: wrap;"><button style="flex: 1 1 140px; background: rgb(255, 199, 44); color: rgb(11, 34, 48); border-width: medium; border-style: none; border-color: currentcolor; border-image: none; border-radius: 10px; padding: 12px 16px; font-weight: 800; font-size: 14px; cursor: pointer; font-family: inherit; box-shadow: rgba(0, 0, 0, 0.35) 2px 2px 0px; min-height: 44px;">Accepter</button><button style="flex: 1 1 140px; background: transparent; color: rgba(255, 255, 255, 0.6); border: 1.5px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px 16px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; min-height: 44px;">Refuser</button></div></div></div></div>
+    <!-- Ancre de teinte barre basse Safari iOS 26+ (navigateur). Cf. <style> #sg-chin :
+         Safari èchantillonne le background d'un èlèment fixed prïs du bord bas ÔåÆ cet
+         èlèment sombre force une barre constante #0d1117 au lieu d'une bande dorèe
+         mouvante. Cachè en standalone (PWA). aria-hidden : invisible pour l'a11y/SEO. -->
+    <div id="sg-chin" aria-hidden="true"></div>
+
+    <script>
+    // Version check ÔÇö purge caches + reload auto sur changement de version (zèro action user).
+    // Compare v (release user-facing) ET b (hash de build posè par stamp-sw-hash.cjs ÔåÆ change à
+    // CHAQUE deploy de CODE, pas seulement sur une release). C'est ce qui faisait que la garde ne
+    // reloadait JAMAIS sur un deploy de code (cause ┬½ version grise coincèe ┬╗ 18/06). Garde
+    // anti-boucle : localStorage ècrit AVANT le reload + verrou sessionStorage par version.
+    (function(){
+      var LOCAL_KEY='sg_v';
+      fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+        if(!d||!d.v)return;
+        var cur=d.v+'|'+(d.b||'');
+        var prev=localStorage.getItem(LOCAL_KEY);
+        localStorage.setItem(LOCAL_KEY,cur);
+        if(prev&&prev!==cur&&'caches' in window&&sessionStorage.getItem('sg_vreload')!==cur){
+          sessionStorage.setItem('sg_vreload',cur);
+          caches.keys().then(function(ks){
+            return Promise.all(ks.map(function(k){return caches.delete(k)}));
+          }).then(function(){location.reload()});
+        }
+      }).catch(function(){});
+    })();
+    // Service Worker registration ÔÇö updateViaCache:'none' force le navigateur à RE-FETCH sw.js
+    // HORS de son cache HTTP (garantie c├┤tè code, indèpendante des headers LiteSpeed) ÔåÆ reg.update()
+    // dètecte le nouveau SW en minutes au lieu de 24 h. + reg.update() 15 min + au retour d'onglet.
+    // Pas de reload rèflexe sur controllerchange (fermait le paywall en saisie) ; le reload est
+    // pilotè par le SW (activate, garde hadOldCache ÔåÆ jamais à la 1re visite).
+    // GitHub Pages: use sw-ghpages.js for SPA routing (intercepts navigation → index.html)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',function(){
+        var isGH = location.hostname === 'aveca.github.io';
+        var swPath = isGH ? '/sargagame/sw-ghpages.js' : '/sw.js';
+        navigator.serviceWorker.register(swPath,{updateViaCache:'none'}).then(function(reg){
+          var upd=function(){try{reg.update()}catch(e){}}
+          setInterval(upd,15*60*1000)
+          document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
+        }).catch(function(){})
+      })
+    }
+    </script>
+  
+
+</body></html>

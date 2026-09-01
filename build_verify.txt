@@ -1,0 +1,75 @@
+
+> sargagame@0.0.0 build
+> node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs
+
+[sync-version] public/version.json déjà à jour (v219)
+[sync-version] public/sw.js CACHE_NAME déjà à jour (sargasses-v219)
+[sync-version] OK — flotte alignée sur v219 (2026-08-11).
+OK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)
+[gen-b2b-partners] OK — 0 partenaire(s) LIVE, 2 en preview → public\api\b2b-partners.json
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 366 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                          [39m[1m[2m 43.87 kB[22m[1m[22m[2m │ gzip:  15.83 kB[22m
+[2mdist/[22m[35massets/Sargasses_PROD-eWJcAzSn.css  [39m[1m[2m 43.71 kB[22m[1m[22m[2m │ gzip:   9.52 kB[22m
+[2mdist/[22m[36massets/SeqPrimitives-DegVvWv4.js    [39m[1m[2m  0.60 kB[22m[1m[22m[2m │ gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/ComicDetail-B9bX4hN8.js      [39m[1m[2m  0.66 kB[22m[1m[22m[2m │ gzip:   0.44 kB[22m
+[2mdist/[22m[36massets/ContextVeilleur-CJoVDDWj.js  [39m[1m[2m  3.68 kB[22m[1m[22m[2m │ gzip:   1.50 kB[22m
+[2mdist/[22m[36massets/index-BYZge3gv.js            [39m[1m[2m  3.87 kB[22m[1m[22m[2m │ gzip:   2.01 kB[22m
+[2mdist/[22m[36massets/ArenaSplash-D3ajsxl5.js      [39m[1m[2m  5.32 kB[22m[1m[22m[2m │ gzip:   2.05 kB[22m
+[2mdist/[22m[36massets/WhatsNewJournal-DFhP7jQ4.js  [39m[1m[2m  5.72 kB[22m[1m[22m[2m │ gzip:   2.61 kB[22m
+[2mdist/[22m[36massets/DiveTransition-DfzRasD7.js   [39m[1m[2m  6.12 kB[22m[1m[22m[2m │ gzip:   2.08 kB[22m
+[2mdist/[22m[36massets/perf-vitals-C_lxgnnT.js      [39m[1m[2m  6.87 kB[22m[1m[22m[2m │ gzip:   2.81 kB[22m
+[2mdist/[22m[36massets/WorldView3D-BRFFQmAs.js      [39m[1m[2m  9.00 kB[22m[1m[22m[2m │ gzip:   3.88 kB[22m
+[2mdist/[22m[36massets/PaidOnboarding-CgU0LfF9.js   [39m[1m[2m  9.51 kB[22m[1m[22m[2m │ gzip:   4.38 kB[22m
+[2mdist/[22m[36massets/VeilleurHero-CiLFE2GX.js     [39m[1m[2m 11.28 kB[22m[1m[22m[2m │ gzip:   3.92 kB[22m
+[2mdist/[22m[36massets/AccountSheet-MjDHOZB_.js     [39m[1m[2m 11.98 kB[22m[1m[22m[2m │ gzip:   4.80 kB[22m
+[2mdist/[22m[36massets/SargaChatB2B-Z89W8Ske.js     [39m[1m[2m 12.60 kB[22m[1m[22m[2m │ gzip:   4.32 kB[22m
+[2mdist/[22m[36massets/SargaChat-hC4DWwbI.js        [39m[1m[2m 13.14 kB[22m[1m[22m[2m │ gzip:   5.48 kB[22m
+[2mdist/[22m[36massets/WelcomePoste-pPWowhee.js     [39m[1m[2m 15.79 kB[22m[1m[22m[2m │ gzip:   6.16 kB[22m
+[2mdist/[22m[36massets/CleanList-Da02qIx8.js        [39m[1m[2m 16.41 kB[22m[1m[22m[2m │ gzip:   5.97 kB[22m
+[2mdist/[22m[36massets/VeilleurRepond-DZkOzLZU.js   [39m[1m[2m 18.01 kB[22m[1m[22m[2m │ gzip:   7.05 kB[22m
+[2mdist/[22m[36massets/HomeJuicy-DZqMsI8z.js        [39m[1m[2m 18.46 kB[22m[1m[22m[2m │ gzip:   6.82 kB[22m
+[2mdist/[22m[36massets/ArenaOnboarding-DAZefgPq.js  [39m[1m[2m 19.62 kB[22m[1m[22m[2m │ gzip:   6.51 kB[22m
+[2mdist/[22m[36massets/ScrollStory-Q8CtkEi8.js      [39m[1m[2m 20.34 kB[22m[1m[22m[2m │ gzip:   6.16 kB[22m
+[2mdist/[22m[36massets/Conditions-C6mbwf9p.js       [39m[1m[2m 22.25 kB[22m[1m[22m[2m │ gzip:   8.22 kB[22m
+[2mdist/[22m[36massets/react-vendor-Cjuj7-iD.js     [39m[1m[2m 24.14 kB[22m[1m[22m[2m │ gzip:   9.46 kB[22m
+[2mdist/[22m[36massets/DemoReel-Bj1QiTvs.js         [39m[1m[2m 26.88 kB[22m[1m[22m[2m │ gzip:  10.15 kB[22m
+[2mdist/[22m[36massets/BriefMatin-C9tRHfzj.js       [39m[1m[2m 28.42 kB[22m[1m[22m[2m │ gzip:   9.73 kB[22m
+[2mdist/[22m[36massets/WeekHub-BPyI7pq2.js          [39m[1m[2m 37.33 kB[22m[1m[22m[2m │ gzip:  12.66 kB[22m
+[2mdist/[22m[36massets/VerticalesMap-DLaCaOXm.js    [39m[1m[2m 45.87 kB[22m[1m[22m[2m │ gzip:  15.44 kB[22m
+[2mdist/[22m[36massets/StoryScenes-D__2cHyT.js      [39m[1m[2m 56.74 kB[22m[1m[22m[2m │ gzip:  18.38 kB[22m
+[2mdist/[22m[36massets/HomeAZ-BzWlBc61.js           [39m[1m[2m 75.76 kB[22m[1m[22m[2m │ gzip:  23.93 kB[22m
+[2mdist/[22m[36massets/WorldMapView-DXa04IRX.js     [39m[1m[2m 86.86 kB[22m[1m[22m[2m │ gzip:  25.97 kB[22m
+[2mdist/[22m[36massets/PremiumModal-rwDr7Xlr.js     [39m[1m[2m108.53 kB[22m[1m[22m[2m │ gzip:  32.43 kB[22m
+[2mdist/[22m[36massets/ChasseHome-Ce1YhMXq.js       [39m[1m[2m143.99 kB[22m[1m[22m[2m │ gzip:  42.27 kB[22m
+[2mdist/[22m[36massets/Sargasses_PROD-Cxe5rZIj.js   [39m[1m[2m528.87 kB[22m[1m[22m[2m │ gzip: 158.87 kB[22m
+[2mdist/[22m[36massets/three-vendor-Ctlblikc.js     [39m[1m[2m536.87 kB[22m[1m[22m[2m │ gzip: 134.96 kB[22m
+[32m✓ built in 4.17s[39m
+[strip-php-secrets] removed api/mollie-config.php
+[strip-php-secrets] removed api/paypal-config.php
+[strip-php-secrets] removed api/stripe-config.php
+[strip-php-secrets] removed api/_deploy-secret.php
+[strip-php-secrets] removed api/_diag.php
+[strip-php-secrets] note: 27 .php restants dans dist/api/ (interceptés par Worker sg-payments)
+   → /api/reliability.json publiée
+   → 11 pages EN supplémentaires générées
+   → 4 pages ES supplémentaires générées
+   → /fiabilite/ générée (MQ + miroir GP) — backtest 97% global, 3339 paires
+   → Landing B2B FR /sargasses-pour-hotels/ (MQ + GP mirror) générée
+   → Sitemaps générés avec lastmod: 2026-08-31
+   → Garde sitemap OK : 98 URLs vérifiées, 0 manquante
+   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et /alertes/
+   → Dataset /recherche/ synchronisé (3 pages, window 2026-08-02→2026-08-31, n=3339) + lien citable
+   → 0 articles éditoriaux ajoutés aux sitemaps
+   → 4 hubs zones côtières GP
+   → 3 hubs zones côtières MQ
+   → /plages/ index page générée (MQ + GP)
+   → /conditions/ hub + 6 aggregation pages (MQ + GP) = 14 pages
+   → 136 pages plages générées (53 MQ + 83 GP)
+   → Sitemaps enrichis avec URLs plages
+   → pages mois MQ : /sargasses-aout-2026/ | GP (_gp/) : /sargasses-aout-2026/
+[stamp-sw] dist/version.json b → faaa896f
+[stamp-sw] dist/sw.js CACHE_NAME → sargasses-v219-faaa896f · PRECACHE_ASSETS → 36 assets (hash de 77 fichiers src/).

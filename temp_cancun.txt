@@ -1,0 +1,15 @@
+HTTP/1.1 308 Permanent Redirect
+Date: Mon, 31 Aug 2026 22:42:44 GMT
+Connection: keep-alive
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=RD3ecjgdXN0r11VIkaRdfrwHsOdS1fhudWHmnGtnettd9YQfGr2K%2FWwSEeFm4%2B5CNW0M11DUVk8jBkEkU11qlBwObvI1HAonbrXuf%2FvtAtcF6fXYKcKdBgFQaDA9yNa4dxyEpSCq"}]}
+Location: /
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Access-Control-Allow-Origin: *
+referrer-policy: strict-origin-when-cross-origin
+Server: cloudflare
+cf-cache-status: DYNAMIC
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+CF-RAY: a33f8cd4ec88d03f-MIA
+alt-svc: h3=":443"; ma=86400
+

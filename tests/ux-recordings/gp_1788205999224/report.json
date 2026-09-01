@@ -1,0 +1,221 @@
+{
+  "region": "gp",
+  "url": "https://sargasses-guadeloupe.com",
+  "timestamp": "2026-08-31T19:53:34.632Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "live",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "MEDIUM",
+      "msg": "9 console errors",
+      "details": {
+        "errors": [
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788205999596
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788205999599
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()",
+            "ts": 1788205999625
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206000062
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206000062
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206002072
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206002573
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206003069
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 403 ()",
+            "ts": 1788206003125
+          }
+        ]
+      },
+      "ts": 1788206014025
+    },
+    {
+      "severity": "MEDIUM",
+      "msg": "8 network failures (non-analytics)",
+      "details": {
+        "errors": [
+          {
+            "url": "https://sargasses-guadeloupe.com/api/weather/beaches-weather.json",
+            "error": "HTTP 403",
+            "ts": 1788205999596
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/api/copernicus/sargassum.json",
+            "error": "HTTP 403",
+            "ts": 1788205999599
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/api/community/fb-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206000062
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/api/community/app-reports.json",
+            "error": "HTTP 403",
+            "ts": 1788206000062
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/api/copernicus/history.json",
+            "error": "HTTP 403",
+            "ts": 1788206002072
+          }
+        ]
+      },
+      "ts": 1788206014025
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 381.60000002384186,
+    "load": 659,
+    "lcp": null,
+    "resourceCount": 32
+  },
+  "consoleErrors": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788205999596
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788205999599
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 ()",
+      "ts": 1788205999625
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206000062
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206000062
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206002072
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206002573
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206003069
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "ts": 1788206003125
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://sargasses-guadeloupe.com/api/weather/beaches-weather.json",
+      "error": "HTTP 403",
+      "ts": 1788205999596
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/copernicus/sargassum.json",
+      "error": "HTTP 403",
+      "ts": 1788205999599
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206000062
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/community/app-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206000062
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/copernicus/history.json",
+      "error": "HTTP 403",
+      "ts": 1788206002072
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/mollie.php",
+      "error": "HTTP 403",
+      "ts": 1788206002573
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/community/fb-reports.json",
+      "error": "HTTP 403",
+      "ts": 1788206003069
+    },
+    {
+      "url": "https://sargasses-guadeloupe.com/api/community/fb-posts.json",
+      "error": "HTTP 403",
+      "ts": 1788206003125
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "critical": 0,
+    "warnings": 0,
+    "medium": 2,
+    "errors": 0
+  }
+}

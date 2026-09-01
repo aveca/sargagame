@@ -1,0 +1,28 @@
+40d74cf1 reservoir: stage cards 2026-08-30 [skip ci]
+5a11a5ec chore: update Copernicus data 2026-08-30 16:34 UTC
+f87d53cd chore: email state 2026-08-30 16:33 UTC
+86f78201 veilleurs: digest 2026-08-30
+76acc4a4 chore: update Copernicus data 2026-08-30 11:50 UTC
+72491ea3 chore: email state 2026-08-30 11:49 UTC
+3e7dae5b chore(assets): auto-generate OG images
+3d08fe60 chore: update Copernicus data 2026-08-30 04:59 UTC
+ea8c0f8d chore: email state 2026-08-30 04:59 UTC
+eaf05fa6 chore: update Copernicus data 2026-08-29 22:55 UTC
+59f73d64 chore: update Copernicus data 2026-08-29 20:51 UTC
+b1555f5e chore: email state 2026-08-29 20:50 UTC
+1f54c399 reservoir: stage cards 2026-08-29 [skip ci]
+0fb40487 chore: update Copernicus data 2026-08-29 16:42 UTC
+3d4a8bca chore: email state 2026-08-29 16:42 UTC
+a01e44c5 chore: daily verdict sent 2026-08-29
+5679d26f veilleurs: digest 2026-08-29
+b86b37fd chore: update Copernicus data 2026-08-29 07:02 UTC
+01da12bd chore: email state 2026-08-29 06:44 UTC
+a4aa5f63 chore(support): suppress bounced addresses 2026-08-28 23:47 UTC
+41c264cd chore: weekly friday optimization 2026-08-28
+72cfea93 reservoir: stage cards 2026-08-28 [skip ci]
+0078e6dd chore: update Copernicus data 2026-08-28 22:20 UTC
+8c9eeb19 chore: email state 2026-08-28 22:20 UTC
+56a0cc6d ux: capture audit 2026-08-28
+1c1971ea ux: weekly report 2026-08-28
+ca4eb708 chore: weekend bulletin sent 2026-08-28
+17802a53 chore: weekly friday optimization 2026-08-28
