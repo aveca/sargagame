@@ -375,8 +375,52 @@
     "hotel-le-rotabas.com": {
       "date": "2026-08-25T10:44:50.938Z",
       "status": "no-email"
+    },
+    "kawann-beach-hotel.com": {
+      "date": "2026-09-01T14:45:21.779Z",
+      "status": "no-email"
+    },
+    "bahia-principe.com": {
+      "date": "2026-09-01T14:45:28.032Z",
+      "status": "no-email"
+    },
+    "iberostar.com": {
+      "date": "2026-09-01T14:45:46.580Z",
+      "status": "no-email"
+    },
+    "barcelo.com": {
+      "date": "2026-09-01T14:45:51.207Z",
+      "emailHash": "f2b777c4ad2d90afa09bb5ed9fc62122",
+      "emailDomain": "domain.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "grandvelas.com": {
+      "date": "2026-09-01T14:45:52.834Z",
+      "emailHash": "2c5592f4bb624c4ccf2877a5f21d2d5e",
+      "emailDomain": "velasresorts.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "rosewoodhotels.com": {
+      "date": "2026-09-01T14:45:53.491Z",
+      "emailHash": "9205a70bf4dee9fd5aab7530c57d2141",
+      "emailDomain": "rosewoodhotelgroup.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "banyantree.com": {
+      "date": "2026-09-01T14:46:02.092Z",
+      "status": "no-email"
+    },
+    "hotelxcaret.com": {
+      "date": "2026-09-01T14:46:02.680Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-08-25T10:44:50.938Z",
-  "totalSent": 14
+  "lastRun": "2026-09-01T14:46:02.680Z",
+  "totalSent": 17
 }

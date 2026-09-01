@@ -125,8 +125,22 @@
       "emailHash": "149125a95bc6c8c600198cb8b9399638",
       "authority": "medium",
       "market": "fr"
+    },
+    "vivreenmartinique.fr": {
+      "date": "2026-09-01T14:42:32.634Z",
+      "status": "sent",
+      "emailHash": "834098421a0d8cc6b1ae757843c730c3",
+      "authority": "medium",
+      "market": "fr"
+    },
+    "madininair.fr": {
+      "date": "2026-09-01T14:43:44.448Z",
+      "status": "sent",
+      "emailHash": "0a4c3232af1491b4feb3c20d97f39035",
+      "authority": "medium",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-08-25T10:44:10.047Z",
-  "totalSent": 18
+  "lastRun": "2026-09-01T14:43:44.449Z",
+  "totalSent": 20
 }

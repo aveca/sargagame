@@ -610,8 +610,53 @@
       "error": null,
       "url": "https://bavarodigital.net/",
       "market": "dr"
+    },
+    "bavaronews.com": {
+      "date": "2026-09-01T14:32:06.025Z",
+      "emailHash": "028573cc69e6f5777bae35ccd733645b",
+      "emailDomain": "editorabavaro.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://bavaronews.com/",
+      "market": "dr"
+    },
+    "drsimplified.com": {
+      "date": "2026-09-01T14:32:09.184Z",
+      "emailHash": "a1e799320765f056c7a911c50997b7a1",
+      "emailDomain": "drsimplified.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://drsimplified.com/what-to-know-about-sargassum-in-the-dominican-republic/",
+      "market": "dr"
+    },
+    "puntacanatravelblog.com": {
+      "date": "2026-09-01T14:32:12.387Z",
+      "emailHash": "b2ef611ac9352b88b09f251cad31edd1",
+      "emailDomain": "puntacanatravelblog.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://puntacanatravelblog.com/general-information-faq/seaweed-punta-cana-sargassum/",
+      "market": "dr"
+    },
+    "everythingpuntacana.com": {
+      "date": "2026-09-01T14:32:21.782Z",
+      "emailHash": "03c1ae1398f3f330330e7270feddd5cd",
+      "emailDomain": "everythingpuntacana.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.everythingpuntacana.com/punta-cana-seaweed-guide/",
+      "market": "dr"
+    },
+    "godominicantravel.com": {
+      "date": "2026-09-01T14:32:23.223Z",
+      "emailHash": "d87b961061af15b16c5a1480c4b29128",
+      "emailDomain": "godominicantravel.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://godominicantravel.com/sargassum-or-seaweed-in-punta-cana/",
+      "market": "dr"
     }
   },
-  "lastRun": "2026-08-25T10:31:39.090Z",
-  "totalSent": 69
+  "lastRun": "2026-09-01T14:32:23.223Z",
+  "totalSent": 74
 }
