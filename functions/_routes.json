@@ -3,7 +3,6 @@
   "include": ["/*"],
   "exclude": [
     "/assets/*",
-    "/api/*",
     "/widget/*",
     "/.well-known/*",
     "/beach/*",
@@ -15,14 +14,15 @@
     "*.png",
     "*.jpg",
     "*.jpeg",
+    "*.gif",
     "*.svg",
     "*.ico",
     "*.woff",
     "*.woff2",
-    ".webp",
-    ".avif",
-    ".map",
-    ".json",
-    ".webmanifest"
+    "*.webp",
+    "*.avif",
+    "*.map",
+    "*.json",
+    "*.webmanifest"
   ]
 }
