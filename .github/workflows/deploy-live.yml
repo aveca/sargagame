@@ -55,11 +55,15 @@ jobs:
                 cp "$SRC" "/tmp/region-builds/$RID/api/copernicus/$F"
               fi
             done
-            # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle)
-            if [ -d "public/api/copernicus/$RID/fc7" ]; then
-              rm -rf "/tmp/region-builds/$RID/api/copernicus/fc7"
-              cp -r "public/api/copernicus/$RID/fc7" "/tmp/region-builds/$RID/api/copernicus/fc7"
+            # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle).
+            # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse…) + RÉGION (mq###/gp###)
+            # — ids disjoints, les deux nécessaires (sentinelles→slug, autres→id direct).
+            FCDIR="/tmp/region-builds/$RID/api/copernicus/fc7"
+            rm -rf "$FCDIR"; mkdir -p "$FCDIR"
+            if [ "$RID" = "mq" ] || [ "$RID" = "gp" ]; then
+              [ -d "public/api/copernicus/fc7" ] && cp -r "public/api/copernicus/fc7/." "$FCDIR/"
             fi
+            [ -d "public/api/copernicus/$RID/fc7" ] && cp -r "public/api/copernicus/$RID/fc7/." "$FCDIR/"
           done
         env:
           DEPLOY_TARGET: cloudflare
@@ -158,12 +162,16 @@ jobs:
               echo "  ✓ Copied ${{ matrix.region }}/$F"
             fi
           done
-          # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle)
-          if [ -d "public/api/copernicus/${{ matrix.region }}/fc7" ]; then
-            rm -rf "dist/api/copernicus/fc7"
-            cp -r "public/api/copernicus/${{ matrix.region }}/fc7" "dist/api/copernicus/fc7"
-            echo "  ✓ Copied ${{ matrix.region }}/fc7 ($(ls dist/api/copernicus/fc7 | wc -l) plages)"
+          # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle).
+          # MQ/GP : fusion ROOT (slugs sentinelles) + RÉGION (mq###/gp###) — ids disjoints.
+          RID="${{ matrix.region }}"
+          FCDIR="dist/api/copernicus/fc7"
+          rm -rf "$FCDIR"; mkdir -p "$FCDIR"
+          if [ "$RID" = "mq" ] || [ "$RID" = "gp" ]; then
+            [ -d "public/api/copernicus/fc7" ] && cp -r "public/api/copernicus/fc7/." "$FCDIR/"
           fi
+          [ -d "public/api/copernicus/$RID/fc7" ] && cp -r "public/api/copernicus/$RID/fc7/." "$FCDIR/"
+          echo "  ✓ fc7 fusionné: $(ls "$FCDIR" | wc -l) fichiers"
 
       - name: Deploy to Cloudflare Pages
         run: |

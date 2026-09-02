@@ -13379,8 +13379,11 @@ useEffect(()=>{
       if(raw){const n=FContract.normalizeForecast(JSON.parse(raw));if(n.length){setMyBeachFc(n);return}}
     }catch(_){}
     setMyBeachFc(undefined)
-    // Id serveur : mq/gp legacy = sentinelles (BEACH_TO_SARG), nouvelles régions = id direct
-    const serverId=IS_NEW_REGION?myBeachId:(BEACH_TO_SARG[myBeachId]||null)
+    // Ids serveur CANDIDATS : mq/gp legacy = slug sentinelle (BEACH_TO_SARG) puis id
+    // direct (mq### — le dossier fc7 fusionné couvre AUSSI les non-sentinelles, série
+    // réelle pipeline au lieu de l'interpolation) ; nouvelles régions = id direct.
+    const serverIds=IS_NEW_REGION?[myBeachId]:[...(BEACH_TO_SARG[myBeachId]?[BEACH_TO_SARG[myBeachId]]:[]),myBeachId]
+    const serverId=serverIds[0]||null
     const _interpFallback=()=>{
       // Repli honnête : série interpolée (plages MQ/GP hors sentinelle) — 100 % issue
       // de la donnée satellite voisine, marquée _interp, jamais fabriquée.
@@ -13393,21 +13396,29 @@ useEffect(()=>{
     if(!serverId){_interpFallback();return}
     // PROD : les domaines sont Cloudflare Pages — le Worker sg-payments intercepte
     // /api/copernicus/forecast* (gates premium), donc le statique PUBLIC fc7/<id>.json
-    // est la voie nominale (région-correcte, copiée par deploy-live/prepare-ftp).
+    // est la voie nominale (région-correcte, fusion root+région côté MQ/GP).
     // Fallback PHP pour l'hébergement FTP legacy. Même contrat des deux côtés :
     // {ok, id, updatedAt, forecast} — même source _private/forecast-full.json.
-    fetch(`/api/copernicus/fc7/${encodeURIComponent(serverId)}.json`,{cache:"no-store"})
-      .then(r=>r.ok?r.json():null)
-      .then(j=>j&&Array.isArray(j.forecast)?j:
-        fetch(`/api/copernicus/forecast-beach.php?beach=${encodeURIComponent(serverId)}`,{cache:"no-store"})
-          .then(r=>r.ok?r.json():null).catch(()=>null))
-      .then(j=>{
+    ;(async()=>{
+      const tryFetch=async url=>{
+        try{
+          const r=await fetch(url,{cache:"no-store"})
+          if(!r||!r.ok)return null
+          const j=await r.json()
+          return j&&j.ok&&Array.isArray(j.forecast)?j:null
+        }catch(_){return null}
+      }
+      for(const sid of serverIds){
+        let j=await tryFetch(`/api/copernicus/fc7/${encodeURIComponent(sid)}.json`)
+        if(!j) j=await tryFetch(`/api/copernicus/forecast-beach.php?beach=${encodeURIComponent(sid)}`)
         if(dead)return
-        const n=j&&j.ok&&Array.isArray(j.forecast)?FContract.normalizeForecast(j.forecast):[]
-        if(n.length){setMyBeachFc(n);try{localStorage.setItem(cacheKey,JSON.stringify(j.forecast))}catch(_){}}
-        else _interpFallback()
-      })
-      .catch(()=>{if(!dead)_interpFallback()})
+        if(j){
+          const n=FContract.normalizeForecast(j.forecast)
+          if(n.length){setMyBeachFc(n);try{localStorage.setItem(cacheKey,JSON.stringify(j.forecast))}catch(_){};return}
+        }
+      }
+      if(!dead)_interpFallback()
+    })()
     return()=>{dead=true}
   },[myBeachId,isPremium,sargData])
 
