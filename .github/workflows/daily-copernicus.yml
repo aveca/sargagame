@@ -10,6 +10,10 @@ on:
 
 permissions:
   contents: write
+  # actions:write → dispatch deploy-live.yml depuis les runs data-only (00/12 UTC) :
+  # le commit bot ne re-déclenche pas les workflows (GITHUB_TOKEN), donc sans ce
+  # dispatch les données resteraient sur git sans être propagées à Pages.
+  actions: write
 
 # S\u00e9rialise les runs sur main pour \u00e9liminer les conflits rebase entre 2 runs
 # concurrents qui se battent pour committer les JSONs Copernicus.
@@ -996,6 +1000,18 @@ jobs:
             exit 1
           fi
 
+      # ── Propager la data fraîche vers Pages sur les runs data-only (00/12 UTC) :
+      # le commit bot ne re-déclenche PAS deploy-live.yml (GITHUB_TOKEN, no re-trigger).
+      # Sans ce dispatch, les JSONs frais restaient sur git jusqu'au prochain full build
+      # (18h/06h UTC) → 12 h de stalerie Pages. Le dispatch part UNIQUEMENT quand un
+      # commit a réellement atterri d'un run full=false (donnée fraîche, pas de rebuild).
+      - name: Trigger deploy-live after data commit (non-full runs)
+        if: steps.check_build.outputs.full == 'false'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-live.yml --ref main
+
       # ── Garde MOAT : intégrité des données AVANT publication FTP ────────────
       # verify-ftp-ready.cjs refuse (exit 1) une carte issue d'une source dégradée
       # / de référence OU un pic "tout vert" suspect (>40 pts de plages propres en
@@ -1022,12 +1038,14 @@ jobs:
       # sautés) → verify_data lit la donnée committée (potentiellement vieille). On ne
       # veut PAS qu'une donnée dégradée déjà committée gèle les deploys de CODE → sur
       # push on déploie toujours (le code/site change, pas la donnée).
-      # Provision fast path (_deploy.php + _deploy-secret.php) sur chaque serveur.
-      # Doit tourner AVANT le deploy pour que le fast path soit disponible.
-      # continue-on-error: si déjà provisionné, le step réussira quand même (idempotent).
-      # Génère _deploy-secret.php depuis le secret DEPLOY_TOKEN (gitignored, pas dans le repo).
+      # ═══ FTP DÉSACTIVÉ (audit 2026-09-02, appliqué sur approbation fondateur) ═══
+      # Les 6 domaines live sont sur Cloudflare Pages (deploy-live.yml). Le deploy FTP
+      # (100+ min seul, timeout-step 120 min) était la SEULE cause des runs cancelled à
+      # 2 h. Scripts conservés intacts (scripts/manual-ftp-deploy.cjs = réserve manuelle).
+      # Steps retirés : Generate _deploy-secret / Provision fast path / Deploy FTPS /
+      # Assert FTPS. Pour réactiver : git revert de ce commit.
       - name: Generate _deploy-secret.php for fast path
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        if: false # FTP désactivé (audit 2026-09-02)
         run: |
           mkdir -p public/api
           cat > public/api/_deploy-secret.php <<'EOF'
@@ -1042,7 +1060,7 @@ jobs:
           EOF
 
       - name: Provision fast path (zip deploy endpoint)
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        if: false # FTP désactivé (audit 2026-09-02)
         continue-on-error: true
         timeout-minutes: 15
         env:
@@ -1066,7 +1084,7 @@ jobs:
 
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        if: false # FTP désactivé (audit 2026-09-02) — 100 min/run de timeout
 # SECURITY P1-014: continue-on-error RETIRÉ (2026-08-27). Le masquage 530 → SUCCESS
 # faisait passer un deploy partiel (MQ/GP/RM 530, secrets GH périmés) pour vert.
 # Désormais le step échoue visiblement ; le health-check reste le gate final.
@@ -1098,7 +1116,7 @@ jobs:
         run: node scripts/manual-ftp-deploy.cjs
 
       - name: Assert FTPS deploy succeeded for live regions (P1-014)
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
+        if: false # FTP désactivé (audit 2026-09-02)
         run: |
           # P1-014: le step FTPS n'est plus continue-on-error → son outcome est
           # désormais visible. Si manual-ftp-deploy a échoué (530 secrets périmés,
@@ -1141,6 +1159,14 @@ jobs:
               SRC="public/api/copernicus/$RID/$F"
               if [ -f "$SRC" ]; then cp "$SRC" "dist/api/copernicus/$F"; fi
             done
+            # fc7 « Ma plage » : fusion ROOT (slugs sentinelles MQ/GP : grande-anse…)
+            # + RÉGION (mq###/gp###) — ids disjoints. Sans ça, ce step full-build
+            # ÉCRASAIT la fusion de deploy-live.yml → régression « Ma plage » MQ/GP.
+            FC=dist/api/copernicus/fc7 ; rm -rf $FC ; mkdir -p $FC
+            if [ "$RID" = "mq" ] || [ "$RID" = "gp" ]; then
+              [ -d public/api/copernicus/fc7 ] && cp -r public/api/copernicus/fc7/. $FC/
+            fi
+            [ -d public/api/copernicus/$RID/fc7 ] && cp -r public/api/copernicus/$RID/fc7/. $FC/
             # GP: run prepare-ftp to get patched artifact, deploy guadeloupe-ftp/
             if [ "$RID" = "gp" ]; then
               echo "Running prepare-ftp.cjs for GP patch..."

@@ -3,6 +3,10 @@ name: Deploy Live (Every Push → Production)
 on:
   push:
     branches: [main]
+  # Dispatch depuis daily-copernicus.yml (data fraîche, runs non-full 00/12 UTC) —
+  # le commit bot ne re-déclenche pas ce workflow (GITHUB_TOKEN) → appel explicite
+  # via gh workflow run. + trigger manuel de debug.
+  workflow_dispatch:
 
 permissions:
   contents: read
