@@ -1982,7 +1982,11 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_beach_cta_b2b_shown","sg_beach_cta_b2b_click",
   "sg_paywall_3view_cta",
   // Cross-sell inter-domain
-  "sg_region_nav_click","sg_cross_sell_click"])
+  "sg_region_nav_click","sg_cross_sell_click",
+  // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
+  // events n'existaient que dans le batch sg_session (/collect.php) — injoignables
+  // en SQL. Ici → analytics_events ligne par ligne → query de cohorte J+1→J+7.
+  "sg_follow_beach","sg_ma_plage_return"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
