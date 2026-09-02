@@ -265,7 +265,7 @@ jobs:
 
       - name: Health check API endpoints
         run: |
-          for EP in /api/mollie-health /api/copernicus/forecast?region=martinique&days=1 /_cron/drip; do
+          for EP in "/api/mollie-health" "/api/copernicus/forecast?region=martinique&days=1" "/_cron/drip"; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}${EP}")
             if [ "$CODE" = "200" ]; then
               echo "✅ ${{ matrix.domain }}${EP} — 200"
