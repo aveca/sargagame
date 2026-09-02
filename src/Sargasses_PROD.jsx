@@ -13422,6 +13422,10 @@ useEffect(()=>{
       return()=>{dead=true}
     }
     if(prev.day!==todayKey){
+      // KPI CLÉ du free tier (validation produit 2026-09-02) : un visiteur qui a suivi une
+      // plage et REVIENT un autre jour → sg_ma_plage_return (changed = le verdict a bougé).
+      // C'est LA mesure de la boucle de retention, au-delà des clics de carte.
+      try{track("sg_ma_plage_return",{beach_id:myBeach.id,prev_status:prev.status})}catch(_){}
       // Nouveau jour : compare hier → aujourd'hui UNE fois, puis écrit le snapshot du jour.
       const diff=FContract.dailyChange(prev,myBeach.status,todayKey)
       try{
