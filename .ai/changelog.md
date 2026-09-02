@@ -1,5 +1,23 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-02 · Sprint DATA+UX — Free tier « Ma plage » + héro « Où se baigner » + intégrité données
+
+**Audit data end-to-end** (STEP 1/2) :
+- Chaîne tracée : ERDDAP → `fetch-sargassum-live.cjs` → `public/api/copernicus[/<région>]/sargassum.json` (public J+0/J+1 via `forecast-gate.cjs`) + `_private/forecast-full.json` (7 jours) → `forecast.php` (payant).
+- **Fake data tuée** : `generateForecast()` (oscillation Math.sin déguisée en prévision) supprimée des 2 fiches plage — série absente = état « Prévision indisponible » explicite (moat honnêteté).
+- `BeachPage.jsx` : statut « clean » par défaut quand live absent → « Données temporairement indisponibles » ; claim « 4× par jour » → timestamp réel `updatedAt`.
+- **Contrat de prévision partagé** `scripts/lib/forecast-contract.cjs` (normalisation, `hasDays`, `trendFromDays`, `localDayKey`, `dailyChange`) — source unique front+tests ; 24 tests node.
+- **Nouvel endpoint public `public/api/copernicus/forecast-beach.php?beach=<id>`** : prévision 7 jours réelle d'UNE seule plage (lit `_private/forecast-full.json` colocalisé), validation id, rate-limit 120/h, CORS 5 domaines live. Gratuit par design (free tier) ; le bulk reste payant via forecast.php.
+
+**UX (STEP 4→7)** :
+- **Héro carte « Meilleur choix aujourd'hui »** (`WorldMapView`) : carte héros (nom, score, verdict humain, tendance drift réelle, fraîcheur satellite « il y a X », CTA « Voir → ») + 2 alternatives compactes. Tri score/confidence sur donnée live uniquement. Rollback `?maphero=0`.
+- **Carte « Ma plage » sur l'accueil carte** : nom + verdict aujourd'hui + demain + chip « Ça a changé ↗ » (comparaison snapshot localStorage hier/aujourd'hui). Rollback `?mapmy=0`.
+- **Suivre gratuitement une plage** : CTA visible dans les 2 fiches (`ChasseDetail` + `BeachSheetComic`) → `sg_my_beach` → séries 7 jours RÉELLES débloquées pour cette plage uniquement (badge « ★ Ma plage · offerts »). Le CTA premium bascule sur « TOUTES LES PLAGES + ALERTES » (funnel préservé).
+- **Daily return loop** : snapshot statut/jour (`sg_my_snap`) + marqueur de changement (`sg_my_changed`) — effet React déterministe, jamais écrasé par un re-render.
+- Rollback global free-forecast : `?freefc=0`.
+
+**Tests** : `npm run build` ✅ (37.3 Ko gzip ≤210) · contract 24/24 ✅ · E2E `tests/e2e/ma-plage.spec.ts` 4/4 ✅ · `ux-smoke.mjs` 4 tokens ✅ · `php -l` OK. (Les 2 échecs `run-tests.cjs` restants sont des fichiers préexistants dans `.claude/worktrees/`, hors périmètre.)
+
 ## 2026-09-01 · Sprint #26 — Kill FTP + Deploy Live Only
 
 **Objectifs atteints** :

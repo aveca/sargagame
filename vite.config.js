@@ -199,6 +199,7 @@ export default defineConfig({
             'api/stripe-config.php',
             'api/_deploy-secret.php',
             'api/_deploy.php',
+            'api/track-open.php',
           ]
           for (const rel of secretRel) {
             const p = resolve(outDir, rel)

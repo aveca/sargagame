@@ -8,6 +8,9 @@
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
+// Contrat de prévision PARTAGÉ (source unique : scripts/lib/forecast-contract.cjs —
+// utilisé aussi par les tests node). Import namespace : interop CJS/ESM sûre.
+import * as FContract from "../scripts/lib/forecast-contract.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
@@ -2516,16 +2519,10 @@ function AbDebug(){
  */
 function statusFromAfai(afai){return afai<.15?"clean":afai<.40?"moderate":"avoid"}
 
-function generateForecast(afai,lang="fr"){
-  const LL=T[lang]||T.fr,now=new Date()
-  return Array.from({length:7},(_,i)=>{
-    const d=new Date(now);d.setDate(d.getDate()+i)
-    const dayName=i===0?LL.today:i===1?LL.tomorrow:LL.days[d.getDay()]
-    const v=Math.sin(i*.8+afai*10)*.15
-    const a=Math.max(0,Math.min(1,afai+v))
-    return{day:dayName,date:d.toISOString().slice(0,10),afai:Math.round(a*100)/100,status:statusFromAfai(a)}
-  })
-}
+// [SUPPRIMÉ 2026-09-02 — moat honnêteté] generateForecast(afai,lang) fabriquait une
+// oscillation Math.sin déguisée en prévision 7 jours réelle quand la série était
+// absente. Supprimé : une prévision absente s'affiche comme « indisponible »,
+// jamais comme des données satellite. Voir forecast-contract.cjs (série vide = []).
 
 function satImg(lat,lng,size=280){
   const p=.006
@@ -4412,7 +4409,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -4433,8 +4430,9 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
     let w=(sargId&&sargData?.weekly?.[sargId])||sargData?._enrichedWeekly?.[`_interp_${beach.id}`]||null
     let fc=w?.forecast||null
-    if(!fc)fc=generateForecast(beach?.afai,lang)
-    return fc
+    // Pas de série réelle → null (la fiche affiche « Prévision indisponible »,
+    // jamais de courbe fabriquée — moat honnêteté, sprint data-integrity 2026-09-02).
+    return fc||null
   },[beach?.id,sargData,forecastProp,lang])
 
   const _satStatus=beach?.status||"_loading"
@@ -4519,11 +4517,17 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
   if(!beach)return null
   const isFav=favorites&&favorites.includes(beach.id)
-  const fcDays=(forecast||[]).slice(0,7)
+  // ── « Ma plage » (free tier) : l'utilisateur suit GRATUITEMENT cette plage → sa
+  //    prévision 7 jours est débloquée via forecast-beach.php (donnée 100 % réelle,
+  //    identique à la série premium — même fichier _private/forecast-full.json).
+  //    Premium = multi-plages/alertes/historique ; le suivi d'UNE plage reste gratuit.
+  const free7=!isPremium&&isMyBeach&&Array.isArray(freeForecast)&&freeForecast.length>=2
+  const fcDays=((free7?freeForecast:forecast)||[]).slice(0,7)
   // Gating J+2→J+7 : la prévision publique ne porte que J+0/J+1. Le header annonce
   // « 7 jours » → pour le NON-premium on complète avec des barres CADENAS NEUTRES
   // (status _loading, déjà floutées car i>0) ; jamais de couleur/valeur fabriquée.
-  if(!isPremium&&fcDays.length>0&&fcDays.length<7){
+  // (Une plage suivie gratuitement = free7 → série déjà complète, pas de padding.)
+  if(!isPremium&&!free7&&fcDays.length>0&&fcDays.length<7){
     const _DOW=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]
     const _realLen=fcDays.length
     const _last=fcDays[_realLen-1]
@@ -4661,14 +4665,29 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
         </div>
 
-        {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
+        {/* PRÉVISIONS 7 j — wish : aujourd'hui visible, le reste FLOUTÉ/verrouillé pour
+             non-premium — SAUF « Ma plage » (free7 : série réelle 7 j offerte au suivi). */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
             <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
-            {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
+            {free7
+              ? <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.clean,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}>★ {_t(lang,"MA PLAGE · GRATUIT","MY BEACH · FREE","MI PLAYA · GRATIS")}</span>
+              : !isPremium&&fcDays.length>0&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
           </div>
+          {/* État honnête : pas de série → « indisponible » explicite, JAMAIS de
+              barres fabriquées (moat). Couvre : plage sans couverture forecast,
+              donnée périmée supprimée, forecast-beach.php 404/503. */}
+          {fcDays.length===0?(
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"13px 14px",borderRadius:12,border:`2.5px dashed ${COMIC.ink}`,background:"rgba(13,11,20,.05)"}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+              <span style={{font:"700 12px/1.4 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,
+                "La prévision n'est pas encore disponible pour cette plage.",
+                "The forecast is not available yet for this beach.",
+                "El pronóstico aún no está disponible para esta playa.")}</span>
+            </div>
+          ):(
           <div style={{display:"flex",gap:6,position:"relative"}}>
-            {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
+            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>0;return(
               <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
                 flex:1,
                 textAlign:"center",
@@ -4689,8 +4708,31 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
                 }}/>
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
-            {!isPremium&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+            {!isPremium&&!free7&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
+          )}
+
+          {/* ── « SUIVRE CETTE PLAGE » — la clé du free tier (1 plage suivie, gratuite).
+              Tap → devient « Ma plage » (persistée) + sa prévision 7 j se débloque au
+              prochain render + elle remonte en tête de l'accueil demain. Ne touche PAS
+              au CTA premium (funnel préservé) : c'est un bouton secondaire. */}
+          {onFollowBeach&&!isMyBeach&&(
+            <button type="button" onClick={()=>{trk("sg_follow_beach",{beach_id:beach.id});onFollowBeach(beach.id)}}
+              style={{width:"100%",marginTop:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,boxShadow:`3px 3px 0 ${COMIC.ink}`,background:"#fff",color:COMIC.ink,font:"800 14px/1.15 'Bricolage Grotesque'",cursor:"pointer"}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 3v2M12 19v2M4.2 5.6 6.3 7.7M17.7 16.3l2.1 2.1M3 12h2M19 12h2M4.2 18.4l2.1-2.1M17.7 7.7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg>
+              {_t(lang,"Suivre gratuitement cette plage","Follow this beach for free","Seguir esta playa gratis")}
+            </button>
+          )}
+          {isMyBeach&&!isPremium&&!free7&&freeForecast===undefined&&fcDays.length>0&&(
+            <div style={{marginTop:10,font:"700 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center"}}>
+              {_t(lang,"★ Ma plage — prévision 7 j en cours de chargement…","★ My beach — loading 7-day forecast…","★ Mi playa — cargando pronóstico 7 días…")}
+            </div>
+          )}
+          {isMyBeach&&!isPremium&&freeForecast===null&&fcDays.length>0&&(
+            <div style={{marginTop:10,font:"700 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center"}}>
+              {_t(lang,"★ Ma plage — la prévision complète n'est pas disponible pour cette plage.","★ My beach — the full forecast is not available for this beach.","★ Mi playa — el pronóstico completo no está disponible para esta playa.")}
+            </div>
+          )}
         </div>
 
         {/* Plan B — où aller maintenant (avoid/moderate) */}
@@ -4755,8 +4797,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const forecast=useMemo(()=>{
     if(!beach)return null
     let fc=weeklyData?.forecast||null
-    // 3. Math.sin fallback (should not happen with 20 sentinels)
-    if(!fc) fc=generateForecast(beach.afai,lang)
+    // Pas de fallback Math.sin (moat honnêteté, sprint data-integrity 2026-09-02).
+    // Série absente → null → la fiche affiche « Prévision indisponible ».
     // 4. Blend community reports into forecast when terrain says worse
     if(fc&&beach?._communityOverride){
       const RANK={clean:0,moderate:1,avoid:2}
@@ -11455,6 +11497,12 @@ export default function App(){
     return null
   })
   const[showPicker,setShowPicker]=useState(false)
+  // ── « MA PLAGE » free tier — prévision 7 jours réelle (forecast-beach.php) pour LA
+  //    plage suivie gratuitement. myBeachFc : série normalisée 7 j | null (pas chargée/
+  //    indisponible). Cache localStorage par jour (la série est quotidienne) → 0 requête
+  //    réseau aux retours dans la journée. Jamais de fabrication : 404/503 → null. ──
+  // undefined = chargement inconnu · null = réellement indisponible · tableau = série prête
+  const[myBeachFc,setMyBeachFc]=useState(undefined)
   const[showPremium,setShowPremium]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
@@ -13311,6 +13359,91 @@ useEffect(()=>{
     return allBeaches.find(b=>b.id===myBeachId)||null
   },[myBeachId,allBeaches])
 
+  // ── FREE 7 JOURS « MA PLAGE » (sprint data/UX 2026-09-02) ───────────────────────
+  // Free tier = utilité quotidienne : 1 plage suivie + sa prévision 7 j RÉELLE.
+  // Source : forecast-beach.php (une seule plage, rate-limité) ; sur MQ/GP legacy les
+  // clés serveur sont les ids sentinelle (BEACH_TO_SARG), ailleurs l'id plage direct.
+  // Plage NON sentinelle (MQ/GP) → repli honnête : série INTERPOLÉE déjà calculée au
+  // bootstrap (_enrichedWeekly, flag _interp — affichée avec sa mention « estimé »).
+  // Cache localStorage par jour → 0 requête aux retours intra-journée.
+  // JAMAIS de fabrication : API down/404 → myBeachFc=null → état « indisponible ».
+  // Rollback : ?freefc=0 → pas d'appel, le floutage premium historique revient.
+  const FREE_FC_OFF=(()=>{try{return /[?&]freefc=0/.test(window.location.search)}catch(_){return false}})()
+  useEffect(()=>{
+    if(!myBeachId||isPremium||FREE_FC_OFF){setMyBeachFc(undefined);return}
+    const dayKey=FContract.localDayKey()
+    const cacheKey=`sg_myfc_${myBeachId}_${dayKey}`
+    let dead=false
+    try{
+      const raw=localStorage.getItem(cacheKey)
+      if(raw){const n=FContract.normalizeForecast(JSON.parse(raw));if(n.length){setMyBeachFc(n);return}}
+    }catch(_){}
+    setMyBeachFc(undefined)
+    // Id serveur : mq/gp legacy = sentinelles (BEACH_TO_SARG), nouvelles régions = id direct
+    const serverId=IS_NEW_REGION?myBeachId:(BEACH_TO_SARG[myBeachId]||null)
+    const _interpFallback=()=>{
+      // Repli honnête : série interpolée (plages MQ/GP hors sentinelle) — 100 % issue
+      // de la donnée satellite voisine, marquée _interp, jamais fabriquée.
+      try{
+        const w=sargData&&sargData._enrichedWeekly&&sargData._enrichedWeekly[`_interp_${myBeachId}`]
+        const n=w&&FContract.normalizeForecast(w.forecast)
+        if(!dead)setMyBeachFc(n&&n.length?n:null)
+      }catch(_){if(!dead)setMyBeachFc(null)}
+    }
+    if(!serverId){_interpFallback();return}
+    fetch(`/api/copernicus/forecast-beach.php?beach=${encodeURIComponent(serverId)}`,{cache:"no-store"})
+      .then(r=>r.ok?r.json():null)
+      .then(j=>{
+        if(dead)return
+        const n=j&&j.ok&&Array.isArray(j.forecast)?FContract.normalizeForecast(j.forecast):[]
+        if(n.length){setMyBeachFc(n);try{localStorage.setItem(cacheKey,JSON.stringify(j.forecast))}catch(_){}}
+        else _interpFallback()
+      })
+      .catch(()=>{if(!dead)_interpFallback()})
+    return()=>{dead=true}
+  },[myBeachId,isPremium,sargData])
+
+  // ── DAILY RETURN LOOP : snapshot du statut de MA PLAGE par jour → détection
+  //    « la situation a changé depuis hier » au retour du lendemain. Stockage local,
+  //    zéro backend, 100 % donnée réelle (statut du bootstrap). useEffect+state (pas un
+  //    memo à effet de bord) : la détection est figée PAR JOUR via sg_my_changed — un
+  //    re-render ne peut pas l'effacer. ──
+  const[myBeachChange,setMyBeachChange]=useState(null)
+  useEffect(()=>{
+    if(!myBeach||typeof myBeach.status!=="string")return
+    let dead=false
+    const todayKey=FContract.localDayKey()
+    let prev=null
+    try{const raw=localStorage.getItem("sg_my_snap");prev=raw?JSON.parse(raw):null}catch(_){}
+    if(!prev||prev.id!==myBeach.id){
+      // Premier passage sur cette plage (ou changement de plage suivie) : pose le snapshot.
+      try{localStorage.setItem("sg_my_snap",JSON.stringify({id:myBeach.id,day:todayKey,status:myBeach.status}));localStorage.removeItem("sg_my_changed")}catch(_){}
+      setMyBeachChange(null)
+      return()=>{dead=true}
+    }
+    if(prev.day!==todayKey){
+      // Nouveau jour : compare hier → aujourd'hui UNE fois, puis écrit le snapshot du jour.
+      const diff=FContract.dailyChange(prev,myBeach.status,todayKey)
+      try{
+        if(diff&&diff.changed)localStorage.setItem("sg_my_changed",`${todayKey}|${diff.from}|${diff.to}`)
+        else localStorage.removeItem("sg_my_changed")
+        localStorage.setItem("sg_my_snap",JSON.stringify({id:myBeach.id,day:todayKey,status:myBeach.status}))
+      }catch(_){}
+      if(!dead)setMyBeachChange(diff)
+      return()=>{dead=true}
+    }
+    // Même jour : le marqueur du matin (s'il existe) garde le chip toute la journée.
+    let c=null
+    try{c=localStorage.getItem("sg_my_changed")}catch(_){}
+    if(c&&c.indexOf(todayKey+"|")===0){
+      const parts=c.split("|")
+      setMyBeachChange({changed:true,from:parts[1]||prev.status,to:parts[2]||myBeach.status})
+    }else{
+      setMyBeachChange({changed:false,from:prev.status,to:myBeach.status})
+    }
+    return()=>{dead=true}
+  },[myBeach&&myBeach.id,myBeach&&myBeach.status])
+
   // ── Brief du matin : data dérivée d'une plage VEDETTE (myBeach → 1er favori → 1re plage scorée),
   //    100 % data-driven (0 fabrication) : verdict/score/H2S/meilleur-jour/Plan-B/fraîcheur RÉELS.
   //    H2S = même repli honnête que H2SBadge ; meilleur jour = min afai du forecast (null si absent) ;
@@ -14530,7 +14663,10 @@ useEffect(()=>{
                 onPremiumClick={openPremium} isPremium={isPremium}
                 sargData={sargData} userPos={userPos} forecast={_fc} track={track}
                 communityReports={communityReports} onRequestGeo={requestGeo}
-                onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}/>
+                onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}
+                isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
+                onFollowBeach={onPickBeach}
+                freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}/>
             </ErrBound>
           )
         })()}
@@ -14802,6 +14938,7 @@ useEffect(()=>{
                   onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
                   previewBeach={previewBeachObj}
                   onAccess={()=>{ if(!ACCOUNT_OFF){openAccount("map");return} openAccessCheck("map") }} onEnableNotif={()=>{ if(!ACCOUNT_OFF){toggleAlerts("map");return} loadPushNow("map") }} alertsOn={!ACCOUNT_OFF?alertsOn:null}
+                  myBeachInfo={myBeach?{beach:myBeach,change:myBeachChange,freeForecast:myBeachFc}:null}
                    onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
               </>
             </Suspense></ErrBound>
@@ -14835,6 +14972,9 @@ useEffect(()=>{
                   onPremium={undefined}
                   onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
                   onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
+                  isMyBeach={!!myBeachId&&myBeachId===comicBeach.id}
+                  onFollowBeach={onPickBeach}
+                  freeForecast={myBeachId===comicBeach.id?myBeachFc:null}
                   communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
                 </Suspense>
           </ErrBound>

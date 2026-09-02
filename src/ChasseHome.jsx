@@ -490,12 +490,18 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
   )
 }
 
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={},isMyBeach=false,onFollowBeach=null,freeForecast=null}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
   const fc7=useMemo(()=>fc7On()?resolveForecast(beach,sargData):null,[beach,sargData])
+  // ── « MA PLAGE » free tier : plage suivie GRATUITEMENT → ses 7 jours se débloquent
+  //    avec la série RÉELLE de forecast-beach.php (même source que le premium).
+  //    free7 → le strip s'affiche comme chez un payant. Premium garde la valeur :
+  //    multi-plages, comparaison, alertes, historique. Rollback global : ?freefc=0 côté App. ──
+  const free7=!isPremium&&isMyBeach&&Array.isArray(freeForecast)&&freeForecast.length>=2
+  const fcUi=free7?freeForecast:fc7
   const fcTrendKey=useMemo(()=>fc7?fcTrend(fc7):"alert",[fc7])
   const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
@@ -615,26 +621,49 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
-        {v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+        {v2Enabled&&!isPremium&&!free7&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
+        {/* « Ma plage » suivie : ses 7 jours sont déjà là, gratuitement. Le CTA premium
+            pivote sur la vraie valeur restante : TOUTES les plages + alertes. */}
+        {v2Enabled&&!isPremium&&free7&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta",followed:1})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {_t({fr:"TOUTES LES PLAGES + ALERTES →",en:"ALL BEACHES + ALERTS →",es:"TODAS LAS PLAYAS + ALERTAS →"})}
+        </button>}
         <H2sNote status={beach.status} lang={lang}/>
+
+        {/* ── « SUIVRE CETTE PLAGE » — free tier : 1 plage offerte (prévision 7 j + carte
+            d'accueil + « ça a changé » le lendemain). Secondaire au CTA premium (funnel
+            préservé) : c'est la valeur gratuite quotidienne, pas un paywall. ── */}
+        {onFollowBeach&&(
+          isMyBeach ? (
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"2px 0 10px",padding:"9px 12px",borderRadius:12,border:"2px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14",background:"#1EC8B0",color:"#0d0b14",font:"800 12.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif"}}>
+              ★ {_t({fr:"Ma plage — suivie, 7 jours offerts",en:"My beach — followed, 7 days free",es:"Mi playa — seguida, 7 días gratis"})}
+            </div>
+          ) : (
+            <button type="button" onClick={()=>{ if(track)try{track("sg_follow_beach",{beach_id:beach.id,via:"chasse_detail"})}catch(_){}; onFollowBeach(beach.id) }}
+              style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"2px 0 10px",padding:"12px 14px",borderRadius:12,border:"2.5px solid #0d0b14",boxShadow:"3px 3px 0 #0d0b14",background:"#fff",color:"#0d0b14",font:"800 14px/1.15 'Bricolage Grotesque',system-ui,sans-serif",cursor:"pointer"}}>
+              <span aria-hidden="true">★</span>
+              {_t({fr:"Suivre gratuitement cette plage",en:"Follow this beach for free",es:"Seguir esta playa gratis"})}
+            </button>
+          )
+        )}
 
         {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE
             (teinte du statut + cadenas + confiance), calqué sur la frontière de ForecastChart.
             Plage non couverte ou ?fc7=0 → simple cadenas (fallback honnête, inchangé). */}
-        {fc7&&fc7.length ? (
+        {fcUi&&fcUi.length ? (
           <div className="lc-detail-fc">
-            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
+            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}
+              {free7&&<span style={{marginLeft:8,font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".06em",textTransform:"uppercase",background:"#1EC8B0",color:"#0d0b14",border:"1.5px solid #0d0b14",borderRadius:999,padding:"3px 7px",verticalAlign:"2px"}}>{_t({fr:"★ Ta plage · offerts",en:"★ Your beach · free",es:"★ Tu playa · gratis"})}</span>}</div>
             <div className="lc-fc-cap">{fcConfJ1!=null
               ? _t({fr:`7 jours, sans trou. Plus on s'éloigne, moins on est sûr — on te le dit. ${fcConfJ1}% pour demain.`,en:`7 days, no blanks. The further out, the less sure — and we tell you. ${fcConfJ1}% for tomorrow.`,es:`7 días, sin huecos. Cuanto más lejos, menos seguros — y te lo decimos. ${fcConfJ1}% para mañana.`})
               : _t({fr:"7 jours, sans trou — estimés jour par jour.",en:"7 days, no blanks — estimated day by day.",es:"7 días, sin huecos — estimados día a día."})}</div>
-            <div className="lc-detail-fc-row" role={isPremium?undefined:"button"} tabIndex={isPremium?undefined:0}
-              aria-label={isPremium?undefined:_t({fr:"Débloquer les prévisions 7 jours",en:"Unlock the 7-day forecast",es:"Desbloquear el pronóstico de 7 días"})}
-              onClick={isPremium?undefined:openFc}
-              onKeyDown={isPremium?undefined:((e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openFc()}})}>
+            <div className="lc-detail-fc-row" role={(isPremium||free7)?undefined:"button"} tabIndex={(isPremium||free7)?undefined:0}
+              aria-label={(isPremium||free7)?undefined:_t({fr:"Débloquer les prévisions 7 jours",en:"Unlock the 7-day forecast",es:"Desbloquear el pronóstico de 7 días"})}
+              onClick={(isPremium||free7)?undefined:openFc}
+              onKeyDown={(isPremium||free7)?undefined:((e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openFc()}})}>
               {Array.from({length:7}).map((_,i)=>{
-                const d=fc7[i]
+                const d=fcUi[i]
                 if(i===0) return (
                   <div key={i} className={`lc-fc-cell s-${v.st} now`}>
                     <span className="lc-fc-day">{_t({fr:"Auj",en:"Now",es:"Hoy"})}</span>
@@ -648,9 +677,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
                 const dv=vof(d.status), far=d.type==="horizon"
                 const conf=d.confidence!=null?Math.round(d.confidence):null
-                if(isPremium) return (
-                  /* PREMIUM : jour débloqué — statut réel coloré, plus de cadenas */
-                  <div key={i} className={`lc-fc-cell s-${dv.st} now${far?" far":""}`}>
+                if(isPremium||free7) return (
+                  /* PREMIUM / « Ma plage » suivi gratuit : jour débloqué — statut réel
+                     coloré (même série que premium), plus de cadenas */
+                  <div key={i} className={`lc-fc-cell s-${dv.st} now${far?" far":""}`} style={d.minR!=null?{position:"relative"}:undefined}>
                     <span className="lc-fc-day">{fcLetter(d,lang)}</span>
                     <span className="lc-fc-dot">{conf!=null?conf:"•"}</span>
                   </div>
@@ -671,8 +701,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               if(off) return null
               return <div className="lc-fc-legend">{_t({fr:"Le chiffre = notre confiance (%) dans l'estimation du jour. Au-delà de J+3, on lit la tendance.",en:"The number = our confidence (%) in that day's estimate. Beyond D+3, we read the trend.",es:"El número = nuestra confianza (%) en la estimación del día. Más allá de D+3, leemos la tendencia."})}</div>
             })()}
-            <div className={"lc-fc-line"+(isPremium||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
+            <div className={"lc-fc-line"+(isPremium||free7||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
               isPremium ? _t({fr:"7 jours débloqués. Si ça bascule avant, on te prévient le matin même.",en:"7 days unlocked. If it turns sooner, we warn you that morning.",es:"7 días desbloqueados. Si cambia antes, te avisamos esa mañana."})
+              : free7 ? _t({fr:"Ta plage, 7 jours offerts. Reviens demain : on recalcule chaque matin au satellite.",en:"Your beach, 7 days on us. Come back tomorrow: we recompute every morning from the satellite.",es:"Tu playa, 7 días gratis. Vuelve mañana: recalculamos cada mañana por satélite."})
               : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — The Watcher watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
               : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. The Watcher warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
               : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
@@ -713,7 +744,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         )}
 
         {!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
-          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+          {free7
+            ? _t({fr:"TOUTES LES PLAGES + ALERTES →",en:"ALL BEACHES + ALERTS →",es:"TODAS LAS PLAYAS + ALERTAS →"})
+            : _t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
         {/* Premium : CTA détail jour-par-jour proéminent (retour julien neveu). onFull
             ouvre la fiche data complète. Flag ?fulldetail=0 → retombe sur l'ancien

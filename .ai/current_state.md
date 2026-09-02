@@ -1,4 +1,52 @@
 ---
+## 2026-09-02 · Agent: coding_agent (OpenCode) · SPRINT DATA+UX+DAILY RETENTION — « Ma plage » FREE TIER + HÉRO + INTÉGRITÉ DATA
+
+### Travail effectué
+- **Résumé 1 ligne** : Audit complet chaîne de données → fake forecasts Math.sin supprimés, contrat partagé créé, endpoint public `forecast-beach.php` (7 j réels, 1 plage) ; homepage « Meilleur choix aujourd'hui » (héro + 2 alternatives), « Ma plage » gratuit (suivi → 7 jours réels débloqués, carte d'accueil, chip « ça a changé depuis hier »). Tests : build ✅ 37.3 Ko, contract 24/24, E2E ma-plage 4/4, ux-smoke 4 tokens ✅, php -l ✅.
+
+### Décisions clés (sprint)
+- **Free tier** : 1 plage suivie + ses 7 jours réels = gratuit (donnée identique au premium, endpoint `forecast-beach.php?beach=<id>` rate-limité 120/h, CORS 5 domaines). Premium = multi-plages/alertes/comparaison (CTA pivote « TOUTES LES PLAGES + ALERTES »).
+- **Audit data** : JSON public = J0/J1 seulement (gate forecast-gate.cjs) ; série complète dans `_private/forecast-full.json`. Data actuellement STALE (33 h sur tout, `stale:true`) — pipeline ERDDAP pas relancé ce jour.
+- **Fake data tuée** : `generateForecast()` (Math.sin) supprimé de `BeachSheetComic` + legacy `BeachSheet` ; `BeachPage.jsx` ne defaulte plus à « clean » sans donnée live.
+- **Contract partagé** : `scripts/lib/forecast-contract.cjs` (normalizeForecast, trendFromDays, dailyChange) — importé par le front (namespace) + tests node.
+
+### Fichiers modifiés
+- `public/api/copernicus/forecast-beach.php` — **NOUVEAU** endpoint public 7 jours / 1 plage
+- `scripts/lib/forecast-contract.cjs` — **NOUVEAU** contrat partagé front+tests
+- `scripts/lib/forecast-contract.test.cjs` — **NOUVEAU** 24 tests contract
+- `tests/e2e/ma-plage.spec.ts` — **NOUVEAU** 4 tests E2E (héro, suivi→7j réels, daily loop, 404 honnête)
+- `src/Sargasses_PROD.jsx` — fake forecast tué, état « prévision indisponible », fetch Ma plage (`?freefc=0` rollback), daily loop, props fiches
+- `src/ChasseHome.jsx` — CTA « Suivre gratuitement cette plage », déblocage 7 j « Ma plage », CTA premium pivoté, strip unlocked sans cadenas
+- `src/WorldMapView.jsx` — héro « Meilleur choix » (`?maphero=0`) + carte « Ma plage » + chip « Ça a changé » (`?mapmy=0`)
+- `src/BeachPage.jsx` — état « Données indisponibles », timestamp réel, pas de « clean » par défaut
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 ✅
+- [x] `check-bundle-budget.cjs` → 37.3 Ko gzip ≤ 210 ✅
+- [x] `php -l` forecast-beach.php + forecast.php ✅
+- [x] contract tests 24/24 ✅ (série vide → [], pas de fabrication ; tendance ; boucle quotidienne)
+- [x] `npx playwright test tests/e2e/ma-plage.spec.ts` → 4/4 ✅
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[] ✅
+- [x] Screenshot mobile vérifié (MA PLAGE + héro séparés, hiérarchie claire) ✅
+- [ ] `run-tests.cjs` : 105/107 — les 2 échecs sont des tests PRÉEXISTANTS dans `.claude/worktrees/` (hors périmètre, non touchés)
+
+### Problèmes restants
+- [ ] Data actuellement STALE (ERDDAP 33 h) — le prochain run `daily-copernicus.yml` (schedule) rafraîchira
+- [ ] `forecast.php` CORS n'inclut pas tulum/barbados (domaines non live — impact nul sur les 5 domaines déployés ; à ajouter si/go-live)
+- [ ] Le héro carte ne s'affiche QUE sur WorldMapView (pas ArchipelView) — par design (WorldMapView = page d'accueil)
+- [ ] E2E « API 404 » couvre le cas erreur ; pas de test plage sentinelles MQ/GP à couverture partielle — comportement repli interpolation, validé contract
+
+### Prochaine action recommandée
+1. `git add -A && git commit -m "feat(sprint-data): Ma plage free tier + héro meilleur choix + intégrité data + forecast-beach.php"` puis `git push origin main` → déclenche `deploy-live.yml` (build + 6 domaines + health-check)
+2. Vérifier post-deploy : héro visible + « Suivre gratuitement » ouvre Ma plage sur prod
+3. Attendre prochain run `daily-copernicus.yml` (schedule) → data fraîche remontera (stale→live)
+
+### Branche / PR
+- Branche : `main` (direct, sprint validé)
+- Commit head : à créer
+- CI : bundle 37.3 Ko ✅, contract 24/24, E2E 4/4, smoke 4/4, php -l ✅
+
+---
 ## 2026-09-01 02:00 UTC · Agent: coding_agent (OpenCode) · SPRINT #26 KILL FTP + DEPLOY LIVE ONLY — 3/3 DONE + BUILD VERIFIED
 
 ### Travail effectué

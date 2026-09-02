@@ -204,6 +204,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 export default function WorldMapView({
   beaches, island, updatedAt, stale=false, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
+  myBeachInfo=null,
 }){
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
@@ -1950,28 +1951,92 @@ export default function WorldMapView({
             </span>
           </div>
           </>)}
-          {/* TOP 3 — MAP VALUE SPRINT #1 — outil décision <10s (score DESC, confidence tie-break) */}
-          {dataReady && beachList.length>=3 && !selected && !emailSent && (()=>{ const top3=[...beachList].filter(b=>b.score!=null && b.days && b.days[day]!=null).sort((a,b)=>{const sd=(b.score||0)-(a.score||0); if(sd!==0) return sd; return (b.conf?.[day]||0)-(a.conf?.[day]||0)}).slice(0,3); if(!top3.length) return null; return (
+          {/* ══ MA PLAGE — rappel quotidien de la plage suivie GRATUITEMENT (daily
+              return loop). Compact : nom + verdict aujourd'hui + demain + chip
+              « situation changée depuis hier » (comparaison réelle snapshot local).
+              Tap → ouvre LA fiche (sa prévision 7 j y est offerte). Rollback ?mapmy=0. ══ */}
+          {(()=>{const myOff=(()=>{try{return /[?&]mapmy=0/.test(window.location.search)}catch(_){return false}})()
+            if(myOff||!myBeachInfo||!myBeachInfo.beach||!rootMode||selected)return null
+            const mb=myBeachInfo.beach, ch=myBeachInfo.change
+            const stToday=mb.status, colT=STATUS_C[stToday]||"#9aa0a8"
+            const tmr=(myBeachInfo.freeForecast&&myBeachInfo.freeForecast[1])||null
+            const stTmr=tmr?tmr.status:null, colTm=STATUS_C[stTmr]||null
+            return (
+            <button type="button" onClick={()=>{try{track&&track("sg_mybeach_card_tap",{beachId:mb.id,changed:ch?!!ch.changed:null})}catch(_){}; onOpenBeach&&onOpenBeach(mb)}}
+              style={{marginTop:9,display:"flex",alignItems:"center",gap:9,pointerEvents:"auto",maxWidth:360,width:"100%",
+                background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"9px 12px",
+                cursor:"pointer",textAlign:"left"}}>
+              <span style={{font:"800 8.5px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:INK,background:"#ffd23f",border:`1.5px solid ${INK}`,borderRadius:6,padding:"4px 6px",flexShrink:0}}>★ {_t(lang,"MA PLAGE","MY BEACH","MI PLAYA")}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <span style={{display:"block",font:"800 13px/1.15 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{mb.name}</span>
+                <span style={{display:"flex",alignItems:"center",gap:6,marginTop:3,font:"700 10.5px/1 'Bricolage Grotesque',sans-serif",color:INK}}>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:4}}><i style={{width:8,height:8,borderRadius:"50%",background:colT,border:`1px solid ${INK}`}}/>{_t(lang,"Auj.","Today","Hoy")} {_t(lang,STATUS_LBL[stToday]?.[0]||"—",STATUS_LBL[stToday]?.[1]||"—",STATUS_LBL[stToday]?.[2]||"—")}</span>
+                  {stTmr&&<><span aria-hidden="true" style={{opacity:.4}}>·</span><span style={{display:"inline-flex",alignItems:"center",gap:4}}><i style={{width:8,height:8,borderRadius:"50%",background:colTm,border:`1px solid ${INK}`}}/>{_t(lang,"Dem.","Tmrrw","Mañ.")} {_t(lang,STATUS_LBL[stTmr]?.[0]||"—",STATUS_LBL[stTmr]?.[1]||"—",STATUS_LBL[stTmr]?.[2]||"—")}</span></>}
+                </span>
+              </span>
+              {ch&&ch.changed&&(
+                <span style={{flexShrink:0,font:"800 9.5px/1.15 'Bricolage Grotesque',sans-serif",color:"#fff",background:"#E8522A",border:`1.5px solid ${INK}`,borderRadius:7,padding:"4px 6px",textTransform:"uppercase",letterSpacing:".03em"}}>
+                  {_t(lang,"Ça a changé ↗","It changed ↗","Cambió ↗")}
+                </span>
+              )}
+            </button>
+            )})()}
+
+          {/* ══ OÙ SE BAIGNER AUJOURD'HUI ? — la PROMESSE produit (réponse <5 s).
+              Sprint data/UX 2026-09-02 : (1) carte HÉROS du meilleur choix — nom,
+              verdict humain, tendance réelle (drift satellite), fraîcheur réelle,
+              CTA explicite — puis (2) 2 alternatives compactes. 100 % data réelle
+              (tri score/confidence, drift du weekly public) ; jamais de plage
+              recommandée par défaut. Ancien strip TOP3 conservé en forme minimale
+              pour les alternatives. Rollback ?maphero=0 → bloc masqué. ══ */}
+          {(()=>{try{if(/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
+          if(!dataReady||beachList.length<3||selected||emailSent)return null
+          const ranked=[...beachList].filter(b=>b.score!=null&&b.days&&b.days[day]!=null)
+            .sort((a,b)=>{const sd=(b.score||0)-(a.score||0);if(sd!==0)return sd;return (b.conf?.[day]||0)-(a.conf?.[day]||0)})
+          if(!ranked.length)return null
+          const best=ranked[0],alts=ranked.slice(1,3)
+          const bst=best.days[day],bcol=STATUS_C[bst]||"#9aa0a8"
+          const bd=forecastByBeach&&forecastByBeach[best.id]
+          const drift=bd?bd.drift:null
+          const driftT=drift==="up"?_t(lang,"↗ risque en hausse","↗ risk rising","↗ riesgo al alza")
+            :drift==="down"?_t(lang,"↘ en baisse","↘ improving","↘ a la baja")
+            :drift?_t(lang,"→ stable","→ stable","→ estable"):null
+          const fresh=updatedAt?_t(lang,`Données satellite il y a ${fmtFresh(updatedAt)}`,`Satellite data ${fmtFresh(updatedAt)} ago`,`Datos satélite hace ${fmtFresh(updatedAt)}`):null
+          const verdict=bst==="clean"?_t(lang,"Faible risque de sargasses","Low sargassum risk","Riesgo bajo de sargazo")
+            :bst==="moderate"?_t(lang,"Risque modéré de sargasses","Moderate sargassum risk","Riesgo moderado de sargazo")
+            :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
+          const dayQ=_t(lang,"aujourd'hui","today","hoy")
+          return (
           <div style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
-            <div style={{display:"flex",alignItems:"center",gap:6,padding:"0 2px"}}>
-              <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}>🏆 {_t(lang,"Meilleures plages aujourd’hui","Best beaches today","Mejores playas hoy")}</span>
-            </div>
-            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:2,scrollbarWidth:"none"}}>
-              {top3.map((b,i)=>{
-                const sc=Math.round(b.score); const st=b.days[day]; const col=STATUS_C[st]||"#9aa0a8";
-                return (
-                <button key={b.id} type="button" onClick={()=>{ try{track&&track("sg_best_beach_click",{beachId:b.id,rank:i+1})}catch(_){}; onOpenBeach&&onOpenBeach(b)}}
-                  style={{flex:"1 1 0",minWidth:108,display:"flex",flexDirection:"column",alignItems:"flex-start",gap:4,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`2.5px 2.5px 0 ${INK}`,borderRadius:12,padding:"8px 10px",cursor:"pointer",textAlign:"left"}}>
-                  <span style={{font:"800 10px/1 'Bricolage Grotesque',sans-serif",color:"#6b6478"}}>#{i+1}</span>
-                  <span style={{font:"800 12px/1.1 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>{b.name}</span>
-                  <span style={{display:"flex",alignItems:"center",gap:5}}>
-                    <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minWidth:26,padding:"2px 5px",borderRadius:6,background:col,color:"#fff",font:"800 11px/1 'Bricolage Grotesque',sans-serif",border:`1px solid ${INK}`}}>{sc}</span>
-                    <span style={{width:7,height:7,borderRadius:"50%",background:col,border:`1px solid ${INK}`}}/>
-                    <span style={{font:"700 10px/1 'Bricolage Grotesque',sans-serif",color:INK,textTransform:"uppercase"}}>{_t(lang,STATUS_LBL[st]?.[0]||st,STATUS_LBL[st]?.[1]||st,STATUS_LBL[st]?.[2]||st)}</span>
-                  </span>
-                </button>
-              )})}
-            </div>
+            <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}>🏆 {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
+            {/* Héros : LE choix du jour */}
+            <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}
+              style={{display:"flex",alignItems:"center",gap:11,background:"#fdf6e3",border:`3px solid ${INK}`,boxShadow:`4px 4px 0 ${INK}`,borderRadius:14,padding:"11px 13px",cursor:"pointer",textAlign:"left"}}>
+              <span style={{flexShrink:0,width:44,height:44,borderRadius:12,background:bcol,border:`2px solid ${INK}`,display:"flex",alignItems:"center",justifyContent:"center",font:"800 17px/1 'JetBrains Mono',monospace",color:"#fff",textShadow:"0 1px 2px rgba(0,0,0,.4)"}}>{Math.round(best.score)}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <span style={{display:"block",font:"800 15px/1.1 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{best.name}</span>
+                <span style={{display:"flex",alignItems:"center",gap:6,marginTop:3,font:"700 11px/1.2 'Bricolage Grotesque',sans-serif",color:INK}}>
+                  <i style={{width:8,height:8,borderRadius:"50%",background:bcol,border:`1px solid ${INK}`,flexShrink:0}}/>
+                  {verdict}{driftT&&<>&nbsp;·&nbsp;<b>{driftT}</b></>}
+                </span>
+                {fresh&&<span style={{display:"block",font:"600 9.5px/1.2 'Bricolage Grotesque',sans-serif",color:"#6b6478",marginTop:3}}>{fresh}</span>}
+              </span>
+              <span style={{flexShrink:0,font:"800 11.5px/1 'Bricolage Grotesque',sans-serif",color:INK,background:"#ffd23f",border:`2px solid ${INK}`,borderRadius:9,padding:"7px 9px",boxShadow:`2px 2px 0 ${INK}`,whiteSpace:"nowrap"}}>{_t(lang,"Voir →","See it →","Ver →")}</span>
+            </button>
+            {/* Alternatives immédiates — pas de clic-per-clic pour comparer */}
+            {alts.length>0&&(
+              <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:2,scrollbarWidth:"none"}}>
+                {alts.map((b,i)=>{
+                  const sc=Math.round(b.score);const st=b.days[day];const col=STATUS_C[st]||"#9aa0a8";
+                  return (
+                  <button key={b.id} type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:b.id,rank:i+2})}catch(_){}; onOpenBeach&&onOpenBeach(b)}}
+                    style={{flex:"1 1 0",minWidth:108,display:"flex",alignItems:"center",gap:7,background:"rgba(253,246,227,.88)",border:`2.5px solid ${INK}`,boxShadow:`2.5px 2.5px 0 ${INK}`,borderRadius:12,padding:"8px 10px",cursor:"pointer",textAlign:"left"}}>
+                    <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",minWidth:26,height:22,borderRadius:6,background:col,color:"#fff",font:"800 11px/1 'Bricolage Grotesque',sans-serif",border:`1px solid ${INK}`}}>{sc}</span>
+                    <span style={{font:"800 12px/1.1 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{b.name}</span>
+                  </button>
+                )})}
+              </div>
+            )}
           </div>
           )})()}
 

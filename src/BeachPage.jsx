@@ -28,7 +28,7 @@ export default function BeachPage() {
         if (sarg && Array.isArray(sarg.levels)) {
           live = sarg.levels.find(l => l.id === found.id) || sarg.levels.find(l => getCanonicalSlug(found) === l.id)
         }
-        setBeach({ ...found, live })
+        setBeach({ ...found, live, __updatedAt: sarg && sarg.updatedAt ? sarg.updatedAt : null })
         setStatus("found")
         try { track("sg_beach_page_view", { beach_id: found.id }) } catch {}
       } else {
@@ -50,9 +50,13 @@ export default function BeachPage() {
     )
   }
 
+  // HONNÊTETÉ (moat) : le statut vient UNIQUEMENT de la donnée live ERDDAP.
+  // `beach.status` dans regions/*.json est un placeholder de config terminologique —
+  // JAMAIS affiché comme un verdict. Pas de live → « indisponible », pas « clean » inventé.
   const score = beach.live && typeof beach.live.score === "number" ? beach.live.score : null
-  const st = (beach.live && beach.live.status) || beach.status || "clean"
-  const color = st==="clean"?"#22C55E":st==="moderate"?"#B87A00":"#E8522A"
+  const st = (beach.live && beach.live.status) || null
+  const color = st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
+  const updatedAt = beach.__updatedAt || null
 
   return (
     <div style={{position:"fixed",inset:0,background:"#0d1117",color:"#fff",overflow:"auto",display:"flex",flexDirection:"column",fontFamily:"system-ui"}}>
@@ -64,10 +68,16 @@ export default function BeachPage() {
       <main style={{padding:24,flex:1,display:"flex",flexDirection:"column",gap:20}}>
         <div style={{background:"rgba(255,255,255,.05)",borderRadius:12,padding:20}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontWeight:700,color:color,textTransform:"uppercase"}}>{st}</span>
+            {st
+              ? <span style={{fontWeight:700,color:color,textTransform:"uppercase"}}>{st==="clean"?"Propre":st==="moderate"?"Modéré":"À éviter"}</span>
+              : <span style={{fontWeight:700,color:"#9aa0a8",textTransform:"uppercase"}}>Données temporairement indisponibles</span>}
             {score!=null && <span style={{fontWeight:800}}>{score}/100</span>}
           </div>
-          <p style={{opacity:0.8,marginTop:12}}>Données satellite Copernicus mises à jour 4× par jour. Score 0-100 combinant sargasses, houle, vent et ensoleillement.</p>
+          <p style={{opacity:0.8,marginTop:12}}>
+            {updatedAt
+              ? `Dernière mise à jour : ${new Date(updatedAt).toLocaleString("fr-FR")}. Source : satellite Copernicus (ERDDAP).`
+              : "Source : satellite Copernicus (ERDDAP)."}
+          </p>
         </div>
         <div style={{display:"flex",gap:12}}>
           <a href="/" style={{flex:1,padding:14,borderRadius:10,background:"#FFC72C",color:"#0d1117",fontWeight:800,textAlign:"center",textDecoration:"none"}}>Voir la carte</a>
