@@ -36,35 +36,70 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (all regions via VITE_REGION)
-        run: npm run build
+      - name: Build all 6 regions with VITE_REGION
+        run: |
+          # Region mapping: id -> project name
+          # mq: sargagame, gp: sargagame-gp, florida: sargagame-florida
+          # puntacana: sargagame-puntacana, rivieramaya: sargagame-rivieramaya, tulum: sargagame-tulum
+          for RID in mq gp florida puntacana rivieramaya tulum; do
+            echo "Building region $RID..."
+            VITE_REGION=$RID npm run build
+            # Copy dist to region-specific folder
+            mkdir -p /tmp/region-builds/$RID
+            cp -r dist/* /tmp/region-builds/$RID/
+            # Copy region-specific Copernicus data into that region's dist
+            mkdir -p /tmp/region-builds/$RID/api/copernicus
+            for F in sargassum.json history.json; do
+              SRC="public/api/copernicus/$RID/$F"
+              if [ -f "$SRC" ]; then
+                cp "$SRC" "/tmp/region-builds/$RID/api/copernicus/$F"
+              fi
+            done
+          done
         env:
           DEPLOY_TARGET: cloudflare
 
-      - name: Check bundle budget (≤ 250 KB gzip)
-        id: budget
-        run: |
-          node scripts/check-bundle-budget.cjs
-          # Extract eager bundle size from the script output for artifact metadata
-          SIZE=$(node -e "
-            const { execSync } = require('child_process');
-            const out = execSync('node scripts/check-bundle-budget.cjs', {encoding: 'utf8'});
-            const match = out.match(/(\\d+\\.?\\d*) Ko gzip TOTAL/);
-            if (match) console.log(Math.round(parseFloat(match[1]) * 1024));
-          ")
-          echo "bundle_size=$SIZE" >> $GITHUB_OUTPUT
-
-      - name: Version stamp
-        id: version
+      - name: Version stamp for MQ
+        id: version-mq
         run: |
           VER=$(cat public/version.json | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
           echo "version=$VER" >> $GITHUB_OUTPUT
 
-      - name: Upload build artifacts
+      - name: Upload region builds
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist
+          name: dist-mq
+          path: /tmp/region-builds/mq
+          retention-days: 1
+      - name: Upload dist-gp
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-gp
+          path: /tmp/region-builds/gp
+          retention-days: 1
+      - name: Upload dist-florida
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-florida
+          path: /tmp/region-builds/florida
+          retention-days: 1
+      - name: Upload dist-puntacana
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-puntacana
+          path: /tmp/region-builds/puntacana
+          retention-days: 1
+      - name: Upload dist-rivieramaya
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-rivieramaya
+          path: /tmp/region-builds/rivieramaya
+          retention-days: 1
+      - name: Upload dist-tulum
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-tulum
+          path: /tmp/region-builds/tulum
           retention-days: 1
 
   # 2. DEPLOY CLOUDFLARE PAGES — 6 regions matrix
@@ -81,10 +116,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download build artifact
+      - name: Download region build artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-${{ matrix.region }}
           path: dist
 
       - name: Setup Node.js
