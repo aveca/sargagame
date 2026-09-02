@@ -160,6 +160,30 @@ function writePrivateForecastFile(baseDir, privateForecasts, updatedAt) {
     JSON.stringify({ updatedAt, weekly: privateForecasts }),
     'utf-8'
   )
+
+  // ── FREE TIER « MA PLAGE » (sprint 2026-09-02) : fichiers statiques PUBLICS —
+  // 1 plage = 1 fichier (<baseDir>/fc7/<id>.json) avec sa série 7 jours RÉELLE.
+  // Pourquoi statique et pas PHP : en prod les domaines sont Cloudflare Pages, où le
+  // Worker sg-payments intercepte /api/copernicus/forecast* (gates premium) et le PHP
+  // ne tourne pas. Les statiques passent librement, identiques en local/preview/prod.
+  // Périmètre : LA MÊME série que _private (zéro divergence possible) ; le gratuit reste
+  // « 1 plage à la fois » (un fichier par requête), le bulk reste premium (forecast.php).
+  const fc7Dir = path.join(baseDir, 'fc7')
+  fs.mkdirSync(fc7Dir, { recursive: true })
+  // Purge des plages sorties de couverture (id absent du nouveau run → pas de stalerie)
+  for (const f of fs.readdirSync(fc7Dir)) {
+    if (!f.endsWith('.json')) continue
+    const fid = f.slice(0, -5)
+    if (!privateForecasts[fid]) { try { fs.unlinkSync(path.join(fc7Dir, f)) } catch { /* noop */ } }
+  }
+  for (const [id, fc] of Object.entries(privateForecasts)) {
+    if (!Array.isArray(fc) || fc.length < 2) continue
+    fs.writeFileSync(
+      path.join(fc7Dir, `${id}.json`),
+      JSON.stringify({ ok: true, id, updatedAt, forecast: fc }),
+      'utf-8'
+    )
+  }
 }
 
 // ── Helpers ────────────────────────────────────────────────────────

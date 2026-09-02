@@ -1131,6 +1131,17 @@ Sitemap: https://${domain}/sitemap.xml
       if (fs.existsSync(htSrc)) fs.copyFileSync(htSrc, path.join(outPriv, '.htaccess'))
       else fs.writeFileSync(path.join(outPriv, '.htaccess'), 'Require all denied\n')
     }
+    // Free tier « Ma plage » (2026-09-02) : fc7/ public 1 fichier/plage, série 7 j
+    // réelle. Le purge de dossiers ci-dessus l'a effacé (comme _private) ; on pose
+    // la version RÉGIONALE — sinon forecast-beach ma plage serait 404/étranger.
+    const regFc7 = path.join(regionDataDir, 'fc7')
+    if (fs.existsSync(regFc7)) {
+      const outFc7 = path.join(outCopernicus, 'fc7')
+      fs.mkdirSync(outFc7, { recursive: true })
+      for (const f of fs.readdirSync(regFc7)) {
+        if (f.endsWith('.json')) fs.copyFileSync(path.join(regFc7, f), path.join(outFc7, f))
+      }
+    }
     console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays MQ purgés, banks/grid régionaux si présents, _private/ gaté si présent)`)
   } else {
     console.warn(`   ⚠ pas de public/api/copernicus/${region.id}/sargassum.json — lance d'abord node scripts/fetch-sargassum-live.cjs`)

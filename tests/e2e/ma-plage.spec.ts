@@ -18,6 +18,21 @@ function seriesFor(id: string) {
   return (w[id] || w['grande-anse'] || Object.values(w)[0]) as any[]
 }
 
+// Le frontend sert la série 7 j via le statique /api/copernicus/fc7/<id>.json
+// (Pages) avec fallback forecast-beach.php (FTP). Les tests interceptent les deux.
+async function mockFc7(page: any, fulfill: (id: string) => { status: number; body: unknown }) {
+  await page.route('**/api/copernicus/fc7/*.json', (route: any) => {
+    const m = route.request().url().match(/fc7\/([^/]+)\.json/)
+    const r = fulfill(m ? m[1] : '')
+    route.fulfill({ status: r.status, contentType: 'application/json', body: JSON.stringify(r.body) })
+  })
+  await page.route('**/api/copernicus/forecast-beach.php*', (route: any) => {
+    const id = new URL(route.request().url()).searchParams.get('beach') || ''
+    const r = fulfill(id)
+    route.fulfill({ status: r.status, contentType: 'application/json', body: JSON.stringify(r.body) })
+  })
+}
+
 const FC7_HEAD = 'text=7 PROCHAINS JOURS'
 
 // Les tests simulent des retours « le lendemain » via reload : le service worker
@@ -44,16 +59,8 @@ test.describe('Ma plage — free tier', () => {
   })
 
   test('suivre une plage débloque ses 7 jours réels (sans payer)', async ({ page }) => {
-    // Mock forecast-beach.php avec la VRAIE série du pipeline (prod identique)
-    await page.route('**/api/copernicus/forecast-beach.php*', route => {
-      const url = new URL(route.request().url())
-      const id = url.searchParams.get('beach') || ''
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) }),
-      })
-    })
+    // Mock fc7/statique avec la VRAIE série du pipeline (prod identique)
+    await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
@@ -78,15 +85,7 @@ test.describe('Ma plage — free tier', () => {
   })
 
   test('boucle quotidienne : « ça a changé » depuis hier sur la carte', async ({ page }) => {
-    await page.route('**/api/copernicus/forecast-beach.php*', route => {
-      const url = new URL(route.request().url())
-      const id = url.searchParams.get('beach') || ''
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) }),
-      })
-    })
+    await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
 
     // 1ère visite : suit une plage (pose sg_my_beach + snapshot du jour)
     await page.goto('/', { waitUntil: 'domcontentloaded' })
@@ -122,9 +121,7 @@ test.describe('Ma plage — free tier', () => {
   })
 
   test('API 404 → état honnête, aucune donnée fabriquée', async ({ page }) => {
-    await page.route('**/api/copernicus/forecast-beach.php*', route => {
-      route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ ok: false, reason: 'unknown_beach' }) })
-    })
+    await mockFc7(page, () => ({ status: 404, body: { ok: false, reason: 'unknown_beach' } }))
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })

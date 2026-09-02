@@ -55,6 +55,11 @@ jobs:
                 cp "$SRC" "/tmp/region-builds/$RID/api/copernicus/$F"
               fi
             done
+            # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle)
+            if [ -d "public/api/copernicus/$RID/fc7" ]; then
+              rm -rf "/tmp/region-builds/$RID/api/copernicus/fc7"
+              cp -r "public/api/copernicus/$RID/fc7" "/tmp/region-builds/$RID/api/copernicus/fc7"
+            fi
           done
         env:
           DEPLOY_TARGET: cloudflare
@@ -153,6 +158,12 @@ jobs:
               echo "  ✓ Copied ${{ matrix.region }}/$F"
             fi
           done
+          # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle)
+          if [ -d "public/api/copernicus/${{ matrix.region }}/fc7" ]; then
+            rm -rf "dist/api/copernicus/fc7"
+            cp -r "public/api/copernicus/${{ matrix.region }}/fc7" "dist/api/copernicus/fc7"
+            echo "  ✓ Copied ${{ matrix.region }}/fc7 ($(ls dist/api/copernicus/fc7 | wc -l) plages)"
+          fi
 
       - name: Deploy to Cloudflare Pages
         run: |

@@ -13391,8 +13391,16 @@ useEffect(()=>{
       }catch(_){if(!dead)setMyBeachFc(null)}
     }
     if(!serverId){_interpFallback();return}
-    fetch(`/api/copernicus/forecast-beach.php?beach=${encodeURIComponent(serverId)}`,{cache:"no-store"})
+    // PROD : les domaines sont Cloudflare Pages — le Worker sg-payments intercepte
+    // /api/copernicus/forecast* (gates premium), donc le statique PUBLIC fc7/<id>.json
+    // est la voie nominale (région-correcte, copiée par deploy-live/prepare-ftp).
+    // Fallback PHP pour l'hébergement FTP legacy. Même contrat des deux côtés :
+    // {ok, id, updatedAt, forecast} — même source _private/forecast-full.json.
+    fetch(`/api/copernicus/fc7/${encodeURIComponent(serverId)}.json`,{cache:"no-store"})
       .then(r=>r.ok?r.json():null)
+      .then(j=>j&&Array.isArray(j.forecast)?j:
+        fetch(`/api/copernicus/forecast-beach.php?beach=${encodeURIComponent(serverId)}`,{cache:"no-store"})
+          .then(r=>r.ok?r.json():null).catch(()=>null))
       .then(j=>{
         if(dead)return
         const n=j&&j.ok&&Array.isArray(j.forecast)?FContract.normalizeForecast(j.forecast):[]
