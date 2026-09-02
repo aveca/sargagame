@@ -3,125 +3,15 @@
   "name": "sg-payments",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-19",
-  "routes": [
-    { "pattern": "sargasses-martinique.com/api/mollie*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/widget-token*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/track-*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/copernicus/forecast*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/b2b-*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/create-checkout*", "zone_name": "sargasses-martinique.com" },
-
-    { "pattern": "sargasses-guadeloupe.com/api/mollie*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/widget-token*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/track-*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/copernicus/forecast*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/b2b-*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/create-checkout*", "zone_name": "sargasses-guadeloupe.com" },
-
-    { "pattern": "sargassummiami.com/api/mollie*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/widget-token*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/track-*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/copernicus/forecast*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/b2b-*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/create-checkout*", "zone_name": "sargassummiami.com" },
-
-    { "pattern": "sargassumpuntacana.com/api/mollie*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/widget-token*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/track-*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/copernicus/forecast*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/b2b-*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/create-checkout*", "zone_name": "sargassumpuntacana.com" },
-
-    { "pattern": "sargassumcancun.com/api/mollie*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/widget-token*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/track-*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/copernicus/forecast*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/b2b-*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/create-checkout*", "zone_name": "sargassumcancun.com" },
-
-    { "pattern": "sargazotulum.com/api/mollie*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/widget-token*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/track-*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/copernicus/forecast*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/b2b-*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" },
-
-    // Collecte first-party (DEC-2026-08-27 P2-008b) : intercepte /collect.php AVANT
-    // l'asset statique Pages (GET → 405 sans source, POST → 204).
-    { "pattern": "sargasses-martinique.com/collect.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/collect.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/collect.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/collect.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/collect.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" },
-
-    // SECURITY 2026-08-28: exact routes for remaining PHP files not covered by existing
-    // `api/mollie*`/`api/b2b-*`/`api/track-*` patterns. These files exist in `dist/api/`
-    // (27 php) and would otherwise be served as static source on Pages (200 `application/x-httpd-php`).
-    // With exact routes they are intercepted AVANT Pages and fall through to generic
-    // `path.endsWith('.php') → 404 nosniff` in Worker (no source leak, no secret).
-    // `*.php` wildcard invalide (10022) → exact routes only (7 files ×6 zones =42, <100/zone).
-    { "pattern": "sargasses-martinique.com/api/_diag.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/_ratelimit.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/comps.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/paypal.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/paypal-webhook.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/stripe-webhook.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-martinique.com/api/retry-failed-payment.php", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/_diag.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/_ratelimit.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/comps.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/paypal.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/paypal-webhook.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/stripe-webhook.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargasses-guadeloupe.com/api/retry-failed-payment.php", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/api/_diag.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/_ratelimit.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/comps.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/paypal.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/paypal-webhook.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/stripe-webhook.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassummiami.com/api/retry-failed-payment.php", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/api/_diag.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/_ratelimit.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/comps.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/paypal.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/paypal-webhook.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/stripe-webhook.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumpuntacana.com/api/retry-failed-payment.php", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/api/_diag.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/_ratelimit.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/comps.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/paypal.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/paypal-webhook.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/stripe-webhook.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargassumcancun.com/api/retry-failed-payment.php", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/api/_diag.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/_ratelimit.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/comps.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/paypal.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/paypal-webhook.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/stripe-webhook.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargazotulum.com/api/retry-failed-payment.php", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargasses-martinique.com/b2b*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/b2b*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/b2b*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/b2b*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/b2b*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/b2b*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargasses-martinique.com/unsubscribe*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/unsubscribe*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/unsubscribe*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/unsubscribe*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/unsubscribe*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/unsubscribe*", "zone_name": "sargazotulum.com" },
-    { "pattern": "sargasses-martinique.com/_cron/*", "zone_name": "sargasses-martinique.com" },
-    { "pattern": "sargasses-guadeloupe.com/_cron/*", "zone_name": "sargasses-guadeloupe.com" },
-    { "pattern": "sargassummiami.com/_cron/*", "zone_name": "sargassummiami.com" },
-    { "pattern": "sargassumpuntacana.com/_cron/*", "zone_name": "sargassumpuntacana.com" },
-    { "pattern": "sargassumcancun.com/_cron/*", "zone_name": "sargassumcancun.com" },
-    { "pattern": "sargazotulum.com/_cron/*", "zone_name": "sargazotulum.com" }
-  ],
+  // Routes already live on Cloudflare (stable, set by founder dashboard).
+  // Intentionally NOT re-declared: CLOUDFLARE_API_TOKEN lacks zones Workers
+  // Routes:Edit scope → wrangler fails 10000 on deploy (same convention as
+  // workers/b2b-api/wrangler.toml). Route changes = manual founder action on
+  // the Cloudflare dashboard. Route list frozen 2026-09-02: api/mollie*,
+  // api/widget-token*, api/track-*, api/copernicus/forecast*, api/b2b-*,
+  // api/create-checkout*, collect.php, api/_diag.php / _ratelimit.php /
+  // comps.php / paypal.php / paypal-webhook.php / stripe-webhook.php /
+  // retry-failed-payment.php, b2b*, unsubscribe*, _cron/* — 6 domains.
   "kv_namespaces": [
     { "binding": "TRANSIENTS", "id": "528c05c792e046029a84e2fdb84f4ae6" }
   ],

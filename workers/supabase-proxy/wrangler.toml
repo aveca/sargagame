@@ -2,15 +2,12 @@ name = "supabase-proxy"
 main = "index.js"
 compatibility_date = "2024-01-01"
 
-# Routes for deployed domains (Barbados not yet on Cloudflare)
-routes = [
-  { pattern = "sargasses-martinique.com/api/supabase*", zone_name = "sargasses-martinique.com" },
-  { pattern = "sargasses-guadeloupe.com/api/supabase*", zone_name = "sargasses-guadeloupe.com" },
-  { pattern = "sargassummiami.com/api/supabase*", zone_name = "sargassummiami.com" },
-  { pattern = "sargassumpuntacana.com/api/supabase*", zone_name = "sargassumpuntacana.com" },
-  { pattern = "sargassumcancun.com/api/supabase*", zone_name = "sargassumcancun.com" },
-  { pattern = "sargazotulum.com/api/supabase*", zone_name = "sargazotulum.com" }
-]
+# Routes already live on Cloudflare (stable, set by founder dashboard).
+# Intentionally NOT re-declared: CLOUDFLARE_API_TOKEN lacks zones Workers
+# Routes:Edit scope -> wrangler fails 10000 on deploy (same convention as
+# workers/b2b-api/wrangler.toml). Route changes = manual founder action on
+# the Cloudflare dashboard. Routes frozen 2026-09-02: <domain>/api/supabase*
+# on the 6 live domains.
 
 [vars]
 SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
