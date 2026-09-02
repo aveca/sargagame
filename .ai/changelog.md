@@ -1,5 +1,13 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-02 · Fix prod — fc7 statique (free tier compatible Cloudflare Pages/Workers)
+
+**Problème découvert en validation prod** : les domaines = Cloudflare Pages, le Worker `sg-payments` possède la route `…/api/copernicus/forecast*` sur les 6 domaines → `forecast-beach.php` était intercepté (403 premium). Le PHP ne tourne plus sur ces domaines.
+
+**Fix** : canal statique `fc7/` — la série 7 jours réelle d'une plage = 1 fichier JSON public `api/copernicus[/<région>]/fc7/<id>.json`, écrit par `writePrivateForecastFile` (même source que `_private`, purge orphelins), propagé par `deploy-live.yml` (Pages) et `prepare-ftp.cjs` (FTP). Frontend : fc7 prioritaire, PHP en fallback. `forecast-beach.php` conservé pour l'hébergement FTP.
+
+**+** KPI `sg_ma_plage_return` (visiteur qui revient le lendemain sur sa plage suivie), `workflow_dispatch` sur `daily-copernicus.yml`, test `fc7-alignment.test.cjs` (25/25 — fc7 ≡ série privée, zéro orphelin).
+
 ## 2026-09-02 · Sprint DATA+UX — Free tier « Ma plage » + héro « Où se baigner » + intégrité données
 
 **Audit data end-to-end** (STEP 1/2) :

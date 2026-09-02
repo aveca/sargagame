@@ -1,4 +1,19 @@
 ---
+## 2026-09-02 · Agent: coding_agent (OpenCode) · VALIDATION PROD POST-SPRINT — fc7 statique + pipeline relancé
+
+### Travail effectué (suite sprint DATA+UX)
+- **Blocage prod identifié** : les domaines live = Cloudflare Pages ; le Worker `sg-payments` intercepte `/api/copernicus/forecast*` → ma `forecast-beach.php` était shadowée (403 « Premium required »). PIVOT : canal 100 % statique.
+- **fc7 statique public** : `public/api/copernicus[/<région>]/fc7/<id>.json` — 1 fichier/plage, série 7 j RÉELLE identique à `_private/forecast-full.json`. Écrit par `writePrivateForecastFile` (purge orphelins incluse), bootstrap 229 fichiers commités. `deploy-live.yml` + `prepare-ftp.cjs` copient `fc7/` par région (purge anti-stale).
+- Frontend `Sargasses_PROD.jsx` : fetch `fc7/<id>.json` en priorité, fallback `forecast-beach.php` (utile FTP legacy).
+- **KPI** : event `sg_ma_plage_return` (visiteur qui suit une plage et revient un autre jour) — la mesure de la boucle de rétention.
+- `daily-copernicus.yml` : `workflow_dispatch` ajouté → run manuel lancé (33670373214) pour rafraîchir la donnée stale (33 h).
+
+### Problèmes restants / infra
+- [ ] **daily-copernicus** : les runs schedule se font annuler au timeout 120 min (build 6 régions + FTP lents). Data stale depuis hier. Run manuel en cours → vérifier qu'un commit « chore: update Copernicus data » apparaît.
+- [ ] **deploy-live.yml** : jobs `Deploy Workers` sg-payments + supabase-proxy échouent (Cloudflare API 10000 authentication error sur workers/routes) — PRÉEXISTANT au sprint (run 03:25 aussi KO). Les 6 deploys Pages passent. Action fondateur : vérifier les permissions du token CLOUDFLARE_API_TOKEN.
+- [ ] Vérifier en prod (au prochain deploy) : `/api/copernicus/fc7/grande-anse.json` répond 200 avec la série 7 j, puis héro/suivi/daily loop en vrai.
+
+---
 ## 2026-09-02 · Agent: coding_agent (OpenCode) · SPRINT DATA+UX+DAILY RETENTION — « Ma plage » FREE TIER + HÉRO + INTÉGRITÉ DATA
 
 ### Travail effectué
