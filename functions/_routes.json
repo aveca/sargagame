@@ -3,7 +3,8 @@
   "include": ["/*"],
   "exclude": [
     "/assets/*",
-    "/.well-known/*",
+    "/api/*",
+    "/widget/*",
     "*.js",
     "*.css",
     "*.png",

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 import { createRequire } from 'module'
 import { conditionPages } from './src/lib/conditions-filters.js'
 // Chargé en lazy via createRequire : un import statique fait bundler le module
@@ -66,8 +66,10 @@ const BEACH_TO_SARG = Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k, 
 // Injectée dans le runtime via `define __REGION__` (inclut les plages inline des nouvelles régions).
 let REGION = null
 try {
-  const _rid = process.env.VITE_REGION || process.env.REGION || 'mq'
-  REGION = JSON.parse(readFileSync(resolve(__dirname, `regions/${_rid}.json`), 'utf-8'))
+  const _rid = (process.env.VITE_REGION || process.env.REGION || 'mq').trim()
+  const regionPath = join(__dirname, 'regions', _rid + '.json')
+  console.log('Loading region from:', regionPath)
+  REGION = JSON.parse(readFileSync(regionPath, 'utf-8'))
 } catch (e) {
   console.warn('vite.config.js: région non chargée:', e.message)
 }
