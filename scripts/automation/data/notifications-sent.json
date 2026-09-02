@@ -1,12 +1,4 @@
 {
-  "2026-08-25": [
-    "florida:fl018:clean>moderate",
-    "rivieramaya:rm001:moderate>clean",
-    "rivieramaya:rm011:moderate>clean",
-    "rivieramaya:rm018:moderate>clean",
-    "rivieramaya:rm004:moderate>clean",
-    "rivieramaya:rm020:moderate>clean"
-  ],
   "2026-08-26": [
     "puntacana:pc007:clean>moderate",
     "florida:fl016:moderate>clean",
@@ -61,5 +53,8 @@
     "rivieramaya:rm005:clean>moderate",
     "rivieramaya:rm011:clean>moderate",
     "rivieramaya:rm020:clean>moderate"
+  ],
+  "2026-09-02": [
+    "rivieramaya:rm019:clean>moderate"
   ]
 }
