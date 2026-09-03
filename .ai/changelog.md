@@ -1,5 +1,12 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-03 · Apply tiered — P0 fuite collmatée + quota 1 forecast/j + mur Premium P2
+
+- **P0 sécurité** (`dfef1552`) : `_private/forecast-full.json` retiré du `dist/` Pages (root + 7 régions) dans le plugin `strip-php-secrets` — la fuite bulk (21 Ko × toutes les plages, 7 jours) est close côté origine (origin = 404, vérifié cache-buster). ⚠️ **Le cache edge Cloudflare garde encore la copie obsolète ~7 j** (s-maxage 604800) jusqu'à expiration — le job `purge-cache` de deploy-live échoue (token sans scope Cache Purge) → **action fondateur** : purge manuelle 6 zones OU ajout du scope Cache Purge au token.
+- **P1 quota** (`78854d2e`) : `sg_fc_quota = {day, beachId}` localStorage, consommé UNIQUEMENT au succès du fetch fc7 (`commitUnlock`), jamais au tap fiche. `requestFollow` = point d'entrée unique ; même plage le même jour = gratuit, 2e plage = mur Premium léger (pas de paiement).
+- **P2 analytics** : `sg_fc_free_unlocked` + `sg_fc_premium_blocked` ajoutés à `SG_FUNNEL_EVENTS` ; CTA Premium du ComicDetail désormais câblé (était `undefined` = bug latent : les CTA premium dans la fiche carte étaient morts).
+- Tests : `ma-plage.spec.ts` 6/6 (couverture quota 1re plage / 2e plage / re-visite). Bundle 37.3 Ko inchangé. ux-smoke 4 tokens OK. Vérif prod Playwright : mur visible + cadenas + quota non recompté.
+
 ## 2026-09-03 · Infra fix B+C+A (approbation fondateur) — deploy-live 100% vert
 
 - **B** (`4b919879`) : 4 steps FTP désactivés dans `daily-copernicus.yml` (100 min/run → cause des timeouts 120 min) ; fusion fc7 ajoutée au step Pages (anti-régression « Ma plage ») ; `gh workflow run deploy-live.yml` depuis runs non-full (Pages fraîches à 00/12 UTC) ; `workflow_dispatch:` ajouté à `deploy-live.yml`.

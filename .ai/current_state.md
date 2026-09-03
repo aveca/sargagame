@@ -1,4 +1,14 @@
 ---
+## 2026-09-03 · Agent: coding_agent (OpenCode) · APPLY TIERED — P0 leak fermée + quota + mur Premium (prod vérifié)
+
+- P0 : `vite.config.js` strip `_private/` de dist → bulk forecast 7 j non exposé sur Pages (origin 404, cachebust vérifié). ⚠️ Edge cache conserve la vieille copie ~7 j (purge job KO — token sans Cache Purge) → action fondateur : purge manuelle ou scope+.
+- P1 : quota 1 forecast/j/place via `sg_fc_quota` (consommé au succès du fetch fc7, jamais au tap) ; P2 mur Premium léger sur 2e plage, CTA câblage ComicDetail `onPremium` réparé.
+- Tests : contract 24/24 + ma-plage 6/6 E2E (quota + revisit) + smoke 4 tokens + prod Playwright (mur visible, quota intact, 6 cadenas, badge absent). Bundle 37.3 Ko ≤ 210.
+- Décision produit gravée : carte = live gratuit · ma plage = 7 j gratuit · premium = multi-plages/comparaison/alertes.
+
+**Prochaine session** : confirmer le run schedule daily-copernicus (sans FTP) + vérifier le data refresh Pages ; puis board KPI `sg_fc_free_unlocked` / `sg_ma_plage_return` dès premiers utilisateurs réels.
+
+---
 ## 2026-09-02 → 03 · Agent: coding_agent (OpenCode) · INFRA FIX B+C+A — deploy-live 100% VERT (1re fois)
 
 ### Travail effectué (approbation fondateur reçue)
