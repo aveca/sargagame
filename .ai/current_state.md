@@ -1,4 +1,23 @@
 ---
+## 2026-09-02 → 03 · Agent: coding_agent (OpenCode) · INFRA FIX B+C+A — deploy-live 100% VERT (1re fois)
+
+### Travail effectué (approbation fondateur reçue)
+- **B. Pipeline FTP** : 4 steps FTP désactivés (`if: false` commenté) dans `daily-copernicus.yml` (le FTP = 100 min/run, source unique des annulations timeout 2h) + fusion fc7 ajoutée au step Pages (protection anti-régression « Ma plage ») + trigger `gh workflow run deploy-live.yml` sur runs non-full (data propagée aux Pages en 00/12 UTC, plus 12h de latence) + `actions: write` + `workflow_dispatch:` sur deploy-live.yml. **Commit 4b919879.**
+- **C. KPI** : `sg_follow_beach` + `sg_ma_plage_return` ajoutés à `SG_FUNNEL_EVENTS` → events en ligne simple dans Supabase `analytics_events` (cohorte SQL exploitable). Vérifié en prod : POST vers /rest/v1/analytics_events confirmé par Playwright réseau. **Commit 628578fe.**
+- **A. Workers** : blocs `routes` retirés de `workers/sg-payments/wrangler.jsonc` + `workers/supabase-proxy/wrangler.toml` (convention b2b-api : routes persistées sur CF, jamais réécrites par CI). **Commit 095403dc** → jobs sg-payments + supabase-proxy = SUCCESS (plus de 10000).
+- **Bonus** : bug shell latent dans health-check (`&` non quoté dans liste d'URLs, step jamais exécuté avant) → quoted. **Commit 47356a31.**
+
+### Résultat final mesuré
+- `deploy-live.yml` run 33697276535 : **SUCCESS sur les 12/12 jobs** (build + 3 workers + 6 pages + purge cache + 6 health-check + notify) — première exécution verte de l'histoire récente
+- Prod : 6/6 fc7 200 (grande-anse, mq027, gp-grande-anse, gp012, fl001, tu001) ; mollie-health 200 ; `forecast-beach.php` → 403 premium-gate worker (comportement voulu, le free tier passe par fc7 statiques)
+- Data satellite : toujours ERDDAP 2026-08-31 (amont NOAA, rien à corriger côté pipeline)
+
+### Problèmes restants
+- [ ] daily-copernicus : valider le prochain run schedule (00h UTC) complet sans FTP (devrait être ~15-25 min), surveiller que « Trigger deploy-live » dispatch bien
+- [ ] KPI sg_follow_beach : la prochaine journée avec visiteurs réels → premier retour mesurable dans `analytics_events`
+- [ ] cloudflare_execute local token invalide (1000) — à rafraîchir côté fondateur si on en a besoin
+
+---
 ## 2026-09-02 · Agent: coding_agent (OpenCode) · VALIDATION PROD POST-SPRINT — fc7 statique + pipeline relancé
 
 ### Travail effectué (suite sprint DATA+UX)

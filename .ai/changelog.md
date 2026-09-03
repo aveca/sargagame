@@ -1,5 +1,13 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-03 · Infra fix B+C+A (approbation fondateur) — deploy-live 100% vert
+
+- **B** (`4b919879`) : 4 steps FTP désactivés dans `daily-copernicus.yml` (100 min/run → cause des timeouts 120 min) ; fusion fc7 ajoutée au step Pages (anti-régression « Ma plage ») ; `gh workflow run deploy-live.yml` depuis runs non-full (Pages fraîches à 00/12 UTC) ; `workflow_dispatch:` ajouté à `deploy-live.yml`.
+- **C** (`628578fe`) : `sg_follow_beach` + `sg_ma_plage_return` ajoutés à `SG_FUNNEL_EVENTS` → atteignent Supabase `analytics_events` (vérifié par interception réseau Playwright en prod).
+- **A** (`095403dc`) : blocs `routes` retirés de `workers/sg-payments/wrangler.jsonc` + `workers/supabase-proxy/wrangler.toml` → plus de 10000 ; les 2 workers passent SUCCESS.
+- **Bonus** (`47356a31`) : health-check shell `&` non quoté (latent depuis création du job) → fixed.
+- **Run final 33697276535** : 12/12 jobs SUCCESS — premier déploiement complet vert.
+
 ## 2026-09-02 · Fix prod — fc7 statique (free tier compatible Cloudflare Pages/Workers)
 
 **Problème découvert en validation prod** : les domaines = Cloudflare Pages, le Worker `sg-payments` possède la route `…/api/copernicus/forecast*` sur les 6 domaines → `forecast-beach.php` était intercepté (403 premium). Le PHP ne tourne plus sur ces domaines.
