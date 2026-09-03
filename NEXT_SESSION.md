@@ -1,6 +1,43 @@
 # NEXT_SESSION — sargagame
 
-> **🎯 2026-07-30 — PAYMENT FLOW FIX + UI IMPROVEMENTS**
+> **🎯 2026-09-03 — SPRINT FUNNEL : IDENTITÉ user_id + GOOGLE 1 CLIC + MOLLIE P0 RÉPARÉ**
+
+## Ce qui a changé (commit <SHA après push>)
+
+### 🚨 P0 — Le checkout Mollie était MORT en prod (découvert en audit, réparé)
+- Frontend appelle `/api/mollie.php` ; le worker sg-payments ne dispatchait que `/api/mollie` exact → **404 JSON** sur create_payment/payment_status/verify_subscription (probe live constaté).
+- Toutes les routes touchant le KV `TRANSIENTS` crashaient **1101** : quota KV du compte CF épuisé (API : "free usage limit") + `rateLimit()` appelée AVANT le try/catch → 1 erreur KV = money-path entier KO.
+- Fix worker : alias `.php`, helper `kv()` fail-open (rate-limit fail-open, idempotence OK car UNIQUE(payment_id) DB), JSON invalide → 400 propre.
+- **Après deploy : vérifier** `POST https://sargasses-martinique.com/api/mollie.php {"action":"verify_subscription","email":"x@y.z"}` → `{active:false,...}` 200 (au lieu de 404).
+
+### 🆔 Identité serveur (nouvelle)
+- `supabase/schema.sql` : table **`sg_users`** (id uuid, email unique lower, provider, provider_user_id) + colonne **`payment_grants.user_id`** → appliquée automatiquement au push par `apply-supabase-schema.yml`.
+- Worker `/api/mollie.php` actions : `auth_google` (ID token vérifié RS256 via JWKS Google + iss+aud+exp), `auth_email` (upsert, SANS token), `auth_session` (token HMAC dédié → identité + entitlements serveur).
+- `create_payment` : résout/crée `user_id` (session OU email) → `metadata.user_id` → webhook → grant rattaché au user.
+- Linking déterministe : Google dont l'email existe déjà → MÊME user_id (jamais 2 comptes).
+
+### 🖥 Frontend
+- `src/lib/auth-client.js` — cache `sg_auth` (jamais la vérité), Google SDK lazy.
+- `src/PremiumModal/IdentityStep.jsx` — « Continuer avec Google » + « ou avec ton email » + chip « Connecté avec Google · x@y / Changer ». **Rollback : `?sgauth=0`**.
+- Restauration cross-device au boot : session Google → `auth_session` → premium restauré depuis payment_grants (event `sg_session_restored`).
+- 13 events : sg_auth_view, sg_google_auth_start/success/error/ready, sg_email_identity_start, sg_payment_submit/created/paid, sg_premium_activated, sg_checkout_abandon, sg_session_restored.
+
+### ⚠️ ACTION FONDATEUR (1 seule — activation du bouton Google)
+1. Console GCP projet `sargassum-automation` → APIs & Services → Credentials → **Create OAuth client ID** (type Web).
+2. **Authorized JavaScript origins** : `https://sargasses-martinique.com`, `https://sargasses-guadeloupe.com`, `https://sargassummiami.com`, `https://sargassumpuntacana.com`, `https://sargassumcancun.com`, `https://sargazotulum.com`. (Pas de redirect URI requis — le bouton GIS ne redirige pas.)
+3. Mettre le client_id (public) : var `GOOGLE_CLIENT_ID` du worker sg-payments (dashboard CF → Workers → sg-payments → Settings → Variables) + `SG_GOOGLE_CLIENT_ID` dans `src/lib/auth-client.js`.
+   - Sans cette étape : tout marche, bouton Google simplement masqué (parcours email seul).
+
+### Tests
+build ✅ · bundle 37.4 Ko ✅ · smoke 4 tokens ✅ · contract worker 23/23 ✅ · E2E identity 3/3 ✅ · run-tests 107/109 (2 échecs = worktrees `.claude/` préexistants, hors repo) ✅
+
+### Prochaines étapes (post-deploy)
+1. Probe money-path live (verify_subscription 200, create_payment « prix invalide » attendu sur cents bidon).
+2. Paiement test réel (nouveau mécanisme → 1 vrai paiement).
+3. Suivre events identité dans `analytics_events` ; mesurer auth_view→google_auth_success vs email.
+4. PHASE 7/8 du brief (refonte visuelle paywall/checkout plus profonde) — la copy/paywall est inchangée volontairement ce sprint (identité d'abord).
+
+---
 
 ### 2026-07-30 — Mollie payment flow fixes and checkout UI improvements
 

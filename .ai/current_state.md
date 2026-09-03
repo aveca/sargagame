@@ -1,5 +1,21 @@
 ---
-## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT UX POLISH — MAINTENANT/PRÉVISION + freshness honnête + chip changement
+## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT FUNNEL — user_id + GOOGLE 1 CLIC + MOLLIE RÉPARÉ (P0)
+
+### Résumé
+1. **P0 découvert & fixé** : checkout Mollie mort en prod (404 `/api/mollie.php` non dispatché + crash 1101 KV quota). Worker : alias `.php`, KV fail-open, JSON gardé.
+2. **Identité serveur créée** : table `sg_users` (uuid/email/provider/provider_user_id) + `payment_grants.user_id` ; actions `auth_google` (OIDC JWKS vérifié), `auth_email`, `auth_session` ; session HMAC dédiée ; linking déterministe email↔Google (jamais 2 comptes) ; user_id propagé create_payment → metadata → webhook → grant.
+3. **Frontend** : étape identité dans le checkout (`IdentityStep`, Google lazy + email sans compte, rollback `?sgauth=0`), `sg_auth` cache, restauration cross-device au boot via session serveur, 13 events analytics nouveaux.
+
+### Tests
+- [x] build ✅ · bundle 37.4 Ko ≤ 210 ✅ · ux-smoke 4 tokens ✅
+- [x] worker esbuild bundle ✅ · contract worker 23/23 ✅ · E2E identity 3/3 ✅ · run-tests 107/109 (2 restants = worktrees préexistants) ✅
+
+### Problèmes restants
+- [ ] **Action fondateur** : client OAuth Google (console) → `GOOGLE_CLIENT_ID` (worker var) + `SG_GOOGLE_CLIENT_ID` (auth-client.js). Sans ça : parcours email seul (Google masqué proprement).
+- [ ] Paiement test réel post-deploy (nouveau mécanisme : auth loop + create_payment) — cmd hook supabase `apply-supabase-schema.yml` applique `sg_users` au push.
+- [ ] Panel UX paywall/checkout refonte profonde (PHASE 7-8 du brief) — la structure actuelle est conservée, seule l'identification a été insérée.
+
+---
 
 `f6be809a` : headline question carte + label MAINTENANT fiche + rename « PRÉVISION 7 JOURS » + fraîcheur pilotée erddapTimestamp (plus de mensonge « ce matin » sur data périmée) + chip « ça a changé » en fiche. 8/8 E2E ma-plage, smoke 4 tokens, bundle 37.4 Ko, deploy SUCCESS. Screenshots prod : `Temp\opencode\ux-audit\390-after-{home,fiche}.png`.
 

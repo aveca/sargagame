@@ -1,6 +1,41 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-03 · SPRINT FUNNEL — identité user_id + Google 1 clic + P0 money-path réparé
+
+**Découverte P0 majeure en audit préalable** : le checkout Mollie était **mort en prod sur les 6 domaines** :
+1. Front → `POST /api/mollie.php` ; worker sg-payments ne dispatchait que `/api/mollie` exact → l'alias `.php` tombait sur le guard anti-leak → **404 sur create_payment / payment_status / verify_subscription** (probes live).
+2. Toute route touchant KV `TRANSIENTS` crashait **1101** : le quota KV du compte CF free était épuisé (confirmé par erreur API 10048). `rateLimit()` était appelée AVANT le try/catch → un seul KV KO cassait TOUT.
+
+**Fix money-path (worker `sg-payments`)** :
+- Alias `/api/mollie.php` + `/api/mollie-webhook.php` dans le dispatch.
+- Helper `kv()` fail-open (rate-limit = log + open ; idempotence = fail-open, `UNIQUE(payment_id)` en DB protège) ; `request.json()` invalid → 400 propre (plus de 1101).
+- Test contract `scripts/tests/worker-auth.contract.test.cjs` : KV 100 % en panne → `verify_subscription` répond toujours (23/23 verts).
+
+**Identité utilisateur (nouveau)** :
+- `supabase/schema.sql` : table `sg_users` (uuid + email unique lowercased + provider + provider_user_id, RLS service-role) + `payment_grants.user_id`. Appliquée par `apply-supabase-schema.yml` (auto au push, Management API).
+- Worker : actions **additives** sur `/api/mollie.php` — `auth_google` (vérif OIDC RS256 via JWKS Google + iss + aud + exp + email_verified ; jamais de confiance au client), `auth_email` (upsert déterministe, SANS token), `auth_session` (token HMAC dédié `sg_session`, 90 j, uid→entitlements).
+- `create_payment` : résout/crée le `user_id` (token session OU upsert email) → `metadata.user_id` → webhook → grant `payment_grants.user_id`. = rattachement serveur durable, maj de FC4.
+- Linking déterministe : Google avec email déjà connu → MÊME user_id (jamais 2 comptes).
+
+**Frontend** :
+- `src/lib/auth-client.js` : cache `sg_auth` (localStorage = cache UX, serveur = vérité), chargement lazy du SDK GIS au moment de l'étape uniquement.
+- `src/PremiumModal/IdentityStep.jsx` : étape d'identification en tête du checkout — « Continuer avec Google » (bouton officiel, #FFC72C-friendly, masqué si `SG_GOOGLE_CLIENT_ID` vide) + « ou avec ton email » + input existant ; chip « Connecté avec Google · x@y / Changer » une fois identifié. **Rollback : `?sgauth=0`**.
+- `doSubscribe.jsx` : `authToken` joint aux 3 payloads create_payment (carte/wallet/hébergé) ; events `sg_payment_submit`, `sg_payment_created` ; `sg_payment_paid` + `sg_premium_activated` aux 3 voies de succès ; user_id du serveur posé en cache.
+- `Sargasses_PROD.jsx` : events identité ajoutés à `SG_FUNNEL_EVENTS` ; retour 3DS enrichi (sg_payment_paid/activated + user_id via sgVerifySub) ; **restauration cross-device au boot** : si session `sg_auth` → `auth_session` → premium restauré depuis payment_grants (`sg_session_restored`).
+- Checkout : header « Paiement sécurisé · Mollie » ; `sg_checkout_abandon` tracké (esc/swipe/btn sans succès).
+- Fix hérité de session (déjà dans le working tree) : PassOffer sticky « Débloquer · prix », walletState promesse, fallback réseau retour 3DS, GA4 purchase au retour.
+
+**Analytics** (cibles sprint couvertes) : sg_auth_view, sg_google_auth_start/success/error(+ready), sg_email_identity_start, sg_payment_submit, sg_payment_created, sg_payment_paid, sg_premium_activated, sg_checkout_abandon, sg_session_restored.
+
+**Data (hors sprint, réparé au passage)** : les fichiers fc7 étaient divergents des séries privées commitées à 04:02 UTC (bug pipeline : step data sans régénération fc7) → `scripts/regen-fc7.cjs` (recopie déterministe) + réalignement ; fc7-alignment.test OK.
+
+**Gate** : build ✅, bundle 37.4 Ko ≤ 210 ✅, ux-smoke 4 tokens ✅, worker esbuild ✅, worker-auth.contract 23/23 ✅, E2E identity-step 3/3 ✅, run-tests 106→107/109 (les 2 restants = worktrees préexistants) ✅.
+
+**Action fondateur requise (1 seule)** : créer le client OAuth Google (Console GCP → Credentials → OAuth client ID type Web ; Authorized JavaScript origins = les 6 domaines ; aucun redirect URI requis — bouton GIS). Coller le client_id : (1) var `GOOGLE_CLIENT_ID` du worker sg-payments (dashboard CF ou wrangler) ; (2) `SG_GOOGLE_CLIENT_ID` dans `src/lib/auth-client.js`. Sans cette étape, tout fonctionne en parcours email seul (Google masqué).
+
 ## 2026-09-03 · Sprint UX polish — AHA moment + data trust
+
+
 
 - **`f6be809a`** : heading question « Où te baigner maintenant ? » (carte, au-dessus du héro), label « MAINTENANT » au-dessus du verdict fiche, renommage « 7 PROCHAINS JOURS » → « **PRÉVISION 7 JOURS** » (séparation visuelle current/forecast), sous-titre de fraîcheur piloté par `erddapTimestamp` (plus jamais « ce matin » si donnée > 12 h : « Lecture satellite d'il y a X j »), chip « ⚠️ Ça a changé depuis hier » visible dans la fiche quand `sg_my_changed` existe.
 - Tests : +2 E2E (séparation MAINTENANT/PRÉVISION, overflow 375/390/430) → ma-plage.spec 8/8 ✅, ux-smoke 4 tokens ✅, bundle 37.4 Ko ≤ 210 ✅
