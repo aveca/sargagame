@@ -3,6 +3,22 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-026 — [FIXÉ 2026-09-03] Money-path Mollie 100 % mort en prod (404 alias + 1101 KV)
+- **Sévérité** : P0 — aucune conversion possible sur les 6 domaines (Pages/Workers)
+- **Date** : découvert en audit sprint funnel 2026-09-03, présent probablement depuis la migration Pages/Workers
+- **Repro** (live) : `POST https://sargasses-martinique.com/api/mollie.php {"action":"verify_subscription","email":"x@y.z"}` → 404 `{"error":"not_found"}` (garde anti-leak PHP du worker) ; `POST /api/mollie` (sans .php) → 500 `error code: 1101` (crash worker).
+- **Causes (2 cumulées)** :
+  1. Le front appelle `/api/mollie.php` (héritage Apache) ; le worker ne dispatchait que `path === '/api/mollie'` exact → le `.php` tombait sur le guard anti-source-leak → 404. Tout le frontend (create_payment, payment_status, verify_subscription, applepay_session) appelait une 404.
+  2. Le compte Cloudflare free avait épuisé son quota KV (`TRANSIENTS`) → tout accès KV levait une exception ; `rateLimit()` étant appelée AVANT le `try/catch` de `handleMollie`, même `/api/mollie` crashait (1101).
+- **Fix** : alias `/api/mollie.php` + `/api/mollie-webhook.php` dans le dispatch ; helper `kv()` fail-open (rate-limit fail-open, idempotence fail-open car `UNIQUE(payment_id)`/UNIQUE(subscription_id) en DB protège) ; `request.json()` invalide → 400 propre. Commit `ac6c81d9` (rebases → voir log). Test : `scripts/tests/worker-auth.contract.test.cjs` couvre KV 100 % KO + alias .php + webhook HMAC + grants.
+- **Surveillance** : le quota KV se remet à zéro à minuit UTC — si nouveaux 1101, vérifier le quota compte CF (ou passer le plan Workers payant).
+
+### BUG-2026-027 — [OUVERT, P1 infra] SUPABASE_ACCESS_TOKEN expiré/révoqué → apply-supabase-schema 401
+- **Date** : 2026-09-03 · **Fichier/workflow** : `.github/workflows/apply-supabase-schema.yml`, secret GH `SUPABASE_ACCESS_TOKEN`
+- **Symptôme** : job « Apply Supabase schema » → `Management API HTTP 401`. Le schéma `supabase/schema.sql` N'EST PAS appliqué automatiquement à la base live → la table `sg_users` + colonne `payment_grants.user_id` (sprint identité 2026-09-03) NE SONT PAS en prod.
+- **Impact** : jusqu'au fix, auth_google renvoie 503 `user_unavailable`, auth_email ok sans user_id (dégradé propre), parcours email/paiement = inchangé. Front tolérant (cache local + fallback email historique).
+- **Fix (fondateur, 2 min)** : Supabase dashboard → Account → Access Tokens → créer un token → remplacer le secret GH `SUPABASE_ACCESS_TOKEN` → relancer le workflow `Apply Supabase schema` (workflow_dispatch). Alternative : coller le bloc `sg_users` de `supabase/schema.sql` dans le SQL Editor.
+
 ### BUG-2026-025 — [FIXÉ 2026-08-25] Tulum (sargazotulum.com) sans routes Workers `/api/mollie*`+`/api/b2b*` → checkout impossible + source PHP exposé
 - **Sévérité** : P1 — checkout Mollie mort sur ce seul domaine (+ fuite de source `mollie.php`/`mollie-lib.php` en `application/x-httpd-php` via l'origine statique Pages, pas de secret exposé : les `*-config.php` ne sont pas dans le build)
 - **Cause (prouvée API CF)** : zone `sargazotulum.com` n'avait que 5 routes Workers (supabase-proxy ×1, sg-payments ×4) contre 7 sur les 5 autres zones — manquaient `sargazotulum.com/api/mollie*` et `sargazotulum.com/api/b2b*` → `b2b-api`. Requêtes tombaient sur Pages = fichiers PHP servis bruts. Deuxième couche : `workers/b2b-api/index.js:509` mapping host→île sans branche `tulum` (fallback `'MQ'`) → même routé, checkout tulum aurait été rejeté `island_mismatch` (front envoie `island:'TULUM'`) ; et `allowedIslands` webhook sans `'TULUM'` → grants skippés.

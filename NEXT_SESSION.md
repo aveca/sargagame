@@ -2,6 +2,13 @@
 
 > **🎯 2026-09-03 — SPRINT FUNNEL : IDENTITÉ user_id + GOOGLE 1 CLIC + MOLLIE P0 RÉPARÉ**
 
+## 🚨 ACTIONS FONDATEUR (2, ~5 min total)
+
+1. **OAuth Google client** (active le bouton « Continuer avec Google ») :
+   Console GCP projet `sargassum-automation` → Credentials → Create OAuth client ID (type **Web**) → Authorized JavaScript origins : `https://sargasses-martinique.com`, `https://sargasses-guadeloupe.com`, `https://sargassummiami.com`, `https://sargassumpuntacana.com`, `https://sargassumcancun.com`, `https://sargazotulum.com` (aucun redirect URI requis) → coller le client_id dans : var `GOOGLE_CLIENT_ID` du worker sg-payments (dashboard Cloudflare → Workers → sg-payments → Variables) **ET** `SG_GOOGLE_CLIENT_ID` dans `src/lib/auth-client.js` (commit).
+   Sans ça : tout démarre déjà, le bouton Google est simplement masqué (parcours email seul).
+2. **`SUPABASE_ACCESS_TOKEN` expiré** (BUG-2026-027) : le job « Apply Supabase schema » échoue en 401 → la table `sg_users` n'est pas encore créée en prod. Supabase → Account → Access Tokens → nouveau token → remplacer le secret GitHub → relancer le workflow « Apply Supabase schema » (Run workflow). Sans ça : dégradé propre, parcours email/paiement inchangé, Google renvoie `user_unavailable`.
+
 ## Ce qui a changé (commit <SHA après push>)
 
 ### 🚨 P0 — Le checkout Mollie était MORT en prod (découvert en audit, réparé)
