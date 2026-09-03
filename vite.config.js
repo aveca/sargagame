@@ -215,6 +215,24 @@ export default defineConfig({
             const p = resolve(outDir, f)
             if (existsSync(p)) { rmSync(p); console.log(`[strip-php-secrets] removed ${f}`) }
           }
+          // BULK PRÉMIUM (SPRINT tiered 2026-09-03) : _private/forecast-full.json
+          // contient la série 7 jours de TOUTES les plages. Sur Pages (pas de
+          // .htaccess), il était servi en clair = paywall contournable. On purge
+          // le dossier de dist/ (root + chaque région) : le gratuit individuel
+          // vit dans fc7/<id>.json (1 plage), le bulk reste premium (forecast.php
+          // / Worker). Le repo garde public/.../_private (pipeline + FTP legacy).
+          for (const rel of ['api/copernicus/_private']) {
+            const p = resolve(outDir, rel)
+            if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); console.log(`[strip-php-secrets] removed ${rel}/ (bulk forecast)`) }
+          }
+          try {
+            const copRegions = readdirSync(resolve(outDir, 'api/copernicus'), { withFileTypes: true })
+            for (const d of copRegions) {
+              if (!d.isDirectory()) continue
+              const p = resolve(outDir, 'api/copernicus', d.name, '_private')
+              if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); console.log(`[strip-php-secrets] removed api/copernicus/${d.name}/_private/ (bulk forecast)`) }
+            }
+          } catch {}
           // Garde-fou: lister les .php restants (non-bloquant, info)
           try {
             const apiFiles = readdirSync(resolve(outDir, 'api'))
