@@ -1,8 +1,18 @@
 ---
-## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT FUNNEL — user_id + GOOGLE 1 CLIC + MOLLIE RÉPARÉ (P0)
+## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT FUNNEL — LIVE VÉRIFIÉ EN PROD ✅
+
+**SHA HEAD** : `63229a57` (docs) · code: `d5be5bda` (message d'erreur précis) · `4af7c9c6` (fc7+secret-scan) · `ac6c81d9` (worker P0) · `c47c9a30` (front identité) · `a76d45f5` (fc7 data)
+
+### Prod vérifiée (post-deploy, 19/19 jobs verts run 33803316086)
+- `POST /api/mollie.php` verify_subscription → **200 JSON** (avant : 404) — MQ + Cancún ✅
+- Guard prix : `create_payment` cents bidon → `{error:"Prix invalide"}` précis ✅
+- `auth_email` → `{ok, user_id:null (tbl en attente), entitlements:[]}` 200 multi-domaine (MQ + Tulum) ✅
+- `auth_google` → 501 `google_not_configured` propre ✅
+- Health-checks 6/6 ✅. CI : ci-tests ✅ · secret-scan ✅ · perf-budget ✅.
 
 ### Résumé
 1. **P0 découvert & fixé** : checkout Mollie mort en prod (404 `/api/mollie.php` non dispatché + crash 1101 KV quota). Worker : alias `.php`, KV fail-open, JSON gardé.
+
 2. **Identité serveur créée** : table `sg_users` (uuid/email/provider/provider_user_id) + `payment_grants.user_id` ; actions `auth_google` (OIDC JWKS vérifié), `auth_email`, `auth_session` ; session HMAC dédiée ; linking déterministe email↔Google (jamais 2 comptes) ; user_id propagé create_payment → metadata → webhook → grant.
 3. **Frontend** : étape identité dans le checkout (`IdentityStep`, Google lazy + email sans compte, rollback `?sgauth=0`), `sg_auth` cache, restauration cross-device au boot via session serveur, 13 events analytics nouveaux.
 
