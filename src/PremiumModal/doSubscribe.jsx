@@ -5,6 +5,19 @@ import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "../ga4-ecomm
 import * as SG from "../Sargasses_PROD.jsx"
 import relHref from "../lib/relHref.js"
 import { sgUid } from "../supabasePhotos.js"
+import { getSgAuthToken, setSgAuth } from "../lib/auth-client.js"
+
+// Identité : token de session serveur (Google) joint à chaque create_payment →
+// le worker rattache le paiement (metadata.user_id) au user stable. Additif :
+// absent = le serveur retombe sur l'upsert par email (parcours sans compte).
+const sgAuthToken = () => { try { return getSgAuthToken() || undefined } catch (_) { return undefined } }
+const sgAuthCapture = (d, fallbackEmail) => {
+  // Le serveur renvoie user_id dans la réponse create_payment → cache identité enrichi.
+  try {
+    const em = (d && d.email) || fallbackEmail
+    if (d && d.user_id && em) setSgAuth({ user_id: d.user_id, email: em })
+  } catch (_) {}
+}
 
 const {
   C, COMIC, IS_NEW_REGION, REGION, REGION_PAY,
@@ -105,8 +118,9 @@ export function usePaymentLogic({
     const _pcCur=_pc?_pc.cur:undefined
     const sessionId = sgUid()
     const body=_pc
-      ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),metadata:{sg_session_id:sessionId}}
+      ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),authToken:sgAuthToken(),metadata:{sg_session_id:sessionId}}
       :{action:"create_subscription",plan:payPlanRef.current,email,cur:_pcCur,source:source||"unknown",lang,walletMethod:method,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode(),metadata:{sg_session_id:sessionId}}
+    try{track("sg_payment_submit",{pass:_pc?_pc.pass:null,plan:payPlanRef.current,via:"wallet"})}catch(_){}
     // GA4 Ecommerce: begin_checkout fires HERE — on actual wallet payment attempt, not paywall open.
     try {
       const _bcPlan = _pc ? _pc.pass : payPlanRef.current
@@ -132,8 +146,10 @@ export function usePaymentLogic({
         setPayError(userMsg)
         return
       }
+      sgAuthCapture(d, email)
+      try { track("sg_payment_created", { paymentId: d.paymentId, subscriptionId: d.subscriptionId, user_id: d.user_id || null }) } catch (_) {}
       if(d.checkoutUrl){
-        try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan:payPlanRef.current,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan:payPlanRef.current,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+        try{const _pd={paymentId:d.paymentId,plan:payPlanRef.current,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,cents:_pc?_pc.cents:null,cur:_pc?_pc.cur:null,email};sessionStorage.setItem("sg_mollie_pending",JSON.stringify(_pd));localStorage.setItem("sg_mollie_pending",JSON.stringify(_pd))}catch(_){}
         try { track("sg_mollie_checkout_redirect", { plan: payPlanRef.current, paymentId: d.paymentId, pass: _pc?.pass, walletMethod: method }) } catch (_) {}
         setPayRedirecting(true)
         setTimeout(()=>window.location.href=d.checkoutUrl,50)
@@ -154,6 +170,8 @@ export function usePaymentLogic({
         const meta = _pc ? getPlanMeta(_pc.pass, PAY_CUR || 'EUR') : getPlanMeta(payPlanRef.current, PAY_CUR || 'EUR');
         purchase(d.paymentId, _pc ? _pc.pass : payPlanRef.current, meta.price, meta.currency, 'mollie');
       }catch(_){}
+      try{track("sg_payment_paid",{paymentId:d.paymentId,pass:_pc?_pc.pass:null,via:"wallet"})}catch(_){}
+      try{track("sg_premium_activated",{pass:_pc?_pc.pass:null,source:source||"unknown"})}catch(_){}
       setPaySuccess(true)
       setTimeout(()=>{onActivated?.();onClose()},900)
     }catch(e){
@@ -207,7 +225,7 @@ export function usePaymentLogic({
               const consentObj={accepted:true,v:"2026-06-29",lang}
               const sessionId = sgUid()
               // Clé attendue par mollie.php (:191) = applePayPaymentToken (avant : paymentToken → jamais transmis)
-              const body={action:"create_payment",applePayPaymentToken:e.payment.token,pass:passVal,cents:centsVal,cur:curVal,email,source:source||"unknown",lang,referredBy:refBy,myReferralCode:myRef,consent:consentObj,metadata:{sg_session_id:sessionId}}
+              const body={action:"create_payment",applePayPaymentToken:e.payment.token,pass:passVal,cents:centsVal,cur:curVal,email,source:source||"unknown",lang,referredBy:refBy,myReferralCode:myRef,consent:consentObj,authToken:sgAuthToken(),metadata:{sg_session_id:sessionId}}
               const r=await fetchTO("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json()
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
@@ -226,6 +244,8 @@ export function usePaymentLogic({
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_applepay",plan:_pc.pass,pass_days:_pc.days})}
               else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie_applepay",plan:payPlanRef.current});if(sgReferredBy())track("sg_referral_convert",{ref_code:sgReferredBy(),plan:payPlanRef.current,provider:"mollie"})}
               try{const meta=getPlanMeta(_pc?_pc.pass:payPlanRef.current,PAY_CUR||'EUR');purchase(d.paymentId,_pc?_pc.pass:payPlanRef.current,meta.price,meta.currency,'mollie_applepay')}catch(_){}
+              try{track("sg_payment_paid",{paymentId:d.paymentId,pass:_pc?_pc.pass:null,via:"applepay_native"})}catch(_){}
+              try{track("sg_premium_activated",{pass:_pc?_pc.pass:null,source:source||"unknown"})}catch(_){}
               setTimeout(()=>{onActivated?.();onClose()},900)
             }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay")}
           }
@@ -300,8 +320,9 @@ export function usePaymentLogic({
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const sessionId = sgUid()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),metadata:{sg_session_id:sessionId}}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang},redirectUrl:mollieReturnUrl(),authToken:sgAuthToken(),metadata:{sg_session_id:sessionId}}
           :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,metadata:{sg_session_id:sessionId}}
+        try { track("sg_payment_submit", { plan, pass: _pc?.pass, via: "card" }) } catch (_) {}
         try { track("sg_create_payment_request", { plan, pass: _pc?.pass, cents: _pc?.cents, cur: _pc?.cur, isSubscription: !_pc }) } catch (_) {}
         // GA4 Ecommerce: begin_checkout fires HERE — on actual payment attempt, not paywall open.
         // Invariant: 1 real Mollie checkout = 1 begin_checkout.
@@ -327,8 +348,10 @@ export function usePaymentLogic({
           }
           throw new Error(userMsg)
         }
+        sgAuthCapture(d, email)
+        try { track("sg_payment_created", { paymentId: d.paymentId, subscriptionId: d.subscriptionId, user_id: d.user_id || null }) } catch (_) {}
         if(d.checkoutUrl){
-          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          try{const _pd={paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,cents:_pc?_pc.cents:null,cur:_pc?_pc.cur:null,email};sessionStorage.setItem("sg_mollie_pending",JSON.stringify(_pd));localStorage.setItem("sg_mollie_pending",JSON.stringify(_pd))}catch(_){}
           try { track("sg_mollie_checkout_redirect", { plan, paymentId: d.paymentId, pass: _pc?.pass }) } catch (_) {}
           setPayRedirecting(true)
           setTimeout(()=>window.location.href=d.checkoutUrl,50);return
@@ -344,6 +367,8 @@ export function usePaymentLogic({
         if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
         else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
         try{const meta=getPlanMeta(_pc?_pc.pass:plan,PAY_CUR||'EUR');purchase(d.paymentId,_pc?_pc.pass:plan,meta.price,meta.currency,'mollie')}catch(_){}
+        try{track("sg_payment_paid",{paymentId:d.paymentId,pass:_pc?_pc.pass:null,plan,via:"card"})}catch(_){}
+        try{track("sg_premium_activated",{pass:_pc?_pc.pass:null,source:source||"unknown"})}catch(_){}
         setPayBusy(false)
         setPaySuccess(true)
         setTimeout(()=>{onActivated?.();onClose()},900);return

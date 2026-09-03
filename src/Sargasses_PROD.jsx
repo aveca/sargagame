@@ -16,7 +16,8 @@ import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
-import {beginCheckout, viewPromotion, getPlanMeta} from "./ga4-ecommerce.js"
+import {beginCheckout, viewPromotion, getPlanMeta, purchase} from "./ga4-ecommerce.js"
+import { getSgAuth, setSgAuth, authSession } from "./lib/auth-client.js"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
@@ -1753,7 +1754,9 @@ export const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5
 // ?pay=paypal. Une fois le test OK : passer ce défaut à 'paypal' = abo live pour TOUS.
 // 'mollie'/'stripe' en fallback. ⚠️ fulfillment serveur (confirm_subscription/webhook)
 // = paypal-config.php live à déployer (FTP/secret) avant le go-live général.
-export const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"mollie";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
+// Sprint funnel 2026-09-03 : ?pay=paypal ne renvoie PLUS vers un chemin mort
+// (PayPal UI retiré → le bouton « Payer » devenait muet). Tout converge vers Mollie.
+export const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=paypal/.test(q))return"mollie"}catch(_){}return"mollie"})()
 // Libellé processeur affiché dans les badges « paiement sécurisé ». Source unique
 // pour ne plus jamais hardcoder « Stripe » (mort) — bascule auto au go-live Mollie.
 export const PAY_LABEL=PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"
@@ -1989,7 +1992,15 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_follow_beach","sg_ma_plage_return",
   // Quota free tier (1 forecast/jour/device) — déblocage effectif vs mur premium
   // vu sur la 2e plage du jour. Mesure la demande réelle de couverture totale.
-  "sg_fc_free_unlocked","sg_fc_premium_blocked"])
+  "sg_fc_free_unlocked","sg_fc_premium_blocked",
+  // SPRINT FUNNEL IDENTITÉ (2026-09-03) : étape identification (Google 1 clic /
+  // email sans compte) + rattachement user_id au paiement. Couvre la liste cible
+  // du sprint : auth_view, google_auth_*, email_identity_start, payment_submit,
+  // payment_created, payment_paid, premium_activated, checkout_abandon.
+  "sg_auth_view","sg_google_auth_start","sg_google_auth_success","sg_google_auth_error",
+  "sg_google_auth_ready","sg_identity_change","sg_email_identity_start",
+  "sg_payment_submit","sg_payment_created","sg_payment_paid","sg_premium_activated",
+  "sg_checkout_abandon","sg_session_restored"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
@@ -11701,12 +11712,13 @@ export default function App(){
         // Idempotence : un paymentId déjà consommé ne re-grante jamais (replay-safe).
         const doneKey="sg_mollie_done_"+ctx.paymentId
         try{if(localStorage.getItem(doneKey)){clean();return}}catch(_){}
-        let paid=null
+        let paid=null, anyResp=false
         // 6 × 2,5 s ≈ 15 s : couvre les confirmations lentes (avant : 3×2 s → faux
         // « échec » alors que le paiement se finalisait = risque de double tentative).
         for(let attempt=0;attempt<6;attempt++){
           if(signal.aborted)break
           try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
+            if(d)anyResp=true
             if(d&&d.terminal&&d.status){
               // Handle terminal failure status immediately (canceled, expired, failed)
               const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"")+(d.status?"&status="+encodeURIComponent(d.status):"")
@@ -11714,10 +11726,16 @@ export default function App(){
             }
             if(d&&d.paid){paid=true;break}
             if(d&&d.status==="paid"){paid=true;break}
-            paid=false;if(attempt<5)await new Promise(r=>setTimeout(r,2500))
-          }catch(_){paid=false}
+            if(attempt<5)await new Promise(r=>setTimeout(r,2500))
+          }catch(_){ /* réseau mort — les 6 polls ont tous échoué, on le verra via anyResp */ }
         }
         if(signal.aborted)return
+        // Sprint funnel 2026-09-03 : une coupure réseau pendant le retour (6 fetchs KO)
+        // n'est PAS un paiement échoué — le webhook peut avoir créé le grant. Essai
+        // final par email (payment_grants) avant de déclarer l'échec.
+        if(paid!==true&&!anyResp&&ctx.email){
+          try{const v=await sgVerifySub(ctx.email);if(v&&v.active){paid=true}}catch(_){}
+        }
         if(paid===true){
           try{localStorage.setItem(doneKey,"1")}catch(_){}
           try{localStorage.setItem("sg_email",ctx.email||"")
@@ -11725,6 +11743,13 @@ export default function App(){
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
             localStorage.setItem("sg_premium_welcome","1")}catch(_){}
           track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
+          track("sg_payment_paid",{paymentId:ctx.paymentId,pass:ctx.pass||null,via:"return_3ds"})
+          track("sg_premium_activated",{pass:ctx.pass||null,source:"mollie_return"})
+          // GA4 purchase (manquait sur le retour 3DS — l'attribution revenu sautait)
+          try{purchase(ctx.paymentId,ctx.pass||ctx.plan||"p30",typeof ctx.cents==="number"?ctx.cents/100:null,ctx.cur||"EUR")}catch(_){}
+          // Sprint identité (2026-09-03) : enrichir le cache sg_auth avec le user_id
+          // serveur (verify_subscription le renvoie désormais) → rattachement durable.
+          if(ctx.email){try{sgVerifySub(ctx.email).then(v=>{if(v&&v.user_id)setSgAuth({user_id:v.user_id,email:ctx.email})}).catch(()=>{})}catch(_){}}
         } else {
           try{sessionStorage.removeItem("sg_mollie_pending");localStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
         }
@@ -11733,6 +11758,30 @@ export default function App(){
     }
     run()
     return()=>ac.abort()
+  },[])
+  // ─── Restauration d'accès cross-device (sprint identité 2026-09-03) ───
+  // Si une session serveur (Google) est en cache, on la re-valide et on restaure
+  // l'accès premium DEPUIS payment_grants (source de vérité serveur). Le
+  // localStorage premium reste un fast-path UX, jamais la preuve. Silencieux,
+  // non bloquant (lancé après mount, jamais sur le chemin critique du 1er paint).
+  useEffect(()=>{
+    let a=null
+    try{a=getSgAuth()}catch(_){}
+    if(!a||!a.token)return
+    let dead=false
+    authSession(a.token).then(d=>{
+      if(dead||!d||!d.ok)return
+      if(d.email){try{setSgAuth({user_id:d.user_id,email:d.email,provider:"google",token:a.token})}catch(_){}}
+      const p=d.premium
+      if(p&&p.active){
+        try{if(p.passEnd)localStorage.setItem("sg_premium_pass_end",String(p.passEnd))}catch(_){}
+        try{setIsPremium(true)}catch(_){}
+        track("sg_session_restored",{premium:1,pass:p.pass||null})
+      }else{
+        track("sg_session_restored",{premium:0})
+      }
+    }).catch(()=>{})
+    return()=>{dead=true}
   },[])
   // Handle ?payment_failed=1 → relance automatique (email retry link)
   // Le client revient ici depuis l'email de relance (ou après un retour 3DS échoué).

@@ -20,6 +20,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react"
 import { track } from "../Sargasses_PROD.jsx"
 import { seasonalCents } from "../lib/pass-price.js"
 import { sgUid } from "../supabasePhotos.js"
+import { IdentityStep, trackEmailIdentityStart } from "./IdentityStep.jsx"
 
 export function OnsiteCheckout({
   lang,
@@ -82,10 +83,31 @@ export function OnsiteCheckout({
   // Ref miroir de payBusy pour les closures clavier (Échap) sans re-bind.
   const payBusyRef = useRef(payBusy)
   payBusyRef.current = payBusy
+  // One-shot : event sg_email_identity_start au 1er focus de l'input email.
+  const emailIdRef = useRef(false)
+  // Abandon checkout : quitter l'étape paiement SANS avoir payé = abandon mesurable.
+  const trackAbandon = useCallback((via) => {
+    if (paySuccess) return // succès → pas un abandon
+    try { track("sg_checkout_abandon", { via, plan: passCtxRef.current?.pass || payPlanRef.current }) } catch (_) {}
+  }, [paySuccess])
   // Refs swipe-down (pour retour au paywall depuis l'étape paiement — même geste que le paywall)
   const payScrollRef = useRef(null)
   const payContentRef = useRef(null)
   const payStartYRef = useRef(0)
+  // Wallets (Apple/Google Pay) : walletAvail() renvoie une PROMESSE au premier appel
+  // — le vieux bail « si promise → return null » ne REVENAIT jamais (aucun re-render)
+  // → boutons wallets invisibles à la 1re ouverture (la plupart des utilisateurs).
+  // Fix 2026-09-03 : état React piloté par la promesse.
+  const [walletState, setWalletState] = useState(null)
+  useEffect(() => {
+    let dead = false
+    try {
+      const r = walletAvail()
+      if (r && typeof r.then === "function") r.then(v => { if (!dead) setWalletState(v) }).catch(() => {})
+      else setWalletState(r)
+    } catch (_) { /* wallets indisponibles → simplement cachés */ }
+    return () => { dead = true }
+  }, [])
 
   // Email : l'overlay est le SEUL détenteur de payEmailRef. À l'ouverture de
   // payStep, on pré-remplit depuis sg_email (écrit par les inputs des paywalls).
@@ -110,6 +132,7 @@ export function OnsiteCheckout({
       if (e.key === "Escape" && !payBusyRef.current) {
         e.stopPropagation()
         try { track("sg_pay_onsite_back", { via: "esc" }) } catch (_) {}
+        trackAbandon("esc")
         setPayStep(false)
       }
     }
@@ -144,6 +167,7 @@ export function OnsiteCheckout({
     if (dy > 60) {
       if (payContentRef.current) payContentRef.current.style.transform = ""
       try { track("sg_pay_onsite_back", { plan: payPlanRef.current, via: "swipe" }) } catch (_) {}
+      trackAbandon("swipe")
       setPayStep(false)
     } else reset()
   }
@@ -240,6 +264,7 @@ export function OnsiteCheckout({
           <button
             onClick={() => {
               try { track("sg_pay_onsite_back", { plan: payPlanRef.current, via: "btn" }) } catch (_) {}
+              trackAbandon("btn")
               setPayStep(false)
             }}
             style={{
@@ -262,7 +287,7 @@ export function OnsiteCheckout({
                 {((lang === "es" ? "SARGAZO " : "SARGASSUM ") + String(REGION?.name || "")).toUpperCase()}
               </span>
             )}
-            🔒 {PAY_CAPTURE_ONLY ? _t(lang, "Sans carte", "No card", "Sin tarjeta") : "Mollie"}
+            🔒 {PAY_CAPTURE_ONLY ? _t(lang, "Sans carte", "No card", "Sin tarjeta") : _t(lang, "Paiement sécurisé · Mollie", "Secure payment · Mollie", "Pago seguro · Mollie")}
           </span>
         </div>
 
@@ -312,6 +337,18 @@ export function OnsiteCheckout({
           </div>
         )}
 
+        {/* IDENTITÉ (étape 1) : Google 1 clic / email — avant tout champ de paiement */}
+        {!PAY_CAPTURE_ONLY && (
+          <IdentityStep
+            lang={lang}
+            isComic={isComic}
+            track={track}
+            payEmailRef={payEmailRef}
+            onPayEmailInput={onPayEmailInput}
+            visible={!!payStep}
+          />
+        )}
+
         {/* Email EN PREMIER (avant wallets et carte) — l'accès est lié à l'email */}
         {!PAY_CAPTURE_ONLY && (
           <div style={{ marginBottom: 14 }}>
@@ -325,6 +362,7 @@ export function OnsiteCheckout({
               inputMode="email"
               autoComplete="email"
               onChange={onPayEmailInput}
+              onFocus={trackEmailIdentityStart.bind(null, track, emailIdRef)}
               defaultValue={typeof localStorage !== "undefined" ? (localStorage.getItem("sg_email") || "") : ""}
               placeholder={_t(lang, "ton@email.com", "you@email.com", "tu@email.com")}
               style={{
@@ -372,13 +410,15 @@ export function OnsiteCheckout({
         )}
 
         {/* Wallets express (Apple Pay / Google Pay) — Mollie only, hors capture */}
-        {!PAY_CAPTURE_ONLY && PAY_PROVIDER === "mollie" && (() => {
-          let w = { apple: false, google: false }
-          try { w = walletAvail() } catch (_) {}
-          // walletAvail() peut retourner une Promise (async) — dans ce cas on skip
-          // (les wallets seront affichés au prochain render via re-mount).
-          if (w && typeof w.then === "function") return null
+        {/*
+          // (obsolète : logique inline remplacée par l'effet walletState ci-dessous)
+        */}
+        {(() => {
+          // Effet de lecture résolu une fois — voir useState/useEffect walletState.
+          if (!walletState) return null
+          const w = walletState
           if (!w.apple && !w.google) return null
+          if (!(!PAY_CAPTURE_ONLY && PAY_PROVIDER === "mollie")) return null
           const cents = seasonalCents(passCtx?.cents ?? 499, passCtx?.cur || PAY_CUR)
           const amountStr2 = (cents / 100).toFixed(2) + (PAY_CUR === "usd" ? " $" : " €")
           const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)

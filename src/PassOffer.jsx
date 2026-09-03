@@ -150,7 +150,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
           <span style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
-            {_t(lang, "Voir le prix →", "See price →", "Ver precio →")}
+            {_t(lang, `Débloquer · ${money(displayCents, cur, lang)}`, `Unlock · ${money(displayCents, cur, lang)}`, `Desbloquear · ${money(displayCents, cur, lang)}`)}
           </span>
           <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span>🔒 Mollie</span><span aria-hidden="true">·</span>
