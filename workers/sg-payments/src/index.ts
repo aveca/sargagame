@@ -1119,7 +1119,10 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
 
     return new Response(JSON.stringify({ error: 'action_inconnue' }), { status: 400, headers: h });
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: 'payment_processing_error' }), { status: 500, headers: h });
+    // Renvoyer le message précis (Prix invalide, déjà en cours, Unauthorized...) :
+    // le frontend classe l'erreur pour guider l'utilisateur (fix 2026-07-30).
+    // Aveuglant : Status toujours 500, jamais de stack ni de clé.
+    return new Response(JSON.stringify({ error: String(e?.message || 'payment_processing_error').slice(0, 120) }), { status: 500, headers: h });
   }
 }
 
