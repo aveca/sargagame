@@ -120,6 +120,68 @@ test.describe('Ma plage — free tier', () => {
     await expect(page.locator('text=/Ça a changé/i').first()).toBeVisible({ timeout: 15000 })
   })
 
+  // ── QUOTA 1 forecast/jour (tiered sprint 2026-09-03) ──────────────────────────
+
+  test('quota épuisé → 2e plage : état actuel gratuit + mur Premium, JAMAIS débloquée', async ({ page }) => {
+    // Quota du jour déjà consommé par une AUTRE plage (injection déterministe)
+    await page.addInitScript(() => {
+      const d = new Date()
+      const p = (n: number) => String(n).padStart(2, '0')
+      const today = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+      localStorage.setItem('sg_fc_quota', JSON.stringify({ day: today, beachId: 'zz-test-autre-plage' }))
+    })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.locator('button:has-text("Voir →")').first().click()
+    await page.waitForSelector('.lc-detail', { timeout: 25000 })
+
+    // Tap « Suivre » → le quota bloque → le bouton est REMPLACÉ par le mur Premium
+    const followBtn = page.locator('button:has-text("Suivre gratuitement cette plage")')
+    await expect(followBtn).toBeVisible({ timeout: 15000 })
+    await followBtn.click()
+    await expect(page.locator('button:has-text("Suivre gratuitement cette plage")')).toHaveCount(0)
+    await expect(page.locator('text=/Prévision 7 jours disponible avec Premium|7-day forecast available with Premium/i')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('button:has-text("Voir Premium")')).toBeVisible()
+
+    // La série 7 jours N'EST PAS débloquée (teasers/cadenas présents)
+    const stillLocked = await page.locator('.lc-fc-cell.teaser, .lc-fc-cell.lock').count()
+    expect(stillLocked).toBeGreaterThan(0)
+
+    // Le quota n'a PAS changé (pas de consommation au second essai)
+    const quota = await page.evaluate(() => JSON.parse(localStorage.getItem('sg_fc_quota') || '{}'))
+    expect(quota.beachId).toBe('zz-test-autre-plage')
+  })
+
+  test('même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé', async ({ page }) => {
+    await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.locator('button:has-text("Voir →")').first().click()
+    await page.locator('button:has-text("Suivre gratuitement cette plage")').click()
+    await expect(page.locator('text=/Ta plage · offerts/i')).toBeVisible({ timeout: 15000 })
+
+    // Le quota est consommé pour CETTE plage aujourd'hui
+    const q1 = await page.evaluate(() => JSON.parse(localStorage.getItem('sg_fc_quota') || '{}'))
+    expect(q1.beachId).toBeTruthy()
+    expect(q1.day).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+
+    // Ferme puis re-ouvre la MÊME plage via la carte MA PLAGE (carte → bottom nav)
+    await page.locator('.lc-detail-x').click()
+    await page.waitForTimeout(500)
+    await page.locator('text=/^Carte$/').first().click()
+    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.locator('button:has-text("MA PLAGE")').first().click()
+    await page.waitForSelector('.lc-detail', { timeout: 25000 })
+
+    // Re-ouverture : toujours débloquée, 0 cadenas, quota IDENTIQUE (pas re-compté)
+    await expect(page.locator('text=/Ta plage · offerts/i')).toBeVisible({ timeout: 15000 })
+    const teasers = await page.locator('.lc-fc-cell.teaser').count()
+    expect(teasers).toBe(0)
+    const q2 = await page.evaluate(() => JSON.parse(localStorage.getItem('sg_fc_quota') || '{}'))
+    expect(q2.beachId).toBe(q1.beachId)
+    expect(q2.day).toBe(q1.day)
+  })
+
   test('API 404 → état honnête, aucune donnée fabriquée', async ({ page }) => {
     await mockFc7(page, () => ({ status: 404, body: { ok: false, reason: 'unknown_beach' } }))
 

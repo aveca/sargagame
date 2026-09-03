@@ -490,7 +490,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
   )
 }
 
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={},isMyBeach=false,onFollowBeach=null,freeForecast=null}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={},isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
@@ -634,7 +634,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {/* ── « SUIVRE CETTE PLAGE » — free tier : 1 plage offerte (prévision 7 j + carte
             d'accueil + « ça a changé » le lendemain). Secondaire au CTA premium (funnel
             préservé) : c'est la valeur gratuite quotidienne, pas un paywall. ── */}
-        {onFollowBeach&&(
+        {onFollowBeach&&!fcBlocked&&(
           isMyBeach ? (
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"2px 0 10px",padding:"9px 12px",borderRadius:12,border:"2px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14",background:"#1EC8B0",color:"#0d0b14",font:"800 12.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif"}}>
               ★ {_t({fr:"Ma plage — suivie, 7 jours offerts",en:"My beach — followed, 7 days free",es:"Mi playa — seguida, 7 días gratis"})}
@@ -646,6 +646,24 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               {_t({fr:"Suivre gratuitement cette plage",en:"Follow this beach for free",es:"Seguir esta playa gratis"})}
             </button>
           )
+        )}
+
+        {/* MUR QUOTA (2e plage le même jour) : l'état actuel RESTE visible en haut (jamais
+            masqué) ; seule la prévision 7 j est proposée en Premium. Pas de paiement ici. */}
+        {fcBlocked&&(
+          <div role="note" style={{margin:"2px 0 10px",padding:"13px 15px",borderRadius:12,border:"2.5px solid #0d0b14",boxShadow:"3px 3px 0 #0d0b14",background:"#fdf6e3",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+            <div style={{font:"800 13px/1.25 'Bricolage Grotesque'",color:"#0d0b14",display:"flex",alignItems:"center",gap:7}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              {_t({fr:"Prévision 7 jours disponible avec Premium",en:"7-day forecast available with Premium",es:"Pronóstico de 7 días disponible con Premium"})}
+            </div>
+            <div style={{font:"600 11.5px/1.45 'Bricolage Grotesque'",color:"#4a4458",marginTop:4}}>
+              {_t({fr:"Compare toutes les plages et prépare ton week-end.",en:"Compare all beaches and plan your weekend.",es:"Compara todas las playas y prepara tu fin de semana."})}
+            </div>
+            <button type="button" onClick={()=>{ if(track)try{track("sg_fc_wall_cta",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("fc_wall") }}
+              style={{marginTop:9,width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"11px 14px",borderRadius:11,border:"2.5px solid #0d0b14",boxShadow:"2.5px 2.5px 0 #0d0b14",background:"#FFC72C",color:"#0d0b14",font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",cursor:"pointer"}}>
+              {_t({fr:"Voir Premium →",en:"See Premium →",es:"Ver Premium →"})}
+            </button>
+          </div>
         )}
 
         {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE

@@ -1986,7 +1986,10 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
   // events n'existaient que dans le batch sg_session (/collect.php) — injoignables
   // en SQL. Ici → analytics_events ligne par ligne → query de cohorte J+1→J+7.
-  "sg_follow_beach","sg_ma_plage_return"])
+  "sg_follow_beach","sg_ma_plage_return",
+  // Quota free tier (1 forecast/jour/device) — déblocage effectif vs mur premium
+  // vu sur la 2e plage du jour. Mesure la demande réelle de couverture totale.
+  "sg_fc_free_unlocked","sg_fc_premium_blocked"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
@@ -4413,7 +4416,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -4720,7 +4723,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
               Tap → devient « Ma plage » (persistée) + sa prévision 7 j se débloque au
               prochain render + elle remonte en tête de l'accueil demain. Ne touche PAS
               au CTA premium (funnel préservé) : c'est un bouton secondaire. */}
-          {onFollowBeach&&!isMyBeach&&(
+          {onFollowBeach&&!isMyBeach&&!fcBlocked&&(
             <button type="button" onClick={()=>{trk("sg_follow_beach",{beach_id:beach.id});onFollowBeach(beach.id)}}
               style={{width:"100%",marginTop:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,boxShadow:`3px 3px 0 ${COMIC.ink}`,background:"#fff",color:COMIC.ink,font:"800 14px/1.15 'Bricolage Grotesque'",cursor:"pointer"}}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 3v2M12 19v2M4.2 5.6 6.3 7.7M17.7 16.3l2.1 2.1M3 12h2M19 12h2M4.2 18.4l2.1-2.1M17.7 7.7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg>
@@ -4735,6 +4738,23 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           {isMyBeach&&!isPremium&&freeForecast===null&&fcDays.length>0&&(
             <div style={{marginTop:10,font:"700 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center"}}>
               {_t(lang,"★ Ma plage — la prévision complète n'est pas disponible pour cette plage.","★ My beach — the full forecast is not available for this beach.","★ Mi playa — el pronóstico completo no está disponible para esta playa.")}
+            </div>
+          )}
+          {/* MUR QUOTA (2e plage du jour) : état actuel/pins/score restent gratuits —
+              seule la prévision 7 j de cette 2e plage est proposée en Premium. */}
+          {fcBlocked&&(
+            <div role="note" style={{margin:"10px 0 0",padding:"13px 15px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,boxShadow:`3px 3px 0 ${COMIC.ink}`,background:"#fff"}}>
+              <div style={{font:"800 13px/1.25 'Bricolage Grotesque'",color:COMIC.ink,display:"flex",alignItems:"center",gap:7}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                {_t(lang,"Prévision 7 jours disponible avec Premium","7-day forecast available with Premium","Pronóstico de 7 días disponible con Premium")}
+              </div>
+              <div style={{font:"600 11.5px/1.45 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>
+                {_t(lang,"Compare toutes les plages et prépare ton week-end.","Compare all beaches and plan your weekend.","Compara todas las playas y prepara tu fin de semana.")}
+              </div>
+              <button type="button" onClick={()=>{trk("sg_fc_wall_cta",{beach_id:beach.id});onPremiumClick&&onPremiumClick("fc_wall")}}
+                style={{marginTop:9,width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"11px 14px",borderRadius:11,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2.5px 2.5px 0 ${COMIC.ink}`,background:COMIC.gold,color:COMIC.ink,font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",cursor:"pointer"}}>
+                {_t(lang,"Voir Premium →","See Premium →","Ver Premium →")}
+              </button>
             </div>
           )}
         </div>
@@ -11507,6 +11527,15 @@ export default function App(){
   //    réseau aux retours dans la journée. Jamais de fabrication : 404/503 → null. ──
   // undefined = chargement inconnu · null = réellement indisponible · tableau = série prête
   const[myBeachFc,setMyBeachFc]=useState(undefined)
+  // ── QUOTA FREE TIER (1 forecast 7 j / jour / device) — sprint tiered 2026-09-03 ──
+  // sg_fc_quota = {day, beachId}. Consommé UNIQUEMENT quand le fetch fc7 réussit
+  // (donnée réellement débloquée), jamais au simple tap fiche. Même plage = gratuit
+  // (re-ouverture / retour quotidien). 2e plage le même jour → mur Premium léger
+  // (pas de paiement in-app dans ce mur, juste le CTA offre).
+  const[fcBlockedId,setFcBlockedId]=useState(null)
+  const fcPendingRef=useRef(null)
+  const _fcQuotaRead=()=>{try{const q=JSON.parse(localStorage.getItem("sg_fc_quota")||"null");return(q&&q.day===FContract.localDayKey())?q:null}catch(_){return null}}
+  const _fcQuotaConsume=(id)=>{try{localStorage.setItem("sg_fc_quota",JSON.stringify({day:FContract.localDayKey(),beachId:id}))}catch(_){}}
   const[showPremium,setShowPremium]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
@@ -13394,8 +13423,20 @@ useEffect(()=>{
       try{
         const w=sargData&&sargData._enrichedWeekly&&sargData._enrichedWeekly[`_interp_${myBeachId}`]
         const n=w&&FContract.normalizeForecast(w.forecast)
-        if(!dead)setMyBeachFc(n&&n.length?n:null)
+        if(!dead){ if(n&&n.length) commitUnlock(n); else setMyBeachFc(null) }
       }catch(_){if(!dead)setMyBeachFc(null)}
+    }
+    // Déblocage effectif = série réelle reçue — C'EST ICI (et seulement ici) que le
+    // quota du jour est consommé. L'event sg_fc_free_unlocked n'est émis que si le
+    // déblocage vient d'un follow FRAIS (fcPendingRef), pas d'un retour quotidien.
+    const commitUnlock=(n)=>{
+      if(dead)return
+      setMyBeachFc(n)
+      _fcQuotaConsume(myBeachId)
+      if(fcPendingRef.current===myBeachId){
+        fcPendingRef.current=null
+        try{track("sg_fc_free_unlocked",{beach_id:myBeachId})}catch(_){}
+      }
     }
     if(!serverId){_interpFallback();return}
     // PROD : les domaines sont Cloudflare Pages — le Worker sg-payments intercepte
@@ -13418,7 +13459,7 @@ useEffect(()=>{
         if(dead)return
         if(j){
           const n=FContract.normalizeForecast(j.forecast)
-          if(n.length){setMyBeachFc(n);try{localStorage.setItem(cacheKey,JSON.stringify(j.forecast))}catch(_){};return}
+          if(n.length){try{localStorage.setItem(cacheKey,JSON.stringify(j.forecast))}catch(_){};commitUnlock(n);return}
         }
       }
       if(!dead)_interpFallback()
@@ -13522,6 +13563,24 @@ useEffect(()=>{
     // Mark old onboarding as done
     s("sg_onb",1)
   },[])
+
+  // requestFollow = l'UNIQUE point d'entrée « suivre une plage » (fiches carte+data).
+  // Garantit le quota 1/jour : jamais consommé au simple tap fiche, jamais consommé
+  // deux fois pour la même plage, mur Premium si le quota du jour est pris par une
+  // AUTRE plage. Le quota lui-même est consommé au succès du fetch fc7 (effet myBeachFc).
+  const requestFollow=useCallback(id=>{
+    const q=_fcQuotaRead()
+    if(id===myBeachId||(q&&q.beachId===id)){fcPendingRef.current=null;onPickBeach(id);return true}
+    if(q){
+      try{track("sg_fc_premium_blocked",{beach_id:id,quota_beach:q.beachId})}catch(_){}
+      setFcBlockedId(id)
+      return false
+    }
+    fcPendingRef.current=id
+    setFcBlockedId(null)
+    onPickBeach(id)
+    return true
+  },[myBeachId,onPickBeach])
 
   const toggleFav=useCallback(id=>{
     setFavorites(f=>{
@@ -14692,7 +14751,8 @@ useEffect(()=>{
                 communityReports={communityReports} onRequestGeo={requestGeo}
                 onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}
                 isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
-                onFollowBeach={onPickBeach}
+                onFollowBeach={requestFollow}
+                fcBlocked={fcBlockedId===selectedBeach.id}
                 freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}/>
             </ErrBound>
           )
@@ -14996,11 +15056,12 @@ useEffect(()=>{
                   beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
                   sargData={sargData}
                   onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
-                  onPremium={undefined}
+                  onPremium={openPremium}
                   onFull={()=>{const b=comicBeach;track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b);/* defer unmount: let BeachSheetComic's bscUp animation cover the gap */ setTimeout(()=>setComicBeach(null),300)}}
                   onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}
                   isMyBeach={!!myBeachId&&myBeachId===comicBeach.id}
-                  onFollowBeach={onPickBeach}
+                  onFollowBeach={requestFollow}
+                  fcBlocked={fcBlockedId===comicBeach.id}
                   freeForecast={myBeachId===comicBeach.id?myBeachFc:null}
                   communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
                 </Suspense>
