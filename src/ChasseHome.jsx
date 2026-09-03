@@ -490,7 +490,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
   )
 }
 
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={},isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={},isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false,myChange=null}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
@@ -585,12 +585,37 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
       </div>
       <div className="lc-detail-body">
         <h2 className="lc-detail-name">{beach.name}</h2>
+        {/* LABEL « MAINTENANT » : sépare visuellement l'état actuel de la prévision
+            7 jours plus bas (sprint UX 2026-09-03 — le malentendu le plus fréquent =
+            confondre current et forecast). */}
+        <div style={{font:"800 9.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".09em",textTransform:"uppercase",opacity:.62,margin:"2px 2px 5px"}}>
+          {_t({fr:"MAINTENANT",en:"NOW",es:"AHORA"})}
+        </div>
         <div className={`lc-detail-head s-${v.st}`}>{_t(head)}</div>
-        <div className="lc-detail-sub">{_t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite — no adivinado."})}
+        {/* Fraîcheur pilotée par la donnée RÉELLE : plus jamais « ce matin » quand le
+            composite satellite date de 2 j (moat = honnêteté). */}
+        <div className="lc-detail-sub">{(()=>{
+          if(why&&why.ageH!=null&&why.ageSat){
+            const h=why.ageH, d=Math.round(h/24)
+            if(h<12)return _t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite esta mañana — no adivinado."})
+            if(h<36)return _t({fr:"Mesuré au satellite hier — pas deviné.",en:"Measured by satellite yesterday — not guessed.",es:"Medido por satélite ayer — no adivinado."})
+            return _t({fr:`Lecture satellite d'il y a ${d} j — on te le dit plutôt que de faire semblant.`,en:`Satellite reading from ${d}d ago — we'd rather tell you than fake it.`,es:`Lectura satelital de hace ${d} días — preferimos decírtelo.`})
+          }
+          return _t({fr:"Mesuré au satellite — pas deviné.",en:"Measured by satellite — not guessed.",es:"Medido por satélite — no adivinado."})
+        })()}
           {why&&<button type="button" className="lc-why-btn" aria-expanded={whyOpen} onClick={toggleWhy}>
             {_t({fr:"Pourquoi ce verdict ?",en:"Why this verdict?",es:"¿Por qué este veredicto?"})} <span aria-hidden="true">{whyOpen?"−":"+"}</span>
           </button>}
         </div>
+        {/* DAILY LOOP en fiche : « ça a changé depuis hier » visible SANS interaction
+            (donnée réelle du snapshot quotidien — jamais inventée). */}
+        {isMyBeach&&myChange&&myChange.changed&&(()=>{
+          const L={clean:_t({fr:"Propre",en:"Clean",es:"Limpia"}),moderate:_t({fr:"Modéré",en:"Moderate",es:"Moderada"}),avoid:_t({fr:"À éviter",en:"Avoid",es:"Evitar"})}
+          return (
+          <div role="status" style={{margin:"6px 2px 8px",display:"inline-flex",alignItems:"center",gap:6,background:"#FFEDD5",border:"2px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14",borderRadius:9,padding:"6px 10px",font:"800 11px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#9a3412"}}>
+            ⚠️ {_t({fr:"Ça a changé depuis hier",en:"It changed since yesterday",es:"Cambió desde ayer"})} — <b>{L[myChange.from]||myChange.from}</b> → <b>{L[myChange.to]||myChange.to}</b>
+          </div>
+        )})()}
         {why&&whyOpen&&(
           <section className="lc-why" aria-label={_t({fr:"Pourquoi ce verdict",en:"Why this verdict",es:"Por qué este veredicto"})}>
             <div className="lc-season-body">
@@ -671,7 +696,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             Plage non couverte ou ?fc7=0 → simple cadenas (fallback honnête, inchangé). */}
         {fcUi&&fcUi.length ? (
           <div className="lc-detail-fc">
-            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}
+            <div className="lc-detail-fc-h">{_t({fr:"PRÉVISION 7 JOURS",en:"7-DAY FORECAST",es:"PRONÓSTICO 7 DÍAS"})}
               {free7&&<span style={{marginLeft:8,font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".06em",textTransform:"uppercase",background:"#1EC8B0",color:"#0d0b14",border:"1.5px solid #0d0b14",borderRadius:999,padding:"3px 7px",verticalAlign:"2px"}}>{_t({fr:"★ Ta plage · offerts",en:"★ Your beach · free",es:"★ Tu playa · gratis"})}</span>}</div>
             <div className="lc-fc-cap">{fcConfJ1!=null
               ? _t({fr:`7 jours, sans trou. Plus on s'éloigne, moins on est sûr — on te le dit. ${fcConfJ1}% pour demain.`,en:`7 days, no blanks. The further out, the less sure — and we tell you. ${fcConfJ1}% for tomorrow.`,es:`7 días, sin huecos. Cuanto más lejos, menos seguros — y te lo decimos. ${fcConfJ1}% para mañana.`})
@@ -729,7 +754,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </div>
         ) : (
           <div className="lc-detail-fc">
-            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
+            <div className="lc-detail-fc-h">{_t({fr:"PRÉVISION 7 JOURS",en:"7-DAY FORECAST",es:"PRONÓSTICO 7 DÍAS"})}</div>
             <div className="lc-detail-fc-row" role={isPremium?undefined:"button"} tabIndex={isPremium?undefined:0}
               aria-label={isPremium?undefined:_t({fr:"Débloquer les prévisions 7 jours",en:"Unlock the 7-day forecast",es:"Desbloquear el pronóstico de 7 días"})}
               onClick={isPremium?undefined:openFc}

@@ -4676,7 +4676,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
              non-premium — SAUF « Ma plage » (free7 : série réelle 7 j offerte au suivi). */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
-            <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
+            <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"PRÉVISION 7 JOURS","7-DAY FORECAST","PRONÓSTICO 7 DÍAS")}</div>
             {free7
               ? <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.clean,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}>★ {_t(lang,"MA PLAGE · GRATUIT","MY BEACH · FREE","MI PLAYA · GRATIS")}</span>
               : !isPremium&&fcDays.length>0&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
@@ -15063,6 +15063,7 @@ useEffect(()=>{
                   onFollowBeach={requestFollow}
                   fcBlocked={fcBlockedId===comicBeach.id}
                   freeForecast={myBeachId===comicBeach.id?myBeachFc:null}
+                  myChange={myBeachId===comicBeach.id?myBeachChange:null}
                   communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
                 </Suspense>
           </ErrBound>

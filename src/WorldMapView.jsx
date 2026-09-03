@@ -2008,6 +2008,10 @@ export default function WorldMapView({
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
           return (
           <div style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
+            {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
+            <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
+              {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
+            </span>
             <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}>🏆 {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}

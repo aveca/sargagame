@@ -33,7 +33,7 @@ async function mockFc7(page: any, fulfill: (id: string) => { status: number; bod
   })
 }
 
-const FC7_HEAD = 'text=7 PROCHAINS JOURS'
+const FC7_HEAD = 'text=/PRÉVISION 7 JOURS/i'
 
 // Les tests simulent des retours « le lendemain » via reload : le service worker
 // (precache) servirait un bundle périmé au reload → on le bloque dans le contexte.
@@ -55,7 +55,7 @@ test.describe('Ma plage — free tier', () => {
 
     // Tap héros → fiche détail (comic) ouverte avec le strip 7 jours
     await heroCta.click()
-    await expect(page.getByText('7 PROCHAINS JOURS', { exact: true })).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('text=/PRÉVISION 7 JOURS/i').first()).toBeVisible({ timeout: 15000 })
   })
 
   test('suivre une plage débloque ses 7 jours réels (sans payer)', async ({ page }) => {
@@ -67,7 +67,7 @@ test.describe('Ma plage — free tier', () => {
 
     // Ouvre la fiche via le héros
     await page.locator('button:has-text("Voir →")').first().click()
-    await expect(page.getByText('7 PROCHAINS JOURS', { exact: true })).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('text=/PRÉVISION 7 JOURS/i').first()).toBeVisible({ timeout: 15000 })
 
     // Non-suivie : cellules teaser (cadenas, teinte réelle) présentes pour les jours > J0
     const teasersBefore = await page.locator('.lc-fc-cell.teaser').count()
@@ -180,6 +180,45 @@ test.describe('Ma plage — free tier', () => {
     const q2 = await page.evaluate(() => JSON.parse(localStorage.getItem('sg_fc_quota') || '{}'))
     expect(q2.beachId).toBe(q1.beachId)
     expect(q2.day).toBe(q1.day)
+  })
+
+  // ── Sprint UX 2026-09-03 : hiérarchie MAINTENANT vs PRÉVISION + mobile ────────
+
+  test('fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés', async ({ page }) => {
+    await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.locator('button:has-text("Voir →")').first().click()
+
+    // État actuel LABELLÉ « MAINTENANT » + strip PRÉVISION 7 JOURS distinct
+    await page.getByText('MAINTENANT', { exact: true }).waitFor({ state: 'visible', timeout: 25000 })
+    await expect(page.locator('text=/PRÉVISION 7 JOURS/i').first()).toBeVisible({ timeout: 15000 })
+
+    // Data trust : la fraîcheur affiche le temps réel (jamais « ce matin » si vieux)
+    const sub = await page.locator('.lc-detail-sub').innerText()
+    expect(/satellite/i.test(sub)).toBe(true)
+    // Si donnée à +12h : pas de claim « ce matin »
+    expect(/Satellite il y a|ce matin|hier|d\'il y a/i.test(sub)).toBe(true)
+  })
+
+  test('mobile 375/390/430 : zéro overflow horizontal sur home + fiche', async ({ page, viewport }) => {
+    const noOverflow = async () => {
+      const o = await page.evaluate(() => ({
+        s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth,
+        body: document.body.scrollWidth,
+      }))
+      expect(o.s).toBeLessThanOrEqual(o.c + 1)
+    }
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForSelector('.sg-maplabel', { timeout: 45000 })
+    await page.waitForTimeout(1500)
+    await noOverflow() // home
+
+    await page.locator('button:has-text("Voir →")').first().click()
+    await page.waitForSelector('.lc-detail', { timeout: 25000 })
+    await page.waitForTimeout(1000)
+    await noOverflow() // fiche ouverte
   })
 
   test('API 404 → état honnête, aucune donnée fabriquée', async ({ page }) => {
