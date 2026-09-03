@@ -1,4 +1,11 @@
 ---
+## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT UX POLISH — MAINTENANT/PRÉVISION + freshness honnête + chip changement
+
+`f6be809a` : headline question carte + label MAINTENANT fiche + rename « PRÉVISION 7 JOURS » + fraîcheur pilotée erddapTimestamp (plus de mensonge « ce matin » sur data périmée) + chip « ça a changé » en fiche. 8/8 E2E ma-plage, smoke 4 tokens, bundle 37.4 Ko, deploy SUCCESS. Screenshots prod : `Temp\opencode\ux-audit\390-after-{home,fiche}.png`.
+
+**Stop recommandé par le fondateur : pas de nouveau sprint fonctionnel avant analyse des events** (sg_fc_free_unlocked, sg_fc_premium_blocked, sg_ma_plage_return).
+
+---
 ## 2026-09-03 · Agent: coding_agent (OpenCode) · APPLY TIERED — P0 leak fermée + quota + mur Premium (prod vérifié)
 
 - P0 : `vite.config.js` strip `_private/` de dist → bulk forecast 7 j non exposé sur Pages (origin 404, cachebust vérifié). ⚠️ Edge cache conserve la vieille copie ~7 j (purge job KO — token sans Cache Purge) → action fondateur : purge manuelle ou scope+.

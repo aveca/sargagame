@@ -1,5 +1,11 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-03 · Sprint UX polish — AHA moment + data trust
+
+- **`f6be809a`** : heading question « Où te baigner maintenant ? » (carte, au-dessus du héro), label « MAINTENANT » au-dessus du verdict fiche, renommage « 7 PROCHAINS JOURS » → « **PRÉVISION 7 JOURS** » (séparation visuelle current/forecast), sous-titre de fraîcheur piloté par `erddapTimestamp` (plus jamais « ce matin » si donnée > 12 h : « Lecture satellite d'il y a X j »), chip « ⚠️ Ça a changé depuis hier » visible dans la fiche quand `sg_my_changed` existe.
+- Tests : +2 E2E (séparation MAINTENANT/PRÉVISION, overflow 375/390/430) → ma-plage.spec 8/8 ✅, ux-smoke 4 tokens ✅, bundle 37.4 Ko ≤ 210 ✅
+- Prod : screenshots `390-after-home.png` / `390-after-fiche.png` confirment la hiérarchie visuelle voulue (question → meilleur choix → carte ; MAINTENANT / PRÉVISION séparés, freshness honnête).
+
 ## 2026-09-03 · Apply tiered — P0 fuite collmatée + quota 1 forecast/j + mur Premium P2
 
 - **P0 sécurité** (`dfef1552`) : `_private/forecast-full.json` retiré du `dist/` Pages (root + 7 régions) dans le plugin `strip-php-secrets` — la fuite bulk (21 Ko × toutes les plages, 7 jours) est close côté origine (origin = 404, vérifié cache-buster). ⚠️ **Le cache edge Cloudflare garde encore la copie obsolète ~7 j** (s-maxage 604800) jusqu'à expiration — le job `purge-cache` de deploy-live échoue (token sans scope Cache Purge) → **action fondateur** : purge manuelle 6 zones OU ajout du scope Cache Purge au token.
