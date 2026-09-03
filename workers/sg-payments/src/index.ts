@@ -71,6 +71,8 @@ interface Env {
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
   RESEND_API_KEY: string;
+  GOOGLE_CLIENT_ID?: string;   // client_id OAuth Google (public par design) — absent = Google Sign-In désactivé proprement
+  AUTH_SECRET?: string;        // secret de signature des sessions (fallback dérivé ci-dessous)
   BREVO_API_KEY?: string;
   SENDPULSE_CLIENT_ID?: string;
   SENDPULSE_CLIENT_SECRET?: string;
@@ -100,11 +102,38 @@ function cors(request: Request): Record<string, string> {
   return h;
 }
 
+// ─── KV fault-tolerant (FIX 2026-09-03 — BUG quota KV → 1101 global) ────
+// Toute erreur KV (quota free plan, namespace KO) rendait JUSQU'ICI un 1101
+// qui cassait TOUT le money-path (rateLimit est appelé avant le try/catch).
+// Règle : rate-limit = fail-open (log), idempotence = fail-open (la contrainte
+// UNIQUE(payment_id/subscription_id) de payment_grants protège le grant).
+function kv(env: Env) {
+  const k = env.TRANSIENTS as KVNamespace | undefined;
+  return {
+    async get(key: string): Promise<string | null> {
+      if (!k) return null;
+      try { return await k.get(key); } catch (e: any) { console.log('KV get KO:', e?.message); return null; }
+    },
+    async put(key: string, value: string, opts?: any): Promise<void> {
+      if (!k) return;
+      try { await k.put(key, value, opts); } catch (e: any) { console.log('KV put KO:', e?.message); }
+    },
+    async delete(key: string): Promise<void> {
+      if (!k) return;
+      try { await k.delete(key); } catch (e: any) { console.log('KV del KO:', e?.message); }
+    },
+  };
+}
+
 async function rateLimit(env: Env, key: string, limit: number, windowSec = 60): Promise<boolean> {
-  const bucket = `${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
-  const cur = parseInt(await env.TRANSIENTS.get(bucket) || '0');
-  if (cur >= limit) return false;
-  await env.TRANSIENTS.put(bucket, String(cur + 1), { expirationTtl: windowSec * 2 });
+  try {
+    const bucket = `${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
+    const cur = parseInt(await kv(env).get(bucket) || '0');
+    if (cur >= limit) return false;
+    await kv(env).put(bucket, String(cur + 1), { expirationTtl: windowSec * 2 });
+  } catch (e: any) {
+    console.log('rateLimit KV KO — fail-open:', e?.message);
+  }
   return true;
 }
 
@@ -152,6 +181,145 @@ async function widgetVerify(env: Env, k: string): Promise<Record<string, any> | 
   const payload = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
   if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
   return payload;
+}
+
+// ═══ IDENTITÉ UTILISATEUR (sprint funnel 2026-09-03) ═══════════════════
+// user_id stable Supabase (table sg_users) + session HMAC signée côté serveur.
+// Le localStorage navigateur n'est QUE un cache UX : la source de vérité
+// d'un accès premium = payment_grants liée au user_id (ou à l'email legacy).
+
+/** supa tolérant : parse JSON gardé, Prefer return=representation explicite. */
+async function supaQ(env: Env, table: string, method: string, body?: any, query = ''): Promise<any> {
+  if (!env.SUPABASE_SERVICE_KEY) return method === 'GET' ? [] : null;
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
+    const r = await fetch(url, {
+      method,
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json', 'Prefer': 'return=representation',
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (!r.ok) return method === 'GET' ? [] : null;
+    const t = await r.text();
+    if (!t) return [];
+    try { return JSON.parse(t); } catch { return []; }
+  } catch { return method === 'GET' ? [] : null; }
+}
+
+// ── Session token (HMAC dédié, indépendant du secret Mollie) ──────────
+function authSecret(env: Env): string {
+  return env.AUTH_SECRET || ((env.MOLLIE_WEBHOOK_SECRET || '') + '|sg-auth-v1');
+}
+
+async function authSign(env: Env, payload: Record<string, any>): Promise<string> {
+  const data = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(authSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
+  return `${data}.${Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+}
+
+async function authVerify(env: Env, token: string): Promise<Record<string, any> | null> {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(authSecret(env)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const s = await crypto.subtle.sign('HMAC', key, enc.encode(parts[0]));
+    const expected = Array.from(new Uint8Array(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+    if (expected.length !== parts[1].length) return null;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ parts[1].charCodeAt(i);
+    if (diff !== 0) return null;
+    const b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(decodeURIComponent(escape(atob(b64 + '='.repeat((4 - b64.length % 4) % 4)))));
+    if (payload.type !== 'sg_session') return null;
+    if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+    if (!payload.uid) return null;
+    return payload;
+  } catch { return null; }
+}
+
+// ── Vérification Google ID Token (OIDC, RS256 via JWKS Google) ─────────
+let JWKS_CACHE: { at: number; keys: any[] } | null = null;
+
+function b64urlDecode(s: string): string {
+  const b = s.replace(/-/g, '+').replace(/_/g, '/');
+  return atob(b + '='.repeat((4 - b.length % 4) % 4));
+}
+
+async function verifyGoogleIdToken(env: Env, credential: string): Promise<{ email: string; sub: string; name: string } | null> {
+  if (!env.GOOGLE_CLIENT_ID) return null; // non configuré → feature off proprement
+  const parts = String(credential || '').split('.');
+  if (parts.length !== 3) return null;
+  let header: any, payload: any;
+  try { header = JSON.parse(b64urlDecode(parts[0])); payload = JSON.parse(b64urlDecode(parts[1])); } catch { return null; }
+  if (header?.alg !== 'RS256' || !header.kid) return null;
+  if (payload.iss !== 'accounts.google.com' && payload.iss !== 'https://accounts.google.com') return null;
+  if (payload.aud !== env.GOOGLE_CLIENT_ID) return null;
+  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+  if (!payload.email || payload.email_verified === false) return null;
+  try {
+    if (!JWKS_CACHE || Date.now() - JWKS_CACHE.at > 6 * 3600_000) {
+      const r = await fetch('https://www.googleapis.com/oauth2/v3/certs');
+      const j = await r.json() as any;
+      if (!j?.keys?.length) return null;
+      JWKS_CACHE = { at: Date.now(), keys: j.keys };
+    }
+    const jwk = JWKS_CACHE!.keys.find(k => k.kid === header.kid);
+    if (!jwk) return null;
+    const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' } as any, false, ['verify']);
+    const sigBytes = Uint8Array.from(b64urlDecode(parts[2]), c => c.charCodeAt(0));
+    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, sigBytes, new TextEncoder().encode(parts[0] + '.' + parts[1]));
+    if (!ok) return null;
+  } catch { return null; }
+  return { email: String(payload.email).toLowerCase().trim(), sub: String(payload.sub), name: String(payload.name || '') };
+}
+
+// ── Users : lookup/upsert déterministe (Google sub → email → création) ──
+async function userUpsert(env: Env, email: string, provider: 'google' | 'email', providerUserId: string | null): Promise<{ id: string; email: string } | null> {
+  const now = new Date().toISOString();
+  if (providerUserId) {
+    const bySub = await supaQ(env, 'sg_users', 'GET', null, `?provider=eq.google&provider_user_id=eq.${encodeURIComponent(providerUserId)}&select=id,email&limit=1`);
+    if (bySub?.[0]) {
+      await supaQ(env, 'sg_users', 'PATCH', { email, updated_at: now }, `?id=eq.${bySub[0].id}`);
+      return bySub[0];
+    }
+  }
+  // Linking : un achat email antérieur → même user_id à la 1re connexion Google (jamais 2 comptes)
+  const byEmail = await supaQ(env, 'sg_users', 'GET', null, `?email=eq.${encodeURIComponent(email)}&select=id,email&limit=1`);
+  if (byEmail?.[0]) {
+    if (providerUserId) await supaQ(env, 'sg_users', 'PATCH', { provider: 'google', provider_user_id: providerUserId, updated_at: now }, `?id=eq.${byEmail[0].id}`);
+    return byEmail[0];
+  }
+  const created = await supaQ(env, 'sg_users', 'POST', { email, provider, provider_user_id: providerUserId }, '?select=id,email');
+  if (created?.[0]) return created[0];
+  // Course concurrente (double insert) → relire
+  const again = await supaQ(env, 'sg_users', 'GET', null, `?email=eq.${encodeURIComponent(email)}&select=id,email&limit=1`);
+  return again?.[0] || null;
+}
+
+// ── Entitlements : grants actifs d'un user (user_id ET email legacy) ────
+async function userEntitlements(env: Env, userId: string | null, email: string | null): Promise<{ entitlements: any[]; premium: any }> {
+  const filters: string[] = [];
+  if (userId) filters.push(`user_id.eq.${userId}`);
+  if (email) filters.push(`email.eq.${encodeURIComponent(email)}`);
+  if (!filters.length) return { entitlements: [], premium: { active: false } };
+  const q = `?select=type,pass,plan,expires_at,payment_id&expires_at=gt.now()&${filters.length > 1 ? 'or=(' + filters.join(',') + ')' : filters[0]}&order=expires_at.desc&limit=10`;
+  const rows = (await supaQ(env, 'payment_grants', 'GET', null, q)) || [];
+  const passRow = rows.find((r: any) => r.type === 'b2c_pass');
+  const passEnd = passRow ? new Date(passRow.expires_at).getTime() : 0;
+  return {
+    entitlements: rows,
+    premium: {
+      active: !!passRow && passEnd > Date.now(),
+      kind: passRow ? 'pass' : null,
+      pass: passRow?.pass || null,
+      passEnd: passEnd > Date.now() ? passEnd : null,
+    },
+  };
 }
 
 async function resendEmail(env: Env, from: string, to: string[], subject: string, html: string): Promise<void> {
@@ -351,14 +519,16 @@ export default {
     const path = url.pathname;
 
     // ─── Mollie API ──────────────────────────────────────
-    if (path === '/api/mollie') {
+    // Alias `.php` : le front historique appelle /api/mollie.php — sans cet alias,
+    // l'URL tombait sur le guard anti-leak 404 et TOUT le checkout était mort (P0 2026-09-03).
+    if (path === '/api/mollie' || path === '/api/mollie.php') {
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
       if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: cors(request) });
       return handleMollie(request, env);
     }
 
     // ─── Mollie Webhook ──────────────────────────────────
-    if (path === '/api/mollie-webhook') {
+    if (path === '/api/mollie-webhook' || path === '/api/mollie-webhook.php') {
       if (request.method === 'GET') return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
       return handleWebhook(request, env);
     }
@@ -805,9 +975,9 @@ async function handleCollect(request: Request, env: Env, ctx: ExecutionContext):
 
   // Cap global quotidien (remplace le cap disque 25 Mo/j du PHP — pas de disque sous Pages)
   const dayKey = `collect:day:${day}`;
-  const dayCount = parseInt(await env.TRANSIENTS.get(dayKey) || '0');
+  const dayCount = parseInt(await kv(env).get(dayKey) || '0');
   if (dayCount >= 5000) return new Response(null, { status: 204, headers: noSniff });
-  ctx.waitUntil(env.TRANSIENTS.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }));
+  ctx.waitUntil(kv(env).put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }));
 
   const region = typeof data.region === 'string' ? data.region.slice(0, 20) : '';
   ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
@@ -823,7 +993,8 @@ async function handleCollect(request: Request, env: Env, ctx: ExecutionContext):
 
 async function handleMollie(request: Request, env: Env): Promise<Response> {
   const h = cors(request);
-  const body = await request.json() as any;
+  let body: any;
+  try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: h }); }
   const action = body.action || '';
   if (!(await rateLimit(env, `mol_${action}`, 20))) return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: h });
 
@@ -850,13 +1021,19 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
       if (currency === 'USD' && pass && pass !== 'trip7') { const m = new Date().getMonth() + 1; if (m >= 6 && m <= 11) amount.value = (parseFloat(amount.value) * 1.15).toFixed(2); }
       const metadata: Record<string, any> = userMeta || {}; metadata.source = source || 'unknown'; metadata.pass = pass || ''; metadata.email = email || ''; metadata.lang = lang || 'fr';
       if (referredBy) metadata.referredBy = referredBy; if (myReferralCode) metadata.myReferralCode = myReferralCode;
+      // Identité stable : session signée (Google) OU upsert email → user_id propagé
+      // au webhook via metadata → le grant payment_grants est rattaché au user (§15 du sprint).
+      let userId: string | null = null;
+      if (body.authToken) { const sess = await authVerify(env, String(body.authToken)); if (sess) userId = String(sess.uid); }
+      if (!userId && email && String(email).includes('@')) { const u = await userUpsert(env, String(email).toLowerCase().trim(), 'email', null); if (u) userId = u.id; }
+      if (userId) metadata.user_id = userId;
       const kind = pass ? 'pass' : 'pro';
       const redirectUrl = userRedirect || `https://${host}/payment/good.html?kind=${kind}&email=${encodeURIComponent(email || '')}&plan=${encodeURIComponent(pass || 'annual')}`;
-      if (pass && email) { const idemKey = `mol_${await hashString(email + '|' + pass)}`; const ex = await env.TRANSIENTS.get(idemKey); if (ex) throw new Error('Paiement déjà en cours.'); await env.TRANSIENTS.put(idemKey, '1', { expirationTtl: 60 }); }
+      if (pass && email) { const idemKey = `mol_${await hashString(email + '|' + pass)}`; const ex = await kv(env).get(idemKey); if (ex) throw new Error('Paiement déjà en cours.'); await kv(env).put(idemKey, '1', { expirationTtl: 60 }); }
       const pd: any = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : 'Sargasses'), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || 'fr_FR' };
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken; if (cardToken) pd.cardToken = cardToken; if (payMethod) pd.method = payMethod;
       const payment = await mollieReq('POST', 'v2/payments', apiKey, pd);
-      return new Response(JSON.stringify({ checkoutUrl: payment.checkoutUrl, paymentId: payment.id }), { headers: h });
+      return new Response(JSON.stringify({ checkoutUrl: payment.checkoutUrl, paymentId: payment.id, user_id: userId || null }), { headers: h });
     }
 
     if (action === 'create_subscription') {
@@ -890,12 +1067,48 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
     if (action === 'verify_subscription') {
       const email = (body.email || '').trim();
       if (!email || !email.includes('@')) return new Response(JSON.stringify({ error: 'Missing email' }), { status: 400, headers: h });
-      const rows = await supa(env, 'payment_grants', 'GET', null, `?select=pass,expires_at,payment_id&type=eq.b2c_pass&email=eq.${email}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
+      const rows = await supa(env, 'payment_grants', 'GET', null, `?select=pass,expires_at,payment_id,user_id&type=eq.b2c_pass&email=eq.${email}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
       if (!rows?.length) return new Response(JSON.stringify({ active: false, reason: 'no_pass_grant' }), { headers: h });
       const passEnd = new Date(rows[0].expires_at).getTime();
       if (!passEnd || passEnd <= Date.now()) return new Response(JSON.stringify({ active: false, reason: 'no_pass_grant' }), { headers: h });
-      return new Response(JSON.stringify({ active: true, kind: 'pass', pass: rows[0].pass, passEnd, status: 'paid' }), { headers: h });
+      return new Response(JSON.stringify({ active: true, kind: 'pass', pass: rows[0].pass, passEnd, status: 'paid', user_id: rows[0].user_id || null }), { headers: h });
     }
+
+    // ═══ IDENTITÉ (sprint funnel 2026-09-03) — actions auth ═══════════
+    // Règle sécurité : JAMAIS de confiance à un email/user_id brut envoyé par le
+    // client. Google = OIDC vérifié (signature JWKS + aud + iss + exp).
+    // Email = identité déclarée, SANS token de session (un token durable exige
+    // la preuve Google ou un grant de paiement webhook).
+    if (action === 'auth_google') {
+      if (!env.GOOGLE_CLIENT_ID) return new Response(JSON.stringify({ error: 'google_not_configured' }), { status: 501, headers: h });
+      const credential = String(body.credential || '');
+      if (!credential || credential.length > 8192) return new Response(JSON.stringify({ error: 'invalid_credential' }), { status: 400, headers: h });
+      const g = await verifyGoogleIdToken(env, credential);
+      if (!g) return new Response(JSON.stringify({ error: 'google_auth_invalid' }), { status: 401, headers: h });
+      const user = await userUpsert(env, g.email, 'google', g.sub);
+      if (!user) return new Response(JSON.stringify({ error: 'user_unavailable' }), { status: 503, headers: h });
+      const token = await authSign(env, { uid: user.id, email: g.email, type: 'sg_session', exp: Math.floor(Date.now() / 1000) + 90 * 86400 });
+      const ent = await userEntitlements(env, user.id, g.email);
+      return new Response(JSON.stringify({ ok: true, user_id: user.id, email: g.email, name: g.name, provider: 'google', token, ...ent }), { headers: h });
+    }
+
+    if (action === 'auth_email') {
+      const email = String(body.email || '').toLowerCase().trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return new Response(JSON.stringify({ error: 'invalid_email' }), { status: 400, headers: h });
+      const user = await userUpsert(env, email, 'email', null);
+      const ent = await userEntitlements(env, user?.id || null, email);
+      return new Response(JSON.stringify({ ok: true, user_id: user?.id || null, email, provider: 'email', ...ent }), { headers: h });
+    }
+
+    if (action === 'auth_session') {
+      const payload = await authVerify(env, String(body.token || ''));
+      if (!payload) return new Response(JSON.stringify({ ok: false, error: 'invalid_session' }), { status: 401, headers: h });
+      const users = await supaQ(env, 'sg_users', 'GET', null, `?id=eq.${payload.uid}&select=id,email&limit=1`);
+      const email = users?.[0]?.email || String(payload.email || '');
+      const ent = await userEntitlements(env, String(payload.uid), email || null);
+      return new Response(JSON.stringify({ ok: true, user_id: payload.uid, email, ...ent }), { headers: h });
+    }
+
 
     if (action === 'applepay_session') {
       const validationUrl = body.validationUrl; if (!validationUrl) throw new Error('validationUrl requis');
@@ -922,7 +1135,7 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
   const { id, type, event } = data;
   if (!id || !type) return new Response(JSON.stringify({ error: 'id + type requis' }), { status: 400 });
   const markerKey = `mollie_${id.replace(/[^A-Za-z0-9_.-]/g, '_')}`;
-  const existing = await env.TRANSIENTS.get(markerKey);
+  const existing = await kv(env).get(markerKey);
   if (existing) return new Response(JSON.stringify({ received: true, duplicate: true }));
   try {
     const apiKey = env.MOLLIE_API_KEY;
@@ -930,7 +1143,7 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
       const payment = await mollieReq('GET', `v2/payments/${id}`, apiKey);
       const status = payment.status || ''; const metadata = payment.metadata || {};
       if (event === 'payment.failed' || status === 'failed') {
-        const pass = metadata.pass || ''; if (pass && ['p30', 'trip7', 'season'].includes(pass)) await env.TRANSIENTS.delete(`mol_b2c_pass_${id}`);
+        const pass = metadata.pass || ''; if (pass && ['p30', 'trip7', 'season'].includes(pass)) await kv(env).delete(`mol_b2c_pass_${id}`);
       }
       if (status === 'paid') {
         const source = metadata.source || ''; const pass = metadata.pass || ''; const email = metadata.email || '';
@@ -941,7 +1154,7 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
           await grantOnboardingAuto(env, email, metadata);
         }
       }
-      await env.TRANSIENTS.put(markerKey, '1', { expirationTtl: 86400 });
+      await kv(env).put(markerKey, '1', { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: 'payment', status }));
     }
     if (type === 'subscription') {
@@ -949,29 +1162,31 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
       const status = sub.status || ''; const metadata = sub.metadata || {}; const planKey = metadata.plan || ''; const cid = sub.customerId || '';
       if (['subscription.created', 'subscription.updated'].includes(event) && planKey && ['pro_monthly', 'brief_monthly'].includes(planKey) && ['active', 'pending'].includes(status)) await grantB2B(env, cid, planKey, sub.id);
       if (event === 'subscription.paid' && planKey && ['pro_monthly', 'brief_monthly'].includes(planKey)) await grantB2B(env, cid, planKey, sub.id);
-      if (['subscription.canceled', 'subscription.expired'].includes(event)) { await env.TRANSIENTS.delete(`mollie_grant_${sub.id}`); await supa(env, 'payment_grants', 'PATCH', { status: 'revoked' }, `?subscription_id=eq.${sub.id}&type=eq.b2b_pro`); }
-      await env.TRANSIENTS.put(markerKey, '1', { expirationTtl: 86400 });
+      if (['subscription.canceled', 'subscription.expired'].includes(event)) { await kv(env).delete(`mollie_grant_${sub.id}`); await supa(env, 'payment_grants', 'PATCH', { status: 'revoked' }, `?subscription_id=eq.${sub.id}&type=eq.b2b_pro`); }
+      await kv(env).put(markerKey, '1', { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: 'subscription', status, event }));
     }
-    await env.TRANSIENTS.put(markerKey, '1', { expirationTtl: 86400 });
+    await kv(env).put(markerKey, '1', { expirationTtl: 86400 });
     return new Response(JSON.stringify({ received: true, type }));
   } catch { return new Response(JSON.stringify({ error: 'webhook_processing_error' }), { status: 500 }); }
 }
 
 async function grantB2B(env: Env, customerId: string, planKey: string, subId: string, days = 30): Promise<void> {
-  const k = `mollie_grant_${subId}`; if (await env.TRANSIENTS.get(k)) return;
+  const k = `mollie_grant_${subId}`; if (await kv(env).get(k)) return;
   const exp = Math.floor(Date.now() / 1000) + days * 86400;
   const token = await widgetSign(env, { plan: planKey, customer_id: customerId, subscription_id: subId, exp, type: 'b2b_pro' });
-  await env.TRANSIENTS.put(k, token, { expirationTtl: (days + 1) * 86400 });
+  await kv(env).put(k, token, { expirationTtl: (days + 1) * 86400 });
   await supa(env, 'payment_grants', 'POST', { subscription_id: subId, type: 'b2b_pro', plan: planKey, customer_id: customerId, expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString() });
 }
 
 async function grantB2C(env: Env, paymentId: string, pass: string, email: string, meta: Record<string, any>): Promise<void> {
-  const k = `mol_b2c_pass_${paymentId}`; if (await env.TRANSIENTS.get(k)) return;
+  const k = `mol_b2c_pass_${paymentId}`; if (await kv(env).get(k)) return;
   const days = PASS_DURATIONS[pass] || 30; const exp = Math.floor(Date.now() / 1000) + days * 86400;
   const sessionId = meta?.sg_session_id || null;
-  await env.TRANSIENTS.put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
-  await supa(env, 'payment_grants', 'POST', { payment_id: paymentId, type: 'b2c_pass', pass, email, currency: meta.currency || 'EUR', expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString(), session_id: sessionId, metadata: meta });
+  await kv(env).put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
+  // user_id : rattache le grant à l'utilisateur stable (sprint identité) si créé au checkout
+  const userId = meta?.user_id || null;
+  await supa(env, 'payment_grants', 'POST', { payment_id: paymentId, type: 'b2c_pass', pass, email, currency: meta.currency || 'EUR', expires_at: new Date(exp * 1000).toISOString(), granted_at: new Date().toISOString(), session_id: sessionId, user_id: userId, metadata: meta });
 }
 
 async function grantOnboardingAuto(env: Env, email: string, meta: Record<string, any>): Promise<void> {

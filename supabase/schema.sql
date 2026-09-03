@@ -216,6 +216,31 @@ alter table public.payment_grants enable row level security;
 -- Pas de policy INSERT anon → écriture côté serveur seulement
 
 -- =====================================================================
+-- sg_users — IDENTITÉ UTILISATEUR STABLE (sprint funnel 2026-09-03)
+-- Un user_id interne par personne ; rattache Google Sign-In et les paiements.
+-- Jamais l'email comme identifiant primaire (l'email est un attribut mutable).
+-- Rattachement déterministe : Google « sub » unique ; email unique ; un compte
+-- Google dont l'email correspond à un user existant se LINK au même user_id.
+-- RLS : aucune policy anon/auth — accès service_role uniquement (worker).
+-- =====================================================================
+create table if not exists public.sg_users (
+  id               uuid primary key default gen_random_uuid(),
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  email            text,                       -- canonique (lowercase, trim)
+  provider         text not null default 'email',  -- 'google' | 'email'
+  provider_user_id text                        -- Google « sub » (jamais pour email-only)
+);
+create unique index if not exists sg_users_email_key on public.sg_users (lower(email)) where email is not null;
+create unique index if not exists sg_users_google_sub_key on public.sg_users (provider, provider_user_id) where provider_user_id is not null;
+alter table public.sg_users enable row level security;
+
+-- Rattachement des entitlements au user_id (additif — l'email reste présent,
+-- les anciens grants gardent user_id NULL et restent résolubles par email).
+alter table public.payment_grants add column if not exists user_id uuid;
+create index if not exists payment_grants_user_idx on public.payment_grants (user_id);
+
+-- =====================================================================
 -- b2c_alerts — Alertes B2C sargassum par région (SPRINT #15)
 -- Insert via LeadCapture B2C toggle → /api/supabase generic
 -- Cron Worker sg-payments 2x/jour (06:00/18:00) → sendEmail si sargassum moderate+

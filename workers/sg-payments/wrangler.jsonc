@@ -20,5 +20,15 @@
   },
   "vars": {
     "SUPABASE_URL": "https://rswdmjtdzrucqzzukfmd.supabase.co"
+    // Sprint identité (2026-09-03) :
+    //   GOOGLE_CLIENT_ID : client_id OAuth Google (valeur PUBLIQUE, API actions
+    //     auth_google/auth_session). Absent = bouton Google masqué, parcours email
+    //     seul (feature-off propre). À poser après création du client OAuth
+    //     Console GCP → Credentials → OAuth client ID « Web » → Authorized
+    //     JavaScript origins = les 6 domaines (mq, gp, miami, puntacana, cancun,
+    //     tulum). Puis : même valeur dans src/lib/auth-client.js
+    //     (SG_GOOGLE_CLIENT_ID) pour activer le bouton côté front.
+    //   AUTH_SECRET (optionnel, secret) : dédié à la signature des sessions.
+    //     Sans lui, secret dérivé de MOLLIE_WEBHOOK_SECRET (fallback OK).
   }
 }
