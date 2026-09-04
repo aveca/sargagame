@@ -1033,7 +1033,7 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
       const pd: any = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : 'Sargasses'), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || 'fr_FR' };
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken; if (cardToken) pd.cardToken = cardToken; if (payMethod) pd.method = payMethod;
       const payment = await mollieReq('POST', 'v2/payments', apiKey, pd);
-      return new Response(JSON.stringify({ checkoutUrl: payment.checkoutUrl, paymentId: payment.id, user_id: userId || null }), { headers: h });
+      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null }), { headers: h });
     }
 
     if (action === 'create_subscription') {
