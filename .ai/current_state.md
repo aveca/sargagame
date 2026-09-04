@@ -1,4 +1,31 @@
 ---
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT UX/UI AUDIT & FIX — RÉGIONNAV, ALERTES, FICHE COMPLÈTE
+
+**SHA HEAD** : `364bd73b` (build local, pas encore déployé)
+
+### Corrections locales (build validé, gates OK)
+1. **RegionNav ghost layer fixé** : RegionNav déplacé dans header chrome + wrapper `.sg-region-nav-inline` + règle CSS `pointer-events:auto` → RegionNav cliquable et visible (z-index header 700, pointer-events corrigé).
+2. **Alertes bell (cloche) fixé** : Util segment `margin-left:12` + `zIndex:10` + boutons cloche `zIndex:20` + `stopPropagation()` → élimine overlap avec freshness badge EN DIRECT, cloche ouvre alertes au lieu de naviguer vers `/fiabilite/`.
+3. **Fiche complète vérifiée** : bouton « Fiche complète → » bascule comic → data sheet (BeachSheetComic) correctement.
+4. **Prévisions 7j confirmées** : section forecast h=190px visible, 7 cellules avec données réelles (Auj79, V60%, S47%...).
+
+### Tests locaux (Gate de ship)
+- ✅ build (4.5s)
+- ✅ bundle 37.4 Ko ≤ 210 Ko gzip
+- ✅ ux-smoke 4 tokens (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- ✅ PHP lint (mollie.php, mollie-lib.php, mollie-webhook.php)
+- ✅ PHP syntax OK
+
+### Problèmes restants (à déployer sur live)
+- [ ] Déployer sur main → GitHub Actions deploy → vérification production
+- [ ] **Action fondateur** : client OAuth Google (console) → `GOOGLE_CLIENT_ID` (worker var) + `SG_GOOGLE_CLIENT_ID` (auth-client.js)
+- [ ] Paiement test réel post-deploy
+- [ ] RegionNav : stacking context `sg-onink-scope` couvre encore header chrome (z-index 700 vs map 1020) — à corriger en augmentant z-index header ou en intégrant RegionNav dans Header component
+- [ ] Alertes bell : overlap résolu localement, à vérifier en production
+- [ ] Install PWA : conditionnel (beforeinstallprompt), comportement correct
+
+---
+
 ## 2026-09-03 · Agent: coding_agent (OpenCode) · SPRINT FUNNEL — LIVE VÉRIFIÉ EN PROD ✅
 
 **SHA HEAD** : `63229a57` (docs) · code: `d5be5bda` (message d'erreur précis) · `4af7c9c6` (fc7+secret-scan) · `ac6c81d9` (worker P0) · `c47c9a30` (front identité) · `a76d45f5` (fc7 data)

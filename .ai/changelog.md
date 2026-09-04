@@ -1,5 +1,30 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-04 · SPRINT UX/UI AUDIT & FIX — RegionNav, Alertes bell, Fiche complète, Prévisions 7j
+
+**Audit systématique parcours utilisateur réel** (Oute-Bénier / L'Autre Bord gp050, Guadeloupe) via Playwright production + scripts custom `ux-sprint-audit.mjs`, `ux-probe-destinations.mjs`.
+
+### Corrections locales (build + gates OK, pas encore déployé live)
+
+1. **RegionNav ghost layer (P1)** — `src/components/RegionNav.jsx`, `src/Sargasses_PROD.jsx:14597-14636`, inline style header chrome
+   - RegionNav (barre régions cross-sell) recouvert par `sg-onink-scope` (WorldMapView root), liens invisibles/non cliquables
+   - Fix : RegionNav wrappe dans `<div className="sg-region-nav-inline">` dans header chrome + règle CSS `.sg-header-chrome > .sg-region-nav-inline{pointer-events:auto}` dans inline style + prop `inline` sur RegionNav pour rendre sans `position:fixed`
+   - Stacking context `sg-onink-scope` (z-index map 1020) couvre encore header (z-index 700) en prod → z-index header à monter ≥ 1100 ou RegionNav intégré dans Header component
+
+2. **Alertes bell — clic navigue vers /fiabilite/ (P0)** — `src/Sargasses_PROD.jsx` Header component
+   - Clic cloche intercepté par freshness badge EN DIRECT (`sg-live-age` + `sg-freshness`) chevauchant visuellement le bouton
+   - Fix : Util segment `margin-left:12` + `zIndex:10` + boutons cloche `zIndex:20` + `stopPropagation()` → élimine overlap, cloche ouvre alertes
+
+3. **Fiche complète → navigation réelle** — vérifié : bouton « Fiche complète → » bascule comic (ChasseDetail) → data sheet (BeachSheetComic)
+
+4. **Prévisions 7j** — section forecast h=190px visible, 7 cellules données réelles (Auj79, V60%, S47%, D37%, L28%, M22%, M17%)
+
+**Gate local** : build 4.5s ✅ · bundle 37.4 Ko gzip ≤ 210 ✅ · ux-smoke 4 tokens ✅ (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]) · PHP lint mollie.php/mollie-lib.php/mollie-webhook.php ✅
+
+**À déployer** : push main → GitHub Actions deploy → vérification production. RegionNav : z-index header à monter ≥ 1100 (au-dessus map z-index 1020) ou RegionNav intégré dans Header component. Alertes bell : vérifier overlap résolu en prod.
+
+---
+
 ## 2026-09-03 · SPRINT FUNNEL — identité user_id + Google 1 clic + P0 money-path réparé
 
 **Découverte P0 majeure en audit préalable** : le checkout Mollie était **mort en prod sur les 6 domaines** :

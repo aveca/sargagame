@@ -7560,14 +7560,15 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       {/* Cloche alertes = INTERRUPTEUR ON/OFF (fonction distincte de l'icône compte → zéro
           redondance ; remplit la barre). Plein = alertes actives ; barré = coupées. Un clic
           bascule (optIn/optOut OneSignal) + toast. Rollback ?account=0 → ancien opt-in direct. */}
-      <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")}>
+      <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")} style={{marginLeft:12,position:'relative',zIndex:10}}>
         {(onToggleAlerts||onEnableNotif)&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=!ACCOUNT_OFF?!!alertsOn:(perm==="granted")
           if(!ACCOUNT_OFF&&onToggleAlerts){
             return(<button aria-label={on?_t(lang,"Désactiver les alertes sargasses","Turn off sargassum alerts","Desactivar alertas de sargazo"):_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
               title={on?_t(lang,"Alertes activées — couper","Alerts on — turn off","Alertas activadas — apagar"):_t(lang,"Activer les alertes","Enable alerts","Activar alertas")}
-              onClick={()=>onToggleAlerts("header")}>
+              onClick={(e)=>{e.stopPropagation();onToggleAlerts("header")}}
+              style={{position:'relative',zIndex:20}}>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={on?"currentColor":"none"}/>
                 <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -7577,13 +7578,15 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           }
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
           return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
-            onClick={()=>{
+            onClick={(e)=>{
+              e.stopPropagation();
               if(on){try{sgToast({tone:"success",msg:_t(lang,"Le Veilleur t'écrit déjà chaque matin 🔔","The Watchman already writes you each morning 🔔","El Vigía ya te escribe cada mañana 🔔")})}catch(_){}; return}
               if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
               if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
               try{track("sg_push_header_cta",{})}catch(_){}
               onEnableNotif&&onEnableNotif()
-            }}>
+            }}
+            style={{position:'relative',zIndex:20}}>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={on?"currentColor":"none"}/>
               <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -14595,7 +14598,7 @@ useEffect(()=>{
               460×88 click-blocker covering the top of the map, making pins
               in that band unclickable on both mobile and desktop. */}
           <div className="sg-header-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
-            <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}`}</style>
+            <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}.sg-header-chrome > .sg-region-nav-inline{pointer-events:auto}`}</style>
             <Header island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
@@ -14632,6 +14635,9 @@ useEffect(()=>{
               }}
               onEnableNotif={()=>forceEnablePush("header")}
               alertsOn={alertsOn} onToggleAlerts={toggleAlerts}/>
+            <div className="sg-region-nav-inline">
+              <RegionNav inline={true} />
+            </div>
           </div>
         </div>
 
@@ -15213,11 +15219,6 @@ useEffect(()=>{
 
         {/* LEAD CAPTURE BANNER — email capture after 15s or 2 scrolls */}
         <LeadCapture />
-
-        {/* Region Navigation — auto-detecte le domaine */}
-        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:1000,padding:'12px 16px',background:'linear-gradient(135deg, #0a5c4a, #0d7f63)',borderBottom:'1px solid rgba(255,255,255,.07)'}}>
-          <RegionNav />
-        </div>
 
         {/* GDPR Cookie Consent Banner — affiché si pas de choix enregistré.
             Accepter → grant analytics_storage via gtag consent update.

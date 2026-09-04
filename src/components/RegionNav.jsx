@@ -17,7 +17,7 @@ const REGIONS = [
 const VISITED_KEY = "sg_visited_regions"
 const CROSS_SELL_DISMISSED_KEY = "sg_cross_sell_dismissed"
 
-export default function RegionNav() {
+export default function RegionNav({inline=false}) {
   const current = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '') : ''
   const [showCrossSell, setShowCrossSell] = useState(false)
 
@@ -46,17 +46,29 @@ export default function RegionNav() {
 
   const lang = (() => { try { const p = window.location.pathname; if (p.startsWith("/es")) return "es"; if (p.startsWith("/en")) return "en"; return "fr" } catch { return "fr" } })()
 
+  const baseStyle = {
+    background: 'linear-gradient(135deg, #0a5c4a, #0d7f63)',
+    padding: '10px 16px',
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
+
+  const wrapperStyle = inline ? baseStyle : {
+    ...baseStyle,
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    borderBottom: '1px solid rgba(255,255,255,.07)'
+  }
+
   return (
     <>
-      <div style={{
-        background: 'linear-gradient(135deg, #0a5c4a, #0d7f63)',
-        padding: '10px 16px',
-        display: 'flex',
-        gap: 8,
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
+      <div style={wrapperStyle}>
         <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>🌍 SargaGame Network —</span>
         <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
           {REGIONS.map(r => {

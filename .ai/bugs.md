@@ -3,6 +3,29 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-028 — [FIXÉ LOCAL 2026-09-04] RegionNav ghost layer — liens invisibles et non cliquables
+- **Sévérité** : P1 — RegionNav (barre régions en haut) recouverte par `sg-onink-scope` (contenu principal), liens invisibles et non cliquables
+- **Date** : 2026-09-04 · **Fichiers** : `src/components/RegionNav.jsx`, `src/Sargasses_PROD.jsx` (header chrome), `src/app-runtime.css` (inline style)
+- **Repro** : Audit Playwright → `elementFromPoint` sur liens RegionNav retourne `DIV.sg-onink-scope` → liens recouverts par contenu principal
+- **Causes** :
+  1. RegionNav rendu dans header chrome (`z-index: 700`) mais contenu principal (`sg-onink-scope` sur WorldMapView) crée stacking context qui le couvre
+  2. RegionNav frère de `.sg-header-row` → ne reçoit pas `pointer-events:auto` (CSS cible uniquement `.sg-header-row > *`)
+- **Fix local** :
+  1. RegionNav wrappe dans `<div className="sg-region-nav-inline">` dans header chrome
+  2. Règle CSS ajoutée dans inline style header chrome : `.sg-header-chrome > .sg-region-nav-inline{pointer-events:auto}`
+  3. RegionNav.jsx : prop `inline` pour rendre sans `position:fixed`
+- **Statut** : Fix local validé (build + smoke OK), à déployer sur live. Stacking context `sg-onink-scope` (z-index map 1020) couvre encore header (z-index 700) → à corriger en production (z-index header ≥ 1100 ou RegionNav intégré dans Header component)
+
+### BUG-2026-029 — [FIXÉ LOCAL 2026-09-04] Cloche alertes — clic navigue vers /fiabilite/ au lieu d'ouvrir alertes
+- **Sévérité** : P0 — clic sur cloche alertes (header) navigue vers `/fiabilite/` au lieu d'ouvrir centre alertes
+- **Date** : 2026-09-04 · **Fichiers** : `src/Sargasses_PROD.jsx` (Header component)
+- **Repro** : Clic sur cloche (coords x=206, y=12) → `elementFromPoint` retourne span freshness badge «il y a 3 j» → navigation vers `/fiabilite/` via handler `onReliability`
+- **Cause** : Badge freshness EN DIRECT (`sg-live-age` + `sg-freshness`) chevauche visuellement bouton cloche (Util segment). Clic intercepté par freshness badge qui bubble vers handler `onReliability` (navigation `/fiabilite/`).
+- **Fix local** :
+  1. Util segment : `margin-left:12` + `position:relative` + `z-index:10` → décale segment util vers la droite
+  2. Boutons cloche : `position:relative` + `z-index:20` + `onClick={(e)=>{e.stopPropagation();...}}` → au-dessus du freshness badge + stop propagation
+- **Statut** : Fix local validé (build + smoke OK), à déployer et vérifier en production
+
 ### BUG-2026-026 — [FIXÉ 2026-09-03] Money-path Mollie 100 % mort en prod (404 alias + 1101 KV)
 - **Sévérité** : P0 — aucune conversion possible sur les 6 domaines (Pages/Workers)
 - **Date** : découvert en audit sprint funnel 2026-09-03, présent probablement depuis la migration Pages/Workers
